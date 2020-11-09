@@ -143,6 +143,11 @@ export const cache = new InMemoryCache({
         isProtected: (value = false) => value,
       }
     },
+    User: {
+      fields: {
+        isLibraryUnlocked: (value = false) => value,
+      },
+    },
     Book: {
       fields: {
         downloadProgress: (value = 0) => value,

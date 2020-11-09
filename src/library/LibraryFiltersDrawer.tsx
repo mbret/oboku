@@ -1,10 +1,10 @@
-import React, { useState, FC, useEffect } from 'react';
-import { gql, useMutation, useQuery, useReactiveVar, useApolloClient } from '@apollo/client';
+import React, { useState, FC } from 'react';
 import Dialog from '@material-ui/core/Dialog';
-import { DialogTitle, makeStyles, createStyles, Drawer, List, ListItem, ListItemText, ListItemIcon, ListItemAvatar, DialogActions, Button } from '@material-ui/core';
-import { ArrowForwardIosRounded, RadioButtonUncheckedOutlined, CheckCircleRounded } from '@material-ui/icons';
+import { DialogTitle, makeStyles, createStyles, Drawer, List, ListItem, ListItemText, ListItemIcon, DialogActions, Button } from '@material-ui/core';
+import { ArrowForwardIosRounded } from '@material-ui/icons';
 import { useQueryGetTags } from '../tags/queries';
 import { useLibraryBooksSettings, useToggleTag } from './queries';
+import { TagsSelectionList } from '../tags/TagsSelectionList';
 
 
 export const LibraryFiltersDrawer: FC<{
@@ -14,6 +14,8 @@ export const LibraryFiltersDrawer: FC<{
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const { data } = useQueryGetTags()
   const { data: libraryFiltersData, error, called } = useLibraryBooksSettings()
+  const libraryBooksSettings = libraryFiltersData?.libraryBooksSettings
+  const selectedTags = libraryBooksSettings?.tags
   const toggleTag = useToggleTag()
 
   console.log('LibraryFiltersDrawer', libraryFiltersData, called, error)
@@ -34,7 +36,7 @@ export const LibraryFiltersDrawer: FC<{
               button
               onClick={() => setIsTagsDialogOpened(true)}
             >
-              <ListItemText primary="Tags" secondary="Any" />
+              <ListItemText primary="Tags" secondary={(selectedTags?.length || 0) > 0 ? 'You have selected tags' : 'Any'} />
               <ListItemIcon>
                 <ArrowForwardIosRounded />
               </ListItemIcon>
@@ -48,24 +50,15 @@ export const LibraryFiltersDrawer: FC<{
         open={isTagsDialogOpened}
       >
         <DialogTitle>Tags selection</DialogTitle>
-        <List>
-          {data?.tags.map((tag) => (
-            <ListItem
-              key={tag?.id}
-              button
-              onClick={() => {
-                tag?.id && toggleTag(tag?.id)
-              }}
-            >
-              <ListItemAvatar>
-                {libraryFiltersData?.libraryBooksSettings?.tags?.find(item => item?.id === tag?.id)
-                  ? <CheckCircleRounded />
-                  : <RadioButtonUncheckedOutlined />}
-              </ListItemAvatar>
-              <ListItemText primary={tag?.name} />
-            </ListItem>
-          ))}
-        </List>
+        {data?.tags && (
+          <TagsSelectionList
+            tags={data?.tags}
+            isSelected={tagId => !!libraryFiltersData?.libraryBooksSettings?.tags?.find(item => item?.id === tagId)}
+            onItemClick={tagId => {
+              toggleTag(tagId)
+            }}
+          />
+        )}
         <DialogActions>
           <Button onClick={() => setIsTagsDialogOpened(false)} color="primary" autoFocus>
             Save

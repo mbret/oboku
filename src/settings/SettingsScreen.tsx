@@ -1,10 +1,11 @@
 import React, { FC, useEffect, useState } from 'react';
-import { ArrowForwardIosRounded } from '@material-ui/icons';
+import { ArrowForwardIosRounded, LockOpenRounded, LockRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { useStorageUse } from './useStorageUse';
-import { useUser, useSignOut, useEditUser } from '../auth/queries';
+import { useUser, useSignOut, useEditUser, useToggleContentProtection } from '../auth/queries';
+import { isUnlockLibraryDialogOpened } from '../auth/UnlockLibraryDialog';
 
 export const SettingsScreen = () => {
   const history = useHistory()
@@ -12,8 +13,10 @@ export const SettingsScreen = () => {
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
   const { data: userData } = useUser()
   const signOut = useSignOut()
+  const toggleContentProtection = useToggleContentProtection()
+  const isLibraryUnlocked = userData?.user.isLibraryUnlocked
 
-  console.log(userData)
+  console.log(`[SettingsScreen]`, { userData })
 
   return (
     <div style={{
@@ -32,6 +35,25 @@ export const SettingsScreen = () => {
           onClick={() => setIsEditContentPasswordDialogOpened(true)}
         >
           <ListItemText primary="Set up content password" secondary={userData?.user.contentPassword ? 'Your password is set up' : 'You do not have set up any password yet'} />
+        </ListItem>
+        <ListItem
+          button
+          onClick={() => {
+            if (isLibraryUnlocked) {
+              toggleContentProtection()
+            } else {
+              isUnlockLibraryDialogOpened(true)
+            }
+          }}
+        >
+          <ListItemText
+            primary={isLibraryUnlocked ? 'Your protected contents are visible' : 'Your protected contents are hidden'}
+            secondary={isLibraryUnlocked ? 'Click to lock' : 'Click to unlock'}
+          />
+          <ListItemIcon>
+            {isLibraryUnlocked && (<LockOpenRounded />)}
+            {!isLibraryUnlocked && (<LockRounded />)}
+          </ListItemIcon>
         </ListItem>
       </List>
       <List subheader={<ListSubheader>Storage</ListSubheader>}>
@@ -81,6 +103,10 @@ const EditContentPasswordDialog: FC<{
   useEffect(() => {
     setText(contentPassword)
   }, [contentPassword])
+
+  useEffect(() => {
+    setText('')
+  }, [open])
 
   return (
     <Dialog onClose={onInnerClose} open={open}>

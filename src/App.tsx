@@ -8,6 +8,7 @@ import { ThemeProvider } from '@material-ui/core';
 import { theme } from './theme';
 import { CookiesProvider } from "react-cookie";
 import { BlockingBackdrop } from './BlockingBackdrop';
+import { UnlockLibraryDialog } from './auth/UnlockLibraryDialog';
 
 function App() {
   const client = useClient()
@@ -22,6 +23,7 @@ function App() {
           <ApolloProvider client={client}>
             <ThemeProvider theme={theme}>
               <AppNavigator />
+              <UnlockLibraryDialog />
               <BlockingBackdrop />
               <RoutineProcess />
             </ThemeProvider>

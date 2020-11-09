@@ -30,7 +30,7 @@ export const ManageStorageScreen = () => {
         </ListItem>
       </List>
       <List subheader={<ListSubheader>Downloaded books</ListSubheader>}>
-        {booksData?.books?.books.map((book) => (
+        {booksData?.map((book) => (
           <ListItem
             button
             onClick={() => { }}

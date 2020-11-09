@@ -87,7 +87,7 @@ export const HomeScreen = () => {
 
 const useContinueReadingBooks = () => {
   const { data: booksData } = useQueryGetBooks()
-  const books = booksData?.books?.books || []
+  const books = booksData || []
   const booksSortedByDate = R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books)
 
   return booksSortedByDate
@@ -96,7 +96,7 @@ const useContinueReadingBooks = () => {
 
 const useRecentlyAddedBooks = () => {
   const { data: booksData } = useQueryGetBooks()
-  const books = booksData?.books?.books || []
+  const books = booksData || []
   const booksSortedByDate = R.sort(R.descend(R.prop('createdAt')), books)
 
   return booksSortedByDate.slice(0, 15)

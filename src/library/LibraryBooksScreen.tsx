@@ -1,24 +1,23 @@
 import React, { useState, FC } from 'react';
-import { useReactiveVar } from '@apollo/client';
 import '../App.css';
 import { BookList } from './/BookList';
 import {
   Dialog, Button, DialogActions, DialogContent, DialogTitle, TextField,
-  Toolbar, IconButton, makeStyles, createStyles, Badge, ListItemText, ListItem, List, ListItemIcon,
+  Toolbar, IconButton, makeStyles, createStyles, Badge, ListItemText, ListItem, List, ListItemIcon, Typography, useTheme,
 } from '@material-ui/core';
-import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecked, RadioButtonChecked } from '@material-ui/icons';
-import { models } from '../client';
-import { BookActionsDrawer } from '../books/BookActionsDrawer';
+import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecked, RadioButtonChecked, LockOpenRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
 import { useLibraryBooksSettings, useToggleLibraryBooksSettingsViewMode, useUpdateLibraryBooksSettings, LibraryBooksSettings } from './queries';
 import { useAddBook, useQueryGetBooks } from '../books/queries';
 import * as R from 'ramda';
+import { useUser } from '../auth/queries';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
+  const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
-  const isBookActionDialogOpenedWithVar = useReactiveVar(models.isBookActionDialogOpenedWithVar)
+  const { data: userData } = useUser()
   const [toggleLibraryBooksSettingsViewMode] = useToggleLibraryBooksSettingsViewMode()
   const { data: libraryBooksSettingsData } = useLibraryBooksSettings()
   const addBook = useAddBook()
@@ -50,7 +49,7 @@ export const LibraryBooksScreen = () => {
     setClosed(false)
   }
 
-  console.log('[LibraryBooksScreen]', books, libraryBooksSettingsData)
+  console.log('[LibraryBooksScreen]', books, libraryBooksSettingsData, userData)
 
   return (
     <div className={classes.container}>
@@ -69,13 +68,19 @@ export const LibraryBooksScreen = () => {
               <TuneRounded />
             )}
         </IconButton>
-        <div style={{ flexGrow: 1, justifyContent: 'flex-start' }}>
+        <div style={{ flexGrow: 1, justifyContent: 'flex-start', flexFlow: 'row', display: 'flex', alignItems: 'center' }}>
           <Button
             onClick={() => setIsSortingDialogOpened(true)}
             startIcon={<SortRounded />}
           >
             {sorting === 'activity' ? 'Recent activity' : sorting === 'alpha' ? 'Alphabetical - A > Z' : 'Date added'}
           </Button>
+          {userData?.user.isLibraryUnlocked && (
+            <div style={{ display: 'flex', flexFlow: 'row', alignItems: 'center', marginLeft: theme.spacing(1), overflow: 'hidden' }}>
+              <Typography variant="caption" noWrap>Protected content is</Typography>
+              &nbsp;<LockOpenRounded fontSize="small"/>
+            </div>
+          )}
         </div>
         <IconButton
           onClick={() => {
@@ -125,7 +130,7 @@ export const LibraryBooksScreen = () => {
             <Toolbar>
               <Button
                 style={{
-                  width: '100%'
+                  flex: 1,
                 }}
                 variant="outlined"
                 disableFocusRipple
@@ -147,7 +152,7 @@ export const LibraryBooksScreen = () => {
 const useSortedList = (sorting: LibraryBooksSettings['sorting'] | undefined) => {
   const { data: booksData } = useQueryGetBooks()
   console.log('useSortedList', booksData)
-  const books = booksData?.books?.books || []
+  const books = booksData || []
 
   switch (sorting) {
     case 'date': {

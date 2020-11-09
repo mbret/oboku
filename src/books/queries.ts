@@ -9,6 +9,7 @@ import { bookOfflineResolvers } from './offlineResolvers';
 import { LocalBook } from './types';
 import { ID } from 'oboku-shared'
 import { useAddLink } from '../links/queries';
+import { useUser } from '../auth/queries';
 
 export type QueryGetBookData = { book: Required<Pick<LocalBook, 'id'>> & LocalBook }
 export type QueryGetBookVariables = { id: string }
@@ -30,6 +31,7 @@ export const BOOK_DETAILS_FRAGMENT = gql`
     tags {
       id
       name
+      isProtected
     }
     links {
       id
@@ -226,8 +228,18 @@ export const useEditBook = () => {
 export const useLazyBooks = () => useLazyQuery<QueryGetBooksData, any>(QueryBooks)
 export const useLazyBook = () => useLazyQuery<QueryGetBookData, QueryGetBookVariables>(GET_BOOK)
 
-export const useQueryGetBooks = (options?: QueryBookOptions<QueryBooksData>) =>
-  useQuery<QueryBooksData>(QueryBooks, { ...options, onError: () => { } })
+export const useQueryGetBooks = (options?: QueryBookOptions<QueryBooksData>) => {
+  const { data } = useQuery<QueryBooksData>(QueryBooks, { ...options })
+  const { data: userData } = useUser()
+  const books = data?.books
+  const isLibraryUnlocked = userData?.user.isLibraryUnlocked || false
+
+  if (!books) return { data: books }
+
+  if (isLibraryUnlocked) return { data: books.books }
+
+  return { data: books.books.filter(book => !book.tags.some(tag => tag.isProtected)) }
+}
 
 export const useBook = (options: QueryBookOptions<QueryGetBookData, QueryGetBookVariables>) =>
   useQuery<QueryGetBookData, QueryGetBookVariables>(GET_BOOK, options)

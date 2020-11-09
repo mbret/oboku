@@ -36,7 +36,12 @@ export const theme = createMuiTheme({
       secondaryAction: {
         // paddingRight: 70
       },
-    }
+    },
+    MuiDialog: {
+      paperWidthSm: {
+        minWidth: 260,
+      }
+    },
     // MuiBottomNavigationAction: {
     //   root: {
     //     paddingTop: '0 !important',

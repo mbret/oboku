@@ -2,16 +2,21 @@ import { gql, useMutation, useQuery, useApolloClient, } from "@apollo/client";
 import { useCallback } from "react";
 import { MutationSignupVariables, User, MutationSigninVariables, MutationEditUserVariables, hashContentPassword } from 'oboku-shared'
 
+export type LocalUser = User & {
+  isLibraryUnlocked?: boolean,
+}
+
 export const UserFragment = gql`
   fragment UserFragment on User {
     __typename
     id
     email
     contentPassword
+    isLibraryUnlocked @client
   }
 `
 
-export type QueryUserData = { user: Required<User> }
+export type QueryUserData = { user: Required<LocalUser> }
 export const QueryUser = gql`
   query QueryUser {
     user {
@@ -91,7 +96,7 @@ export const useEditUser = () => {
   const [editUser] = useMutation<MutationEditUserData, MutationEditUserVariables>(MutationEditUser)
   const client = useApolloClient()
 
-  return useCallback(async (variables: Pick<User, 'contentPassword'>) => {
+  return useCallback(async (variables: Pick<LocalUser, 'contentPassword'>) => {
     const contentPassword = variables.contentPassword
       ? new TextDecoder().decode((await hashContentPassword(variables.contentPassword)))
       : variables.contentPassword
@@ -106,6 +111,17 @@ export const useEditUser = () => {
 export const useUser = () => useQuery<QueryUserData>(QueryUser)
 
 export const useAuth = () => useQuery<QueryAuthData>(QueryAuth)
+
+export const useToggleContentProtection = () => {
+  const client = useApolloClient()
+
+  return useCallback(() => {
+    const data = client.readQuery<QueryUserData>({ query: QueryUser })
+    if (data) {
+      client.writeQuery<QueryUserData>({ query: QueryUser, data: { user: { ...data.user, isLibraryUnlocked: !data.user.isLibraryUnlocked } } })
+    }
+  }, [client])
+}
 
 export const useSignOut = () => {
   const client = useApolloClient()

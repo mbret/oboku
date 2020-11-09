@@ -9,6 +9,7 @@ import { API_URI } from '../constants';
 import { useBook, useEditBook, useLazyBook } from '../books/queries';
 import { useQueryGetTags } from '../tags/queries';
 import { useEditLink } from '../links/queries';
+import { TagsSelectionList } from '../tags/TagsSelectionList';
 
 type ScreenParams = {
   id: string
@@ -236,28 +237,19 @@ const TagsDialog: FC<{
       open={open}
     >
       <DialogTitle>Tags selection</DialogTitle>
-      <List>
-        {tags && tags.map((tag) => (
-          <ListItem
-            key={tag?.id}
-            button
-            onClick={() => {
-              let newTagList = currentBookTagIds.filter(id => id !== tag.id)
-              if (newTagList.length === currentBookTagIds.length) {
-                newTagList = [...currentBookTagIds, tag.id || '-1']
-              }
-              editBook({ id: id, tags: newTagList })
-            }}
-          >
-            <ListItemAvatar>
-              {bookTags?.find(item => item?.id === tag?.id)
-                ? <CheckCircleRounded />
-                : <RadioButtonUncheckedOutlined />}
-            </ListItemAvatar>
-            <ListItemText primary={tag?.name} />
-          </ListItem>
-        ))}
-      </List>
+      {tags && (
+        <TagsSelectionList
+          tags={tags}
+          isSelected={tagId => !!bookTags?.find(item => item?.id === tagId)}
+          onItemClick={tagId => {
+            let newTagList = currentBookTagIds.filter(currentId => currentId !== tagId)
+            if (newTagList.length === currentBookTagIds.length) {
+              newTagList = [...currentBookTagIds, tagId || '-1']
+            }
+            editBook({ id, tags: newTagList })
+          }}
+        />
+      )}
       <DialogActions>
         <Button onClick={onClose} color="primary" autoFocus>
           Close

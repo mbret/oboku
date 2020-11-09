@@ -56,8 +56,9 @@ export const authLink = new ApolloLink((operation, forward) => {
         case 'MutationSignup': {
           const data = (result as FetchResult<MutationSignupData>).data
           if (data?.signup) {
+            const userData = { ...data?.signup.user, isLibraryUnlocked: false }
             cache.writeQuery<QueryAuthData>({ query: QueryAuth, data: { auth: { token: data?.signup.token } } })
-            cache.writeQuery<QueryUserData>({ query: QueryUser, data: { user: data?.signup.user } })
+            cache.writeQuery<QueryUserData>({ query: QueryUser, data: { user: userData } })
             syncLibrary(client).catch(_ => { })
           }
           break
@@ -65,8 +66,9 @@ export const authLink = new ApolloLink((operation, forward) => {
         case 'MutationSignin': {
           const data = (result as FetchResult<MutationSigninData>).data
           if (data?.signin) {
+            const userData = { ...data?.signin.user, isLibraryUnlocked: false }
             cache.writeQuery<QueryAuthData>({ query: QueryAuth, data: { auth: { token: data?.signin.token } } })
-            cache.writeQuery<QueryUserData>({ query: QueryUser, data: { user: data?.signin.user } })
+            cache.writeQuery<QueryUserData>({ query: QueryUser, data: { user: userData } })
             syncLibrary(client).catch(_ => { })
           }
           break
