@@ -33,15 +33,13 @@
     <img src="https://user-images.githubusercontent.com/1911240/98496751-afc74900-2285-11eb-8ea4-852a3fbc2030.png" alt="Logo" width="200" height="200">
   </a>
 
-  <h3 align="center">oboku</h3>
-
   <p align="center">
-    An awesome README template to jumpstart your projects!
+    Your free e-reader friendly own personal cloud library
     <br />
-    <a href="https://github.com/mbret/oboku"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/mbret/oboku/wiki"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/mbret/oboku">View Demo</a>
+    <a href="https://github.com/mbret/oboku/wiki">View Demo</a>
     ·
     <a href="https://github.com/mbret/oboku/issues">Report Bug</a>
     ·
@@ -71,7 +69,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+<h3>Oboku</h3>
 
 There are many great README templates available on GitHub, however, I didn't find one that really suit my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need.
 
