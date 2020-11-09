@@ -2,7 +2,7 @@ import React from 'react';
 import { TopBarNavigation } from '../TopBarNavigation';
 import { makeStyles, Typography } from '@material-ui/core';
 import { useParams } from 'react-router-dom';
-import { useQueryGetOneSeries } from '../queries';
+import { useQueryGetOneSeries } from '../series/queries';
 import { SeriesBookList } from './SeriesBookList';
 
 type ScreenParams = {

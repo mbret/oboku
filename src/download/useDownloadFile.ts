@@ -1,37 +1,97 @@
-import React, { useRef } from 'react'
-import { useQuery, useMutation, useApolloClient, gql } from '@apollo/client';
-import { GET_BOOKS, EDIT_BOOK, GET_BOOK } from '../books/queries';
+import { gql, useApolloClient } from '@apollo/client';
 import localforage from 'localforage';
 import { API_URI } from '../constants';
+import { QueryAuth, QueryAuthData } from '../auth/queries';
+import axios, { AxiosResponse } from 'axios'
+import { LocalBook } from '../books/types';
+import { useCallback } from 'react';
+import throttle from 'lodash.throttle';
+
+type QueryBookDownloadStateData = { book: Required<Pick<LocalBook, 'downloadState' | 'downloadProgress'>> }
+type QueryBookDownloadStateVariables = { id: string }
+export const QueryBookDownloadState = gql`
+  query QueryBookDownloadState($id: ID!) {
+    book(id: $id) {
+      id
+      downloadState @client
+      downloadProgress @client
+    }
+  }
+`;
+
+const useQueryBookDownloadState = () => {
+  const client = useApolloClient()
+
+  return (id: string) => client.readQuery<QueryBookDownloadStateData, QueryBookDownloadStateVariables>({ query: QueryBookDownloadState, variables: { id } })
+}
+
+const useWriteBookDownloadState = () => {
+  const client = useApolloClient()
+  const queryBookDownloadState = useQueryBookDownloadState()
+
+  return (id: string, update: (data: QueryBookDownloadStateData) => QueryBookDownloadStateData) => {
+    const data = queryBookDownloadState(id)
+    if (data) {
+      client.writeQuery<QueryBookDownloadStateData, QueryBookDownloadStateVariables>({ query: QueryBookDownloadState, variables: { id }, data: update(data) })
+    }
+  }
+}
 
 export const useDownloadFile = () => {
   const client = useApolloClient()
+  const writeBookDownloadState = useWriteBookDownloadState()
 
-  return async (bookId: string) => {
-    try {
-      const data = client.readQuery({ query: GET_BOOKS })
-      client.writeQuery({
-        query: GET_BOOKS,
-        data: { books: data.books.map(book => book.id !== bookId ? book : { ...book, downloadState: 'downloading' }) },
-      })
-      try {
-        const response = await fetch(`${API_URI}/download/${bookId}`)
-        if (!response.ok) {
-          throw new Error(response.statusText)
+  return useCallback(async (bookId: string) => {
+    const throttleSetProgress = throttle((progress: number) => {
+      writeBookDownloadState(bookId, existing => ({
+        book: {
+          ...existing.book,
+          downloadProgress: progress,
         }
-        await localforage.setItem(`book-download-${bookId}`, await response.arrayBuffer())
-        client.writeQuery({
-          query: GET_BOOKS,
-          data: { books: data.books.map(book => book.id !== bookId ? book : { ...book, downloadState: 'downloaded' }) },
+      }))
+    }, 500)
+
+    try {
+      const authData = client.readQuery<QueryAuthData>({ query: QueryAuth })
+
+      writeBookDownloadState(bookId, existing => ({
+        book: {
+          ...existing.book,
+          downloadProgress: 0,
+          downloadState: 'downloading',
+        }
+      }))
+
+      try {
+        const response: AxiosResponse<ArrayBuffer> = await axios({
+          url: `${API_URI}/download/${bookId}`,
+          headers: {
+            Authorization: `Bearer ${authData?.auth.token}`
+          },
+          responseType: 'arraybuffer',
+          onDownloadProgress: event => {
+            throttleSetProgress(Math.round((event.loaded / event.total) * 100))
+          }
         })
+        await localforage.setItem(`book-download-${bookId}`, response.data)
+
+        writeBookDownloadState(bookId, existing => ({
+          book: {
+            ...existing.book,
+            downloadProgress: 100,
+            downloadState: 'downloaded',
+          }
+        }))
       } catch (e) {
-        client.writeQuery({
-          query: GET_BOOKS,
-          data: { books: data.books.map(book => book.id !== bookId ? book : { ...book, downloadState: 'none' }) },
-        })
+        writeBookDownloadState(bookId, existing => ({
+          book: {
+            ...existing.book,
+            downloadState: 'none',
+          }
+        }))
       }
     } catch (e) {
       console.error(e)
     }
-  }
+  }, [client, writeBookDownloadState])
 }

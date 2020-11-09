@@ -1,21 +1,45 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
-import { Tab, Tabs } from '@material-ui/core'
+import { Tab, Tabs, Button } from '@material-ui/core'
 import { useHistory, useLocation, Route, Switch, Redirect } from 'react-router-dom'
 import { LibraryBooksScreen } from './LibraryBooksScreen'
 import { LibraryTagsScreen } from './LibraryTagsScreen'
 import { TopBarNavigation } from '../TopBarNavigation'
 import { ROUTES } from '../constants'
 import { LibrarySeriesScreen } from './LibrarySeriesScreen'
+import { useIsSyncing, useSyncLibrary } from './queries'
 
 export const LibraryTopTabNavigator = () => {
   const location = useLocation()
   const history = useHistory()
   const classes = useStyles();
+  const isSyncing = useIsSyncing()
+  const syncLibrary = useSyncLibrary()
 
   return (
     <div className={classes.container}>
-      <TopBarNavigation title="Library" showBack={false} />
+      <TopBarNavigation
+        title="Library"
+        showBack={false}
+        rightComponent={(
+          <>
+            {isSyncing && (
+              <span>
+                Syncing library...
+              </span>
+            )}
+            {!isSyncing && (
+              <Button
+                color="inherit"
+                variant="outlined"
+                onClick={() => syncLibrary()}
+              >
+                Sync library
+              </Button>
+            )}
+          </>
+        )}
+      />
       <Tabs
         className={classes.tabsContainer}
         value={location.pathname}

@@ -1,12 +1,14 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIosRounded, CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
+import { CheckCircleRounded, RadioButtonUncheckedOutlined, MoreVertRounded, EditRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, ListItemAvatar, Chip, makeStyles } from '@material-ui/core';
+import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, ListItemAvatar, Chip, makeStyles, ListSubheader, Typography, Drawer, DialogContent, TextField } from '@material-ui/core';
 import { useParams } from 'react-router-dom';
-import { useQueryGetTags, useQueryGetSeries } from '../queries';
+import { useQueryGetSeries } from '../series/queries';
 import { API_URI } from '../constants';
-import { useQueryGetBook, useMutationEditBook } from '../books/queries';
+import { useBook, useEditBook, useLazyBook } from '../books/queries';
+import { useQueryGetTags } from '../tags/queries';
+import { useEditLink } from '../links/queries';
 
 type ScreenParams = {
   id: string
@@ -16,25 +18,39 @@ export const BookDetailsScreen = () => {
   const classes = useClasses()
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isSeriesDialogOpened, setIsSeriesDialogOpened] = useState(false)
+  const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<undefined | string>(undefined)
   const { id } = useParams<ScreenParams>()
-  const { data } = useQueryGetBook({ variables: { id } })
+  const { data } = useBook({ variables: { id } })
   const book = data?.book
   const series = book?.series
 
   console.log('[BookDetailsScreen]', book)
+
   return (
     <div style={{
       flex: 1
     }}>
-      <TopBarNavigation title={book?.title || ''} showBack={true} />
-      <List component="nav" aria-label="main mailbox folders">
+      <TopBarNavigation title="Book details" showBack={true} />
+      <div className={classes.headerContent}>
         <div className={classes.coverContainer} >
           <img
             alt="img"
-            src={`${API_URI}/cover/${book?.id}`}
+            src={`${API_URI}/cover/${book?.id}?${book?.lastMetadataUpdatedAt || ''}`}
             className={classes.cover}
           />
         </div>
+      </div>
+
+      <div className={classes.titleContainer}>
+        <Typography gutterBottom variant="h5">
+          {book?.title || 'Unknown'}
+        </Typography>
+        <Typography gutterBottom variant="subtitle1">
+          By {book?.author || 'Unknown'}
+        </Typography>
+      </div>
+
+      <List component="nav" aria-label="main mailbox folders">
         <ListItem
           button
           onClick={() => setIsTagsDialogOpened(true)}
@@ -52,9 +68,7 @@ export const BookDetailsScreen = () => {
               : 'No tags yet'
             }
           />
-          <ListItemIcon>
-            <ArrowForwardIosRounded />
-          </ListItemIcon>
+          <MoreVertRounded />
         </ListItem>
         <ListItem
           button
@@ -73,15 +87,134 @@ export const BookDetailsScreen = () => {
               : 'Not a part of any series yet'
             }
           />
-          <ListItemIcon>
-            <ArrowForwardIosRounded />
-          </ListItemIcon>
+          <MoreVertRounded />
         </ListItem>
+      </List>
+      <List subheader={<ListSubheader>Links</ListSubheader>}>
+        {book?.links?.map(item => (
+          <ListItem
+            key={item.id}
+            button
+            onClick={() => setIsLinkActionDrawerOpenWith(item.id)}
+          >
+            <ListItemText
+              primary={item.location}
+              primaryTypographyProps={{
+                style: {
+                  paddingRight: 10,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }
+              }}
+              secondary="This is your metadata link"
+            />
+            <MoreVertRounded />
+          </ListItem>
+        ))}
       </List>
       <TagsDialog id={id} open={isTagsDialogOpened} onClose={() => setIsTagsDialogOpened(false)} />
       <SeriesDialog id={id} open={isSeriesDialogOpened} onClose={() => setIsSeriesDialogOpened(false)} />
+      <LinkActionsDrawer
+        openWith={isLinkActionDrawerOpenWith}
+        bookId={book?.id}
+        onClose={() => setIsLinkActionDrawerOpenWith(undefined)}
+      />
     </div>
   );
+}
+
+const LinkActionsDrawer: FC<{
+  openWith: string | undefined,
+  bookId: string | undefined,
+  onClose: () => void
+}> = ({ openWith, onClose, bookId }) => {
+  const [isEditDialogOpenWith, setIsEditDialogOpenWith] = useState<string | undefined>(undefined)
+
+  return (
+    <>
+      <Drawer
+        anchor="bottom"
+        open={!!openWith}
+        onClose={onClose}
+      >
+        <List>
+          <ListItem button
+            onClick={() => {
+              setIsEditDialogOpenWith(openWith)
+            }}
+          >
+            <ListItemIcon>
+              <EditRounded />
+            </ListItemIcon>
+            <ListItemText primary="Edit the location" />
+          </ListItem>
+        </List>
+      </Drawer>
+      <EditLinkDialog
+        openWith={isEditDialogOpenWith}
+        bookId={bookId}
+        onClose={() => setIsEditDialogOpenWith(undefined)}
+      />
+    </>
+  )
+}
+
+const EditLinkDialog: FC<{
+  openWith: string | undefined,
+  bookId: string | undefined,
+  onClose: () => void,
+}> = ({ onClose, openWith, bookId }) => {
+  const [location, setLocation] = useState('')
+  const [getBook, { data }] = useLazyBook()
+  const editLink = useEditLink()
+  const link = data?.book.links?.find(item => item.id === openWith)
+
+  const onInnerClose = () => {
+    setLocation('')
+    onClose()
+  }
+
+  useEffect(() => {
+    bookId && getBook({ variables: { id: bookId } })
+  }, [bookId, getBook])
+
+  useEffect(() => {
+    setLocation(prev => link?.location || prev)
+  }, [link, openWith])
+
+  console.log('EditLinkDialog', data)
+
+  return (
+    <Dialog onClose={onInnerClose} open={!!openWith}>
+      <DialogTitle>Link edit</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          id="name"
+          label="Name"
+          type="text"
+          fullWidth
+          value={location}
+          onChange={e => setLocation(e.target.value)}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onInnerClose} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            onInnerClose()
+            openWith && bookId && editLink(bookId, openWith, location)
+          }}
+          color="primary"
+        >
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
 }
 
 const TagsDialog: FC<{
@@ -90,8 +223,8 @@ const TagsDialog: FC<{
   id: string
 }> = ({ open, onClose, id }) => {
   const { data: getTagsData } = useQueryGetTags()
-  const { data: getBookData } = useQueryGetBook({ variables: { id } })
-  const [editBook] = useMutationEditBook()
+  const { data: getBookData } = useBook({ variables: { id } })
+  const editBook = useEditBook()
   const tags = getTagsData?.tags
   const bookTags = getBookData?.book?.tags
   const currentBookTagIds = bookTags?.map(tag => tag.id || '-1') || []
@@ -113,7 +246,7 @@ const TagsDialog: FC<{
               if (newTagList.length === currentBookTagIds.length) {
                 newTagList = [...currentBookTagIds, tag.id || '-1']
               }
-              editBook({ variables: { id: id, tags: newTagList } }).catch(() => { })
+              editBook({ id: id, tags: newTagList })
             }}
           >
             <ListItemAvatar>
@@ -140,8 +273,8 @@ const SeriesDialog: FC<{
   id: string
 }> = ({ open, onClose, id }) => {
   const { data: getSeriesData } = useQueryGetSeries()
-  const { data: getBookData } = useQueryGetBook({ variables: { id } })
-  const [editBook] = useMutationEditBook()
+  const { data: getBookData } = useBook({ variables: { id } })
+  const editBook = useEditBook()
   const series = getSeriesData?.series
   const bookSeries = getBookData?.book?.series
   const currentBookSeriesIds = bookSeries?.map(item => item.id || '-1') || []
@@ -151,7 +284,6 @@ const SeriesDialog: FC<{
   return (
     <Dialog
       onClose={onClose}
-      aria-labelledby="simple-dialog-title"
       open={open}
     >
       <DialogTitle>Series selection</DialogTitle>
@@ -165,7 +297,7 @@ const SeriesDialog: FC<{
               if (newIdsList.length === currentBookSeriesIds.length) {
                 newIdsList = [...currentBookSeriesIds, seriesItem.id || '-1']
               }
-              editBook({ variables: { id: id, series: newIdsList } }).catch(() => { })
+              editBook({ id: id, series: newIdsList })
             }}
           >
             <ListItemAvatar>
@@ -186,13 +318,30 @@ const SeriesDialog: FC<{
   )
 }
 
-const useClasses = makeStyles({
-  coverContainer: {
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'center'
-  },
-  cover: {
-    height: '20vh'
+const useClasses = makeStyles(theme => {
+  type Props = {}
+
+  return {
+    coverContainer: {
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center'
+    },
+    headerContent: {
+      paddingBottom: theme.spacing(3),
+      paddingTop: theme.spacing(5),
+      display: 'flex',
+      alignItems: 'flex-end',
+      // paddingLeft: theme.spacing(2),
+      // paddingRight: theme.spacing(2),
+    },
+    titleContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      flexFlow: 'column',
+    },
+    cover: {
+      height: '20vh'
+    }
   }
 })

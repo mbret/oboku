@@ -1,50 +1,118 @@
-import React from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import { ArrowBackIosRounded, Inbox, ArrowForwardIosRounded } from '@material-ui/icons';
+import React, { FC, useEffect, useState } from 'react';
+import { ArrowForwardIosRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
+import { useStorageUse } from './useStorageUse';
+import { useUser, useSignOut, useEditUser } from '../auth/queries';
 
 export const SettingsScreen = () => {
   const history = useHistory()
+  const [isEditContentPasswordDialogOpened, setIsEditContentPasswordDialogOpened] = useState(false)
+  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
+  const { data: userData } = useUser()
+  const signOut = useSignOut()
+
+  console.log(userData)
 
   return (
     <div style={{
       flex: 1
     }}>
       <TopBarNavigation title={'Settings'} showBack={false} />
-      <List component="nav" aria-label="main mailbox folders">
+      <List subheader={<ListSubheader>Account</ListSubheader>}>
+        <ListItem
+          button
+          onClick={signOut}
+        >
+          <ListItemText primary="Sign out" secondary={userData?.user.email} />
+        </ListItem>
+        <ListItem
+          button
+          onClick={() => setIsEditContentPasswordDialogOpened(true)}
+        >
+          <ListItemText primary="Set up content password" secondary={userData?.user.contentPassword ? 'Your password is set up' : 'You do not have set up any password yet'} />
+        </ListItem>
+      </List>
+      <List subheader={<ListSubheader>Storage</ListSubheader>}>
         <ListItem
           button
           onClick={() => {
             history.push('/settings/manage-storage')
           }}
         >
-          <ListItemText primary="Manage storage" />
+          <ListItemText primary="Manage storage" secondary={`${usedInMb} MB (${(quotaUsed * 100).toFixed(2)}%) used of ${quotaInGb} GB`} />
           <ListItemIcon>
             <ArrowForwardIosRounded />
           </ListItemIcon>
         </ListItem>
       </List>
+      <List subheader={<ListSubheader>Help and feedback</ListSubheader>}>
+      </List>
+      <List subheader={<ListSubheader>About</ListSubheader>}>
+        <ListItem
+          button
+          onClick={() => { }}
+        >
+          <ListItemText primary="Terms of Service" />
+          <ListItemIcon>
+            <ArrowForwardIosRounded />
+          </ListItemIcon>
+        </ListItem>
+      </List>
+      <EditContentPasswordDialog open={isEditContentPasswordDialogOpened} onClose={() => setIsEditContentPasswordDialogOpened(false)} />
     </div>
   );
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      flexGrow: 1,
-    },
-    menuButton: {
-      marginRight: theme.spacing(2),
-    },
-    title: {
-      flexGrow: 1,
-    },
-  }),
-);
+const EditContentPasswordDialog: FC<{
+  open: boolean,
+  onClose: () => void,
+}> = ({ onClose, open }) => {
+  const editUser = useEditUser()
+  const { data: userData } = useUser()
+  const [text, setText] = useState('')
+  const contentPassword = userData?.user.contentPassword || ''
+
+  const onInnerClose = () => {
+    onClose()
+  }
+
+  useEffect(() => {
+    setText(contentPassword)
+  }, [contentPassword])
+
+  return (
+    <Dialog onClose={onInnerClose} open={open}>
+      <DialogTitle>Set up your content password</DialogTitle>
+      <DialogContent>
+        <DialogContentText >
+          This password will be needed to unlock and access books using a protected tag.
+        </DialogContentText>
+        <TextField
+          autoFocus
+          id="name"
+          label="Password"
+          type="text"
+          fullWidth
+          value={text}
+          onChange={e => setText(e.target.value)}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onInnerClose} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            onInnerClose()
+            editUser({ contentPassword: text })
+          }}
+          color="primary"
+        >
+          Change
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}

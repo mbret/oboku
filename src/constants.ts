@@ -1,5 +1,8 @@
-export const API_URI = 'http://localhost:4000'
+export const API_URI = process.env.REACT_APP_API_URL
+// export const API_URI = 'https://mbret-oboku-api.glitch.me/'
 // export const API_URI = 'https://tough-walrus-50.loca.lt/'
+
+console.log(process.env)
 
 export const ROUTES = {
   HOME: '/',
@@ -10,6 +13,8 @@ export const ROUTES = {
   LIBRARY_BOOKS: '/library/books',
   LIBRARY_SERIES: '/library/series',
   LIBRARY_TAGS: '/library/tags',
+  LOGIN: '/login',
+  REGISTER: '/register',
 }
 
 // Average ratio (w/h) for books cover. This ratio may be used

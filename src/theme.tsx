@@ -2,7 +2,7 @@
  * @see https://material-ui.com/customization/default-theme/
  * @see https://material-ui.com/customization/palette/
  */
-import { createMuiTheme } from '@material-ui/core/styles';
+import { createMuiTheme } from '@material-ui/core/styles'
 
 const light = 'rgba(0, 0, 0, 0.38)'
 const main = 'rgba(0, 0, 0, 0.54)'
@@ -32,7 +32,11 @@ export const theme = createMuiTheme({
         },
       },
     },
-
+    MuiListItem: {
+      secondaryAction: {
+        // paddingRight: 70
+      },
+    }
     // MuiBottomNavigationAction: {
     //   root: {
     //     paddingTop: '0 !important',

@@ -1,11 +1,15 @@
-import React, { useState, FC, useEffect } from 'react';
+import React, { useState, FC } from 'react';
 import '../App.css';
 import Dialog from '@material-ui/core/Dialog';
-import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, IconButton, makeStyles, createStyles, ListItem, ListItemText, List, ListItemIcon, Drawer, Divider, withStyles } from '@material-ui/core';
-import { DeleteForeverRounded, MoreVert, Edit } from '@material-ui/icons';
-import { useMutationEditSeries, useQueryGetSeries, useMationAddSeries, useMutationRemoveSeries, useLazyQueryGetOneSeries } from '../queries';
+import {
+  Button, DialogActions, DialogContent, DialogTitle, TextField,
+  Toolbar, IconButton, makeStyles, createStyles, ListItem, ListItemText, List
+} from '@material-ui/core';
+import { MoreVert } from '@material-ui/icons';
+import { useQueryGetSeries, useAddSeries } from '../series/queries';
 import { API_URI, ROUTES } from '../constants';
 import { useHistory } from 'react-router-dom';
+import { SeriesActionsDrawer } from '../series/SeriesActionsDrawer';
 
 export const LibrarySeriesScreen = () => {
   const classes = useStyles();
@@ -89,7 +93,11 @@ export const LibrarySeriesScreen = () => {
           </ListItem>
         ))}
       </List>
-      <ActionDialog open={!!isActionDialogOpenedWith} id={isActionDialogOpenedWith} onClose={() => setIsActionDialogOpenedWith(undefined)} />
+      <SeriesActionsDrawer
+        open={!!isActionDialogOpenedWith}
+        id={isActionDialogOpenedWith}
+        onClose={() => setIsActionDialogOpenedWith(undefined)}
+      />
       <AddSeriesDialog
         onClose={() => setIsAddSeriesDialogOpened(false)}
         open={isAddSeriesDialogOpened}
@@ -103,7 +111,7 @@ const AddSeriesDialog: FC<{
   onClose: () => void,
 }> = ({ onClose, open }) => {
   const [name, setName] = useState('')
-  const [addSeries] = useMationAddSeries()
+  const addSeries = useAddSeries()
 
   const onInnerClose = () => {
     setName('')
@@ -112,13 +120,13 @@ const AddSeriesDialog: FC<{
 
   const onConfirm = (name: string) => {
     if (name) {
-      addSeries({ variables: { name } }).catch(() => { })
+      addSeries(name)
     }
   }
 
   return (
     <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>Add a series</DialogTitle>
+      <DialogTitle>Create a new series</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
@@ -146,134 +154,6 @@ const AddSeriesDialog: FC<{
       </DialogActions>
     </Dialog>
   )
-}
-
-const EditSeriesDialog: FC<{
-  open: boolean,
-  id: string | undefined,
-  onClose: () => void,
-}> = ({ onClose, open, id }) => {
-  const [name, setName] = useState('')
-  const [getTag, { data }] = useLazyQueryGetOneSeries()
-  const [editSeries] = useMutationEditSeries()
-  const { name: seriesName } = data?.oneSeries || {}
-
-  const onInnerClose = () => {
-    setName('')
-    onClose()
-  }
-
-  const onConfirm = (id: string, name: string) => {
-    if (name) {
-      editSeries({ variables: { id, name } })
-    }
-  }
-
-  useEffect(() => {
-    id && getTag({ variables: { id } })
-  }, [id, getTag])
-
-  useEffect(() => {
-    setName(prev => seriesName || prev)
-  }, [seriesName, id])
-
-  console.log('EditSeriesDialog', id, seriesName, data)
-
-  return (
-    <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>Series: {seriesName}</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          id="name"
-          label="Name"
-          type="text"
-          fullWidth
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onInnerClose} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={() => {
-            onInnerClose()
-            id && onConfirm(id, name)
-          }}
-          color="primary"
-        >
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
-
-const ActionDialog: FC<{
-  open: boolean,
-  id: string | undefined,
-  onClose: () => void,
-}> = ({ open, id, onClose }) => {
-  const [isEditSeriesDialogOpenedWithId, setIsEditSeriesDialogOpenedWithId] = useState<string | undefined>(undefined)
-  const [getOneSeries, { data }] = useLazyQueryGetOneSeries()
-  const [removeSeries] = useMutationRemoveSeries()
-
-  const handleClose = () => {
-    onClose()
-  };
-
-  const onRemove = (id: string | undefined) => {
-    handleClose()
-    id && removeSeries({ variables: { id } }).catch(() => { })
-  }
-
-  const onEdit = (id: string | undefined) => {
-    handleClose()
-    id && setIsEditSeriesDialogOpenedWithId(id)
-  }
-
-  useEffect(() => {
-    id && getOneSeries({
-      variables: { id }
-    })
-  }, [id, getOneSeries])
-
-  console.log('[ActionDialog]', data)
-
-  return (
-    <>
-      <Drawer
-        anchor="bottom"
-        open={open}
-        onClose={handleClose}
-      >
-        <div
-          role="presentation"
-        >
-          <List>
-            <ListItem button onClick={() => onEdit(id)}>
-              <ListItemIcon><Edit /></ListItemIcon>
-              <ListItemText primary="Edit" />
-            </ListItem>
-          </List>
-          <Divider />
-          <List>
-            <ListItem button onClick={() => onRemove(id)}>
-              <ListItemIcon><DeleteForeverRounded /></ListItemIcon>
-              <ListItemText primary="Remove" />
-            </ListItem>
-          </List>
-        </div>
-      </Drawer>
-      <EditSeriesDialog
-        id={isEditSeriesDialogOpenedWithId}
-        onClose={() => setIsEditSeriesDialogOpenedWithId(undefined)}
-        open={!!isEditSeriesDialogOpenedWithId}
-      />
-    </>
-  );
 }
 
 const useStyles = makeStyles((theme) =>

@@ -1,48 +1,48 @@
-import React, { useState } from 'react';
-import { gql, useMutation, useQuery, useReactiveVar } from '@apollo/client';
+import React, { useState, FC } from 'react';
+import { useReactiveVar } from '@apollo/client';
 import '../App.css';
-import Dialog from '@material-ui/core/Dialog';
 import { BookList } from './/BookList';
-import { Button, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, AppBar, Toolbar, IconButton, Typography, makeStyles, createStyles, Drawer, Badge } from '@material-ui/core';
-import { Menu, PublishRounded, TuneRounded } from '@material-ui/icons';
-import { useLazyQueryGetTags, useQueryGetLibraryFilters } from '../queries';
+import {
+  Dialog, Button, DialogActions, DialogContent, DialogTitle, TextField,
+  Toolbar, IconButton, makeStyles, createStyles, Badge, ListItemText, ListItem, List, ListItemIcon,
+} from '@material-ui/core';
+import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecked, RadioButtonChecked } from '@material-ui/icons';
 import { models } from '../client';
-import { BookActionDialog } from '../BookActionsDialog';
+import { BookActionsDrawer } from '../books/BookActionsDrawer';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
-import { GET_BOOKS } from '../books/queries';
-
-const ADD_BOOK = gql`
-  mutation AddBook($url: String!) {
-    addBook(url: $url) {
-      url
-    }
-  }
-`;
+import { useLibraryBooksSettings, useToggleLibraryBooksSettingsViewMode, useUpdateLibraryBooksSettings, LibraryBooksSettings } from './queries';
+import { useAddBook, useQueryGetBooks } from '../books/queries';
+import * as R from 'ramda';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
+  const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const isBookActionDialogOpenedWithVar = useReactiveVar(models.isBookActionDialogOpenedWithVar)
-  const { data: libraryFiltersData } = useQueryGetLibraryFilters()
-  const [addBook, { loading, error, data, client, called }] = useMutation(ADD_BOOK, {
-    refetchQueries: ['Books'],
-  });
-  const { refetch } = useQuery(GET_BOOKS, {
-    // pollInterval: 1000,
-  });
-  const [getTags, { refetch: refetchGetTags }] = useLazyQueryGetTags()
+  const [toggleLibraryBooksSettingsViewMode] = useToggleLibraryBooksSettingsViewMode()
+  const { data: libraryBooksSettingsData } = useLibraryBooksSettings()
+  const addBook = useAddBook()
   const [closed, setClosed] = useState(true)
   const [bookUrl, setBookUrl] = useState('')
-  const libraryFilters = libraryFiltersData?.libraryFilters
+  const libraryFilters = libraryBooksSettingsData?.libraryBooksSettings
+  const sorting = libraryFilters?.sorting
+  const books = useSortedList(sorting)
+  const viewMode = libraryBooksSettingsData?.libraryBooksSettings.viewMode
   const tagsFilterApplied = (libraryFilters?.tags.length || 0) > 0
   const numberOfFiltersApplied = [tagsFilterApplied].filter(i => i).length
+  const filteredTags = libraryFilters?.tags?.map(tag => tag?.id || '-1') || []
+  const visibleBooks = filteredTags.length === 0
+    ? books
+    : books
+      .filter(book => book.tags?.some(b => filteredTags.includes(b.id || '-1')))
 
   const handleClose = () => {
     setClosed(true)
   };
 
   const handleConfirm = () => {
-    addBook({ variables: { url: bookUrl } }).catch(() => { });
+    setBookUrl('')
+    addBook(bookUrl)
     handleClose()
   }
 
@@ -50,16 +50,13 @@ export const LibraryBooksScreen = () => {
     setClosed(false)
   }
 
-  console.log('LibraryBooksScreen', isBookActionDialogOpenedWithVar, refetchGetTags)
+  console.log('[LibraryBooksScreen]', books, libraryBooksSettingsData)
 
   return (
     <div className={classes.container}>
       <Toolbar>
         <IconButton
           edge="start"
-          className={classes.menuButton}
-          color="inherit"
-          aria-label="menu"
           onClick={() => setIsFiltersDrawerOpened(true)}
         >
           {numberOfFiltersApplied > 0
@@ -72,13 +69,21 @@ export const LibraryBooksScreen = () => {
               <TuneRounded />
             )}
         </IconButton>
-        <Button
-          color="inherit"
-          onClick={onClickAddBook}
-          startIcon={<PublishRounded />}
-        >
-          Add a new book
+        <div style={{ flexGrow: 1, justifyContent: 'flex-start' }}>
+          <Button
+            onClick={() => setIsSortingDialogOpened(true)}
+            startIcon={<SortRounded />}
+          >
+            {sorting === 'activity' ? 'Recent activity' : sorting === 'alpha' ? 'Alphabetical - A > Z' : 'Date added'}
           </Button>
+        </div>
+        <IconButton
+          onClick={() => {
+            toggleLibraryBooksSettingsViewMode()
+          }}
+        >
+          {viewMode === 'grid' ? <AppsRounded /> : <ListRounded />}
+        </IconButton>
       </Toolbar>
       <div style={{
         display: 'flex',
@@ -87,14 +92,6 @@ export const LibraryBooksScreen = () => {
         flex: 1,
         // flexGrow: 1
       }}>
-        <div style={{}}>
-          <button
-            onClick={() => {
-              refetch()
-              refetchGetTags ? refetchGetTags() : getTags()
-            }}
-          >Sync library</button>
-        </div>
         <Dialog onClose={handleClose} open={!closed}>
           <DialogTitle>Add a book</DialogTitle>
           <DialogContent>
@@ -118,12 +115,97 @@ export const LibraryBooksScreen = () => {
             </Button>
           </DialogActions>
         </Dialog>
-        <BookActionDialog />
-        <BookList />
+        <BookList
+          viewMode={viewMode}
+          sorting={sorting}
+          headerHeight={60}
+          data={visibleBooks}
+          style={{ height: '100%' }}
+          renderHeader={() => (
+            <Toolbar>
+              <Button
+                style={{
+                  width: '100%'
+                }}
+                variant="outlined"
+                disableFocusRipple
+                disableRipple
+                onClick={onClickAddBook}
+              >
+                Create a new book
+              </Button>
+            </Toolbar>
+          )}
+        />
+        <SortByDialog onClose={() => setIsSortingDialogOpened(false)} open={isSortingDialogOpened} />
         <LibraryFiltersDrawer open={isFiltersDrawerOpened} onClose={() => setIsFiltersDrawerOpened(false)} />
       </div>
     </div>
   );
+}
+
+const useSortedList = (sorting: LibraryBooksSettings['sorting'] | undefined) => {
+  const { data: booksData } = useQueryGetBooks()
+  console.log('useSortedList', booksData)
+  const books = booksData?.books?.books || []
+
+  switch (sorting) {
+    case 'date': {
+      return R.sort(R.descend(R.prop('createdAt')), books)
+    }
+    case 'activity': {
+      return R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books)
+    }
+    default: {
+      return R.sort(R.ascend(R.prop('title')), books)
+    }
+  }
+}
+
+const SortByDialog: FC<{ onClose: () => void, open: boolean }> = ({ onClose, open }) => {
+  const { data } = useLibraryBooksSettings()
+  const [updateLibraryBooksSettings] = useUpdateLibraryBooksSettings()
+  const sorting = data?.libraryBooksSettings?.sorting || 'date'
+
+  const onSortChange = (newSorting: typeof sorting) => {
+    onClose()
+    updateLibraryBooksSettings({ sorting: newSorting })
+  }
+
+  return (
+    <Dialog
+      onClose={onClose}
+      open={open}
+    >
+      <DialogTitle>Sort by</DialogTitle>
+      <List>
+        <ListItem button
+          onClick={() => onSortChange('alpha')}
+        >
+          <ListItemIcon >
+            {sorting === 'alpha' ? <RadioButtonChecked /> : <RadioButtonUnchecked />}
+          </ListItemIcon>
+          <ListItemText primary="Alphabetical - A > Z" />
+        </ListItem>
+        <ListItem button
+          onClick={() => onSortChange('date')}
+        >
+          <ListItemIcon >
+            {sorting === 'date' ? <RadioButtonChecked /> : <RadioButtonUnchecked />}
+          </ListItemIcon>
+          <ListItemText primary="Date added" />
+        </ListItem>
+        <ListItem button
+          onClick={() => onSortChange('activity')}
+        >
+          <ListItemIcon >
+            {sorting === 'activity' ? <RadioButtonChecked /> : <RadioButtonUnchecked />}
+          </ListItemIcon>
+          <ListItemText primary="Recent activity" />
+        </ListItem>
+      </List>
+    </Dialog>
+  )
 }
 
 const useStyles = makeStyles((theme) =>
@@ -133,9 +215,6 @@ const useStyles = makeStyles((theme) =>
       flexDirection: 'column',
       height: '100%',
       flex: 1,
-    },
-    menuButton: {
-      marginRight: theme.spacing(2),
     },
     title: {
       flexGrow: 1,

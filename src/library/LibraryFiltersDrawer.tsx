@@ -1,9 +1,10 @@
 import React, { useState, FC, useEffect } from 'react';
 import { gql, useMutation, useQuery, useReactiveVar, useApolloClient } from '@apollo/client';
 import Dialog from '@material-ui/core/Dialog';
-import { DialogTitle, TextField, AppBar, Toolbar, IconButton, Typography, makeStyles, createStyles, Drawer, List, ListItem, ListItemText, ListItemIcon, ListItemAvatar, DialogActions, Button } from '@material-ui/core';
-import { Menu, PublishRounded, TuneRounded, ArrowForwardIosRounded, RadioButtonUncheckedOutlined, CheckCircleRounded } from '@material-ui/icons';
-import { useQueryGetLibraryFilters, useQueryGetTags, GET_LIBRARY_FILTERS, GET_TAG } from '../queries';
+import { DialogTitle, makeStyles, createStyles, Drawer, List, ListItem, ListItemText, ListItemIcon, ListItemAvatar, DialogActions, Button } from '@material-ui/core';
+import { ArrowForwardIosRounded, RadioButtonUncheckedOutlined, CheckCircleRounded } from '@material-ui/icons';
+import { useQueryGetTags } from '../tags/queries';
+import { useLibraryBooksSettings, useToggleTag } from './queries';
 
 
 export const LibraryFiltersDrawer: FC<{
@@ -12,7 +13,7 @@ export const LibraryFiltersDrawer: FC<{
 }> = ({ open, onClose }) => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const { data } = useQueryGetTags()
-  const { data: libraryFiltersData, error, called } = useQueryGetLibraryFilters()
+  const { data: libraryFiltersData, error, called } = useLibraryBooksSettings()
   const toggleTag = useToggleTag()
 
   console.log('LibraryFiltersDrawer', libraryFiltersData, called, error)
@@ -57,7 +58,7 @@ export const LibraryFiltersDrawer: FC<{
               }}
             >
               <ListItemAvatar>
-                {libraryFiltersData?.libraryFilters?.tags?.find(item => item?.id === tag?.id)
+                {libraryFiltersData?.libraryBooksSettings?.tags?.find(item => item?.id === tag?.id)
                   ? <CheckCircleRounded />
                   : <RadioButtonUncheckedOutlined />}
               </ListItemAvatar>
@@ -73,32 +74,6 @@ export const LibraryFiltersDrawer: FC<{
       </Dialog>
     </>
   );
-}
-
-const useToggleTag = () => {
-  const client = useApolloClient()
-
-  return async (tagId: string) => {
-    try {
-      const { libraryFilters } = client.readQuery({ query: GET_LIBRARY_FILTERS }) || {}
-      const { data } = await client.query({ query: GET_TAG, variables: { id: tagId } })
-      const tag = data?.tag
-
-      let newTags
-      if (libraryFilters?.tags.find(item => item?.id === tagId)) {
-        newTags = libraryFilters?.tags.filter(item => item?.id !== tagId)
-      } else {
-        newTags = [...libraryFilters?.tags, tag]
-      }
-
-      client.writeQuery({
-        query: GET_LIBRARY_FILTERS,
-        data: { libraryFilters: { tags: newTags } }
-      })
-    } catch (e) {
-      console.error(e)
-    }
-  }
 }
 
 const useStyles = makeStyles((theme) =>

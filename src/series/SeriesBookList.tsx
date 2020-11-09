@@ -1,7 +1,7 @@
 import React, { useRef, FC } from 'react'
 import { CircularProgress, GridList, GridListTile, GridListTileBar, IconButton, makeStyles } from "@material-ui/core"
 import { Info, CloudDownloadRounded } from '@material-ui/icons';
-import { useQueryGetLibraryFilters, useQueryGetOneSeries } from '../queries';
+import { useQueryGetOneSeries } from '../series/queries';
 import { models } from '../client';
 import { useWindowSize } from 'react-use';
 import { API_URI } from '../constants';

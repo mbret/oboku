@@ -12,7 +12,8 @@ export const TopBarNavigation: FC<{
   showBack?: boolean,
   position?: ComponentProps<typeof AppBar>['position'],
   color?: ComponentProps<typeof AppBar>['color'],
-}> = ({ title, showBack = true, position = 'static', color = 'primary' }) => {
+  rightComponent?: React.ReactNode,
+}> = ({ title, showBack = true, position = 'static', color = 'primary', rightComponent }) => {
   const classes = useStyles({ color });
   const history = useHistory()
 
@@ -34,6 +35,7 @@ export const TopBarNavigation: FC<{
         <Typography variant="h6" className={classes.title}>
           {title}
         </Typography>
+        {rightComponent}
       </Toolbar>
     </AppBar>
   );

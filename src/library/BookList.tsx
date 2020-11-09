@@ -1,212 +1,201 @@
-import React, { useRef, useMemo, useCallback, Component } from 'react'
-import { CircularProgress, GridList, GridListTile, GridListTileBar, IconButton, makeStyles, Typography } from "@material-ui/core"
-import { Info, CloudDownloadRounded, MoreVert } from '@material-ui/icons';
-import { useQueryGetLibraryFilters } from '../queries';
-import { models, Book } from '../client';
+import React, { useCallback, FC, useMemo } from 'react'
+import { CircularProgress, makeStyles, Typography, Button } from "@material-ui/core"
+import { CloudDownloadRounded, MoreVert, Pause } from '@material-ui/icons';
+import { models } from '../client';
 import { useWindowSize, useScrollbarWidth } from 'react-use';
-import { API_URI, COVER_AVERAGE_RATIO } from '../constants';
+import { COVER_AVERAGE_RATIO } from '../constants';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { useHistory } from 'react-router-dom';
-import { useQueryGetBooks } from '../books/queries';
 import { ItemList } from '../lists/ItemList';
+import { LibraryBooksSettings } from './queries';
+import { LocalBook } from '../books/types';
+import { Cover } from '../books/Cover';
 
-export const BookList = () => {
+export const BookList: FC<{
+  viewMode?: 'grid' | 'list',
+  renderHeader?: () => React.ReactNode,
+  headerHeight?: number,
+  sorting?: LibraryBooksSettings['sorting'],
+  isHorizontal?: boolean,
+  style?: React.CSSProperties,
+  itemWidth?: number,
+  data: LocalBook[],
+}> = ({ viewMode = 'grid', renderHeader, headerHeight, sorting, isHorizontal = false, style, itemWidth, data }) => {
   const history = useHistory();
   const sbw = useScrollbarWidth() || 0;
-  const classes = useStyles();
   const windowSize = useWindowSize()
-  const { data: booksData, error } = useQueryGetBooks()
+  const classes = useStyles({ isHorizontal, windowSize });
   const downloadFile = useDownloadFile()
-  const { data: libraryFiltersData } = useQueryGetLibraryFilters()
-  const books = booksData?.books || []
-  const filteredTags = libraryFiltersData?.libraryFilters?.tags?.map(tag => tag?.id || '-1') || []
-  const visibleBooks = filteredTags.length === 0
-    ? books
-    : books
-      .filter(book => book.tags?.some(b => filteredTags.includes(b.id || '-1')))
+  const hasHeader = !!renderHeader
+  const listData = useMemo(() => {
+    if (hasHeader) return ['header' as const, ...data]
+    else return data
+  }, [data, hasHeader])
+  const itemsPerRow = viewMode === 'grid'
+    ? windowSize.width > 420 ? 3 : 2
+    : 1
+  const adjustedRatioWhichConsiderBottom = COVER_AVERAGE_RATIO - 0.1
 
-  const rowRenderer = useCallback((type, book: Book) => {
+  type ListDataItem = (typeof listData)[number]
+  const rowRenderer = useCallback((type, item: ListDataItem) => {
+    if (item === 'header') {
+      if (renderHeader) return renderHeader()
+      return null
+    }
+
     return (
       <div
-        key={book.id}
+        key={item.id}
         className={classes.itemContainer}
         onClick={() => {
-          if (!book.lastMetadataUpdatedAt) return
-          if (book.downloadState === 'none') {
-            book.id && downloadFile(book.id).catch(() => { })
-          } else if (book.downloadState === 'downloaded') {
-            history.push(`/reader/${book.id}`)
+          if (!item.lastMetadataUpdatedAt) return
+          if (item.downloadState === 'none') {
+            item.id && downloadFile(item.id).catch(() => { })
+          } else if (item.downloadState === 'downloaded') {
+            history.push(`/reader/${item.id}`)
           }
         }}
       >
-        <img
-          alt="img"
-          src={`${API_URI}/cover/${book.id}`}
+        <div
           style={{
             position: 'relative',
-            // border: '1px solid black',
-            ...!(book.downloadState === 'downloaded') && {
-              opacity: 0.5,
-            },
             flexGrow: 1,
             width: '100%',
-            objectFit: 'cover',
-            borderRadius: 10,
+            minHeight: 0,
           }}
-        />
+        >
+          <Cover bookId={item.id} />
+          {item.downloadState === 'downloading' && (
+            <div style={{
+              backgroundColor: 'white',
+              opacity: 0.5,
+              height: `${100 - (item.downloadProgress || 0)}%`,
+              width: '100%',
+              position: 'absolute',
+              top: 0,
+            }} />
+          )}
+          <div style={{
+            position: 'absolute',
+            height: '100%',
+            width: '100%',
+            top: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            {!item.lastMetadataUpdatedAt && (
+              <div className={classes.itemCoverCenterInfo}>
+                <CircularProgress size="1rem" />&nbsp;
+                <Typography noWrap>Refresh...</Typography>
+              </div>
+            )}
+            {item.lastMetadataUpdatedAt && item.downloadState === 'none' && (
+              <>
+                <div style={{
+                  backgroundColor: 'white',
+                  opacity: 0.5,
+                  height: '100%',
+                  width: '100%',
+                  position: 'absolute',
+                  top: 0,
+                }} />
+                <CloudDownloadRounded />
+              </>
+            )}
+            {item.downloadState === 'downloading' && (
+              <div className={classes.itemCoverCenterInfo}>
+                <Pause />&nbsp;
+                <Typography noWrap>Downloading...</Typography>
+              </div>
+            )}
+          </div>
+        </div>
         <div
           className={classes.itemBottomContainer}
           onClick={(e) => {
             e.stopPropagation()
-            book.id && models.isBookActionDialogOpenedWithVar(models.isBookActionDialogOpenedWithVar(book.id))
+            item.id && models.isBookActionDialogOpenedWithVar(models.isBookActionDialogOpenedWithVar(item.id))
           }}
         >
-          <div style={{ width: '100%' }}>
-            <Typography variant="subtitle1">{book?.title}</Typography>
-            <Typography variant="subtitle2">{book?.author || 'Unknown'}</Typography>
+          <div style={{ width: '100%', overflow: 'hidden' }}>
+            <Typography variant="subtitle1" className={classes.itemTitle}>{item?.title || 'Unknown'}</Typography>
+            <Typography variant="subtitle2">By {item?.author || 'Unknown'}</Typography>
           </div>
           <MoreVert style={{ transform: 'translate(50%, 0%)' }} />
         </div>
       </div >
     )
-  }, [classes])
-
-  console.log('[BookList]', libraryFiltersData, booksData, sbw)
-
-  // return (
-  //   <ItemList
-  //     data={visibleBooks}
-  //     rowRenderer={rowRenderer}
-  //     numberOfItems={1}
-  //     preferredRatio={coverRatioAdjustmentDueToBottomArea}
-  //   // className={classes.container}
-  //   />
-  // )
+  }, [classes, downloadFile, history, renderHeader])
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} style={style}>
       <ItemList
-        data={visibleBooks}
-        rowRenderer={rowRenderer}
-        numberOfItems={2}
-        preferredRatio={COVER_AVERAGE_RATIO}
-      // className={classes.container}
+        data={listData}
+        rowRenderer={rowRenderer as any}
+        itemsPerRow={itemsPerRow}
+        preferredRatio={adjustedRatioWhichConsiderBottom}
+        headerHeight={headerHeight}
+        renderHeader={renderHeader}
+        isHorizontal={isHorizontal}
+        itemWidth={itemWidth}
       />
     </div>
   )
-
-  // return (
-  //   <div
-  //     className={classes.container}>
-  //     {visibleBooks && (
-  //       <GridList cellHeight={300} className={classes.gridList} cols={3}>
-  //         {visibleBooks
-  //           .map((book: any) => (
-  //             <GridListTile
-  //               key={book.id}
-  //               style={{
-  //                 cursor: 'pointer'
-  //               }}
-  //               onClick={() => {
-  //                 if (!book.lastMetadataUpdatedAt) return
-  //                 if (book.downloadState === 'none') {
-  //                   downloadFile(book.id).catch(() => { })
-  //                 } else if (book.downloadState === 'downloaded') {
-  //                   history.push(`/reader/${book.id}`)
-  //                 }
-  //               }}
-  //             >
-  //               <img
-  //                 alt="img"
-  //                 src={`${API_URI}/cover/${book.id}`}
-  //                 // onError={}
-  //                 style={{
-  //                   ...!(book.downloadState === 'downloaded') && {
-  //                     opacity: 0.5,
-  //                   },
-  //                 }} />
-  //               <div style={{
-  //                 position: 'absolute',
-  //                 height: '100%',
-  //                 width: '100%',
-  //                 top: 0,
-  //                 display: 'flex',
-  //                 justifyContent: 'center',
-  //                 alignItems: 'center'
-  //               }}>
-  //                 {!book.lastMetadataUpdatedAt && (
-  //                   <CircularProgress />
-  //                 )}
-  //               </div>
-  //               {book.lastMetadataUpdatedAt && book.downloadState !== 'downloaded' && <GridListTileBar
-  //                 title={book.downloadState === 'downloading' ? 'Downloading...' : <CloudDownloadRounded />}
-  //                 titlePosition="top"
-  //                 actionPosition="left"
-  //               />}
-  //               <GridListTileBar
-  //                 title={book.lastMetadataUpdatedAt ? book.title : ''}
-  //                 subtitle={
-  //                   <span>{book.lastMetadataUpdatedAt ? `by: ${book.author}` : 'Fetching metadata...'}</span>
-  //                 }
-  //                 actionIcon={
-  //                   <IconButton
-  //                     aria-label={`info about ${book.title}`}
-  //                     className={classes.icon}
-  //                     onClick={(e) => {
-  //                       e.stopPropagation()
-  //                       models.isBookActionDialogOpenedWithVar(models.isBookActionDialogOpenedWithVar(book.id))
-  //                     }}
-  //                   >
-  //                     <Info />
-  //                   </IconButton>
-  //                 }
-  //               />
-  //             </GridListTile>
-  //           ))}
-  //       </GridList>
-  //     )}
-
-  //   </div>
-  // )
 }
 
-const useStyles = () => {
-  const windowSize = useWindowSize()
 
-  return useRef(makeStyles((theme) => ({
+
+const useStyles = makeStyles((theme) => {
+  type Props = { isHorizontal: boolean, windowSize: { width: number } }
+
+  return {
     container: {
-      paddingLeft: theme.spacing(1),
-      paddingRight: theme.spacing(1),
+      paddingLeft: (props: Props) => props.isHorizontal ? 0 : theme.spacing(1),
+      paddingRight: (props: Props) => props.isHorizontal ? 0 : theme.spacing(1),
       display: 'flex',
       flexFlow: 'column',
-      height: '100%',
+      // height: '100%',
+      // border: '1px solid green'
     },
     itemContainer: {
       cursor: 'pointer',
-      border: '1px solid blue',
       height: '100%',
       position: 'relative',
-      paddingBottom: 10,
       boxSizing: 'border-box',
       display: 'flex',
       flexFlow: 'column',
-      padding: theme.spacing(1)
+      padding: (props: Props) => theme.spacing(1),
+      // border: '1px solid blue',
     },
     itemBottomContainer: {
-      backgroundColor: 'green',
       boxSizing: 'border-box',
       width: '100%',
       height: 50,
+      minHeight: 50,
       flexFlow: 'row',
       display: 'flex',
       alignItems: 'center',
       paddingLeft: 2,
       paddingRight: 5,
     },
-    gridList: {
-      width: (props: any) => props.windowSize.width,
+    itemTitle: {
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
     },
-  }))).current({
-    windowSize
-  })
-}
+    itemCoverCenterInfo: {
+      display: 'flex',
+      alignItems: 'center',
+      overflow: 'hidden',
+      width: '90%',
+      justifyContent: 'center',
+    },
+    itemCoverCenterInfoText: {
+
+    },
+    gridList: {
+      width: (props: Props) => props.windowSize.width,
+    },
+  }
+})
