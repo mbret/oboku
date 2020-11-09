@@ -28,8 +28,9 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
+  
   <a href="https://github.com/mbret/oboku">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
+    <img src="https://user-images.githubusercontent.com/1911240/98496751-afc74900-2285-11eb-8ea4-852a3fbc2030.png" alt="Logo" width="200" height="200">
   </a>
 
   <h3 align="center">oboku</h3>
