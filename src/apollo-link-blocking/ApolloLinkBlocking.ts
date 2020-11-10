@@ -24,8 +24,9 @@ export class ApolloLinkBlocking extends ApolloLink {
     const definition = getMainDefinition(operation.query)
     const context = operation.getContext()
     const cache = context.cache as InMemoryCache
+    const isBlockingDirective = definition.directives?.find(directive => directive.name.value === 'blocking')
 
-    if (definition.directives?.find(directive => directive.name.value === 'blocking')) {
+    if (isBlockingDirective) {
       const cleanedQuery = removeDirectivesFromDocument([{ name: 'blocking' }], operation.query)
       if (cleanedQuery) {
         operation.query = cleanedQuery
@@ -42,10 +43,17 @@ export class ApolloLinkBlocking extends ApolloLink {
     }
 
     const onDone = () => {
-      setTimeout(() => {
-        const data = cache.readQuery<QueryBlockingData>({ query: QueryBlocking })
-        cache.writeQuery<QueryBlockingData>({ query: QueryBlocking, data: { blocking: { remaining: (data?.blocking?.remaining || 0) - 1 } } })
-      }, 500)
+      if (isBlockingDirective) {
+        setTimeout(() => {
+          const data = cache.readQuery<QueryBlockingData>({ query: QueryBlocking })
+          let newValue = (data?.blocking?.remaining || 0) - 1
+          if (newValue < 0) {
+            console.error('ApolloLinkBlocking: blocking indice cannot be substracted more for this operation. Please fix your code', operation)
+            newValue = 0
+          }
+          cache.writeQuery<QueryBlockingData>({ query: QueryBlocking, data: { blocking: { remaining: newValue } } })
+        }, 500)
+      }
     }
 
     return new Observable<FetchResult>(observer => {

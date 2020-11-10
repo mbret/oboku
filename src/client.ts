@@ -48,9 +48,11 @@ export const offlineQueue = new ApolloLinkOfflineQueue({
 const blockingLink = new ApolloLinkBlocking()
 
 const withClientLink = setContext((operation, { headers = {}, cache }: { headers?: any, cache: InMemoryCache }) => {
+  const definition = getMainDefinition(operation.query)
 
   return {
     client: clientForContext,
+    noRetry: definition.directives?.find(directive => directive.name.value === 'noRetry'),
   }
 })
 
@@ -81,8 +83,7 @@ const retryLink = new RetryLink({
       if (error.statusCode === 400) return false
 
       // Do not retry @noRetry directive
-      const definition = getMainDefinition(operation.query)
-      if (definition.directives?.find(directive => directive.name.value === 'noRetry')) {
+      if (operation.getContext().noRetry) {
         return false
       }
 
