@@ -10,6 +10,12 @@ import { ERROR_EMAIL_TAKEN } from 'oboku-shared'
 import { OrDivider } from '../common/OrDivider';
 import { useLocation, useHistory } from 'react-router-dom';
 import { ROUTES } from '../constants';
+import * as yup from 'yup'
+
+const schema = yup.object().shape({
+  email: yup.string().email().required(),
+  password: yup.string().required(),
+})
 
 export const RegisterScreen = () => {
   const classes = useStyles();
@@ -17,6 +23,7 @@ export const RegisterScreen = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [signup, { error }] = useSignup()
+  const isValid = useIsValid(email, password)
   const theme = useTheme()
   let hasEmailTakenError = false
   let hasUnknownError = false
@@ -101,6 +108,7 @@ export const RegisterScreen = () => {
             }}
             variant="outlined"
             size="large"
+            disabled={!isValid}
             onClick={onSubmit}
           >
             Register
@@ -134,3 +142,13 @@ const useStyles = makeStyles((theme) =>
     }
   }),
 );
+
+const useIsValid = (email: string, password: string) => {
+  const [isValid, setIsValid] = useState(false)
+
+  useEffect(() => {
+    setIsValid(schema.isValidSync({ email, password }))
+  }, [email, password])
+
+  return isValid
+}

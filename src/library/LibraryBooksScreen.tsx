@@ -2,27 +2,26 @@ import React, { useState, FC } from 'react';
 import '../App.css';
 import { BookList } from './/BookList';
 import {
-  Dialog, Button, DialogActions, DialogContent, DialogTitle, TextField,
+  Dialog, Button, DialogTitle,
   Toolbar, IconButton, makeStyles, createStyles, Badge, ListItemText, ListItem, List, ListItemIcon, Typography, useTheme,
 } from '@material-ui/core';
 import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecked, RadioButtonChecked, LockOpenRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
 import { useLibraryBooksSettings, useToggleLibraryBooksSettingsViewMode, useUpdateLibraryBooksSettings, LibraryBooksSettings } from './queries';
-import { useAddBook, useQueryGetBooks } from '../books/queries';
+import { useQueryGetBooks } from '../books/queries';
 import * as R from 'ramda';
 import { useUser } from '../auth/queries';
+import { UploadNewBookDialog } from '../books/UploadNewBookDialog';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
   const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
+  const [isUploadNewBookDialogOpened, setIsUploadNewBookDialogOpened] = useState(false)
   const { data: userData } = useUser()
   const [toggleLibraryBooksSettingsViewMode] = useToggleLibraryBooksSettingsViewMode()
   const { data: libraryBooksSettingsData } = useLibraryBooksSettings()
-  const addBook = useAddBook()
-  const [closed, setClosed] = useState(true)
-  const [bookUrl, setBookUrl] = useState('')
   const libraryFilters = libraryBooksSettingsData?.libraryBooksSettings
   const sorting = libraryFilters?.sorting
   const books = useSortedList(sorting)
@@ -34,20 +33,6 @@ export const LibraryBooksScreen = () => {
     ? books
     : books
       .filter(book => book.tags?.some(b => filteredTags.includes(b.id || '-1')))
-
-  const handleClose = () => {
-    setClosed(true)
-  };
-
-  const handleConfirm = () => {
-    setBookUrl('')
-    addBook(bookUrl)
-    handleClose()
-  }
-
-  const onClickAddBook = () => {
-    setClosed(false)
-  }
 
   console.log('[LibraryBooksScreen]', books, libraryBooksSettingsData, userData)
 
@@ -97,29 +82,6 @@ export const LibraryBooksScreen = () => {
         flex: 1,
         // flexGrow: 1
       }}>
-        <Dialog onClose={handleClose} open={!closed}>
-          <DialogTitle>Add a book</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="book url"
-              type="text"
-              fullWidth
-              value={bookUrl}
-              onChange={e => setBookUrl(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleConfirm} color="primary">
-              Add
-            </Button>
-          </DialogActions>
-        </Dialog>
         <BookList
           viewMode={viewMode}
           sorting={sorting}
@@ -135,13 +97,14 @@ export const LibraryBooksScreen = () => {
                 variant="outlined"
                 disableFocusRipple
                 disableRipple
-                onClick={onClickAddBook}
+                onClick={() => setIsUploadNewBookDialogOpened(true)}
               >
-                Create a new book
+                Add a new book
               </Button>
             </Toolbar>
           )}
         />
+        <UploadNewBookDialog open={isUploadNewBookDialogOpened} onClose={() => setIsUploadNewBookDialogOpened(false)} />
         <SortByDialog onClose={() => setIsSortingDialogOpened(false)} open={isSortingDialogOpened} />
         <LibraryFiltersDrawer open={isFiltersDrawerOpened} onClose={() => setIsFiltersDrawerOpened(false)} />
       </div>

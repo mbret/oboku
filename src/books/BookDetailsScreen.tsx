@@ -10,6 +10,7 @@ import { useBook, useEditBook, useLazyBook } from '../books/queries';
 import { useQueryGetTags } from '../tags/queries';
 import { useEditLink } from '../links/queries';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
+import { Alert } from '@material-ui/lab';
 
 type ScreenParams = {
   id: string
@@ -50,6 +51,10 @@ export const BookDetailsScreen = () => {
           By {book?.author || 'Unknown'}
         </Typography>
       </div>
+
+      {!book?.lastMetadataUpdatedAt && (
+        <Alert severity="info" >We are still retrieving metadata information...</Alert>
+      )}
 
       <List component="nav" aria-label="main mailbox folders">
         <ListItem
@@ -331,6 +336,7 @@ const useClasses = makeStyles(theme => {
       display: 'flex',
       alignItems: 'center',
       flexFlow: 'column',
+      marginBottom: theme.spacing(1),
     },
     cover: {
       height: '20vh'

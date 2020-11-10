@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
-import { Typography, useTheme, Button, TextField } from '@material-ui/core';
+import React, { useEffect, useState } from 'react';
+import { Typography, useTheme, Button, TextField, Link } from '@material-ui/core';
 import { Alert } from '@material-ui/lab'
 import { useSignin } from './queries';
 import { ApolloError } from '@apollo/client';
 import { OrDivider } from '../common/OrDivider';
 import { useHistory } from 'react-router-dom';
 import { ROUTES } from '../constants';
+import * as yup from 'yup'
+
+const schema = yup.object().shape({
+  email: yup.string().email().required(),
+  password: yup.string().required(),
+})
 
 export const LoginScreen = () => {
   const history = useHistory()
@@ -13,6 +19,7 @@ export const LoginScreen = () => {
   const [password, setPassword] = useState('')
   const [signin, { error }] = useSignin()
   const theme = useTheme()
+  const isValid = useIsValid(email, password)
   let hasInvalidInput = false
   let hasUnknownError = false
 
@@ -32,7 +39,7 @@ export const LoginScreen = () => {
     signin(email, password)
   }
 
-  console.log('[LoginScreen]', { error })
+  console.log('[LoginScreen]', { error, isValid })
 
   return (
     <div style={{
@@ -97,11 +104,17 @@ export const LoginScreen = () => {
               width: '100%',
             }}
             variant="outlined"
+            disabled={!isValid}
             size="large"
             onClick={onSubmit}
           >
             Login
         </Button>
+          <div style={{ textAlign: 'center', margin: theme.spacing(2) }}>
+            <Link href="#" onClick={() => alert('Not implemented yet')}>
+              I forgot my password
+            </Link>
+          </div>
         </form>
         <OrDivider style={{
           marginTop: theme.spacing(5)
@@ -121,4 +134,14 @@ export const LoginScreen = () => {
       </div>
     </div>
   );
+}
+
+const useIsValid = (email: string, password: string) => {
+  const [isValid, setIsValid] = useState(false)
+
+  useEffect(() => {
+    setIsValid(schema.isValidSync({ email, password }))
+  }, [email, password])
+
+  return isValid
 }
