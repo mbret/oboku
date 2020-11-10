@@ -1,17 +1,15 @@
-import { createContext } from 'react';
+import React, { createContext } from 'react';
 
 export type TourKey =
-  | 'ExistingUserFirstTimeLibrary'
-  | 'FirstTimeCoverLongPress'
-  | 'EistingUserFirstTimeLibrarySearch'
-  | 'NewUserFirstTimeFilterLibrary'
-  | 'FirstTimeDownload';
+  | 'AppTourReader'
+  | 'AppTourWelcome'
 
-type Step = {
+export type Step = {
   measures: undefined | { x: number, y: number, width: number, height: number, pageX: number, pageY: number };
   spotlightSize: undefined | number;
   spotlightMargin: undefined | number;
-  content: React.ReactNode;
+  content: React.ReactNode | ((args: { onClose: () => void }) => React.ReactNode)
+  withButtons: boolean
 };
 
 type TourContext = {

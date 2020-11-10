@@ -197,10 +197,9 @@ const useClasses = makeStyles((theme) => {
   return {
     verticalScrollButton: {
       position: 'absolute',
-      padding: '10px 20px 10px 20px',
-      width: 40,
+      padding: theme.spacing(1),
       backgroundColor: 'gray',
-      opacity: 0.7,
+      opacity: 0.5,
       borderRadius: 50,
       alignItems: 'center',
       justifyContent: 'center',

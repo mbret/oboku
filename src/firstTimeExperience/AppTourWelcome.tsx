@@ -2,28 +2,25 @@ import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import cover from '../assets/cover.png'
 import { Box, makeStyles, Typography } from '@material-ui/core';
-import { makeVar, useReactiveVar } from '@apollo/client';
 import { useFirstTimeExperience, useSetFirstTimeExperience } from './queries';
-
-export const isAppTourWelcomeOpened = makeVar(false);
 
 export const AppTourWelcome: React.FC = memo(() => {
   const { data: fteData } = useFirstTimeExperience()
   const setFirstTimeExperience = useSetFirstTimeExperience()
-  const show = useReactiveVar(isAppTourWelcomeOpened) || !fteData?.firstTimeExperience.hasDoneWelcomeTour
+  const show = !fteData?.firstTimeExperience.hasDoneWelcomeTour
   const styles = useStyles();
 
   return (
     <Tour
       unskippable
-      id="FirstTimeCoverLongPress"
+      id="AppTourWelcome"
       show={show}
       onClose={() => {
         setFirstTimeExperience({ hasDoneWelcomeTour: true })
       }}
     >
       <Step
-        id="FirstTimeCoverLongPress"
+        id="AppTourWelcome"
         number={1}
         content={(
           <Box className={styles.slide1}>

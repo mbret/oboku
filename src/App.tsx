@@ -18,7 +18,7 @@ function App() {
   return (
     <>
       {!client && (
-        <div>App is loading...</div>
+        null
       )}
       {client && (
         <CookiesProvider>

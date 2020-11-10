@@ -103,7 +103,7 @@ export const RegisterScreen = () => {
           )}
           <Button
             style={{
-              marginTop: theme.spacing(5),
+              marginTop: theme.spacing(4),
               width: '100%',
             }}
             color="primary"
@@ -116,7 +116,7 @@ export const RegisterScreen = () => {
         </Button>
         </form>
         <OrDivider style={{
-          marginTop: theme.spacing(5)
+          marginTop: theme.spacing(4)
         }} />
         <Button
           style={{

@@ -1,19 +1,20 @@
 import React, { useContext, useEffect, useState, useRef, useCallback, memo } from 'react';
 import { useMeasure } from 'react-use';
 // import { View, LayoutRectangle, findNodeHandle, UIManager, ViewStyle } from 'react-native';
-import { TourContext, TourKey } from './TourContext';
+import { Step as StepType, TourContext, TourKey } from './TourContext';
 
 type Props = {
   number: number;
-  content?: React.ReactNode;
+  content?: StepType['content'];
   style?: React.CSSProperties;
   id: TourKey;
   spotlightSize?: number;
   spotlightMargin?: number;
   testID?: string;
+  withButtons?: boolean
 };
 
-export const Step: React.FC<Props> = memo(({ children, id, number, content, style, spotlightSize, spotlightMargin }) => {
+export const Step: React.FC<Props> = memo(({ withButtons = true, children, id, number, content, style, spotlightSize, spotlightMargin }) => {
   const { tours = {}, registerOrUpdateStep } = useContext(TourContext) || {};
   const [ref, layout] = useMeasure();
   const tour = tours[id];
@@ -30,6 +31,7 @@ export const Step: React.FC<Props> = memo(({ children, id, number, content, styl
         spotlightSize,
         spotlightMargin,
         content,
+        withButtons,
       });
     } else {
       // const node = findNodeHandle(containerRef.current);
@@ -39,10 +41,11 @@ export const Step: React.FC<Props> = memo(({ children, id, number, content, styl
           spotlightSize,
           spotlightMargin,
           content,
+          withButtons,
         });
       // });
     }
-  }, [registerOrUpdateStep, id, number, layout, content, tour?.show, children, spotlightSize, spotlightMargin]);
+  }, [registerOrUpdateStep, id, number, layout, withButtons, content, tour?.show, children, spotlightSize, spotlightMargin]);
 
   // const onLayout = useCallback(event => {
   //   setLayout(event.nativeEvent.layout);

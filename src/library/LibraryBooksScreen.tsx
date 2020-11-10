@@ -38,7 +38,7 @@ export const LibraryBooksScreen = () => {
 
   return (
     <div className={classes.container}>
-      <Toolbar>
+      <Toolbar style={{ borderBottom: `1px solid ${theme.palette.grey[200]}`, boxSizing: 'border-box' }}>
         <IconButton
           edge="start"
           onClick={() => setIsFiltersDrawerOpened(true)}
@@ -64,7 +64,7 @@ export const LibraryBooksScreen = () => {
           {userData?.user.isLibraryUnlocked && (
             <div style={{ display: 'flex', flexFlow: 'row', alignItems: 'center', marginLeft: theme.spacing(1), overflow: 'hidden' }}>
               <Typography variant="caption" noWrap>Protected content is</Typography>
-              &nbsp;<LockOpenRounded fontSize="small"/>
+              &nbsp;<LockOpenRounded fontSize="small" />
             </div>
           )}
         </div>

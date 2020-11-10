@@ -1,12 +1,14 @@
 import { gql, useApolloClient, useQuery, } from "@apollo/client";
 import { useCallback } from "react";
 
-const defaultData: Required<FirstTimeExperience> = {
-  hasDoneWelcomeTour: false
-}
-
 export type FirstTimeExperience = {
   hasDoneWelcomeTour?: boolean,
+  hasDoneReaderTour?: boolean,
+}
+
+export const defaultData: Required<FirstTimeExperience> = {
+  hasDoneWelcomeTour: false,
+  hasDoneReaderTour: false,
 }
 
 export type QueryFirstTimeExperienceData = { firstTimeExperience: FirstTimeExperience }
@@ -14,6 +16,7 @@ export const QueryFirstTimeExperience = gql`
   query QueryFirstTimeExperience {
     firstTimeExperience @client {
       hasDoneWelcomeTour
+      hasDoneReaderTour
     }
   }
 `

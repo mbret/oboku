@@ -22,7 +22,10 @@ export const SettingsScreen = () => {
 
   return (
     <div style={{
-      flex: 1
+      display: 'flex',
+      flex: 1,
+      overflow: 'scroll',
+      flexFlow: 'column',
     }}>
       <TopBarNavigation title={'Settings'} showBack={false} />
       <List subheader={<ListSubheader>Account</ListSubheader>}>

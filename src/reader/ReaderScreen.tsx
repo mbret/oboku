@@ -3,13 +3,15 @@ import { useHistory, useParams } from 'react-router-dom'
 import localforage from 'localforage';
 import { EpubView } from "react-reader";
 import { useWindowSize } from "react-use";
-import { Divider, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
+import { Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, Toolbar } from '@material-ui/core';
 import { ArrowBackIosRounded } from '@material-ui/icons';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
 import { Rendition } from "epubjs";
 import { Contents, Location } from "epubjs";
 import { useEditBook, useBook } from '../books/queries';
+import { AppTourReader } from '../firstTimeExperience/AppTourReader';
+import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from './utils';
 
 type ReaderInstance = {
   nextPage: () => void,
@@ -28,6 +30,8 @@ export const ReaderScreen: FC<{}> = () => {
   const { data: bookData } = useBook({ variables: { id: bookId } })
   const windowSize = useWindowSize()
   const editBook = useEditBook()
+  const verticalTappingZoneHeight = useVerticalTappingZoneHeight()
+  const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
   const book = bookData?.book
 
   console.log('[ReaderScreen]', bookData)
@@ -54,8 +58,8 @@ export const ReaderScreen: FC<{}> = () => {
     const realClientXOffset = clientX - (windowSize.width * pageDisplayedIndex)
     // console.log(e)
     console.log('mouse', clientX, clientX - (windowSize.width * pageDisplayedIndex), rendition?.getContents(), location)
-    const maxOffsetPrev = windowSize.width / 6
-    const maxOffsetBottomMenu = windowSize.height / 5
+    const maxOffsetPrev = horizontalTappingZoneWidth
+    const maxOffsetBottomMenu = verticalTappingZoneHeight
     const minOffsetNext = windowSize.width - maxOffsetPrev
     const minOffsetBottomMenu = windowSize.height - maxOffsetBottomMenu
     if (realClientXOffset < maxOffsetPrev) {
@@ -68,7 +72,7 @@ export const ReaderScreen: FC<{}> = () => {
     } else if (clientY > minOffsetBottomMenu) {
       setIsBottomMenuShown(true)
     }
-  }, [windowSize, next, prev])
+  }, [windowSize, verticalTappingZoneHeight, next, prev, horizontalTappingZoneWidth, rendition])
 
   useEffect(() => {
 
@@ -223,23 +227,16 @@ export const ReaderScreen: FC<{}> = () => {
             onClose={() => setIsTopMenuShown(false)}
             transitionDuration={0}
           >
-            <div
-              role="presentation"
-            // onClick={toggleDrawer(anchor, false)}
-            // onKeyDown={toggleDrawer(anchor, false)}
-            >
-              <List>
-                <ListItem
-                  button
-                  onClick={() => {
-                    history.goBack()
-                  }}
-                >
-                  <ListItemIcon><ArrowBackIosRounded /></ListItemIcon>
-                  <ListItemText primary="Leave the reader" />
-                </ListItem>
-              </List>
-            </div>
+            <Toolbar>
+              <IconButton
+                edge="start"
+                onClick={() => {
+                  history.goBack()
+                }}
+              >
+                <ArrowBackIosRounded />
+              </IconButton>
+            </Toolbar>
           </Drawer>
           <Drawer
             anchor="bottom"
@@ -247,30 +244,11 @@ export const ReaderScreen: FC<{}> = () => {
             onClose={() => setIsBottomMenuShown(false)}
             transitionDuration={0}
           >
-            <div
-              role="presentation"
-            >
-              <List>
-                {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-                  <ListItem button key={text}>
-                    <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                    <ListItemText primary={text} />
-                  </ListItem>
-                ))}
-              </List>
-              <Divider />
-              <List>
-                {['All mail', 'Trash', 'Spam'].map((text, index) => (
-                  <ListItem button key={text}>
-                    <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                    <ListItemText primary={text} />
-                  </ListItem>
-                ))}
-              </List>
-            </div>
+            Not implemented yet
           </Drawer>
         </div>
       )}
+      <AppTourReader />
     </>
   )
 }

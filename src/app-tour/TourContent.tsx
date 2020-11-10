@@ -77,34 +77,37 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
       }}
     >
       <div className={styles.container}>
-        {stepContents && (
+        {stepContents && stepContents.length > 0 && (
           <div className={styles.contentContainer}>
             <div className={styles.carouselContainer}>
-              {stepContents}
+              {typeof stepContents[0] === 'function' && stepContents[0]({ onClose })}
+              {typeof stepContents[0] !== 'function' && stepContents[0]}
             </div>
-            <div className={styles.bottomContainer}>
-              <Box className={styles.nexButtonContainer} justifyContent="center"  display="flex">
-                <Button
-                  // style={styles.nextButton}
-                  variant="outlined"
-                  size="large"
-                  onClick={() => {
-                    if (isFinalStep) {
-                      onClose();
-                    } else {
-                      // swiperRef.current?.scrollBy(1, true);
-                    }
-                  }}
-                >{!isFinalStep ? 'next' : 'close'}</Button>
-              </Box>
-              {/* {!isFinalStep && !unskippable && (
+            {currentStep.withButtons && (
+              <div className={styles.bottomContainer}>
+                <Box className={styles.nexButtonContainer} justifyContent="center" display="flex">
+                  <Button
+                    // style={styles.nextButton}
+                    variant="outlined"
+                    size="large"
+                    onClick={() => {
+                      if (isFinalStep) {
+                        onClose();
+                      } else {
+                        // swiperRef.current?.scrollBy(1, true);
+                      }
+                    }}
+                  >{!isFinalStep ? 'next' : 'close'}</Button>
+                </Box>
+                {/* {!isFinalStep && !unskippable && (
                 <Button
                   textOnly
                   text={t('appTour.skipButton')}
                   onPress={onClose}
                 />
               )} */}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
