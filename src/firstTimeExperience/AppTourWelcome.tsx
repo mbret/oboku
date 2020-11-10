@@ -1,16 +1,7 @@
-import React, { useMemo, memo } from 'react';
-// import { useTheme } from '@src/theme';
-// import { useSelector, useDispatch } from 'react-redux';
-// import DeviceInfo from 'react-native-device-info';
-// import { useTranslation } from 'react-i18next';
-// import { getBook } from '@src/models/books/selectors';
-// import { useMediaHelpers } from '@phoenix/ui-tools';
-// import { Cover } from '@phoenix/cover';
+import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import cover from '../assets/cover.png'
-// import { stopFirstTimeCoverLongPress } from './actions';
-// import StepTitle from './StepTitle';
-import { Box, Button, makeStyles, Typography } from '@material-ui/core';
+import { Box, makeStyles, Typography } from '@material-ui/core';
 import { makeVar, useReactiveVar } from '@apollo/client';
 import { useFirstTimeExperience, useSetFirstTimeExperience } from './queries';
 
@@ -20,18 +11,7 @@ export const AppTourWelcome: React.FC = memo(() => {
   const { data: fteData } = useFirstTimeExperience()
   const setFirstTimeExperience = useSetFirstTimeExperience()
   const show = useReactiveVar(isAppTourWelcomeOpened) || !fteData?.firstTimeExperience.hasDoneWelcomeTour
-
-  // const dispatch = useDispatch();
-  // const { t } = useTranslation();
-  // const { vh, vw } = useMediaHelpers();
-
-  // const bookId = useSelector(state => state.firstTimeExperience.firstTimeCoverLongPressBookId);
-  // const { imageSrc = '', coverImageRatio } = useSelector(state => bookId && getBook(state, bookId)) || {};
-  // const coverWidth = DeviceInfo.isTablet() ? vw(15) : vw(40);
-  // const styles = useStyles(coverWidth);
   const styles = useStyles();
-
-  console.log(fteData)
 
   return (
     <Tour
@@ -82,7 +62,7 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     flex: 1,
     flexFlow: 'column',
-    justifyItems: 'center',
+    justifyContent: 'center',
     alignItems: 'center',
     // paddingHorizontal: 30,
     // justifyContent: 'center',
