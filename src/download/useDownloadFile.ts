@@ -2,7 +2,7 @@ import { gql, useApolloClient } from '@apollo/client';
 import localforage from 'localforage';
 import { API_URI } from '../constants';
 import { QueryAuth, QueryAuthData } from '../auth/queries';
-import axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 import { LocalBook } from '../books/types';
 import { useCallback } from 'react';
 import throttle from 'lodash.throttle';
@@ -63,14 +63,15 @@ export const useDownloadFile = () => {
       }))
 
       try {
-        const response: AxiosResponse<ArrayBuffer> = await axios({
+        const response = await axios({
           url: `${API_URI}/download/${bookId}`,
           headers: {
             Authorization: `Bearer ${authData?.auth.token}`
           },
-          responseType: 'arraybuffer',
-          onDownloadProgress: event => {
-            throttleSetProgress(Math.round((event.loaded / event.total) * 100))
+          responseType: 'blob',
+          onDownloadProgress: (event: ProgressEvent) => {
+            const contentLength = parseInt((event.target as XMLHttpRequest).getResponseHeader('oboku-content-length') || '1')
+            throttleSetProgress(Math.round((event.loaded / contentLength) * 100))
           }
         })
         await localforage.setItem(`book-download-${bookId}`, response.data)
@@ -89,6 +90,7 @@ export const useDownloadFile = () => {
             downloadState: 'none',
           }
         }))
+        throw e
       }
     } catch (e) {
       console.error(e)

@@ -97,7 +97,7 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
                         // swiperRef.current?.scrollBy(1, true);
                       }
                     }}
-                  >{!isFinalStep ? 'next' : 'close'}</Button>
+                  >{!isFinalStep ? 'next' : 'Got it'}</Button>
                 </Box>
                 {/* {!isFinalStep && !unskippable && (
                 <Button

@@ -7,10 +7,12 @@ import { useStorageUse } from './useStorageUse';
 import { useUser, useSignOut, useEditUser, useToggleContentProtection } from '../auth/queries';
 import { isUnlockLibraryDialogOpened } from '../auth/UnlockLibraryDialog';
 import { useResetFirstTimeExperience } from '../firstTimeExperience/queries';
+import { LoadLibraryFromJsonDialog } from '../debug/LoadLibraryFromJsonDialog';
 
 export const SettingsScreen = () => {
   const history = useHistory()
   const [isEditContentPasswordDialogOpened, setIsEditContentPasswordDialogOpened] = useState(false)
+  const [isLoadLibraryDebugOpened, setIsLoadLibraryDebugOpened] = useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
   const { data: userData } = useUser()
   const signOut = useSignOut()
@@ -93,6 +95,19 @@ export const SettingsScreen = () => {
           </ListItemIcon>
         </ListItem>
       </List>
+      {process.env.NODE_ENV !== 'production' && (
+        <>
+          <List subheader={<ListSubheader>Developer options</ListSubheader>}>
+            <ListItem
+              button
+              onClick={() => setIsLoadLibraryDebugOpened(true)}
+            >
+              <ListItemText primary="Load library from JSON file" />
+            </ListItem>
+          </List>
+          <LoadLibraryFromJsonDialog open={isLoadLibraryDebugOpened} onClose={() => setIsLoadLibraryDebugOpened(false)} />
+        </>
+      )}
       <EditContentPasswordDialog open={isEditContentPasswordDialogOpened} onClose={() => setIsEditContentPasswordDialogOpened(false)} />
     </div>
   );

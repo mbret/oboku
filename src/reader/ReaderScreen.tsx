@@ -8,7 +8,7 @@ import { ArrowBackIosRounded } from '@material-ui/icons';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
 import { Rendition } from "epubjs";
-import { Contents, Location } from "epubjs";
+import { Contents, Location, Book } from "epubjs";
 import { useEditBook, useBook } from '../books/queries';
 import { AppTourReader } from '../firstTimeExperience/AppTourReader';
 import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from './utils';
@@ -19,7 +19,7 @@ type ReaderInstance = {
 }
 
 export const ReaderScreen: FC<{}> = () => {
-  const readerRef = useRef<ReaderInstance>()
+  const readerRef = useRef<any>()
   const rootRef = useRef<HTMLDivElement>()
   const history = useHistory()
   const [rendition, setRendition] = useState<Rendition | undefined>(undefined)
@@ -204,7 +204,8 @@ export const ReaderScreen: FC<{}> = () => {
           {book && (
             <EpubView
               ref={readerRef as any}
-              url={file}
+              // Buck in typing, epubjs accept blobs
+              url={file as any}
               getRendition={setRendition}
               epubInitOptions={{
 
@@ -254,11 +255,11 @@ export const ReaderScreen: FC<{}> = () => {
 }
 
 const useFile = (bookId) => {
-  const [file, setFile] = useState<ArrayBuffer | undefined>(undefined)
+  const [file, setFile] = useState<Blob | undefined>(undefined)
 
   useEffect(() => {
     (async () => {
-      const data = await localforage.getItem<ArrayBuffer>(`book-download-${bookId}`)
+      const data = await localforage.getItem<Blob>(`book-download-${bookId}`)
       if (data) {
         setFile(data)
       }

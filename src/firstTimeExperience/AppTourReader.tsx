@@ -70,7 +70,7 @@ export const AppTourReader: React.FC = memo(() => {
                     variant="outlined"
                     size="large"
                     onClick={onClose}
-                  >Close</Button>
+                  >Got it</Button>
                 </Box>
               </Box>
               <Box style={{
