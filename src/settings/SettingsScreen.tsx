@@ -6,6 +6,7 @@ import { useHistory } from 'react-router-dom';
 import { useStorageUse } from './useStorageUse';
 import { useUser, useSignOut, useEditUser, useToggleContentProtection } from '../auth/queries';
 import { isUnlockLibraryDialogOpened } from '../auth/UnlockLibraryDialog';
+import { useResetFirstTimeExperience } from '../firstTimeExperience/queries';
 
 export const SettingsScreen = () => {
   const history = useHistory()
@@ -13,6 +14,7 @@ export const SettingsScreen = () => {
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
   const { data: userData } = useUser()
   const signOut = useSignOut()
+  const resetFirstTimeExperience = useResetFirstTimeExperience()
   const toggleContentProtection = useToggleContentProtection()
   const isLibraryUnlocked = userData?.user.isLibraryUnlocked
 
@@ -70,6 +72,12 @@ export const SettingsScreen = () => {
         </ListItem>
       </List>
       <List subheader={<ListSubheader>Help and feedback</ListSubheader>}>
+        <ListItem
+          button
+          onClick={resetFirstTimeExperience}
+        >
+          <ListItemText primary="Restart the welcome tour" />
+        </ListItem>
       </List>
       <List subheader={<ListSubheader>About</ListSubheader>}>
         <ListItem

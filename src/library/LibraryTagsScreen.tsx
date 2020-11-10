@@ -24,8 +24,7 @@ export const LibraryTagsScreen = () => {
             width: '100%'
           }}
           variant="outlined"
-          disableFocusRipple
-          disableRipple
+          color="primary"
           onClick={() => setIsAddTagDialogOpened(true)}
         >
           Create a new tag

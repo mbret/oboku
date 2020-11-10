@@ -22,6 +22,7 @@ import { ApolloLinkBlocking } from './apollo-link-blocking/ApolloLinkBlocking';
 import { getMainDefinition } from './utils';
 import { ApolloLinkDirective } from './apollo-link-directive/ApolloLinkDirective';
 import { libraryLink } from './library/LibraryLink';
+import { FirstTimeExperience } from './firstTimeExperience/queries';
 
 let clientForContext: ApolloClient<any> | undefined
 
@@ -163,6 +164,7 @@ export const cache = new InMemoryCache({
     },
     Query: {
       fields: {
+        firstTimeExperience: (existing: Required<FirstTimeExperience> = { hasDoneWelcomeTour: false }) => existing,
         book: {
           // This proxy allow us to not have to precache this query
           read: (_, { toReference, args, variables }) => toReference({

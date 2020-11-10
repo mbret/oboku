@@ -24,7 +24,6 @@ export const TopBarNavigation: FC<{
           <IconButton
             edge="start"
             className={classes.menuButton}
-            color="inherit"
             onClick={() => {
               history.goBack()
             }}

@@ -55,6 +55,7 @@ export const LibraryBooksScreen = () => {
         </IconButton>
         <div style={{ flexGrow: 1, justifyContent: 'flex-start', flexFlow: 'row', display: 'flex', alignItems: 'center' }}>
           <Button
+            color="primary"
             onClick={() => setIsSortingDialogOpened(true)}
             startIcon={<SortRounded />}
           >
@@ -95,8 +96,7 @@ export const LibraryBooksScreen = () => {
                   flex: 1,
                 }}
                 variant="outlined"
-                disableFocusRipple
-                disableRipple
+                color="primary"
                 onClick={() => setIsUploadNewBookDialogOpened(true)}
               >
                 Add a new book

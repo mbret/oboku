@@ -30,8 +30,7 @@ export const LibrarySeriesScreen = () => {
             width: '100%'
           }}
           variant="outlined"
-          disableFocusRipple
-          disableRipple
+          color="primary"
           onClick={() => setIsAddSeriesDialogOpened(true)}
         >
           Create a new series

@@ -3,6 +3,7 @@
  * @see https://material-ui.com/customization/palette/
  */
 import { createMuiTheme } from '@material-ui/core/styles'
+import { grey } from '@material-ui/core/colors';
 
 const light = 'rgba(0, 0, 0, 0.38)'
 const main = 'rgba(0, 0, 0, 0.54)'
@@ -11,10 +12,19 @@ const dark = 'rgba(0, 0, 0, 0.87)'
 export const theme = createMuiTheme({
   palette: {
     primary: {
-      light,
-      main,
-      dark,
+      // light,
+      main: grey[700],
+      // main,
+      // dark,
     },
+      // text: {
+      //   primary: 'rgb(255, 255, 255)',
+      // },
+    //   secondary: {
+    //     light,
+    //     main,
+    //     dark,
+    //   },
   },
   transitions: {
     // So we have `transition: none;` everywhere
@@ -47,6 +57,20 @@ export const theme = createMuiTheme({
     //     paddingTop: '0 !important',
     //   }
     // }
+    MuiButtonBase: {
+      root: {
+        // color: '#fff',
+      }
+    },
+    MuiButton: {
+      root: {
+        color: '#fff',
+      },
+      outlined: {
+        border: '1px solid rgba(255, 255, 255, 0.23)'
+        // color: '#fff',
+      }
+    }
   },
   props: {
     // Name of the component ⚛️

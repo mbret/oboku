@@ -9,6 +9,8 @@ import { theme } from './theme';
 import { CookiesProvider } from "react-cookie";
 import { BlockingBackdrop } from './BlockingBackdrop';
 import { UnlockLibraryDialog } from './auth/UnlockLibraryDialog';
+import { AppTourWelcome } from './firstTimeExperience/AppTourWelcome';
+import { TourProvider } from './app-tour/TourProvider';
 
 function App() {
   const client = useClient()
@@ -22,10 +24,13 @@ function App() {
         <CookiesProvider>
           <ApolloProvider client={client}>
             <ThemeProvider theme={theme}>
-              <AppNavigator />
-              <UnlockLibraryDialog />
-              <BlockingBackdrop />
-              <RoutineProcess />
+              <TourProvider>
+                <AppNavigator />
+                <AppTourWelcome />
+                <UnlockLibraryDialog />
+                <BlockingBackdrop />
+                <RoutineProcess />
+              </TourProvider>
             </ThemeProvider>
           </ApolloProvider>
         </CookiesProvider>

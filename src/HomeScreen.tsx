@@ -19,7 +19,10 @@ export const HomeScreen = () => {
 
   return (
     <div style={{
-      flex: 1
+      display: 'flex',
+      flex: 1,
+      overflow: 'scroll',
+      flexFlow: 'column',
     }}>
       <TopBarNavigation title={'Home'} showBack={false} />
       {continueReadingBooks.length === 0 && (

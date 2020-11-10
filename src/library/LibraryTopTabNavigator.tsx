@@ -30,7 +30,7 @@ export const LibraryTopTabNavigator = () => {
             )}
             {!isSyncing && (
               <Button
-                color="inherit"
+                // color="primary"
                 variant="outlined"
                 onClick={() => syncLibrary()}
               >
