@@ -103,6 +103,7 @@ export const LoginScreen = () => {
               marginTop: theme.spacing(5),
               width: '100%',
             }}
+            color="primary"
             variant="outlined"
             disabled={!isValid}
             size="large"
@@ -124,6 +125,7 @@ export const LoginScreen = () => {
             width: '100%',
           }}
           variant="outlined"
+          color="primary"
           size="large"
           onClick={() => {
             history.replace(ROUTES.REGISTER)

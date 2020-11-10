@@ -106,6 +106,7 @@ export const RegisterScreen = () => {
               marginTop: theme.spacing(5),
               width: '100%',
             }}
+            color="primary"
             variant="outlined"
             size="large"
             disabled={!isValid}
@@ -121,6 +122,7 @@ export const RegisterScreen = () => {
           style={{
             width: '100%',
           }}
+          color="primary"
           variant="outlined"
           size="large"
           onClick={() => {

@@ -67,7 +67,7 @@ export const theme = createMuiTheme({
         color: '#fff',
       },
       outlined: {
-        border: '1px solid rgba(255, 255, 255, 0.23)'
+        border: '1px solid rgba(255, 255, 255, 1)'
         // color: '#fff',
       }
     }
