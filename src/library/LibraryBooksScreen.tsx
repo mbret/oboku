@@ -96,23 +96,35 @@ export const LibraryBooksScreen = () => {
         flexDirection: 'column',
         height: '100%',
         flex: 1,
-        overflow: 'scroll'
+        overflow: 'scroll',
+        alignItems: 'center'
       }}>
         {books.length === 0 && (
           <>
             <Toolbar style={{ width: '100%', boxSizing: 'border-box' }}>
               {addBookButton}
             </Toolbar>
-            <div style={{ display: 'flex', flex: 1, justifyContent: 'center', flexFlow: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{
+              display: 'flex',
+              flex: 1,
+              justifyContent: 'center',
+              flexFlow: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              // paddingLeft: theme.spacing(2),
+              // paddingRight: theme.spacing(2),
+              width: '80%',
+              maxWidth: theme.custom.maxWidthCenteredContent
+            }}>
               <img
                 style={{
-                  width: '80%',
-                  maxWidth: 600,
+                  width: '100%',
+                  // maxWidth: theme.,
                 }}
                 src={EmptyLibraryAsset}
                 alt="libray"
               />
-              <Typography style={{ maxWidth: 300, paddingTop: theme.spacing(5) }}>It looks like your library is empty for the moment. Maybe it's time to add a new book</Typography>
+              <Typography style={{ maxWidth: 300, paddingTop: theme.spacing(1) }}>It looks like your library is empty for the moment. Maybe it's time to add a new book</Typography>
             </div>
           </>
         )}
