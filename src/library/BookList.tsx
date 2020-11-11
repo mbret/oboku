@@ -155,8 +155,6 @@ const useStyles = makeStyles((theme) => {
       paddingRight: (props: Props) => props.isHorizontal ? 0 : theme.spacing(1),
       display: 'flex',
       flexFlow: 'column',
-      // height: '100%',
-      // border: '1px solid green'
     },
     itemContainer: {
       cursor: 'pointer',

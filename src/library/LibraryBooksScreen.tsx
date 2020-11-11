@@ -97,11 +97,14 @@ export const LibraryBooksScreen = () => {
         height: '100%',
         flex: 1,
         overflow: 'scroll',
-        alignItems: 'center',
-        width: '100%'
       }}>
-        {books.length === 0 && (
-          <>
+        {visibleBooks.length === 0 && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            flex: 1,
+          }}>
             <Toolbar style={{ width: '100%', boxSizing: 'border-box' }}>
               {addBookButton}
             </Toolbar>
@@ -127,9 +130,9 @@ export const LibraryBooksScreen = () => {
               />
               <Typography style={{ maxWidth: 300, paddingTop: theme.spacing(1) }}>It looks like your library is empty for the moment. Maybe it's time to add a new book</Typography>
             </div>
-          </>
+          </div>
         )}
-        {books.length > 0 && (
+        {visibleBooks.length > 0 && (
           <BookList
             viewMode={viewMode}
             sorting={sorting}

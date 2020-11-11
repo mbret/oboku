@@ -121,7 +121,7 @@ export const ItemList: FC<{
   }
 
   return (
-    <div style={{ display: 'flex', height: 1, flexGrow: 1, flex: 1, position: 'relative' }} className={className} ref={ref as any}>
+    <div style={{ display: 'flex', flexGrow: 1, flex: 1, position: 'relative' }} className={className} ref={ref as any}>
       {data.length > 0 && (
         <RecyclerListView
           ref={listRef as any}
@@ -129,6 +129,7 @@ export const ItemList: FC<{
           dataProvider={dataProvider}
           rowRenderer={rowRenderer}
           onScroll={onScroll}
+          style={{ flex: 1, display: 'flex' }}
           onVisibleIndicesChanged={onVisibleIndicesChanged}
           // onEndReached={() => setEndReached(true)}
           render
