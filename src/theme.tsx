@@ -5,6 +5,19 @@
 import { createMuiTheme } from '@material-ui/core/styles'
 import { grey } from '@material-ui/core/colors';
 
+declare module "@material-ui/core/styles" {
+  interface Theme {
+    custom: {
+      maxWidthCenteredContent: number
+    }
+  }
+  interface ThemeOptions {
+    custom: {
+      maxWidthCenteredContent: number
+    }
+  }
+}
+
 const light = 'rgba(0, 0, 0, 0.38)'
 const main = 'rgba(0, 0, 0, 0.54)'
 const dark = 'rgba(0, 0, 0, 0.87)'
@@ -17,6 +30,7 @@ export const theme = createMuiTheme({
       // main: '#FF7863',
       // main: '#FF6363',
       main: 'rgb(225, 100, 50, 1)', // #e16432
+      // main: '#ff5722', 
       // main,
       // dark,
     },
@@ -81,5 +95,8 @@ export const theme = createMuiTheme({
       // The properties to apply
       disableRipple: true, // No more ripple, on the whole application 💣!
     },
+  },
+  custom: {
+    maxWidthCenteredContent: 320
   }
 });

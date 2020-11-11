@@ -15,8 +15,8 @@ export type QueryFirstTimeExperienceData = { firstTimeExperience: FirstTimeExper
 export const QueryFirstTimeExperience = gql`
   query QueryFirstTimeExperience {
     firstTimeExperience @client {
-      hasDoneWelcomeTour
-      hasDoneReaderTour
+      hasDoneWelcomeTour @client
+      hasDoneReaderTour @client
     }
   }
 `

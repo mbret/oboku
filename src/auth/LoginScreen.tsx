@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, useTheme, Button, TextField, Link } from '@material-ui/core';
+import { useTheme, Button, TextField, Link } from '@material-ui/core';
 import { Alert } from '@material-ui/lab'
 import { useSignin } from './queries';
 import { ApolloError } from '@apollo/client';
@@ -44,7 +44,9 @@ export const LoginScreen = () => {
 
   return (
     <div style={{
-      flex: 1
+      flex: 1,
+      paddingTop: theme.spacing(4),
+      paddingBottom: theme.spacing(4),
     }}>
       <Header />
       <div style={{
@@ -84,7 +86,7 @@ export const LoginScreen = () => {
           )}
           <Button
             style={{
-              marginTop: theme.spacing(4),
+              marginTop: theme.spacing(2),
               width: '100%',
             }}
             color="primary"
@@ -102,7 +104,7 @@ export const LoginScreen = () => {
           </div>
         </form>
         <OrDivider style={{
-          marginTop: theme.spacing(4)
+          marginTop: theme.spacing(2)
         }} />
         <Button
           style={{

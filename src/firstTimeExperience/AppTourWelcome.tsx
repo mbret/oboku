@@ -1,14 +1,16 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
-import cover from '../assets/cover.png'
-import { Box, makeStyles, Typography } from '@material-ui/core';
+import ReadingBoyAsset from '../assets/reading-boy.svg'
+import { Box, makeStyles, Typography, useTheme } from '@material-ui/core';
 import { useFirstTimeExperience, useSetFirstTimeExperience } from './queries';
+import { Logo } from '../common/Logo';
 
 export const AppTourWelcome: React.FC = memo(() => {
   const { data: fteData } = useFirstTimeExperience()
   const setFirstTimeExperience = useSetFirstTimeExperience()
   const show = !fteData?.firstTimeExperience.hasDoneWelcomeTour
   const styles = useStyles();
+  const theme = useTheme()
 
   return (
     <Tour
@@ -24,12 +26,22 @@ export const AppTourWelcome: React.FC = memo(() => {
         number={1}
         content={(
           <Box className={styles.slide1}>
-            <img src={cover} alt="cover" style={{
-              width: '100%',
-              maxWidth: 300,
-              objectFit: 'cover',
-            }} />
-            <Typography>Welcome and thank you for using the app. Oboku is under heavy development so bugs are to be expected</Typography>
+            <Logo />
+            <div style={{
+              display: 'flex',
+              flexFlow: 'column',
+              alignItems: 'center',
+              maxWidth: theme.custom.maxWidthCenteredContent,
+              width: '80%',
+              paddingTop: theme.spacing(2)
+            }}>
+              <img src={ReadingBoyAsset} alt="cover" style={{
+                width: '100%',
+                objectFit: 'cover',
+                paddingBottom: theme.spacing(2)
+              }} />
+              <Typography >Welcome and thank you for using the app. Oboku is under heavy development so bugs are to be expected</Typography>
+            </div>
           </Box>
         )}
       />
@@ -51,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
   },
   slide1: {
     // display,
-    padding: theme.spacing(5),
+    padding: theme.spacing(2),
     boxSizing: 'border-box',
     textAlign: 'center',
     // border: '1px solid red',

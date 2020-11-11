@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { makeStyles, createStyles, Typography, useTheme, Button, TextField } from '@material-ui/core';
+import { makeStyles, createStyles, useTheme, Button, TextField } from '@material-ui/core';
 import { Alert } from '@material-ui/lab'
-import * as R from 'ramda';
-import { TopBarNavigation } from '../TopBarNavigation';
-import { LockRounded, EmailRounded } from '@material-ui/icons';
 import { useSignup } from './queries';
 import { ApolloError } from '@apollo/client';
 import { ERROR_EMAIL_TAKEN } from 'oboku-shared'
 import { OrDivider } from '../common/OrDivider';
 import { Header } from './Header';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import * as yup from 'yup'
 
@@ -19,7 +16,6 @@ const schema = yup.object().shape({
 })
 
 export const RegisterScreen = () => {
-  const classes = useStyles();
   const history = useHistory()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -47,7 +43,9 @@ export const RegisterScreen = () => {
 
   return (
     <div style={{
-      flex: 1
+      flex: 1,
+      paddingTop: theme.spacing(4),
+      paddingBottom: theme.spacing(4),
     }}>
       <Header />
       <div style={{
@@ -87,7 +85,7 @@ export const RegisterScreen = () => {
           )}
           <Button
             style={{
-              marginTop: theme.spacing(4),
+              marginTop: theme.spacing(2),
               width: '100%',
             }}
             color="primary"
@@ -100,7 +98,7 @@ export const RegisterScreen = () => {
         </Button>
         </form>
         <OrDivider style={{
-          marginTop: theme.spacing(4)
+          marginTop: theme.spacing(2)
         }} />
         <Button
           style={{
@@ -122,10 +120,7 @@ export const RegisterScreen = () => {
 
 const useStyles = makeStyles((theme) =>
   createStyles({
-    title: {
-      padding: theme.spacing(1),
-      paddingTop: theme.spacing(2)
-    }
+    
   }),
 );
 
