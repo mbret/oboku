@@ -35,8 +35,8 @@ export const UploadNewBookDialog: FC<{
           A link is the location where your file is stored. At the moment Oboku only support <b>direct download</b> and <b>google drive public link</b>
           </Typography>
           <b>Here are some examples: </b>
-          <br />https://my_nas_url.com/file/45646578
-          <br />https://drive.google.com/file/d/1kGGQnvm...
+          <Typography noWrap>https://my_nas_url.com/file/45646578</Typography>
+          <Typography noWrap>https://drive.google.com/file/d/1kGGQnvm...</Typography>
         </DialogContentText>
         <TextField
           autoFocus

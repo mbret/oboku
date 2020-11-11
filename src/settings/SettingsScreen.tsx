@@ -58,10 +58,8 @@ export const SettingsScreen = () => {
             primary={isLibraryUnlocked ? 'Your protected contents are visible' : 'Your protected contents are hidden'}
             secondary={isLibraryUnlocked ? 'Click to lock' : 'Click to unlock'}
           />
-          <ListItemIcon>
-            {isLibraryUnlocked && (<LockOpenRounded />)}
-            {!isLibraryUnlocked && (<LockRounded />)}
-          </ListItemIcon>
+          {isLibraryUnlocked && (<LockOpenRounded color="action" />)}
+          {!isLibraryUnlocked && (<LockRounded color="action" />)}
         </ListItem>
       </List>
       <List subheader={<ListSubheader disableSticky>Storage</ListSubheader>}>
@@ -72,9 +70,7 @@ export const SettingsScreen = () => {
           }}
         >
           <ListItemText primary="Manage storage" secondary={`${usedInMb} MB (${(quotaUsed * 100).toFixed(2)}%) used of ${quotaInGb} GB`} />
-          <ListItemIcon>
-            <ArrowForwardIosRounded />
-          </ListItemIcon>
+          <ArrowForwardIosRounded color="action" />
         </ListItem>
       </List>
       <List subheader={<ListSubheader disableSticky>Help and feedback</ListSubheader>}>
@@ -91,9 +87,7 @@ export const SettingsScreen = () => {
           onClick={() => { }}
         >
           <ListItemText primary="Terms of Service" />
-          <ListItemIcon>
-            <ArrowForwardIosRounded />
-          </ListItemIcon>
+          <ArrowForwardIosRounded color="action" />
         </ListItem>
       </List>
       {process.env.NODE_ENV !== 'production' && (

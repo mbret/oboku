@@ -97,7 +97,8 @@ export const LibraryBooksScreen = () => {
         height: '100%',
         flex: 1,
         overflow: 'scroll',
-        alignItems: 'center'
+        alignItems: 'center',
+        width: '100%'
       }}>
         {books.length === 0 && (
           <>
