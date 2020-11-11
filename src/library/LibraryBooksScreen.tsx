@@ -161,7 +161,7 @@ const useSortedList = (sorting: LibraryBooksSettings['sorting'] | undefined) => 
 
   switch (sorting) {
     case 'date': {
-      return R.sort(R.descend(R.prop('createdAt')), books)
+      return R.sort(R.ascend(R.prop('createdAt')), books)
     }
     case 'activity': {
       return R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books)
