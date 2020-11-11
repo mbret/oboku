@@ -8,6 +8,7 @@ import { useSignup } from './queries';
 import { ApolloError } from '@apollo/client';
 import { ERROR_EMAIL_TAKEN } from 'oboku-shared'
 import { OrDivider } from '../common/OrDivider';
+import { Header } from './Header';
 import { useLocation, useHistory } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import * as yup from 'yup'
@@ -48,24 +49,7 @@ export const RegisterScreen = () => {
     <div style={{
       flex: 1
     }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        flexFlow: 'row',
-        paddingTop: theme.spacing(10),
-        paddingBottom: theme.spacing(10),
-      }}>
-        <Typography variant="h1" color="textPrimary" style={{
-          fontWeight: theme.typography.fontWeightBold,
-        }}>O</Typography>
-        <Typography variant="h1" color="primary" style={{
-          display: 'flex',
-          fontWeight: theme.typography.fontWeightBold,
-          flexFlow: 'row',
-        }}>
-          boku
-        </Typography>
-      </div>
+      <Header />
       <div style={{
         paddingLeft: theme.spacing(5),
         paddingRight: theme.spacing(5),

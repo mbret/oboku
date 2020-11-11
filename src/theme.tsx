@@ -13,18 +13,21 @@ export const theme = createMuiTheme({
   palette: {
     primary: {
       // light,
-      main: grey[700],
+      // main: grey[700],
+      // main: '#FF7863',
+      // main: '#FF6363',
+      main: 'rgb(225, 100, 50, 1)', // #e16432
       // main,
       // dark,
     },
-      // text: {
-      //   primary: 'rgb(255, 255, 255)',
-      // },
-    //   secondary: {
-    //     light,
-    //     main,
-    //     dark,
-    //   },
+    // text: {
+    //   primary: 'rgb(255, 255, 255)',
+    // },
+    secondary: {
+      // light,
+      main,
+      // dark,
+    },
   },
   transitions: {
     // So we have `transition: none;` everywhere

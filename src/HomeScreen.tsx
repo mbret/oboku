@@ -6,7 +6,7 @@ import { BookList } from './library/BookList';
 import { COVER_AVERAGE_RATIO, ROUTES } from './constants';
 import * as R from 'ramda';
 import { useHistory } from 'react-router-dom'
-import logo from './assets/no-books-in-progress@3x.png'
+import ContinueReadingAsset from './assets/continue-reading.svg'
 
 export const HomeScreen = () => {
   const classes = useStyles();
@@ -30,19 +30,19 @@ export const HomeScreen = () => {
           width: '100%',
           boxSizing: 'border-box',
           padding: theme.spacing(5),
-          // height: 300,
           alignItems: 'center',
           display: 'flex',
           flexFlow: 'column',
         }}>
           <img
-            src={logo}
+            src={ContinueReadingAsset}
             alt="img"
             style={{ width: '100%', maxHeight: 300, objectFit: 'contain', paddingBottom: theme.spacing(3) }}
           />
-          <Typography style={{ paddingBottom: theme.spacing(2) }} variant="body1" align="center">How about start reading something today ?</Typography>
+          <Typography style={{ maxWidth: 300, paddingBottom: theme.spacing(2) }} variant="body1" align="center">Looks like you are not reading anything right now. How about starting today ?</Typography>
           <Button
             variant="outlined"
+            color="primary"
             size="large"
             onClick={() => history.replace(ROUTES.LIBRARY_BOOKS)}
           >
@@ -53,7 +53,7 @@ export const HomeScreen = () => {
       {continueReadingBooks.length > 0 && (
         <>
           <div className={classes.title}>
-            <Typography variant="h5">Continue reading</Typography>
+            <Typography variant="h6">Continue reading</Typography>
           </div>
           <BookList
             isHorizontal
@@ -70,7 +70,7 @@ export const HomeScreen = () => {
       {recentlyAddedBooks.length > 0 && (
         <>
           <div className={classes.title}>
-            <Typography variant="h5">Recently added</Typography>
+            <Typography variant="h6">Recently added</Typography>
           </div>
           <BookList
             isHorizontal

@@ -184,13 +184,10 @@ export const ReaderScreen: FC<{}> = () => {
     return () => rendition?.off('relocated', onRelocated)
   }, [rendition, editBook, bookId, book])
 
-  console.log(rendition?.getContents(), rendition?.book)
+  console.log(book, readerRef, rendition?.getContents(), rendition?.book, file)
 
   return (
     <>
-      {!file && (
-        <div>Loading...</div>
-      )}
       {file && (
         <div
           style={{
@@ -200,28 +197,29 @@ export const ReaderScreen: FC<{}> = () => {
           }}
           ref={rootRef as any}
         >
-          {" "}
-          {book && (
-            <EpubView
-              ref={readerRef as any}
-              // Buck in typing, epubjs accept blobs
-              url={file as any}
-              getRendition={setRendition}
-              epubInitOptions={{
+          <EpubView
+            ref={readerRef as any}
+            // Buck in typing, epubjs accept blobs
+            url={file as any}
+            getRendition={setRendition}
+            epubInitOptions={{
 
-              }}
-              // http://epubjs.org/documentation/0.3/#bookrenderto
-              epubOptions={{
-                // flow: 'paginated',
-                // width: "100%",
-                // height: "100%",
-                // stylesheet: `/reader.css`,
-              }}
-              // url={'/2.epub'}
-              location={book.readingStateCurrentBookmarkLocation || undefined}
-            // locationChanged={onLocationChanged}
-            />
-          )}
+            }}
+            // http://epubjs.org/documentation/0.3/#bookrenderto
+            epubOptions={{
+              // flow: 'paginated',
+              // width: "100%",
+              // height: "100%",
+              // stylesheet: `/reader.css`,
+              // defaultDirection: 'rtl'
+            }}
+            loadingView={(
+              <div>
+                Book is loading
+              </div>
+            )}
+            location={book?.readingStateCurrentBookmarkLocation || undefined}
+          />
           <Drawer
             anchor="top"
             open={isTopMenuShown}

@@ -30,7 +30,8 @@ export const SettingsScreen = () => {
       flexFlow: 'column',
     }}>
       <TopBarNavigation title={'Settings'} showBack={false} />
-      <List subheader={<ListSubheader>Account</ListSubheader>}>
+      <List >
+        <ListSubheader disableSticky>Account</ListSubheader>
         <ListItem
           button
           onClick={signOut}
@@ -63,7 +64,7 @@ export const SettingsScreen = () => {
           </ListItemIcon>
         </ListItem>
       </List>
-      <List subheader={<ListSubheader>Storage</ListSubheader>}>
+      <List subheader={<ListSubheader disableSticky>Storage</ListSubheader>}>
         <ListItem
           button
           onClick={() => {
@@ -76,7 +77,7 @@ export const SettingsScreen = () => {
           </ListItemIcon>
         </ListItem>
       </List>
-      <List subheader={<ListSubheader>Help and feedback</ListSubheader>}>
+      <List subheader={<ListSubheader disableSticky>Help and feedback</ListSubheader>}>
         <ListItem
           button
           onClick={resetFirstTimeExperience}
@@ -84,7 +85,7 @@ export const SettingsScreen = () => {
           <ListItemText primary="Restart the welcome tour" />
         </ListItem>
       </List>
-      <List subheader={<ListSubheader>About</ListSubheader>}>
+      <List subheader={<ListSubheader disableSticky>About</ListSubheader>}>
         <ListItem
           button
           onClick={() => { }}
@@ -97,7 +98,7 @@ export const SettingsScreen = () => {
       </List>
       {process.env.NODE_ENV !== 'production' && (
         <>
-          <List subheader={<ListSubheader>Developer options</ListSubheader>}>
+          <List subheader={<ListSubheader disableSticky>Developer options</ListSubheader>}>
             <ListItem
               button
               onClick={() => setIsLoadLibraryDebugOpened(true)}

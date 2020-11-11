@@ -6,6 +6,7 @@ import { ApolloError } from '@apollo/client';
 import { OrDivider } from '../common/OrDivider';
 import { useHistory } from 'react-router-dom';
 import { ROUTES } from '../constants';
+import { Header } from './Header';
 import * as yup from 'yup'
 
 const schema = yup.object().shape({
@@ -45,24 +46,7 @@ export const LoginScreen = () => {
     <div style={{
       flex: 1
     }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        flexFlow: 'row',
-        paddingTop: theme.spacing(10),
-        paddingBottom: theme.spacing(10),
-      }}>
-        <Typography variant="h1" color="textPrimary" style={{
-          fontWeight: theme.typography.fontWeightBold,
-        }}>O</Typography>
-        <Typography variant="h1" color="primary" style={{
-          display: 'flex',
-          fontWeight: theme.typography.fontWeightBold,
-          flexFlow: 'row',
-        }}>
-          boku
-        </Typography>
-      </div>
+      <Header />
       <div style={{
         paddingLeft: theme.spacing(5),
         paddingRight: theme.spacing(5),
@@ -112,7 +96,7 @@ export const LoginScreen = () => {
             Login
         </Button>
           <div style={{ textAlign: 'center', margin: theme.spacing(2) }}>
-            <Link href="#" onClick={() => alert('Not implemented yet')}>
+            <Link color="textPrimary" href="#" onClick={() => alert('Not implemented yet')}>
               I forgot my password
             </Link>
           </div>

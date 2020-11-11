@@ -12,6 +12,7 @@ import { useQueryGetBooks } from '../books/queries';
 import * as R from 'ramda';
 import { useUser } from '../auth/queries';
 import { UploadNewBookDialog } from '../books/UploadNewBookDialog';
+import EmptyLibraryAsset from '../assets/empty-library.svg'
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
@@ -36,6 +37,19 @@ export const LibraryBooksScreen = () => {
 
   console.log('[LibraryBooksScreen]', books, libraryBooksSettingsData, userData)
 
+  const addBookButton = (
+    <Button
+      style={{
+        flex: 1,
+      }}
+      variant="outlined"
+      color="primary"
+      onClick={() => setIsUploadNewBookDialogOpened(true)}
+    >
+      Add a new book
+    </Button>
+  )
+
   return (
     <div className={classes.container}>
       <Toolbar style={{ borderBottom: `1px solid ${theme.palette.grey[200]}`, boxSizing: 'border-box' }}>
@@ -55,7 +69,8 @@ export const LibraryBooksScreen = () => {
         </IconButton>
         <div style={{ flexGrow: 1, justifyContent: 'flex-start', flexFlow: 'row', display: 'flex', alignItems: 'center' }}>
           <Button
-            color="primary"
+            variant="text"
+            color="secondary"
             onClick={() => setIsSortingDialogOpened(true)}
             startIcon={<SortRounded />}
           >
@@ -81,34 +96,45 @@ export const LibraryBooksScreen = () => {
         flexDirection: 'column',
         height: '100%',
         flex: 1,
-        // flexGrow: 1
+        overflow: 'scroll'
       }}>
-        <BookList
-          viewMode={viewMode}
-          sorting={sorting}
-          headerHeight={60}
-          data={visibleBooks}
-          style={{ height: '100%' }}
-          renderHeader={() => (
-            <Toolbar>
-              <Button
-                style={{
-                  flex: 1,
-                }}
-                variant="outlined"
-                color="primary"
-                onClick={() => setIsUploadNewBookDialogOpened(true)}
-              >
-                Add a new book
-              </Button>
+        {books.length === 0 && (
+          <>
+            <Toolbar style={{ width: '100%', boxSizing: 'border-box' }}>
+              {addBookButton}
             </Toolbar>
-          )}
-        />
+            <div style={{ display: 'flex', flex: 1, justifyContent: 'center', flexFlow: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <img
+                style={{
+                  width: '80%',
+                  maxWidth: 600,
+                }}
+                src={EmptyLibraryAsset}
+                alt="libray"
+              />
+              <Typography style={{ maxWidth: 300, paddingTop: theme.spacing(5) }}>It looks like your library is empty for the moment. Maybe it's time to add a new book</Typography>
+            </div>
+          </>
+        )}
+        {books.length > 0 && (
+          <BookList
+            viewMode={viewMode}
+            sorting={sorting}
+            headerHeight={60}
+            data={visibleBooks}
+            style={{ height: '100%' }}
+            renderHeader={() => (
+              <Toolbar style={{ marginLeft: -theme.spacing(1), marginRight: -theme.spacing(1) }}>
+                {addBookButton}
+              </Toolbar>
+            )}
+          />
+        )}
         <UploadNewBookDialog open={isUploadNewBookDialogOpened} onClose={() => setIsUploadNewBookDialogOpened(false)} />
         <SortByDialog onClose={() => setIsSortingDialogOpened(false)} open={isSortingDialogOpened} />
         <LibraryFiltersDrawer open={isFiltersDrawerOpened} onClose={() => setIsFiltersDrawerOpened(false)} />
       </div>
-    </div>
+    </div >
   );
 }
 
@@ -183,6 +209,7 @@ const useStyles = makeStyles((theme) =>
       flexDirection: 'column',
       height: '100%',
       flex: 1,
+      overflow: 'hidden'
     },
     title: {
       flexGrow: 1,
