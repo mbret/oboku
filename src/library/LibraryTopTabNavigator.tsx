@@ -44,6 +44,7 @@ export const LibraryTopTabNavigator = () => {
         className={classes.tabsContainer}
         value={location.pathname}
         indicatorColor="primary"
+        style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none'}}
         onChange={(e, value) => {
           history.replace(value)
         }}
