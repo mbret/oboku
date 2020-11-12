@@ -1,5 +1,5 @@
 import { gql, useMutation, useApolloClient } from "@apollo/client";
-import { MutationEditLinkData, MutationEditLinkVariables, MutationAddLinkData, MutationAddLinkVariables } from 'oboku-shared'
+import { MutationEditLinkArgs, Mutation, MutationAddLinkArgs } from '../generated/graphql'
 import { useCallback } from "react";
 import { linkOfflineResolvers } from "./offlineResolvers";
 
@@ -30,7 +30,7 @@ const MutationAddLink = gql`
 
 export const useAddLink = () => {
   const client = useApolloClient()
-  const [addLink] = useMutation<MutationAddLinkData, MutationAddLinkVariables>(MutationAddLink)
+  const [addLink] = useMutation<Mutation['addLink'], MutationAddLinkArgs>(MutationAddLink)
 
   return useCallback((location: string, bookId: string) => {
     const link = linkOfflineResolvers.Mutation.addLink({ bookId, location }, { client })
@@ -41,7 +41,7 @@ export const useAddLink = () => {
 
 export const useEditLink = () => {
   const client = useApolloClient()
-  const [editLink] = useMutation<MutationEditLinkData, MutationEditLinkVariables>(MutationEditLink)
+  const [editLink] = useMutation<Mutation['editLink'], MutationEditLinkArgs>(MutationEditLink)
 
   return useCallback((bookId: string, id: string, location: string) => {
     linkOfflineResolvers.Mutation.editLink({ id, bookId, location }, { client })

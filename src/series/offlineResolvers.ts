@@ -1,8 +1,7 @@
 import { generateUniqueID } from "../utils";
-import { MutationAddSeriesData, MutationAddSeriesVariables } from 'oboku-shared'
 import { ApolloClient } from "@apollo/client";
 import { GET_ONE_SERIES, GET_ONE_SERIES_VARIABLES, GET_ONE_SERIES_DATA } from "./queries";
-import { MutationEditSeriesVariables, MutationRemoveSeriesVariables } from 'oboku-shared'
+import { MutationEditSeriesArgs, MutationRemoveSeriesArgs } from "../generated/graphql";
 
 export declare type IResolverObject<TContext = any, TArgs = any> = {
   [key: string]: IFieldResolver<TContext, TArgs>
@@ -14,7 +13,7 @@ type ResolverContext = { client: ApolloClient<any> }
 
 export const seriesOfflineResolvers = {
   Mutation: {
-    addSeries: (variables: Omit<MutationAddSeriesVariables, 'id'>, { client }: ResolverContext): MutationAddSeriesData => {
+    addSeries: (variables: { name: string }, { client }: ResolverContext) => {
       const series = {
         __typename: 'Series' as const,
         id: generateUniqueID(),
@@ -39,11 +38,11 @@ export const seriesOfflineResolvers = {
 
       return series
     },
-    removeSeries: ({ id }: MutationRemoveSeriesVariables, { client }: ResolverContext) => {
+    removeSeries: ({ id }: MutationRemoveSeriesArgs, { client }: ResolverContext) => {
       const item = client.cache.identify({ id, __typename: 'Series' })
       item && client.cache.evict({ id: item })
     },
-    editSeries: ({ id, name }: MutationEditSeriesVariables, { client }: ResolverContext) => {
+    editSeries: ({ id, name }: MutationEditSeriesArgs, { client }: ResolverContext) => {
       client.cache.modify({
         id: client.cache.identify({ id, __typename: 'Series' }),
         fields: {

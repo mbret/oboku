@@ -1,8 +1,8 @@
 import { useQuery, gql, useApolloClient } from '@apollo/client';
 import { useCallback } from 'react';
 import { QueryBooks } from '../books/queries';
+import { Tag } from '../generated/graphql';
 import { GET_SERIES } from '../series/queries';
-import { Tag } from 'oboku-shared'
 import { GET_TAGS, QueryTag } from '../tags/queries';
 
 export type LibraryBooksSettings = {

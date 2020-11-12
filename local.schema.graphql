@@ -1,0 +1,8 @@
+type FirstTimeExperience {
+  hasDoneWelcomeTour: Boolean
+  hasDoneReaderTour: Boolean
+}
+
+type Query {
+  firstTimeExperience: FirstTimeExperience
+}

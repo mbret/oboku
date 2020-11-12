@@ -1,5 +1,5 @@
 import { generateUniqueID } from "../utils";
-import { MutationAddBookVariables, MutationRemoveBookVariables, MutationEditBookVariables, MutationAddBookData, ID } from 'oboku-shared'
+import { MutationAddBookArgs, MutationRemoveBookArgs, MutationEditBookArgs } from '../generated/graphql'
 import { ApolloClient, Reference } from "@apollo/client";
 import { GET_BOOK, QueryBooks, QueryBooksData, QueryGetBookData, QueryGetBookVariables } from "./queries";
 import { LocalBook } from "./types";
@@ -7,7 +7,7 @@ import { LocalBook } from "./types";
 type ResolverContext = { client: ApolloClient<any> }
 
 export const bookOfflineResolvers = {
-  addBook: (variables: Omit<MutationAddBookVariables, 'id'>, { client }: ResolverContext): MutationAddBookData => {
+  addBook: (variables: Omit<MutationAddBookArgs, 'id'>, { client }: ResolverContext): LocalBook => {
     const book: Required<LocalBook> = {
       __typename: 'Book' as const,
       id: generateUniqueID(),
@@ -19,9 +19,14 @@ export const bookOfflineResolvers = {
       createdAt: 1604302214598,
       downloadState: 'none',
       downloadProgress: 0,
+      language: null,
       tags: [],
       links: [],
-      author: '',
+      date: Date.now(),
+      publisher: null,
+      rights: null,
+      subject: null,
+      creator: null,
       series: [],
       ...variables,
     }
@@ -42,7 +47,7 @@ export const bookOfflineResolvers = {
 
     return book
   },
-  removeBook: ({ id }: MutationRemoveBookVariables, { client }: ResolverContext) => {
+  removeBook: ({ id }: MutationRemoveBookArgs, { client }: ResolverContext) => {
     const itemRef = client.cache.identify({ id, __typename: 'Book' })
     if (itemRef) {
       // @see https://www.apollographql.com/docs/react/caching/garbage-collection/#dangling-references
@@ -63,7 +68,7 @@ export const bookOfflineResolvers = {
       })
     }
   },
-  editBook: ({ id, ...rest }: MutationEditBookVariables & { tags?: ID[], series?: ID[] }, { client }: ResolverContext) => {
+  editBook: ({ id, ...rest }: MutationEditBookArgs & { tags?: string[], series?: string[] }, { client }: ResolverContext) => {
     const editedBookId = client.cache.identify({ id, __typename: 'Book' })
     console.log('modify', editedBookId, rest)
 

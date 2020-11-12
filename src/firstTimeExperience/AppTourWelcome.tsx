@@ -2,13 +2,15 @@ import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import ReadingBoyAsset from '../assets/reading-boy.svg'
 import { Box, makeStyles, Typography, useTheme } from '@material-ui/core';
-import { useFirstTimeExperience, useSetFirstTimeExperience } from './queries';
+import { useSetFirstTimeExperience } from './queries';
+import { QueryFirstTimeExperienceDocument  } from '../generated/graphql';
 import { Logo } from '../common/Logo';
+import { useQuery } from '@apollo/client';
 
 export const AppTourWelcome: React.FC = memo(() => {
-  const { data: fteData } = useFirstTimeExperience()
+  const { data: fteData } = useQuery(QueryFirstTimeExperienceDocument)
   const setFirstTimeExperience = useSetFirstTimeExperience()
-  const show = !fteData?.firstTimeExperience.hasDoneWelcomeTour
+  const show = !fteData?.firstTimeExperience?.hasDoneWelcomeTour
   const styles = useStyles();
   const theme = useTheme()
 
@@ -36,7 +38,7 @@ export const AppTourWelcome: React.FC = memo(() => {
               paddingTop: theme.spacing(2)
             }}>
               <img src={ReadingBoyAsset} alt="cover" style={{
-                width: '100%',
+                width: '80%',
                 objectFit: 'cover',
                 paddingBottom: theme.spacing(2)
               }} />

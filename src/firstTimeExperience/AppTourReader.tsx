@@ -1,17 +1,19 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import { Box, Button, makeStyles, Typography, useTheme } from '@material-ui/core';
-import { useFirstTimeExperience, useSetFirstTimeExperience } from './queries';
+import { useSetFirstTimeExperience } from './queries';
+import { QueryFirstTimeExperienceDocument } from '../generated/graphql';
 import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from '../reader/utils';
 import { TouchAppRounded } from '@material-ui/icons';
+import { useQuery } from '@apollo/client';
 
 export const AppTourReader: React.FC = memo(() => {
-  const { data: fteData } = useFirstTimeExperience()
+  const { data: fteData } = useQuery(QueryFirstTimeExperienceDocument)
   const theme = useTheme()
   const setFirstTimeExperience = useSetFirstTimeExperience()
   const verticalTappingZoneHeight = useVerticalTappingZoneHeight()
   const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
-  const show = !fteData?.firstTimeExperience.hasDoneReaderTour
+  const show = !fteData?.firstTimeExperience?.hasDoneReaderTour
   const styles = useStyles();
 
   return (

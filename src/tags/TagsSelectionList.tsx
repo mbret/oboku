@@ -1,7 +1,7 @@
 import { List, ListItem, ListItemAvatar, ListItemText } from '@material-ui/core'
 import { CheckCircleRounded, LockRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
-import { Tag } from 'oboku-shared'
 import React, { FC } from 'react'
+import { Tag } from '../generated/graphql'
 
 export const TagsSelectionList: FC<{
   tags: Tag[],

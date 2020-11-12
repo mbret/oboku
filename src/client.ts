@@ -8,7 +8,6 @@ import { persistCache } from 'apollo3-cache-persist';
 import localforage from 'localforage';
 import { API_URI } from './constants';
 import { GET_LIBRARY_BOOKS_SETTINGS } from './library/queries';
-import { typeDefs } from 'oboku-shared'
 import { QueryBooks, QueryBooksData } from './books/queries';
 import { ApolloLinkOfflineQueue } from './apollo-link-offline-queue'
 import { GET_TAGS } from './tags/queries';
@@ -22,7 +21,9 @@ import { ApolloLinkBlocking } from './apollo-link-blocking/ApolloLinkBlocking';
 import { getMainDefinition } from './utils';
 import { ApolloLinkDirective } from './apollo-link-directive/ApolloLinkDirective';
 import { libraryLink } from './library/LibraryLink';
-import { defaultData, FirstTimeExperience } from './firstTimeExperience/queries';
+import { defaultData } from './firstTimeExperience/queries';
+import { TypedTypePolicies, FirstTimeExperience } from './generated/graphql';
+import { mergeDeepLeft } from 'ramda';
 
 let clientForContext: ApolloClient<any> | undefined
 
@@ -138,97 +139,110 @@ export const models = {
   isBookActionDialogOpenedWithVar,
 }
 
-export const cache = new InMemoryCache({
-  typePolicies: {
-    Tag: {
-      fields: {
-        isProtected: (value = false) => value,
-      }
+const localTypePolocies = {
+  User: {
+    fields: {
+      isLibraryUnlocked: (value = false) => value,
     },
-    User: {
-      fields: {
-        isLibraryUnlocked: (value = false) => value,
+  },
+  Book: {
+    fields: {
+      downloadProgress: (value = 0) => value,
+      downloadState: {
+        read: (value = 'none') => value,
+        merge: (_, incoming: string) => incoming,
       },
-    },
-    Book: {
-      fields: {
-        downloadProgress: (value = 0) => value,
-        downloadState: {
-          read: (value = 'none') => value,
-          merge: (_, incoming: string) => incoming,
-        },
-        // series: {
-        //   merge: (existing: Reference[], incoming: Reference[]) => incoming
-        // }
-      }
-    },
-    Query: {
-      fields: {
-        firstTimeExperience: (existing: Required<FirstTimeExperience> = defaultData) => existing,
-        book: {
-          // This proxy allow us to not have to precache this query
-          read: (_, { toReference, args, variables }) => toReference({
-            __typename: 'Book',
-            id: args?.id,
-          })
-        },
-        isBookActionDialogOpenedWith: {
-          read() {
-            return isBookActionDialogOpenedWithVar()
-          }
-        },
-        todos: {
-          read() {
-            return todosVar();
-          }
+    }
+  },
+  Query: {
+    fields: {
+      isBookActionDialogOpenedWith: {
+        read() {
+          return isBookActionDialogOpenedWithVar()
+        }
+      },
+      todos: {
+        read() {
+          return todosVar();
         }
       }
-    },
-    Mutation: {
-      fields: {
-        // addBook: {
-        //   merge: (_, incoming: Book | Reference, { isReference, cache, toReference, readField }) => {
-        //     if (isReference(incoming)) {
-        //       console.warn(incoming, readField('createdAt', incoming), cache.extract())
-        //       const existingData = cache.readQuery<GET_BOOKS_DATA>({ query: GET_BOOKS })
+    }
+  },
+}
 
-        //       // cache.writeQuery({ query: GET_BOOKS, data: { books: [...existingData?.books || [], toReference(incoming)] } })
-        //       // cache.writeQuery({ query: GET_BOOKS, data: { books: [] } })
-        //       cache.modify({
-        //         fields: {
-        //           books: (prev) => [...prev || [], incoming]
-        //         }
-        //       })
-        //       console.warn(existingData, cache.extract())
-        //     }
+const typePolicies: TypedTypePolicies = {
+  Tag: {
+    fields: {
+      isProtected: (value = false) => value,
+    }
+  },
+  Book: {
+    fields: {
+      // series: {
+      //   merge: (existing: Reference[], incoming: Reference[]) => incoming
+      // }
+    }
+  },
+  Query: {
+    fields: {
+      book: {
+        // This proxy allow us to not have to precache this query
+        read: (_, { toReference, args, variables }) => toReference({
+          __typename: 'Book',
+          id: args?.id,
+        })
+      },
+      firstTimeExperience: (existing: FirstTimeExperience = defaultData) => existing,
+    }
+  },
+  Mutation: {
+    fields: {
+      // addBook: {
+      //   merge: (_, incoming: Book | Reference, { isReference, cache, toReference, readField }) => {
+      //     if (isReference(incoming)) {
+      //       console.warn(incoming, readField('createdAt', incoming), cache.extract())
+      //       const existingData = cache.readQuery<GET_BOOKS_DATA>({ query: GET_BOOKS })
 
-        //     return incoming
-        //   }
-        // },
-        // removeSeries: {
-        //   merge: (existing, incoming) => {
-        //     const item = cache.identify(incoming)
-        //     cache.evict({ id: item })
+      //       // cache.writeQuery({ query: GET_BOOKS, data: { books: [...existingData?.books || [], toReference(incoming)] } })
+      //       // cache.writeQuery({ query: GET_BOOKS, data: { books: [] } })
+      //       cache.modify({
+      //         fields: {
+      //           books: (prev) => [...prev || [], incoming]
+      //         }
+      //       })
+      //       console.warn(existingData, cache.extract())
+      //     }
 
-        //     return incoming
-        //   }
-        // },
-        // addSeries: {
-        //   merge: (existing, incoming, { cache }) => {
-        //     cache.modify({
-        //       fields: {
-        //         series: (prev = [], { toReference }) => {
-        //           return [...prev, toReference(incoming)]
-        //         }
-        //       }
-        //     })
+      //     return incoming
+      //   }
+      // },
+      // removeSeries: {
+      //   merge: (existing, incoming) => {
+      //     const item = cache.identify(incoming)
+      //     cache.evict({ id: item })
 
-        //     return incoming
-        //   },
-        // }
-      }
+      //     return incoming
+      //   }
+      // },
+      // addSeries: {
+      //   merge: (existing, incoming, { cache }) => {
+      //     cache.modify({
+      //       fields: {
+      //         series: (prev = [], { toReference }) => {
+      //           return [...prev, toReference(incoming)]
+      //         }
+      //       }
+      //     })
+
+      //     return incoming
+      //   },
+      // }
     }
   }
+}
+
+export const cache = new InMemoryCache({
+  typePolicies: mergeDeepLeft(localTypePolocies, typePolicies)
 })
 
 // export const persistor = new CachePersistor({
@@ -255,7 +269,6 @@ export const useClient = () => {
       const client = new ApolloClient({
         link,
         cache,
-        typeDefs,
       });
 
       // @ts-ignore

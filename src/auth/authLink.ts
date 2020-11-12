@@ -3,7 +3,7 @@ import { MutationSigninData, QueryAuthData, QueryUser, QueryAuth, QueryUserData,
 import { ApolloClient, InMemoryCache } from "@apollo/client"
 import { syncLibrary } from "../library/queries"
 import { getMainDefinition } from "@apollo/client/utilities"
-import { MutationEditUserVariables } from "oboku-shared"
+import { Mutation } from '../generated/graphql'
 
 /**
  * @see https://github.com/zenparsing/zen-observable
@@ -31,7 +31,7 @@ export const authLink = new ApolloLink((operation, forward) => {
   // ...
 
   if (definition.name?.value === getMainDefinition(MutationEditUser).name?.value) {
-    const incomingData = operation.variables as MutationEditUserVariables
+    const incomingData = operation.variables as Mutation['editUser']
     const data = client.readQuery<QueryUserData>({ query: QueryUser })
     data && client.writeQuery<QueryUserData>({ query: QueryUser, data: { user: { ...data.user, ...incomingData } } })
   }

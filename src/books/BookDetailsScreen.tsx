@@ -2,15 +2,17 @@ import React, { FC, useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import { CheckCircleRounded, RadioButtonUncheckedOutlined, MoreVertRounded, EditRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, ListItemAvatar, Chip, makeStyles, ListSubheader, Typography, Drawer, DialogContent, TextField } from '@material-ui/core';
-import { useParams } from 'react-router-dom';
+import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, ListItemAvatar, Chip, makeStyles, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider } from '@material-ui/core';
+import { useHistory, useParams } from 'react-router-dom';
 import { useQueryGetSeries } from '../series/queries';
-import { API_URI } from '../constants';
 import { useBook, useEditBook, useLazyBook } from '../books/queries';
 import { useQueryGetTags } from '../tags/queries';
 import { useEditLink } from '../links/queries';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
 import { Alert } from '@material-ui/lab';
+import { Cover } from './Cover';
+import { useDownloadFile } from '../download/useDownloadFile';
+import { ROUTES } from '../constants';
 
 type ScreenParams = {
   id: string
@@ -18,6 +20,9 @@ type ScreenParams = {
 
 export const BookDetailsScreen = () => {
   const classes = useClasses()
+  const theme = useTheme()
+  const history = useHistory()
+  const downloadFile = useDownloadFile()
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isSeriesDialogOpened, setIsSeriesDialogOpened] = useState(false)
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<undefined | string>(undefined)
@@ -35,27 +40,57 @@ export const BookDetailsScreen = () => {
       <TopBarNavigation title="Book details" showBack={true} />
       <div className={classes.headerContent}>
         <div className={classes.coverContainer} >
-          <img
-            alt="img"
-            src={`${API_URI}/cover/${book?.id}?${book?.lastMetadataUpdatedAt || ''}`}
-            className={classes.cover}
-          />
+          {book && (<Cover bookId={book.id} />)}
         </div>
       </div>
-
       <div className={classes.titleContainer}>
-        <Typography gutterBottom variant="h5">
+        <Typography variant="body1">
           {book?.title || 'Unknown'}
         </Typography>
-        <Typography gutterBottom variant="subtitle1">
-          By {book?.author || 'Unknown'}
+        <Typography gutterBottom variant="caption">
+          By {book?.creator || 'Unknown'}
         </Typography>
       </div>
-
+      <Box marginBottom={1} style={{
+        display: 'flex',
+        width: '100%',
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+      }}>
+        {book?.downloadState === 'none' && (
+          <Button fullWidth variant="outlined" color="primary" onClick={() => downloadFile(book.id)}>Download</Button>
+        )}
+        {book?.downloadState === 'downloading' && (
+          <Button fullWidth variant="outlined" color="primary" disabled >Downloading...</Button>
+        )}
+        {book?.downloadState === 'downloaded' && (
+          <Button fullWidth variant="outlined" color="primary" onClick={() => history.push(ROUTES.READER.replace(':id', book.id))}>Read</Button>
+        )}
+      </Box>
       {!book?.lastMetadataUpdatedAt && (
         <Alert severity="info" >We are still retrieving metadata information...</Alert>
       )}
-
+      <Box paddingX={2} marginY={3} marginBottom={3}><Divider light  /></Box>
+      <Box paddingX={2}>
+        <Typography variant="subtitle1"><b>More details</b></Typography>
+        <Box display="flex" flexDirection="row" alignItems="center">
+          <Typography variant="body1" >Date:&nbsp;</Typography>
+          <Typography variant="body2" >{book?.date && (new Date(book.date)).toLocaleDateString()}</Typography>
+        </Box>
+        <Box display="flex" flexDirection="row" alignItems="center">
+          <Typography variant="body1" >Publisher:&nbsp;</Typography>
+          <Typography variant="body2" >{book?.publisher}</Typography>
+        </Box>
+        <Box display="flex" flexDirection="row" alignItems="center">
+          <Typography variant="body1" >Genre:&nbsp;</Typography>
+          <Typography variant="body2" >{book?.subject}</Typography>
+        </Box>
+        <Box display="flex" flexDirection="row" alignItems="center">
+          <Typography variant="body1" >Language:&nbsp;</Typography>
+          <Typography variant="body2" >{book?.language}</Typography>
+        </Box>
+      </Box>
+      <Box paddingX={2} marginY={3} marginBottom={2}><Divider light /></Box>
       <List component="nav" aria-label="main mailbox folders">
         <ListItem
           button
@@ -67,7 +102,7 @@ export const BookDetailsScreen = () => {
               ? (
                 <>
                   {book?.tags?.map(tag => (
-                    <Chip label={tag.name} key={tag.id} />
+                    <Chip label={tag?.name} key={tag?.id} />
                   ))}
                 </>
               )
@@ -86,7 +121,7 @@ export const BookDetailsScreen = () => {
               ? (
                 <>
                   {series?.map(item => (
-                    <Chip label={item.name} key={item.id} />
+                    <Chip label={item?.name} key={item?.id} />
                   ))}
                 </>
               )
@@ -99,12 +134,12 @@ export const BookDetailsScreen = () => {
       <List subheader={<ListSubheader>Links</ListSubheader>}>
         {book?.links?.map(item => (
           <ListItem
-            key={item.id}
+            key={item?.id}
             button
-            onClick={() => setIsLinkActionDrawerOpenWith(item.id)}
+            onClick={() => setIsLinkActionDrawerOpenWith(item?.id)}
           >
             <ListItemText
-              primary={item.location}
+              primary={item?.location}
               primaryTypographyProps={{
                 style: {
                   paddingRight: 10,
@@ -174,7 +209,7 @@ const EditLinkDialog: FC<{
   const [location, setLocation] = useState('')
   const [getBook, { data }] = useLazyBook()
   const editLink = useEditLink()
-  const link = data?.book.links?.find(item => item.id === openWith)
+  const link = data?.book.links?.find(item => item?.id === openWith)
 
   const onInnerClose = () => {
     setLocation('')
@@ -233,7 +268,7 @@ const TagsDialog: FC<{
   const editBook = useEditBook()
   const tags = getTagsData?.tags
   const bookTags = getBookData?.book?.tags
-  const currentBookTagIds = bookTags?.map(tag => tag.id || '-1') || []
+  const currentBookTagIds = bookTags?.map(tag => tag?.id || '-1') || []
 
   return (
     <Dialog
@@ -274,7 +309,7 @@ const SeriesDialog: FC<{
   const editBook = useEditBook()
   const series = getSeriesData?.series
   const bookSeries = getBookData?.book?.series
-  const currentBookSeriesIds = bookSeries?.map(item => item.id || '-1') || []
+  const currentBookSeriesIds = bookSeries?.map(item => item?.id || '-1') || []
 
   console.log('[SeriesDialog]', getSeriesData, getBookData)
 
@@ -320,23 +355,30 @@ const useClasses = makeStyles(theme => {
 
   return {
     coverContainer: {
-      width: '100%',
-      display: 'flex',
-      justifyContent: 'center'
+      width: '80%',
+      [theme.breakpoints.down('sm')]: {
+        width: '40%',
+      },
+      maxWidth: theme.custom.maxWidthCenteredContent,
     },
     headerContent: {
-      paddingBottom: theme.spacing(3),
-      paddingTop: theme.spacing(5),
+      paddingBottom: theme.spacing(2),
+      paddingTop: theme.spacing(3),
       display: 'flex',
-      alignItems: 'flex-end',
-      // paddingLeft: theme.spacing(2),
-      // paddingRight: theme.spacing(2),
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     titleContainer: {
+      maxWidth: theme.custom.maxWidthCenteredContent,
+      margin: 'auto',
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+      marginBottom: theme.spacing(1),
       display: 'flex',
       alignItems: 'center',
       flexFlow: 'column',
-      marginBottom: theme.spacing(1),
+      justifyContent: 'center',
+      textAlign: 'center',
     },
     cover: {
       height: '20vh'

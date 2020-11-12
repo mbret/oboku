@@ -1,4 +1,4 @@
-import { MutationEditLinkVariables, MutationAddLinkVariables, CreatedLink } from 'oboku-shared'
+import { MutationEditLinkArgs, MutationAddLinkArgs, Link } from '../generated/graphql'
 import { ApolloClient, gql } from "@apollo/client";
 import { generateUniqueID } from "../utils";
 import { QueryFullLink } from "./queries";
@@ -18,8 +18,8 @@ export const QueryBookLinks = gql`
 
 export const linkOfflineResolvers = {
   Mutation: {
-    addLink: ({ bookId, ...rest }: Omit<MutationAddLinkVariables, 'id'> & { bookId: string }, { client }: ResolverContext) => {
-      const link: CreatedLink = {
+    addLink: ({ bookId, ...rest }: Omit<MutationAddLinkArgs, 'id'> & { bookId: string }, { client }: ResolverContext) => {
+      const link: Required<Link> = {
         __typename: 'Link' as const,
         id: generateUniqueID(),
         location: rest.location,
@@ -38,7 +38,7 @@ export const linkOfflineResolvers = {
 
       return link
     },
-    editLink: ({ id, bookId, ...rest }: MutationEditLinkVariables & { bookId: string }, { client }: ResolverContext) => {
+    editLink: ({ id, bookId, ...rest }: MutationEditLinkArgs & { bookId: string }, { client }: ResolverContext) => {
       const itemId = client.cache.identify({ id, __typename: 'Link' })
       const bookItemId = client.cache.identify({ id: bookId, __typename: 'Book' })
 

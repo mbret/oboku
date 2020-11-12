@@ -1,0 +1,19 @@
+  mutation ADD_SERIES($id: ID!, $name: String!) {
+    addSeries(id: $id, name: $name) {
+      id
+      name
+    }
+  }
+
+  mutation EDIT_SERIES($id: ID!, $name: String) {
+    editSeries(id: $id, name: $name) {
+      id
+      name
+    }
+  }
+
+  mutation REMOVE_SERIES($id: ID!) {
+    removeSeries(id: $id) {
+      id
+    }
+  }

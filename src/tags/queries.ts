@@ -1,7 +1,7 @@
 import { useQuery, useLazyQuery, gql, useMutation, useApolloClient } from "@apollo/client"
-import { Tag, MutationAddTagVariables, MutationRemoveTagVariables, MutationEditTagVariables, MutationEditTagData, QueryTagVariables } from 'oboku-shared'
 import { tagsOfflineResolvers } from "./offlineResolvers"
 import { useCallback } from "react"
+import { Mutation, MutationAddTagArgs, MutationEditTagArgs, MutationRemoveTagArgs, QueryTagArgs, Tag } from "../generated/graphql"
 
 const MutationTagDetailsFragment = gql`
   fragment MutationTagDetailsFragment on Tag {
@@ -74,12 +74,12 @@ export const EDIT_TAG = gql`
 
 export const useQueryGetTags = () => useQuery<{ tags: Tag[] }>(GET_TAGS)
 export const useLazyQueryGetTags = () => useLazyQuery<{ tags: Tag[] }>(GET_TAGS)
-export const useLazyQueryGetTag = () => useLazyQuery<QueryTagData, QueryTagVariables>(QueryTag)
+export const useLazyQueryGetTag = () => useLazyQuery<QueryTagData, QueryTagArgs>(QueryTag)
 
 export const useCreateTag = () => {
   const client = useApolloClient()
 
-  const [addTag] = useMutation<{ addTag: MutationAddTagVariables }, MutationAddTagVariables>(ADD_TAG);
+  const [addTag] = useMutation<{ addTag: Mutation['addTag'] }, MutationAddTagArgs>(ADD_TAG);
 
   return useCallback((name: string) => {
     const tag = tagsOfflineResolvers.Mutation.addTag({ name }, { client })
@@ -92,7 +92,7 @@ export const useCreateTag = () => {
 export const useRemoveTag = () => {
   const client = useApolloClient()
 
-  const [removeTagMutation] = useMutation<any, MutationRemoveTagVariables>(REMOVE_TAG);
+  const [removeTagMutation] = useMutation<any, MutationRemoveTagArgs>(REMOVE_TAG);
 
   return useCallback((id: string) => {
     tagsOfflineResolvers.Mutation.removeTag({ id }, { client })
@@ -105,9 +105,9 @@ export const useRemoveTag = () => {
 export const useEditTag = () => {
   const client = useApolloClient()
 
-  const [editTag] = useMutation<MutationEditTagData, MutationEditTagVariables>(EDIT_TAG);
+  const [editTag] = useMutation<{ editTag: Mutation['editTag'] }, MutationEditTagArgs>(EDIT_TAG);
 
-  return useCallback((variables: MutationEditTagVariables) => {
+  return useCallback((variables: MutationEditTagArgs) => {
     tagsOfflineResolvers.Mutation.editTag(variables, { client })
 
     return editTag({ variables })
@@ -116,5 +116,5 @@ export const useEditTag = () => {
 }
 
 export const useTag = (id: string) => {
-  return useQuery<QueryTagData, QueryTagVariables>(QueryTag, { variables: { id } })
+  return useQuery<QueryTagData, QueryTagArgs>(QueryTag, { variables: { id } })
 }

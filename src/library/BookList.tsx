@@ -3,7 +3,7 @@ import { CircularProgress, makeStyles, Typography, Button } from "@material-ui/c
 import { CloudDownloadRounded, MoreVert, Pause } from '@material-ui/icons';
 import { models } from '../client';
 import { useWindowSize, useScrollbarWidth } from 'react-use';
-import { COVER_AVERAGE_RATIO } from '../constants';
+import { COVER_AVERAGE_RATIO, ROUTES } from '../constants';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { useHistory } from 'react-router-dom';
 import { ItemList } from '../lists/ItemList';
@@ -52,7 +52,7 @@ export const BookList: FC<{
           if (item.downloadState === 'none') {
             item.id && downloadFile(item.id).catch(() => { })
           } else if (item.downloadState === 'downloaded') {
-            history.push(`/reader/${item.id}`)
+            history.push(ROUTES.READER.replace(':id', item.id))
           }
         }}
       >
@@ -119,8 +119,8 @@ export const BookList: FC<{
           }}
         >
           <div style={{ width: '100%', overflow: 'hidden' }}>
-            <Typography variant="subtitle1" className={classes.itemTitle}>{item?.title || 'Unknown'}</Typography>
-            <Typography variant="subtitle2">By {item?.author || 'Unknown'}</Typography>
+            <Typography variant="body2" className={classes.itemTitle}>{item?.title || 'Unknown'}</Typography>
+            <Typography variant="caption">{item?.creator || 'Unknown'}</Typography>
           </div>
           <MoreVert style={{ transform: 'translate(50%, 0%)' }} />
         </div>

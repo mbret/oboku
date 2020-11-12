@@ -81,7 +81,7 @@ export const BookGridItem: FC<{ id: string }> = ({ id }) => {
       >
         <div style={{ width: '100%', overflow: 'hidden' }}>
           <Typography variant="subtitle1" className={classes.itemTitle}>{item?.title || 'Unknown'}</Typography>
-          <Typography variant="subtitle2">By {item?.author || 'Unknown'}</Typography>
+          <Typography variant="subtitle2">By {item?.creator || 'Unknown'}</Typography>
         </div>
         <MoreVert style={{ transform: 'translate(50%, 0%)' }} />
       </div> */}

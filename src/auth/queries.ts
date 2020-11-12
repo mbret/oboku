@@ -1,6 +1,7 @@
 import { gql, useMutation, useQuery, useApolloClient, } from "@apollo/client";
 import { useCallback } from "react";
-import { MutationSignupVariables, User, MutationSigninVariables, MutationEditUserVariables, hashContentPassword } from 'oboku-shared'
+import { MutationSignupArgs, User, MutationSigninArgs, MutationEditUserArgs } from '../generated/graphql'
+import { hashContentPassword } from 'oboku-shared'
 
 export type LocalUser = User & {
   isLibraryUnlocked?: boolean,
@@ -73,7 +74,7 @@ export const QueryAuth = gql`
 `
 
 export const useSignup = () => {
-  const [signup, result] = useMutation<MutationSignupData, MutationSignupVariables>(MutationSignup)
+  const [signup, result] = useMutation<MutationSignupData, MutationSignupArgs>(MutationSignup)
 
   const enhancedQuery = useCallback(async (email: string, password: string) => {
     return signup({ variables: { email, password }, }).catch(_ => { })
@@ -83,7 +84,7 @@ export const useSignup = () => {
 }
 
 export const useSignin = () => {
-  const [signin, result] = useMutation<MutationSigninData, MutationSigninVariables>(MutationSignin)
+  const [signin, result] = useMutation<MutationSigninData, MutationSigninArgs>(MutationSignin)
 
   const enhancedQuery = useCallback(async (email: string, password: string) => {
     return signin({ variables: { email, password }, }).catch(_ => { })
@@ -93,7 +94,7 @@ export const useSignin = () => {
 }
 
 export const useEditUser = () => {
-  const [editUser] = useMutation<MutationEditUserData, MutationEditUserVariables>(MutationEditUser)
+  const [editUser] = useMutation<MutationEditUserData, MutationEditUserArgs>(MutationEditUser)
   const client = useApolloClient()
 
   return useCallback(async (variables: Pick<LocalUser, 'contentPassword'>) => {

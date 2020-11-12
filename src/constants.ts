@@ -16,6 +16,7 @@ export const ROUTES = {
   LIBRARY_TAGS: '/library/tags',
   LOGIN: '/login',
   REGISTER: '/register',
+  READER: '/reader/:id'
 }
 
 // Average ratio (w/h) for books cover. This ratio may be used

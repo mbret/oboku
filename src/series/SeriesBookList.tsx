@@ -69,7 +69,7 @@ export const SeriesBookList: FC<{ seriesId: string }> = ({ seriesId }) => {
                 <GridListTileBar
                   title={book.lastMetadataUpdatedAt ? book.title : ''}
                   subtitle={
-                    <span>{book.lastMetadataUpdatedAt ? `by: ${book.author}` : 'Fetching metadata...'}</span>
+                    <span>{book.lastMetadataUpdatedAt ? `by: ${book.creator}` : 'Fetching metadata...'}</span>
                   }
                   actionIcon={
                     <IconButton

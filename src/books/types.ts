@@ -1,4 +1,4 @@
-import { Book } from 'oboku-shared'
+import { Book } from '../generated/graphql'
 
 export type LocalBook = Book & {
   downloadProgress?: number,

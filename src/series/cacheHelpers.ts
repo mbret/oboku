@@ -1,5 +1,5 @@
 import { Reference, ApolloCache } from '@apollo/client';
-import { Book, Series } from 'oboku-shared'
+import { Book, Series } from '../generated/graphql';
 
 export const removeBookFromSeries = <DATA = any>(cache: ApolloCache<DATA>, bookToRemove: Reference | Book, series: Reference | Series) => {
   const seriesWithOutdatedBook = cache.identify(series)

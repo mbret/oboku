@@ -1,13 +1,12 @@
 import { gql, useQuery, QueryHookOptions as QueryBookOptions, useMutation, useApolloClient, useLazyQuery } from '@apollo/client';
 import {
-  Book, MutationAddBookVariables, MutationRemoveBookVariables, MutationRemoveBookData,
-  MutationAddLinkVariables, Link, MutationEditBookVariables, MutationAddBookData, MutationAddTagsToBookVariables, MutationRemoveTagsToBookVariables
-} from 'oboku-shared'
+  Book, MutationAddBookArgs, MutationRemoveBookArgs,
+  MutationEditBookArgs, Mutation, MutationAddTagsToBookArgs, MutationRemoveTagsToBookArgs
+} from '../generated/graphql'
 import { difference } from 'ramda';
 import { useCallback } from 'react';
 import { bookOfflineResolvers } from './offlineResolvers';
 import { LocalBook } from './types';
-import { ID } from 'oboku-shared'
 import { useAddLink } from '../links/queries';
 import { useUser } from '../auth/queries';
 
@@ -22,6 +21,11 @@ export const BOOK_DETAILS_FRAGMENT = gql`
     id
     lastMetadataUpdatedAt
     title
+    creator
+    language
+    date
+    publisher
+    subject
     downloadState @client
     downloadProgress @client
     readingStateCurrentBookmarkLocation
@@ -75,7 +79,7 @@ export const GET_BOOK = gql`
   ${BOOK_DETAILS_FRAGMENT}
 `;
 
-type REMOVE_BOOK_DATA = { removeBook: MutationRemoveBookData }
+type REMOVE_BOOK_DATA = { removeBook: Mutation['removeBook'] }
 export const MutationRemoveBook = {
   name: 'RemoveBook',
   operation: gql`
@@ -151,7 +155,7 @@ export const MutationRemoveSeriesToBook = gql`
 
 export const useRemoveBook = () => {
   const client = useApolloClient()
-  const [removeBook] = useMutation<REMOVE_BOOK_DATA, MutationRemoveBookVariables>(MutationRemoveBook.operation);
+  const [removeBook] = useMutation<REMOVE_BOOK_DATA, MutationRemoveBookArgs>(MutationRemoveBook.operation);
 
   return useCallback((id: string) => {
     bookOfflineResolvers.removeBook({ id }, { client })
@@ -162,7 +166,7 @@ export const useRemoveBook = () => {
 
 export const useAddBook = () => {
   const client = useApolloClient()
-  const [addBook] = useMutation<{ addBook: MutationAddBookData }, MutationAddBookVariables>(MutationAddBook.operation)
+  const [addBook] = useMutation<{ addBook: Mutation['addBook'] }, MutationAddBookArgs>(MutationAddBook.operation)
   const addLink = useAddLink()
 
   return useCallback(async (location: string) => {
@@ -175,14 +179,14 @@ export const useAddBook = () => {
 }
 
 export const useEditBook = () => {
-  const [editBook] = useMutation<EDIT_BOOK_DATA, MutationEditBookVariables>(EDIT_BOOK)
+  const [editBook] = useMutation<EDIT_BOOK_DATA, MutationEditBookArgs>(EDIT_BOOK)
   const [addSeriesToBook] = useMutation<any, any>(MutationAddSeriesToBook)
   const [removeSeriesToBook] = useMutation<any, any>(MutationRemoveSeriesToBook)
-  const [addTagsToBook] = useMutation<any, MutationAddTagsToBookVariables>(MutationAddTagsToBook)
-  const [removeTagsToBook] = useMutation<any, MutationRemoveTagsToBookVariables>(MutationRemoveTagsToBook)
+  const [addTagsToBook] = useMutation<any, MutationAddTagsToBookArgs>(MutationAddTagsToBook)
+  const [removeTagsToBook] = useMutation<any, MutationRemoveTagsToBookArgs>(MutationRemoveTagsToBook)
   const client = useApolloClient()
 
-  return useCallback((variables: MutationEditBookVariables & { tags?: ID[], series?: ID[] }) => {
+  return useCallback((variables: MutationEditBookArgs & { tags?: string[], series?: string[] }) => {
     const oldData = client.cache.readQuery<QueryGetBookData>({ query: GET_BOOK, variables: { id: variables.id } })
 
     bookOfflineResolvers.editBook(variables, { client })
@@ -195,7 +199,7 @@ export const useEditBook = () => {
 
     if (oldData?.book) {
       if (tags) {
-        const existingTags = (oldData.book.tags || []).map(item => item.id || '')
+        const existingTags = (oldData.book.tags || []).map(item => item?.id || '')
         const removed = difference(existingTags, tags)
         const added = difference(tags, existingTags)
 
@@ -209,7 +213,7 @@ export const useEditBook = () => {
       }
 
       if (series) {
-        const existingSeries = (oldData.book.series || []).map(item => item.id || '')
+        const existingSeries = (oldData.book.series || []).map(item => item?.id || '')
         const removed = difference(existingSeries, series)
         const added = difference(series, existingSeries)
 
@@ -238,7 +242,7 @@ export const useQueryGetBooks = (options?: QueryBookOptions<QueryBooksData>) => 
 
   if (isLibraryUnlocked) return { data: books.books }
 
-  return { data: books.books.filter(book => !book.tags.some(tag => tag.isProtected)) }
+  return { data: books.books.filter(book => !book?.tags?.some(tag => tag?.isProtected)) }
 }
 
 export const useBook = (options: QueryBookOptions<QueryGetBookData, QueryGetBookVariables>) =>

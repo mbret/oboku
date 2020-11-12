@@ -1,11 +1,7 @@
 import { generateUniqueID } from "../utils";
-import { MutationAddTagVariables, MutationRemoveTagVariables, MutationEditTagVariables, MutationAddTagData, Tag, QueryTagVariables } from 'oboku-shared'
 import { ApolloClient } from "@apollo/client";
 import { QueryTag, QueryTagData } from "./queries";
-
-// interface IResolvers<TContext = any> {
-//   Mutation: IResolverObject<TContext>
-// }
+import { QueryTagArgs, Tag } from "../generated/graphql";
 
 export declare type IResolverObject<TContext = any, TArgs = any> = {
   [key: string]: IFieldResolver<TContext, TArgs>
@@ -17,7 +13,7 @@ type ResolverContext = { client: ApolloClient<any> }
 
 export const tagsOfflineResolvers = {
   Mutation: {
-    addTag: (variables: Omit<MutationAddTagVariables, 'id'>, { client }: ResolverContext): MutationAddTagData => {
+    addTag: (variables: { name: string }, { client }: ResolverContext) => {
       const tag: Required<Tag> = {
         __typename: 'Tag' as const,
         id: generateUniqueID(),
@@ -39,13 +35,13 @@ export const tagsOfflineResolvers = {
 
       return tag
     },
-    removeTag: ({ id }: MutationRemoveTagVariables, { client }: ResolverContext) => {
+    removeTag: ({ id }: { id: string }, { client }: ResolverContext) => {
       const item = client.cache.identify({ id, __typename: 'Tag' })
       item && client.cache.evict({ id: item })
     },
-    editTag: ({id, ...rest}: MutationEditTagVariables, { client }: ResolverContext) => {
-      const data = client.readQuery<QueryTagData, QueryTagVariables>({ query: QueryTag, variables: { id } })
-      data && client.writeQuery<QueryTagData, QueryTagVariables>({
+    editTag: ({ id, ...rest }: { id: string }, { client }: ResolverContext) => {
+      const data = client.readQuery<QueryTagData, QueryTagArgs>({ query: QueryTag, variables: { id } })
+      data && client.writeQuery<QueryTagData, QueryTagArgs>({
         query: QueryTag, variables: { id }, data: {
           tag: {
             ...data.tag,

@@ -33,7 +33,7 @@ export const LibraryBooksScreen = () => {
   const visibleBooks = filteredTags.length === 0
     ? books
     : books
-      .filter(book => book.tags?.some(b => filteredTags.includes(b.id || '-1')))
+      .filter(book => book.tags?.some(b => filteredTags.includes(b?.id || '-1')))
 
   console.log('[LibraryBooksScreen]', books, libraryBooksSettingsData, userData)
 
