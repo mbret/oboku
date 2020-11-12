@@ -1,7 +1,7 @@
 import { generateUniqueID } from "../utils";
 import { ApolloClient } from "@apollo/client";
 import { GET_ONE_SERIES, GET_ONE_SERIES_VARIABLES, GET_ONE_SERIES_DATA } from "./queries";
-import { MutationEditSeriesArgs, MutationRemoveSeriesArgs } from "../generated/graphql";
+import { MutationEditSeriesArgs, MutationRemoveSeriesArgs, QuerySeriesIdsDocument } from "../generated/graphql";
 
 export declare type IResolverObject<TContext = any, TArgs = any> = {
   [key: string]: IFieldResolver<TContext, TArgs>
@@ -41,6 +41,9 @@ export const seriesOfflineResolvers = {
     removeSeries: ({ id }: MutationRemoveSeriesArgs, { client }: ResolverContext) => {
       const item = client.cache.identify({ id, __typename: 'Series' })
       item && client.cache.evict({ id: item })
+      const data = client.readQuery({ query: QuerySeriesIdsDocument })
+      data && client.writeQuery({ query: QuerySeriesIdsDocument, data: { series: data?.series?.filter(item => item?.id !== id) } })
+      client.cache.gc()
     },
     editSeries: ({ id, name }: MutationEditSeriesArgs, { client }: ResolverContext) => {
       client.cache.modify({

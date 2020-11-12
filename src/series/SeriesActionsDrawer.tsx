@@ -28,7 +28,7 @@ export const SeriesActionsDrawer: FC<{
 
   useEffect(() => {
     id && getOneSeries({
-      variables: { id }
+      variables: { id },
     })
   }, [id, getOneSeries])
 

@@ -121,7 +121,12 @@ export const ItemList: FC<{
   }
 
   return (
-    <div style={{ display: 'flex', flexGrow: 1, flex: 1, position: 'relative' }} className={className} ref={ref as any}>
+    <div style={{
+      display: 'flex',
+      flexGrow: 1,
+      flex: 1,
+      position: 'relative'
+    }} className={className} ref={ref as any}>
       {data.length > 0 && (
         <RecyclerListView
           ref={listRef as any}

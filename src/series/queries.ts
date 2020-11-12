@@ -34,7 +34,7 @@ export const GET_ONE_SERIES = gql`
 
 export const useQueryGetSeries = () => useQuery<GET_SERIES_DATA>(GET_SERIES)
 export const useQueryGetOneSeries = (options: QueryHookOptions<GET_ONE_SERIES_DATA, GET_ONE_SERIES_VARIABLES>) => useQuery<GET_ONE_SERIES_DATA, GET_ONE_SERIES_VARIABLES>(GET_ONE_SERIES, options)
-export const useLazyQueryGetOneSeries = () => useLazyQuery<GET_ONE_SERIES_DATA>(GET_ONE_SERIES)
+export const useLazyQueryGetOneSeries = () => useLazyQuery<GET_ONE_SERIES_DATA>(GET_ONE_SERIES, { fetchPolicy: 'cache-only' })
 
 export const useAddSeries = () => {
   const client = useApolloClient()
