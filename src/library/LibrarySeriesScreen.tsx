@@ -3,13 +3,14 @@ import '../App.css';
 import Dialog from '@material-ui/core/Dialog';
 import {
   Button, DialogActions, DialogContent, DialogTitle, TextField,
-  Toolbar, IconButton, makeStyles, createStyles, ListItem, ListItemText, List
+  Toolbar, IconButton, makeStyles, createStyles, ListItem, ListItemText, List, useTheme
 } from '@material-ui/core';
 import { MoreVert } from '@material-ui/icons';
 import { useQueryGetSeries, useAddSeries } from '../series/queries';
-import { API_URI, ROUTES } from '../constants';
+import { ROUTES } from '../constants';
 import { useHistory } from 'react-router-dom';
 import { SeriesActionsDrawer } from '../series/SeriesActionsDrawer';
+import { Cover } from '../books/Cover';
 
 export const LibrarySeriesScreen = () => {
   const classes = useStyles();
@@ -17,7 +18,8 @@ export const LibrarySeriesScreen = () => {
   const [isAddSeriesDialogOpened, setIsAddSeriesDialogOpened] = useState(false)
   const [isActionDialogOpenedWith, setIsActionDialogOpenedWith] = useState<string | undefined>(undefined)
   const { data: seriesData } = useQueryGetSeries()
-
+  const theme = useTheme()
+  const cardHeight = 200
   const series = seriesData?.series
 
   console.log('[LibrarySeriesScreen]', seriesData)
@@ -46,27 +48,37 @@ export const LibrarySeriesScreen = () => {
               item?.id && history.push(ROUTES.SERIES_DETAILS.replace(':id', item.id))
             }}
           >
-            <div className={classes.itemCard}>
+            <div className={classes.itemCard} style={{ height: cardHeight }}>
               <div className={classes.itemBottomRadius} />
               <div style={{
                 width: '100%',
-                height: '70%',
                 zIndex: 1,
                 display: 'flex',
                 justifyContent: 'center',
               }}>
-                {item.books?.slice(0, 3).map(bookItem => (
-                  <img
-                    alt="img"
-                    src={`${API_URI}/cover/${bookItem?.id}`}
-                    style={{
-                      border: '1px solid black',
-                      height: '100%',
-                      marginRight: 10,
-                      marginLeft: 10,
-                    }}
-                  />
-                ))}
+                {item.books?.slice(0, 3).map((bookItem, i) => {
+                  const length = (item.books?.length || 0)
+                  const coverHeight = 200 * (length < 3 ? 0.6 : 0.5)
+
+                  return (
+                    <>
+                      {bookItem && (
+                        <Cover
+                          bookId={bookItem.id}
+                          style={{
+                            height: coverHeight,
+                            width: coverHeight * theme.custom.coverAverageRatio,
+                            ...(length > 2 && i === 1) && {
+                              marginTop: -10,
+                            },
+                            marginRight: 5,
+                            marginLeft: 5,
+                          }}
+                        />
+                      )}
+                    </>
+                  )
+                })}
               </div>
             </div>
             <div style={{
@@ -171,7 +183,6 @@ const useStyles = makeStyles((theme) =>
     },
     itemCard: {
       backgroundColor: theme.palette.grey[200],
-      height: 200,
       width: '100%',
       display: 'flex',
       borderRadius: 10,

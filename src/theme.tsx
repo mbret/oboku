@@ -8,12 +8,14 @@ import { grey } from '@material-ui/core/colors';
 declare module "@material-ui/core/styles" {
   interface Theme {
     custom: {
-      maxWidthCenteredContent: number
+      maxWidthCenteredContent: number,
+      coverAverageRatio: number,
     }
   }
   interface ThemeOptions {
     custom: {
-      maxWidthCenteredContent: number
+      maxWidthCenteredContent: number,
+      coverAverageRatio: number,
     }
   }
 }
@@ -97,6 +99,11 @@ export const theme = createMuiTheme({
     },
   },
   custom: {
-    maxWidthCenteredContent: 320
+    maxWidthCenteredContent: 320,
+
+    // Average ratio (w/h) for books cover. This ratio may be used
+    // to help designing fixed height carousel or card. This average takes
+    // into account the deviation
+    coverAverageRatio: 9 / 14,
   }
 });

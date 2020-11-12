@@ -1,9 +1,9 @@
 import React, { useCallback, FC, useMemo } from 'react'
-import { CircularProgress, makeStyles, Typography, Button } from "@material-ui/core"
+import { CircularProgress, makeStyles, Typography, Button, useTheme } from "@material-ui/core"
 import { CloudDownloadRounded, MoreVert, Pause } from '@material-ui/icons';
 import { models } from '../client';
 import { useWindowSize, useScrollbarWidth } from 'react-use';
-import { COVER_AVERAGE_RATIO, ROUTES } from '../constants';
+import { ROUTES } from '../constants';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { useHistory } from 'react-router-dom';
 import { ItemList } from '../lists/ItemList';
@@ -27,6 +27,7 @@ export const BookList: FC<{
   const classes = useStyles({ isHorizontal, windowSize });
   const downloadFile = useDownloadFile()
   const hasHeader = !!renderHeader
+  const theme = useTheme()
   const listData = useMemo(() => {
     if (hasHeader) return ['header' as const, ...data]
     else return data
@@ -34,7 +35,7 @@ export const BookList: FC<{
   const itemsPerRow = viewMode === 'grid'
     ? windowSize.width > 420 ? 3 : 2
     : 1
-  const adjustedRatioWhichConsiderBottom = COVER_AVERAGE_RATIO - 0.1
+  const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
 
   type ListDataItem = (typeof listData)[number]
   const rowRenderer = useCallback((type, item: ListDataItem) => {

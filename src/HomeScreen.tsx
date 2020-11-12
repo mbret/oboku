@@ -3,7 +3,7 @@ import { TopBarNavigation } from './TopBarNavigation';
 import { makeStyles, createStyles, Typography, useTheme, Button } from '@material-ui/core';
 import { useQueryGetBooks } from './books/queries';
 import { BookList } from './library/BookList';
-import { COVER_AVERAGE_RATIO, ROUTES } from './constants';
+import { ROUTES } from './constants';
 import * as R from 'ramda';
 import { useHistory } from 'react-router-dom'
 import ContinueReadingAsset from './assets/continue-reading.svg'
@@ -60,7 +60,7 @@ export const HomeScreen = () => {
             itemWidth={itemWidth}
             data={continueReadingBooks}
             style={{
-              height: itemWidth / COVER_AVERAGE_RATIO,
+              height: itemWidth / theme.custom.coverAverageRatio,
               // border: '1px solid black'
             }}
             viewMode="list"
@@ -77,7 +77,7 @@ export const HomeScreen = () => {
             itemWidth={itemWidth}
             data={recentlyAddedBooks}
             style={{
-              height: itemWidth / COVER_AVERAGE_RATIO,
+              height: itemWidth / theme.custom.coverAverageRatio,
               // border: '1px solid black'
             }}
             viewMode="list"

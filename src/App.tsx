@@ -11,6 +11,7 @@ import { BlockingBackdrop } from './BlockingBackdrop';
 import { UnlockLibraryDialog } from './auth/UnlockLibraryDialog';
 import { AppTourWelcome } from './firstTimeExperience/AppTourWelcome';
 import { TourProvider } from './app-tour/TourProvider';
+import { ManageBookSeriesDialog } from './books/ManageBookSeriesDialog';
 
 function App() {
   const client = useClient()
@@ -28,6 +29,7 @@ function App() {
                 <AppNavigator />
                 <AppTourWelcome />
                 <UnlockLibraryDialog />
+                <ManageBookSeriesDialog />
                 <BlockingBackdrop />
                 <RoutineProcess />
               </TourProvider>

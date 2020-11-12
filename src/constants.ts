@@ -18,8 +18,3 @@ export const ROUTES = {
   REGISTER: '/register',
   READER: '/reader/:id'
 }
-
-// Average ratio (w/h) for books cover. This ratio may be used
-// to help designing fixed height carousel or card. This average takes
-// into account the deviation
-export const COVER_AVERAGE_RATIO = 9 / 14;

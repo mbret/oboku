@@ -13,6 +13,7 @@ import { Alert } from '@material-ui/lab';
 import { Cover } from './Cover';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { ROUTES } from '../constants';
+import { ManageBookSeriesDialog, openManageBookSeriesDialog } from './ManageBookSeriesDialog';
 
 type ScreenParams = {
   id: string
@@ -24,7 +25,6 @@ export const BookDetailsScreen = () => {
   const history = useHistory()
   const downloadFile = useDownloadFile()
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
-  const [isSeriesDialogOpened, setIsSeriesDialogOpened] = useState(false)
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<undefined | string>(undefined)
   const { id } = useParams<ScreenParams>()
   const { data } = useBook({ variables: { id } })
@@ -113,7 +113,7 @@ export const BookDetailsScreen = () => {
         </ListItem>
         <ListItem
           button
-          onClick={() => setIsSeriesDialogOpened(true)}
+          onClick={() => openManageBookSeriesDialog(book?.id)}
         >
           <ListItemText
             primary="Series"
@@ -155,7 +155,6 @@ export const BookDetailsScreen = () => {
         ))}
       </List>
       <TagsDialog id={id} open={isTagsDialogOpened} onClose={() => setIsTagsDialogOpened(false)} />
-      <SeriesDialog id={id} open={isSeriesDialogOpened} onClose={() => setIsSeriesDialogOpened(false)} />
       <LinkActionsDrawer
         openWith={isLinkActionDrawerOpenWith}
         bookId={book?.id}
@@ -290,57 +289,6 @@ const TagsDialog: FC<{
           }}
         />
       )}
-      <DialogActions>
-        <Button onClick={onClose} color="primary" autoFocus>
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
-
-const SeriesDialog: FC<{
-  open: boolean,
-  onClose: () => void,
-  id: string
-}> = ({ open, onClose, id }) => {
-  const { data: getSeriesData } = useQueryGetSeries()
-  const { data: getBookData } = useBook({ variables: { id } })
-  const editBook = useEditBook()
-  const series = getSeriesData?.series
-  const bookSeries = getBookData?.book?.series
-  const currentBookSeriesIds = bookSeries?.map(item => item?.id || '-1') || []
-
-  console.log('[SeriesDialog]', getSeriesData, getBookData)
-
-  return (
-    <Dialog
-      onClose={onClose}
-      open={open}
-    >
-      <DialogTitle>Series selection</DialogTitle>
-      <List>
-        {series && series.map((seriesItem) => (
-          <ListItem
-            key={seriesItem?.id}
-            button
-            onClick={() => {
-              let newIdsList = currentBookSeriesIds.filter(id => id !== seriesItem.id)
-              if (newIdsList.length === currentBookSeriesIds.length) {
-                newIdsList = [...currentBookSeriesIds, seriesItem.id || '-1']
-              }
-              editBook({ id: id, series: newIdsList })
-            }}
-          >
-            <ListItemAvatar>
-              {bookSeries?.find(item => item?.id === seriesItem?.id)
-                ? <CheckCircleRounded />
-                : <RadioButtonUncheckedOutlined />}
-            </ListItemAvatar>
-            <ListItemText primary={seriesItem?.name} />
-          </ListItem>
-        ))}
-      </List>
       <DialogActions>
         <Button onClick={onClose} color="primary" autoFocus>
           Close

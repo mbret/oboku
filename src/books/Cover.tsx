@@ -4,7 +4,11 @@ import { API_URI } from '../constants'
 import { useBook } from './queries'
 import placeholder from '../assets/cover-placeholder.png'
 
-export const Cover: FC<{ bookId: string }> = ({ bookId }) => {
+export const Cover: FC<{
+  bookId: string,
+  style?: React.CSSProperties
+  fullWidth?: boolean
+}> = ({ bookId, style, fullWidth = true }) => {
   const isMounted = useMountedState()
   const { data } = useBook({ variables: { id: bookId } })
   const [hasError, setHasError] = useState(false)
@@ -24,10 +28,16 @@ export const Cover: FC<{ bookId: string }> = ({ bookId }) => {
       src={hasError ? placeholder : coverSrc}
       style={{
         position: 'relative',
+        // maxHeight: '100%',
+        // maxWidth: '100%',
         height: '100%',
-        width: '100%',
+        ...fullWidth && {
+          width: '100%',
+        },
+        justifySelf: 'flex-end',
         objectFit: 'cover',
         borderRadius: 10,
+        ...style,
       }}
       onError={() => {
         isMounted() && setHasError(true)

@@ -10,7 +10,7 @@ import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItemText from '@material-ui/core/ListItemText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Dialog from '@material-ui/core/Dialog';
-import { Remove, CloudDownload, Book, SyncRounded, DeleteForeverRounded, EditRounded, ListAltRounded } from '@material-ui/icons';
+import { Remove, CloudDownload, Book, SyncRounded, DeleteForeverRounded, EditRounded, ListAltRounded, LibraryBooksRounded } from '@material-ui/icons';
 import AddIcon from '@material-ui/icons/Add';
 import Typography from '@material-ui/core/Typography';
 import { blue } from '@material-ui/core/colors';
@@ -21,7 +21,8 @@ import { useHistory } from 'react-router-dom';
 import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { ROUTES } from '../constants';
 import { GET_BOOK, useRemoveBook, useEditBook, useLazyBook } from './queries';
-import { Drawer, Divider } from '@material-ui/core';
+import { Drawer, Divider, ListItemIcon } from '@material-ui/core';
+import { openManageBookSeriesDialog } from './ManageBookSeriesDialog';
 
 export const BookActionsDrawer = (props) => {
   const bookId = useReactiveVar(models.isBookActionDialogOpenedWithVar)
@@ -59,11 +60,9 @@ export const BookActionsDrawer = (props) => {
                 history.push(ROUTES.BOOK_DETAILS.replace(':id', book.id))
               }}
             >
-              <ListItemAvatar>
-                <Avatar>
-                  <ListAltRounded />
-                </Avatar>
-              </ListItemAvatar>
+              <ListItemIcon>
+                <ListAltRounded />
+              </ListItemIcon>
               <ListItemText primary="Go to details" />
             </ListItem>
             <ListItem button
@@ -72,12 +71,21 @@ export const BookActionsDrawer = (props) => {
                 editBook({ id: book.id, lastMetadataUpdatedAt: null })
               }}
             >
-              <ListItemAvatar>
-                <Avatar>
-                  <SyncRounded />
-                </Avatar>
-              </ListItemAvatar>
+              <ListItemIcon>
+                <SyncRounded />
+              </ListItemIcon>
               <ListItemText primary="Refresh metadata" />
+            </ListItem>
+            <ListItem button
+              onClick={() => {
+                handleClose()
+                openManageBookSeriesDialog(bookId)
+              }}
+            >
+              <ListItemIcon>
+                <LibraryBooksRounded />
+              </ListItemIcon>
+              <ListItemText primary="Add or remove from series" />
             </ListItem>
             {book.downloadState === 'downloaded' && (
               <ListItem button
@@ -86,11 +94,9 @@ export const BookActionsDrawer = (props) => {
                   bookId && removeDownloadFile(bookId)
                 }}
               >
-                <ListItemAvatar>
-                  <Avatar>
-                    <DeleteForeverRounded />
-                  </Avatar>
-                </ListItemAvatar>
+                <ListItemIcon>
+                  <DeleteForeverRounded />
+                </ListItemIcon>
                 <ListItemText primary="Remove the book download" />
               </ListItem>
             )}
@@ -103,11 +109,9 @@ export const BookActionsDrawer = (props) => {
                 bookId && removeBook(bookId)
               }}
             >
-              <ListItemAvatar>
-                <Avatar>
-                  <DeleteForeverRounded />
-                </Avatar>
-              </ListItemAvatar>
+              <ListItemIcon>
+                <DeleteForeverRounded />
+              </ListItemIcon>
               <ListItemText primary="Remove from library" />
             </ListItem>
           </List>
