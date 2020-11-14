@@ -3,17 +3,22 @@ import { useMountedState } from 'react-use'
 import { API_URI } from '../constants'
 import { useBook } from './queries'
 import placeholder from '../assets/cover-placeholder.png'
+import { useTheme } from '@material-ui/core'
 
 export const Cover: FC<{
   bookId: string,
   style?: React.CSSProperties
-  fullWidth?: boolean
-}> = ({ bookId, style, fullWidth = true }) => {
+  fullWidth?: boolean,
+  withShadow?: boolean,
+  rounded?: boolean,
+}> = ({ bookId, style, fullWidth = true, withShadow = false, rounded = true, ...rest }) => {
   const isMounted = useMountedState()
+  const theme = useTheme()
   const { data } = useBook({ variables: { id: bookId } })
   const [hasError, setHasError] = useState(false)
   const book = data?.book
 
+  console.log('ASDASD', rest)
   const coverSrc = book
     ? `${API_URI}/cover/${book.id}?${book?.lastMetadataUpdatedAt || ''}`
     : placeholder
@@ -31,17 +36,23 @@ export const Cover: FC<{
         // maxHeight: '100%',
         // maxWidth: '100%',
         height: '100%',
+        ...withShadow && {
+          boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`,
+        },
         ...fullWidth && {
           width: '100%',
         },
         justifySelf: 'flex-end',
         objectFit: 'cover',
-        borderRadius: 10,
+        ...rounded && {
+          borderRadius: 10,
+        },
         ...style,
       }}
       onError={() => {
         isMounted() && setHasError(true)
       }}
+      {...rest}
     />
   )
 }

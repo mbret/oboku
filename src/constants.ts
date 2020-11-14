@@ -10,11 +10,13 @@ export const ROUTES = {
   BOOK_DETAILS: '/book/:id',
   SERIES_DETAILS: '/series/:id',
   SETTINGS: '/settings',
+  DATASOURCES: '/datasources',
   LIBRARY_ROOT: '/library',
   LIBRARY_BOOKS: '/library/books',
   LIBRARY_SERIES: '/library/series',
   LIBRARY_TAGS: '/library/tags',
   LOGIN: '/login',
   REGISTER: '/register',
-  READER: '/reader/:id'
+  READER: '/reader/:id',
+  FAQ: '/faq',
 }

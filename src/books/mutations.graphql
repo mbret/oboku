@@ -1,0 +1,11 @@
+mutation MutationAddSeriesToBook($id: ID!, $series: [ID]!) {
+  addSeriesToBook(id: $id, series: $series) {
+    success
+  }
+}
+
+mutation MutationRemoveSeriesToBook($id: ID!, $series: [ID]!) {
+  removeSeriesToBook(id: $id, series: $series) {
+    success
+  }
+}

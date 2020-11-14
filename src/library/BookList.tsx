@@ -1,5 +1,5 @@
 import React, { useCallback, FC, useMemo } from 'react'
-import { CircularProgress, makeStyles, Typography, Button, useTheme } from "@material-ui/core"
+import { CircularProgress, makeStyles, Typography, useTheme } from "@material-ui/core"
 import { CloudDownloadRounded, MoreVert, Pause } from '@material-ui/icons';
 import { models } from '../client';
 import { useWindowSize, useScrollbarWidth } from 'react-use';
@@ -8,8 +8,8 @@ import { useDownloadFile } from '../download/useDownloadFile';
 import { useHistory } from 'react-router-dom';
 import { ItemList } from '../lists/ItemList';
 import { LibraryBooksSettings } from './queries';
-import { LocalBook } from '../books/types';
 import { Cover } from '../books/Cover';
+import { Book, Maybe } from '../generated/graphql';
 
 export const BookList: FC<{
   viewMode?: 'grid' | 'list',
@@ -19,7 +19,7 @@ export const BookList: FC<{
   isHorizontal?: boolean,
   style?: React.CSSProperties,
   itemWidth?: number,
-  data: LocalBook[],
+  data: Maybe<Book>[],
 }> = ({ viewMode = 'grid', renderHeader, headerHeight, sorting, isHorizontal = false, style, itemWidth, data }) => {
   const history = useHistory();
   const sbw = useScrollbarWidth() || 0;
@@ -46,14 +46,14 @@ export const BookList: FC<{
 
     return (
       <div
-        key={item.id}
+        key={item?.id}
         className={classes.itemContainer}
         onClick={() => {
-          if (!item.lastMetadataUpdatedAt) return
-          if (item.downloadState === 'none') {
-            item.id && downloadFile(item.id).catch(() => { })
-          } else if (item.downloadState === 'downloaded') {
-            history.push(ROUTES.READER.replace(':id', item.id))
+          if (!item?.lastMetadataUpdatedAt) return
+          if (item?.downloadState === 'none') {
+            item?.id && downloadFile(item?.id).catch(() => { })
+          } else if (item?.downloadState === 'downloaded') {
+            history.push(ROUTES.READER.replace(':id', item?.id))
           }
         }}
       >
@@ -65,12 +65,12 @@ export const BookList: FC<{
             minHeight: 0,
           }}
         >
-          <Cover bookId={item.id} />
-          {item.downloadState === 'downloading' && (
+          {item && <Cover bookId={item?.id} />}
+          {item?.downloadState === 'downloading' && (
             <div style={{
               backgroundColor: 'white',
               opacity: 0.5,
-              height: `${100 - (item.downloadProgress || 0)}%`,
+              height: `${100 - (item?.downloadProgress || 0)}%`,
               width: '100%',
               position: 'absolute',
               top: 0,
@@ -85,13 +85,13 @@ export const BookList: FC<{
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-            {!item.lastMetadataUpdatedAt && (
+            {!item?.lastMetadataUpdatedAt && (
               <div className={classes.itemCoverCenterInfo}>
                 <CircularProgress size="1rem" />&nbsp;
                 <Typography noWrap>Refresh...</Typography>
               </div>
             )}
-            {item.lastMetadataUpdatedAt && item.downloadState === 'none' && (
+            {item?.lastMetadataUpdatedAt && item?.downloadState === 'none' && (
               <>
                 <div style={{
                   backgroundColor: 'white',
@@ -104,7 +104,7 @@ export const BookList: FC<{
                 <CloudDownloadRounded />
               </>
             )}
-            {item.downloadState === 'downloading' && (
+            {item?.downloadState === 'downloading' && (
               <div className={classes.itemCoverCenterInfo}>
                 <Pause />&nbsp;
                 <Typography noWrap>Downloading...</Typography>
@@ -116,7 +116,7 @@ export const BookList: FC<{
           className={classes.itemBottomContainer}
           onClick={(e) => {
             e.stopPropagation()
-            item.id && models.isBookActionDialogOpenedWithVar(models.isBookActionDialogOpenedWithVar(item.id))
+            item?.id && models.isBookActionDialogOpenedWithVar(models.isBookActionDialogOpenedWithVar(item.id))
           }}
         >
           <div style={{ width: '100%', overflow: 'hidden' }}>

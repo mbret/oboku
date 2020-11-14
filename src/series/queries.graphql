@@ -1,5 +1,25 @@
 query QuerySeriesIds {
-    series {
+  series {
+    __typename
+    id
+  }
+}
+
+query QueryOneSeriesBooks($id: ID!) {
+  oneSeries(id: $id) {
+    id
+    books {
       id
     }
   }
+}
+
+query QUERY_ONE_SERIES_($id: ID!) {
+  oneSeries(id: $id) {
+    id
+    name
+    books {
+      id
+    }
+  }
+}

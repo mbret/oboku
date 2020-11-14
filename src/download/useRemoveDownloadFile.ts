@@ -1,6 +1,7 @@
 import { useApolloClient } from '@apollo/client';
 import { QueryBooks, QueryBooksData } from '../books/queries';
 import localforage from 'localforage';
+import { DownloadState } from '../generated/graphql';
 
 export const useRemoveDownloadFile = () => {
   const client = useApolloClient()
@@ -15,7 +16,7 @@ export const useRemoveDownloadFile = () => {
           data: {
             books: {
               ...data.books,
-              books: data.books.books.map(book => book.id !== bookId ? book : { ...book, downloadState: 'none' })
+              books: data.books.books.map(book => book.id !== bookId ? book : { ...book, downloadState: DownloadState.None })
             }
           },
         })

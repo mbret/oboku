@@ -3,7 +3,7 @@ import { useApolloClient, useQuery } from '@apollo/client';
 import { QueryBooks, QueryBooksData } from './books/queries';
 import localforage from 'localforage';
 import { gql } from '@apollo/client';
-import { Book } from './generated/graphql'
+import { Book, DownloadState } from './generated/graphql'
 
 const POLLING_INTERVAL = 30000
 
@@ -73,7 +73,7 @@ const useRevertInvalidDownloads = () => {
                   books: {
                     ...existingData?.books,
                     books: books
-                      .map(book => !toUpdate.includes(book.id) ? book : { ...book, downloadState: 'none' })
+                      .map(book => !toUpdate.includes(book.id) ? book : { ...book, downloadState: DownloadState.None })
                   }
                 },
               })

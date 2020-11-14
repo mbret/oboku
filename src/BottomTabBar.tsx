@@ -2,7 +2,7 @@ import React from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 import BottomNavigation from '@material-ui/core/BottomNavigation'
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction'
-import { HomeOutlined, Home, LocalLibrary, SettingsOutlined, LocalLibraryOutlined, Settings } from '@material-ui/icons'
+import { HomeOutlined, Home, LocalLibrary, SettingsOutlined, LocalLibraryOutlined, Settings, Storage, StorageOutlined } from '@material-ui/icons'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ROUTES } from './constants'
 
@@ -28,7 +28,7 @@ export const BottomTabBar = ({ children }) => {
           history.push(newValue)
         }}
         className={classes.root}
-        showLabels={true}
+      showLabels={true}
       >
         <BottomNavigationAction
           icon={normalizedPath === ROUTES.HOME ? <Home /> : <HomeOutlined />}
@@ -41,6 +41,12 @@ export const BottomTabBar = ({ children }) => {
           showLabel={false}
           disableRipple
           value={ROUTES.LIBRARY_BOOKS}
+        />
+        <BottomNavigationAction
+          icon={normalizedPath === ROUTES.DATASOURCES ? <Storage /> : <StorageOutlined />}
+          showLabel={false}
+          disableRipple
+          value={ROUTES.DATASOURCES}
         />
         <BottomNavigationAction
           icon={normalizedPath === ROUTES.SETTINGS ? <Settings /> : <SettingsOutlined />}

@@ -12,24 +12,6 @@ const initialDataProvider = new DataProvider((r1, r2) => {
   return r1 !== r2;
 })
 
-// export const useItemListLayoutProvider = (
-//   getLayoutTypeForIndex?: (index: number) => string | number
-// ) => (itemWidth: number, itemHeight: number) => {
-//   //Create the layout provider
-//   //First method: Given an index return the type of item e.g ListItemType1, ListItemType2 in case you have variety of items in your list/grid
-//   //Second: Given a type and object set the exact height and width for that type on given object, if you're using non deterministic rendering provide close estimates
-//   //If you need data based check you can access your data provider here
-//   //You'll need data in most cases, we don't provide it by default to enable things like data virtualization in the future
-//   //NOTE: For complex lists LayoutProvider will also be complex it would then make sense to move it to a different file
-//   return new LayoutProvider(
-//     index => 1,
-//     (type, dim) => {
-//       dim.width = itemWidth
-//       dim.height = itemHeight
-//     }
-//   ), [itemWidth, itemHeight]
-// }
-
 export const ItemList: FC<{
   rowRenderer: ComponentProps<typeof RecyclerListView>['rowRenderer'],
   isHorizontal: ComponentProps<typeof RecyclerListView>['isHorizontal'],
@@ -45,10 +27,6 @@ export const ItemList: FC<{
   const sbw = useScrollbarWidth() || 0;
   const listRef = useRef<RecyclerListView<any, any>>()
   const [ref, { width }] = useMeasure();
-  const [visibleIndices, setVisibleIndices] = useState([0])
-  const [offsetY, setOffsetY] = useState(0)
-  const [offsetX, setOffsetX] = useState(0)
-  const [endReached, setEndReached] = useState(false)
   const maxWidth = (width - sbw)
   const hasHeader = !!renderHeader
   const computedItemWidth = itemWidth ? itemWidth : maxWidth / itemsPerRow
@@ -78,45 +56,39 @@ export const ItemList: FC<{
     }
   ), [computedItemWidth, itemHeight, hasHeader, headerHeight, maxWidth])
 
-  const onVisibleIndicesChanged: TOnItemStatusChanged = (indices: number[]) => {
-    setVisibleIndices(indices)
-    console.log('onVisibleIndicesChanged', visibleIndices)
-  }
-
-  const offsets = isHorizontal
+  const getOffsets = () => isHorizontal
     ? data.map((_, i) => Math.floor(listRef?.current?.getLayout(i)?.x || 0))
     : data.map((_, i) => Math.floor(listRef?.current?.getLayout(i)?.y || 0))
 
-  const onScroll = (rawEvent: ScrollEvent, x: number, y) => {
-    // setOffsetY(rawEvent.nativeEvent.contentOffset.y)
-    // setOffsetX(rawEvent.nativeEvent.contentOffset.x)
-    // if (endReached) {
-    //   setEndReached(false)
-    // }
-    // if (rawEvent.nativeEvent.contentOffset.y >= offsets[offsets.length - 1])
-  }
-
   const dataProvider = useMemo(() => initialDataProvider.cloneWithRows(data), [data])
 
+  const getNextOffset = (offset: number) => {
+    const offsets = getOffsets()
+    return offsets.find(x => x > offset) || offset
+  }
+
+  const getPrevOffset = (offset: number) => {
+    const offsets = getOffsets()
+    return offsets.reverse().find(x => x < offset) || 0
+  }
+
   const onExpandMoreClick = () => {
-    const offset = listRef?.current?.getCurrentScrollOffset()
-    if (offset !== undefined) {
-      const nextIndexOffset = offsets.find(o => o > offset)
-      if (nextIndexOffset) {
-        if (isHorizontal) {
-          listRef?.current?.scrollToOffset(nextIndexOffset, 0, false)
-        } else {
-          listRef?.current?.scrollToOffset(0, nextIndexOffset, false)
-        }
-      }
+    const offset = listRef?.current?.getCurrentScrollOffset() || 0
+    const nextOffset = getNextOffset(offset)
+    if (isHorizontal) {
+      listRef?.current?.scrollToOffset(nextOffset, 0, false)
+    } else {
+      listRef?.current?.scrollToOffset(0, nextOffset, false)
     }
   }
 
   const onExpandLessClick = () => {
-    const firstIndex = listRef?.current?.findApproxFirstVisibleIndex()
-    if (firstIndex !== undefined && firstIndex > 0) {
-      setEndReached(false)
-      listRef?.current?.scrollToIndex(firstIndex - 1, false)
+    const offset = listRef?.current?.getCurrentScrollOffset() || 0
+    const nextOffset = getPrevOffset(offset)
+    if (isHorizontal) {
+      listRef?.current?.scrollToOffset(nextOffset, 0, false)
+    } else {
+      listRef?.current?.scrollToOffset(0, nextOffset, false)
     }
   }
 
@@ -125,7 +97,8 @@ export const ItemList: FC<{
       display: 'flex',
       flexGrow: 1,
       flex: 1,
-      position: 'relative'
+      position: 'relative',
+      overflow: 'scroll',
     }} className={className} ref={ref as any}>
       {data.length > 0 && (
         <RecyclerListView
@@ -133,10 +106,7 @@ export const ItemList: FC<{
           layoutProvider={layoutProvider}
           dataProvider={dataProvider}
           rowRenderer={rowRenderer}
-          onScroll={onScroll}
           style={{ flex: 1, display: 'flex' }}
-          onVisibleIndicesChanged={onVisibleIndicesChanged}
-          // onEndReached={() => setEndReached(true)}
           render
           isHorizontal={isHorizontal}
           scrollViewProps={{

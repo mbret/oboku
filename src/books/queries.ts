@@ -6,14 +6,13 @@ import {
 import { difference } from 'ramda';
 import { useCallback } from 'react';
 import { bookOfflineResolvers } from './offlineResolvers';
-import { LocalBook } from './types';
 import { useAddLink } from '../links/queries';
 import { useUser } from '../auth/queries';
 
-export type QueryGetBookData = { book: Required<Pick<LocalBook, 'id'>> & LocalBook }
+export type QueryGetBookData = { book: Required<Pick<Book, 'id'>> & Book }
 export type QueryGetBookVariables = { id: string }
 
-export type QueryGetBooksData = { book: LocalBook[] }
+export type QueryGetBooksData = { book: Book[] }
 
 export const BOOK_DETAILS_FRAGMENT = gql`
   fragment BookDetails on Book {
@@ -53,7 +52,7 @@ export type QueryBooksData = {
     __typename: 'Books',
     timestamp: number,
     books: (
-      Required<LocalBook>
+      Required<Book>
     )[]
   }
 }
@@ -137,22 +136,6 @@ export const MutationRemoveTagsToBook = gql`
   }
 `
 
-export const MutationAddSeriesToBook = gql`
-  mutation MutationAddSeriesToBook($id: ID!, $series: [ID]!) {
-    addSeriesToBook(id: $id, series: $series) {
-      id
-    }
-  }
-`
-
-export const MutationRemoveSeriesToBook = gql`
-  mutation MutationRemoveSeriesToBook($id: ID!, $series: [ID]!) {
-    removeSeriesToBook(id: $id, series: $series) {
-      id
-    }
-  }
-`
-
 export const useRemoveBook = () => {
   const client = useApolloClient()
   const [removeBook] = useMutation<REMOVE_BOOK_DATA, MutationRemoveBookArgs>(MutationRemoveBook.operation);
@@ -180,18 +163,16 @@ export const useAddBook = () => {
 
 export const useEditBook = () => {
   const [editBook] = useMutation<EDIT_BOOK_DATA, MutationEditBookArgs>(EDIT_BOOK)
-  const [addSeriesToBook] = useMutation<any, any>(MutationAddSeriesToBook)
-  const [removeSeriesToBook] = useMutation<any, any>(MutationRemoveSeriesToBook)
   const [addTagsToBook] = useMutation<any, MutationAddTagsToBookArgs>(MutationAddTagsToBook)
   const [removeTagsToBook] = useMutation<any, MutationRemoveTagsToBookArgs>(MutationRemoveTagsToBook)
   const client = useApolloClient()
 
-  return useCallback((variables: MutationEditBookArgs & { tags?: string[], series?: string[] }) => {
+  return useCallback((variables: MutationEditBookArgs & { tags?: string[] }) => {
     const oldData = client.cache.readQuery<QueryGetBookData>({ query: GET_BOOK, variables: { id: variables.id } })
 
     bookOfflineResolvers.editBook(variables, { client })
 
-    const { tags, series, id, ...rest } = variables
+    const { tags, id, ...rest } = variables
 
     if (Object.keys(rest).length > 0) {
       editBook({ variables: { id, ...rest } })
@@ -211,22 +192,8 @@ export const useEditBook = () => {
           removeTagsToBook({ variables: { id: variables.id, tags: removed } })
         }
       }
-
-      if (series) {
-        const existingSeries = (oldData.book.series || []).map(item => item?.id || '')
-        const removed = difference(existingSeries, series)
-        const added = difference(series, existingSeries)
-
-        if (added.length > 0) {
-          addSeriesToBook({ variables: { id: variables.id, series: added } })
-        }
-
-        if (removed.length > 0) {
-          removeSeriesToBook({ variables: { id: variables.id, series: removed } })
-        }
-      }
     }
-  }, [editBook, client, addSeriesToBook, addTagsToBook, removeSeriesToBook, removeTagsToBook])
+  }, [editBook, client, addTagsToBook, removeTagsToBook])
 }
 
 export const useLazyBooks = () => useLazyQuery<QueryGetBooksData, any>(QueryBooks)

@@ -1,7 +1,7 @@
-import { generateUniqueID } from "../utils";
+import { generateUniqueID, getMainDefinition } from "../utils";
 import { ApolloClient } from "@apollo/client";
-import { GET_ONE_SERIES, GET_ONE_SERIES_VARIABLES, GET_ONE_SERIES_DATA } from "./queries";
-import { MutationEditSeriesArgs, MutationRemoveSeriesArgs, QuerySeriesIdsDocument } from "../generated/graphql";
+import { MutationEditSeriesArgs, MutationRemoveSeriesArgs, Query_One_Series_Document, QuerySeriesIdsDocument } from "../generated/graphql";
+import { useClient } from "../client";
 
 export declare type IResolverObject<TContext = any, TArgs = any> = {
   [key: string]: IFieldResolver<TContext, TArgs>
@@ -9,7 +9,7 @@ export declare type IResolverObject<TContext = any, TArgs = any> = {
 
 export type IFieldResolver<TContext, TArgs = Record<string, any>> = (args: TArgs, context: TContext) => any;
 
-type ResolverContext = { client: ApolloClient<any> }
+type ResolverContext = { client: NonNullable<ReturnType<typeof useClient>> }
 
 export const seriesOfflineResolvers = {
   Mutation: {
@@ -22,8 +22,8 @@ export const seriesOfflineResolvers = {
       }
 
       // create the offline item reference
-      client.cache.writeQuery<GET_ONE_SERIES_DATA, GET_ONE_SERIES_VARIABLES>({
-        query: GET_ONE_SERIES,
+      client.cache.writeQuery({
+        query: Query_One_Series_Document,
         variables: { id: series.id },
         data: { oneSeries: series },
       })
@@ -39,11 +39,13 @@ export const seriesOfflineResolvers = {
       return series
     },
     removeSeries: ({ id }: MutationRemoveSeriesArgs, { client }: ResolverContext) => {
-      const item = client.cache.identify({ id, __typename: 'Series' })
-      item && client.cache.evict({ id: item })
-      const data = client.readQuery({ query: QuerySeriesIdsDocument })
-      data && client.writeQuery({ query: QuerySeriesIdsDocument, data: { series: data?.series?.filter(item => item?.id !== id) } })
-      client.cache.gc()
+      const normalizedId = client.cache.identify({ id, __typename: 'Series' })
+      if (normalizedId) {
+        client.cache.evict({ id: normalizedId })
+        client.evictRootQuery({ fieldName: 'oneSeries', args: { id } })
+        const data = client.readQuery({ query: QuerySeriesIdsDocument })
+        data && client.writeQuery({ query: QuerySeriesIdsDocument, data: { series: data?.series?.filter(item => item?.id !== id) } })
+      }
     },
     editSeries: ({ id, name }: MutationEditSeriesArgs, { client }: ResolverContext) => {
       client.cache.modify({

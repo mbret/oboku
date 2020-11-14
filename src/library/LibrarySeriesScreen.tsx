@@ -60,39 +60,41 @@ export const LibrarySeriesScreen = () => {
                   const length = (item.books?.length || 0)
                   const coverHeight = 200 * (length < 3 ? 0.6 : 0.5)
 
+                  if (!bookItem) return null
+
                   return (
-                    <>
-                      {bookItem && (
-                        <Cover
-                          bookId={bookItem.id}
-                          style={{
-                            height: coverHeight,
-                            width: coverHeight * theme.custom.coverAverageRatio,
-                            ...(length > 2 && i === 1) && {
-                              marginTop: -10,
-                            },
-                            marginRight: 5,
-                            marginLeft: 5,
-                          }}
-                        />
-                      )}
-                    </>
+                    <Cover
+                      key={bookItem.id}
+                      bookId={bookItem.id}
+                      withShadow
+                      style={{
+                        height: coverHeight,
+                        width: coverHeight * theme.custom.coverAverageRatio,
+                        ...(length > 2 && i === 1) && {
+                          marginTop: -10,
+                        },
+                        marginRight: 5,
+                        marginLeft: 5,
+                      }}
+                    />
                   )
                 })}
               </div>
             </div>
-            <div style={{
-              display: 'flex',
-              flexFlow: 'row',
-              width: '100%',
-              alignItems: 'center'
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                flexFlow: 'row',
+                width: '100%',
+                alignItems: 'center'
+              }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsActionDialogOpenedWith(item.id)
+              }}
+            >
               <ListItemText primary={item.name} secondary={`${item.books?.length || 0} book(s)`} />
               <IconButton
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsActionDialogOpenedWith(item.id)
-                }}
                 disableFocusRipple
                 disableRipple
                 disableTouchRipple

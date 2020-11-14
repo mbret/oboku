@@ -3,11 +3,11 @@ import localforage from 'localforage';
 import { API_URI } from '../constants';
 import { QueryAuth, QueryAuthData } from '../auth/queries';
 import axios from 'axios'
-import { LocalBook } from '../books/types';
 import { useCallback } from 'react';
 import throttle from 'lodash.throttle';
+import { Book, DownloadState } from '../generated/graphql';
 
-type QueryBookDownloadStateData = { book: Required<Pick<LocalBook, 'downloadState' | 'downloadProgress'>> }
+type QueryBookDownloadStateData = { book: Required<Pick<Book, 'downloadState' | 'downloadProgress'>> }
 type QueryBookDownloadStateVariables = { id: string }
 export const QueryBookDownloadState = gql`
   query QueryBookDownloadState($id: ID!) {
@@ -58,7 +58,7 @@ export const useDownloadFile = () => {
         book: {
           ...existing.book,
           downloadProgress: 0,
-          downloadState: 'downloading',
+          downloadState: DownloadState.Downloading,
         }
       }))
 
@@ -80,14 +80,14 @@ export const useDownloadFile = () => {
           book: {
             ...existing.book,
             downloadProgress: 100,
-            downloadState: 'downloaded',
+            downloadState: DownloadState.Downloaded,
           }
         }))
       } catch (e) {
         writeBookDownloadState(bookId, existing => ({
           book: {
             ...existing.book,
-            downloadState: 'none',
+            downloadState: DownloadState.None,
           }
         }))
         throw e

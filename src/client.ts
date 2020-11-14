@@ -1,4 +1,4 @@
-import { ApolloClient, InMemoryCache, makeVar } from '@apollo/client';
+import { ApolloCache, ApolloClient, InMemoryCache, makeVar, Reference, StoreValue } from '@apollo/client';
 import { HttpLink } from 'apollo-link-http';
 import { RetryLink } from "apollo-link-retry";
 import apolloLogger from 'apollo-link-logger';
@@ -22,8 +22,14 @@ import { getMainDefinition } from './utils';
 import { ApolloLinkDirective } from './apollo-link-directive/ApolloLinkDirective';
 import { libraryLink } from './library/LibraryLink';
 import { defaultData } from './firstTimeExperience/queries';
-import { TypedTypePolicies, FirstTimeExperience } from './generated/graphql';
+import { TypedTypePolicies, FirstTimeExperience, QueryFieldPolicy, Series, Book } from './generated/graphql';
 import { mergeDeepLeft } from 'ramda';
+import { ApolloLinkOfflineQueries } from './apollo-link-offline-queries';
+import { seriesLink } from './series/SeriesLink';
+import { booksLink } from './books/BooksLink';
+import { Modifier } from '@apollo/client/cache/core/types/common';
+
+export declare function useApolloClient(): any;
 
 let clientForContext: ApolloClient<any> | undefined
 
@@ -49,7 +55,7 @@ export const offlineQueue = new ApolloLinkOfflineQueue({
 
 const blockingLink = new ApolloLinkBlocking()
 
-const withClientLink = setContext((operation, { headers = {}, cache }: { headers?: any, cache: InMemoryCache }) => {
+const withApolloClientInContextLink = setContext((operation, { headers = {}, cache }: { headers?: any, cache: InMemoryCache }) => {
   const definition = getMainDefinition(operation.query)
 
   return {
@@ -98,13 +104,20 @@ const retryLink = new RetryLink({
   }
 })
 
+const offlineQueriesLink = new ApolloLinkOfflineQueries()
+
 const link: any = ApolloLink.from([
-  // new ApolloLinkWithCLient(),
-  withClientLink,
-  authLink,
-  libraryLink,
   onErrorLink,
   apolloLogger,
+  withApolloClientInContextLink,
+
+  // custom offline links
+  authLink,
+  libraryLink,
+  seriesLink,
+  booksLink,
+
+  offlineQueriesLink,
   offlineQueue,
   blockingLink,
   retryLink,
@@ -148,10 +161,7 @@ const localTypePolocies = {
   Book: {
     fields: {
       downloadProgress: (value = 0) => value,
-      downloadState: {
-        read: (value = 'none') => value,
-        merge: (_, incoming: string) => incoming,
-      },
+
     }
   },
   Query: {
@@ -178,19 +188,22 @@ const typePolicies: TypedTypePolicies = {
   },
   Book: {
     fields: {
-      // series: {
-      //   merge: (existing: Reference[], incoming: Reference[]) => incoming
-      // }
+      series: {
+        merge: (_, incoming) => incoming,
+      },
+      downloadState: {
+        read: (value = 'none') => value,
+        merge: (_, incoming: string) => incoming,
+      },
     }
   },
   Query: {
     fields: {
       book: {
-        // This proxy allow us to not have to precache this query
-        read: (_, { toReference, args, variables }) => toReference({
-          __typename: 'Book',
-          id: args?.id,
-        })
+        read: (_, { toReference, args }) => toReference({ __typename: 'Book', id: args?.id, })
+      },
+      oneSeries: {
+        read: (_, { toReference, args }) => toReference({ __typename: 'Series', id: args?.id, })
       },
       firstTimeExperience: (existing: FirstTimeExperience = defaultData) => existing,
     }
@@ -245,14 +258,69 @@ export const cache = new InMemoryCache({
   typePolicies: mergeDeepLeft(localTypePolocies, typePolicies)
 })
 
+type MyCache = InMemoryCache & { foo: () => void }
+
+const getCacheWrapper = (originalCache: InMemoryCache) => {
+  type EvictOptions = Parameters<typeof originalCache.evict>[0]
+  // fieldName: keyof QueryFieldPolicy, args
+  (originalCache as any).evictRootQuery = (options: Omit<EvictOptions, 'id' | 'fieldName'> & { fieldName: keyof QueryFieldPolicy }) => {
+    return originalCache.evict({ id: 'ROOT_QUERY', ...options })
+  }
+
+  return originalCache as MyCache
+}
+
 // export const persistor = new CachePersistor({
 //   cache,
 //   storage: (localforage as any),
 //   debug: true,
 // })
 
+abstract class MyApolloCache<TSerialized> extends ApolloCache<TSerialized> {
+
+}
+
+interface StoreObject {
+  __typename?: keyof TypedTypePolicies
+  [storeFieldName: string]: StoreValue;
+}
+
+type EvictOptions = Parameters<typeof cache.evict>[0]
+type ModifyOptions = Parameters<typeof cache.modify>[0]
+// type Modifier = ModifyOptions['fields']
+
+
+type ReferenceTypename = Series['__typename'] | Book['__typename']
+
+export class OfflineApolloClient<TCacheShape> extends ApolloClient<TCacheShape> {
+  public evictRootQuery = <Field extends keyof QueryFieldPolicy>(options: Omit<EvictOptions, 'id' | 'fieldName'> & {
+    fieldName: Field,
+  }) => {
+    return this.cache.evict(options)
+  }
+
+  public identify = <R extends ReferenceTypename>(
+    object: {
+      __typename?: R
+      [storeFieldName: string]: StoreValue
+    } | Reference
+  ) => {
+    return this.cache.identify(object)
+  }
+
+  public modify = <Entity>(
+    options: Omit<ModifyOptions, 'fields'> & {
+      fields: {
+        [K in keyof Partial<Entity>]: Modifier<any>;
+      }
+    }
+  ) => {
+    return this.cache.modify(options)
+  }
+}
+
 export const useClient = () => {
-  const [client, setClient] = useState<ApolloClient<any> | undefined>(undefined)
+  const [client, setClient] = useState<OfflineApolloClient<any> | undefined>(undefined)
   // @todo https://www.apollographql.com/docs/react/networking/authentication/
   // const [authToken] = useAuthToken()
 
@@ -266,7 +334,8 @@ export const useClient = () => {
         debug: true,
       });
 
-      const client = new ApolloClient({
+
+      const client = new OfflineApolloClient({
         link,
         cache,
       });

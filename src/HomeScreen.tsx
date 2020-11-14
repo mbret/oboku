@@ -14,12 +14,13 @@ export const HomeScreen = () => {
   const history = useHistory()
   const continueReadingBooks = useContinueReadingBooks()
   const recentlyAddedBooks = useRecentlyAddedBooks()
+  const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
+  const itemWidth = 150
 
-  const itemWidth = 200
-
+  console.log('[HomeScreen]', itemWidth / adjustedRatioWhichConsiderBottom)
   return (
     <div style={{
-      display: 'flex',
+      // display: 'flex',
       flex: 1,
       overflow: 'scroll',
       flexFlow: 'column',
@@ -60,7 +61,7 @@ export const HomeScreen = () => {
             itemWidth={itemWidth}
             data={continueReadingBooks}
             style={{
-              height: itemWidth / theme.custom.coverAverageRatio,
+              height: itemWidth / adjustedRatioWhichConsiderBottom,
               // border: '1px solid black'
             }}
             viewMode="list"
@@ -77,7 +78,7 @@ export const HomeScreen = () => {
             itemWidth={itemWidth}
             data={recentlyAddedBooks}
             style={{
-              height: itemWidth / theme.custom.coverAverageRatio,
+              height: itemWidth / adjustedRatioWhichConsiderBottom,
               // border: '1px solid black'
             }}
             viewMode="list"

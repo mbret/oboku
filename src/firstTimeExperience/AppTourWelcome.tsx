@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
-import ReadingBoyAsset from '../assets/reading-boy.svg'
+import FteCoverAsset from '../assets/fte-cover.svg'
 import { Box, makeStyles, Typography, useTheme } from '@material-ui/core';
 import { useSetFirstTimeExperience } from './queries';
 import { QueryFirstTimeExperienceDocument  } from '../generated/graphql';
@@ -37,7 +37,7 @@ export const AppTourWelcome: React.FC = memo(() => {
               width: '80%',
               paddingTop: theme.spacing(2)
             }}>
-              <img src={ReadingBoyAsset} alt="cover" style={{
+              <img src={FteCoverAsset} alt="cover" style={{
                 width: '80%',
                 objectFit: 'cover',
                 paddingBottom: theme.spacing(2)
