@@ -20,7 +20,7 @@ import { ApolloLinkDirective } from './apollo-link-directive/ApolloLinkDirective
 import { libraryLink } from './library/LibraryLink';
 import { defaultData } from './firstTimeExperience/queries';
 import { dataSourcesLink } from './dataSources/DataSourcesLink';
-import { TypedTypePolicies, FirstTimeExperience, QueryFieldPolicy, Series, Book, QueryUserIsLibraryProtectedDocument, QueryAuthDocument, Query, Get_SeriesDocument, QuerySeriesIdsDocument } from './generated/graphql';
+import { TypedTypePolicies, FirstTimeExperience, QueryFieldPolicy, Series, Book, QueryUserIsLibraryProtectedDocument, QueryAuthDocument, Query, Get_SeriesDocument, QuerySeriesIdsDocument, User } from './generated/graphql';
 import { mergeDeepLeft } from 'ramda';
 import { ApolloLinkOfflineQueries } from './apollo-link-offline-queries';
 import { seriesLink } from './series/SeriesLink';
@@ -230,6 +230,9 @@ const typePolicies: TypedTypePolicies = {
   },
   Query: {
     fields: {
+      user: {
+        read: (value: User) => value || null,
+      },
       syncState: {
         merge: (_, incoming) => incoming,
       },
