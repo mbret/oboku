@@ -20,14 +20,15 @@ import localforage from 'localforage';
 import { useHistory } from 'react-router-dom';
 import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { ROUTES } from '../constants';
-import { GET_BOOK, useRemoveBook, useEditBook, useLazyBook } from './queries';
+import { useRemoveBook, useEditBook } from './queries';
 import { Drawer, Divider, ListItemIcon } from '@material-ui/core';
 import { openManageBookSeriesDialog } from './ManageBookSeriesDialog';
+import { QueryBookDocument } from '../generated/graphql';
 
 export const BookActionsDrawer = (props) => {
   const bookId = useReactiveVar(models.isBookActionDialogOpenedWithVar)
   const history = useHistory()
-  const [getBook, { data }] = useLazyBook()
+  const [getBook, { data }] = useLazyQuery(QueryBookDocument)
   const removeDownloadFile = useRemoveDownloadFile()
   const removeBook = useRemoveBook()
   const editBook = useEditBook()

@@ -1,6 +1,6 @@
 import { gql, useMutation, useQuery, useApolloClient, } from "@apollo/client";
 import { useCallback } from "react";
-import { MutationSignupArgs, User, MutationSigninArgs, MutationEditUserArgs } from '../generated/graphql'
+import { MutationSignupArgs, User, MutationSigninArgs, MutationEditUserArgs, QueryAuthDocument } from '../generated/graphql'
 import { hashContentPassword } from 'oboku-shared'
 
 export type LocalUser = User & {
@@ -64,15 +64,6 @@ export const MutationEditUser = gql`
   ${UserFragment}
 `
 
-export type QueryAuthData = { auth: { token: string | null } }
-export const QueryAuth = gql`
-  query QueryAuth {
-    auth @client {
-      token
-    }
-  }
-`
-
 export const useSignup = () => {
   const [signup, result] = useMutation<MutationSignupData, MutationSignupArgs>(MutationSignup)
 
@@ -109,9 +100,9 @@ export const useEditUser = () => {
   }, [editUser, client])
 }
 
-export const useUser = () => useQuery<QueryUserData>(QueryUser)
+export const useUser = () => useQuery<QueryUserData>(QueryUser, { fetchPolicy: 'cache-only' })
 
-export const useAuth = () => useQuery<QueryAuthData>(QueryAuth)
+export const useAuth = () => useQuery(QueryAuthDocument)
 
 export const useToggleContentProtection = () => {
   const client = useApolloClient()
@@ -128,6 +119,6 @@ export const useSignOut = () => {
   const client = useApolloClient()
 
   return useCallback(() => {
-    client.cache.writeQuery<QueryAuthData>({ query: QueryAuth, data: { auth: { token: null } } })
+    client.cache.writeQuery({ query: QueryAuthDocument, data: { auth: { token: null, isAuthenticated: false } } })
   }, [client])
 }

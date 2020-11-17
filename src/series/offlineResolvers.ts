@@ -20,13 +20,6 @@ export const seriesOfflineResolvers = {
         books: [],
         ...variables,
       }
-
-      // create the offline item reference
-      client.cache.writeQuery({
-        query: Query_One_Series_Document,
-        variables: { id: series.id },
-        data: { oneSeries: series },
-      })
       // add the offline item to the list
       client.cache.modify({
         fields: {

@@ -1,46 +1,25 @@
-import React, { useRef, FC } from 'react'
-import { CircularProgress, GridList, GridListTile, GridListTileBar, IconButton, makeStyles } from "@material-ui/core"
-import { models } from '../client';
-import { useWindowSize } from 'react-use';
-import { API_URI } from '../constants';
-import { useDownloadFile } from '../download/useDownloadFile';
-import { useHistory } from 'react-router-dom';
-import { useQueryGetBooks } from '../books/queries';
-import { BookList } from '../library/BookList';
+import React, { ComponentProps, FC, useMemo } from 'react'
+import { BookList } from '../books/BookList';
 import { useQuery } from '@apollo/client';
-import { Query_One_Series_Document } from '../generated/graphql';
+import { QueryOneSeriesBookIdsDocument } from '../generated/graphql';
 
-export const SeriesBookList: FC<{ seriesId: string }> = ({ seriesId }) => {
-  const history = useHistory();
-  const classes = useStyles();
-  const { data: seriesData } = useQuery(Query_One_Series_Document, { variables: { id: seriesId } })
-  const downloadFile = useDownloadFile()
+export const SeriesBookList: FC<{
+  seriesId: string,
+  renderHeader: ComponentProps<typeof BookList>['renderHeader']
+  headerHeight: ComponentProps<typeof BookList>['headerHeight']
+}> = ({ seriesId, renderHeader, headerHeight }) => {
+  const { data: seriesData } = useQuery(QueryOneSeriesBookIdsDocument, { variables: { id: seriesId } })
   const books = seriesData?.oneSeries?.books || []
+  const data = useMemo(() => books.map(book => book?.id || '-1'), [books])
 
   console.log('[BookList]', seriesData)
 
   return (
-    <BookList data={books} style={{ height: '100%' }} />
+    <BookList
+      data={data}
+      style={{ height: '100%', width: '100%' }}
+      headerHeight={headerHeight}
+      renderHeader={renderHeader}
+    />
   )
-}
-
-const useStyles = () => {
-  const windowSize = useWindowSize()
-
-  return useRef(makeStyles((theme) => ({
-    container: {
-      display: 'flex',
-      height: 500,
-      flexGrow: 1,
-      paddingBottom: 2
-    },
-    gridList: {
-      width: (props: any) => props.windowSize.width,
-    },
-    icon: {
-      color: 'rgba(255, 255, 255, 0.54)',
-    },
-  }))).current({
-    windowSize
-  })
 }

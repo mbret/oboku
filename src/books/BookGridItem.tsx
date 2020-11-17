@@ -2,12 +2,13 @@ import React from 'react'
 import { useWindowSize } from "react-use"
 import { makeStyles } from "@material-ui/core"
 import { useRef, FC } from "react"
-import { useBook } from "./queries"
 import { API_URI } from '../constants'
+import { useQuery } from '@apollo/client'
+import { QueryBookDocument } from '../generated/graphql'
 
 export const BookGridItem: FC<{ id: string }> = ({ id }) => {
   const classes = useClasses()
-  const { data } = useBook({ variables: { id } })
+  const { data } = useQuery(QueryBookDocument, { variables: { id } })
   const book = data?.book
 
   return (

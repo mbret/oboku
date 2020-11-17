@@ -9,9 +9,11 @@ import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
 import { Rendition } from "epubjs";
 import { Contents, Location, Book } from "epubjs";
-import { useEditBook, useBook } from '../books/queries';
+import { useEditBook } from '../books/queries';
 import { AppTourReader } from '../firstTimeExperience/AppTourReader';
 import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from './utils';
+import { useQuery } from '@apollo/client';
+import { QueryBookDocument } from '../generated/graphql';
 
 type ReaderInstance = {
   nextPage: () => void,
@@ -27,7 +29,7 @@ export const ReaderScreen: FC<{}> = () => {
   const file = useFile(bookId)
   const [isTopMenuShown, setIsTopMenuShown] = useState(false)
   const [isBottomMenuShown, setIsBottomMenuShown] = useState(false)
-  const { data: bookData } = useBook({ variables: { id: bookId } })
+  const { data: bookData } = useQuery(QueryBookDocument, { variables: { id: bookId } })
   const windowSize = useWindowSize()
   const editBook = useEditBook()
   const verticalTappingZoneHeight = useVerticalTappingZoneHeight()

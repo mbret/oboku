@@ -5,7 +5,6 @@ import {
   Route,
   Redirect,
 } from "react-router-dom"
-import './App.css'
 import { HomeScreen } from './HomeScreen'
 import { LoginScreen } from './auth/LoginScreen'
 import { ReaderScreen } from './reader/ReaderScreen'
@@ -24,7 +23,7 @@ import { FAQScreen } from './FAQScreen'
 
 export const AppNavigator = () => {
   const { data: authData } = useAuth()
-  const isAuthenticated = !!authData?.auth.token
+  const isAuthenticated = !!authData?.auth?.token
 
   return (
     <Router basename={process.env.PUBLIC_URL}>

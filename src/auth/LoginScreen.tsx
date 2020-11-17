@@ -16,8 +16,8 @@ const schema = yup.object().shape({
 
 export const LoginScreen = () => {
   const history = useHistory()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail] = useState(`${process.env.REACT_APP_EMAIL}`)
+  const [password, setPassword] = useState(`${process.env.REACT_APP_PASSWORD}`)
   const [signin, { error }] = useSignin()
   const theme = useTheme()
   const isValid = useIsValid(email, password)

@@ -5,7 +5,18 @@ query QuerySeriesIds {
   }
 }
 
-query QueryOneSeriesBooks($id: ID!) {
+query GET_SERIES($foo: String) {
+  series(foo: $foo) {
+    __typename
+    id
+    name
+    books {
+      id
+    }
+  }
+}
+
+query QueryOneSeriesBookIds($id: ID!) {
   oneSeries(id: $id) {
     id
     books {

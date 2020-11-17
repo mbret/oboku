@@ -1,11 +1,10 @@
 import { gql, useApolloClient } from '@apollo/client';
 import localforage from 'localforage';
 import { API_URI } from '../constants';
-import { QueryAuth, QueryAuthData } from '../auth/queries';
 import axios from 'axios'
 import { useCallback } from 'react';
 import throttle from 'lodash.throttle';
-import { Book, DownloadState } from '../generated/graphql';
+import { Book, DownloadState, QueryAuthDocument } from '../generated/graphql';
 
 type QueryBookDownloadStateData = { book: Required<Pick<Book, 'downloadState' | 'downloadProgress'>> }
 type QueryBookDownloadStateVariables = { id: string }
@@ -52,7 +51,7 @@ export const useDownloadFile = () => {
     }, 500)
 
     try {
-      const authData = client.readQuery<QueryAuthData>({ query: QueryAuth })
+      const authData = client.readQuery({ query: QueryAuthDocument })
 
       writeBookDownloadState(bookId, existing => ({
         book: {
@@ -66,7 +65,7 @@ export const useDownloadFile = () => {
         const response = await axios({
           url: `${API_URI}/download/${bookId}`,
           headers: {
-            Authorization: `Bearer ${authData?.auth.token}`
+            Authorization: `Bearer ${authData?.auth?.token}`
           },
           responseType: 'blob',
           onDownloadProgress: (event: ProgressEvent) => {

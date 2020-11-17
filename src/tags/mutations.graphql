@@ -1,0 +1,5 @@
+mutation MutationRemoveTag($id: ID!) {
+  removeTag(id: $id) {
+    success
+  }
+}

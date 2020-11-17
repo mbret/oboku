@@ -21,7 +21,7 @@ export const useLoadLibraryFromJson = () => {
 
     libraryJson.books.forEach(item => {
       console.log(item)
-      addBook(item.url)
+      // addBook(item.url)
     })
 
     libraryJson.tags.forEach(item => {

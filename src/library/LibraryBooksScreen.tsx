@@ -1,6 +1,6 @@
-import React, { useState, FC } from 'react';
-import '../App.css';
-import { BookList } from './/BookList';
+import React, { useState, FC, useMemo, useEffect } from 'react';
+import ReactDOM from 'react-dom'
+import { BookList } from '../books/BookList';
 import {
   Dialog, Button, DialogTitle,
   Toolbar, IconButton, makeStyles, createStyles, Badge, ListItemText, ListItem, List, ListItemIcon, Typography, useTheme,
@@ -8,11 +8,14 @@ import {
 import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecked, RadioButtonChecked, LockOpenRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
 import { useLibraryBooksSettings, useToggleLibraryBooksSettingsViewMode, useUpdateLibraryBooksSettings, LibraryBooksSettings } from './queries';
-import { useQueryGetBooks } from '../books/queries';
 import * as R from 'ramda';
 import { useUser } from '../auth/queries';
 import { UploadNewBookDialog } from '../books/UploadNewBookDialog';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
+import { Book, QueryBooksDocument } from '../generated/graphql';
+import { useQuery } from '@apollo/client';
+import { useMeasure } from 'react-use';
+import { useMeasureElement } from '../utils';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
@@ -25,17 +28,16 @@ export const LibraryBooksScreen = () => {
   const { data: libraryBooksSettingsData } = useLibraryBooksSettings()
   const libraryFilters = libraryBooksSettingsData?.libraryBooksSettings
   const sorting = libraryFilters?.sorting
-  const books = useSortedList(sorting)
+  const sortedList = useSortedList(sorting)
   const viewMode = libraryBooksSettingsData?.libraryBooksSettings.viewMode
   const tagsFilterApplied = (libraryFilters?.tags.length || 0) > 0
   const numberOfFiltersApplied = [tagsFilterApplied].filter(i => i).length
   const filteredTags = libraryFilters?.tags?.map(tag => tag?.id || '-1') || []
   const visibleBooks = filteredTags.length === 0
-    ? books
-    : books
-      .filter(book => book.tags?.some(b => filteredTags.includes(b?.id || '-1')))
-
-  console.log('[LibraryBooksScreen]', books, libraryBooksSettingsData, userData)
+    ? sortedList
+    : sortedList
+      .filter(book => book?.tags?.some(b => filteredTags.includes(b?.id || '-1')))
+  const books = useMemo(() => visibleBooks.map(item => item.id), [visibleBooks])
 
   const addBookButton = (
     <Button
@@ -50,8 +52,19 @@ export const LibraryBooksScreen = () => {
     </Button>
   )
 
+  const listHeader = (
+    < Toolbar style={{ marginLeft: -theme.spacing(1), marginRight: -theme.spacing(1) }}>
+      {addBookButton}
+    </Toolbar>
+  )
+
+  const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
+
+  console.log('[LibraryBooksScreen]', books, libraryBooksSettingsData, userData, listHeaderHeight)
+
   return (
     <div className={classes.container}>
+      {listHeaderDimTracker}
       <Toolbar style={{ borderBottom: `1px solid ${theme.palette.grey[200]}`, boxSizing: 'border-box' }}>
         <IconButton
           edge="start"
@@ -78,8 +91,7 @@ export const LibraryBooksScreen = () => {
           </Button>
           {userData?.user.isLibraryUnlocked && (
             <div style={{ display: 'flex', flexFlow: 'row', alignItems: 'center', marginLeft: theme.spacing(1), overflow: 'hidden' }}>
-              <Typography variant="caption" noWrap>Protected content is</Typography>
-              &nbsp;<LockOpenRounded fontSize="small" />
+              <LockOpenRounded fontSize="small" />
             </div>
           )}
         </div>
@@ -98,7 +110,7 @@ export const LibraryBooksScreen = () => {
         flex: 1,
         overflow: 'scroll',
       }}>
-        {visibleBooks.length === 0 && (
+        {books.length === 0 && (
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -132,20 +144,17 @@ export const LibraryBooksScreen = () => {
             </div>
           </div>
         )}
-        {visibleBooks.length > 0 && (
+        {books.length > 0 && (
           <BookList
             viewMode={viewMode}
             sorting={sorting}
-            headerHeight={60}
-            data={visibleBooks}
+            headerHeight={listHeaderHeight}
+            data={books}
             style={{ height: '100%' }}
-            renderHeader={() => (
-              <Toolbar style={{ marginLeft: -theme.spacing(1), marginRight: -theme.spacing(1) }}>
-                {addBookButton}
-              </Toolbar>
-            )}
+            renderHeader={() => listHeader}
           />
         )}
+
         <UploadNewBookDialog open={isUploadNewBookDialogOpened} onClose={() => setIsUploadNewBookDialogOpened(false)} />
         <SortByDialog onClose={() => setIsSortingDialogOpened(false)} open={isSortingDialogOpened} />
         <LibraryFiltersDrawer open={isFiltersDrawerOpened} onClose={() => setIsFiltersDrawerOpened(false)} />
@@ -155,19 +164,18 @@ export const LibraryBooksScreen = () => {
 }
 
 const useSortedList = (sorting: LibraryBooksSettings['sorting'] | undefined) => {
-  const { data: booksData } = useQueryGetBooks()
-  console.log('useSortedList', booksData)
-  const books = booksData || []
+  const { data: booksData } = useQuery(QueryBooksDocument)
+  const books = booksData?.books || []
 
   switch (sorting) {
     case 'date': {
-      return R.sort(R.ascend(R.prop('createdAt')), books)
+      return R.sort(R.ascend(R.prop('createdAt')), books as Required<Book>[])
     }
     case 'activity': {
-      return R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books)
+      return R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books as Required<Book>[])
     }
     default: {
-      return R.sort(R.ascend(R.prop('title')), books)
+      return R.sort(R.ascend(R.prop('title')), books as Required<Book>[])
     }
   }
 }

@@ -1,6 +1,5 @@
 import { ApolloProvider } from '@apollo/client';
-import React, { useEffect } from 'react';
-import './App.css';
+import React from 'react';
 import { useClient } from './client';
 import { RoutineProcess } from './RoutineProcess';
 import { AppNavigator } from './AppNavigator';
@@ -12,13 +11,13 @@ import { UnlockLibraryDialog } from './auth/UnlockLibraryDialog';
 import { AppTourWelcome } from './firstTimeExperience/AppTourWelcome';
 import { TourProvider } from './app-tour/TourProvider';
 import { ManageBookSeriesDialog } from './books/ManageBookSeriesDialog';
-import { listFiles } from './google';
+import { GoogleApiProvider, listFiles } from './google';
 
 let googleAuth
 
 const SCOPE = 'https://www.googleapis.com/auth/drive.metadata.readonly'
 
-const signInFunction = async ()=>{
+const signInFunction = async () => {
   googleAuth.signIn();
   updateSignStatus()
 
@@ -26,17 +25,17 @@ const signInFunction = async ()=>{
 
 }
 
-const updateSignStatus = async ()=>{
+const updateSignStatus = async () => {
   var user = googleAuth.currentUser.get();
   console.log('updateSignStatus', user)
-  if (user.wc == null){
+  if (user.wc == null) {
     // this.setState({
     //   name: ''
     // });
   }
-  else{
+  else {
     var isAuthorized = user.hasGrantedScopes(SCOPE);
-    if(isAuthorized){
+    if (isAuthorized) {
       console.log('IS AUTHORIZED')
       // this.setState({
       //   name: user.Ot.Cd
@@ -78,15 +77,6 @@ const initClient = () => {
 function App() {
   const client = useClient()
 
-  // useEffect(() => {
-  //   var script = document.createElement('script');
-  //   script.onload = () => {
-  //     (window as any).gapi.load('client:auth2', initClient);
-  //   }
-  //   script.src = "https://apis.google.com/js/api.js";
-  //   document.body.appendChild(script);
-  // }, [])
-
   return (
     <>
       {!client && (
@@ -96,14 +86,22 @@ function App() {
         <CookiesProvider>
           <ApolloProvider client={client}>
             <ThemeProvider theme={theme}>
-              <TourProvider>
-                <AppNavigator />
-                <AppTourWelcome />
-                <UnlockLibraryDialog />
-                <ManageBookSeriesDialog />
-                <BlockingBackdrop />
-                <RoutineProcess />
-              </TourProvider>
+              <GoogleApiProvider>
+                <TourProvider>
+                  <AppNavigator />
+                  <AppTourWelcome />
+                  <UnlockLibraryDialog />
+                  <ManageBookSeriesDialog />
+                  <BlockingBackdrop />
+                  <RoutineProcess />
+                  <div id="measure-layer" style={{
+                    display: "inline-block",
+                    position: "absolute",
+                    visibility: "hidden",
+                    zIndex: -1,
+                  }} />
+                </TourProvider>
+              </GoogleApiProvider>
             </ThemeProvider>
           </ApolloProvider>
         </CookiesProvider>

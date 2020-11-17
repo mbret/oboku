@@ -1,0 +1,11 @@
+mutation MutationAddLink($id: ID!, $bookId: ID!, $resourceId: String!, $type: LinkType!) {
+  addLink(id: $id, bookId: $bookId, resourceId: $resourceId, type: $type) {
+    success
+  }
+}
+
+mutation MutationEditLink($id: ID!, $resourceId: String!, $type: LinkType!) {
+  editLink(id: $id, resourceId: $resourceId, type: $type) {
+    success
+  }
+}

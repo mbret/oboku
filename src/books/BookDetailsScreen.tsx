@@ -1,11 +1,10 @@
 import React, { FC, useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
-import { CheckCircleRounded, RadioButtonUncheckedOutlined, MoreVertRounded, EditRounded } from '@material-ui/icons';
+import { MoreVertRounded, EditRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, ListItemAvatar, Chip, makeStyles, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider } from '@material-ui/core';
+import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, makeStyles, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
-import { useQueryGetSeries } from '../series/queries';
-import { useBook, useEditBook, useLazyBook } from '../books/queries';
+import { useEditBook } from '../books/queries';
 import { useQueryGetTags } from '../tags/queries';
 import { useEditLink } from '../links/queries';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
@@ -13,7 +12,9 @@ import { Alert } from '@material-ui/lab';
 import { Cover } from './Cover';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { ROUTES } from '../constants';
-import { ManageBookSeriesDialog, openManageBookSeriesDialog } from './ManageBookSeriesDialog';
+import { openManageBookSeriesDialog } from './ManageBookSeriesDialog';
+import { LinkType, QueryBookDocument } from '../generated/graphql';
+import { useLazyQuery, useQuery } from '@apollo/client';
 
 type ScreenParams = {
   id: string
@@ -27,7 +28,7 @@ export const BookDetailsScreen = () => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<undefined | string>(undefined)
   const { id } = useParams<ScreenParams>()
-  const { data } = useBook({ variables: { id } })
+  const { data } = useQuery(QueryBookDocument, { variables: { id } })
   const book = data?.book
   const series = book?.series
 
@@ -70,7 +71,7 @@ export const BookDetailsScreen = () => {
       {!book?.lastMetadataUpdatedAt && (
         <Alert severity="info" >We are still retrieving metadata information...</Alert>
       )}
-      <Box paddingX={2} marginY={3} marginBottom={3}><Divider light  /></Box>
+      <Box paddingX={2} marginY={3} marginBottom={3}><Divider light /></Box>
       <Box paddingX={2}>
         <Typography variant="subtitle1"><b>More details</b></Typography>
         <Box display="flex" flexDirection="row" alignItems="center">
@@ -139,7 +140,7 @@ export const BookDetailsScreen = () => {
             onClick={() => setIsLinkActionDrawerOpenWith(item?.id)}
           >
             <ListItemText
-              primary={item?.location}
+              primary={item?.resourceId}
               primaryTypographyProps={{
                 style: {
                   paddingRight: 10,
@@ -206,9 +207,9 @@ const EditLinkDialog: FC<{
   onClose: () => void,
 }> = ({ onClose, openWith, bookId }) => {
   const [location, setLocation] = useState('')
-  const [getBook, { data }] = useLazyBook()
+  const [getBook, { data }] = useLazyQuery(QueryBookDocument)
   const editLink = useEditLink()
-  const link = data?.book.links?.find(item => item?.id === openWith)
+  const link = data?.book?.links?.find(item => item?.id === openWith)
 
   const onInnerClose = () => {
     setLocation('')
@@ -220,7 +221,7 @@ const EditLinkDialog: FC<{
   }, [bookId, getBook])
 
   useEffect(() => {
-    setLocation(prev => link?.location || prev)
+    setLocation(prev => link?.resourceId || prev)
   }, [link, openWith])
 
   console.log('EditLinkDialog', data)
@@ -246,7 +247,7 @@ const EditLinkDialog: FC<{
         <Button
           onClick={() => {
             onInnerClose()
-            openWith && bookId && editLink(bookId, openWith, location)
+            openWith && bookId && editLink(bookId, openWith, location, LinkType.Uri)
           }}
           color="primary"
         >
@@ -263,7 +264,7 @@ const TagsDialog: FC<{
   id: string
 }> = ({ open, onClose, id }) => {
   const { data: getTagsData } = useQueryGetTags()
-  const { data: getBookData } = useBook({ variables: { id } })
+  const { data: getBookData } = useQuery(QueryBookDocument, { variables: { id } })
   const editBook = useEditBook()
   const tags = getTagsData?.tags
   const bookTags = getBookData?.book?.tags

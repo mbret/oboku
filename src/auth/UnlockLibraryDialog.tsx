@@ -7,11 +7,12 @@ import { useToggleContentProtection, useUser } from './queries';
 export const isUnlockLibraryDialogOpened = makeVar(false);
 
 export const UnlockLibraryDialog: FC<{}> = () => {
+
   const [text, setText] = useState('')
   const { data: userData } = useUser()
   const isOpened = useReactiveVar(isUnlockLibraryDialogOpened);
   const toggleContentProtection = useToggleContentProtection()
-  const contentPassword = userData?.user.contentPassword
+  const contentPassword = userData?.user?.contentPassword
 
   const onClose = () => {
     isUnlockLibraryDialogOpened(false)

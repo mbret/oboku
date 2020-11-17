@@ -1,9 +1,9 @@
 import { ApolloLink, FetchResult } from "apollo-link"
-import { MutationSigninData, QueryAuthData, QueryUser, QueryAuth, QueryUserData, MutationSignupData, MutationEditUser } from "./queries"
+import { MutationSigninData, QueryUser, QueryUserData, MutationSignupData, MutationEditUser } from "./queries"
 import { ApolloClient, InMemoryCache } from "@apollo/client"
 import { syncLibrary } from "../library/queries"
 import { getMainDefinition } from "@apollo/client/utilities"
-import { Mutation } from '../generated/graphql'
+import { Mutation, QueryAuthDocument } from '../generated/graphql'
 
 /**
  * @see https://github.com/zenparsing/zen-observable
@@ -57,7 +57,7 @@ export const authLink = new ApolloLink((operation, forward) => {
           const data = (result as FetchResult<MutationSignupData>).data
           if (data?.signup) {
             const userData = { ...data?.signup.user, isLibraryUnlocked: false }
-            cache.writeQuery<QueryAuthData>({ query: QueryAuth, data: { auth: { token: data?.signup.token } } })
+            cache.writeQuery({ query: QueryAuthDocument, data: { auth: { token: data?.signup.token, isAuthenticated: true } } })
             cache.writeQuery<QueryUserData>({ query: QueryUser, data: { user: userData } })
             syncLibrary(client).catch(_ => { })
           }
@@ -67,7 +67,7 @@ export const authLink = new ApolloLink((operation, forward) => {
           const data = (result as FetchResult<MutationSigninData>).data
           if (data?.signin) {
             const userData = { ...data?.signin.user, isLibraryUnlocked: false }
-            cache.writeQuery<QueryAuthData>({ query: QueryAuth, data: { auth: { token: data?.signin.token } } })
+            cache.writeQuery({ query: QueryAuthDocument, data: { auth: { token: data?.signin.token, isAuthenticated: true } } })
             cache.writeQuery<QueryUserData>({ query: QueryUser, data: { user: userData } })
             syncLibrary(client).catch(_ => { })
           }

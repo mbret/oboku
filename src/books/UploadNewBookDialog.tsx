@@ -2,6 +2,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Dialog
 import React, { FC, useEffect, useState } from 'react'
 import { useAddBook } from './queries'
 import * as yup from 'yup'
+import { LinkType } from '../generated/graphql'
 
 const schema = yup.object().shape({
   bookUrl: yup.string().url().required(),
@@ -17,7 +18,7 @@ export const UploadNewBookDialog: FC<{
 
   const handleConfirm = () => {
     setBookUrl('')
-    addBook(bookUrl)
+    addBook(bookUrl, LinkType.Uri)
     onClose()
   }
 

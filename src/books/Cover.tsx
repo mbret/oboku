@@ -1,9 +1,10 @@
 import React, { FC, useEffect, useState } from 'react'
 import { useMountedState } from 'react-use'
 import { API_URI } from '../constants'
-import { useBook } from './queries'
 import placeholder from '../assets/cover-placeholder.png'
 import { useTheme } from '@material-ui/core'
+import { useQuery } from '@apollo/client'
+import { QueryBookDocument } from '../generated/graphql'
 
 export const Cover: FC<{
   bookId: string,
@@ -14,11 +15,10 @@ export const Cover: FC<{
 }> = ({ bookId, style, fullWidth = true, withShadow = false, rounded = true, ...rest }) => {
   const isMounted = useMountedState()
   const theme = useTheme()
-  const { data } = useBook({ variables: { id: bookId } })
+  const { data } = useQuery(QueryBookDocument, { variables: { id: bookId } })
   const [hasError, setHasError] = useState(false)
   const book = data?.book
 
-  console.log('ASDASD', rest)
   const coverSrc = book
     ? `${API_URI}/cover/${book.id}?${book?.lastMetadataUpdatedAt || ''}`
     : placeholder

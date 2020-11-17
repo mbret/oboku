@@ -1,24 +1,10 @@
-import { gql, useQuery, useLazyQuery, useMutation, QueryHookOptions } from '@apollo/client';
-import { BOOK_DETAILS_FRAGMENT } from '../books/queries';
+import { useQuery, useLazyQuery, useMutation } from '@apollo/client';
 import { useCallback } from 'react';
 import { seriesOfflineResolvers } from './offlineResolvers';
-import { QueryOneSeriesArgs, Series, Add_SeriesDocument, Edit_SeriesDocument, Remove_SeriesDocument, Query_One_Series_Document } from '../generated/graphql';
+import { Add_SeriesDocument, Edit_SeriesDocument, Remove_SeriesDocument, Query_One_Series_Document, Get_SeriesDocument } from '../generated/graphql';
 import { useOfflineApolloClient } from '../useOfflineApolloClient';
 
-type GET_SERIES_DATA = { series: Series[] }
-export const GET_SERIES = gql`
-  query GET_SERIES {
-    series {
-      id
-      name
-      books {
-        id
-      }
-    }
-  }
-`
-
-export const useQueryGetSeries = () => useQuery<GET_SERIES_DATA>(GET_SERIES, { fetchPolicy: 'cache-only' })
+export const useQueryGetSeries = () => useQuery(Get_SeriesDocument, { variables: { foo: 'asdasd' } })
 export const useLazyQueryGetOneSeries = () => useLazyQuery(Query_One_Series_Document, { fetchPolicy: 'cache-only' })
 
 export const useAddSeries = () => {

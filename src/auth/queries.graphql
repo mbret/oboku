@@ -1,0 +1,12 @@
+query QueryAuth {
+  auth @client {
+    token
+    isAuthenticated
+  }
+}
+
+query QueryUserIsLibraryProtected {
+  user {
+    isLibraryUnlocked
+  }
+}

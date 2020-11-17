@@ -1,10 +1,9 @@
-import { makeVar, useMutation, useReactiveVar } from '@apollo/client';
+import { makeVar, useLazyQuery, useMutation, useReactiveVar } from '@apollo/client';
 import { Button, Dialog, DialogActions, DialogTitle } from '@material-ui/core';
 import React, { FC, useEffect } from 'react';
-import { MutationAddSeriesToBookDocument, MutationRemoveSeriesToBookDocument } from '../generated/graphql';
+import { MutationAddSeriesToBookDocument, MutationRemoveSeriesToBookDocument, QueryBookDocument } from '../generated/graphql';
 import { useQueryGetSeries } from '../series/queries';
 import { SeriesSelectionList } from '../series/SeriesSelectionList';
-import { useLazyBook } from './queries';
 
 export const openManageBookSeriesDialog = makeVar<string | undefined>(undefined)
 
@@ -12,7 +11,7 @@ export const ManageBookSeriesDialog: FC<{}> = () => {
   const id = useReactiveVar(openManageBookSeriesDialog)
   const open = !!id
   const { data: getSeriesData } = useQueryGetSeries()
-  const [getBook, { data: getBookData }] = useLazyBook()
+  const [getBook, { data: getBookData }] = useLazyQuery(QueryBookDocument)
   const [addToBook] = useMutation(MutationAddSeriesToBookDocument)
   const [removeFromBook] = useMutation(MutationRemoveSeriesToBookDocument)
   const series = getSeriesData?.series

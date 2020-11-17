@@ -1,5 +1,4 @@
 import React, { useState, FC } from 'react';
-import '../App.css';
 import Dialog from '@material-ui/core/Dialog';
 import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, makeStyles, createStyles, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
 import { useQueryGetTags, useCreateTag } from '../tags/queries';

@@ -3,12 +3,14 @@ import { TopBarNavigation } from '../TopBarNavigation';
 import { makeStyles, ListItem, List, ListItemText, ListItemAvatar, createStyles, Theme, LinearProgress, ListSubheader, ListItemIcon } from '@material-ui/core';
 import { StorageRounded, MoreVert, SaveRounded } from '@material-ui/icons';
 import { useStorageUse } from './useStorageUse';
-import { useQueryGetBooks } from '../books/queries';
+import { useQuery } from '@apollo/client';
+import { QueryBooksDocument } from '../generated/graphql';
 
 export const ManageStorageScreen = () => {
   const classes = useStyles();
-  const { data: booksData } = useQueryGetBooks()
+  const { data: booksData } = useQuery(QueryBooksDocument)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
+  const books = booksData?.books
 
   return (
     <>
@@ -30,7 +32,7 @@ export const ManageStorageScreen = () => {
         </ListItem>
       </List>
       <List subheader={<ListSubheader>Downloaded books</ListSubheader>}>
-        {booksData?.map((book) => (
+        {books?.map((book) => (
           <ListItem
             button
             onClick={() => { }}

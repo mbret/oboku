@@ -3,7 +3,6 @@
  * @see https://material-ui.com/customization/palette/
  */
 import { createMuiTheme } from '@material-ui/core/styles'
-import { grey } from '@material-ui/core/colors';
 
 declare module "@material-ui/core/styles" {
   interface Theme {
@@ -97,6 +96,9 @@ export const theme = createMuiTheme({
       // The properties to apply
       disableRipple: true, // No more ripple, on the whole application 💣!
     },
+  },
+  zIndex: {
+    
   },
   custom: {
     maxWidthCenteredContent: 320,

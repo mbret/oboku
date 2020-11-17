@@ -2,6 +2,8 @@ import { v4 } from 'uuid'
 import { getMainDefinition as bloodyBrokenTypedFunction } from "@apollo/client/utilities"
 import { DocumentNode, OperationTypeNode } from "graphql"
 import { Operation, TypedDocumentNode } from '@apollo/client'
+import { useMeasure } from 'react-use'
+import React, { useMemo } from 'react'
 
 /**
  * @todo see how to use guid / salt / etc. Truly
@@ -30,3 +32,39 @@ export const forOperationAs = <Result, Variables, T extends TypedDocumentNode<Re
     callback({ variables: operation.variables as T['__variablesType'] })
   }
 }
+
+export const createPolling = <F extends () => Promise<void>>(fn: F, ms: number) => {
+  let timeout
+
+  const loop = (fn: F) => {
+    timeout = setTimeout(async () => {
+      await fn()
+      timeout && loop(fn)
+    }, ms)
+  }
+
+  return [
+    () => {
+      if (!timeout) {
+        loop(fn)
+      }
+    },
+    () => {
+      clearTimeout(timeout)
+      timeout = undefined
+    }
+  ]
+}
+
+export const useMeasureElement = (element: React.ReactNode) => {
+  const [ref, dim] = useMeasure()
+
+  const elementToRender = useMemo(() => (
+    <div ref={ref as any} style={{ position: 'absolute', visibility: 'hidden' }}>
+      {element}
+    </div>
+  ), [element, ref])
+
+  console.log('useMeasureElement')
+  return [elementToRender, dim] as [typeof elementToRender, typeof dim]
+};

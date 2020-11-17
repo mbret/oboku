@@ -1,9 +1,7 @@
 import { useQuery, gql, useApolloClient } from '@apollo/client';
 import { useCallback } from 'react';
-import { QueryBooks } from '../books/queries';
-import { Tag } from '../generated/graphql';
-import { GET_SERIES } from '../series/queries';
-import { GET_TAGS, QueryTag } from '../tags/queries';
+import { SyncLibraryDocument, Tag } from '../generated/graphql';
+import { QueryTag } from '../tags/queries';
 
 export type LibraryBooksSettings = {
   tags: Tag[],
@@ -74,9 +72,7 @@ export const useToggleLibraryBooksSettingsViewMode = () => {
 export const syncLibrary = async (client: ReturnType<typeof useApolloClient>) => {
   client.writeQuery<QuerySyncData>({ query: QuerySync, data: { sync: { happening: true } } })
   try {
-    await client.query({ query: QueryBooks, fetchPolicy: 'network-only' }).catch(() => { })
-    await client.query({ query: GET_TAGS, fetchPolicy: 'network-only' }).catch(() => { })
-    await client.query({ query: GET_SERIES, fetchPolicy: 'network-only' }).catch(() => { })
+    await client.query({ query: SyncLibraryDocument, fetchPolicy: 'network-only' }).catch(() => { })
   } catch (e) { }
   client.writeQuery<QuerySyncData>({ query: QuerySync, data: { sync: { happening: false } } })
 }

@@ -1,9 +1,9 @@
 import { generateUniqueID } from "../utils";
-import { MutationAddBookArgs, MutationRemoveBookArgs, MutationEditBookArgs, Book, DownloadState } from '../generated/graphql'
-import { ApolloClient, Reference } from "@apollo/client";
-import { GET_BOOK, QueryBooks, QueryBooksData, QueryGetBookData, QueryGetBookVariables } from "./queries";
+import { MutationAddBookArgs, MutationRemoveBookArgs, Edit_BookDocument, Book, DownloadState, QueryBookDocument } from '../generated/graphql'
+import { Reference } from "@apollo/client";
+import { OfflineApolloClient } from "../client";
 
-type ResolverContext = { client: ApolloClient<any> }
+type ResolverContext = { client: OfflineApolloClient<any> }
 
 export const bookOfflineResolvers = {
   addBook: (variables: Omit<MutationAddBookArgs, 'id'>, { client }: ResolverContext): Book => {
@@ -31,18 +31,16 @@ export const bookOfflineResolvers = {
     }
 
     // create the offline books reference
-    client.cache.writeQuery<QueryGetBookData, QueryGetBookVariables>({ query: GET_BOOK, variables: { id: book.id }, data: { book } })
-    const queryBooksData = client.readQuery<QueryBooksData>({ query: QueryBooks })
-    if (queryBooksData) {
-      client.writeQuery<QueryBooksData>({
-        query: QueryBooks, data: {
-          books: {
-            ...queryBooksData.books,
-            books: [...queryBooksData.books.books, book]
-          }
+    client.cache.writeQuery({ query: QueryBookDocument, variables: { id: book.id }, data: { book } })
+    client.modify('Query', {
+      fields: {
+        books: (existing = [], { toReference }) => {
+          const ref = toReference(book)
+          if (ref) return [...existing, ref]
+          return existing
         }
-      })
-    }
+      }
+    })
 
     return book
   },
@@ -55,19 +53,13 @@ export const bookOfflineResolvers = {
       client.cache.gc()
     }
 
-    const queryBooksData = client.readQuery<QueryBooksData>({ query: QueryBooks })
-    if (queryBooksData) {
-      client.writeQuery<QueryBooksData>({
-        query: QueryBooks, data: {
-          books: {
-            ...queryBooksData.books,
-            books: queryBooksData.books.books.filter(item => item.id !== id)
-          }
-        }
-      })
-    }
+    client.modify('Query', {
+      fields: {
+        books: (existing = []) => existing.filter(({ __ref }: Reference) => __ref !== itemRef)
+      }
+    })
   },
-  editBook: ({ id, ...rest }: MutationEditBookArgs & { tags?: string[] }, { client }: ResolverContext) => {
+  editBook: ({ id, ...rest }: NonNullable<typeof Edit_BookDocument['__variablesType']> & { tags?: string[] }, { client }: ResolverContext) => {
     const editedBookId = client.cache.identify({ id, __typename: 'Book' })
     console.log('modify', editedBookId, rest)
 

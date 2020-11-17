@@ -10,8 +10,6 @@ export const removeBookFromSeries = <DATA = any>(cache: ApolloCache<DATA>, bookT
       id: seriesWithOutdatedBook,
       fields: {
         books: (existingValue: Reference[] = [], { toReference }) => {
-          console.log('ASDASDASDASD', existingValue, seriesWithOutdatedBook, existingValue.filter(v => cache.identify(v) !== bookToRemoveIdentity))
-
           return existingValue.filter(v => cache.identify(v) !== bookToRemoveIdentity)
         }
       }

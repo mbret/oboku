@@ -1,0 +1,35 @@
+query SyncLibrary @noRetry {
+  books { 
+    ...BookDetails
+    tags {
+      id
+    }
+    links {
+      id
+    }
+    series {
+      id
+    }
+  }
+  tags {
+    id
+    name
+    isProtected
+    books {
+      id
+    }
+  }
+  series {
+    id
+    name
+    books {
+      id
+    }
+  }
+  dataSources {
+    id
+    type
+    lastSyncedAt
+    data
+  }
+}

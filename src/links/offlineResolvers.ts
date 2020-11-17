@@ -1,9 +1,10 @@
-import { MutationEditLinkArgs, MutationAddLinkArgs, Link } from '../generated/graphql'
-import { ApolloClient, gql } from "@apollo/client";
+import { MutationAddLinkDocument, Link, MutationEditLinkDocument } from '../generated/graphql'
+import { gql } from "@apollo/client";
 import { generateUniqueID } from "../utils";
 import { QueryFullLink } from "./queries";
+import { OfflineApolloClient } from '../client';
 
-type ResolverContext = { client: ApolloClient<any> }
+type ResolverContext = { client: OfflineApolloClient<any> }
 
 export const QueryBookLinks = gql`
   query QueryBookLinks($id: ID!) {
@@ -18,11 +19,12 @@ export const QueryBookLinks = gql`
 
 export const linkOfflineResolvers = {
   Mutation: {
-    addLink: ({ bookId, ...rest }: Omit<MutationAddLinkArgs, 'id'> & { bookId: string }, { client }: ResolverContext) => {
-      const link: Required<Link> = {
+    addLink: ({ bookId, ...rest }: Omit<NonNullable<typeof MutationAddLinkDocument['__variablesType']>, 'id'> & { bookId: string }, { client }: ResolverContext) => {
+      const link = {
         __typename: 'Link' as const,
         id: generateUniqueID(),
-        location: rest.location,
+        data: '',
+        ...rest,
       }
 
       // create normalized reference + prepare link() query
@@ -38,7 +40,7 @@ export const linkOfflineResolvers = {
 
       return link
     },
-    editLink: ({ id, bookId, ...rest }: MutationEditLinkArgs & { bookId: string }, { client }: ResolverContext) => {
+    editLink: ({ id, bookId, ...rest }: NonNullable<typeof MutationEditLinkDocument['__variablesType']> & { bookId: string }, { client }: ResolverContext) => {
       const itemId = client.cache.identify({ id, __typename: 'Link' })
       const bookItemId = client.cache.identify({ id: bookId, __typename: 'Book' })
 
@@ -53,10 +55,10 @@ export const linkOfflineResolvers = {
         })
       }
 
-      client.cache.modify({
+      client.modify('Link', {
         id: itemId,
         fields: {
-          location: (prev) => rest.location !== undefined ? rest.location : prev,
+          resourceId: (prev) => rest.resourceId !== undefined ? rest.resourceId : prev,
         }
       })
     },

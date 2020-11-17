@@ -1,5 +1,6 @@
 import { OperationQueueEntry } from "../apollo-link-offline-queue/types";
-import { MutationRemoveBook, MutationAddBook } from "../books/queries";
+import { AddBookDocument, RemoveBookDocument } from "../generated/graphql";
+import { forOperationAs, isSameOperation } from "../utils";
 
 /**
  * @IMPORTANT
@@ -11,34 +12,33 @@ import { MutationRemoveBook, MutationAddBook } from "../books/queries";
  * - replace operation (remove and then add)
  */
 export const rules = (queue: OperationQueueEntry[], newEntry: OperationQueueEntry): OperationQueueEntry[] => {
-  switch (newEntry.operation.operationName) {
-    /**
-     * @case 
-     * We try to remove a book that we already want to add before
-     * 
-     * @result
-     * we remove both mutation
-     * 
-     * @todo
-     * remove any edit mutation too
-     */
-    case MutationRemoveBook.name: {
-      const addMutation = queue.find(entry =>
-        entry.operation.operationName === MutationAddBook.name
-        && entry.operation.variables?.id === newEntry.operation.variables?.id
+  /**
+   * @case 
+   * We try to remove a book that we already want to add before
+   * 
+   * @result
+   * we remove both mutation
+   * 
+   * @todo
+   * remove any edit mutation too
+   */
+  if (isSameOperation(newEntry.operation.query, RemoveBookDocument)) {
+    const addMutation = queue.find(entry =>
+      isSameOperation(entry.operation.query, AddBookDocument)
+      && entry.operation.variables?.id === newEntry.operation.variables?.id
+    )
+
+    console.warn('REMOVED')
+
+    if (addMutation) {
+      return queue.filter(entry =>
+        entry !== addMutation
+        && entry !== newEntry
       )
-
-      console.warn('REMOVED')
-
-      if (addMutation) {
-        return queue.filter(entry =>
-          entry !== addMutation
-          && entry !== newEntry
-        )
-      }
-
-      return queue
     }
-    default: return queue
+
+    return queue
   }
+
+  return queue
 }

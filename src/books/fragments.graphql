@@ -1,0 +1,34 @@
+fragment BookDetails on Book {
+  __typename
+  id
+  lastMetadataUpdatedAt
+  title
+  creator
+  language
+  date
+  publisher
+  subject
+  downloadState @client
+  downloadProgress @client
+  readingStateCurrentBookmarkLocation
+  readingStateCurrentBookmarkProgressUpdatedAt
+  readingStateCurrentBookmarkProgressPercent
+  createdAt
+}
+
+fragment BookDetailsWithAssociations on Book {
+  ...BookDetails
+  tags {
+    id
+    name
+    isProtected @client
+  }
+  links {
+    id
+    resourceId
+  }
+  series {
+    id
+    name
+  }
+}

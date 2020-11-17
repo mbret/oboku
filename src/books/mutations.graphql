@@ -9,3 +9,43 @@ mutation MutationRemoveSeriesToBook($id: ID!, $series: [ID]!) {
     success
   }
 }
+
+mutation AddBook($id: ID!) {
+  addBook(id: $id) {
+    success
+  }
+}
+
+mutation EDIT_BOOK(
+  $id: ID!, 
+  $lastMetadataUpdatedAt: Float,
+  $readingStateCurrentBookmarkLocation: String,
+  $readingStateCurrentBookmarkProgressPercent: Float
+) {
+  editBook(
+    id: $id, 
+    lastMetadataUpdatedAt: $lastMetadataUpdatedAt
+    readingStateCurrentBookmarkLocation: $readingStateCurrentBookmarkLocation,
+    readingStateCurrentBookmarkProgressPercent: $readingStateCurrentBookmarkProgressPercent
+  ) {
+    id
+  }
+}
+
+mutation RemoveBook($id: ID!) {
+  removeBook(id: $id) {
+    id
+  }
+}
+
+mutation MutationAddTagsToBook($id: ID!, $tags: [ID]!) {
+  addTagsToBook(id: $id, tags: $tags) {
+    success
+  }
+}
+
+mutation MutationRemoveTagsToBook($id: ID!, $tags: [ID]!) {
+  removeTagsToBook(id: $id, tags: $tags) {
+    success
+  }
+}

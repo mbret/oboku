@@ -1,5 +1,4 @@
 import React, { useState, FC } from 'react';
-import '../App.css';
 import Dialog from '@material-ui/core/Dialog';
 import {
   Button, DialogActions, DialogContent, DialogTitle, TextField,
@@ -42,7 +41,7 @@ export const LibrarySeriesScreen = () => {
         {series && series.map(item => (
           <ListItem
             button
-            key={item.id}
+            key={item?.id}
             className={classes.listItem}
             onClick={() => {
               item?.id && history.push(ROUTES.SERIES_DETAILS.replace(':id', item.id))
@@ -56,8 +55,8 @@ export const LibrarySeriesScreen = () => {
                 display: 'flex',
                 justifyContent: 'center',
               }}>
-                {item.books?.slice(0, 3).map((bookItem, i) => {
-                  const length = (item.books?.length || 0)
+                {item?.books?.slice(0, 3).map((bookItem, i) => {
+                  const length = (item?.books?.length || 0)
                   const coverHeight = 200 * (length < 3 ? 0.6 : 0.5)
 
                   if (!bookItem) return null
@@ -90,10 +89,10 @@ export const LibrarySeriesScreen = () => {
               }}
               onClick={(e) => {
                 e.stopPropagation()
-                setIsActionDialogOpenedWith(item.id)
+                setIsActionDialogOpenedWith(item?.id)
               }}
             >
-              <ListItemText primary={item.name} secondary={`${item.books?.length || 0} book(s)`} />
+              <ListItemText primary={item?.name} secondary={`${item?.books?.length || 0} book(s)`} />
               <IconButton
                 disableFocusRipple
                 disableRipple

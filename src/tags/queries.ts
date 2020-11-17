@@ -1,7 +1,7 @@
 import { useQuery, useLazyQuery, gql, useMutation, useApolloClient } from "@apollo/client"
 import { tagsOfflineResolvers } from "./offlineResolvers"
 import { useCallback } from "react"
-import { Mutation, MutationAddTagArgs, MutationEditTagArgs, MutationRemoveTagArgs, QueryTagArgs, Tag } from "../generated/graphql"
+import { Mutation, MutationAddTagArgs, MutationEditTagArgs, MutationRemoveTagArgs, QueryTagArgs, Tag, MutationRemoveTagDocument } from "../generated/graphql"
 
 const MutationTagDetailsFragment = gql`
   fragment MutationTagDetailsFragment on Tag {
@@ -18,14 +18,6 @@ export const TAG_DETAILS_FRAGMENT = gql`
     name
     isProtected
     books {
-      id
-    }
-  }
-`
-
-export const REMOVE_TAG = gql`
-  mutation REMOVE_TAG($id: ID!) {
-    removeTag(id: $id) {
       id
     }
   }
@@ -74,7 +66,7 @@ export const EDIT_TAG = gql`
 
 export const useQueryGetTags = () => useQuery<{ tags: Tag[] }>(GET_TAGS)
 export const useLazyQueryGetTags = () => useLazyQuery<{ tags: Tag[] }>(GET_TAGS)
-export const useLazyQueryGetTag = () => useLazyQuery<QueryTagData, QueryTagArgs>(QueryTag)
+export const useLazyQueryGetTag = () => useLazyQuery<QueryTagData, QueryTagArgs>(QueryTag, {})
 
 export const useCreateTag = () => {
   const client = useApolloClient()
@@ -92,7 +84,7 @@ export const useCreateTag = () => {
 export const useRemoveTag = () => {
   const client = useApolloClient()
 
-  const [removeTagMutation] = useMutation<any, MutationRemoveTagArgs>(REMOVE_TAG);
+  const [removeTagMutation] = useMutation<any, MutationRemoveTagArgs>(MutationRemoveTagDocument);
 
   return useCallback((id: string) => {
     tagsOfflineResolvers.Mutation.removeTag({ id }, { client })
