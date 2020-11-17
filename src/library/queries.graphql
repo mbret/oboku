@@ -19,6 +19,10 @@ query SyncLibrary @noRetry {
       id
     }
   }
+  links {
+    id
+    resourceId
+  }
   series {
     id
     name

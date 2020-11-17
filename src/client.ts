@@ -1,4 +1,4 @@
-import { ApolloCache, ApolloClient, FieldFunctionOptions, InMemoryCache, makeVar, Reference, StoreValue } from '@apollo/client';
+import { ApolloClient, FieldFunctionOptions, InMemoryCache, makeVar, Reference } from '@apollo/client';
 import { HttpLink } from 'apollo-link-http';
 import { RetryLink } from "apollo-link-retry";
 import apolloLogger from 'apollo-link-logger';
@@ -20,14 +20,12 @@ import { ApolloLinkDirective } from './apollo-link-directive/ApolloLinkDirective
 import { libraryLink } from './library/LibraryLink';
 import { defaultData } from './firstTimeExperience/queries';
 import { dataSourcesLink } from './dataSources/DataSourcesLink';
-import { TypedTypePolicies, FirstTimeExperience, QueryFieldPolicy, Series, Book, QueryUserIsLibraryProtectedDocument, QueryAuthDocument, Query, Get_SeriesDocument, QuerySeriesIdsDocument, User } from './generated/graphql';
+import { TypedTypePolicies, FirstTimeExperience, QueryUserIsLibraryProtectedDocument, QueryAuthDocument, Get_SeriesDocument, User } from './generated/graphql';
 import { mergeDeepLeft } from 'ramda';
 import { ApolloLinkOfflineQueries } from './apollo-link-offline-queries';
 import { seriesLink } from './series/SeriesLink';
 import { booksLink } from './books/BooksLink';
-import { Modifier } from '@apollo/client/cache/core/types/common';
 import { OfflineApolloClient } from './useOfflineApolloClient';
-import { QueryUser, QueryUserData } from './auth/queries';
 
 export { OfflineApolloClient }
 
@@ -406,6 +404,7 @@ export const useClient = () => {
       await booksLink.init(client)
       await dataSourcesLink.init(client)
       blockingLink.reset(client)
+
       offlineQueue.restoreQueue(client)
 
       console.log('cache', cache.extract())
