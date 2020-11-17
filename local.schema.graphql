@@ -3,6 +3,30 @@ type FirstTimeExperience {
   hasDoneReaderTour: Boolean
 }
 
+enum DownloadState {
+  none
+  downloaded
+  downloading
+}
+
+extend type Book {
+  downloadState: DownloadState
+  downloadProgress: Float
+}
+
+type Auth {
+  token: String
+  isAuthenticated: Boolean!
+}
+
+extend type User {
+  isLibraryUnlocked: Boolean!
+}
+
 type Query {
   firstTimeExperience: FirstTimeExperience
+  series(foo: String): [Series]
+  books(isProtected: Boolean): [Book]
+  user: User
+  auth: Auth
 }
