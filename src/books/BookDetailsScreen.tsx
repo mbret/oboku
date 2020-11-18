@@ -36,7 +36,8 @@ export const BookDetailsScreen = () => {
 
   return (
     <div style={{
-      flex: 1
+      flex: 1,
+      overflow: 'auto'
     }}>
       <TopBarNavigation title="Book details" showBack={true} />
       <div className={classes.headerContent}>
