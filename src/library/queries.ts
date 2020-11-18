@@ -1,6 +1,6 @@
 import { useQuery, gql, useApolloClient } from '@apollo/client';
 import { useCallback } from 'react';
-import { SyncLibraryDocument, Tag } from '../generated/graphql';
+import { QuerySyncHappeningDocument, SyncLibraryDocument, Tag } from '../generated/graphql';
 import { QueryTag } from '../tags/queries';
 
 export type LibraryBooksSettings = {
@@ -19,15 +19,6 @@ export const GET_LIBRARY_BOOKS_SETTINGS = gql`
       }
       viewMode
       sorting
-    }
-  }
-`
-
-export type QuerySyncData = { sync?: { happening?: boolean } }
-export const QuerySync = gql`
-  query QuerySync @client {
-    sync {
-      happening
     }
   }
 `
@@ -70,11 +61,11 @@ export const useToggleLibraryBooksSettingsViewMode = () => {
 }
 
 export const syncLibrary = async (client: ReturnType<typeof useApolloClient>) => {
-  client.writeQuery<QuerySyncData>({ query: QuerySync, data: { sync: { happening: true } } })
+  client.writeQuery({ query: QuerySyncHappeningDocument, data: { syncState: { happening: true } } })
   try {
     await client.query({ query: SyncLibraryDocument, fetchPolicy: 'network-only' }).catch(() => { })
   } catch (e) { }
-  client.writeQuery<QuerySyncData>({ query: QuerySync, data: { sync: { happening: false } } })
+  client.writeQuery({ query: QuerySyncHappeningDocument, data: { syncState: { happening: false } } })
 }
 
 export const useSyncLibrary = () => {
@@ -86,9 +77,9 @@ export const useSyncLibrary = () => {
 }
 
 export const useIsSyncing = () => {
-  const { data } = useQuery<QuerySyncData>(QuerySync)
+  const { data } = useQuery(QuerySyncHappeningDocument)
 
-  return !!data?.sync?.happening
+  return !!data?.syncState?.happening
 }
 
 export const useToggleTag = () => {

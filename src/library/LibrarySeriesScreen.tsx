@@ -5,11 +5,14 @@ import {
   Toolbar, IconButton, makeStyles, createStyles, ListItem, ListItemText, List, useTheme
 } from '@material-ui/core';
 import { MoreVert } from '@material-ui/icons';
-import { useQueryGetSeries, useAddSeries } from '../series/queries';
+import { useQueryGetSeries } from '../series/queries';
 import { ROUTES } from '../constants';
 import { useHistory } from 'react-router-dom';
 import { SeriesActionsDrawer } from '../series/SeriesActionsDrawer';
 import { Cover } from '../books/Cover';
+import { Add_SeriesDocument } from '../generated/graphql';
+import { useMutation } from '@apollo/client';
+import { createNewSeries } from '../series/helpers';
 
 export const LibrarySeriesScreen = () => {
   const classes = useStyles();
@@ -123,17 +126,11 @@ const AddSeriesDialog: FC<{
   onClose: () => void,
 }> = ({ onClose, open }) => {
   const [name, setName] = useState('')
-  const addSeries = useAddSeries()
+  const [addSeries] = useMutation(Add_SeriesDocument)
 
   const onInnerClose = () => {
     setName('')
     onClose()
-  }
-
-  const onConfirm = (name: string) => {
-    if (name) {
-      addSeries(name)
-    }
   }
 
   return (
@@ -157,7 +154,9 @@ const AddSeriesDialog: FC<{
         <Button
           onClick={() => {
             onInnerClose()
-            onConfirm(name)
+            if (name) {
+              addSeries({ variables: createNewSeries({ name }) })
+            }
           }}
           color="primary"
         >

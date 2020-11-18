@@ -23,10 +23,24 @@ extend type User {
   isLibraryUnlocked: Boolean!
 }
 
+extend type SyncQueryResponse {
+  happening: Boolean!
+}
+
+type App {
+  id: ID!
+  hasUpdateAvailable: Boolean!
+}
+
 type Query {
+  app: App
   firstTimeExperience: FirstTimeExperience
   series(foo: String): [Series]
   books(isProtected: Boolean): [Book]
   user: User
   auth: Auth
+}
+
+type Mutation {
+  app(hasUpdateAvailable: Boolean): App
 }

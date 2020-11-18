@@ -13,8 +13,11 @@ import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
+import appPackage from '../package.json'
 
 declare const self: ServiceWorkerGlobalScope;
+
+console.warn(appPackage.version)
 
 clientsClaim();
 

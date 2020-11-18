@@ -88,7 +88,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "start-prod": "npm run build && npm run serve -s build -l 3000",
+    "start-prod": "npm run build && npm run serve-prod",
     "serve-prod": "serve -s build -l 3000",
     "tsc": "tsc",
     "generate": "graphql-codegen --config codegen.yml"

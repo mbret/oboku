@@ -37,3 +37,15 @@ query SyncLibrary @noRetry {
     data
   }
 }
+
+query QueryInitSyncState @client {
+  syncState {
+    __typename
+  }
+}
+
+query QuerySyncHappening @client {
+  syncState {
+    happening
+  }
+}

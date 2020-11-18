@@ -1,6 +1,6 @@
 import { ApolloProvider } from '@apollo/client';
-import React from 'react';
-import { useClient } from './client';
+import React, { useEffect, useState } from 'react';
+import { getClient, useClient } from './client';
 import { RoutineProcess } from './RoutineProcess';
 import { AppNavigator } from './AppNavigator';
 import { ThemeProvider } from '@material-ui/core';
@@ -11,71 +11,40 @@ import { UnlockLibraryDialog } from './auth/UnlockLibraryDialog';
 import { AppTourWelcome } from './firstTimeExperience/AppTourWelcome';
 import { TourProvider } from './app-tour/TourProvider';
 import { ManageBookSeriesDialog } from './books/ManageBookSeriesDialog';
-import { GoogleApiProvider, listFiles } from './google';
+import { GoogleApiProvider } from './google';
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import { UpdateAvailableDialog } from './UpdateAvailableDialog';
 
-let googleAuth
-
-const SCOPE = 'https://www.googleapis.com/auth/drive.metadata.readonly'
-
-const signInFunction = async () => {
-  googleAuth.signIn();
-  updateSignStatus()
-
-  await listFiles((window as any).gapi, '')
-
-}
-
-const updateSignStatus = async () => {
-  var user = googleAuth.currentUser.get();
-  console.log('updateSignStatus', user)
-  if (user.wc == null) {
-    // this.setState({
-    //   name: ''
-    // });
-  }
-  else {
-    var isAuthorized = user.hasGrantedScopes(SCOPE);
-    if (isAuthorized) {
-      console.log('IS AUTHORIZED')
-      // this.setState({
-      //   name: user.Ot.Cd
-      // });
-      //we will put the code of the third step here
-    }
-  }
-}
-
-const initClient = () => {
-  (window as any).gapi.client
-    .init({
-      // 'apiKey': "<YOUR API KEY>",
-      'clientId': "325550353363-vklpik5kklrfohg1vdrkvjp1n8dopnrd.apps.googleusercontent.com",
-      'scope': SCOPE,
-      'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
-    }).then(() => {
-      console.log('AUTHENTICATED')
-      googleAuth = (window as any).gapi.auth2.getAuthInstance()
-      googleAuth.isSignedIn.listen(updateSignStatus)
-
-      signInFunction()
-
-      //   this.setState({
-      //     googleAuth: window.gapi.auth2.getAuthInstance()
-      //   })
-      //   this.state.googleAuth.isSignedIn.listen(this.updateSigninStatus);
-
-
-      //    document.getElementById('signout-btn').addEventListener('click', this.signOutFunction);
-
-      // });
-    })
-    .catch(e => {
-      console.error(e)
-    })
-};
-
-function App() {
+export function App() {
   const client = useClient()
+  const [newServiceWorker, setNewServiceWorker] = useState<ServiceWorker | undefined>(undefined)
+
+  useEffect(() => {
+    // If you want your app to work offline and load faster, you can change
+    // unregister() to register() below. Note this comes with some pitfalls.
+    // Learn more about service workers: https://cra.link/PWA
+    serviceWorkerRegistration.register({
+      onSuccess: () => console.warn('onSuccess'),
+      onUpdate: reg => console.warn('onUpdate', reg),
+      onWaitingServiceWorkerFound: async (reg) => {
+        reg.waiting && setNewServiceWorker(reg.waiting)
+        const client = await getClient()
+        console.warn('onWaitingServiceWorkerFound', reg)
+        try {
+          client.modify('App', {
+            id: client.identify({ __typename: 'App', id: '_' }),
+            fields: {
+              hasUpdateAvailable: _ => true
+            }
+          })
+        } catch (e) {
+          console.error(e)
+        }
+
+
+      },
+    });
+  }, [])
 
   return (
     <>
@@ -94,13 +63,8 @@ function App() {
                   <ManageBookSeriesDialog />
                   <BlockingBackdrop />
                   <RoutineProcess />
-                  <div id="measure-layer" style={{
-                    display: "inline-block",
-                    position: "absolute",
-                    visibility: "hidden",
-                    zIndex: -1,
-                  }} />
                 </TourProvider>
+                <UpdateAvailableDialog serviceWorker={newServiceWorker} />
               </GoogleApiProvider>
             </ThemeProvider>
           </ApolloProvider>
@@ -109,5 +73,3 @@ function App() {
     </>
   );
 }
-
-export default App;

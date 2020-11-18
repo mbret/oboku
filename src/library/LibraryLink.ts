@@ -1,26 +1,38 @@
-import { ApolloLink, FetchResult } from "apollo-link"
-import { ApolloClient } from "@apollo/client"
-import { getMainDefinition } from "../utils"
-import { QuerySync, QuerySyncData } from "./queries"
+import { ApolloLink } from "apollo-link"
+import { QueryInitSyncStateDocument } from "../generated/graphql"
+import { OfflineApolloClient } from "../useOfflineApolloClient"
 
 class LibraryLink extends ApolloLink {
   public request = (operation, forward) => {
-    const context = operation.getContext()
-    const definition = getMainDefinition(operation.query)
-    const client = context.client as ApolloClient<any>
 
     return forward(operation)
   }
 
-  public init = async (client: ApolloClient<any>) => {
-    let data: QuerySyncData | null | undefined
-    try {
-      data = client.readQuery<QuerySyncData>({ query: QuerySync })
-    } catch (e) { }
+  public init = async (client: OfflineApolloClient<any>) => {
+    this.initializeState(client)
+    this.resetState(client)
+  }
 
-    if (!data) {
-      client.writeQuery<QuerySyncData>({ query: QuerySync, data: { sync: { happening: false } } })
-    }
+  protected initializeState = async (client: OfflineApolloClient<any>) => {
+    let data
+      try { data = client.readQuery({ query: QueryInitSyncStateDocument }) } catch (e) { }
+
+      if (!data) {
+        client.writeQuery({
+          query: QueryInitSyncStateDocument,
+          data: {
+            syncState: { __typename: 'SyncQueryResponse' }
+          }
+        })
+      }
+  }
+
+  protected resetState = async (client: OfflineApolloClient<any>) => {
+    client.modify('Query', {
+      fields: {
+        syncState: (value) => ({ ...value, happening: false })
+      }
+    })
   }
 }
 

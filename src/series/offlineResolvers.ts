@@ -1,6 +1,4 @@
-import { generateUniqueID, getMainDefinition } from "../utils";
-import { ApolloClient } from "@apollo/client";
-import { MutationEditSeriesArgs, MutationRemoveSeriesArgs, Query_One_Series_Document, QuerySeriesIdsDocument } from "../generated/graphql";
+import { MutationEditSeriesArgs, MutationRemoveSeriesArgs, QuerySeriesIdsDocument } from "../generated/graphql";
 import { useClient } from "../client";
 
 export declare type IResolverObject<TContext = any, TArgs = any> = {
@@ -13,24 +11,6 @@ type ResolverContext = { client: NonNullable<ReturnType<typeof useClient>> }
 
 export const seriesOfflineResolvers = {
   Mutation: {
-    addSeries: (variables: { name: string }, { client }: ResolverContext) => {
-      const series = {
-        __typename: 'Series' as const,
-        id: generateUniqueID(),
-        books: [],
-        ...variables,
-      }
-      // add the offline item to the list
-      client.cache.modify({
-        fields: {
-          series: (prev = [], { toReference }) => {
-            return [...prev, toReference(series)]
-          }
-        }
-      })
-
-      return series
-    },
     removeSeries: ({ id }: MutationRemoveSeriesArgs, { client }: ResolverContext) => {
       const normalizedId = client.cache.identify({ id, __typename: 'Series' })
       if (normalizedId) {

@@ -1,0 +1,8 @@
+fragment FragmentInitApp on App {
+  id
+  hasUpdateAvailable
+}
+
+fragment FragmentAppHasUpdateAvailable on App {
+  hasUpdateAvailable
+}

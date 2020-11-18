@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache, Reference, StoreValue, useApolloClient } from "@apollo/client";
 import { Modifier } from "@apollo/client/cache/core/types/common";
 import { useClient } from "./client";
-import { Book, DataSource, Link, Query, QueryFieldPolicy, Series } from "./generated/graphql";
+import { App, Book, DataSource, Link, Query, QueryFieldPolicy, Series } from "./generated/graphql";
 
 type MyCache = InMemoryCache & { foo: () => void }
 
@@ -19,7 +19,7 @@ type EvictOptions = Parameters<InMemoryCache['evict']>[0]
 type ModifyOptions = Parameters<InMemoryCache['modify']>[0]
 
 
-type ReferenceTypename = Series['__typename'] | Book['__typename'] | DataSource['__typename']
+type ReferenceTypename = Series['__typename'] | Book['__typename'] | DataSource['__typename'] | App['__typename']
 
 type ModifyableBook = Omit<Required<Book>, 'series'> & {
   series: Reference[]
@@ -29,15 +29,16 @@ type ModifyableSeries = Omit<Required<Series>, 'books'> & {
   books: Reference[]
 }
 
-type ModifyableQuery = Omit<Required<Query>, 'books' | 'dataSources'> & {
+type ModifyableQuery = Omit<Required<Query>, 'books' | 'dataSources' | 'series'> & {
   books: Reference[],
+  series: Reference[],
   dataSources: Reference[],
 }
 
 type ModifyableDataSource = Required<DataSource>
 type ModifyableLink = Required<Link>
 
-type ModifyEntity = ModifyableSeries | ModifyableBook | ModifyableQuery | ModifyableDataSource | ModifyableLink
+type ModifyEntity = ModifyableSeries | ModifyableBook | ModifyableQuery | ModifyableDataSource | ModifyableLink | App
 
 type OfflineModifyOption<Entity> = Omit<ModifyOptions, 'fields'> & {
   fields: {
@@ -61,6 +62,7 @@ export class OfflineApolloClient<TCacheShape> extends ApolloClient<TCacheShape> 
     return this.cache.identify(object)
   }
 
+  public modify(__typename: App['__typename'], options: OfflineModifyOption<App>): boolean
   public modify(__typename: ModifyableSeries['__typename'], options: OfflineModifyOption<ModifyableSeries>): boolean
   public modify(__typename: ModifyableBook['__typename'], options: OfflineModifyOption<ModifyableBook>): boolean
   public modify(__typename: ModifyableQuery['__typename'], options: OfflineModifyOption<ModifyableQuery>): boolean

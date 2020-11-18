@@ -20,12 +20,13 @@ import { ApolloLinkDirective } from './apollo-link-directive/ApolloLinkDirective
 import { libraryLink } from './library/LibraryLink';
 import { defaultData } from './firstTimeExperience/queries';
 import { dataSourcesLink } from './dataSources/DataSourcesLink';
-import { TypedTypePolicies, FirstTimeExperience, QueryUserIsLibraryProtectedDocument, QueryAuthDocument, Get_SeriesDocument, User } from './generated/graphql';
+import { TypedTypePolicies, FirstTimeExperience, QueryUserIsLibraryProtectedDocument, QueryAuthDocument, Get_SeriesDocument, User, FragmentInitAppFragmentDoc } from './generated/graphql';
 import { mergeDeepLeft } from 'ramda';
 import { ApolloLinkOfflineQueries } from './apollo-link-offline-queries';
 import { seriesLink } from './series/SeriesLink';
 import { booksLink } from './books/BooksLink';
 import { OfflineApolloClient } from './useOfflineApolloClient';
+import { appLink } from './AppLink';
 
 export { OfflineApolloClient }
 
@@ -123,6 +124,7 @@ const link: any = ApolloLink.from([
   seriesLink,
   booksLink,
   dataSourcesLink,
+  appLink,
 
   offlineQueriesLink,
   offlineQueue,
@@ -220,7 +222,7 @@ const typePolicies: TypedTypePolicies = {
   Series: {
     fields: {
       books: {
-        read: (value, options) => {
+        read: (value: Reference[] | undefined = [], options) => {
           return filterOutUnprotectedBooks(value, options)
         }
       }
@@ -228,6 +230,9 @@ const typePolicies: TypedTypePolicies = {
   },
   Query: {
     fields: {
+      app: {
+        read: (_, { toReference }) => toReference({ __typename: 'App', id: '_' }),
+      },
       user: {
         read: (value: User) => value || null,
       },
@@ -314,105 +319,114 @@ export const cache = new InMemoryCache({
   typePolicies: mergeDeepLeft(localTypePolocies, typePolicies)
 })
 
-export const useClient = () => {
-  const [client, setClient] = useState<OfflineApolloClient<any> | undefined>(undefined)
-  // @todo https://www.apollographql.com/docs/react/networking/authentication/
-  // const [authToken] = useAuthToken()
+export const loadClient = async () => {
+  await persistCache({
+    cache,
+    storage: (localforage as any),
+    debug: true,
+  });
 
-  clientForContext = client
+  const client = new OfflineApolloClient({
+    link,
+    cache,
+    defaultOptions: {
+      /**
+       * The useQuery hook uses Apollo Client's watchQuery function. 
+       * To set defaultOptions when using the useQuery hook, make sure 
+       * to set them under the defaultOptions.watchQuery property.
+       */
+      watchQuery: {
+        returnPartialData: true,
+        fetchPolicy: 'cache-only',
+      },
+      query: {
+        fetchPolicy: 'cache-only',
+      }
+    }
+  });
+
+  // precache for offline purpose
+  [
+    () => {
+      let data = null
+      try {
+        data = cache.readQuery({ query: GET_LIBRARY_BOOKS_SETTINGS })
+      } catch (e) { }
+
+      if (data === null) {
+        cache.writeQuery({
+          query: GET_LIBRARY_BOOKS_SETTINGS,
+          data: {
+            libraryBooksSettings: { tags: [], viewMode: 'grid', sorting: 'date' }
+          }
+        })
+      }
+    },
+    () => {
+      let data = null
+      try {
+        data = cache.readQuery({ query: GET_TAGS })
+      } catch (e) { }
+
+      if (data === null) {
+        cache.writeQuery({ query: GET_TAGS, data: { tags: [] } })
+      }
+    },
+    () => {
+      let data
+      try {
+        data = cache.readQuery({ query: Get_SeriesDocument })
+      } catch (e) { }
+
+      if (!data) {
+        cache.writeQuery({ query: Get_SeriesDocument, data: { series: [] } })
+      }
+    },
+    () => {
+      let data
+      try {
+        data = cache.readQuery({ query: QueryAuthDocument })
+      } catch (e) { }
+
+      if (!data) {
+        cache.writeQuery({ query: QueryAuthDocument, data: { auth: { token: null, isAuthenticated: false } } })
+      }
+    },
+  ].map(fn => fn())
+
+  await appLink.init(client)
+  await libraryLink.init(client)
+  await booksLink.init(client)
+  await dataSourcesLink.init(client)
+  blockingLink.reset(client)
+
+  offlineQueue.restoreQueue(client)
+
+  console.warn('Apollo cache after boot', cache.extract())
+
+  return client
+}
+
+export const loadingClient = loadClient()
+
+export const getClient = () => loadingClient
+
+export const useClient = () => {
+  const [loadedClient, setLoadedClient] = useState<OfflineApolloClient<any> | undefined>(undefined)
 
   useEffect(() => {
     (async () => {
-      await persistCache({
-        cache,
-        storage: (localforage as any),
-        debug: true,
-      });
+      const client = await getClient()
 
-      const client = new OfflineApolloClient({
-        link,
-        cache,
-        defaultOptions: {
-          /**
-           * The useQuery hook uses Apollo Client's watchQuery function. 
-           * To set defaultOptions when using the useQuery hook, make sure 
-           * to set them under the defaultOptions.watchQuery property.
-           */
-          watchQuery: {
-            returnPartialData: true,
-            fetchPolicy: 'cache-only',
-          },
-          query: {
-            fetchPolicy: 'cache-only',
-          }
-        }
-      });
+      clientForContext = client
 
       // @ts-ignore
       window.__client = client;
 
-      // precache for offline purpose
-      [
-        () => {
-          let data = null
-          try {
-            data = cache.readQuery({ query: GET_LIBRARY_BOOKS_SETTINGS })
-          } catch (e) { }
-
-          if (data === null) {
-            cache.writeQuery({
-              query: GET_LIBRARY_BOOKS_SETTINGS,
-              data: {
-                libraryBooksSettings: { tags: [], viewMode: 'grid', sorting: 'date' }
-              }
-            })
-          }
-        },
-        () => {
-          let data = null
-          try {
-            data = cache.readQuery({ query: GET_TAGS })
-          } catch (e) { }
-
-          if (data === null) {
-            cache.writeQuery({ query: GET_TAGS, data: { tags: [] } })
-          }
-        },
-        () => {
-          let data
-          try {
-            data = cache.readQuery({ query: Get_SeriesDocument })
-          } catch (e) { }
-
-          if (!data) {
-            cache.writeQuery({ query: Get_SeriesDocument, data: { series: [] } })
-          }
-        },
-        () => {
-          let data
-          try {
-            data = cache.readQuery({ query: QueryAuthDocument })
-          } catch (e) { }
-
-          if (!data) {
-            cache.writeQuery({ query: QueryAuthDocument, data: { auth: { token: null, isAuthenticated: false } } })
-          }
-        },
-      ].map(fn => fn())
-
-      await libraryLink.init(client)
-      await booksLink.init(client)
-      await dataSourcesLink.init(client)
-      blockingLink.reset(client)
-
-      offlineQueue.restoreQueue(client)
-
-      console.log('cache', cache.extract())
-
-      setClient(client)
+      setLoadedClient(client)
     })()
   }, [])
 
-  return client
+  return loadedClient
 }
 
