@@ -1,11 +1,11 @@
-mutation MutationAddSeriesToBook($id: ID!, $series: [ID]!) {
-  addSeriesToBook(id: $id, series: $series) {
+mutation MutationAddCollectionsToBook($id: ID!, $collections: [ID]!) {
+  addCollectionsToBook(id: $id, collections: $collections) {
     success
   }
 }
 
-mutation MutationRemoveSeriesToBook($id: ID!, $series: [ID]!) {
-  removeSeriesToBook(id: $id, series: $series) {
+mutation MutationRemoveCollectionsToBook($id: ID!, $collections: [ID]!) {
+  removeCollectionsToBook(id: $id, collections: $collections) {
     success
   }
 }

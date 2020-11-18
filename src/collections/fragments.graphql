@@ -1,0 +1,5 @@
+fragment NewCollection on Collection {
+  __typename
+  id
+  name
+}

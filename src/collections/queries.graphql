@@ -1,0 +1,36 @@
+query QueryCollectionIds {
+  collections {
+    __typename
+    id
+  }
+}
+
+query GET_COLLECTIONS($foo: String) {
+  collections(foo: $foo) {
+    __typename
+    id
+    name
+    books {
+      id
+    }
+  }
+}
+
+query QueryCollectionBookIds($id: ID!) {
+  collection(id: $id) {
+    id
+    books {
+      id
+    }
+  }
+}
+
+query QUERY_COLLECTION_($id: ID!) {
+  collection(id: $id) {
+    id
+    name
+    books {
+      id
+    }
+  }
+}

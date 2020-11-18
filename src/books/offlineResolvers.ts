@@ -26,7 +26,7 @@ export const bookOfflineResolvers = {
       rights: null,
       subject: null,
       creator: null,
-      series: [],
+      collection: [],
       ...variables,
     }
 
@@ -47,7 +47,7 @@ export const bookOfflineResolvers = {
   removeBook: ({ id }: MutationRemoveBookArgs, { client }: ResolverContext) => {
     const itemRef = client.cache.identify({ id, __typename: 'Book' })
     if (itemRef) {
-      // @see https://www.apollographql.com/docs/react/caching/garbage-collection/#dangling-references
+      // @see https://www.apollographql.com/docs/react/caching/garbage-collections/#dangling-references
       client.cache.evict({ id: itemRef })
       client.cache.evict({ id: 'ROOT_QUERY', fieldName: 'book', args: { id } })
       client.cache.gc()
@@ -82,7 +82,7 @@ export const bookOfflineResolvers = {
       }
     })
 
-    // Eventually add the book to any associated tags and series
+    // Eventually add the book to any associated tags and collection
     if (rest.tags) {
       rest.tags.forEach(itemId => {
         const item = client.cache.identify({ id: itemId, __typename: 'Tag' })

@@ -1,20 +1,20 @@
 import { useApolloClient } from "@apollo/client"
 import { useCallback } from "react"
 import { useAddBook } from "../books/queries"
-// import { useAddSeries } from "../series/queries"
+// import { useAddCollection } from "../collections/queries"
 import { useCreateTag } from "../tags/queries"
 
 type LibraryJson = {
   books: { url: string }[],
   tags: { name: string }[],
-  series: { name: string }[],
+  collections: { name: string }[],
 }
 
 export const useLoadLibraryFromJson = () => {
   const client = useApolloClient()
   const addBook = useAddBook()
   const createTag = useCreateTag()
-  // const addSeries = useAddSeries()
+  // const addCollection = useAddCollection()
 
   return useCallback((json: string) => {
     const libraryJson = JSON.parse(json) as LibraryJson
@@ -29,9 +29,9 @@ export const useLoadLibraryFromJson = () => {
       createTag(item.name)
     })
 
-    libraryJson.series.forEach(item => {
+    libraryJson.collections.forEach(item => {
       console.log(item)
-      // addSeries(item.name)
+      // addCollection(item.name)
     })
   }, [client])
 }

@@ -12,7 +12,7 @@ import { Alert } from '@material-ui/lab';
 import { Cover } from './Cover';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { ROUTES } from '../constants';
-import { openManageBookSeriesDialog } from './ManageBookSeriesDialog';
+import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
 import { LinkType, QueryBookDocument } from '../generated/graphql';
 import { useLazyQuery, useQuery } from '@apollo/client';
 
@@ -30,7 +30,7 @@ export const BookDetailsScreen = () => {
   const { id } = useParams<ScreenParams>()
   const { data } = useQuery(QueryBookDocument, { variables: { id } })
   const book = data?.book
-  const series = book?.series
+  const collection = book?.collections
 
   console.log('[BookDetailsScreen]', book)
 
@@ -114,19 +114,19 @@ export const BookDetailsScreen = () => {
         </ListItem>
         <ListItem
           button
-          onClick={() => openManageBookSeriesDialog(book?.id)}
+          onClick={() => openManageBookCollectionsDialog(book?.id)}
         >
           <ListItemText
-            primary="Series"
-            secondary={((series?.length || 0) > 0)
+            primary="Collection"
+            secondary={((collection?.length || 0) > 0)
               ? (
                 <>
-                  {series?.map(item => (
+                  {collection?.map(item => (
                     <Chip label={item?.name} key={item?.id} />
                   ))}
                 </>
               )
-              : 'Not a part of any series yet'
+              : 'Not a part of any collection yet'
             }
           />
           <MoreVertRounded />

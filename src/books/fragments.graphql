@@ -27,7 +27,7 @@ fragment BookDetailsWithAssociations on Book {
     id
     resourceId
   }
-  series {
+  collections {
     id
     name
   }

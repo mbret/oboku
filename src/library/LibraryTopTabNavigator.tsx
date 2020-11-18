@@ -6,7 +6,7 @@ import { LibraryBooksScreen } from './LibraryBooksScreen'
 import { LibraryTagsScreen } from './LibraryTagsScreen'
 import { TopBarNavigation } from '../TopBarNavigation'
 import { ROUTES } from '../constants'
-import { LibrarySeriesScreen } from './LibrarySeriesScreen'
+import { LibraryCollectionScreen } from './LibraryCollectionScreen'
 import { useIsSyncing, useSyncLibrary } from './queries'
 
 export const LibraryTopTabNavigator = () => {
@@ -50,15 +50,15 @@ export const LibraryTopTabNavigator = () => {
         }}
       >
         <Tab label="Books" value={ROUTES.LIBRARY_BOOKS} disableFocusRipple disableRipple disableTouchRipple />
-        <Tab label="Series" value={ROUTES.LIBRARY_SERIES} disableFocusRipple disableRipple disableTouchRipple />
+        <Tab label="Collections" value={ROUTES.LIBRARY_COLLECTIONS} disableFocusRipple disableRipple disableTouchRipple />
         <Tab label="Tags" value={ROUTES.LIBRARY_TAGS} disableFocusRipple disableRipple disableTouchRipple />
       </Tabs>
       <Switch>
         <Route exact path={ROUTES.LIBRARY_BOOKS}>
           <LibraryBooksScreen />
         </Route>
-        <Route exact path={ROUTES.LIBRARY_SERIES} >
-          <LibrarySeriesScreen />
+        <Route exact path={ROUTES.LIBRARY_COLLECTIONS} >
+          <LibraryCollectionScreen />
         </Route>
         <Route exact path={ROUTES.LIBRARY_TAGS} >
           <LibraryTagsScreen />

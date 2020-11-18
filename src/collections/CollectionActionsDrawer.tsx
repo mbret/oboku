@@ -1,16 +1,16 @@
 import { Drawer, ListItem, Divider, List, ListItemIcon, ListItemText, DialogContent, DialogTitle, Dialog, TextField, DialogActions, Button } from "@material-ui/core";
 import React, { useEffect, useState, FC } from "react";
-import { useLazyQueryGetOneSeries, useRemoveSeries, useEditSeries } from "./queries";
+import { useLazyQueryGetCollection, useRemoveCollection, useEditCollection } from "./queries";
 import { Edit, DeleteForeverRounded } from "@material-ui/icons";
 
-export const SeriesActionsDrawer: FC<{
+export const CollectionActionsDrawer: FC<{
   open: boolean,
   id: string | undefined,
   onClose: () => void,
 }> = ({ open, id, onClose }) => {
-  const [isEditSeriesDialogOpenedWithId, setIsEditSeriesDialogOpenedWithId] = useState<string | undefined>(undefined)
-  const [getOneSeries, { data }] = useLazyQueryGetOneSeries()
-  const removeSeries = useRemoveSeries()
+  const [isEditCollectionDialogOpenedWithId, setIsEditCollectionDialogOpenedWithId] = useState<string | undefined>(undefined)
+  const [getCollection, { data }] = useLazyQueryGetCollection()
+  const removeCollection = useRemoveCollection()
 
   const handleClose = () => {
     onClose()
@@ -18,19 +18,19 @@ export const SeriesActionsDrawer: FC<{
 
   const onRemove = (id: string | undefined) => {
     handleClose()
-    id && removeSeries(id)
+    id && removeCollection(id)
   }
 
   const onEdit = (id: string | undefined) => {
     handleClose()
-    id && setIsEditSeriesDialogOpenedWithId(id)
+    id && setIsEditCollectionDialogOpenedWithId(id)
   }
 
   useEffect(() => {
-    id && getOneSeries({
+    id && getCollection({
       variables: { id },
     })
-  }, [id, getOneSeries])
+  }, [id, getCollection])
 
   console.log('[ActionDialog]', data)
 
@@ -59,25 +59,25 @@ export const SeriesActionsDrawer: FC<{
           </List>
         </div>
       </Drawer>
-      <EditSeriesDialog
-        id={isEditSeriesDialogOpenedWithId}
-        onClose={() => setIsEditSeriesDialogOpenedWithId(undefined)}
-        open={!!isEditSeriesDialogOpenedWithId}
+      <EditCollectionDialog
+        id={isEditCollectionDialogOpenedWithId}
+        onClose={() => setIsEditCollectionDialogOpenedWithId(undefined)}
+        open={!!isEditCollectionDialogOpenedWithId}
       />
     </>
   );
 }
 
 
-const EditSeriesDialog: FC<{
+const EditCollectionDialog: FC<{
   open: boolean,
   id: string | undefined,
   onClose: () => void,
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState('')
-  const [getTag, { data }] = useLazyQueryGetOneSeries()
-  const editSeries = useEditSeries()
-  const { name: seriesName } = data?.oneSeries || {}
+  const [getTag, { data }] = useLazyQueryGetCollection()
+  const editCollection = useEditCollection()
+  const { name: collectionName } = data?.collection || {}
 
   const onInnerClose = () => {
     setName('')
@@ -86,7 +86,7 @@ const EditSeriesDialog: FC<{
 
   const onConfirm = (id: string, name: string) => {
     if (name) {
-      editSeries(id, name)
+      editCollection(id, name)
     }
   }
 
@@ -95,14 +95,14 @@ const EditSeriesDialog: FC<{
   }, [id, getTag])
 
   useEffect(() => {
-    setName(prev => seriesName || prev)
-  }, [seriesName, id])
+    setName(prev => collectionName || prev)
+  }, [collectionName, id])
 
-  console.log('EditSeriesDialog', id, seriesName, data)
+  console.log('EditCollectionDialog', id, collectionName, data)
 
   return (
     <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>Series: {seriesName}</DialogTitle>
+      <DialogTitle>Collection: {collectionName}</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus

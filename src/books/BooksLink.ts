@@ -1,6 +1,6 @@
 import { ApolloLink, NextLink, Operation } from "apollo-link"
 import { createPolling, forOperationAs } from "../utils"
-import { Book, Maybe, MutationAddSeriesToBookDocument, MutationRemoveSeriesToBookDocument, QueryBookIdsDocument, QueryBooksSyncStateDocument, QuerySyncTriggerBooksPropertiesDocument, Series, SyncLibraryDocument } from "../generated/graphql"
+import { Book, Maybe, MutationAddCollectionsToBookDocument, MutationRemoveCollectionsToBookDocument, QueryBookIdsDocument, QueryBooksSyncStateDocument, QuerySyncTriggerBooksPropertiesDocument, Collection, SyncLibraryDocument } from "../generated/graphql"
 import { OfflineApolloClient } from "../client"
 import { Reference } from "@apollo/client"
 
@@ -11,28 +11,28 @@ class BooksLink extends ApolloLink {
     const context = operation.getContext()
     const client = context.client as OfflineApolloClient<any>
 
-    forOperationAs(operation, MutationAddSeriesToBookDocument, ({ variables }) => {
+    forOperationAs(operation, MutationAddCollectionsToBookDocument, ({ variables }) => {
       const bookRefId = client.identify({ __typename: 'Book', id: variables?.id })
       if (variables && bookRefId) {
         client.modify('Book', {
           id: bookRefId,
           fields: {
-            series: (existing, { toReference }) => {
-                let newSeries = [...existing]
-                variables.series.forEach(id => {
-                  const ref = toReference({ __typename: 'Series', id: id })
+            collections: (existing, { toReference }) => {
+                let newCollections = [...existing]
+                variables.collections.forEach(id => {
+                  const ref = toReference({ __typename: 'Collection', id: id })
                   if (ref) {
-                    newSeries.push(ref)
+                    newCollections.push(ref)
                   }
                 })
-                return newSeries
+                return newCollections
             }
           }
         })
-        variables.series.forEach(seriesId => {
-          const seriesRefId = client.identify({ __typename: 'Series', id: seriesId })
-          seriesRefId && bookRefId && client.modify('Series', {
-            id: seriesRefId,
+        variables.collections.forEach(collectionId => {
+          const collectionRefId = client.identify({ __typename: 'Collection', id: collectionId })
+          collectionRefId && bookRefId && client.modify('Collection', {
+            id: collectionRefId,
             fields: {
               books: (existing, { toReference }) => {
                 const ref = toReference(bookRefId)
@@ -45,20 +45,20 @@ class BooksLink extends ApolloLink {
       }
     })
 
-    forOperationAs(operation, MutationRemoveSeriesToBookDocument, ({ variables }) => {
+    forOperationAs(operation, MutationRemoveCollectionsToBookDocument, ({ variables }) => {
       const bookRefId = client.identify({ __typename: 'Book', id: variables?.id })
-      const seriesReferences = variables?.series.map(id => client.identify({ __typename: 'Series', id })) || []
+      const collectionReferences = variables?.collections.map(id => client.identify({ __typename: 'Collection', id })) || []
 
       if (bookRefId) {
         client.modify('Book', {
           id: bookRefId,
           fields: {
-            series: (existing: Reference[]) => existing.filter(item => !seriesReferences.includes(item.__ref))
+            collections: (existing: Reference[]) => existing.filter(item => !collectionReferences.includes(item.__ref))
           }
         })
-        seriesReferences.forEach(seriesRefId => {
-          seriesRefId && client.modify('Series', {
-            id: seriesRefId,
+        collectionReferences.forEach(collectionRefId => {
+          collectionRefId && client.modify('Collection', {
+            id: collectionRefId,
             fields: {
               books: (existing: Reference[]) => existing.filter(item => item.__ref !== bookRefId)
             }

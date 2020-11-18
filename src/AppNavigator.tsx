@@ -14,7 +14,7 @@ import { ManageStorageScreen } from './settings/ManageStorageScreen'
 import { LibraryTopTabNavigator } from './library/LibraryTopTabNavigator'
 import { ROUTES } from './constants'
 import { BookDetailsScreen } from './books/BookDetailsScreen'
-import { SeriesDetailsScreen } from './series/SeriesDetailsScreen'
+import { CollectionDetailsScreen } from './collections/CollectionDetailsScreen'
 import { useAuth } from './auth/queries'
 import { RegisterScreen } from './auth/RegisterScreen'
 import { BookActionsDrawer } from './books/BookActionsDrawer'
@@ -44,8 +44,8 @@ export const AppNavigator = () => {
               <Route exact path={ROUTES.BOOK_DETAILS} >
                 <BookDetailsScreen />
               </Route>
-              <Route exact path={ROUTES.SERIES_DETAILS} >
-                <SeriesDetailsScreen />
+              <Route exact path={ROUTES.COLLECTION_DETAILS} >
+                <CollectionDetailsScreen />
               </Route>
               <Route exact path={ROUTES.FAQ}>
                 <FAQScreen />

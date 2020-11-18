@@ -35,7 +35,7 @@ type App {
 type Query {
   app: App
   firstTimeExperience: FirstTimeExperience
-  series(foo: String): [Series]
+  collections(foo: String): [Collection]
   books(isProtected: Boolean): [Book]
   user: User
   auth: Auth

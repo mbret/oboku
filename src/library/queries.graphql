@@ -7,7 +7,7 @@ query SyncLibrary @noRetry {
     links {
       id
     }
-    series {
+    collections {
       id
     }
   }
@@ -23,7 +23,7 @@ query SyncLibrary @noRetry {
     id
     resourceId
   }
-  series {
+  collections {
     id
     name
     books {

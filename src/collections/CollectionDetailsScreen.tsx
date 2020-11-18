@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
-import { TopBarNavigation } from '../TopBarNavigation';
-import { Button, makeStyles, Toolbar, Typography, useTheme } from '@material-ui/core';
-import { useParams } from 'react-router-dom';
-import { SeriesBookList } from './SeriesBookList';
+import React, { useState } from 'react'
+import { TopBarNavigation } from '../TopBarNavigation'
+import { Button, makeStyles, Toolbar, Typography, useTheme } from '@material-ui/core'
+import { useParams } from 'react-router-dom'
+import { CollectionBookList } from './CollectionBookList'
 import EmptyLibraryAsset from '../assets/empty-library.svg'
-import SeriesBgSvg from '../assets/series-bg.svg'
-import { BooksSelectionDialog } from './BooksSelectionDialog';
-import { useQuery } from '@apollo/client';
-import { Query_One_Series_Document } from '../generated/graphql';
-import { useMeasureElement } from '../utils';
+import CollectionBgSvg from '../assets/series-bg.svg'
+import { BooksSelectionDialog } from './BooksSelectionDialog'
+import { useQuery } from '@apollo/client'
+import { Query_Collection_Document } from '../generated/graphql'
+import { useMeasureElement } from '../utils'
 
 type ScreenParams = {
   id: string
 }
 
-export const SeriesDetailsScreen = () => {
+export const CollectionDetailsScreen = () => {
   const classes = useClasses()
   const theme = useTheme()
   const { id } = useParams<ScreenParams>()
   const [isBookDialogOpened, setIsBookDialogOpened] = useState(false)
-  const { data } = useQuery(Query_One_Series_Document, { variables: { id }, fetchPolicy: 'cache-only' })
-  const series = data?.oneSeries
-  const books = data?.oneSeries?.books || []
+  const { data } = useQuery(Query_Collection_Document, { variables: { id }, fetchPolicy: 'cache-only' })
+  const collection = data?.collection
+  const books = data?.collection?.books || []
 
   const addBookButton = (
     <Button
@@ -44,7 +44,7 @@ export const SeriesDetailsScreen = () => {
 
   const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
 
-  console.log('[SeriesDetailsScreen]', series)
+  console.log('[CollectionDetailsScreen]', collection)
 
   return (
     <div style={{
@@ -63,10 +63,10 @@ export const SeriesDetailsScreen = () => {
         <div className={classes.headerContent}>
           <div>
             <Typography variant="h5" gutterBottom className={classes.titleTypo} >
-              {series?.name}
+              {collection?.name}
             </Typography>
             <Typography variant="subtitle1" gutterBottom className={classes.titleTypo}>
-              {`${series?.books?.length || 0} book(s)`}
+              {`${collection?.books?.length || 0} book(s)`}
             </Typography>
           </div>
         </div>
@@ -111,8 +111,8 @@ export const SeriesDetailsScreen = () => {
             </div>
           )}
           {books.length > 0 && (
-            <SeriesBookList
-              seriesId={id}
+            <CollectionBookList
+              collectionId={id}
               headerHeight={listHeaderHeight}
               renderHeader={() => (
                 <Toolbar style={{ marginLeft: -theme.spacing(1), marginRight: -theme.spacing(1) }}>
@@ -123,9 +123,9 @@ export const SeriesDetailsScreen = () => {
           )}
         </div>
       </div>
-      {series && <BooksSelectionDialog open={isBookDialogOpened} onClose={() => setIsBookDialogOpened(false)} seriesId={series?.id} />}
+      {collection && <BooksSelectionDialog open={isBookDialogOpened} onClose={() => setIsBookDialogOpened(false)} collectionId={collection?.id} />}
     </div>
-  );
+  )
 }
 
 const useClasses = makeStyles(theme => {
@@ -140,7 +140,7 @@ const useClasses = makeStyles(theme => {
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
       width: '100%',
-      backgroundImage: `url(${SeriesBgSvg})`,
+      backgroundImage: `url(${CollectionBgSvg})`,
       backgroundAttachment: 'fixed',
       backgroundSize: 'cover',
     },

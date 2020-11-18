@@ -20,10 +20,10 @@ import { ApolloLinkDirective } from './apollo-link-directive/ApolloLinkDirective
 import { libraryLink } from './library/LibraryLink';
 import { defaultData } from './firstTimeExperience/queries';
 import { dataSourcesLink } from './dataSources/DataSourcesLink';
-import { TypedTypePolicies, FirstTimeExperience, QueryUserIsLibraryProtectedDocument, QueryAuthDocument, Get_SeriesDocument, User, FragmentInitAppFragmentDoc } from './generated/graphql';
+import { TypedTypePolicies, FirstTimeExperience, QueryUserIsLibraryProtectedDocument, QueryAuthDocument, User, Get_CollectionsDocument } from './generated/graphql';
 import { mergeDeepLeft } from 'ramda';
 import { ApolloLinkOfflineQueries } from './apollo-link-offline-queries';
-import { seriesLink } from './series/SeriesLink';
+import { collectionLink } from './collections/CollectionLink';
 import { booksLink } from './books/BooksLink';
 import { OfflineApolloClient } from './useOfflineApolloClient';
 import { appLink } from './AppLink';
@@ -121,7 +121,7 @@ const link: any = ApolloLink.from([
   // custom offline links
   authLink,
   libraryLink,
-  seriesLink,
+  collectionLink,
   booksLink,
   dataSourcesLink,
   appLink,
@@ -210,7 +210,7 @@ const typePolicies: TypedTypePolicies = {
   },
   Book: {
     fields: {
-      series: {
+      collections: {
         merge: (_, incoming) => incoming,
       },
       downloadState: {
@@ -219,7 +219,7 @@ const typePolicies: TypedTypePolicies = {
       },
     }
   },
-  Series: {
+  Collection: {
     fields: {
       books: {
         read: (value: Reference[] | undefined = [], options) => {
@@ -242,15 +242,15 @@ const typePolicies: TypedTypePolicies = {
       book: {
         read: (_, { toReference, args }) => toReference({ __typename: 'Book', id: args?.id, })
       },
-      series: {
+      collections: {
         read: (value: Reference[] = [], { variables, readField, }) => {
-          // console.log(value, variables, cache.readQuery({ query: QuerySeriesIdsDocument }))
-          // console.warn('READ SERIES', value.map(ref => rea), variables)
+          // console.log(value, variables, cache.readQuery({ query: QueryCollectionIdsDocument }))
+          // console.warn('READ COLLECTION', value.map(ref => rea), variables)
 
           return value
         },
         merge: (existing, incoming) => {
-          // console.warn('MERGE SERIES', incoming)
+          // console.warn('MERGE COLLECTION', incoming)
           return incoming
         },
       },
@@ -260,11 +260,8 @@ const typePolicies: TypedTypePolicies = {
         },
         merge: (_, incoming) => incoming,
       },
-      oneSeries: {
-        read: (_, { toReference, args, }) => {
-          // console.log(toReference({ __typename: 'Series', id: args?.id, }))
-          return toReference({ __typename: 'Series', id: args?.id, })
-        }
+      collection: {
+        read: (_, { toReference, args, }) => toReference({ __typename: 'Collection', id: args?.id, })
       },
       firstTimeExperience: (existing: FirstTimeExperience = defaultData) => existing,
     }
@@ -290,7 +287,7 @@ const typePolicies: TypedTypePolicies = {
       //     return incoming
       //   }
       // },
-      // removeSeries: {
+      // removeCollection: {
       //   merge: (existing, incoming) => {
       //     const item = cache.identify(incoming)
       //     cache.evict({ id: item })
@@ -298,11 +295,11 @@ const typePolicies: TypedTypePolicies = {
       //     return incoming
       //   }
       // },
-      // addSeries: {
+      // addCollection: {
       //   merge: (existing, incoming, { cache }) => {
       //     cache.modify({
       //       fields: {
-      //         series: (prev = [], { toReference }) => {
+      //         collection: (prev = [], { toReference }) => {
       //           return [...prev, toReference(incoming)]
       //         }
       //       }
@@ -375,11 +372,11 @@ export const loadClient = async () => {
     () => {
       let data
       try {
-        data = cache.readQuery({ query: Get_SeriesDocument })
+        data = cache.readQuery({ query: Get_CollectionsDocument })
       } catch (e) { }
 
       if (!data) {
-        cache.writeQuery({ query: Get_SeriesDocument, data: { series: [] } })
+        cache.writeQuery({ query: Get_CollectionsDocument, data: { collections: [] } })
       }
     },
     () => {

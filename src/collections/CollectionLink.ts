@@ -1,27 +1,27 @@
 import { ApolloLink, NextLink, Operation } from "apollo-link"
 import { OfflineApolloClient } from "../client"
-import { Add_SeriesDocument, NewSeriesFragmentDoc } from "../generated/graphql"
+import { Add_CollectionDocument, NewCollectionFragmentDoc } from "../generated/graphql"
 import { forOperationAs } from "../utils"
 
-class SeriesLink extends ApolloLink {
+class CollectionLink extends ApolloLink {
   public request = (operation: Operation, forward: NextLink) => {
     const context = operation.getContext()
     const client = context.client as OfflineApolloClient<any>
 
     /**
-     * Add the new series into cache + list of series
+     * Add the new collection into cache + list of collection
      */
-    forOperationAs(operation, Add_SeriesDocument, ({ variables }) => {
+    forOperationAs(operation, Add_CollectionDocument, ({ variables }) => {
       const ref = client.cache.writeFragment({
         data: {
-          __typename: 'Series',
+          __typename: 'Collection',
           ...variables,
         },
-        fragment: NewSeriesFragmentDoc
+        fragment: NewCollectionFragmentDoc
       });
       client.modify('Query', {
         fields: {
-          series: (prev = []) => {
+          collections: (prev = []) => {
             if (ref) return [...prev, ref]
             return prev
           }
@@ -33,4 +33,4 @@ class SeriesLink extends ApolloLink {
   }
 }
 
-export const seriesLink = new SeriesLink()
+export const collectionLink = new CollectionLink()

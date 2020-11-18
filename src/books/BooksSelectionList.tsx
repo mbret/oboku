@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemAvatar, ListItemText, useTheme } from '@material-ui/core'
+import { List, ListItem, ListItemAvatar, ListItemText, Typography, useTheme } from '@material-ui/core'
 import { CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
 import React, { FC } from 'react'
 import { Book, Maybe } from '../generated/graphql'
@@ -30,7 +30,7 @@ export const BooksSelectionList: FC<{
               }} />}
             </>
           </ListItemAvatar>
-          <ListItemText primary={item?.title || 'Unknown'} secondary="asdasd" />
+          <ListItemText primary={<Typography noWrap>{item?.title || 'Unknown'}</Typography>} secondary="asdasd" />
           {item?.id && isSelected(item?.id)
             ? <CheckCircleRounded />
             : <RadioButtonUncheckedOutlined />}

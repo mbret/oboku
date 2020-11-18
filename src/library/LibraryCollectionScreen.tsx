@@ -5,26 +5,26 @@ import {
   Toolbar, IconButton, makeStyles, createStyles, ListItem, ListItemText, List, useTheme
 } from '@material-ui/core';
 import { MoreVert } from '@material-ui/icons';
-import { useQueryGetSeries } from '../series/queries';
+import { useQueryGetCollection } from '../collections/queries';
 import { ROUTES } from '../constants';
 import { useHistory } from 'react-router-dom';
-import { SeriesActionsDrawer } from '../series/SeriesActionsDrawer';
+import { CollectionActionsDrawer } from '../collections/CollectionActionsDrawer';
 import { Cover } from '../books/Cover';
-import { Add_SeriesDocument } from '../generated/graphql';
+import { Add_CollectionDocument } from '../generated/graphql';
 import { useMutation } from '@apollo/client';
-import { createNewSeries } from '../series/helpers';
+import { createNewCollection } from '../collections/helpers';
 
-export const LibrarySeriesScreen = () => {
+export const LibraryCollectionScreen = () => {
   const classes = useStyles();
   const history = useHistory()
-  const [isAddSeriesDialogOpened, setIsAddSeriesDialogOpened] = useState(false)
+  const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] = useState(false)
   const [isActionDialogOpenedWith, setIsActionDialogOpenedWith] = useState<string | undefined>(undefined)
-  const { data: seriesData } = useQueryGetSeries()
+  const { data: collectionData } = useQueryGetCollection()
   const theme = useTheme()
   const cardHeight = 200
-  const series = seriesData?.series
+  const collections = collectionData?.collections
 
-  console.log('[LibrarySeriesScreen]', seriesData)
+  console.log('[LibraryCollectionScreen]', collectionData)
 
   return (
     <div className={classes.container}>
@@ -35,19 +35,19 @@ export const LibrarySeriesScreen = () => {
           }}
           variant="outlined"
           color="primary"
-          onClick={() => setIsAddSeriesDialogOpened(true)}
+          onClick={() => setIsAddCollectionDialogOpened(true)}
         >
-          Create a new series
+          Create a new collection
         </Button>
       </Toolbar>
       <List className={classes.list}>
-        {series && series.map(item => (
+        {collections && collections.map(item => (
           <ListItem
             button
             key={item?.id}
             className={classes.listItem}
             onClick={() => {
-              item?.id && history.push(ROUTES.SERIES_DETAILS.replace(':id', item.id))
+              item?.id && history.push(ROUTES.COLLECTION_DETAILS.replace(':id', item.id))
             }}
           >
             <div className={classes.itemCard} style={{ height: cardHeight }}>
@@ -108,25 +108,25 @@ export const LibrarySeriesScreen = () => {
           </ListItem>
         ))}
       </List>
-      <SeriesActionsDrawer
+      <CollectionActionsDrawer
         open={!!isActionDialogOpenedWith}
         id={isActionDialogOpenedWith}
         onClose={() => setIsActionDialogOpenedWith(undefined)}
       />
-      <AddSeriesDialog
-        onClose={() => setIsAddSeriesDialogOpened(false)}
-        open={isAddSeriesDialogOpened}
+      <AddCollectionDialog
+        onClose={() => setIsAddCollectionDialogOpened(false)}
+        open={isAddCollectionDialogOpened}
       />
     </div>
   );
 }
 
-const AddSeriesDialog: FC<{
+const AddCollectionDialog: FC<{
   open: boolean,
   onClose: () => void,
 }> = ({ onClose, open }) => {
   const [name, setName] = useState('')
-  const [addSeries] = useMutation(Add_SeriesDocument)
+  const [addCollection] = useMutation(Add_CollectionDocument)
 
   const onInnerClose = () => {
     setName('')
@@ -135,7 +135,7 @@ const AddSeriesDialog: FC<{
 
   return (
     <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>Create a new series</DialogTitle>
+      <DialogTitle>Create a new collection</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
@@ -155,7 +155,7 @@ const AddSeriesDialog: FC<{
           onClick={() => {
             onInnerClose()
             if (name) {
-              addSeries({ variables: createNewSeries({ name }) })
+              addCollection({ variables: createNewCollection({ name }) })
             }
           }}
           color="primary"

@@ -1,18 +1,18 @@
 import React, { ComponentProps, FC, useMemo } from 'react'
 import { BookList } from '../books/BookList';
 import { useQuery } from '@apollo/client';
-import { QueryOneSeriesBookIdsDocument } from '../generated/graphql';
+import { QueryCollectionBookIdsDocument } from '../generated/graphql';
 
-export const SeriesBookList: FC<{
-  seriesId: string,
+export const CollectionBookList: FC<{
+  collectionId: string,
   renderHeader: ComponentProps<typeof BookList>['renderHeader']
   headerHeight: ComponentProps<typeof BookList>['headerHeight']
-}> = ({ seriesId, renderHeader, headerHeight }) => {
-  const { data: seriesData } = useQuery(QueryOneSeriesBookIdsDocument, { variables: { id: seriesId } })
-  const books = seriesData?.oneSeries?.books || []
+}> = ({ collectionId, renderHeader, headerHeight }) => {
+  const { data: collectionData } = useQuery(QueryCollectionBookIdsDocument, { variables: { id: collectionId } })
+  const books = collectionData?.collection?.books || []
   const data = useMemo(() => books.map(book => book?.id || '-1'), [books])
 
-  console.log('[BookList]', seriesData)
+  console.log('[BookList]', collectionData)
 
   return (
     <BookList

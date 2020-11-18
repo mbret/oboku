@@ -1,5 +1,0 @@
-fragment NewSeries on Series {
-  __typename
-  id
-  name
-}

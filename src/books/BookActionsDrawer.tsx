@@ -22,7 +22,7 @@ import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { ROUTES } from '../constants';
 import { useRemoveBook, useEditBook } from './queries';
 import { Drawer, Divider, ListItemIcon } from '@material-ui/core';
-import { openManageBookSeriesDialog } from './ManageBookSeriesDialog';
+import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
 import { QueryBookDocument } from '../generated/graphql';
 
 export const BookActionsDrawer = (props) => {
@@ -80,13 +80,13 @@ export const BookActionsDrawer = (props) => {
             <ListItem button
               onClick={() => {
                 handleClose()
-                openManageBookSeriesDialog(bookId)
+                openManageBookCollectionsDialog(bookId)
               }}
             >
               <ListItemIcon>
                 <LibraryBooksRounded />
               </ListItemIcon>
-              <ListItemText primary="Add or remove from series" />
+              <ListItemText primary="Add or remove from collection" />
             </ListItem>
             {book.downloadState === 'downloaded' && (
               <ListItem button

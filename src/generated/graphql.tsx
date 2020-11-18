@@ -23,6 +23,7 @@ export type User = {
 
 export type Book = {
   __typename?: 'Book';
+  collections?: Maybe<Array<Maybe<Collection>>>;
   createdAt?: Maybe<Scalars['Float']>;
   creator?: Maybe<Scalars['String']>;
   date?: Maybe<Scalars['Float']>;
@@ -37,7 +38,6 @@ export type Book = {
   readingStateCurrentBookmarkProgressPercent?: Maybe<Scalars['Float']>;
   readingStateCurrentBookmarkProgressUpdatedAt?: Maybe<Scalars['Float']>;
   rights?: Maybe<Scalars['String']>;
-  series?: Maybe<Array<Maybe<Series>>>;
   subject?: Maybe<Scalars['String']>;
   tags?: Maybe<Array<Maybe<Tag>>>;
   title?: Maybe<Scalars['String']>;
@@ -64,8 +64,8 @@ export type Tag = {
   isProtected?: Maybe<Scalars['Boolean']>;
 };
 
-export type Series = {
-  __typename?: 'Series';
+export type Collection = {
+  __typename?: 'Collection';
   id: Scalars['ID'];
   name?: Maybe<Scalars['String']>;
   books?: Maybe<Array<Maybe<Book>>>;
@@ -96,12 +96,12 @@ export type Query = {
   auth?: Maybe<Auth>;
   book?: Maybe<Book>;
   books?: Maybe<Array<Maybe<Book>>>;
+  collection?: Maybe<Collection>;
+  collections?: Maybe<Array<Maybe<Collection>>>;
   dataSource?: Maybe<DataSource>;
   dataSources?: Maybe<Array<Maybe<DataSource>>>;
   firstTimeExperience?: Maybe<FirstTimeExperience>;
   links?: Maybe<Array<Maybe<Link>>>;
-  oneSeries?: Maybe<Series>;
-  series?: Maybe<Array<Maybe<Series>>>;
   syncState?: Maybe<SyncQueryResponse>;
   tag?: Maybe<Tag>;
   tags?: Maybe<Array<Maybe<Tag>>>;
@@ -119,12 +119,12 @@ export type QueryBooksArgs = {
 };
 
 
-export type QueryOneSeriesArgs = {
+export type QueryCollectionArgs = {
   id: Scalars['ID'];
 };
 
 
-export type QuerySeriesArgs = {
+export type QueryCollectionsArgs = {
   foo?: Maybe<Scalars['String']>;
 };
 
@@ -147,21 +147,21 @@ export type AuthenticationResponse = {
 export type Mutation = {
   __typename?: 'Mutation';
   addBook?: Maybe<MutationResponse>;
+  addCollection?: Maybe<Collection>;
+  addCollectionsToBook?: Maybe<MutationResponse>;
   addDataSource?: Maybe<DataSource>;
   addLink?: Maybe<MutationResponse>;
-  addSeries?: Maybe<Series>;
-  addSeriesToBook?: Maybe<MutationResponse>;
   addTag?: Maybe<Tag>;
   addTagsToBook?: Maybe<MutationResponse>;
   app?: Maybe<App>;
   editBook?: Maybe<Book>;
+  editCollection?: Maybe<Collection>;
   editLink?: Maybe<MutationResponse>;
-  editSeries?: Maybe<Series>;
   editTag?: Maybe<Tag>;
   editUser?: Maybe<User>;
   removeBook?: Maybe<Book>;
-  removeSeries?: Maybe<MutationResponse>;
-  removeSeriesToBook?: Maybe<MutationResponse>;
+  removeCollection?: Maybe<MutationResponse>;
+  removeCollectionsToBook?: Maybe<MutationResponse>;
   removeTag?: Maybe<MutationResponse>;
   removeTagsToBook?: Maybe<MutationResponse>;
   signin?: Maybe<AuthenticationResponse>;
@@ -172,6 +172,18 @@ export type Mutation = {
 
 export type MutationAddBookArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationAddCollectionArgs = {
+  id: Scalars['ID'];
+  name: Scalars['String'];
+};
+
+
+export type MutationAddCollectionsToBookArgs = {
+  id: Scalars['ID'];
+  collections?: Maybe<Array<Maybe<Scalars['ID']>>>;
 };
 
 
@@ -187,18 +199,6 @@ export type MutationAddLinkArgs = {
   bookId: Scalars['ID'];
   type: LinkType;
   resourceId: Scalars['String'];
-};
-
-
-export type MutationAddSeriesArgs = {
-  id: Scalars['ID'];
-  name?: Maybe<Scalars['String']>;
-};
-
-
-export type MutationAddSeriesToBookArgs = {
-  id: Scalars['ID'];
-  series?: Maybe<Array<Maybe<Scalars['ID']>>>;
 };
 
 
@@ -228,16 +228,16 @@ export type MutationEditBookArgs = {
 };
 
 
+export type MutationEditCollectionArgs = {
+  id: Scalars['ID'];
+  name?: Maybe<Scalars['String']>;
+};
+
+
 export type MutationEditLinkArgs = {
   id: Scalars['ID'];
   type: LinkType;
   resourceId: Scalars['String'];
-};
-
-
-export type MutationEditSeriesArgs = {
-  id: Scalars['ID'];
-  name?: Maybe<Scalars['String']>;
 };
 
 
@@ -259,14 +259,14 @@ export type MutationRemoveBookArgs = {
 };
 
 
-export type MutationRemoveSeriesArgs = {
+export type MutationRemoveCollectionArgs = {
   id: Scalars['ID'];
 };
 
 
-export type MutationRemoveSeriesToBookArgs = {
+export type MutationRemoveCollectionsToBookArgs = {
   id: Scalars['ID'];
-  series?: Maybe<Array<Maybe<Scalars['ID']>>>;
+  collections?: Maybe<Array<Maybe<Scalars['ID']>>>;
 };
 
 
@@ -362,36 +362,36 @@ export type BookDetailsWithAssociationsFragment = (
   )>>>, links?: Maybe<Array<Maybe<(
     { __typename?: 'Link' }
     & Pick<Link, 'id' | 'resourceId'>
-  )>>>, series?: Maybe<Array<Maybe<(
-    { __typename?: 'Series' }
-    & Pick<Series, 'id' | 'name'>
+  )>>>, collections?: Maybe<Array<Maybe<(
+    { __typename?: 'Collection' }
+    & Pick<Collection, 'id' | 'name'>
   )>>> }
   & BookDetailsFragment
 );
 
-export type MutationAddSeriesToBookMutationVariables = Exact<{
+export type MutationAddCollectionsToBookMutationVariables = Exact<{
   id: Scalars['ID'];
-  series: Array<Maybe<Scalars['ID']>>;
+  collections: Array<Maybe<Scalars['ID']>>;
 }>;
 
 
-export type MutationAddSeriesToBookMutation = (
+export type MutationAddCollectionsToBookMutation = (
   { __typename?: 'Mutation' }
-  & { addSeriesToBook?: Maybe<(
+  & { addCollectionsToBook?: Maybe<(
     { __typename?: 'MutationResponse' }
     & Pick<MutationResponse, 'success'>
   )> }
 );
 
-export type MutationRemoveSeriesToBookMutationVariables = Exact<{
+export type MutationRemoveCollectionsToBookMutationVariables = Exact<{
   id: Scalars['ID'];
-  series: Array<Maybe<Scalars['ID']>>;
+  collections: Array<Maybe<Scalars['ID']>>;
 }>;
 
 
-export type MutationRemoveSeriesToBookMutation = (
+export type MutationRemoveCollectionsToBookMutation = (
   { __typename?: 'Mutation' }
-  & { removeSeriesToBook?: Maybe<(
+  & { removeCollectionsToBook?: Maybe<(
     { __typename?: 'MutationResponse' }
     & Pick<MutationResponse, 'success'>
   )> }
@@ -540,6 +540,114 @@ export type QuerySyncTriggerBooksPropertiesQuery = (
   )>>> }
 );
 
+export type NewCollectionFragment = (
+  { __typename: 'Collection' }
+  & Pick<Collection, 'id' | 'name'>
+);
+
+export type Add_CollectionMutationVariables = Exact<{
+  id: Scalars['ID'];
+  name: Scalars['String'];
+}>;
+
+
+export type Add_CollectionMutation = (
+  { __typename?: 'Mutation' }
+  & { addCollection?: Maybe<(
+    { __typename?: 'Collection' }
+    & Pick<Collection, 'id' | 'name'>
+  )> }
+);
+
+export type Edit_CollectionMutationVariables = Exact<{
+  id: Scalars['ID'];
+  name?: Maybe<Scalars['String']>;
+}>;
+
+
+export type Edit_CollectionMutation = (
+  { __typename?: 'Mutation' }
+  & { editCollection?: Maybe<(
+    { __typename?: 'Collection' }
+    & Pick<Collection, 'id' | 'name'>
+  )> }
+);
+
+export type Remove_CollectionMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type Remove_CollectionMutation = (
+  { __typename?: 'Mutation' }
+  & { removeCollection?: Maybe<(
+    { __typename?: 'MutationResponse' }
+    & Pick<MutationResponse, 'success'>
+  )> }
+);
+
+export type QueryCollectionIdsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type QueryCollectionIdsQuery = (
+  { __typename?: 'Query' }
+  & { collections?: Maybe<Array<Maybe<(
+    { __typename: 'Collection' }
+    & Pick<Collection, 'id'>
+  )>>> }
+);
+
+export type Get_CollectionsQueryVariables = Exact<{
+  foo?: Maybe<Scalars['String']>;
+}>;
+
+
+export type Get_CollectionsQuery = (
+  { __typename?: 'Query' }
+  & { collections?: Maybe<Array<Maybe<(
+    { __typename: 'Collection' }
+    & Pick<Collection, 'id' | 'name'>
+    & { books?: Maybe<Array<Maybe<(
+      { __typename?: 'Book' }
+      & Pick<Book, 'id'>
+    )>>> }
+  )>>> }
+);
+
+export type QueryCollectionBookIdsQueryVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type QueryCollectionBookIdsQuery = (
+  { __typename?: 'Query' }
+  & { collection?: Maybe<(
+    { __typename?: 'Collection' }
+    & Pick<Collection, 'id'>
+    & { books?: Maybe<Array<Maybe<(
+      { __typename?: 'Book' }
+      & Pick<Book, 'id'>
+    )>>> }
+  )> }
+);
+
+export type Query_Collection_QueryVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type Query_Collection_Query = (
+  { __typename?: 'Query' }
+  & { collection?: Maybe<(
+    { __typename?: 'Collection' }
+    & Pick<Collection, 'id' | 'name'>
+    & { books?: Maybe<Array<Maybe<(
+      { __typename?: 'Book' }
+      & Pick<Book, 'id'>
+    )>>> }
+  )> }
+);
+
 export type MutationAddDataSourceMutationVariables = Exact<{
   id: Scalars['ID'];
   type: DataSourceType;
@@ -660,9 +768,9 @@ export type SyncLibraryQuery = (
     )>>>, links?: Maybe<Array<Maybe<(
       { __typename?: 'Link' }
       & Pick<Link, 'id'>
-    )>>>, series?: Maybe<Array<Maybe<(
-      { __typename?: 'Series' }
-      & Pick<Series, 'id'>
+    )>>>, collections?: Maybe<Array<Maybe<(
+      { __typename?: 'Collection' }
+      & Pick<Collection, 'id'>
     )>>> }
     & BookDetailsFragment
   )>>>, tags?: Maybe<Array<Maybe<(
@@ -675,9 +783,9 @@ export type SyncLibraryQuery = (
   )>>>, links?: Maybe<Array<Maybe<(
     { __typename?: 'Link' }
     & Pick<Link, 'id' | 'resourceId'>
-  )>>>, series?: Maybe<Array<Maybe<(
-    { __typename?: 'Series' }
-    & Pick<Series, 'id' | 'name'>
+  )>>>, collections?: Maybe<Array<Maybe<(
+    { __typename?: 'Collection' }
+    & Pick<Collection, 'id' | 'name'>
     & { books?: Maybe<Array<Maybe<(
       { __typename?: 'Book' }
       & Pick<Book, 'id'>
@@ -762,114 +870,6 @@ export type QueryAppHasUpdateAvailableQuery = (
   )> }
 );
 
-export type NewSeriesFragment = (
-  { __typename: 'Series' }
-  & Pick<Series, 'id' | 'name'>
-);
-
-export type Add_SeriesMutationVariables = Exact<{
-  id: Scalars['ID'];
-  name: Scalars['String'];
-}>;
-
-
-export type Add_SeriesMutation = (
-  { __typename?: 'Mutation' }
-  & { addSeries?: Maybe<(
-    { __typename?: 'Series' }
-    & Pick<Series, 'id' | 'name'>
-  )> }
-);
-
-export type Edit_SeriesMutationVariables = Exact<{
-  id: Scalars['ID'];
-  name?: Maybe<Scalars['String']>;
-}>;
-
-
-export type Edit_SeriesMutation = (
-  { __typename?: 'Mutation' }
-  & { editSeries?: Maybe<(
-    { __typename?: 'Series' }
-    & Pick<Series, 'id' | 'name'>
-  )> }
-);
-
-export type Remove_SeriesMutationVariables = Exact<{
-  id: Scalars['ID'];
-}>;
-
-
-export type Remove_SeriesMutation = (
-  { __typename?: 'Mutation' }
-  & { removeSeries?: Maybe<(
-    { __typename?: 'MutationResponse' }
-    & Pick<MutationResponse, 'success'>
-  )> }
-);
-
-export type QuerySeriesIdsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type QuerySeriesIdsQuery = (
-  { __typename?: 'Query' }
-  & { series?: Maybe<Array<Maybe<(
-    { __typename: 'Series' }
-    & Pick<Series, 'id'>
-  )>>> }
-);
-
-export type Get_SeriesQueryVariables = Exact<{
-  foo?: Maybe<Scalars['String']>;
-}>;
-
-
-export type Get_SeriesQuery = (
-  { __typename?: 'Query' }
-  & { series?: Maybe<Array<Maybe<(
-    { __typename: 'Series' }
-    & Pick<Series, 'id' | 'name'>
-    & { books?: Maybe<Array<Maybe<(
-      { __typename?: 'Book' }
-      & Pick<Book, 'id'>
-    )>>> }
-  )>>> }
-);
-
-export type QueryOneSeriesBookIdsQueryVariables = Exact<{
-  id: Scalars['ID'];
-}>;
-
-
-export type QueryOneSeriesBookIdsQuery = (
-  { __typename?: 'Query' }
-  & { oneSeries?: Maybe<(
-    { __typename?: 'Series' }
-    & Pick<Series, 'id'>
-    & { books?: Maybe<Array<Maybe<(
-      { __typename?: 'Book' }
-      & Pick<Book, 'id'>
-    )>>> }
-  )> }
-);
-
-export type Query_One_Series_QueryVariables = Exact<{
-  id: Scalars['ID'];
-}>;
-
-
-export type Query_One_Series_Query = (
-  { __typename?: 'Query' }
-  & { oneSeries?: Maybe<(
-    { __typename?: 'Series' }
-    & Pick<Series, 'id' | 'name'>
-    & { books?: Maybe<Array<Maybe<(
-      { __typename?: 'Book' }
-      & Pick<Book, 'id'>
-    )>>> }
-  )> }
-);
-
 export type MutationRemoveTagMutationVariables = Exact<{
   id: Scalars['ID'];
 }>;
@@ -890,8 +890,9 @@ export type UserFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	isLibraryUnlocked?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type BookKeySpecifier = ('createdAt' | 'creator' | 'date' | 'downloadProgress' | 'downloadState' | 'id' | 'language' | 'lastMetadataUpdatedAt' | 'links' | 'publisher' | 'readingStateCurrentBookmarkLocation' | 'readingStateCurrentBookmarkProgressPercent' | 'readingStateCurrentBookmarkProgressUpdatedAt' | 'rights' | 'series' | 'subject' | 'tags' | 'title' | BookKeySpecifier)[];
+export type BookKeySpecifier = ('collections' | 'createdAt' | 'creator' | 'date' | 'downloadProgress' | 'downloadState' | 'id' | 'language' | 'lastMetadataUpdatedAt' | 'links' | 'publisher' | 'readingStateCurrentBookmarkLocation' | 'readingStateCurrentBookmarkProgressPercent' | 'readingStateCurrentBookmarkProgressUpdatedAt' | 'rights' | 'subject' | 'tags' | 'title' | BookKeySpecifier)[];
 export type BookFieldPolicy = {
+	collections?: FieldPolicy<any> | FieldReadFunction<any>,
 	createdAt?: FieldPolicy<any> | FieldReadFunction<any>,
 	creator?: FieldPolicy<any> | FieldReadFunction<any>,
 	date?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -906,7 +907,6 @@ export type BookFieldPolicy = {
 	readingStateCurrentBookmarkProgressPercent?: FieldPolicy<any> | FieldReadFunction<any>,
 	readingStateCurrentBookmarkProgressUpdatedAt?: FieldPolicy<any> | FieldReadFunction<any>,
 	rights?: FieldPolicy<any> | FieldReadFunction<any>,
-	series?: FieldPolicy<any> | FieldReadFunction<any>,
 	subject?: FieldPolicy<any> | FieldReadFunction<any>,
 	tags?: FieldPolicy<any> | FieldReadFunction<any>,
 	title?: FieldPolicy<any> | FieldReadFunction<any>
@@ -925,8 +925,8 @@ export type TagFieldPolicy = {
 	books?: FieldPolicy<any> | FieldReadFunction<any>,
 	isProtected?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type SeriesKeySpecifier = ('id' | 'name' | 'books' | SeriesKeySpecifier)[];
-export type SeriesFieldPolicy = {
+export type CollectionKeySpecifier = ('id' | 'name' | 'books' | CollectionKeySpecifier)[];
+export type CollectionFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	books?: FieldPolicy<any> | FieldReadFunction<any>
@@ -944,18 +944,18 @@ export type SyncQueryResponseFieldPolicy = {
 	dataSources?: FieldPolicy<any> | FieldReadFunction<any>,
 	happening?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('app' | 'auth' | 'book' | 'books' | 'dataSource' | 'dataSources' | 'firstTimeExperience' | 'links' | 'oneSeries' | 'series' | 'syncState' | 'tag' | 'tags' | 'user' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('app' | 'auth' | 'book' | 'books' | 'collection' | 'collections' | 'dataSource' | 'dataSources' | 'firstTimeExperience' | 'links' | 'syncState' | 'tag' | 'tags' | 'user' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
 	app?: FieldPolicy<any> | FieldReadFunction<any>,
 	auth?: FieldPolicy<any> | FieldReadFunction<any>,
 	book?: FieldPolicy<any> | FieldReadFunction<any>,
 	books?: FieldPolicy<any> | FieldReadFunction<any>,
+	collection?: FieldPolicy<any> | FieldReadFunction<any>,
+	collections?: FieldPolicy<any> | FieldReadFunction<any>,
 	dataSource?: FieldPolicy<any> | FieldReadFunction<any>,
 	dataSources?: FieldPolicy<any> | FieldReadFunction<any>,
 	firstTimeExperience?: FieldPolicy<any> | FieldReadFunction<any>,
 	links?: FieldPolicy<any> | FieldReadFunction<any>,
-	oneSeries?: FieldPolicy<any> | FieldReadFunction<any>,
-	series?: FieldPolicy<any> | FieldReadFunction<any>,
 	syncState?: FieldPolicy<any> | FieldReadFunction<any>,
 	tag?: FieldPolicy<any> | FieldReadFunction<any>,
 	tags?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -970,24 +970,24 @@ export type AuthenticationResponseFieldPolicy = {
 	token?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('addBook' | 'addDataSource' | 'addLink' | 'addSeries' | 'addSeriesToBook' | 'addTag' | 'addTagsToBook' | 'app' | 'editBook' | 'editLink' | 'editSeries' | 'editTag' | 'editUser' | 'removeBook' | 'removeSeries' | 'removeSeriesToBook' | 'removeTag' | 'removeTagsToBook' | 'signin' | 'signup' | 'syncDataSource' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('addBook' | 'addCollection' | 'addCollectionsToBook' | 'addDataSource' | 'addLink' | 'addTag' | 'addTagsToBook' | 'app' | 'editBook' | 'editCollection' | 'editLink' | 'editTag' | 'editUser' | 'removeBook' | 'removeCollection' | 'removeCollectionsToBook' | 'removeTag' | 'removeTagsToBook' | 'signin' | 'signup' | 'syncDataSource' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	addBook?: FieldPolicy<any> | FieldReadFunction<any>,
+	addCollection?: FieldPolicy<any> | FieldReadFunction<any>,
+	addCollectionsToBook?: FieldPolicy<any> | FieldReadFunction<any>,
 	addDataSource?: FieldPolicy<any> | FieldReadFunction<any>,
 	addLink?: FieldPolicy<any> | FieldReadFunction<any>,
-	addSeries?: FieldPolicy<any> | FieldReadFunction<any>,
-	addSeriesToBook?: FieldPolicy<any> | FieldReadFunction<any>,
 	addTag?: FieldPolicy<any> | FieldReadFunction<any>,
 	addTagsToBook?: FieldPolicy<any> | FieldReadFunction<any>,
 	app?: FieldPolicy<any> | FieldReadFunction<any>,
 	editBook?: FieldPolicy<any> | FieldReadFunction<any>,
+	editCollection?: FieldPolicy<any> | FieldReadFunction<any>,
 	editLink?: FieldPolicy<any> | FieldReadFunction<any>,
-	editSeries?: FieldPolicy<any> | FieldReadFunction<any>,
 	editTag?: FieldPolicy<any> | FieldReadFunction<any>,
 	editUser?: FieldPolicy<any> | FieldReadFunction<any>,
 	removeBook?: FieldPolicy<any> | FieldReadFunction<any>,
-	removeSeries?: FieldPolicy<any> | FieldReadFunction<any>,
-	removeSeriesToBook?: FieldPolicy<any> | FieldReadFunction<any>,
+	removeCollection?: FieldPolicy<any> | FieldReadFunction<any>,
+	removeCollectionsToBook?: FieldPolicy<any> | FieldReadFunction<any>,
 	removeTag?: FieldPolicy<any> | FieldReadFunction<any>,
 	removeTagsToBook?: FieldPolicy<any> | FieldReadFunction<any>,
 	signin?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -1038,12 +1038,12 @@ export type TypedTypePolicies = TypePolicies & {
 		subscriptionType?: true,
 		fields?: TagFieldPolicy,
 	},
-	Series?: {
-		keyFields?: false | SeriesKeySpecifier | (() => undefined | SeriesKeySpecifier),
+	Collection?: {
+		keyFields?: false | CollectionKeySpecifier | (() => undefined | CollectionKeySpecifier),
 		queryType?: true,
 		mutationType?: true,
 		subscriptionType?: true,
-		fields?: SeriesFieldPolicy,
+		fields?: CollectionFieldPolicy,
 	},
 	DataSource?: {
 		keyFields?: false | DataSourceKeySpecifier | (() => undefined | DataSourceKeySpecifier),
@@ -1110,14 +1110,14 @@ export type TypedTypePolicies = TypePolicies & {
 	}
 };
 export const BookDetailsFragmentDoc: DocumentNode<BookDetailsFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BookDetails"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Book"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"lastMetadataUpdatedAt"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"title"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"creator"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"language"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"date"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"publisher"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"subject"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"downloadState"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]},{"kind":"Field","name":{"kind":"Name","value":"downloadProgress"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]},{"kind":"Field","name":{"kind":"Name","value":"readingStateCurrentBookmarkLocation"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"readingStateCurrentBookmarkProgressUpdatedAt"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"readingStateCurrentBookmarkProgressPercent"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"createdAt"},"arguments":[],"directives":[]}]}}]};
-export const BookDetailsWithAssociationsFragmentDoc: DocumentNode<BookDetailsWithAssociationsFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BookDetailsWithAssociations"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Book"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BookDetails"},"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"tags"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"isProtected"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]}]}},{"kind":"Field","name":{"kind":"Name","value":"links"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"resourceId"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"series"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]}]}}]}},...BookDetailsFragmentDoc.definitions]};
+export const BookDetailsWithAssociationsFragmentDoc: DocumentNode<BookDetailsWithAssociationsFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BookDetailsWithAssociations"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Book"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BookDetails"},"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"tags"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"isProtected"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]}]}},{"kind":"Field","name":{"kind":"Name","value":"links"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"resourceId"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"collections"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]}]}}]}},...BookDetailsFragmentDoc.definitions]};
+export const NewCollectionFragmentDoc: DocumentNode<NewCollectionFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NewCollection"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Collection"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]}]}}]};
 export const FragmentInitAppFragmentDoc: DocumentNode<FragmentInitAppFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentInitApp"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"App"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"hasUpdateAvailable"},"arguments":[],"directives":[]}]}}]};
 export const FragmentAppHasUpdateAvailableFragmentDoc: DocumentNode<FragmentAppHasUpdateAvailableFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentAppHasUpdateAvailable"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"App"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasUpdateAvailable"},"arguments":[],"directives":[]}]}}]};
-export const NewSeriesFragmentDoc: DocumentNode<NewSeriesFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NewSeries"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Series"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]}]}}]};
 export const QueryAuthDocument: DocumentNode<QueryAuthQuery, QueryAuthQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryAuth"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"auth"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"isAuthenticated"},"arguments":[],"directives":[]}]}}]}}]};
 export const QueryUserIsLibraryProtectedDocument: DocumentNode<QueryUserIsLibraryProtectedQuery, QueryUserIsLibraryProtectedQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryUserIsLibraryProtected"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"isLibraryUnlocked"},"arguments":[],"directives":[]}]}}]}}]};
-export const MutationAddSeriesToBookDocument: DocumentNode<MutationAddSeriesToBookMutation, MutationAddSeriesToBookMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationAddSeriesToBook"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"series"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addSeriesToBook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"series"},"value":{"kind":"Variable","name":{"kind":"Name","value":"series"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
-export const MutationRemoveSeriesToBookDocument: DocumentNode<MutationRemoveSeriesToBookMutation, MutationRemoveSeriesToBookMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationRemoveSeriesToBook"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"series"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeSeriesToBook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"series"},"value":{"kind":"Variable","name":{"kind":"Name","value":"series"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
+export const MutationAddCollectionsToBookDocument: DocumentNode<MutationAddCollectionsToBookMutation, MutationAddCollectionsToBookMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationAddCollectionsToBook"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"collections"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addCollectionsToBook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"collections"},"value":{"kind":"Variable","name":{"kind":"Name","value":"collections"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
+export const MutationRemoveCollectionsToBookDocument: DocumentNode<MutationRemoveCollectionsToBookMutation, MutationRemoveCollectionsToBookMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationRemoveCollectionsToBook"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"collections"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeCollectionsToBook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"collections"},"value":{"kind":"Variable","name":{"kind":"Name","value":"collections"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
 export const AddBookDocument: DocumentNode<AddBookMutation, AddBookMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddBook"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addBook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
 export const Edit_BookDocument: DocumentNode<Edit_BookMutation, Edit_BookMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"EDIT_BOOK"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"lastMetadataUpdatedAt"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"readingStateCurrentBookmarkLocation"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"readingStateCurrentBookmarkProgressPercent"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Float"}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"editBook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"lastMetadataUpdatedAt"},"value":{"kind":"Variable","name":{"kind":"Name","value":"lastMetadataUpdatedAt"}}},{"kind":"Argument","name":{"kind":"Name","value":"readingStateCurrentBookmarkLocation"},"value":{"kind":"Variable","name":{"kind":"Name","value":"readingStateCurrentBookmarkLocation"}}},{"kind":"Argument","name":{"kind":"Name","value":"readingStateCurrentBookmarkProgressPercent"},"value":{"kind":"Variable","name":{"kind":"Name","value":"readingStateCurrentBookmarkProgressPercent"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]};
 export const RemoveBookDocument: DocumentNode<RemoveBookMutation, RemoveBookMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RemoveBook"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeBook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]};
@@ -1129,6 +1129,13 @@ export const QueryBooksDownloadStateDocument: DocumentNode<QueryBooksDownloadSta
 export const QueryBookDocument: DocumentNode<QueryBookQuery, QueryBookQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryBook"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"book"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BookDetailsWithAssociations"},"directives":[]}]}}]}},...BookDetailsWithAssociationsFragmentDoc.definitions]};
 export const QueryBooksSyncStateDocument: DocumentNode<QueryBooksSyncStateQuery, QueryBooksSyncStateQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryBooksSyncState"},"variableDefinitions":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"noRetry"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"syncState"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"title"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"creator"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"lastMetadataUpdatedAt"},"arguments":[],"directives":[]}]}}]}}]}}]};
 export const QuerySyncTriggerBooksPropertiesDocument: DocumentNode<QuerySyncTriggerBooksPropertiesQuery, QuerySyncTriggerBooksPropertiesQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QuerySyncTriggerBooksProperties"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"lastMetadataUpdatedAt"},"arguments":[],"directives":[]}]}}]}}]};
+export const Add_CollectionDocument: DocumentNode<Add_CollectionMutation, Add_CollectionMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ADD_COLLECTION"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addCollection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]}]}}]}}]};
+export const Edit_CollectionDocument: DocumentNode<Edit_CollectionMutation, Edit_CollectionMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"EDIT_COLLECTION"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"editCollection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]}]}}]}}]};
+export const Remove_CollectionDocument: DocumentNode<Remove_CollectionMutation, Remove_CollectionMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"REMOVE_COLLECTION"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeCollection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
+export const QueryCollectionIdsDocument: DocumentNode<QueryCollectionIdsQuery, QueryCollectionIdsQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryCollectionIds"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collections"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]};
+export const Get_CollectionsDocument: DocumentNode<Get_CollectionsQuery, Get_CollectionsQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GET_COLLECTIONS"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"foo"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collections"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"foo"},"value":{"kind":"Variable","name":{"kind":"Name","value":"foo"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]}}]};
+export const QueryCollectionBookIdsDocument: DocumentNode<QueryCollectionBookIdsQuery, QueryCollectionBookIdsQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryCollectionBookIds"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]}}]};
+export const Query_Collection_Document: DocumentNode<Query_Collection_Query, Query_Collection_QueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QUERY_COLLECTION_"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collection"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]}}]};
 export const MutationAddDataSourceDocument: DocumentNode<MutationAddDataSourceMutation, MutationAddDataSourceMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationAddDataSource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"DataSourceType"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"data"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},"directives":[]}],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"asyncQueue"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"blocking"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"noRetry"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addDataSource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}},{"kind":"Argument","name":{"kind":"Name","value":"data"},"value":{"kind":"Variable","name":{"kind":"Name","value":"data"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"type"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"data"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"lastSyncedAt"},"arguments":[],"directives":[]}]}}]}}]};
 export const MutationSyncDataSourceDocument: DocumentNode<MutationSyncDataSourceMutation, MutationSyncDataSourceMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationSyncDataSource"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"asyncQueue"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"noRetry"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"syncDataSource"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
 export const QueryDataSourcesIdsDocument: DocumentNode<QueryDataSourcesIdsQuery, QueryDataSourcesIdsQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryDataSourcesIds"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dataSources"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]};
@@ -1137,20 +1144,13 @@ export const QueryDataSourceIdDocument: DocumentNode<QueryDataSourceIdQuery, Que
 export const QuerySyncableDataSourcePropertiesDocument: DocumentNode<QuerySyncableDataSourcePropertiesQuery, QuerySyncableDataSourcePropertiesQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QuerySyncableDataSourceProperties"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dataSources"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"lastSyncedAt"},"arguments":[],"directives":[]}]}}]}}]};
 export const QueryDataSourcesSyncStateDocument: DocumentNode<QueryDataSourcesSyncStateQuery, QueryDataSourcesSyncStateQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryDataSourcesSyncState"},"variableDefinitions":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"noRetry"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"syncState"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"dataSources"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"lastSyncedAt"},"arguments":[],"directives":[]}]}}]}}]}}]};
 export const QueryFirstTimeExperienceDocument: DocumentNode<QueryFirstTimeExperienceQuery, QueryFirstTimeExperienceQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryFirstTimeExperience"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"firstTimeExperience"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasDoneWelcomeTour"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]},{"kind":"Field","name":{"kind":"Name","value":"hasDoneReaderTour"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]}]}}]}}]};
-export const SyncLibraryDocument: DocumentNode<SyncLibraryQuery, SyncLibraryQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SyncLibrary"},"variableDefinitions":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"noRetry"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BookDetails"},"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"tags"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"links"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"series"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"isProtected"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"links"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"resourceId"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"series"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"dataSources"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"type"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"lastSyncedAt"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"data"},"arguments":[],"directives":[]}]}}]}},...BookDetailsFragmentDoc.definitions]};
+export const SyncLibraryDocument: DocumentNode<SyncLibraryQuery, SyncLibraryQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SyncLibrary"},"variableDefinitions":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"noRetry"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BookDetails"},"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"tags"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"links"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"collections"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"tags"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"isProtected"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"links"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"resourceId"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"collections"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"dataSources"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"type"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"lastSyncedAt"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"data"},"arguments":[],"directives":[]}]}}]}},...BookDetailsFragmentDoc.definitions]};
 export const QueryInitSyncStateDocument: DocumentNode<QueryInitSyncStateQuery, QueryInitSyncStateQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryInitSyncState"},"variableDefinitions":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"syncState"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]}]}}]}}]};
 export const QuerySyncHappeningDocument: DocumentNode<QuerySyncHappeningQuery, QuerySyncHappeningQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QuerySyncHappening"},"variableDefinitions":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"syncState"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"happening"},"arguments":[],"directives":[]}]}}]}}]};
 export const MutationAddLinkDocument: DocumentNode<MutationAddLinkMutation, MutationAddLinkMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationAddLink"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"bookId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"LinkType"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addLink"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"bookId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"bookId"}}},{"kind":"Argument","name":{"kind":"Name","value":"resourceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}},{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
 export const MutationEditLinkDocument: DocumentNode<MutationEditLinkMutation, MutationEditLinkMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationEditLink"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"LinkType"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"editLink"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"resourceId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resourceId"}}},{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
 export const MutationAppDocument: DocumentNode<MutationAppMutation, MutationAppMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationApp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"hasUpdateAvailable"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"app"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"hasUpdateAvailable"},"value":{"kind":"Variable","name":{"kind":"Name","value":"hasUpdateAvailable"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"hasUpdateAvailable"},"arguments":[],"directives":[]}]}}]}}]};
 export const QueryAppHasUpdateAvailableDocument: DocumentNode<QueryAppHasUpdateAvailableQuery, QueryAppHasUpdateAvailableQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryAppHasUpdateAvailable"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"app"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasUpdateAvailable"},"arguments":[],"directives":[]}]}}]}}]};
-export const Add_SeriesDocument: DocumentNode<Add_SeriesMutation, Add_SeriesMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ADD_SERIES"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addSeries"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]}]}}]}}]};
-export const Edit_SeriesDocument: DocumentNode<Edit_SeriesMutation, Edit_SeriesMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"EDIT_SERIES"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"editSeries"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]}]}}]}}]};
-export const Remove_SeriesDocument: DocumentNode<Remove_SeriesMutation, Remove_SeriesMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"REMOVE_SERIES"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeSeries"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
-export const QuerySeriesIdsDocument: DocumentNode<QuerySeriesIdsQuery, QuerySeriesIdsQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QuerySeriesIds"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"series"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]};
-export const Get_SeriesDocument: DocumentNode<Get_SeriesQuery, Get_SeriesQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GET_SERIES"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"foo"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"series"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"foo"},"value":{"kind":"Variable","name":{"kind":"Name","value":"foo"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]}}]};
-export const QueryOneSeriesBookIdsDocument: DocumentNode<QueryOneSeriesBookIdsQuery, QueryOneSeriesBookIdsQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryOneSeriesBookIds"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"oneSeries"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]}}]};
-export const Query_One_Series_Document: DocumentNode<Query_One_Series_Query, Query_One_Series_QueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QUERY_ONE_SERIES_"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"oneSeries"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]}}]};
 export const MutationRemoveTagDocument: DocumentNode<MutationRemoveTagMutation, MutationRemoveTagMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationRemoveTag"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeTag"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
 
       export interface PossibleTypesResultData {
