@@ -34,7 +34,7 @@ mutation EDIT_BOOK(
 
 mutation RemoveBook($id: ID!) {
   removeBook(id: $id) {
-    id
+    success
   }
 }
 

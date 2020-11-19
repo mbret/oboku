@@ -1,5 +1,5 @@
 import { generateUniqueID } from "../utils";
-import { MutationAddBookArgs, MutationRemoveBookArgs, Edit_BookDocument, Book, DownloadState, QueryBookDocument } from '../generated/graphql'
+import { MutationAddBookArgs, MutationRemoveBookArgs, Edit_BookDocument, Book, DownloadState, QueryBookDocument, BookAssociationIdsFragmentDoc } from '../generated/graphql'
 import { Reference } from "@apollo/client";
 import { OfflineApolloClient } from "../client";
 
@@ -7,7 +7,7 @@ type ResolverContext = { client: OfflineApolloClient<any> }
 
 export const bookOfflineResolvers = {
   addBook: (variables: Omit<MutationAddBookArgs, 'id'>, { client }: ResolverContext): Book => {
-    const book = {
+    const book: Required<Book> = {
       __typename: 'Book' as const,
       id: generateUniqueID(),
       lastMetadataUpdatedAt: null,
@@ -26,7 +26,7 @@ export const bookOfflineResolvers = {
       rights: null,
       subject: null,
       creator: null,
-      collection: [],
+      collections: [],
       ...variables,
     }
 
@@ -46,17 +46,35 @@ export const bookOfflineResolvers = {
   },
   removeBook: ({ id }: MutationRemoveBookArgs, { client }: ResolverContext) => {
     const itemRef = client.cache.identify({ id, __typename: 'Book' })
-    if (itemRef) {
-      // @see https://www.apollographql.com/docs/react/caching/garbage-collections/#dangling-references
-      client.cache.evict({ id: itemRef })
-      client.cache.evict({ id: 'ROOT_QUERY', fieldName: 'book', args: { id } })
-      client.cache.gc()
-    }
-
+    const associations = client.readFragment({
+      id: itemRef,
+      fragment: BookAssociationIdsFragmentDoc,
+    })
+    // @see https://www.apollographql.com/docs/react/caching/garbage-collections/#dangling-references
+    client.cache.evict({ id: itemRef })
+    // prune book from books
     client.modify('Query', {
       fields: {
-        books: (existing = []) => existing.filter(({ __ref }: Reference) => __ref !== itemRef)
+        books: (existing = [], { canRead }) => existing.filter(canRead)
       }
+    })
+    // prune book from tags
+    associations?.tags?.forEach(tag => {
+      client.modify('Tag', {
+        id: client.identify({ __typename: 'Tag', id: tag?.id }),
+        fields: {
+          books: (existing: Reference[], { canRead }) => existing.filter(canRead)
+        },
+      })
+    })
+    // prune book from collections
+    associations?.collections?.forEach(collection => {
+      client.modify('Collection', {
+        id: client.identify({ __typename: 'Collection', id: collection?.id }),
+        fields: {
+          books: (existing: Reference[], { canRead }) => existing.filter(canRead)
+        }
+      })
     })
   },
   editBook: ({ id, ...rest }: NonNullable<typeof Edit_BookDocument['__variablesType']> & { tags?: string[] }, { client }: ResolverContext) => {

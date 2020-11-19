@@ -32,3 +32,15 @@ fragment BookDetailsWithAssociations on Book {
     name
   }
 }
+
+fragment BookAssociationIds on Book {
+  tags {
+    id
+  }
+  links {
+    id
+  }
+  collections {
+    id
+  }
+}

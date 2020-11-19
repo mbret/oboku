@@ -87,14 +87,14 @@ export const LibraryBooksScreen = () => {
             onClick={() => setIsSortingDialogOpened(true)}
             startIcon={<SortRounded />}
           >
-            {sorting === 'activity' ? 'Recent activity' : sorting === 'alpha' ? 'Alphabetical - A > Z' : 'Date added'}
+            {sorting === 'activity' ? 'Recent activity' : sorting === 'alpha' ? 'A > Z' : 'Date added'}
           </Button>
-          {userData?.user.isLibraryUnlocked && (
-            <div style={{ display: 'flex', flexFlow: 'row', alignItems: 'center', marginLeft: theme.spacing(1), overflow: 'hidden' }}>
-              <LockOpenRounded fontSize="small" />
-            </div>
-          )}
         </div>
+        {userData?.user.isLibraryUnlocked && (
+          <div style={{ display: 'flex', flexFlow: 'row', alignItems: 'center', marginLeft: theme.spacing(1), overflow: 'hidden' }}>
+            <LockOpenRounded fontSize="small" />
+          </div>
+        )}
         <IconButton
           onClick={() => {
             toggleLibraryBooksSettingsViewMode()

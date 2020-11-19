@@ -1,14 +1,13 @@
-import { useQuery, useMutation, useLazyQuery } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import {
   MutationEditBookArgs, MutationRemoveTagsToBookArgs, LinkType,
-  AddBookDocument, RemoveBookDocument, Edit_BookDocument, QueryBooksDocument, QueryBookDocument, MutationAddTagsToBookDocument,
+  AddBookDocument, RemoveBookDocument, Edit_BookDocument, QueryBookDocument, MutationAddTagsToBookDocument,
   MutationRemoveTagsToBookDocument,
 } from '../generated/graphql'
 import { difference } from 'ramda';
 import { useCallback } from 'react';
 import { bookOfflineResolvers } from './offlineResolvers';
 import { useAddLink } from '../links/queries';
-import { useUser } from '../auth/queries';
 import { useOfflineApolloClient } from '../useOfflineApolloClient';
 
 export const useRemoveBook = () => {

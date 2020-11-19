@@ -12,7 +12,7 @@ export const UploadNewBookDialog: FC<{
   open: boolean,
   onClose: () => void
 }> = ({ open, onClose }) => {
-  const [bookUrl, setBookUrl] = useState('')
+  const [bookUrl, setBookUrl] = useState(process.env.REACT_APP_HTTP_LINK || '')
   const isValid = schema.isValidSync({ bookUrl })
   const addBook = useAddBook()
 

@@ -42,7 +42,7 @@ export const SettingsScreen = () => {
           button
           onClick={() => setIsEditContentPasswordDialogOpened(true)}
         >
-          <ListItemText primary="Set up content password" secondary={userData?.user.contentPassword ? 'Your password is set up' : 'You do not have set up any password yet'} />
+          <ListItemText primary="Protected contents password" secondary={userData?.user.contentPassword ? 'Change my password' : 'Initialize my password'} />
         </ListItem>
         <ListItem
           button
@@ -55,7 +55,7 @@ export const SettingsScreen = () => {
           }}
         >
           <ListItemText
-            primary={isLibraryUnlocked ? 'Your protected contents are visible' : 'Your protected contents are hidden'}
+            primary={isLibraryUnlocked ? 'Protected contents are visible' : 'Protected contents are hidden'}
             secondary={isLibraryUnlocked ? 'Click to lock' : 'Click to unlock'}
           />
           {isLibraryUnlocked && (<LockOpenRounded color="action" />)}
