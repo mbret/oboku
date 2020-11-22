@@ -19,10 +19,10 @@
 
 - [Table of contents](#table-of-contents)
 - [About](#about)
+- [Status](#status)
 - [Features](#features)
 - [Roadmap](#roadmap)
 - [Quick start](#quick-start)
-- [Status](#status)
 - [Bugs and feature requests](#bugs-and-feature-requests)
 - [Creators](#creators)
 - [Copyright and license](#copyright-and-license)
@@ -68,8 +68,19 @@ Although it is a similar project oboku has some key differences:
 
 In no way oboku wishes to undermine calibre-web and I want to personally thanks [janeczku](https://github.com/janeczku) and all the contributors for making calibre-web project.
 
+## Status
+
+This project is still under heavy development and is not officialy released yet.
+If you like it and want to contribute, we are looking for translators and general contributors. If you would like to see a specific feature [please open a new issue](https://github.com/mbret/oboku/issues/new).
+
 ## Features
 
+- Use the app and read your books offline
+- Connect datasources to automatically synchronize your books (Google Drive, dropbox, ...)
+- Manage collections and tags
+- Hide sensitives books behind protected tags
+- Follow your book progress
+- Visualize, sort and filter your books
 
 ## Roadmap
 
@@ -86,13 +97,9 @@ $ npm install
 $ npm start
 ```
 
-## Status
-
-This project is still under heavy development and is not officialy released yet.
-
 ## Bugs and feature requests
 
-Have a bug or a feature request? Please search for existing and closed issues. If your problem or idea is not addressed yet, [please open a new issue](https://github/mbret/oboku/issues/new).
+Have a bug or a feature request? Please search for existing and closed issues. If your problem or idea is not addressed yet, [please open a new issue](https://github.com/mbret/oboku/issues/new).
 
 ## Creators
 
