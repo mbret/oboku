@@ -28,12 +28,13 @@
 - [Copyright and license](#copyright-and-license)
 
 ## About
+<p align="center">
 <img src="https://user-images.githubusercontent.com/1911240/99895904-bff01700-2cce-11eb-84d6-ed1a250fafac.png" alt="Logo" height="250">
 <img src="https://user-images.githubusercontent.com/1911240/99895927-0e051a80-2ccf-11eb-8dc1-038e07ffd184.png" alt="Logo" height="250">
 <img src="https://user-images.githubusercontent.com/1911240/99895942-3ab93200-2ccf-11eb-9f43-6c54d0cea830.png" alt="Logo" height="250">
+</p>
 
 ---
-
 oboku is a reading cloud library which allows you to synchronize your own books from various sources and provide a focused and friendly app.
 
 The service is different from kindle, kobo or google play book since it emphazise and focus on your own content (sometime named side loaded books). By connecting your own datasource to the service you will be able to synchronize and access your content wherever you are and on every device you have.
