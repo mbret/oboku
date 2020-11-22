@@ -29,9 +29,9 @@
 
 ## About
 <p align="center">
-<img src="https://user-images.githubusercontent.com/1911240/99895904-bff01700-2cce-11eb-84d6-ed1a250fafac.png" alt="Logo" height="250">
-<img src="https://user-images.githubusercontent.com/1911240/99895927-0e051a80-2ccf-11eb-8dc1-038e07ffd184.png" alt="Logo" height="250">
-<img src="https://user-images.githubusercontent.com/1911240/99895942-3ab93200-2ccf-11eb-9f43-6c54d0cea830.png" alt="Logo" height="250">
+<img src="https://user-images.githubusercontent.com/1911240/99895904-bff01700-2cce-11eb-84d6-ed1a250fafac.png" alt="Logo" height="300">
+<img src="https://user-images.githubusercontent.com/1911240/99895927-0e051a80-2ccf-11eb-8dc1-038e07ffd184.png" alt="Logo" height="300">
+<img src="https://user-images.githubusercontent.com/1911240/99895942-3ab93200-2ccf-11eb-9f43-6c54d0cea830.png" alt="Logo" height="300">
 </p>
 
 ---
