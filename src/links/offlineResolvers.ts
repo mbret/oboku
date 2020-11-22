@@ -1,7 +1,6 @@
-import { MutationAddLinkDocument, Link, MutationEditLinkDocument } from '../generated/graphql'
+import { MutationAddLinkDocument, MutationEditLinkDocument, QueryFullLinkDocument } from '../generated/graphql'
 import { gql } from "@apollo/client";
 import { generateUniqueID } from "../utils";
-import { QueryFullLink } from "./queries";
 import { OfflineApolloClient } from '../client';
 
 type ResolverContext = { client: OfflineApolloClient<any> }
@@ -28,7 +27,7 @@ export const linkOfflineResolvers = {
       }
 
       // create normalized reference + prepare link() query
-      client.writeQuery({ query: QueryFullLink, variables: { id: link.id }, data: { link: link } })
+      client.writeQuery({ query: QueryFullLinkDocument, variables: { id: link.id }, data: { link: link } })
 
       // Add link to book
       const data = client.readQuery({ query: QueryBookLinks, variables: { id: bookId } })

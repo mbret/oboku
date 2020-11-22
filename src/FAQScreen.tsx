@@ -13,7 +13,7 @@ export const FAQScreen = () => (
     <List subheader={<ListSubheader disableSticky>Data sources</ListSubheader>}>
       <ListItem>
         <Typography variant="body2">
-          Data sources let you add an external location from which Oboku can automatically add books.
+          Data sources let you add an external location from which oboku can automatically add books.
           Let's take an example with Google Drive. Assuming you want to store your files in a folder
           on your drive. Rather than adding each book one by one by providing the public URL of each files, you
           can create a data source which target the folder where all your books are. Once the data source is created

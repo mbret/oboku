@@ -42,7 +42,7 @@ export const AppTourWelcome: React.FC = memo(() => {
                 objectFit: 'cover',
                 paddingBottom: theme.spacing(2)
               }} />
-              <Typography >Welcome and thank you for using the app. Oboku is under heavy development so bugs are to be expected</Typography>
+              <Typography >Welcome and thank you for using the app. oboku is under heavy development so bugs are to be expected</Typography>
             </div>
           </Box>
         )}

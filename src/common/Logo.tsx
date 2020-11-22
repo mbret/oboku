@@ -8,7 +8,7 @@ export const Logo = () => {
     <div style={{flexFlow: 'row', display: 'flex'}}>
       <Typography variant="h1" color="primary" style={{
         fontWeight: theme.typography.fontWeightBold,
-      }}>O</Typography>
+      }}>o</Typography>
       <Typography variant="h1" style={{
         display: 'flex',
         fontWeight: theme.typography.fontWeightBold,

@@ -1,208 +1,107 @@
-<!--
-*** Thanks for checking out this README Template. If you have a suggestion that would
-*** make this better, please fork the repo and create a pull request or simply open
-*** an issue with the tag "enhancement".
-*** Thanks again! Now go create something AMAZING! :D
--->
-
-
-
-
-
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-
-
-<!-- PROJECT LOGO -->
-<br />
 <p align="center">
-  
-  <a href="https://github.com/mbret/oboku">
-    <img src="https://user-images.githubusercontent.com/1911240/98496751-afc74900-2285-11eb-8ea4-852a3fbc2030.png" alt="Logo" width="200" height="200">
+  <a 
+  href="https://github.com/mbret/oboku">
+    <img src="https://user-images.githubusercontent.com/1911240/99893449-bca35e00-2cc3-11eb-88c1-80b3190eb620.png" alt="Logo" width="75" height="75">
   </a>
 
+  <h3 align="center">oboku</h3>
+
   <p align="center">
-    Your free e-reader friendly own personal cloud library
-    <br />
-    <a href="https://github.com/mbret/oboku/wiki"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/mbret/oboku/wiki">View Demo</a>
+    Your personal reading cloud library
+    <br>
+    <a href="https://reponame/issues/new?template=bug.md">Report bug</a>
     ·
-    <a href="https://github.com/mbret/oboku/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/mbret/oboku/issues">Request Feature</a>
+    <a href="https://reponame/issues/new?template=feature.md&labels=feature">Request feature</a>
   </p>
 </p>
 
+## Table of contents
+
+- [Table of contents](#table-of-contents)
+- [About](#about)
+- [Features](#features)
+- [Roadmap](#roadmap)
+- [Quick start](#quick-start)
+- [Status](#status)
+- [Bugs and feature requests](#bugs-and-feature-requests)
+- [Creators](#creators)
+- [Copyright and license](#copyright-and-license)
+
+## About
+<img src="https://user-images.githubusercontent.com/1911240/99895904-bff01700-2cce-11eb-84d6-ed1a250fafac.png" alt="Logo" height="250">
+<img src="https://user-images.githubusercontent.com/1911240/99895927-0e051a80-2ccf-11eb-8dc1-038e07ffd184.png" alt="Logo" height="250">
+<img src="https://user-images.githubusercontent.com/1911240/99895942-3ab93200-2ccf-11eb-9f43-6c54d0cea830.png" alt="Logo" height="250">
+
+---
+
+oboku is a reading cloud library which allows you to synchronize your own books from various sources and provide a focused and friendly app.
+
+The service is different from kindle, kobo or google play book since it emphazise and focus on your own content (sometime named side loaded books). By connecting your own datasource to the service you will be able to synchronize and access your content wherever you are and on every device you have.
+
+One of the main focus of oboku is the accessibility no matter the device. In that way, e-ink devices always comes first in mind when developing new features. There are no fancy animation or complexe ui. The experience will also be adapted based on your screen size.
+
+At this point in time oboku is in early stage of development and very limited in term of features. Many more will be added over time but the phylosophy behind it will stay the same. With that said, should you try it ?
+
+You should try oboku if you:
+- Possess your own book files. For now the synchronization support is limited and paid services such as kobo or kindle are not supported.
+- Read from different devices (e-ink, tablet, web, ...)
+- Like to organize your books automatically
+- Manage your books with calibre
+- Often goes offline
+
+You should not try it if you:
+- **Wants a complete and bug free service**. This is still an early and heavily developed product
+- Only buy and read books from paid or closed platform (without API we cannot synchronize from them, ever) (ex: kobo, kindle, ...)
+- Like fancy animation or UI such as turning page
+
+------
+About [Calibre Web](https://github.com/janeczku/calibre-web):
+
+Calibre Web is another similar project that created many years ago and provide a similar experience. It obviously provide a lot more of features at this time and you might want to give it a try as well. Most specifically if you are using calibre as your source of data.
+Although it is a similar project oboku has some key differences:
+- Offline first
+- e-ink friendly
+- provide more different data sources for your books (Google Drive, Dropbox, ...)
+- Not self hosted (hassle free). Although you can fork the project, self host it and generally use the code however you want (under MIT limitation).
+- Use modern web technologies and is accessible through any devices
+
+In no way oboku wishes to undermine calibre-web and I want to personally thanks [janeczku](https://github.com/janeczku) and all the contributors for making calibre-web project.
+
+## Features
 
 
-<!-- TABLE OF CONTENTS -->
-## Table of Contents
-
-* [About the Project](#about-the-project)
-  * [Built With](#built-with)
-* [Getting Started](#getting-started)
-  * [Prerequisites](#prerequisites)
-  * [Installation](#installation)
-* [Usage](#usage)
-* [Roadmap](#roadmap)
-* [Contributing](#contributing)
-* [License](#license)
-* [Contact](#contact)
-* [Acknowledgements](#acknowledgements)
-
-
-
-<!-- ABOUT THE PROJECT -->
-## About The Project
-
-<h3>Oboku</h3>
-
-There are many great README templates available on GitHub, however, I didn't find one that really suit my needs so I created this enhanced one. I want to create a README template so amazing that it'll be the last one you ever need.
-
-Here's why:
-* Your time should be focused on creating something amazing. A project that solves a problem and helps others
-* You shouldn't be doing the same tasks over and over like creating a README from scratch
-* You should element DRY principles to the rest of your life :smile:
-
-Of course, no one template will serve all projects since your needs may be different. So I'll be adding more in the near future. You may also suggest changes by forking this repo and creating a pull request or opening an issue.
-
-A list of commonly used resources that I find helpful are listed in the acknowledgements.
-
-### Built With
-This section should list any major frameworks that you built your project using. Leave any add-ons/plugins for the acknowledgements section. Here are a few examples.
-* [Bootstrap](https://getbootstrap.com)
-* [JQuery](https://jquery.com)
-* [Laravel](https://laravel.com)
-
-
-
-<!-- GETTING STARTED -->
-## Getting Started
-
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
-### Prerequisites
-
-This is an example of how to list things you need to use the software and how to install them.
-* npm
-```sh
-npm install npm@latest -g
-```
-
-### Installation
-
-1. Get a free API Key at [https://example.com](https://example.com)
-2. Clone the repo
-```sh
-git clone https://github.com/your_username_/Project-Name.git
-```
-3. Install NPM packages
-```sh
-npm install
-```
-4. Enter your API in `config.js`
-```JS
-const API_KEY = 'ENTER YOUR API';
-```
-
-
-
-<!-- USAGE EXAMPLES -->
-## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_
-
-
-
-<!-- ROADMAP -->
 ## Roadmap
 
-See the [open issues](https://github.com/mbret/oboku/issues) for a list of proposed features (and known issues).
+- Add support for Calibre datasource
+- Add metadata support from Google Book API
+- Add reader annotations
+- Add reader bookmark
+- Add reader font size change
+
+## Quick start
+
+```sh
+$ npm install
+$ npm start
+```
+
+## Status
+
+This project is still under heavy development and is not officialy released yet.
+
+## Bugs and feature requests
+
+Have a bug or a feature request? Please search for existing and closed issues. If your problem or idea is not addressed yet, [please open a new issue](https://github/mbret/oboku/issues/new).
+
+## Creators
+
+**Maxime Bret**
+
+- <https://github.com/mbret>
 
 
+## Copyright and license
 
-<!-- CONTRIBUTING -->
-## Contributing
+Code released under the [MIT License](https://mbret/oboku/blob/master/LICENSE).
 
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-
-
-<!-- LICENSE -->
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-
-
-<!-- CONTACT -->
-## Contact
-
-Your Name - [@your_twitter](https://twitter.com/your_username) - email@example.com
-
-Project Link: [https://github.com/your_username/repo_name](https://github.com/your_username/repo_name)
-
-
-
-<!-- ACKNOWLEDGEMENTS -->
-## Acknowledgements
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Img Shields](https://shields.io)
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Pages](https://pages.github.com)
-* [Animate.css](https://daneden.github.io/animate.css)
-* [Loaders.css](https://connoratherton.com/loaders)
-* [Slick Carousel](https://kenwheeler.github.io/slick)
-* [Smooth Scroll](https://github.com/cferdinandi/smooth-scroll)
-* [Sticky Kit](http://leafo.net/sticky-kit)
-* [JVectorMap](http://jvectormap.com)
-* [Font Awesome](https://fontawesome.com)
-
-
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/mbret/oboku.svg?style=flat-square
-[contributors-url]: https://github.com/mbret/oboku/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/mbret/oboku.svg?style=flat-square
-[forks-url]: https://github.com/mbret/oboku/network/members
-[stars-shield]: https://img.shields.io/github/stars/mbret/oboku.svg?style=flat-square
-[stars-url]: https://github.com/mbret/oboku/stargazers
-[issues-shield]: https://img.shields.io/github/issues/mbret/oboku.svg?style=flat-square
-[issues-url]: https://github.com/mbret/oboku/issues
-[license-shield]: https://img.shields.io/github/license/mbret/oboku.svg?style=flat-square
-[license-url]: https://github.com/mbret/oboku/blob/master/LICENSE.txt
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/maxime-bret
-[product-screenshot]: images/screenshot.png
-
-## Resources
-https://github.com/helfer/apollo-link-serialize
-https://medium.com/twostoryrobot/a-recipe-for-offline-support-in-react-apollo-571ad7e6f7f4
-https://www.youtube.com/watch?v=6icuEm8c8a8&list=PLpi1lPB6opQyraZSmwFre_FpL00_3nTzV&index=46
-https://undraw.co/search
+Enjoy :metal:

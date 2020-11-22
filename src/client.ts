@@ -242,6 +242,9 @@ const typePolicies: TypedTypePolicies = {
       book: {
         read: (_, { toReference, args }) => toReference({ __typename: 'Book', id: args?.id, })
       },
+      link: {
+        read: (_, { toReference, args }) => toReference({ __typename: 'Link', id: args?.id, })
+      },
       collections: {
         read: (value: Reference[] = [], { variables, readField, }) => {
           // console.log(value, variables, cache.readQuery({ query: QueryCollectionIdsDocument }))

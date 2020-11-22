@@ -32,8 +32,8 @@ export const UploadNewBookDialog: FC<{
       <DialogContent>
         <DialogContentText>
           <Typography gutterBottom>
-            Oboku <b>does not</b> store any file on its own. Adding a book means creating a new book reference with one or several links.
-          A link is the location where your file is stored. At the moment Oboku only support <b>direct download</b> and <b>google drive public link</b>
+            oboku <b>does not</b> store any file on its own. Adding a book means creating a new book reference with one or several links.
+          A link is the location where your file is stored. At the moment oboku only support <b>direct download</b> and <b>google drive public link</b>
           </Typography>
           <b>Here are some examples: </b>
           <Typography noWrap>https://my_nas_url.com/file/45646578</Typography>

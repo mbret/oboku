@@ -1,3 +1,4 @@
+import { InMemoryCache } from "@apollo/client"
 import { ApolloLink, NextLink, Operation } from "apollo-link"
 import { OfflineApolloClient } from "./client"
 import { FragmentInitAppFragmentDoc } from "./generated/graphql"
@@ -12,8 +13,13 @@ class AppLink extends ApolloLink {
 
   init = async (client: OfflineApolloClient<any>) => {
     this.client = client
+    const cache = client.cache as InMemoryCache
 
     const ref = client.identify({ __typename: 'App', id: '_' })
+
+    // Very important so no gc
+    ref && cache.retain(ref);
+    
     let fragment
     try {
       fragment = client.readFragment({ fragment: FragmentInitAppFragmentDoc, id: ref })

@@ -1,17 +1,8 @@
-import { gql, useMutation } from "@apollo/client";
-import { MutationEditLinkArgs, Mutation, MutationAddLinkArgs, MutationAddLinkDocument, MutationEditLinkDocument, LinkType } from '../generated/graphql'
+import { useMutation } from "@apollo/client";
+import { MutationAddLinkDocument, MutationEditLinkDocument, LinkType } from '../generated/graphql'
 import { useCallback } from "react";
 import { linkOfflineResolvers } from "./offlineResolvers";
 import { useOfflineApolloClient } from "../useOfflineApolloClient";
-
-export const QueryFullLink = gql`
-  query QueryFullLink($id: ID!) {
-    link(id: $id) {
-      id
-      resourceId
-    }
-  }
-`
 
 export const useAddLink = () => {
   const client = useOfflineApolloClient()
