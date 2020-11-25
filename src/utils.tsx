@@ -4,7 +4,6 @@ import { DocumentNode, OperationTypeNode } from "graphql"
 import { Operation, TypedDocumentNode } from '@apollo/client'
 import { useMeasure } from 'react-use'
 import React, { useMemo } from 'react'
-import { useOfflineApolloClient } from './useOfflineApolloClient'
 
 /**
  * @todo see how to use guid / salt / etc. Truly

@@ -1,12 +1,30 @@
-query QueryAuth {
-  auth @client {
+query QueryUserAuthState {
+  user @client {
     token
     isAuthenticated
+  }
+}
+
+query QueryUserId {
+  user {
+    id
+  }
+}
+
+query QueryUser {
+  user {
+    ...UserData
   }
 }
 
 query QueryUserIsLibraryProtected {
   user {
     isLibraryUnlocked
+  }
+}
+
+query QueryAuthorize($password: String!) @blocking @noRetry @asyncQueue {
+  authorize(password: $password) {
+    success
   }
 }

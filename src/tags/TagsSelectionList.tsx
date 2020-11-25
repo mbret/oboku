@@ -1,10 +1,10 @@
 import { List, ListItem, ListItemAvatar, ListItemText } from '@material-ui/core'
 import { CheckCircleRounded, LockRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
 import React, { FC } from 'react'
-import { Tag } from '../generated/graphql'
+import { Maybe, Tag } from '../generated/graphql'
 
 export const TagsSelectionList: FC<{
-  tags: Tag[],
+  tags: Maybe<Tag>[],
   onItemClick: (id: string) => void,
   isSelected: (id: string) => boolean,
 }> = ({ tags, onItemClick, isSelected }) => {
@@ -20,12 +20,12 @@ export const TagsSelectionList: FC<{
           }}
         >
           <ListItemAvatar>
-            {tag.id && isSelected(tag.id)
+            {tag?.id && isSelected(tag?.id)
               ? <CheckCircleRounded />
               : <RadioButtonUncheckedOutlined />}
           </ListItemAvatar>
           <ListItemText primary={tag?.name} />
-          {tag.isProtected && <LockRounded color="primary" />}
+          {tag?.isProtected && <LockRounded color="primary" />}
         </ListItem>
       ))}
     </List>

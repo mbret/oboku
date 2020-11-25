@@ -14,13 +14,10 @@ extend type Book {
   downloadProgress: Float
 }
 
-type Auth {
-  token: String
-  isAuthenticated: Boolean!
-}
-
 extend type User {
   isLibraryUnlocked: Boolean!
+  token: String
+  isAuthenticated: Boolean!
 }
 
 extend type SyncQueryResponse {
@@ -38,9 +35,13 @@ type Query {
   collections(foo: String): [Collection]
   books(isProtected: Boolean): [Book]
   user: User
-  auth: Auth
+}
+
+type OfflineResponse {
+  success: Boolean
 }
 
 type Mutation {
   app(hasUpdateAvailable: Boolean): App
+  logout: OfflineResponse
 }

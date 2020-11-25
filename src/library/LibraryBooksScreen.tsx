@@ -1,5 +1,4 @@
-import React, { useState, FC, useMemo, useEffect } from 'react';
-import ReactDOM from 'react-dom'
+import React, { useState, FC, useMemo } from 'react';
 import { BookList } from '../books/BookList';
 import {
   Dialog, Button, DialogTitle,
@@ -9,12 +8,10 @@ import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecke
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
 import { useLibraryBooksSettings, useToggleLibraryBooksSettingsViewMode, useUpdateLibraryBooksSettings, LibraryBooksSettings } from './queries';
 import * as R from 'ramda';
-import { useUser } from '../auth/queries';
 import { UploadNewBookDialog } from '../books/UploadNewBookDialog';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
-import { Book, QueryBooksDocument } from '../generated/graphql';
+import { Book, QueryBooksDocument, QueryUserDocument } from '../generated/graphql';
 import { useQuery } from '@apollo/client';
-import { useMeasure } from 'react-use';
 import { useMeasureElement } from '../utils';
 
 export const LibraryBooksScreen = () => {
@@ -23,7 +20,7 @@ export const LibraryBooksScreen = () => {
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const [isUploadNewBookDialogOpened, setIsUploadNewBookDialogOpened] = useState(false)
-  const { data: userData } = useUser()
+  const { data: userData } = useQuery(QueryUserDocument)
   const [toggleLibraryBooksSettingsViewMode] = useToggleLibraryBooksSettingsViewMode()
   const { data: libraryBooksSettingsData } = useLibraryBooksSettings()
   const libraryFilters = libraryBooksSettingsData?.libraryBooksSettings
@@ -90,7 +87,7 @@ export const LibraryBooksScreen = () => {
             {sorting === 'activity' ? 'Recent activity' : sorting === 'alpha' ? 'A > Z' : 'Date added'}
           </Button>
         </div>
-        {userData?.user.isLibraryUnlocked && (
+        {userData?.user?.isLibraryUnlocked && (
           <div style={{ display: 'flex', flexFlow: 'row', alignItems: 'center', marginLeft: theme.spacing(1), overflow: 'hidden' }}>
             <LockOpenRounded fontSize="small" />
           </div>

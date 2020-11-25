@@ -64,7 +64,6 @@ export const EDIT_TAG = gql`
   ${MutationTagDetailsFragment}
 `
 
-export const useQueryGetTags = () => useQuery<{ tags: Tag[] }>(GET_TAGS)
 export const useLazyQueryGetTags = () => useLazyQuery<{ tags: Tag[] }>(GET_TAGS)
 export const useLazyQueryGetTag = () => useLazyQuery<QueryTagData, QueryTagArgs>(QueryTag, {})
 

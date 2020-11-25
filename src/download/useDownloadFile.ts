@@ -4,7 +4,7 @@ import { API_URI } from '../constants';
 import axios from 'axios'
 import { useCallback } from 'react';
 import throttle from 'lodash.throttle';
-import { Book, DownloadState, QueryAuthDocument } from '../generated/graphql';
+import { Book, DownloadState, QueryUserAuthStateDocument } from '../generated/graphql';
 
 type QueryBookDownloadStateData = { book: Required<Pick<Book, 'downloadState' | 'downloadProgress'>> }
 type QueryBookDownloadStateVariables = { id: string }
@@ -51,7 +51,7 @@ export const useDownloadFile = () => {
     }, 500)
 
     try {
-      const authData = client.readQuery({ query: QueryAuthDocument })
+      const authData = client.readQuery({ query: QueryUserAuthStateDocument })
 
       writeBookDownloadState(bookId, existing => ({
         book: {
@@ -65,7 +65,7 @@ export const useDownloadFile = () => {
         const response = await axios({
           url: `${API_URI}/download/${bookId}`,
           headers: {
-            Authorization: `Bearer ${authData?.auth?.token}`
+            Authorization: `Bearer ${authData?.user?.token}`
           },
           responseType: 'blob',
           onDownloadProgress: (event: ProgressEvent) => {

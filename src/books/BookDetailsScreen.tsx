@@ -5,7 +5,6 @@ import { TopBarNavigation } from '../TopBarNavigation';
 import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, makeStyles, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
 import { useEditBook } from '../books/queries';
-import { useQueryGetTags } from '../tags/queries';
 import { useEditLink } from '../links/queries';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
 import { Alert } from '@material-ui/lab';
@@ -13,7 +12,7 @@ import { Cover } from './Cover';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { ROUTES } from '../constants';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
-import { LinkType, QueryBookDocument } from '../generated/graphql';
+import { LinkType, QueryBookDocument, QueryTagsDocument } from '../generated/graphql';
 import { useLazyQuery, useQuery } from '@apollo/client';
 
 type ScreenParams = {
@@ -264,7 +263,7 @@ const TagsDialog: FC<{
   onClose: () => void,
   id: string
 }> = ({ open, onClose, id }) => {
-  const { data: getTagsData } = useQueryGetTags()
+  const { data: getTagsData } = useQuery(QueryTagsDocument)
   const { data: getBookData } = useQuery(QueryBookDocument, { variables: { id } })
   const editBook = useEditBook()
   const tags = getTagsData?.tags

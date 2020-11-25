@@ -7,7 +7,7 @@ import {
 import { FetchResult } from 'apollo-link';
 import { getMainDefinition } from './utils';
 
-export class ApolloLinkOfflineQueries extends ApolloLink {
+export class ApolloLinkOfflineOperations extends ApolloLink {
   public request(operation: Operation, forward: NextLink) {
     const definition = getMainDefinition(operation.query)
     const isOfflineDirective = definition.directives?.find(directive => directive.name.value === 'offline')

@@ -1,9 +1,9 @@
 import { ApolloLink, FetchResult } from "apollo-link"
-import { MutationSigninData, QueryUser, QueryUserData, MutationSignupData, MutationEditUser } from "./queries"
-import { ApolloClient, InMemoryCache } from "@apollo/client"
 import { syncLibrary } from "../library/queries"
 import { getMainDefinition } from "@apollo/client/utilities"
-import { Mutation, QueryAuthDocument } from '../generated/graphql'
+import { MutationSignupDocument, MutationSigninDocument, MutationEditUserDocument, UserRemoteDataFragmentDoc, QueryUserDocument, MutationLogoutDocument, QueryUserIdDocument } from '../generated/graphql'
+import { OfflineApolloClient } from "../useOfflineApolloClient"
+import { forOperationAs } from "../utils"
 
 /**
  * @see https://github.com/zenparsing/zen-observable
@@ -12,28 +12,33 @@ import { Mutation, QueryAuthDocument } from '../generated/graphql'
  */
 export const authLink = new ApolloLink((operation, forward) => {
   const context = operation.getContext()
-  const cache = context.cache as InMemoryCache
-  const client = context.client as ApolloClient<any>
+  const client = context.client as OfflineApolloClient<any>
   const definition = getMainDefinition(operation.query)
 
-  /**
-   * Listen for incoming operation
-   * 
-   * @warning
-   * I am not sure yet if it's a good idea to perform logic on incoming
-   * operation such as doing the cache update here rather than the hooks
-   * or offline resolvers. The reason is that some other link could retry
-   * some of the mutation. A good example is the queue Link which will
-   * replay everything on restore. Although we could filter out the incoming 
-   * replayed operation by checking the context (isReplayed: true), I keep
-   * wondering whether it's a good idea or not.
-   */
-  // ...
+  forOperationAs(operation, MutationLogoutDocument, () => {
+    const data = client.readQuery({ query: QueryUserIdDocument })
+    const refId = client.identify({ __typename: 'User', id: data?.user?.id })
+    client.evictRootQuery({ fieldName: 'user' })
+    client.evictRootQuery({ fieldName: 'books' })
+    client.evictRootQuery({ fieldName: 'tags' })
+    client.evictRootQuery({ fieldName: 'collections' })
+    client.cache.evict({ id: refId })
+  })
 
-  if (definition.name?.value === getMainDefinition(MutationEditUser).name?.value) {
-    const incomingData = operation.variables as Mutation['editUser']
-    const data = client.readQuery<QueryUserData>({ query: QueryUser })
-    data && client.writeQuery<QueryUserData>({ query: QueryUser, data: { user: { ...data.user, ...incomingData } } })
+  if (definition.name?.value === getMainDefinition(MutationEditUserDocument).name?.value) {
+    const incomingData = operation.variables as typeof MutationEditUserDocument['__resultType']
+    if (incomingData?.editUser) {
+      const refId = client.identify({ __typename: 'User', id: incomingData.editUser.id })
+      const userData = client.readFragment({
+        id: refId,
+        fragment: UserRemoteDataFragmentDoc,
+      })
+      userData && client.writeFragment({
+        id: refId,
+        fragment: UserRemoteDataFragmentDoc,
+        data: { ...userData, ...incomingData?.editUser }
+      })
+    }
   }
 
   return forward(operation)
@@ -51,24 +56,37 @@ export const authLink = new ApolloLink((operation, forward) => {
      * dispatching the correct query.
      */
     .map(result => {
-
       switch (operation.operationName) {
         case 'MutationSignup': {
-          const data = (result as FetchResult<MutationSignupData>).data
+          const data = (result as FetchResult<typeof MutationSignupDocument['__resultType']>).data
           if (data?.signup) {
-            const userData = { ...data?.signup.user, isLibraryUnlocked: false }
-            cache.writeQuery({ query: QueryAuthDocument, data: { auth: { token: data?.signup.token, isAuthenticated: true } } })
-            cache.writeQuery<QueryUserData>({ query: QueryUser, data: { user: userData } })
+            client.writeQuery({
+              query: QueryUserDocument,
+              data: {
+                user: {
+                  token: data.signup.token,
+                  isLibraryUnlocked: false,
+                  ...data.signup.user
+                },
+              }
+            })
             syncLibrary(client).catch(_ => { })
           }
           break
         }
         case 'MutationSignin': {
-          const data = (result as FetchResult<MutationSigninData>).data
+          const data = (result as FetchResult<typeof MutationSigninDocument['__resultType']>).data
           if (data?.signin) {
-            const userData = { ...data?.signin.user, isLibraryUnlocked: false }
-            cache.writeQuery({ query: QueryAuthDocument, data: { auth: { token: data?.signin.token, isAuthenticated: true } } })
-            cache.writeQuery<QueryUserData>({ query: QueryUser, data: { user: userData } })
+            client.writeQuery({
+              query: QueryUserDocument,
+              data: {
+                user: {
+                  token: data.signin.token,
+                  isLibraryUnlocked: false,
+                  ...data.signin.user
+                },
+              }
+            })
             syncLibrary(client).catch(_ => { })
           }
           break

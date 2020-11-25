@@ -15,15 +15,16 @@ import { LibraryTopTabNavigator } from './library/LibraryTopTabNavigator'
 import { ROUTES } from './constants'
 import { BookDetailsScreen } from './books/BookDetailsScreen'
 import { CollectionDetailsScreen } from './collections/CollectionDetailsScreen'
-import { useAuth } from './auth/queries'
 import { RegisterScreen } from './auth/RegisterScreen'
 import { BookActionsDrawer } from './books/BookActionsDrawer'
 import { DataSourcesScreen } from './dataSources/DataSourcesScreen'
 import { FAQScreen } from './FAQScreen'
+import { useQuery } from '@apollo/client'
+import { QueryUserAuthStateDocument } from './generated/graphql'
 
 export const AppNavigator = () => {
-  const { data: authData } = useAuth()
-  const isAuthenticated = !!authData?.auth?.token
+  const { data: authData } = useQuery(QueryUserAuthStateDocument)
+  const isAuthenticated = !!authData?.user?.token
 
   return (
     <Router basename={process.env.PUBLIC_URL}>

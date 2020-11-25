@@ -1,19 +1,23 @@
 import React, { useState, FC } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, makeStyles, createStyles, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
-import { useQueryGetTags, useCreateTag } from '../tags/queries';
+import { useCreateTag } from '../tags/queries';
 import { TagActionsDrawer } from '../tags/TagActionsDrawer';
-import { EditRounded, LocalOfferRounded, LockRounded } from '@material-ui/icons';
+import { LocalOfferRounded, LockRounded } from '@material-ui/icons';
+import { useQuery } from '@apollo/client';
+import { QueryTagsDocument } from '../generated/graphql';
+import { LockActionDialog } from '../auth/LockActionDialog';
 
 export const LibraryTagsScreen = () => {
+  const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
   const classes = useStyles();
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] = useState<string | undefined>(undefined)
-  const { data } = useQueryGetTags()
+  const { data } = useQuery(QueryTagsDocument)
   const tags = data?.tags
   const addTag = useCreateTag()
 
-  console.log('LibraryTagsScreen', tags)
+  console.log('LibraryTagsScreen', tags, lockedAction)
 
   return (
     <div className={classes.container}>
@@ -33,14 +37,24 @@ export const LibraryTagsScreen = () => {
         {tags && tags.map(tag => (
           <ListItem
             button
-            key={tag.id}
-            onClick={() => setIsTagActionsDrawerOpenedWith(tag.id)}
+            key={tag?.id}
+            onClick={() => {
+              const action = () => setIsTagActionsDrawerOpenedWith(tag?.id)
+              if (tag?.isProtected) {
+                setLockedAction(_ => action)
+              } else {
+                action()
+              }
+            }}
           >
             <ListItemIcon>
               <LocalOfferRounded />
             </ListItemIcon>
-            <ListItemText primary={tag.name} secondary={`${tag.books?.length || 0} book(s)`} />
-            {tag.isProtected && <LockRounded color="primary" />}
+            <ListItemText
+              primary={tag?.name}
+              secondary={`${tag?.isProtected ? '?' : tag?.books?.length || 0} book(s)`}
+            />
+            {tag?.isProtected && <LockRounded color="primary" />}
           </ListItem>
         ))}
       </List>
@@ -53,6 +67,7 @@ export const LibraryTagsScreen = () => {
         onClose={() => setIsAddTagDialogOpened(false)}
         open={isAddTagDialogOpened}
       />
+      <LockActionDialog action={lockedAction} />
       <TagActionsDrawer
         openWith={isTagActionsDrawerOpenedWith}
         onClose={() => setIsTagActionsDrawerOpenedWith(undefined)}

@@ -18,7 +18,9 @@ export type User = {
   contentPassword?: Maybe<Scalars['String']>;
   email?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
+  isAuthenticated: Scalars['Boolean'];
   isLibraryUnlocked: Scalars['Boolean'];
+  token?: Maybe<Scalars['String']>;
 };
 
 export type Book = {
@@ -83,6 +85,12 @@ export type DataSource = {
   data?: Maybe<Scalars['String']>;
 };
 
+export type GoogleDriveDataSourceData = {
+  __typename?: 'GoogleDriveDataSourceData';
+  applyTags?: Maybe<Array<Maybe<Scalars['ID']>>>;
+  driveId: Scalars['String'];
+};
+
 export type SyncQueryResponse = {
   __typename?: 'SyncQueryResponse';
   books?: Maybe<Array<Maybe<Book>>>;
@@ -90,10 +98,15 @@ export type SyncQueryResponse = {
   happening: Scalars['Boolean'];
 };
 
+export type AuthorizeResponse = {
+  __typename?: 'AuthorizeResponse';
+  success: Scalars['Boolean'];
+};
+
 export type Query = {
   __typename?: 'Query';
   app?: Maybe<App>;
-  auth?: Maybe<Auth>;
+  authorize?: Maybe<AuthorizeResponse>;
   book?: Maybe<Book>;
   books?: Maybe<Array<Maybe<Book>>>;
   collection?: Maybe<Collection>;
@@ -107,6 +120,11 @@ export type Query = {
   tag?: Maybe<Tag>;
   tags?: Maybe<Array<Maybe<Tag>>>;
   user?: Maybe<User>;
+};
+
+
+export type QueryAuthorizeArgs = {
+  password: Scalars['String'];
 };
 
 
@@ -165,6 +183,7 @@ export type Mutation = {
   editLink?: Maybe<MutationResponse>;
   editTag?: Maybe<Tag>;
   editUser?: Maybe<User>;
+  logout?: Maybe<OfflineResponse>;
   removeBook?: Maybe<MutationResponse>;
   removeCollection?: Maybe<MutationResponse>;
   removeCollectionsToBook?: Maybe<MutationResponse>;
@@ -210,7 +229,7 @@ export type MutationAddLinkArgs = {
 
 export type MutationAddTagArgs = {
   id: Scalars['ID'];
-  name?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
 };
 
 
@@ -321,26 +340,119 @@ export enum DownloadState {
   Downloading = 'downloading'
 }
 
-export type Auth = {
-  __typename?: 'Auth';
-  token?: Maybe<Scalars['String']>;
-  isAuthenticated: Scalars['Boolean'];
-};
-
 export type App = {
   __typename?: 'App';
   id: Scalars['ID'];
   hasUpdateAvailable: Scalars['Boolean'];
 };
 
-export type QueryAuthQueryVariables = Exact<{ [key: string]: never; }>;
+export type OfflineResponse = {
+  __typename?: 'OfflineResponse';
+  success?: Maybe<Scalars['Boolean']>;
+};
+
+export type UserRemoteDataFragment = (
+  { __typename: 'User' }
+  & Pick<User, 'id' | 'email' | 'contentPassword'>
+);
+
+export type UserDataFragment = (
+  { __typename: 'User' }
+  & Pick<User, 'isLibraryUnlocked' | 'token'>
+  & UserRemoteDataFragment
+);
+
+export type MutationSignupMutationVariables = Exact<{
+  email: Scalars['String'];
+  password: Scalars['String'];
+}>;
 
 
-export type QueryAuthQuery = (
+export type MutationSignupMutation = (
+  { __typename?: 'Mutation' }
+  & { signup?: Maybe<(
+    { __typename?: 'AuthenticationResponse' }
+    & Pick<AuthenticationResponse, 'token'>
+    & { user: (
+      { __typename?: 'User' }
+      & UserRemoteDataFragment
+    ) }
+  )> }
+);
+
+export type MutationSigninMutationVariables = Exact<{
+  email: Scalars['String'];
+  password: Scalars['String'];
+}>;
+
+
+export type MutationSigninMutation = (
+  { __typename?: 'Mutation' }
+  & { signin?: Maybe<(
+    { __typename?: 'AuthenticationResponse' }
+    & Pick<AuthenticationResponse, 'token'>
+    & { user: (
+      { __typename?: 'User' }
+      & UserRemoteDataFragment
+    ) }
+  )> }
+);
+
+export type MutationEditUserMutationVariables = Exact<{
+  id: Scalars['ID'];
+  contentPassword?: Maybe<Scalars['String']>;
+}>;
+
+
+export type MutationEditUserMutation = (
+  { __typename?: 'Mutation' }
+  & { editUser?: Maybe<(
+    { __typename?: 'User' }
+    & UserRemoteDataFragment
+  )> }
+);
+
+export type MutationLogoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MutationLogoutMutation = (
+  { __typename?: 'Mutation' }
+  & { logout?: Maybe<(
+    { __typename?: 'OfflineResponse' }
+    & Pick<OfflineResponse, 'success'>
+  )> }
+);
+
+export type QueryUserAuthStateQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type QueryUserAuthStateQuery = (
   { __typename?: 'Query' }
-  & { auth?: Maybe<(
-    { __typename?: 'Auth' }
-    & Pick<Auth, 'token' | 'isAuthenticated'>
+  & { user?: Maybe<(
+    { __typename?: 'User' }
+    & Pick<User, 'token' | 'isAuthenticated'>
+  )> }
+);
+
+export type QueryUserIdQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type QueryUserIdQuery = (
+  { __typename?: 'Query' }
+  & { user?: Maybe<(
+    { __typename?: 'User' }
+    & Pick<User, 'id'>
+  )> }
+);
+
+export type QueryUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type QueryUserQuery = (
+  { __typename?: 'Query' }
+  & { user?: Maybe<(
+    { __typename?: 'User' }
+    & UserDataFragment
   )> }
 );
 
@@ -352,6 +464,19 @@ export type QueryUserIsLibraryProtectedQuery = (
   & { user?: Maybe<(
     { __typename?: 'User' }
     & Pick<User, 'isLibraryUnlocked'>
+  )> }
+);
+
+export type QueryAuthorizeQueryVariables = Exact<{
+  password: Scalars['String'];
+}>;
+
+
+export type QueryAuthorizeQuery = (
+  { __typename?: 'Query' }
+  & { authorize?: Maybe<(
+    { __typename?: 'AuthorizeResponse' }
+    & Pick<AuthorizeResponse, 'success'>
   )> }
 );
 
@@ -916,12 +1041,29 @@ export type MutationRemoveTagMutation = (
   )> }
 );
 
-export type UserKeySpecifier = ('contentPassword' | 'email' | 'id' | 'isLibraryUnlocked' | UserKeySpecifier)[];
+export type QueryTagsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type QueryTagsQuery = (
+  { __typename?: 'Query' }
+  & { tags?: Maybe<Array<Maybe<(
+    { __typename?: 'Tag' }
+    & Pick<Tag, 'id' | 'name' | 'isProtected'>
+    & { books?: Maybe<Array<Maybe<(
+      { __typename?: 'Book' }
+      & Pick<Book, 'id'>
+    )>>> }
+  )>>> }
+);
+
+export type UserKeySpecifier = ('contentPassword' | 'email' | 'id' | 'isAuthenticated' | 'isLibraryUnlocked' | 'token' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
 	contentPassword?: FieldPolicy<any> | FieldReadFunction<any>,
 	email?: FieldPolicy<any> | FieldReadFunction<any>,
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
-	isLibraryUnlocked?: FieldPolicy<any> | FieldReadFunction<any>
+	isAuthenticated?: FieldPolicy<any> | FieldReadFunction<any>,
+	isLibraryUnlocked?: FieldPolicy<any> | FieldReadFunction<any>,
+	token?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type BookKeySpecifier = ('collections' | 'createdAt' | 'creator' | 'date' | 'downloadProgress' | 'downloadState' | 'id' | 'language' | 'lastMetadataUpdatedAt' | 'links' | 'publisher' | 'readingStateCurrentBookmarkLocation' | 'readingStateCurrentBookmarkProgressPercent' | 'readingStateCurrentBookmarkProgressUpdatedAt' | 'rights' | 'subject' | 'tags' | 'title' | BookKeySpecifier)[];
 export type BookFieldPolicy = {
@@ -971,16 +1113,25 @@ export type DataSourceFieldPolicy = {
 	lastSyncedAt?: FieldPolicy<any> | FieldReadFunction<any>,
 	data?: FieldPolicy<any> | FieldReadFunction<any>
 };
+export type GoogleDriveDataSourceDataKeySpecifier = ('applyTags' | 'driveId' | GoogleDriveDataSourceDataKeySpecifier)[];
+export type GoogleDriveDataSourceDataFieldPolicy = {
+	applyTags?: FieldPolicy<any> | FieldReadFunction<any>,
+	driveId?: FieldPolicy<any> | FieldReadFunction<any>
+};
 export type SyncQueryResponseKeySpecifier = ('books' | 'dataSources' | 'happening' | SyncQueryResponseKeySpecifier)[];
 export type SyncQueryResponseFieldPolicy = {
 	books?: FieldPolicy<any> | FieldReadFunction<any>,
 	dataSources?: FieldPolicy<any> | FieldReadFunction<any>,
 	happening?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('app' | 'auth' | 'book' | 'books' | 'collection' | 'collections' | 'dataSource' | 'dataSources' | 'firstTimeExperience' | 'link' | 'links' | 'syncState' | 'tag' | 'tags' | 'user' | QueryKeySpecifier)[];
+export type AuthorizeResponseKeySpecifier = ('success' | AuthorizeResponseKeySpecifier)[];
+export type AuthorizeResponseFieldPolicy = {
+	success?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type QueryKeySpecifier = ('app' | 'authorize' | 'book' | 'books' | 'collection' | 'collections' | 'dataSource' | 'dataSources' | 'firstTimeExperience' | 'link' | 'links' | 'syncState' | 'tag' | 'tags' | 'user' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
 	app?: FieldPolicy<any> | FieldReadFunction<any>,
-	auth?: FieldPolicy<any> | FieldReadFunction<any>,
+	authorize?: FieldPolicy<any> | FieldReadFunction<any>,
 	book?: FieldPolicy<any> | FieldReadFunction<any>,
 	books?: FieldPolicy<any> | FieldReadFunction<any>,
 	collection?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -1004,7 +1155,7 @@ export type AuthenticationResponseFieldPolicy = {
 	token?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('addBook' | 'addCollection' | 'addCollectionsToBook' | 'addDataSource' | 'addLink' | 'addTag' | 'addTagsToBook' | 'app' | 'editBook' | 'editCollection' | 'editLink' | 'editTag' | 'editUser' | 'removeBook' | 'removeCollection' | 'removeCollectionsToBook' | 'removeTag' | 'removeTagsToBook' | 'signin' | 'signup' | 'syncDataSource' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('addBook' | 'addCollection' | 'addCollectionsToBook' | 'addDataSource' | 'addLink' | 'addTag' | 'addTagsToBook' | 'app' | 'editBook' | 'editCollection' | 'editLink' | 'editTag' | 'editUser' | 'logout' | 'removeBook' | 'removeCollection' | 'removeCollectionsToBook' | 'removeTag' | 'removeTagsToBook' | 'signin' | 'signup' | 'syncDataSource' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	addBook?: FieldPolicy<any> | FieldReadFunction<any>,
 	addCollection?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -1019,6 +1170,7 @@ export type MutationFieldPolicy = {
 	editLink?: FieldPolicy<any> | FieldReadFunction<any>,
 	editTag?: FieldPolicy<any> | FieldReadFunction<any>,
 	editUser?: FieldPolicy<any> | FieldReadFunction<any>,
+	logout?: FieldPolicy<any> | FieldReadFunction<any>,
 	removeBook?: FieldPolicy<any> | FieldReadFunction<any>,
 	removeCollection?: FieldPolicy<any> | FieldReadFunction<any>,
 	removeCollectionsToBook?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -1033,15 +1185,14 @@ export type FirstTimeExperienceFieldPolicy = {
 	hasDoneWelcomeTour?: FieldPolicy<any> | FieldReadFunction<any>,
 	hasDoneReaderTour?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type AuthKeySpecifier = ('token' | 'isAuthenticated' | AuthKeySpecifier)[];
-export type AuthFieldPolicy = {
-	token?: FieldPolicy<any> | FieldReadFunction<any>,
-	isAuthenticated?: FieldPolicy<any> | FieldReadFunction<any>
-};
 export type AppKeySpecifier = ('id' | 'hasUpdateAvailable' | AppKeySpecifier)[];
 export type AppFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	hasUpdateAvailable?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type OfflineResponseKeySpecifier = ('success' | OfflineResponseKeySpecifier)[];
+export type OfflineResponseFieldPolicy = {
+	success?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type TypedTypePolicies = TypePolicies & {
 	User?: {
@@ -1086,12 +1237,26 @@ export type TypedTypePolicies = TypePolicies & {
 		subscriptionType?: true,
 		fields?: DataSourceFieldPolicy,
 	},
+	GoogleDriveDataSourceData?: {
+		keyFields?: false | GoogleDriveDataSourceDataKeySpecifier | (() => undefined | GoogleDriveDataSourceDataKeySpecifier),
+		queryType?: true,
+		mutationType?: true,
+		subscriptionType?: true,
+		fields?: GoogleDriveDataSourceDataFieldPolicy,
+	},
 	SyncQueryResponse?: {
 		keyFields?: false | SyncQueryResponseKeySpecifier | (() => undefined | SyncQueryResponseKeySpecifier),
 		queryType?: true,
 		mutationType?: true,
 		subscriptionType?: true,
 		fields?: SyncQueryResponseFieldPolicy,
+	},
+	AuthorizeResponse?: {
+		keyFields?: false | AuthorizeResponseKeySpecifier | (() => undefined | AuthorizeResponseKeySpecifier),
+		queryType?: true,
+		mutationType?: true,
+		subscriptionType?: true,
+		fields?: AuthorizeResponseFieldPolicy,
 	},
 	Query?: {
 		keyFields?: false | QueryKeySpecifier | (() => undefined | QueryKeySpecifier),
@@ -1128,29 +1293,38 @@ export type TypedTypePolicies = TypePolicies & {
 		subscriptionType?: true,
 		fields?: FirstTimeExperienceFieldPolicy,
 	},
-	Auth?: {
-		keyFields?: false | AuthKeySpecifier | (() => undefined | AuthKeySpecifier),
-		queryType?: true,
-		mutationType?: true,
-		subscriptionType?: true,
-		fields?: AuthFieldPolicy,
-	},
 	App?: {
 		keyFields?: false | AppKeySpecifier | (() => undefined | AppKeySpecifier),
 		queryType?: true,
 		mutationType?: true,
 		subscriptionType?: true,
 		fields?: AppFieldPolicy,
+	},
+	OfflineResponse?: {
+		keyFields?: false | OfflineResponseKeySpecifier | (() => undefined | OfflineResponseKeySpecifier),
+		queryType?: true,
+		mutationType?: true,
+		subscriptionType?: true,
+		fields?: OfflineResponseFieldPolicy,
 	}
 };
+export const UserRemoteDataFragmentDoc: DocumentNode<UserRemoteDataFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserRemoteData"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"email"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"contentPassword"},"arguments":[],"directives":[]}]}}]};
+export const UserDataFragmentDoc: DocumentNode<UserDataFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserData"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserRemoteData"},"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"isLibraryUnlocked"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]},{"kind":"Field","name":{"kind":"Name","value":"token"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]}]}},...UserRemoteDataFragmentDoc.definitions]};
 export const BookDetailsFragmentDoc: DocumentNode<BookDetailsFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BookDetails"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Book"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"lastMetadataUpdatedAt"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"title"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"creator"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"language"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"date"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"publisher"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"subject"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"downloadState"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]},{"kind":"Field","name":{"kind":"Name","value":"downloadProgress"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]},{"kind":"Field","name":{"kind":"Name","value":"readingStateCurrentBookmarkLocation"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"readingStateCurrentBookmarkProgressUpdatedAt"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"readingStateCurrentBookmarkProgressPercent"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"createdAt"},"arguments":[],"directives":[]}]}}]};
 export const BookDetailsWithAssociationsFragmentDoc: DocumentNode<BookDetailsWithAssociationsFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BookDetailsWithAssociations"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Book"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"BookDetails"},"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"tags"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"isProtected"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}]}]}},{"kind":"Field","name":{"kind":"Name","value":"links"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"resourceId"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"collections"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]}]}}]}},...BookDetailsFragmentDoc.definitions]};
 export const BookAssociationIdsFragmentDoc: DocumentNode<BookAssociationIdsFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"BookAssociationIds"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Book"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tags"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"links"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}},{"kind":"Field","name":{"kind":"Name","value":"collections"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]};
 export const NewCollectionFragmentDoc: DocumentNode<NewCollectionFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"NewCollection"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Collection"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]}]}}]};
 export const FragmentInitAppFragmentDoc: DocumentNode<FragmentInitAppFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentInitApp"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"App"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"hasUpdateAvailable"},"arguments":[],"directives":[]}]}}]};
 export const FragmentAppHasUpdateAvailableFragmentDoc: DocumentNode<FragmentAppHasUpdateAvailableFragment, unknown> = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"FragmentAppHasUpdateAvailable"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"App"}},"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasUpdateAvailable"},"arguments":[],"directives":[]}]}}]};
-export const QueryAuthDocument: DocumentNode<QueryAuthQuery, QueryAuthQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryAuth"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"auth"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"isAuthenticated"},"arguments":[],"directives":[]}]}}]}}]};
+export const MutationSignupDocument: DocumentNode<MutationSignupMutation, MutationSignupMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationSignup"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"email"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},"directives":[]}],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"asyncQueue"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"blocking"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"noRetry"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"signup"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"email"},"value":{"kind":"Variable","name":{"kind":"Name","value":"email"}}},{"kind":"Argument","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserRemoteData"},"directives":[]}]}}]}}]}},...UserRemoteDataFragmentDoc.definitions]};
+export const MutationSigninDocument: DocumentNode<MutationSigninMutation, MutationSigninMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationSignin"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"email"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},"directives":[]}],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"asyncQueue"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"blocking"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"noRetry"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"signin"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"email"},"value":{"kind":"Variable","name":{"kind":"Name","value":"email"}}},{"kind":"Argument","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserRemoteData"},"directives":[]}]}}]}}]}},...UserRemoteDataFragmentDoc.definitions]};
+export const MutationEditUserDocument: DocumentNode<MutationEditUserMutation, MutationEditUserMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationEditUser"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"contentPassword"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}},"directives":[]}],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"asyncQueue"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"blocking"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"noRetry"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"editUser"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"contentPassword"},"value":{"kind":"Variable","name":{"kind":"Name","value":"contentPassword"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserRemoteData"},"directives":[]}]}}]}},...UserRemoteDataFragmentDoc.definitions]};
+export const MutationLogoutDocument: DocumentNode<MutationLogoutMutation, MutationLogoutMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationLogout"},"variableDefinitions":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"offline"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"logout"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
+export const QueryUserAuthStateDocument: DocumentNode<QueryUserAuthStateQuery, QueryUserAuthStateQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryUserAuthState"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"client"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"token"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"isAuthenticated"},"arguments":[],"directives":[]}]}}]}}]};
+export const QueryUserIdDocument: DocumentNode<QueryUserIdQuery, QueryUserIdQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryUserId"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]};
+export const QueryUserDocument: DocumentNode<QueryUserQuery, QueryUserQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryUser"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserData"},"directives":[]}]}}]}},...UserDataFragmentDoc.definitions]};
 export const QueryUserIsLibraryProtectedDocument: DocumentNode<QueryUserIsLibraryProtectedQuery, QueryUserIsLibraryProtectedQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryUserIsLibraryProtected"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"isLibraryUnlocked"},"arguments":[],"directives":[]}]}}]}}]};
+export const QueryAuthorizeDocument: DocumentNode<QueryAuthorizeQuery, QueryAuthorizeQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryAuthorize"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"password"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},"directives":[]}],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"blocking"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"noRetry"},"arguments":[]},{"kind":"Directive","name":{"kind":"Name","value":"asyncQueue"},"arguments":[]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"authorize"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"password"},"value":{"kind":"Variable","name":{"kind":"Name","value":"password"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
 export const MutationAddCollectionsToBookDocument: DocumentNode<MutationAddCollectionsToBookMutation, MutationAddCollectionsToBookMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationAddCollectionsToBook"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"collections"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addCollectionsToBook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"collections"},"value":{"kind":"Variable","name":{"kind":"Name","value":"collections"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
 export const MutationRemoveCollectionsToBookDocument: DocumentNode<MutationRemoveCollectionsToBookMutation, MutationRemoveCollectionsToBookMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationRemoveCollectionsToBook"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"collections"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeCollectionsToBook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"collections"},"value":{"kind":"Variable","name":{"kind":"Name","value":"collections"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
 export const AddBookDocument: DocumentNode<AddBookMutation, AddBookMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddBook"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addBook"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
@@ -1188,6 +1362,7 @@ export const QueryFullLinkDocument: DocumentNode<QueryFullLinkQuery, QueryFullLi
 export const MutationAppDocument: DocumentNode<MutationAppMutation, MutationAppMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationApp"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"hasUpdateAvailable"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"app"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"hasUpdateAvailable"},"value":{"kind":"Variable","name":{"kind":"Name","value":"hasUpdateAvailable"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"hasUpdateAvailable"},"arguments":[],"directives":[]}]}}]}}]};
 export const QueryAppHasUpdateAvailableDocument: DocumentNode<QueryAppHasUpdateAvailableQuery, QueryAppHasUpdateAvailableQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryAppHasUpdateAvailable"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"app"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasUpdateAvailable"},"arguments":[],"directives":[]}]}}]}}]};
 export const MutationRemoveTagDocument: DocumentNode<MutationRemoveTagMutation, MutationRemoveTagMutationVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"MutationRemoveTag"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}},"directives":[]}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeTag"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"},"arguments":[],"directives":[]}]}}]}}]};
+export const QueryTagsDocument: DocumentNode<QueryTagsQuery, QueryTagsQueryVariables> = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"QueryTags"},"variableDefinitions":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tags"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"name"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"isProtected"},"arguments":[],"directives":[]},{"kind":"Field","name":{"kind":"Name","value":"books"},"arguments":[],"directives":[],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"},"arguments":[],"directives":[]}]}}]}}]}}]};
 
       export interface PossibleTypesResultData {
         possibleTypes: {

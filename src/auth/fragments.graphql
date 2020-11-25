@@ -1,0 +1,13 @@
+fragment UserRemoteData on User {
+  __typename
+  id
+  email
+  contentPassword
+}
+
+fragment UserData on User {
+  __typename
+  ...UserRemoteData
+  isLibraryUnlocked @client
+  token @client
+}

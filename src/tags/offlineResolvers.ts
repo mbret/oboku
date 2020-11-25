@@ -2,19 +2,14 @@ import { generateUniqueID } from "../utils";
 import { ApolloClient } from "@apollo/client";
 import { QueryTag, QueryTagData } from "./queries";
 import { QueryTagArgs, Tag } from "../generated/graphql";
-
-export declare type IResolverObject<TContext = any, TArgs = any> = {
-  [key: string]: IFieldResolver<TContext, TArgs>
-};
-
-export type IFieldResolver<TContext, TArgs = Record<string, any>> = (args: TArgs, context: TContext) => any;
+import { NonMaybe } from "../types";
 
 type ResolverContext = { client: ApolloClient<any> }
 
 export const tagsOfflineResolvers = {
   Mutation: {
     addTag: (variables: { name: string }, { client }: ResolverContext) => {
-      const tag: Required<Tag> = {
+      const tag: NonMaybe<Tag> = {
         __typename: 'Tag' as const,
         id: generateUniqueID(),
         books: [],

@@ -1,42 +1,45 @@
-import { makeVar, useQuery, useReactiveVar } from '@apollo/client';
+import { useQuery } from '@apollo/client';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core'
 import { hashContentPassword } from 'oboku-shared';
 import React, { FC, useEffect, useState } from 'react'
 import { QueryUserDocument } from '../generated/graphql';
-import { useToggleContentProtection } from './queries';
 
-export const isUnlockLibraryDialogOpened = makeVar(false);
-
-export const UnlockLibraryDialog: FC<{}> = () => {
-
+export const LockActionDialog: FC<{
+  action?: () => void
+}> = ({ action }) => {
+  const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const { data: userData } = useQuery(QueryUserDocument)
-  const isOpened = useReactiveVar(isUnlockLibraryDialogOpened);
-  const toggleContentProtection = useToggleContentProtection()
   const contentPassword = userData?.user?.contentPassword
 
   const onClose = () => {
-    isUnlockLibraryDialogOpened(false)
+    setOpen(false)
   }
 
   const onConfirm = async () => {
     const hashedPassword = await hashContentPassword(text)
     if (contentPassword === hashedPassword) {
-      toggleContentProtection()
       onClose()
+      action && action()
     }
   }
 
   useEffect(() => {
     setText('')
-  }, [isOpened])
+  }, [open])
+
+  useEffect(() => {
+    if (action) {
+      setOpen(true)
+    }
+  }, [action])
 
   return (
-    <Dialog onClose={onClose} open={isOpened}>
-      <DialogTitle>Unlock library protected contents</DialogTitle>
+    <Dialog onClose={onClose} open={open}>
+      <DialogTitle>Please enter your content password to continue</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          By entering your content password you will make every protected content visible. do not forget to lock it back when needed
+          This is required because the action you want to perform involve your protected contents
         </DialogContentText>
         <TextField
           autoFocus
@@ -51,9 +54,9 @@ export const UnlockLibraryDialog: FC<{}> = () => {
       <DialogActions>
         <Button onClick={onClose} color="primary">
           Cancel
-            </Button>
+        </Button>
         <Button onClick={onConfirm} color="primary">
-          Unlock
+          Continue
         </Button>
       </DialogActions>
     </Dialog>

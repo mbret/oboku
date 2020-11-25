@@ -35,9 +35,9 @@
 </p>
 
 ---
-oboku is a reading cloud library which allows you to synchronize your own books from various sources and provide a focused and friendly app.
+oboku is a reading cloud library which allows you to synchronize your own books from various sources and provide a friendly reading app.
 
-The service is different from kindle, kobo or google play book since it emphazise and focus on your own content (sometime named side loaded books). By connecting your own datasource to the service you will be able to synchronize and access your content wherever you are and on every device you have.
+The service is different from kindle, kobo or google play book since it emphazise and focus on your own content (sometime named side loaded books). By connecting your own datasource to the service you will be able to synchronize and access your content wherever you with any devices.
 
 One of the main focus of oboku is the accessibility no matter the device. In that way, e-ink devices always comes first in mind when developing new features. There are no fancy animation or complexe ui. The experience will also be adapted based on your screen size.
 

@@ -20,9 +20,9 @@ import { ApolloLinkDirective } from './apollo-link-directive/ApolloLinkDirective
 import { libraryLink } from './library/LibraryLink';
 import { defaultData } from './firstTimeExperience/queries';
 import { dataSourcesLink } from './dataSources/DataSourcesLink';
-import { TypedTypePolicies, FirstTimeExperience, QueryUserIsLibraryProtectedDocument, QueryAuthDocument, User, Get_CollectionsDocument } from './generated/graphql';
+import { TypedTypePolicies, FirstTimeExperience, QueryUserIsLibraryProtectedDocument, User, Get_CollectionsDocument, QueryUserAuthStateDocument } from './generated/graphql';
 import { mergeDeepLeft } from 'ramda';
-import { ApolloLinkOfflineQueries } from './apollo-link-offline-queries';
+import { ApolloLinkOfflineOperations } from './apollo-link-offline-operations';
 import { collectionLink } from './collections/CollectionLink';
 import { booksLink } from './books/BooksLink';
 import { OfflineApolloClient } from './useOfflineApolloClient';
@@ -71,8 +71,8 @@ const withApolloClientInContextLink = setContext((operation, { headers = {}, cac
 })
 
 const authContextLink = setContext((operation, { headers = {}, cache }: { headers?: any, cache: InMemoryCache }) => {
-  const data = cache.readQuery({ query: QueryAuthDocument })
-  const authToken = data?.auth?.token
+  const data = cache.readQuery({ query: QueryUserAuthStateDocument })
+  const authToken = data?.user?.token
 
   return {
     headers: {
@@ -110,7 +110,7 @@ const retryLink = new RetryLink({
   }
 })
 
-const offlineQueriesLink = new ApolloLinkOfflineQueries()
+const offlineOperationsLink = new ApolloLinkOfflineOperations()
 
 const link: any = ApolloLink.from([
   withApolloClientInContextLink,
@@ -126,7 +126,9 @@ const link: any = ApolloLink.from([
   dataSourcesLink,
   appLink,
 
-  offlineQueriesLink,
+  // remove @offline operations
+  offlineOperationsLink,
+
   offlineQueue,
   retryLink,
   authContextLink,
@@ -206,6 +208,11 @@ const typePolicies: TypedTypePolicies = {
   Tag: {
     fields: {
       isProtected: (value = false) => value,
+    }
+  },
+  User: {
+    fields: {
+      isAuthenticated: (_, { readField }) => !!readField('token')
     }
   },
   Book: {
@@ -380,16 +387,6 @@ export const loadClient = async () => {
 
       if (!data) {
         cache.writeQuery({ query: Get_CollectionsDocument, data: { collections: [] } })
-      }
-    },
-    () => {
-      let data
-      try {
-        data = cache.readQuery({ query: QueryAuthDocument })
-      } catch (e) { }
-
-      if (!data) {
-        cache.writeQuery({ query: QueryAuthDocument, data: { auth: { token: null, isAuthenticated: false } } })
       }
     },
   ].map(fn => fn())

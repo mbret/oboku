@@ -1,24 +1,28 @@
 import React, { FC, useEffect, useState } from 'react';
 import { ArrowForwardIosRounded, LockOpenRounded, LockRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemText, ListSubheader, TextField } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { useStorageUse } from './useStorageUse';
-import { useUser, useSignOut, useEditUser, useToggleContentProtection } from '../auth/queries';
+import { useToggleContentProtection } from '../auth/queries';
 import { isUnlockLibraryDialogOpened } from '../auth/UnlockLibraryDialog';
 import { useResetFirstTimeExperience } from '../firstTimeExperience/queries';
 import { LoadLibraryFromJsonDialog } from '../debug/LoadLibraryFromJsonDialog';
+import { useMutation, useQuery } from '@apollo/client';
+import { MutationEditUserDocument, MutationLogoutDocument, QueryUserDocument } from '../generated/graphql';
+import { LockActionBehindUserPasswordDialog } from '../auth/LockActionBehindUserPasswordDialog';
 
 export const SettingsScreen = () => {
   const history = useHistory()
+  const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
   const [isEditContentPasswordDialogOpened, setIsEditContentPasswordDialogOpened] = useState(false)
   const [isLoadLibraryDebugOpened, setIsLoadLibraryDebugOpened] = useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
-  const { data: userData } = useUser()
-  const signOut = useSignOut()
+  const { data: userData } = useQuery(QueryUserDocument)
+  const [signOut] = useMutation(MutationLogoutDocument)
   const resetFirstTimeExperience = useResetFirstTimeExperience()
   const toggleContentProtection = useToggleContentProtection()
-  const isLibraryUnlocked = userData?.user.isLibraryUnlocked
+  const isLibraryUnlocked = userData?.user?.isLibraryUnlocked
 
   console.log(`[SettingsScreen]`, { userData })
 
@@ -34,15 +38,21 @@ export const SettingsScreen = () => {
         <ListSubheader disableSticky>Account</ListSubheader>
         <ListItem
           button
-          onClick={signOut}
+          onClick={_ => signOut()}
         >
-          <ListItemText primary="Sign out" secondary={userData?.user.email} />
+          <ListItemText primary="Sign out" secondary={userData?.user?.email} />
         </ListItem>
         <ListItem
           button
-          onClick={() => setIsEditContentPasswordDialogOpened(true)}
+          onClick={() => {
+            if (userData?.user?.contentPassword) {
+              setLockedAction(_ => () => setIsEditContentPasswordDialogOpened(true))
+            } else {
+              setIsEditContentPasswordDialogOpened(true)
+            }
+          }}
         >
-          <ListItemText primary="Protected contents password" secondary={userData?.user.contentPassword ? 'Change my password' : 'Initialize my password'} />
+          <ListItemText primary="Protected contents password" secondary={userData?.user?.contentPassword ? 'Change my password' : 'Initialize my password'} />
         </ListItem>
         <ListItem
           button
@@ -103,6 +113,7 @@ export const SettingsScreen = () => {
           <LoadLibraryFromJsonDialog open={isLoadLibraryDebugOpened} onClose={() => setIsLoadLibraryDebugOpened(false)} />
         </>
       )}
+      <LockActionBehindUserPasswordDialog action={lockedAction} />
       <EditContentPasswordDialog open={isEditContentPasswordDialogOpened} onClose={() => setIsEditContentPasswordDialogOpened(false)} />
     </div>
   );
@@ -112,10 +123,10 @@ const EditContentPasswordDialog: FC<{
   open: boolean,
   onClose: () => void,
 }> = ({ onClose, open }) => {
-  const editUser = useEditUser()
-  const { data: userData } = useUser()
+  const [editUser] = useMutation(MutationEditUserDocument)
+  const { data: userData } = useQuery(QueryUserDocument)
   const [text, setText] = useState('')
-  const contentPassword = userData?.user.contentPassword || ''
+  const contentPassword = userData?.user?.contentPassword || ''
 
   const onInnerClose = () => {
     onClose()
@@ -140,7 +151,7 @@ const EditContentPasswordDialog: FC<{
           autoFocus
           id="name"
           label="Password"
-          type="text"
+          type="password"
           fullWidth
           value={text}
           onChange={e => setText(e.target.value)}
@@ -151,9 +162,14 @@ const EditContentPasswordDialog: FC<{
           Cancel
         </Button>
         <Button
-          onClick={() => {
+          onClick={async () => {
             onInnerClose()
-            editUser({ contentPassword: text })
+            userData?.user?.id && editUser({
+              variables: {
+                id: userData?.user?.id,
+                contentPassword: text
+              }
+            })
           }}
           color="primary"
         >

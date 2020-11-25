@@ -1,17 +1,21 @@
-import { useMutation } from '@apollo/client'
+import { useMutation, useQuery } from '@apollo/client'
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography, useTheme } from '@material-ui/core'
-import { ArrowBackIosRounded, ArrowForwardIosRounded, CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
+import { ArrowBackIosRounded, ArrowForwardIosRounded, CheckCircleRounded, LocalOfferRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
 import { Alert } from '@material-ui/lab'
 import React, { FC, useState } from 'react'
-import { DataSourceType, MutationAddDataSourceDocument } from '../generated/graphql'
+import { DataSourceType, GoogleDriveDataSourceData, MutationAddDataSourceDocument, QueryTagsDocument } from '../generated/graphql'
 import { useFolders } from '../google'
+import { TagsSelectionList } from '../tags/TagsSelectionList'
 import { generateUniqueID } from '../utils'
 
 export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [selectedTags, setSelectedTags] = useState<{ [key: string]: true | undefined }>({})
+  const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
   const [addDataSource, { data: addDataSourceData }] = useMutation(MutationAddDataSourceDocument, { onCompleted: onClose })
   const [selectedFolder, setSelectedFolder] = useState<{ name: string, id: string } | undefined>(undefined)
   const [folderChain, setFolderChain] = useState<{ name: string, id: string }[]>([{ name: '', id: 'root' }])
   const currentFolder = folderChain[folderChain.length - 1]
+  const tags = useQuery(QueryTagsDocument)?.data?.tags || []
   const theme = useTheme()
   const data = useFolders({ parent: currentFolder.id })
 
@@ -23,6 +27,15 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
       <DialogContent style={{ padding: 0 }}>
         <Alert severity="info">Only your public shared folder will be displayed</Alert>
         <List style={{ flex: 1 }}>
+          <ListItem onClick={() => setIsTagSelectionOpen(true)}>
+            <ListItemIcon>
+              <LocalOfferRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="Apply tags"
+              secondary={Object.keys(selectedTags).map(id => tags.find(tag => tag?.id === id)?.name).join(' ')}
+            />
+          </ListItem>
           <ListSubheader disableSticky>
             <Typography noWrap>
               {folderChain.length === 1 ? '/' : folderChain.map(({ name }) => name).join(' / ')}
@@ -85,12 +98,43 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
           color="primary"
           disabled={!selectedFolder}
           onClick={() => {
-            addDataSource({ variables: { id: generateUniqueID(), type: DataSourceType.Drive, data: JSON.stringify(selectedFolder) } })
+            if (selectedFolder) {
+              const customData: GoogleDriveDataSourceData = {
+                applyTags: Object.keys(selectedTags),
+                driveId: selectedFolder.id
+              }
+              addDataSource({
+                variables: {
+                  id: generateUniqueID(),
+                  type: DataSourceType.Drive,
+                  data: JSON.stringify(customData),
+                }
+              })
+            }
           }}
         >
           Confirm
         </Button>
       </DialogActions>
-    </Dialog>
+      <Dialog open={isTagSelectionOpen} onClose={() => setIsTagSelectionOpen(false)}>
+        <DialogTitle>Choose tags to apply automatically</DialogTitle>
+        <TagsSelectionList
+          tags={tags}
+          isSelected={(id) => !!selectedTags[id]}
+          onItemClick={(id) => {
+            if (selectedTags[id]) {
+              setSelectedTags(({ [id]: removed, ...rest }) => rest)
+            } else {
+              setSelectedTags((value) => ({ ...value, [id]: true }))
+            }
+          }}
+        />
+        <DialogActions>
+          <Button onClick={() => setIsTagSelectionOpen(false)} color="primary" autoFocus>
+            Close
+        </Button>
+        </DialogActions>
+      </Dialog>
+    </Dialog >
   )
 }

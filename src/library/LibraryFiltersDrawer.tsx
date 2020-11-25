@@ -2,17 +2,17 @@ import React, { useState, FC } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { DialogTitle, makeStyles, createStyles, Drawer, List, ListItem, ListItemText, ListItemIcon, DialogActions, Button } from '@material-ui/core';
 import { ArrowForwardIosRounded } from '@material-ui/icons';
-import { useQueryGetTags } from '../tags/queries';
 import { useLibraryBooksSettings, useToggleTag } from './queries';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
-
+import { QueryTagsDocument } from '../generated/graphql';
+import { useQuery } from '@apollo/client';
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean,
   onClose: () => void
 }> = ({ open, onClose }) => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
-  const { data } = useQueryGetTags()
+  const { data } = useQuery(QueryTagsDocument)
   const { data: libraryFiltersData, error, called } = useLibraryBooksSettings()
   const libraryBooksSettings = libraryFiltersData?.libraryBooksSettings
   const selectedTags = libraryBooksSettings?.tags

@@ -25,6 +25,7 @@ export class ApolloLinkBlocking extends ApolloLink {
     const context = operation.getContext()
     const cache = context.cache as InMemoryCache
     const isBlockingDirective = definition.directives?.find(directive => directive.name.value === 'blocking')
+    console.log('BLOCKING QUERY', operation, getMainDefinition(operation.query))
 
     if (isBlockingDirective) {
       const cleanedQuery = removeDirectivesFromDocument([{ name: 'blocking' }], operation.query)

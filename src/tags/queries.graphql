@@ -1,0 +1,10 @@
+query QueryTags {
+  tags {
+    id
+    name
+    isProtected
+    books {
+      id
+    }
+  }
+}
