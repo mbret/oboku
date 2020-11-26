@@ -44,8 +44,8 @@ At this point in time oboku is in early stage of development and very limited in
 
 **Here are some of the key features you can expect:**
 
-- Use the app and read your books offline
-- Connect datasources to automatically synchronize your books (Google Drive, dropbox, ...)
+- Offline first, the app will work no matter your connectivity. You will still need to pre-download your book if you plan to go offline and synchronize your library if you add book.
+- Connect various data sources to automatically synchronize your books from (Google Drive, dropbox, ...)
 - Manage collections and tags
 - Hide sensitives books behind protected tags
 - Follow your book progress
