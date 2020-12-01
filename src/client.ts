@@ -27,6 +27,7 @@ import { collectionLink } from './collections/CollectionLink';
 import { booksLink } from './books/BooksLink';
 import { OfflineApolloClient } from './useOfflineApolloClient';
 import { appLink } from './AppLink';
+import { onUnAuthenticatedResponseLink } from './auth/onUnAuthenticatedResponseLink';
 
 export { OfflineApolloClient }
 
@@ -35,23 +36,10 @@ export declare function useApolloClient(): any;
 let clientForContext: ApolloClient<any> | undefined
 
 const onErrorLink = onError(({ graphQLErrors, networkError, operation }) => {
-  const context = operation.getContext()
-  console.warn(context)
-  const cache = context.cache as InMemoryCache
+  if (graphQLErrors) {
+    console.warn('[graphQLErrors]', graphQLErrors)
+  }
 
-  if (graphQLErrors)
-    graphQLErrors.forEach((error) => {
-      if ((error.extensions as any)?.code === 'UNAUTHENTICATED') {
-        cache.modify({
-          fields: {
-            auth: (existing = {}) => ({ ...existing, token: null })
-          }
-        })
-        console.warn('UNAUTHENTICATED error, user has been logged out')
-      } else {
-        console.warn('[graphQLErrors]', error)
-      }
-    });
   if (networkError) console.warn(`[Network error]`, networkError, operation);
 });
 
@@ -115,6 +103,7 @@ const offlineOperationsLink = new ApolloLinkOfflineOperations()
 const link: any = ApolloLink.from([
   withApolloClientInContextLink,
   onErrorLink,
+  onUnAuthenticatedResponseLink,
   apolloLogger,
   blockingLink,
 
@@ -135,26 +124,6 @@ const link: any = ApolloLink.from([
   directiveLink,
   new HttpLink({ uri: API_URI }),
 ]);
-
-export interface Todo {
-  text: string;
-  completed: boolean;
-  id: number
-}
-
-export type Todos = Todo[];
-
-const todosInitialValue: Todos = [
-  {
-    id: 0,
-    completed: false,
-    text: "Use Apollo Client 3"
-  }
-]
-
-export const todosVar = makeVar<Todos>(
-  todosInitialValue
-);
 
 const isBookActionDialogOpenedWithVar = makeVar<string | undefined>(undefined)
 
@@ -181,11 +150,6 @@ const localTypePolocies = {
           return isBookActionDialogOpenedWithVar()
         }
       },
-      todos: {
-        read() {
-          return todosVar();
-        }
-      }
     }
   },
 }

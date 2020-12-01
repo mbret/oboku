@@ -1,7 +1,7 @@
 import { useMutation } from '@apollo/client';
 import {
   MutationEditBookArgs, MutationRemoveTagsToBookArgs, LinkType,
-  AddBookDocument, RemoveBookDocument, Edit_BookDocument, QueryBookDocument, MutationAddTagsToBookDocument,
+  AddBookDocument, RemoveBookDocument, MutationEditBookDocument, QueryBookDocument, MutationAddTagsToBookDocument,
   MutationRemoveTagsToBookDocument,
 } from '../generated/graphql'
 import { difference } from 'ramda';
@@ -36,7 +36,7 @@ export const useAddBook = () => {
 }
 
 export const useEditBook = () => {
-  const [editBook] = useMutation(Edit_BookDocument)
+  const [editBook] = useMutation(MutationEditBookDocument)
   const [addTagsToBook] = useMutation(MutationAddTagsToBookDocument)
   const [removeTagsToBook] = useMutation<any, MutationRemoveTagsToBookArgs>(MutationRemoveTagsToBookDocument)
   const client = useOfflineApolloClient()

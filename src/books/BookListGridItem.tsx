@@ -1,18 +1,19 @@
 import React, { FC } from 'react'
-import { CircularProgress, makeStyles, Typography } from "@material-ui/core"
-import { CloudDownloadRounded, MoreVert, Pause } from '@material-ui/icons';
+import { CircularProgress, makeStyles, Typography, useTheme } from "@material-ui/core"
+import { CloudDownloadRounded, ImportContactsRounded, MenuBookRounded, MoreVert, Pause } from '@material-ui/icons';
 import { models } from '../client';
 import { useWindowSize } from 'react-use';
 import { ROUTES } from '../constants';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { useHistory } from 'react-router-dom';
 import { Cover } from '../books/Cover';
-import { Book, QueryBookDocument } from '../generated/graphql';
+import { Book, QueryBookDocument, ReadingStateState } from '../generated/graphql';
 import { useQuery } from '@apollo/client';
 
 export const BookListGridItem: FC<{
   bookId: Book['id'],
 }> = ({ bookId }) => {
+  const theme = useTheme()
   const { data } = useQuery(QueryBookDocument, { variables: { id: bookId } }) || {}
   const history = useHistory();
   const windowSize = useWindowSize()
@@ -87,6 +88,16 @@ export const BookListGridItem: FC<{
             </div>
           )}
         </div>
+        {item?.readingStateCurrentState === ReadingStateState.Reading && (
+          <ReadingProgress
+            progress={(item?.readingStateCurrentBookmarkProgressPercent || 0) * 100}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: '50%',
+              transform: 'translateX(-50%)',
+            }} />
+        )}
       </div>
       <div
         className={classes.itemBottomContainer}
@@ -105,7 +116,27 @@ export const BookListGridItem: FC<{
   )
 }
 
+const ReadingProgress: FC<{ style: React.CSSProperties, progress: number }> = ({ style, progress }) => {
+  const theme = useTheme()
 
+  return (
+    <div style={{
+      ...style,
+    }}>
+      <MenuBookRounded style={{ opacity: '50%', fontSize: 60 }} />
+      <Typography
+        style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          color: 'white',
+          textShadow: '0px 0px 3px black',
+          fontWeight: theme.typography.fontWeightBold,
+        }}>{Math.floor(progress) || 1}%</Typography>
+    </div>
+  )
+}
 
 const useStyles = makeStyles((theme) => {
   type Props = { windowSize: { width: number } }
@@ -122,6 +153,7 @@ const useStyles = makeStyles((theme) => {
       // border: '1px solid blue',
     },
     itemBottomContainer: {
+      // border: '1px solid red',
       boxSizing: 'border-box',
       width: '100%',
       height: 50,

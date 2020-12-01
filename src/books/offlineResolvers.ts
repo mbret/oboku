@@ -1,5 +1,5 @@
 import { generateUniqueID } from "../utils";
-import { MutationAddBookArgs, MutationRemoveBookArgs, Edit_BookDocument, Book, DownloadState, QueryBookDocument, BookAssociationIdsFragmentDoc } from '../generated/graphql'
+import { MutationAddBookArgs, MutationRemoveBookArgs, MutationEditBookDocument, Book, DownloadState, QueryBookDocument, BookAssociationIdsFragmentDoc, ReadingStateState } from '../generated/graphql'
 import { Reference } from "@apollo/client";
 import { OfflineApolloClient } from "../client";
 
@@ -15,6 +15,7 @@ export const bookOfflineResolvers = {
       readingStateCurrentBookmarkLocation: null,
       readingStateCurrentBookmarkProgressUpdatedAt: null,
       readingStateCurrentBookmarkProgressPercent: 0,
+      readingStateCurrentState: ReadingStateState.NotStarted,
       createdAt: 1604302214598,
       downloadState: DownloadState.None,
       downloadProgress: 0,
@@ -77,7 +78,7 @@ export const bookOfflineResolvers = {
       })
     })
   },
-  editBook: ({ id, ...rest }: NonNullable<typeof Edit_BookDocument['__variablesType']> & { tags?: string[] }, { client }: ResolverContext) => {
+  editBook: ({ id, ...rest }: NonNullable<typeof MutationEditBookDocument['__variablesType']> & { tags?: string[] }, { client }: ResolverContext) => {
     const editedBookId = client.cache.identify({ id, __typename: 'Book' })
     console.log('modify', editedBookId, rest)
 

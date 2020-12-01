@@ -2,6 +2,7 @@ import { ApolloClient, InMemoryCache, Reference, StoreValue, useApolloClient } f
 import { Modifier } from "@apollo/client/cache/core/types/common";
 import { useClient } from "./client";
 import { App, Book, DataSource, Link, Query, QueryFieldPolicy, Collection, Tag, User } from "./generated/graphql";
+import { NonMaybe } from "./types";
 
 type MyCache = InMemoryCache & { foo: () => void }
 
@@ -46,7 +47,7 @@ type ModifyableQuery = Omit<Required<Query>, 'books' | 'dataSources' | 'collecti
 }
 
 type ModifyableDataSource = Required<DataSource>
-type ModifyableLink = Required<Link>
+type ModifyableLink = NonMaybe<Link>
 
 type ModifyEntity =
   ModifyableCollection
@@ -84,10 +85,10 @@ export class OfflineApolloClient<TCacheShape> extends ApolloClient<TCacheShape> 
   public modify(__typename: App['__typename'], options: OfflineModifyOption<App>): boolean
   public modify(__typename: ModifyableTag['__typename'], options: OfflineModifyOption<ModifyableTag>): boolean
   public modify(__typename: ModifyableCollection['__typename'], options: OfflineModifyOption<ModifyableCollection>): boolean
-  public modify(__typename: ModifyableBook['__typename'], options: OfflineModifyOption<ModifyableBook>): boolean
   public modify(__typename: ModifyableQuery['__typename'], options: OfflineModifyOption<ModifyableQuery>): boolean
   public modify(__typename: ModifyableDataSource['__typename'], options: OfflineModifyOption<ModifyableDataSource>): boolean
   public modify(__typename: ModifyableLink['__typename'], options: OfflineModifyOption<ModifyableLink>): boolean
+  public modify(__typename: ModifyableBook['__typename'], options: OfflineModifyOption<ModifyableBook>): boolean
   public modify<Entity extends ModifyEntity>(__typename: Entity['__typename'], options: OfflineModifyOption<Entity>) {
     return this.cache.modify(options)
   }

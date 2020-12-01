@@ -1,6 +1,6 @@
 import { ApolloLink, NextLink, Operation } from "apollo-link"
 import { createPolling, forOperationAs } from "../utils"
-import { Book, Maybe, MutationAddCollectionsToBookDocument, MutationRemoveCollectionsToBookDocument, QueryBookIdsDocument, QueryBooksSyncStateDocument, QuerySyncTriggerBooksPropertiesDocument, Collection, SyncLibraryDocument } from "../generated/graphql"
+import { Book, Maybe, MutationAddCollectionsToBookDocument, MutationRemoveCollectionsToBookDocument, QueryBookIdsDocument, QueryBooksSyncStateDocument, QuerySyncTriggerBooksPropertiesDocument, Collection, SyncLibraryDocument, MutationEditBookDocument } from "../generated/graphql"
 import { OfflineApolloClient } from "../client"
 import { Reference } from "@apollo/client"
 
@@ -18,14 +18,14 @@ class BooksLink extends ApolloLink {
           id: bookRefId,
           fields: {
             collections: (existing, { toReference }) => {
-                let newCollections = [...existing]
-                variables.collections.forEach(id => {
-                  const ref = toReference({ __typename: 'Collection', id: id })
-                  if (ref) {
-                    newCollections.push(ref)
-                  }
-                })
-                return newCollections
+              let newCollections = [...existing]
+              variables.collections.forEach(id => {
+                const ref = toReference({ __typename: 'Collection', id: id })
+                if (ref) {
+                  newCollections.push(ref)
+                }
+              })
+              return newCollections
             }
           }
         })
@@ -65,6 +65,25 @@ class BooksLink extends ApolloLink {
           })
         })
       }
+    })
+
+    forOperationAs(operation, MutationEditBookDocument, ({ variables }) => {
+      const editedBookId = client.cache.identify({ id: variables?.id, __typename: 'Book' })
+
+      if (!editedBookId) return
+
+      client.modify('Book', {
+        id: editedBookId,
+        fields: {
+          lastMetadataUpdatedAt: (prev) =>
+            variables?.lastMetadataUpdatedAt === undefined ? prev : variables?.lastMetadataUpdatedAt,
+          readingStateCurrentBookmarkLocation: (prev) =>
+            variables?.readingStateCurrentBookmarkLocation === undefined ? prev : variables?.readingStateCurrentBookmarkLocation,
+          readingStateCurrentBookmarkProgressPercent: (prev) =>
+            variables?.readingStateCurrentBookmarkProgressPercent === undefined ? prev : variables?.readingStateCurrentBookmarkProgressPercent,
+          readingStateCurrentState: prev => variables?.readingStateCurrentState || prev,
+        }
+      })
     })
 
     return forward(operation)

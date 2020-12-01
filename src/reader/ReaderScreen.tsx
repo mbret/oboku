@@ -2,18 +2,20 @@ import React, { useState, useEffect, useRef, useCallback, FC } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import localforage from 'localforage';
 import { EpubView } from "react-reader";
-import { useWindowSize } from "react-use";
+import { useDebounce, useThrottleFn, useWindowSize } from "react-use";
 import { Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, Toolbar } from '@material-ui/core';
 import { ArrowBackIosRounded } from '@material-ui/icons';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
 import { Rendition } from "epubjs";
-import { Contents, Location, Book } from "epubjs";
+import { Contents, Location } from "epubjs";
 import { useEditBook } from '../books/queries';
 import { AppTourReader } from '../firstTimeExperience/AppTourReader';
 import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from './utils';
-import { useQuery } from '@apollo/client';
-import { QueryBookDocument } from '../generated/graphql';
+import { useMutation, useQuery } from '@apollo/client';
+import { MutationEditBookDocument, QueryBookDocument, ReadingStateState } from '../generated/graphql';
+import { PromiseReturnType } from '../types';
+import { PageNumber } from './PageNumber';
 
 type ReaderInstance = {
   nextPage: () => void,
@@ -24,19 +26,24 @@ export const ReaderScreen: FC<{}> = () => {
   const readerRef = useRef<any>()
   const rootRef = useRef<HTMLDivElement>()
   const history = useHistory()
+  const [currentLocation, setCurrentLocation] = useState<any | undefined>(undefined)
+  const [currentPage, setCurrentPage] = useState<undefined | number>(undefined)
+  const [totalPages, setTotalPages] = useState<undefined | number>(undefined)
+  const [progress, setProgress] = useState<number | undefined>(undefined)
+  const [generatedLocations, setGeneratedLocations] = useState<string[]>([])
   const [rendition, setRendition] = useState<Rendition | undefined>(undefined)
   const { bookId } = useParams<any>()
   const file = useFile(bookId)
   const [isTopMenuShown, setIsTopMenuShown] = useState(false)
   const [isBottomMenuShown, setIsBottomMenuShown] = useState(false)
   const { data: bookData } = useQuery(QueryBookDocument, { variables: { id: bookId } })
+  const book = bookData?.book
   const windowSize = useWindowSize()
   const editBook = useEditBook()
   const verticalTappingZoneHeight = useVerticalTappingZoneHeight()
   const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
-  const book = bookData?.book
 
-  console.log('[ReaderScreen]', bookData)
+  const isReflow = (rendition?.book as any)?.displayOptions.fixedLayout !== 'true'
 
   const next = useCallback(() => {
     console.log('next')
@@ -58,7 +65,6 @@ export const ReaderScreen: FC<{}> = () => {
     const start = location.start as any
     const pageDisplayedIndex = start.displayed.page - 1
     const realClientXOffset = clientX - (windowSize.width * pageDisplayedIndex)
-    // console.log(e)
     console.log('mouse', clientX, clientX - (windowSize.width * pageDisplayedIndex), rendition?.getContents(), location)
     const maxOffsetPrev = horizontalTappingZoneWidth
     const maxOffsetBottomMenu = verticalTappingZoneHeight
@@ -113,35 +119,57 @@ export const ReaderScreen: FC<{}> = () => {
 
   useVerticalCentererRendererHook(rendition)
 
+  const updateProgress = useCallback((currentLocation: any | undefined) => {
+    /**
+     * Comic detected
+     * For comic the rendering does not work and will always return page number of 0
+     * and a location of -1. We just get the number of pages based on spine and the current index.
+     * If the book is fully pre-paginated the number of pages should not change anyway.
+     */
+    if (!isReflow) {
+      const pageNumber = (currentLocation?.start?.index || 0) + 1
+      setCurrentPage(pageNumber)
+      setTotalPages(rendition?.book.packaging.spine.length)
+      setProgress(pageNumber / (rendition?.book?.packaging?.spine?.length || 0))
+    } else {
+      const _currentPage = currentLocation?.atEnd
+        ? currentLocation?.end?.location
+        : rendition?.book.locations.locationFromCfi(currentLocation?.start?.cfi) as unknown as number
+      if (currentLocation && _currentPage > -1) {
+        const progress = rendition?.book.locations.percentageFromCfi(currentLocation?.start?.cfi);
+        const finalProgress = currentLocation?.atEnd ? 1 : progress
+        // The % of how far along in the book you are
+        setProgress(finalProgress)
+        setCurrentPage(_currentPage)
+        setTotalPages((rendition?.book.locations as any)?.total)
+      }
+    }
+  }, [rendition, isReflow])
+
+  /**
+   * Generate good enough page range for progress and current page.
+   * We use 600 char as breaker as it's a good enough middle. 
+   * @todo optimize to retrieve from storage
+   */
+  useEffect(() => {
+    (async () => {
+      await rendition?.book.ready
+      // Generates CFI for every X characters (Characters per/page)
+      await rendition?.book.locations.generate(600)
+
+      // Will trigger a relocate
+      rendition?.reportLocation()
+    })()
+  }, [rendition, updateProgress])
+
 
   useEffect(() => {
-    // rendition?.book.ready.then(function () {
-    //   // const stored = localStorage.getItem(rendition?.book.key() + '-locations');
-    //   console.log('metadata:', (rendition?.book as any)?.package);
-    //   // if (stored) {
-    //   // return rendition?.book.locations.load(stored);
-    //   // } else {
-    //   return rendition?.book.locations.generate(1024); // Generates CFI for every X characters (Characters per/page)
-    //   // }
-    // }).then(function (location: any) { // This promise will take a little while to return (About 20 seconds or so for Moby Dick)
-    //   // localStorage.setItem(rendition?.book.key() + '-locations', rendition?.book.locations.save());
-    //   console.log(rendition?.book.key(), location, location.findIndex(v => v === rendition?.book.key()))
-    // });
 
     const onRelocated = async (location: Location) => {
-      const currentStartIndex = location?.start.index
-      let progress: number | undefined
+      setCurrentLocation(await rendition?.currentLocation() as any)
 
-      /**
-       * Comic detected
-       * For comic the rendering does not work and will always return page number of 0
-       * and a location of -1. We just get the number of pages based on spine and the current index.
-       * If the book is fully pre-paginated the number of pages should not change anyway.
-       */
-      if (rendition?.book.packaging.metadata.layout === 'pre-paginated') {
-        const pageNumber = location.start.index + 1
-        progress = pageNumber / rendition?.book.packaging.spine.length
-      }
+      const currentStartIndex = location?.start.index
+      // let progress: number | undefined
 
       console.log(`onRelocated`,
         location,
@@ -149,24 +177,20 @@ export const ReaderScreen: FC<{}> = () => {
         rendition?.book.packaging,
         await rendition?.book.getRange(location.start.cfi),
         rendition?.book.locations,
-        progress,
+        // progress,
       )
       //   // debugger
       //   console.log(`relocated`, location)
-      // // @see https://github.com/futurepress/epub.js/issues/278. It needs to load all locations
-      // const progress = rendition?.book.locations.percentageFromCfi(location.start.cfi);
+      // @see https://github.com/futurepress/epub.js/issues/278. It needs to load all locations
+      // progress = rendition?.book.locations.percentageFromCfi(location.start.cfi);
       // const finalProgress = location.atEnd ? 1 : progress
       // console.log('Progress:', finalProgress); // The % of how far along in the book you are
       // console.log('Current Page:', rendition?.book.locations.locationFromCfi(location.start.cfi))
-      // console.log('Total Pages:', (rendition?.book.locations as any).total);
+      // console.log('Total Pages:', (rendition?.book.locations as any)?.total);
 
-      if (location.start.cfi !== book?.readingStateCurrentBookmarkLocation) {
-        editBook({
-          id: bookId,
-          readingStateCurrentBookmarkLocation: location.start.cfi,
-          readingStateCurrentBookmarkProgressPercent: progress,
-        })
-      }
+      updateProgress(location)
+
+
     }
 
     rendition?.on('relocated', onRelocated);
@@ -184,9 +208,20 @@ export const ReaderScreen: FC<{}> = () => {
     // })
 
     return () => rendition?.off('relocated', onRelocated)
-  }, [rendition, editBook, bookId, book])
+  }, [rendition, editBook, bookId, book, updateProgress, progress])
 
-  console.log(book, readerRef, rendition?.getContents(), rendition?.book, file)
+  useUpdateBookState(bookId, progress, currentLocation)
+
+  console.log('[ReaderScreen]', {
+    progress,
+    currentPage,
+    totalPages,
+    rendition,
+    currentLocation,
+    // currentPosition: Math.floor(generatedLocations.length * (currentLocation?.start.percentage.toFixed(4))),
+    // currentProgress: Math.floor(currentLocation?.start.percentage.toFixed(4) * 100),
+    // generatedLocations
+  })
 
   return (
     <>
@@ -201,7 +236,7 @@ export const ReaderScreen: FC<{}> = () => {
         >
           <EpubView
             ref={readerRef as any}
-            // Buck in typing, epubjs accept blobs
+            // Bug in typing, epubjs accept blobs
             url={file as any}
             getRendition={setRendition}
             epubInitOptions={{
@@ -209,6 +244,8 @@ export const ReaderScreen: FC<{}> = () => {
             }}
             // http://epubjs.org/documentation/0.3/#bookrenderto
             epubOptions={{
+              // height: 600,
+              // width: 300,
               // flow: 'paginated',
               // width: "100%",
               // height: "100%",
@@ -245,7 +282,7 @@ export const ReaderScreen: FC<{}> = () => {
             onClose={() => setIsBottomMenuShown(false)}
             transitionDuration={0}
           >
-            Not implemented yet
+            <PageNumber currentPage={currentPage} totalPages={totalPages} isReflow={isReflow} />
           </Drawer>
         </div>
       )}
@@ -278,8 +315,10 @@ const useVerticalCentererRendererHook = (rendition: Rendition | undefined) => {
 
       if ($body) {
         const height = $body.getBoundingClientRect().height
+        var scaleX = $body.getBoundingClientRect().width / $body.offsetWidth;
         if (height < windowInnerHeight) {
-          $body.style.paddingTop = `${(windowInnerHeight - height) / 2}px`
+          console.log(windowInnerHeight, height, windowInnerHeight - height, (windowInnerHeight - height) / 2, scaleX)
+          $body.style.paddingTop = `${((windowInnerHeight - height) / 2) / scaleX}px`
           console.warn(`useVerticalCentererRendererHook -> re-center with padding of ${$body.style.paddingTop}`)
         }
       }
@@ -291,4 +330,27 @@ const useVerticalCentererRendererHook = (rendition: Rendition | undefined) => {
       rendition?.hooks.content.deregister(hook)
     }
   }, [rendition])
+}
+
+const useUpdateBookState = (bookId: string, progress: number | undefined, location: any | undefined) => {
+  const [editBook] = useMutation(MutationEditBookDocument)
+  const { data: bookData } = useQuery(QueryBookDocument, { variables: { id: bookId } })
+  const readingStateCurrentBookmarkLocation = bookData?.book?.readingStateCurrentBookmarkLocation
+
+  useDebounce(() => {
+    console.log(readingStateCurrentBookmarkLocation)
+    if (location && location?.start?.cfi !== readingStateCurrentBookmarkLocation) {
+      editBook({
+        variables: {
+          id: bookId,
+          readingStateCurrentBookmarkLocation: location?.start?.cfi,
+          readingStateCurrentState: ReadingStateState.Reading,
+          ...progress && {
+            // progress
+            readingStateCurrentBookmarkProgressPercent: progress,
+          }
+        }
+      })
+    }
+  }, 400, [progress, location, readingStateCurrentBookmarkLocation] as any)
 }

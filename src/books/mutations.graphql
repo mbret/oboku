@@ -16,17 +16,19 @@ mutation AddBook($id: ID!) {
   }
 }
 
-mutation EDIT_BOOK(
+mutation MutationEditBook(
   $id: ID!, 
   $lastMetadataUpdatedAt: Float,
   $readingStateCurrentBookmarkLocation: String,
   $readingStateCurrentBookmarkProgressPercent: Float
+  $readingStateCurrentState: ReadingStateState
 ) {
   editBook(
     id: $id, 
     lastMetadataUpdatedAt: $lastMetadataUpdatedAt
     readingStateCurrentBookmarkLocation: $readingStateCurrentBookmarkLocation,
     readingStateCurrentBookmarkProgressPercent: $readingStateCurrentBookmarkProgressPercent
+    readingStateCurrentState: $readingStateCurrentState
   ) {
     id
   }

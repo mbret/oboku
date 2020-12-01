@@ -48,6 +48,7 @@ export class ApolloLinkOfflineQueue extends ApolloLink {
       this.enqueue(operationEntry);
 
       return () => {
+        console.log('CAMCELLED')
         this.cancelOperation(operationEntry)
       };
     });
@@ -137,12 +138,10 @@ export class ApolloLinkOfflineQueue extends ApolloLink {
           observer.next && observer.next(v)
         },
         error: (e: Error) => {
-          console.info(`[apolloLinkQueue] queue(${this.opQueue.length}) currentSubscription error`, e)
           observer.error && observer.error(e)
           onOperationDone()
         },
         complete: () => {
-          console.info(`[apolloLinkQueue] queue(${this.opQueue.length}) currentSubscription complete`)
           observer.complete && observer.complete()
           onOperationDone()
         },
