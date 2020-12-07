@@ -6,8 +6,8 @@ import { ROUTES } from './constants';
 import * as R from 'ramda';
 import { useHistory } from 'react-router-dom'
 import ContinueReadingAsset from './assets/continue-reading.svg'
-import { Book, QueryBooksDocument } from './generated/graphql';
-import { useQuery } from '@apollo/client';
+import { useRecoilValue } from 'recoil';
+import { booksAsArrayState } from './books/states';
 
 export const HomeScreen = () => {
   const classes = useStyles();
@@ -97,23 +97,21 @@ export const HomeScreen = () => {
 }
 
 const useContinueReadingBooks = () => {
-  const { data: booksData } = useQuery(QueryBooksDocument)
-  const books = booksData?.books || []
-  const booksSortedByDate = R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books as Required<Book>[])
+  const books = useRecoilValue(booksAsArrayState)
+  const booksSortedByDate = R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books)
 
   return booksSortedByDate
     .filter(book => (book.readingStateCurrentBookmarkProgressPercent || 0) > 0)
-    .map(book => book.id)
+    .map(book => book._id)
 }
 
 const useRecentlyAddedBooks = () => {
-  const { data: booksData } = useQuery(QueryBooksDocument)
-  const books = booksData?.books || []
-  const booksSortedByDate = R.sort(R.descend(R.prop('createdAt')), books as Required<Book>[])
+  const books = useRecoilValue(booksAsArrayState)
+  const booksSortedByDate = R.sort(R.descend(R.prop('createdAt')), books)
 
   return booksSortedByDate
     .slice(0, 15)
-    .map(book => book.id)
+    .map(book => book._id)
 }
 
 const useStyles = makeStyles((theme) =>

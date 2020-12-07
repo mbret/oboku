@@ -4,13 +4,17 @@ import { TopBarNavigation } from '../TopBarNavigation';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemText, ListSubheader, TextField } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { useStorageUse } from './useStorageUse';
-import { useToggleContentProtection } from '../auth/queries';
-import { isUnlockLibraryDialogOpened } from '../auth/UnlockLibraryDialog';
-import { useResetFirstTimeExperience } from '../firstTimeExperience/queries';
+import { unlockLibraryDialogState } from '../auth/UnlockLibraryDialog';
+import { useResetFirstTimeExperience } from '../firstTimeExperience/helpers';
 import { LoadLibraryFromJsonDialog } from '../debug/LoadLibraryFromJsonDialog';
-import { useMutation, useQuery } from '@apollo/client';
-import { MutationEditUserDocument, MutationLogoutDocument, QueryUserDocument } from '../generated/graphql';
 import { LockActionBehindUserPasswordDialog } from '../auth/LockActionBehindUserPasswordDialog';
+import { useSignOut } from '../auth/helpers';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { authState } from '../auth/authState';
+import { settingsState } from './states';
+import { useUpdateContentPassword } from './helpers';
+import { libraryState } from '../library/states';
+import { useUpdateLibrary } from '../library/helpers';
 
 export const SettingsScreen = () => {
   const history = useHistory()
@@ -18,13 +22,13 @@ export const SettingsScreen = () => {
   const [isEditContentPasswordDialogOpened, setIsEditContentPasswordDialogOpened] = useState(false)
   const [isLoadLibraryDebugOpened, setIsLoadLibraryDebugOpened] = useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
-  const { data: userData } = useQuery(QueryUserDocument)
-  const [signOut] = useMutation(MutationLogoutDocument)
-  const resetFirstTimeExperience = useResetFirstTimeExperience()
-  const toggleContentProtection = useToggleContentProtection()
-  const isLibraryUnlocked = userData?.user?.isLibraryUnlocked
-
-  console.log(`[SettingsScreen]`, { userData })
+  const [, isUnlockLibraryDialogOpened] = useRecoilState(unlockLibraryDialogState)
+  const auth = useRecoilValue(authState)
+  const settings = useRecoilValue(settingsState)
+  const library = useRecoilValue(libraryState)
+  const [signOut] = useSignOut()
+  const [resetFirstTimeExperience] = useResetFirstTimeExperience()
+  const [udpateLibrary] = useUpdateLibrary()
 
   return (
     <div style={{
@@ -40,36 +44,36 @@ export const SettingsScreen = () => {
           button
           onClick={_ => signOut()}
         >
-          <ListItemText primary="Sign out" secondary={userData?.user?.email} />
+          <ListItemText primary="Sign out" secondary={auth?.email} />
         </ListItem>
         <ListItem
           button
           onClick={() => {
-            if (userData?.user?.contentPassword) {
+            if (settings?.contentPassword) {
               setLockedAction(_ => () => setIsEditContentPasswordDialogOpened(true))
             } else {
               setIsEditContentPasswordDialogOpened(true)
             }
           }}
         >
-          <ListItemText primary="Protected contents password" secondary={userData?.user?.contentPassword ? 'Change my password' : 'Initialize my password'} />
+          <ListItemText primary="Protected contents password" secondary={settings?.contentPassword ? 'Change my password' : 'Initialize my password'} />
         </ListItem>
         <ListItem
           button
           onClick={() => {
-            if (isLibraryUnlocked) {
-              toggleContentProtection()
+            if (library?.isLibraryUnlocked) {
+              udpateLibrary({ isLibraryUnlocked: false })
             } else {
               isUnlockLibraryDialogOpened(true)
             }
           }}
         >
           <ListItemText
-            primary={isLibraryUnlocked ? 'Protected contents are visible' : 'Protected contents are hidden'}
-            secondary={isLibraryUnlocked ? 'Click to lock' : 'Click to unlock'}
+            primary={library?.isLibraryUnlocked ? 'Protected contents are visible' : 'Protected contents are hidden'}
+            secondary={library?.isLibraryUnlocked ? 'Click to lock' : 'Click to unlock'}
           />
-          {isLibraryUnlocked && (<LockOpenRounded color="action" />)}
-          {!isLibraryUnlocked && (<LockRounded color="action" />)}
+          {library?.isLibraryUnlocked && (<LockOpenRounded color="action" />)}
+          {!library?.isLibraryUnlocked && (<LockRounded color="action" />)}
         </ListItem>
       </List>
       <List subheader={<ListSubheader disableSticky>Storage</ListSubheader>}>
@@ -123,10 +127,10 @@ const EditContentPasswordDialog: FC<{
   open: boolean,
   onClose: () => void,
 }> = ({ onClose, open }) => {
-  const [editUser] = useMutation(MutationEditUserDocument)
-  const { data: userData } = useQuery(QueryUserDocument)
+  const updatePassword = useUpdateContentPassword()
+  const settings = useRecoilValue(settingsState)
   const [text, setText] = useState('')
-  const contentPassword = userData?.user?.contentPassword || ''
+  const contentPassword = settings?.contentPassword || ''
 
   const onInnerClose = () => {
     onClose()
@@ -164,12 +168,7 @@ const EditContentPasswordDialog: FC<{
         <Button
           onClick={async () => {
             onInnerClose()
-            userData?.user?.id && editUser({
-              variables: {
-                id: userData?.user?.id,
-                contentPassword: text
-              }
-            })
+            updatePassword(text)
           }}
           color="primary"
         >

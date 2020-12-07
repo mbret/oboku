@@ -1,6 +1,0 @@
-query QueryFirstTimeExperience {
-  firstTimeExperience @client {
-    hasDoneWelcomeTour @client
-    hasDoneReaderTour @client
-  }
-}

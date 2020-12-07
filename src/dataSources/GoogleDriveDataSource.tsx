@@ -3,8 +3,9 @@ import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogT
 import { ArrowBackIosRounded, ArrowForwardIosRounded, CheckCircleRounded, LocalOfferRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
 import { Alert } from '@material-ui/lab'
 import React, { FC, useState } from 'react'
-import { DataSourceType, GoogleDriveDataSourceData, MutationAddDataSourceDocument, QueryTagsDocument } from '../generated/graphql'
+import { useRecoilValue } from 'recoil'
 import { useFolders } from '../google'
+import { tagsAsArrayState } from '../tags/states'
 import { TagsSelectionList } from '../tags/TagsSelectionList'
 import { generateUniqueID } from '../utils'
 
@@ -15,7 +16,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
   const [selectedFolder, setSelectedFolder] = useState<{ name: string, id: string } | undefined>(undefined)
   const [folderChain, setFolderChain] = useState<{ name: string, id: string }[]>([{ name: '', id: 'root' }])
   const currentFolder = folderChain[folderChain.length - 1]
-  const tags = useQuery(QueryTagsDocument)?.data?.tags || []
+  const tags = useRecoilValue(tagsAsArrayState)
   const theme = useTheme()
   const data = useFolders({ parent: currentFolder.id })
 
@@ -33,7 +34,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
             </ListItemIcon>
             <ListItemText
               primary="Apply tags"
-              secondary={Object.keys(selectedTags).map(id => tags.find(tag => tag?.id === id)?.name).join(' ')}
+              secondary={Object.keys(selectedTags).map(id => tags.find(tag => tag?._id === id)?.name).join(' ')}
             />
           </ListItem>
           <ListSubheader disableSticky>

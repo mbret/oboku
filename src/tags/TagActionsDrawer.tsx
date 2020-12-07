@@ -5,21 +5,18 @@ import {
   ListItemText, ListItemIcon, DialogActions, Button, Divider, DialogContent, TextField
 } from '@material-ui/core';
 import { CheckCircleRounded, DeleteForeverRounded, EditRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
-import { useRemoveTag, useLazyQueryGetTag, useEditTag } from '../tags/queries';
+import { useRemoveTag, useUpdateTag } from '../tags/helpers';
+import { useRecoilValue } from 'recoil';
+import { normalizedTagsState } from './states';
 
 export const TagActionsDrawer: FC<{
   openWith: string | undefined,
   onClose: () => void
 }> = ({ openWith, onClose }) => {
-  const [getTag, { data }] = useLazyQueryGetTag()
-  const editTag = useEditTag()
+  const tag = useRecoilValue(normalizedTagsState)[openWith || '-1']
+  const [editTag] = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] = useState<string | undefined>(undefined)
-  const removeTag = useRemoveTag()
-  const tag = data?.tag
-
-  useEffect(() => {
-    openWith && getTag({ variables: { id: openWith } })
-  }, [openWith, getTag])
+  const [removeTag] = useRemoveTag()
 
   console.log('[TagActionsDrawer]', tag)
 
@@ -43,7 +40,7 @@ export const TagActionsDrawer: FC<{
           </ListItem>
           <ListItem
             button
-            onClick={() => openWith && editTag({ id: openWith, isProtected: !tag?.isProtected})}
+            onClick={() => openWith && editTag({ _id: openWith, isProtected: !tag?.isProtected })}
           >
             <ListItemIcon>
               {!tag?.isProtected && (<RadioButtonUncheckedOutlined />)}
@@ -58,7 +55,7 @@ export const TagActionsDrawer: FC<{
             button
             onClick={() => {
               onClose()
-              openWith && removeTag(openWith)
+              openWith && removeTag({ id: openWith })
             }}
           >
             <ListItemIcon>
@@ -86,9 +83,8 @@ const EditTagDialog: FC<{
   onClose: () => void,
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState('')
-  const [getTag, { data }] = useLazyQueryGetTag()
-  const editTag = useEditTag()
-  const { name: tagName } = data?.tag || {}
+  const { name: tagName } = useRecoilValue(normalizedTagsState)[id || '-1'] || {}
+  const [editTag] = useUpdateTag()
 
   const onInnerClose = () => {
     setName('')
@@ -97,19 +93,15 @@ const EditTagDialog: FC<{
 
   const onConfirm = (id: string, name: string) => {
     if (name) {
-      editTag({ id, name })
+      editTag({ _id: id, name })
     }
   }
-
-  useEffect(() => {
-    id && getTag({ variables: { id } })
-  }, [id, getTag])
 
   useEffect(() => {
     setName(prev => tagName || prev)
   }, [tagName, id])
 
-  console.log('EditTagDialog', id, tagName, data)
+  console.log('EditTagDialog', id, tagName)
 
   return (
     <Dialog onClose={onInnerClose} open={open}>

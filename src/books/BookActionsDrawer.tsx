@@ -1,49 +1,32 @@
 
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import Avatar from '@material-ui/core/Avatar';
+import React from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import ListItemText from '@material-ui/core/ListItemText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Dialog from '@material-ui/core/Dialog';
-import { Remove, CloudDownload, Book, SyncRounded, DeleteForeverRounded, EditRounded, ListAltRounded, LibraryBooksRounded } from '@material-ui/icons';
-import AddIcon from '@material-ui/icons/Add';
-import Typography from '@material-ui/core/Typography';
-import { blue } from '@material-ui/core/colors';
-import { useReactiveVar, useMutation, useQuery, useLazyQuery } from '@apollo/client';
-import { models } from '../client';
-import localforage from 'localforage';
+import { SyncRounded, DeleteForeverRounded, ListAltRounded, LibraryBooksRounded } from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
-import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
+// import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { ROUTES } from '../constants';
-import { useRemoveBook, useEditBook } from './queries';
+import { useUpdateBook } from './helpers';
+import { useRemoveBook } from './helpers';
 import { Drawer, Divider, ListItemIcon } from '@material-ui/core';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
-import { QueryBookDocument } from '../generated/graphql';
+import { atom, useRecoilState, useRecoilValue } from 'recoil';
+import { normalizedBooksState } from './states';
 
-export const BookActionsDrawer = (props) => {
-  const bookId = useReactiveVar(models.isBookActionDialogOpenedWithVar)
+export const bookActionDrawerState = atom<{ openedWith: undefined | string }>({ key: 'bookActionDrawerState', default: { openedWith: undefined } })
+
+export const BookActionsDrawer = () => {
+  const [{ openedWith: bookId }, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const history = useHistory()
-  const [getBook, { data }] = useLazyQuery(QueryBookDocument)
-  const removeDownloadFile = useRemoveDownloadFile()
-  const removeBook = useRemoveBook()
-  const editBook = useEditBook()
-  const classes = useStyles();
-  const book = data?.book
+  const book = useRecoilValue(normalizedBooksState)[bookId || '-1']
+  // const removeDownloadFile = useRemoveDownloadFile()
+  const [removeBook] = useRemoveBook()
+  const [editBook] = useUpdateBook()
 
   const handleClose = () => {
-    models.isBookActionDialogOpenedWithVar(undefined)
+    setBookActionDrawerState({ openedWith: undefined })
   };
-
-  useEffect(() => {
-    bookId && getBook({
-      variables: { id: bookId }
-    })
-  }, [bookId, getBook])
 
   return (
     <Drawer
@@ -58,7 +41,7 @@ export const BookActionsDrawer = (props) => {
             <ListItem button
               onClick={() => {
                 handleClose()
-                history.push(ROUTES.BOOK_DETAILS.replace(':id', book.id))
+                history.push(ROUTES.BOOK_DETAILS.replace(':id', book._id))
               }}
             >
               <ListItemIcon>
@@ -69,7 +52,7 @@ export const BookActionsDrawer = (props) => {
             <ListItem button
               onClick={() => {
                 handleClose()
-                editBook({ id: book.id, lastMetadataUpdatedAt: null })
+                editBook({ _id: book._id, lastMetadataUpdatedAt: null })
               }}
             >
               <ListItemIcon>
@@ -88,7 +71,7 @@ export const BookActionsDrawer = (props) => {
               </ListItemIcon>
               <ListItemText primary="Add or remove from collection" />
             </ListItem>
-            {book.downloadState === 'downloaded' && (
+            {/* {book.downloadState === 'downloaded' && (
               <ListItem button
                 onClick={() => {
                   handleClose()
@@ -100,14 +83,14 @@ export const BookActionsDrawer = (props) => {
                 </ListItemIcon>
                 <ListItemText primary="Remove the book download" />
               </ListItem>
-            )}
+            )} */}
           </List>
           <Divider />
           <List>
             <ListItem button
               onClick={() => {
                 handleClose()
-                bookId && removeBook(bookId)
+                bookId && removeBook({ id: bookId })
               }}
             >
               <ListItemIcon>
@@ -121,10 +104,3 @@ export const BookActionsDrawer = (props) => {
     </Drawer>
   );
 }
-
-const useStyles = makeStyles({
-  avatar: {
-    backgroundColor: blue[100],
-    color: blue[600],
-  },
-});

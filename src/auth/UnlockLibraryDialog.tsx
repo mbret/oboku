@@ -1,28 +1,28 @@
-import { makeVar, useQuery, useReactiveVar } from '@apollo/client';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core'
 import { hashContentPassword } from 'oboku-shared';
 import React, { FC, useEffect, useState } from 'react'
-import { QueryUserDocument } from '../generated/graphql';
-import { useToggleContentProtection } from './queries';
+import { atom, useRecoilState, useRecoilValue } from 'recoil';
+import { useUpdateLibrary } from '../library/helpers';
+import { settingsState } from '../settings/states';
 
-export const isUnlockLibraryDialogOpened = makeVar(false);
+export const unlockLibraryDialogState = atom({ key: 'unlockLibraryDialog', default: false })
 
 export const UnlockLibraryDialog: FC<{}> = () => {
 
   const [text, setText] = useState('')
-  const { data: userData } = useQuery(QueryUserDocument)
-  const isOpened = useReactiveVar(isUnlockLibraryDialogOpened);
-  const toggleContentProtection = useToggleContentProtection()
-  const contentPassword = userData?.user?.contentPassword
+  const settings = useRecoilValue(settingsState)
+  const [isOpened, setIsOpened] = useRecoilState(unlockLibraryDialogState);
+  const [updateLibrary] = useUpdateLibrary()
+  const contentPassword = settings?.contentPassword
 
   const onClose = () => {
-    isUnlockLibraryDialogOpened(false)
+    setIsOpened(false)
   }
 
   const onConfirm = async () => {
     const hashedPassword = await hashContentPassword(text)
     if (contentPassword === hashedPassword) {
-      toggleContentProtection()
+      updateLibrary({ isLibraryUnlocked: true })
       onClose()
     }
   }
@@ -42,7 +42,7 @@ export const UnlockLibraryDialog: FC<{}> = () => {
           autoFocus
           id="name"
           label="Content password"
-          type="text"
+          type="password"
           fullWidth
           value={text}
           onChange={e => setText(e.target.value)}

@@ -1,6 +1,0 @@
-query QueryFullLink($id: ID!) {
-  link(id: $id) {
-    id
-    resourceId
-  }
-}

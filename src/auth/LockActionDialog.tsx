@@ -1,16 +1,15 @@
-import { useQuery } from '@apollo/client';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core'
 import { hashContentPassword } from 'oboku-shared';
 import React, { FC, useEffect, useState } from 'react'
-import { QueryUserDocument } from '../generated/graphql';
+import { useRecoilValue } from 'recoil';
+import { settingsState } from '../settings/states';
 
 export const LockActionDialog: FC<{
   action?: () => void
 }> = ({ action }) => {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
-  const { data: userData } = useQuery(QueryUserDocument)
-  const contentPassword = userData?.user?.contentPassword
+  const settings = useRecoilValue(settingsState)
 
   const onClose = () => {
     setOpen(false)
@@ -18,7 +17,7 @@ export const LockActionDialog: FC<{
 
   const onConfirm = async () => {
     const hashedPassword = await hashContentPassword(text)
-    if (contentPassword === hashedPassword) {
+    if (settings?.contentPassword === hashedPassword) {
       onClose()
       action && action()
     }

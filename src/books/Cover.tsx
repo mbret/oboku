@@ -3,8 +3,8 @@ import { useMountedState } from 'react-use'
 import { API_URI } from '../constants'
 import placeholder from '../assets/cover-placeholder.png'
 import { useTheme } from '@material-ui/core'
-import { useQuery } from '@apollo/client'
-import { QueryBookDocument } from '../generated/graphql'
+import { useRecoilValue } from 'recoil'
+import { normalizedBooksState } from './states'
 
 export const Cover: FC<{
   bookId: string,
@@ -15,12 +15,11 @@ export const Cover: FC<{
 }> = ({ bookId, style, fullWidth = true, withShadow = false, rounded = true, ...rest }) => {
   const isMounted = useMountedState()
   const theme = useTheme()
-  const { data } = useQuery(QueryBookDocument, { variables: { id: bookId } })
+  const book = useRecoilValue(normalizedBooksState)[bookId || '-1']
   const [hasError, setHasError] = useState(false)
-  const book = data?.book
 
   const coverSrc = book
-    ? `${API_URI}/cover/${book.id}?${book?.lastMetadataUpdatedAt || ''}`
+    ? `${API_URI}/cover/${book._id}?${book?.lastMetadataUpdatedAt || ''}`
     : placeholder
 
   useEffect(() => {

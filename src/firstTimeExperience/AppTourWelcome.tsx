@@ -2,15 +2,15 @@ import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import FteCoverAsset from '../assets/fte-cover.svg'
 import { Box, makeStyles, Typography, useTheme } from '@material-ui/core';
-import { useSetFirstTimeExperience } from './queries';
-import { QueryFirstTimeExperienceDocument  } from '../generated/graphql';
 import { Logo } from '../common/Logo';
-import { useQuery } from '@apollo/client';
+import { useUpdateAuth } from '../auth/helpers';
+import { useRecoilValue } from 'recoil';
+import { authState } from '../auth/authState';
 
 export const AppTourWelcome: React.FC = memo(() => {
-  const { data: fteData } = useQuery(QueryFirstTimeExperienceDocument)
-  const setFirstTimeExperience = useSetFirstTimeExperience()
-  const show = !fteData?.firstTimeExperience?.hasDoneWelcomeTour
+  const { token, hasDoneWelcomeTour } = useRecoilValue(authState) || {}
+  const [updateAuth] = useUpdateAuth()
+  const show = !hasDoneWelcomeTour && !!token
   const styles = useStyles();
   const theme = useTheme()
 
@@ -20,7 +20,7 @@ export const AppTourWelcome: React.FC = memo(() => {
       id="AppTourWelcome"
       show={show}
       onClose={() => {
-        setFirstTimeExperience({ hasDoneWelcomeTour: true })
+        updateAuth({ hasDoneWelcomeTour: true })
       }}
     >
       <Step

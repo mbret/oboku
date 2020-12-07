@@ -1,1 +1,0 @@
-export { ApolloLinkOfflineOperations } from './ApolloLinkOfflineOperations'

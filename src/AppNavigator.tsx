@@ -19,12 +19,15 @@ import { RegisterScreen } from './auth/RegisterScreen'
 import { BookActionsDrawer } from './books/BookActionsDrawer'
 import { DataSourcesScreen } from './dataSources/DataSourcesScreen'
 import { FAQScreen } from './FAQScreen'
-import { useQuery } from '@apollo/client'
-import { QueryUserAuthStateDocument } from './generated/graphql'
+import { useAuth } from './auth/helpers'
 
 export const AppNavigator = () => {
-  const { data: authData } = useQuery(QueryUserAuthStateDocument)
-  const isAuthenticated = !!authData?.user?.token
+  const auth = useAuth()
+  const isAuthenticated = !!auth?.token
+
+  console.log('AUTH', auth)
+
+  if (auth === undefined) return null
 
   return (
     <Router basename={process.env.PUBLIC_URL}>

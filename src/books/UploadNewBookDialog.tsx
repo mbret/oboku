@@ -1,8 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
-import { useAddBook } from './queries'
+import { useAddBook } from './helpers'
 import * as yup from 'yup'
-import { LinkType } from '../generated/graphql'
 
 const schema = yup.object().shape({
   bookUrl: yup.string().url().required(),
@@ -14,11 +13,11 @@ export const UploadNewBookDialog: FC<{
 }> = ({ open, onClose }) => {
   const [bookUrl, setBookUrl] = useState(process.env.REACT_APP_HTTP_LINK || '')
   const isValid = schema.isValidSync({ bookUrl })
-  const addBook = useAddBook()
+  const [addBook] = useAddBook()
 
   const handleConfirm = () => {
     setBookUrl('')
-    addBook(bookUrl, LinkType.Uri)
+    addBook({ linkUrl: bookUrl })
     onClose()
   }
 

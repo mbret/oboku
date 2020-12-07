@@ -14,10 +14,17 @@ import { ManageBookCollectionsDialog } from './books/ManageBookCollectionsDialog
 import { GoogleApiProvider } from './google';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import { UpdateAvailableDialog } from './UpdateAvailableDialog';
+import { useDatabase } from './databases';
+import { useObservers } from './useObservers';
+import { useLoadInitialState } from './useLoadInitialState';
 
 export function App() {
+  const isInitialStateReady = useLoadInitialState()
   const client = useClient()
+  const db = useDatabase()
   const [newServiceWorker, setNewServiceWorker] = useState<ServiceWorker | undefined>(undefined)
+
+  useObservers()
 
   useEffect(() => {
     // If you want your app to work offline and load faster, you can change
@@ -40,36 +47,31 @@ export function App() {
         } catch (e) {
           console.error(e)
         }
-
-
       },
     });
   }, [])
 
   return (
-    <>
-      {!client && (
-        null
-      )}
-      {client && (
-        <CookiesProvider>
-          <ApolloProvider client={client}>
-            <ThemeProvider theme={theme}>
-              <GoogleApiProvider>
+    <CookiesProvider>
+      <GoogleApiProvider>
+        <ThemeProvider theme={theme}>
+          {(!isInitialStateReady || !client)
+            ? null
+            : (
+              <ApolloProvider client={client}>
                 <TourProvider>
                   <AppNavigator />
                   <AppTourWelcome />
                   <UnlockLibraryDialog />
                   <ManageBookCollectionsDialog />
-                  <BlockingBackdrop />
                   <RoutineProcess />
                 </TourProvider>
                 <UpdateAvailableDialog serviceWorker={newServiceWorker} />
-              </GoogleApiProvider>
-            </ThemeProvider>
-          </ApolloProvider>
-        </CookiesProvider>
-      )}
-    </>
+              </ApolloProvider>
+            )}
+          <BlockingBackdrop />
+        </ThemeProvider>
+      </GoogleApiProvider>
+    </CookiesProvider>
   );
 }

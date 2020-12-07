@@ -6,9 +6,9 @@ import { CollectionBookList } from './CollectionBookList'
 import EmptyLibraryAsset from '../assets/empty-library.svg'
 import CollectionBgSvg from '../assets/series-bg.svg'
 import { BooksSelectionDialog } from './BooksSelectionDialog'
-import { useQuery } from '@apollo/client'
-import { Query_Collection_Document } from '../generated/graphql'
 import { useMeasureElement } from '../utils'
+import { useRecoilValue } from 'recoil'
+import { normalizedCollectionsState } from './states'
 
 type ScreenParams = {
   id: string
@@ -19,9 +19,8 @@ export const CollectionDetailsScreen = () => {
   const theme = useTheme()
   const { id } = useParams<ScreenParams>()
   const [isBookDialogOpened, setIsBookDialogOpened] = useState(false)
-  const { data } = useQuery(Query_Collection_Document, { variables: { id }, fetchPolicy: 'cache-only' })
-  const collection = data?.collection
-  const books = data?.collection?.books || []
+  const collection = useRecoilValue(normalizedCollectionsState)[id || '-1']
+  const books = collection?.books || []
 
   const addBookButton = (
     <Button
@@ -123,7 +122,7 @@ export const CollectionDetailsScreen = () => {
           )}
         </div>
       </div>
-      {collection && <BooksSelectionDialog open={isBookDialogOpened} onClose={() => setIsBookDialogOpened(false)} collectionId={collection?.id} />}
+      {collection && <BooksSelectionDialog open={isBookDialogOpened} onClose={() => setIsBookDialogOpened(false)} collectionId={collection?._id} />}
     </div>
   )
 }

@@ -1,28 +1,27 @@
-import React, { useState, FC } from 'react';
-import Dialog from '@material-ui/core/Dialog';
+import React, { useState, FC } from 'react'
+import Dialog from '@material-ui/core/Dialog'
 import {
   Button, DialogActions, DialogContent, DialogTitle, TextField,
   Toolbar, IconButton, makeStyles, createStyles, ListItem, ListItemText, List, useTheme
-} from '@material-ui/core';
-import { MoreVert } from '@material-ui/icons';
-import { useQueryGetCollection } from '../collections/queries';
-import { ROUTES } from '../constants';
-import { useHistory } from 'react-router-dom';
-import { CollectionActionsDrawer } from '../collections/CollectionActionsDrawer';
-import { Cover } from '../books/Cover';
-import { Add_CollectionDocument } from '../generated/graphql';
-import { useMutation } from '@apollo/client';
-import { createNewCollection } from '../collections/helpers';
+} from '@material-ui/core'
+import { MoreVert } from '@material-ui/icons'
+import { ROUTES } from '../constants'
+import { useHistory } from 'react-router-dom'
+import { CollectionActionsDrawer } from '../collections/CollectionActionsDrawer'
+import { Cover } from '../books/Cover'
+import { useMutation } from '@apollo/client'
+import { useCreateCollection } from '../collections/helpers'
+import { useRecoilValue } from 'recoil'
+import { collectionsAsArrayState } from '../collections/states'
 
 export const LibraryCollectionScreen = () => {
-  const classes = useStyles();
+  const classes = useStyles()
   const history = useHistory()
   const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] = useState(false)
   const [isActionDialogOpenedWith, setIsActionDialogOpenedWith] = useState<string | undefined>(undefined)
-  const { data: collectionData } = useQueryGetCollection()
+  const collections = useRecoilValue(collectionsAsArrayState)
   const theme = useTheme()
   const cardHeight = 200
-  const collections = collectionData?.collections
 
   console.log('[LibraryCollectionScreen]', collectionData)
 
@@ -118,7 +117,7 @@ export const LibraryCollectionScreen = () => {
         open={isAddCollectionDialogOpened}
       />
     </div>
-  );
+  )
 }
 
 const AddCollectionDialog: FC<{
@@ -200,4 +199,4 @@ const useStyles = makeStyles((theme) =>
       position: 'absolute',
     },
   }),
-);
+)

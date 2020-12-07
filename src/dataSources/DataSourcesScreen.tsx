@@ -6,8 +6,6 @@ import { Alert } from '@material-ui/lab';
 import { ROUTES } from '../constants';
 import { DataSourcesAddDrawer } from './DataSourcesAddDrawer';
 import { GoogleDriveDataSource } from './GoogleDriveDataSource';
-import { useQuery } from '@apollo/client';
-import { DataSource, Maybe, QueryDataSourcesDocument } from '../generated/graphql';
 import { ReactComponent as GoogleDriveAsset } from '../assets/google-drive.svg';
 import { DataSourcesActionsDrawer } from './DataSourcesActionsDrawer';
 

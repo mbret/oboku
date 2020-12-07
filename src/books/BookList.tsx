@@ -1,15 +1,8 @@
 import React, { useCallback, FC, useMemo } from 'react'
-import { CircularProgress, makeStyles, Typography, useTheme } from "@material-ui/core"
-import { CloudDownloadRounded, MoreVert, Pause } from '@material-ui/icons';
-import { models } from '../client';
-import { useWindowSize, useScrollbarWidth } from 'react-use';
-import { ROUTES } from '../constants';
-import { useDownloadFile } from '../download/useDownloadFile';
-import { useHistory } from 'react-router-dom';
+import { makeStyles, useTheme } from "@material-ui/core"
+import { useWindowSize } from 'react-use';
 import { ItemList } from '../lists/ItemList';
 import { LibraryBooksSettings } from '../library/queries';
-import { Cover } from '../books/Cover';
-import { Book, Maybe } from '../generated/graphql';
 import { BookListGridItem } from './BookListGridItem';
 
 export const BookList: FC<{
@@ -20,7 +13,7 @@ export const BookList: FC<{
   isHorizontal?: boolean,
   style?: React.CSSProperties,
   itemWidth?: number,
-  data: Book['id'][],
+  data: string[],
 }> = ({ viewMode = 'grid', renderHeader, headerHeight, sorting, isHorizontal = false, style, itemWidth, data }) => {
   const windowSize = useWindowSize()
   const classes = useStyles({ isHorizontal, windowSize });
@@ -61,8 +54,6 @@ export const BookList: FC<{
     </div>
   )
 }
-
-
 
 const useStyles = makeStyles((theme) => {
   type Props = { isHorizontal: boolean, windowSize: { width: number } }

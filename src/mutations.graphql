@@ -1,6 +1,0 @@
-mutation MutationApp($hasUpdateAvailable: Boolean) {
-  app(hasUpdateAvailable: $hasUpdateAvailable) {
-    id
-    hasUpdateAvailable
-  }
-}

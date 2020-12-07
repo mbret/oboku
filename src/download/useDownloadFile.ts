@@ -4,7 +4,6 @@ import { API_URI } from '../constants';
 import axios from 'axios'
 import { useCallback } from 'react';
 import throttle from 'lodash.throttle';
-import { Book, DownloadState, QueryUserAuthStateDocument } from '../generated/graphql';
 
 type QueryBookDownloadStateData = { book: Required<Pick<Book, 'downloadState' | 'downloadProgress'>> }
 type QueryBookDownloadStateVariables = { id: string }

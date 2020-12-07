@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme, Button, TextField, Link } from '@material-ui/core';
 import { Alert } from '@material-ui/lab'
-import { useSignin } from './queries';
-import { ApolloError } from '@apollo/client';
 import { OrDivider } from '../common/OrDivider';
 import { useHistory } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import { Header } from './Header';
 import * as yup from 'yup'
+import { useSignIn } from './helpers';
+import { ServerError } from '../errors';
 
 const schema = yup.object().shape({
   email: yup.string().email().required(),
@@ -18,7 +18,7 @@ export const LoginScreen = () => {
   const history = useHistory()
   const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || '')
   const [password, setPassword] = useState(process.env.REACT_APP_PASSWORD || '')
-  const [signin, { error }] = useSignin()
+  const [signIn, { error }] = useSignIn()
   const theme = useTheme()
   const isValid = useIsValid(email, password)
   let hasInvalidInput = false
@@ -27,20 +27,14 @@ export const LoginScreen = () => {
   if (error) {
     hasUnknownError = true
   }
-  if (error instanceof ApolloError) {
-    error.graphQLErrors.forEach(({ extensions }) => {
-      if ((extensions as any)?.code === 'BAD_USER_INPUT') {
-        hasInvalidInput = true
-        hasUnknownError = false
-      }
-    })
+  if (error instanceof ServerError && error.response.status === 400) {
+    hasInvalidInput = true
+    hasUnknownError = false
   }
 
-  const onSubmit = () => {
-    signin(email, password)
+  const onSubmit = async () => {
+    signIn(email, password)
   }
-
-  console.log('[LoginScreen]', { error, isValid })
 
   return (
     <div style={{

@@ -1,7 +1,8 @@
-import { useLazyQuery, useQuery } from '@apollo/client';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core'
 import React, { FC, useEffect, useState } from 'react'
-import { QueryAuthorizeDocument, QueryUserDocument } from '../generated/graphql';
+import { useRecoilValue } from 'recoil';
+import { authState } from './authState';
+import { useAuthorize } from './helpers';
 
 export const LockActionBehindUserPasswordDialog: FC<{
   action?: () => void
@@ -9,20 +10,19 @@ export const LockActionBehindUserPasswordDialog: FC<{
   const [open, setOpen] = useState(false)
   const [success, setSuccess] = useState(false)
   const [text, setText] = useState('')
-  const { data: userData } = useQuery(QueryUserDocument)
-  const [authorize] = useLazyQuery(QueryAuthorizeDocument, {
-    fetchPolicy: 'network-only',
-    onCompleted: (data) => {
-      setSuccess(data?.authorize?.success || false)
-    }
-  })
+  const auth = useRecoilValue(authState)
+  const authorize = useAuthorize()
 
   const onClose = () => {
     setOpen(false)
   }
 
   const onConfirm = () => {
-    authorize({ variables: { password: text } })
+    authorize({
+      variables: { password: text }, onSuccess: () => {
+        setSuccess(true)
+      }
+    })
   }
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export const LockActionBehindUserPasswordDialog: FC<{
           Make sure you are online to proceed since we need to authorize you with the server
         </DialogContentText>
         <form>
-          <input type="text" name="email" value={userData?.user?.email || ''} autoComplete="email" style={{ display: 'none' }} readOnly />
+          <input type="text" name="email" value={auth?.email || ''} autoComplete="email" style={{ display: 'none' }} readOnly />
           <TextField
             autoFocus
             id="name"

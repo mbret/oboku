@@ -4,3 +4,11 @@ export type PromiseReturnType<T extends (...args: any) =>
 export type NonMaybe<T> = {
   [P in keyof T]-?: NonNullable<T[P]>
 };
+
+export type OneValue<T> = T extends Array<any> ? T[number] : T
+
+export type MongoUpdateSyntax<DocType> = {
+  $set?: DocType,
+  $push?: { [key in keyof DocType]?: OneValue<DocType[key]> },
+  $pullAll?: { [key in keyof DocType]?: DocType[key] },
+}

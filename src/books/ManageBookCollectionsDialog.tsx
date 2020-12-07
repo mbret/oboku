@@ -1,25 +1,21 @@
-import { makeVar, useLazyQuery, useMutation, useReactiveVar } from '@apollo/client';
+import { makeVar, useMutation, useReactiveVar } from '@apollo/client';
 import { Button, Dialog, DialogActions, DialogTitle } from '@material-ui/core';
-import React, { FC, useEffect } from 'react';
-import { MutationAddCollectionsToBookDocument, MutationRemoveCollectionsToBookDocument, QueryBookDocument } from '../generated/graphql';
-import { useQueryGetCollection } from '../collections/queries';
+import React, { FC } from 'react';
+import { useRecoilValue } from 'recoil';
 import { CollectionSelectionList } from '../collections/CollectionSelectionList';
+import { collectionsAsArrayState } from '../collections/states';
+import { normalizedBooksState } from './states';
 
 export const openManageBookCollectionsDialog = makeVar<string | undefined>(undefined)
 
 export const ManageBookCollectionsDialog: FC<{}> = () => {
   const id = useReactiveVar(openManageBookCollectionsDialog)
   const open = !!id
-  const { data: getCollectionData } = useQueryGetCollection()
-  const [getBook, { data: getBookData }] = useLazyQuery(QueryBookDocument)
+  const collections = useRecoilValue(collectionsAsArrayState)
+  const book = useRecoilValue(normalizedBooksState)[id || '-1']
   const [addToBook] = useMutation(MutationAddCollectionsToBookDocument)
   const [removeFromBook] = useMutation(MutationRemoveCollectionsToBookDocument)
-  const collections = getCollectionData?.collections
-  const bookCollection = getBookData?.book?.collections
-
-  useEffect(() => {
-    id && getBook({ variables: { id } })
-  }, [id, getBook])
+  const bookCollection = book?.collections
 
   const isSelected = (id: string) => !!bookCollection?.find(item => item?.id === id)
 

@@ -1,10 +1,11 @@
 import React, { FC } from 'react';
 import { Backdrop, CircularProgress, createStyles, makeStyles, useTheme } from "@material-ui/core"
-import { useIsOpened } from './apollo-link-blocking/useIsOpened';
+import { isLockedState } from './lockState';
+import { useRecoilValue } from 'recoil';
 
 export const BlockingBackdrop: FC<{}> = () => {
   const classes = useStyles();
-  const open = useIsOpened()
+  const open = useRecoilValue(isLockedState)
   const theme = useTheme()
 
   return (

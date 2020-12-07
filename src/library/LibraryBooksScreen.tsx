@@ -13,6 +13,11 @@ import EmptyLibraryAsset from '../assets/empty-library.svg'
 import { Book, QueryBooksDocument, QueryUserDocument } from '../generated/graphql';
 import { useQuery } from '@apollo/client';
 import { useMeasureElement } from '../utils';
+import { LibraryViewMode, useRxMutation, useRxQuery } from '../databases';
+import { useAuth } from '../auth/helpers';
+import { libraryState } from './states';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { booksAsArrayState } from '../books/states';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
@@ -20,21 +25,25 @@ export const LibraryBooksScreen = () => {
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const [isUploadNewBookDialogOpened, setIsUploadNewBookDialogOpened] = useState(false)
-  const { data: userData } = useQuery(QueryUserDocument)
-  const [toggleLibraryBooksSettingsViewMode] = useToggleLibraryBooksSettingsViewMode()
+  // const [toggleLibraryBooksSettingsViewMode] = useToggleLibraryBooksSettingsViewMode()
+  const [setLibraryViewMode] = useRxMutation<{ viewMode: LibraryViewMode }>((db, { variables: { viewMode } }) => db.library.findOne().update({ $set: { viewMode } }))
+  // const library = useRxQuery((db) => db.library.findOne())
+  const library = useRecoilValue(libraryState)
   const { data: libraryBooksSettingsData } = useLibraryBooksSettings()
   const libraryFilters = libraryBooksSettingsData?.libraryBooksSettings
+  const auth = useAuth()
   const sorting = libraryFilters?.sorting
   const sortedList = useSortedList(sorting)
-  const viewMode = libraryBooksSettingsData?.libraryBooksSettings.viewMode
+  // const viewMode = libraryBooksSettingsData?.libraryBooksSettings.viewMode
   const tagsFilterApplied = (libraryFilters?.tags.length || 0) > 0
   const numberOfFiltersApplied = [tagsFilterApplied].filter(i => i).length
   const filteredTags = libraryFilters?.tags?.map(tag => tag?.id || '-1') || []
-  const visibleBooks = filteredTags.length === 0
-    ? sortedList
-    : sortedList
-      .filter(book => book?.tags?.some(b => filteredTags.includes(b?.id || '-1')))
-  const books = useMemo(() => visibleBooks.map(item => item.id), [visibleBooks])
+  const visibleBooks = sortedList
+  // const visibleBooks = filteredTags.length === 0
+  //   ? sortedList
+  //   : sortedList
+  //     .filter(book => book?.tags?.some(b => filteredTags.includes(b?.primary || '-1')))
+  const books = useMemo(() => visibleBooks.map(item => item._id), [visibleBooks])
 
   const addBookButton = (
     <Button
@@ -57,7 +66,7 @@ export const LibraryBooksScreen = () => {
 
   const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
 
-  console.log('[LibraryBooksScreen]', books, libraryBooksSettingsData, userData, listHeaderHeight)
+  console.log('[LibraryBooksScreen]', books, library)
 
   return (
     <div className={classes.container}>
@@ -87,17 +96,17 @@ export const LibraryBooksScreen = () => {
             {sorting === 'activity' ? 'Recent activity' : sorting === 'alpha' ? 'A > Z' : 'Date added'}
           </Button>
         </div>
-        {userData?.user?.isLibraryUnlocked && (
+        {library?.isLibraryUnlocked && (
           <div style={{ display: 'flex', flexFlow: 'row', alignItems: 'center', marginLeft: theme.spacing(1), overflow: 'hidden' }}>
             <LockOpenRounded fontSize="small" />
           </div>
         )}
         <IconButton
           onClick={() => {
-            toggleLibraryBooksSettingsViewMode()
+            setLibraryViewMode({ viewMode: library?.viewMode === LibraryViewMode.GRID ? LibraryViewMode.LIST : LibraryViewMode.GRID })
           }}
         >
-          {viewMode === 'grid' ? <AppsRounded /> : <ListRounded />}
+          {library?.viewMode === 'grid' ? <AppsRounded /> : <ListRounded />}
         </IconButton>
       </Toolbar>
       <div style={{
@@ -143,7 +152,7 @@ export const LibraryBooksScreen = () => {
         )}
         {books.length > 0 && (
           <BookList
-            viewMode={viewMode}
+            viewMode={library?.viewMode}
             sorting={sorting}
             headerHeight={listHeaderHeight}
             data={books}
@@ -161,18 +170,17 @@ export const LibraryBooksScreen = () => {
 }
 
 const useSortedList = (sorting: LibraryBooksSettings['sorting'] | undefined) => {
-  const { data: booksData } = useQuery(QueryBooksDocument)
-  const books = booksData?.books || []
+  const books = useRecoilValue(booksAsArrayState)
 
   switch (sorting) {
     case 'date': {
-      return R.sort(R.ascend(R.prop('createdAt')), books as Required<Book>[])
+      return R.sort(R.ascend(R.prop('createdAt')), books)
     }
     case 'activity': {
-      return R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books as Required<Book>[])
+      return R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books)
     }
     default: {
-      return R.sort(R.ascend(R.prop('title')), books as Required<Book>[])
+      return R.sort(R.ascend(R.prop('title')), books)
     }
   }
 }

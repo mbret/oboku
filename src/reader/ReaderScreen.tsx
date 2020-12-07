@@ -9,11 +9,10 @@ import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
 import { Rendition } from "epubjs";
 import { Contents, Location } from "epubjs";
-import { useEditBook } from '../books/queries';
+import { useUpdateBook } from '../books/helpers';
 import { AppTourReader } from '../firstTimeExperience/AppTourReader';
 import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from './utils';
 import { useMutation, useQuery } from '@apollo/client';
-import { MutationEditBookDocument, QueryBookDocument, ReadingStateState } from '../generated/graphql';
 import { PromiseReturnType } from '../types';
 import { PageNumber } from './PageNumber';
 
@@ -39,7 +38,7 @@ export const ReaderScreen: FC<{}> = () => {
   const { data: bookData } = useQuery(QueryBookDocument, { variables: { id: bookId } })
   const book = bookData?.book
   const windowSize = useWindowSize()
-  const editBook = useEditBook()
+  const [editBook] = useUpdateBook()
   const verticalTappingZoneHeight = useVerticalTappingZoneHeight()
   const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
 
@@ -179,7 +178,6 @@ export const ReaderScreen: FC<{}> = () => {
         rendition?.book.locations,
         // progress,
       )
-      //   // debugger
       //   console.log(`relocated`, location)
       // @see https://github.com/futurepress/epub.js/issues/278. It needs to load all locations
       // progress = rendition?.book.locations.percentageFromCfi(location.start.cfi);

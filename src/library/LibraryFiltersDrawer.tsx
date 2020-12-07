@@ -4,15 +4,15 @@ import { DialogTitle, makeStyles, createStyles, Drawer, List, ListItem, ListItem
 import { ArrowForwardIosRounded } from '@material-ui/icons';
 import { useLibraryBooksSettings, useToggleTag } from './queries';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
-import { QueryTagsDocument } from '../generated/graphql';
-import { useQuery } from '@apollo/client';
+import { useRecoilValue } from 'recoil';
+import { tagsAsArrayState } from '../tags/states';
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean,
   onClose: () => void
 }> = ({ open, onClose }) => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
-  const { data } = useQuery(QueryTagsDocument)
+  const tags = useRecoilValue(tagsAsArrayState)
   const { data: libraryFiltersData, error, called } = useLibraryBooksSettings()
   const libraryBooksSettings = libraryFiltersData?.libraryBooksSettings
   const selectedTags = libraryBooksSettings?.tags
@@ -50,9 +50,9 @@ export const LibraryFiltersDrawer: FC<{
         open={isTagsDialogOpened}
       >
         <DialogTitle>Tags selection</DialogTitle>
-        {data?.tags && (
+        {tags && (
           <TagsSelectionList
-            tags={data?.tags}
+            tags={tags}
             isSelected={tagId => !!libraryFiltersData?.libraryBooksSettings?.tags?.find(item => item?.id === tagId)}
             onItemClick={tagId => {
               toggleTag(tagId)

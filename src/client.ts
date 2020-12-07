@@ -13,14 +13,11 @@ import { GET_TAGS } from './tags/queries';
 import { useState, useEffect } from 'react';
 import { setContext } from 'apollo-link-context'
 import { authLink } from './auth/authLink';
-import { rules as booksOfflineRules } from './books/offlineRules';
-import { ApolloLinkBlocking } from './apollo-link-blocking/ApolloLinkBlocking';
 import { getMainDefinition } from './utils';
 import { ApolloLinkDirective } from './apollo-link-directive/ApolloLinkDirective';
 import { libraryLink } from './library/LibraryLink';
-import { defaultData } from './firstTimeExperience/queries';
 import { dataSourcesLink } from './dataSources/DataSourcesLink';
-import { TypedTypePolicies, FirstTimeExperience, QueryUserIsLibraryProtectedDocument, User, Get_CollectionsDocument, QueryUserAuthStateDocument } from './generated/graphql';
+import { TypedTypePolicies, QueryUserIsLibraryProtectedDocument, User, Get_CollectionsDocument, QueryUserAuthStateDocument } from './generated/graphql';
 import { mergeDeepLeft } from 'ramda';
 import { ApolloLinkOfflineOperations } from './apollo-link-offline-operations';
 import { collectionLink } from './collections/CollectionLink';
@@ -42,12 +39,6 @@ const onErrorLink = onError(({ graphQLErrors, networkError, operation }) => {
 
   if (networkError) console.warn(`[Network error]`, networkError, operation);
 });
-
-export const offlineQueue = new ApolloLinkOfflineQueue({
-  rules: [booksOfflineRules]
-})
-
-const blockingLink = new ApolloLinkBlocking()
 
 const withApolloClientInContextLink = setContext((operation, { headers = {}, cache }: { headers?: any, cache: InMemoryCache }) => {
   const definition = getMainDefinition(operation.query)
@@ -105,7 +96,6 @@ const link: any = ApolloLink.from([
   onErrorLink,
   onUnAuthenticatedResponseLink,
   apolloLogger,
-  blockingLink,
 
   // custom offline links
   authLink,
@@ -118,7 +108,6 @@ const link: any = ApolloLink.from([
   // remove @offline operations
   offlineOperationsLink,
 
-  offlineQueue,
   retryLink,
   authContextLink,
   directiveLink,
@@ -237,7 +226,7 @@ const typePolicies: TypedTypePolicies = {
       collection: {
         read: (_, { toReference, args, }) => toReference({ __typename: 'Collection', id: args?.id, })
       },
-      firstTimeExperience: (existing: FirstTimeExperience = defaultData) => existing,
+      // firstTimeExperience: (existing: FirstTimeExperience = defaultData) => existing,
     }
   },
   Mutation: {
@@ -359,9 +348,6 @@ export const loadClient = async () => {
   await libraryLink.init(client)
   await booksLink.init(client)
   await dataSourcesLink.init(client)
-  blockingLink.reset(client)
-
-  offlineQueue.restoreQueue(client)
 
   console.warn('Apollo cache after boot', cache.extract())
 

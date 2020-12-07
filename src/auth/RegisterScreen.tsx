@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { makeStyles, createStyles, useTheme, Button, TextField } from '@material-ui/core';
+import { useTheme, Button, TextField } from '@material-ui/core';
 import { Alert } from '@material-ui/lab'
-import { useSignup } from './queries';
-import { ApolloError } from '@apollo/client';
 import { ERROR_EMAIL_TAKEN } from 'oboku-shared'
 import { OrDivider } from '../common/OrDivider';
 import { Header } from './Header';
 import { useHistory } from 'react-router-dom';
 import { ROUTES } from '../constants';
 import * as yup from 'yup'
+import { useSignUp } from './helpers'
+import { ServerError } from '../errors';
 
 const schema = yup.object().shape({
   email: yup.string().email().required(),
@@ -19,26 +19,26 @@ export const RegisterScreen = () => {
   const history = useHistory()
   const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || '')
   const [password, setPassword] = useState(process.env.REACT_APP_PASSWORD || '')
-  const [signup, { error }] = useSignup()
   const isValid = useIsValid(email, password)
   const theme = useTheme()
+  const [signUp, { error }] = useSignUp()
   let hasEmailTakenError = false
   let hasUnknownError = false
 
   if (error) {
     hasUnknownError = true
   }
-  if (error instanceof ApolloError) {
-    error.graphQLErrors.forEach(({ extensions }) => {
-      if ((extensions as any)?.code === 'BAD_USER_INPUT' && (extensions as any)?.exception.code === ERROR_EMAIL_TAKEN) {
+  if (error instanceof ServerError) {
+    error.errors.forEach(({ code }) => {
+      if (code === ERROR_EMAIL_TAKEN) {
         hasEmailTakenError = true
         hasUnknownError = false
       }
     })
   }
 
-  const onSubmit = () => {
-    signup(email, password)
+  const onSubmit = async () => {
+    signUp(email, password)
   }
 
   return (
@@ -117,12 +117,6 @@ export const RegisterScreen = () => {
     </div>
   );
 }
-
-const useStyles = makeStyles((theme) =>
-  createStyles({
-    
-  }),
-);
 
 const useIsValid = (email: string, password: string) => {
   const [isValid, setIsValid] = useState(false)

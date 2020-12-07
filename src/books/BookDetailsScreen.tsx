@@ -4,7 +4,7 @@ import { MoreVertRounded, EditRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
 import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, makeStyles, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
-import { useEditBook } from '../books/queries';
+import { useAddTagToBook, useRemoveTagToBook } from '../books/helpers';
 import { useEditLink } from '../links/queries';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
 import { Alert } from '@material-ui/lab';
@@ -12,8 +12,10 @@ import { Cover } from './Cover';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { ROUTES } from '../constants';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
-import { LinkType, QueryBookDocument, QueryTagsDocument } from '../generated/graphql';
-import { useLazyQuery, useQuery } from '@apollo/client';
+import { useRecoilValue } from 'recoil';
+import { normalizedBooksState, bookTagsState, bookLinksState } from './states';
+import { tagsAsArrayState } from '../tags/states';
+import { normalizedLinksState } from '../links/states';
 
 type ScreenParams = {
   id: string
@@ -27,11 +29,12 @@ export const BookDetailsScreen = () => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<undefined | string>(undefined)
   const { id } = useParams<ScreenParams>()
-  const { data } = useQuery(QueryBookDocument, { variables: { id } })
-  const book = data?.book
+  const book = useRecoilValue(normalizedBooksState)[id]
+  const tags = useRecoilValue(bookTagsState(id))
+  const links = useRecoilValue(bookLinksState(id))
   const collection = book?.collections
 
-  console.log('[BookDetailsScreen]', book)
+  console.log('[BookDetailsScreen]', { book, tags, links })
 
   return (
     <div style={{
@@ -41,7 +44,7 @@ export const BookDetailsScreen = () => {
       <TopBarNavigation title="Book details" showBack={true} />
       <div className={classes.headerContent}>
         <div className={classes.coverContainer} >
-          {book && (<Cover bookId={book.id} />)}
+          {book && (<Cover bookId={book._id} />)}
         </div>
       </div>
       <div className={classes.titleContainer}>
@@ -59,13 +62,13 @@ export const BookDetailsScreen = () => {
         paddingRight: theme.spacing(2),
       }}>
         {book?.downloadState === 'none' && (
-          <Button fullWidth variant="outlined" color="primary" onClick={() => downloadFile(book.id)}>Download</Button>
+          <Button fullWidth variant="outlined" color="primary" onClick={() => downloadFile(book._id)}>Download</Button>
         )}
         {book?.downloadState === 'downloading' && (
           <Button fullWidth variant="outlined" color="primary" disabled >Downloading...</Button>
         )}
         {book?.downloadState === 'downloaded' && (
-          <Button fullWidth variant="outlined" color="primary" onClick={() => history.push(ROUTES.READER.replace(':id', book.id))}>Read</Button>
+          <Button fullWidth variant="outlined" color="primary" onClick={() => history.push(ROUTES.READER.replace(':id', book._id))}>Read</Button>
         )}
       </Box>
       {!book?.lastMetadataUpdatedAt && (
@@ -88,7 +91,7 @@ export const BookDetailsScreen = () => {
         </Box>
         <Box display="flex" flexDirection="row" alignItems="center">
           <Typography variant="body1" >Language:&nbsp;</Typography>
-          <Typography variant="body2" >{book?.language}</Typography>
+          <Typography variant="body2" >{book?.lang}</Typography>
         </Box>
       </Box>
       <Box paddingX={2} marginY={3} marginBottom={2}><Divider light /></Box>
@@ -99,11 +102,11 @@ export const BookDetailsScreen = () => {
         >
           <ListItemText
             primary="Tags"
-            secondary={((book?.tags?.length || 0) > 0)
+            secondary={((tags?.length || 0) > 0)
               ? (
                 <>
-                  {book?.tags?.map(tag => (
-                    <Chip label={tag?.name} key={tag?.id} />
+                  {tags?.map(tag => (
+                    <Chip label={tag?.name} key={tag?._id} />
                   ))}
                 </>
               )
@@ -114,30 +117,30 @@ export const BookDetailsScreen = () => {
         </ListItem>
         <ListItem
           button
-          onClick={() => openManageBookCollectionsDialog(book?.id)}
+          onClick={() => openManageBookCollectionsDialog(book?._id)}
         >
-          <ListItemText
+          {/* <ListItemText
             primary="Collection"
             secondary={((collection?.length || 0) > 0)
               ? (
                 <>
                   {collection?.map(item => (
-                    <Chip label={item?.name} key={item?.id} />
+                    <Chip label={item?.name} key={item?._id} />
                   ))}
                 </>
               )
               : 'Not a part of any collection yet'
             }
-          />
+          /> */}
           <MoreVertRounded />
         </ListItem>
       </List>
       <List subheader={<ListSubheader>Links</ListSubheader>}>
-        {book?.links?.map(item => (
+        {links?.map(item => (
           <ListItem
-            key={item?.id}
+            key={item?._id}
             button
-            onClick={() => setIsLinkActionDrawerOpenWith(item?.id)}
+            onClick={() => setIsLinkActionDrawerOpenWith(item?._id)}
           >
             <ListItemText
               primary={item?.resourceId}
@@ -158,7 +161,7 @@ export const BookDetailsScreen = () => {
       <TagsDialog id={id} open={isTagsDialogOpened} onClose={() => setIsTagsDialogOpened(false)} />
       <LinkActionsDrawer
         openWith={isLinkActionDrawerOpenWith}
-        bookId={book?.id}
+        bookId={book?._id}
         onClose={() => setIsLinkActionDrawerOpenWith(undefined)}
       />
     </div>
@@ -194,7 +197,6 @@ const LinkActionsDrawer: FC<{
       </Drawer>
       <EditLinkDialog
         openWith={isEditDialogOpenWith}
-        bookId={bookId}
         onClose={() => setIsEditDialogOpenWith(undefined)}
       />
     </>
@@ -203,13 +205,11 @@ const LinkActionsDrawer: FC<{
 
 const EditLinkDialog: FC<{
   openWith: string | undefined,
-  bookId: string | undefined,
   onClose: () => void,
-}> = ({ onClose, openWith, bookId }) => {
+}> = ({ onClose, openWith }) => {
   const [location, setLocation] = useState('')
-  const [getBook, { data }] = useLazyQuery(QueryBookDocument)
-  const editLink = useEditLink()
-  const link = data?.book?.links?.find(item => item?.id === openWith)
+  const link = useRecoilValue(normalizedLinksState)[openWith || '-1']
+  const [editLink] = useEditLink()
 
   const onInnerClose = () => {
     setLocation('')
@@ -217,14 +217,8 @@ const EditLinkDialog: FC<{
   }
 
   useEffect(() => {
-    bookId && getBook({ variables: { id: bookId } })
-  }, [bookId, getBook])
-
-  useEffect(() => {
     setLocation(prev => link?.resourceId || prev)
   }, [link, openWith])
-
-  console.log('EditLinkDialog', data)
 
   return (
     <Dialog onClose={onInnerClose} open={!!openWith}>
@@ -247,7 +241,10 @@ const EditLinkDialog: FC<{
         <Button
           onClick={() => {
             onInnerClose()
-            openWith && bookId && editLink(bookId, openWith, location, LinkType.Uri)
+            link && editLink({
+              _id: link._id,
+              resourceId: location,
+            })
           }}
           color="primary"
         >
@@ -263,12 +260,12 @@ const TagsDialog: FC<{
   onClose: () => void,
   id: string
 }> = ({ open, onClose, id }) => {
-  const { data: getTagsData } = useQuery(QueryTagsDocument)
-  const { data: getBookData } = useQuery(QueryBookDocument, { variables: { id } })
-  const editBook = useEditBook()
-  const tags = getTagsData?.tags
-  const bookTags = getBookData?.book?.tags
-  const currentBookTagIds = bookTags?.map(tag => tag?.id || '-1') || []
+  const tags = useRecoilValue(tagsAsArrayState)
+  const book = useRecoilValue(normalizedBooksState)[id]
+  const [addTagToBook] = useAddTagToBook()
+  const removeTagToBook = useRemoveTagToBook()
+  const bookTags = book?.tags
+  const isSelected = (tagId: string) => !!bookTags?.find(itemId => itemId === tagId)
 
   return (
     <Dialog
@@ -280,13 +277,10 @@ const TagsDialog: FC<{
       {tags && (
         <TagsSelectionList
           tags={tags}
-          isSelected={tagId => !!bookTags?.find(item => item?.id === tagId)}
+          isSelected={isSelected}
           onItemClick={tagId => {
-            let newTagList = currentBookTagIds.filter(currentId => currentId !== tagId)
-            if (newTagList.length === currentBookTagIds.length) {
-              newTagList = [...currentBookTagIds, tagId || '-1']
-            }
-            editBook({ id, tags: newTagList })
+            if (!isSelected(tagId)) addTagToBook({ tagId, bookId: id })
+            else removeTagToBook({ tagId, bookId: id })
           }}
         />
       )}
@@ -300,8 +294,6 @@ const TagsDialog: FC<{
 }
 
 const useClasses = makeStyles(theme => {
-  type Props = {}
-
   return {
     coverContainer: {
       width: '80%',

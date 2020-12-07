@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { TopBarNavigation } from '../TopBarNavigation';
 import { makeStyles, ListItem, List, ListItemText, ListItemAvatar, createStyles, Theme, LinearProgress, ListSubheader, ListItemIcon } from '@material-ui/core';
-import { StorageRounded, MoreVert, SaveRounded } from '@material-ui/icons';
+import { StorageRounded, MoreVert } from '@material-ui/icons';
 import { useStorageUse } from './useStorageUse';
-import { useQuery } from '@apollo/client';
-import { QueryBooksDocument } from '../generated/graphql';
+import { useRxQuery } from '../databases';
 
 export const ManageStorageScreen = () => {
   const classes = useStyles();
-  const { data: booksData } = useQuery(QueryBooksDocument)
+  const books = useRxQuery(db => db.book.find())
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
-  const books = booksData?.books
 
   return (
     <>
@@ -37,7 +35,7 @@ export const ManageStorageScreen = () => {
             button
             onClick={() => { }}
           >
-            <ListItemText primary={book?.title} secondary="0 MB"/>
+            <ListItemText primary={book?.title} secondary="0 MB" />
             <ListItemIcon>
               <MoreVert />
             </ListItemIcon>

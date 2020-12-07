@@ -1,36 +1,36 @@
 import React, { FC } from 'react'
 import { CircularProgress, makeStyles, Typography, useTheme } from "@material-ui/core"
-import { CloudDownloadRounded, ImportContactsRounded, MenuBookRounded, MoreVert, Pause } from '@material-ui/icons';
-import { models } from '../client';
+import { CloudDownloadRounded, MenuBookRounded, MoreVert, Pause } from '@material-ui/icons';
 import { useWindowSize } from 'react-use';
 import { ROUTES } from '../constants';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { useHistory } from 'react-router-dom';
 import { Cover } from '../books/Cover';
-import { Book, QueryBookDocument, ReadingStateState } from '../generated/graphql';
-import { useQuery } from '@apollo/client';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { bookActionDrawerState } from './BookActionsDrawer';
+import { normalizedBooksState } from './states';
+import { ReadingStateState } from '../databases';
 
 export const BookListGridItem: FC<{
-  bookId: Book['id'],
+  bookId: string,
 }> = ({ bookId }) => {
-  const theme = useTheme()
-  const { data } = useQuery(QueryBookDocument, { variables: { id: bookId } }) || {}
+  const item = useRecoilValue(normalizedBooksState)[bookId]
   const history = useHistory();
   const windowSize = useWindowSize()
   const classes = useStyles({ windowSize });
   const downloadFile = useDownloadFile()
-  const item = data?.book
+  const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
 
   return (
     <div
-      key={item?.id}
+      key={item?._id}
       className={classes.itemContainer}
       onClick={() => {
         if (!item?.lastMetadataUpdatedAt) return
         if (item?.downloadState === 'none') {
-          item?.id && downloadFile(item?.id).catch(() => { })
+          item?._id && downloadFile(item?._id).catch(() => { })
         } else if (item?.downloadState === 'downloaded') {
-          history.push(ROUTES.READER.replace(':id', item?.id))
+          history.push(ROUTES.READER.replace(':id', item?._id))
         }
       }}
     >
@@ -42,7 +42,7 @@ export const BookListGridItem: FC<{
           minHeight: 0,
         }}
       >
-        {item && <Cover bookId={item?.id} />}
+        {item && <Cover bookId={item?._id} />}
         {item?.downloadState === 'downloading' && (
           <div style={{
             backgroundColor: 'white',
@@ -103,7 +103,7 @@ export const BookListGridItem: FC<{
         className={classes.itemBottomContainer}
         onClick={(e) => {
           e.stopPropagation()
-          item?.id && models.isBookActionDialogOpenedWithVar(models.isBookActionDialogOpenedWithVar(item.id))
+          item?._id && setBookActionDrawerState({ openedWith: item._id })
         }}
       >
         <div style={{ width: '100%', overflow: 'hidden' }}>

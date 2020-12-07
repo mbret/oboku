@@ -1,23 +1,21 @@
 import React, { useState, FC } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, makeStyles, createStyles, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
-import { useCreateTag } from '../tags/queries';
+import { useCreateTag } from '../tags/helpers';
 import { TagActionsDrawer } from '../tags/TagActionsDrawer';
 import { LocalOfferRounded, LockRounded } from '@material-ui/icons';
-import { useQuery } from '@apollo/client';
-import { QueryTagsDocument } from '../generated/graphql';
 import { LockActionDialog } from '../auth/LockActionDialog';
+import { useRxQuery } from '../databases';
 
 export const LibraryTagsScreen = () => {
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
   const classes = useStyles();
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] = useState<string | undefined>(undefined)
-  const { data } = useQuery(QueryTagsDocument)
-  const tags = data?.tags
-  const addTag = useCreateTag()
+  const tags = useRxQuery(db => db.tag.find())
+  const [addTag] = useCreateTag()
 
-  console.log('LibraryTagsScreen', tags, lockedAction)
+  console.log('LibraryTagsScreen', tags?.map(tag => (tag as any)), lockedAction)
 
   return (
     <div className={classes.container}>
@@ -37,9 +35,9 @@ export const LibraryTagsScreen = () => {
         {tags && tags.map(tag => (
           <ListItem
             button
-            key={tag?.id}
+            key={tag?.primary}
             onClick={() => {
-              const action = () => setIsTagActionsDrawerOpenedWith(tag?.id)
+              const action = () => setIsTagActionsDrawerOpenedWith(tag?.primary)
               if (tag?.isProtected) {
                 setLockedAction(_ => action)
               } else {
@@ -61,7 +59,7 @@ export const LibraryTagsScreen = () => {
       <AddTagDialog
         onConfirm={(name) => {
           if (name) {
-            addTag(name)
+            addTag({ name })
           }
         }}
         onClose={() => setIsAddTagDialogOpened(false)}

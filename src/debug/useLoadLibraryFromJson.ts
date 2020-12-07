@@ -1,6 +1,6 @@
 import { useApolloClient } from "@apollo/client"
 import { useCallback } from "react"
-import { useAddBook } from "../books/queries"
+import { useAddBook } from "../books/helpers"
 // import { useAddCollection } from "../collections/queries"
 import { useCreateTag } from "../tags/queries"
 
