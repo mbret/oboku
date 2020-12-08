@@ -1,7 +1,7 @@
 import {
   atom,
 } from 'recoil'
-import { SettingsDocType } from '../databases'
+import { SettingsDocType } from '../rxdb'
 
 export const settingsState = atom<SettingsDocType | undefined>({
   key: 'settingsState',

@@ -7,13 +7,15 @@ import { LibraryTagsScreen } from './LibraryTagsScreen'
 import { TopBarNavigation } from '../TopBarNavigation'
 import { ROUTES } from '../constants'
 import { LibraryCollectionScreen } from './LibraryCollectionScreen'
-import { useIsSyncing, useSyncLibrary } from './queries'
+import { useSyncLibrary } from './helpers'
+import { useRecoilValue } from 'recoil'
+import { syncState } from './states'
 
 export const LibraryTopTabNavigator = () => {
   const location = useLocation()
   const history = useHistory()
   const classes = useStyles();
-  const isSyncing = useIsSyncing()
+  const { isSyncing } = useRecoilValue(syncState)
   const syncLibrary = useSyncLibrary()
 
   return (
@@ -44,7 +46,7 @@ export const LibraryTopTabNavigator = () => {
         className={classes.tabsContainer}
         value={location.pathname}
         indicatorColor="primary"
-        style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none'}}
+        style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}
         onChange={(e, value) => {
           history.replace(value)
         }}

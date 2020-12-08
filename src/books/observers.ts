@@ -1,8 +1,11 @@
+import { BookDocType } from "oboku-shared"
 import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
-import { BookDocType, useDatabase } from "../databases"
-import { normalizedBooksState } from "./states"
+import { useAxiosClient } from "../axiosClient"
+import { API_URI } from "../constants"
+import { useDatabase } from "../rxdb"
+import { DownloadState, normalizedBooksState } from "./states"
 
 export const useBooksInitialState = () => {
   const db = useDatabase()
@@ -15,7 +18,7 @@ export const useBooksInitialState = () => {
         try {
           const books = await db.book.find().exec()
           const booksAsMap = books.reduce((map: UnwrapRecoilValue<typeof normalizedBooksState>, obj) => {
-            map[obj._id] = obj.toJSON()
+            map[obj._id] = ({ ...obj.toJSON(), downloadProgress: 0, downloadState: DownloadState.None })
             return map
           }, {})
           setBooks(booksAsMap)
@@ -42,14 +45,23 @@ export const useBooksObservers = () => {
         case 'INSERT': {
           return setBooks(state => ({
             ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData,
+            [changeEvent.documentData._id]: {
+              ...changeEvent.documentData,
+              downloadProgress: 0,
+              downloadState: DownloadState.None,
+            },
           }))
         }
         case 'UPDATE': {
-          return setBooks(state => ({
-            ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData,
-          }))
+          return setBooks(state => {
+            return {
+              ...state,
+              [changeEvent.documentData._id]: {
+                ...state[changeEvent.documentData._id]!,
+                ...changeEvent.documentData,
+              },
+            }
+          })
         }
         case 'DELETE': {
           return setBooks(({ [changeEvent.documentData._id]: deletedTag, ...rest }) => rest)
@@ -58,3 +70,4 @@ export const useBooksObservers = () => {
     })
   }, [db, setBooks])
 }
+

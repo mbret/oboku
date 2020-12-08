@@ -6,14 +6,12 @@ import {
 } from '@material-ui/core';
 import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecked, RadioButtonChecked, LockOpenRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
-import { useLibraryBooksSettings, useToggleLibraryBooksSettingsViewMode, useUpdateLibraryBooksSettings, LibraryBooksSettings } from './queries';
+import { useUpdateLibrary } from './helpers';
 import * as R from 'ramda';
 import { UploadNewBookDialog } from '../books/UploadNewBookDialog';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
-import { Book, QueryBooksDocument, QueryUserDocument } from '../generated/graphql';
-import { useQuery } from '@apollo/client';
 import { useMeasureElement } from '../utils';
-import { LibraryViewMode, useRxMutation, useRxQuery } from '../databases';
+import { LibraryDocType, LibraryViewMode, useRxMutation, useRxQuery } from '../rxdb';
 import { useAuth } from '../auth/helpers';
 import { libraryState } from './states';
 import { useRecoilState, useRecoilValue } from 'recoil';
@@ -25,19 +23,15 @@ export const LibraryBooksScreen = () => {
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const [isUploadNewBookDialogOpened, setIsUploadNewBookDialogOpened] = useState(false)
-  // const [toggleLibraryBooksSettingsViewMode] = useToggleLibraryBooksSettingsViewMode()
   const [setLibraryViewMode] = useRxMutation<{ viewMode: LibraryViewMode }>((db, { variables: { viewMode } }) => db.library.findOne().update({ $set: { viewMode } }))
   // const library = useRxQuery((db) => db.library.findOne())
   const library = useRecoilValue(libraryState)
-  const { data: libraryBooksSettingsData } = useLibraryBooksSettings()
-  const libraryFilters = libraryBooksSettingsData?.libraryBooksSettings
   const auth = useAuth()
-  const sorting = libraryFilters?.sorting
-  const sortedList = useSortedList(sorting)
+  const sortedList = useSortedList(library.sorting)
   // const viewMode = libraryBooksSettingsData?.libraryBooksSettings.viewMode
-  const tagsFilterApplied = (libraryFilters?.tags.length || 0) > 0
+  const tagsFilterApplied = (library?.tags.length || 0) > 0
   const numberOfFiltersApplied = [tagsFilterApplied].filter(i => i).length
-  const filteredTags = libraryFilters?.tags?.map(tag => tag?.id || '-1') || []
+  const filteredTags = library?.tags?.map(tag => tag || '-1') || []
   const visibleBooks = sortedList
   // const visibleBooks = filteredTags.length === 0
   //   ? sortedList
@@ -66,7 +60,7 @@ export const LibraryBooksScreen = () => {
 
   const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
 
-  console.log('[LibraryBooksScreen]', books, library)
+  console.log('[LibraryBooksScreen]', books)
 
   return (
     <div className={classes.container}>
@@ -93,7 +87,7 @@ export const LibraryBooksScreen = () => {
             onClick={() => setIsSortingDialogOpened(true)}
             startIcon={<SortRounded />}
           >
-            {sorting === 'activity' ? 'Recent activity' : sorting === 'alpha' ? 'A > Z' : 'Date added'}
+            {library.sorting === 'activity' ? 'Recent activity' : library.sorting === 'alpha' ? 'A > Z' : 'Date added'}
           </Button>
         </div>
         {library?.isLibraryUnlocked && (
@@ -153,7 +147,7 @@ export const LibraryBooksScreen = () => {
         {books.length > 0 && (
           <BookList
             viewMode={library?.viewMode}
-            sorting={sorting}
+            sorting={library.sorting}
             headerHeight={listHeaderHeight}
             data={books}
             style={{ height: '100%' }}
@@ -169,7 +163,7 @@ export const LibraryBooksScreen = () => {
   );
 }
 
-const useSortedList = (sorting: LibraryBooksSettings['sorting'] | undefined) => {
+const useSortedList = (sorting: LibraryDocType['sorting'] | undefined) => {
   const books = useRecoilValue(booksAsArrayState)
 
   switch (sorting) {
@@ -186,13 +180,13 @@ const useSortedList = (sorting: LibraryBooksSettings['sorting'] | undefined) => 
 }
 
 const SortByDialog: FC<{ onClose: () => void, open: boolean }> = ({ onClose, open }) => {
-  const { data } = useLibraryBooksSettings()
-  const [updateLibraryBooksSettings] = useUpdateLibraryBooksSettings()
-  const sorting = data?.libraryBooksSettings?.sorting || 'date'
+  const library = useRecoilValue(libraryState)
+  const [updateLibrary] = useUpdateLibrary()
+  const sorting = library.sorting || 'date'
 
   const onSortChange = (newSorting: typeof sorting) => {
     onClose()
-    updateLibraryBooksSettings({ sorting: newSorting })
+    updateLibrary({ sorting: newSorting })
   }
 
   return (

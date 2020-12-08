@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
-import { useDatabase } from "../databases"
-import { LinkDocType } from "../rxdb/databases"
+import { useDatabase } from "../rxdb"
+import { LinkDocType } from 'oboku-shared'
 import { normalizedLinksState } from "./states"
 
 export const useLinksInitialState = () => {

@@ -1,5 +1,5 @@
-import { hashContentPassword } from "oboku-shared"
-import { SettingsDocType, useRxMutation } from "../databases"
+import { hashContentPassword } from "oboku-shared/dist/crypto"
+import { SettingsDocType, useRxMutation } from "../rxdb"
 
 export const useUpdateSettings = () =>
   useRxMutation<Partial<SettingsDocType>>(

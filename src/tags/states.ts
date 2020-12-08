@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import { TagsDocType } from "../databases";
+import { TagsDocType } from "../rxdb";
 
 export const normalizedTagsState = atom<Record<string, TagsDocType | undefined>>({
   key: 'tagsState',

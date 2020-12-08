@@ -5,6 +5,7 @@ import placeholder from '../assets/cover-placeholder.png'
 import { useTheme } from '@material-ui/core'
 import { useRecoilValue } from 'recoil'
 import { normalizedBooksState } from './states'
+import { authState } from '../auth/authState'
 
 export const Cover: FC<{
   bookId: string,
@@ -13,45 +14,70 @@ export const Cover: FC<{
   withShadow?: boolean,
   rounded?: boolean,
 }> = ({ bookId, style, fullWidth = true, withShadow = false, rounded = true, ...rest }) => {
+  const auth = useRecoilValue(authState)
   const isMounted = useMountedState()
   const theme = useTheme()
   const book = useRecoilValue(normalizedBooksState)[bookId || '-1']
   const [hasError, setHasError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
+  console.log(auth)
   const coverSrc = book
-    ? `${API_URI}/cover/${book._id}?${book?.lastMetadataUpdatedAt || ''}`
+    ? `${API_URI}/cover/${auth?.userId}-${book._id}?${book?.lastMetadataUpdatedAt || ''}`
     : placeholder
+
+  const finalSrc = hasError ? placeholder : coverSrc
 
   useEffect(() => {
     setHasError(false)
-  }, [coverSrc, isMounted])
+  }, [coverSrc])
+
+  const finalStyle: React.CSSProperties = {
+    position: 'relative',
+    // maxHeight: '100%',
+    // maxWidth: '100%',
+    height: '100%',
+    ...withShadow && {
+      boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`,
+    },
+    ...fullWidth && {
+      width: '100%',
+    },
+    justifySelf: 'flex-end',
+    objectFit: 'cover',
+    ...rounded && {
+      borderRadius: 10,
+    },
+    ...style,
+  }
 
   return (
-    <img
-      alt="img"
-      src={hasError ? placeholder : coverSrc}
-      style={{
-        position: 'relative',
-        // maxHeight: '100%',
-        // maxWidth: '100%',
-        height: '100%',
-        ...withShadow && {
-          boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`,
-        },
-        ...fullWidth && {
-          width: '100%',
-        },
-        justifySelf: 'flex-end',
-        objectFit: 'cover',
-        ...rounded && {
-          borderRadius: 10,
-        },
-        ...style,
-      }}
-      onError={() => {
-        isMounted() && setHasError(true)
-      }}
-      {...rest}
-    />
+    <>
+      {isLoading && (
+        <img
+          alt="img"
+          src={placeholder}
+          style={finalStyle}
+          {...rest}
+        />
+      )}
+      <img
+        alt="img"
+        src={finalSrc}
+        style={{
+          ...finalStyle,
+          ...isLoading && {
+            visibility: 'hidden'
+          }
+        }}
+        onLoad={() => {
+          setIsLoading(false)
+        }}
+        onError={(e) => {
+          isMounted() && setHasError(true)
+        }}
+        {...rest}
+      />
+    </>
   )
 }

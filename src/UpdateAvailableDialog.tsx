@@ -1,20 +1,20 @@
-import { useQuery } from '@apollo/client'
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core'
 import React, { FC } from 'react'
-import { QueryAppHasUpdateAvailableDocument } from './generated/graphql'
-import { useOfflineApolloClient } from './useOfflineApolloClient'
+import { atom, useRecoilValue } from 'recoil'
+
+export const updateAvailableState = atom({
+  key: 'updateAvailableState',
+  default: false,
+})
 
 export const UpdateAvailableDialog: FC<{
   serviceWorker?: ServiceWorker
 }> = ({ serviceWorker }) => {
-  const client = useOfflineApolloClient()
-  const { data } = useQuery(QueryAppHasUpdateAvailableDocument)
-
-  console.log(`[UpdateAvailableDialog]`, data)
+  const hasUpdate = useRecoilValue(updateAvailableState)
 
   return (
     <Dialog
-      open={!!data?.app?.hasUpdateAvailable}
+      open={hasUpdate}
     >
       <DialogTitle >An update is available</DialogTitle>
       <DialogContent>

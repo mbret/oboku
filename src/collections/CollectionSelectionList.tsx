@@ -1,11 +1,10 @@
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import { CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
-import { Maybe } from 'graphql/jsutils/Maybe';
 import React, { FC } from 'react';
-import { Collection } from '../generated/graphql';
+import { Collection } from './states';
 
 export const CollectionSelectionList: FC<{
-  collections: Maybe<Collection>[],
+  collections: Collection[],
   onItemClick: (id: string) => void,
   isSelected: (id: string) => boolean,
 }> = ({ collections, onItemClick, isSelected }) => {
@@ -14,14 +13,14 @@ export const CollectionSelectionList: FC<{
     <List>
       {collections && collections.map((item) => (
         <ListItem
-          key={item?.id}
+          key={item?._id}
           button
           onClick={() => {
-            item?.id && onItemClick(item.id)
+            item?._id && onItemClick(item._id)
           }}
         >
           <ListItemText primary={item?.name} />
-          {item?.id && isSelected(item?.id)
+          {item?._id && isSelected(item?._id)
             ? <CheckCircleRounded />
             : <RadioButtonUncheckedOutlined />}
         </ListItem>

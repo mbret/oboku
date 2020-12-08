@@ -1,6 +1,4 @@
-import { ApolloProvider } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
-import { getClient, useClient } from './client';
 import { RoutineProcess } from './RoutineProcess';
 import { AppNavigator } from './AppNavigator';
 import { ThemeProvider } from '@material-ui/core';
@@ -13,15 +11,17 @@ import { TourProvider } from './app-tour/TourProvider';
 import { ManageBookCollectionsDialog } from './books/ManageBookCollectionsDialog';
 import { GoogleApiProvider } from './google';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import { UpdateAvailableDialog } from './UpdateAvailableDialog';
-import { useDatabase } from './databases';
+import { UpdateAvailableDialog, updateAvailableState } from './UpdateAvailableDialog';
+import { useDatabase } from './rxdb';
 import { useObservers } from './useObservers';
 import { useLoadInitialState } from './useLoadInitialState';
+import { useRecoilState } from 'recoil';
+import { AxiosProvider } from './axiosClient';
 
 export function App() {
   const isInitialStateReady = useLoadInitialState()
-  const client = useClient()
   const db = useDatabase()
+  const [, setUpdateAvailable] = useRecoilState(updateAvailableState)
   const [newServiceWorker, setNewServiceWorker] = useState<ServiceWorker | undefined>(undefined)
 
   useObservers()
@@ -35,42 +35,33 @@ export function App() {
       onUpdate: reg => console.warn('onUpdate', reg),
       onWaitingServiceWorkerFound: async (reg) => {
         reg.waiting && setNewServiceWorker(reg.waiting)
-        const client = await getClient()
-        console.warn('onWaitingServiceWorkerFound', reg)
-        try {
-          client.modify('App', {
-            id: client.identify({ __typename: 'App', id: '_' }),
-            fields: {
-              hasUpdateAvailable: _ => true
-            }
-          })
-        } catch (e) {
-          console.error(e)
-        }
+        setUpdateAvailable(true)
       },
     });
-  }, [])
+  }, [setUpdateAvailable])
 
   return (
     <CookiesProvider>
       <GoogleApiProvider>
-        <ThemeProvider theme={theme}>
-          {(!isInitialStateReady || !client)
-            ? null
-            : (
-              <ApolloProvider client={client}>
-                <TourProvider>
-                  <AppNavigator />
-                  <AppTourWelcome />
-                  <UnlockLibraryDialog />
-                  <ManageBookCollectionsDialog />
-                  <RoutineProcess />
-                </TourProvider>
-                <UpdateAvailableDialog serviceWorker={newServiceWorker} />
-              </ApolloProvider>
-            )}
-          <BlockingBackdrop />
-        </ThemeProvider>
+        <AxiosProvider >
+          <ThemeProvider theme={theme}>
+            {(!isInitialStateReady)
+              ? null
+              : (
+                <>
+                  <TourProvider>
+                    <AppNavigator />
+                    <AppTourWelcome />
+                    <UnlockLibraryDialog />
+                    <ManageBookCollectionsDialog />
+                    <RoutineProcess />
+                  </TourProvider>
+                  <UpdateAvailableDialog serviceWorker={newServiceWorker} />
+                </>
+              )}
+            <BlockingBackdrop />
+          </ThemeProvider>
+        </AxiosProvider>
       </GoogleApiProvider>
     </CookiesProvider>
   );

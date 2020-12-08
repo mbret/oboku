@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
-import { useDatabase } from "../databases"
+import { useDatabase } from "../rxdb"
 import { DataSourceDocType } from "../rxdb/dataSource"
 import { normalizedDataSourcesState } from "./states"
 
@@ -14,7 +14,7 @@ export const useDataSourcesInitialState = () => {
     if (db) {
       (async () => {
         try {
-          const dataSources = await db.dataSource.find().exec()
+          const dataSources = await db.datasource.find().exec()
           const dataSourcesAsMap = dataSources.reduce((map: UnwrapRecoilValue<typeof normalizedDataSourcesState>, obj) => {
             map[obj._id] = obj.toJSON()
             return map
@@ -37,7 +37,7 @@ export const useDataSourcesObservers = () => {
   const [, setDataSources] = useRecoilState(normalizedDataSourcesState)
 
   useEffect(() => {
-    db?.dataSource.$.subscribe((changeEvent: RxChangeEvent<DataSourceDocType>) => {
+    db?.datasource.$.subscribe((changeEvent: RxChangeEvent<DataSourceDocType>) => {
       console.warn('CHANGE EVENT', changeEvent)
       switch (changeEvent.operation) {
         case 'INSERT': {

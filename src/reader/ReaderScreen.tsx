@@ -12,9 +12,11 @@ import { Contents, Location } from "epubjs";
 import { useUpdateBook } from '../books/helpers';
 import { AppTourReader } from '../firstTimeExperience/AppTourReader';
 import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from './utils';
-import { useMutation, useQuery } from '@apollo/client';
 import { PromiseReturnType } from '../types';
 import { PageNumber } from './PageNumber';
+import { useRecoilValue } from 'recoil';
+import { normalizedBooksState } from '../books/states';
+import { ReadingStateState } from 'oboku-shared'
 
 type ReaderInstance = {
   nextPage: () => void,
@@ -35,8 +37,7 @@ export const ReaderScreen: FC<{}> = () => {
   const file = useFile(bookId)
   const [isTopMenuShown, setIsTopMenuShown] = useState(false)
   const [isBottomMenuShown, setIsBottomMenuShown] = useState(false)
-  const { data: bookData } = useQuery(QueryBookDocument, { variables: { id: bookId } })
-  const book = bookData?.book
+  const book = useRecoilValue(normalizedBooksState)[bookId || '-1']
   const windowSize = useWindowSize()
   const [editBook] = useUpdateBook()
   const verticalTappingZoneHeight = useVerticalTappingZoneHeight()
@@ -331,22 +332,20 @@ const useVerticalCentererRendererHook = (rendition: Rendition | undefined) => {
 }
 
 const useUpdateBookState = (bookId: string, progress: number | undefined, location: any | undefined) => {
-  const [editBook] = useMutation(MutationEditBookDocument)
-  const { data: bookData } = useQuery(QueryBookDocument, { variables: { id: bookId } })
-  const readingStateCurrentBookmarkLocation = bookData?.book?.readingStateCurrentBookmarkLocation
+  const [editBook] = useUpdateBook()
+  const book = useRecoilValue(normalizedBooksState)[bookId || '-1']
+  const readingStateCurrentBookmarkLocation = book?.readingStateCurrentBookmarkLocation
 
   useDebounce(() => {
     console.log(readingStateCurrentBookmarkLocation)
     if (location && location?.start?.cfi !== readingStateCurrentBookmarkLocation) {
       editBook({
-        variables: {
-          id: bookId,
-          readingStateCurrentBookmarkLocation: location?.start?.cfi,
-          readingStateCurrentState: ReadingStateState.Reading,
-          ...progress && {
-            // progress
-            readingStateCurrentBookmarkProgressPercent: progress,
-          }
+        _id: bookId,
+        readingStateCurrentBookmarkLocation: location?.start?.cfi,
+        readingStateCurrentState: ReadingStateState.Reading,
+        ...progress && {
+          // progress
+          readingStateCurrentBookmarkProgressPercent: progress,
         }
       })
     }

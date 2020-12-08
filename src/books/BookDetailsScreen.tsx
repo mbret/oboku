@@ -5,17 +5,17 @@ import { TopBarNavigation } from '../TopBarNavigation';
 import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, makeStyles, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
 import { useAddTagToBook, useRemoveTagToBook } from '../books/helpers';
-import { useEditLink } from '../links/queries';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
 import { Alert } from '@material-ui/lab';
 import { Cover } from './Cover';
 import { useDownloadFile } from '../download/useDownloadFile';
 import { ROUTES } from '../constants';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { normalizedBooksState, bookTagsState, bookLinksState } from './states';
 import { tagsAsArrayState } from '../tags/states';
 import { normalizedLinksState } from '../links/states';
+import { useEditLink } from '../links/helpers';
 
 type ScreenParams = {
   id: string
@@ -32,6 +32,7 @@ export const BookDetailsScreen = () => {
   const book = useRecoilValue(normalizedBooksState)[id]
   const tags = useRecoilValue(bookTagsState(id))
   const links = useRecoilValue(bookLinksState(id))
+  const setOpenManageBookCollectionsDialog = useSetRecoilState(openManageBookCollectionsDialog)
   const collection = book?.collections
 
   console.log('[BookDetailsScreen]', { book, tags, links })
@@ -61,7 +62,7 @@ export const BookDetailsScreen = () => {
         paddingLeft: theme.spacing(2),
         paddingRight: theme.spacing(2),
       }}>
-        {book?.downloadState === 'none' && (
+        {/* {book?.downloadState === 'none' && (
           <Button fullWidth variant="outlined" color="primary" onClick={() => downloadFile(book._id)}>Download</Button>
         )}
         {book?.downloadState === 'downloading' && (
@@ -69,7 +70,7 @@ export const BookDetailsScreen = () => {
         )}
         {book?.downloadState === 'downloaded' && (
           <Button fullWidth variant="outlined" color="primary" onClick={() => history.push(ROUTES.READER.replace(':id', book._id))}>Read</Button>
-        )}
+        )} */}
       </Box>
       {!book?.lastMetadataUpdatedAt && (
         <Alert severity="info" >We are still retrieving metadata information...</Alert>
@@ -117,7 +118,7 @@ export const BookDetailsScreen = () => {
         </ListItem>
         <ListItem
           button
-          onClick={() => openManageBookCollectionsDialog(book?._id)}
+          onClick={() => setOpenManageBookCollectionsDialog(book?._id)}
         >
           {/* <ListItemText
             primary="Collection"
@@ -209,7 +210,7 @@ const EditLinkDialog: FC<{
 }> = ({ onClose, openWith }) => {
   const [location, setLocation] = useState('')
   const link = useRecoilValue(normalizedLinksState)[openWith || '-1']
-  const [editLink] = useEditLink()
+  const editLink = useEditLink()
 
   const onInnerClose = () => {
     setLocation('')

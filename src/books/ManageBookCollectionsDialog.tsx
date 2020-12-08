@@ -1,27 +1,27 @@
-import { makeVar, useMutation, useReactiveVar } from '@apollo/client';
 import { Button, Dialog, DialogActions, DialogTitle } from '@material-ui/core';
 import React, { FC } from 'react';
-import { useRecoilValue } from 'recoil';
+import { atom, useRecoilState, useRecoilValue } from 'recoil';
 import { CollectionSelectionList } from '../collections/CollectionSelectionList';
 import { collectionsAsArrayState } from '../collections/states';
+import { useAddCollectionToBook, useRemoveCollectionFromBook } from './helpers';
 import { normalizedBooksState } from './states';
 
-export const openManageBookCollectionsDialog = makeVar<string | undefined>(undefined)
+export const openManageBookCollectionsDialog = atom<string | undefined>({ key: 'openManageBookCollectionsDialog', default: undefined })
 
 export const ManageBookCollectionsDialog: FC<{}> = () => {
-  const id = useReactiveVar(openManageBookCollectionsDialog)
+  const [id, setOpenManageBookCollectionsDialog] = useRecoilState(openManageBookCollectionsDialog)
   const open = !!id
   const collections = useRecoilValue(collectionsAsArrayState)
   const book = useRecoilValue(normalizedBooksState)[id || '-1']
-  const [addToBook] = useMutation(MutationAddCollectionsToBookDocument)
-  const [removeFromBook] = useMutation(MutationRemoveCollectionsToBookDocument)
+  const [addToBook] = useAddCollectionToBook()
+  const [removeFromBook] = useRemoveCollectionFromBook()
   const bookCollection = book?.collections
 
-  const isSelected = (id: string) => !!bookCollection?.find(item => item?.id === id)
+  const isSelected = (id: string) => !!bookCollection?.find(item => item === id)
 
   return (
     <Dialog
-      onClose={() => openManageBookCollectionsDialog(undefined)}
+      onClose={() => setOpenManageBookCollectionsDialog(undefined)}
       open={open}
     >
       <DialogTitle>Collection selection</DialogTitle>
@@ -30,14 +30,14 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
         isSelected={isSelected}
         onItemClick={collectionId => {
           if (isSelected(collectionId)) {
-            id && removeFromBook({ variables: { id, collections: [collectionId] } })
-          } else{
-            id && addToBook({ variables: { id, collections: [collectionId] } })
+            id && removeFromBook({ bookId: id, collectionId })
+          } else {
+            id && addToBook({ bookId: id, collectionId })
           }
         }}
       />}
       <DialogActions>
-        <Button onClick={() => openManageBookCollectionsDialog(undefined)} color="primary" autoFocus>
+        <Button onClick={() => setOpenManageBookCollectionsDialog(undefined)} color="primary" autoFocus>
           Close
         </Button>
       </DialogActions>

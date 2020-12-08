@@ -62,6 +62,11 @@ export const applyHooks = (db: Database) => {
           },
         }
       }))
+
+      /**
+       * Remove any link attached to that book
+       */
+    await db.link.safeFind({ selector: { book: data._id } }).remove()
   }, true)
 
   db.book.postInsert(async function (data) {
@@ -70,8 +75,8 @@ export const applyHooks = (db: Database) => {
      */
     await db.link
       .safeUpdate({
-        $pullAll: {
-          books: [data._id]
+        $set: {
+          book: data._id
         }
       }, collection => collection.safeFind({
         selector: {

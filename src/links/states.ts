@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import { LinkDocType } from "../databases";
+import { LinkDocType } from 'oboku-shared'
 
 export const normalizedLinksState = atom<Record<string, LinkDocType | undefined>>({
   key: 'linksState',

@@ -1,26 +1,24 @@
-import { useMutation, useQuery } from '@apollo/client'
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography, useTheme } from '@material-ui/core'
 import { ArrowBackIosRounded, ArrowForwardIosRounded, CheckCircleRounded, LocalOfferRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
 import { Alert } from '@material-ui/lab'
 import React, { FC, useState } from 'react'
 import { useRecoilValue } from 'recoil'
 import { useFolders } from '../google'
+import { DataSourceType, GoogleDriveDataSourceData } from '../rxdb/dataSource'
 import { tagsAsArrayState } from '../tags/states'
 import { TagsSelectionList } from '../tags/TagsSelectionList'
-import { generateUniqueID } from '../utils'
+import { useCreateDataSource } from './helpers'
 
 export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedTags, setSelectedTags] = useState<{ [key: string]: true | undefined }>({})
   const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
-  const [addDataSource, { data: addDataSourceData }] = useMutation(MutationAddDataSourceDocument, { onCompleted: onClose })
+  const [addDataSource] = useCreateDataSource()
   const [selectedFolder, setSelectedFolder] = useState<{ name: string, id: string } | undefined>(undefined)
   const [folderChain, setFolderChain] = useState<{ name: string, id: string }[]>([{ name: '', id: 'root' }])
   const currentFolder = folderChain[folderChain.length - 1]
   const tags = useRecoilValue(tagsAsArrayState)
   const theme = useTheme()
   const data = useFolders({ parent: currentFolder.id })
-
-  console.log('[GoogleDriveDataSource]', addDataSourceData)
 
   return (
     <Dialog onClose={onClose} open fullScreen>
@@ -105,11 +103,9 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
                 driveId: selectedFolder.id
               }
               addDataSource({
-                variables: {
-                  id: generateUniqueID(),
-                  type: DataSourceType.Drive,
-                  data: JSON.stringify(customData),
-                }
+                type: DataSourceType.DRIVE,
+                data: JSON.stringify(customData),
+                lastSyncedAt: null
               })
             }
           }}

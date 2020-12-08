@@ -3,7 +3,7 @@ import { TopBarNavigation } from '../TopBarNavigation';
 import { makeStyles, ListItem, List, ListItemText, ListItemAvatar, createStyles, Theme, LinearProgress, ListSubheader, ListItemIcon } from '@material-ui/core';
 import { StorageRounded, MoreVert } from '@material-ui/icons';
 import { useStorageUse } from './useStorageUse';
-import { useRxQuery } from '../databases';
+import { useRxQuery } from '../rxdb';
 
 export const ManageStorageScreen = () => {
   const classes = useStyles();

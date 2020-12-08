@@ -1,7 +1,9 @@
 import { Drawer, ListItem, Divider, List, ListItemIcon, ListItemText, DialogContent, DialogTitle, Dialog, TextField, DialogActions, Button } from "@material-ui/core";
 import React, { useEffect, useState, FC } from "react";
-import { useLazyQueryGetCollection, useRemoveCollection, useEditCollection } from "./queries";
 import { Edit, DeleteForeverRounded } from "@material-ui/icons";
+import { useRemoveCollection, useUpdateCollection } from "./helpers";
+import { useRecoilValue } from "recoil";
+import { normalizedCollectionsState } from "./states";
 
 export const CollectionActionsDrawer: FC<{
   open: boolean,
@@ -9,8 +11,7 @@ export const CollectionActionsDrawer: FC<{
   onClose: () => void,
 }> = ({ open, id, onClose }) => {
   const [isEditCollectionDialogOpenedWithId, setIsEditCollectionDialogOpenedWithId] = useState<string | undefined>(undefined)
-  const [getCollection, { data }] = useLazyQueryGetCollection()
-  const removeCollection = useRemoveCollection()
+  const [removeCollection] = useRemoveCollection()
 
   const handleClose = () => {
     onClose()
@@ -18,21 +19,13 @@ export const CollectionActionsDrawer: FC<{
 
   const onRemove = (id: string | undefined) => {
     handleClose()
-    id && removeCollection(id)
+    id && removeCollection({ id })
   }
 
   const onEdit = (id: string | undefined) => {
     handleClose()
     id && setIsEditCollectionDialogOpenedWithId(id)
   }
-
-  useEffect(() => {
-    id && getCollection({
-      variables: { id },
-    })
-  }, [id, getCollection])
-
-  console.log('[ActionDialog]', data)
 
   return (
     <>
@@ -68,16 +61,14 @@ export const CollectionActionsDrawer: FC<{
   );
 }
 
-
 const EditCollectionDialog: FC<{
   open: boolean,
   id: string | undefined,
   onClose: () => void,
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState('')
-  const [getTag, { data }] = useLazyQueryGetCollection()
-  const editCollection = useEditCollection()
-  const { name: collectionName } = data?.collection || {}
+  const collection = useRecoilValue(normalizedCollectionsState)[id || '-1']
+  const [editCollection] = useUpdateCollection()
 
   const onInnerClose = () => {
     setName('')
@@ -86,23 +77,17 @@ const EditCollectionDialog: FC<{
 
   const onConfirm = (id: string, name: string) => {
     if (name) {
-      editCollection(id, name)
+      editCollection({ _id: id, name })
     }
   }
 
   useEffect(() => {
-    id && getTag({ variables: { id } })
-  }, [id, getTag])
-
-  useEffect(() => {
-    setName(prev => collectionName || prev)
-  }, [collectionName, id])
-
-  console.log('EditCollectionDialog', id, collectionName, data)
+    setName(prev => collection?.name || prev)
+  }, [collection?.name, id])
 
   return (
     <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>Collection: {collectionName}</DialogTitle>
+      <DialogTitle>Collection: {collection?.name}</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus

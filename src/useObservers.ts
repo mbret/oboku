@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from "react"
 import { RxChangeEvent, RxDocument, RxReplicationState } from "rxdb"
 import { useAuth, useIsAuthenticated, useSignOut } from "./auth/helpers"
-import { API_URI } from "./constants"
-import { AuthDocType, AuthDocument, LibraryDocType, SettingsDocType, useDatabase } from "./databases"
+import { API_SYNC_URL, API_SYNC_POLL1_URL, API_SYNC_POLL_2_URL } from "./constants"
+import { AuthDocType, AuthDocument, LibraryDocType, SettingsDocType, useDatabase } from "./rxdb"
 import PouchDB from 'pouchdb'
-import { useSetRecoilState } from "recoil"
-import { libraryState } from "./library/states"
+import { useRecoilState, useSetRecoilState } from "recoil"
+import { libraryState, syncState } from "./library/states"
 import { authState } from "./auth/authState"
 import { settingsState } from "./settings/states"
 import { useBooksObservers } from "./books/observers"
@@ -70,18 +70,21 @@ export const useObservers = () => {
   const { token } = useAuth() || {}
   const isAuthenticated = useIsAuthenticated()
   const [signOut] = useSignOut()
+  const [{ syncRefresh }, setSyncState] = useRecoilState(syncState)
 
   useBooksObservers()
   useTagsObservers()
   useLinksObservers()
   useCollectionsObservers()
   useDataSourcesObservers()
-  
+
   useEffect(() => {
     let syncStates: (RxReplicationState | ReturnType<NonNullable<typeof database>['sync']>)[]
 
     const attachEventsToSubscription = (state: typeof syncStates[number]) => {
-      // state?.active$.subscribe(active => console.warn(`sync active(${active})`))
+      // state?.active$.subscribe((active: boolean) => {
+      //   setSyncState(old => ({ ...old, isSyncing: active }))
+      // })
       // state?.alive$.subscribe(data => console.warn(`sync alive(${data})`))
       // state?.change$.subscribe(data => console.warn(`sync change`, data))
       // state?.denied$.subscribe(data => console.warn(`sync denied`, data))
@@ -95,8 +98,8 @@ export const useObservers = () => {
       // state?.docs$.subscribe(data => console.warn(`sync docs`, data))
     }
 
-    const syncOptions = () => ({
-      remote: new PouchDB(`${API_URI}/sync`, {
+    const syncOptions = (name: string) => ({
+      remote: new PouchDB(['tag', 'book', 'link'].includes(name) ? API_SYNC_POLL1_URL : API_SYNC_POLL_2_URL, {
         fetch: (url, opts) => {
           (opts?.headers as unknown as Map<string, string>).set('Authorization', `Bearer ${token}`)
           return PouchDB.fetch(url, opts)
@@ -114,7 +117,7 @@ export const useObservers = () => {
 
     if (isAuthenticated && database) {
       syncStates = [
-        database?.sync({ syncOptions, collectionNames: ['tag', 'book', 'link', 'settings', 'collection', 'dataSource'] })
+        database?.sync({ syncOptions, collectionNames: ['tag', 'book', 'link', 'settings', 'c_ollection', 'datasource'] })
       ]
       syncStates?.forEach(attachEventsToSubscription)
     }
@@ -122,7 +125,7 @@ export const useObservers = () => {
     return () => {
       syncStates?.forEach(state => state.cancel())
     }
-  }, [database, signOut, isAuthenticated, token])
+  }, [database, signOut, isAuthenticated, token, syncRefresh, setSyncState])
 
   useEffect(() => {
     const obs$ = database?.auth.$.subscribe(authReducer)

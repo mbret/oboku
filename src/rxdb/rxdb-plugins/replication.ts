@@ -12,7 +12,7 @@ type ReplicationSyncOptions = Omit<SyncOptions, 'remote'> & {
 
 type SyncFn<Collections> = (options: {
   collectionNames?: (keyof Collections)[]
-  syncOptions: () => ReplicationSyncOptions
+  syncOptions: (collectionName: string) => ReplicationSyncOptions
 }) => Replication
 
 declare module 'rxdb' {
@@ -103,10 +103,13 @@ class Replication {
   _states: any
   _subscribers: any
   _aliveSubject: any
-  _errorSubject: any
+  protected completed = false
+  protected _activeSubject = new BehaviorSubject(false);
+  protected _completeSubject = new Subject<boolean>();
+  protected _errorSubject = new Subject<Error>()
   _pReplicationStates: any
   private filterCreationInterval: number | undefined
-  syncOptions: () => ReplicationSyncOptions
+  syncOptions: (collectionName: string) => ReplicationSyncOptions
 
   constructor(
     public database: any,
@@ -125,8 +128,12 @@ class Replication {
     this._states = [];
     this._subscribers = [];
     this._aliveSubject = new BehaviorSubject(false);
-    this._errorSubject = new Subject();
     this._pReplicationStates = Promise.resolve([]);
+
+    this._errorSubject.asObservable().subscribe(e => {
+      this._completeSubject.next(true)
+      this._completeSubject.complete()
+    })
 
     this.connect()
   }
@@ -135,11 +142,20 @@ class Replication {
     return this._aliveSubject.asObservable();
   }
 
+  get active$() {
+    return this._activeSubject.asObservable();
+  }
+
   get error$() {
     return this._errorSubject.asObservable();
   }
 
+  get complete$() {
+    return this._completeSubject.asObservable();
+  }
+
   private async connect() {
+
     await this.cancel();
 
     const tryToCreateFilter = async () => {
@@ -157,6 +173,7 @@ class Replication {
       await tryToCreateFilter()
       await this._sync();
     } catch (e) {
+      console.warn('error during replication', e)
       this._errorSubject.next(e);
     }
   }
@@ -183,8 +200,9 @@ class Replication {
   protected async _sync() {
     const collections = this.collections;
     const collectionNames = Object.keys(collections);
+
     const promises = collectionNames.map((name) => {
-      const options = this.syncOptions()
+      const options = this.syncOptions(name)
       return collections[name].sync({
         remote: options.remote,
         direction: options.direction,
@@ -196,10 +214,26 @@ class Replication {
       });
     });
 
+
     const allAlive = promises.map(() => false);
+    const allActive = promises.map(() => false);
+    const allComplete = promises.map(() => false);
 
     const attachEventsToSubscription = (state: RxReplicationState, i: number) => {
-      this._subscribers.push(state?.active$.subscribe(active => console.warn(`sync ${state.collection.name} active(${active})`)))
+      this._subscribers.push(state?.active$.subscribe(val => {
+        console.warn(`sync ${state.collection.name} active(${val})`)
+        const repActive = allActive[i];
+
+        if (repActive === val) return;
+
+        allActive[i] = val;
+
+        const active = allActive.reduce((acc, x) => acc || x, true);
+
+        if (active === this._activeSubject.value) return;
+        this._activeSubject.next(active);
+      }))
+
       this._subscribers.push(state.alive$.subscribe((val) => {
         console.warn(`sync ${state.collection.name} alive(${val})`)
         const repAlive = allAlive[i];
@@ -213,13 +247,32 @@ class Replication {
         this.alive = alive;
         this._aliveSubject.next(alive);
       }))
+      
       this._subscribers.push(state?.change$.subscribe(data => console.warn(`sync ${state.collection.name} change`, data)))
+
       this._subscribers.push(state?.denied$.subscribe(data => console.warn(`sync ${state.collection.name} denied`, data)))
+
       this._subscribers.push(state?.error$.subscribe((error) => {
         console.warn(`sync ${state.collection.name} error`, error)
         this._errorSubject.next(error)
       }))
-      this._subscribers.push(state?.complete$.subscribe(data => console.warn(`sync ${state.collection.name} complete`, data)))
+
+      this._subscribers.push(state?.complete$.subscribe(val => {
+        console.warn(`sync complete ${state.collection.name} `, val)
+        const repComplete = allComplete[i];
+
+        if (repComplete === val) return;
+
+        allComplete[i] = val;
+
+        const complete = allComplete.reduce((acc, x) => acc || x, true);
+
+        if (complete) {
+          this._completeSubject.next(complete)
+          this._completeSubject.complete()
+        }
+      }))
+
       this._subscribers.push(state?.docs$.subscribe(data => console.warn(`sync ${state.collection.name} docs`, data)))
     }
 
@@ -234,7 +287,7 @@ class Replication {
   }
 
   protected async createFilter() {
-    const remote = this.syncOptions().remote
+    const remote = this.syncOptions('filter').remote
     // https://pouchdb.com/2015/04/05/filtered-replication.html
     const field = this._field;
     const db = typeof remote === 'string' ? new PouchDB(remote) : remote;

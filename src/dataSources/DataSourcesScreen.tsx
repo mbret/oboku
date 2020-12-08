@@ -8,10 +8,12 @@ import { DataSourcesAddDrawer } from './DataSourcesAddDrawer';
 import { GoogleDriveDataSource } from './GoogleDriveDataSource';
 import { ReactComponent as GoogleDriveAsset } from '../assets/google-drive.svg';
 import { DataSourcesActionsDrawer } from './DataSourcesActionsDrawer';
+import { DataSource, dataSourcesAsArrayState } from './states';
+import { useRecoilValue } from 'recoil';
 
-const extractGoogleDriveData = (item: Maybe<DataSource>) => {
+const extractGoogleDriveData = (item: DataSource) => {
   if (item?.data) {
-    return JSON.parse(item?.data) as { name?: string, id?: string }
+    return JSON.parse(item.data) as { name?: string, id?: string }
   }
   return undefined
 }
@@ -21,9 +23,7 @@ export const DataSourcesScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isGoogleDriveOpened, setIsGoogleDriveOpened] = useState(false)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<string | undefined>(undefined)
-  const { data: dataSourcesData } = useQuery(QueryDataSourcesDocument, { fetchPolicy: 'cache-only' })
-
-  console.log(`[DataSourcesScreen]`, dataSourcesData)
+  const dataSources = useRecoilValue(dataSourcesAsArrayState)
 
   return (
     <>
@@ -48,8 +48,8 @@ export const DataSourcesScreen = () => {
         </Button>
         </Toolbar>
         <List>
-          {dataSourcesData?.dataSources?.map(item => (
-            <ListItem key={item?.id} button onClick={() => setIsActionsDrawerOpenWith(item?.id)}>
+          {dataSources?.map(item => (
+            <ListItem key={item._id} button onClick={() => setIsActionsDrawerOpenWith(item._id)}>
               <ListItemIcon>
                 <SvgIcon >
                   <GoogleDriveAsset />

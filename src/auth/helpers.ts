@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { useRecoilValue } from "recoil"
 import { API_URI } from "../constants"
-import { AuthDocType, useRxMutation, useRxQuery } from "../databases"
+import { AuthDocType, useRxMutation, useRxQuery } from "../rxdb"
 import { createServerError } from "../errors"
 import { useLock } from "../lockState"
 import { useReCreateDb, useDatabase } from "../rxdb/databases"
@@ -71,13 +71,13 @@ export const useSignIn = () => {
       if (!response.ok) {
         throw await createServerError(response)
       }
-      const token = (await response.json()).token
+      const { token, userId } = (await response.json())
       const previousAuth = await db?.auth.findOne().exec()
       let newDb = db
       if (previousAuth?.email !== email) {
         newDb = await reCreateDb()
       }
-      await newDb?.auth.safeUpdate({ $set: { token, email } }, auth => auth.findOne())
+      await newDb?.auth.safeUpdate({ $set: { token, email, userId } }, auth => auth.findOne())
       unlock('authorize')
     } catch (e) {
       setError(e)
@@ -108,9 +108,9 @@ export const useSignUp = () => {
       if (!response.ok) {
         throw await createServerError(response)
       }
-      const token = (await response.json()).token
+      const { token, userId } = (await response.json())
       const newDb = await reCreateDb()
-      await newDb?.auth.safeUpdate({ $set: { token, email } }, auth => auth.findOne())
+      await newDb?.auth.safeUpdate({ $set: { token, email, userId } }, auth => auth.findOne())
       unlock('authorize')
     } catch (e) {
       setError(e)

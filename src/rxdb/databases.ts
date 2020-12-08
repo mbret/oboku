@@ -8,27 +8,12 @@ import { CollectionCollection, collectionCollectionMethods, collectionSchema } f
 import { applyHooks } from './middleware';
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from './types';
 import { dataSourceSchema, dataSourceCollectionMethods, DataSourceCollection } from './dataSource';
+import type { LibrarySorting } from '../library/states';
+import { BookDocType, LinkDocType } from 'oboku-shared';
 
 addRxPlugin(require('pouchdb-adapter-idb'));
 addRxPlugin(require('pouchdb-adapter-http'))
 addRxPlugin(RxdbReplicationPlugin)
-
-export enum ReadingStateState {
-  Finished = 'FINISHED',
-  NotStarted = 'NOT_STARTED',
-  Reading = 'READING'
-}
-
-export enum DownloadState {
-  None = 'none',
-  Downloaded = 'downloaded',
-  Downloading = 'downloading'
-}
-
-export enum LinkType {
-  Uri = 'URI',
-  Drive = 'DRIVE'
-}
 
 export enum LibraryViewMode {
   GRID = 'grid',
@@ -39,13 +24,16 @@ export type AuthDocType = {
   id: 'auth',
   token: null | string,
   email: null | string,
+  userId: string | null,
   hasDoneWelcomeTour: boolean,
   hasDoneReaderTour: boolean,
 }
 
 export type LibraryDocType = {
-  viewMode: LibraryViewMode
+  viewMode: LibraryViewMode,
+  sorting: LibrarySorting
   isLibraryUnlocked: boolean,
+  tags: string[]
 }
 
 export type SettingsDocType = {
@@ -58,34 +46,6 @@ export type TagsDocType = {
   name: null | string,
   isProtected: boolean,
   books: string[],
-}
-
-export type LinkDocType = {
-  _id: string,
-  type: LinkType
-  resourceId: string
-  data: string | null,
-  books: string[]
-}
-
-export type BookDocType = {
-  _id: string,
-  createdAt: number,
-  creator: string | null,
-  date: number,
-  lang: string | null,
-  lastMetadataUpdatedAt: number | null,
-  publisher: string | null,
-  readingStateCurrentBookmarkLocation: string | null,
-  readingStateCurrentBookmarkProgressPercent: number,
-  readingStateCurrentBookmarkProgressUpdatedAt: number | null,
-  readingStateCurrentState: ReadingStateState,
-  rights: string | null,
-  subject: string | null,
-  tags: string[],
-  links: string[],
-  collections: string[],
-  title: string | null,
 }
 
 export type DocTypes = AuthDocType | TagsDocType | BookDocType | LinkDocType | LibraryDocType | SettingsDocType
@@ -137,14 +97,14 @@ type TagsCollectionMethods = {
   ) => Promise<AuthDocument>
 }
 type BookCollectionMethods = {
-  post: (json: Omit<BookDocType, '_id'>) => Promise<BookDocument>,
+  post: (json: Omit<BookDocType, '_id' | 'rx_model' | '_rev'>) => Promise<BookDocument>,
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<BookDocType>,
     cb: (collection: BookCollection) => RxQuery
   ) => Promise<BookDocument>
 }
 type LinkCollectionMethods = {
-  post: (json: Omit<LinkDocType, '_id'>) => Promise<LinkDocument>,
+  post: (json: Omit<LinkDocType, '_id' | 'rx_model' | '_rev'>) => Promise<LinkDocument>,
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<LinkDocType>,
     cb: (collection: LinkCollection) => RxQuery
@@ -166,8 +126,8 @@ export type MyDatabaseCollections = {
   link: LinkCollection,
   library: LibraryCollection,
   settings: SettingsCollection,
-  collection: CollectionCollection,
-  dataSource: DataSourceCollection,
+  c_ollection: CollectionCollection,
+  datasource: DataSourceCollection,
 }
 
 const authSchema: RxJsonSchema<AuthDocType> = {
@@ -178,6 +138,7 @@ const authSchema: RxJsonSchema<AuthDocType> = {
     id: { type: 'string', primary: true, final: true },
     token: { type: ['string', 'null'], final: false, },
     email: { type: ['string', 'null'], final: false, },
+    userId: { type: ['string', 'null'], },
     hasDoneReaderTour: { type: 'boolean' },
     hasDoneWelcomeTour: { type: 'boolean' },
   }
@@ -189,6 +150,8 @@ const librarySchema: RxJsonSchema<LibraryDocType> = {
   properties: {
     isLibraryUnlocked: { type: 'boolean' },
     viewMode: { type: 'string' },
+    sorting: { type: 'string' },
+    tags: { type: 'array', items: { type: 'string' } },
   }
 }
 
@@ -213,7 +176,7 @@ const tagsSchema: RxJsonSchema<Omit<TagsDocType, '_id'>> = withReplicationSchema
   required: ['isProtected', 'name', 'books']
 })
 
-const linkSchema: RxJsonSchema<Omit<LinkDocType, '_id'>> = withReplicationSchema('link', {
+const linkSchema: RxJsonSchema<Omit<Required<LinkDocType>, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('link', {
   title: 'link',
   version: 0,
   type: 'object',
@@ -221,12 +184,13 @@ const linkSchema: RxJsonSchema<Omit<LinkDocType, '_id'>> = withReplicationSchema
     data: { type: ['string', 'null'] },
     resourceId: { type: 'string' },
     type: { type: 'string' },
-    books: { ref: 'book', type: 'array', items: { type: 'string' } }
+    book: { type: ['string'] },
+    contentLength: { type: 'number' }
   },
-  required: ['data', 'resourceId', 'type', 'books']
+  required: ['data', 'resourceId', 'type']
 })
 
-const bookSchema: RxJsonSchema<Omit<BookDocType, '_id'>> = withReplicationSchema('book', {
+const bookSchema: RxJsonSchema<Omit<BookDocType, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('book', {
   title: 'books',
   version: 0,
   type: 'object',
@@ -360,11 +324,11 @@ const createCollections = async (db: Database) => {
       schema: settingsSchema,
       statics: settingsCollectionMethods
     },
-    collection: {
+    c_ollection: {
       schema: collectionSchema,
       statics: collectionCollectionMethods,
     },
-    dataSource: {
+    datasource: {
       schema: dataSourceSchema,
       statics: dataSourceCollectionMethods,
     }
@@ -381,6 +345,7 @@ const initializeCollectionsData = async (db: Database) => {
         email: null,
         hasDoneReaderTour: false,
         hasDoneWelcomeTour: false,
+        userId: null,
       })
     }
 
@@ -396,7 +361,9 @@ const initializeCollectionsData = async (db: Database) => {
     if (!libraryDoc) {
       await db.library.insert({
         viewMode: LibraryViewMode.GRID,
+        sorting: 'date',
         isLibraryUnlocked: false,
+        tags: []
       })
     }
   } catch (e) {
@@ -449,3 +416,32 @@ export const useDatabase = () => {
 
   return _db
 }
+
+
+// export const useSync = () => {
+//   database
+//     .sync({
+//       collectionNames: ['link', 'book'],
+//       syncOptions: () => ({
+//         remote: new PouchDB(API_SYNC_URL, {
+//           fetch: (url, opts) => {
+//             (opts?.headers as unknown as Map<string, string>).set('Authorization', client.getAuthorizationHeader())
+//             return PouchDB.fetch(url, opts)
+//           }
+//         }),
+//         direction: {
+//           push: true,
+//         },
+//         options: {
+//           retry: false,
+//           live: false,
+//           timeout: 5000,
+//         }
+//       })
+//     })
+//     .complete$
+//     .pipe(first())
+//     .subscribe(completed => {
+//       completed && refreshMetadata(book._id).catch(_ => { })
+//     })
+// }

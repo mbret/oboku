@@ -1,11 +1,11 @@
 import { List, ListItem, ListItemAvatar, ListItemText, Typography, useTheme } from '@material-ui/core'
 import { CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
 import React, { FC } from 'react'
-import { Book, Maybe } from '../generated/graphql'
 import { Cover } from './Cover'
+import { Book } from './states'
 
 export const BooksSelectionList: FC<{
-  books: Maybe<Book>[],
+  books: Book[],
   onItemClick: (id: string) => void,
   isSelected: (id: string) => boolean,
 }> = ({ books, onItemClick, isSelected }) => {
@@ -16,22 +16,22 @@ export const BooksSelectionList: FC<{
     <List>
       {books?.map((item) => (
         <ListItem
-          key={item?.id}
+          key={item?._id}
           button
           onClick={() => {
-            item?.id && onItemClick(item.id)
+            item?._id && onItemClick(item._id)
           }}
         >
           <ListItemAvatar style={{ marginRight: theme.spacing(1) }}>
             <>
-              {item && <Cover rounded={false} bookId={item.id} style={{
+              {item && <Cover rounded={false} bookId={item._id} style={{
                 width: coverWidth,
                 height: coverWidth / theme.custom.coverAverageRatio,
               }} />}
             </>
           </ListItemAvatar>
           <ListItemText primary={<Typography noWrap>{item?.title || 'Unknown'}</Typography>} secondary="asdasd" />
-          {item?.id && isSelected(item?.id)
+          {item?._id && isSelected(item?._id)
             ? <CheckCircleRounded />
             : <RadioButtonUncheckedOutlined />}
         </ListItem>

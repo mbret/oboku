@@ -9,7 +9,7 @@ import { Cover } from '../books/Cover';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { bookActionDrawerState } from './BookActionsDrawer';
 import { normalizedBooksState } from './states';
-import { ReadingStateState } from '../databases';
+import { ReadingStateState } from 'oboku-shared'
 
 export const BookListGridItem: FC<{
   bookId: string,
@@ -28,7 +28,7 @@ export const BookListGridItem: FC<{
       onClick={() => {
         if (!item?.lastMetadataUpdatedAt) return
         if (item?.downloadState === 'none') {
-          item?._id && downloadFile(item?._id).catch(() => { })
+          item?._id && downloadFile(item?._id)
         } else if (item?.downloadState === 'downloaded') {
           history.push(ROUTES.READER.replace(':id', item?._id))
         }

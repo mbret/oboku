@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
-import { BookDocType, useDatabase } from "../databases"
+import { useDatabase } from "../rxdb"
 import { TagsDocType } from "../rxdb/databases"
 import { normalizedTagsState } from "./states"
 

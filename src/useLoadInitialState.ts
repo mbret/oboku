@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useBooksInitialState } from "./books/observers";
-import { useDatabase } from "./databases"
+import { useDatabase } from "./rxdb"
 import { useTagsInitialState } from "./tags/observers";
 import { useLinksInitialState } from "./links/observers";
 import { useCollectionsInitialState } from "./collections/observers";

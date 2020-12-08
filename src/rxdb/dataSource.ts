@@ -1,4 +1,4 @@
-import { RxDocument, RxJsonSchema, RxQuery, RxDataSource } from "rxdb"
+import { RxDocument, RxJsonSchema, RxQuery, RxCollection } from "rxdb"
 import { withReplicationSchema } from "./rxdb-plugins/replication"
 import { SafeUpdateMongoUpdateSyntax } from "./types"
 
@@ -6,11 +6,16 @@ export enum DataSourceType {
   DRIVE = 'DRIVE'
 }
 
+export type GoogleDriveDataSourceData = {
+  applyTags: string[]
+  driveId: string
+}
+
 export type DataSourceDocType = {
   _id: string,
   type: DataSourceType
-  lastSyncedAt: number
-  data: String
+  lastSyncedAt: number | null
+  data: string
 }
 
 export type DataSourceDocMethods = {}
@@ -25,9 +30,9 @@ type DataSourceCollectionMethods = {
   ) => Promise<DataSourceDocument>,
 }
 
-export type DataSourceCollection = RxDataSource<DataSourceDocType, {}, DataSourceCollectionMethods>
+export type DataSourceCollection = RxCollection<DataSourceDocType, {}, DataSourceCollectionMethods>
 
-export const dataSourceSchema: RxJsonSchema<Omit<DataSourceDocType, '_id'>> = withReplicationSchema('dataSource', {
+export const dataSourceSchema: RxJsonSchema<Omit<DataSourceDocType, '_id'>> = withReplicationSchema('datasource', {
   title: 'dataSourceSchema',
   version: 0,
   type: 'object',

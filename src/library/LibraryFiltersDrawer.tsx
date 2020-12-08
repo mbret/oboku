@@ -2,10 +2,11 @@ import React, { useState, FC } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { DialogTitle, makeStyles, createStyles, Drawer, List, ListItem, ListItemText, ListItemIcon, DialogActions, Button } from '@material-ui/core';
 import { ArrowForwardIosRounded } from '@material-ui/icons';
-import { useLibraryBooksSettings, useToggleTag } from './queries';
+import { useToggleTag } from './helpers';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
 import { useRecoilValue } from 'recoil';
 import { tagsAsArrayState } from '../tags/states';
+import { libraryState } from './states';
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean,
@@ -13,12 +14,9 @@ export const LibraryFiltersDrawer: FC<{
 }> = ({ open, onClose }) => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const tags = useRecoilValue(tagsAsArrayState)
-  const { data: libraryFiltersData, error, called } = useLibraryBooksSettings()
-  const libraryBooksSettings = libraryFiltersData?.libraryBooksSettings
-  const selectedTags = libraryBooksSettings?.tags
+  const library = useRecoilValue(libraryState)
+  const selectedTags = library.tags
   const toggleTag = useToggleTag()
-
-  console.log('LibraryFiltersDrawer', libraryFiltersData, called, error)
 
   return (
     <>
@@ -53,7 +51,7 @@ export const LibraryFiltersDrawer: FC<{
         {tags && (
           <TagsSelectionList
             tags={tags}
-            isSelected={tagId => !!libraryFiltersData?.libraryBooksSettings?.tags?.find(item => item?.id === tagId)}
+            isSelected={tagId => !!library.tags?.find(item => item === tagId)}
             onItemClick={tagId => {
               toggleTag(tagId)
             }}

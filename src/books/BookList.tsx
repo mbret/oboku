@@ -2,14 +2,14 @@ import React, { useCallback, FC, useMemo } from 'react'
 import { makeStyles, useTheme } from "@material-ui/core"
 import { useWindowSize } from 'react-use';
 import { ItemList } from '../lists/ItemList';
-import { LibraryBooksSettings } from '../library/queries';
 import { BookListGridItem } from './BookListGridItem';
+import { LibrarySorting } from '../library/states';
 
 export const BookList: FC<{
   viewMode?: 'grid' | 'list',
   renderHeader?: () => React.ReactNode,
   headerHeight?: number,
-  sorting?: LibraryBooksSettings['sorting'],
+  sorting?: LibrarySorting,
   isHorizontal?: boolean,
   style?: React.CSSProperties,
   itemWidth?: number,

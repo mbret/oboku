@@ -5,7 +5,7 @@ import { useCreateTag } from '../tags/helpers';
 import { TagActionsDrawer } from '../tags/TagActionsDrawer';
 import { LocalOfferRounded, LockRounded } from '@material-ui/icons';
 import { LockActionDialog } from '../auth/LockActionDialog';
-import { useRxQuery } from '../databases';
+import { useRxQuery } from '../rxdb';
 
 export const LibraryTagsScreen = () => {
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)

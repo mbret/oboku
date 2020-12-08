@@ -9,7 +9,6 @@ import { ROUTES } from '../constants'
 import { useHistory } from 'react-router-dom'
 import { CollectionActionsDrawer } from '../collections/CollectionActionsDrawer'
 import { Cover } from '../books/Cover'
-import { useMutation } from '@apollo/client'
 import { useCreateCollection } from '../collections/helpers'
 import { useRecoilValue } from 'recoil'
 import { collectionsAsArrayState } from '../collections/states'
@@ -22,8 +21,6 @@ export const LibraryCollectionScreen = () => {
   const collections = useRecoilValue(collectionsAsArrayState)
   const theme = useTheme()
   const cardHeight = 200
-
-  console.log('[LibraryCollectionScreen]', collectionData)
 
   return (
     <div className={classes.container}>
@@ -43,10 +40,10 @@ export const LibraryCollectionScreen = () => {
         {collections && collections.map(item => (
           <ListItem
             button
-            key={item?.id}
+            key={item?._id}
             className={classes.listItem}
             onClick={() => {
-              item?.id && history.push(ROUTES.COLLECTION_DETAILS.replace(':id', item.id))
+              item?._id && history.push(ROUTES.COLLECTION_DETAILS.replace(':id', item._id))
             }}
           >
             <div className={classes.itemCard} style={{ height: cardHeight }}>
@@ -65,8 +62,8 @@ export const LibraryCollectionScreen = () => {
 
                   return (
                     <Cover
-                      key={bookItem.id}
-                      bookId={bookItem.id}
+                      key={bookItem}
+                      bookId={bookItem}
                       withShadow
                       style={{
                         height: coverHeight,
@@ -91,7 +88,7 @@ export const LibraryCollectionScreen = () => {
               }}
               onClick={(e) => {
                 e.stopPropagation()
-                setIsActionDialogOpenedWith(item?.id)
+                setIsActionDialogOpenedWith(item?._id)
               }}
             >
               <ListItemText primary={item?.name} secondary={`${item?.books?.length || 0} book(s)`} />
@@ -125,7 +122,7 @@ const AddCollectionDialog: FC<{
   onClose: () => void,
 }> = ({ onClose, open }) => {
   const [name, setName] = useState('')
-  const [addCollection] = useMutation(Add_CollectionDocument)
+  const [addCollection] = useCreateCollection()
 
   const onInnerClose = () => {
     setName('')
@@ -154,7 +151,7 @@ const AddCollectionDialog: FC<{
           onClick={() => {
             onInnerClose()
             if (name) {
-              addCollection({ variables: createNewCollection({ name }) })
+              addCollection({ name, books: [] })
             }
           }}
           color="primary"

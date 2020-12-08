@@ -1,7 +1,7 @@
 import { List, ListItem, ListItemAvatar, ListItemText } from '@material-ui/core'
 import { CheckCircleRounded, LockRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
 import React, { FC } from 'react'
-import { TagsDocType } from '../databases'
+import { TagsDocType } from '../rxdb'
 
 export const TagsSelectionList: FC<{
   tags: TagsDocType[],

@@ -1,7 +1,7 @@
 import {
   atom,
 } from 'recoil'
-import { AuthDocType } from '../databases'
+import { AuthDocType } from '../rxdb'
 
 export const authState = atom<AuthDocType | undefined>({
   key: 'authState',

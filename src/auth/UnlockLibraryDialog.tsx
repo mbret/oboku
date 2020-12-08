@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core'
-import { hashContentPassword } from 'oboku-shared';
+import { hashContentPassword } from 'oboku-shared/dist/crypto';
 import React, { FC, useEffect, useState } from 'react'
 import { atom, useRecoilState, useRecoilValue } from 'recoil';
 import { useUpdateLibrary } from '../library/helpers';

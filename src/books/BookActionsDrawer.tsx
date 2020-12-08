@@ -7,22 +7,23 @@ import { SyncRounded, DeleteForeverRounded, ListAltRounded, LibraryBooksRounded 
 import { useHistory } from 'react-router-dom';
 // import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { ROUTES } from '../constants';
-import { useUpdateBook } from './helpers';
+import { useRefreshBookMetadata } from './helpers';
 import { useRemoveBook } from './helpers';
 import { Drawer, Divider, ListItemIcon } from '@material-ui/core';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
-import { atom, useRecoilState, useRecoilValue } from 'recoil';
+import { atom, useRecoilCallback, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { normalizedBooksState } from './states';
 
 export const bookActionDrawerState = atom<{ openedWith: undefined | string }>({ key: 'bookActionDrawerState', default: { openedWith: undefined } })
 
 export const BookActionsDrawer = () => {
+  const setOpenManageBookCollectionsDialog = useSetRecoilState(openManageBookCollectionsDialog)
   const [{ openedWith: bookId }, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const history = useHistory()
   const book = useRecoilValue(normalizedBooksState)[bookId || '-1']
   // const removeDownloadFile = useRemoveDownloadFile()
   const [removeBook] = useRemoveBook()
-  const [editBook] = useUpdateBook()
+  const refreshBookMetadata = useRefreshBookMetadata()
 
   const handleClose = () => {
     setBookActionDrawerState({ openedWith: undefined })
@@ -52,7 +53,7 @@ export const BookActionsDrawer = () => {
             <ListItem button
               onClick={() => {
                 handleClose()
-                editBook({ _id: book._id, lastMetadataUpdatedAt: null })
+                refreshBookMetadata(book._id)
               }}
             >
               <ListItemIcon>
@@ -63,7 +64,7 @@ export const BookActionsDrawer = () => {
             <ListItem button
               onClick={() => {
                 handleClose()
-                openManageBookCollectionsDialog(bookId)
+                setOpenManageBookCollectionsDialog(bookId)
               }}
             >
               <ListItemIcon>
