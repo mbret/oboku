@@ -1,16 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { atom, useRecoilState, useRecoilValue } from 'recoil';
-import { addRxPlugin, createRxDatabase, removeRxDatabase, RxCollection, RxDatabase, RxDocument, RxJsonSchema, RxQuery, RxQueryOptions } from 'rxdb'
-import { Subscription } from 'rxjs';
+import { useEffect, useState } from 'react';
+import { atom, useRecoilState } from 'recoil';
+import { addRxPlugin, createRxDatabase, RxCollection, RxDocument, RxJsonSchema, RxQuery } from 'rxdb'
 import { RxdbReplicationPlugin, withReplicationSchema } from './rxdb-plugins/replication';
 import { MongoUpdateSyntax, PromiseReturnType } from '../types';
 import { CollectionCollection, collectionCollectionMethods, collectionSchema } from './collection';
 import { applyHooks } from './middleware';
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from './types';
 import { dataSourceSchema, dataSourceCollectionMethods, DataSourceCollection } from './dataSource';
-import type { LibrarySorting } from '../library/states';
 import { BookDocType, InsertableBookDocType, LinkDocType, TagsDocType } from 'oboku-shared';
-import { RxDocumentMutation } from './hooks';
+import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
+import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
+
+// theses plugins does not get automatically added when building for production
+addRxPlugin(RxDBQueryBuilderPlugin)
+addRxPlugin(RxDBValidatePlugin)
 
 addRxPlugin(require('pouchdb-adapter-idb'));
 addRxPlugin(require('pouchdb-adapter-http'))
