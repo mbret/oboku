@@ -10,10 +10,12 @@ import { dataSourceSchema, dataSourceCollectionMethods, DataSourceCollection } f
 import { BookDocType, InsertableBookDocType, LinkDocType, TagsDocType } from 'oboku-shared';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
-
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
+        
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBQueryBuilderPlugin)
 addRxPlugin(RxDBValidatePlugin)
+addRxPlugin(RxDBUpdatePlugin);
 
 addRxPlugin(require('pouchdb-adapter-idb'));
 addRxPlugin(require('pouchdb-adapter-http'))
