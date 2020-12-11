@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import { DataSourceDocType } from '../rxdb/dataSource'
+import { DataSourceDocType } from 'oboku-shared'
 
 export type DataSource = DataSourceDocType
 

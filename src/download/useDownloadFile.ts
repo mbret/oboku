@@ -1,70 +1,67 @@
 import localforage from 'localforage';
-import { API_URI } from '../constants';
-import axios from 'axios'
 import { useCallback } from 'react';
 import throttle from 'lodash.throttle';
+import { UnwrapRecoilValue, useSetRecoilState } from 'recoil';
+import { DownloadState, normalizedBookDownloadsState } from './states';
+import { useAxiosClient } from '../axiosClient';
 
 export const useDownloadFile = () => {
-  return (id: string) => {
-    console.error('todo')
+  const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
+  const client = useAxiosClient()
 
-  }
-  // const client = useApolloClient()
-  // const writeBookDownloadState = useWriteBookDownloadState()
+  const setDownloadData = useCallback((bookId: string, data: UnwrapRecoilValue<typeof normalizedBookDownloadsState>[number]) => {
+    setBookDownloadsState(prev => ({
+      ...prev,
+      [bookId]: {
+        ...prev[bookId],
+        ...data,
+      }
+    }))
+  }, [setBookDownloadsState])
 
-  // return useCallback(async (bookId: string) => {
-  //   const throttleSetProgress = throttle((progress: number) => {
-  //     writeBookDownloadState(bookId, existing => ({
-  //       book: {
-  //         ...existing.book,
-  //         downloadProgress: progress,
-  //       }
-  //     }))
-  //   }, 500)
+  return useCallback(async (bookId: string) => {
+    const throttleSetProgress = throttle((progress: number) => {
+      setDownloadData(bookId, {
+        downloadProgress: progress
+      })
+    }, 500)
 
-  //   try {
-  //     const authData = client.readQuery({ query: QueryUserAuthStateDocument })
+    try {
+      setDownloadData(bookId, {
+        downloadProgress: 0,
+          downloadState: DownloadState.Downloading,
+      })
 
-  //     writeBookDownloadState(bookId, existing => ({
-  //       book: {
-  //         ...existing.book,
-  //         downloadProgress: 0,
-  //         downloadState: DownloadState.Downloading,
-  //       }
-  //     }))
+      try {
+        if (await localforage.getItem(`book-download-${bookId}`)) {
+          setDownloadData(bookId, {
+            downloadProgress: 100,
+              downloadState: DownloadState.Downloaded,
+          })
+          return
+        }
+        const response = await client.downloadBook(bookId, {
+          onDownloadProgress: (event: ProgressEvent) => {
+            if ((event.target as XMLHttpRequest).getAllResponseHeaders().indexOf('oboku-content-length')) {
+              const contentLength = parseInt((event.target as XMLHttpRequest).getResponseHeader('oboku-content-length') || '1')
+              throttleSetProgress(Math.round((event.loaded / contentLength) * 100))
+            }
+          }
+        })
+        await localforage.setItem(`book-download-${bookId}`, response.data)
 
-  //     try {
-  //       const response = await axios({
-  //         url: `${API_URI}/download/${bookId}`,
-  //         headers: {
-  //           Authorization: `Bearer ${authData?.user?.token}`
-  //         },
-  //         responseType: 'blob',
-  //         onDownloadProgress: (event: ProgressEvent) => {
-  //           const contentLength = parseInt((event.target as XMLHttpRequest).getResponseHeader('oboku-content-length') || '1')
-  //           throttleSetProgress(Math.round((event.loaded / contentLength) * 100))
-  //         }
-  //       })
-  //       await localforage.setItem(`book-download-${bookId}`, response.data)
-
-  //       writeBookDownloadState(bookId, existing => ({
-  //         book: {
-  //           ...existing.book,
-  //           downloadProgress: 100,
-  //           downloadState: DownloadState.Downloaded,
-  //         }
-  //       }))
-  //     } catch (e) {
-  //       writeBookDownloadState(bookId, existing => ({
-  //         book: {
-  //           ...existing.book,
-  //           downloadState: DownloadState.None,
-  //         }
-  //       }))
-  //       throw e
-  //     }
-  //   } catch (e) {
-  //     console.error(e)
-  //   }
-  // }, [client, writeBookDownloadState])
+        setDownloadData(bookId, {
+          downloadProgress: 100,
+            downloadState: DownloadState.Downloaded,
+        })
+      } catch (e) {
+        setDownloadData(bookId, {
+            downloadState: DownloadState.None,
+        })
+        throw e
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }, [client, setDownloadData])
 }

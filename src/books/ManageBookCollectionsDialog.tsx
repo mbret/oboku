@@ -30,9 +30,9 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
         isSelected={isSelected}
         onItemClick={collectionId => {
           if (isSelected(collectionId)) {
-            id && removeFromBook({ bookId: id, collectionId })
+            id && removeFromBook({ _id: id, collectionId })
           } else {
-            id && addToBook({ bookId: id, collectionId })
+            id && addToBook({ _id: id, collectionId })
           }
         }}
       />}

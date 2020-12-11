@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
-import { CollectionDocType } from "../rxdb/collection"
+import { CollectionDocType } from 'oboku-shared'
 import { normalizedCollectionsState } from "./states"
 
 export const useCollectionsInitialState = () => {
@@ -14,7 +14,7 @@ export const useCollectionsInitialState = () => {
     if (db) {
       (async () => {
         try {
-          const collections = await db.c_ollection.find().exec()
+          const collections = await db.obokucollection.find().exec()
           const collectionsAsMap = collections.reduce((map: UnwrapRecoilValue<typeof normalizedCollectionsState>, obj) => {
             map[obj._id] = obj.toJSON()
             return map
@@ -37,7 +37,7 @@ export const useCollectionsObservers = () => {
   const [, setCollections] = useRecoilState(normalizedCollectionsState)
 
   useEffect(() => {
-    db?.c_ollection.$.subscribe((changeEvent: RxChangeEvent<CollectionDocType>) => {
+    db?.obokucollection.$.subscribe((changeEvent: RxChangeEvent<CollectionDocType>) => {
       console.warn('CHANGE EVENT', changeEvent)
       switch (changeEvent.operation) {
         case 'INSERT': {

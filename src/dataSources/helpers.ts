@@ -1,14 +1,57 @@
-import { DataSourceDocType } from "../rxdb/dataSource"
+import { first } from "rxjs/operators"
+import { useAxiosClient } from "../axiosClient"
+import { useDatabase } from "../rxdb"
+import { DataSourceDocType } from 'oboku-shared'
 import { useRxMutation } from "../rxdb/hooks"
 
-export const useCreateDataSource = () =>
-  useRxMutation<Omit<DataSourceDocType, '_id'>>((db, { variables }) => db?.datasource.post({ ...variables }))
+export const useSynchronizeDataSource = () => {
+  const client = useAxiosClient()
+  const database = useDatabase()
+  const [updateDataSource] = useUpdateDataSource()
+
+  return async (_id: string) => {
+    await updateDataSource({ lastSyncedAt: null, _id })
+    database?.sync({
+      collectionNames: ['datasource'],
+      syncOptions: () => ({
+        remote: client.getPouchDbRemoteInstance(),
+        direction: {
+          push: true,
+        },
+        options: {
+          retry: false,
+          live: false,
+          timeout: 5000,
+        }
+      })
+    })
+      .complete$
+      .pipe(first())
+      .subscribe(completed => {
+        completed && client.syncDataSource(_id).catch(console.error)
+      })
+  }
+}
+
+export const useCreateDataSource = () => {
+  type Payload = Omit<DataSourceDocType, '_id' | 'rx_model' | '_rev'>
+  const synchronize = useSynchronizeDataSource()
+  const [createDataSource] = useRxMutation((db, variables: Payload) => db?.datasource.post({ ...variables }))
+
+  return async (data: Payload) => {
+    const dataSource = await createDataSource(data)
+    await synchronize(dataSource._id)
+    await synchronize(dataSource._id)
+  }
+}
 
 export const useRemoveDataSource = () =>
-  useRxMutation<{ id: string }>((db, { variables: { id } }) => db.datasource.findOne({ selector: { _id: id } }).remove())
+  useRxMutation((db, { id }: { id: string }) => db.datasource.findOne({ selector: { _id: id } }).remove())
 
 export const useUpdateDataSource = () =>
-  useRxMutation<Partial<DataSourceDocType> & Required<Pick<DataSourceDocType, '_id'>>>(
-    (db, { variables: { _id, ...rest } }) =>
+  useRxMutation(
+    (db, { _id, ...rest }: Partial<DataSourceDocType> & Required<Pick<DataSourceDocType, '_id'>>) =>
       db.datasource.safeUpdate({ $set: rest }, dataSource => dataSource.findOne({ selector: { _id } }))
   )
+
+

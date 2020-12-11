@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react"
 import { RxChangeEvent, RxDocument, RxReplicationState } from "rxdb"
 import { useAuth, useIsAuthenticated, useSignOut } from "./auth/helpers"
 import { API_SYNC_URL, API_SYNC_POLL1_URL, API_SYNC_POLL_2_URL } from "./constants"
-import { AuthDocType, AuthDocument, LibraryDocType, SettingsDocType, useDatabase } from "./rxdb"
+import { AuthDocType, AuthDocument, SettingsDocType, useDatabase } from "./rxdb"
 import PouchDB from 'pouchdb'
 import { useRecoilState, useSetRecoilState } from "recoil"
 import { libraryState, syncState } from "./library/states"
@@ -32,21 +32,6 @@ export const useAuthStateReducer = () => {
   }, [setState])
 }
 
-export const useLibraryStateReducer = () => {
-  const setState = useSetRecoilState(libraryState);
-
-  return useCallback((eventOrAction: RxChangeEvent<LibraryDocType> | { operation: 'INIT', documentData: RxDocument<LibraryDocType> }) => {
-    switch (eventOrAction.operation) {
-      case 'INIT': {
-        return setState(old => ({ ...old, ...eventOrAction.documentData.toJSON() }))
-      }
-      case 'UPDATE': {
-        return setState(old => ({ ...old, ...eventOrAction.documentData }))
-      }
-    }
-  }, [setState])
-}
-
 export const useSettingsStateReducer = () => {
   const setState = useSetRecoilState(settingsState);
 
@@ -64,7 +49,6 @@ export const useSettingsStateReducer = () => {
 
 export const useObservers = () => {
   const authReducer = useAuthStateReducer()
-  const libraryReducer = useLibraryStateReducer()
   const settingsReducer = useSettingsStateReducer()
   const database = useDatabase()
   const { token } = useAuth() || {}
@@ -117,7 +101,7 @@ export const useObservers = () => {
 
     if (isAuthenticated && database) {
       syncStates = [
-        database?.sync({ syncOptions, collectionNames: ['tag', 'book', 'link', 'settings', 'c_ollection', 'datasource'] })
+        database?.sync({ syncOptions, collectionNames: ['tag', 'book', 'link', 'settings', 'obokucollection', 'datasource'] })
       ]
       syncStates?.forEach(attachEventsToSubscription)
     }
@@ -129,13 +113,11 @@ export const useObservers = () => {
 
   useEffect(() => {
     const obs$ = database?.auth.$.subscribe(authReducer)
-    const libraryObs$ = database?.library.$.subscribe(libraryReducer)
     const settingsObs$ = database?.settings.$.subscribe(settingsReducer)
 
     return () => {
       obs$?.unsubscribe()
       settingsObs$?.unsubscribe()
-      libraryObs$?.unsubscribe()
     }
-  }, [database, libraryReducer, authReducer, settingsReducer])
+  }, [database, authReducer, settingsReducer])
 }

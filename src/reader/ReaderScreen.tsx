@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, FC } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import localforage from 'localforage';
-import { EpubView } from "react-reader";
+import { EpubView } from './EpubView'
 import { useDebounce, useThrottleFn, useWindowSize } from "react-use";
 import { Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, Toolbar } from '@material-ui/core';
 import { ArrowBackIosRounded } from '@material-ui/icons';
@@ -94,6 +94,10 @@ export const ReaderScreen: FC<{}> = () => {
     // })
     const onClick = e => onRenditionClick(e)
     rendition?.on('click', onClick)
+
+    rendition?.on('displayError', e => {
+      console.warn('displayError', e)
+    })
 
     return () => {
       rendition?.off('click', onClick)
@@ -194,6 +198,7 @@ export const ReaderScreen: FC<{}> = () => {
 
     rendition?.on('relocated', onRelocated);
 
+
     // rendition?.on('resized', (e) => {
     //   console.log('resized', e)
     // })
@@ -222,6 +227,7 @@ export const ReaderScreen: FC<{}> = () => {
     // generatedLocations
   })
 
+  // console.log(file)
   return (
     <>
       {file && (

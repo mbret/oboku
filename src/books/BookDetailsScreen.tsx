@@ -12,7 +12,7 @@ import { useDownloadFile } from '../download/useDownloadFile';
 import { ROUTES } from '../constants';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { normalizedBooksState, bookTagsState, bookLinksState } from './states';
+import { normalizedBooksState, bookTagsState, bookLinksState, bookCollectionsState, enrichedBookState } from './states';
 import { tagsAsArrayState } from '../tags/states';
 import { normalizedLinksState } from '../links/states';
 import { useEditLink } from '../links/helpers';
@@ -29,11 +29,11 @@ export const BookDetailsScreen = () => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<undefined | string>(undefined)
   const { id } = useParams<ScreenParams>()
-  const book = useRecoilValue(normalizedBooksState)[id]
+  const book = useRecoilValue(enrichedBookState(id))
   const tags = useRecoilValue(bookTagsState(id))
   const links = useRecoilValue(bookLinksState(id))
+  const collections = useRecoilValue(bookCollectionsState(id))
   const setOpenManageBookCollectionsDialog = useSetRecoilState(openManageBookCollectionsDialog)
-  const collection = book?.collections
 
   console.log('[BookDetailsScreen]', { book, tags, links })
 
@@ -62,7 +62,7 @@ export const BookDetailsScreen = () => {
         paddingLeft: theme.spacing(2),
         paddingRight: theme.spacing(2),
       }}>
-        {/* {book?.downloadState === 'none' && (
+        {book?.downloadState === 'none' && (
           <Button fullWidth variant="outlined" color="primary" onClick={() => downloadFile(book._id)}>Download</Button>
         )}
         {book?.downloadState === 'downloading' && (
@@ -70,7 +70,7 @@ export const BookDetailsScreen = () => {
         )}
         {book?.downloadState === 'downloaded' && (
           <Button fullWidth variant="outlined" color="primary" onClick={() => history.push(ROUTES.READER.replace(':id', book._id))}>Read</Button>
-        )} */}
+        )}
       </Box>
       {!book?.lastMetadataUpdatedAt && (
         <Alert severity="info" >We are still retrieving metadata information...</Alert>
@@ -120,19 +120,19 @@ export const BookDetailsScreen = () => {
           button
           onClick={() => setOpenManageBookCollectionsDialog(book?._id)}
         >
-          {/* <ListItemText
+          <ListItemText
             primary="Collection"
-            secondary={((collection?.length || 0) > 0)
+            secondary={((collections?.length || 0) > 0)
               ? (
                 <>
-                  {collection?.map(item => (
+                  {collections?.map(item => (
                     <Chip label={item?.name} key={item?._id} />
                   ))}
                 </>
               )
               : 'Not a part of any collection yet'
             }
-          /> */}
+          />
           <MoreVertRounded />
         </ListItem>
       </List>
@@ -280,7 +280,7 @@ const TagsDialog: FC<{
           tags={tags}
           isSelected={isSelected}
           onItemClick={tagId => {
-            if (!isSelected(tagId)) addTagToBook({ tagId, bookId: id })
+            if (!isSelected(tagId)) addTagToBook({ tagId, _id: id })
             else removeTagToBook({ tagId, bookId: id })
           }}
         />

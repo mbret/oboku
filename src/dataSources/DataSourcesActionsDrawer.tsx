@@ -1,13 +1,14 @@
-import { Drawer, ListItem, List, ListItemIcon, ListItemText } from "@material-ui/core";
+import { Drawer, ListItem, List, ListItemIcon, ListItemText, Divider } from "@material-ui/core";
 import React, { FC } from "react";
-import { SyncRounded } from "@material-ui/icons";
+import { SyncRounded, DeleteForeverRounded } from "@material-ui/icons";
+import { useSynchronizeDataSource, useRemoveDataSource } from './helpers'
 
 export const DataSourcesActionsDrawer: FC<{
   openWith: string,
   onClose: () => void,
 }> = ({ openWith, onClose }) => {
-  console.error('todo')
-  // const [syncDataSource] = useMutation(MutationSyncDataSourceDocument)
+  const syncDataSource = useSynchronizeDataSource()
+  const [remove] = useRemoveDataSource()
 
   return (
     <>
@@ -16,19 +17,29 @@ export const DataSourcesActionsDrawer: FC<{
         open={true}
         onClose={onClose}
       >
-        <div
-          role="presentation"
-        >
-          <List>
-            <ListItem button onClick={() => {
-              // syncDataSource({ variables: { id: openWith } })
+        <List>
+          <ListItem button onClick={() => {
+            syncDataSource(openWith)
+            onClose()
+          }}>
+            <ListItemIcon><SyncRounded /></ListItemIcon>
+            <ListItemText primary="Synchronize" />
+          </ListItem>
+        </List>
+        <Divider />
+        <List>
+          <ListItem button
+            onClick={() => {
               onClose()
-            }}>
-              <ListItemIcon><SyncRounded /></ListItemIcon>
-              <ListItemText primary="Synchronize" />
-            </ListItem>
-          </List>
-        </div>
+              remove({ id: openWith })
+            }}
+          >
+            <ListItemIcon>
+              <DeleteForeverRounded />
+            </ListItemIcon>
+            <ListItemText primary="Remove the data source" />
+          </ListItem>
+        </List>
       </Drawer>
     </>
   );

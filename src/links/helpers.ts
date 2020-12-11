@@ -8,8 +8,8 @@ type EditBookPayload = Partial<LinkDocType> & Required<Pick<LinkDocType, '_id'>>
 export const useEditLink = () => {
   const db = useDatabase()
   const refreshBookMetadata = useRefreshBookMetadata()
-  const [editLink] = useRxMutation<EditBookPayload>(
-    (db, { variables: { _id, ...rest } }) =>
+  const [editLink] = useRxMutation(
+    (db, { _id, ...rest }: EditBookPayload) =>
       db.link.safeUpdate({ $set: rest }, collection => collection.findOne({ selector: { _id } }))
   )
 

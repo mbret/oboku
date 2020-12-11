@@ -19,7 +19,7 @@ export const CollectionActionsDrawer: FC<{
 
   const onRemove = (id: string | undefined) => {
     handleClose()
-    id && removeCollection({ id })
+    id && removeCollection({ _id: id })
   }
 
   const onEdit = (id: string | undefined) => {

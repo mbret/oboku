@@ -26,9 +26,9 @@ export const BooksSelectionDialog: FC<{
         isSelected={isSelected}
         onItemClick={(bookId) => {
           if (isSelected(bookId)) {
-            collectionId && removeFromBook({ bookId, collectionId })
+            collectionId && removeFromBook({ _id: bookId, collectionId })
           } else {
-            collectionId && addToBook({ bookId, collectionId })
+            collectionId && addToBook({ _id: bookId, collectionId })
           }
         }}
         books={books}

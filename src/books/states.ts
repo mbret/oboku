@@ -1,24 +1,32 @@
 import { intersection } from "ramda";
-import { atom, selector, selectorFamily } from "recoil";
+import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil";
 import { BookDocType } from 'oboku-shared'
 import { libraryState } from "../library/states";
 import { normalizedTagsState, protectedTagIdsState } from "../tags/states";
 import { normalizedLinksState } from "../links/states";
+import { bookDownloadsState } from "../download/states";
+import { normalizedCollectionsState } from "../collections/states";
 
-export enum DownloadState {
-  None = 'none',
-  Downloaded = 'downloaded',
-  Downloading = 'downloading'
-}
+export type Book = NonNullable<UnwrapRecoilValue<typeof normalizedBooksState>[number]>
 
-export type Book = BookDocType & {
-  downloadState: DownloadState,
-  downloadProgress: number,
-}
-
-export const normalizedBooksState = atom<Record<string, Book | undefined>>({
+export const normalizedBooksState = atom<Record<string, BookDocType | undefined>>({
   key: 'books',
   default: {}
+})
+
+export const enrichedBookState = selectorFamily({
+  key: 'enrichedBookState',
+  get: (bookId: string) => ({ get }) => {
+    const book = get(normalizedBooksState)[bookId]
+    const downloadState = get(bookDownloadsState(bookId))
+
+    if (!book) return undefined
+
+    return {
+      ...book,
+      ...downloadState || {},
+    }
+  }
 })
 
 export const booksAsArrayState = selector<Book[]>({
@@ -39,7 +47,7 @@ export const bookIdsState = selector({
     const protectedTags = get(protectedTagIdsState)
 
     if (isLibraryUnlocked) return Object.keys(books)
-    
+
     return Object.values(books).filter(book => intersection(protectedTags, book?.tags || []).length === 0).map(book => book?._id || '-1')
   }
 })
@@ -61,5 +69,15 @@ export const bookLinksState = selectorFamily({
     const links = get(normalizedLinksState)
 
     return book?.links?.map(id => links[id])
+  }
+})
+
+export const bookCollectionsState = selectorFamily({
+  key: 'bookCollectionsState',
+  get: (bookId: string) => ({ get }) => {
+    const book = get(normalizedBooksState)[bookId]
+    const collections = get(normalizedCollectionsState)
+
+    return book?.collections?.map(id => collections[id])
   }
 })

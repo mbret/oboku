@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
-import { DataSourceDocType } from "../rxdb/dataSource"
+import { DataSourceDocType } from 'oboku-shared'
 import { normalizedDataSourcesState } from "./states"
 
 export const useDataSourcesInitialState = () => {

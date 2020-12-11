@@ -5,7 +5,7 @@ import { useTagsInitialState } from "./tags/observers";
 import { useLinksInitialState } from "./links/observers";
 import { useCollectionsInitialState } from "./collections/observers";
 import { useDataSourcesInitialState } from "./dataSources/observers";
-import { useAuthStateReducer, useLibraryStateReducer, useSettingsStateReducer } from "./useObservers";
+import { useAuthStateReducer, useSettingsStateReducer } from "./useObservers";
 
 /**
  * This hook will load anything needed from the database into the state.
@@ -15,7 +15,6 @@ import { useAuthStateReducer, useLibraryStateReducer, useSettingsStateReducer } 
 export const useLoadInitialState = () => {
   const db = useDatabase()
   const authReducer = useAuthStateReducer();
-  const libraryReducer = useLibraryStateReducer();
   const settingsReducer = useSettingsStateReducer();
   const isBookStateReady = useBooksInitialState()
   const isTagStateReady = useTagsInitialState()
@@ -31,9 +30,6 @@ export const useLoadInitialState = () => {
           const auth = await db.auth.findOne().exec()
           auth && authReducer({ operation: 'INIT', documentData: auth })
 
-          const library = await db.library.findOne().exec()
-          library && libraryReducer({ operation: 'INIT', documentData: library })
-
           const settings = await db.settings.findOne().exec()
           settings && settingsReducer({ operation: 'INIT', documentData: settings })
 
@@ -43,7 +39,7 @@ export const useLoadInitialState = () => {
         }
       })()
     }
-  }, [db, authReducer, libraryReducer, settingsReducer])
+  }, [db, authReducer, settingsReducer])
 
   return ready && isBookStateReady && isTagStateReady && isLinkStateReady && isCollectionStateReady && isDataSourceStateReady
 }

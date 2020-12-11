@@ -4,15 +4,16 @@ import { Alert } from '@material-ui/lab'
 import React, { FC, useState } from 'react'
 import { useRecoilValue } from 'recoil'
 import { useFolders } from '../google'
-import { DataSourceType, GoogleDriveDataSourceData } from '../rxdb/dataSource'
+import { GoogleDriveDataSourceData } from 'oboku-shared'
 import { tagsAsArrayState } from '../tags/states'
 import { TagsSelectionList } from '../tags/TagsSelectionList'
 import { useCreateDataSource } from './helpers'
+import { DataSourceType } from 'oboku-shared'
 
 export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedTags, setSelectedTags] = useState<{ [key: string]: true | undefined }>({})
   const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
-  const [addDataSource] = useCreateDataSource()
+  const addDataSource = useCreateDataSource()
   const [selectedFolder, setSelectedFolder] = useState<{ name: string, id: string } | undefined>(undefined)
   const [folderChain, setFolderChain] = useState<{ name: string, id: string }[]>([{ name: '', id: 'root' }])
   const currentFolder = folderChain[folderChain.length - 1]
@@ -97,6 +98,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
           color="primary"
           disabled={!selectedFolder}
           onClick={() => {
+            onClose()
             if (selectedFolder) {
               const customData: GoogleDriveDataSourceData = {
                 applyTags: Object.keys(selectedTags),

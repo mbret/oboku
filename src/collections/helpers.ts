@@ -1,14 +1,14 @@
-import { CollectionDocType } from "../rxdb/collection"
+import { CollectionDocType } from 'oboku-shared'
 import { useRxMutation } from "../rxdb/hooks"
 
 export const useCreateCollection = () =>
-  useRxMutation<Omit<CollectionDocType, '_id'>>((db, { variables: { name } }) => db?.c_ollection.post({ name, books: [] }))
+  useRxMutation((db, { name }: { name: string }) => db?.obokucollection.post({ name, books: [] }))
 
 export const useRemoveCollection = () =>
-  useRxMutation<{ id: string }>((db, { variables: { id } }) => db.c_ollection.findOne({ selector: { _id: id } }).remove())
+  useRxMutation((db, { _id }: { _id: string }) => db.obokucollection.findOne({ selector: { _id } }).remove())
 
 export const useUpdateCollection = () =>
-  useRxMutation<Partial<CollectionDocType> & Required<Pick<CollectionDocType, '_id'>>>(
-    (db, { variables: { _id, ...rest } }) =>
-      db.c_ollection.safeUpdate({ $set: rest }, collection => collection.findOne({ selector: { _id } }))
+  useRxMutation(
+    (db, { _id, ...rest }: Partial<CollectionDocType> & { _id: string }) =>
+      db.obokucollection.safeUpdate({ $set: rest }, collection => collection.findOne({ selector: { _id } }))
   )

@@ -60,15 +60,17 @@ export function useRxQuery<D extends DocTypes, R extends D | null | D[]>(
   return res
 }
 
+export type RxDocumentMutation<Document = any, Variables = any> = { __doc: Document, __variables: Variables }
+
 // export function useRxMutation (
 //   query: (database: RxDatabase<MyDatabaseCollections>) => Promise<any> | undefined,
 // ): any
 export function useRxMutation(
   query: (database: RxDatabase<MyDatabaseCollections>, options: {}) => Promise<any> | undefined
 ): [() => Promise<any>, any]
-export function useRxMutation<V>(
-  query: (database: RxDatabase<MyDatabaseCollections>, options: { variables: V }) => Promise<any> | undefined
-): [(variables: V) => Promise<any>, any]
+export function useRxMutation<V, D>(
+  query: (database: RxDatabase<MyDatabaseCollections>, variables: V) => Promise<D> | undefined
+): [(variables: V) => Promise<D>, any]
 export function useRxMutation(query) {
   const db = useDatabase()
   const dbRef = useRef(db)
@@ -77,7 +79,7 @@ export function useRxMutation(query) {
 
   const cb = useCallback(async (variables?: any) => {
     if (dbRef.current) {
-      return await query(dbRef.current, { variables })
+      return await query(dbRef.current, variables)
     } else {
       throw new Error('DB not initialized')
     }

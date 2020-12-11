@@ -1,14 +1,14 @@
-import { TagsDocType } from "../rxdb/databases"
+import { TagsDocType } from "oboku-shared"
 import { useRxMutation } from "../rxdb/hooks"
 
 export const useCreateTag = () =>
-  useRxMutation<{ name: string }>((db, { variables: { name } }) => db?.tag.post({ name, books: [], isProtected: false }))
+  useRxMutation((db, { name }: { name: string }) => db?.tag.post({ name, books: [], isProtected: false }))
 
 export const useRemoveTag = () =>
-  useRxMutation<{ id: string }>((db, { variables: { id } }) => db.tag.findOne({ selector: { _id: id } }).remove())
+  useRxMutation((db, { id }: { id: string }) => db.tag.findOne({ selector: { _id: id } }).remove())
 
 export const useUpdateTag = () =>
-  useRxMutation<Partial<TagsDocType> & Required<Pick<TagsDocType, '_id'>>>(
-    (db, { variables: { _id, ...rest } }) =>
+  useRxMutation(
+    (db, { _id, ...rest }: Partial<TagsDocType> & Required<Pick<TagsDocType, '_id'>>) =>
       db.tag.safeUpdate({ $set: rest }, collection => collection.findOne({ selector: { _id } }))
   )

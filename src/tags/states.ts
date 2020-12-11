@@ -1,5 +1,5 @@
-import { atom, selector } from "recoil";
-import { TagsDocType } from "../rxdb";
+import { atom, selector } from "recoil"
+import { TagsDocType } from "oboku-shared"
 
 export const normalizedTagsState = atom<Record<string, TagsDocType | undefined>>({
   key: 'tagsState',

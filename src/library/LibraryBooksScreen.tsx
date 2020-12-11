@@ -6,15 +6,14 @@ import {
 } from '@material-ui/core';
 import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecked, RadioButtonChecked, LockOpenRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
-import { useUpdateLibrary } from './helpers';
 import * as R from 'ramda';
 import { UploadNewBookDialog } from '../books/UploadNewBookDialog';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
 import { useMeasureElement } from '../utils';
-import { LibraryDocType, LibraryViewMode, useRxMutation, useRxQuery } from '../rxdb';
+import { LibraryViewMode } from '../rxdb';
 import { useAuth } from '../auth/helpers';
-import { libraryState } from './states';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { LibraryDocType, libraryState } from './states';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { booksAsArrayState } from '../books/states';
 
 export const LibraryBooksScreen = () => {
@@ -23,7 +22,7 @@ export const LibraryBooksScreen = () => {
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const [isUploadNewBookDialogOpened, setIsUploadNewBookDialogOpened] = useState(false)
-  const [setLibraryViewMode] = useRxMutation<{ viewMode: LibraryViewMode }>((db, { variables: { viewMode } }) => db.library.findOne().update({ $set: { viewMode } }))
+  const setLibraryState = useSetRecoilState(libraryState)
   // const library = useRxQuery((db) => db.library.findOne())
   const library = useRecoilValue(libraryState)
   const auth = useAuth()
@@ -97,7 +96,7 @@ export const LibraryBooksScreen = () => {
         )}
         <IconButton
           onClick={() => {
-            setLibraryViewMode({ viewMode: library?.viewMode === LibraryViewMode.GRID ? LibraryViewMode.LIST : LibraryViewMode.GRID })
+            setLibraryState(prev => ({ ...prev, viewMode: library?.viewMode === LibraryViewMode.GRID ? LibraryViewMode.LIST : LibraryViewMode.GRID }))
           }}
         >
           {library?.viewMode === 'grid' ? <AppsRounded /> : <ListRounded />}
@@ -181,12 +180,12 @@ const useSortedList = (sorting: LibraryDocType['sorting'] | undefined) => {
 
 const SortByDialog: FC<{ onClose: () => void, open: boolean }> = ({ onClose, open }) => {
   const library = useRecoilValue(libraryState)
-  const [updateLibrary] = useUpdateLibrary()
+  const setLibraryState = useSetRecoilState(libraryState)
   const sorting = library.sorting || 'date'
 
   const onSortChange = (newSorting: typeof sorting) => {
     onClose()
-    updateLibrary({ sorting: newSorting })
+    setLibraryState(prev => ({ ...prev, sorting: newSorting }))
   }
 
   return (

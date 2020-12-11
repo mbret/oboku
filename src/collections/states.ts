@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import { CollectionDocType } from '../rxdb/collection'
+import { CollectionDocType } from 'oboku-shared'
 
 export type Collection = CollectionDocType
 

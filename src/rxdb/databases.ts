@@ -9,7 +9,8 @@ import { applyHooks } from './middleware';
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from './types';
 import { dataSourceSchema, dataSourceCollectionMethods, DataSourceCollection } from './dataSource';
 import type { LibrarySorting } from '../library/states';
-import { BookDocType, LinkDocType } from 'oboku-shared';
+import { BookDocType, InsertableBookDocType, LinkDocType, TagsDocType } from 'oboku-shared';
+import { RxDocumentMutation } from './hooks';
 
 addRxPlugin(require('pouchdb-adapter-idb'));
 addRxPlugin(require('pouchdb-adapter-http'))
@@ -29,26 +30,12 @@ export type AuthDocType = {
   hasDoneReaderTour: boolean,
 }
 
-export type LibraryDocType = {
-  viewMode: LibraryViewMode,
-  sorting: LibrarySorting
-  isLibraryUnlocked: boolean,
-  tags: string[]
-}
-
 export type SettingsDocType = {
   id: 'settings',
   contentPassword: string | null,
 }
 
-export type TagsDocType = {
-  _id: string,
-  name: null | string,
-  isProtected: boolean,
-  books: string[],
-}
-
-export type DocTypes = AuthDocType | TagsDocType | BookDocType | LinkDocType | LibraryDocType | SettingsDocType
+export type DocTypes = AuthDocType | TagsDocType | BookDocType | LinkDocType | SettingsDocType
 
 type TagsDocMethods = {
   safeUpdate: (updateObj: MongoUpdateSyntax<TagsDocType>) => Promise<any>
@@ -68,7 +55,6 @@ export type AuthDocument = RxDocument<AuthDocType, AuthDocMethods>
 export type SettingsDocument = RxDocument<SettingsDocType>
 type BookDocument = RxDocument<BookDocType, BookDocMethods>
 type LinkDocument = RxDocument<LinkDocType, LinkDocMethods>
-export type LibraryDocument = RxDocument<LibraryDocType>
 
 
 type AuthCollectionMethods = {
@@ -83,21 +69,15 @@ type SettingsCollectionMethods = {
     cb: (collection: SettingsCollection) => RxQuery
   ) => Promise<SettingsDocument>
 }
-type LibraryCollectionMethods = {
-  safeUpdate: (
-    json: SafeUpdateMongoUpdateSyntax<LibraryDocType>,
-    cb: (collection: LibraryCollection) => RxQuery
-  ) => Promise<LibraryDocument>
-}
 type TagsCollectionMethods = {
-  post: (json: Omit<TagsDocType, '_id'>) => Promise<TagsDocument>,
+  post: (json: Omit<TagsDocType, '_id' | 'rx_model' | '_rev'>) => Promise<TagsDocument>,
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<TagsDocType>,
     cb: (collection: TagsCollection) => RxQuery
   ) => Promise<AuthDocument>
 }
 type BookCollectionMethods = {
-  post: (json: Omit<BookDocType, '_id' | 'rx_model' | '_rev'>) => Promise<BookDocument>,
+  post: (json: Omit<InsertableBookDocType, 'rx_model'>) => Promise<BookDocument>,
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<BookDocType>,
     cb: (collection: BookCollection) => RxQuery
@@ -117,16 +97,17 @@ type AuthCollection = RxCollection<AuthDocType, AuthDocMethods, AuthCollectionMe
 type TagsCollection = RxCollection<TagsDocType, TagsDocMethods, TagsCollectionMethods>
 type BookCollection = RxCollection<BookDocType, BookDocMethods, BookCollectionMethods>
 type LinkCollection = RxCollection<LinkDocType, LinkDocMethods, LinkCollectionMethods>
-type LibraryCollection = RxCollection<LibraryDocType, any, LibraryCollectionMethods>
+
+// export type BookDocumentMutation = RxDocumentMutation<BookDocument | null, Partial<BookDocument> & { tagId?: string, collectionId?: string }>
+// export type BookDocumentRemoveMutation = RxDocumentMutation<BookDocument | null, { id: string }>
 
 export type MyDatabaseCollections = {
   auth: AuthCollection,
   tag: TagsCollection,
   book: BookCollection,
   link: LinkCollection,
-  library: LibraryCollection,
   settings: SettingsCollection,
-  c_ollection: CollectionCollection,
+  obokucollection: CollectionCollection,
   datasource: DataSourceCollection,
 }
 
@@ -144,17 +125,6 @@ const authSchema: RxJsonSchema<AuthDocType> = {
   }
 }
 
-const librarySchema: RxJsonSchema<LibraryDocType> = {
-  version: 0,
-  type: 'object',
-  properties: {
-    isLibraryUnlocked: { type: 'boolean' },
-    viewMode: { type: 'string' },
-    sorting: { type: 'string' },
-    tags: { type: 'array', items: { type: 'string' } },
-  }
-}
-
 const settingsSchema: RxJsonSchema<SettingsDocType> = withReplicationSchema('settings', {
   version: 0,
   type: 'object',
@@ -164,7 +134,7 @@ const settingsSchema: RxJsonSchema<SettingsDocType> = withReplicationSchema('set
   }
 })
 
-const tagsSchema: RxJsonSchema<Omit<TagsDocType, '_id'>> = withReplicationSchema('tag', {
+const tagsSchema: RxJsonSchema<Omit<TagsDocType, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('tag', {
   title: 'tag',
   version: 0,
   type: 'object',
@@ -184,8 +154,8 @@ const linkSchema: RxJsonSchema<Omit<Required<LinkDocType>, '_id' | 'rx_model' | 
     data: { type: ['string', 'null'] },
     resourceId: { type: 'string' },
     type: { type: 'string' },
-    book: { type: ['string'] },
-    contentLength: { type: 'number' }
+    book: { type: ['string', 'null'] },
+    contentLength: { type: ['number', 'null'] }
   },
   required: ['data', 'resourceId', 'type']
 })
@@ -198,7 +168,7 @@ const bookSchema: RxJsonSchema<Omit<BookDocType, '_id' | 'rx_model' | '_rev'>> =
     collections: { type: ['array'], items: { type: 'string' } },
     createdAt: { type: ['number'] },
     creator: { type: ['string', 'null'] },
-    date: { type: ['number'] },
+    date: { type: ['number', 'null'] },
     lang: { type: ['string', 'null'] },
     lastMetadataUpdatedAt: { type: ['number', 'null'] },
     links: { ref: 'link', type: 'array', items: { type: 'string' } },
@@ -208,7 +178,7 @@ const bookSchema: RxJsonSchema<Omit<BookDocType, '_id' | 'rx_model' | '_rev'>> =
     readingStateCurrentBookmarkProgressUpdatedAt: { type: ['number', 'null'] },
     readingStateCurrentState: { type: ['string'] },
     rights: { type: ['string', 'null'] },
-    subject: { type: ['string', 'null'] },
+    subject: { type: ['array', 'null'], items: { type: 'string' } },
     tags: { type: 'array', ref: 'tag', items: { type: 'string' } },
     title: { type: ['string', 'null'] },
   },
@@ -238,11 +208,6 @@ const authCollectionMethods: AuthCollectionMethods = {
 }
 const settingsCollectionMethods: SettingsCollectionMethods = {
   safeUpdate: async function (this: SettingsCollection, json, cb) {
-    return cb(this).update(json)
-  }
-}
-const libraryCollectionMethods: LibraryCollectionMethods = {
-  safeUpdate: async function (this: LibraryCollection, json, cb) {
     return cb(this).update(json)
   }
 }
@@ -316,15 +281,11 @@ const createCollections = async (db: Database) => {
       methods: tagsDocMethods,
       statics: tagsCollectionMethods
     },
-    library: {
-      schema: librarySchema,
-      statics: libraryCollectionMethods
-    },
     settings: {
       schema: settingsSchema,
       statics: settingsCollectionMethods
     },
-    c_ollection: {
+    obokucollection: {
       schema: collectionSchema,
       statics: collectionCollectionMethods,
     },
@@ -354,16 +315,6 @@ const initializeCollectionsData = async (db: Database) => {
       await db.settings.insert({
         contentPassword: null,
         id: 'settings'
-      })
-    }
-
-    const libraryDoc = await db.library.findOne().exec()
-    if (!libraryDoc) {
-      await db.library.insert({
-        viewMode: LibraryViewMode.GRID,
-        sorting: 'date',
-        isLibraryUnlocked: false,
-        tags: []
       })
     }
   } catch (e) {
@@ -412,7 +363,9 @@ export const useDatabase = () => {
         setDb(_db)
       })()
     }
-  }, [valid, setDbState, db])
+  }, [valid, setDbState, db]);
+
+  (window as any).db = _db
 
   return _db
 }

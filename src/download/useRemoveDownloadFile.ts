@@ -1,22 +1,22 @@
-// import localforage from 'localforage';
-// import { DownloadState } from '../generated/graphql';
-// import { useOfflineApolloClient } from '../useOfflineApolloClient';
+import localforage from 'localforage';
+import { useSetRecoilState } from 'recoil';
+import { DownloadState, normalizedBookDownloadsState } from './states';
 
-// export const useRemoveDownloadFile = () => {
-//   const client = useOfflineApolloClient()
+export const useRemoveDownloadFile = () => {
+  const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
 
-//   return async (bookId: string) => {
-//     try {
-//       await localforage.removeItem(`book-download-${bookId}`)
-//       client.modify('Book', {
-//         id: client.identify({ __typename: 'Book', id: bookId }),
-//         fields: {
-//           downloadState: _ => DownloadState.None
-//         }
-//       })
-//     } catch (e) {
-//       console.error(e)
-//     }
-//   }
-// }
-export {}
+  return async (bookId: string) => {
+    try {
+      await localforage.removeItem(`book-download-${bookId}`)
+      setBookDownloadsState(prev => ({
+        ...prev,
+        [bookId]: {
+          ...prev[bookId],
+          downloadState: DownloadState.None,
+        }
+      }))
+    } catch (e) {
+      console.error(e)
+    }
+  }
+}

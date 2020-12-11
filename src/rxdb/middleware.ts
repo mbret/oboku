@@ -3,7 +3,7 @@ import { useDatabase } from './databases'
 type Database = NonNullable<ReturnType<typeof useDatabase>>
 
 export const applyHooks = (db: Database) => {
-  db.book.postSave(async function (data) {
+  db.book.postSave(async function (data, d) {
     const tagsFromWhichToRemoveBook = await db.tag.find({
       selector: {
         books: {
@@ -14,6 +14,37 @@ export const applyHooks = (db: Database) => {
         }
       }
     }).exec()
+
+    // Remove the book from all collections that are not anymore in this book
+    await db.obokucollection
+      .safeUpdate({
+        $pullAll: {
+          books: [data._id]
+        }
+      }, collection => collection.safeFind({
+        selector: {
+          _id: {
+            $nin: data.collections
+          },
+        }
+      }))
+
+    // add the book to any collections that are in this book but where not before
+    await db.obokucollection
+      .safeUpdate({
+        $push: {
+          books: data._id
+        }
+      }, collection => collection.safeFind({
+        selector: {
+          books: {
+            $nin: [data._id]
+          },
+          _id: {
+            $in: data.collections
+          },
+        }
+      }))
 
     // @todo bulk
     await Promise.all(tagsFromWhichToRemoveBook.map(async (tag) => {
@@ -63,9 +94,23 @@ export const applyHooks = (db: Database) => {
         }
       }))
 
-      /**
-       * Remove any link attached to that book
-       */
+    // dettach all collections to this book
+    await db.obokucollection
+      .safeUpdate({
+        $pullAll: {
+          books: [data._id]
+        }
+      }, collection => collection.find({
+        selector: {
+          books: {
+            $in: [data._id]
+          },
+        }
+      }))
+
+    /**
+     * Remove any link attached to that book
+     */
     await db.link.safeFind({ selector: { book: data._id } }).remove()
   }, true)
 
@@ -103,6 +148,21 @@ export const applyHooks = (db: Database) => {
           tags: [data._id]
         }
       })
+    }))
+  }, true)
+
+  db.obokucollection.postRemove(async function (data) {
+    // remove any book that were attached to this collection
+    await db.book.safeUpdate({
+      $pullAll: {
+        collections: [data._id]
+      }
+    }, collection => collection.find({
+      selector: {
+        collections: {
+          $in: [data._id]
+        },
+      }
     }))
   }, true)
 }

@@ -21,7 +21,6 @@ export const Cover: FC<{
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  console.log(auth)
   const coverSrc = book
     ? `${API_URI}/cover/${auth?.userId}-${book._id}?${book?.lastMetadataUpdatedAt || ''}`
     : placeholder

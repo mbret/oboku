@@ -5,34 +5,44 @@ import { useDatabase } from "../rxdb"
 import { API_SYNC_URL } from "../constants"
 import { first } from 'rxjs/operators'
 import PouchDB from 'pouchdb'
+import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 
-export const useRemoveBook = () =>
-  useRxMutation<{ id: string }>((db, { variables: { id } }) => db.book.findOne({ selector: { _id: id } }).remove())
+export const useRemoveBook = () => {
+  const removeDownload = useRemoveDownloadFile()
+  const [removeBook] = useRxMutation((db, { id }: { id: string }) => db.book.findOne({ selector: { _id: id } }).remove())
+
+  return async ({ id }: { id: string }) => {
+    await Promise.all([
+      removeDownload(id),
+      removeBook({ id })
+    ])
+  }
+}
 
 export const useRemoveTagToBook = () => {
-  const [removeTag] = useRxMutation<{ bookId: string, tagId: string }>(
-    (db, { variables: { bookId, tagId } }) =>
+  const [removeTag] = useRxMutation(
+    (db, { _id, tagId }: { _id: string, tagId: string }) =>
       db.book
-        .findOne({ selector: { _id: bookId } })
+        .findOne({ selector: { _id } })
         .update({ $pullAll: { tags: [tagId] } })
   )
 
   return (variables: { bookId: string, tagId: string }) => {
-    removeTag(variables)
+    removeTag({ _id: variables.bookId, tagId: variables.tagId })
   }
 }
 
 export const useAddTagToBook = () =>
-  useRxMutation<{ bookId: string, tagId: string }>(
-    (db, { variables: { bookId, tagId } }) =>
+  useRxMutation(
+    (db, { _id, tagId }: { _id: string, tagId: string }) =>
       db.book
-        .findOne({ selector: { _id: bookId } })
+        .findOne({ selector: { _id } })
         .update({ $push: { tags: tagId } })
   )
 
 export const useUpdateBook = () =>
-  useRxMutation<Partial<BookDocType> & Required<Pick<BookDocType, '_id'>>>(
-    (db, { variables: { _id, ...rest } }) =>
+  useRxMutation(
+    (db, { _id, ...rest }: Partial<BookDocType>) =>
       db.book.safeUpdate({ $set: rest }, collection => collection.findOne({ selector: { _id } }))
   )
 
@@ -73,18 +83,18 @@ export const useRefreshBookMetadata = () => {
 }
 
 export const useAddCollectionToBook = () =>
-  useRxMutation<{ bookId: string, collectionId: string }>(
-    (db, { variables: { bookId, collectionId } }) =>
+  useRxMutation(
+    (db, { _id, collectionId }: { _id: string, collectionId: string }) =>
       db.book
-        .findOne({ selector: { _id: bookId } })
+        .findOne({ selector: { _id } })
         .update({ $push: { collections: collectionId } })
   )
 
 export const useRemoveCollectionFromBook = () =>
-  useRxMutation<{ bookId: string, collectionId: string }>(
-    (db, { variables: { bookId, collectionId } }) =>
+  useRxMutation(
+    (db, { _id, collectionId }: { _id: string, collectionId: string }) =>
       db.book
-        .findOne({ selector: { _id: bookId } })
+        .findOne({ selector: { _id } })
         .update({ $pullAll: { collections: [collectionId] } })
   )
 
@@ -99,6 +109,8 @@ export const useAddBook = () => {
           type: LinkType.Uri,
           resourceId: linkUrl,
           data: null,
+          book: null,
+          contentLength: null,
         })
         const book = await database.book.post({
           lastMetadataUpdatedAt: null,

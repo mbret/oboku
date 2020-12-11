@@ -6,13 +6,14 @@ import { createServerError } from "../errors"
 import { useLock } from "../lockState"
 import { useReCreateDb, useDatabase } from "../rxdb/databases"
 import { authState } from "./authState"
+import { useResetStore } from "../PersistedRecoilRoot"
 
 export const useAuth = () =>
   useRxQuery(db => db.auth.findOne().where('id').equals('auth'))
 
 export const useUpdateAuth = () =>
-  useRxMutation<Partial<AuthDocType & { foo: string }>>(
-    (db, { variables }) =>
+  useRxMutation(
+    (db, variables: Partial<AuthDocType>) =>
       db.auth.safeUpdate({ $set: variables }, collection => collection.findOne())
   )
 
@@ -54,6 +55,7 @@ export const useAuthorize = () => {
 
 export const useSignIn = () => {
   const db = useDatabase()
+  const resetLocalState = useResetStore()
   const reCreateDb = useReCreateDb()
   const [lock, unlock] = useLock()
   const [error, setError] = useState<Error | undefined>(undefined)
@@ -75,6 +77,7 @@ export const useSignIn = () => {
       const previousAuth = await db?.auth.findOne().exec()
       let newDb = db
       if (previousAuth?.email !== email) {
+        await resetLocalState()
         newDb = await reCreateDb()
       }
       await newDb?.auth.safeUpdate({ $set: { token, email, userId } }, auth => auth.findOne())
@@ -83,7 +86,7 @@ export const useSignIn = () => {
       setError(e)
       unlock('authorize')
     }
-  }, [db, lock, unlock, reCreateDb])
+  }, [db, lock, unlock, reCreateDb, resetLocalState])
 
   const data = { error }
 
@@ -93,6 +96,7 @@ export const useSignIn = () => {
 export const useSignUp = () => {
   const [lock, unlock] = useLock()
   const reCreateDb = useReCreateDb()
+  const resetLocalState = useResetStore()
   const [error, setError] = useState<Error | undefined>(undefined)
 
   const cb = useCallback(async (email: string, password: string) => {
@@ -109,6 +113,7 @@ export const useSignUp = () => {
         throw await createServerError(response)
       }
       const { token, userId } = (await response.json())
+      await resetLocalState()
       const newDb = await reCreateDb()
       await newDb?.auth.safeUpdate({ $set: { token, email, userId } }, auth => auth.findOne())
       unlock('authorize')
@@ -116,7 +121,7 @@ export const useSignUp = () => {
       setError(e)
       unlock('authorize')
     }
-  }, [lock, unlock, reCreateDb])
+  }, [lock, unlock, reCreateDb, resetLocalState])
 
   const data = { error }
 

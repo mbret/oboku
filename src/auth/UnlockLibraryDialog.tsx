@@ -1,8 +1,8 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core'
 import { hashContentPassword } from 'oboku-shared/dist/crypto';
 import React, { FC, useEffect, useState } from 'react'
-import { atom, useRecoilState, useRecoilValue } from 'recoil';
-import { useUpdateLibrary } from '../library/helpers';
+import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { libraryState } from '../library/states';
 import { settingsState } from '../settings/states';
 
 export const unlockLibraryDialogState = atom({ key: 'unlockLibraryDialog', default: false })
@@ -12,7 +12,7 @@ export const UnlockLibraryDialog: FC<{}> = () => {
   const [text, setText] = useState('')
   const settings = useRecoilValue(settingsState)
   const [isOpened, setIsOpened] = useRecoilState(unlockLibraryDialogState);
-  const [updateLibrary] = useUpdateLibrary()
+  const setLibraryState = useSetRecoilState(libraryState)
   const contentPassword = settings?.contentPassword
 
   const onClose = () => {
@@ -22,7 +22,7 @@ export const UnlockLibraryDialog: FC<{}> = () => {
   const onConfirm = async () => {
     const hashedPassword = await hashContentPassword(text)
     if (contentPassword === hashedPassword) {
-      updateLibrary({ isLibraryUnlocked: true })
+      setLibraryState(prev => ({ ...prev, isLibraryUnlocked: true }))
       onClose()
     }
   }

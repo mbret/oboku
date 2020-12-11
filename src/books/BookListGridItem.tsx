@@ -8,13 +8,13 @@ import { useHistory } from 'react-router-dom';
 import { Cover } from '../books/Cover';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { bookActionDrawerState } from './BookActionsDrawer';
-import { normalizedBooksState } from './states';
+import { enrichedBookState } from './states';
 import { ReadingStateState } from 'oboku-shared'
 
 export const BookListGridItem: FC<{
   bookId: string,
 }> = ({ bookId }) => {
-  const item = useRecoilValue(normalizedBooksState)[bookId]
+  const item = useRecoilValue(enrichedBookState(bookId))
   const history = useHistory();
   const windowSize = useWindowSize()
   const classes = useStyles({ windowSize });

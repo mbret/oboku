@@ -151,7 +151,7 @@ const AddCollectionDialog: FC<{
           onClick={() => {
             onInnerClose()
             if (name) {
-              addCollection({ name, books: [] })
+              addCollection({ name })
             }
           }}
           color="primary"

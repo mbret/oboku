@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
-import { TagsDocType } from "../rxdb/databases"
+import { TagsDocType } from "oboku-shared"
 import { normalizedTagsState } from "./states"
 
 export const useTagsInitialState = () => {

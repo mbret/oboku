@@ -1,11 +1,17 @@
 import { atom } from "recoil";
-import { LibraryDocType } from "../rxdb";
 import { LibraryViewMode } from "../rxdb/databases";
+
+export type LibraryDocType = {
+  viewMode: LibraryViewMode,
+  sorting: LibrarySorting
+  isLibraryUnlocked: boolean,
+  tags: string[]
+}
 
 export type LibrarySorting = 'date' | 'activity' | 'alpha'
 
 export const libraryState = atom<LibraryDocType>({
-  key: 'libraryState',
+  key: 'libraryState_persist',
   default: {
     isLibraryUnlocked: false,
     viewMode: LibraryViewMode.GRID,
