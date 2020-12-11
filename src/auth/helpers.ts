@@ -83,6 +83,7 @@ export const useSignIn = () => {
       await newDb?.auth.safeUpdate({ $set: { token, email, userId } }, auth => auth.findOne())
       unlock('authorize')
     } catch (e) {
+      console.error(e)
       setError(e)
       unlock('authorize')
     }
