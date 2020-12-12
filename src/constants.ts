@@ -1,12 +1,13 @@
 export const API_URI = process.env.REACT_APP_API_URL
 export const API_SYNC_URL = `${API_URI}/sync`
-export const API_SYNC_POLL1_URL = `${process.env.REACT_APP_API_POLL_1_URL}/sync`
-export const API_SYNC_POLL_2_URL = `${process.env.REACT_APP_API_POLL_2_URL}/sync`
+// export const API_SYNC_POLL1_URL = `${process.env.REACT_APP_API_POLL_1_URL}/sync`
+export const API_SYNC_POLL1_URL = API_SYNC_URL
+// export const API_SYNC_POLL_2_URL = `${process.env.REACT_APP_API_POLL_2_URL}/sync`
+export const API_SYNC_POLL_2_URL = API_SYNC_URL
 // export const API_URI = 'https://mbret-oboku-api.glitch.me/'
 // export const API_URI = 'https://tough-walrus-50.loca.lt/'
 
 console.log(process.env)
-
 
 export const ROUTES = {
   HOME: '/',
