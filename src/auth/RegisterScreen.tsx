@@ -98,7 +98,7 @@ export const RegisterScreen = () => {
             <Alert severity="info" >Something went wrong. Could you try again?</Alert>
           )}
           {hasBetaCodeError && (
-            <Alert severity="info" >Beta code invalid</Alert>
+            <Alert severity="info" >This beta code is not valid for this email</Alert>
           )}
           <Button
             style={{
