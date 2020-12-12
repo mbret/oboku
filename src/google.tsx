@@ -1,4 +1,5 @@
-import React, { FC, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { FC, useContext, useEffect, useRef, useState } from 'react'
+import { Report } from './report'
 
 type ContextValue = [typeof gapi | undefined, 'loading' | 'signedOut' | 'signedIn', () => void]
 const defaultContextValue: ContextValue = [undefined, 'loading', () => { }]
@@ -53,7 +54,7 @@ export const GoogleApiProvider: FC = ({ children }) => {
     
           setIsReady(true)
         } catch (e) {
-          console.error(e)
+          Report.error(e)
         }
       });
     }
@@ -140,7 +141,7 @@ export const useFiles = (options: { q?: string }) => {
         }
         console.log(response)
       } catch (e) {
-        console.error(e)
+        Report.error(e)
       }
     })()
   }, [gapi, q, nextToken])

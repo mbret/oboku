@@ -7,6 +7,7 @@ import { useLock } from "../lockState"
 import { useReCreateDb, useDatabase } from "../rxdb"
 import { authState } from "./authState"
 import { useResetStore } from "../PersistedRecoilRoot"
+import { Report } from "../report"
 
 export const useAuth = () =>
   useRxQuery(db => db.auth.findOne().where('id').equals('auth'))
@@ -47,7 +48,7 @@ export const useAuthorize = () => {
       unlock('authorize')
       onSuccess()
     } catch (e) {
-      console.error(e)
+      Report.error(e)
       unlock('authorize')
     }
   }
@@ -83,7 +84,7 @@ export const useSignIn = () => {
       await newDb?.auth.safeUpdate({ $set: { token, email, userId } }, auth => auth.findOne())
       unlock('authorize')
     } catch (e) {
-      console.error(e)
+      Report.error(e)
       setError(e)
       unlock('authorize')
     }

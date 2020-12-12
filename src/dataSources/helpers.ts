@@ -3,6 +3,7 @@ import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
 import { DataSourceDocType } from 'oboku-shared'
 import { useRxMutation } from "../rxdb/hooks"
+import { Report } from "../report"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
@@ -28,7 +29,7 @@ export const useSynchronizeDataSource = () => {
       .complete$
       .pipe(first())
       .subscribe(completed => {
-        completed && client.syncDataSource(_id).catch(console.error)
+        completed && client.syncDataSource(_id).catch(Report.error)
       })
   }
 }

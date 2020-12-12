@@ -4,6 +4,7 @@ import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
 import { DataSourceDocType } from 'oboku-shared'
 import { normalizedDataSourcesState } from "./states"
+import { Report } from "../report"
 
 export const useDataSourcesInitialState = () => {
   const db = useDatabase()
@@ -23,7 +24,7 @@ export const useDataSourcesInitialState = () => {
 
           setIsReady(true)
         } catch (e) {
-          console.error(e)
+          Report.error(e)
         }
       })()
     }

@@ -4,6 +4,7 @@ import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
 import { TagsDocType } from "oboku-shared"
 import { normalizedTagsState } from "./states"
+import { Report } from "../report"
 
 export const useTagsInitialState = () => {
   const db = useDatabase()
@@ -23,7 +24,7 @@ export const useTagsInitialState = () => {
 
           setIsReady(true)
         } catch (e) {
-          console.error(e)
+          Report.error(e)
         }
       })()
     }

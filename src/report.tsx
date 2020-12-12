@@ -1,5 +1,13 @@
+import * as Sentry from "@sentry/react"
+
 export const Report = {
-  log: () => {
-    
+  error: (err: any) => {
+    if (process.env.NODE_ENV !== 'development') {
+      Sentry.captureException(err)
+    }
+    console.error(err)
+  },
+  captureMessage: (message: string, captureContext?: Parameters<typeof Sentry.captureMessage>[1]) => {
+    Sentry.captureMessage(message, captureContext)
   }
 }

@@ -6,6 +6,7 @@ import { useLinksInitialState } from "./links/observers";
 import { useCollectionsInitialState } from "./collections/observers";
 import { useDataSourcesInitialState } from "./dataSources/observers";
 import { useAuthStateReducer, useSettingsStateReducer } from "./useObservers";
+import { Report } from "./report";
 
 /**
  * This hook will load anything needed from the database into the state.
@@ -35,7 +36,7 @@ export const useLoadInitialState = () => {
 
           setIsReady(true)
         } catch (e) {
-          console.error(e)
+          Report.error(e)
         }
       })()
     }

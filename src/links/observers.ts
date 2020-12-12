@@ -4,6 +4,7 @@ import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
 import { LinkDocType } from 'oboku-shared'
 import { normalizedLinksState } from "./states"
+import { Report } from "../report"
 
 export const useLinksInitialState = () => {
   const db = useDatabase()
@@ -23,7 +24,7 @@ export const useLinksInitialState = () => {
 
           setIsReady(true)
         } catch (e) {
-          console.error(e)
+          Report.error(e)
         }
       })()
     }

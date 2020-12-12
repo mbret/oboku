@@ -6,6 +6,7 @@ import { API_SYNC_URL } from "../constants"
 import { first } from 'rxjs/operators'
 import PouchDB from 'pouchdb'
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
+import { Report } from "../report"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -77,7 +78,7 @@ export const useRefreshBookMetadata = () => {
       .complete$
       .pipe(first())
       .subscribe(completed => {
-        completed && client.refreshMetadata(bookId).catch(console.error)
+        completed && client.refreshMetadata(bookId).catch(Report.error)
       })
   }
 }
@@ -133,7 +134,7 @@ export const useAddBook = () => {
         refreshMetadata(book._id)
       }
     } catch (e) {
-      console.error(e)
+      Report.error(e)
     }
   }
 

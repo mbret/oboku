@@ -4,6 +4,7 @@ import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
 import { CollectionDocType } from 'oboku-shared'
 import { normalizedCollectionsState } from "./states"
+import { Report } from "../report"
 
 export const useCollectionsInitialState = () => {
   const db = useDatabase()
@@ -23,7 +24,7 @@ export const useCollectionsInitialState = () => {
 
           setIsReady(true)
         } catch (e) {
-          console.error(e)
+          Report.error(e)
         }
       })()
     }

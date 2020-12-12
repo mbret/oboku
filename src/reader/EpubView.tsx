@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Book, Contents, EpubCFI, Rendition } from 'epubjs'
 import { BookOptions } from "epubjs/types/book"
 import { RenditionOptions } from "epubjs/types/rendition"
+import { Report } from "../report";
 
 interface Toc {
   label: string;
@@ -124,7 +125,7 @@ export class EpubView extends Component<{
     }
 
     this.rendition.on('displayError', e => {
-      console.error(e)
+      Report.error(e)
     })
 
     this.prevPage = () => {

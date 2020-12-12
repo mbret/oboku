@@ -1,5 +1,6 @@
 import localforage from 'localforage';
 import { useSetRecoilState } from 'recoil';
+import { Report } from '../report';
 import { DownloadState, normalizedBookDownloadsState } from './states';
 
 export const useRemoveDownloadFile = () => {
@@ -16,7 +17,7 @@ export const useRemoveDownloadFile = () => {
         }
       }))
     } catch (e) {
-      console.error(e)
+      Report.error(e)
     }
   }
 }

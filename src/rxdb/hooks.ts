@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { RxDatabase, RxQuery } from "rxdb"
 import { Subscription } from "rxjs"
+import { Report } from "../report"
 import type { DocTypes, MyDatabaseCollections } from "../rxdb"
 import { PromiseReturnType } from "../types"
 import { useDatabase } from "./RxDbProvider"
@@ -46,7 +47,7 @@ export function useRxQuery<D extends DocTypes, R extends D | null | D[]>(
           setRes(result)
           setInc(inc => inc + 1)
         } catch (e) {
-          console.error(e)
+          Report.error(e)
         }
       })()
     }

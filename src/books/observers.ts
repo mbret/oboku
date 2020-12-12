@@ -2,6 +2,7 @@ import { BookDocType } from "oboku-shared"
 import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
+import { Report } from "../report"
 import { useDatabase } from "../rxdb"
 import { normalizedBooksState } from "./states"
 
@@ -23,7 +24,7 @@ export const useBooksInitialState = () => {
 
           setIsReady(true)
         } catch (e) {
-          console.error(e)
+          Report.error(e)
         }
       })()
     }

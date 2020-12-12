@@ -3,6 +3,7 @@ import localforage from 'localforage'
 import React, { createContext, FC, useContext, useEffect, useRef, useState } from "react";
 import { Subject, asyncScheduler } from "rxjs";
 import { throttleTime } from 'rxjs/operators'
+import { Report } from "./report";
 
 const PersistedStatesContext = createContext<RecoilState<any>[]>([])
 
@@ -40,7 +41,7 @@ const usePersistance = () => {
             })
           )
         } catch (e) {
-          console.error(e)
+          Report.error(e)
         }
       })
 

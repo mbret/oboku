@@ -4,6 +4,7 @@ import throttle from 'lodash.throttle';
 import { UnwrapRecoilValue, useSetRecoilState } from 'recoil';
 import { DownloadState, normalizedBookDownloadsState } from './states';
 import { useAxiosClient } from '../axiosClient';
+import { Report } from '../report';
 
 export const useDownloadFile = () => {
   const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
@@ -61,7 +62,7 @@ export const useDownloadFile = () => {
         throw e
       }
     } catch (e) {
-      console.error(e)
+      Report.error(e)
     }
   }, [client, setDownloadData])
 }

@@ -14,7 +14,7 @@ const useRevertInvalidDownloads = () => {
   // const client = useOfflineApolloClient()
 
   useEffect(() => {
-    // console.error('todo')
+    // Report.error('todo')
 
     //   (async () => {
     //     try {
@@ -42,11 +42,11 @@ const useRevertInvalidDownloads = () => {
     //             })
     //           })
     //         } catch (e) {
-    //           console.error(e)
+    //           Report.error(e)
     //         }
     //       })
     //     } catch (e) {
-    //       console.error(e)
+    //       Report.error(e)
     //     }
     //   })()
   }, [])

@@ -1,4 +1,5 @@
 import { useSetRecoilState } from "recoil"
+import { Report } from "../report"
 import { syncState } from "./states"
 
 export const useSyncLibrary = () => {
@@ -7,4 +8,4 @@ export const useSyncLibrary = () => {
   return () => setSyncState(old => ({ ...old, syncRefresh: old.syncRefresh + 1 }))
 }
 
-export const useToggleTag = () => (a: any) => console.error('todo')
+export const useToggleTag = () => (a: any) => Report.error('todo')
