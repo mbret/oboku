@@ -1,3 +1,4 @@
+import './debug'
 import React from 'react';
 import ReactDOM from 'react-dom';
 import 'fontsource-roboto/300.css'
@@ -6,31 +7,14 @@ import 'fontsource-roboto/500.css'
 import 'fontsource-roboto/700.css'
 import './index.css';
 import { App } from './App';
-import reportWebVitals from './reportWebVitals';
-import * as Sentry from "@sentry/react";
-import { Integrations } from "@sentry/tracing";
-import firebase from "firebase/app"
-import "firebase/analytics"
-import { FIREBASE_BASE_CONFIG } from './constants'
-
-Sentry.init({
-  dsn: "https://0d7a61df8dba4122be660fcc1161bf49@o490447.ingest.sentry.io/5554285",
-  autoSessionTracking: true,
-  integrations: [
-    new Integrations.BrowserTracing(),
-  ],
-
-  // We recommend adjusting this value in production, or using tracesSampler
-  // for finer control
-  tracesSampleRate: 1.0,
-})
-
-firebase.initializeApp(FIREBASE_BASE_CONFIG)
-firebase.analytics()
+import reportWebVitals from './reportWebVitals'
+import * as Sentry from "@sentry/react"
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Sentry.ErrorBoundary>
+      <App />
+    </Sentry.ErrorBoundary>
   </React.StrictMode>,
   document.getElementById('root')
 );

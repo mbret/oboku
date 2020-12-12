@@ -1,0 +1,5 @@
+export const Report = {
+  log: () => {
+    
+  }
+}
