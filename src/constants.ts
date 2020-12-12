@@ -17,8 +17,6 @@ export const FIREBASE_BASE_CONFIG = {
   measurementId: "G-8HE2QKW24V"
 }
 
-console.log(process.env)
-
 export const ROUTES = {
   HOME: '/',
   BOOK_DETAILS: '/book/:id',

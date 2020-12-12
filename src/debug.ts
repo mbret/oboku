@@ -26,3 +26,5 @@ if (process.env.NODE_ENV !== 'development') {
   console.error = () => { }
   console.warn = () => { }
 }
+
+console.log(process.env)
