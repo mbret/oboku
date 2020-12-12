@@ -7,6 +7,16 @@ export const API_SYNC_POLL_2_URL = API_SYNC_URL
 // export const API_URI = 'https://mbret-oboku-api.glitch.me/'
 // export const API_URI = 'https://tough-walrus-50.loca.lt/'
 
+export const FIREBASE_BASE_CONFIG = {
+  apiKey: "AIzaSyDJIkOKxOCf3WXrsPldQrEIY7LY237YSGU",
+  authDomain: "oboku-api.firebaseapp.com",
+  projectId: "oboku-api",
+  storageBucket: "oboku-api.appspot.com",
+  messagingSenderId: "325550353363",
+  appId: "1:325550353363:web:a1c53e1b63fe56ac829d26",
+  measurementId: "G-8HE2QKW24V"
+}
+
 console.log(process.env)
 
 export const ROUTES = {
