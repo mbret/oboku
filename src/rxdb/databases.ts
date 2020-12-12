@@ -21,7 +21,7 @@ addRxPlugin(RxDBReplicationPlugin)
 addRxPlugin(RxdbReplicationPlugin)
 
 addRxPlugin(require('pouchdb-adapter-idb'));
-// addRxPlugin(require('pouchdb-adapter-http'))
+addRxPlugin(require('pouchdb-adapter-http'))
 
 export enum LibraryViewMode {
   GRID = 'grid',

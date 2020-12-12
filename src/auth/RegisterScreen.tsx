@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme, Button, TextField } from '@material-ui/core';
 import { Alert } from '@material-ui/lab'
-import { ERROR_EMAIL_TAKEN } from 'oboku-shared'
+import { ERROR_EMAIL_TAKEN, ERROR_INVALID_BETA_CODE } from 'oboku-shared'
 import { OrDivider } from '../common/OrDivider';
 import { Header } from './Header';
 import { useHistory } from 'react-router-dom';
@@ -19,26 +19,29 @@ export const RegisterScreen = () => {
   const history = useHistory()
   const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || '')
   const [password, setPassword] = useState(process.env.REACT_APP_PASSWORD || '')
+  const [code, setCode] = useState('')
   const isValid = useIsValid(email, password)
   const theme = useTheme()
   const [signUp, { error }] = useSignUp()
   let hasEmailTakenError = false
+  let hasBetaCodeError = false
   let hasUnknownError = false
 
-  if (error) {
-    hasUnknownError = true
-  }
   if (error instanceof ServerError) {
     error.errors.forEach(({ code }) => {
       if (code === ERROR_EMAIL_TAKEN) {
         hasEmailTakenError = true
         hasUnknownError = false
+      } else if (code === ERROR_INVALID_BETA_CODE) {
+        hasBetaCodeError = true
       }
     })
+  } else if (error) {
+    hasUnknownError = true
   }
 
   const onSubmit = async () => {
-    signUp(email, password)
+    signUp(email, password, code)
   }
 
   return (
@@ -77,11 +80,25 @@ export const RegisterScreen = () => {
             value={password}
             onChange={e => setPassword(e.target.value)}
           />
+          <TextField
+            label="Beta code"
+            type="text"
+            variant="outlined"
+            style={{
+              width: '100%',
+              marginBottom: theme.spacing(2),
+            }}
+            value={code}
+            onChange={e => setCode(e.target.value)}
+          />
           {hasEmailTakenError && (
             <Alert severity="info">This email is already taken</Alert>
           )}
           {hasUnknownError && (
             <Alert severity="info" >Something went wrong. Could you try again?</Alert>
+          )}
+          {hasBetaCodeError && (
+            <Alert severity="info" >Beta code invalid</Alert>
           )}
           <Button
             style={{

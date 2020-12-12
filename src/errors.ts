@@ -1,7 +1,6 @@
-import { BAD_USER_INPUT } from "oboku-shared";
-import { ERROR_EMAIL_TAKEN } from "oboku-shared";
+import { BAD_USER_INPUT, ERROR_EMAIL_TAKEN, ERROR_INVALID_BETA_CODE } from "oboku-shared"
 
-type ErrorCode = typeof ERROR_EMAIL_TAKEN | typeof BAD_USER_INPUT
+type ErrorCode = typeof ERROR_EMAIL_TAKEN | typeof BAD_USER_INPUT | typeof ERROR_INVALID_BETA_CODE
 
 export const createServerError = async (response: Response) => {
   try {

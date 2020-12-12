@@ -100,12 +100,12 @@ export const useSignUp = () => {
   const resetLocalState = useResetStore()
   const [error, setError] = useState<Error | undefined>(undefined)
 
-  const cb = useCallback(async (email: string, password: string) => {
+  const cb = useCallback(async (email: string, password: string, code) => {
     try {
       lock('authorize')
       const response = await fetch(`${API_URI}/signup`, {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, code }),
         headers: {
           "Content-Type": "application/json"
         }
