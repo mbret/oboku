@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-import { atom, useRecoilState } from 'recoil';
 import { addRxPlugin, createRxDatabase, RxCollection, RxDocument, RxJsonSchema, RxQuery } from 'rxdb'
 import { RxdbReplicationPlugin, withReplicationSchema } from './rxdb-plugins/replication';
 import { MongoUpdateSyntax, PromiseReturnType } from '../types';
@@ -11,15 +9,19 @@ import { BookDocType, InsertableBookDocType, LinkDocType, TagsDocType } from 'ob
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
-        
+import { RxDBReplicationPlugin } from 'rxdb/plugins/replication'
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+
 // theses plugins does not get automatically added when building for production
+addRxPlugin(RxDBLeaderElectionPlugin)
 addRxPlugin(RxDBQueryBuilderPlugin)
 addRxPlugin(RxDBValidatePlugin)
 addRxPlugin(RxDBUpdatePlugin);
+addRxPlugin(RxDBReplicationPlugin)
+addRxPlugin(RxdbReplicationPlugin)
 
 addRxPlugin(require('pouchdb-adapter-idb'));
-addRxPlugin(require('pouchdb-adapter-http'))
-addRxPlugin(RxdbReplicationPlugin)
+// addRxPlugin(require('pouchdb-adapter-http'))
 
 export enum LibraryViewMode {
   GRID = 'grid',
@@ -246,9 +248,7 @@ const linkCollectionMethods: LinkCollectionMethods = {
 
 type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 
-const databaseState = atom<{ valid }>({ key: 'database', default: { valid: false } })
-
-const createDatabase = async () => {
+export const createDatabase = async () => {
   // await removeRxDatabase('oboku', 'idb')
   const db = await createRxDatabase<MyDatabaseCollections>({
     name: 'oboku',
@@ -326,80 +326,3 @@ const initializeCollectionsData = async (db: Database) => {
     console.warn(e)
   }
 }
-
-export const useReCreateDb = () => {
-  const [, setDb] = useRecoilState(databaseState)
-  const currentDb = useDatabase()
-
-  return async () => {
-    _db = undefined
-    dbIsLoading = true
-    setDb({ valid: false })
-
-    // at this point we expect useDatabase to be rendered
-    // again with undefined database. So that nothing should interact with
-    // the db while it's being recreated
-    await currentDb?.remove()
-    _db = await createDatabase()
-
-    // We force a new render of useDatabase to notify everyone
-    dbIsLoading = false
-    setDb({ valid: true })
-
-    return _db
-  }
-}
-
-let dbIsLoading = false
-let _db: Database | undefined = undefined
-
-export const useDatabase = () => {
-  const [{ valid }, setDbState] = useRecoilState(databaseState)
-  const [db, setDb] = useState(_db)
-
-  useEffect(() => {
-    if (!valid && !db && !dbIsLoading) {
-      console.warn(valid, db, dbIsLoading)
-      dbIsLoading = true;
-      (async () => {
-        _db = await createDatabase()
-        dbIsLoading = false
-        setDbState({ valid: true })
-        setDb(_db)
-      })()
-    }
-  }, [valid, setDbState, db]);
-
-  (window as any).db = _db
-
-  return _db
-}
-
-
-// export const useSync = () => {
-//   database
-//     .sync({
-//       collectionNames: ['link', 'book'],
-//       syncOptions: () => ({
-//         remote: new PouchDB(API_SYNC_URL, {
-//           fetch: (url, opts) => {
-//             (opts?.headers as unknown as Map<string, string>).set('Authorization', client.getAuthorizationHeader())
-//             return PouchDB.fetch(url, opts)
-//           }
-//         }),
-//         direction: {
-//           push: true,
-//         },
-//         options: {
-//           retry: false,
-//           live: false,
-//           timeout: 5000,
-//         }
-//       })
-//     })
-//     .complete$
-//     .pipe(first())
-//     .subscribe(completed => {
-//       completed && refreshMetadata(book._id).catch(_ => { })
-//     })
-// }

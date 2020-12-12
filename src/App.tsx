@@ -11,15 +11,15 @@ import { TourProvider } from './app-tour/TourProvider';
 import { ManageBookCollectionsDialog } from './books/ManageBookCollectionsDialog';
 import { GoogleApiProvider } from './google';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import { UpdateAvailableDialog, updateAvailableState } from './UpdateAvailableDialog';
-import { useDatabase } from './rxdb';
+import { UpdateAvailableDialog } from './UpdateAvailableDialog';
+import { RxDbProvider } from './rxdb';
 import { useObservers } from './useObservers';
 import { useLoadInitialState } from './useLoadInitialState';
-import { useSetRecoilState } from 'recoil';
 import { AxiosProvider } from './axiosClient';
 import { PersistedRecoilRoot } from './PersistedRecoilRoot';
 import { libraryState } from './library/states';
 import { normalizedBookDownloadsState } from './download/states';
+import { AppLoading } from './AppLoading';
 
 const localStatesToPersist = [
   libraryState,
@@ -27,16 +27,18 @@ const localStatesToPersist = [
 ]
 
 export function App() {
+  const [loading, setLoading] = useState(true)
   const [newServiceWorker, setNewServiceWorker] = useState<ServiceWorker | undefined>(undefined)
 
   return (
     <>
-      <PersistedRecoilRoot states={localStatesToPersist}>
-        <CookiesProvider>
-          <GoogleApiProvider>
-            <AxiosProvider >
-              <ThemeProvider theme={theme}>
-                <RecoilSyncedWithDatabase>
+      <ThemeProvider theme={theme}>
+        {loading && <AppLoading />}
+        <RxDbProvider>
+          <PersistedRecoilRoot states={localStatesToPersist} onReady={() => setLoading(false)}>
+            <CookiesProvider>
+              <GoogleApiProvider>
+                <AxiosProvider >
                   <TourProvider>
                     <AppNavigator />
                     <AppTourWelcome />
@@ -45,48 +47,39 @@ export function App() {
                     <RoutineProcess />
                   </TourProvider>
                   <UpdateAvailableDialog serviceWorker={newServiceWorker} />
-                </RecoilSyncedWithDatabase>
-                <BlockingBackdrop />
-              </ThemeProvider>
-            </AxiosProvider>
-          </GoogleApiProvider>
-        </CookiesProvider>
-      </PersistedRecoilRoot>
+                  <RecoilSyncedWithDatabase />
+                  <BlockingBackdrop />
+                </AxiosProvider>
+              </GoogleApiProvider>
+            </CookiesProvider>
+          </PersistedRecoilRoot>
+        </RxDbProvider>
+      </ThemeProvider>
       <UpdateAvailableObserver onUpdateAvailable={sw => setNewServiceWorker(sw)} />
     </>
   );
 }
 
 const RecoilSyncedWithDatabase: FC = ({ children }) => {
-  useDatabase()
-  const isInitialStateReady = useLoadInitialState()
-
+  useLoadInitialState()
   useObservers()
 
-  return (
-    <>
-      {!isInitialStateReady ? null : children}
-    </>
-  )
+  return null
 }
 
 const UpdateAvailableObserver: FC<{ onUpdateAvailable: (sw: ServiceWorker) => void }> = ({ onUpdateAvailable }) => {
-  const setUpdateAvailable = useSetRecoilState(updateAvailableState)
-
   useEffect(() => {
     // If you want your app to work offline and load faster, you can change
     // unregister() to register() below. Note this comes with some pitfalls.
     // Learn more about service workers: https://cra.link/PWA
     serviceWorkerRegistration.register({
       onSuccess: () => console.warn('onSuccess'),
-      onUpdate: reg => console.warn('onUpdate', reg),
+      onUpdate: reg => reg.waiting && onUpdateAvailable(reg.waiting),
       onWaitingServiceWorkerFound: async (reg) => {
         reg.waiting && onUpdateAvailable(reg.waiting)
-        // reg.waiting && setNewServiceWorker(reg.waiting)
-        setUpdateAvailable(true)
       },
     });
-  }, [onUpdateAvailable, setUpdateAvailable])
+  }, [onUpdateAvailable])
 
   return null
 }

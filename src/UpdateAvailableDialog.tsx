@@ -1,6 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core'
 import React, { FC } from 'react'
-import { atom, useRecoilValue } from 'recoil'
+import { atom } from 'recoil'
 
 export const updateAvailableState = atom({
   key: 'updateAvailableState',
@@ -10,7 +10,7 @@ export const updateAvailableState = atom({
 export const UpdateAvailableDialog: FC<{
   serviceWorker?: ServiceWorker
 }> = ({ serviceWorker }) => {
-  const hasUpdate = useRecoilValue(updateAvailableState)
+  const hasUpdate = !!serviceWorker
 
   return (
     <Dialog

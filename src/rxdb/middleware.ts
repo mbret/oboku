@@ -1,4 +1,4 @@
-import { useDatabase } from './databases'
+import { useDatabase } from './RxDbProvider'
 
 type Database = NonNullable<ReturnType<typeof useDatabase>>
 

@@ -8,7 +8,7 @@ import { RxDatabase, RxQuery } from "rxdb"
 import { Subscription } from "rxjs"
 import type { DocTypes, MyDatabaseCollections } from "../rxdb"
 import { PromiseReturnType } from "../types"
-import { useDatabase } from "./databases"
+import { useDatabase } from "./RxDbProvider"
 
 // ): PromiseReturnType<NonNullable<ReturnType<NonNullable<typeof queryCb>>>['exec']>
 export function useRxQuery<D extends DocTypes, R extends D | null | D[]>(

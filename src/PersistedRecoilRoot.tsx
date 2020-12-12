@@ -67,15 +67,23 @@ const RecoilPersistor = () => {
   return null
 }
 
-export const PersistedRecoilRoot: FC<{ states?: RecoilState<any>[] }> = ({ children, states = [] }) => {
+export const PersistedRecoilRoot: FC<{
+  states?: RecoilState<any>[],
+  onReady: () => void
+}> = ({ children, states = [], onReady }) => {
   const [initialeState, setInitialState] = useState<{ [key: string]: { value: any } } | undefined>(undefined)
+  const alreadyLoaded = useRef(!!initialeState)
 
   useEffect(() => {
     (async () => {
-      const restored = await localforage.getItem<string>(`local-user`)
-      setInitialState(restored ? JSON.parse(restored) : {})
+      if (!alreadyLoaded.current) {
+        const restored = await localforage.getItem<string>(`local-user`)
+        alreadyLoaded.current = true
+        setInitialState(restored ? JSON.parse(restored) : {})
+        onReady()
+      }
     })()
-  }, [])
+  }, [onReady])
 
   const initializeState = ({ set }: MutableSnapshot) => {
     if (initialeState) {

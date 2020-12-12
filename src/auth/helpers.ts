@@ -4,7 +4,7 @@ import { API_URI } from "../constants"
 import { AuthDocType, useRxMutation, useRxQuery } from "../rxdb"
 import { createServerError } from "../errors"
 import { useLock } from "../lockState"
-import { useReCreateDb, useDatabase } from "../rxdb/databases"
+import { useReCreateDb, useDatabase } from "../rxdb"
 import { authState } from "./authState"
 import { useResetStore } from "../PersistedRecoilRoot"
 

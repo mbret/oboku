@@ -1,5 +1,5 @@
 import { atom } from "recoil";
-import { LibraryViewMode } from "../rxdb/databases";
+import { LibraryViewMode } from "../rxdb";
 
 export type LibraryDocType = {
   viewMode: LibraryViewMode,
