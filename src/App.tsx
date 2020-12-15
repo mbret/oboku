@@ -26,6 +26,7 @@ const localStatesToPersist = [
   libraryState,
   normalizedBookDownloadsState,
 ]
+
 export function App() {
   const [loading, setLoading] = useState(true)
   const [newServiceWorker, setNewServiceWorker] = useState<ServiceWorker | undefined>(undefined)
