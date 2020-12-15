@@ -20,6 +20,7 @@ import { PersistedRecoilRoot } from './PersistedRecoilRoot';
 import { libraryState } from './library/states';
 import { normalizedBookDownloadsState } from './download/states';
 import { AppLoading } from './AppLoading';
+import { UserFeedback } from './UserFeedback';
 
 const localStatesToPersist = [
   libraryState,
@@ -52,6 +53,7 @@ export function App() {
                 </AxiosProvider>
               </GoogleApiProvider>
             </CookiesProvider>
+            <UserFeedback />
           </PersistedRecoilRoot>
         </RxDbProvider>
       </ThemeProvider>

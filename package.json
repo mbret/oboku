@@ -38,7 +38,7 @@
     "react-use": "^15.3.4",
     "recoil": "^0.1.2",
     "recyclerlistview": "^3.0.0",
-    "rxdb": "^9.10.1",
+    "rxdb": "^9.11.0",
     "rxjs": "^6.6.3",
     "serve": "^11.3.2",
     "typescript": "^4.0.3",
