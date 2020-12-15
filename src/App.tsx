@@ -40,7 +40,7 @@ export function App() {
               <GoogleApiProvider>
                 <AxiosProvider >
                   <TourProvider>
-                    <AppNavigator />
+                    {/* <AppNavigator /> */}
                     <AppTourWelcome />
                     <UnlockLibraryDialog />
                     <ManageBookCollectionsDialog />
