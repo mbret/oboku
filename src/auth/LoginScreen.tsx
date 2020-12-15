@@ -86,7 +86,7 @@ export const LoginScreen = () => {
           size="large"
           onClick={onSubmit}
         >
-          Login
+          PUTE
         </Button>
         <div style={{ textAlign: 'center', margin: theme.spacing(2) }}>
           <Link color="textPrimary" href="#" onClick={() => alert('Not implemented yet')}>
