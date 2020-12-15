@@ -9,6 +9,7 @@ import { ROUTES } from '../constants';
 import * as yup from 'yup'
 import { useSignUp } from './helpers'
 import { ServerError } from '../errors';
+import { CenteredBox } from '../common/CenteredBox';
 
 const schema = yup.object().shape({
   email: yup.string().email().required(),
@@ -45,93 +46,88 @@ export const RegisterScreen = () => {
   }
 
   return (
-    <div style={{
+    <CenteredBox style={{
       flex: 1,
       paddingTop: theme.spacing(4),
       paddingBottom: theme.spacing(4),
     }}>
       <Header />
-      <div style={{
-        paddingLeft: theme.spacing(5),
-        paddingRight: theme.spacing(5),
-      }}>
-        <form style={{}} noValidate autoComplete="off">
-          <TextField
-            label="Email"
-            type="text"
-            variant="outlined"
-            autoComplete="email"
-            style={{
-              width: '100%',
-              marginBottom: theme.spacing(2),
-            }}
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-          />
-          <TextField
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            variant="outlined"
-            style={{
-              width: '100%',
-              marginBottom: theme.spacing(2),
-            }}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-          <TextField
-            label="Beta code"
-            type="text"
-            variant="outlined"
-            style={{
-              width: '100%',
-              marginBottom: theme.spacing(2),
-            }}
-            value={code}
-            onChange={e => setCode(e.target.value)}
-          />
-          {hasEmailTakenError && (
-            <Alert severity="info">This email is already taken</Alert>
-          )}
-          {hasUnknownError && (
-            <Alert severity="info" >Something went wrong. Could you try again?</Alert>
-          )}
-          {hasBetaCodeError && (
-            <Alert severity="info" >This beta code is not valid for this email</Alert>
-          )}
-          <Button
-            style={{
-              marginTop: theme.spacing(2),
-              width: '100%',
-            }}
-            color="primary"
-            variant="outlined"
-            size="large"
-            disabled={!isValid}
-            onClick={onSubmit}
-          >
-            Register
-        </Button>
-        </form>
-        <OrDivider style={{
-          marginTop: theme.spacing(2)
-        }} />
+      <form style={{}} noValidate autoComplete="off">
+        <TextField
+          label="Email"
+          type="text"
+          variant="outlined"
+          autoComplete="email"
+          style={{
+            width: '100%',
+            marginBottom: theme.spacing(2),
+          }}
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+        />
+        <TextField
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          variant="outlined"
+          style={{
+            width: '100%',
+            marginBottom: theme.spacing(2),
+          }}
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
+        <TextField
+          label="Beta code"
+          type="text"
+          variant="outlined"
+          style={{
+            width: '100%',
+            marginBottom: theme.spacing(2),
+          }}
+          value={code}
+          onChange={e => setCode(e.target.value)}
+        />
+        {hasEmailTakenError && (
+          <Alert severity="info">This email is already taken</Alert>
+        )}
+        {hasUnknownError && (
+          <Alert severity="info" >Something went wrong. Could you try again?</Alert>
+        )}
+        {hasBetaCodeError && (
+          <Alert severity="info" >This beta code is not valid for this email</Alert>
+        )}
         <Button
           style={{
+            marginTop: theme.spacing(2),
             width: '100%',
           }}
           color="primary"
           variant="outlined"
           size="large"
-          onClick={() => {
-            history.replace(ROUTES.LOGIN)
-          }}
+          disabled={!isValid}
+          onClick={onSubmit}
         >
-          Login
+          Register
         </Button>
-      </div>
-    </div>
+      </form>
+      <OrDivider style={{
+        marginTop: theme.spacing(2)
+      }} />
+      <Button
+        style={{
+          width: '100%',
+        }}
+        color="primary"
+        variant="outlined"
+        size="large"
+        onClick={() => {
+          history.replace(ROUTES.LOGIN)
+        }}
+      >
+        Login
+        </Button>
+    </CenteredBox>
   );
 }
 

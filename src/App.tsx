@@ -4,7 +4,7 @@ import { AppNavigator } from './AppNavigator';
 import { ThemeProvider } from '@material-ui/core';
 import { theme } from './theme';
 import { CookiesProvider } from "react-cookie";
-import { BlockingBackdrop } from './BlockingBackdrop';
+import { BlockingBackdrop } from './common/BlockingBackdrop';
 import { UnlockLibraryDialog } from './auth/UnlockLibraryDialog';
 import { AppTourWelcome } from './firstTimeExperience/AppTourWelcome';
 import { TourProvider } from './app-tour/TourProvider';

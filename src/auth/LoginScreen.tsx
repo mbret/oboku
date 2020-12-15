@@ -8,6 +8,7 @@ import { Header } from './Header';
 import * as yup from 'yup'
 import { useSignIn } from './helpers';
 import { ServerError } from '../errors';
+import { CenteredBox } from '../common/CenteredBox';
 
 const schema = yup.object().shape({
   email: yup.string().email().required(),
@@ -37,84 +38,79 @@ export const LoginScreen = () => {
   }
 
   return (
-    <div style={{
+    <CenteredBox style={{
       flex: 1,
       paddingTop: theme.spacing(4),
       paddingBottom: theme.spacing(4),
     }}>
       <Header />
-      <div style={{
-        paddingLeft: theme.spacing(5),
-        paddingRight: theme.spacing(5),
-      }}>
-        <form style={{}} noValidate autoComplete="off">
-          <TextField
-            label="Email"
-            type="text"
-            variant="outlined"
-            autoComplete="email"
-            style={{
-              width: '100%',
-              marginBottom: theme.spacing(2),
-            }}
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-          />
-          <TextField
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            variant="outlined"
-            style={{
-              width: '100%',
-              marginBottom: theme.spacing(2),
-            }}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-          {hasInvalidInput && (
-            <Alert severity="info" >Wrong credentials</Alert>
-          )}
-          {hasUnknownError && (
-            <Alert severity="info" >Something went wrong. Could you try again?</Alert>
-          )}
-          <Button
-            style={{
-              marginTop: theme.spacing(2),
-              width: '100%',
-            }}
-            color="primary"
-            variant="outlined"
-            disabled={!isValid}
-            size="large"
-            onClick={onSubmit}
-          >
-            Login
-        </Button>
-          <div style={{ textAlign: 'center', margin: theme.spacing(2) }}>
-            <Link color="textPrimary" href="#" onClick={() => alert('Not implemented yet')}>
-              I forgot my password
-            </Link>
-          </div>
-        </form>
-        <OrDivider style={{
-          marginTop: theme.spacing(2)
-        }} />
-        <Button
+      <form style={{}} noValidate autoComplete="off">
+        <TextField
+          label="Email"
+          type="text"
+          variant="outlined"
+          autoComplete="email"
           style={{
             width: '100%',
+            marginBottom: theme.spacing(2),
           }}
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+        />
+        <TextField
+          label="Password"
+          type="password"
+          autoComplete="current-password"
           variant="outlined"
-          color="primary"
-          size="large"
-          onClick={() => {
-            history.replace(ROUTES.REGISTER)
+          style={{
+            width: '100%',
+            marginBottom: theme.spacing(2),
           }}
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
+        {hasInvalidInput && (
+          <Alert severity="info" >Wrong credentials</Alert>
+        )}
+        {hasUnknownError && (
+          <Alert severity="info" >Something went wrong. Could you try again?</Alert>
+        )}
+        <Button
+          style={{
+            marginTop: theme.spacing(2),
+            width: '100%',
+          }}
+          color="primary"
+          variant="outlined"
+          disabled={!isValid}
+          size="large"
+          onClick={onSubmit}
         >
-          Register
+          Login
         </Button>
-      </div>
-    </div>
+        <div style={{ textAlign: 'center', margin: theme.spacing(2) }}>
+          <Link color="textPrimary" href="#" onClick={() => alert('Not implemented yet')}>
+            I forgot my password
+            </Link>
+        </div>
+      </form>
+      <OrDivider style={{
+        marginTop: theme.spacing(2)
+      }} />
+      <Button
+        style={{
+          width: '100%',
+        }}
+        variant="outlined"
+        color="primary"
+        size="large"
+        onClick={() => {
+          history.replace(ROUTES.REGISTER)
+        }}
+      >
+        Register
+        </Button>
+    </CenteredBox>
   );
 }
 
