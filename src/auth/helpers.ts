@@ -20,13 +20,16 @@ export const useUpdateAuth = () =>
 
 export const useIsAuthenticated = () => !!useAuth()?.token
 
-export const useSignOut = () =>
-  useRxMutation(db =>
-    db.auth.findOne()
-      .where('id')
-      .equals('auth')
-      .update({ $set: { token: null } })
-  )
+export const useSignOut = () => {
+  const db = useDatabase()
+
+  return useCallback(async () => {
+    const doc = await db?.auth.findOne().exec()
+    await doc?.atomicPatch({
+      token: null
+    })
+  }, [db])
+}
 
 export const useAuthorize = () => {
   const [lock, unlock] = useLock()

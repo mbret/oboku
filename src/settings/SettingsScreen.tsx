@@ -25,7 +25,7 @@ export const SettingsScreen = () => {
   const auth = useRecoilValue(authState)
   const settings = useRecoilValue(settingsState)
   const library = useRecoilValue(libraryState)
-  const [signOut] = useSignOut()
+  const signOut = useSignOut()
   const [resetFirstTimeExperience] = useResetFirstTimeExperience()
   const setLibraryState = useSetRecoilState(libraryState)
 

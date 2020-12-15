@@ -34,3 +34,7 @@ code {
   height: 0;
   background: transparent;  /* Optional: just make scrollbar invisible */
 }
+
+.sentry-error-embed-wrapper {
+  z-index: 2000 !important; /* need to adjust because of material https://material-ui.com/customization/z-index/ */
+}
