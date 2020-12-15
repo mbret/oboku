@@ -41,7 +41,7 @@ export function App() {
                 <AxiosProvider >
                   <TourProvider>
                     <AppNavigator />
-                    {/* <AppTourWelcome /> */}
+                    <AppTourWelcome />
                     <UnlockLibraryDialog />
                     <ManageBookCollectionsDialog />
                     <RoutineProcess />
