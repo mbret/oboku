@@ -31,7 +31,7 @@ export const AppTourReader: React.FC = memo(() => {
         withButtons={false}
         content={({ onClose }) => (
           <Box className={styles.slide1}>
-            <Box style={{
+            {/* <Box style={{
               borderBottom: '1px dashed white',
               height: verticalTappingZoneHeight,
               width: '100%',
@@ -42,7 +42,7 @@ export const AppTourReader: React.FC = memo(() => {
             }}>
               <Typography>Tap here to show the top menu</Typography>
               <TouchAppRounded />
-            </Box>
+            </Box> */}
             <Box style={{
               display: 'flex',
               flex: 1,
@@ -66,7 +66,12 @@ export const AppTourReader: React.FC = memo(() => {
                 flexFlow: 'column',
                 padding: theme.spacing(3),
               }}>
-                <Typography>Navigate through the book by tapping on the side of the screen</Typography>
+                <Box >
+                  <Typography>Navigate through the book by tapping on the side of the screen</Typography>
+                </Box>
+                <Box mt={4}>
+                  <TouchAppRounded /> <Typography>Tap in the middle to toggle top and bottom menu</Typography>
+                </Box>
                 <Box mt={4}>
                   <Button
                     variant="outlined"
@@ -86,7 +91,7 @@ export const AppTourReader: React.FC = memo(() => {
                 <TouchAppRounded />
               </Box>
             </Box>
-            <Box style={{
+            {/* <Box style={{
               borderTop: '1px dashed white',
               height: verticalTappingZoneHeight,
               width: '100%',
@@ -97,7 +102,7 @@ export const AppTourReader: React.FC = memo(() => {
             }}>
               <TouchAppRounded />
               <Typography>Tap here to show reading controls menu</Typography>
-            </Box>
+            </Box> */}
           </Box>
         )}
       />

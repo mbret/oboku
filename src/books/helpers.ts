@@ -7,6 +7,7 @@ import { first } from 'rxjs/operators'
 import PouchDB from 'pouchdb'
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../report"
+import { useGetLazySignedGapi } from "../dataSources/google/helpers"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -51,9 +52,21 @@ export const useRefreshBookMetadata = () => {
   const client = useAxiosClient()
   const database = useDatabase()
   const [updateBook] = useUpdateBook()
+  const [getLazySignedGapi] = useGetLazySignedGapi()
 
   return async (bookId: string) => {
-    console.log(bookId)
+    const book = await database?.book.findOne({ selector: { _id: bookId } }).exec()
+    const firstLink = await database?.link.findOne({ selector: { _id: book?.links[0] } }).exec()
+
+    let credentials
+    switch (firstLink?.type) {
+      case LinkType.Drive: {
+        credentials = (await getLazySignedGapi())?.credentials
+        break
+      }
+      default:
+    }
+
     await updateBook({ _id: bookId, lastMetadataUpdatedAt: null })
 
     database?.sync({
@@ -78,7 +91,7 @@ export const useRefreshBookMetadata = () => {
       .complete$
       .pipe(first())
       .subscribe(completed => {
-        completed && client.refreshMetadata(bookId).catch(Report.error)
+        completed && client.refreshMetadata(bookId, credentials).catch(Report.error)
       })
   }
 }
