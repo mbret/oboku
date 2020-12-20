@@ -14,6 +14,7 @@
     "@types/gapi": "0.0.39",
     "@types/gapi.auth2": "0.0.52",
     "@types/gapi.client.drive": "^3.0.13",
+    "@types/google.picker": "0.0.34",
     "@types/pouchdb": "^6.4.0",
     "@types/yup": "^0.29.10",
     "axios": "^0.21.0",
@@ -21,6 +22,8 @@
     "fontsource-roboto": "^3.0.3",
     "gh-pages": "^3.1.0",
     "graphql": "^15.4.0",
+    "jszip": "^3.5.0",
+    "libarchive.js": "^1.3.0",
     "localforage": "^1.9.0",
     "lodash.throttle": "^4.1.1",
     "oboku-shared": "git+https://github.com/mbret/oboku-shared.git",
@@ -29,6 +32,7 @@
     "pouchdb-adapter-idb": "^7.2.2",
     "pouchdb-adapter-memory": "^7.2.2",
     "ramda": "^0.27.1",
+    "rc-slider": "^9.7.1",
     "react": "^17.0.1",
     "react-cookie": "^4.0.3",
     "react-dom": "^17.0.1",
@@ -56,6 +60,7 @@
     "workbox-routing": "^5.1.3",
     "workbox-strategies": "^5.1.3",
     "workbox-streams": "^5.1.3",
+    "workerize-loader": "^1.3.0",
     "yup": "^0.29.3"
   },
   "devDependencies": {
