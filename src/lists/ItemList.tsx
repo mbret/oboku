@@ -1,10 +1,11 @@
-import React, { useMemo, FC, ComponentProps, useRef, useState } from 'react'
+import React, { useMemo, FC, ComponentProps, useRef, useState, useEffect } from 'react'
 import { useScrollbarWidth, useMeasure } from 'react-use';
 import { RecyclerListView, DataProvider, LayoutProvider } from "recyclerlistview/web";
 import { ArrowBackIosRounded, ArrowForwardIosRounded, ExpandMoreRounded, ExpandLessRounded } from '@material-ui/icons';
 import { TOnItemStatusChanged } from 'recyclerlistview/dist/web/core/ViewabilityTracker';
 import { ScrollEvent } from 'recyclerlistview/dist/web/core/scrollcomponent/BaseScrollView';
 import { makeStyles } from '@material-ui/core';
+import { Report } from '../report';
 
 //Create the data provider and provide method which takes in two rows of data and return if those two are different or not.
 //THIS IS VERY IMPORTANT, FORGET PERFORMANCE IF THIS IS MESSED UP
@@ -29,7 +30,7 @@ export const ItemList: FC<{
   const [ref, { width }] = useMeasure();
   const maxWidth = (width - sbw)
   const hasHeader = !!renderHeader
-  const computedItemWidth = itemWidth ? itemWidth : maxWidth / itemsPerRow
+  const computedItemWidth = itemWidth ? itemWidth : Math.floor(maxWidth / itemsPerRow)
   const itemHeight = computedItemWidth / preferredRatio
   const displayScrollerButtons = hasHeader ? data.length > 1 : data.length > 0
 
@@ -55,6 +56,26 @@ export const ItemList: FC<{
       }
     }
   ), [computedItemWidth, itemHeight, hasHeader, headerHeight, maxWidth])
+
+  /**
+   * Ugly hack but because we don't want to use the window for scrol and resize (since we have custom dimension)
+   * the resize is not being listened to (https://github.com/Flipkart/recyclerlistview/blob/5500b6bbfd098868c11db83311d3d35ae742f991/src/platform/web/scrollcomponent/ScrollViewer.tsx#L28)
+   * It is only being listened when it's on window. Anyway we have a dynamic dimensions so we just force a resize whenever
+   * the width change. It's using internal API and is not safe. One day I will need to create my own external view or fix the
+   * library...
+   */
+  useEffect(() => {
+    if (maxWidth > 0) {
+      try {
+        // @ts-ignore
+        listRef.current?._onSizeChanged({ height: listRef.current?._layout.height, width: maxWidth })
+      } catch (e) {
+        Report.error(e)
+      }
+    }
+  }, [maxWidth])
+
+  console.log('LAYOUT', computedItemWidth, computedItemWidth * itemsPerRow, maxWidth, itemWidth)
 
   const getOffsets = () => isHorizontal
     ? data.map((_, i) => Math.floor(listRef?.current?.getLayout(i)?.x || 0))
@@ -92,13 +113,15 @@ export const ItemList: FC<{
     }
   }
 
+  // @ts-ignore
+  window.list = listRef
+
   return (
     <div style={{
       display: 'flex',
-      flexGrow: 1,
-      flex: 1,
+      flex: `0 0 100%`,
+      width: '100%',
       position: 'relative',
-      overflow: 'scroll',
     }} className={className} ref={ref as any}>
       {data.length > 0 && (
         <RecyclerListView
@@ -106,16 +129,12 @@ export const ItemList: FC<{
           layoutProvider={layoutProvider}
           dataProvider={dataProvider}
           rowRenderer={rowRenderer}
-          style={{ flex: 1, display: 'flex' }}
-          render
+          canChangeSize={true}
           isHorizontal={isHorizontal}
           scrollViewProps={{
             showsVerticalScrollIndicator: false,
             useWindowScroll: false,
-            style: {
-              width: '100%',
-              // backgroundColor: 'red'
-            }
+            canChangeSize: true,
           }}
         />
       )}
