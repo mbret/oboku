@@ -1,3 +1,7 @@
+/**
+ * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
+ * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
+ */
 import React, { useState, useEffect, useRef, useCallback, FC } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 import localforage from 'localforage';
@@ -14,23 +18,46 @@ import { AppTourReader } from '../firstTimeExperience/AppTourReader';
 import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from './utils';
 import { PromiseReturnType } from '../types';
 import { PageNumber } from './PageNumber';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { normalizedBooksState } from '../books/states';
 import { ReadingStateState } from 'oboku-shared'
+import { currentApproximateProgressState, currentChapterState, currentLocationState, currentPageState, isMenuShownState, layoutState, tocState, totalApproximativePagesState } from './states';
+import { Menu } from './Menu';
+import { TopBar } from './TopBar';
+import { BottomBar } from './BottomBar';
+import { useGenerateLocations, useResetStates } from './helpers';
+import { ReaderProvider } from './ReaderProvider';
+import { ComicReader } from './comic/ComicReader';
+import { clone } from 'ramda';
+import { concatMapTo } from 'rxjs/operators';
 
 type ReaderInstance = {
   nextPage: () => void,
   prevPage: () => void,
 }
 
+// function toggleFullScreen() {
+//   var doc = window.document;
+//   var docEl = doc.documentElement;
+
+//   var requestFullScreen = docEl.requestFullscreen || (docEl as any).mozRequestFullScreen || (docEl as any).webkitRequestFullScreen || (docEl as any).msRequestFullscreen;
+//   var cancelFullScreen = doc.exitFullscreen || (doc as any).mozCancelFullScreen || (doc as any).webkitExitFullscreen || (doc as any).msExitFullscreen;
+
+//   if (!doc.fullscreenElement && !(doc as any).mozFullScreenElement && !(doc as any).webkitFullscreenElement && !(doc as any).msFullscreenElement) {
+//     requestFullScreen.call(docEl);
+//   }
+//   else {
+//     cancelFullScreen.call(doc);
+//   }
+// }
+
+const comicMimeTypes = ['application/x-cbz']
+
 export const ReaderScreen: FC<{}> = () => {
   const readerRef = useRef<any>()
   const rootRef = useRef<HTMLDivElement>()
-  const history = useHistory()
-  const [currentLocation, setCurrentLocation] = useState<any | undefined>(undefined)
-  const [currentPage, setCurrentPage] = useState<undefined | number>(undefined)
-  const [totalPages, setTotalPages] = useState<undefined | number>(undefined)
-  const [progress, setProgress] = useState<number | undefined>(undefined)
+
+  const setCurrentApproximateProgress = useSetRecoilState(currentApproximateProgressState)
   const [generatedLocations, setGeneratedLocations] = useState<string[]>([])
   const [rendition, setRendition] = useState<Rendition | undefined>(undefined)
   const { bookId } = useParams<any>()
@@ -42,21 +69,32 @@ export const ReaderScreen: FC<{}> = () => {
   const [editBook] = useUpdateBook()
   const verticalTappingZoneHeight = useVerticalTappingZoneHeight()
   const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
+  const [isMenuShow, setIsMenuShown] = useRecoilState(isMenuShownState)
+  const [layout, setLayout] = useRecoilState(layoutState)
+  const setCurrentPage = useSetRecoilState(currentPageState)
+  const setTotalApproximativePages = useSetRecoilState(totalApproximativePagesState)
+  const [toc, setToc] = useRecoilState(tocState)
+  const [currentLocation, setCurrentLocation] = useRecoilState(currentLocationState)
+  const setCurrentChapter = useSetRecoilState(currentChapterState)
+  const isUsingComicReader = comicMimeTypes.includes(file?.type || '')
+  const resetStates = useResetStates()
 
-  const isReflow = (rendition?.book as any)?.displayOptions.fixedLayout !== 'true'
+  useGenerateLocations(rendition)
 
-  const next = useCallback(() => {
-    console.log('next')
-    // readerRef.current?.nextPage();
-    rendition?.next()
-    // rendition?.prev()
-  }, [rendition]);
+  useEffect(() => {
+    return () => {
+      console.warn('resetStates')
+      resetStates()
+    }
+  }, [resetStates])
 
-  const prev = useCallback(() => {
-    console.log('prev')
-    // readerRef.current?.nextPage();
-    rendition?.prev()
-  }, [rendition]);
+  // useEffect(() => {
+  //   document.documentElement.requestFullscreen().catch(console.error)
+  // }, [])
+
+  // useEffect(() => {
+  //   toggleFullScreen()
+  // }, [isMenuShow])
 
   // @todo only show menu on short click
   const onRenditionClick = useCallback((e: MouseEvent) => {
@@ -64,34 +102,56 @@ export const ReaderScreen: FC<{}> = () => {
     const location = rendition?.currentLocation() as any
     const start = location.start as any
     const pageDisplayedIndex = start.displayed.page - 1
-    const realClientXOffset = clientX - (windowSize.width * pageDisplayedIndex)
-    console.log('mouse', clientX, clientX - (windowSize.width * pageDisplayedIndex), rendition?.getContents(), location)
+
+    let realClientXOffset = clientX - (windowSize.width * pageDisplayedIndex)
+
+    // For now comic reader only render current page so there
+    // are no issue with weird offset
+    if (isUsingComicReader) {
+      realClientXOffset = clientX
+    }
+
     const maxOffsetPrev = horizontalTappingZoneWidth
     const maxOffsetBottomMenu = verticalTappingZoneHeight
     const minOffsetNext = windowSize.width - maxOffsetPrev
     const minOffsetBottomMenu = windowSize.height - maxOffsetBottomMenu
+
+    console.log(
+      'mouse',
+      clientX,
+      realClientXOffset,
+      maxOffsetPrev,
+    )
+
     if (realClientXOffset < maxOffsetPrev) {
-      prev()
+      rendition?.prev()
     } else if (realClientXOffset > minOffsetNext) {
-      next()
+      rendition?.next()
+    } else {
+      setIsMenuShown(val => !val)
     }
-    else if (clientY < maxOffsetBottomMenu) {
-      setIsTopMenuShown(true)
-    } else if (clientY > minOffsetBottomMenu) {
-      setIsBottomMenuShown(true)
-    }
-  }, [windowSize, verticalTappingZoneHeight, next, prev, horizontalTappingZoneWidth, rendition])
+
+    // else if (clientY < maxOffsetBottomMenu) {
+    //   setIsTopMenuShown(true)
+    // } else if (clientY > minOffsetBottomMenu) {
+    //   setIsBottomMenuShown(true)
+    // }
+  }, [windowSize, verticalTappingZoneHeight, horizontalTappingZoneWidth, rendition, setIsMenuShown, isUsingComicReader])
+
+  // @ts-ignore
+  window.rendition = rendition;
 
   useEffect(() => {
+    if (!rendition) return
 
-    setTimeout(() => {
-      // rendition && prev()
+    const href = currentLocation?.start.href
 
-    }, 1000)
-    // rootRef.current?.addEventListener('click', (e) => {
-    // document.addEventListener('click', (e) => {
-    //   console.log(e)
-    // })
+    if (href) {
+      setCurrentChapter(rendition.book.navigation.get(href))
+    }
+  }, [rendition, currentLocation, setCurrentChapter])
+
+  useEffect(() => {
     const onClick = e => onRenditionClick(e)
     rendition?.on('click', onClick)
 
@@ -99,10 +159,29 @@ export const ReaderScreen: FC<{}> = () => {
       console.warn('displayError', e)
     })
 
+    if (rendition) {
+      if (
+        (rendition.book as any)?.displayOptions.fixedLayout === 'true'
+        || rendition.book.packaging.metadata?.layout === 'pre-paginated') {
+        setLayout('fixed')
+      } else {
+        setLayout('reflow')
+      }
+    }
+
     return () => {
       rendition?.off('click', onClick)
     }
-  }, [rendition, onRenditionClick, next])
+  }, [rendition, onRenditionClick, setLayout])
+
+  useEffect(() => {
+    if (!rendition) return
+    (async () => {
+      const { toc } = await rendition.book.loaded.navigation
+      console.warn(toc)
+      setToc(toc)
+    })()
+  }, [rendition, setToc])
 
   // const onLocationChanged = (epubcifi: string) => {
   //   console.log(
@@ -123,6 +202,12 @@ export const ReaderScreen: FC<{}> = () => {
 
   useVerticalCentererRendererHook(rendition)
 
+  useEffect(() => {
+    rendition?.hooks.content.register(function (contents, b) {
+      contents.content.setAttribute('tabindex', '-1')
+    })
+  }, [rendition])
+
   const updateProgress = useCallback((currentLocation: any | undefined) => {
     /**
      * Comic detected
@@ -130,47 +215,35 @@ export const ReaderScreen: FC<{}> = () => {
      * and a location of -1. We just get the number of pages based on spine and the current index.
      * If the book is fully pre-paginated the number of pages should not change anyway.
      */
-    if (!isReflow) {
-      const pageNumber = (currentLocation?.start?.index || 0) + 1
+
+    if (layout === 'fixed') {
+      const pageNumber = (currentLocation?.start?.index || 0)
+      const spineLength = rendition?.book?.packaging?.spine?.length || 0
       setCurrentPage(pageNumber)
-      setTotalPages(rendition?.book.packaging.spine.length)
-      setProgress(pageNumber / (rendition?.book?.packaging?.spine?.length || 0))
+      console.log(currentLocation)
+      setTotalApproximativePages(rendition?.book.packaging.spine.length)
+      setCurrentApproximateProgress(pageNumber / (spineLength - 1))
     } else {
       const _currentPage = currentLocation?.atEnd
         ? currentLocation?.end?.location
         : rendition?.book.locations.locationFromCfi(currentLocation?.start?.cfi) as unknown as number
+
       if (currentLocation && _currentPage > -1) {
         const progress = rendition?.book.locations.percentageFromCfi(currentLocation?.start?.cfi);
         const finalProgress = currentLocation?.atEnd ? 1 : progress
         // The % of how far along in the book you are
-        setProgress(finalProgress)
+        setCurrentApproximateProgress(finalProgress)
         setCurrentPage(_currentPage)
-        setTotalPages((rendition?.book.locations as any)?.total)
+        setTotalApproximativePages((rendition?.book.locations as any)?.total)
       }
     }
-  }, [rendition, isReflow])
-
-  /**
-   * Generate good enough page range for progress and current page.
-   * We use 600 char as breaker as it's a good enough middle. 
-   * @todo optimize to retrieve from storage
-   */
-  useEffect(() => {
-    (async () => {
-      await rendition?.book.ready
-      // Generates CFI for every X characters (Characters per/page)
-      await rendition?.book.locations.generate(600)
-
-      // Will trigger a relocate
-      rendition?.reportLocation()
-    })()
-  }, [rendition, updateProgress])
-
+  }, [rendition, layout, setCurrentPage, setTotalApproximativePages, setCurrentApproximateProgress])
 
   useEffect(() => {
 
     const onRelocated = async (location: Location) => {
-      setCurrentLocation(await rendition?.currentLocation() as any)
+      const newLocation = await rendition?.currentLocation() as any
+      setCurrentLocation(clone(newLocation))
 
       const currentStartIndex = location?.start.index
       // let progress: number | undefined
@@ -192,44 +265,22 @@ export const ReaderScreen: FC<{}> = () => {
       // console.log('Total Pages:', (rendition?.book.locations as any)?.total);
 
       updateProgress(location)
-
-
     }
 
     rendition?.on('relocated', onRelocated);
 
-
-    // rendition?.on('resized', (e) => {
-    //   console.log('resized', e)
-    // })
-
-    // rendition?.on('locationChanged', (e) => {
-    //   console.log('locationChanged', e)
-    // })
-
-    // rendition?.on('displayed', (e) => {
-    //   console.log('displayed', e)
-    // })
-
     return () => rendition?.off('relocated', onRelocated)
-  }, [rendition, editBook, bookId, book, updateProgress, progress])
+  }, [rendition, editBook, bookId, book, updateProgress, setCurrentLocation])
 
-  useUpdateBookState(bookId, progress, currentLocation)
+  useUpdateBookState(bookId)
 
   console.log('[ReaderScreen]', {
-    progress,
-    currentPage,
-    totalPages,
     rendition,
-    currentLocation,
-    // currentPosition: Math.floor(generatedLocations.length * (currentLocation?.start.percentage.toFixed(4))),
-    // currentProgress: Math.floor(currentLocation?.start.percentage.toFixed(4) * 100),
-    // generatedLocations
   })
 
   // console.log(file)
   return (
-    <>
+    <ReaderProvider rendition={rendition}>
       {file && (
         <div
           style={{
@@ -239,60 +290,39 @@ export const ReaderScreen: FC<{}> = () => {
           }}
           ref={rootRef as any}
         >
-          <EpubView
-            ref={readerRef as any}
-            // Bug in typing, epubjs accept blobs
-            url={file as any}
-            getRendition={setRendition}
-            epubInitOptions={{
+          {!isUsingComicReader
+            ? (
+              <EpubView
+                // http://epubjs.org/documentation/0.3/#bookrenderto
+                ref={readerRef as any}
+                // Bug in typing, epubjs accept blobs
+                url={file as any}
+                getRendition={setRendition}
+                epubOptions={{
+                  stylesheet: 'html { display: none; } ',
 
-            }}
-            // http://epubjs.org/documentation/0.3/#bookrenderto
-            epubOptions={{
-              // height: 600,
-              // width: 300,
-              // flow: 'paginated',
-              // width: "100%",
-              // height: "100%",
-              // stylesheet: `/reader.css`,
-              // defaultDirection: 'rtl'
-            }}
-            loadingView={(
-              <div>
-                Book is loading
-              </div>
-            )}
-            location={book?.readingStateCurrentBookmarkLocation || undefined}
-          />
-          <Drawer
-            anchor="top"
-            open={isTopMenuShown}
-            onClose={() => setIsTopMenuShown(false)}
-            transitionDuration={0}
-          >
-            <Toolbar>
-              <IconButton
-                edge="start"
-                onClick={() => {
-                  history.goBack()
                 }}
-              >
-                <ArrowBackIosRounded />
-              </IconButton>
-            </Toolbar>
-          </Drawer>
-          <Drawer
-            anchor="bottom"
-            open={isBottomMenuShown}
-            onClose={() => setIsBottomMenuShown(false)}
-            transitionDuration={0}
-          >
-            <PageNumber currentPage={currentPage} totalPages={totalPages} isReflow={isReflow} />
-          </Drawer>
+                loadingView={(
+                  <div>
+                    Book is loading
+                  </div>
+                )}
+                location={book?.readingStateCurrentBookmarkLocation || undefined}
+              />
+            )
+            : (
+              <ComicReader
+                url={file}
+                getRendition={setRendition as any}
+                location={book?.readingStateCurrentBookmarkLocation || undefined}
+              />
+            )}
+          <TopBar />
+          <BottomBar />
         </div>
       )}
       <AppTourReader />
-    </>
+    </ReaderProvider>
   )
 }
 
@@ -337,23 +367,29 @@ const useVerticalCentererRendererHook = (rendition: Rendition | undefined) => {
   }, [rendition])
 }
 
-const useUpdateBookState = (bookId: string, progress: number | undefined, location: any | undefined) => {
+const useUpdateBookState = (bookId: string) => {
   const [editBook] = useUpdateBook()
+  const currentLocation = useRecoilValue(currentLocationState)
+  const currentApproximateProgress = useRecoilValue(currentApproximateProgressState)
   const book = useRecoilValue(normalizedBooksState)[bookId || '-1']
   const readingStateCurrentBookmarkLocation = book?.readingStateCurrentBookmarkLocation
 
   useDebounce(() => {
+    console.log(currentApproximateProgress)
     console.log(readingStateCurrentBookmarkLocation)
-    if (location && location?.start?.cfi !== readingStateCurrentBookmarkLocation) {
+    if (currentLocation && currentLocation?.start?.cfi !== readingStateCurrentBookmarkLocation) {
       editBook({
         _id: bookId,
-        readingStateCurrentBookmarkLocation: location?.start?.cfi,
+        readingStateCurrentBookmarkLocation: currentLocation?.start?.cfi,
         readingStateCurrentState: ReadingStateState.Reading,
-        ...progress && {
+        ...currentApproximateProgress && {
           // progress
-          readingStateCurrentBookmarkProgressPercent: progress,
+          readingStateCurrentBookmarkProgressPercent: currentApproximateProgress,
+        },
+        ...currentApproximateProgress === 1 && {
+          readingStateCurrentState: ReadingStateState.Finished,
         }
       })
     }
-  }, 400, [progress, location, readingStateCurrentBookmarkLocation] as any)
+  }, 400, [currentApproximateProgress, currentLocation, readingStateCurrentBookmarkLocation] as any)
 }

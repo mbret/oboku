@@ -57,7 +57,7 @@ export class EpubView extends Component<{
       this.book.destroy();
     }
     this.book = new Book(url as any, epubInitOptions);
-   
+
     this.book.loaded.navigation.then(({ toc }) => {
       this.setState(
         {
@@ -109,19 +109,18 @@ export class EpubView extends Component<{
       ...epubOptions
     } as any);
 
-    const spine_get = this.rendition.book.spine.get.bind(this.rendition.book.spine);  
+    const spine_get = this.rendition.book.spine.get.bind(this.rendition.book.spine);
     // @see http://epubjs.org/documentation/0.3/#spineget
-    this.rendition.book.spine.get = function(this: Rendition['book']['spine'], target) {
-      console.log(this)
-        let t = spine_get(target);
-        if (t === null) {
-          // Sometime the spine is completely broken and t will be null.
-          // in this case we try to return the first item. It might end up on the first page of current
-          // chapter.
-          // Once we get on a valid spine it should be working correctly
-          return spine_get(0)
-        }
-        return t;
+    this.rendition.book.spine.get = function (this: Rendition['book']['spine'], target) {
+      let t = spine_get(target);
+      if (t === null) {
+        // Sometime the spine is completely broken and t will be null.
+        // in this case we try to return the first item. It might end up on the first page of current
+        // chapter.
+        // Once we get on a valid spine it should be working correctly
+        return spine_get(0)
+      }
+      return t;
     }
 
     this.rendition.on('displayError', e => {
