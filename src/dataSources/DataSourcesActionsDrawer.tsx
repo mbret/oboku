@@ -8,6 +8,7 @@ export const DataSourcesActionsDrawer: FC<{
   onClose: () => void,
 }> = ({ openWith, onClose }) => {
   const syncDataSource = useSynchronizeDataSource()
+  // const renewAuthorization = useRenewDataSourceCredentials()
   const [remove] = useRemoveDataSource()
 
   return (
@@ -25,6 +26,13 @@ export const DataSourcesActionsDrawer: FC<{
             <ListItemIcon><SyncRounded /></ListItemIcon>
             <ListItemText primary="Synchronize" />
           </ListItem>
+          {/* <ListItem button onClick={() => {
+            renewAuthorization(openWith)
+            onClose()
+          }}>
+            <ListItemIcon><VpnKeyRounded /></ListItemIcon>
+            <ListItemText primary="Renew authorization" />
+          </ListItem> */}
         </List>
         <Divider />
         <List>

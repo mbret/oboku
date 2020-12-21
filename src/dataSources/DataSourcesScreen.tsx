@@ -1,22 +1,17 @@
 import React, { useState } from 'react';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { Link, Button, Toolbar, List, ListItem, ListItemText, SvgIcon, ListItemIcon, Typography } from '@material-ui/core';
+import { Link, Button, Toolbar, List, ListItem, ListItemText, SvgIcon, ListItemIcon, Typography, Box, useTheme } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { Alert } from '@material-ui/lab';
 import { ROUTES } from '../constants';
 import { DataSourcesAddDrawer } from './DataSourcesAddDrawer';
-import { GoogleDriveDataSource } from './GoogleDriveDataSource';
+import { GoogleDriveDataSource } from './google/GoogleDriveDataSource';
 import { ReactComponent as GoogleDriveAsset } from '../assets/google-drive.svg';
 import { DataSourcesActionsDrawer } from './DataSourcesActionsDrawer';
-import { DataSource, dataSourcesAsArrayState } from './states';
+import { dataSourcesAsArrayState } from './states';
 import { useRecoilValue } from 'recoil';
-
-const extractGoogleDriveData = (item: DataSource) => {
-  if (item?.data) {
-    return JSON.parse(item.data) as { name?: string, id?: string }
-  }
-  return undefined
-}
+import { Error } from '@material-ui/icons';
+import { extractDataSourceData } from 'oboku-shared';
 
 export const DataSourcesScreen = () => {
   const history = useHistory()
@@ -24,6 +19,7 @@ export const DataSourcesScreen = () => {
   const [isGoogleDriveOpened, setIsGoogleDriveOpened] = useState(false)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<string | undefined>(undefined)
   const dataSources = useRecoilValue(dataSourcesAsArrayState)
+  const theme = useTheme()
 
   return (
     <>
@@ -56,8 +52,17 @@ export const DataSourcesScreen = () => {
                 </SvgIcon>
               </ListItemIcon>
               <ListItemText
-                primary={<Typography noWrap>{extractGoogleDriveData(item)?.name}</Typography>}
-                secondary={item?.lastSyncedAt ? `Last synced at ${(new Date(item?.lastSyncedAt)).toDateString()}` : 'Syncing...'}
+                primary={<Typography noWrap>{extractDataSourceData(item)?.folderName || 'Google Drive'}</Typography>}
+                secondary={item?.lastSyncedAt
+                  ? `Last synced at ${(new Date(item?.lastSyncedAt)).toDateString()}`
+                  : item?.lastSyncErrorCode
+                    ? (
+                      <Box flexDirection="row" display="flex">
+                        <Error fontSize="small" style={{ marginRight: theme.spacing(1) }} /><Typography variant="body2">Sync did not succeed</Typography>
+                      </Box>
+                    )
+                    : 'Syncing...'
+                }
               />
             </ListItem>
           ))}

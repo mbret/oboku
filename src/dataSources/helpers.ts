@@ -1,38 +1,72 @@
 import { first } from "rxjs/operators"
 import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
-import { DataSourceDocType } from 'oboku-shared'
+import { DataSourceDocType, DataSourceType } from 'oboku-shared'
 import { useRxMutation } from "../rxdb/hooks"
 import { Report } from "../report"
+import { useRecoilCallback } from "recoil"
+import { useGetLazySignedGapi } from "./google/helpers"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
   const database = useDatabase()
   const [updateDataSource] = useUpdateDataSource()
+  const [getLazySignedGapi] = useGetLazySignedGapi()
 
-  return async (_id: string) => {
-    await updateDataSource({ lastSyncedAt: null, _id })
-    database?.sync({
-      collectionNames: ['datasource'],
-      syncOptions: () => ({
-        remote: client.getPouchDbRemoteInstance(),
-        direction: {
-          push: true,
-        },
-        options: {
-          retry: false,
-          live: false,
-          timeout: 5000,
-        }
-      })
-    })
-      .complete$
-      .pipe(first())
-      .subscribe(completed => {
-        completed && client.syncDataSource(_id).catch(Report.error)
-      })
-  }
+  return useRecoilCallback(({ snapshot }) => async (_id: string) => {
+    const dataSource = await database?.datasource.findOne({ selector: { _id } }).exec()
+
+    switch (dataSource?.type) {
+      case DataSourceType.DRIVE: {
+        const { credentials } = (await getLazySignedGapi()) || {}
+        await updateDataSource({ _id, lastSyncedAt: null, lastSyncErrorCode: null })
+        database?.sync({
+          collectionNames: ['datasource'],
+          syncOptions: () => ({
+            remote: client.getPouchDbRemoteInstance(),
+            direction: {
+              push: true,
+            },
+            options: {
+              retry: false,
+              live: false,
+              timeout: 5000,
+            }
+          })
+        })
+          .complete$
+          .pipe(first())
+          .subscribe(completed => {
+            completed && client.syncDataSource(_id, credentials).catch(Report.error)
+          })
+        break
+      }
+      default:
+    }
+  })
 }
+
+// export const useRenewDataSourceCredentials = () => {
+//   const [updateDataSource] = useUpdateDataSource()
+//   const [getLazySignedGapi] = useGetLazySignedGapi()
+//   const database = useDatabase()
+
+//   return useRecoilCallback(({ snapshot }) => async (id: string) => {
+//     const dataSource = await database?.datasource.findOne({ selector: { _id: id } }).exec()
+
+//     switch (dataSource?.type) {
+//       case DataSourceType.DRIVE: {
+//         const { credentials } = (await getLazySignedGapi()) || {}
+//         await updateDataSource({
+//           _id: id,
+//           credentials: credentials
+//         })
+//         break
+//       }
+//       default:
+//     }
+//   })
+// }
 
 export const useCreateDataSource = () => {
   type Payload = Omit<DataSourceDocType, '_id' | 'rx_model' | '_rev'>
@@ -41,7 +75,6 @@ export const useCreateDataSource = () => {
 
   return async (data: Payload) => {
     const dataSource = await createDataSource(data)
-    await synchronize(dataSource._id)
     await synchronize(dataSource._id)
   }
 }

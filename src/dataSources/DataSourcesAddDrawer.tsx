@@ -19,7 +19,7 @@ export const DataSourcesAddDrawer: FC<{
           <List>
             <ListItem button onClick={() => onClose('drive')}>
               <ListItemIcon><StorageRounded /></ListItemIcon>
-              <ListItemText primary="Add a Google Drive folder" />
+              <ListItemText primary="From Google Drive" />
             </ListItem>
           </List>
         </div>

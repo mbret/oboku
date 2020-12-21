@@ -1,14 +1,13 @@
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Typography, useTheme } from '@material-ui/core'
-import { ArrowBackIosRounded, ArrowForwardIosRounded, CheckCircleRounded, LocalOfferRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
-import { Alert } from '@material-ui/lab'
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemIcon, ListItemText, Typography } from '@material-ui/core'
+import { ArrowBackIosRounded, LocalOfferRounded } from '@material-ui/icons'
 import React, { FC, useState } from 'react'
 import { useRecoilValue } from 'recoil'
-import { useFolders } from '../google'
 import { GoogleDriveDataSourceData } from 'oboku-shared'
-import { tagsAsArrayState } from '../tags/states'
-import { TagsSelectionList } from '../tags/TagsSelectionList'
-import { useCreateDataSource } from './helpers'
+import { tagsAsArrayState } from '../../tags/states'
+import { TagsSelectionList } from '../../tags/TagsSelectionList'
+import { useCreateDataSource } from '../helpers'
 import { DataSourceType } from 'oboku-shared'
+import { DrivePicker } from './DrivePicker'
 
 export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedTags, setSelectedTags] = useState<{ [key: string]: true | undefined }>({})
@@ -18,15 +17,20 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
   const [folderChain, setFolderChain] = useState<{ name: string, id: string }[]>([{ name: '', id: 'root' }])
   const currentFolder = folderChain[folderChain.length - 1]
   const tags = useRecoilValue(tagsAsArrayState)
-  const theme = useTheme()
-  const data = useFolders({ parent: currentFolder.id })
+  const [showDrive, setShowDrive] = useState(false)
+
+  const onPick = (data: any) => {
+    if (data.action === 'picked') {
+      console.log(data)
+      setSelectedFolder(data.docs[0])
+    }
+  }
 
   return (
     <Dialog onClose={onClose} open fullScreen>
-      <DialogTitle>Select a folder</DialogTitle>
-      <DialogContent style={{ padding: 0 }}>
-        <Alert severity="info">Only your public shared folder will be displayed</Alert>
-        <List style={{ flex: 1 }}>
+      <DialogTitle>Google Drive datasource</DialogTitle>
+      <DialogContent style={{ padding: 0, display: 'flex', flexFlow: 'column' }}>
+        <List >
           <ListItem onClick={() => setIsTagSelectionOpen(true)}>
             <ListItemIcon>
               <LocalOfferRounded />
@@ -36,11 +40,6 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
               secondary={Object.keys(selectedTags).map(id => tags.find(tag => tag?._id === id)?.name).join(' ')}
             />
           </ListItem>
-          <ListSubheader disableSticky>
-            <Typography noWrap>
-              {folderChain.length === 1 ? '/' : folderChain.map(({ name }) => name).join(' / ')}
-            </Typography>
-          </ListSubheader>
           <ListItem>
             <Typography noWrap>Selected: {selectedFolder?.name || 'None'}</Typography>
           </ListItem>
@@ -59,36 +58,12 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
               >Go back</Button>
             </ListItem>
           )}
-          {!data && (
-            <ListItem style={{ display: 'flex', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <ListItemText style={{ textAlign: 'center', paddingTop: theme.spacing(2) }} primary={<CircularProgress />} />
-            </ListItem>
-          )}
-          {data && data.map(item => (
-            <ListItem
-              key={item.id}
-              onClick={() => {
-                if (selectedFolder?.id === item.id) {
-                  setSelectedFolder(undefined)
-                } else {
-                  setSelectedFolder({ name: item.name, id: item.id })
-                }
-              }}
-            >
-              <ListItemIcon>
-                {selectedFolder?.id === item.id ? <CheckCircleRounded /> : <RadioButtonUncheckedOutlined />}
-              </ListItemIcon>
-              <ListItemText primary={<Typography noWrap>{item?.name}</Typography>} />
-              <ArrowForwardIosRounded onClick={(e) => {
-                e.stopPropagation()
-                setFolderChain(chain => [...chain, {
-                  name: item?.name,
-                  id: item?.id
-                }])
-              }} />
-            </ListItem>
-          ))}
         </List>
+        <Box flex={1} display="flex" justifyContent="center" alignItems="center">
+          <Button color="primary" variant="contained" onClick={() => setShowDrive(true)}>
+            Choose a folder
+        </Button>
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
@@ -102,7 +77,8 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
             if (selectedFolder) {
               const customData: GoogleDriveDataSourceData = {
                 applyTags: Object.keys(selectedTags),
-                driveId: selectedFolder.id
+                driveId: selectedFolder.id,
+                folderName: selectedFolder.name
               }
               addDataSource({
                 type: DataSourceType.DRIVE,
@@ -134,6 +110,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
         </Button>
         </DialogActions>
       </Dialog>
+      <DrivePicker show={showDrive} onClose={onPick} />
     </Dialog >
   )
 }
