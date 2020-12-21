@@ -8,6 +8,7 @@ import { Report } from '../report';
 import { useDatabase } from '../rxdb';
 import { LinkType } from 'oboku-shared';
 import { useGetLazySignedGapi } from '../dataSources/google/helpers';
+import { DOWNLOAD_PREFIX } from '../constants';
 
 export const useDownloadFile = () => {
   const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
@@ -39,7 +40,7 @@ export const useDownloadFile = () => {
       })
 
       try {
-        if (await localforage.getItem(`book-download-${bookId}`)) {
+        if (await localforage.getItem(`${DOWNLOAD_PREFIX}-${bookId}`)) {
           setDownloadData(bookId, {
             downloadProgress: 100,
             downloadState: DownloadState.Downloaded,
@@ -66,7 +67,7 @@ export const useDownloadFile = () => {
             }
           }
         })
-        await localforage.setItem(`book-download-${bookId}`, response.data)
+        await localforage.setItem(`${DOWNLOAD_PREFIX}-${bookId}`, response.data)
 
         setDownloadData(bookId, {
           downloadProgress: 100,

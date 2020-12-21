@@ -8,6 +8,7 @@ export const API_SYNC_POLL1_URL = `${process.env.REACT_APP_API_POLL_1_URL}/sync`
 export const API_SYNC_POLL_2_URL = API_SYNC_URL
 // export const API_URI = 'https://mbret-oboku-api.glitch.me/'
 // export const API_URI = 'https://tough-walrus-50.loca.lt/'
+export const DOWNLOAD_PREFIX = `book-download`
 
 export const FIREBASE_BASE_CONFIG = {
   apiKey: "AIzaSyDJIkOKxOCf3WXrsPldQrEIY7LY237YSGU",
