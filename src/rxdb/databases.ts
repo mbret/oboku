@@ -67,8 +67,8 @@ type LinkDocument = RxDocument<LinkDocType, LinkDocMethods>
 type AuthCollectionMethods = {
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<AuthDocType>,
-    cb: (collection: AuthCollection) => RxQuery
-  ) => Promise<AuthDocument>
+    cb: (collection: AuthCollection) => RxQuery<AuthDocType, AuthDocument | null>
+  ) => Promise<AuthDocument>,
 }
 type SettingsCollectionMethods = {
   safeUpdate: (
@@ -210,7 +210,8 @@ const linkDocMethods: LinkDocMethods = {
 
 const authCollectionMethods: AuthCollectionMethods = {
   safeUpdate: async function (this: AuthCollection, json, cb) {
-    return cb(this).update(json)
+    const doc = await cb(this).exec()
+    return doc?.update(json)
   }
 }
 const settingsCollectionMethods: SettingsCollectionMethods = {
@@ -253,8 +254,10 @@ export const createDatabase = async () => {
   const db = await createRxDatabase<MyDatabaseCollections>({
     name: 'oboku',
     adapter: 'idb',
-    multiInstance: true,
-    ignoreDuplicate: false
+    multiInstance: false,
+    pouchSettings: {
+      skip_setup: true,
+    }
   })
 
   await createCollections(db)

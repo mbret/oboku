@@ -80,6 +80,7 @@ export function useRxMutation(query) {
 
   const cb = useCallback(async (variables?: any) => {
     if (dbRef.current) {
+      console.log('RUN MUTATION QUERY', dbRef.current)
       return await query(dbRef.current, variables)
     } else {
       throw new Error('DB not initialized')

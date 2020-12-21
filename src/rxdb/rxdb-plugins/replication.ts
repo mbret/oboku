@@ -96,7 +96,7 @@ export const RxdbReplicationPlugin = {
 };
 
 class Replication {
-  public collections: any
+  public collections: RxCollection[]
   replicationStates: any
   alive: boolean = false
   _field: any
@@ -107,7 +107,7 @@ class Replication {
   protected _activeSubject = new BehaviorSubject(false);
   protected _completeSubject = new Subject<boolean>();
   protected _errorSubject = new Subject<Error>()
-  _pReplicationStates: any
+  _pReplicationStates: Promise<RxReplicationState[]>
   private filterCreationInterval: number | undefined
   syncOptions: (collectionName: string) => ReplicationSyncOptions
 
@@ -190,8 +190,8 @@ class Replication {
       this._aliveSubject.next(false);
     }
 
-    await this._pReplicationStates.then((arr) => {
-      return Promise.all(arr.map((x) => x.cancel()));
+    await this._pReplicationStates.then((replicationStates) => {
+      return Promise.all(replicationStates.map((x) => x.cancel()));
     });
     this._pReplicationStates = Promise.resolve([]);
     this.replicationStates = [];
@@ -203,12 +203,13 @@ class Replication {
 
     const promises = collectionNames.map((name) => {
       const options = this.syncOptions(name)
-      return collections[name].sync({
+      const collection = collections[name] as RxCollection
+      return collection.sync({
         remote: options.remote,
         direction: options.direction,
         options: {
           ...options.options,
-          filter: 'app/by_model',
+          filter: 'app/by_model' as any,
           query_params: { [this._field]: name }
         }
       });
@@ -247,7 +248,7 @@ class Replication {
         this.alive = alive;
         this._aliveSubject.next(alive);
       }))
-      
+
       this._subscribers.push(state?.change$.subscribe(data => console.warn(`sync ${state.collection.name} change`, data)))
 
       this._subscribers.push(state?.denied$.subscribe(data => console.warn(`sync ${state.collection.name} denied`, data)))
@@ -277,9 +278,10 @@ class Replication {
     }
 
     this._pReplicationStates = Promise.all(promises)
-      .then((arr) => {
-        arr.forEach(attachEventsToSubscription);
-        return arr;
+      .then((replicationStates) => {
+        replicationStates.forEach(attachEventsToSubscription);
+
+        return replicationStates;
       })
       .then((arr) => (this.replicationStates = arr));
 

@@ -26,7 +26,9 @@ export const dataSourceSchema: RxJsonSchema<Omit<DataSourceDocType, '_id' | 'rx_
   properties: {
     type: { type: 'string', final: true },
     lastSyncedAt: { type: ['number', 'null'] },
+    lastSyncErrorCode: { type: ['string', 'null'] },
     data: { type: 'string' },
+    credentials: { type: ['object', 'null'] },
   },
   required: []
 })
