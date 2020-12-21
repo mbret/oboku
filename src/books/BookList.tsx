@@ -63,7 +63,6 @@ const useStyles = makeStyles((theme) => {
       paddingLeft: (props: Props) => props.isHorizontal ? 0 : theme.spacing(1),
       paddingRight: (props: Props) => props.isHorizontal ? 0 : theme.spacing(1),
       display: 'flex',
-      // flexFlow: 'column',
     },
     itemContainer: {
       cursor: 'pointer',
@@ -73,7 +72,6 @@ const useStyles = makeStyles((theme) => {
       display: 'flex',
       flexFlow: 'column',
       padding: (props: Props) => theme.spacing(1),
-      // border: '1px solid blue',
     },
     itemBottomContainer: {
       boxSizing: 'border-box',
