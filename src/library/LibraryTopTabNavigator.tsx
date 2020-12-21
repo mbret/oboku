@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
-import { Tab, Tabs, Button } from '@material-ui/core'
+import { Tab, Tabs, Box, IconButton } from '@material-ui/core'
 import { useHistory, useLocation, Route, Switch, Redirect } from 'react-router-dom'
 import { LibraryBooksScreen } from './LibraryBooksScreen'
 import { LibraryTagsScreen } from './LibraryTagsScreen'
@@ -8,38 +8,38 @@ import { TopBarNavigation } from '../TopBarNavigation'
 import { ROUTES } from '../constants'
 import { LibraryCollectionScreen } from './LibraryCollectionScreen'
 import { useSyncLibrary } from './helpers'
-import { useRecoilValue } from 'recoil'
-import { syncState } from './states'
+import { Sync } from '@material-ui/icons'
 
 export const LibraryTopTabNavigator = () => {
   const location = useLocation()
   const history = useHistory()
   const classes = useStyles();
-  const { isSyncing } = useRecoilValue(syncState)
   const syncLibrary = useSyncLibrary()
+  const [syncActive, setSyncActive] = useState(false)
+
+  useEffect(() => {
+    if (syncActive) {
+      setTimeout(() => {
+        setSyncActive(false)
+      }, 2000)
+    }
+  }, [syncActive])
 
   return (
     <div className={classes.container}>
       <TopBarNavigation
         title="Library"
         showBack={false}
+        hasSearch
         rightComponent={(
-          <>
-            {isSyncing && (
-              <span>
-                Syncing library...
-              </span>
-            )}
-            {!isSyncing && (
-              <Button
-                // color="primary"
-                variant="outlined"
-                onClick={() => syncLibrary()}
-              >
-                Sync library
-              </Button>
-            )}
-          </>
+          <Box ml={2}>
+            <IconButton disabled={syncActive} onClick={() => {
+              syncLibrary()
+              setSyncActive(true)
+            }} color="inherit">
+              <Sync />
+            </IconButton>
+          </Box>
         )}
       />
       <Tabs

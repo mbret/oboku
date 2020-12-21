@@ -11,7 +11,6 @@ import { UploadNewBookDialog } from '../books/UploadNewBookDialog';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
 import { useMeasureElement } from '../utils';
 import { LibraryViewMode } from '../rxdb';
-import { useAuth } from '../auth/helpers';
 import { LibraryDocType, libraryState } from './states';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { booksAsArrayState } from '../books/states';
@@ -23,19 +22,22 @@ export const LibraryBooksScreen = () => {
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const [isUploadNewBookDialogOpened, setIsUploadNewBookDialogOpened] = useState(false)
   const setLibraryState = useSetRecoilState(libraryState)
-  // const library = useRxQuery((db) => db.library.findOne())
   const library = useRecoilValue(libraryState)
-  const auth = useAuth()
   const sortedList = useSortedList(library.sorting)
-  // const viewMode = libraryBooksSettingsData?.libraryBooksSettings.viewMode
   const tagsFilterApplied = (library?.tags.length || 0) > 0
   const numberOfFiltersApplied = [tagsFilterApplied].filter(i => i).length
-  const filteredTags = library?.tags?.map(tag => tag || '-1') || []
+  const filteredTags = library.tags
   const visibleBooks = sortedList
-  // const visibleBooks = filteredTags.length === 0
-  //   ? sortedList
-  //   : sortedList
-  //     .filter(book => book?.tags?.some(b => filteredTags.includes(b?.primary || '-1')))
+      .filter(book => {
+        let valid = true
+        if (filteredTags.length > 0 && !book?.tags?.some(b => filteredTags.includes(b))) {
+          valid = false
+        }
+        if (library.readingStates.length > 0 && !library.readingStates.includes(book.readingStateCurrentState)) {
+          valid = false
+        }
+        return valid
+      })
   const books = useMemo(() => visibleBooks.map(item => item._id), [visibleBooks])
 
   const addBookButton = (
@@ -153,7 +155,6 @@ export const LibraryBooksScreen = () => {
             renderHeader={() => listHeader}
           />
         )}
-
         <UploadNewBookDialog open={isUploadNewBookDialogOpened} onClose={() => setIsUploadNewBookDialogOpened(false)} />
         <SortByDialog onClose={() => setIsSortingDialogOpened(false)} open={isSortingDialogOpened} />
         <LibraryFiltersDrawer open={isFiltersDrawerOpened} onClose={() => setIsFiltersDrawerOpened(false)} />

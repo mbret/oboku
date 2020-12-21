@@ -8,6 +8,7 @@ import { useHistory } from 'react-router-dom'
 import ContinueReadingAsset from './assets/continue-reading.svg'
 import { useRecoilValue } from 'recoil';
 import { booksAsArrayState } from './books/states';
+import { ReadingStateState } from 'oboku-shared';
 
 export const HomeScreen = () => {
   const classes = useStyles();
@@ -27,7 +28,7 @@ export const HomeScreen = () => {
       overflow: 'hidden',
       flexFlow: 'column',
     }}>
-      <TopBarNavigation title={'Home'} showBack={false} />
+      <TopBarNavigation title={'Home'} showBack={false} hasSearch />
       <div style={{
         height: '100%',
         overflow: 'scroll'
@@ -101,7 +102,7 @@ const useContinueReadingBooks = () => {
   const booksSortedByDate = R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books)
 
   return booksSortedByDate
-    .filter(book => (book.readingStateCurrentBookmarkProgressPercent || 0) > 0)
+    .filter(book => book.readingStateCurrentState === ReadingStateState.Reading)
     .map(book => book._id)
 }
 

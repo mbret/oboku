@@ -18,6 +18,10 @@ body {
   box-sizing: border-box;
 }
 
+* {
+  /* -webkit-user-select: none */
+}
+
 #root {
   height: 100%;
   margin: 0;
@@ -37,4 +41,25 @@ code {
 
 .sentry-error-embed-wrapper {
   z-index: 2000 !important; /* need to adjust because of material https://material-ui.com/customization/z-index/ */
+}
+
+.sentry-error-embed-wrapper {
+  z-index: 2000 !important; /* need to adjust because of material https://material-ui.com/customization/z-index/ */
+}
+
+/* google Picker overwrite to have it fullscreen and mobile friendly */
+.picker-dialog {
+  z-index: 3000 !important;
+  height: 100%;
+  width: 100%;
+}
+.picker-dialog {
+  height: 100% !important;
+  width: 100% !important;
+  left: 0 !important;
+}
+.picker-dialog-content {
+  height: 100% !important;
+  width: 100% !important;
+  left: 0 !important;
 }

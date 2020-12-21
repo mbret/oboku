@@ -13,3 +13,5 @@ export const useMeasureElement = (element: React.ReactNode) => {
   console.log('useMeasureElement')
   return [elementToRender, dim] as [typeof elementToRender, typeof dim]
 };
+
+export const waitFor = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))

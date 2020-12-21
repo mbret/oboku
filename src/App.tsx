@@ -9,7 +9,7 @@ import { UnlockLibraryDialog } from './auth/UnlockLibraryDialog';
 import { AppTourWelcome } from './firstTimeExperience/AppTourWelcome';
 import { TourProvider } from './app-tour/TourProvider';
 import { ManageBookCollectionsDialog } from './books/ManageBookCollectionsDialog';
-import { GoogleApiProvider } from './google';
+import { GoogleApiProvider } from './dataSources/google/helpers';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import { UpdateAvailableDialog } from './UpdateAvailableDialog';
 import { RxDbProvider } from './rxdb';

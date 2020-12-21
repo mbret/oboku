@@ -11,7 +11,8 @@ export const useStorageUse = () => {
   const [indexedDBUsage, setIndexedDBUsage] = useState<number | undefined>(undefined)
 
   useEffect(() => {
-    navigator.storage.estimate().then((estimate) => {
+    // not available in all browsers
+    navigator.storage && navigator.storage.estimate().then((estimate) => {
       const estimateIndexedDBUsage = (estimate as ChromeStorageEstimate)?.usageDetails?.indexedDB
       estimate.quota && setStorageQuota(estimate.quota)
       estimateIndexedDBUsage && setIndexedDBUsage(estimateIndexedDBUsage)

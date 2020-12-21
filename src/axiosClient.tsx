@@ -24,19 +24,28 @@ export const useAxiosClient = () =>
 
     downloadBook: (
       bookId: string,
+      credentials: { [key: string]: any },
       options?: AxiosRequestConfig
     ) => instance.get(`${API_URI}/download/${bookId}`, {
       responseType: 'blob',
       ...options,
+      headers: {
+        'oboku-credentials': JSON.stringify(credentials),
+        ...options?.headers
+      }
     }),
 
     getAuthorizationHeader: () => instance.defaults.headers.common['Authorization'],
 
-    refreshMetadata: (bookId: string) =>
-      instance.post(`${API_URI}/refresh-metadata/${bookId}`),
+    refreshMetadata: (bookId: string, credentials?: { [key: string]: any },) =>
+      instance.post(`${API_URI}/refresh-metadata/${bookId}`, {}, {
+        headers: {
+          'oboku-credentials': JSON.stringify(credentials),
+        }
+      }),
 
-    syncDataSource: (dataSourceId: string) =>
-      instance.post(`${API_URI}/sync-datasource/${dataSourceId}`),
+    syncDataSource: (dataSourceId: string, credentials?: { [key: string]: any },) =>
+      instance.post(`${API_URI}/sync-datasource/${dataSourceId}`, { credentials }),
 
     getPouchDbRemoteInstance: () => new PouchDB(API_SYNC_URL, {
       fetch: (url, opts) => {
