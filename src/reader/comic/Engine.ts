@@ -2,38 +2,12 @@ import JSZip, { loadAsync } from 'jszip'
 import { compose, prop, sortBy } from 'ramda'
 import { BehaviorSubject, Subject } from 'rxjs'
 import { filter, first } from 'rxjs/operators'
+import { compareLists } from './utils'
 import './style.css'
 
 type Event = {
   name: string,
   cb: (data: any) => {}
-}
-
-function sortArray(arr) {
-  var tempArr: any = [], n;
-  for (var i in arr) {
-    tempArr[i] = arr[i].match(/([^0-9]+)|([0-9]+)/g);
-    for (var j in tempArr[i]) {
-      if (!isNaN(n = parseInt(tempArr[i][j]))) {
-        tempArr[i][j] = n;
-      }
-    }
-  }
-  tempArr.sort(function (x, y: any) {
-    for (var i in x) {
-      if (y.length < i || x[i] < y[i]) {
-        return -1; // x is longer
-      }
-      if (x[i] > y[i]) {
-        return 1;
-      }
-    }
-    return 0;
-  });
-  for (var i in tempArr) {
-    arr[i] = tempArr[i].join('');
-  }
-  return arr;
 }
 
 export class Engine {
@@ -110,9 +84,9 @@ export class Engine {
   public async load({ url }: { url: Blob }) {
     if (this.container) {
       const jszip = await loadAsync(url)
-      const sortedKeys = sortArray(Object.values(jszip.files).filter(file => !file.dir).map(f => f.name))
-      // const files = sortBy(prop('name'))(Object.values(jszip.files).filter(file => !file.dir))
-      const files = sortedKeys.map(name => jszip.files[name])
+      const filesAsArray = Object.values(jszip.files).filter(file => !file.dir)
+      const sortedKeys = filesAsArray.map(f => f.name).sort(compareLists)
+      const files = sortedKeys.map(name => filesAsArray.find(f => f.name === name) as JSZip.JSZipObject)
 
       this.packaging.spine.items = files
       this.packaging.spine.length = files.length
