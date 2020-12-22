@@ -4,7 +4,6 @@ import { useRecoilState } from "recoil"
 import { isMenuShownState } from "./states"
 import { useHistory } from 'react-router-dom'
 import { ArrowBackIosRounded } from '@material-ui/icons'
-import { useResetStates } from './helpers'
 
 export const TopBar = () => {
   const [isMenuShow, setIsMenuShown] = useRecoilState(isMenuShownState)

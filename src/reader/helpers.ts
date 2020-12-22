@@ -2,6 +2,10 @@ import { useRecoilCallback, useRecoilValue } from "recoil"
 import * as states from "./states"
 import { Rendition } from "epubjs"
 import { useEffect, useState } from "react"
+import { useUpdateBook } from "../books/helpers"
+import { bookState } from "../books/states"
+import { ReadingStateState } from "oboku-shared"
+import { useDebounce } from "react-use"
 
 const statesToReset = [
   states.currentApproximateProgressState,
@@ -14,10 +18,14 @@ const statesToReset = [
   states.totalApproximativePagesState,
 ]
 
-export const useResetStates = () => {
-  return useRecoilCallback(({ reset }) => () => {
+export const useResetStateOnUnmount = () => {
+  const resetStates = useRecoilCallback(({ reset }) => () => {
     statesToReset.forEach(state => reset(state))
   }, [])
+
+  useEffect(() => {
+    return () => resetStates()
+  }, [resetStates])
 }
 
 /**
@@ -52,4 +60,29 @@ export const useGenerateLocations = (rendition: Rendition | undefined, words = 3
   }, [rendition, words, layout])
 
   return locations
+}
+
+export const useUpdateBookState = (bookId: string) => {
+  const [editBook] = useUpdateBook()
+  const currentLocation = useRecoilValue(states.currentLocationState)
+  const currentApproximateProgress = useRecoilValue(states.currentApproximateProgressState)
+  const book = useRecoilValue(bookState(bookId))
+  const readingStateCurrentBookmarkLocation = book?.readingStateCurrentBookmarkLocation
+
+  useDebounce(() => {
+    if (currentLocation && currentLocation?.start?.cfi !== readingStateCurrentBookmarkLocation) {
+      editBook({
+        _id: bookId,
+        readingStateCurrentBookmarkLocation: currentLocation?.start?.cfi,
+        readingStateCurrentState: ReadingStateState.Reading,
+        ...currentApproximateProgress && {
+          // progress
+          readingStateCurrentBookmarkProgressPercent: currentApproximateProgress,
+        },
+        ...currentApproximateProgress === 1 && {
+          readingStateCurrentState: ReadingStateState.Finished,
+        }
+      })
+    }
+  }, 400, [currentApproximateProgress, currentLocation, readingStateCurrentBookmarkLocation] as any)
 }
