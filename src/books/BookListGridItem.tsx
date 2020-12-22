@@ -108,7 +108,7 @@ export const BookListGridItem: FC<{
       >
         <div style={{ width: '100%', overflow: 'hidden' }}>
           <Typography variant="body2" className={classes.itemTitle}>{item?.title || 'Unknown'}</Typography>
-          <Typography variant="caption">{item?.creator || 'Unknown'}</Typography>
+          <Typography variant="caption" noWrap={true} display="block">{item?.creator || 'Unknown'}</Typography>
         </div>
         <MoreVert style={{ transform: 'translate(50%, 0%)' }} />
       </div>

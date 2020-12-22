@@ -4,7 +4,7 @@ import { atom, useRecoilState, useRecoilValue } from 'recoil';
 import { CollectionSelectionList } from '../collections/CollectionSelectionList';
 import { collectionsAsArrayState } from '../collections/states';
 import { useAddCollectionToBook, useRemoveCollectionFromBook } from './helpers';
-import { normalizedBooksState } from './states';
+import { bookState } from './states';
 
 export const openManageBookCollectionsDialog = atom<string | undefined>({ key: 'openManageBookCollectionsDialog', default: undefined })
 
@@ -12,7 +12,7 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
   const [id, setOpenManageBookCollectionsDialog] = useRecoilState(openManageBookCollectionsDialog)
   const open = !!id
   const collections = useRecoilValue(collectionsAsArrayState)
-  const book = useRecoilValue(normalizedBooksState)[id || '-1']
+  const book = useRecoilValue(bookState(id || '-1'))
   const [addToBook] = useAddCollectionToBook()
   const [removeFromBook] = useRemoveCollectionFromBook()
   const bookCollection = book?.collections

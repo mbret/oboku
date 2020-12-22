@@ -14,10 +14,27 @@ export const normalizedBooksState = atom<Record<string, BookDocType | undefined>
   default: {}
 })
 
+export const bookState = selectorFamily({
+  key: 'bookState',
+  get: (bookId: string) => ({ get }) => {
+    const book = get(normalizedBooksState)[bookId]
+    const tags = get(normalizedTagsState)
+    const collections = get(normalizedCollectionsState)
+
+    if (!book) return undefined
+
+    return {
+      ...book,
+      collections: book?.collections.filter(id => !!collections[id]),
+      tags: book?.tags.filter(id => !!tags[id]),
+    }
+  }
+})
+
 export const enrichedBookState = selectorFamily({
   key: 'enrichedBookState',
   get: (bookId: string) => ({ get }) => {
-    const book = get(normalizedBooksState)[bookId]
+    const book = get(bookState(bookId))
     const downloadState = get(bookDownloadsState(bookId))
 
     if (!book) return undefined
@@ -65,7 +82,7 @@ export const bookTagsState = selectorFamily({
 export const bookLinksState = selectorFamily({
   key: 'bookLinksState',
   get: (bookId: string) => ({ get }) => {
-    const book = get(normalizedBooksState)[bookId]
+    const book = get(bookState(bookId))
     const links = get(normalizedLinksState)
 
     return book?.links?.map(id => links[id])
@@ -75,7 +92,7 @@ export const bookLinksState = selectorFamily({
 export const bookCollectionsState = selectorFamily({
   key: 'bookCollectionsState',
   get: (bookId: string) => ({ get }) => {
-    const book = get(normalizedBooksState)[bookId]
+    const book = get(bookState(bookId))
     const collections = get(normalizedCollectionsState)
 
     return book?.collections?.map(id => collections[id])

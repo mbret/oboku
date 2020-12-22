@@ -12,7 +12,7 @@ import { useRemoveBook } from './helpers';
 import { Drawer, Divider, ListItemIcon } from '@material-ui/core';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
 import { atom, useRecoilCallback, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { enrichedBookState, normalizedBooksState } from './states';
+import { enrichedBookState } from './states';
 
 export const bookActionDrawerState = atom<{ openedWith: undefined | string }>({ key: 'bookActionDrawerState', default: { openedWith: undefined } })
 

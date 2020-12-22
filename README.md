@@ -19,6 +19,9 @@
 
 - [Table of contents](#table-of-contents)
 - [About](#about)
+  - [About existing similar / alternative services or products](#about-existing-similar--alternative-services-or-products)
+    - [BookFusion:](#bookfusion)
+    - [Calibre Web:](#calibre-web)
 - [Status](#status)
 - [Roadmap](#roadmap)
 - [Quick start](#quick-start)

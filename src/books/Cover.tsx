@@ -4,7 +4,7 @@ import { API_URI } from '../constants'
 import placeholder from '../assets/cover-placeholder.png'
 import { useTheme } from '@material-ui/core'
 import { useRecoilValue } from 'recoil'
-import { normalizedBooksState } from './states'
+import { bookState } from './states'
 import { authState } from '../auth/authState'
 
 export const Cover: FC<{
@@ -17,7 +17,7 @@ export const Cover: FC<{
   const auth = useRecoilValue(authState)
   const isMounted = useMountedState()
   const theme = useTheme()
-  const book = useRecoilValue(normalizedBooksState)[bookId || '-1']
+  const book = useRecoilValue(bookState(bookId))
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 

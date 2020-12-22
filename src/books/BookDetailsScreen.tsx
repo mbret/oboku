@@ -12,7 +12,7 @@ import { useDownloadFile } from '../download/useDownloadFile';
 import { ROUTES } from '../constants';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { normalizedBooksState, bookTagsState, bookLinksState, bookCollectionsState, enrichedBookState } from './states';
+import { bookState, bookTagsState, bookLinksState, bookCollectionsState, enrichedBookState } from './states';
 import { tagsAsArrayState } from '../tags/states';
 import { normalizedLinksState } from '../links/states';
 import { useEditLink } from '../links/helpers';
@@ -262,7 +262,7 @@ const TagsDialog: FC<{
   id: string
 }> = ({ open, onClose, id }) => {
   const tags = useRecoilValue(tagsAsArrayState)
-  const book = useRecoilValue(normalizedBooksState)[id]
+  const book = useRecoilValue(bookState(id))
   const [addTagToBook] = useAddTagToBook()
   const removeTagToBook = useRemoveTagToBook()
   const bookTags = book?.tags
