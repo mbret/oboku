@@ -18,12 +18,13 @@ export const ItemList: FC<{
   isHorizontal: ComponentProps<typeof RecyclerListView>['isHorizontal'],
   data: any[],
   itemsPerRow: number,
-  preferredRatio: number,
+  preferredRatio?: number,
   className?: string,
   renderHeader?: () => React.ReactNode,
   headerHeight?: number,
   itemWidth?: number,
-}> = ({ rowRenderer, data, itemsPerRow, preferredRatio = 1, className, renderHeader, headerHeight, isHorizontal, itemWidth }) => {
+  itemHeight?: number,
+}> = ({ rowRenderer, data, itemsPerRow, itemHeight, preferredRatio = 1, className, renderHeader, headerHeight, isHorizontal, itemWidth }) => {
   const classes = useClasses()
   const sbw = useScrollbarWidth() || 0;
   const listRef = useRef<RecyclerListView<any, any>>()
@@ -31,7 +32,7 @@ export const ItemList: FC<{
   const maxWidth = (width - sbw)
   const hasHeader = !!renderHeader
   const computedItemWidth = itemWidth ? itemWidth : Math.floor(maxWidth / itemsPerRow)
-  const itemHeight = computedItemWidth / preferredRatio
+  const computedItemHeight = itemHeight || computedItemWidth / preferredRatio
   const displayScrollerButtons = hasHeader ? data.length > 1 : data.length > 0
 
   //Create the layout provider
@@ -51,11 +52,11 @@ export const ItemList: FC<{
         }
         default: {
           dim.width = computedItemWidth
-          dim.height = itemHeight
+          dim.height = computedItemHeight
         }
       }
     }
-  ), [computedItemWidth, itemHeight, hasHeader, headerHeight, maxWidth])
+  ), [computedItemWidth, computedItemHeight, hasHeader, headerHeight, maxWidth])
 
   /**
    * Ugly hack but because we don't want to use the window for scrol and resize (since we have custom dimension)
@@ -192,6 +193,7 @@ const useClasses = makeStyles((theme) => {
   return {
     verticalScrollButton: {
       position: 'absolute',
+      // position: 'fixed',
       padding: theme.spacing(1),
       backgroundColor: 'gray',
       opacity: 0.5,

@@ -1,57 +1,54 @@
-import { Box, ListItemAvatar, ListItemText, Typography, useTheme } from '@material-ui/core'
-import { CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
+import { Box, Button, ListItemText, Typography, useTheme } from '@material-ui/core'
 import React, { FC } from 'react'
 import { useRecoilValue } from 'recoil'
 import { Cover } from './Cover'
+import { useDefaultItemClickHandler } from './listHelpers'
 import { enrichedBookState } from './states'
 
 export const BookListListItem: FC<{
   bookId: string,
   onItemClick?: (id: string) => void,
   isSelected?: (id: string) => boolean,
-  size?: 'small' | 'large'
-}> = ({ bookId, onItemClick, size = 'large' }) => {
+  size?: 'small' | 'large',
+  itemHeight?: number,
+}> = ({ bookId, onItemClick, size = 'large', itemHeight }) => {
   const book = useRecoilValue(enrichedBookState(bookId))
+  const onDefaultItemClick = useDefaultItemClickHandler()
   const theme = useTheme()
-  const itemHeight = size === 'small' ? 50 : 100
-  const coverWidth = itemHeight * theme.custom.coverAverageRatio
+  const computedHeight = itemHeight || (size === 'small' ? 50 : 100)
+  const coverWidth = computedHeight * theme.custom.coverAverageRatio
 
   return (
     <Box
       key={book?._id}
       onClick={() => {
-        book?._id && onItemClick && onItemClick(book._id)
+        if (onItemClick) return onItemClick(bookId)
+        return onDefaultItemClick(bookId)
       }}
       style={{
-        // border: '1px solid green',
         display: 'flex',
-        flexGrow: 1,
-        overflow: 'auto',
-        height: itemHeight,
+        overflow: 'hidden',
+        height: computedHeight,
+        cursor: 'pointer'
       }}
+      flexGrow={1}
     >
       <Box style={{
-        // border: '1px solid red',
-        // marginRight: theme.spacing(1),
         flex: `0 0 ${coverWidth}px`
       }}>
         {book && (
           <Cover
-            // rounded={false}
             bookId={book._id}
-            style={{
-              // width: coverWidth,
-              // height: coverWidth / theme.custom.coverAverageRatio,
-            }}
           />
         )}
       </Box>
       <Box style={{
         marginLeft: theme.spacing(1)
-      }}>
+      }} overflow="hidden">
         <ListItemText primary={(
           <Typography
             noWrap
+            display="block"
             {...size === 'small' && {
               variant: 'body2'
             }}

@@ -19,13 +19,17 @@ export const useSynchronizeStateWithStorage = () => {
           const state = await snapshot.getPromise(normalizedBookDownloadsState)
           const readingState = state[bookId]
           if (readingState?.downloadState !== DownloadState.Downloaded) {
-            set(normalizedBookDownloadsState, old => ({
-              ...old,
-              [bookId]: {
-                downloadProgress: 100,
-                downloadState: DownloadState.Downloaded,
-              }
-            }))
+            const item = await localforage.getItem<Blob>(`${DOWNLOAD_PREFIX}-${bookId}`)
+            if (item) {
+              set(normalizedBookDownloadsState, old => ({
+                ...old,
+                [bookId]: {
+                  downloadProgress: 100,
+                  downloadState: DownloadState.Downloaded,
+                  size: item?.size,
+                }
+              }))
+            }
           }
         }),
     )

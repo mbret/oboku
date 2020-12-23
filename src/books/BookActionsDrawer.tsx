@@ -11,14 +11,17 @@ import { useRefreshBookMetadata } from './helpers';
 import { useRemoveBook } from './helpers';
 import { Drawer, Divider, ListItemIcon } from '@material-ui/core';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
-import { atom, useRecoilCallback, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { enrichedBookState } from './states';
 
-export const bookActionDrawerState = atom<{ openedWith: undefined | string }>({ key: 'bookActionDrawerState', default: { openedWith: undefined } })
+export const bookActionDrawerState = atom<{
+  openedWith: undefined | string,
+  actions?: ('removeDownload' | 'goToDetails')[]
+}>({ key: 'bookActionDrawerState', default: { openedWith: undefined } })
 
 export const BookActionsDrawer = () => {
   const setOpenManageBookCollectionsDialog = useSetRecoilState(openManageBookCollectionsDialog)
-  const [{ openedWith: bookId }, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
+  const [{ openedWith: bookId, actions }, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const history = useHistory()
   const book = useRecoilValue(enrichedBookState(bookId || '-1'))
   const removeDownloadFile = useRemoveDownloadFile()
@@ -39,40 +42,46 @@ export const BookActionsDrawer = () => {
       {book && (
         <>
           <List>
-            <ListItem button
-              onClick={() => {
-                handleClose()
-                history.push(ROUTES.BOOK_DETAILS.replace(':id', book._id))
-              }}
-            >
-              <ListItemIcon>
-                <ListAltRounded />
-              </ListItemIcon>
-              <ListItemText primary="Go to details" />
-            </ListItem>
-            <ListItem button
-              onClick={() => {
-                handleClose()
-                refreshBookMetadata(book._id)
-              }}
-            >
-              <ListItemIcon>
-                <SyncRounded />
-              </ListItemIcon>
-              <ListItemText primary="Refresh metadata" />
-            </ListItem>
-            <ListItem button
-              onClick={() => {
-                handleClose()
-                setOpenManageBookCollectionsDialog(bookId)
-              }}
-            >
-              <ListItemIcon>
-                <LibraryBooksRounded />
-              </ListItemIcon>
-              <ListItemText primary="Add or remove from collection" />
-            </ListItem>
-            {book.downloadState === 'downloaded' && (
+            {(actions?.includes('goToDetails') || !actions) && (
+              <ListItem button
+                onClick={() => {
+                  handleClose()
+                  history.push(ROUTES.BOOK_DETAILS.replace(':id', book._id))
+                }}
+              >
+                <ListItemIcon>
+                  <ListAltRounded />
+                </ListItemIcon>
+                <ListItemText primary="Go to details" />
+              </ListItem>
+            )}
+            {!actions && (
+              <ListItem button
+                onClick={() => {
+                  handleClose()
+                  refreshBookMetadata(book._id)
+                }}
+              >
+                <ListItemIcon>
+                  <SyncRounded />
+                </ListItemIcon>
+                <ListItemText primary="Refresh metadata" />
+              </ListItem>
+            )}
+            {!actions && (
+              <ListItem button
+                onClick={() => {
+                  handleClose()
+                  setOpenManageBookCollectionsDialog(bookId)
+                }}
+              >
+                <ListItemIcon>
+                  <LibraryBooksRounded />
+                </ListItemIcon>
+                <ListItemText primary="Add or remove from collection" />
+              </ListItem>
+            )}
+            {(actions?.includes('removeDownload') || !actions) && book.downloadState === 'downloaded' && (
               <ListItem button
                 onClick={() => {
                   handleClose()
@@ -86,20 +95,24 @@ export const BookActionsDrawer = () => {
               </ListItem>
             )}
           </List>
-          <Divider />
-          <List>
-            <ListItem button
-              onClick={() => {
-                handleClose()
-                bookId && removeBook({ id: bookId })
-              }}
-            >
-              <ListItemIcon>
-                <DeleteForeverRounded />
-              </ListItemIcon>
-              <ListItemText primary="Remove from library" />
-            </ListItem>
-          </List>
+          {!actions && (
+            <>
+              <Divider />
+              <List>
+                <ListItem button
+                  onClick={() => {
+                    handleClose()
+                    bookId && removeBook({ id: bookId })
+                  }}
+                >
+                  <ListItemIcon>
+                    <DeleteForeverRounded />
+                  </ListItemIcon>
+                  <ListItemText primary="Remove from library" />
+                </ListItem>
+              </List>
+            </>
+          )}
         </>
       )}
     </Drawer>

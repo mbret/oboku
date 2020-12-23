@@ -2,23 +2,21 @@ import React, { FC } from 'react'
 import { CircularProgress, makeStyles, Typography, useTheme } from "@material-ui/core"
 import { CloudDownloadRounded, MenuBookRounded, MoreVert, Pause } from '@material-ui/icons';
 import { useWindowSize } from 'react-use';
-import { ROUTES } from '../constants';
-import { useDownloadFile } from '../download/useDownloadFile';
-import { useHistory } from 'react-router-dom';
 import { Cover } from '../books/Cover';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { bookActionDrawerState } from './BookActionsDrawer';
 import { enrichedBookState } from './states';
 import { ReadingStateState } from 'oboku-shared'
+import { useDefaultItemClickHandler } from './listHelpers';
 
 export const BookListGridItem: FC<{
   bookId: string,
-}> = ({ bookId }) => {
+  onItemClick?: (id: string) => void,
+}> = ({ bookId, onItemClick }) => {
   const item = useRecoilValue(enrichedBookState(bookId))
-  const history = useHistory();
+  const onDefaultItemClick = useDefaultItemClickHandler()
   const windowSize = useWindowSize()
   const classes = useStyles({ windowSize });
-  const downloadFile = useDownloadFile()
   const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
 
   return (
@@ -26,12 +24,8 @@ export const BookListGridItem: FC<{
       key={item?._id}
       className={classes.itemContainer}
       onClick={() => {
-        if (!item?.lastMetadataUpdatedAt) return
-        if (item?.downloadState === 'none') {
-          item?._id && downloadFile(item?._id)
-        } else if (item?.downloadState === 'downloaded') {
-          history.push(ROUTES.READER.replace(':id', item?._id))
-        }
+        if (onItemClick) return onItemClick(bookId)
+        return onDefaultItemClick(bookId)
       }}
     >
       <div
@@ -146,11 +140,9 @@ const useStyles = makeStyles((theme) => {
       cursor: 'pointer',
       height: '100%',
       position: 'relative',
-      boxSizing: 'border-box',
       display: 'flex',
       flexFlow: 'column',
       padding: (props: Props) => theme.spacing(1),
-      // border: '1px solid blue',
     },
     itemBottomContainer: {
       // border: '1px solid red',

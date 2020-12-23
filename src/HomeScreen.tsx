@@ -71,7 +71,7 @@ export const HomeScreen = () => {
                 height: itemWidth / adjustedRatioWhichConsiderBottom,
                 // border: '1px solid black'
               }}
-              viewMode="list"
+              viewMode="grid"
             />
           </>
         )}
@@ -88,7 +88,7 @@ export const HomeScreen = () => {
                 height: itemWidth / adjustedRatioWhichConsiderBottom,
                 // border: '1px solid black'
               }}
-              viewMode="list"
+              viewMode="grid"
             />
           </>
         )}

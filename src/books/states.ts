@@ -4,7 +4,7 @@ import { BookDocType } from 'oboku-shared'
 import { libraryState } from "../library/states";
 import { normalizedTagsState, protectedTagIdsState } from "../tags/states";
 import { normalizedLinksState } from "../links/states";
-import { bookDownloadsState } from "../download/states";
+import { bookDownloadsState, DownloadState, normalizedBookDownloadsState } from "../download/states";
 import { normalizedCollectionsState } from "../collections/states";
 
 export type Book = NonNullable<UnwrapRecoilValue<typeof normalizedBooksState>[number]>
@@ -43,6 +43,16 @@ export const enrichedBookState = selectorFamily({
       ...book,
       ...downloadState || {},
     }
+  }
+})
+
+export const downloadedBookIdsState = selector({
+  key: 'downloadedBookIdsState',
+  get: ({ get }) => {
+    const book = get(bookIdsState)
+    const downloadState = get(normalizedBookDownloadsState)
+
+    return book.filter(id => downloadState[id]?.downloadState === DownloadState.Downloaded)
   }
 })
 

@@ -1,57 +1,55 @@
 import React from 'react';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { makeStyles, ListItem, List, ListItemText, ListItemAvatar, createStyles, Theme, LinearProgress, ListSubheader, ListItemIcon } from '@material-ui/core';
-import { StorageRounded, MoreVert } from '@material-ui/icons';
+import { ListItem, List, ListItemText, LinearProgress, ListItemIcon, Typography, Box } from '@material-ui/core';
+import { StorageRounded } from '@material-ui/icons';
 import { useStorageUse } from './useStorageUse';
-import { useRxQuery } from '../rxdb';
+import { LibraryViewMode } from '../rxdb';
+import { BookList } from '../books/BookList';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { downloadedBookIdsState } from '../books/states';
+import { bookActionDrawerState } from '../books/BookActionsDrawer';
+import { bookDownloadsSizeState } from '../download/states';
+import { bytesToMb } from '../utils';
 
 export const ManageStorageScreen = () => {
-  const classes = useStyles();
-  const books = useRxQuery(db => db.book.find())
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
+  const books = useRecoilValue(downloadedBookIdsState)
+  const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
+  const bookSize = useRecoilValue(bookDownloadsSizeState)
 
   return (
     <>
       <TopBarNavigation title={'Manage storage'} />
-      <List className={classes.root}>
+      <List>
         <ListItem>
-          <ListItemAvatar>
+          <ListItemIcon>
             <StorageRounded />
-          </ListItemAvatar>
+          </ListItemIcon>
           <ListItemText
             primary="Available storage"
+            disableTypography
             secondary={
-              <>
-                <LinearProgress variant="determinate" value={quotaUsed * 100} />
-                {`${usedInMb} MB (${(quotaUsed * 100).toFixed(2)}%) used of ${quotaInGb} GB`}
-              </>
+              <Box>
+                <Box marginY={1}><LinearProgress variant="determinate" value={quotaUsed * 100} /></Box>
+                <Typography gutterBottom variant="body2">{`${usedInMb} MB used of ${quotaInGb} GB (${(quotaUsed * 100).toFixed(2)}%)`}</Typography>
+                <Typography variant="body2" color="textSecondary"><b>{bytesToMb(bookSize)} MB used by books</b></Typography>
+              </Box>
             }
           />
         </ListItem>
       </List>
-      <List subheader={<ListSubheader>Downloaded books</ListSubheader>}>
-        {books?.map((book) => (
-          <ListItem
-            button
-            onClick={() => { }}
-          >
-            <ListItemText primary={book?.title} secondary="0 MB" />
-            <ListItemIcon>
-              <MoreVert />
-            </ListItemIcon>
-          </ListItem>
-        ))}
-      </List>
+      {books?.length > 0 && (
+        <BookList
+          viewMode={LibraryViewMode.LIST}
+          data={books}
+          density="dense"
+          style={{
+            height: '100%',
+            overflow: 'hidden'
+          }}
+          onItemClick={(id) => setBookActionDrawerState({ openedWith: id, actions: ['removeDownload'] })}
+        />
+      )}
     </>
   );
 }
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      // width: '100%',
-      // maxWidth: 360,
-      // backgroundColor: theme.palette.background.paper,
-    },
-  }),
-);
