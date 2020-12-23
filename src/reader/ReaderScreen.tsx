@@ -277,22 +277,24 @@ export const ReaderScreen: FC<{}> = () => {
           }}
           ref={rootRef as any}
         >
-          {/* 
-            This div is used to capture click event in case where epubjs does not cover the
-            entire screen with its iframe. It does happens for example when a fixed layout is on spread
-            mode but there is only one page. There will be one half of the screen empty and therefore
-            no rendition.on.click event.
-          */}
-          <div
-            style={{
-              height: windowSize.height,
-              width: windowSize.width,
-              position: "relative",
-            }}
-            onClick={e => onRenditionClick(e.nativeEvent)}
-          >
-            {!isUsingComicReader
-              ? (
+
+
+          {!isUsingComicReader
+            ? (
+              /**
+               * This div is used to capture click event in case where epubjs does not cover the
+               * entire screen with its iframe. It does happens for example when a fixed layout is on spread 
+               * mode but there is only one page. There will be one half of the screen empty and therefore
+               * no rendition.on.click event.
+               */
+              < div
+                style={{
+                  height: windowSize.height,
+                  width: windowSize.width,
+                  position: "relative",
+                }}
+                onClick={e => onRenditionClick(e.nativeEvent)}
+              >
                 <EpubView
                   // http://epubjs.org/documentation/0.3/#bookrenderto
                   ref={readerRef as any}
@@ -310,21 +312,22 @@ export const ReaderScreen: FC<{}> = () => {
                   )}
                   location={firstLocation.current}
                 />
-              )
-              : (
-                <ComicReader
-                  url={file}
-                  getRendition={setRendition as any}
-                  location={firstLocation.current}
-                />
-              )}
-          </div>
+              </div>
+            )
+            : (
+              <ComicReader
+                url={file}
+                getRendition={setRendition as any}
+                location={firstLocation.current}
+              />
+            )}
           <TopBar />
           <BottomBar />
         </div>
-      )}
+      )
+      }
       <AppTourReader />
-    </ReaderProvider>
+    </ReaderProvider >
   )
 }
 
