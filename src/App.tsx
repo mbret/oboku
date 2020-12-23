@@ -53,7 +53,7 @@ export function App() {
                 </AxiosProvider>
               </GoogleApiProvider>
             </CookiesProvider>
-            <UserFeedback />
+            {/* <UserFeedback /> */}
           </PersistedRecoilRoot>
         </RxDbProvider>
       </ThemeProvider>
