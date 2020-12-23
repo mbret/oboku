@@ -15,3 +15,5 @@ export const useMeasureElement = (element: React.ReactNode) => {
 };
 
 export const waitFor = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
+export const bytesToMb = (value: number) => (value / 1e+6).toFixed(2)

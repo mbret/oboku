@@ -45,7 +45,7 @@ export const Cover: FC<{
     justifySelf: 'flex-end',
     objectFit: 'cover',
     ...rounded && {
-      borderRadius: '5%',
+      borderRadius: 5,
     },
     ...style,
   }

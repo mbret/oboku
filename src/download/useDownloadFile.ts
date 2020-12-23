@@ -72,6 +72,7 @@ export const useDownloadFile = () => {
         setDownloadData(bookId, {
           downloadProgress: 100,
           downloadState: DownloadState.Downloaded,
+          size: response.data?.size || 0
         })
       } catch (e) {
         setDownloadData(bookId, {

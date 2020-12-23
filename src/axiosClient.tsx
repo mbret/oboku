@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useMemo } from 'react';
-import axios, { AxiosRequestConfig } from 'axios'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useRecoilValue } from 'recoil';
 import { authState } from './auth/authState';
 import { API_SYNC_URL, API_URI } from './constants';
@@ -26,7 +26,7 @@ export const useAxiosClient = () =>
       bookId: string,
       credentials: { [key: string]: any },
       options?: AxiosRequestConfig
-    ) => instance.get(`${API_URI}/download/${bookId}`, {
+    ) => instance.get<any, AxiosResponse<Blob>>(`${API_URI}/download/${bookId}`, {
       responseType: 'blob',
       ...options,
       headers: {
