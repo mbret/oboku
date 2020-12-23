@@ -10,6 +10,7 @@ export const PageNumber: FC<{
   const totalApproximativePages = useRecoilValue(totalApproximativePagesState)
   const layout = useRecoilValue(layoutState)
   const currentApproximateProgress = useRecoilValue(currentApproximateProgressState)
+  console.log('updateProgress', currentApproximateProgress)
   const roundedProgress = Math.floor((currentApproximateProgress || 0) * 100)
   const displayableProgress = roundedProgress > 0 ? roundedProgress : 1
   const currentChapter = useRecoilValue(currentChapterState)
@@ -31,35 +32,30 @@ export const PageNumber: FC<{
         display: 'flex',
         justifyContent: 'center',
       }}>
-      {isLoading
-        ? (
-          <Typography style={{ fontWeight: theme.typography.fontWeightMedium }}>Loading ...</Typography>
-        )
-        : (
-          <>
-            {layout === 'fixed'
-              ? (
-                <Typography style={{ fontWeight: theme.typography.fontWeightMedium }}>page {(currentPageToDisplay || 0)} of {totalPagesToDisplay}</Typography>
-              ) : (
-                <Box justifyContent="center" alignItems="center" display="flex" flexDirection="column">
-                  <Typography variant="body2">
-                    {currentChapter?.label}
-                  </Typography>
-                  <Box display="flex" mt={1}>
-                    <Typography >
-                      page {(currentPageToDisplay || 0)} of {totalPagesToDisplay}
+      <>
+        {layout === 'fixed'
+          ? (
+            <Typography style={{ fontWeight: theme.typography.fontWeightMedium }}>page {(currentPageToDisplay || 0)} of {totalPagesToDisplay}</Typography>
+          ) : (
+            <Box justifyContent="center" alignItems="center" display="flex" flexDirection="column">
+              <Typography variant="body2">
+                {currentChapter?.label}
+              </Typography>
+              <Box display="flex" mt={1}>
+                <Typography >
+                  page {(currentPageToDisplay || 0)} of {totalPagesToDisplay}
+                </Typography>
+                {currentApproximateProgress !== undefined && (
+                  <Box ml={2}>
+                    <Typography style={{ fontWeight: theme.typography.fontWeightMedium }}>
+                      ({displayableProgress} %)
                     </Typography>
-                    <Box ml={2}>
-                      <Typography style={{ fontWeight: theme.typography.fontWeightMedium }}>
-                        ({displayableProgress} %)
-                  </Typography>
-                    </Box>
                   </Box>
-                </Box>
-              )}
-          </>
-        )
-      }
+                )}
+              </Box>
+            </Box>
+          )}
+      </>
     </Box >
   )
 }

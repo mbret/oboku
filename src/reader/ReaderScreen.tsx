@@ -85,9 +85,6 @@ export const ReaderScreen: FC<{}> = () => {
   // @todo only show menu on short click
   const onRenditionClick = useCallback((e: MouseEvent) => {
     const { offsetX, offsetY, clientX, clientY, x, screenX, pageX, movementX } = e
-    const location = rendition?.currentLocation() as any
-    const start = location.start as any
-    const pageDisplayedIndex = start.displayed.page - 1
 
     // let wrapper = rendition?.manager?.container;
 
@@ -108,9 +105,9 @@ export const ReaderScreen: FC<{}> = () => {
     }
 
     const maxOffsetPrev = horizontalTappingZoneWidth
-    const maxOffsetBottomMenu = verticalTappingZoneHeight
+    // const maxOffsetBottomMenu = verticalTappingZoneHeight
     const minOffsetNext = windowSize.width - maxOffsetPrev
-    const minOffsetBottomMenu = windowSize.height - maxOffsetBottomMenu
+    // const minOffsetBottomMenu = windowSize.height - maxOffsetBottomMenu
 
     console.log(
       'mouse',
@@ -133,7 +130,7 @@ export const ReaderScreen: FC<{}> = () => {
     // } else if (clientY > minOffsetBottomMenu) {
     //   setIsBottomMenuShown(true)
     // }
-  }, [windowSize, verticalTappingZoneHeight, horizontalTappingZoneWidth, rendition, setIsMenuShown, isUsingComicReader])
+  }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, isUsingComicReader])
 
   // @ts-ignore
   window.rendition = rendition;
@@ -211,7 +208,6 @@ export const ReaderScreen: FC<{}> = () => {
      * and a location of -1. We just get the number of pages based on spine and the current index.
      * If the book is fully pre-paginated the number of pages should not change anyway.
      */
-
     if (layout === 'fixed') {
       const pageNumber = (currentLocation?.start?.index || 0)
       const spineLength = rendition?.book?.packaging?.spine?.length || 0
@@ -221,15 +217,26 @@ export const ReaderScreen: FC<{}> = () => {
     } else {
       const _currentPage = currentLocation?.atEnd
         ? currentLocation?.end?.location
-        : rendition?.book.locations.locationFromCfi(currentLocation?.start?.cfi) as unknown as number
+        // : rendition?.book.locations.locationFromCfi(currentLocation?.start?.cfi) as unknown as number
+        : currentLocation?.start?.displayed.page
+
+      console.log('updateProgress', currentLocation, layout, _currentPage)
 
       if (currentLocation && _currentPage > -1) {
-        const progress = rendition?.book.locations.percentageFromCfi(currentLocation?.start?.cfi);
-        const finalProgress = currentLocation?.atEnd ? 1 : progress
-        // The % of how far along in the book you are
-        setCurrentApproximateProgress(finalProgress)
-        setCurrentPage(_currentPage)
-        setTotalApproximativePages((rendition?.book.locations as any)?.total)
+        const progress: number | undefined | null = rendition?.book.locations.percentageFromCfi(currentLocation?.start?.cfi);
+        if (typeof progress === 'number') {
+          const finalProgress = currentLocation?.atEnd ? 1 : progress
+          // The % of how far along in the book you are
+          setCurrentApproximateProgress(finalProgress)
+          setCurrentPage(_currentPage)
+          setTotalApproximativePages((rendition?.book.locations as any)?.total)
+        } else {
+          // this is a fallback when the locations have not been loaded successfully.
+          // it can happens whenever there is a "fixed" book that does not have the meta
+          // It will be like a reflow with X chapters which are X pages which contains one image
+          setCurrentPage(currentLocation?.start.index)
+          setTotalApproximativePages(rendition?.book.packaging.spine.length)
+        }
       }
     }
   }, [rendition, layout, setCurrentPage, setTotalApproximativePages, setCurrentApproximateProgress])
@@ -277,8 +284,6 @@ export const ReaderScreen: FC<{}> = () => {
           }}
           ref={rootRef as any}
         >
-
-
           {!isUsingComicReader
             ? (
               /**
