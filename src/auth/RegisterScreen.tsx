@@ -6,15 +6,10 @@ import { OrDivider } from '../common/OrDivider';
 import { Header } from './Header';
 import { useHistory } from 'react-router-dom';
 import { ROUTES } from '../constants';
-import * as yup from 'yup'
 import { useSignUp } from './helpers'
 import { ServerError } from '../errors';
 import { CenteredBox } from '../common/CenteredBox';
-
-const schema = yup.object().shape({
-  email: yup.string().email().required(),
-  password: yup.string().required(),
-})
+import { validators } from 'oboku-shared'
 
 export const RegisterScreen = () => {
   const history = useHistory()
@@ -50,12 +45,13 @@ export const RegisterScreen = () => {
       flex: 1,
       paddingTop: theme.spacing(4),
       paddingBottom: theme.spacing(4),
+      overflow: 'scroll'
     }}>
       <Header />
       <form style={{}} noValidate autoComplete="off">
         <TextField
           label="Email"
-          type="text"
+          type="email"
           variant="outlined"
           autoComplete="email"
           style={{
@@ -135,7 +131,7 @@ const useIsValid = (email: string, password: string) => {
   const [isValid, setIsValid] = useState(false)
 
   useEffect(() => {
-    setIsValid(schema.isValidSync({ email, password }))
+    setIsValid(validators.signupSchema.isValidSync({ email, password }))
   }, [email, password])
 
   return isValid
