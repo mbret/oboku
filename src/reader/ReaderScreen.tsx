@@ -303,6 +303,7 @@ export const ReaderScreen: FC<{}> = () => {
                   getRendition={setRendition}
                   epubOptions={{
                     // spread: 'never' // never / always
+                    minSpreadWidth: 99999
                     // stylesheet: 'html { display: none; } ',
                   }}
                   loadingView={(
