@@ -28,12 +28,7 @@ export const BookListGridItem: FC<{
         return onDefaultItemClick(bookId)
       }}
     >
-      <div
-        style={{
-          position: 'relative',
-          flex: 1,
-        }}
-      >
+      <div className={classes.coverContainer}>
         {item && <Cover bookId={item?._id} />}
         {item?.downloadState === 'downloading' && (
           <div style={{
@@ -140,19 +135,25 @@ const useStyles = makeStyles((theme) => {
       position: 'relative',
       display: 'flex',
       flexFlow: 'column',
-      padding: (props: Props) => theme.spacing(1),
+      paddingLeft: (props: Props) => theme.spacing(1),
+      paddingRight: (props: Props) => theme.spacing(1),
+    },
+    coverContainer: {
+      position: 'relative',
+      display: 'flex',
+      flex: 1,
+      marginTop: (props: Props) => theme.spacing(1),
+      minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
     },
     itemBottomContainer: {
-      // border: '1px solid red',
-      boxSizing: 'border-box',
       width: '100%',
       height: 50,
-      minHeight: 50,
       flexFlow: 'row',
       display: 'flex',
       alignItems: 'center',
       paddingLeft: 2,
       paddingRight: 5,
+      marginBottom: (props: Props) => theme.spacing(1),
     },
     itemTitle: {
       whiteSpace: 'nowrap',

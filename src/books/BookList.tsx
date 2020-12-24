@@ -28,7 +28,7 @@ export const BookList: FC<{
     else return data
   }, [data, hasHeader])
   const itemsPerRow = viewMode === 'grid'
-    ? windowSize.width > 420 ? 3 : 2
+    ? windowSize.width > theme.breakpoints.values['sm'] ? 4 : 2
     : 1
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
   const densityMultiplier = density === 'dense' ? 0.8 : 1
