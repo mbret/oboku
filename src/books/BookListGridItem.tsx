@@ -31,9 +31,7 @@ export const BookListGridItem: FC<{
       <div
         style={{
           position: 'relative',
-          flexGrow: 1,
-          width: '100%',
-          minHeight: 0,
+          flex: 1,
         }}
       >
         {item && <Cover bookId={item?._id} />}

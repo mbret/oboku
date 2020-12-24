@@ -32,7 +32,7 @@ export const BookList: FC<{
     : 1
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
   const densityMultiplier = density === 'dense' ? 0.8 : 1
-  const listItemMargin = 10 * densityMultiplier
+  const listItemMargin = (windowSize.width > theme.breakpoints.values['sm'] ? 20 : 10) * densityMultiplier
   const itemHeight = viewMode === LibraryViewMode.GRID
     ? undefined
     : (((windowSize.width > theme.breakpoints.values['sm'] ? 200 : 150) * theme.custom.coverAverageRatio) + listItemMargin) * densityMultiplier
