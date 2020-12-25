@@ -201,7 +201,7 @@ export const ReaderScreen: FC<{}> = () => {
     })
   }, [rendition])
 
-  const updateProgress = useCallback((currentLocation: any | undefined) => {
+  const updateProgress = useCallback((currentLocation: Location) => {
     /**
      * Comic detected
      * For comic the rendering does not work and will always return page number of 0
@@ -215,15 +215,25 @@ export const ReaderScreen: FC<{}> = () => {
       setTotalApproximativePages(rendition?.book.packaging.spine.length)
       setCurrentApproximateProgress(pageNumber / (spineLength - 1))
     } else {
-      const _currentPage = currentLocation?.atEnd
-        ? currentLocation?.end?.location
-        // : rendition?.book.locations.locationFromCfi(currentLocation?.start?.cfi) as unknown as number
-        : currentLocation?.start?.displayed.page
+      // type is wrong here, the return is a number (-1, 120, 1, etc)
+      // but in case the api change we will treat it as any and type check
+      const startLocation = rendition?.book.locations.locationFromCfi(currentLocation.start.cfi) as unknown
+
+      const _currentPage = currentLocation.start.displayed.page
+        // currentLocation?.atEnd
+        //   ? currentLocation?.end?.location
+        //   : currentLocation?.start?.displayed.page
 
       console.log('updateProgress', currentLocation, layout, _currentPage)
 
-      if (currentLocation && _currentPage > -1) {
-        const progress: number | undefined | null = rendition?.book.locations.percentageFromCfi(currentLocation?.start?.cfi);
+      if (currentLocation && (_currentPage > -1)) {
+        const progress: number | undefined | null =
+          // when location is -1, it means the book has not finished generating. This means we cannot have a 
+          // valid percentageFromCfi. In fact percentageFromCfi will return 1, which is wrong
+          (typeof startLocation === 'number') && startLocation === -1
+            ? undefined
+            : rendition?.book.locations.percentageFromCfi(currentLocation?.start?.cfi);
+        rendition?.book.locations.locationFromCfi(currentLocation?.start?.cfi)
         if (typeof progress === 'number') {
           const finalProgress = currentLocation?.atEnd ? 1 : progress
           // The % of how far along in the book you are
