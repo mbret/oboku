@@ -1,7 +1,6 @@
 import { List, ListItem, ListItemAvatar, ListItemText, Typography, useTheme } from '@material-ui/core'
 import { CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
 import React, { FC } from 'react'
-import { BookListListItem } from './BookListListItem'
 import { Cover } from './Cover'
 import { Book } from './states'
 

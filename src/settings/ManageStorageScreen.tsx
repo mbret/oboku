@@ -4,7 +4,7 @@ import { ListItem, List, ListItemText, LinearProgress, ListItemIcon, Typography,
 import { StorageRounded } from '@material-ui/icons';
 import { useStorageUse } from './useStorageUse';
 import { LibraryViewMode } from '../rxdb';
-import { BookList } from '../books/BookList';
+import { BookList } from '../books/bookList/BookList';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { downloadedBookIdsState } from '../books/states';
 import { bookActionDrawerState } from '../books/BookActionsDrawer';
@@ -43,6 +43,7 @@ export const ManageStorageScreen = () => {
           viewMode={LibraryViewMode.LIST}
           data={books}
           density="dense"
+          withDrawerActions={false}
           style={{
             height: '100%',
             overflow: 'hidden'

@@ -1,7 +1,7 @@
 import React from 'react';
 import { TopBarNavigation } from './TopBarNavigation';
 import { makeStyles, createStyles, Typography, useTheme, Button } from '@material-ui/core';
-import { BookList } from './books/BookList';
+import { BookList } from './books/bookList/BookList';
 import { ROUTES } from './constants';
 import * as R from 'ramda';
 import { useHistory } from 'react-router-dom'

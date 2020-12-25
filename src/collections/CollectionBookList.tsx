@@ -1,5 +1,5 @@
 import React, { ComponentProps, FC, useMemo } from 'react'
-import { BookList } from '../books/BookList';
+import { BookList } from '../books/bookList/BookList';
 import { useRecoilValue } from 'recoil';
 import { normalizedCollectionsState } from './states';
 

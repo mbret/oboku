@@ -1,10 +1,10 @@
 import React, { useCallback, FC, useMemo } from 'react'
 import { Box, makeStyles, useTheme } from "@material-ui/core"
 import { useWindowSize } from 'react-use';
-import { ItemList } from '../lists/ItemList';
+import { ItemList } from '../../lists/ItemList';
 import { BookListGridItem } from './BookListGridItem';
-import { LibrarySorting } from '../library/states';
-import { LibraryViewMode } from '../rxdb';
+import { LibrarySorting } from '../../library/states';
+import { LibraryViewMode } from '../../rxdb';
 import { BookListListItem } from './BookListListItem';
 
 export const BookList: FC<{
@@ -17,8 +17,9 @@ export const BookList: FC<{
   itemWidth?: number,
   data: string[],
   density?: 'dense' | 'large',
-  onItemClick?: (id: string) => void
-}> = ({ viewMode = 'grid', renderHeader, headerHeight, density = 'large', isHorizontal = false, style, data, itemWidth, onItemClick }) => {
+  onItemClick?: (id: string) => void,
+  withDrawerActions?: boolean
+}> = ({ viewMode = 'grid', renderHeader, headerHeight, density = 'large', isHorizontal = false, style, data, itemWidth, onItemClick, withDrawerActions }) => {
   const windowSize = useWindowSize()
   const classes = useStyles({ isHorizontal, windowSize });
   const hasHeader = !!renderHeader
@@ -52,10 +53,11 @@ export const BookList: FC<{
             bookId={item}
             itemHeight={(itemHeight || 0) - listItemMargin}
             onItemClick={onItemClick}
+            withDrawerActions={withDrawerActions}
           />
         </Box>
       )
-  }, [renderHeader, viewMode, itemHeight, listItemMargin, onItemClick])
+  }, [renderHeader, viewMode, itemHeight, listItemMargin, onItemClick, withDrawerActions])
 
   return (
     <div className={classes.container} style={style}>
