@@ -16,6 +16,7 @@ export const applyHooks = (db: Database) => {
     }).exec()
 
     // Remove the book from all collections that are not anymore in this book
+    // but that also still reference the book
     await db.obokucollection
       .safeUpdate({
         $pullAll: {
@@ -23,13 +24,17 @@ export const applyHooks = (db: Database) => {
         }
       }, collection => collection.safeFind({
         selector: {
+          books: {
+            $in: [data._id]
+          },
           _id: {
             $nin: data.collections
           },
         }
       }))
 
-    // add the book to any collections that are in this book but where not before
+    // add the book to any collections that are in this book
+    // but does not reference it yet
     await db.obokucollection
       .safeUpdate({
         $push: {

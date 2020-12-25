@@ -64,12 +64,14 @@ export const useGenerateLocations = (rendition: Rendition | undefined, words = 3
 
 export const useUpdateBookState = (bookId: string) => {
   const [editBook] = useUpdateBook()
-  const currentLocation = useRecoilValue(states.currentLocationState)
-  const currentApproximateProgress = useRecoilValue(states.currentApproximateProgressState)
-  const book = useRecoilValue(bookState(bookId))
-  const readingStateCurrentBookmarkLocation = book?.readingStateCurrentBookmarkLocation
+  const currentLocationToWatch = useRecoilValue(states.currentLocationState)
 
-  useDebounce(() => {
+  const updateBook = useRecoilCallback(({ snapshot }) => async () => {
+    const currentLocation = await snapshot.getPromise(states.currentLocationState)
+    const currentApproximateProgress = await snapshot.getPromise(states.currentApproximateProgressState)
+    const book = await snapshot.getPromise(bookState(bookId))
+    const readingStateCurrentBookmarkLocation = book?.readingStateCurrentBookmarkLocation
+
     if (currentLocation && currentLocation?.start?.cfi !== readingStateCurrentBookmarkLocation) {
       editBook({
         _id: bookId,
@@ -84,5 +86,7 @@ export const useUpdateBookState = (bookId: string) => {
         }
       })
     }
-  }, 400, [currentApproximateProgress, currentLocation, readingStateCurrentBookmarkLocation] as any)
+  }, [editBook])
+
+  useDebounce(updateBook, 400, [currentLocationToWatch, updateBook])
 }

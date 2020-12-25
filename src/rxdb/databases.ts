@@ -172,7 +172,7 @@ const bookSchema: RxJsonSchema<Omit<BookDocType, '_id' | 'rx_model' | '_rev'>> =
   version: 0,
   type: 'object',
   properties: {
-    collections: { type: ['array'], items: { type: 'string' } },
+    collections: { type: 'array', ref: 'obokucollection', items: { type: 'string' } },
     createdAt: { type: ['number'] },
     creator: { type: ['string', 'null'] },
     date: { type: ['number', 'null'] },
