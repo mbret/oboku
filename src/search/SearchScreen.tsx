@@ -1,6 +1,6 @@
-import { Box, createStyles, fade, InputBase, List, ListItem, makeStyles, Theme } from '@material-ui/core'
+import { Box, createStyles, fade, InputBase, makeStyles, Theme } from '@material-ui/core'
 import React from 'react'
-import { BookListListItem } from '../books/BookListListItem'
+import { BookList } from '../books/bookList/BookList'
 import { TopBarNavigation } from '../TopBarNavigation'
 import { useSearch } from './helpers'
 
@@ -9,12 +9,13 @@ export const SearchScreen = () => {
   const [search, setSearch, results] = useSearch()
 
   return (
-    <Box>
+    <Box display="flex" flexDirection="column" overflow="hidden" flex={1}>
       <TopBarNavigation showBack rightComponent={(
         <div className={classes.search} >
           <InputBase
             placeholder="Alice in wonderland, myTag, ..."
             value={search || ''}
+            autoFocus
             classes={{
               root: classes.inputRoot,
               input: classes.inputInput,
@@ -24,13 +25,14 @@ export const SearchScreen = () => {
           />
         </div>
       )} />
-      <List>
-        {results.map(book => (
-          <ListItem key={book._id}>
-            <BookListListItem bookId={book._id} size="small" />
-          </ListItem>
-        ))}
-      </List>
+      <BookList
+        data={results.map(book => book._id)}
+        viewMode="list"
+        style={{
+          height: '100%',
+          overflow: 'hidden'
+        }}
+      />
     </Box>
   )
 }
