@@ -66,7 +66,8 @@ export const Cover: FC<{
         style={{
           ...finalStyle,
           ...isLoading && {
-            visibility: 'hidden'
+            // visibility: 'hidden'
+            display: 'none'
           }
         }}
         onLoad={() => {
