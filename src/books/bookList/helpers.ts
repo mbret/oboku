@@ -10,7 +10,7 @@ export const useDefaultItemClickHandler = () => {
 
   return useRecoilCallback(({ snapshot }) => async (id: string) => {
     const item = await snapshot.getPromise(enrichedBookState(id))
-    if (!item?.lastMetadataUpdatedAt) return
+    // if (!item?.lastMetadataUpdatedAt) return
     if (item?.downloadState === 'none') {
       item?._id && downloadFile(item?._id)
     } else if (item?.downloadState === 'downloaded') {

@@ -27,7 +27,10 @@ export const BookListGridItem: FC<{
         return onDefaultItemClick(bookId)
       }}
     >
-      <BookListCoverContainer bookId={bookId} className={classes.coverContainer} />
+      <BookListCoverContainer
+        bookId={bookId}
+        className={classes.coverContainer}
+      />
       <div
         className={classes.itemBottomContainer}
         onClick={(e) => {

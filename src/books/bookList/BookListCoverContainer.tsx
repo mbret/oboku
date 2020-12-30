@@ -1,18 +1,22 @@
 import React, { FC } from 'react'
-import { CircularProgress, makeStyles, Typography } from "@material-ui/core"
-import { CloudDownloadRounded, Pause } from '@material-ui/icons';
+import { Box, makeStyles, Chip } from "@material-ui/core"
+import { CloudDownloadRounded, LoopRounded, Pause } from '@material-ui/icons';
 import { useWindowSize } from 'react-use';
 import { Cover } from '../Cover';
 import { useRecoilValue } from 'recoil';
 import { enrichedBookState } from '../states';
 import { ReadingStateState } from 'oboku-shared'
 import { ReadingProgress } from './ReadingProgress'
+import { theme } from '../../theme';
+import { DownloadState } from '../../download/states';
 
 export const BookListCoverContainer: FC<{
   bookId: string,
   className?: string,
-  withReadingProgress?: boolean
-}> = ({ bookId, className, withReadingProgress = true }) => {
+  withReadingProgressStatus?: boolean
+  withDownloadStatus?: boolean
+  withMetadaStatus?: boolean
+}> = ({ bookId, className, withMetadaStatus = true, withDownloadStatus = true, withReadingProgressStatus = true }) => {
   const item = useRecoilValue(enrichedBookState(bookId))
   const windowSize = useWindowSize()
   const classes = useStyles({ windowSize });
@@ -20,52 +24,46 @@ export const BookListCoverContainer: FC<{
   return (
     <div className={`${classes.coverContainer} ${className}`}>
       {item && <Cover bookId={item?._id} />}
-      {item?.downloadState === 'downloading' && (
+      {item?.downloadState !== DownloadState.Downloaded && (
         <div style={{
           backgroundColor: 'white',
           opacity: 0.5,
-          height: `${100 - (item?.downloadProgress || 0)}%`,
+          height: item?.downloadState === DownloadState.Downloading
+            ? `${100 - (item?.downloadProgress || 0)}%`
+            : `100%`,
           width: '100%',
           position: 'absolute',
           top: 0,
         }} />
       )}
-      <div style={{
-        position: 'absolute',
-        height: '100%',
-        width: '100%',
-        top: 0,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
-        {!item?.lastMetadataUpdatedAt && (
-          <div className={classes.itemCoverCenterInfo}>
-            <CircularProgress size="1rem" />&nbsp;
-            <Typography noWrap>Refresh...</Typography>
-          </div>
+      <Box
+        flexDirection="column"
+        alignItems="center"
+        style={{
+          position: 'absolute',
+          height: '100%',
+          width: '100%',
+          top: 0,
+          display: 'flex',
+          padding: theme.spacing(1),
+        }}>
+        {(withMetadaStatus && !item?.lastMetadataUpdatedAt) && (
+          <Box className={classes.itemCoverCenterInfo}>
+            <Chip color="secondary" size="small" icon={<LoopRounded color="primary" className="icon-spin" />} label="metadata..." />
+          </Box>
         )}
-        {item?.lastMetadataUpdatedAt && item?.downloadState === 'none' && (
-          <>
-            <div style={{
-              backgroundColor: 'white',
-              opacity: 0.5,
-              height: '100%',
-              width: '100%',
-              position: 'absolute',
-              top: 0,
-            }} />
-            <CloudDownloadRounded />
-          </>
+        {item?.downloadState === 'none' && (
+          <Box position="absolute" left="50%" top="50%" style={{ transform: 'translate(-50%, -50%)' }}>
+            <CloudDownloadRounded color="secondary" />
+          </Box>
         )}
-        {item?.downloadState === 'downloading' && (
-          <div className={classes.itemCoverCenterInfo}>
-            <Pause />&nbsp;
-            <Typography noWrap>Downloading...</Typography>
-          </div>
+        {(withDownloadStatus && item?.downloadState === 'downloading') && (
+          <Box position="absolute" left="50%" top="50%" style={{ transform: 'translate(-50%, -50%)' }}>
+            <Chip color="secondary" size="small" icon={<Pause />} label="downloading..." />
+          </Box>
         )}
-      </div>
-      {withReadingProgress && (
+      </Box>
+      {withReadingProgressStatus && (
         <>
           {item?.readingStateCurrentState === ReadingStateState.Reading && (
             <ReadingProgress
@@ -83,21 +81,16 @@ export const BookListCoverContainer: FC<{
   )
 }
 
-const useStyles = makeStyles(() => {
+const useStyles = makeStyles((theme) => {
   return {
     coverContainer: {
       position: 'relative',
       display: 'flex',
-      // flex: 1,
-      // marginTop: (props: Props) => theme.spacing(1),
       minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
     },
     itemCoverCenterInfo: {
       display: 'flex',
-      alignItems: 'center',
       overflow: 'hidden',
-      width: '90%',
-      justifyContent: 'center',
     },
     itemCoverCenterInfoText: {
 

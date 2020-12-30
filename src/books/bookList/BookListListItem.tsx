@@ -1,11 +1,11 @@
-import { Box, makeStyles, Typography, useTheme } from '@material-ui/core'
+import { Box, Chip, makeStyles, Typography, useTheme } from '@material-ui/core'
 import React, { FC } from 'react'
 import { useRecoilValue, useSetRecoilState } from 'recoil'
 import { useDefaultItemClickHandler } from './helpers'
 import { enrichedBookState } from '../states'
 import { BookListCoverContainer } from './BookListCoverContainer'
 import { ReadingStateState } from 'oboku-shared'
-import { MenuBookRounded, MoreVert } from '@material-ui/icons'
+import { LoopRounded, MenuBookRounded, MoreVert } from '@material-ui/icons'
 import { bookActionDrawerState } from '../BookActionsDrawer'
 
 export const BookListListItem: FC<{
@@ -42,7 +42,9 @@ export const BookListListItem: FC<{
       <BookListCoverContainer
         bookId={bookId}
         className={classes.coverContainer}
-        withReadingProgress={false}
+        withReadingProgressStatus={false}
+        withDownloadStatus={false}
+        withMetadaStatus={false}
       />
       <Box ml={1} overflow="hidden" style={{ display: 'flex', flex: 1, minHeight: 0, flexDirection: 'column' }}>
         <Typography
@@ -56,16 +58,24 @@ export const BookListListItem: FC<{
           {book?.title || 'Unknown'}
         </Typography>
         <Typography noWrap color="textSecondary" variant="body2">{book?.creator}</Typography>
-        <Box style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'flex-end' }}>
-          {book?.readingStateCurrentState === ReadingStateState.Reading && (
-            <>
-              <MenuBookRounded style={{ opacity: '50%' }} />
-              <Typography
-                color="textSecondary"
-                style={{
-                  marginLeft: theme.spacing(0.5),
-                }}>{Math.floor((book?.readingStateCurrentBookmarkProgressPercent || 0) * 100) || 1}%</Typography>
-            </>
+        <Box style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'flex-end' }} justifyContent="space-between">
+          <Box>
+            {book?.readingStateCurrentState === ReadingStateState.Reading && (
+              <Box display="flex" flexDirection="row">
+                <MenuBookRounded style={{ opacity: '50%' }} />
+                <Typography
+                  color="textSecondary"
+                  style={{
+                    marginLeft: theme.spacing(0.5),
+                  }}>{Math.floor((book?.readingStateCurrentBookmarkProgressPercent || 0) * 100) || 1}%</Typography>
+              </Box>
+            )}
+          </Box>
+
+          {(!book?.lastMetadataUpdatedAt) && (
+            <Box display="flex" flexDirection="row">
+              <Chip size="small" avatar={<LoopRounded className="icon-spin" />} label="metadata..." />
+            </Box>
           )}
         </Box>
       </Box>
@@ -88,15 +98,13 @@ export const BookListListItem: FC<{
   )
 }
 
-const useStyles = makeStyles((theme) => {
-  type Props = { windowSize: { width: number } }
+const useStyles = makeStyles(() => {
 
   return {
     coverContainer: {
       position: 'relative',
       display: 'flex',
       flex: ({ coverWidth }: { coverWidth: number }) => `0 0 ${coverWidth}px`,
-      // marginTop: (props: Props) => theme.spacing(1),
       minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
     },
   }
