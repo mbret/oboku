@@ -57,7 +57,7 @@ export const BookListListItem: FC<{
         >
           {book?.title || 'Unknown'}
         </Typography>
-        <Typography noWrap color="textSecondary" variant="body2">{book?.creator}</Typography>
+        <Typography noWrap color="textSecondary" variant="body2">{book?.creator || 'Unknown'}</Typography>
         <Box style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'flex-end' }} justifyContent="space-between">
           <Box>
             {book?.readingStateCurrentState === ReadingStateState.Reading && (

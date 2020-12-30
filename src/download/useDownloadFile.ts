@@ -40,6 +40,7 @@ export const useDownloadFile = () => {
       })
 
       try {
+        // for some reason if the file exist we do not download it again
         if (await localforage.getItem(`${DOWNLOAD_PREFIX}-${bookId}`)) {
           setDownloadData(bookId, {
             downloadProgress: 100,
