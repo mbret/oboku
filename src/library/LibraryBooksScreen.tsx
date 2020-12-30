@@ -7,20 +7,24 @@ import {
 import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecked, RadioButtonChecked, LockOpenRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
 import * as R from 'ramda';
-import { UploadNewBookDialog } from '../books/UploadNewBookDialog';
+import { UploadBookFromUriDialog } from '../upload/UploadBookFromUriDialog';
+import { UploadBookFromDevice } from '../upload/UploadBookFromDevice';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
 import { useMeasureElement } from '../utils';
 import { LibraryViewMode } from '../rxdb';
 import { LibraryDocType, libraryState } from './states';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { booksAsArrayState } from '../books/states';
+import { UploadBookDrawer } from './UploadBookDrawer';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
   const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
+  const [isUploadBookDrawerOpened, setIsUploadBookDrawerOpened] = useState(false)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
-  const [isUploadNewBookDialogOpened, setIsUploadNewBookDialogOpened] = useState(false)
+  const [isUploadBookFromUriDialogOpened, setIsUploadBookFromUriDialogOpened] = useState(false)
+  const [isUploadBookFromDeviceDialogOpened, setIsUploadBookFromDeviceDialogOpened] = useState(false)
   const setLibraryState = useSetRecoilState(libraryState)
   const library = useRecoilValue(libraryState)
   const sortedList = useSortedList(library.sorting)
@@ -28,16 +32,16 @@ export const LibraryBooksScreen = () => {
   const numberOfFiltersApplied = [tagsFilterApplied].filter(i => i).length
   const filteredTags = library.tags
   const visibleBooks = sortedList
-      .filter(book => {
-        let valid = true
-        if (filteredTags.length > 0 && !book?.tags?.some(b => filteredTags.includes(b))) {
-          valid = false
-        }
-        if (library.readingStates.length > 0 && !library.readingStates.includes(book.readingStateCurrentState)) {
-          valid = false
-        }
-        return valid
-      })
+    .filter(book => {
+      let valid = true
+      if (filteredTags.length > 0 && !book?.tags?.some(b => filteredTags.includes(b))) {
+        valid = false
+      }
+      if (library.readingStates.length > 0 && !library.readingStates.includes(book.readingStateCurrentState)) {
+        valid = false
+      }
+      return valid
+    })
   const books = useMemo(() => visibleBooks.map(item => item._id), [visibleBooks])
 
   const addBookButton = (
@@ -47,7 +51,7 @@ export const LibraryBooksScreen = () => {
       }}
       variant="outlined"
       color="primary"
-      onClick={() => setIsUploadNewBookDialogOpened(true)}
+      onClick={() => setIsUploadBookDrawerOpened(true)}
     >
       Add a new book
     </Button>
@@ -155,9 +159,20 @@ export const LibraryBooksScreen = () => {
             renderHeader={() => listHeader}
           />
         )}
-        <UploadNewBookDialog open={isUploadNewBookDialogOpened} onClose={() => setIsUploadNewBookDialogOpened(false)} />
+        <UploadBookFromUriDialog open={isUploadBookFromUriDialogOpened} onClose={() => setIsUploadBookFromUriDialogOpened(false)} />
+        {isUploadBookFromDeviceDialogOpened && <UploadBookFromDevice open onClose={() => setIsUploadBookFromDeviceDialogOpened(false)} />}
         <SortByDialog onClose={() => setIsSortingDialogOpened(false)} open={isSortingDialogOpened} />
         <LibraryFiltersDrawer open={isFiltersDrawerOpened} onClose={() => setIsFiltersDrawerOpened(false)} />
+        <UploadBookDrawer open={isUploadBookDrawerOpened} onClose={(type) => {
+          setIsUploadBookDrawerOpened(false)
+          switch (type) {
+            case 'device':
+              setIsUploadBookFromDeviceDialogOpened(true)
+              break
+            default:
+              setIsUploadBookFromUriDialogOpened(true)
+          }
+        }} />
       </div>
     </div >
   );
@@ -168,7 +183,7 @@ const useSortedList = (sorting: LibraryDocType['sorting'] | undefined) => {
 
   switch (sorting) {
     case 'date': {
-      return R.sort(R.ascend(R.prop('createdAt')), books)
+      return R.sort(R.descend(R.prop('createdAt')), books)
     }
     case 'activity': {
       return R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books)

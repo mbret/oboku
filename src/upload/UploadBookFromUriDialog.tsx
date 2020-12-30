@@ -1,13 +1,14 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from '@material-ui/core'
+import { LinkType } from 'oboku-shared'
 import React, { FC, useEffect, useState } from 'react'
-import { useAddBook } from './helpers'
 import * as yup from 'yup'
+import { useAddBook } from '../books/helpers'
 
 const schema = yup.object().shape({
   bookUrl: yup.string().url().required(),
 })
 
-export const UploadNewBookDialog: FC<{
+export const UploadBookFromUriDialog: FC<{
   open: boolean,
   onClose: () => void
 }> = ({ open, onClose }) => {
@@ -17,7 +18,7 @@ export const UploadNewBookDialog: FC<{
 
   const handleConfirm = () => {
     setBookUrl('')
-    addBook({ linkUrl: bookUrl })
+    addBook({ link: { book: null, data: null, resourceId: bookUrl, type: LinkType.Uri } })
     onClose()
   }
 

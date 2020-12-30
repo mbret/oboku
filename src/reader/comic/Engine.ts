@@ -4,6 +4,7 @@ import { BehaviorSubject, Subject } from 'rxjs'
 import { filter, first } from 'rxjs/operators'
 import { compareLists } from './utils'
 import './style.css'
+import { Report } from '../../report'
 
 type Event = {
   name: string,
@@ -64,10 +65,8 @@ export class Engine {
     }
 
   constructor() {
-    this.files$.subscribe(files => console.log('ASDASDASD', files))
     this.#actions$
       .subscribe(action => {
-        console.log('ASDASDASD', action)
         switch (action.name) {
           case 'display': {
             this.onDisplay(action.data)
@@ -83,14 +82,6 @@ export class Engine {
 
   public async load({ url }: { url: Blob }) {
     if (this.container) {
-      const jszip = await loadAsync(url)
-      const filesAsArray = Object.values(jszip.files).filter(file => !file.dir)
-      const sortedKeys = filesAsArray.map(f => f.name).sort(compareLists)
-      const files = sortedKeys.map(name => filesAsArray.find(f => f.name === name) as JSZip.JSZipObject)
-
-      this.packaging.spine.items = files
-      this.packaging.spine.length = files.length
-
       this.wrapper = this.container.ownerDocument.createElement('div')
       this.wrapper.className = 'comic-reader-wrapper'
 
@@ -104,8 +95,20 @@ export class Engine {
 
       this.container?.appendChild(this.wrapper)
 
-      this.#jszip$.next(jszip)
-      this.files$.next(files)
+      try {
+        const jszip = await loadAsync(url)
+        const filesAsArray = Object.values(jszip.files).filter(file => !file.dir)
+        const sortedKeys = filesAsArray.map(f => f.name).sort(compareLists)
+        const files = sortedKeys.map(name => filesAsArray.find(f => f.name === name) as JSZip.JSZipObject)
+
+        this.packaging.spine.items = files
+        this.packaging.spine.length = files.length
+
+        this.#jszip$.next(jszip)
+        this.files$.next(files)
+      } catch (e) {
+        Report.error(e)
+      }
     }
 
     return this

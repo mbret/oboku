@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect, useRef, useCallback, FC } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
-import localforage from 'localforage';
+
 import { EpubView } from './EpubView'
 import { useDebounce, useThrottleFn, useWindowSize } from "react-use";
 import { Box, Button, Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography } from '@material-ui/core';
@@ -25,11 +25,10 @@ import { currentApproximateProgressState, currentChapterState, currentLocationSt
 import { Menu } from './Menu';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
-import { useGenerateLocations, useResetStateOnUnmount, useUpdateBookState } from './helpers';
+import { useGenerateLocations, useResetStateOnUnmount, useUpdateBookState, useFile } from './helpers';
 import { ReaderProvider } from './ReaderProvider';
 import { ComicReader } from './comic/ComicReader';
 import { clone } from 'ramda';
-import { concatMapTo } from 'rxjs/operators';
 
 type ReaderInstance = {
   nextPage: () => void,
@@ -51,8 +50,6 @@ type ReaderInstance = {
 //   }
 // }
 
-const comicMimeTypes = ['application/x-cbz']
-
 export const ReaderScreen: FC<{}> = () => {
   const readerRef = useRef<any>()
   const rootRef = useRef<HTMLDivElement>()
@@ -60,7 +57,7 @@ export const ReaderScreen: FC<{}> = () => {
   const [generatedLocations, setGeneratedLocations] = useState<string[]>([])
   const [rendition, setRendition] = useState<Rendition | undefined>(undefined)
   const { bookId } = useParams<{ bookId?: string }>()
-  const { file, error: fileError } = useFile(bookId || '-1')
+  const { file, reader: readerToUse, error: fileError } = useFile(bookId || '-1')
   const [isTopMenuShown, setIsTopMenuShown] = useState(false)
   const [isBottomMenuShown, setIsBottomMenuShown] = useState(false)
   const book = useRecoilValue(bookState(bookId || '-1'))
@@ -75,7 +72,6 @@ export const ReaderScreen: FC<{}> = () => {
   const [toc, setToc] = useRecoilState(tocState)
   const [currentLocation, setCurrentLocation] = useRecoilState(currentLocationState)
   const setCurrentChapter = useSetRecoilState(currentChapterState)
-  const isUsingComicReader = comicMimeTypes.includes(file?.type || '')
   const firstLocation = useRef(book?.readingStateCurrentBookmarkLocation || undefined)
   const history = useHistory()
 
@@ -96,7 +92,7 @@ export const ReaderScreen: FC<{}> = () => {
     // const epubViewContainer = e.target?.querySelector("p").closest(".near.ancestor")
     // For now comic reader only render current page so there
     // are no issue with weird offset
-    if (isUsingComicReader) {
+    if (readerToUse === 'comic') {
       realClientXOffset = clientX
     }
 
@@ -130,7 +126,7 @@ export const ReaderScreen: FC<{}> = () => {
     // } else if (clientY > minOffsetBottomMenu) {
     //   setIsBottomMenuShown(true)
     // }
-  }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, isUsingComicReader])
+  }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, readerToUse])
 
   // @ts-ignore
   window.rendition = rendition;
@@ -294,7 +290,7 @@ export const ReaderScreen: FC<{}> = () => {
           }}
           ref={rootRef as any}
         >
-          {!isUsingComicReader
+          {readerToUse === 'epub'
             ? (
               /**
                * This div is used to capture click event in case where epubjs does not cover the
@@ -345,24 +341,6 @@ export const ReaderScreen: FC<{}> = () => {
       <AppTourReader />
     </ReaderProvider >
   )
-}
-
-const useFile = (bookId: string) => {
-  const [file, setFile] = useState<Blob | undefined>(undefined)
-  const [error, setError] = useState<Error | undefined>(undefined)
-
-  useEffect(() => {
-    (async () => {
-      const data = await localforage.getItem<Blob>(`book-download-${bookId}`)
-      if (!data) {
-        setError(new Error('Unable to load file'))
-      } else {
-        setFile(data)
-      }
-    })()
-  }, [bookId])
-
-  return { file, error }
 }
 
 const useVerticalCentererRendererHook = (rendition: Rendition | undefined) => {

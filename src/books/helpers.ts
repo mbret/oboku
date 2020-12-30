@@ -8,6 +8,8 @@ import PouchDB from 'pouchdb'
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../report"
 import { useGetLazySignedGapi } from "../dataSources/google/helpers"
+import { useCallback } from "react"
+import { useDownloadFileFromFile } from "../download/useDownloadFileFromFile"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -57,6 +59,8 @@ export const useRefreshBookMetadata = () => {
   return async (bookId: string) => {
     const book = await database?.book.findOne({ selector: { _id: bookId } }).exec()
     const firstLink = await database?.link.findOne({ selector: { _id: book?.links[0] } }).exec()
+
+    if (firstLink?.type === LinkType.File) return
 
     let credentials
     switch (firstLink?.type) {
@@ -116,17 +120,17 @@ export const useAddBook = () => {
   const database = useDatabase()
   const refreshMetadata = useRefreshBookMetadata()
 
-  const cb = async ({ linkUrl }: { linkUrl: string }) => {
+  const cb = async ({
+    book,
+    link
+  }: {
+    book?: Partial<Parameters<NonNullable<typeof database>['book']['post']>[0]>
+    link: Parameters<NonNullable<typeof database>['link']['post']>[0]
+  }) => {
     try {
       if (database) {
-        const linkAdded = await database.link.post({
-          type: LinkType.Uri,
-          resourceId: linkUrl,
-          data: null,
-          book: null,
-          contentLength: null,
-        })
-        const book = await database.book.post({
+        const linkAdded = await database.link.post(link)
+        const newBook = await database.book.post({
           lastMetadataUpdatedAt: null,
           title: null,
           readingStateCurrentBookmarkLocation: null,
@@ -143,8 +147,11 @@ export const useAddBook = () => {
           subject: null,
           creator: null,
           collections: [],
+          ...book,
         })
-        refreshMetadata(book._id)
+        refreshMetadata(newBook._id)
+
+        return newBook
       }
     } catch (e) {
       Report.error(e)
@@ -152,4 +159,22 @@ export const useAddBook = () => {
   }
 
   return [cb]
+}
+
+export const useAddBookFromFile = () => {
+  const [addBook] = useAddBook()
+  const downloadFileFromFile = useDownloadFileFromFile()
+
+  return useCallback(async (file: File) => {
+    const book = await addBook({
+      link: { book: null, data: null, resourceId: 'file', type: LinkType.File },
+      book: {
+        title: file.name,
+        lastMetadataUpdatedAt: Date.now(),
+      }
+    })
+    if (book) {
+      await downloadFileFromFile({ file, id: book?._id })
+    }
+  }, [addBook, downloadFileFromFile])
 }

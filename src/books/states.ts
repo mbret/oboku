@@ -6,6 +6,7 @@ import { normalizedTagsState, protectedTagIdsState } from "../tags/states";
 import { normalizedLinksState } from "../links/states";
 import { bookDownloadsState, DownloadState, normalizedBookDownloadsState } from "../download/states";
 import { normalizedCollectionsState } from "../collections/states";
+import { LinkType } from "oboku-shared";
 
 export type Book = NonNullable<UnwrapRecoilValue<typeof normalizedBooksState>[number]>
 
@@ -39,9 +40,12 @@ export const enrichedBookState = selectorFamily({
 
     if (!book) return undefined
 
+    const firstLink = get(normalizedLinksState)[book.links[0]]
+
     return {
       ...book,
       ...downloadState || {},
+      isLocal: firstLink?.type === LinkType.File
     }
   }
 })

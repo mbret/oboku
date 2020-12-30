@@ -6,6 +6,7 @@ import { useUpdateBook } from "../books/helpers"
 import { bookState } from "../books/states"
 import { ReadingStateState } from "oboku-shared"
 import { useDebounce } from "react-use"
+import localforage from 'localforage'
 
 const statesToReset = [
   states.currentApproximateProgressState,
@@ -89,4 +90,28 @@ export const useUpdateBookState = (bookId: string) => {
   }, [editBook])
 
   useDebounce(updateBook, 400, [currentLocationToWatch, updateBook])
+}
+
+// const comicMimeTypes = ['application/x-cbz']
+const epubMimeTypes = ['application/epub+zip']
+
+export const useFile = (bookId: string) => {
+  const [data, setData] = useState<{ file?: Blob | undefined, reader?: 'comic' | 'epub', error?: Error | undefined }>({})
+
+  useEffect(() => {
+    (async () => {
+      const data = await localforage.getItem<Blob>(`book-download-${bookId}`)
+      if (!data) {
+        setData(prev => ({ ...prev, error: new Error('Unable to load file') }))
+      } else {
+        if (epubMimeTypes.includes(data.type) || (data instanceof File && data.name.endsWith('.epub'))) {
+          setData(prev => ({ ...prev, file: data, reader: 'epub', error: undefined }))
+        } else {
+          setData(prev => ({ ...prev, file: data, reader: 'comic', error: undefined }))
+        }
+      }
+    })()
+  }, [bookId])
+
+  return data
 }

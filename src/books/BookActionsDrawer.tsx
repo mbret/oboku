@@ -81,7 +81,7 @@ export const BookActionsDrawer = () => {
                 <ListItemText primary="Add or remove from collection" />
               </ListItem>
             )}
-            {(actions?.includes('removeDownload') || !actions) && book.downloadState === 'downloaded' && (
+            {(actions?.includes('removeDownload') || !actions) && (book.downloadState === 'downloaded' && !book.isLocal) && (
               <ListItem button
                 onClick={() => {
                   handleClose()
