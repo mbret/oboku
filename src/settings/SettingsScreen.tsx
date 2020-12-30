@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from 'react';
 import { ArrowForwardIosRounded, LockOpenRounded, LockRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, List, ListItem, ListItemText, ListSubheader, TextField } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Link, List, ListItem, ListItemText, ListSubheader, TextField, Typography } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { useStorageUse } from './useStorageUse';
 import { unlockLibraryDialogState } from '../auth/UnlockLibraryDialog';
@@ -87,6 +87,15 @@ export const SettingsScreen = () => {
         </ListItem>
       </List>
       <List subheader={<ListSubheader disableSticky>Help and feedback</ListSubheader>}>
+        <ListItem
+          button
+        >
+          <ListItemText
+            primary={(
+              <Typography><Link target="__blank" href="https://docs.oboku.me/support">Support page</Link></Typography>
+            )}
+          />
+        </ListItem>
         <ListItem
           button
           onClick={resetFirstTimeExperience}
