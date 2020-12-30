@@ -4,10 +4,11 @@ import { useRecoilState } from "recoil"
 import { isMenuShownState } from "./states"
 import { useHistory } from 'react-router-dom'
 import { ArrowBackIosRounded } from '@material-ui/icons'
+import { useNavigation } from '../navigation/useNavigation'
 
 export const TopBar = () => {
   const [isMenuShow, setIsMenuShown] = useRecoilState(isMenuShownState)
-  const history = useHistory()
+  const { goBack } = useNavigation()
   const theme = useTheme()
 
   return (
@@ -32,9 +33,7 @@ export const TopBar = () => {
         <IconButton
           edge="start"
           color="inherit"
-          onClick={() => {
-            history.goBack()
-          }}
+          onClick={goBack}
         >
           <ArrowBackIosRounded />
         </IconButton>

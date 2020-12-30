@@ -5,9 +5,9 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { ArrowBackIosRounded, Search } from '@material-ui/icons';
-import { useHistory } from 'react-router-dom';
-import { Box, Button, fade, InputBase } from '@material-ui/core';
+import { Box, fade, InputBase } from '@material-ui/core';
 import { ROUTES } from './constants';
+import { useNavigation } from './navigation/useNavigation';
 
 export const TopBarNavigation: FC<{
   title?: string,
@@ -18,7 +18,7 @@ export const TopBarNavigation: FC<{
   hasSearch?: boolean
 }> = ({ title, showBack = true, position = 'static', color = 'primary', rightComponent, hasSearch = false }) => {
   const classes = useStyles({ color });
-  const history = useHistory()
+  const { goBack, history } = useNavigation()
 
   return (
     <AppBar position={position} elevation={0} color={color}>
@@ -27,9 +27,7 @@ export const TopBarNavigation: FC<{
           <IconButton
             edge="start"
             className={classes.menuButton}
-            onClick={() => {
-              history.goBack()
-            }}
+            onClick={goBack}
           >
             <ArrowBackIosRounded />
           </IconButton>

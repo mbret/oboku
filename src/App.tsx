@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import { RoutineProcess } from './RoutineProcess';
-import { AppNavigator } from './AppNavigator';
+import { AppNavigator } from './navigation/AppNavigator';
 import { ThemeProvider } from '@material-ui/core';
 import { theme } from './theme';
 import { CookiesProvider } from "react-cookie";
