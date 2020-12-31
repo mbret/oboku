@@ -16,10 +16,10 @@ export const UpdateAvailableDialog: FC<{
     <Dialog
       open={hasUpdate}
     >
-      <DialogTitle >An update is available</DialogTitle>
+      <DialogTitle >Yay! A new version is here</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          An update is available. Please reload the app to get the latest changes.
+          A new version of the app is available. To update you can click on "reload" button. (<b>This action is mandatory right now until release</b>)
         </DialogContentText>
       </DialogContent>
       <DialogActions>
