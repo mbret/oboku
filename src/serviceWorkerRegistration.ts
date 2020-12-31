@@ -18,6 +18,8 @@ const isLocalhost = Boolean(
   window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
 );
 
+const CHECK_FOR_SW_UPDATE_EVERY = 1000 * 60 * 60
+
 type Config = {
   onSuccess?: (registration: ServiceWorkerRegistration) => void;
   onUpdate?: (registration: ServiceWorkerRegistration) => void;
@@ -67,6 +69,7 @@ function registerValidSW(swUrl: string, config?: Config) {
           config?.onWaitingServiceWorkerFound(registration)
         }
       }
+      
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) {
@@ -101,6 +104,12 @@ function registerValidSW(swUrl: string, config?: Config) {
           }
         };
       };
+
+      // Manually check if there is a new update available
+      // @see https://developers.google.com/web/fundamentals/primers/service-workers/lifecycle#manual_updates
+      setInterval(() => {
+        registration.update().catch(() => {})
+      }, CHECK_FOR_SW_UPDATE_EVERY)
     })
     .catch((error) => {
       console.error('Error during service worker registration:', error);
