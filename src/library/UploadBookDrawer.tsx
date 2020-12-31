@@ -11,7 +11,7 @@ import { ReadingStateState } from 'oboku-shared';
 
 export const UploadBookDrawer: FC<{
   open: boolean,
-  onClose: (type: 'uri' | 'device') => void
+  onClose: (type?: 'uri' | 'device' | undefined) => void
 }> = ({ open, onClose }) => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] = useState(false)
@@ -24,7 +24,7 @@ export const UploadBookDrawer: FC<{
       <Drawer
         anchor="bottom"
         open={open}
-        onClose={onClose}
+        onClose={() => onClose()}
         transitionDuration={0}
       >
         <div

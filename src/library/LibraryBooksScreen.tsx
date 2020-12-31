@@ -169,8 +169,10 @@ export const LibraryBooksScreen = () => {
             case 'device':
               setIsUploadBookFromDeviceDialogOpened(true)
               break
-            default:
+            case 'uri':
               setIsUploadBookFromUriDialogOpened(true)
+              break
+            default:
           }
         }} />
       </div>
