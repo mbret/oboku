@@ -82,7 +82,8 @@ export const GoogleApiProvider: FC = ({ children }) => {
       }
       isSigning.current = true
       try {
-        await googleApi?.auth2.getAuthInstance().signIn()
+        // await googleApi?.auth2.getAuthInstance().signIn({ prompt: 'consent' })
+        await googleApi?.auth2.getAuthInstance().signIn({})
         return googleApi
       } catch (e) {
         Report.error(e)
@@ -125,3 +126,5 @@ export const useGetLazySignedGapi = () => {
 
   return [getter, signedGoogleApi] as [typeof getter, typeof signedGoogleApi]
 }
+
+export const generateResourceId = (fileOrFolderId: string) => `drive-${fileOrFolderId}`

@@ -1,9 +1,7 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, List, ListItem, ListItemSecondaryAction, ListItemText, TextField, Typography } from '@material-ui/core'
-import React, { FC, useEffect, useState } from 'react'
-import * as yup from 'yup'
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemText, Typography } from '@material-ui/core'
+import React, { FC } from 'react'
 import { useAddBookFromFile } from '../books/helpers'
 import { useDropzone } from 'react-dropzone'
-import { DeleteRounded } from '@material-ui/icons'
 import { Report } from '../report'
 
 export const UploadBookFromDevice: FC<{

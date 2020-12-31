@@ -6,6 +6,8 @@ import { useRxMutation } from "../rxdb/hooks"
 import { Report } from "../report"
 import { useRecoilCallback } from "recoil"
 import { useGetLazySignedGapi } from "./google/helpers"
+import { UploadBook } from "./google/UploadBook"
+import { ReactComponent as GoogleDriveAsset } from '../assets/google-drive.svg'
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
@@ -88,4 +90,11 @@ export const useUpdateDataSource = () =>
       db.datasource.safeUpdate({ $set: rest }, dataSource => dataSource.findOne({ selector: { _id } }))
   )
 
-
+export const useDataSourcePlugins = () => {
+  return [{
+    type: DataSourceType.DRIVE,
+    name: 'Google Drive',
+    Icon: GoogleDriveAsset,
+    UploadComponent: UploadBook
+  }]
+}

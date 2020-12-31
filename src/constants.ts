@@ -33,6 +33,5 @@ export const ROUTES = {
   LOGIN: '/login',
   REGISTER: '/register',
   READER: '/reader/:id',
-  FAQ: '/faq',
   SEARCH: '/search',
 }

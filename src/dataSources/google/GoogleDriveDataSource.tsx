@@ -114,7 +114,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
           </DialogActions>
         </Dialog>
       </Dialog >
-      <DrivePicker show={showDrive} onClose={onPick} />
+      <DrivePicker show={showDrive} onClose={onPick} select="folder" />
     </>
   )
 }

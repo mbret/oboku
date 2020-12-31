@@ -2,26 +2,57 @@ import { FC, useEffect, useMemo, useRef } from 'react'
 import { DEVELOPER_KEY, APP_ID } from './constants'
 import { useGetLazySignedGapi } from './helpers'
 
-export const DrivePicker: FC<{ show: boolean, onClose: (data: any) => void }> = ({ show, onClose }) => {
+export const DrivePicker: FC<{
+  show: boolean,
+  onClose: (data: {
+    action?: string,
+    docs?: {
+      name?: string,
+      // description: ""
+      // driveSuccess: true
+      // embedUrl: "https://drive.google.com/file/d/1CBRtljItFwiBfvbGPv51UBKI1016wCOn/preview?usp=drive_web"
+      // iconUrl: "https://drive-thirdparty.googleusercontent.com/16/type/application/x-cbz"
+      id: "1CBRtljItFwiBfvbGPv51UBKI1016wCOn"
+      // lastEditedUtc: 1608550030000
+      // mimeType: "application/x-cbz"
+      // name: "[Michiking] Ane Taiken Shuukan _ The Older Sister Experience for a Week ch. 1-5+SP [English] [PSYN] [Digital].cbz"
+      // parentId: "1bCaFCoGe5fKoH-s_k6-pmzy9MCdMQ53h"
+      // serviceId: "DoclistBlob"
+      // sizeBytes: 71088242
+      // type: "file"
+      // url: "https://drive.google.com/file/d/1CBRtljItFwiBfvbGPv51UBKI1016wCOn/view?usp=drive_web"
+    }[]
+  }) => void,
+  select: 'folder' | 'file'
+}> = ({ show, onClose, select }) => {
   const [getSignedGapi, gapi] = useGetLazySignedGapi()
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
   const accessToken = gapi?.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token
 
-  const picker = useMemo(() => new google.picker.PickerBuilder()
-    .addView(
-      new google.picker.DocsView()
-        .setIncludeFolders(true)
-        .setSelectFolderEnabled(true)
-    )
-    .setOAuthToken(accessToken || '')
-    .setSelectableMimeTypes('application/vnd.google-apps.folder')
-    .setDeveloperKey(DEVELOPER_KEY)
-    .setAppId(APP_ID)
-    .setCallback(async (data) => {
-      onCloseRef.current(data)
-    })
-    .build(), [accessToken])
+  const picker = useMemo(() => {
+    let picker = new google.picker.PickerBuilder()
+      .addView(
+        new google.picker.DocsView()
+          .setIncludeFolders(true)
+          .setSelectFolderEnabled(select === 'folder' ? true : false)
+      )
+      .setOAuthToken(accessToken || '')
+      .setDeveloperKey(DEVELOPER_KEY)
+      .setAppId(APP_ID)
+      .setCallback(async (data) => {
+        onCloseRef.current(data)
+      })
+
+    if (select === 'file') {
+      // picker = picker.setSelectableMimeTypes('application/vnd.google-apps.file')
+    } else {
+      picker = picker.setSelectableMimeTypes('application/vnd.google-apps.folder')
+    }
+
+    return picker.build()
+
+  }, [accessToken, select])
 
   useEffect(() => {
     if (show && !accessToken) {

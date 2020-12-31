@@ -9,6 +9,7 @@ import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
 import * as R from 'ramda';
 import { UploadBookFromUriDialog } from '../upload/UploadBookFromUriDialog';
 import { UploadBookFromDevice } from '../upload/UploadBookFromDevice';
+import { UploadBookFromDataSource } from '../upload/UploadBookFromDataSource';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
 import { useMeasureElement } from '../utils';
 import { LibraryViewMode } from '../rxdb';
@@ -16,6 +17,7 @@ import { LibraryDocType, libraryState } from './states';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { booksAsArrayState } from '../books/states';
 import { UploadBookDrawer } from './UploadBookDrawer';
+import { useDataSourcePlugins } from '../dataSources/helpers';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
@@ -25,7 +27,9 @@ export const LibraryBooksScreen = () => {
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const [isUploadBookFromUriDialogOpened, setIsUploadBookFromUriDialogOpened] = useState(false)
   const [isUploadBookFromDeviceDialogOpened, setIsUploadBookFromDeviceDialogOpened] = useState(false)
+  const [isUploadBookFromDataSourceDialogOpened, setIsUploadBookFromDataSourceDialogOpened] = useState<ReturnType<typeof useDataSourcePlugins>[number] | undefined>(undefined)
   const setLibraryState = useSetRecoilState(libraryState)
+  const dataSourcePlugins = useDataSourcePlugins()
   const library = useRecoilValue(libraryState)
   const sortedList = useSortedList(library.sorting)
   const tagsFilterApplied = (library?.tags.length || 0) > 0
@@ -161,6 +165,7 @@ export const LibraryBooksScreen = () => {
         )}
         <UploadBookFromUriDialog open={isUploadBookFromUriDialogOpened} onClose={() => setIsUploadBookFromUriDialogOpened(false)} />
         {isUploadBookFromDeviceDialogOpened && <UploadBookFromDevice open onClose={() => setIsUploadBookFromDeviceDialogOpened(false)} />}
+        {isUploadBookFromDataSourceDialogOpened && <UploadBookFromDataSource openWith={isUploadBookFromDataSourceDialogOpened} onClose={() => setIsUploadBookFromDataSourceDialogOpened(undefined)} />}
         <SortByDialog onClose={() => setIsSortingDialogOpened(false)} open={isSortingDialogOpened} />
         <LibraryFiltersDrawer open={isFiltersDrawerOpened} onClose={() => setIsFiltersDrawerOpened(false)} />
         <UploadBookDrawer open={isUploadBookDrawerOpened} onClose={(type) => {
@@ -173,6 +178,10 @@ export const LibraryBooksScreen = () => {
               setIsUploadBookFromUriDialogOpened(true)
               break
             default:
+              const dataSource = dataSourcePlugins.find((dataSource) => type === dataSource.type)
+              if (dataSource) {
+                setIsUploadBookFromDataSourceDialogOpened(dataSource)
+              }
           }
         }} />
       </div>
