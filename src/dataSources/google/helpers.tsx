@@ -84,7 +84,9 @@ export const GoogleApiProvider: FC = ({ children }) => {
       try {
         await googleApi?.auth2.getAuthInstance().signIn()
         return googleApi
-      } catch (_) { }
+      } catch (e) {
+        Report.error(e)
+      }
       isSigning.current = false
     }
 
