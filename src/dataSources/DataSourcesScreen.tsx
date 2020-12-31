@@ -30,7 +30,9 @@ export const DataSourcesScreen = () => {
         flexFlow: 'column',
       }}>
         <TopBarNavigation title={'Data sources'} showBack={false} />
-        <Alert severity="info">Automatically add books from an external source (eg: Google Drive shared folder). <Link onClick={() => history.push(ROUTES.FAQ)}>Learn more</Link></Alert>
+        <Alert severity="info">
+          Automatically add books from an external source (eg: Google Drive shared folder). <Link href="https://docs.oboku.me" target="__blank">Learn more</Link>
+        </Alert>
         <Toolbar>
           <Button
             style={{

@@ -19,7 +19,6 @@ import { CollectionDetailsScreen } from '../collections/CollectionDetailsScreen'
 import { RegisterScreen } from '../auth/RegisterScreen'
 import { BookActionsDrawer } from '../books/BookActionsDrawer'
 import { DataSourcesScreen } from '../dataSources/DataSourcesScreen'
-import { FAQScreen } from '../FAQScreen'
 import { useAuth } from '../auth/helpers'
 import { SearchScreen } from '../search/SearchScreen'
 
@@ -52,9 +51,6 @@ export const AppNavigator = () => {
               </Route>
               <Route exact path={ROUTES.COLLECTION_DETAILS} >
                 <CollectionDetailsScreen />
-              </Route>
-              <Route exact path={ROUTES.FAQ}>
-                <FAQScreen />
               </Route>
               <Route exact path={ROUTES.SEARCH}>
                 <SearchScreen />
