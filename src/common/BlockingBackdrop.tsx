@@ -1,10 +1,9 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Backdrop, CircularProgress, createStyles, makeStyles, useTheme } from "@material-ui/core"
-import { useRecoilValue } from 'recoil';
+import { useRecoilCallback, useRecoilValue } from 'recoil';
+import { atom, selector } from "recoil";
 
-import { atom, selector, useRecoilState } from "recoil";
-
-type Key = 'authorize'
+type Key = string
 
 const lockState = atom<Key[]>({
   key: 'lock',
@@ -17,18 +16,19 @@ export const isLockedState = selector({
 });
 
 export const useLock = () => {
-  const [, setLock] = useRecoilState(lockState)
-  const lock = (key: Key) => {
-    setLock(old => [...old, key])
-  }
-
-  const unlock = (key: Key) => {
-    setLock(old => {
+  const unlock = useRecoilCallback(({ set }) => (key: Key) => {
+    set(lockState, old => {
       const index = old.findIndex(k => k === key)
 
       return [...old.slice(0, index), ...old.slice(index + 1)];
     })
-  }
+  }, [])
+
+  const lock = useRecoilCallback(({ set }) => (key: Key = Date.now().toString()) => {
+    set(lockState, old => [...old, key])
+
+    return () => unlock(key)
+  }, [])
 
   return [lock, unlock] as [typeof lock, typeof unlock]
 }
@@ -67,6 +67,17 @@ export const BlockingBackdrop: FC<{}> = () => {
       <CircularProgress color="inherit" />
     </Backdrop>
   )
+}
+
+export const BlockingScreen = () => {
+  const [lock] = useLock()
+
+  useEffect(() => {
+    const unlock = lock()
+    return () => unlock()
+  }, [lock])
+
+  return null
 }
 
 const useStyles = makeStyles((theme) =>
