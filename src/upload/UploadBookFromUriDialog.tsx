@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from '@material-ui/core'
-import { LinkType } from 'oboku-shared'
+import { DataSourceType } from 'oboku-shared'
 import React, { FC, useEffect, useState } from 'react'
 import * as yup from 'yup'
 import { useAddBook } from '../books/helpers'
@@ -18,7 +18,7 @@ export const UploadBookFromUriDialog: FC<{
 
   const handleConfirm = () => {
     setBookUrl('')
-    addBook({ link: { book: null, data: null, resourceId: bookUrl, type: LinkType.Uri } })
+    addBook({ link: { book: null, data: null, resourceId: bookUrl, type: DataSourceType.URI } })
     onClose()
   }
 

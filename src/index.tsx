@@ -6,9 +6,16 @@ import 'fontsource-roboto/400.css'
 import 'fontsource-roboto/500.css'
 import 'fontsource-roboto/700.css'
 import './index.css';
+import { configureDataSources } from './dataSources/configure';
 import { App } from './App';
 import reportWebVitals from './reportWebVitals'
 import * as Sentry from "@sentry/react"
+import { randomBytes, createHash } from 'crypto-browserify'
+
+// @ts-ignore
+window.crypto.randomBytes = randomBytes
+// @ts-ignore
+window.crypto.createHash = createHash
 
 ReactDOM.render(
   <React.StrictMode>
@@ -22,4 +29,6 @@ ReactDOM.render(
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals(console.log);
+reportWebVitals(console.log)
+
+configureDataSources()

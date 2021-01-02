@@ -21,6 +21,7 @@ import { BookActionsDrawer } from '../books/BookActionsDrawer'
 import { DataSourcesScreen } from '../dataSources/DataSourcesScreen'
 import { useAuth } from '../auth/helpers'
 import { SearchScreen } from '../search/SearchScreen'
+import { AuthCallbackScreen } from '../auth/AuthCallbackScreen'
 
 export const AppNavigator = () => {
   const auth = useAuth()
@@ -37,60 +38,65 @@ export const AppNavigator = () => {
         display: 'flex',
         flexFlow: 'column'
       }}>
-        {isAuthenticated
-          ? (
-            <Switch>
-              <Route path="/reader/:bookId" >
-                <ReaderScreen />
-              </Route>
-              <Route path="/settings/manage-storage" >
-                <ManageStorageScreen />
-              </Route>
-              <Route exact path={ROUTES.BOOK_DETAILS} >
-                <BookDetailsScreen />
-              </Route>
-              <Route exact path={ROUTES.COLLECTION_DETAILS} >
-                <CollectionDetailsScreen />
-              </Route>
-              <Route exact path={ROUTES.SEARCH}>
-                <SearchScreen />
-              </Route>
-              <BottomTabBar>
-                <Switch>
-                  <Route exact path="/settings">
-                    <SettingsScreen />
-                  </Route>
-                  <Route path="/library">
-                    <LibraryTopTabNavigator />
-                  </Route>
-                  <Route exact path="/">
-                    <HomeScreen />
-                  </Route>
-                  <Route exact path={ROUTES.DATASOURCES}>
-                    <DataSourcesScreen />
-                  </Route>
-                  <Route path="/">
-                    <Redirect to="/" />
-                  </Route>
-                </Switch>
-              </BottomTabBar>
-            </Switch>
-          )
-          : (
-            <Switch>
-              <Route exact path={ROUTES.LOGIN}>
-                <LoginScreen />
-              </Route>
-              <Route exact path={ROUTES.REGISTER}>
-                <RegisterScreen />
-              </Route>
-              <Redirect
-                to={{
-                  pathname: ROUTES.LOGIN,
-                }}
-              />
-            </Switch>
-          )}
+        <Switch>
+          <Route path={ROUTES.AUTH_CALLBACK}>
+            <AuthCallbackScreen />
+          </Route>
+          {isAuthenticated
+            ? (
+              <Switch>
+                <Route path="/reader/:bookId" >
+                  <ReaderScreen />
+                </Route>
+                <Route path="/settings/manage-storage" >
+                  <ManageStorageScreen />
+                </Route>
+                <Route exact path={ROUTES.BOOK_DETAILS} >
+                  <BookDetailsScreen />
+                </Route>
+                <Route exact path={ROUTES.COLLECTION_DETAILS} >
+                  <CollectionDetailsScreen />
+                </Route>
+                <Route exact path={ROUTES.SEARCH}>
+                  <SearchScreen />
+                </Route>
+                <BottomTabBar>
+                  <Switch>
+                    <Route exact path="/settings">
+                      <SettingsScreen />
+                    </Route>
+                    <Route path="/library">
+                      <LibraryTopTabNavigator />
+                    </Route>
+                    <Route exact path="/">
+                      <HomeScreen />
+                    </Route>
+                    <Route exact path={ROUTES.DATASOURCES}>
+                      <DataSourcesScreen />
+                    </Route>
+                    <Route path="/">
+                      <Redirect to="/" />
+                    </Route>
+                  </Switch>
+                </BottomTabBar>
+              </Switch>
+            )
+            : (
+              <Switch>
+                <Route exact path={ROUTES.LOGIN}>
+                  <LoginScreen />
+                </Route>
+                <Route exact path={ROUTES.REGISTER}>
+                  <RegisterScreen />
+                </Route>
+                <Redirect
+                  to={{
+                    pathname: ROUTES.LOGIN,
+                  }}
+                />
+              </Switch>
+            )}
+        </Switch>
       </div>
       <BookActionsDrawer />
       <BackBehaviorWatcher />
@@ -103,7 +109,7 @@ const BackBehaviorWatcher = () => {
 
   console.log(history)
   useEffect(() => {
-    window.onpopstate = function(event) {
+    window.onpopstate = function (event) {
       // alert(`location: ${document.location}, state: ${JSON.stringify(event.state)}`)
     }
 

@@ -1,5 +1,5 @@
 import { useAxiosClient } from "../axiosClient"
-import { BookDocType, LinkType, ReadingStateState } from 'oboku-shared'
+import { BookDocType, DataSourceType, ReadingStateState } from 'oboku-shared'
 import { useRxMutation } from "../rxdb/hooks"
 import { useDatabase } from "../rxdb"
 import { API_SYNC_URL } from "../constants"
@@ -7,9 +7,9 @@ import { first } from 'rxjs/operators'
 import PouchDB from 'pouchdb'
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../report"
-import { useGetLazySignedGapi } from "../dataSources/google/helpers"
 import { useCallback } from "react"
 import { useDownloadFileFromFile } from "../download/useDownloadFileFromFile"
+import { useGetDataSourceCredentials } from "../dataSources/helpers"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -54,22 +54,15 @@ export const useRefreshBookMetadata = () => {
   const client = useAxiosClient()
   const database = useDatabase()
   const [updateBook] = useUpdateBook()
-  const [getLazySignedGapi] = useGetLazySignedGapi()
+  const getDataSourceCredentials = useGetDataSourceCredentials()
 
   return async (bookId: string) => {
     const book = await database?.book.findOne({ selector: { _id: bookId } }).exec()
     const firstLink = await database?.link.findOne({ selector: { _id: book?.links[0] } }).exec()
 
-    if (firstLink?.type === LinkType.File) return
+    if (!firstLink || firstLink?.type === DataSourceType.FILE) return
 
-    let credentials
-    switch (firstLink?.type) {
-      case LinkType.Drive: {
-        credentials = (await getLazySignedGapi())?.credentials
-        break
-      }
-      default:
-    }
+    const credentials = await getDataSourceCredentials(firstLink.type)
 
     await updateBook({ _id: bookId, lastMetadataUpdatedAt: null })
 
@@ -167,7 +160,7 @@ export const useAddBookFromFile = () => {
 
   return useCallback(async (file: File) => {
     const book = await addBook({
-      link: { book: null, data: null, resourceId: 'file', type: LinkType.File },
+      link: { book: null, data: null, resourceId: 'file', type: DataSourceType.FILE },
       book: {
         title: file.name,
         lastMetadataUpdatedAt: Date.now(),

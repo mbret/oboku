@@ -6,8 +6,9 @@ import { useRxMutation } from "../rxdb/hooks"
 import { Report } from "../report"
 import { useRecoilCallback } from "recoil"
 import { useGetLazySignedGapi } from "./google/helpers"
-import { UploadBook } from "./google/UploadBook"
-import { ReactComponent as GoogleDriveAsset } from '../assets/google-drive.svg'
+import { plugins } from "./configure"
+import { useCallback, useMemo, useRef } from "react"
+import plugin from "pouchdb"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
@@ -90,11 +91,26 @@ export const useUpdateDataSource = () =>
       db.datasource.safeUpdate({ $set: rest }, dataSource => dataSource.findOne({ selector: { _id } }))
   )
 
-export const useDataSourcePlugins = () => {
-  return [{
-    type: DataSourceType.DRIVE,
-    name: 'Google Drive',
-    Icon: GoogleDriveAsset,
-    UploadComponent: UploadBook
-  }]
+export const useDataSourceHelpers = (id: typeof plugins[number]['uniqueResourceIdentifier']) => {
+  return useMemo(() => ({
+    generateResourceId: (resourceId: string) => `${id}-${resourceId}`
+  }), [id])
+}
+
+export const useDataSourcePlugins = () => plugins
+
+export const useGetDataSourceCredentials = () => {
+  const plugins = useDataSourcePlugins()
+  // It's important to use array for plugins and be careful of the order since
+  // it will trigger all hooks
+  type GetCredentials = ReturnType<typeof plugins[number]['useGetCredentials']>
+  const getPluginCredentials = useRef<(Pick<typeof plugins[number], 'type'> & { getCredentials: GetCredentials })[]>([])
+  getPluginCredentials.current = plugins.map(plugin => ({ type: plugin.type, getCredentials: plugin.useGetCredentials() }))
+
+  return useCallback(async (linkType: DataSourceType) => {
+    const found = getPluginCredentials.current.find(plugin => plugin.type === linkType)
+    if (found) return found.getCredentials()
+
+    return undefined
+  }, [getPluginCredentials])
 }

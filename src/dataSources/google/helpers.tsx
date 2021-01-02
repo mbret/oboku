@@ -127,4 +127,8 @@ export const useGetLazySignedGapi = () => {
   return [getter, signedGoogleApi] as [typeof getter, typeof signedGoogleApi]
 }
 
-export const generateResourceId = (fileOrFolderId: string) => `drive-${fileOrFolderId}`
+export const useGetCredentials = () => {
+  const [getLazySignedGapi] = useGetLazySignedGapi()
+
+  return useCallback(async () => (await getLazySignedGapi())?.credentials, [getLazySignedGapi])
+}

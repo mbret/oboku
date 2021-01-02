@@ -3,13 +3,15 @@ import { Report } from '../../report'
 import { DrivePicker } from './DrivePicker'
 import { BlockingScreen } from '../../common/BlockingBackdrop'
 import { useAddBook } from '../../books/helpers'
-import { LinkType } from 'oboku-shared'
-import { generateResourceId } from './helpers'
+import { DataSourceType } from 'oboku-shared'
+import { useDataSourceHelpers } from '../helpers'
+import { UNIQUE_RESOURCE_IDENTIFIER } from './constants'
 
 export const UploadBook: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
   const [addBook] = useAddBook()
+  const { generateResourceId } = useDataSourceHelpers(UNIQUE_RESOURCE_IDENTIFIER)
 
   const onPick: ComponentProps<typeof DrivePicker>['onClose'] = async (data) => {
     if (data.action !== 'loaded') {
@@ -25,7 +27,7 @@ export const UploadBook: FC<{
               book: null,
               data: null,
               resourceId: generateResourceId(doc.id),
-              type: LinkType.Drive,
+              type: DataSourceType.DRIVE,
             }
           }).catch(Report.error)
         }))

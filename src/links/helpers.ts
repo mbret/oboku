@@ -1,5 +1,5 @@
 import { useRxMutation } from "../rxdb/hooks";
-import { LinkDocType, LinkType } from 'oboku-shared'
+import { LinkDocType, DataSourceType } from 'oboku-shared'
 import { useRefreshBookMetadata } from "../books/helpers";
 import { useDatabase } from "../rxdb";
 
@@ -17,7 +17,7 @@ export const useEditLink = () => {
     await editLink(data)
     const completeLink = await db?.link.findOne({ selector: { _id: data._id } }).exec()
 
-    if (completeLink?.book && completeLink.type === LinkType.Uri && data.resourceId) {
+    if (completeLink?.book && completeLink.type === DataSourceType.URI && data.resourceId) {
       refreshBookMetadata(completeLink.book)
     }
   }

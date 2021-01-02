@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { TopBarNavigation } from '../TopBarNavigation';
 import { Link, Button, Toolbar, List, ListItem, ListItemText, SvgIcon, ListItemIcon, Typography, Box, useTheme } from '@material-ui/core';
-import { useHistory } from 'react-router-dom';
 import { Alert } from '@material-ui/lab';
-import { ROUTES } from '../constants';
 import { DataSourcesAddDrawer } from './DataSourcesAddDrawer';
 import { GoogleDriveDataSource } from './google/GoogleDriveDataSource';
 import { ReactComponent as GoogleDriveAsset } from '../assets/google-drive.svg';
@@ -14,7 +12,6 @@ import { Error } from '@material-ui/icons';
 import { extractDataSourceData } from 'oboku-shared';
 
 export const DataSourcesScreen = () => {
-  const history = useHistory()
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isGoogleDriveOpened, setIsGoogleDriveOpened] = useState(false)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<string | undefined>(undefined)
@@ -54,6 +51,7 @@ export const DataSourcesScreen = () => {
                 </SvgIcon>
               </ListItemIcon>
               <ListItemText
+                // @ts-ignore
                 primary={<Typography noWrap>{extractDataSourceData(item)?.folderName || 'Google Drive'}</Typography>}
                 secondary={item?.lastSyncedAt
                   ? `Last synced at ${(new Date(item?.lastSyncedAt)).toDateString()}`

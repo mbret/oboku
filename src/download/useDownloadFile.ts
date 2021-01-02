@@ -6,15 +6,15 @@ import { DownloadState, normalizedBookDownloadsState } from './states';
 import { useAxiosClient } from '../axiosClient';
 import { Report } from '../report';
 import { useDatabase } from '../rxdb';
-import { LinkType } from 'oboku-shared';
-import { useGetLazySignedGapi } from '../dataSources/google/helpers';
+import { DataSourceType } from 'oboku-shared';
 import { DOWNLOAD_PREFIX } from '../constants';
+import { useGetDataSourceCredentials } from '../dataSources/helpers';
 
 export const useDownloadFile = () => {
   const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
   const client = useAxiosClient()
   const database = useDatabase()
-  const [getLazySignedGapi] = useGetLazySignedGapi()
+  const getDataSourceCredentials = useGetDataSourceCredentials()
 
   const setDownloadData = useCallback((bookId: string, data: UnwrapRecoilValue<typeof normalizedBookDownloadsState>[number]) => {
     setBookDownloadsState(prev => ({
@@ -51,14 +51,10 @@ export const useDownloadFile = () => {
 
         const book = await database?.book.findOne({ selector: { _id: bookId} }).exec()
         const firstLink = await database?.link.findOne({ selector: { _id: book?.links[0]} }).exec()
-        let credentials
-        switch (firstLink?.type) {
-          case LinkType.Drive: {
-            credentials = (await getLazySignedGapi())?.credentials
-            break
-          }
-          default:
-        }
+
+        if (!firstLink) throw new Error('invalid link')
+        
+        const credentials = await getDataSourceCredentials(firstLink.type)
 
         const response = await client.downloadBook(bookId, credentials || {}, {
           onDownloadProgress: (event: ProgressEvent) => {
@@ -84,5 +80,5 @@ export const useDownloadFile = () => {
     } catch (e) {
       Report.error(e)
     }
-  }, [client, setDownloadData, database, getLazySignedGapi])
+  }, [client, setDownloadData, database, getDataSourceCredentials])
 }
