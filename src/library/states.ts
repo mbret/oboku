@@ -23,6 +23,11 @@ export const libraryState = atom<LibraryDocType>({
   },
 });
 
+export const isUploadBookDrawerOpenedState = atom({
+  key: 'isUploadBookDrawerOpenedState',
+  default: false,
+})
+
 export const syncState = atom({
   key: 'syncState',
   default: {

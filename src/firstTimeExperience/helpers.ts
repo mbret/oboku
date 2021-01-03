@@ -1,9 +1,7 @@
-import { useRxMutation } from "../rxdb";
+import { useRecoilCallback } from "recoil";
+import { firstTimeExperienceState } from "./firstTimeExperienceStates";
 
 export const useResetFirstTimeExperience = () =>
-  useRxMutation(db => db.auth.safeUpdate({
-    $set: {
-      hasDoneReaderTour: false,
-      hasDoneWelcomeTour: false,
-    }
-  }, collection => collection.findOne()))
+  useRecoilCallback(({ reset }) => () => {
+    reset(firstTimeExperienceState)
+  })

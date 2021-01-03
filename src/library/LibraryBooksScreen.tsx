@@ -13,8 +13,8 @@ import { UploadBookFromDataSource } from '../upload/UploadBookFromDataSource';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
 import { useMeasureElement } from '../utils';
 import { LibraryViewMode } from '../rxdb';
-import { LibraryDocType, libraryState } from './states';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { isUploadBookDrawerOpenedState, LibraryDocType, libraryState } from './states';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { booksAsArrayState } from '../books/states';
 import { UploadBookDrawer } from './UploadBookDrawer';
 import { useDataSourcePlugins } from '../dataSources/helpers';
@@ -23,7 +23,7 @@ export const LibraryBooksScreen = () => {
   const classes = useStyles();
   const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
-  const [isUploadBookDrawerOpened, setIsUploadBookDrawerOpened] = useState(false)
+  const [isUploadBookDrawerOpened, setIsUploadBookDrawerOpened] = useRecoilState(isUploadBookDrawerOpenedState)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const [isUploadBookFromUriDialogOpened, setIsUploadBookFromUriDialogOpened] = useState(false)
   const [isUploadBookFromDeviceDialogOpened, setIsUploadBookFromDeviceDialogOpened] = useState(false)
@@ -58,7 +58,7 @@ export const LibraryBooksScreen = () => {
       onClick={() => setIsUploadBookDrawerOpened(true)}
     >
       Add a new book
-    </Button>
+    </Button >
   )
 
   const listHeader = (

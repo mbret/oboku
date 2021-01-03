@@ -1,35 +1,33 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
-import FteCoverAsset from '../assets/fte-cover.svg'
-import { Box, makeStyles, Typography, useTheme } from '@material-ui/core';
-import { Logo } from '../common/Logo';
+import FteUploadAsset from '../assets/fte-upload.svg'
+import { Box, Link, makeStyles, Typography, useTheme } from '@material-ui/core';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { authState } from '../auth/authState';
 import { firstTimeExperienceState } from './firstTimeExperienceStates';
+import { isUploadBookDrawerOpenedState } from '../library/states';
 
-export const AppTourWelcome: React.FC = memo(() => {
-  const [{ hasDoneWelcomeTour }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)
-  const { token } = useRecoilValue(authState) || {}
-  const show = !hasDoneWelcomeTour && !!token
+export const AppTourFirstAddingBook: React.FC = memo(() => {
+  const isUploadBookDrawerOpened = useRecoilValue(isUploadBookDrawerOpenedState)
+  const [{ hasDoneFirstTimeAddingBook }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)
+  const show = !hasDoneFirstTimeAddingBook && isUploadBookDrawerOpened
   const styles = useStyles();
   const theme = useTheme()
 
   return (
     <Tour
       unskippable
-      id="AppTourWelcome"
+      id="AppTourFirstAddingBook"
       show={show}
       onClose={() => {
-        setFirstTimeExperienceState(old => ({ ...old, hasDoneWelcomeTour: true }))
+        setFirstTimeExperienceState(old => ({ ...old, hasDoneFirstTimeAddingBook: true }))
       }}
     >
       <Step
-        id="AppTourWelcome"
+        id="AppTourFirstAddingBook"
         number={1}
         content={(
           <Box className={styles.slide1}>
-            <Logo />
-            <div style={{
+            <Box style={{
               display: 'flex',
               flexFlow: 'column',
               alignItems: 'center',
@@ -37,13 +35,16 @@ export const AppTourWelcome: React.FC = memo(() => {
               width: '80%',
               paddingTop: theme.spacing(2)
             }}>
-              <img src={FteCoverAsset} alt="cover" style={{
-                width: '80%',
+              <img src={FteUploadAsset} alt="cover" style={{
+                width: '100%',
                 objectFit: 'contain',
                 paddingBottom: theme.spacing(2)
               }} />
-              <Typography >Welcome and thank you for using the app. oboku is under heavy development so bugs are to be expected</Typography>
-            </div>
+              <Typography >
+                Looks like you are about to add content to your library. There will be several options to choose from so feel
+                free to read more about it on the <Link href="https://docs.oboku.me/wiki/adding-a-book" target="__blank">doc</Link>
+              </Typography>
+            </Box>
           </Box>
         )}
       />
@@ -52,40 +53,26 @@ export const AppTourWelcome: React.FC = memo(() => {
 });
 
 const useStyles = makeStyles((theme) => ({
-  text: {
-    // ...fonts.bodyL,
-    // color: colors.whitePrimary,
-  },
   coverContainer: {
-    // marginTop: vh(5),
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',
-    // width: coverWidth,
   },
   slide1: {
-    // display,
     padding: theme.spacing(2),
     boxSizing: 'border-box',
     textAlign: 'center',
-    // border: '1px solid red',
     color: '#fff',
     display: 'flex',
     flex: 1,
     flexFlow: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    // paddingHorizontal: 30,
-    // justifyContent: 'center',
-    // ...DeviceInfo.isTablet() && {
-    //   paddingHorizontal: 180,
-    // },
   },
   firstCircle: {
     width: 66,
     height: 66,
     borderRadius: 50,
-    // backgroundColor: colors.white,
     opacity: 0.3,
     position: 'absolute',
   },
@@ -93,7 +80,6 @@ const useStyles = makeStyles((theme) => ({
     width: 40,
     height: 40,
     borderRadius: 50,
-    // backgroundColor: colors.white,
     opacity: 0.4,
     position: 'absolute',
   },

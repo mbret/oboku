@@ -1,19 +1,16 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import { Box, Button, makeStyles, Typography, useTheme } from '@material-ui/core';
-import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from '../reader/utils';
+import { useHorizontalTappingZoneWidth } from '../reader/utils';
 import { TouchAppRounded } from '@material-ui/icons';
-import { useUpdateAuth } from '../auth/helpers';
-import { useRecoilValue } from 'recoil';
-import { authState } from '../auth/authState';
+import { useRecoilState } from 'recoil';
+import { firstTimeExperienceState } from './firstTimeExperienceStates';
 
 export const AppTourReader: React.FC = memo(() => {
-  const auth = useRecoilValue(authState)
+  const [{ hasDoneReaderTour }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)
   const theme = useTheme()
-  const [updateAuth] = useUpdateAuth()
-  const verticalTappingZoneHeight = useVerticalTappingZoneHeight()
   const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
-  const show = !auth?.hasDoneReaderTour
+  const show = !hasDoneReaderTour
   const styles = useStyles();
 
   return (
@@ -22,7 +19,7 @@ export const AppTourReader: React.FC = memo(() => {
       id="AppTourReader"
       show={show}
       onClose={() => {
-        updateAuth({ hasDoneReaderTour: true })
+        setFirstTimeExperienceState(old => ({ ...old, hasDoneReaderTour: true }))
       }}
     >
       <Step

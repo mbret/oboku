@@ -3,6 +3,7 @@ import React, { createContext } from 'react';
 export type TourKey =
   | 'AppTourReader'
   | 'AppTourWelcome'
+  | 'AppTourFirstAddingBook'
 
 export type Step = {
   measures: undefined | { x: number, y: number, width: number, height: number, pageX: number, pageY: number };
@@ -12,7 +13,7 @@ export type Step = {
   withButtons: boolean
 };
 
-type TourContext = {
+type TourContextType = {
   tours: {
     [K in TourKey]?: {
       steps: { [key: string]: Step };
@@ -23,4 +24,4 @@ type TourContext = {
   toggleTour: (key: TourKey, show: boolean) => void;
 };
 
-export const TourContext = createContext<TourContext | undefined>(undefined);
+export const TourContext = createContext<TourContextType | undefined>(undefined);

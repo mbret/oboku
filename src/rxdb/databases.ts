@@ -33,8 +33,6 @@ export type AuthDocType = {
   token: null | string,
   email: null | string,
   userId: string | null,
-  hasDoneWelcomeTour: boolean,
-  hasDoneReaderTour: boolean,
 }
 
 export type SettingsDocType = {
@@ -127,8 +125,6 @@ const authSchema: RxJsonSchema<AuthDocType> = {
     token: { type: ['string', 'null'], final: false, },
     email: { type: ['string', 'null'], final: false, },
     userId: { type: ['string', 'null'], },
-    hasDoneReaderTour: { type: 'boolean' },
-    hasDoneWelcomeTour: { type: 'boolean' },
   }
 }
 
@@ -252,7 +248,9 @@ type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 export const createDatabase = async () => {
   // await removeRxDatabase('oboku', 'idb')
   const db = await createRxDatabase<MyDatabaseCollections>({
-    name: 'oboku',
+    // number is used to invalidate current one and therefore create new one in case of update
+    // use migration for release instead of that
+    name: 'oboku1', 
     adapter: 'idb',
     multiInstance: false,
     pouchSettings: {
@@ -312,8 +310,6 @@ const initializeCollectionsData = async (db: Database) => {
         id: 'auth',
         token: null,
         email: null,
-        hasDoneReaderTour: false,
-        hasDoneWelcomeTour: false,
         userId: null,
       })
     }

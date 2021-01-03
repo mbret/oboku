@@ -21,10 +21,13 @@ import { libraryState } from './library/states';
 import { normalizedBookDownloadsState } from './download/states';
 import { AppLoading } from './AppLoading';
 import { UserFeedback } from './UserFeedback';
+import { AppTourFirstAddingBook } from './firstTimeExperience/AppTourFirstAddingBook';
+import { firstTimeExperienceState } from './firstTimeExperience/firstTimeExperienceStates';
 
 const localStatesToPersist = [
   libraryState,
   normalizedBookDownloadsState,
+  firstTimeExperienceState,
 ]
 
 export function App() {
@@ -43,6 +46,7 @@ export function App() {
                   <TourProvider>
                     <AppNavigator />
                     <AppTourWelcome />
+                    <AppTourFirstAddingBook />
                     <UnlockLibraryDialog />
                     <ManageBookCollectionsDialog />
                     <RoutineProcess />
