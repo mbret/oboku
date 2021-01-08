@@ -21,13 +21,13 @@ class LoadedJSZip extends Loaded {
     return await this.jszip.file(filename)?.async('base64')
   }
 
-  public getType() { 
+  public getType() {
     return 'comic' as const
   }
 }
 
 class LoadedFile extends Loaded {
-  constructor(public files: LoadableFile[], public data: File) {
+  constructor(public files: LoadableFile[], public data: Blob | File) {
     super(files)
   }
 
@@ -35,14 +35,16 @@ class LoadedFile extends Loaded {
     return await this.data.text()
   }
 
-  public getType() { 
+  public getType() {
     return 'file' as const
   }
 }
 
 export const load = async (data: Blob | File) => {
-  if (data instanceof File && data.name.endsWith('.txt')) {
-    const files = [{ name: data.name }]
+  if (['text/xml'].includes(data.type)
+    || (data instanceof File && (data.name.endsWith('.txt')))
+  ) {
+    const files = [{ name: data instanceof File ? data.name : 'unknown' }]
     return new LoadedFile(files, data)
   }
 
