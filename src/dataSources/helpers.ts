@@ -5,47 +5,43 @@ import { DataSourceDocType, DataSourceType } from 'oboku-shared'
 import { useRxMutation } from "../rxdb/hooks"
 import { Report } from "../report"
 import { useRecoilCallback } from "recoil"
-import { useGetLazySignedGapi } from "./google/helpers"
 import { plugins } from "./configure"
 import { useCallback, useMemo, useRef } from "react"
-import plugin from "pouchdb"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
   const database = useDatabase()
   const [updateDataSource] = useUpdateDataSource()
-  const [getLazySignedGapi] = useGetLazySignedGapi()
+  const getDataSourceCredentials = useGetDataSourceCredentials()
 
   return useRecoilCallback(({ snapshot }) => async (_id: string) => {
     const dataSource = await database?.datasource.findOne({ selector: { _id } }).exec()
 
-    switch (dataSource?.type) {
-      case DataSourceType.DRIVE: {
-        const { credentials } = (await getLazySignedGapi()) || {}
-        await updateDataSource({ _id, lastSyncedAt: null, lastSyncErrorCode: null })
-        database?.sync({
-          collectionNames: ['datasource'],
-          syncOptions: () => ({
-            remote: client.getPouchDbRemoteInstance(),
-            direction: {
-              push: true,
-            },
-            options: {
-              retry: false,
-              live: false,
-              timeout: 5000,
-            }
-          })
-        })
-          .complete$
-          .pipe(first())
-          .subscribe(completed => {
-            completed && client.syncDataSource(_id, credentials).catch(Report.error)
-          })
-        break
-      }
-      default:
-    }
+    if (!dataSource) return
+
+    const credentials = await getDataSourceCredentials(dataSource.type)
+
+    await updateDataSource({ _id, lastSyncedAt: null, lastSyncErrorCode: null })
+
+    database?.sync({
+      collectionNames: ['datasource'],
+      syncOptions: () => ({
+        remote: client.getPouchDbRemoteInstance(),
+        direction: {
+          push: true,
+        },
+        options: {
+          retry: false,
+          live: false,
+          timeout: 5000,
+        }
+      })
+    })
+      .complete$
+      .pipe(first())
+      .subscribe(completed => {
+        completed && client.syncDataSource(_id, credentials).catch(Report.error)
+      })
   })
 }
 
@@ -76,8 +72,8 @@ export const useCreateDataSource = () => {
   const synchronize = useSynchronizeDataSource()
   const [createDataSource] = useRxMutation((db, variables: Payload) => db?.datasource.post({ ...variables }))
 
-  return async (data: Payload) => {
-    const dataSource = await createDataSource(data)
+  return async (data: Omit<Payload, 'lastSyncedAt' | 'createdAt' | 'modifiedAt'>) => {
+    const dataSource = await createDataSource({ ...data, lastSyncedAt: null, createdAt: new Date().toISOString(), modifiedAt: null })
     await synchronize(dataSource._id)
   }
 }

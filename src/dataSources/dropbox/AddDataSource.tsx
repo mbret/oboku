@@ -1,37 +1,35 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemIcon, ListItemText, Typography } from '@material-ui/core'
 import { ArrowBackIosRounded, LocalOfferRounded } from '@material-ui/icons'
-import React, { FC, useState } from 'react'
+import React, { ComponentProps, FC, useState } from 'react'
 import { useRecoilValue } from 'recoil'
-import { GoogleDriveDataSourceData } from 'oboku-shared'
+import { DropboxDataSourceData, DataSourceType } from 'oboku-shared'
 import { tagsAsArrayState } from '../../tags/states'
 import { TagsSelectionList } from '../../tags/TagsSelectionList'
 import { useCreateDataSource } from '../helpers'
-import { DataSourceType } from 'oboku-shared'
-import { DrivePicker } from './DrivePicker'
+import { Picker } from './Picker'
+import { DropboxFile } from './types'
 
-export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
+export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedTags, setSelectedTags] = useState<{ [key: string]: true | undefined }>({})
   const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
   const addDataSource = useCreateDataSource()
-  const [selectedFolder, setSelectedFolder] = useState<{ name: string, id: string } | undefined>(undefined)
-  const [folderChain, setFolderChain] = useState<{ name: string, id: string }[]>([{ name: '', id: 'root' }])
+  const [selectedFolder, setSelectedFolder] = useState<DropboxFile | undefined>(undefined)
+  const [folderChain, setFolderChain] = useState<DropboxFile[]>([{ name: '', id: 'root', isDir: true }])
   const currentFolder = folderChain[folderChain.length - 1]
   const tags = useRecoilValue(tagsAsArrayState)
-  const [showDrive, setShowDrive] = useState(false)
+  const [showPicker, setShowPicker] = useState(false)
 
-  const onPick = (data: any) => {
-    if (data.action !== 'loaded') {
-      setShowDrive(false)
-    }
-    if (data.action === 'picked') {
-      setSelectedFolder(data.docs[0])
+  const onPick: ComponentProps<typeof Picker>['onClose'] = (files) => {
+    setShowPicker(false)
+    if (files && files.length > 0) {
+      setSelectedFolder(files[0])
     }
   }
 
   return (
     <>
-      <Dialog onClose={onClose} open={!showDrive} fullScreen>
-        <DialogTitle>Google Drive datasource</DialogTitle>
+      <Dialog onClose={onClose} open fullScreen>
+        <DialogTitle>Dropbox datasource</DialogTitle>
         <DialogContent style={{ padding: 0, display: 'flex', flexFlow: 'column' }}>
           <List >
             <ListItem onClick={() => setIsTagSelectionOpen(true)}>
@@ -63,7 +61,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
             )}
           </List>
           <Box flex={1} display="flex" justifyContent="center" alignItems="center">
-            <Button color="primary" variant="contained" onClick={() => setShowDrive(true)}>
+            <Button color="primary" variant="contained" onClick={() => setShowPicker(true)}>
               Choose a folder
         </Button>
           </Box>
@@ -78,13 +76,13 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
             onClick={() => {
               onClose()
               if (selectedFolder) {
-                const customData: GoogleDriveDataSourceData = {
+                const customData: DropboxDataSourceData = {
                   applyTags: Object.keys(selectedTags),
                   folderId: selectedFolder.id,
                   folderName: selectedFolder.name
                 }
                 addDataSource({
-                  type: DataSourceType.DRIVE,
+                  type: DataSourceType.DROPBOX,
                   data: JSON.stringify(customData),
                 })
               }
@@ -113,7 +111,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
           </DialogActions>
         </Dialog>
       </Dialog >
-      <DrivePicker show={showDrive} onClose={onPick} select="folder" />
+      {showPicker && <Picker onClose={onPick} select="folder" multiselect={false} />}
     </>
   )
 }

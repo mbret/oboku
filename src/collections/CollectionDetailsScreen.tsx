@@ -8,7 +8,7 @@ import CollectionBgSvg from '../assets/series-bg.svg'
 import { BooksSelectionDialog } from './BooksSelectionDialog'
 import { useMeasureElement } from '../utils'
 import { useRecoilValue } from 'recoil'
-import { normalizedCollectionsState } from './states'
+import { collectionState } from './states'
 
 type ScreenParams = {
   id: string
@@ -19,7 +19,7 @@ export const CollectionDetailsScreen = () => {
   const theme = useTheme()
   const { id } = useParams<ScreenParams>()
   const [isBookDialogOpened, setIsBookDialogOpened] = useState(false)
-  const collection = useRecoilValue(normalizedCollectionsState)[id || '-1']
+  const collection = useRecoilValue(collectionState(id || '-1'))
   const books = collection?.books || []
 
   const addBookButton = (
@@ -128,8 +128,6 @@ export const CollectionDetailsScreen = () => {
 }
 
 const useClasses = makeStyles(theme => {
-  type Props = { headerHeight: string }
-
   return {
     headerContent: {
       minHeight: 100,

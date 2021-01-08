@@ -1,4 +1,4 @@
-export type File = {
+export type DropboxFile = {
     // // Unique ID for the file, compatible with Dropbox API v2.
     id: string
 
@@ -20,5 +20,5 @@ export type File = {
     // thumbnailLink: "https://...?bounding_box=75&mode=fit",
 
     // // Boolean, whether or not the file is actually a directory
-    // isDir: false,
+    isDir: boolean,
 }

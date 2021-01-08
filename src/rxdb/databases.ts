@@ -1,10 +1,10 @@
 import { addRxPlugin, createRxDatabase, RxCollection, RxDocument, RxJsonSchema, RxQuery } from 'rxdb'
 import { RxdbReplicationPlugin, withReplicationSchema } from './rxdb-plugins/replication';
 import { MongoUpdateSyntax, PromiseReturnType } from '../types';
-import { CollectionCollection, collectionCollectionMethods, collectionSchema } from './collection';
+import { CollectionCollection, collectionCollectionMethods, collectionSchema, collectionMigrationStrategies } from './collection';
 import { applyHooks } from './middleware';
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from './types';
-import { dataSourceSchema, dataSourceCollectionMethods, DataSourceCollection } from './dataSource';
+import { dataSourceSchema, dataSourceCollectionMethods, DataSourceCollection, migrationStrategies as dataSourceMigrationStrategies } from './dataSource';
 import { BookDocType, InsertableBookDocType, LinkDocType, TagsDocType } from 'oboku-shared';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
@@ -139,33 +139,59 @@ const settingsSchema: RxJsonSchema<SettingsDocType> = withReplicationSchema('set
 
 const tagsSchema: RxJsonSchema<Omit<TagsDocType, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('tag', {
   title: 'tag',
-  version: 0,
+  version: 1,
   type: 'object',
   properties: {
     name: { type: ['string'], final: false },
     isProtected: { type: ['boolean'], final: false },
     books: { type: ['array'], items: { type: 'string' } },
+    createdAt: { type: 'string' },
+    modifiedAt: { type: ['string', 'null'] },
   },
   required: ['isProtected', 'name', 'books']
 })
 
+const tagsSchemaMigrationStrategies = {
+  1: (oldDoc: TagsDocType): TagsDocType | null => {
+
+    return {
+      ...oldDoc,
+      createdAt: new Date().toISOString(),
+      modifiedAt: null,
+    }
+  }
+}
+
 const linkSchema: RxJsonSchema<Omit<Required<LinkDocType>, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('link', {
   title: 'link',
-  version: 0,
+  version: 1,
   type: 'object',
   properties: {
     data: { type: ['string', 'null'] },
     resourceId: { type: 'string' },
     type: { type: 'string' },
     book: { type: ['string', 'null'] },
-    contentLength: { type: ['number', 'null'] }
+    contentLength: { type: ['number', 'null'] },
+    createdAt: { type: 'string' },
+    modifiedAt: { type: ['string', 'null'] },
   },
   required: ['data', 'resourceId', 'type']
 })
 
+const linkSchemaMigrationStrategies = {
+  1: (oldDoc: TagsDocType): TagsDocType | null => {
+
+    return {
+      ...oldDoc,
+      createdAt: new Date().toISOString(),
+      modifiedAt: null,
+    }
+  }
+}
+
 const bookSchema: RxJsonSchema<Omit<BookDocType, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('book', {
   title: 'books',
-  version: 0,
+  version: 1,
   type: 'object',
   properties: {
     collections: { type: 'array', ref: 'obokucollection', items: { type: 'string' } },
@@ -184,9 +210,20 @@ const bookSchema: RxJsonSchema<Omit<BookDocType, '_id' | 'rx_model' | '_rev'>> =
     subject: { type: ['array', 'null'], items: { type: 'string' } },
     tags: { type: 'array', ref: 'tag', items: { type: 'string' } },
     title: { type: ['string', 'null'] },
+    modifiedAt: { type: ['string', 'null'] },
   },
   required: []
 })
+
+const bookSchemaMigrationStrategies = {
+  1: (oldDoc: TagsDocType): TagsDocType | null => {
+
+    return {
+      ...oldDoc,
+      modifiedAt: null,
+    }
+  }
+}
 
 const tagsDocMethods: TagsDocMethods = {
   safeUpdate: function (this: TagsDocument, updateObj) {
@@ -246,11 +283,8 @@ const linkCollectionMethods: LinkCollectionMethods = {
 type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 
 export const createDatabase = async () => {
-  // await removeRxDatabase('oboku', 'idb')
   const db = await createRxDatabase<MyDatabaseCollections>({
-    // number is used to invalidate current one and therefore create new one in case of update
-    // use migration for release instead of that
-    name: 'oboku1', 
+    name: 'oboku', 
     adapter: 'idb',
     multiInstance: false,
     pouchSettings: {
@@ -263,6 +297,9 @@ export const createDatabase = async () => {
 
   applyHooks(db)
 
+  // @ts-ignore
+  window.db = db
+  
   return db
 }
 
@@ -276,16 +313,19 @@ const createCollections = async (db: Database) => {
       schema: bookSchema,
       methods: bookDocMethods,
       statics: bookCollectionMethods,
+      migrationStrategies: bookSchemaMigrationStrategies,
     },
     link: {
       schema: linkSchema,
       statics: linkCollectionMethods,
       methods: linkDocMethods,
+      migrationStrategies: linkSchemaMigrationStrategies
     },
     tag: {
       schema: tagsSchema,
       methods: tagsDocMethods,
-      statics: tagsCollectionMethods
+      statics: tagsCollectionMethods,
+      migrationStrategies: tagsSchemaMigrationStrategies,
     },
     settings: {
       schema: settingsSchema,
@@ -294,10 +334,12 @@ const createCollections = async (db: Database) => {
     obokucollection: {
       schema: collectionSchema,
       statics: collectionCollectionMethods,
+      migrationStrategies: collectionMigrationStrategies,
     },
     datasource: {
       schema: dataSourceSchema,
       statics: dataSourceCollectionMethods,
+      migrationStrategies: dataSourceMigrationStrategies
     }
   })
 }

@@ -6,7 +6,7 @@ import React, { FC, useEffect } from 'react'
 import { Report } from '../../report'
 import { BlockingScreen } from '../../common/BlockingBackdrop'
 import { useAddBook } from '../../books/helpers'
-import { File } from './types'
+import { DropboxFile } from './types'
 import { DataSourceType } from 'oboku-shared'
 import { useDataSourceHelpers } from '../helpers'
 import { UNIQUE_RESOURCE_IDENTIFIER } from './constants'
@@ -27,7 +27,7 @@ export const UploadBook: FC<{
         cancel: function () {
           onClose()
         },
-        success: async (files: File[]) => {
+        success: async (files: DropboxFile[]) => {
           onClose()
 
           await Promise.all(files.map(doc => {
@@ -40,6 +40,8 @@ export const UploadBook: FC<{
                 data: null,
                 resourceId: generateResourceId(doc.id),
                 type: DataSourceType.DROPBOX,
+                createdAt: new Date().toISOString(),
+                modifiedAt: null
               }
             }).catch(Report.error)
           }))

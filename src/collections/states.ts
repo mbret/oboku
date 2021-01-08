@@ -1,5 +1,6 @@
-import { atom, selector } from "recoil";
+import { atom, selector, selectorFamily } from "recoil";
 import { CollectionDocType } from 'oboku-shared'
+import { bookIdsState } from "../books/states";
 
 export type Collection = CollectionDocType
 
@@ -13,6 +14,23 @@ export const collectionsAsArrayState = selector<Collection[]>({
   get: ({ get }) => {
     const collections = get(normalizedCollectionsState)
 
-    return Object.values(collections) as NonNullable<typeof collections[number]>[]
+    const ids = Object.keys(collections)
+
+    return ids.map(id => get(collectionState(id))) as NonNullable<typeof collections[number]>[]
+  }
+})
+
+export const collectionState = selectorFamily({
+  key: 'collectionState',
+  get: (id: string) => ({ get }) => {
+    const collection = get(normalizedCollectionsState)[id]
+    const bookIds = get(bookIdsState)
+
+    if (!collection) return undefined
+
+    return {
+      ...collection,
+      books: collection.books.filter(id => bookIds.includes(id))
+    }
   }
 })

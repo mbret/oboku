@@ -28,6 +28,8 @@ export const UploadBook: FC<{
               data: null,
               resourceId: generateResourceId(doc.id),
               type: DataSourceType.DRIVE,
+              createdAt: new Date().toISOString(),
+              modifiedAt: null
             }
           }).catch(Report.error)
         }))

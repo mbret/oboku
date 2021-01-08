@@ -18,7 +18,7 @@ export const UploadBookFromUriDialog: FC<{
 
   const handleConfirm = () => {
     setBookUrl('')
-    addBook({ link: { book: null, data: null, resourceId: bookUrl, type: DataSourceType.URI } })
+    addBook({ link: { book: null, data: null, resourceId: bookUrl, type: DataSourceType.URI, createdAt: new Date().toISOString(), modifiedAt: null } })
     onClose()
   }
 

@@ -2,7 +2,7 @@ import { TagsDocType } from "oboku-shared"
 import { useRxMutation } from "../rxdb/hooks"
 
 export const useCreateTag = () =>
-  useRxMutation((db, { name }: { name: string }) => db?.tag.post({ name, books: [], isProtected: false }))
+  useRxMutation((db, { name }: { name: string }) => db?.tag.post({ name, books: [], isProtected: false, createdAt: new Date().toISOString(), modifiedAt: null }))
 
 export const useRemoveTag = () =>
   useRxMutation((db, { id }: { id: string }) => db.tag.findOne({ selector: { _id: id } }).remove())

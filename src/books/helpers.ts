@@ -140,6 +140,7 @@ export const useAddBook = () => {
           subject: null,
           creator: null,
           collections: [],
+          modifiedAt: null,
           ...book,
         })
         refreshMetadata(newBook._id)
@@ -160,7 +161,14 @@ export const useAddBookFromFile = () => {
 
   return useCallback(async (file: File) => {
     const book = await addBook({
-      link: { book: null, data: null, resourceId: 'file', type: DataSourceType.FILE },
+      link: {
+        book: null,
+        data: null,
+        resourceId: 'file',
+        type: DataSourceType.FILE,
+        createdAt: new Date().toISOString(),
+        modifiedAt: null
+      },
       book: {
         title: file.name,
         lastMetadataUpdatedAt: Date.now(),

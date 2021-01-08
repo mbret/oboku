@@ -3,20 +3,21 @@ import { TopBarNavigation } from '../TopBarNavigation';
 import { Link, Button, Toolbar, List, ListItem, ListItemText, SvgIcon, ListItemIcon, Typography, Box, useTheme } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import { DataSourcesAddDrawer } from './DataSourcesAddDrawer';
-import { GoogleDriveDataSource } from './google/GoogleDriveDataSource';
-import { ReactComponent as GoogleDriveAsset } from '../assets/google-drive.svg';
 import { DataSourcesActionsDrawer } from './DataSourcesActionsDrawer';
 import { dataSourcesAsArrayState } from './states';
 import { useRecoilValue } from 'recoil';
 import { Error } from '@material-ui/icons';
 import { extractDataSourceData } from 'oboku-shared';
+import { useDataSourcePlugins } from './helpers';
+import { AddDataSource } from './AddDataSource';
 
 export const DataSourcesScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
-  const [isGoogleDriveOpened, setIsGoogleDriveOpened] = useState(false)
+  const [isAddDataSourceOpenedWith, setIsAddDataSourceOpenedWith] = useState<ReturnType<typeof useDataSourcePlugins>[number] | undefined>(undefined)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<string | undefined>(undefined)
   const dataSources = useRecoilValue(dataSourcesAsArrayState)
   const theme = useTheme()
+  const dataSourcesPlugins = useDataSourcePlugins()
 
   return (
     <>
@@ -43,39 +44,45 @@ export const DataSourcesScreen = () => {
         </Button>
         </Toolbar>
         <List>
-          {dataSources?.map(item => (
-            <ListItem key={item._id} button onClick={() => setIsActionsDrawerOpenWith(item._id)}>
-              <ListItemIcon>
-                <SvgIcon >
-                  <GoogleDriveAsset />
-                </SvgIcon>
-              </ListItemIcon>
-              <ListItemText
-                // @ts-ignore
-                primary={<Typography noWrap>{extractDataSourceData(item)?.folderName || 'Google Drive'}</Typography>}
-                secondary={item?.lastSyncedAt
-                  ? `Last synced at ${(new Date(item?.lastSyncedAt)).toDateString()}`
-                  : item?.lastSyncErrorCode
-                    ? (
-                      <Box flexDirection="row" display="flex">
-                        <Error fontSize="small" style={{ marginRight: theme.spacing(1) }} /><Typography variant="body2">Sync did not succeed</Typography>
-                      </Box>
-                    )
-                    : 'Syncing...'
-                }
-              />
-            </ListItem>
-          ))}
+          {dataSources?.map(item => {
+            const dataSource = dataSourcesPlugins.find(dataSource => dataSource.type === item.type)
+
+            return (
+              <ListItem key={item._id} button onClick={() => setIsActionsDrawerOpenWith(item._id)}>
+                {dataSource && (
+                  <ListItemIcon>
+                    <SvgIcon >
+                      <dataSource.Icon />
+                    </SvgIcon>
+                  </ListItemIcon>
+                )}
+                <ListItemText
+                  primary={<Typography noWrap>{extractDataSourceData(item)?.folderName || dataSource?.name}</Typography>}
+                  secondary={item?.lastSyncedAt
+                    ? `Last synced at ${(new Date(item?.lastSyncedAt)).toDateString()}`
+                    : item?.lastSyncErrorCode
+                      ? (
+                        <Box flexDirection="row" display="flex">
+                          <Error fontSize="small" style={{ marginRight: theme.spacing(1) }} /><Typography variant="body2">Sync did not succeed</Typography>
+                        </Box>
+                      )
+                      : 'Syncing...'
+                  }
+                />
+              </ListItem>
+            )
+          })}
         </List>
       </div>
-      <DataSourcesAddDrawer open={isDrawerOpened} onClose={(key) => {
+      <DataSourcesAddDrawer open={isDrawerOpened} onClose={(type) => {
         setIsDrawerOpened(false)
-        if (key === 'drive') {
-          setIsGoogleDriveOpened(true)
+        const dataSource = dataSourcesPlugins.find((dataSource) => type === dataSource.type)
+        if (dataSource) {
+          setIsAddDataSourceOpenedWith(dataSource)
         }
       }} />
       {isActionsDrawerOpenWith && <DataSourcesActionsDrawer openWith={isActionsDrawerOpenWith} onClose={() => setIsActionsDrawerOpenWith(undefined)} />}
-      {isGoogleDriveOpened && <GoogleDriveDataSource onClose={() => setIsGoogleDriveOpened(false)} />}
+      {isAddDataSourceOpenedWith && <AddDataSource onClose={() => setIsAddDataSourceOpenedWith(undefined)} openWith={isAddDataSourceOpenedWith} />}
     </>
   );
 }

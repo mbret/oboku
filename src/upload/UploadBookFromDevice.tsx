@@ -3,7 +3,7 @@ import React, { FC } from 'react'
 import { useAddBookFromFile } from '../books/helpers'
 import { useDropzone } from 'react-dropzone'
 import { Report } from '../report'
-import { READER_SUPPORTED_EXTENSIONS } from '../constants'
+import { READER_SUPPORTED_EXTENSIONS } from 'oboku-shared'
 
 export const UploadBookFromDevice: FC<{
   open: boolean,

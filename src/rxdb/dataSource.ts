@@ -17,11 +17,9 @@ type DataSourceCollectionMethods = {
 
 export type DataSourceCollection = RxCollection<DataSourceDocType, {}, DataSourceCollectionMethods>
 
-// export type DataSourceMutation = RxDocumentMutation<DataSourceDocument, Omit<DataSourceDocType, '_id'>>
-
 export const dataSourceSchema: RxJsonSchema<Omit<DataSourceDocType, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('datasource', {
   title: 'dataSourceSchema',
-  version: 0,
+  version: 1,
   type: 'object',
   properties: {
     type: { type: 'string', final: true },
@@ -29,9 +27,22 @@ export const dataSourceSchema: RxJsonSchema<Omit<DataSourceDocType, '_id' | 'rx_
     lastSyncErrorCode: { type: ['string', 'null'] },
     data: { type: 'string' },
     credentials: { type: ['object', 'null'] },
+    createdAt: { type: 'string' },
+    modifiedAt: { type: ['string', 'null'] },
   },
-  required: []
+  required: [],
 })
+
+export const migrationStrategies = {
+  1: (oldDoc: DataSourceDocType): DataSourceDocType | null => {
+
+    return {
+      ...oldDoc,
+      createdAt: new Date().toISOString(),
+      modifiedAt: null,
+    }
+  }
+}
 
 export const dataSourceCollectionMethods: DataSourceCollectionMethods = {
   post: async function (this: DataSourceCollection, json) {

@@ -22,15 +22,28 @@ export type CollectionCollection = RxCollection<CollectionDocType, {}, Collectio
 
 export const collectionSchema: RxJsonSchema<CollectionDocSchema> = withReplicationSchema('obokucollection', {
   title: 'obokucollection',
-  version: 0,
+  version: 1,
   type: 'object',
   properties: {
     name: { type: 'string' },
     books: { type: 'array', ref: 'book', items: { type: 'string' } },
-    resourceId: { type: ['string', 'null'], }
+    resourceId: { type: ['string', 'null'], },
+    createdAt: { type: 'string' },
+    modifiedAt: { type: ['string', 'null'] },
   },
   required: ['name']
 })
+
+export const collectionMigrationStrategies = {
+  1: (oldDoc: CollectionDocType): CollectionDocType | null => {
+
+    return {
+      ...oldDoc,
+      createdAt: new Date().toISOString(),
+      modifiedAt: null,
+    }
+  }
+}
 
 export const collectionCollectionMethods: CollectionCollectionMethods = {
   post: async function (this: CollectionCollection, json) {

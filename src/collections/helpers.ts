@@ -2,7 +2,7 @@ import { CollectionDocType } from 'oboku-shared'
 import { useRxMutation } from "../rxdb/hooks"
 
 export const useCreateCollection = () =>
-  useRxMutation((db, { name }: { name: string }) => db?.obokucollection.post({ name, books: [] }))
+  useRxMutation((db, { name }: { name: string }) => db?.obokucollection.post({ name, books: [], createdAt: new Date().toISOString(), modifiedAt: null, }))
 
 export const useRemoveCollection = () =>
   useRxMutation((db, { _id }: { _id: string }) => db.obokucollection.findOne({ selector: { _id } }).remove())

@@ -20,8 +20,6 @@ export const FIREBASE_BASE_CONFIG = {
   measurementId: "G-8HE2QKW24V"
 }
 
-export const READER_SUPPORTED_EXTENSIONS = ['.epub', '.txt', '.cbz']
-
 export const ROUTES = {
   HOME: '/',
   BOOK_DETAILS: '/book/:id',

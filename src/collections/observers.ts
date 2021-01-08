@@ -38,7 +38,7 @@ export const useCollectionsObservers = () => {
   const [, setCollections] = useRecoilState(normalizedCollectionsState)
 
   useEffect(() => {
-    db?.obokucollection.$.subscribe((changeEvent: RxChangeEvent<CollectionDocType>) => {
+    const sub = db?.obokucollection.$.subscribe((changeEvent: RxChangeEvent<CollectionDocType>) => {
       console.warn('CHANGE EVENT', changeEvent)
       switch (changeEvent.operation) {
         case 'INSERT': {
@@ -58,5 +58,7 @@ export const useCollectionsObservers = () => {
         }
       }
     })
+
+    return () => sub?.unsubscribe()
   }, [db, setCollections])
 }
