@@ -98,7 +98,7 @@ const epubMimeTypes = ['application/epub+zip']
 export const useFile = (bookId: string) => {
   const [data, setData] = useState<{
     file?: Blob | undefined,
-    documentType?: 'comic' | 'epub' | 'txt' | 'unknown',
+    documentType?: 'comic' | 'epub' | 'unknown',
     error?: Error | undefined
   }>({})
 
@@ -110,7 +110,12 @@ export const useFile = (bookId: string) => {
       } else {
         if (epubMimeTypes.includes(data.type) || (data instanceof File && data.name.endsWith('.epub'))) {
           setData(prev => ({ ...prev, file: data, documentType: 'epub', error: undefined }))
-        } else if ((data instanceof File && data.name.endsWith('.cbz'))) {
+        } else if (
+          data instanceof File
+          && (
+            data.name.endsWith('.cbz')
+            || data.name.endsWith('.txt'))
+        ) {
           setData(prev => ({ ...prev, file: data, documentType: 'comic', error: undefined }))
         } else {
           setData(prev => ({ ...prev, file: data, documentType: 'unknown', error: undefined }))

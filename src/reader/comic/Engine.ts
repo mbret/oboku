@@ -1,21 +1,26 @@
-import JSZip, { loadAsync } from 'jszip'
-import { compose, prop, sortBy } from 'ramda'
+import JSZip from 'jszip'
 import { BehaviorSubject, Subject } from 'rxjs'
 import { filter, first } from 'rxjs/operators'
-import { compareLists } from './utils'
+import { load } from './Loader'
+import { createRenderer, Renderer } from './Renderer'
 import './style.css'
 import { Report } from '../../report'
+import { PromiseReturnType } from '../../types'
 
 type Event = {
   name: string,
   cb: (data: any) => {}
 }
 
+type LoadableFiles = NonNullable<PromiseReturnType<typeof load>>['files']
+
 export class Engine {
   protected container: HTMLElement | undefined
-  protected files$ = new BehaviorSubject<JSZip.JSZipObject[] | undefined>(undefined)
+  // protected loaded = new Loader()
+  protected files$ = new BehaviorSubject<LoadableFiles | undefined>(undefined)
   protected events: Event[] = []
-  #jszip$ = new BehaviorSubject<JSZip | undefined>(undefined)
+  protected renderer: Renderer | undefined
+  #loaded = new BehaviorSubject<PromiseReturnType<typeof load> | undefined>(undefined)
   protected wrapper: HTMLDivElement | undefined
   #actions$ = new Subject<{ name: 'display', data: any }>()
   protected _currentLocation: {
@@ -51,7 +56,7 @@ export class Engine {
   public packaging: {
     spine: {
       length: number,
-      items: JSZip.JSZipObject[],
+      items: LoadableFiles,
     },
     metadata: { layout: 'pre-paginated' }
   } = {
@@ -80,33 +85,27 @@ export class Engine {
     this.container = container
   }
 
-  public async load({ url }: { url: Blob }) {
+  public async load({ url }: { url: Blob | File }) {
     if (this.container) {
       this.wrapper = this.container.ownerDocument.createElement('div')
       this.wrapper.className = 'comic-reader-wrapper'
-
-      this.wrapper.addEventListener('click', clickEvent => {
-        clickEvent.stopPropagation()
-        this.events.forEach(event => {
-          if (event.name === 'click') {
-            event.cb(clickEvent)
-          }
-        })
-      })
-
       this.container?.appendChild(this.wrapper)
 
       try {
-        const jszip = await loadAsync(url)
-        const filesAsArray = Object.values(jszip.files).filter(file => !file.dir)
-        const sortedKeys = filesAsArray.map(f => f.name).sort(compareLists)
-        const files = sortedKeys.map(name => filesAsArray.find(f => f.name === name) as JSZip.JSZipObject)
+        const loaded = await load(url)
+        this.renderer = createRenderer(loaded.getType(), this.wrapper, this.container)
 
-        this.packaging.spine.items = files
-        this.packaging.spine.length = files.length
+        this.renderer.on('click', event => this.events.forEach(e => {
+          if (e.name === 'click') {
+            e.cb(event)
+          }
+        }))
 
-        this.#jszip$.next(jszip)
-        this.files$.next(files)
+        this.packaging.spine.items = loaded.files
+        this.packaging.spine.length = loaded.files.length
+
+        this.#loaded.next(loaded)
+        this.files$.next(loaded.files)
       } catch (e) {
         Report.error(e)
       }
@@ -123,16 +122,13 @@ export class Engine {
 
   }
 
-  protected async renderFile(file: JSZip.JSZipObject) {
-    this.#jszip$
+  protected async renderFile(file: LoadableFiles[number]) {
+    this.#loaded
       .pipe(first())
-      .subscribe(async (jszip) => {
-        if (this.wrapper) {
-          this.wrapper.innerHTML = ''
-          const data = await jszip?.file(file.name)?.async('base64')
-          const img = this.container?.ownerDocument.createElement('img')
-          img?.setAttribute('src', `data:image/png;base64,${data}`)
-          img && this.wrapper?.appendChild(img)
+      .subscribe(async (loaded) => {
+        const data = await loaded?.getFile(file.name)
+        if (data) {
+          this.renderer?.render(data)
 
           const fileIndex = (this.files$.value || []).indexOf(file)
           this._currentLocation.start.displayed.page = fileIndex + 1
@@ -195,5 +191,9 @@ export class Engine {
     if (index > 0) {
       this.renderFile((this.files$.value || [])[index - 1])
     }
+  }
+
+  public destroy() {
+    this.renderer?.destroy()
   }
 }

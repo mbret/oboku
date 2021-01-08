@@ -81,4 +81,8 @@ export class EpubJSInterface extends Engine {
       },
     }
   }
+
+  public destroy() {
+    super.destroy()
+  }
 }

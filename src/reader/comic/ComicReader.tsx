@@ -1,9 +1,10 @@
 import React, { FC, useEffect, useRef } from 'react'
+import { useUnmount } from 'react-use'
 import { Report } from '../../report'
 import { EpubJSInterface } from './EpubJSInterface'
 
 export const ComicReader: FC<{
-  url: Blob
+  url: Blob | File
   location?: string,
   getRendition: (rendition: EpubJSInterface) => void
 }> = ({ url, location, getRendition }) => {
@@ -17,15 +18,17 @@ export const ComicReader: FC<{
   }
 
   useEffect(() => {
-    engine.current.load({
-      url,
-    }).catch(Report.error)
+    engine.current.load({ url }).catch(Report.error)
     getRenditionRef.current(engine.current)
   }, [url, getRendition])
 
   useEffect(() => {
     engine.current.display(location)
   }, [location])
+
+  useUnmount(() => {
+    engine.current.destroy()
+  })
 
   return (
     <div ref={ref => {
