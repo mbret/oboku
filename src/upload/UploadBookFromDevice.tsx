@@ -3,13 +3,16 @@ import React, { FC } from 'react'
 import { useAddBookFromFile } from '../books/helpers'
 import { useDropzone } from 'react-dropzone'
 import { Report } from '../report'
+import { READER_SUPPORTED_EXTENSIONS } from '../constants'
 
 export const UploadBookFromDevice: FC<{
   open: boolean,
   onClose: () => void
 }> = ({ open, onClose }) => {
   const addBookFromFile = useAddBookFromFile()
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone()
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    accept: READER_SUPPORTED_EXTENSIONS.join(',')
+  })
 
   const handleConfirm = async () => {
     onClose()
