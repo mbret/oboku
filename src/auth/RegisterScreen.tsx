@@ -41,7 +41,7 @@ export const RegisterScreen = () => {
   }
 
   return (
-    <CenteredBox style={{
+    <CenteredBox display="flex" flexDirection="column" style={{
       flex: 1,
       paddingTop: theme.spacing(4),
       paddingBottom: theme.spacing(4),
