@@ -7,7 +7,7 @@ import { useHistory, useParams } from 'react-router-dom'
 
 import { EpubView } from './EpubView'
 import { useDebounce, useThrottleFn, useWindowSize } from "react-use";
-import { Box, Button, Divider, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography } from '@material-ui/core';
+import { Box, Button, Divider, Drawer, IconButton, Link, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography } from '@material-ui/core';
 import { ArrowBackIosRounded } from '@material-ui/icons';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
@@ -57,7 +57,7 @@ export const ReaderScreen: FC<{}> = () => {
   const [generatedLocations, setGeneratedLocations] = useState<string[]>([])
   const [rendition, setRendition] = useState<Rendition | undefined>(undefined)
   const { bookId } = useParams<{ bookId?: string }>()
-  const { file, reader: readerToUse, error: fileError } = useFile(bookId || '-1')
+  const { file, documentType, error: fileError } = useFile(bookId || '-1')
   const [isTopMenuShown, setIsTopMenuShown] = useState(false)
   const [isBottomMenuShown, setIsBottomMenuShown] = useState(false)
   const book = useRecoilValue(bookState(bookId || '-1'))
@@ -92,7 +92,7 @@ export const ReaderScreen: FC<{}> = () => {
     // const epubViewContainer = e.target?.querySelector("p").closest(".near.ancestor")
     // For now comic reader only render current page so there
     // are no issue with weird offset
-    if (readerToUse === 'comic') {
+    if (documentType === 'comic') {
       realClientXOffset = clientX
     }
 
@@ -126,7 +126,7 @@ export const ReaderScreen: FC<{}> = () => {
     // } else if (clientY > minOffsetBottomMenu) {
     //   setIsBottomMenuShown(true)
     // }
-  }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, readerToUse])
+  }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, documentType])
 
   // @ts-ignore
   window.rendition = rendition;
@@ -216,9 +216,9 @@ export const ReaderScreen: FC<{}> = () => {
       const startLocation = rendition?.book.locations.locationFromCfi(currentLocation.start.cfi) as unknown
 
       const _currentPage = currentLocation.start.displayed.page
-        // currentLocation?.atEnd
-        //   ? currentLocation?.end?.location
-        //   : currentLocation?.start?.displayed.page
+      // currentLocation?.atEnd
+      //   ? currentLocation?.end?.location
+      //   : currentLocation?.start?.displayed.page
 
       console.log('updateProgress', currentLocation, layout, _currentPage)
 
@@ -290,49 +290,58 @@ export const ReaderScreen: FC<{}> = () => {
           }}
           ref={rootRef as any}
         >
-          {readerToUse === 'epub'
-            ? (
-              /**
-               * This div is used to capture click event in case where epubjs does not cover the
-               * entire screen with its iframe. It does happens for example when a fixed layout is on spread 
-               * mode but there is only one page. There will be one half of the screen empty and therefore
-               * no rendition.on.click event.
-               */
-              < div
-                style={{
-                  height: windowSize.height,
-                  width: windowSize.width,
-                  position: "relative",
+          {
+            /**
+             * This div is used to capture click event in case where epubjs does not cover the
+             * entire screen with its iframe. It does happens for example when a fixed layout is on spread 
+             * mode but there is only one page. There will be one half of the screen empty and therefore
+             * no rendition.on.click event.
+             */
+          }
+          <div
+            style={{
+              height: windowSize.height,
+              width: windowSize.width,
+              position: "relative",
+            }}
+            onClick={e => onRenditionClick(e.nativeEvent)}
+          >
+            {documentType === 'epub' && (
+              <EpubView
+                // http://epubjs.org/documentation/0.3/#bookrenderto
+                ref={readerRef as any}
+                // Bug in typing, epubjs accept blobs
+                url={file as any}
+                getRendition={setRendition}
+                epubOptions={{
+                  // spread: 'never' // never / always
+                  minSpreadWidth: 99999
+                  // stylesheet: 'html { display: none; } ',
                 }}
-                onClick={e => onRenditionClick(e.nativeEvent)}
-              >
-                <EpubView
-                  // http://epubjs.org/documentation/0.3/#bookrenderto
-                  ref={readerRef as any}
-                  // Bug in typing, epubjs accept blobs
-                  url={file as any}
-                  getRendition={setRendition}
-                  epubOptions={{
-                    // spread: 'never' // never / always
-                    minSpreadWidth: 99999
-                    // stylesheet: 'html { display: none; } ',
-                  }}
-                  loadingView={(
-                    <div>
-                      Book is loading
-                    </div>
-                  )}
-                  location={firstLocation.current}
-                />
-              </div>
-            )
-            : (
+                loadingView={(
+                  <div>
+                    Book is loading
+                  </div>
+                )}
+                location={firstLocation.current}
+              />
+            )}
+            {(documentType === 'comic') && (
               <ComicReader
                 url={file}
                 getRendition={setRendition as any}
                 location={firstLocation.current}
               />
             )}
+            {documentType === 'unknown' && (
+              <Box display="flex" alignItems="center" textAlign="center" p={2} height="100%">
+                <Typography>
+                  Oups! it looks like the book <b>{book?.title}</b> is not supported yet.
+                  If you would like to be able to open it please visit the <Link href="https://docs.oboku.me" target="__blank">documentation</Link> and try to reach out.
+                </Typography>
+              </Box>
+            )}
+          </div>
           <TopBar />
           <BottomBar />
         </div>

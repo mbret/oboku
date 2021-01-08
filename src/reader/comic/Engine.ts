@@ -86,6 +86,7 @@ export class Engine {
       this.wrapper.className = 'comic-reader-wrapper'
 
       this.wrapper.addEventListener('click', clickEvent => {
+        clickEvent.stopPropagation()
         this.events.forEach(event => {
           if (event.name === 'click') {
             event.cb(clickEvent)

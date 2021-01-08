@@ -96,7 +96,11 @@ export const useUpdateBookState = (bookId: string) => {
 const epubMimeTypes = ['application/epub+zip']
 
 export const useFile = (bookId: string) => {
-  const [data, setData] = useState<{ file?: Blob | undefined, reader?: 'comic' | 'epub', error?: Error | undefined }>({})
+  const [data, setData] = useState<{
+    file?: Blob | undefined,
+    documentType?: 'comic' | 'epub' | 'txt' | 'unknown',
+    error?: Error | undefined
+  }>({})
 
   useEffect(() => {
     (async () => {
@@ -105,9 +109,11 @@ export const useFile = (bookId: string) => {
         setData(prev => ({ ...prev, error: new Error('Unable to load file') }))
       } else {
         if (epubMimeTypes.includes(data.type) || (data instanceof File && data.name.endsWith('.epub'))) {
-          setData(prev => ({ ...prev, file: data, reader: 'epub', error: undefined }))
+          setData(prev => ({ ...prev, file: data, documentType: 'epub', error: undefined }))
+        } else if ((data instanceof File && data.name.endsWith('.cbz'))) {
+          setData(prev => ({ ...prev, file: data, documentType: 'comic', error: undefined }))
         } else {
-          setData(prev => ({ ...prev, file: data, reader: 'comic', error: undefined }))
+          setData(prev => ({ ...prev, file: data, documentType: 'unknown', error: undefined }))
         }
       }
     })()
