@@ -11,6 +11,7 @@ import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 import { RxDBReplicationPlugin } from 'rxdb/plugins/replication'
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
 
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBLeaderElectionPlugin)
@@ -19,6 +20,7 @@ addRxPlugin(RxDBValidatePlugin)
 addRxPlugin(RxDBUpdatePlugin);
 addRxPlugin(RxDBReplicationPlugin)
 addRxPlugin(RxdbReplicationPlugin)
+addRxPlugin(RxDBMigrationPlugin)
 
 addRxPlugin(require('pouchdb-adapter-idb'));
 addRxPlugin(require('pouchdb-adapter-http'))
