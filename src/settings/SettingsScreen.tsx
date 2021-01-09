@@ -14,6 +14,7 @@ import { authState } from '../auth/authState';
 import { settingsState } from './states';
 import { useUpdateContentPassword } from './helpers';
 import { libraryState } from '../library/states';
+import { version } from '../../package.json'
 
 export const SettingsScreen = () => {
   const history = useHistory()
@@ -110,6 +111,12 @@ export const SettingsScreen = () => {
         >
           <ListItemText primary="Terms of Service" />
           <ArrowForwardIosRounded color="action" />
+        </ListItem>
+        <ListItem
+          button
+          onClick={() => { }}
+        >
+          <ListItemText primary="Version" secondary={version}/>
         </ListItem>
       </List>
       {process.env.NODE_ENV !== 'production' && (
