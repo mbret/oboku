@@ -61,24 +61,30 @@ export class FileRenderer extends Renderer {
     this.wrapper.appendChild(frame)
     contentDiv.innerText = content
 
+    const registerEvents = () => {
+      frame.contentDocument?.addEventListener('click', clickEvent => {
+        this.events.forEach(event => {
+          if (event.name === 'click') {
+            event.cb(clickEvent)
+          }
+        })
+      })
+    }
+
     // will work on chrome but not firefox
     // @see https://bugzilla.mozilla.org/show_bug.cgi?id=728151
+    // @see https://stackoverflow.com/questions/6126619/which-js-event-is-fired-when-chrome-gets-the-download-file/6245998#6245998
     if (frame.contentWindow) {
       frame.contentWindow?.document.body.appendChild(contentDiv)
     }
 
+    registerEvents()
+
     // will work on firefox
     frame.onload = () => {
       frame.contentWindow?.document.body.appendChild(contentDiv)
+      registerEvents()
     }
-
-    frame.contentDocument?.addEventListener('click', clickEvent => {
-      this.events.forEach(event => {
-        if (event.name === 'click') {
-          event.cb(clickEvent)
-        }
-      })
-    })
   }
 }
 
