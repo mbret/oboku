@@ -9,8 +9,6 @@ import { Report } from '../report'
 
 const screenfullApi = screenfull as Screenfull
 
-window.screenfull = screenfull
-
 export const TopBar = () => {
   const isMenuShow = useRecoilValue(isMenuShownState)
   const classes = useStyles({ isMenuShow })

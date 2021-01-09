@@ -20,6 +20,8 @@ export const FIREBASE_BASE_CONFIG = {
   measurementId: "G-8HE2QKW24V"
 }
 
+export const IS_MOBILE_DEVICE = isMobileDetected()
+
 export const ROUTES = {
   HOME: '/',
   BOOK_DETAILS: '/book/:id',
