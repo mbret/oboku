@@ -60,7 +60,15 @@ export class FileRenderer extends Renderer {
     const contentDiv = frame.ownerDocument.createElement('div')
     this.wrapper.appendChild(frame)
     contentDiv.innerText = content
+
+    // will work on chrome but not firefox
+    // @see https://bugzilla.mozilla.org/show_bug.cgi?id=728151
     if (frame.contentWindow) {
+      frame.contentWindow?.document.body.appendChild(contentDiv)
+    }
+
+    // will work on firefox
+    frame.onload = () => {
       frame.contentWindow?.document.body.appendChild(contentDiv)
     }
 

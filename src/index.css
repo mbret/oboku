@@ -12,12 +12,14 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none;
 }
 
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+  scrollbar-width: none;
 }
 
 * {
