@@ -112,10 +112,7 @@ export const SettingsScreen = () => {
           <ListItemText primary="Terms of Service" />
           <ArrowForwardIosRounded color="action" />
         </ListItem>
-        <ListItem
-          button
-          onClick={() => { }}
-        >
+        <ListItem>
           <ListItemText primary="Version" secondary={version}/>
         </ListItem>
       </List>
