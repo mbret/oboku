@@ -1,33 +1,43 @@
-import React, { useEffect } from 'react'
-import { AppBar, Box, Drawer, IconButton, Toolbar, Typography, useTheme } from "@material-ui/core"
-import { useRecoilState } from "recoil"
+import React, { useCallback, useEffect, useState } from 'react'
+import { AppBar, Box, IconButton, makeStyles, Toolbar } from "@material-ui/core"
+import { useRecoilValue } from "recoil"
 import { isMenuShownState } from "./states"
-import { useHistory } from 'react-router-dom'
-import { ArrowBackIosRounded } from '@material-ui/icons'
+import { ArrowBackIosRounded, FullscreenExitRounded, FullscreenRounded } from '@material-ui/icons'
 import { useNavigation } from '../navigation/useNavigation'
+import screenfull, { Screenfull } from 'screenfull'
+import { Report } from '../report'
+
+const screenfullApi = screenfull as Screenfull
 
 export const TopBar = () => {
-  const [isMenuShow, setIsMenuShown] = useRecoilState(isMenuShownState)
+  const isMenuShow = useRecoilValue(isMenuShownState)
+  const classes = useStyles({ isMenuShow })
   const { goBack } = useNavigation()
-  const theme = useTheme()
+  const [isFullScreen, setIsFullScreen] = useState(screenfullApi.isEnabled && screenfullApi.isFullscreen)
+
+  const onToggleFullScreenClick = useCallback(() => {
+    if (screenfullApi.isFullscreen) {
+      screenfullApi.exit().catch(Report.error)
+    } else if (!screenfullApi.isFullscreen) {
+      screenfullApi.request(undefined, { navigationUI: 'hide' }).catch(Report.error)
+    }
+  }, [])
+
+  useEffect(() => {
+    const cb = () => {
+      setIsFullScreen(screenfullApi.isFullscreen)
+    }
+
+    screenfullApi.on('change', cb)
+
+    return () => screenfullApi.off('change', cb)
+  }, [])
 
   return (
     <AppBar
-      // anchor="top"
-      // open={isMenuShow}
-      // onClose={() => setIsMenuShown(false)}
-      // transitionDuration={0}
       position="fixed"
       elevation={0}
-      style={{
-        // position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        // backgroundColor: theme.palette.primary.main,
-        // display: isMenuShow ? 'flex'
-        visibility: isMenuShow ? 'visible' : 'hidden'
-      }}
+      className={classes.appBar}
     >
       <Toolbar >
         <IconButton
@@ -37,7 +47,26 @@ export const TopBar = () => {
         >
           <ArrowBackIosRounded />
         </IconButton>
+        <Box flexGrow={1} />
+        {screenfullApi.isEnabled && (
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={onToggleFullScreenClick}
+          >
+            {isFullScreen ? <FullscreenExitRounded /> : <FullscreenRounded />}
+          </IconButton>
+        )}
       </Toolbar>
     </AppBar>
   )
 }
+
+const useStyles = makeStyles(({
+  appBar: {
+    top: 0,
+    left: 0,
+    width: '100%',
+    visibility: ({ isMenuShow }: { isMenuShow: boolean }) => isMenuShow ? 'visible' : 'hidden'
+  }
+}))

@@ -8,7 +8,6 @@ import { useHistory, useParams } from 'react-router-dom'
 import { EpubView } from './EpubView'
 import { useDebounce, useThrottleFn, useWindowSize } from "react-use";
 import { Box, Button, Divider, Drawer, IconButton, Link, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography } from '@material-ui/core';
-import { ArrowBackIosRounded } from '@material-ui/icons';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
 import { Rendition } from "epubjs";
@@ -29,26 +28,11 @@ import { useGenerateLocations, useResetStateOnUnmount, useUpdateBookState, useFi
 import { ReaderProvider } from './ReaderProvider';
 import { ComicReader } from './comic/ComicReader';
 import { clone } from 'ramda';
+import screenfull, { Screenfull } from 'screenfull'
+import { Report } from '../report';
+import { IS_MOBILE_DEVICE } from '../constants';
 
-type ReaderInstance = {
-  nextPage: () => void,
-  prevPage: () => void,
-}
-
-// function toggleFullScreen() {
-//   var doc = window.document;
-//   var docEl = doc.documentElement;
-
-//   var requestFullScreen = docEl.requestFullscreen || (docEl as any).mozRequestFullScreen || (docEl as any).webkitRequestFullScreen || (docEl as any).msRequestFullscreen;
-//   var cancelFullScreen = doc.exitFullscreen || (doc as any).mozCancelFullScreen || (doc as any).webkitExitFullscreen || (doc as any).msExitFullscreen;
-
-//   if (!doc.fullscreenElement && !(doc as any).mozFullScreenElement && !(doc as any).webkitFullscreenElement && !(doc as any).msFullscreenElement) {
-//     requestFullScreen.call(docEl);
-//   }
-//   else {
-//     cancelFullScreen.call(doc);
-//   }
-// }
+const screenfullApi = screenfull as Screenfull
 
 export const ReaderScreen: FC<{}> = () => {
   const readerRef = useRef<any>()
@@ -65,7 +49,7 @@ export const ReaderScreen: FC<{}> = () => {
   const [editBook] = useUpdateBook()
   const verticalTappingZoneHeight = useVerticalTappingZoneHeight()
   const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
-  const [isMenuShow, setIsMenuShown] = useRecoilState(isMenuShownState)
+  const setIsMenuShown = useSetRecoilState(isMenuShownState)
   const [layout, setLayout] = useRecoilState(layoutState)
   const setCurrentPage = useSetRecoilState(currentPageState)
   const setTotalApproximativePages = useSetRecoilState(totalApproximativePagesState)
@@ -127,6 +111,20 @@ export const ReaderScreen: FC<{}> = () => {
     //   setIsBottomMenuShown(true)
     // }
   }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, documentType])
+
+  useEffect(() => {
+    if(process.env.NODE_ENV !== 'production') return
+
+    if (IS_MOBILE_DEVICE && screenfullApi.isEnabled && !screenfullApi.isFullscreen) {
+      screenfullApi.request(undefined, { navigationUI: 'hide' }).catch(Report.error)
+    }
+
+    return () => {
+      if (IS_MOBILE_DEVICE && screenfullApi.isEnabled && screenfullApi.isFullscreen) {
+        screenfullApi.exit().catch(Report.error)
+      }
+    }
+  }, [])
 
   // @ts-ignore
   window.rendition = rendition;
