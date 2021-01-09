@@ -120,7 +120,7 @@ export const ReaderScreen: FC<{}> = () => {
     }
 
     return () => {
-      if (IS_MOBILE_DEVICE && screenfullApi.isEnabled && screenfullApi.isFullscreen) {
+      if (screenfullApi.isEnabled && screenfullApi.isFullscreen) {
         screenfullApi.exit().catch(Report.error)
       }
     }
