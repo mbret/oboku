@@ -1,9 +1,11 @@
-import React, { useMemo, FC, ComponentProps, useRef, useEffect, useState, useCallback } from 'react'
+import React, { useMemo, FC, ComponentProps, useRef, useEffect } from 'react'
 import { useScrollbarWidth, useMeasure } from 'react-use';
 import { RecyclerListView, DataProvider, LayoutProvider } from "recyclerlistview/web";
 import { ArrowBackIosRounded, ArrowForwardIosRounded, ExpandMoreRounded, ExpandLessRounded } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/core';
 import { Report } from '../report';
+import { useRecoilValue } from 'recoil';
+import { localSettingsState } from '../settings/states';
 
 // Create the data provider and provide method which takes in two rows of data and return if those two are different or not.
 // THIS IS VERY IMPORTANT, FORGET PERFORMANCE IF THIS IS MESSED UP
@@ -26,14 +28,13 @@ export const ItemList: FC<{
   const classes = useClasses()
   const sbw = useScrollbarWidth() || 0;
   const listRef = useRef<RecyclerListView<any, any>>()
-  const [ref, { width, height }] = useMeasure();
+  const [ref, { width }] = useMeasure();
   const maxWidth = (width - sbw)
   const hasHeader = !!renderHeader
   const computedItemWidth = itemWidth ? itemWidth : Math.floor(maxWidth / itemsPerRow)
   const computedItemHeight = itemHeight || computedItemWidth / preferredRatio
-  const displayScrollerButtons = hasHeader ? data.length > 1 : data.length > 0
-  const [showBackwardArrow, setShowBackwardArrow] = useState(false)
-  const [showForwardArrow, setShowForwardArrow] = useState(true)
+  const { useNavigationArrows } = useRecoilValue(localSettingsState)
+  const displayScrollerButtons = (hasHeader ? data.length > 1 : data.length > 0) && useNavigationArrows
 
   // Create the layout provider
   // First method: Given an index return the type of item e.g ListItemType1, ListItemType2 in case you have variety of items in your list/grid
@@ -112,45 +113,14 @@ export const ItemList: FC<{
     }
   }
 
-  const onScroll = useCallback((e: Parameters<NonNullable<ComponentProps<typeof RecyclerListView>['onScroll']>>[0]) => {
-    const { x, y } = e.nativeEvent.contentOffset
-    if ((isHorizontal && x > 0) || (!isHorizontal && y > 0)) {
-      setShowBackwardArrow(true)
-    } else {
-      setShowBackwardArrow(false)
-    }
-    setShowForwardArrow(true)
-  }, [isHorizontal])
-
   // @ts-ignore
   window.list = listRef
-
-  /**
-   * onEndReached is not reliable (fired as soon as the list is created..) 
-   * and onScroll is only called when scrolling
-   * so in order to show/hide the arrows as much as we can we also listen to 
-   * changes in measure and manually check the content
-   * */ 
-  useEffect(() => {
-    const contentDimension = listRef.current?.getContentDimension()
-    if (isHorizontal && (contentDimension?.width || 0) <= width) {
-      setShowForwardArrow(false)
-    } else if (!isHorizontal && (contentDimension?.height || 0) <= height) {
-      setShowForwardArrow(false)
-    } else {
-      setShowForwardArrow(true)
-    }
-  }, [height, width, isHorizontal])
 
   const scrollViewProps = useMemo(() => ({
     showsVerticalScrollIndicator: false,
     useWindowScroll: false,
     canChangeSize: true,
   }), [])
-
-  const onEndReached = useCallback(() => {
-    setShowForwardArrow(false)
-  }, [])
 
   return (
     <div style={{
@@ -167,14 +137,12 @@ export const ItemList: FC<{
           rowRenderer={rowRenderer}
           canChangeSize={true}
           isHorizontal={isHorizontal}
-          onScroll={onScroll}
-          onEndReached={onEndReached}
           scrollViewProps={scrollViewProps}
         />
       )}
       {displayScrollerButtons && (
         <>
-          {!isHorizontal && showBackwardArrow && (
+          {!isHorizontal && (
             <div
               className={`${classes.verticalScrollButton} ${classes.verticalScrollButtonLess}`}
               onClick={onExpandLessClick}
@@ -182,7 +150,7 @@ export const ItemList: FC<{
               <ExpandLessRounded style={{ color: 'white' }} />
             </div>
           )}
-          {!isHorizontal && showForwardArrow && (
+          {!isHorizontal && (
             <div
               className={`${classes.verticalScrollButton} ${classes.verticalScrollButtonMore}`}
               onClick={onExpandMoreClick}
@@ -190,7 +158,7 @@ export const ItemList: FC<{
               <ExpandMoreRounded style={{ color: 'white' }} />
             </div>
           )}
-          {isHorizontal && showBackwardArrow && (
+          {isHorizontal && (
             <div
               style={{
                 position: 'absolute',
@@ -202,7 +170,7 @@ export const ItemList: FC<{
               <ArrowBackIosRounded style={{ color: 'white' }} />
             </div>
           )}
-          {isHorizontal && showForwardArrow && (
+          {isHorizontal && (
             <div
               style={{
                 position: 'absolute',

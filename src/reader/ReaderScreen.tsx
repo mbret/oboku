@@ -6,22 +6,16 @@ import React, { useState, useEffect, useRef, useCallback, FC } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 
 import { EpubView } from './EpubView'
-import { useDebounce, useThrottleFn, useWindowSize } from "react-use";
-import { Box, Button, Divider, Drawer, IconButton, Link, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography } from '@material-ui/core';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
+import { useWindowSize } from "react-use";
+import { Box, Button, Link, Typography } from '@material-ui/core';
 import { Rendition } from "epubjs";
 import { Contents, Location } from "epubjs";
 import { useUpdateBook } from '../books/helpers';
 import { AppTourReader } from '../firstTimeExperience/AppTourReader';
 import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from './utils';
-import { PromiseReturnType } from '../types';
-import { PageNumber } from './PageNumber';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { bookState } from '../books/states';
-import { ReadingStateState } from 'oboku-shared'
 import { currentApproximateProgressState, currentChapterState, currentLocationState, currentPageState, isMenuShownState, layoutState, tocState, totalApproximativePagesState } from './states';
-import { Menu } from './Menu';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
 import { useGenerateLocations, useResetStateOnUnmount, useUpdateBookState, useFile } from './helpers';
@@ -31,6 +25,7 @@ import { clone } from 'ramda';
 import screenfull, { Screenfull } from 'screenfull'
 import { Report } from '../report';
 import { IS_MOBILE_DEVICE } from '../constants';
+import { localSettingsState } from '../settings/states';
 
 const screenfullApi = screenfull as Screenfull
 
@@ -58,6 +53,7 @@ export const ReaderScreen: FC<{}> = () => {
   const setCurrentChapter = useSetRecoilState(currentChapterState)
   const firstLocation = useRef(book?.readingStateCurrentBookmarkLocation || undefined)
   const history = useHistory()
+  const localSettings = useRecoilValue(localSettingsState)
 
   useGenerateLocations(rendition)
   useResetStateOnUnmount()
@@ -113,9 +109,12 @@ export const ReaderScreen: FC<{}> = () => {
   }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, documentType])
 
   useEffect(() => {
-    if(process.env.NODE_ENV !== 'production') return
-
-    if (IS_MOBILE_DEVICE && screenfullApi.isEnabled && !screenfullApi.isFullscreen) {
+    if (
+      (
+        localSettings.readingFullScreenSwitchMode === 'always'
+        || (localSettings.readingFullScreenSwitchMode === 'automatic' && IS_MOBILE_DEVICE)
+      )
+      && screenfullApi.isEnabled && !screenfullApi.isFullscreen) {
       screenfullApi.request(undefined, { navigationUI: 'hide' }).catch(Report.error)
     }
 
@@ -124,7 +123,7 @@ export const ReaderScreen: FC<{}> = () => {
         screenfullApi.exit().catch(Report.error)
       }
     }
-  }, [])
+  }, [localSettings])
 
   // @ts-ignore
   window.rendition = rendition;

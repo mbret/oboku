@@ -1,8 +1,6 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import BottomNavigation from '@material-ui/core/BottomNavigation'
-import BottomNavigationAction from '@material-ui/core/BottomNavigationAction'
-import { HomeOutlined, Home, LocalLibrary, SettingsOutlined, LocalLibraryOutlined, Settings, Storage, StorageOutlined } from '@material-ui/icons'
+import { makeStyles, BottomNavigationAction, BottomNavigation } from '@material-ui/core'
+import { HomeOutlined, Home, LocalLibrary, LocalLibraryOutlined, Storage, StorageOutlined, AccountCircleRounded, AccountCircleOutlined } from '@material-ui/icons'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ROUTES } from './constants'
 
@@ -28,7 +26,7 @@ export const BottomTabBar = ({ children }) => {
           history.push(newValue)
         }}
         className={classes.root}
-      showLabels={true}
+        showLabels={true}
       >
         <BottomNavigationAction
           icon={normalizedPath === ROUTES.HOME ? <Home /> : <HomeOutlined />}
@@ -49,10 +47,10 @@ export const BottomTabBar = ({ children }) => {
           value={ROUTES.DATASOURCES}
         />
         <BottomNavigationAction
-          icon={normalizedPath === ROUTES.SETTINGS ? <Settings /> : <SettingsOutlined />}
+          icon={normalizedPath === ROUTES.PROFILE ? <AccountCircleRounded /> : <AccountCircleOutlined />}
           showLabel={false}
           disableRipple
-          value={ROUTES.SETTINGS}
+          value={ROUTES.PROFILE}
         />
       </BottomNavigation>
     </div>

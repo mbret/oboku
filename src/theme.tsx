@@ -60,6 +60,17 @@ export const theme = createMuiTheme({
         },
       },
     },
+    MuiBottomNavigation: {
+      root: {
+
+      }
+    },
+    MuiBottomNavigationAction: {
+      root: {
+        // disable the lift up effect when an icon is selected
+        padding: '0 !important'
+      },
+    },
     MuiListItem: {
       secondaryAction: {
         // paddingRight: 70

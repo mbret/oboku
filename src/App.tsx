@@ -23,11 +23,13 @@ import { AppLoading } from './AppLoading';
 import { UserFeedback } from './UserFeedback';
 import { AppTourFirstAddingBook } from './firstTimeExperience/AppTourFirstAddingBook';
 import { firstTimeExperienceState } from './firstTimeExperience/firstTimeExperienceStates';
+import { localSettingsState } from './settings/states';
 
 const localStatesToPersist = [
   libraryState,
   normalizedBookDownloadsState,
   firstTimeExperienceState,
+  localSettingsState,
 ]
 
 export function App() {

@@ -10,7 +10,7 @@ import { HomeScreen } from '../HomeScreen'
 import { LoginScreen } from '../auth/LoginScreen'
 import { ReaderScreen } from '../reader/ReaderScreen'
 import { BottomTabBar } from '../BottomTabBar'
-import { SettingsScreen } from '../settings/SettingsScreen'
+import { ProfileScreen } from '../settings/ProfileScreen'
 import { ManageStorageScreen } from '../settings/ManageStorageScreen'
 import { LibraryTopTabNavigator } from '../library/LibraryTopTabNavigator'
 import { ROUTES } from '../constants'
@@ -22,6 +22,7 @@ import { DataSourcesScreen } from '../dataSources/DataSourcesScreen'
 import { useAuth } from '../auth/helpers'
 import { SearchScreen } from '../search/SearchScreen'
 import { AuthCallbackScreen } from '../auth/AuthCallbackScreen'
+import { SettingsScreen } from '../settings/SettingsScreen'
 
 export const AppNavigator = () => {
   const auth = useAuth()
@@ -48,9 +49,6 @@ export const AppNavigator = () => {
                 <Route path="/reader/:bookId" >
                   <ReaderScreen />
                 </Route>
-                <Route path="/settings/manage-storage" >
-                  <ManageStorageScreen />
-                </Route>
                 <Route exact path={ROUTES.BOOK_DETAILS} >
                   <BookDetailsScreen />
                 </Route>
@@ -60,10 +58,18 @@ export const AppNavigator = () => {
                 <Route exact path={ROUTES.SEARCH}>
                   <SearchScreen />
                 </Route>
+                <Route path={`${ROUTES.PROFILE}/manage-storage`} >
+                  <Within path={ROUTES.PROFILE}>
+                    <ManageStorageScreen />
+                  </Within>
+                </Route>
+                <Route path={`${ROUTES.SETTINGS}`} >
+                  <SettingsScreen />
+                </Route>
                 <BottomTabBar>
                   <Switch>
-                    <Route exact path="/settings">
-                      <SettingsScreen />
+                    <Route exact path={ROUTES.PROFILE}>
+                      <ProfileScreen />
                     </Route>
                     <Route path="/library">
                       <LibraryTopTabNavigator />
