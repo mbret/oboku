@@ -18,7 +18,7 @@ const isLocalhost = Boolean(
   window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
 );
 
-const CHECK_FOR_SW_UPDATE_EVERY = 1000 * 60 * 60
+const CHECK_FOR_SW_UPDATE_EVERY = 600000 // 600000ms = 10mn
 
 type Config = {
   onSuccess?: (registration: ServiceWorkerRegistration) => void;
