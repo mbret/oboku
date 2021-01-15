@@ -56,9 +56,7 @@ export const AppNavigator = () => {
                   <SearchScreen />
                 </Route>
                 <Route path={`${ROUTES.PROFILE}/manage-storage`} >
-                  <Within path={ROUTES.PROFILE}>
-                    <ManageStorageScreen />
-                  </Within>
+                  <ManageStorageScreen />
                 </Route>
                 <Route path={`${ROUTES.SETTINGS}`} >
                   <SettingsScreen />
