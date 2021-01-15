@@ -28,14 +28,8 @@ body {
   scrollbar-width: none;
 }
 
-* {
-  /* -webkit-user-select: none */
-}
-
 #root {
-  height: 100%;
   margin: 0;
-  overflow: hidden;
 }
 
 code {

@@ -9,7 +9,7 @@ export const SearchScreen = () => {
   const [search, setSearch, results] = useSearch()
 
   return (
-    <Box display="flex" flexDirection="column" overflow="hidden" flex={1}>
+    <Box display="flex" flexDirection="column" overflow="hidden" flex={1} height="100vh">
       <TopBarNavigation showBack rightComponent={(
         <div className={classes.search} >
           <InputBase
@@ -30,7 +30,7 @@ export const SearchScreen = () => {
         viewMode="list"
         style={{
           height: '100%',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
       />
     </Box>

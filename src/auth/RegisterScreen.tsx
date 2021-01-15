@@ -23,6 +23,9 @@ export const RegisterScreen = () => {
   let hasBetaCodeError = false
   let hasUnknownError = false
 
+  if (error) {
+    hasUnknownError = true
+  }
   if (error instanceof ServerError) {
     error.errors.forEach(({ code }) => {
       if (code === ERROR_EMAIL_TAKEN) {
@@ -30,10 +33,9 @@ export const RegisterScreen = () => {
         hasUnknownError = false
       } else if (code === ERROR_INVALID_BETA_CODE) {
         hasBetaCodeError = true
+        hasUnknownError = false
       }
     })
-  } else if (error) {
-    hasUnknownError = true
   }
 
   const onSubmit = async () => {

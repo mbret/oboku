@@ -23,6 +23,7 @@ import { useAuth } from '../auth/helpers'
 import { SearchScreen } from '../search/SearchScreen'
 import { AuthCallbackScreen } from '../auth/AuthCallbackScreen'
 import { SettingsScreen } from '../settings/SettingsScreen'
+import { Box } from '@material-ui/core'
 
 export const AppNavigator = () => {
   const auth = useAuth()
@@ -34,11 +35,7 @@ export const AppNavigator = () => {
 
   return (
     <BrowserRouter basename={process.env.PUBLIC_URL} >
-      <div style={{
-        height: '100%',
-        display: 'flex',
-        flexFlow: 'column'
-      }}>
+      <Box display="flex" flexDirection="column" flex={1}>
         <Switch>
           <Route path={ROUTES.AUTH_CALLBACK}>
             <AuthCallbackScreen />
@@ -103,7 +100,7 @@ export const AppNavigator = () => {
               </Switch>
             )}
         </Switch>
-      </div>
+      </Box>
       <BookActionsDrawer />
       <BackBehaviorWatcher />
     </BrowserRouter>
