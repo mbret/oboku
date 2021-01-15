@@ -15,7 +15,7 @@ export const BottomTabBar = ({ children }) => {
   return (
     <div style={{
       display: 'flex',
-      height: '100vh',
+      height: '100%',
       flexDirection: 'column',
       flex: 1
     }}>

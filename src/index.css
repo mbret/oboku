@@ -1,11 +1,9 @@
 html {
-  height: 100%;
   margin: 0;
   box-sizing: border-box;
 }
 
 body {
-  height: 100%;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
@@ -17,6 +15,7 @@ body {
 
 html,
 body {
+  height: 100%;
   /* Disables pull-to-refresh but allows overscroll glow effects. */
   overscroll-behavior-y: contain;
 }
@@ -30,6 +29,7 @@ body {
 
 #root {
   margin: 0;
+  height: 100%;
 }
 
 code {

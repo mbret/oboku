@@ -34,7 +34,7 @@ export const LoginScreen = () => {
 
   return (
     <CenteredBox display="flex" flexDirection="column" style={{
-      flex: 1,
+      flexShrink: 0,
       paddingTop: theme.spacing(4),
       paddingBottom: theme.spacing(4),
       overflow: 'scroll'

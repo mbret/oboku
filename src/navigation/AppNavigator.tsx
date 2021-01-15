@@ -35,7 +35,7 @@ export const AppNavigator = () => {
 
   return (
     <BrowserRouter basename={process.env.PUBLIC_URL} >
-      <Box display="flex" flexDirection="column" flex={1}>
+      <Box display="flex" flexDirection="column" flex={1} height="100%" flexShrink={0}>
         <Switch>
           <Route path={ROUTES.AUTH_CALLBACK}>
             <AuthCallbackScreen />

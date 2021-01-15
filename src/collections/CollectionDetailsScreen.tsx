@@ -48,7 +48,7 @@ export const CollectionDetailsScreen = () => {
   return (
     <div style={{
       flex: 1,
-      height: '100vh',
+      height: '100%',
     }}>
       <TopBarNavigation title="" showBack={true} position="absolute" color="transparent" />
       {listHeaderDimTracker}
