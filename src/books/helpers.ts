@@ -8,8 +8,9 @@ import PouchDB from 'pouchdb'
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../report"
 import { useCallback } from "react"
-import { useDownloadFileFromFile } from "../download/useDownloadFileFromFile"
 import { useGetDataSourceCredentials } from "../dataSources/helpers"
+import { useDownloadBook } from "../download/useDownloadBook"
+import { PromiseReturnType } from "../types"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -64,6 +65,9 @@ export const useRefreshBookMetadata = () => {
 
     const credentials = await getDataSourceCredentials(firstLink.type)
 
+    if ('isError' in credentials && credentials.reason === 'cancelled') return
+    if ('isError' in credentials) throw credentials.error || new Error('')
+
     await updateBook({ _id: bookId, lastMetadataUpdatedAt: null })
 
     database?.sync({
@@ -88,7 +92,7 @@ export const useRefreshBookMetadata = () => {
       .complete$
       .pipe(first())
       .subscribe(completed => {
-        completed && client.refreshMetadata(bookId, credentials).catch(Report.error)
+        completed && client.refreshMetadata(bookId, credentials.data).catch(Report.error)
       })
   }
 }
@@ -113,13 +117,15 @@ export const useAddBook = () => {
   const database = useDatabase()
   const refreshMetadata = useRefreshBookMetadata()
 
-  const cb = async ({
+  type Return = { book: PromiseReturnType<NonNullable<typeof database>['book']['post']>, link: PromiseReturnType<NonNullable<typeof database>['link']['post']> }
+
+  const addBook = async ({
     book,
     link
   }: {
     book?: Partial<Parameters<NonNullable<typeof database>['book']['post']>[0]>
     link: Parameters<NonNullable<typeof database>['link']['post']>[0]
-  }) => {
+  }): Promise<Return | undefined> => {
     try {
       if (database) {
         const linkAdded = await database.link.post(link)
@@ -145,22 +151,22 @@ export const useAddBook = () => {
         })
         refreshMetadata(newBook._id)
 
-        return newBook
+        return { book: newBook, link: linkAdded }
       }
     } catch (e) {
       Report.error(e)
     }
   }
 
-  return [cb]
+  return [addBook]
 }
 
 export const useAddBookFromFile = () => {
   const [addBook] = useAddBook()
-  const downloadFileFromFile = useDownloadFileFromFile()
+  const downloadFile = useDownloadBook()
 
   return useCallback(async (file: File) => {
-    const book = await addBook({
+    const { book } = await addBook({
       link: {
         book: null,
         data: null,
@@ -173,9 +179,9 @@ export const useAddBookFromFile = () => {
         title: file.name,
         lastMetadataUpdatedAt: Date.now(),
       }
-    })
+    }) || {}
     if (book) {
-      await downloadFileFromFile({ file, id: book?._id })
+      await downloadFile(book._id, file)
     }
-  }, [addBook, downloadFileFromFile])
+  }, [addBook, downloadFile])
 }

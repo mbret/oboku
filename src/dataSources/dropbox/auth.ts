@@ -29,7 +29,7 @@ const isAccessTokenStillSufficient = () => {
  * Token is valid for about 4 hours
  */
 export const authUser = () => {
-  return new Promise<DropboxAuth>((resolve, reject) => {
+  return new Promise<DropboxAuth | { isError: true, error?: Error, reason: 'cancelled' }>((resolve, reject) => {
     let timedOut = false
     let listenToPopupCloseInterval: ReturnType<typeof setInterval>
     let listenToPopupTimeoutTimeout: ReturnType<typeof setTimeout>
@@ -112,7 +112,7 @@ export const authUser = () => {
       if (_oauthWindow?.closed) {
         cleanup()
 
-        reject(new Error('User closed the popup'));
+        resolve({ isError: true, reason: 'cancelled' })
       }
     }, 1000)
 

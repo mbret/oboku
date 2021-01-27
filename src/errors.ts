@@ -7,7 +7,7 @@ export const createServerError = async (response: Response) => {
     const body = await response.json()
     const errors = body?.errors?.map(error => ({
       code: error?.code
-    }))
+    })) || []
     throw new ServerError(response, errors);
   } catch (e) {
     throw e

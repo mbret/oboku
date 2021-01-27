@@ -7,6 +7,7 @@ import { Report } from "../report"
 import { useRecoilCallback } from "recoil"
 import { plugins } from "./configure"
 import { useCallback, useMemo, useRef } from "react"
+import { UseDownloadHook } from "./types"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
@@ -15,57 +16,42 @@ export const useSynchronizeDataSource = () => {
   const getDataSourceCredentials = useGetDataSourceCredentials()
 
   return useRecoilCallback(({ snapshot }) => async (_id: string) => {
-    const dataSource = await database?.datasource.findOne({ selector: { _id } }).exec()
+    try {
+      const dataSource = await database?.datasource.findOne({ selector: { _id } }).exec()
 
-    if (!dataSource) return
+      if (!dataSource) return
 
-    const credentials = await getDataSourceCredentials(dataSource.type)
+      const credentials = await getDataSourceCredentials(dataSource.type)
 
-    await updateDataSource({ _id, lastSyncedAt: null, lastSyncErrorCode: null })
+      if ('isError' in credentials && credentials.reason === 'cancelled') return
+      if ('isError' in credentials) throw credentials.error || new Error('')
 
-    database?.sync({
-      collectionNames: ['datasource'],
-      syncOptions: () => ({
-        remote: client.getPouchDbRemoteInstance(),
-        direction: {
-          push: true,
-        },
-        options: {
-          retry: false,
-          live: false,
-          timeout: 5000,
-        }
+      await updateDataSource({ _id, lastSyncedAt: null, lastSyncErrorCode: null })
+
+      database?.sync({
+        collectionNames: ['datasource'],
+        syncOptions: () => ({
+          remote: client.getPouchDbRemoteInstance(),
+          direction: {
+            push: true,
+          },
+          options: {
+            retry: false,
+            live: false,
+            timeout: 5000,
+          }
+        })
       })
-    })
-      .complete$
-      .pipe(first())
-      .subscribe(completed => {
-        completed && client.syncDataSource(_id, credentials).catch(Report.error)
-      })
+        .complete$
+        .pipe(first())
+        .subscribe(completed => {
+          completed && client.syncDataSource(_id, credentials.data).catch(Report.error)
+        })
+    } catch (e) {
+      Report.error(e)
+    }
   })
 }
-
-// export const useRenewDataSourceCredentials = () => {
-//   const [updateDataSource] = useUpdateDataSource()
-//   const [getLazySignedGapi] = useGetLazySignedGapi()
-//   const database = useDatabase()
-
-//   return useRecoilCallback(({ snapshot }) => async (id: string) => {
-//     const dataSource = await database?.datasource.findOne({ selector: { _id: id } }).exec()
-
-//     switch (dataSource?.type) {
-//       case DataSourceType.DRIVE: {
-//         const { credentials } = (await getLazySignedGapi()) || {}
-//         await updateDataSource({
-//           _id: id,
-//           credentials: credentials
-//         })
-//         break
-//       }
-//       default:
-//     }
-//   })
-// }
 
 export const useCreateDataSource = () => {
   type Payload = Omit<DataSourceDocType, '_id' | 'rx_model' | '_rev'>
@@ -107,6 +93,24 @@ export const useGetDataSourceCredentials = () => {
     const found = getPluginCredentials.current.find(plugin => plugin.type === linkType)
     if (found) return found.getCredentials()
 
-    return undefined
+    throw new Error('no datasource found for this link')
   }, [getPluginCredentials])
+}
+
+export const useDownloadBookFromDataSource = () => {
+  const plugins = useDataSourcePlugins()
+  // It's important to use array for plugins and be careful of the order since
+  // it will trigger all hooks
+  type UseDownloadBook = ReturnType<typeof plugins[number]['useDownloadBook']>
+  const getPluginFn = useRef<(Pick<typeof plugins[number], 'type'> & { useDownloadBook: UseDownloadBook })[]>([])
+  getPluginFn.current = plugins.map(plugin => ({ type: plugin.type, useDownloadBook: plugin.useDownloadBook() }))
+
+  const downloadBook: ReturnType<UseDownloadHook> = async (link, options) => {
+    const found = getPluginFn.current.find(plugin => plugin.type === link.type)
+    if (found) return found.useDownloadBook(link, options)
+
+    throw new Error('no datasource found for this link')
+  }
+
+  return useCallback(downloadBook, [getPluginFn])
 }

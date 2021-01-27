@@ -8,7 +8,7 @@ import { useAddTagToBook, useRemoveTagToBook } from '../books/helpers';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
 import { Alert } from '@material-ui/lab';
 import { Cover } from './Cover';
-import { useDownloadFile } from '../download/useDownloadFile';
+import { useDownloadBook } from '../download/useDownloadBook';
 import { ROUTES } from '../constants';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
@@ -25,7 +25,7 @@ export const BookDetailsScreen = () => {
   const classes = useClasses()
   const theme = useTheme()
   const history = useHistory()
-  const downloadFile = useDownloadFile()
+  const downloadFile = useDownloadBook()
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<undefined | string>(undefined)
   const { id } = useParams<ScreenParams>()

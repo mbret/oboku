@@ -7,6 +7,7 @@ import { bookState } from "../books/states"
 import { ReadingStateState } from "oboku-shared"
 import { useDebounce } from "react-use"
 import localforage from 'localforage'
+import { useBookFile } from "../download/useBookFile"
 
 const statesToReset = [
   states.currentApproximateProgressState,
@@ -96,6 +97,7 @@ export const useUpdateBookState = (bookId: string) => {
 const epubMimeTypes = ['application/epub+zip']
 
 export const useFile = (bookId: string) => {
+  const file = useBookFile(bookId)
   const [data, setData] = useState<{
     file?: Blob | undefined,
     documentType?: 'comic' | 'epub' | 'unknown',
@@ -104,26 +106,25 @@ export const useFile = (bookId: string) => {
 
   useEffect(() => {
     (async () => {
-      const data = await localforage.getItem<Blob>(`book-download-${bookId}`)
-      if (!data) {
+      if (file === null) {
         setData(prev => ({ ...prev, error: new Error('Unable to load file') }))
-      } else {
-        if (epubMimeTypes.includes(data.type) || (data instanceof File && data.name.endsWith('.epub'))) {
-          setData(prev => ({ ...prev, file: data, documentType: 'epub', error: undefined }))
+      } else if (file) {
+        if (epubMimeTypes.includes(file.data.type) || file.name.endsWith('.epub')) {
+          setData(prev => ({ ...prev, file: file.data, documentType: 'epub', error: undefined }))
         } else if (
-          ['text/xml'].includes(data.type)
-          || (data instanceof File
+          ['text/xml'].includes(file.data.type)
+          || (file instanceof File
             && (
-              data.name.endsWith('.cbz')
-              || data.name.endsWith('.txt')))
+              file.name.endsWith('.cbz')
+              || file.name.endsWith('.txt')))
         ) {
-          setData(prev => ({ ...prev, file: data, documentType: 'comic', error: undefined }))
+          setData(prev => ({ ...prev, file: file.data, documentType: 'comic', error: undefined }))
         } else {
-          setData(prev => ({ ...prev, file: data, documentType: 'unknown', error: undefined }))
+          setData(prev => ({ ...prev, file: file.data, documentType: 'unknown', error: undefined }))
         }
       }
     })()
-  }, [bookId])
+  }, [file])
 
   return data
 }

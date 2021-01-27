@@ -1,11 +1,11 @@
 import { useHistory } from "react-router-dom";
 import { useRecoilCallback } from "recoil";
 import { ROUTES } from "../../constants";
-import { useDownloadFile } from "../../download/useDownloadFile";
+import { useDownloadBook } from "../../download/useDownloadBook";
 import { enrichedBookState } from "../states";
 
 export const useDefaultItemClickHandler = () => {
-  const downloadFile = useDownloadFile()
+  const downloadFile = useDownloadBook()
   const history = useHistory();
 
   return useRecoilCallback(({ snapshot }) => async (id: string) => {

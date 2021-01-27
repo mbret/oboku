@@ -1,19 +1,21 @@
 import { useCallback } from "react";
 import { authUser } from "./auth";
-import { Report } from "../../report";
+import { DropboxAuth } from "dropbox";
 
 export const useGetCredentials = () => {
   return useCallback(async () => {
-    try {
-      const dpx = await authUser()
+    const dpx = await authUser()
 
+    if (dpx instanceof DropboxAuth) {
       return {
-        accessToken: dpx.getAccessToken()
+        data: {
+          accessToken: dpx.getAccessToken()
+        }
       }
-    } catch (e) {
-      Report.error(e)
-
-      return undefined
     }
+
+    return dpx
   }, [])
 }
+
+export const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`dropbox-`, ``)

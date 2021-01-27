@@ -1,6 +1,7 @@
 import { waitFor } from '../../utils'
 import React, { FC, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Report } from '../../report'
+import { UseGetCredentials } from '../types'
 
 type ContextValue = [
   typeof gapi | undefined,
@@ -86,9 +87,10 @@ export const GoogleApiProvider: FC = ({ children }) => {
         await googleApi?.auth2.getAuthInstance().signIn({})
         return googleApi
       } catch (e) {
-        Report.error(e)
+        throw e
+      } finally {
+        isSigning.current = false
       }
-      isSigning.current = false
     }
 
     setContextValue([
@@ -130,5 +132,20 @@ export const useGetLazySignedGapi = () => {
 export const useGetCredentials = () => {
   const [getLazySignedGapi] = useGetLazySignedGapi()
 
-  return useCallback(async () => (await getLazySignedGapi())?.credentials, [getLazySignedGapi])
+  return useCallback(async () => {
+    try {
+      const auth = (await getLazySignedGapi())?.credentials
+
+      if (!auth) throw new Error('unknown')
+      
+      return { data: auth as unknown as { [key: string]: string } }
+    } catch (e) {
+      if (e?.error === 'popup_closed_by_user') {
+        return { isError: true, reason: 'cancelled' } as { isError: true, reason: 'cancelled' }
+      }
+      throw e
+    }
+  }, [getLazySignedGapi])
 }
+
+export const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`drive-`, ``)

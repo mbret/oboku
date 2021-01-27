@@ -87,6 +87,8 @@ export const RxdbReplicationPlugin = {
             .concat(database.replications.slice(index + 1));
         };
 
+        replication.connect()
+
         return replication;
       }
 
@@ -111,6 +113,11 @@ class Replication {
   private filterCreationInterval: number | undefined
   syncOptions: (collectionName: string) => ReplicationSyncOptions
 
+  /**
+   * Used to cancel ongoing async stuff. Ideally we should completely switch to observers
+   */
+  private terminated = false
+
   constructor(
     public database: any,
     { syncOptions, collectionNames }: Parameters<SyncFn<any>>[0]
@@ -134,8 +141,6 @@ class Replication {
       this._completeSubject.next(true)
       this._completeSubject.complete()
     })
-
-    this.connect()
   }
 
   get alive$() {
@@ -154,14 +159,16 @@ class Replication {
     return this._completeSubject.asObservable();
   }
 
-  private async connect() {
-
+  public async connect() {
     await this.cancel();
+
+    this.terminated = false
 
     const tryToCreateFilter = async () => {
       try {
         await this.createFilter();
       } catch (e) {
+        if (this.terminated) return
         this._errorSubject.next(e);
         this.filterCreationInterval = setTimeout(() => {
           tryToCreateFilter()
@@ -179,6 +186,7 @@ class Replication {
   }
 
   public async cancel() {
+    this.terminated = true
     clearTimeout(this.filterCreationInterval);
 
     this._subscribers.forEach((x) => x.unsubscribe());
@@ -214,7 +222,6 @@ class Replication {
         }
       });
     });
-
 
     const allAlive = promises.map(() => false);
     const allActive = promises.map(() => false);
@@ -313,9 +320,13 @@ class Replication {
         await db.put({ ...doc, _rev: meta?._rev })
       }
     } catch (e) {
-      await db.put(doc)
+      if (e.status === 404) {
+        await db.put(doc)
+      } else {
+        throw e
+      }
+    } finally {
+      db.close()
     }
-
-    db.close()
   }
 }

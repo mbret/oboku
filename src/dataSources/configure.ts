@@ -7,8 +7,9 @@ import { UploadBook } from "./google/UploadBook"
 import { DataSourceType } from "oboku-shared"
 import { useGetCredentials as useGetGoogleCredentials } from "./google/helpers"
 import { useGetCredentials as useGetDropboxCredentials } from "./dropbox/helpers"
-import { GoogleDriveDataSource } from "./google/GoogleDriveDataSource"
-import { AddDataSource } from "./dropbox/AddDataSource"
+import * as googlePlugin from "./google"
+import * as dropboxPlugin from "./dropbox"
+import { UseDownloadHook, UseGetCredentials } from "./types"
 
 export const plugins: {
   uniqueResourceIdentifier: string
@@ -21,7 +22,8 @@ export const plugins: {
   AddDataSource: React.FunctionComponent<{
     onClose: () => void
   }>,
-  useGetCredentials: () => () => Promise<any>
+  useGetCredentials: UseGetCredentials,
+  useDownloadBook: UseDownloadHook
 }[] = []
 
 export const configureDataSources = () => {
@@ -31,8 +33,9 @@ export const configureDataSources = () => {
     name: 'Dropbox',
     Icon: DropboxIcon,
     UploadComponent: UploadBookFromDropbox,
-    AddDataSource: AddDataSource,
-    useGetCredentials: useGetDropboxCredentials
+    AddDataSource: dropboxPlugin.AddDataSource,
+    useGetCredentials: useGetDropboxCredentials,
+    useDownloadBook: dropboxPlugin.useDownloadBook
   })
 
   plugins.push({
@@ -41,7 +44,8 @@ export const configureDataSources = () => {
     name: 'Google Drive',
     Icon: GoogleDriveAsset,
     UploadComponent: UploadBook,
-    AddDataSource: GoogleDriveDataSource,
-    useGetCredentials: useGetGoogleCredentials
+    AddDataSource: googlePlugin.GoogleDriveDataSource,
+    useGetCredentials: useGetGoogleCredentials,
+    useDownloadBook: googlePlugin.useDownloadBook
   })
 }
