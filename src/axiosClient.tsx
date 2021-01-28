@@ -2,7 +2,7 @@ import React, { FC, useEffect, useMemo } from 'react';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useRecoilValue } from 'recoil';
 import { authState } from './auth/authState';
-import { API_SYNC_URL, API_URI, AWS_API_URL } from './constants';
+import { API_SYNC_URL, API_URI } from './constants';
 import PouchDB from 'pouchdb'
 
 const instance = axios.create();
