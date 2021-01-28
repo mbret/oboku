@@ -2,7 +2,7 @@ import React, { FC, useEffect, useMemo } from 'react';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { useRecoilValue } from 'recoil';
 import { authState } from './auth/authState';
-import { API_SYNC_URL, API_URI } from './constants';
+import { API_SYNC_URL, API_URI, AWS_API_URL } from './constants';
 import PouchDB from 'pouchdb'
 
 const instance = axios.create();
@@ -38,14 +38,21 @@ export const useAxiosClient = () =>
     getAuthorizationHeader: () => instance.defaults.headers.common['Authorization'],
 
     refreshMetadata: (bookId: string, credentials?: { [key: string]: any },) =>
-      instance.post(`${API_URI}/refresh-metadata/${bookId}`, {}, {
+      instance.post(`${API_URI}/refresh-metadata`, { bookId }, {
+        // timeout: 60000, // 1mn
+        // timeout: 1000,
+        withCredentials: false,
         headers: {
           'oboku-credentials': JSON.stringify(credentials),
         }
       }),
 
     syncDataSource: (dataSourceId: string, credentials?: { [key: string]: any },) =>
-      instance.post(`${API_URI}/sync-datasource/${dataSourceId}`, { credentials }),
+      instance.post(`${API_URI}/sync-datasource`, { dataSourceId }, {
+        headers: {
+          'oboku-credentials': JSON.stringify(credentials),
+        }
+      }),
 
     getPouchDbRemoteInstance: () => new PouchDB(API_SYNC_URL, {
       fetch: (url, opts) => {
