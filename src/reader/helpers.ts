@@ -113,7 +113,11 @@ export const useFile = (bookId: string) => {
           setData(prev => ({ ...prev, file: file.data, documentType: 'epub', error: undefined }))
         } else if (
           ['text/xml'].includes(file.data.type)
-          || (file instanceof File
+          || (
+            file.name.endsWith('.cbz')
+              || file.name.endsWith('.txt')
+          )
+          || (file.data instanceof File
             && (
               file.name.endsWith('.cbz')
               || file.name.endsWith('.txt')))
