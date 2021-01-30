@@ -5,14 +5,15 @@ import { useCreateTag } from '../tags/helpers';
 import { TagActionsDrawer } from '../tags/TagActionsDrawer';
 import { LocalOfferRounded, LockRounded } from '@material-ui/icons';
 import { LockActionDialog } from '../auth/LockActionDialog';
-import { useRxQuery } from '../rxdb';
+import { tagsAsArrayState } from '../tags/states';
+import { useRecoilValue } from 'recoil';
 
 export const LibraryTagsScreen = () => {
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
   const classes = useStyles();
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] = useState<string | undefined>(undefined)
-  const tags = useRxQuery(db => db.tag.find())
+  const tags = useRecoilValue(tagsAsArrayState)
   const [addTag] = useCreateTag()
 
   console.log('LibraryTagsScreen', tags?.map(tag => (tag as any)), lockedAction)
@@ -35,9 +36,9 @@ export const LibraryTagsScreen = () => {
         {tags && tags.map(tag => (
           <ListItem
             button
-            key={tag?.primary}
+            key={tag?._id}
             onClick={() => {
-              const action = () => setIsTagActionsDrawerOpenedWith(tag?.primary)
+              const action = () => setIsTagActionsDrawerOpenedWith(tag?._id)
               if (tag?.isProtected) {
                 setLockedAction(_ => action)
               } else {
