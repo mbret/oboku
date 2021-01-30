@@ -1,8 +1,9 @@
 import React from 'react'
 import { makeStyles, BottomNavigationAction, BottomNavigation } from '@material-ui/core'
-import { HomeOutlined, Home, LocalLibrary, LocalLibraryOutlined, Storage, StorageOutlined, AccountCircleRounded, AccountCircleOutlined } from '@material-ui/icons'
+import { HomeOutlined, Home, LocalLibrary, LocalLibraryOutlined, Storage, StorageOutlined, AccountCircleRounded, AccountCircleOutlined, PortableWifiOffRounded } from '@material-ui/icons'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ROUTES } from './constants'
+import { useNetwork } from 'react-use'
 
 export const BottomTabBar = ({ children }) => {
   const location = useLocation()
@@ -13,13 +14,9 @@ export const BottomTabBar = ({ children }) => {
     : location.pathname
 
   return (
-    <div style={{
-      display: 'flex',
-      height: '100%',
-      flexDirection: 'column',
-      flex: 1
-    }}>
+    <div className={classes.container}>
       {children}
+      <OfflineIcon />
       <BottomNavigation
         value={normalizedPath}
         onChange={(event, newValue) => {
@@ -57,10 +54,42 @@ export const BottomTabBar = ({ children }) => {
   )
 }
 
+const OfflineIcon = () => {
+  const classes = useStyles();
+  const network = useNetwork()
+  
+  if (network.online) return null
+  
+  return (
+    <div className={classes.offlineWrapper}>
+      <PortableWifiOffRounded fontSize="small" className={classes.offlineIcon} />
+    </div>
+  )
+}
+
 const useStyles = makeStyles(theme => ({
+  container: {
+    display: 'flex',
+    height: '100%',
+    flexDirection: 'column',
+    flex: 1
+  },
   root: {
     borderTopColor: theme.palette.primary.main,
     borderTopWidth: 1,
     borderTopStyle: 'solid'
   },
+  offlineWrapper: {
+    position: 'absolute',
+    backgroundColor: theme.palette.grey['700'],
+    display: 'flex',
+    left: 0,
+    bottom: 0,
+    paddingLeft: 1,
+    paddingBottom: 1,
+    paddingRight: 5,
+    paddingTop: 5,
+    borderTopRightRadius: 15,
+  },
+  offlineIcon: { color: 'white' }
 }));
