@@ -94,7 +94,9 @@ export const ItemList: FC<{
   }
 
   const onExpandMoreClick = () => {
-    const offset = listRef?.current?.getCurrentScrollOffset() || 0
+    // sometimes the offset is a bit off like "149.9" which will get a next offset of "150"
+    // whereas we were supposed to go after it.
+    const offset = Math.round(listRef?.current?.getCurrentScrollOffset() || 0)
     const nextOffset = getNextOffset(offset)
     if (isHorizontal) {
       listRef?.current?.scrollToOffset(nextOffset, 0, false)
@@ -192,7 +194,7 @@ const useClasses = makeStyles((theme) => {
   return {
     verticalScrollButton: {
       position: 'absolute',
-      padding: theme.spacing(1),
+      padding: theme.spacing(2),
       backgroundColor: 'gray',
       opacity: 0.5,
       borderRadius: 50,
@@ -208,7 +210,7 @@ const useClasses = makeStyles((theme) => {
       left: theme.spacing(1),
     },
     horizontalButton: {
-      padding: theme.spacing(1),
+      padding: theme.spacing(2),
       backgroundColor: 'gray',
       opacity: 0.5,
       borderRadius: 50,
