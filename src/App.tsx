@@ -63,7 +63,7 @@ export function App() {
           </PersistedRecoilRoot>
         </RxDbProvider>
       </ThemeProvider>
-      <UpdateAvailableObserver onUpdateAvailable={sw => setNewServiceWorker(sw)} />
+      <ServiceWorkerRegistrator onUpdateAvailable={sw => setNewServiceWorker(sw)} />
     </>
   );
 }
@@ -75,7 +75,7 @@ const RecoilSyncedWithDatabase: FC = ({ children }) => {
   return null
 }
 
-const UpdateAvailableObserver: FC<{ onUpdateAvailable: (sw: ServiceWorker) => void }> = ({ onUpdateAvailable }) => {
+const ServiceWorkerRegistrator: FC<{ onUpdateAvailable: (sw: ServiceWorker) => void }> = ({ onUpdateAvailable }) => {
   useEffect(() => {
     // If you want your app to work offline and load faster, you can change
     // unregister() to register() below. Note this comes with some pitfalls.

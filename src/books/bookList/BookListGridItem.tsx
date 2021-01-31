@@ -1,7 +1,7 @@
-import React, { FC } from 'react'
+import React, { FC, memo, useEffect } from 'react'
 import { makeStyles, Typography } from "@material-ui/core"
 import { MoreVert } from '@material-ui/icons';
-import { useWindowSize } from 'react-use';
+import { useRafState, useWindowSize } from 'react-use';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { bookActionDrawerState } from '../BookActionsDrawer';
 import { enrichedBookState } from '../states';
@@ -11,12 +11,19 @@ import { BookListCoverContainer } from './BookListCoverContainer';
 export const BookListGridItem: FC<{
   bookId: string,
   onItemClick?: (id: string) => void,
-}> = ({ bookId, onItemClick }) => {
+}> = memo(({ bookId, onItemClick }) => {
   const item = useRecoilValue(enrichedBookState(bookId))
   const onDefaultItemClick = useDefaultItemClickHandler()
   const windowSize = useWindowSize()
   const classes = useStyles({ windowSize });
   const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
+  const [render, setRender] = useRafState(false)
+
+  useEffect(() => {
+    setRender(true)
+  }, [setRender])
+
+  if (!render) return null
 
   return (
     <div
@@ -48,7 +55,7 @@ export const BookListGridItem: FC<{
       </div>
     </div >
   )
-}
+})
 
 const useStyles = makeStyles((theme) => {
   type Props = { windowSize: { width: number } }

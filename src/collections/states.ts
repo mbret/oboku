@@ -1,6 +1,6 @@
 import { atom, selector, selectorFamily } from "recoil";
 import { CollectionDocType } from 'oboku-shared'
-import { bookIdsState } from "../books/states";
+import { protectedBookIdsState } from "../books/states";
 
 export type Collection = CollectionDocType
 
@@ -24,7 +24,7 @@ export const collectionState = selectorFamily({
   key: 'collectionState',
   get: (id: string) => ({ get }) => {
     const collection = get(normalizedCollectionsState)[id]
-    const bookIds = get(bookIdsState)
+    const bookIds = get(protectedBookIdsState)
 
     if (!collection) return undefined
 
