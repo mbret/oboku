@@ -3,7 +3,7 @@ import { makeStyles, BottomNavigationAction, BottomNavigation } from '@material-
 import { HomeOutlined, Home, LocalLibrary, LocalLibraryOutlined, Storage, StorageOutlined, AccountCircleRounded, AccountCircleOutlined, PortableWifiOffRounded } from '@material-ui/icons'
 import { useHistory, useLocation } from 'react-router-dom'
 import { ROUTES } from './constants'
-import { useNetwork } from 'react-use'
+import { useNetworkState } from 'react-use'
 
 export const BottomTabBar = ({ children }) => {
   const location = useLocation()
@@ -56,7 +56,7 @@ export const BottomTabBar = ({ children }) => {
 
 const OfflineIcon = () => {
   const classes = useStyles();
-  const network = useNetwork()
+  const network = useNetworkState()
   
   if (network.online) return null
   

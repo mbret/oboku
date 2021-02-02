@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState, useRef, useCallback, memo } from 'react';
+import React, { useContext, useEffect, memo } from 'react';
 import { useMeasure } from 'react-use';
 // import { View, LayoutRectangle, findNodeHandle, UIManager, ViewStyle } from 'react-native';
 import { Step as StepType, TourContext, TourKey } from './TourContext';
@@ -23,7 +23,7 @@ export const Step: React.FC<Props> = memo(({ withButtons = true, children, id, n
 
   useEffect(() => {
     console.log('on layout', layout)
-    if (!layout.width) return;
+    if ("width" in layout && !layout.width) return;
 
     if (!children) {
       registerOrUpdateStep && registerOrUpdateStep(id, number, {
@@ -36,6 +36,7 @@ export const Step: React.FC<Props> = memo(({ withButtons = true, children, id, n
     } else {
       // const node = findNodeHandle(containerRef.current);
       // node && UIManager.measureInWindow(node, (pageX, pageY, width, height) => {
+      if ("width" in layout) {
         registerOrUpdateStep && registerOrUpdateStep(id, number, {
           measures: { x: 0, y: 0, width: layout.width, height: layout.height, pageX: layout.x, pageY: layout.y },
           spotlightSize,
@@ -43,6 +44,7 @@ export const Step: React.FC<Props> = memo(({ withButtons = true, children, id, n
           content,
           withButtons,
         });
+      }
       // });
     }
   }, [registerOrUpdateStep, id, number, layout, withButtons, content, tour?.show, children, spotlightSize, spotlightMargin]);

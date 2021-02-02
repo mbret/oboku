@@ -1,8 +1,9 @@
 import { useMeasure } from 'react-use'
 import React, { useMemo } from 'react'
+import { UseMeasureResult } from 'react-use/lib/useMeasure';
 
 export const useMeasureElement = (element: React.ReactNode) => {
-  const [ref, dim] = useMeasure()
+  const [ref, dim] = useMeasure() as UseMeasureResult
 
   const elementToRender = useMemo(() => (
     <div ref={ref as any} style={{ position: 'absolute', visibility: 'hidden' }}>

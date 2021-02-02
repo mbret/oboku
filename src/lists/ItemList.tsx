@@ -6,6 +6,7 @@ import { makeStyles } from '@material-ui/core';
 import { Report } from '../report';
 import { useRecoilValue } from 'recoil';
 import { localSettingsState } from '../settings/states';
+import { UseMeasureResult } from 'react-use/lib/useMeasure';
 
 // Create the data provider and provide method which takes in two rows of data and return if those two are different or not.
 // THIS IS VERY IMPORTANT, FORGET PERFORMANCE IF THIS IS MESSED UP
@@ -28,7 +29,7 @@ export const ItemList: FC<{
   const classes = useClasses()
   const sbw = useScrollbarWidth() || 0;
   const listRef = useRef<RecyclerListView<any, any>>()
-  const [ref, { width }] = useMeasure();
+  const [ref, { width }] = useMeasure() as UseMeasureResult;
   const maxWidth = (width - sbw)
   const hasHeader = !!renderHeader
   const computedItemWidth = itemWidth ? itemWidth : Math.floor(maxWidth / itemsPerRow)
