@@ -23,13 +23,11 @@ export const UploadBookFromDevice: FC<{
     }
   }
 
-  console.log(acceptedFiles)
-
   return (
     <Dialog onClose={onClose} open={open} fullScreen>
       <DialogTitle>Add a book from device</DialogTitle>
-      <DialogContent >
-        <Box {...getRootProps({ className: 'dropzone' })} display="flex" flex={1} height="100%" alignItems="center">
+      <DialogContent style={{ display: 'flex' }}>
+        <Box {...getRootProps({ className: 'dropzone' })} display="flex" flex={1} alignItems="center" justifyContent="center">
           <input {...getInputProps()} />
           {acceptedFiles.length > 0
             ? (
