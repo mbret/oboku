@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useEffect, useMemo, useState } from 'react'
 import { useMountedState } from 'react-use'
 import { API_URI } from '../constants'
 import placeholder from '../assets/cover-placeholder.png'
@@ -21,20 +21,28 @@ export const Cover: FC<{
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  const coverSrc = book
-    ? `${API_URI}/cover/${auth?.userId}-${book._id}?${book?.lastMetadataUpdatedAt || ''}`
-    : placeholder
+  const assetHash = book?.lastMetadataUpdatedAt?.toString()
 
-  const finalSrc = hasError ? placeholder : coverSrc
+  const urlParams = new URLSearchParams({
+    ...assetHash && {
+      hash: assetHash,
+    }
+  })
+
+
+  const originalSrc = book ? `${API_URI}/cover/${auth?.userId}-${book._id}?${urlParams.toString()}` : undefined
+  urlParams.append('format', 'image/jpeg')
+  const originalJpgSrc = book ? `${API_URI}/cover/${auth?.userId}-${book._id}?${urlParams.toString()}` : undefined
+
+  const coverSrc = originalSrc && !hasError ? originalSrc : placeholder
+  const coverSrcJpg = originalJpgSrc && !hasError ? originalJpgSrc : placeholder
 
   useEffect(() => {
     setHasError(false)
-  }, [coverSrc])
+  }, [originalSrc])
 
-  const finalStyle: React.CSSProperties = {
+  const finalStyle: React.CSSProperties = useMemo(() => ({
     position: 'relative',
-    // maxHeight: '100%',
-    // maxWidth: '100%',
     height: '100%',
     ...withShadow && {
       boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`,
@@ -48,7 +56,14 @@ export const Cover: FC<{
       borderRadius: 5,
     },
     ...style,
-  }
+  }), [theme, fullWidth, style, rounded, withShadow])
+
+  const imgStyle = useMemo(() => ({
+    ...finalStyle,
+    ...isLoading && {
+      display: 'none'
+    }
+  }), [finalStyle, isLoading])
 
   return (
     <>
@@ -60,24 +75,22 @@ export const Cover: FC<{
           {...rest}
         />
       )}
-      <img
-        alt="img"
-        src={finalSrc}
-        style={{
-          ...finalStyle,
-          ...isLoading && {
-            // visibility: 'hidden'
-            display: 'none'
-          }
-        }}
-        onLoad={() => {
-          setIsLoading(false)
-        }}
-        onError={(e) => {
-          isMounted() && setHasError(true)
-        }}
-        {...rest}
-      />
+      <picture style={imgStyle}>
+        <source srcSet={coverSrc} type="image/webp" />
+        <source srcSet={coverSrcJpg} type="image/jpeg" />
+        <img
+          alt="img"
+          src={coverSrc}
+          style={finalStyle}
+          onLoad={() => {
+            setIsLoading(false)
+          }}
+          onError={(e) => {
+            isMounted() && setHasError(true)
+          }}
+          {...rest}
+        />
+      </picture>
     </>
   )
 }

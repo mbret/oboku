@@ -1,4 +1,4 @@
-import React, { useCallback, FC, useMemo } from 'react'
+import React, { ComponentProps, useCallback, FC, useMemo } from 'react'
 import { Box, makeStyles, useTheme } from "@material-ui/core"
 import { useWindowSize } from 'react-use';
 import { ItemList } from '../../lists/ItemList';
@@ -6,6 +6,8 @@ import { BookListGridItem } from './BookListGridItem';
 import { LibrarySorting } from '../../library/states';
 import { LibraryViewMode } from '../../rxdb';
 import { BookListListItem } from './BookListListItem';
+
+type CellRenderer = ComponentProps<typeof ItemList>['rowRenderer']
 
 export const BookList: FC<{
   viewMode?: 'grid' | 'list',
@@ -39,7 +41,7 @@ export const BookList: FC<{
     : (((windowSize.width > theme.breakpoints.values['sm'] ? 200 : 150) * theme.custom.coverAverageRatio) + listItemMargin) * densityMultiplier
   type ListDataItem = (typeof listData)[number]
 
-  const rowRenderer = useCallback((type, item: ListDataItem) => {
+  const rowRenderer: CellRenderer = useCallback((_, item): any => {
     if (item === 'header') {
       if (renderHeader) return renderHeader()
       return null
@@ -63,7 +65,7 @@ export const BookList: FC<{
     <div className={classes.container} style={style}>
       <ItemList
         data={listData}
-        rowRenderer={rowRenderer as any}
+        rowRenderer={rowRenderer}
         itemsPerRow={itemsPerRow}
         // only used when grid layout
         preferredRatio={adjustedRatioWhichConsiderBottom}
