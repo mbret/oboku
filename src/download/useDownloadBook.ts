@@ -75,7 +75,7 @@ export const useDownloadBook = () => {
             return
           }
 
-          if ('isError' in dataSourceResponse) throw dataSourceResponse.error || new Error()
+          if ('isError' in dataSourceResponse) throw dataSourceResponse.error || new Error(dataSourceResponse.reason)
           // const response = await client.downloadBook(bookId, credentials || {}, {
           //   onDownloadProgress: (event: ProgressEvent) => {
           //     if ((event.target as XMLHttpRequest).getAllResponseHeaders().indexOf('oboku-content-length')) {

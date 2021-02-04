@@ -24,6 +24,7 @@ import { UserFeedback } from './UserFeedback';
 import { AppTourFirstAddingBook } from './firstTimeExperience/AppTourFirstAddingBook';
 import { firstTimeExperienceState } from './firstTimeExperience/firstTimeExperienceStates';
 import { localSettingsState } from './settings/states';
+import { DialogProvider } from './dialog';
 
 const localStatesToPersist = [
   libraryState,
@@ -45,17 +46,19 @@ export function App() {
             <CookiesProvider>
               <GoogleApiProvider>
                 <AxiosProvider >
-                  <TourProvider>
-                    <AppNavigator />
-                    <AppTourWelcome />
-                    <AppTourFirstAddingBook />
-                    <UnlockLibraryDialog />
-                    <ManageBookCollectionsDialog />
-                    <RoutineProcess />
-                  </TourProvider>
-                  <UpdateAvailableDialog serviceWorker={newServiceWorker} />
-                  <RecoilSyncedWithDatabase />
-                  <BlockingBackdrop />
+                  <DialogProvider>
+                    <TourProvider>
+                      <AppNavigator />
+                      <AppTourWelcome />
+                      <AppTourFirstAddingBook />
+                      <UnlockLibraryDialog />
+                      <ManageBookCollectionsDialog />
+                      <RoutineProcess />
+                    </TourProvider>
+                    <UpdateAvailableDialog serviceWorker={newServiceWorker} />
+                    <RecoilSyncedWithDatabase />
+                    <BlockingBackdrop />
+                  </DialogProvider>
                 </AxiosProvider>
               </GoogleApiProvider>
             </CookiesProvider>

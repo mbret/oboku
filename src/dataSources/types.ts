@@ -8,9 +8,13 @@ export type UseDownloadHook = () => (link: LinkDocType, options?: {
 } | {
   isError: true,
   error?: Error,
-  reason: 'unknown' | 'cancelled'
+  reason: 'unknown' | 'cancelled' | 'popupBlocked'
 }>
 
-export type UseGetCredentials = () => () => Promise<{ isError: true, error?: Error, reason: 'unknown' | 'cancelled' } | {
+export type UseGetCredentials = () => () => Promise<{
+  isError: true,
+  error?: Error,
+  reason: 'unknown' | 'cancelled' | 'popupBlocked'
+} | {
   data: { [key: string]: string }
 }>

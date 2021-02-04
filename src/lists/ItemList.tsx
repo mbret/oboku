@@ -131,7 +131,10 @@ export const ItemList: FC<{
       flex: `0 0 100%`,
       width: '100%',
       position: 'relative',
-    }} className={className} ref={ref as any}>
+    }}
+      className={className}
+      ref={ref as any}
+    >
       {data.length > 0 && (
         <RecyclerListView
           ref={listRef as any}

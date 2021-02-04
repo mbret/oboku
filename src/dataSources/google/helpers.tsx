@@ -49,7 +49,7 @@ export const GoogleApiProvider: FC = ({ children }) => {
             .init({
               'clientId': "325550353363-vklpik5kklrfohg1vdrkvjp1n8dopnrd.apps.googleusercontent.com",
               'scope': SCOPE,
-              'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+              'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
             })
 
           const onSignIn = (signedIn: boolean) => {
@@ -142,6 +142,9 @@ export const useGetCredentials = () => {
     } catch (e) {
       if (e?.error === 'popup_closed_by_user') {
         return { isError: true, reason: 'cancelled' } as { isError: true, reason: 'cancelled' }
+      }
+      if (e?.error === 'popup_blocked_by_browser') {
+        return { isError: true, reason: 'popupBlocked' } as { isError: true, reason: 'popupBlocked' }
       }
       throw e
     }

@@ -8,6 +8,7 @@ import { useRecoilCallback } from "recoil"
 import { plugins } from "./configure"
 import { useCallback, useMemo, useRef } from "react"
 import { UseDownloadHook } from "./types"
+import { useDialog } from "../dialog"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
@@ -83,6 +84,8 @@ export const useDataSourcePlugins = () => plugins
 
 export const useGetDataSourceCredentials = () => {
   const plugins = useDataSourcePlugins()
+  const dialog = useDialog()
+
   // It's important to use array for plugins and be careful of the order since
   // it will trigger all hooks
   type GetCredentials = ReturnType<typeof plugins[number]['useGetCredentials']>
@@ -91,14 +94,30 @@ export const useGetDataSourceCredentials = () => {
 
   return useCallback(async (linkType: DataSourceType) => {
     const found = getPluginCredentials.current.find(plugin => plugin.type === linkType)
-    if (found) return found.getCredentials()
+    if (found) {
+      const res = await found.getCredentials()
+
+      if ('isError' in res && res.reason === 'popupBlocked') {
+        dialog({
+          title: 'Unable to authenticate',
+          content: `
+          It seems that your browser is blocking popup so we cannot authenticate you with the provider. 
+          Please add a restriction for oboku or try with another browser. Safari blocks all popups by default for example.
+          `
+        })
+      }
+
+      return res
+    }
 
     throw new Error('no datasource found for this link')
-  }, [getPluginCredentials])
+  }, [getPluginCredentials, dialog])
 }
 
 export const useDownloadBookFromDataSource = () => {
   const plugins = useDataSourcePlugins()
+  const dialog = useDialog()
+
   // It's important to use array for plugins and be careful of the order since
   // it will trigger all hooks
   type UseDownloadBook = ReturnType<typeof plugins[number]['useDownloadBook']>
@@ -107,10 +126,24 @@ export const useDownloadBookFromDataSource = () => {
 
   const downloadBook: ReturnType<UseDownloadHook> = async (link, options) => {
     const found = getPluginFn.current.find(plugin => plugin.type === link.type)
-    if (found) return found.useDownloadBook(link, options)
+    if (found) {
+      const res = await found.useDownloadBook(link, options)
+
+      if ('isError' in res && res.reason === 'popupBlocked') {
+        dialog({
+          title: 'Unable to authenticate',
+          content: `
+          It seems that your browser is blocking popup so we cannot authenticate you with the provider. 
+          Please add a restriction for oboku or try with another browser. Safari blocks all popups by default for example.
+          `
+        })
+      }
+
+      return res
+    }
 
     throw new Error('no datasource found for this link')
   }
 
-  return useCallback(downloadBook, [getPluginFn])
+  return useCallback(downloadBook, [getPluginFn, dialog])
 }
