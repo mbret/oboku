@@ -8,14 +8,13 @@ import { useHistory, useParams } from 'react-router-dom'
 import { EpubView } from './EpubView'
 import { useWindowSize } from "react-use";
 import { Box, Button, Link, Typography } from '@material-ui/core';
-import { Rendition } from "epubjs";
-import { Contents, Location } from "epubjs";
+import { Rendition, Contents, Location } from "epubjs";
 import { useUpdateBook } from '../books/helpers';
 import { AppTourReader } from '../firstTimeExperience/AppTourReader';
-import { useHorizontalTappingZoneWidth, useVerticalTappingZoneHeight } from './utils';
+import { useHorizontalTappingZoneWidth } from './utils';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { bookState } from '../books/states';
-import { currentApproximateProgressState, currentChapterState, currentLocationState, currentPageState, isMenuShownState, layoutState, tocState, totalApproximativePagesState } from './states';
+import { currentApproximateProgressState, currentChapterState, currentDirectionState, currentLocationState, currentPageState, isMenuShownState, layoutState, tocState, totalApproximativePagesState } from './states';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
 import { useGenerateLocations, useResetStateOnUnmount, useUpdateBookState, useFile } from './helpers';
@@ -26,6 +25,7 @@ import screenfull, { Screenfull } from 'screenfull'
 import { Report } from '../report';
 import { IS_MOBILE_DEVICE } from '../constants';
 import { localSettingsState } from '../settings/states';
+import { PackagingMetadataObjectWithMissingProperties } from './types';
 
 const screenfullApi = screenfull as Screenfull
 
@@ -33,27 +33,24 @@ export const ReaderScreen: FC<{}> = () => {
   const readerRef = useRef<any>()
   const rootRef = useRef<HTMLDivElement>()
   const setCurrentApproximateProgress = useSetRecoilState(currentApproximateProgressState)
-  const [generatedLocations, setGeneratedLocations] = useState<string[]>([])
   const [rendition, setRendition] = useState<Rendition | undefined>(undefined)
   const { bookId } = useParams<{ bookId?: string }>()
   const { file, documentType, error: fileError } = useFile(bookId || '-1')
-  const [isTopMenuShown, setIsTopMenuShown] = useState(false)
-  const [isBottomMenuShown, setIsBottomMenuShown] = useState(false)
   const book = useRecoilValue(bookState(bookId || '-1'))
   const windowSize = useWindowSize()
   const [editBook] = useUpdateBook()
-  const verticalTappingZoneHeight = useVerticalTappingZoneHeight()
   const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
   const setIsMenuShown = useSetRecoilState(isMenuShownState)
   const [layout, setLayout] = useRecoilState(layoutState)
   const setCurrentPage = useSetRecoilState(currentPageState)
   const setTotalApproximativePages = useSetRecoilState(totalApproximativePagesState)
-  const [toc, setToc] = useRecoilState(tocState)
+  const setToc = useSetRecoilState(tocState)
   const [currentLocation, setCurrentLocation] = useRecoilState(currentLocationState)
   const setCurrentChapter = useSetRecoilState(currentChapterState)
   const firstLocation = useRef(book?.readingStateCurrentBookmarkLocation || undefined)
   const history = useHistory()
   const localSettings = useRecoilValue(localSettingsState)
+  const direction = useRecoilValue(currentDirectionState)
 
   useGenerateLocations(rendition)
   useResetStateOnUnmount()
@@ -94,9 +91,11 @@ export const ReaderScreen: FC<{}> = () => {
     )
 
     if (realClientXOffset < maxOffsetPrev) {
-      rendition?.prev()
+      if (direction === 'ltr')  rendition?.prev()
+      else rendition?.next()
     } else if (realClientXOffset > minOffsetNext) {
-      rendition?.next()
+      if (direction === 'ltr')  rendition?.next()
+      else rendition?.prev()
     } else {
       setIsMenuShown(val => !val)
     }
@@ -106,7 +105,7 @@ export const ReaderScreen: FC<{}> = () => {
     // } else if (clientY > minOffsetBottomMenu) {
     //   setIsBottomMenuShown(true)
     // }
-  }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, documentType])
+  }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, documentType, direction])
 
   useEffect(() => {
     if (
@@ -258,6 +257,7 @@ export const ReaderScreen: FC<{}> = () => {
   }, [rendition, editBook, bookId, book, updateProgress, setCurrentLocation])
 
   useUpdateBookState(bookId || '-1')
+  useDirection(rendition)
 
   console.log('[ReaderScreen]', {
     rendition,
@@ -388,4 +388,17 @@ const useVerticalCentererRendererHook = (rendition: Rendition | undefined) => {
       rendition?.hooks.content.deregister(hook)
     }
   }, [rendition, layout])
+}
+
+const useDirection = (rendition?: Rendition) => {
+  const setCurrentDirectionState = useSetRecoilState(currentDirectionState)
+  const { direction } = rendition?.book.packaging.metadata as PackagingMetadataObjectWithMissingProperties | undefined || {}
+
+  useEffect(() => {
+    if (direction === 'rtl') {
+      setCurrentDirectionState('rtl')
+    } else {
+      setCurrentDirectionState('ltr')
+    }
+  }, [direction, setCurrentDirectionState])
 }

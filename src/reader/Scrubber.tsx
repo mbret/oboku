@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from 'react';
 import RcSlider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useRecoilValue } from 'recoil';
-import { currentPageState, layoutState, totalApproximativePagesState, currentApproximateProgressState } from './states';
+import { currentPageState, layoutState, totalApproximativePagesState, currentApproximateProgressState, currentDirectionState } from './states';
 import { useTheme } from '@material-ui/core';
 import { useReader } from './ReaderProvider';
 
@@ -12,6 +12,7 @@ export const Scrubber: FC<{
   const currentPage = useRecoilValue(currentPageState)
   const totalApproximativePages = useRecoilValue(totalApproximativePagesState)
   const currentApproximateProgress = useRecoilValue(currentApproximateProgressState)
+  const direction = useRecoilValue(currentDirectionState)
   const [value, setValue] = useState(currentPage || 0)
   const layout = useRecoilValue(layoutState)
   const theme = useTheme()
@@ -39,6 +40,7 @@ export const Scrubber: FC<{
       onChange={value => {
         setValue(value)
       }}
+      reverse={direction === 'rtl'}
       step={step}
       onAfterChange={(value) => {
         if (layout === 'fixed') {

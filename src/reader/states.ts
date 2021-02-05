@@ -43,3 +43,8 @@ export const currentChapterState = atom<Navigation['toc'][number] | undefined>({
   key: 'currentChapterState',
   default: undefined
 })
+
+export const currentDirectionState = atom<'ltr' | 'rtl'>({
+  key: 'currentDirectionState',
+  default: 'ltr'
+})
