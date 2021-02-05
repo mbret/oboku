@@ -26,12 +26,14 @@ import { Report } from '../report';
 import { IS_MOBILE_DEVICE } from '../constants';
 import { localSettingsState } from '../settings/states';
 import { PackagingMetadataObjectWithMissingProperties } from './types';
+import { BookLoading } from './BookLoading';
 
 const screenfullApi = screenfull as Screenfull
 
 export const ReaderScreen: FC<{}> = () => {
   const readerRef = useRef<any>()
   const rootRef = useRef<HTMLDivElement>()
+  const [isBookReady, setIsBookReady] = useState(false)
   const setCurrentApproximateProgress = useSetRecoilState(currentApproximateProgressState)
   const [rendition, setRendition] = useState<Rendition | undefined>(undefined)
   const { bookId } = useParams<{ bookId?: string }>()
@@ -91,10 +93,10 @@ export const ReaderScreen: FC<{}> = () => {
     )
 
     if (realClientXOffset < maxOffsetPrev) {
-      if (direction === 'ltr')  rendition?.prev()
+      if (direction === 'ltr') rendition?.prev()
       else rendition?.next()
     } else if (realClientXOffset > minOffsetNext) {
-      if (direction === 'ltr')  rendition?.next()
+      if (direction === 'ltr') rendition?.next()
       else rendition?.prev()
     } else {
       setIsMenuShown(val => !val)
@@ -246,6 +248,7 @@ export const ReaderScreen: FC<{}> = () => {
   useEffect(() => {
 
     const onRelocated = async (location: Location) => {
+      setIsBookReady(true)
       const newLocation = await rendition?.currentLocation() as any
       setCurrentLocation(clone(newLocation))
       updateProgress(location)
@@ -304,24 +307,24 @@ export const ReaderScreen: FC<{}> = () => {
             onClick={e => onRenditionClick(e.nativeEvent)}
           >
             {documentType === 'epub' && (
-              <EpubView
-                // http://epubjs.org/documentation/0.3/#bookrenderto
-                ref={readerRef as any}
-                // Bug in typing, epubjs accept blobs
-                url={file as any}
-                getRendition={setRendition}
-                epubOptions={{
-                  // spread: 'never' // never / always
-                  minSpreadWidth: 99999
-                  // stylesheet: 'html { display: none; } ',
-                }}
-                loadingView={(
-                  <div>
-                    Book is loading
-                  </div>
+              <>
+                <EpubView
+                  // http://epubjs.org/documentation/0.3/#bookrenderto
+                  ref={readerRef as any}
+                  // Bug in typing, epubjs accept blobs
+                  url={file as any}
+                  getRendition={setRendition}
+                  epubOptions={{
+                    // spread: 'never' // never / always
+                    minSpreadWidth: 99999
+                    // stylesheet: 'html { display: none; } ',
+                  }}
+                  location={firstLocation.current}
+                />
+                {!isBookReady && (
+                  <BookLoading />
                 )}
-                location={firstLocation.current}
-              />
+              </>
             )}
             {(documentType === 'comic') && (
               <ComicReader
