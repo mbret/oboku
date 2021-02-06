@@ -1,1 +1,0 @@
-import 'libarchive.js/dist/worker-bundle.js'
