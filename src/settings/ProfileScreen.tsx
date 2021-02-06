@@ -16,6 +16,7 @@ import { useUpdateContentPassword } from './helpers';
 import { libraryState } from '../library/states';
 import { version } from '../../package.json'
 import { ROUTES } from '../constants';
+import { useDialog } from '../dialog';
 
 export const ProfileScreen = () => {
   const history = useHistory()
@@ -31,6 +32,7 @@ export const ProfileScreen = () => {
   const resetFirstTimeExperience = useResetFirstTimeExperience()
   const setLibraryState = useSetRecoilState(libraryState)
   const theme = useTheme()
+  const dialog = useDialog()
 
   return (
     <Box display="flex" flex={1} overflow="scroll" flexDirection="column">
@@ -145,7 +147,7 @@ export const ProfileScreen = () => {
         subheader={<ListSubheader disableSticky style={{ color: theme.palette.error.dark }}>Danger zone</ListSubheader>}
         style={{ backgroundColor: fade(theme.palette.error.light, 0.2) }}
       >
-        <ListItem button onClick={() => alert('Not implemented yet')}>
+        <ListItem button onClick={() => dialog({ preset: 'NOT_IMPLEMENTED' })}>
           <ListItemText primary="Delete my account" />
         </ListItem>
       </List>
