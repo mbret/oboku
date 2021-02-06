@@ -9,6 +9,7 @@ import ContinueReadingAsset from './assets/continue-reading.svg'
 import { useRecoilValue } from 'recoil';
 import { booksAsArrayState } from './books/states';
 import { ReadingStateState } from 'oboku-shared';
+import { useBookSortedBy } from './books/helpers';
 
 export const HomeScreen = () => {
   const classes = useStyles();
@@ -98,8 +99,7 @@ export const HomeScreen = () => {
 }
 
 const useContinueReadingBooks = () => {
-  const books = useRecoilValue(booksAsArrayState)
-  const booksSortedByDate = R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books)
+  const booksSortedByDate = useBookSortedBy('activity')
 
   return booksSortedByDate
     .filter(book => book.readingStateCurrentState === ReadingStateState.Reading)

@@ -3,10 +3,8 @@ import * as states from "./states"
 import { Rendition } from "epubjs"
 import { useEffect, useState } from "react"
 import { useUpdateBook } from "../books/helpers"
-import { bookState } from "../books/states"
 import { ReadingStateState } from "oboku-shared"
 import { useDebounce } from "react-use"
-import localforage from 'localforage'
 import { useBookFile } from "../download/useBookFile"
 
 const statesToReset = [
@@ -71,16 +69,14 @@ export const useUpdateBookState = (bookId: string) => {
   const updateBook = useRecoilCallback(({ snapshot }) => async () => {
     const currentLocation = await snapshot.getPromise(states.currentLocationState)
     const currentApproximateProgress = await snapshot.getPromise(states.currentApproximateProgressState)
-    const book = await snapshot.getPromise(bookState(bookId))
-    const readingStateCurrentBookmarkLocation = book?.readingStateCurrentBookmarkLocation
 
-    if (currentLocation && currentLocation?.start?.cfi !== readingStateCurrentBookmarkLocation) {
+    if (currentLocation) {
       editBook({
         _id: bookId,
         readingStateCurrentBookmarkLocation: currentLocation?.start?.cfi,
+        readingStateCurrentBookmarkProgressUpdatedAt: (new Date()).toISOString(),
         readingStateCurrentState: ReadingStateState.Reading,
         ...currentApproximateProgress && {
-          // progress
           readingStateCurrentBookmarkProgressPercent: currentApproximateProgress,
         },
         ...currentApproximateProgress === 1 && {
@@ -115,7 +111,7 @@ export const useFile = (bookId: string) => {
           ['text/xml'].includes(file.data.type)
           || (
             file.name.endsWith('.cbz')
-              || file.name.endsWith('.txt')
+            || file.name.endsWith('.txt')
           )
           || (file.data instanceof File
             && (

@@ -11,6 +11,9 @@ import { useCallback } from "react"
 import { useGetDataSourceCredentials } from "../dataSources/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { PromiseReturnType } from "../types"
+import { useRecoilValue } from "recoil"
+import { booksAsArrayState } from "./states"
+import * as R from 'ramda';
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -184,4 +187,24 @@ export const useAddBookFromFile = () => {
       await downloadFile(book._id, file)
     }
   }, [addBook, downloadFile])
+}
+
+export const useBookSortedBy = (sorting: 'date' | 'activity' | 'alpha') => {
+  const books = useRecoilValue(booksAsArrayState)
+
+  switch (sorting) {
+    case 'date': {
+      return R.sort(R.descend(R.prop('createdAt')), books)
+    }
+    case 'activity': {
+      return R.sort((a, b) => {
+        if (!a.readingStateCurrentBookmarkProgressUpdatedAt) return 1
+        if (!b.readingStateCurrentBookmarkProgressUpdatedAt) return -1
+        return (new Date(b.readingStateCurrentBookmarkProgressUpdatedAt).getTime()) - (new Date(a.readingStateCurrentBookmarkProgressUpdatedAt).getTime())
+      }, books)
+    }
+    default: {
+      return R.sort(R.ascend(R.prop('title')), books)
+    }
+  }
 }

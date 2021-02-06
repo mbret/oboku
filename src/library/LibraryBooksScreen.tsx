@@ -6,18 +6,17 @@ import {
 } from '@material-ui/core';
 import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecked, RadioButtonChecked, LockOpenRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
-import * as R from 'ramda';
 import { UploadBookFromUriDialog } from '../upload/UploadBookFromUriDialog';
 import { UploadBookFromDevice } from '../upload/UploadBookFromDevice';
 import { UploadBookFromDataSource } from '../upload/UploadBookFromDataSource';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
 import { useMeasureElement } from '../utils';
 import { LibraryViewMode } from '../rxdb';
-import { isUploadBookDrawerOpenedState, LibraryDocType, libraryState } from './states';
+import { isUploadBookDrawerOpenedState, libraryState } from './states';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { booksAsArrayState } from '../books/states';
 import { UploadBookDrawer } from './UploadBookDrawer';
 import { useDataSourcePlugins } from '../dataSources/helpers';
+import { useBookSortedBy } from '../books/helpers';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
@@ -31,7 +30,7 @@ export const LibraryBooksScreen = () => {
   const setLibraryState = useSetRecoilState(libraryState)
   const dataSourcePlugins = useDataSourcePlugins()
   const library = useRecoilValue(libraryState)
-  const sortedList = useSortedList(library.sorting)
+  const sortedList = useBookSortedBy(library.sorting)
   const tagsFilterApplied = (library?.tags.length || 0) > 0
   const numberOfFiltersApplied = [tagsFilterApplied].filter(i => i).length
   const filteredTags = library.tags
@@ -187,22 +186,6 @@ export const LibraryBooksScreen = () => {
       </div>
     </div >
   );
-}
-
-const useSortedList = (sorting: LibraryDocType['sorting'] | undefined) => {
-  const books = useRecoilValue(booksAsArrayState)
-
-  switch (sorting) {
-    case 'date': {
-      return R.sort(R.descend(R.prop('createdAt')), books)
-    }
-    case 'activity': {
-      return R.sort(R.descend(R.prop('readingStateCurrentBookmarkProgressUpdatedAt')), books)
-    }
-    default: {
-      return R.sort(R.ascend(R.prop('title')), books)
-    }
-  }
 }
 
 const SortByDialog: FC<{ onClose: () => void, open: boolean }> = ({ onClose, open }) => {

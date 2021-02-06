@@ -55,7 +55,12 @@ export const BookListCoverContainer: FC<{
               )}
               {(withDownloadStatus && item?.downloadState === 'downloading') && (
                 <Box position="absolute" left="50%" top="50%" className={classes.pauseButton}>
-                  <Chip color="secondary" size="small" icon={<Pause />} label="downloading..." />
+                  <Chip
+                    color="secondary"
+                    size="small"
+                    //  icon={<Pause />} 
+                    label="downloading..."
+                  />
                 </Box>
               )}
             </Box>

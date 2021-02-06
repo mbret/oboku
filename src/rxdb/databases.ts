@@ -5,13 +5,14 @@ import { CollectionCollection, collectionCollectionMethods, collectionSchema, co
 import { applyHooks } from './middleware';
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from './types';
 import { dataSourceSchema, dataSourceCollectionMethods, DataSourceCollection, migrationStrategies as dataSourceMigrationStrategies } from './dataSource';
-import { BookDocType, InsertableBookDocType, LinkDocType, TagsDocType } from 'oboku-shared';
+import { BookDocType, LinkDocType, TagsDocType } from 'oboku-shared';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 import { RxDBReplicationPlugin } from 'rxdb/plugins/replication'
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
+import { BookCollection, bookCollectionMethods, bookDocMethods, bookSchema, bookSchemaMigrationStrategies } from './schemas/book';
 
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBLeaderElectionPlugin)
@@ -47,9 +48,7 @@ export type DocTypes = AuthDocType | TagsDocType | BookDocType | LinkDocType | S
 type TagsDocMethods = {
   safeUpdate: (updateObj: MongoUpdateSyntax<TagsDocType>) => Promise<any>
 };
-type BookDocMethods = {
-  safeUpdate: (updateObj: MongoUpdateSyntax<BookDocType>) => Promise<any>
-}
+
 type LinkDocMethods = {
   safeUpdate: (updateObj: MongoUpdateSyntax<LinkDocType>) => Promise<any>
 }
@@ -60,9 +59,7 @@ type AuthDocMethods = {
 type TagsDocument = RxDocument<TagsDocType, TagsDocMethods>
 export type AuthDocument = RxDocument<AuthDocType, AuthDocMethods>
 export type SettingsDocument = RxDocument<SettingsDocType>
-type BookDocument = RxDocument<BookDocType, BookDocMethods>
 type LinkDocument = RxDocument<LinkDocType, LinkDocMethods>
-
 
 type AuthCollectionMethods = {
   safeUpdate: (
@@ -83,13 +80,7 @@ type TagsCollectionMethods = {
     cb: (collection: TagsCollection) => RxQuery
   ) => Promise<AuthDocument>
 }
-type BookCollectionMethods = {
-  post: (json: Omit<InsertableBookDocType, 'rx_model'>) => Promise<BookDocument>,
-  safeUpdate: (
-    json: SafeUpdateMongoUpdateSyntax<BookDocType>,
-    cb: (collection: BookCollection) => RxQuery
-  ) => Promise<BookDocument>
-}
+
 type LinkCollectionMethods = {
   post: (json: Omit<LinkDocType, '_id' | 'rx_model' | '_rev'>) => Promise<LinkDocument>,
   safeUpdate: (
@@ -102,7 +93,6 @@ type LinkCollectionMethods = {
 type SettingsCollection = RxCollection<SettingsDocType, any, SettingsCollectionMethods>
 type AuthCollection = RxCollection<AuthDocType, AuthDocMethods, AuthCollectionMethods>
 type TagsCollection = RxCollection<TagsDocType, TagsDocMethods, TagsCollectionMethods>
-type BookCollection = RxCollection<BookDocType, BookDocMethods, BookCollectionMethods>
 type LinkCollection = RxCollection<LinkDocType, LinkDocMethods, LinkCollectionMethods>
 
 // export type BookDocumentMutation = RxDocumentMutation<BookDocument | null, Partial<BookDocument> & { tagId?: string, collectionId?: string }>
@@ -191,52 +181,12 @@ const linkSchemaMigrationStrategies = {
   }
 }
 
-const bookSchema: RxJsonSchema<Omit<BookDocType, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('book', {
-  title: 'books',
-  version: 1,
-  type: 'object',
-  properties: {
-    collections: { type: 'array', ref: 'obokucollection', items: { type: 'string' } },
-    createdAt: { type: ['number'] },
-    creator: { type: ['string', 'null'] },
-    date: { type: ['number', 'null'] },
-    lang: { type: ['string', 'null'] },
-    lastMetadataUpdatedAt: { type: ['number', 'null'] },
-    links: { ref: 'link', type: 'array', items: { type: 'string' } },
-    publisher: { type: ['string', 'null'] },
-    readingStateCurrentBookmarkLocation: { type: ['string', 'null'] },
-    readingStateCurrentBookmarkProgressPercent: { type: ['number'] },
-    readingStateCurrentBookmarkProgressUpdatedAt: { type: ['number', 'null'] },
-    readingStateCurrentState: { type: ['string'] },
-    rights: { type: ['string', 'null'] },
-    subject: { type: ['array', 'null'], items: { type: 'string' } },
-    tags: { type: 'array', ref: 'tag', items: { type: 'string' } },
-    title: { type: ['string', 'null'] },
-    modifiedAt: { type: ['string', 'null'] },
-  },
-  required: []
-})
-
-const bookSchemaMigrationStrategies = {
-  1: (oldDoc: TagsDocType): TagsDocType | null => {
-
-    return {
-      ...oldDoc,
-      modifiedAt: null,
-    }
-  }
-}
-
 const tagsDocMethods: TagsDocMethods = {
   safeUpdate: function (this: TagsDocument, updateObj) {
     return this.update(updateObj)
   }
 };
-const bookDocMethods: BookDocMethods = {
-  safeUpdate: function (this: BookDocument, updateObj) {
-    return this.update(updateObj)
-  }
-};
+
 const linkDocMethods: LinkDocMethods = {
   safeUpdate: async function (this: LinkDocument, updateObj) {
     return this.update(updateObj)
@@ -262,14 +212,7 @@ const tagsCollectionMethods: TagsCollectionMethods = {
     return cb(this).update(json)
   }
 };
-const bookCollectionMethods: BookCollectionMethods = {
-  post: async function (this: BookCollection, json) {
-    return this.insert(json as BookDocType)
-  },
-  safeUpdate: async function (this: BookCollection, json, cb) {
-    return cb(this).update(json)
-  },
-}
+
 const linkCollectionMethods: LinkCollectionMethods = {
   post: async function (this: LinkCollection, json) {
     return this.insert(json as LinkDocType)
