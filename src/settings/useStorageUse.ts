@@ -20,7 +20,7 @@ export const useStorageUse = () => {
 
   }, [])
 
-  const quotaUsed = (indexedDBUsage || 1) / (storageQuota || 1)
+  const quotaUsed = (indexedDBUsage || 0) / (storageQuota || 1)
   const usedInMb = ((indexedDBUsage || 1) / 1e+6).toFixed(2)
   const quotaInGb = ((storageQuota || 1) / 1e+9).toFixed(2)
 
