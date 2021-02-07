@@ -18,8 +18,6 @@ export const TagActionsDrawer: FC<{
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] = useState<string | undefined>(undefined)
   const [removeTag] = useRemoveTag()
 
-  console.log('[TagActionsDrawer]', tag)
-
   return (
     <>
       <Drawer
@@ -47,6 +45,16 @@ export const TagActionsDrawer: FC<{
               {tag?.isProtected && (<CheckCircleRounded />)}
             </ListItemIcon>
             <ListItemText primary="Mark this tag as protected" secondary="This will lock and hide books behind it. Use unlock features to display them" />
+          </ListItem>
+          <ListItem
+            button
+            onClick={() => openWith && editTag({ _id: openWith, isBlurEnabled: !tag?.isBlurEnabled })}
+          >
+            <ListItemIcon>
+              {!tag?.isBlurEnabled && (<RadioButtonUncheckedOutlined />)}
+              {tag?.isBlurEnabled && (<CheckCircleRounded />)}
+            </ListItemIcon>
+            <ListItemText primary="Blur covers" secondary="Apply a blur filter on book covers. Useful for sensitive content" />
           </ListItem>
         </List>
         <Divider />

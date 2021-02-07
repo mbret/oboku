@@ -1,6 +1,6 @@
 import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
-import { withReplicationSchema } from "./rxdb-plugins/replication"
-import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "./types"
+import { withReplicationSchema } from "../rxdb-plugins/replication"
+import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
 import { CollectionDocType } from 'oboku-shared'
 
 type CollectionDocSchema = Required<Omit<CollectionDocType, '_id' | 'rx_model' | '_rev'>>

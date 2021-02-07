@@ -1,7 +1,7 @@
 import { addRxPlugin, createRxDatabase, RxCollection, RxDocument, RxJsonSchema, RxQuery } from 'rxdb'
 import { RxdbReplicationPlugin, withReplicationSchema } from './rxdb-plugins/replication';
 import { MongoUpdateSyntax, PromiseReturnType } from '../types';
-import { CollectionCollection, collectionCollectionMethods, collectionSchema, collectionMigrationStrategies } from './collection';
+import { CollectionCollection, collectionCollectionMethods, collectionSchema, collectionMigrationStrategies } from './schemas/collection';
 import { applyHooks } from './middleware';
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from './types';
 import { dataSourceSchema, dataSourceCollectionMethods, DataSourceCollection, migrationStrategies as dataSourceMigrationStrategies } from './dataSource';
@@ -129,13 +129,14 @@ const settingsSchema: RxJsonSchema<SettingsDocType> = withReplicationSchema('set
   }
 })
 
-const tagsSchema: RxJsonSchema<Omit<TagsDocType, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('tag', {
+const tagsSchema: RxJsonSchema<Required<Omit<TagsDocType, '_id' | 'rx_model' | '_rev'>>> = withReplicationSchema('tag', {
   title: 'tag',
-  version: 1,
+  version: 2,
   type: 'object',
   properties: {
     name: { type: ['string'], final: false },
     isProtected: { type: ['boolean'], final: false },
+    isBlurEnabled: { type: ['boolean'] },
     books: { type: ['array'], items: { type: 'string' } },
     createdAt: { type: 'string' },
     modifiedAt: { type: ['string', 'null'] },
@@ -144,14 +145,12 @@ const tagsSchema: RxJsonSchema<Omit<TagsDocType, '_id' | 'rx_model' | '_rev'>> =
 })
 
 const tagsSchemaMigrationStrategies = {
-  1: (oldDoc: TagsDocType): TagsDocType | null => {
-
-    return {
-      ...oldDoc,
-      createdAt: new Date().toISOString(),
-      modifiedAt: null,
-    }
-  }
+  1: (oldDoc: TagsDocType): TagsDocType | null => ({
+    ...oldDoc,
+    createdAt: new Date().toISOString(),
+    modifiedAt: null,
+  }),
+  2: (oldDoc: TagsDocType): TagsDocType | null => oldDoc
 }
 
 const linkSchema: RxJsonSchema<Omit<Required<LinkDocType>, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('link', {
@@ -229,7 +228,7 @@ type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 
 export const createDatabase = async () => {
   const db = await createRxDatabase<MyDatabaseCollections>({
-    name: 'oboku', 
+    name: 'oboku',
     adapter: 'idb',
     multiInstance: false,
     pouchSettings: {
@@ -244,7 +243,7 @@ export const createDatabase = async () => {
 
   // @ts-ignore
   window.db = db
-  
+
   return db
 }
 

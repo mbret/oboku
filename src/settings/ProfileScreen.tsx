@@ -104,8 +104,19 @@ export const ProfileScreen = () => {
           button
         >
           <ListItemText
-            primary={(
-              <Typography>Go to <Link target="__blank" href="https://docs.oboku.me/support">Support page</Link></Typography>
+            primary="Do you need any help?"
+            secondary={(
+              <Typography variant="body2" color="textSecondary">You can visit our <Link target="__blank" href="https://docs.oboku.me/support">support page</Link></Typography>
+            )}
+          />
+        </ListItem>
+        <ListItem
+          button
+        >
+          <ListItemText
+            primary="I have a request"
+            secondary={(
+              <Typography variant="body2" color="textSecondary">Whether it is a bug, a feature request or anything else, please visit the <Link target="__blank" href="https://docs.oboku.me">doc</Link> to find all useful links</Typography>
             )}
           />
         </ListItem>
@@ -113,13 +124,16 @@ export const ProfileScreen = () => {
           button
           onClick={resetFirstTimeExperience}
         >
-          <ListItemText primary="Restart the welcome tour" />
+          <ListItemText
+            primary="Restart the welcome tour"
+            secondary="This will display all the first time tours overlay again. Useful for a quick reminder on how to use the app"
+          />
         </ListItem>
       </List>
       <List subheader={<ListSubheader disableSticky>About</ListSubheader>}>
         <ListItem
           button
-          onClick={() => { }}
+          onClick={() => dialog({ preset: 'NOT_IMPLEMENTED' })}
         >
           <ListItemIcon>
             <GavelRounded />
@@ -147,6 +161,12 @@ export const ProfileScreen = () => {
         subheader={<ListSubheader disableSticky style={{ color: theme.palette.error.dark }}>Danger zone</ListSubheader>}
         style={{ backgroundColor: fade(theme.palette.error.light, 0.2) }}
       >
+        <ListItem button onClick={() => dialog({ preset: 'NOT_IMPLEMENTED' })}>
+          <ListItemText
+            primary="Repair my account"
+            secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one of the options"
+          />
+        </ListItem>
         <ListItem button onClick={() => dialog({ preset: 'NOT_IMPLEMENTED' })}>
           <ListItemText primary="Delete my account" />
         </ListItem>

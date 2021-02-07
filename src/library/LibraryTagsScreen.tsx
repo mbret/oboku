@@ -3,7 +3,7 @@ import Dialog from '@material-ui/core/Dialog';
 import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, makeStyles, createStyles, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
 import { useCreateTag } from '../tags/helpers';
 import { TagActionsDrawer } from '../tags/TagActionsDrawer';
-import { LocalOfferRounded, LockRounded } from '@material-ui/icons';
+import { BlurOnRounded, LocalOfferRounded, LockRounded } from '@material-ui/icons';
 import { LockActionDialog } from '../auth/LockActionDialog';
 import { tagsAsArrayState } from '../tags/states';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
@@ -59,6 +59,7 @@ export const LibraryTagsScreen = () => {
               secondary={`${tag?.isProtected ? '?' : tag?.books?.length || 0} book(s)`}
             />
             {tag?.isProtected && <LockRounded color="primary" />}
+            {tag?.isBlurEnabled && <BlurOnRounded color="primary" />}
           </ListItem>
         ))}
       </List>

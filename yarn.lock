@@ -10991,7 +10991,7 @@ object.values@^1.1.0, object.values@^1.1.1:
 
 "oboku-shared@git+https://github.com/mbret/oboku-shared.git":
   version "1.0.0"
-  resolved "git+https://github.com/mbret/oboku-shared.git#1f5a87c4a2dbd6d4e35cc82a5261b2c48fd18fae"
+  resolved "git+https://github.com/mbret/oboku-shared.git#491a921b0bf425f456c5fbae9ef39450cb06422e"
   dependencies:
     "@graphql-codegen/cli" "^1.19.1"
     "@types/crypto-js" "^4.0.1"

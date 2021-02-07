@@ -3,9 +3,28 @@ import { useMountedState } from 'react-use'
 import { API_URI } from '../constants'
 import placeholder from '../assets/cover-placeholder.png'
 import { useTheme } from '@material-ui/core'
-import { useRecoilValue } from 'recoil'
-import { bookState } from './states'
+import { selectorFamily, useRecoilValue } from 'recoil'
+import { enrichedBookState } from './states'
 import { authState } from '../auth/authState'
+import { bluredTagIdsState } from '../tags/states'
+
+const bookCoverState = selectorFamily({
+  key: 'bookCoverState',
+  get: (id: string) => ({ get }) => {
+    const enrichedBook = get(enrichedBookState(id))
+    const bluredTags = get(bluredTagIdsState)
+
+    if (!enrichedBook) return undefined
+
+    const { _id, lastMetadataUpdatedAt } = enrichedBook
+
+    return {
+      _id,
+      lastMetadataUpdatedAt,
+      isBlurred: enrichedBook.tags.some(bookTagId => bluredTags.includes(bookTagId))
+    }
+  }
+})
 
 export const Cover: FC<{
   bookId: string,
@@ -17,7 +36,7 @@ export const Cover: FC<{
   const auth = useRecoilValue(authState)
   const isMounted = useMountedState()
   const theme = useTheme()
-  const book = useRecoilValue(bookState(bookId))
+  const book = useRecoilValue(bookCoverState(bookId))
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -28,7 +47,6 @@ export const Cover: FC<{
       hash: assetHash,
     }
   })
-
 
   const originalSrc = book ? `${API_URI}/cover/${auth?.userId}-${book._id}?${urlParams.toString()}` : undefined
   urlParams.append('format', 'image/jpeg')
@@ -60,6 +78,7 @@ export const Cover: FC<{
 
   const imgStyle = useMemo(() => ({
     ...finalStyle,
+    filter: 'blur(1)',
     ...isLoading && {
       display: 'none'
     }
@@ -72,6 +91,9 @@ export const Cover: FC<{
           alt="img"
           src={placeholder}
           style={finalStyle}
+          {...book?.isBlurred && {
+            className: "svgBlur"
+          }}
           {...rest}
         />
       )}
@@ -82,6 +104,9 @@ export const Cover: FC<{
           alt="img"
           src={coverSrc}
           style={finalStyle}
+          {...book?.isBlurred && {
+            className: "svgBlur"
+          }}
           onLoad={() => {
             setIsLoading(false)
           }}

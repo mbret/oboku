@@ -24,6 +24,7 @@ import { FirstTimeExperienceTours } from './firstTimeExperience/FirstTimeExperie
 import { firstTimeExperienceState } from './firstTimeExperience/firstTimeExperienceStates';
 import { localSettingsState } from './settings/states';
 import { DialogProvider } from './dialog';
+import { BlurContainer } from './books/BlurContainer';
 
 const localStatesToPersist = [
   libraryState,
@@ -65,6 +66,7 @@ export function App() {
         </RxDbProvider>
       </ThemeProvider>
       <ServiceWorkerRegistrator onUpdateAvailable={sw => setNewServiceWorker(sw)} />
+      <BlurContainer />
     </>
   );
 }

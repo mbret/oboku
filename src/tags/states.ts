@@ -27,7 +27,16 @@ export const protectedTagIdsState = selector({
   get: ({ get }) => {
     const tags = get(normalizedTagsState)
 
-    return Object.values(tags).filter(tag => tag?.isProtected).map(tag => tag?._id)
+    return Object.values(tags).filter(tag => tag?.isProtected).map(tag => tag?._id as string)
+  }
+})
+
+export const bluredTagIdsState = selector<string[]>({
+  key: 'bluredTagIdsState',
+  get: ({ get }) => {
+    const tags = get(normalizedTagsState)
+
+    return Object.values(tags).filter(tag => tag?.isBlurEnabled).map(tag => tag?._id as string)
   }
 })
 
