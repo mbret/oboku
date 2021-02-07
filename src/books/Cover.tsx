@@ -1,8 +1,8 @@
-import React, { FC, useEffect, useMemo, useState } from 'react'
+import React, { FC, memo, useEffect, useState } from 'react'
 import { useMountedState } from 'react-use'
 import { API_URI } from '../constants'
 import placeholder from '../assets/cover-placeholder.png'
-import { useTheme } from '@material-ui/core'
+import { Box, makeStyles } from '@material-ui/core'
 import { selectorFamily, useRecoilValue } from 'recoil'
 import { enrichedBookState } from './states'
 import { authState } from '../auth/authState'
@@ -26,19 +26,21 @@ const bookCoverState = selectorFamily({
   }
 })
 
-export const Cover: FC<{
+type Props = {
   bookId: string,
   style?: React.CSSProperties
   fullWidth?: boolean,
   withShadow?: boolean,
   rounded?: boolean,
-}> = ({ bookId, style, fullWidth = true, withShadow = false, rounded = true, ...rest }) => {
+}
+
+export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withShadow = false, rounded = true, ...rest }) => {
   const auth = useRecoilValue(authState)
   const isMounted = useMountedState()
-  const theme = useTheme()
   const book = useRecoilValue(bookCoverState(bookId))
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const classes = useStyle({ withShadow, fullWidth, rounded, isLoading })
 
   const assetHash = book?.lastMetadataUpdatedAt?.toString()
 
@@ -59,53 +61,28 @@ export const Cover: FC<{
     setHasError(false)
   }, [originalSrc])
 
-  const finalStyle: React.CSSProperties = useMemo(() => ({
-    position: 'relative',
-    height: '100%',
-    ...withShadow && {
-      boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`,
-    },
-    ...fullWidth && {
-      width: '100%',
-    },
-    justifySelf: 'flex-end',
-    objectFit: 'cover',
-    ...rounded && {
-      borderRadius: 5,
-    },
-    ...style,
-  }), [theme, fullWidth, style, rounded, withShadow])
-
-  const imgStyle = useMemo(() => ({
-    ...finalStyle,
-    filter: 'blur(1)',
-    ...isLoading && {
-      display: 'none'
-    }
-  }), [finalStyle, isLoading])
-
   return (
-    <>
+    <Box style={style} className={classes.container}>
       {isLoading && (
         <img
           alt="img"
           src={placeholder}
-          style={finalStyle}
+          className={classes.img}
           {...book?.isBlurred && {
-            className: "svgBlur"
+            className: `${classes.img} svgBlur`
           }}
           {...rest}
         />
       )}
-      <picture style={imgStyle}>
+      <picture className={classes.picture}>
         <source srcSet={coverSrc} type="image/webp" />
         <source srcSet={coverSrcJpg} type="image/jpeg" />
         <img
           alt="img"
           src={coverSrc}
-          style={finalStyle}
+          className={classes.img}
           {...book?.isBlurred && {
-            className: "svgBlur"
+            className: `${classes.img} svgBlur`
           }}
           onLoad={() => {
             setIsLoading(false)
@@ -116,6 +93,35 @@ export const Cover: FC<{
           {...rest}
         />
       </picture>
-    </>
+    </Box>
   )
-}
+})
+
+type StyleProps = Pick<Props, 'withShadow' | 'fullWidth' | 'rounded'> & { isLoading: boolean }
+
+const useStyle = makeStyles(theme => ({
+  container: {
+    width: '100%'
+  },
+  picture: ({ isLoading }: StyleProps) => ({
+    width: '100%',
+    ...isLoading && {
+      display: 'none'
+    }
+  }),
+  img: ({ withShadow, fullWidth, rounded }: StyleProps) => ({
+    position: 'relative',
+    height: '100%',
+    justifySelf: 'flex-end',
+    objectFit: 'cover',
+    ...withShadow && {
+      boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`,
+    },
+    ...fullWidth && {
+      width: '100%',
+    },
+    ...rounded && {
+      borderRadius: 5,
+    },
+  }),
+}))
