@@ -22,7 +22,6 @@ export const Step: React.FC<Props> = memo(({ withButtons = true, children, id, n
   // const containerRef = useRef<any>();
 
   useEffect(() => {
-    console.log('on layout', layout)
     if ("width" in layout && !layout.width) return;
 
     if (!children) {

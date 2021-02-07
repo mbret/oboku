@@ -233,7 +233,7 @@ export const createDatabase = async () => {
     multiInstance: false,
     pouchSettings: {
       skip_setup: true,
-    }
+    },
   })
 
   await createCollections(db)

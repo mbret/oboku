@@ -5,7 +5,7 @@ import { useTagsInitialState } from "./tags/observers";
 import { useLinksInitialState } from "./links/observers";
 import { useCollectionsInitialState } from "./collections/observers";
 import { useDataSourcesInitialState } from "./dataSources/observers";
-import { useAuthStateReducer, useSettingsStateReducer } from "./useObservers";
+import { useAuthStateReducer, useSettingsStateReducer } from "./sync/useObservers";
 import { Report } from "./report";
 
 /**

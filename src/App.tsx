@@ -12,7 +12,7 @@ import { GoogleApiProvider } from './dataSources/google/helpers';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import { UpdateAvailableDialog } from './UpdateAvailableDialog';
 import { RxDbProvider } from './rxdb';
-import { useObservers } from './useObservers';
+import { useObservers } from './sync/useObservers';
 import { useLoadInitialState } from './useLoadInitialState';
 import { AxiosProvider } from './axiosClient';
 import { PersistedRecoilRoot } from './PersistedRecoilRoot';

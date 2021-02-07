@@ -20,7 +20,7 @@ export function useRxQuery<D extends DocTypes, R extends D | null | D[]>(
   const [res, setRes] = useState<Result | undefined>()
   const query = db && queryCb(db)
   const queryAsString = query?.toString()
-  console.log(queryAsString)
+  // console.log(queryAsString)
   const [, setInc] = useState(0) // used to force render
   const queryCbRef = useRef(queryCb)
   queryCbRef.current = queryCb
@@ -32,10 +32,10 @@ export function useRxQuery<D extends DocTypes, R extends D | null | D[]>(
     let $sub: Subscription | undefined
 
     if (db) {
-      console.log('RUN QUERY')
+      // console.log('RUN QUERY')
 
       $sub = memoizedQuery?.$.subscribe(results => {
-        console.log('RUN QUERY changes', results)
+        // console.log('RUN QUERY changes', results)
         setRes(results)
         setInc(inc => inc + 1)
       });
@@ -43,7 +43,7 @@ export function useRxQuery<D extends DocTypes, R extends D | null | D[]>(
       (async () => {
         try {
           const result = await memoizedQuery?.exec()
-          console.log('RUN QUERY results', result)
+          // console.log('RUN QUERY results', result)
           setRes(result)
           setInc(inc => inc + 1)
         } catch (e) {
@@ -53,7 +53,7 @@ export function useRxQuery<D extends DocTypes, R extends D | null | D[]>(
     }
 
     return () => {
-      console.log('RUN QUERY unsubscribe')
+      // console.log('RUN QUERY unsubscribe')
       $sub?.unsubscribe()
     }
   }, [db, memoizedQuery])

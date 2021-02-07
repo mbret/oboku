@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import { DataSourceDocType, DataSourceType } from 'oboku-shared'
+import { DataSourceDocType } from 'oboku-shared'
 
 export type DataSource = DataSourceDocType
 
@@ -16,8 +16,3 @@ export const dataSourcesAsArrayState = selector<DataSource[]>({
     return Object.values(dataSources) as NonNullable<typeof dataSources[number]>[]
   }
 })
-
-// export const credentialsState = atom<Record<string, any | undefined>>({
-//   key: 'credentialsState',
-//   default: {}
-// })

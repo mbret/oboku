@@ -54,7 +54,15 @@ export const useDataSourcesObservers = () => {
           }))
         }
         case 'DELETE': {
-          return setDataSources(({ [changeEvent.documentData._id]: deletedDataSource, ...rest }) => rest)
+          return setDataSources(old => {
+            const exist = old[changeEvent.documentData._id]
+
+            if (!exist) return old
+
+            const { [changeEvent.documentData._id]: deletedDataSource, ...rest } = old
+
+            return rest
+          })
         }
       }
     })
