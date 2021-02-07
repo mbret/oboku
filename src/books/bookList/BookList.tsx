@@ -1,4 +1,4 @@
-import React, { ComponentProps, useCallback, FC, useMemo } from 'react'
+import React, { ComponentProps, useCallback, FC, useMemo, memo } from 'react'
 import { Box, makeStyles, useTheme } from "@material-ui/core"
 import { useWindowSize } from 'react-use';
 import { ItemList } from '../../lists/ItemList';
@@ -21,7 +21,7 @@ export const BookList: FC<{
   density?: 'dense' | 'large',
   onItemClick?: (id: string) => void,
   withDrawerActions?: boolean
-}> = ({ viewMode = 'grid', renderHeader, headerHeight, density = 'large', isHorizontal = false, style, data, itemWidth, onItemClick, withDrawerActions }) => {
+}> = memo(({ viewMode = 'grid', renderHeader, headerHeight, density = 'large', isHorizontal = false, style, data, itemWidth, onItemClick, withDrawerActions }) => {
   const windowSize = useWindowSize()
   const classes = useStyles({ isHorizontal, windowSize });
   const hasHeader = !!renderHeader
@@ -30,8 +30,9 @@ export const BookList: FC<{
     if (hasHeader) return ['header' as const, ...data]
     else return data
   }, [data, hasHeader])
+  const dynamicNumberOfItems = Math.round(windowSize.width / 200)
   const itemsPerRow = viewMode === 'grid'
-    ? windowSize.width > theme.breakpoints.values['sm'] ? 4 : 2
+    ? dynamicNumberOfItems > 0 ? dynamicNumberOfItems : dynamicNumberOfItems
     : 1
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
   const densityMultiplier = density === 'dense' ? 0.8 : 1
@@ -39,7 +40,6 @@ export const BookList: FC<{
   const itemHeight = viewMode === LibraryViewMode.GRID
     ? undefined
     : (((windowSize.width > theme.breakpoints.values['sm'] ? 200 : 150) * theme.custom.coverAverageRatio) + listItemMargin) * densityMultiplier
-  type ListDataItem = (typeof listData)[number]
 
   const rowRenderer: CellRenderer = useCallback((_, item): any => {
     if (item === 'header') {
@@ -78,7 +78,7 @@ export const BookList: FC<{
       />
     </div>
   )
-}
+})
 
 const useStyles = makeStyles((theme) => {
   type Props = { isHorizontal: boolean, windowSize: { width: number } }
