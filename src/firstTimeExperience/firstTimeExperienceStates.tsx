@@ -6,5 +6,11 @@ export const firstTimeExperienceState = atom({
     hasDoneWelcomeTour: false,
     hasDoneReaderTour: false,
     hasDoneFirstTimeAddingBook: false,
+    hasDoneFirstTimeTags: false,
   }
+})
+
+export const isTagsTourOpenedState = atom({
+  key: 'isTagsTourOpenedState',
+  default: false
 })

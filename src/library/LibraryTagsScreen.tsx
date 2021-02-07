@@ -1,4 +1,4 @@
-import React, { useState, FC } from 'react';
+import React, { useState, FC, useEffect } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, makeStyles, createStyles, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
 import { useCreateTag } from '../tags/helpers';
@@ -6,17 +6,22 @@ import { TagActionsDrawer } from '../tags/TagActionsDrawer';
 import { LocalOfferRounded, LockRounded } from '@material-ui/icons';
 import { LockActionDialog } from '../auth/LockActionDialog';
 import { tagsAsArrayState } from '../tags/states';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { isTagsTourOpenedState, firstTimeExperienceState } from '../firstTimeExperience/firstTimeExperienceStates';
 
 export const LibraryTagsScreen = () => {
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
   const classes = useStyles();
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
+  const setIsTagsTourOpenedState = useSetRecoilState(isTagsTourOpenedState)
+  const { hasDoneFirstTimeTags } = useRecoilValue(firstTimeExperienceState)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] = useState<string | undefined>(undefined)
   const tags = useRecoilValue(tagsAsArrayState)
   const [addTag] = useCreateTag()
 
-  console.log('LibraryTagsScreen', tags?.map(tag => (tag as any)), lockedAction)
+  useEffect(() => {
+    !hasDoneFirstTimeTags && setIsTagsTourOpenedState(true)
+  }, [setIsTagsTourOpenedState, hasDoneFirstTimeTags])
 
   return (
     <div className={classes.container}>

@@ -6,7 +6,6 @@ import { theme } from './theme';
 import { CookiesProvider } from "react-cookie";
 import { BlockingBackdrop } from './common/BlockingBackdrop';
 import { UnlockLibraryDialog } from './auth/UnlockLibraryDialog';
-import { AppTourWelcome } from './firstTimeExperience/AppTourWelcome';
 import { TourProvider } from './app-tour/TourProvider';
 import { ManageBookCollectionsDialog } from './books/ManageBookCollectionsDialog';
 import { GoogleApiProvider } from './dataSources/google/helpers';
@@ -21,7 +20,7 @@ import { libraryState } from './library/states';
 import { normalizedBookDownloadsState } from './download/states';
 import { AppLoading } from './AppLoading';
 import { UserFeedback } from './UserFeedback';
-import { AppTourFirstAddingBook } from './firstTimeExperience/AppTourFirstAddingBook';
+import { FirstTimeExperienceTours } from './firstTimeExperience/FirstTimeExperienceTours';
 import { firstTimeExperienceState } from './firstTimeExperience/firstTimeExperienceStates';
 import { localSettingsState } from './settings/states';
 import { DialogProvider } from './dialog';
@@ -49,8 +48,7 @@ export function App() {
                   <DialogProvider>
                     <TourProvider>
                       <AppNavigator />
-                      <AppTourWelcome />
-                      <AppTourFirstAddingBook />
+                      <FirstTimeExperienceTours />
                       <UnlockLibraryDialog />
                       <ManageBookCollectionsDialog />
                       <RoutineProcess />

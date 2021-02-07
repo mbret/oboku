@@ -4,6 +4,7 @@ export type TourKey =
   | 'AppTourReader'
   | 'AppTourWelcome'
   | 'AppTourFirstAddingBook'
+  | 'AppTourFirstTourTags'
 
 export type Step = {
   measures: undefined | { x: number, y: number, width: number, height: number, pageX: number, pageY: number };
