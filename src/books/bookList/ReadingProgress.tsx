@@ -3,7 +3,7 @@ import { Typography, useTheme } from "@material-ui/core"
 import { MenuBookRounded } from '@material-ui/icons';
 import { useMeasure } from 'react-use';
 
-export const ReadingProgress: FC<{ style?: React.CSSProperties, progress: number, className: string }> = ({ style, progress, className }) => {
+export const ReadingProgress: FC<{ style?: React.CSSProperties, progress: number, className?: string }> = ({ style, progress, className }) => {
   const theme = useTheme()
   const [ref, layout] = useMeasure()
   let width = 0

@@ -1,11 +1,12 @@
 import React, { ComponentProps, useCallback, FC, useMemo, memo } from 'react'
-import { Box, makeStyles, useTheme } from "@material-ui/core"
+import { Box, useTheme } from "@material-ui/core"
 import { useWindowSize } from 'react-use';
 import { ItemList } from '../../lists/ItemList';
 import { BookListGridItem } from './BookListGridItem';
 import { LibrarySorting } from '../../library/states';
 import { LibraryViewMode } from '../../rxdb';
 import { BookListListItem } from './BookListListItem';
+import { useCSS } from '../../utils';
 
 type CellRenderer = ComponentProps<typeof ItemList>['rowRenderer']
 
@@ -23,7 +24,7 @@ export const BookList: FC<{
   withDrawerActions?: boolean
 }> = memo(({ viewMode = 'grid', renderHeader, headerHeight, density = 'large', isHorizontal = false, style, data, itemWidth, onItemClick, withDrawerActions }) => {
   const windowSize = useWindowSize()
-  const classes = useStyles({ isHorizontal, windowSize });
+  const classes = useStyle({ isHorizontal });
   const hasHeader = !!renderHeader
   const theme = useTheme()
   const listData = useMemo(() => {
@@ -62,7 +63,7 @@ export const BookList: FC<{
   }, [renderHeader, viewMode, itemHeight, listItemMargin, onItemClick, withDrawerActions])
 
   return (
-    <div className={classes.container} style={style}>
+    <div style={{ ...classes.container, ...style }}>
       <ItemList
         data={listData}
         rowRenderer={rowRenderer}
@@ -80,14 +81,14 @@ export const BookList: FC<{
   )
 })
 
-const useStyles = makeStyles((theme) => {
-  type Props = { isHorizontal: boolean, windowSize: { width: number } }
+const useStyle = ({ isHorizontal }: { isHorizontal: boolean }) => {
+  const theme = useTheme()
 
-  return {
+  return useCSS(() => ({
     container: {
-      paddingLeft: (props: Props) => props.isHorizontal ? 0 : theme.spacing(1),
-      paddingRight: (props: Props) => props.isHorizontal ? 0 : theme.spacing(1),
+      paddingLeft: isHorizontal ? 0 : theme.spacing(1),
+      paddingRight: isHorizontal ? 0 : theme.spacing(1),
       display: 'flex',
     },
-  }
-})
+  }), [theme, isHorizontal])
+}

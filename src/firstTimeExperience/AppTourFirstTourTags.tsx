@@ -1,9 +1,10 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import TagSvg from '../assets/undraw_schedule_pnbk.svg'
-import { Box, Link, makeStyles, Typography, useTheme } from '@material-ui/core';
+import { Box, Link, Typography, useTheme } from '@material-ui/core';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { isTagsTourOpenedState, firstTimeExperienceState } from './firstTimeExperienceStates';
+import { useCSS } from '../utils';
 
 export const AppTourFirstTourTags: React.FC = memo(() => {
   const isTagsTourOpened = useRecoilValue(isTagsTourOpenedState)
@@ -25,7 +26,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
         id="AppTourFirstTourTags"
         number={1}
         content={(
-          <Box className={styles.slide1}>
+          <Box style={styles.slide1}>
             <Box style={{
               display: 'flex',
               flexFlow: 'column',
@@ -52,21 +53,25 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
   );
 });
 
-const useStyles = makeStyles((theme) => ({
-  coverContainer: {
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  slide1: {
-    padding: theme.spacing(2),
-    boxSizing: 'border-box',
-    textAlign: 'center',
-    color: '#fff',
-    display: 'flex',
-    flex: 1,
-    flexFlow: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-}));
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
+    coverContainer: {
+      alignSelf: 'center',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    slide1: {
+      padding: theme.spacing(2),
+      boxSizing: 'border-box',
+      textAlign: 'center',
+      color: '#fff',
+      display: 'flex',
+      flex: 1,
+      flexFlow: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  }), [theme])
+}

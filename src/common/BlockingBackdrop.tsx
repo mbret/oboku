@@ -1,7 +1,8 @@
 import React, { FC, useEffect, useState } from 'react';
-import { Backdrop, CircularProgress, createStyles, makeStyles, useTheme } from "@material-ui/core"
+import { Backdrop, CircularProgress, useTheme } from "@material-ui/core"
 import { useRecoilCallback, useRecoilValue } from 'recoil';
 import { atom, selector } from "recoil";
+import { useCSS } from '../utils';
 
 type Key = string
 
@@ -63,7 +64,7 @@ export const BlockingBackdrop: FC<{}> = () => {
   }, [open])
 
   return (
-    <Backdrop className={classes.backdrop} open={active} style={{ zIndex: theme.zIndex.tooltip + 1 }}>
+    <Backdrop open={active} style={{ ...classes.backdrop, zIndex: theme.zIndex.tooltip + 1 }}>
       <CircularProgress color="inherit" />
     </Backdrop>
   )
@@ -80,11 +81,13 @@ export const BlockingScreen = () => {
   return null
 }
 
-const useStyles = makeStyles((theme) =>
-  createStyles({
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
     backdrop: {
       zIndex: theme.zIndex.drawer + 1,
       color: '#fff',
     },
-  }),
-);
+  }), [theme])
+}

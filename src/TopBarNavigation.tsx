@@ -1,13 +1,13 @@
 import React, { FC, ComponentProps } from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import { ArrowBackIosRounded, Search } from '@material-ui/icons';
-import { Box, fade, InputBase } from '@material-ui/core';
+import { ArrowBackIosRounded, MoreVertRounded, Search } from '@material-ui/icons';
+import { Box, fade, InputBase, makeStyles, useTheme } from '@material-ui/core';
 import { ROUTES } from './constants';
 import { useNavigation } from './navigation/useNavigation';
+import { useCSS } from './utils';
 
 export const TopBarNavigation: FC<{
   title?: string,
@@ -15,9 +15,10 @@ export const TopBarNavigation: FC<{
   position?: ComponentProps<typeof AppBar>['position'],
   color?: ComponentProps<typeof AppBar>['color'],
   rightComponent?: React.ReactNode,
-  hasSearch?: boolean
-}> = ({ title, showBack = true, position = 'static', color = 'primary', rightComponent, hasSearch = false }) => {
-  const classes = useStyles({ color });
+  hasSearch?: boolean,
+  onMoreClick?: () => void
+}> = ({ title, showBack = true, position = 'static', color = 'primary', rightComponent, hasSearch = false, onMoreClick }) => {
+  const { styles, classes } = useStyles({ color });
   const { goBack, history } = useNavigation()
 
   return (
@@ -26,7 +27,7 @@ export const TopBarNavigation: FC<{
         {showBack && (
           <IconButton
             edge="start"
-            className={classes.menuButton}
+            style={styles.menuButton}
             onClick={goBack}
           >
             <ArrowBackIosRounded />
@@ -34,7 +35,7 @@ export const TopBarNavigation: FC<{
         )}
         <Box flexGrow={1}>
           {!hasSearch && (
-            <Typography variant="h6" className={classes.title}>
+            <Typography variant="h6" style={styles.title}>
               {title}
             </Typography>
           )}
@@ -42,7 +43,7 @@ export const TopBarNavigation: FC<{
             <div className={classes.search} onClick={() => {
               history.push(ROUTES.SEARCH)
             }}>
-              <div className={classes.searchIcon}>
+              <div style={styles.searchIcon}>
                 <Search />
               </div>
               <InputBase
@@ -58,34 +59,53 @@ export const TopBarNavigation: FC<{
           )}
         </Box>
         {rightComponent}
+        {!rightComponent && !!onMoreClick && (
+          <IconButton
+            edge="end"
+            style={styles.menuButtonEnd}
+            onClick={onMoreClick}
+          >
+            <MoreVertRounded />
+          </IconButton>
+        )}
       </Toolbar>
     </AppBar>
   );
 }
 
-const useStyles = makeStyles((theme: Theme) => {
-  type Props = { color: ComponentProps<typeof AppBar>['color'] }
-
-  return createStyles({
-    root: {
-      flexGrow: 1,
+const useClasses = makeStyles(theme => ({
+  inputRoot: {
+    color: 'inherit',
+    width: '100%',
+  },
+  inputInput: {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
+    width: '100%',
+  },
+  search: {
+    position: 'relative',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: fade(theme.palette.common.white, 0.15),
+    '&:hover': {
+      backgroundColor: fade(theme.palette.common.white, 0.25),
     },
+    marginLeft: 0,
+    width: '100%',
+  },
+}))
+
+const useStyles = ({ color }: { color: ComponentProps<typeof AppBar>['color'] }) => {
+  const theme = useTheme()
+  const classes = useClasses()
+
+  const styles = useCSS(() => ({
     menuButton: {
       marginRight: theme.spacing(1),
-      color: ({ color }: Props) => color === 'transparent' ? 'white' : 'inherit',
+      color: color === 'transparent' ? 'white' : 'inherit',
     },
-    title: {
-      flexGrow: 1,
-    },
-    search: {
-      position: 'relative',
-      borderRadius: theme.shape.borderRadius,
-      backgroundColor: fade(theme.palette.common.white, 0.15),
-      '&:hover': {
-        backgroundColor: fade(theme.palette.common.white, 0.25),
-      },
-      marginLeft: 0,
-      width: '100%',
+    menuButtonEnd: {
+      color: color === 'transparent' ? 'white' : 'inherit',
     },
     searchIcon: {
       padding: theme.spacing(0, 2),
@@ -96,14 +116,10 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    inputRoot: {
-      color: 'inherit',
-      width: '100%',
+    title: {
+      flexGrow: 1,
     },
-    inputInput: {
-      padding: theme.spacing(1, 1, 1, 0),
-      paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
-      width: '100%',
-    },
-  })
-});
+  }), [theme, color])
+
+  return { styles, classes }
+}

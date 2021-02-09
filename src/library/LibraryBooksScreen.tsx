@@ -1,22 +1,24 @@
-import React, { useState, FC, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BookList } from '../books/bookList/BookList';
 import {
-  Dialog, Button, DialogTitle,
-  Toolbar, IconButton, makeStyles, createStyles, Badge, ListItemText, ListItem, List, ListItemIcon, Typography, useTheme,
+  Button,
+  Toolbar, IconButton, Badge, Typography, useTheme,
 } from '@material-ui/core';
-import { AppsRounded, TuneRounded, ListRounded, SortRounded, RadioButtonUnchecked, RadioButtonChecked, LockOpenRounded } from '@material-ui/icons';
+import { AppsRounded, TuneRounded, ListRounded, SortRounded, LockOpenRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
 import { UploadBookFromUriDialog } from '../upload/UploadBookFromUriDialog';
 import { UploadBookFromDevice } from '../upload/UploadBookFromDevice';
 import { UploadBookFromDataSource } from '../upload/UploadBookFromDataSource';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
-import { useMeasureElement } from '../utils';
+import { useCSS, useMeasureElement } from '../utils';
 import { LibraryViewMode } from '../rxdb';
 import { isUploadBookDrawerOpenedState, libraryState } from './states';
+import { booksAsArrayState } from '../books/states';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { UploadBookDrawer } from './UploadBookDrawer';
 import { useDataSourcePlugins } from '../dataSources/helpers';
-import { useBookSortedBy } from '../books/helpers';
+import { useBooksSortedBy } from '../books/helpers';
+import { SortByDialog } from '../books/bookList/SortByDialog';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
@@ -30,7 +32,8 @@ export const LibraryBooksScreen = () => {
   const setLibraryState = useSetRecoilState(libraryState)
   const dataSourcePlugins = useDataSourcePlugins()
   const library = useRecoilValue(libraryState)
-  const sortedList = useBookSortedBy(library.sorting)
+  const unsortedBooks = useRecoilValue(booksAsArrayState)
+  const sortedList = useBooksSortedBy(unsortedBooks, library.sorting)
   const tagsFilterApplied = (library?.tags.length || 0) > 0
   const numberOfFiltersApplied = [tagsFilterApplied].filter(i => i).length
   const filteredTags = library.tags
@@ -71,7 +74,7 @@ export const LibraryBooksScreen = () => {
   console.log('[LibraryBooksScreen]', books)
 
   return (
-    <div className={classes.container}>
+    <div style={classes.container}>
       {listHeaderDimTracker}
       <Toolbar style={{ borderBottom: `1px solid ${theme.palette.grey[200]}`, boxSizing: 'border-box' }}>
         <IconButton
@@ -165,7 +168,16 @@ export const LibraryBooksScreen = () => {
         <UploadBookFromUriDialog open={isUploadBookFromUriDialogOpened} onClose={() => setIsUploadBookFromUriDialogOpened(false)} />
         {isUploadBookFromDeviceDialogOpened && <UploadBookFromDevice open onClose={() => setIsUploadBookFromDeviceDialogOpened(false)} />}
         {isUploadBookFromDataSourceDialogOpened && <UploadBookFromDataSource openWith={isUploadBookFromDataSourceDialogOpened} onClose={() => setIsUploadBookFromDataSourceDialogOpened(undefined)} />}
-        <SortByDialog onClose={() => setIsSortingDialogOpened(false)} open={isSortingDialogOpened} />
+        <SortByDialog
+          value={library.sorting}
+          onClose={() => setIsSortingDialogOpened(false)}
+          open={isSortingDialogOpened}
+          onChange={newSort => {
+            // requestAnimationFrame(() => {
+            setLibraryState(prev => ({ ...prev, sorting: newSort }))
+            // })
+          }}
+        />
         <LibraryFiltersDrawer open={isFiltersDrawerOpened} onClose={() => setIsFiltersDrawerOpened(false)} />
         <UploadBookDrawer open={isUploadBookDrawerOpened} onClose={(type) => {
           setIsUploadBookDrawerOpened(false)
@@ -188,54 +200,8 @@ export const LibraryBooksScreen = () => {
   );
 }
 
-const SortByDialog: FC<{ onClose: () => void, open: boolean }> = ({ onClose, open }) => {
-  const library = useRecoilValue(libraryState)
-  const setLibraryState = useSetRecoilState(libraryState)
-  const sorting = library.sorting || 'date'
-
-  const onSortChange = (newSorting: typeof sorting) => {
-    onClose()
-    setLibraryState(prev => ({ ...prev, sorting: newSorting }))
-  }
-
-  return (
-    <Dialog
-      onClose={onClose}
-      open={open}
-    >
-      <DialogTitle>Sort by</DialogTitle>
-      <List>
-        <ListItem button
-          onClick={() => onSortChange('alpha')}
-        >
-          <ListItemIcon >
-            {sorting === 'alpha' ? <RadioButtonChecked /> : <RadioButtonUnchecked />}
-          </ListItemIcon>
-          <ListItemText primary="Alphabetical - A > Z" />
-        </ListItem>
-        <ListItem button
-          onClick={() => onSortChange('date')}
-        >
-          <ListItemIcon >
-            {sorting === 'date' ? <RadioButtonChecked /> : <RadioButtonUnchecked />}
-          </ListItemIcon>
-          <ListItemText primary="Date added" />
-        </ListItem>
-        <ListItem button
-          onClick={() => onSortChange('activity')}
-        >
-          <ListItemIcon >
-            {sorting === 'activity' ? <RadioButtonChecked /> : <RadioButtonUnchecked />}
-          </ListItemIcon>
-          <ListItemText primary="Recent activity" />
-        </ListItem>
-      </List>
-    </Dialog>
-  )
-}
-
-const useStyles = makeStyles((theme) =>
-  createStyles({
+const useStyles = () => {
+  return useCSS(() => ({
     container: {
       display: 'flex',
       flexDirection: 'column',
@@ -243,8 +209,5 @@ const useStyles = makeStyles((theme) =>
       flex: 1,
       overflow: 'hidden'
     },
-    title: {
-      flexGrow: 1,
-    },
-  }),
-);
+  }), [])
+}

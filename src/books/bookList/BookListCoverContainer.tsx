@@ -1,24 +1,25 @@
 import React, { FC, memo, useEffect } from 'react'
-import { Box, makeStyles, Chip } from "@material-ui/core"
-import { CloudDownloadRounded, LoopRounded, Pause } from '@material-ui/icons';
-import { useRafState, useWindowSize } from 'react-use';
+import { Box, Chip, useTheme } from "@material-ui/core"
+import { CloudDownloadRounded, LoopRounded } from '@material-ui/icons';
+import { useRafState } from 'react-use';
 import { Cover } from '../Cover';
 import { useRecoilValue, UnwrapRecoilValue } from 'recoil';
-import { enrichedBookState, normalizedBooksState } from '../states';
-import { BookDocType, ReadingStateState } from 'oboku-shared'
+import { enrichedBookState } from '../states';
+import { ReadingStateState } from 'oboku-shared'
 import { ReadingProgress } from './ReadingProgress'
-import { theme } from '../../theme';
 import { DownloadState } from '../../download/states';
+import { useCSS } from '../../utils';
 
 type Book = UnwrapRecoilValue<ReturnType<typeof enrichedBookState>>
 
 export const BookListCoverContainer: FC<{
   bookId: string,
   className?: string,
+  style?: React.CSSProperties,
   withReadingProgressStatus?: boolean
   withDownloadStatus?: boolean
   withMetadaStatus?: boolean
-}> = memo(({ bookId, className, withMetadaStatus = true, withDownloadStatus = true, withReadingProgressStatus = true }) => {
+}> = memo(({ bookId, className, withMetadaStatus = true, style, withDownloadStatus = true, withReadingProgressStatus = true }) => {
   const item = useRecoilValue(enrichedBookState(bookId))
   const classes = useStyles({ item });
   const [render, setRender] = useRafState(false)
@@ -28,7 +29,7 @@ export const BookListCoverContainer: FC<{
   }, [setRender])
 
   return (
-    <div className={`${classes.coverContainer} ${className}`}>
+    <div style={{ ...classes.coverContainer, ...style }} className={className}>
       {!render
         ? (
           null
@@ -37,24 +38,24 @@ export const BookListCoverContainer: FC<{
           <>
             {item && <Cover bookId={item?._id} />}
             {item?.downloadState !== DownloadState.Downloaded && (
-              <div className={classes.downloadOverlay} />
+              <div style={classes.downloadOverlay} />
             )}
             <Box
               flexDirection="column"
               alignItems="center"
-              className={classes.bodyContainer}>
+              style={classes.bodyContainer}>
               {(withMetadaStatus && !item?.lastMetadataUpdatedAt) && (
-                <Box className={classes.itemCoverCenterInfo}>
+                <Box style={classes.itemCoverCenterInfo}>
                   <Chip color="secondary" size="small" icon={<LoopRounded color="primary" className="icon-spin" />} label="metadata..." />
                 </Box>
               )}
               {item?.downloadState === 'none' && (
-                <Box position="absolute" left="50%" top="50%" className={classes.pauseButton}>
+                <Box position="absolute" left="50%" top="50%" style={classes.pauseButton}>
                   <CloudDownloadRounded color="secondary" />
                 </Box>
               )}
               {(withDownloadStatus && item?.downloadState === 'downloading') && (
-                <Box position="absolute" left="50%" top="50%" className={classes.pauseButton}>
+                <Box position="absolute" left="50%" top="50%" style={classes.pauseButton}>
                   <Chip
                     color="secondary"
                     size="small"
@@ -69,7 +70,7 @@ export const BookListCoverContainer: FC<{
                 {item?.readingStateCurrentState === ReadingStateState.Reading && (
                   <ReadingProgress
                     progress={(item?.readingStateCurrentBookmarkProgressPercent || 0) * 100}
-                    className={classes.readingProgress} />
+                    style={classes.readingProgress} />
                 )}
               </>
             )}
@@ -79,8 +80,10 @@ export const BookListCoverContainer: FC<{
   )
 })
 
-const useStyles = makeStyles((theme) => {
-  return {
+const useStyles = ({ item }: { item: Book }) => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
     coverContainer: {
       position: 'relative',
       display: 'flex',
@@ -111,12 +114,12 @@ const useStyles = makeStyles((theme) => {
     downloadOverlay: {
       backgroundColor: 'white',
       opacity: 0.5,
-      height: ({ item }: { item: Book }) => item?.downloadState === DownloadState.Downloading
+      height: item?.downloadState === DownloadState.Downloading
         ? `${100 - (item?.downloadProgress || 0)}%`
         : `100%`,
       width: '100%',
       position: 'absolute',
       top: 0,
     }
-  }
-})
+  }), [theme, item])
+}

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
-import { Tab, Tabs, Box, IconButton } from '@material-ui/core'
+import { Tab, Tabs, Box, IconButton, useTheme } from '@material-ui/core'
 import { useHistory, useLocation, Route, Switch, Redirect } from 'react-router-dom'
 import { LibraryBooksScreen } from './LibraryBooksScreen'
 import { LibraryTagsScreen } from './LibraryTagsScreen'
@@ -9,6 +8,7 @@ import { ROUTES } from '../constants'
 import { LibraryCollectionScreen } from './LibraryCollectionScreen'
 import { useSyncLibrary } from './helpers'
 import { Sync } from '@material-ui/icons'
+import { useCSS } from '../utils'
 
 export const LibraryTopTabNavigator = () => {
   const location = useLocation()
@@ -26,7 +26,7 @@ export const LibraryTopTabNavigator = () => {
   }, [syncActive])
 
   return (
-    <div className={classes.container}>
+    <div style={classes.container}>
       <TopBarNavigation
         title="Library"
         showBack={false}
@@ -43,10 +43,9 @@ export const LibraryTopTabNavigator = () => {
         )}
       />
       <Tabs
-        className={classes.tabsContainer}
+        style={classes.tabsContainer}
         value={location.pathname}
         indicatorColor="primary"
-        style={{ borderTop: 'none', borderLeft: 'none', borderRight: 'none' }}
         onChange={(e, value) => {
           history.replace(value)
         }}
@@ -73,14 +72,19 @@ export const LibraryTopTabNavigator = () => {
   )
 }
 
-const useStyles = makeStyles(theme => ({
-  container: {
-    display: 'flex',
-    flexFlow: 'column',
-    overflow: 'hidden',
-    flex: 1,
-  },
-  tabsContainer: {
-    border: `1px solid ${theme.palette.primary.light}`
-  }
-}));
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
+    container: {
+      display: 'flex',
+      flexFlow: 'column',
+      overflow: 'hidden',
+      flex: 1,
+    },
+    tabsContainer: {
+      border: `1px solid ${theme.palette.primary.light}`,
+      borderTop: 'none', borderLeft: 'none', borderRight: 'none' 
+    }
+  }), [theme])
+}

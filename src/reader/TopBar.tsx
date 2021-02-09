@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { AppBar, Box, IconButton, makeStyles, Toolbar } from "@material-ui/core"
 import { useRecoilValue } from "recoil"
 import { isMenuShownState } from "./states"
+import { AppBar, Box, IconButton, Toolbar } from "@material-ui/core"
 import { ArrowBackIosRounded, FullscreenExitRounded, FullscreenRounded } from '@material-ui/icons'
 import { useNavigation } from '../navigation/useNavigation'
 import screenfull, { Screenfull } from 'screenfull'
 import { Report } from '../report'
+import { useCSS } from '../utils'
 
 const screenfullApi = screenfull as Screenfull
 
@@ -37,7 +38,7 @@ export const TopBar = () => {
     <AppBar
       position="fixed"
       elevation={0}
-      className={classes.appBar}
+      style={classes.appBar}
     >
       <Toolbar >
         <IconButton
@@ -62,11 +63,13 @@ export const TopBar = () => {
   )
 }
 
-const useStyles = makeStyles(({
-  appBar: {
-    top: 0,
-    left: 0,
-    width: '100%',
-    visibility: ({ isMenuShow }: { isMenuShow: boolean }) => isMenuShow ? 'visible' : 'hidden'
-  }
-}))
+const useStyles = ({ isMenuShow }: { isMenuShow: boolean }) => {
+  return useCSS(() => ({
+    appBar: {
+      top: 0,
+      left: 0,
+      width: '100%',
+      visibility: isMenuShow ? 'visible' : 'hidden'
+    }
+  }), [isMenuShow])
+}

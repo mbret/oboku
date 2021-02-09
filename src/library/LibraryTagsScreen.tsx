@@ -1,6 +1,6 @@
 import React, { useState, FC, useEffect } from 'react';
 import Dialog from '@material-ui/core/Dialog';
-import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, makeStyles, createStyles, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
+import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
 import { useCreateTag } from '../tags/helpers';
 import { TagActionsDrawer } from '../tags/TagActionsDrawer';
 import { BlurOnRounded, LocalOfferRounded, LockRounded } from '@material-ui/icons';
@@ -8,6 +8,7 @@ import { LockActionDialog } from '../auth/LockActionDialog';
 import { tagsAsArrayState } from '../tags/states';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { isTagsTourOpenedState, firstTimeExperienceState } from '../firstTimeExperience/firstTimeExperienceStates';
+import { useCSS } from '../utils';
 
 export const LibraryTagsScreen = () => {
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
@@ -24,7 +25,7 @@ export const LibraryTagsScreen = () => {
   }, [setIsTagsTourOpenedState, hasDoneFirstTimeTags])
 
   return (
-    <div className={classes.container}>
+    <div style={classes.container}>
       <Toolbar>
         <Button
           style={{
@@ -37,7 +38,7 @@ export const LibraryTagsScreen = () => {
           Create a new tag
         </Button>
       </Toolbar>
-      <List className={classes.list}>
+      <List style={classes.list}>
         {tags && tags.map(tag => (
           <ListItem
             button
@@ -124,13 +125,13 @@ const AddTagDialog: FC<{
   )
 }
 
-const useStyles = makeStyles((theme) =>
-  createStyles({
+const useStyles = () => {
+  return useCSS(() => ({
     container: {
       flex: 1,
       overflow: 'auto'
     },
     list: {
     },
-  }),
-);
+  }), [])
+}

@@ -1,10 +1,11 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import FteUploadAsset from '../assets/fte-upload.svg'
-import { Box, Link, makeStyles, Typography, useTheme } from '@material-ui/core';
+import { Box, Link, Typography, useTheme } from '@material-ui/core';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { firstTimeExperienceState } from './firstTimeExperienceStates';
 import { isUploadBookDrawerOpenedState } from '../library/states';
+import { useCSS } from '../utils';
 
 export const AppTourFirstAddingBook: React.FC = memo(() => {
   const isUploadBookDrawerOpened = useRecoilValue(isUploadBookDrawerOpenedState)
@@ -26,7 +27,7 @@ export const AppTourFirstAddingBook: React.FC = memo(() => {
         id="AppTourFirstAddingBook"
         number={1}
         content={(
-          <Box className={styles.slide1}>
+          <Box style={styles.slide1}>
             <Box style={{
               display: 'flex',
               flexFlow: 'column',
@@ -52,38 +53,20 @@ export const AppTourFirstAddingBook: React.FC = memo(() => {
   );
 });
 
-const useStyles = makeStyles((theme) => ({
-  coverContainer: {
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  slide1: {
-    padding: theme.spacing(2),
-    boxSizing: 'border-box',
-    textAlign: 'center',
-    color: '#fff',
-    display: 'flex',
-    flex: 1,
-    flexFlow: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  firstCircle: {
-    width: 66,
-    height: 66,
-    borderRadius: 50,
-    opacity: 0.3,
-    position: 'absolute',
-  },
-  secondCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 50,
-    opacity: 0.4,
-    position: 'absolute',
-  },
-  cover: {
-    opacity: 0.4,
-  },
-}));
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
+    slide1: {
+      padding: theme.spacing(2),
+      boxSizing: 'border-box',
+      textAlign: 'center',
+      color: '#fff',
+      display: 'flex',
+      flex: 1,
+      flexFlow: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  }), [theme])
+}

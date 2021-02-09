@@ -1,60 +1,87 @@
 import { Drawer, ListItem, Divider, List, ListItemIcon, ListItemText, DialogContent, DialogTitle, Dialog, TextField, DialogActions, Button } from "@material-ui/core";
 import React, { useEffect, useState, FC } from "react";
-import { Edit, DeleteForeverRounded } from "@material-ui/icons";
+import { Edit, DeleteForeverRounded, DynamicFeedRounded } from "@material-ui/icons";
 import { useRemoveCollection, useUpdateCollection } from "./helpers";
 import { useRecoilValue } from "recoil";
 import { normalizedCollectionsState } from "./states";
+import { BooksSelectionDialog } from "./BooksSelectionDialog";
 
 export const CollectionActionsDrawer: FC<{
   open: boolean,
-  id: string | undefined,
+  id: string,
   onClose: () => void,
-}> = ({ open, id, onClose }) => {
+  onRemove?: () => void,
+}> = ({ open, id, onClose, onRemove }) => {
   const [isEditCollectionDialogOpenedWithId, setIsEditCollectionDialogOpenedWithId] = useState<string | undefined>(undefined)
   const [removeCollection] = useRemoveCollection()
+  const [isBookDialogOpened, setIsBookDialogOpened] = useState(false)
+  const [openDrawer, setOpenDrawer] = useState(false)
+
+  useEffect(() => {
+    setOpenDrawer(open)
+  }, [open])
 
   const handleClose = () => {
     onClose()
   };
 
-  const onRemove = (id: string | undefined) => {
+  const onRemoveCollection = (id: string | undefined) => {
     handleClose()
+    onRemove && onRemove()
     id && removeCollection({ _id: id })
-  }
-
-  const onEdit = (id: string | undefined) => {
-    handleClose()
-    id && setIsEditCollectionDialogOpenedWithId(id)
   }
 
   return (
     <>
       <Drawer
         anchor="bottom"
-        open={open}
+        open={openDrawer}
         onClose={handleClose}
       >
         <div
           role="presentation"
         >
           <List>
-            <ListItem button onClick={() => onEdit(id)}>
+            <ListItem button onClick={() => {
+              setOpenDrawer(false)
+              setIsEditCollectionDialogOpenedWithId(id)
+            }}>
               <ListItemIcon><Edit /></ListItemIcon>
-              <ListItemText primary="Edit" />
+              <ListItemText primary="Rename" />
+            </ListItem>
+          </List>
+          <List>
+            <ListItem button onClick={() => {
+              setOpenDrawer(false)
+              setIsBookDialogOpened(true)
+            }}>
+              <ListItemIcon><DynamicFeedRounded /></ListItemIcon>
+              <ListItemText primary="Add or Remove books" />
             </ListItem>
           </List>
           <Divider />
           <List>
-            <ListItem button onClick={() => onRemove(id)}>
+            <ListItem button onClick={() => onRemoveCollection(id)}>
               <ListItemIcon><DeleteForeverRounded /></ListItemIcon>
               <ListItemText primary="Remove" />
             </ListItem>
           </List>
         </div>
       </Drawer>
+      <BooksSelectionDialog
+        open={isBookDialogOpened}
+        onClose={() => {
+          setIsBookDialogOpened(false)
+          handleClose()
+        }}
+        collectionId={id}
+      />
       <EditCollectionDialog
         id={isEditCollectionDialogOpenedWithId}
-        onClose={() => setIsEditCollectionDialogOpenedWithId(undefined)}
+        onClose={() => {
+          setIsEditCollectionDialogOpenedWithId(undefined)
+          handleClose()
+        }}
         open={!!isEditCollectionDialogOpenedWithId}
       />
     </>

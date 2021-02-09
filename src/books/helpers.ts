@@ -7,12 +7,12 @@ import { first } from 'rxjs/operators'
 import PouchDB from 'pouchdb'
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../report"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useGetDataSourceCredentials } from "../dataSources/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { PromiseReturnType } from "../types"
-import { useRecoilValue } from "recoil"
-import { booksAsArrayState } from "./states"
+import { UnwrapRecoilValue, useRecoilValue } from "recoil"
+import { normalizedBooksState, Book } from "./states"
 import * as R from 'ramda';
 
 export const useRemoveBook = () => {
@@ -189,9 +189,21 @@ export const useAddBookFromFile = () => {
   }, [addBook, downloadFile])
 }
 
-export const useBookSortedBy = (sorting: 'date' | 'activity' | 'alpha') => {
-  const books = useRecoilValue(booksAsArrayState)
+export const useBookIdsSortedBy = (ids: string[], sorting: 'date' | 'activity' | 'alpha' | undefined) => {
+  const normalizedBooks = useRecoilValue(normalizedBooksState)
 
+  return useMemo(() => {
+    const books = ids.map(id => normalizedBooks[id]) as Book[]
+
+    return sortBooksBy(books, sorting).map(({ _id }) => _id)
+  }, [normalizedBooks, ids, sorting])
+}
+
+export const useBooksSortedBy = (books: Book[], sorting: 'date' | 'activity' | 'alpha' | undefined) => {
+  return useMemo(() => sortBooksBy(books, sorting), [books, sorting])
+}
+
+const sortBooksBy = (books: Book[], sorting: 'date' | 'activity' | 'alpha' | undefined) => {
   switch (sorting) {
     case 'date': {
       return R.sort(R.descend(R.prop('createdAt')), books)
@@ -203,8 +215,9 @@ export const useBookSortedBy = (sorting: 'date' | 'activity' | 'alpha') => {
         return (new Date(b.readingStateCurrentBookmarkProgressUpdatedAt).getTime()) - (new Date(a.readingStateCurrentBookmarkProgressUpdatedAt).getTime())
       }, books)
     }
-    default: {
+    case 'alpha': {
       return R.sort(R.ascend(R.prop('title')), books)
     }
+    default: return books
   }
 }

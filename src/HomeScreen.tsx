@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { TopBarNavigation } from './TopBarNavigation';
-import { makeStyles, createStyles, Typography, useTheme, Button } from '@material-ui/core';
+import { Typography, useTheme, Button } from '@material-ui/core';
 import { BookList } from './books/bookList/BookList';
 import { ROUTES } from './constants';
 import * as R from 'ramda';
@@ -9,19 +9,21 @@ import ContinueReadingAsset from './assets/continue-reading.svg'
 import { useRecoilValue } from 'recoil';
 import { booksAsArrayState } from './books/states';
 import { ReadingStateState } from 'oboku-shared';
-import { useBookSortedBy } from './books/helpers';
+import { useBooksSortedBy } from './books/helpers';
+import { useCSS } from './utils';
 
 export const HomeScreen = () => {
   const classes = useStyles();
   const theme = useTheme()
   const history = useHistory()
   const continueReadingBooks = useContinueReadingBooks()
+  const continueReadingBookIds = useMemo(() => continueReadingBooks.map(({ _id }) => _id), [continueReadingBooks])
   const recentlyAddedBooks = useRecentlyAddedBooks()
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
   const itemWidth = 150
 
   console.log('[HomeScreen]', itemWidth / adjustedRatioWhichConsiderBottom)
-  
+
   return (
     <div style={{
       display: 'flex',
@@ -61,13 +63,13 @@ export const HomeScreen = () => {
         )}
         {continueReadingBooks.length > 0 && (
           <>
-            <div className={classes.title}>
+            <div style={classes.title}>
               <Typography variant="h6">Continue reading</Typography>
             </div>
             <BookList
               isHorizontal
               itemWidth={itemWidth}
-              data={continueReadingBooks}
+              data={continueReadingBookIds}
               style={{
                 height: itemWidth / adjustedRatioWhichConsiderBottom,
                 // border: '1px solid black'
@@ -78,7 +80,7 @@ export const HomeScreen = () => {
         )}
         {recentlyAddedBooks.length > 0 && (
           <>
-            <div className={classes.title}>
+            <div style={classes.title}>
               <Typography variant="h6">Recently added</Typography>
             </div>
             <BookList
@@ -99,11 +101,11 @@ export const HomeScreen = () => {
 }
 
 const useContinueReadingBooks = () => {
-  const booksSortedByDate = useBookSortedBy('activity')
+  const booksAsArray = useRecoilValue(booksAsArrayState)
+  const booksSortedByDate = useBooksSortedBy(booksAsArray, 'activity')
 
   return booksSortedByDate
     .filter(book => book.readingStateCurrentState === ReadingStateState.Reading)
-    .map(book => book._id)
 }
 
 const useRecentlyAddedBooks = () => {
@@ -115,11 +117,13 @@ const useRecentlyAddedBooks = () => {
     .map(book => book._id)
 }
 
-const useStyles = makeStyles((theme) =>
-  createStyles({
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
     title: {
       padding: theme.spacing(1),
       paddingTop: theme.spacing(2)
     }
-  }),
-);
+  }), [theme])
+}

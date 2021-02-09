@@ -2,7 +2,7 @@ import React, { useState, FC } from 'react'
 import Dialog from '@material-ui/core/Dialog'
 import {
   Button, DialogActions, DialogContent, DialogTitle, TextField,
-  Toolbar, IconButton, makeStyles, createStyles, ListItem, ListItemText, List, useTheme
+  Toolbar, IconButton, ListItem, ListItemText, List, useTheme
 } from '@material-ui/core'
 import { MoreVert } from '@material-ui/icons'
 import { ROUTES } from '../constants'
@@ -12,6 +12,7 @@ import { Cover } from '../books/Cover'
 import { useCreateCollection } from '../collections/helpers'
 import { useRecoilValue } from 'recoil'
 import { collectionsAsArrayState } from '../collections/states'
+import { useCSS } from '../utils'
 
 export const LibraryCollectionScreen = () => {
   const classes = useStyles()
@@ -23,7 +24,7 @@ export const LibraryCollectionScreen = () => {
   const cardHeight = 200
 
   return (
-    <div className={classes.container}>
+    <div style={classes.container}>
       <Toolbar>
         <Button
           style={{
@@ -36,18 +37,18 @@ export const LibraryCollectionScreen = () => {
           Create a new collection
         </Button>
       </Toolbar>
-      <List className={classes.list}>
+      <List style={classes.list}>
         {collections && collections.map(item => (
           <ListItem
             button
             key={item?._id}
-            className={classes.listItem}
+            style={classes.listItem}
             onClick={() => {
               item?._id && history.push(ROUTES.COLLECTION_DETAILS.replace(':id', item._id))
             }}
           >
-            <div className={classes.itemCard} style={{ height: cardHeight }}>
-              <div className={classes.itemBottomRadius} />
+            <div style={{ ...classes.itemCard, height: cardHeight }}>
+              <div style={classes.itemBottomRadius} />
               <div style={{
                 width: '100%',
                 zIndex: 1,
@@ -104,11 +105,13 @@ export const LibraryCollectionScreen = () => {
           </ListItem>
         ))}
       </List>
-      <CollectionActionsDrawer
-        open={!!isActionDialogOpenedWith}
-        id={isActionDialogOpenedWith}
-        onClose={() => setIsActionDialogOpenedWith(undefined)}
-      />
+      {isActionDialogOpenedWith && (
+        <CollectionActionsDrawer
+          open={!!isActionDialogOpenedWith}
+          id={isActionDialogOpenedWith}
+          onClose={() => setIsActionDialogOpenedWith(undefined)}
+        />
+      )}
       <AddCollectionDialog
         onClose={() => setIsAddCollectionDialogOpened(false)}
         open={isAddCollectionDialogOpened}
@@ -163,8 +166,10 @@ const AddCollectionDialog: FC<{
   )
 }
 
-const useStyles = makeStyles((theme) =>
-  createStyles({
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
     container: {
       flex: 1,
       overflow: 'auto'
@@ -195,5 +200,5 @@ const useStyles = makeStyles((theme) =>
       alignSelf: 'flex-end',
       position: 'absolute',
     },
-  }),
-)
+  }), [theme])
+}

@@ -2,11 +2,12 @@ import React, { useMemo, FC, ComponentProps, useRef, useEffect } from 'react'
 import { useScrollbarWidth, useMeasure } from 'react-use';
 import { RecyclerListView, DataProvider, LayoutProvider } from "recyclerlistview/web";
 import { ArrowBackIosRounded, ArrowForwardIosRounded, ExpandMoreRounded, ExpandLessRounded } from '@material-ui/icons';
-import { makeStyles } from '@material-ui/core';
+import { useTheme } from '@material-ui/core';
 import { Report } from '../report';
 import { useRecoilValue } from 'recoil';
 import { localSettingsState } from '../settings/states';
 import { UseMeasureResult } from 'react-use/lib/useMeasure';
+import { useCSS } from '../utils';
 
 // Create the data provider and provide method which takes in two rows of data and return if those two are different or not.
 // THIS IS VERY IMPORTANT, FORGET PERFORMANCE IF THIS IS MESSED UP
@@ -144,13 +145,17 @@ export const ItemList: FC<{
           canChangeSize={true}
           isHorizontal={isHorizontal}
           scrollViewProps={scrollViewProps}
+          renderAheadOffset={10}
         />
       )}
       {displayScrollerButtons && (
         <>
           {!isHorizontal && (
             <div
-              className={`${classes.verticalScrollButton} ${classes.verticalScrollButtonLess}`}
+              style={{
+                ...classes.verticalScrollButton,
+                ...classes.verticalScrollButtonLess,
+              }}
               onClick={onExpandLessClick}
             >
               <ExpandLessRounded style={{ color: 'white' }} />
@@ -158,7 +163,10 @@ export const ItemList: FC<{
           )}
           {!isHorizontal && (
             <div
-              className={`${classes.verticalScrollButton} ${classes.verticalScrollButtonMore}`}
+              style={{
+                ...classes.verticalScrollButton,
+                ...classes.verticalScrollButtonMore,
+              }}
               onClick={onExpandMoreClick}
             >
               <ExpandMoreRounded style={{ color: 'white' }} />
@@ -167,10 +175,10 @@ export const ItemList: FC<{
           {isHorizontal && (
             <div
               style={{
+                ...classes.horizontalButton,
                 position: 'absolute',
                 left: 5,
               }}
-              className={classes.horizontalButton}
               onClick={onExpandLessClick}
             >
               <ArrowBackIosRounded style={{ color: 'white' }} />
@@ -179,10 +187,10 @@ export const ItemList: FC<{
           {isHorizontal && (
             <div
               style={{
+                ...classes.horizontalButton,
                 position: 'absolute',
                 right: 5,
               }}
-              className={classes.horizontalButton}
               onClick={onExpandMoreClick}
             >
               <ArrowForwardIosRounded style={{ color: 'white' }} />
@@ -194,8 +202,10 @@ export const ItemList: FC<{
   )
 }
 
-const useClasses = makeStyles((theme) => {
-  return {
+const useClasses = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
     verticalScrollButton: {
       position: 'absolute',
       padding: theme.spacing(2),
@@ -225,5 +235,5 @@ const useClasses = makeStyles((theme) => {
       display: 'flex',
       flexFlow: 'column',
     }
-  }
-})
+  }), [theme])
+}

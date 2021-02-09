@@ -2,7 +2,7 @@ import React, { FC, useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import { MoreVertRounded, EditRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, makeStyles, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider } from '@material-ui/core';
+import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider, makeStyles } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
 import { useAddTagToBook, useRemoveTagToBook } from '../books/helpers';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
@@ -16,13 +16,14 @@ import { bookState, bookTagsState, bookLinksState, bookCollectionsState, enriche
 import { tagsAsArrayState } from '../tags/states';
 import { normalizedLinksState } from '../links/states';
 import { useEditLink } from '../links/helpers';
+import { useCSS } from '../utils';
 
 type ScreenParams = {
   id: string
 }
 
 export const BookDetailsScreen = () => {
-  const classes = useClasses()
+  const { styles, classes } = useStyles()
   const theme = useTheme()
   const history = useHistory()
   const downloadFile = useDownloadBook()
@@ -43,12 +44,12 @@ export const BookDetailsScreen = () => {
       overflow: 'auto'
     }}>
       <TopBarNavigation title="Book details" showBack={true} />
-      <div className={classes.headerContent}>
+      <div style={styles.headerContent}>
         <div className={classes.coverContainer} >
           {book && (<Cover bookId={book._id} />)}
         </div>
       </div>
-      <div className={classes.titleContainer}>
+      <div style={styles.titleContainer}>
         <Typography variant="body1">
           {book?.title || 'Unknown'}
         </Typography>
@@ -294,15 +295,21 @@ const TagsDialog: FC<{
   )
 }
 
-const useClasses = makeStyles(theme => {
-  return {
-    coverContainer: {
-      width: '80%',
-      [theme.breakpoints.down('sm')]: {
-        width: '40%',
-      },
-      maxWidth: theme.custom.maxWidthCenteredContent,
+const useClasses = makeStyles(theme => ({
+  coverContainer: {
+    width: '80%',
+    [theme.breakpoints.down('sm')]: {
+      width: '40%',
     },
+    maxWidth: theme.custom.maxWidthCenteredContent,
+  },
+}))
+
+const useStyles = () => {
+  const theme = useTheme()
+  const classes = useClasses()
+
+  const styles = useCSS(() => ({
     headerContent: {
       paddingBottom: theme.spacing(2),
       paddingTop: theme.spacing(3),
@@ -325,5 +332,7 @@ const useClasses = makeStyles(theme => {
     cover: {
       height: '20vh'
     }
-  }
-})
+  }), [theme])
+
+  return { styles, classes }
+}

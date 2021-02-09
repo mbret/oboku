@@ -2,11 +2,12 @@ import React, { FC, memo, useEffect, useState } from 'react'
 import { useMountedState } from 'react-use'
 import { API_URI } from '../constants'
 import placeholder from '../assets/cover-placeholder.png'
-import { Box, makeStyles } from '@material-ui/core'
+import { Box, useTheme } from '@material-ui/core'
 import { selectorFamily, useRecoilValue } from 'recoil'
 import { enrichedBookState } from './states'
 import { authState } from '../auth/authState'
 import { bluredTagIdsState } from '../tags/states'
+import { useCSS } from '../utils'
 
 const bookCoverState = selectorFamily({
   key: 'bookCoverState',
@@ -62,25 +63,25 @@ export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withSha
   }, [originalSrc])
 
   return (
-    <Box style={style} className={classes.container}>
+    <Box style={{ ...classes.container, ...style }}>
       {isLoading && (
         <img
           alt="img"
           src={placeholder}
-          className={classes.img}
+          style={classes.img}
           {...book?.isBlurred && {
             className: `${classes.img} svgBlur`
           }}
           {...rest}
         />
       )}
-      <picture className={classes.picture}>
+      <picture style={classes.picture}>
         <source srcSet={coverSrc} type="image/webp" />
         <source srcSet={coverSrcJpg} type="image/jpeg" />
         <img
           alt="img"
           src={coverSrc}
-          className={classes.img}
+          style={classes.img}
           {...book?.isBlurred && {
             className: `${classes.img} svgBlur`
           }}
@@ -99,29 +100,33 @@ export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withSha
 
 type StyleProps = Pick<Props, 'withShadow' | 'fullWidth' | 'rounded'> & { isLoading: boolean }
 
-const useStyle = makeStyles(theme => ({
-  container: {
-    width: '100%'
-  },
-  picture: ({ isLoading }: StyleProps) => ({
-    width: '100%',
-    ...isLoading && {
-      display: 'none'
-    }
-  }),
-  img: ({ withShadow, fullWidth, rounded }: StyleProps) => ({
-    position: 'relative',
-    height: '100%',
-    justifySelf: 'flex-end',
-    objectFit: 'cover',
-    ...withShadow && {
-      boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`,
+const useStyle = ({ withShadow, fullWidth, rounded, isLoading }: StyleProps) => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
+    container: {
+      width: '100%'
     },
-    ...fullWidth && {
+    picture: {
       width: '100%',
+      ...isLoading && {
+        display: 'none'
+      }
     },
-    ...rounded && {
-      borderRadius: 5,
+    img: {
+      position: 'relative',
+      height: '100%',
+      justifySelf: 'flex-end',
+      objectFit: 'cover',
+      ...withShadow && {
+        boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`,
+      },
+      ...fullWidth && {
+        width: '100%',
+      },
+      ...rounded && {
+        borderRadius: 5,
+      },
     },
-  }),
-}))
+  }), [theme, withShadow, fullWidth, rounded, isLoading])
+}

@@ -1,4 +1,4 @@
-import { Box, Chip, makeStyles, Typography, useTheme } from '@material-ui/core'
+import { Box, Chip, Typography, useTheme } from '@material-ui/core'
 import React, { FC } from 'react'
 import { useRecoilValue, useSetRecoilState } from 'recoil'
 import { useDefaultItemClickHandler } from './helpers'
@@ -7,6 +7,7 @@ import { BookListCoverContainer } from './BookListCoverContainer'
 import { ReadingStateState } from 'oboku-shared'
 import { LoopRounded, MenuBookRounded, MoreVert } from '@material-ui/icons'
 import { bookActionDrawerState } from '../BookActionsDrawer'
+import { useCSS } from '../../utils'
 
 export const BookListListItem: FC<{
   bookId: string,
@@ -41,7 +42,7 @@ export const BookListListItem: FC<{
     >
       <BookListCoverContainer
         bookId={bookId}
-        className={classes.coverContainer}
+        style={classes.coverContainer}
         withReadingProgressStatus={false}
         withDownloadStatus={false}
         withMetadaStatus={false}
@@ -98,14 +99,15 @@ export const BookListListItem: FC<{
   )
 }
 
-const useStyles = makeStyles(() => {
+const useStyles = ({ coverWidth }: { coverWidth: number }) => {
+  const theme = useTheme()
 
-  return {
+  return useCSS(() => ({
     coverContainer: {
       position: 'relative',
       display: 'flex',
-      flex: ({ coverWidth }: { coverWidth: number }) => `0 0 ${coverWidth}px`,
+      flex: `0 0 ${coverWidth}px`,
       minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
     },
-  }
-})
+  }), [theme, coverWidth])
+}

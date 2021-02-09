@@ -1,10 +1,11 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
-import { Box, Button, makeStyles, Typography, useTheme } from '@material-ui/core';
+import { Box, Button, Typography, useTheme } from '@material-ui/core';
 import { useHorizontalTappingZoneWidth } from '../reader/utils';
 import { TouchAppRounded } from '@material-ui/icons';
 import { useRecoilState } from 'recoil';
 import { firstTimeExperienceState } from './firstTimeExperienceStates';
+import { useCSS } from '../utils';
 
 export const AppTourReader: React.FC = memo(() => {
   const [{ hasDoneReaderTour }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)
@@ -27,7 +28,7 @@ export const AppTourReader: React.FC = memo(() => {
         number={1}
         withButtons={false}
         content={({ onClose }) => (
-          <Box className={styles.slide1}>
+          <Box style={styles.slide1}>
             {/* <Box style={{
               borderBottom: '1px dashed white',
               height: verticalTappingZoneHeight,
@@ -107,12 +108,16 @@ export const AppTourReader: React.FC = memo(() => {
   );
 });
 
-const useStyles = makeStyles((theme) => ({
-  slide1: {
-    boxSizing: 'border-box',
-    color: '#fff',
-    display: 'flex',
-    flex: 1,
-    flexFlow: 'column',
-  },
-}));
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
+    slide1: {
+      boxSizing: 'border-box',
+      color: '#fff',
+      display: 'flex',
+      flex: 1,
+      flexFlow: 'column',
+    },
+  }), [theme])
+}

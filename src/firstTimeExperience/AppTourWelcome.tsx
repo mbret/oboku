@@ -1,11 +1,12 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import FteCoverAsset from '../assets/fte-cover.svg'
-import { Box, makeStyles, Typography, useTheme } from '@material-ui/core';
+import { Box, Typography, useTheme } from '@material-ui/core';
 import { Logo } from '../common/Logo';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { authState } from '../auth/authState';
 import { firstTimeExperienceState } from './firstTimeExperienceStates';
+import { useCSS } from '../utils';
 
 export const AppTourWelcome: React.FC = memo(() => {
   const [{ hasDoneWelcomeTour }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)
@@ -27,7 +28,7 @@ export const AppTourWelcome: React.FC = memo(() => {
         id="AppTourWelcome"
         number={1}
         content={(
-          <Box className={styles.slide1}>
+          <Box style={styles.slide1}>
             <Logo />
             <div style={{
               display: 'flex',
@@ -51,53 +52,27 @@ export const AppTourWelcome: React.FC = memo(() => {
   );
 });
 
-const useStyles = makeStyles((theme) => ({
-  text: {
-    // ...fonts.bodyL,
-    // color: colors.whitePrimary,
-  },
-  coverContainer: {
-    // marginTop: vh(5),
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    // width: coverWidth,
-  },
-  slide1: {
-    // display,
-    padding: theme.spacing(2),
-    boxSizing: 'border-box',
-    textAlign: 'center',
-    // border: '1px solid red',
-    color: '#fff',
-    display: 'flex',
-    flex: 1,
-    flexFlow: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    // paddingHorizontal: 30,
-    // justifyContent: 'center',
-    // ...DeviceInfo.isTablet() && {
-    //   paddingHorizontal: 180,
-    // },
-  },
-  firstCircle: {
-    width: 66,
-    height: 66,
-    borderRadius: 50,
-    // backgroundColor: colors.white,
-    opacity: 0.3,
-    position: 'absolute',
-  },
-  secondCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 50,
-    // backgroundColor: colors.white,
-    opacity: 0.4,
-    position: 'absolute',
-  },
-  cover: {
-    opacity: 0.4,
-  },
-}));
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
+    slide1: {
+      // display,
+      padding: theme.spacing(2),
+      boxSizing: 'border-box',
+      textAlign: 'center',
+      // border: '1px solid red',
+      color: '#fff',
+      display: 'flex',
+      flex: 1,
+      flexFlow: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      // paddingHorizontal: 30,
+      // justifyContent: 'center',
+      // ...DeviceInfo.isTablet() && {
+      //   paddingHorizontal: 180,
+      // },
+    },
+  }), [theme])
+}
