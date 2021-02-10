@@ -7,7 +7,6 @@ import {
 import { AppsRounded, TuneRounded, ListRounded, SortRounded, LockOpenRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
 import { UploadBookFromUriDialog } from '../upload/UploadBookFromUriDialog';
-import { UploadBookFromDevice } from '../upload/UploadBookFromDevice';
 import { UploadBookFromDataSource } from '../upload/UploadBookFromDataSource';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
 import { useCSS, useMeasureElement } from '../utils';
@@ -19,6 +18,7 @@ import { UploadBookDrawer } from './UploadBookDrawer';
 import { useDataSourcePlugins } from '../dataSources/helpers';
 import { useBooksSortedBy } from '../books/helpers';
 import { SortByDialog } from '../books/bookList/SortByDialog';
+import { isUploadBookFromDeviceOpenedFromState } from '../upload/state';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
@@ -27,7 +27,7 @@ export const LibraryBooksScreen = () => {
   const [isUploadBookDrawerOpened, setIsUploadBookDrawerOpened] = useRecoilState(isUploadBookDrawerOpenedState)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const [isUploadBookFromUriDialogOpened, setIsUploadBookFromUriDialogOpened] = useState(false)
-  const [isUploadBookFromDeviceDialogOpened, setIsUploadBookFromDeviceDialogOpened] = useState(false)
+  const setIsUploadBookFromDeviceOpened = useSetRecoilState(isUploadBookFromDeviceOpenedFromState)
   const [isUploadBookFromDataSourceDialogOpened, setIsUploadBookFromDataSourceDialogOpened] = useState<ReturnType<typeof useDataSourcePlugins>[number] | undefined>(undefined)
   const setLibraryState = useSetRecoilState(libraryState)
   const dataSourcePlugins = useDataSourcePlugins()
@@ -74,7 +74,9 @@ export const LibraryBooksScreen = () => {
   console.log('[LibraryBooksScreen]', books)
 
   return (
-    <div style={classes.container}>
+    <div
+      style={classes.container}
+    >
       {listHeaderDimTracker}
       <Toolbar style={{ borderBottom: `1px solid ${theme.palette.grey[200]}`, boxSizing: 'border-box' }}>
         <IconButton
@@ -166,7 +168,6 @@ export const LibraryBooksScreen = () => {
           />
         )}
         <UploadBookFromUriDialog open={isUploadBookFromUriDialogOpened} onClose={() => setIsUploadBookFromUriDialogOpened(false)} />
-        {isUploadBookFromDeviceDialogOpened && <UploadBookFromDevice open onClose={() => setIsUploadBookFromDeviceDialogOpened(false)} />}
         {isUploadBookFromDataSourceDialogOpened && <UploadBookFromDataSource openWith={isUploadBookFromDataSourceDialogOpened} onClose={() => setIsUploadBookFromDataSourceDialogOpened(undefined)} />}
         <SortByDialog
           value={library.sorting}
@@ -183,7 +184,7 @@ export const LibraryBooksScreen = () => {
           setIsUploadBookDrawerOpened(false)
           switch (type) {
             case 'device':
-              setIsUploadBookFromDeviceDialogOpened(true)
+              setIsUploadBookFromDeviceOpened('local')
               break
             case 'uri':
               setIsUploadBookFromUriDialogOpened(true)
