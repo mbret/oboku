@@ -1,4 +1,4 @@
-export const compareLists = (a: string, b: string) => {
+export const sortByTitleComparator = (a: string, b: string) => {
   var alist = a.split(/(\d+)/),
     blist = b.split(/(\d+)/);
 

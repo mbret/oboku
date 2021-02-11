@@ -70,6 +70,7 @@ export const CollectionDetailsScreen = () => {
           </div>
           <BookListWithControls
             data={data}
+            defaultSort="alpha"
             renderEmptyList={(
               <div style={{
                 display: 'flex',

@@ -1,5 +1,5 @@
 import JSZip, { loadAsync } from 'jszip'
-import { compareLists } from './utils'
+import { sortByTitleComparator } from '@oboku/shared/dist/sorts'
 import './style.css'
 
 type LoadableFile = { name: string }
@@ -51,7 +51,7 @@ export const load = async (data: Blob | File) => {
   if (data instanceof Blob) {
     const jszip = await loadAsync(data)
     const filesAsArray = Object.values(jszip.files).filter(file => !file.dir)
-    const sortedKeys = filesAsArray.map(f => f.name).sort(compareLists)
+    const sortedKeys = filesAsArray.map(f => f.name).sort(sortByTitleComparator)
     const files = sortedKeys
       .map(name => {
         const file = filesAsArray.find(f => f.name === name) as JSZip.JSZipObject

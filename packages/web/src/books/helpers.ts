@@ -11,9 +11,10 @@ import { useCallback, useMemo } from "react"
 import { useGetDataSourceCredentials } from "../dataSources/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { PromiseReturnType } from "../types"
-import { UnwrapRecoilValue, useRecoilValue } from "recoil"
+import { useRecoilValue } from "recoil"
 import { normalizedBooksState, Book } from "./states"
 import * as R from 'ramda';
+import { sortByTitleComparator } from '@oboku/shared/dist/sorts'
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -216,7 +217,7 @@ const sortBooksBy = (books: Book[], sorting: 'date' | 'activity' | 'alpha' | und
       }, books)
     }
     case 'alpha': {
-      return R.sort(R.ascend(R.prop('title')), books)
+      return books.sort((a, b) => sortByTitleComparator(a.title || '', b.title || ''))
     }
     default: return books
   }
