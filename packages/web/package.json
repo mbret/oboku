@@ -1,0 +1,111 @@
+{
+  "name": "@oboku/web",
+  "version": "0.1.11",
+  "private": true,
+  "engines": {
+    "node": "12.x"
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.57",
+    "@oboku/shared": "1.0.0",
+    "@sentry/react": "^6.0.3",
+    "@sentry/tracing": "^6.0.3",
+    "@types/gapi": "0.0.39",
+    "@types/gapi.auth2": "0.0.52",
+    "@types/gapi.client.drive": "^3.0.13",
+    "@types/google.picker": "0.0.34",
+    "@types/pouchdb": "^6.4.0",
+    "@types/react-virtualized": "^9.21.11",
+    "@types/yup": "^0.29.10",
+    "axios": "^0.21.0",
+    "crypto-browserify": "^3.12.0",
+    "dropbox": "^8.2.0",
+    "firebase": "^8.2.6",
+    "fontsource-roboto": "^3.0.3",
+    "jszip": "^3.5.0",
+    "localforage": "^1.9.0",
+    "lodash.throttle": "^4.1.1",
+    "pouchdb": "^7.2.2",
+    "pouchdb-adapter-idb": "^7.2.2",
+    "pouchdb-adapter-memory": "^7.2.2",
+    "ramda": "^0.27.1",
+    "rc-slider": "^9.7.1",
+    "react": "^17.0.1",
+    "react-cookie": "^4.0.3",
+    "react-dom": "^17.0.1",
+    "react-dropzone": "^11.3.0",
+    "react-reader": "^0.20.3",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.1",
+    "react-use": "17.1.0",
+    "react-virtualized": "^9.22.3",
+    "recoil": "^0.1.2",
+    "recyclerlistview": "^3.0.5",
+    "rxdb": "^9.12.1",
+    "rxjs": "^6.6.3",
+    "screenfull": "^5.1.0",
+    "serve": "^11.3.2",
+    "typescript": "^4.0.3",
+    "uuid": "^8.3.1",
+    "web-vitals": "^0.2.4",
+    "workbox-background-sync": "^5.1.3",
+    "workbox-broadcast-update": "^5.1.3",
+    "workbox-cacheable-response": "^5.1.3",
+    "workbox-core": "^5.1.3",
+    "workbox-expiration": "^5.1.3",
+    "workbox-google-analytics": "^5.1.3",
+    "workbox-navigation-preload": "^5.1.3",
+    "workbox-precaching": "^5.1.3",
+    "workbox-range-requests": "^5.1.3",
+    "workbox-routing": "^5.1.3",
+    "workbox-strategies": "^5.1.3",
+    "workbox-streams": "^5.1.3",
+    "workerize-loader": "^1.3.0",
+    "yup": "^0.32.8"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^11.2.2",
+    "@testing-library/user-event": "^12.5.0",
+    "@types/jest": "^26.0.17",
+    "@types/lodash.throttle": "^4.1.6",
+    "@types/node": "^12.19.8",
+    "@types/ramda": "^0.27.36",
+    "@types/react": "17.0.1",
+    "@types/react-dom": "17.0.0",
+    "@types/react-router-dom": "^5.1.7",
+    "@types/testing-library__dom": "^7.5.0",
+    "@types/uuid": "^8.3.0"
+  },
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "start-prod": "npm run build && npm run serve-prod",
+    "serve-prod": "serve -s build -l 3000",
+    "tsc": "tsc"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
