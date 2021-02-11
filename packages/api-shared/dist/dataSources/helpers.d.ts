@@ -30,5 +30,6 @@ export declare const createHelpers: (dataSourceId: string, refreshBookMetadata: 
         isNotACollection: boolean;
         tags: string[];
         isIgnored: boolean;
+        direction: "ltr" | "rtl" | undefined;
     };
 };

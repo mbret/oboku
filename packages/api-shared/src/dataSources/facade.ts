@@ -31,29 +31,29 @@ export const dataSourceFacade = {
     const userId = Buffer.from(userEmail).toString('hex')
     const helpers = createHelpers(dataSourceId, refreshBookMetadata, db, isBookCoverExist, userId)
 
-    const dataSource = await helpers.findOne('datasource', { selector: { _id: dataSourceId } })
-
-    if (!dataSource) throw new Error('Data source not found')
-
-    const { type } = dataSource
-
-    // we create the date now on purpose so that if something change on the datasource
-    // during the process (which can take time), user will not be misled to believe its
-    // latest changes have been synced
-    const lastSyncedAt = new Date().getTime()
-    const ctx = { dataSourceId, userEmail, credentials, dataSourceType: type }
-
-    const runSync = () => {
-      switch (type) {
-        case DataSourceType.DRIVE:
-          return googleDataSource.sync(ctx, helpers)
-        case DataSourceType.DROPBOX:
-          return dropboxDataSource.sync(ctx, helpers)
-        default: { }
-      }
-    }
-
     try {
+      const dataSource = await helpers.findOne('datasource', { selector: { _id: dataSourceId } })
+
+      if (!dataSource) throw new Error('Data source not found')
+
+      const { type } = dataSource
+
+      // we create the date now on purpose so that if something change on the datasource
+      // during the process (which can take time), user will not be misled to believe its
+      // latest changes have been synced
+      const lastSyncedAt = new Date().getTime()
+      const ctx = { dataSourceId, userEmail, credentials, dataSourceType: type }
+
+      const runSync = () => {
+        switch (type) {
+          case DataSourceType.DRIVE:
+            return googleDataSource.sync(ctx, helpers)
+          case DataSourceType.DROPBOX:
+            return dropboxDataSource.sync(ctx, helpers)
+          default: { }
+        }
+      }
+
       const syncable = await runSync()
 
       if (syncable) {

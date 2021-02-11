@@ -32,25 +32,25 @@ exports.dataSourceFacade = {
         console.log(`dataSourceFacade started sync for ${dataSourceId} with user ${userEmail}`);
         const userId = Buffer.from(userEmail).toString('hex');
         const helpers = helpers_1.createHelpers(dataSourceId, refreshBookMetadata, db, isBookCoverExist, userId);
-        const dataSource = yield helpers.findOne('datasource', { selector: { _id: dataSourceId } });
-        if (!dataSource)
-            throw new Error('Data source not found');
-        const { type } = dataSource;
-        // we create the date now on purpose so that if something change on the datasource
-        // during the process (which can take time), user will not be misled to believe its
-        // latest changes have been synced
-        const lastSyncedAt = new Date().getTime();
-        const ctx = { dataSourceId, userEmail, credentials, dataSourceType: type };
-        const runSync = () => {
-            switch (type) {
-                case shared_1.DataSourceType.DRIVE:
-                    return google_1.dataSource.sync(ctx, helpers);
-                case shared_1.DataSourceType.DROPBOX:
-                    return dropbox_1.dataSource.sync(ctx, helpers);
-                default: { }
-            }
-        };
         try {
+            const dataSource = yield helpers.findOne('datasource', { selector: { _id: dataSourceId } });
+            if (!dataSource)
+                throw new Error('Data source not found');
+            const { type } = dataSource;
+            // we create the date now on purpose so that if something change on the datasource
+            // during the process (which can take time), user will not be misled to believe its
+            // latest changes have been synced
+            const lastSyncedAt = new Date().getTime();
+            const ctx = { dataSourceId, userEmail, credentials, dataSourceType: type };
+            const runSync = () => {
+                switch (type) {
+                    case shared_1.DataSourceType.DRIVE:
+                        return google_1.dataSource.sync(ctx, helpers);
+                    case shared_1.DataSourceType.DROPBOX:
+                        return dropbox_1.dataSource.sync(ctx, helpers);
+                    default: { }
+                }
+            };
             const syncable = yield runSync();
             if (syncable) {
                 yield sync_1.sync(syncable, ctx, helpers);

@@ -59,7 +59,7 @@ jobs:
       - name: build & deploy
         run: |
           yarn
-          cd packages/oboku-api-aws-lambda
+          cd packages/api-lambda
 
           touch .env
           echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env
