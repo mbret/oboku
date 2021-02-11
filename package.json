@@ -2,7 +2,6 @@
   "name": "@oboku/workspae",
   "version": "1.0.0",
   "private": true,
-  "main": "index.js",
   "repository": "git@github.com:mbret/oboku.git",
   "author": "Maxime Bret <bret.maxime@gmail.com>",
   "license": "MIT",
