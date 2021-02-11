@@ -1,0 +1,10 @@
+.comic-reader-wrapper {
+  height: 100%;
+  width: 100%;
+}
+
+.comic-reader-wrapper img {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
