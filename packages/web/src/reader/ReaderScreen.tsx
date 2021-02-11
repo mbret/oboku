@@ -2,7 +2,7 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
-import React, { useState, useEffect, useRef, useCallback, FC } from 'react'
+import React, { useState, useEffect, useRef, useCallback, FC, useMemo } from 'react'
 import { useHistory, useParams } from 'react-router-dom'
 
 import { EpubView } from './EpubView'
@@ -27,6 +27,7 @@ import { IS_MOBILE_DEVICE } from '../constants';
 import { localSettingsState } from '../settings/states';
 import { PackagingMetadataObjectWithMissingProperties } from './types';
 import { BookLoading } from './BookLoading';
+import { extractMetadataFromName } from '@oboku/shared/dist/directives';
 
 const screenfullApi = screenfull as Screenfull
 
@@ -37,7 +38,7 @@ export const ReaderScreen: FC<{}> = () => {
   const setCurrentApproximateProgress = useSetRecoilState(currentApproximateProgressState)
   const [rendition, setRendition] = useState<Rendition | undefined>(undefined)
   const { bookId } = useParams<{ bookId?: string }>()
-  const { file, documentType, error: fileError } = useFile(bookId || '-1')
+  const { file, documentType, error: fileError, filename } = useFile(bookId || '-1')
   const book = useRecoilValue(bookState(bookId || '-1'))
   const windowSize = useWindowSize()
   const [editBook] = useUpdateBook()
@@ -59,7 +60,7 @@ export const ReaderScreen: FC<{}> = () => {
 
   // @todo only show menu on short click
   const onRenditionClick = useCallback((e: MouseEvent) => {
-    const { offsetX, offsetY, clientX, clientY, x, screenX, pageX, movementX } = e
+    const { clientX } = e
 
     // let wrapper = rendition?.manager?.container;
 
@@ -262,10 +263,17 @@ export const ReaderScreen: FC<{}> = () => {
   useUpdateBookState(bookId || '-1')
   useDirection(rendition)
 
-  console.log('[ReaderScreen]', {
-    rendition,
-    book,
-  })
+  const { direction: metadataDirection } = (filename ? extractMetadataFromName(filename) : undefined || {})
+
+  const epubOptions = useMemo(() => ({
+    // spread: 'never' // never / always
+    minSpreadWidth: 99999,
+    // defaultDirection: 'ltr',
+    ...metadataDirection && {
+      defaultDirection: metadataDirection
+    }
+    // stylesheet: 'html { display: none; } ',
+  }), [metadataDirection])
 
   if (fileError) {
     return (
@@ -314,11 +322,7 @@ export const ReaderScreen: FC<{}> = () => {
                   // Bug in typing, epubjs accept blobs
                   url={file as any}
                   getRendition={setRendition}
-                  epubOptions={{
-                    // spread: 'never' // never / always
-                    minSpreadWidth: 99999
-                    // stylesheet: 'html { display: none; } ',
-                  }}
+                  epubOptions={epubOptions}
                   location={firstLocation.current}
                 />
                 {!isBookReady && (
@@ -327,11 +331,17 @@ export const ReaderScreen: FC<{}> = () => {
               </>
             )}
             {(documentType === 'comic') && (
-              <ComicReader
-                url={file}
-                getRendition={setRendition as any}
-                location={firstLocation.current}
-              />
+              <>
+                <ComicReader
+                  url={file}
+                  getRendition={setRendition}
+                  location={firstLocation.current}
+                  epubOptions={epubOptions}
+                />
+                {!isBookReady && (
+                  <BookLoading />
+                )}
+              </>
             )}
             {documentType === 'unknown' && (
               <Box display="flex" alignItems="center" textAlign="center" p={2} height="100%">

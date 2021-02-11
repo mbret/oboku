@@ -5,6 +5,7 @@ import {
 import createNano from 'nano'
 import { DataSourceDocType, InsertableBookDocType, SafeMangoQuery, Errors, ObokuSharedError } from "@oboku/shared"
 import { uniq } from "ramda"
+import { extractMetadataFromName } from '@oboku/shared/src/directives'
 
 export const createHelpers = (
   dataSourceId: string,
@@ -61,42 +62,4 @@ export const createHelpers = (
   }
 
   return helpers
-}
-
-/**
-* Will extract any oboku normalized metadata that exist in the resource id string.
-* Use this method to enrich the content that is being synchronized
-* @example
-* "foo [oboku~no_collection]" -> { isCollection: false }
-* "foo [oboku~tags~bar]" -> { tags: ['bar'] }
-* "foo [oboku~tags~bar,bar2]" -> { tags: ['bar', 'bar2'] }
-*/
-export const extractMetadataFromName = (resourceId: string) => {
-  let isNotACollection = false
-  let tags: string[] = []
-  let isIgnored = false
-  const directives = resourceId.match(/(\[oboku\~[^\]]*\])+/ig)?.map(str =>
-    str.replace(/\[oboku~/, '')
-      .replace(/\]/, '')
-  )
-  directives?.forEach(directive => {
-    if (directive === 'no_collection') {
-      isNotACollection = true
-    }
-    if (directive === 'ignore') {
-      isIgnored = true
-    }
-    if (directive.startsWith('tags~')) {
-      const newTags: string[] | undefined = directive.replace(/\[tags\~/, '')
-        .replace(/\]/, '')
-        .split('~')[1]?.split(',')
-      tags = [...tags, ...(newTags || [])]
-    }
-  })
-
-  return {
-    isNotACollection,
-    tags,
-    isIgnored,
-  }
 }

@@ -1,4 +1,3 @@
-import JSZip from 'jszip'
 import { BehaviorSubject, Subject } from 'rxjs'
 import { filter, first } from 'rxjs/operators'
 import { load } from './Loader'
@@ -6,6 +5,7 @@ import { createRenderer, Renderer } from './Renderer'
 import './style.css'
 import { Report } from '../../report'
 import { PromiseReturnType } from '../../types'
+import { RenditionOptions } from '../types'
 
 type Event = {
   name: string,
@@ -23,6 +23,7 @@ export class Engine {
   #loaded = new BehaviorSubject<PromiseReturnType<typeof load> | undefined>(undefined)
   protected wrapper: HTMLDivElement | undefined
   #actions$ = new Subject<{ name: 'display', data: any }>()
+  protected epubOptions: RenditionOptions = {}
   protected _currentLocation: {
     start: {
       index: number,
@@ -58,14 +59,15 @@ export class Engine {
       length: number,
       items: LoadableFiles,
     },
-    metadata: { layout: 'pre-paginated' }
+    metadata: { layout: 'pre-paginated', direction: 'ltr' | 'rtl' }
   } = {
       spine: {
         items: [],
         length: 0,
       },
       metadata: {
-        layout: 'pre-paginated'
+        layout: 'pre-paginated',
+        direction: 'rtl'
       }
     }
 
@@ -81,8 +83,13 @@ export class Engine {
       })
   }
 
-  public renderTo = async (container: HTMLElement) => {
+  public renderTo = async (container: HTMLElement, epubOptions: RenditionOptions) => {
     this.container = container
+    this.epubOptions = epubOptions
+
+    if (this.epubOptions?.defaultDirection) {
+      this.packaging.metadata.direction = this.epubOptions?.defaultDirection as 'ltr' | 'rtl'
+    }
   }
 
   public async load({ url }: { url: Blob | File }) {

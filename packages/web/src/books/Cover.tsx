@@ -2,7 +2,7 @@ import React, { FC, memo, useEffect, useState } from 'react'
 import { useMountedState } from 'react-use'
 import { API_URI } from '../constants'
 import placeholder from '../assets/cover-placeholder.png'
-import { Box, useTheme } from '@material-ui/core'
+import { useTheme } from '@material-ui/core'
 import { selectorFamily, useRecoilValue } from 'recoil'
 import { enrichedBookState } from './states'
 import { authState } from '../auth/authState'
@@ -63,7 +63,7 @@ export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withSha
   }, [originalSrc])
 
   return (
-    <Box style={{ ...classes.container, ...style }}>
+    <div style={{ ...classes.container, ...style }}>
       {isLoading && (
         <img
           alt="img"
@@ -94,7 +94,7 @@ export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withSha
           {...rest}
         />
       </picture>
-    </Box>
+    </div>
   )
 })
 

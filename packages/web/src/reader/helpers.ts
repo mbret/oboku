@@ -96,6 +96,7 @@ export const useFile = (bookId: string) => {
   const file = useBookFile(bookId)
   const [data, setData] = useState<{
     file?: Blob | undefined,
+    filename?: string,
     documentType?: 'comic' | 'epub' | 'unknown',
     error?: Error | undefined
   }>({})
@@ -106,7 +107,7 @@ export const useFile = (bookId: string) => {
         setData(prev => ({ ...prev, error: new Error('Unable to load file') }))
       } else if (file) {
         if (epubMimeTypes.includes(file.data.type) || file.name.endsWith('.epub')) {
-          setData(prev => ({ ...prev, file: file.data, documentType: 'epub', error: undefined }))
+          setData(prev => ({ ...prev, file: file.data, documentType: 'epub', error: undefined, filename: file.name }))
         } else if (
           ['text/xml'].includes(file.data.type)
           || (
@@ -118,9 +119,9 @@ export const useFile = (bookId: string) => {
               file.name.endsWith('.cbz')
               || file.name.endsWith('.txt')))
         ) {
-          setData(prev => ({ ...prev, file: file.data, documentType: 'comic', error: undefined }))
+          setData(prev => ({ ...prev, file: file.data, documentType: 'comic', error: undefined, filename: file.name }))
         } else {
-          setData(prev => ({ ...prev, file: file.data, documentType: 'unknown', error: undefined }))
+          setData(prev => ({ ...prev, file: file.data, documentType: 'unknown', error: undefined, filename: file.name }))
         }
       }
     })()

@@ -11,3 +11,5 @@ export {}
 export type PackagingMetadataObjectWithMissingProperties = Book['packaging']['metadata'] & {
   direction: string
 }
+
+export type RenditionOptions = Parameters<Book['renderTo']>[1]

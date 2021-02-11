@@ -1,13 +1,15 @@
-import React, { FC, useEffect, useRef } from 'react'
+import { FC, useEffect, useRef } from 'react'
 import { useUnmount } from 'react-use'
 import { Report } from '../../report'
+import { RenditionOptions } from '../types'
 import { EpubJSInterface } from './EpubJSInterface'
 
 export const ComicReader: FC<{
   url: Blob | File
   location?: string,
-  getRendition: (rendition: EpubJSInterface) => void
-}> = ({ url, location, getRendition }) => {
+  getRendition: (rendition: any) => void
+  epubOptions: RenditionOptions
+}> = ({ url, location, getRendition, epubOptions }) => {
   const engine = useRef(new EpubJSInterface())
   const getRenditionRef = useRef(getRendition)
   getRenditionRef.current = getRendition
@@ -32,7 +34,7 @@ export const ComicReader: FC<{
 
   return (
     <div ref={ref => {
-      ref && engine.current.renderTo(ref)
+      ref && engine.current.renderTo(ref, epubOptions)
     }} style={{ height: '100%' }}></div>
   )
 }

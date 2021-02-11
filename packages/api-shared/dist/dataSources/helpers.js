@@ -9,9 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extractMetadataFromName = exports.createHelpers = void 0;
+exports.createHelpers = void 0;
 const helpers_1 = require("@oboku/api-shared/src/db/helpers");
 const shared_1 = require("@oboku/shared");
+const directives_1 = require("@oboku/shared/src/directives");
 const createHelpers = (dataSourceId, refreshBookMetadata, db, getBookCover, userId) => {
     const helpers = {
         refreshBookMetadata: (opts) => refreshBookMetadata(opts).catch(console.error),
@@ -44,46 +45,9 @@ const createHelpers = (dataSourceId, refreshBookMetadata, db, getBookCover, user
                     return new shared_1.ObokuSharedError(shared_1.Errors.ERROR_DATASOURCE_UNKNOWN, previousError);
             }
         },
-        extractMetadataFromName: exports.extractMetadataFromName,
+        extractMetadataFromName: directives_1.extractMetadataFromName,
     };
     return helpers;
 };
 exports.createHelpers = createHelpers;
-/**
-* Will extract any oboku normalized metadata that exist in the resource id string.
-* Use this method to enrich the content that is being synchronized
-* @example
-* "foo [oboku~no_collection]" -> { isCollection: false }
-* "foo [oboku~tags~bar]" -> { tags: ['bar'] }
-* "foo [oboku~tags~bar,bar2]" -> { tags: ['bar', 'bar2'] }
-*/
-const extractMetadataFromName = (resourceId) => {
-    var _a;
-    let isNotACollection = false;
-    let tags = [];
-    let isIgnored = false;
-    const directives = (_a = resourceId.match(/(\[oboku\~[^\]]*\])+/ig)) === null || _a === void 0 ? void 0 : _a.map(str => str.replace(/\[oboku~/, '')
-        .replace(/\]/, ''));
-    directives === null || directives === void 0 ? void 0 : directives.forEach(directive => {
-        var _a;
-        if (directive === 'no_collection') {
-            isNotACollection = true;
-        }
-        if (directive === 'ignore') {
-            isIgnored = true;
-        }
-        if (directive.startsWith('tags~')) {
-            const newTags = (_a = directive.replace(/\[tags\~/, '')
-                .replace(/\]/, '')
-                .split('~')[1]) === null || _a === void 0 ? void 0 : _a.split(',');
-            tags = [...tags, ...(newTags || [])];
-        }
-    });
-    return {
-        isNotACollection,
-        tags,
-        isIgnored,
-    };
-};
-exports.extractMetadataFromName = extractMetadataFromName;
 //# sourceMappingURL=helpers.js.map
