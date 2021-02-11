@@ -1,0 +1,41 @@
+{
+  "name": "@oboku/api-lambda",
+  "version": "1.0.0",
+  "description": "hello world sample for NodeJS",
+  "main": "./build/app.js",
+  "repository": "https://github.com/awslabs/aws-sam-cli/tree/develop/samcli/local/init/templates/cookiecutter-aws-sam-hello-nodejs",
+  "author": "SAM CLI",
+  "license": "MIT",
+  "dependencies": {
+    "@oboku/shared": "1.0.0",
+    "@types/aws-lambda": "^8.10.68",
+    "@types/concurrently": "^5.2.1",
+    "@types/sharp": "^0.27.1",
+    "aws-lambda": "^1.0.6",
+    "aws-sdk": "^2.817.0",
+    "axios": "^0.21.0",
+    "copy-webpack-plugin": "^7.0.0",
+    "nano": "^9.0.1",
+    "node-fetch": "^2.6.1",
+    "node-loader": "^1.0.2",
+    "request": "^2.88.2",
+    "sharp": "^0.27.1",
+    "ts-loader": "^8.0.12",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.3",
+    "unzipper": "^0.10.11",
+    "webpack": "^5.11.0",
+    "webpack-cli": "^4.3.0"
+  },
+  "scripts": {
+    "test": "mocha tests/unit/",
+    "compile": "mkdir -p dist && cp package-build.json dist/package.json && ts-node scripts/compile.ts",
+    "compile:dev": "ts-node scripts/startDev.ts",
+    "start:dev": "concurrently -n webpack,api,lambda \"yarn compile:dev\" \"sam local start-api -p 4001 --host 0.0.0.0 --parameter-overrides Environment=DEV\" \"sam local start-lambda -p 4002 --parameter-overrides Environment=DEV\"",
+    "watch": "yarn start:dev"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^8.2.1"
+  }
+}

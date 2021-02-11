@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  oboku-api
+
+  Sample SAM Template for oboku-api
+
+Parameters:
+  CoverBucketName:
+    Type: String
+    Default: "oboku-covers"
+  Environment:
+    Type: String
+    Default: "PROD"
+    AllowedValues:
+      - DEV
+      - PROD
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Api:
+    BinaryMediaTypes:
+      - "*/*"
+    Cors:
+      AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+      AllowHeaders: "'*'"
+      AllowOrigin: "'*'"
+      AllowCredentials: false
+  Function:
+    Timeout: 900
+    Environment:
+      Variables:
+        Foo: Bar
+        ENV: !Ref Environment
+
+Resources:
+  RefreshMetadataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/refreshMetadata
+      Handler: main.fn
+      Runtime: nodejs12.x
+      Events:
+        Post:
+          Type: Api
+          Properties:
+            Path: /refresh-metadata
+            Method: post
+  RefreshMetadataLongProcessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/refreshMetadataLongProcess
+      Handler: main.fn
+      Runtime: nodejs12.x
+      MemorySize: 512
+      Policies:
+        S3CrudPolicy:
+          BucketName: !Ref CoverBucketName
+  SyncDataSourceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/syncDataSource
+      Handler: main.fn
+      Runtime: nodejs12.x
+      Events:
+        Post:
+          Type: Api
+          Properties:
+            Path: /sync-datasource
+            Method: post
+  SyncDataSourceLongProcessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/syncDataSourceLongProcess
+      Handler: main.fn
+      Runtime: nodejs12.x
+      MemorySize: 512
+      Policies:
+        S3ReadPolicy:
+          BucketName: !Ref CoverBucketName
+  SigninFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/signin
+      Handler: main.fn
+      Runtime: nodejs12.x
+      Events:
+        Post:
+          Type: Api 
+          Properties:
+            Path: /signin
+            Method: post
+  CoverFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/cover
+      Handler: main.fn
+      Runtime: nodejs12.x
+      Policies:
+        S3ReadPolicy:
+          BucketName: !Ref CoverBucketName
+      Events:
+        Post:
+          Type: Api 
+          Properties:
+            Path: /cover/{id}
+            Method: get
+  SignupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/signup
+      Handler: main.fn
+      Runtime: nodejs12.x
+      Events:
+        Post:
+          Type: Api 
+          Properties:
+            Path: /signup
+            Method: post
+  CoverBucket:
+    Type: AWS::S3::Bucket
