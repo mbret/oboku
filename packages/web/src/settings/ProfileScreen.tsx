@@ -23,7 +23,7 @@ export const ProfileScreen = () => {
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
   const [isEditContentPasswordDialogOpened, setIsEditContentPasswordDialogOpened] = useState(false)
   const [isLoadLibraryDebugOpened, setIsLoadLibraryDebugOpened] = useState(false)
-  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
+  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([])
   const [, isUnlockLibraryDialogOpened] = useRecoilState(unlockLibraryDialogState)
   const auth = useRecoilValue(authState)
   const settings = useRecoilValue(settingsState)

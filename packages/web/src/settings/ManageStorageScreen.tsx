@@ -12,8 +12,8 @@ import { bookDownloadsSizeState } from '../download/states';
 import { bytesToMb } from '../utils';
 
 export const ManageStorageScreen = () => {
-  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse()
   const books = useRecoilValue(downloadedBookIdsState)
+  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([books])
   const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const bookSize = useRecoilValue(bookDownloadsSizeState)
 
