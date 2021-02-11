@@ -24,6 +24,6 @@
   },
   "include": [
     "src",
-    "node_modules/oboku-shared"
+    "node_modules/@oboku/shared"
   ]
 }
