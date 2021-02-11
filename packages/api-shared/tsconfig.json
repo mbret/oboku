@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "commonjs",
+    "target": "es2016",
+    "jsx": "preserve",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": false,
+    "outDir": "dist"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["dist", "**/*.d.ts"],
+}

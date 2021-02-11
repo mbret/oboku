@@ -1,0 +1,17 @@
+{
+  "name": "@oboku/api-shared",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "watch": "nodemon"
+  },
+  "dependencies": {
+    "@oboku/shared": "1.0.0",
+    "@types/node-fetch": "^2.5.8",
+    "dropbox": "mbret/dropbox-sdk-js#main",
+    "googleapis": "^67.0.0",
+    "nano": "^9.0.1",
+    "node-fetch": "^2.6.1"
+  }
+}
