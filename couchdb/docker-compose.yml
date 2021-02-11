@@ -1,0 +1,12 @@
+version: '3.1'
+
+services:
+
+  couchdb:
+    image: couchdb
+    restart: always
+    ports:
+      - "127.0.0.1:5984:5984"
+      - "127.0.0.1:5986:5986"
+    volumes:
+      - /private/couchdb/etc/local.d:/opt/couchdb/etc/local.d

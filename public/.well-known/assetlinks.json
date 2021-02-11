@@ -1,5 +1,0 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target" : { "namespace": "android_app", "package_name": "me.oboku.app.twa",
-                   "sha256_cert_fingerprints": ["CF:2A:D3:38:FB:9D:83:5B:82:2D:9E:DA:DF:BD:4E:A7:D0:5C:FE:33:43:90:DC:02:96:91:EB:A7:9E:8E:D0:6F"] }
-    }]
