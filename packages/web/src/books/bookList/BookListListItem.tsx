@@ -1,13 +1,13 @@
-import { Box, Chip, Typography, useTheme } from '@material-ui/core'
+import { Chip, Typography, useTheme } from '@material-ui/core'
 import React, { FC } from 'react'
 import { useRecoilValue, useSetRecoilState } from 'recoil'
 import { useDefaultItemClickHandler } from './helpers'
 import { enrichedBookState } from '../states'
-import { BookListCoverContainer } from './BookListCoverContainer'
 import { ReadingStateState } from '@oboku/shared'
 import { LoopRounded, MenuBookRounded, MoreVert } from '@material-ui/icons'
 import { bookActionDrawerState } from '../BookActionsDrawer'
 import { useCSS } from '../../utils'
+import { BookListCoverContainer } from './BookListCoverContainer'
 
 export const BookListListItem: FC<{
   bookId: string,
@@ -26,8 +26,7 @@ export const BookListListItem: FC<{
   const setBookActionDrawerState = useSetRecoilState(bookActionDrawerState)
 
   return (
-    <Box
-      key={book?._id}
+    <div
       onClick={() => {
         if (onItemClick) return onItemClick(bookId)
         return onDefaultItemClick(bookId)
@@ -36,9 +35,9 @@ export const BookListListItem: FC<{
         display: 'flex',
         overflow: 'hidden',
         height: computedHeight,
-        cursor: 'pointer'
+        cursor: 'pointer',
+        flexGrow: 1,
       }}
-      flexGrow={1}
     >
       <BookListCoverContainer
         bookId={bookId}
@@ -47,7 +46,7 @@ export const BookListListItem: FC<{
         withDownloadStatus={false}
         withMetadaStatus={false}
       />
-      <Box ml={1} overflow="hidden" style={{ display: 'flex', flex: 1, minHeight: 0, flexDirection: 'column' }}>
+      <div style={{ display: 'flex', flex: 1, minHeight: 0, flexDirection: 'column', marginLeft: theme.spacing(1), overflow: 'hidden' }}>
         <Typography
           noWrap
           variant="body1"
@@ -59,43 +58,43 @@ export const BookListListItem: FC<{
           {book?.title || 'Unknown'}
         </Typography>
         <Typography noWrap color="textSecondary" variant="body2">{book?.creator || 'Unknown'}</Typography>
-        <Box style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'flex-end' }} justifyContent="space-between">
-          <Box>
+        <div style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'flex-end', justifyContent: 'space-between' }}>
+          <div>
             {book?.readingStateCurrentState === ReadingStateState.Reading && (
-              <Box display="flex" flexDirection="row">
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
                 <MenuBookRounded style={{ opacity: '50%' }} />
                 <Typography
                   color="textSecondary"
                   style={{
                     marginLeft: theme.spacing(0.5),
                   }}>{Math.floor((book?.readingStateCurrentBookmarkProgressPercent || 0) * 100) || 1}%</Typography>
-              </Box>
+              </div>
             )}
-          </Box>
+          </div>
 
           {(!book?.lastMetadataUpdatedAt) && (
-            <Box display="flex" flexDirection="row">
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
               <Chip size="small" avatar={<LoopRounded className="icon-spin" />} label="metadata..." />
-            </Box>
+            </div>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
       {withDrawerActions && (
-        <Box
-          display="flex"
-          alignItems="center"
-          ml={1}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginLeft: theme.spacing(1)
+          }}
           onClick={(e) => {
             e.stopPropagation()
             book?._id && setBookActionDrawerState({ openedWith: book._id })
           }}
         >
-          <MoreVert style={{
-            // transform: 'translate(-50%, 0%)',
-          }} />
-        </Box>
+          <MoreVert />
+        </div>
       )}
-    </Box>
+    </div>
   )
 }
 

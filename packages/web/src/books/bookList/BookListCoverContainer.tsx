@@ -1,5 +1,5 @@
 import React, { FC, memo, useEffect } from 'react'
-import { Box, Chip, useTheme } from "@material-ui/core"
+import { Chip, useTheme } from "@material-ui/core"
 import { CloudDownloadRounded, LoopRounded } from '@material-ui/icons';
 import { useRafState } from 'react-use';
 import { Cover } from '../Cover';
@@ -40,31 +40,29 @@ export const BookListCoverContainer: FC<{
             {item?.downloadState !== DownloadState.Downloaded && (
               <div style={classes.downloadOverlay} />
             )}
-            <Box
-              flexDirection="column"
-              alignItems="center"
+            <div
               style={classes.bodyContainer}>
               {(withMetadaStatus && !item?.lastMetadataUpdatedAt) && (
-                <Box style={classes.itemCoverCenterInfo}>
+                <div style={classes.itemCoverCenterInfo}>
                   <Chip color="secondary" size="small" icon={<LoopRounded color="primary" className="icon-spin" />} label="metadata..." />
-                </Box>
+                </div>
               )}
               {item?.downloadState === 'none' && (
-                <Box position="absolute" left="50%" top="50%" style={classes.pauseButton}>
+                <div style={classes.pauseButton}>
                   <CloudDownloadRounded color="secondary" />
-                </Box>
+                </div>
               )}
               {(withDownloadStatus && item?.downloadState === 'downloading') && (
-                <Box position="absolute" left="50%" top="50%" style={classes.pauseButton}>
+                <div style={classes.pauseButton}>
                   <Chip
                     color="secondary"
                     size="small"
                     //  icon={<Pause />} 
                     label="downloading..."
                   />
-                </Box>
+                </div>
               )}
-            </Box>
+            </div>
             {withReadingProgressStatus && (
               <>
                 {item?.readingStateCurrentState === ReadingStateState.Reading && (
@@ -103,6 +101,8 @@ const useStyles = ({ item }: { item: Book }) => {
       top: 0,
       display: 'flex',
       padding: theme.spacing(1),
+      flexDirection: "column",
+      alignItems: "center",
     },
     readingProgress: {
       position: 'absolute',
@@ -110,7 +110,10 @@ const useStyles = ({ item }: { item: Book }) => {
       left: '50%',
       transform: 'translateX(-50%)',
     },
-    pauseButton: { transform: 'translate(-50%, -50%)' },
+    pauseButton: {
+      transform: 'translate(-50%, -50%)',
+      position: "absolute", left: "50%", top: "50%"
+    },
     downloadOverlay: {
       backgroundColor: 'white',
       opacity: 0.5,
