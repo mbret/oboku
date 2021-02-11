@@ -94,6 +94,22 @@ export const BookActionsDrawer = () => {
                 <ListItemText primary="Remove the book download" />
               </ListItem>
             )}
+            {(actions?.includes('removeDownload') || !actions) && (book.downloadState === 'downloaded' && book.isLocal) && (
+              <ListItem button
+                onClick={() => {
+                  handleClose()
+                  bookId && removeBook({ id: bookId })
+                }}
+              >
+                <ListItemIcon>
+                  <DeleteForeverRounded />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Remove the book"
+                  secondary="This book is local, removing its content will remove it from your library as well"
+                />
+              </ListItem>
+            )}
           </List>
           {!actions && (
             <>
