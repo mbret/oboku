@@ -1,0 +1,22 @@
+{
+  "name": "@oboku/shared",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "tsc",
+    "watch": "nodemon"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/crypto-js": "^4.0.1",
+    "crypto-js": "^4.0.0",
+    "typescript": "^4.0.5",
+    "yup": "^0.32.8"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.6"
+  }
+}
