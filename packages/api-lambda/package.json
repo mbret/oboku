@@ -7,8 +7,8 @@
   "author": "SAM CLI",
   "license": "MIT",
   "dependencies": {
-    "@oboku/shared": "*",
-    "@oboku/api-shared": "*",
+    "@oboku/shared": "1.0.0",
+    "@oboku/api-shared": "1.0.0",
     "@types/aws-lambda": "^8.10.68",
     "@types/concurrently": "^5.2.1",
     "@types/sharp": "^0.27.1",

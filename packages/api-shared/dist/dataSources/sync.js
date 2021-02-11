@@ -27,10 +27,10 @@ exports.sync = sync;
 const syncFolder = ({ ctx, helpers, hasCollectionAsParent, item, lvl, parents }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const metadataForFolder = helpers.extractMetadataFromName(item.name);
-    logger.log(`syncFolder metadata for ${item.name}`, metadataForFolder);
+    logger.log(`syncFolder ${item.name}: metadata `, metadataForFolder);
     const isCollection = isFolder(item) && !hasCollectionAsParent && lvl > 0 && !metadataForFolder.isNotACollection;
     if (metadataForFolder.isIgnored) {
-        logger.log(`syncFolder ignore ${item.name}`);
+        logger.log(`syncFolder ${item.name}: ignore`);
         return;
     }
     yield Promise.all(metadataForFolder.tags.map(name => helpers.getOrcreateTagFromName(name)));
@@ -41,7 +41,7 @@ const syncFolder = ({ ctx, helpers, hasCollectionAsParent, item, lvl, parents })
     if (isFolder(item) && isCollection) {
         yield registerOrUpdateCollection({ ctx, item, helpers });
     }
-    logger.log(`syncFolder ${item.name} with items ${((_a = item.items) === null || _a === void 0 ? void 0 : _a.length) || 0} items`, item);
+    logger.log(`syncFolder ${item.name}: with items ${((_a = item.items) === null || _a === void 0 ? void 0 : _a.length) || 0} items`);
     yield Promise.all((item.items || []).map((subItem) => __awaiter(void 0, void 0, void 0, function* () {
         if (isFile(subItem)) {
             yield createOrUpdateBook({
@@ -65,6 +65,7 @@ const syncFolder = ({ ctx, helpers, hasCollectionAsParent, item, lvl, parents })
 });
 const createOrUpdateBook = ({ ctx: { dataSourceType }, helpers, parents, item }) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        logger.log(`createOrUpdateBook "${item.name}":`, parents.map(p => p.name));
         const parentTags = parents.reduce((tags, parent) => [...tags, ...helpers.extractMetadataFromName(parent.name).tags], []);
         const metadata = helpers.extractMetadataFromName(item.name);
         const parentFolders = parents.filter(parent => isFolder(parent));
@@ -128,20 +129,23 @@ const createOrUpdateBook = ({ ctx: { dataSourceType }, helpers, parents, item })
  */
 const synchronizeBookWithParentCollections = (bookId, parents, helpers) => __awaiter(void 0, void 0, void 0, function* () {
     const parentResourceIds = (parents === null || parents === void 0 ? void 0 : parents.map(parent => parent.resourceId)) || [];
-    logger.log(`synchronizeBookWithParentCollections between ${bookId} and`, parentResourceIds);
+    logger.log(`synchronizeBookWithParentCollections "${bookId}":`, parentResourceIds);
     // Retrieve all the new collection to which attach the book and add the book in the list
-    const collectionsThatHaveNotThisBookAsReferenceYet = yield helpers.find('obokucollection', {
-        selector: {
-            $or: parentResourceIds.map(resourceId => ({ resourceId })),
-            books: {
-                $nin: [bookId]
+    // if there is no collection we don't run the query since it will return everything because of the empty $or
+    if (parentResourceIds.length > 0) {
+        const collectionsThatHaveNotThisBookAsReferenceYet = yield helpers.find('obokucollection', {
+            selector: {
+                $or: parentResourceIds.map(resourceId => ({ resourceId })),
+                books: {
+                    $nin: [bookId]
+                }
             }
+        });
+        if (collectionsThatHaveNotThisBookAsReferenceYet.length > 0) {
+            logger.log(`synchronizeBookWithParentCollections ${bookId} has ${collectionsThatHaveNotThisBookAsReferenceYet.length} collection missing its reference`);
+            yield Promise.all(collectionsThatHaveNotThisBookAsReferenceYet
+                .map(collection => helpers.atomicUpdate('obokucollection', collection._id, old => (Object.assign(Object.assign({}, old), { books: [...old.books.filter(id => id !== bookId), bookId] })))));
         }
-    });
-    if (collectionsThatHaveNotThisBookAsReferenceYet.length > 0) {
-        logger.log(`synchronizeBookWithParentCollections ${bookId} has ${collectionsThatHaveNotThisBookAsReferenceYet.length} collection missing its reference`);
-        yield Promise.all(collectionsThatHaveNotThisBookAsReferenceYet
-            .map(collection => helpers.atomicUpdate('obokucollection', collection._id, old => (Object.assign(Object.assign({}, old), { books: [...old.books.filter(id => id !== bookId), bookId] })))));
     }
     // Retrieve all the collections that has the book attached but are not a parent anymore
     // @todo only retrieve collections that are from the sync folder
