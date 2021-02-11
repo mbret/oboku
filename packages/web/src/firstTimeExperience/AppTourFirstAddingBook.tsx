@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import FteUploadAsset from '../assets/fte-upload.svg'
-import { Box, Link, Typography, useTheme } from '@material-ui/core';
+import { Link, Typography, useTheme } from '@material-ui/core';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { firstTimeExperienceState } from './firstTimeExperienceStates';
 import { isUploadBookDrawerOpenedState } from '../library/states';
@@ -27,8 +27,8 @@ export const AppTourFirstAddingBook: React.FC = memo(() => {
         id="AppTourFirstAddingBook"
         number={1}
         content={(
-          <Box style={styles.slide1}>
-            <Box style={{
+          <div style={styles.slide1}>
+            <div style={{
               display: 'flex',
               flexFlow: 'column',
               alignItems: 'center',
@@ -45,8 +45,8 @@ export const AppTourFirstAddingBook: React.FC = memo(() => {
                 Looks like you are about to add content to your library. There will be several options to choose from so feel
                 free to read more about it on the <Link href="https://docs.oboku.me/wiki/adding-a-book" target="__blank">doc</Link>
               </Typography>
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
       />
     </Tour>

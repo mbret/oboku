@@ -28,7 +28,7 @@ export const AppTourReader: React.FC = memo(() => {
         number={1}
         withButtons={false}
         content={({ onClose }) => (
-          <Box style={styles.slide1}>
+          <div style={styles.slide1}>
             {/* <Box style={{
               borderBottom: '1px dashed white',
               height: verticalTappingZoneHeight,
@@ -41,11 +41,11 @@ export const AppTourReader: React.FC = memo(() => {
               <Typography>Tap here to show the top menu</Typography>
               <TouchAppRounded />
             </Box> */}
-            <Box style={{
+            <div style={{
               display: 'flex',
               flex: 1,
             }}>
-              <Box style={{
+              <div style={{
                 borderRight: '1px dashed white',
                 height: '100%',
                 width: horizontalTappingZoneWidth,
@@ -54,8 +54,8 @@ export const AppTourReader: React.FC = memo(() => {
                 justifyContent: 'center',
               }}>
                 <TouchAppRounded />
-              </Box>
-              <Box style={{
+              </div>
+              <div style={{
                 flex: 1,
                 display: 'flex',
                 alignItems: 'center',
@@ -64,9 +64,9 @@ export const AppTourReader: React.FC = memo(() => {
                 flexFlow: 'column',
                 padding: theme.spacing(3),
               }}>
-                <Box >
+                <div >
                   <Typography>Navigate through the book by tapping on the side of the screen</Typography>
-                </Box>
+                </div>
                 <Box mt={4}>
                   <TouchAppRounded /> <Typography>Tap in the middle to toggle top and bottom menu</Typography>
                 </Box>
@@ -77,8 +77,8 @@ export const AppTourReader: React.FC = memo(() => {
                     onClick={onClose}
                   >Got it</Button>
                 </Box>
-              </Box>
-              <Box style={{
+              </div>
+              <div style={{
                 borderLeft: '1px dashed white',
                 height: '100%',
                 width: horizontalTappingZoneWidth,
@@ -87,8 +87,8 @@ export const AppTourReader: React.FC = memo(() => {
                 justifyContent: 'center',
               }}>
                 <TouchAppRounded />
-              </Box>
-            </Box>
+              </div>
+            </div>
             {/* <Box style={{
               borderTop: '1px dashed white',
               height: verticalTappingZoneHeight,
@@ -101,7 +101,7 @@ export const AppTourReader: React.FC = memo(() => {
               <TouchAppRounded />
               <Typography>Tap here to show reading controls menu</Typography>
             </Box> */}
-          </Box>
+          </div>
         )}
       />
     </Tour>

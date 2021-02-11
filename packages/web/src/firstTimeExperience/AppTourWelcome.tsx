@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import FteCoverAsset from '../assets/fte-cover.svg'
-import { Box, Typography, useTheme } from '@material-ui/core';
+import { Typography, useTheme } from '@material-ui/core';
 import { Logo } from '../common/Logo';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { authState } from '../auth/authState';
@@ -28,7 +28,7 @@ export const AppTourWelcome: React.FC = memo(() => {
         id="AppTourWelcome"
         number={1}
         content={(
-          <Box style={styles.slide1}>
+          <div style={styles.slide1}>
             <Logo />
             <div style={{
               display: 'flex',
@@ -45,7 +45,7 @@ export const AppTourWelcome: React.FC = memo(() => {
               }} />
               <Typography >Welcome and thank you for using the app. oboku is under heavy development so bugs are to be expected</Typography>
             </div>
-          </Box>
+          </div>
         )}
       />
     </Tour>

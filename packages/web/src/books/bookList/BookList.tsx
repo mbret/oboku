@@ -1,5 +1,5 @@
 import React, { ComponentProps, useCallback, FC, useMemo, memo } from 'react'
-import { Box, useTheme } from "@material-ui/core"
+import { useTheme } from "@material-ui/core"
 import { useWindowSize } from 'react-use';
 import { ItemList } from '../../lists/ItemList';
 import { BookListGridItem } from './BookListGridItem';
@@ -51,14 +51,14 @@ export const BookList: FC<{
     return viewMode === LibraryViewMode.GRID
       ? <BookListGridItem bookId={item} />
       : (
-        <Box display="flex" alignItems="center" flex={1}>
+        <div style={{ flex: 1, alignItems: 'center', display: 'flex' }}>
           <BookListListItem
             bookId={item}
             itemHeight={(itemHeight || 0) - listItemMargin}
             onItemClick={onItemClick}
             withDrawerActions={withDrawerActions}
           />
-        </Box>
+        </div>
       )
   }, [renderHeader, viewMode, itemHeight, listItemMargin, onItemClick, withDrawerActions])
 

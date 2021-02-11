@@ -1,9 +1,9 @@
-import { Box, LinearProgress, Typography } from "@material-ui/core"
+import { LinearProgress, Typography } from "@material-ui/core"
 
 export const BookLoading = () => {
 
   return (
-    <Box style={{
+    <div style={{
       position: 'absolute',
       backgroundColor: 'white',
       top: 0,
@@ -17,6 +17,6 @@ export const BookLoading = () => {
     }}>
       <Typography gutterBottom>Your book is loading...</Typography>
       <LinearProgress style={{ width: 200 }}  />
-    </Box>
+    </div>
   )
 }

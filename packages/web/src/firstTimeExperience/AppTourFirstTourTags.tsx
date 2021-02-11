@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import TagSvg from '../assets/undraw_schedule_pnbk.svg'
-import { Box, Link, Typography, useTheme } from '@material-ui/core';
+import { Link, Typography, useTheme } from '@material-ui/core';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { isTagsTourOpenedState, firstTimeExperienceState } from './firstTimeExperienceStates';
 import { useCSS } from '../utils';
@@ -26,8 +26,8 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
         id="AppTourFirstTourTags"
         number={1}
         content={(
-          <Box style={styles.slide1}>
-            <Box style={{
+          <div style={styles.slide1}>
+            <div style={{
               display: 'flex',
               flexFlow: 'column',
               alignItems: 'center',
@@ -45,8 +45,8 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
                 or use tags behaviors to blur covers, protect access and more to customize your content accessibility.
                 More information in the <Link href="https://docs.oboku.me" target="__blank">doc</Link>
               </Typography>
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
       />
     </Tour>

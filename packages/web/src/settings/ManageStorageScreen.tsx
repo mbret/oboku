@@ -29,11 +29,11 @@ export const ManageStorageScreen = () => {
             primary="Available storage"
             disableTypography
             secondary={
-              <Box>
+              <div>
                 <Box marginY={1}><LinearProgress variant="determinate" value={quotaUsed * 100} /></Box>
                 <Typography gutterBottom variant="body2">{`${usedInMb} MB used of ${quotaInGb} GB (${(quotaUsed * 100).toFixed(2)}%)`}</Typography>
                 <Typography variant="body2" color="textSecondary"><b>{bytesToMb(bookSize)} MB used by books</b></Typography>
-              </Box>
+              </div>
             }
           />
         </ListItem>
