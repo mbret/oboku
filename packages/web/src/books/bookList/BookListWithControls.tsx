@@ -7,10 +7,11 @@ type Sorting = ComponentProps<typeof ListActionsToolbar>['sorting']
 
 export const BookListWithControls: FC<{
   data: string[],
-  renderEmptyList?: React.ReactNode
-}> = ({ data, renderEmptyList }) => {
+  renderEmptyList?: React.ReactNode,
+  defaultSort?: Sorting
+}> = ({ data, renderEmptyList, defaultSort = 'date' }) => {
   const [innerViewMode, setInnerViewMode] = useState<'list' | 'grid'>('grid')
-  const [sorting, setSorting] = useState<Sorting>(undefined)
+  const [sorting, setSorting] = useState<Sorting>(defaultSort)
   const sortedData = useBookIdsSortedBy(data, sorting)
   
   return (
