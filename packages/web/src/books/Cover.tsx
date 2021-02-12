@@ -105,7 +105,8 @@ const useStyle = ({ withShadow, fullWidth, rounded, isLoading }: StyleProps) => 
 
   return useCSS(() => ({
     container: {
-      width: '100%'
+      width: '100%',
+      height: '100%'
     },
     picture: {
       width: '100%',

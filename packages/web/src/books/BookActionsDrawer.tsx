@@ -3,16 +3,17 @@ import React from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import { SyncRounded, DeleteForeverRounded, ListAltRounded, LibraryBooksRounded } from '@material-ui/icons';
+import { SyncRounded, DeleteForeverRounded } from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
 import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { ROUTES } from '../constants';
 import { useRefreshBookMetadata } from './helpers';
 import { useRemoveBook } from './helpers';
-import { Drawer, Divider, ListItemIcon } from '@material-ui/core';
+import { Drawer, Divider, ListItemIcon, Typography, makeStyles } from '@material-ui/core';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
 import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { enrichedBookState } from './states';
+import { Cover } from './Cover';
 
 export const bookActionDrawerState = atom<{
   openedWith: undefined | string,
@@ -27,6 +28,7 @@ export const BookActionsDrawer = () => {
   const removeDownloadFile = useRemoveDownloadFile()
   const removeBook = useRemoveBook()
   const refreshBookMetadata = useRefreshBookMetadata()
+  const classes = useStyles()
 
   const handleClose = () => {
     setBookActionDrawerState({ openedWith: undefined })
@@ -41,6 +43,15 @@ export const BookActionsDrawer = () => {
     >
       {book && (
         <>
+          <div className={classes.topContainer}>
+            <div className={classes.coverContainer}>
+              <Cover bookId={book._id} />
+            </div>
+            <div className={classes.topDetails}>
+              <Typography variant="body1" noWrap>{book.title}</Typography>
+              <Typography variant="caption" noWrap>{book.creator}</Typography>
+            </div>
+          </div>
           <List>
             {(actions?.includes('goToDetails') || !actions) && (
               <ListItem button
@@ -49,12 +60,46 @@ export const BookActionsDrawer = () => {
                   history.push(ROUTES.BOOK_DETAILS.replace(':id', book._id))
                 }}
               >
-                <ListItemIcon>
-                  <ListAltRounded />
-                </ListItemIcon>
                 <ListItemText primary="Go to details" />
               </ListItem>
             )}
+            {/* {!actions && (
+              <ListItem button
+                onClick={() => {
+                  handleClose()
+                }}
+              >
+                <ListItemText primary="Mark as unread" />
+              </ListItem>
+            )} */}
+            {/* {!actions && (
+              <ListItem button
+                onClick={() => {
+                  handleClose()
+                }}
+              >
+                <ListItemText primary="Mark as finished" />
+              </ListItem>
+            )} */}
+            {!actions && (
+              <ListItem button
+                onClick={() => {
+                  handleClose()
+                  setOpenManageBookCollectionsDialog(bookId)
+                }}
+              >
+                <ListItemText primary="Manage collections" />
+              </ListItem>
+            )}
+            {/* {!actions && (
+              <ListItem button
+                onClick={() => {
+                  handleClose()
+                }}
+              >
+                <ListItemText primary="Manage tags" />
+              </ListItem>
+            )} */}
             {!actions && (
               <ListItem button
                 onClick={() => {
@@ -66,19 +111,6 @@ export const BookActionsDrawer = () => {
                   <SyncRounded />
                 </ListItemIcon>
                 <ListItemText primary="Refresh metadata" />
-              </ListItem>
-            )}
-            {!actions && (
-              <ListItem button
-                onClick={() => {
-                  handleClose()
-                  setOpenManageBookCollectionsDialog(bookId)
-                }}
-              >
-                <ListItemIcon>
-                  <LibraryBooksRounded />
-                </ListItemIcon>
-                <ListItemText primary="Add or remove from collection" />
               </ListItem>
             )}
             {(actions?.includes('removeDownload') || !actions) && (book.downloadState === 'downloaded' && !book.isLocal) && (
@@ -134,3 +166,32 @@ export const BookActionsDrawer = () => {
     </Drawer>
   );
 }
+
+const useStyles = makeStyles((theme) => ({
+  topContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    marginLeft: theme.spacing(2),
+    marginRight: theme.spacing(2),
+    marginTop: theme.spacing(2),
+    height: 60,
+    [theme.breakpoints.up('sm')]: {
+      height: 100,
+    },
+    [theme.breakpoints.up('md')]: {
+      height: 130,
+    },
+  },
+  coverContainer: {
+    width: 60 * theme.custom.coverAverageRatio,
+    [theme.breakpoints.up('sm')]: {
+      width: 100 * theme.custom.coverAverageRatio,
+    },
+    [theme.breakpoints.up('md')]: {
+      width: 130 * theme.custom.coverAverageRatio,
+    },
+    height: '100%',
+    flexShrink: 0,
+  },
+  topDetails: { display: 'flex', flexDirection: 'column', marginLeft: 10, overflow: 'hidden' }
+}))
