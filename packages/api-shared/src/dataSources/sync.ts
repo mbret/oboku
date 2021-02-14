@@ -86,23 +86,29 @@ const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, i
   helpers: Helpers,
 }) => {
   try {
-    logger.log(`createOrUpdateBook "${item.name}":`, parents.map(p => p.name))
+    logger.log(`createOrUpdateBook "${item.name}":`, item.resourceId)
     const parentTags = parents.reduce((tags: string[], parent) => [...tags, ...helpers.extractMetadataFromName(parent.name).tags], [])
     const metadata = helpers.extractMetadataFromName(item.name)
     const parentFolders = parents.filter(parent => isFolder(parent)) as SynchronizableItem[]
     const existingLink = await helpers.findOne('link', { selector: { resourceId: item.resourceId } })
+
+    logger.log(`createOrUpdateBook "${item.name}": existingLink`, existingLink?._id)
+
     let existingBook: BookDocType | null = null
     if (existingLink?.book) {
       existingBook = await helpers.findOne('book', { selector: { _id: existingLink.book } })
+
+      logger.log(`createOrUpdateBook "${item.name}": existingBook`, existingBook?._id)
     }
 
     if (!existingLink || !existingBook) {
       let bookId = existingBook?._id
       if (!bookId) {
-        logger.log(`createOrUpdateBook new file ${item.name} detected`)
+        logger.log(`createOrUpdateBook "${item.name}": new file detected, creating book`)
         const insertedBook = await helpers.createBook({
           title: item.name
         })
+        // logger.log(`createOrUpdateBook "${item.name}": new file detected, creating book`, insertedBook)
         bookId = insertedBook.id
       }
 

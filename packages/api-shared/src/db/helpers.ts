@@ -85,6 +85,8 @@ export const createBook = async (db: createNano.DocumentScope<unknown>, data: Pa
     date: null,
     lang: null,
     lastMetadataUpdatedAt: null,
+    lastMetadataUpdateError: null,
+    metadataUpdateStatus: null,
     links: [],
     publisher: null,
     readingStateCurrentBookmarkLocation: null,

@@ -4,7 +4,7 @@ import { useRecoilValue, useSetRecoilState } from 'recoil'
 import { useDefaultItemClickHandler } from './helpers'
 import { enrichedBookState } from '../states'
 import { ReadingStateState } from '@oboku/shared'
-import { LoopRounded, MenuBookRounded, MoreVert } from '@material-ui/icons'
+import { ErrorRounded, LoopRounded, MenuBookRounded, MoreVert } from '@material-ui/icons'
 import { bookActionDrawerState } from '../BookActionsDrawer'
 import { useCSS } from '../../utils'
 import { BookListCoverContainer } from './BookListCoverContainer'
@@ -72,9 +72,14 @@ export const BookListListItem: FC<{
             )}
           </div>
 
-          {(!book?.lastMetadataUpdatedAt) && (
+          {(book?.metadataUpdateStatus === 'fetching') && (
             <div style={{ display: 'flex', flexDirection: 'row' }}>
               <Chip size="small" avatar={<LoopRounded className="icon-spin" />} label="metadata..." />
+            </div>
+          )}
+          {(book?.metadataUpdateStatus !== 'fetching' && !!book?.lastMetadataUpdateError) && (
+            <div style={{ display: 'flex', flexDirection: 'row' }}>
+              <Chip size="small" icon={<ErrorRounded color="primary" />} label="metadata" />
             </div>
           )}
         </div>

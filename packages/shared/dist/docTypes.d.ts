@@ -52,6 +52,8 @@ export declare type BookDocType = {
     date: number | null;
     lang: string | null;
     lastMetadataUpdatedAt: number | null;
+    metadataUpdateStatus: null | 'fetching';
+    lastMetadataUpdateError: null | string;
     publisher: string | null;
     readingStateCurrentBookmarkLocation: string | null;
     readingStateCurrentBookmarkProgressPercent: number;

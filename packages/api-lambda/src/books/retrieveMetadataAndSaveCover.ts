@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as unzipper from 'unzipper'
 import { dataSourceFacade } from '@oboku/api-shared/src/dataSources/facade'
 import * as parser from 'fast-xml-parser'
-import { BookDocType, LinkDocType, OPF, READER_SUPPORTED_MIME_TYPES } from "@oboku/shared"
+import { BookDocType, LinkDocType, OPF, READER_SUPPORTED_MIME_TYPES, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "@oboku/shared"
 import { detectMimeTypeFromContent } from "../utils"
 import { PromiseReturnType } from "../types"
 import { COVER_MAXIMUM_SIZE_FOR_STORAGE, TMP_DIR } from '../constants'
@@ -35,7 +35,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     const { filepath, metadata } = await downloadToTmpFolder(ctx, ctx.book, ctx.link)
 
     tmpFilePath = filepath
-    console.log(filepath, metadata)
+    console.log(`syncMetadata processing ${ctx.book._id}`, filepath, metadata)
 
     let fallbackContentType = metadata.contentType
     let opfAsJson: OPF = {
@@ -55,14 +55,25 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
       fallbackContentType = await detectMimeTypeFromContent(filepath)
     }
 
-    if (fallbackContentType === 'application/epub+zip') {
+    if (METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType)) {
+      const files: string[] = []
+      const coverAllowedExt = ['.jpg', '.png']
+      let isEpub = false
+
       await fs.createReadStream(filepath)
-        .pipe(unzipper.Parse())
+        .pipe(unzipper.Parse({
+          verbose: false
+        }))
         .on('entry', async (entry: unzipper.Entry) => {
           contentLength = contentLength + entry.vars.compressedSize
           const filepath = entry.path
 
+          if (entry.type === 'File') {
+            files.push(entry.path)
+          }
+
           if (filepath.endsWith('.opf')) {
+            isEpub = true
             const filepathParts = filepath.split('/')
             if (filepathParts.length > 1) {
               folderBasePath = `${filepathParts[0]}/`
@@ -71,33 +82,21 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
             opfAsJson = parser.parse(xml, {
               attributeNamePrefix: '',
               ignoreAttributes: false,
-              // supressEmptyNode: false,
-              // format: false,
             })
+            entry.autodrain()
           } else {
             entry.autodrain()
           }
         }).promise()
 
-      coverPath = findMissingCover(opfAsJson)
+      coverPath = isEpub
+        ? findMissingCover(opfAsJson)
+        : files
+          .filter(file => coverAllowedExt.includes(path.extname(file).toLowerCase()))
+          .sort()[0]
+
     } else {
-      const files: string[] = []
-      try {
-        await fs.createReadStream(filepath)
-          .pipe(unzipper.Parse())
-          .on('entry', async (entry: unzipper.Entry) => {
-            if (entry.type === 'File') {
-              files.push(entry.path)
-            }
-            entry.autodrain()
-          }).promise()
-      } catch (e) {
-        console.log(`Error while trying to unzip book with resource id ${ctx.link.resourceId}`)
-      }
-      const coverAllowedExt = ['.jpg', '.png']
-      coverPath = files
-        .filter(file => coverAllowedExt.includes(path.extname(file).toLowerCase()))
-        .sort()[0]
+      console.log(`retrieveMetadataAndSaveCover format not supported yet`)
     }
 
     console.log(opfAsJson, opfAsJson?.package?.metadata)

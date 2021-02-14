@@ -1,6 +1,6 @@
 import React, { FC, memo, useEffect } from 'react'
 import { Chip, useTheme } from "@material-ui/core"
-import { CloudDownloadRounded, LoopRounded } from '@material-ui/icons';
+import { CloudDownloadRounded, ErrorRounded, LoopRounded } from '@material-ui/icons';
 import { useRafState } from 'react-use';
 import { Cover } from '../Cover';
 import { useRecoilValue, UnwrapRecoilValue } from 'recoil';
@@ -42,9 +42,14 @@ export const BookListCoverContainer: FC<{
             )}
             <div
               style={classes.bodyContainer}>
-              {(withMetadaStatus && !item?.lastMetadataUpdatedAt) && (
+              {(withMetadaStatus && item?.metadataUpdateStatus === 'fetching') && (
                 <div style={classes.itemCoverCenterInfo}>
                   <Chip color="secondary" size="small" icon={<LoopRounded color="primary" className="icon-spin" />} label="metadata..." />
+                </div>
+              )}
+              {(withMetadaStatus && item?.metadataUpdateStatus !== 'fetching' && !!item?.lastMetadataUpdateError) && (
+                <div style={classes.itemCoverCenterInfo}>
+                  <Chip color="secondary" size="small" icon={<ErrorRounded color="primary" />} label="metadata" />
                 </div>
               )}
               {item?.downloadState === 'none' && (

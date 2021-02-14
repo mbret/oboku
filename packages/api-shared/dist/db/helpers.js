@@ -88,6 +88,8 @@ const createBook = (db, data = {}) => __awaiter(void 0, void 0, void 0, function
         date: null,
         lang: null,
         lastMetadataUpdatedAt: null,
+        lastMetadataUpdateError: null,
+        metadataUpdateStatus: null,
         links: [],
         publisher: null,
         readingStateCurrentBookmarkLocation: null,

@@ -72,7 +72,7 @@ export const useRefreshBookMetadata = () => {
     if ('isError' in credentials && credentials.reason === 'cancelled') return
     if ('isError' in credentials) throw credentials.error || new Error('')
 
-    await updateBook({ _id: bookId, lastMetadataUpdatedAt: null })
+    await updateBook({ _id: bookId, metadataUpdateStatus: 'fetching' })
 
     database?.sync({
       collectionNames: ['link', 'book'],
@@ -135,6 +135,8 @@ export const useAddBook = () => {
         const linkAdded = await database.link.post(link)
         const newBook = await database.book.post({
           lastMetadataUpdatedAt: null,
+          lastMetadataUpdateError: null,
+          metadataUpdateStatus: null,
           title: null,
           readingStateCurrentBookmarkLocation: null,
           readingStateCurrentBookmarkProgressUpdatedAt: null,

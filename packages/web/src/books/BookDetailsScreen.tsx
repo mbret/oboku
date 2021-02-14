@@ -73,7 +73,7 @@ export const BookDetailsScreen = () => {
           <Button fullWidth variant="outlined" color="primary" onClick={() => history.push(ROUTES.READER.replace(':id', book._id))}>Read</Button>
         )}
       </Box>
-      {!book?.lastMetadataUpdatedAt && (
+      {book?.metadataUpdateStatus === 'fetching' && (
         <Alert severity="info" >We are still retrieving metadata information...</Alert>
       )}
       <Box paddingX={2} marginY={3} marginBottom={3}><Divider light /></Box>
