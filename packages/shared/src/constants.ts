@@ -1,4 +1,4 @@
-const extensions = ['.epub', '.txt', '.cbz']
+const extensions = ['.epub', '.txt', '.cbz', '.cbr']
 
 export const READER_SUPPORTED_EXTENSIONS = [...extensions, ...extensions.map(e => e.toUpperCase())]
 export const METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS = ['application/x-cbz', 'application/epub+zip']

@@ -113,11 +113,13 @@ export const useFile = (bookId: string) => {
           ['text/xml'].includes(file.data.type)
           || (
             normalizedName.endsWith('.cbz')
+            || normalizedName.endsWith('.cbr')
             || normalizedName.endsWith('.txt')
           )
           || (file.data instanceof File
             && (
               normalizedName.endsWith('.cbz')
+              || normalizedName.endsWith('.cbr')
               || normalizedName.endsWith('.txt')))
         ) {
           setData(prev => ({ ...prev, file: file.data, documentType: 'comic', error: undefined, filename: normalizedName }))
