@@ -3,7 +3,6 @@ import { RoutineProcess } from './RoutineProcess';
 import { AppNavigator } from './navigation/AppNavigator';
 import { ThemeProvider } from '@material-ui/core';
 import { theme } from './theme';
-import { CookiesProvider } from "react-cookie";
 import { BlockingBackdrop } from './common/BlockingBackdrop';
 import { UnlockLibraryDialog } from './auth/UnlockLibraryDialog';
 import { TourProvider } from './app-tour/TourProvider';
@@ -43,24 +42,22 @@ export function App() {
         {loading && <AppLoading />}
         <RxDbProvider>
           <PersistedRecoilRoot states={localStatesToPersist} onReady={() => setLoading(false)}>
-            <CookiesProvider>
-              <GoogleApiProvider>
-                <AxiosProvider >
-                  <DialogProvider>
-                    <TourProvider>
-                      <AppNavigator />
-                      <FirstTimeExperienceTours />
-                      <UnlockLibraryDialog />
-                      <ManageBookCollectionsDialog />
-                      <RoutineProcess />
-                    </TourProvider>
-                    <UpdateAvailableDialog serviceWorker={newServiceWorker} />
-                    <RecoilSyncedWithDatabase />
-                    <BlockingBackdrop />
-                  </DialogProvider>
-                </AxiosProvider>
-              </GoogleApiProvider>
-            </CookiesProvider>
+            <GoogleApiProvider>
+              <AxiosProvider >
+                <DialogProvider>
+                  <TourProvider>
+                    <AppNavigator />
+                    <FirstTimeExperienceTours />
+                    <UnlockLibraryDialog />
+                    <ManageBookCollectionsDialog />
+                    <RoutineProcess />
+                  </TourProvider>
+                  <UpdateAvailableDialog serviceWorker={newServiceWorker} />
+                  <RecoilSyncedWithDatabase />
+                  <BlockingBackdrop />
+                </DialogProvider>
+              </AxiosProvider>
+            </GoogleApiProvider>
             {/* <UserFeedback /> */}
           </PersistedRecoilRoot>
         </RxDbProvider>
