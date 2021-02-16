@@ -1,5 +1,6 @@
 import { ReadingStateState } from "@oboku/shared";
 import { atom } from "recoil";
+import { DownloadState } from "../download/states";
 import { LibraryViewMode } from "../rxdb";
 
 export type LibraryDocType = {
@@ -7,7 +8,8 @@ export type LibraryDocType = {
   sorting: LibrarySorting
   isLibraryUnlocked: boolean,
   tags: string[],
-  readingStates: ReadingStateState[]
+  readingStates: ReadingStateState[],
+  downloadState?: DownloadState | undefined
 }
 
 export type LibrarySorting = 'date' | 'activity' | 'alpha'
@@ -20,6 +22,7 @@ export const libraryState = atom<LibraryDocType>({
     sorting: 'date',
     tags: [],
     readingStates: [],
+    downloadState: undefined
   },
 });
 

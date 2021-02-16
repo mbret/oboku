@@ -19,6 +19,7 @@ import { useDataSourcePlugins } from '../dataSources/helpers';
 import { useBooksSortedBy } from '../books/helpers';
 import { SortByDialog } from '../books/bookList/SortByDialog';
 import { isUploadBookFromDeviceOpenedFromState } from '../upload/state';
+import { DownloadState } from '../download/states';
 
 export const LibraryBooksScreen = () => {
   const classes = useStyles();
@@ -32,23 +33,26 @@ export const LibraryBooksScreen = () => {
   const setLibraryState = useSetRecoilState(libraryState)
   const dataSourcePlugins = useDataSourcePlugins()
   const library = useRecoilValue(libraryState)
-  const unsortedBooks = useRecoilValue(booksAsArrayState)
-  const sortedList = useBooksSortedBy(unsortedBooks, library.sorting)
-  const tagsFilterApplied = (library?.tags.length || 0) > 0
-  const numberOfFiltersApplied = [tagsFilterApplied].filter(i => i).length
   const filteredTags = library.tags
-  const visibleBooks = sortedList
-    .filter(book => {
-      let valid = true
-      if (filteredTags.length > 0 && !book?.tags?.some(b => filteredTags.includes(b))) {
-        valid = false
-      }
-      if (library.readingStates.length > 0 && !library.readingStates.includes(book.readingStateCurrentState)) {
-        valid = false
-      }
-      return valid
-    })
-  const books = useMemo(() => visibleBooks.map(item => item._id), [visibleBooks])
+  const unsortedBooks = useRecoilValue(booksAsArrayState)
+  const filteredBooks = unsortedBooks.filter(book => {
+    if (library.downloadState === DownloadState.Downloaded && book.downloadState.downloadState !== DownloadState.Downloaded) {
+      return false
+    }
+    if (filteredTags.length > 0 && !book?.tags?.some(b => filteredTags.includes(b))) {
+      return false
+    }
+    if (library.readingStates.length > 0 && !library.readingStates.includes(book.readingStateCurrentState)) {
+      return false
+    }
+    return true
+  })
+  const sortedList = useBooksSortedBy(filteredBooks, library.sorting)
+  let numberOfFiltersApplied = 0
+  if ((library?.tags.length || 0) > 0) numberOfFiltersApplied++
+  if ((library?.readingStates.length || 0) > 0) numberOfFiltersApplied++
+  if (library?.downloadState !== undefined) numberOfFiltersApplied++
+  const books = useMemo(() => sortedList.map(item => item._id), [sortedList])
 
   const addBookButton = (
     <Button

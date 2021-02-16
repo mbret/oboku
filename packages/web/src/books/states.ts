@@ -60,13 +60,20 @@ export const downloadedBookIdsState = selector({
   }
 })
 
-export const booksAsArrayState = selector<Book[]>({
+export const booksAsArrayState = selector({
   key: 'booksAsArray',
   get: ({ get }) => {
     const books = get(normalizedBooksState)
     const bookIds = get(protectedBookIdsState)
 
-    return bookIds.map(id => books[id] as Book)
+    return bookIds.map(id => {
+      const downloadState = get(bookDownloadsState(id))
+      
+      return {
+        ...books[id] as Book,
+        downloadState,
+      }
+    })
   }
 })
 

@@ -8,6 +8,7 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { tagsAsArrayState } from '../tags/states';
 import { libraryState } from './states';
 import { ReadingStateState } from '@oboku/shared';
+import { DownloadState } from '../download/states';
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean,
@@ -16,7 +17,7 @@ export const LibraryFiltersDrawer: FC<{
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] = useState(false)
   const tags = useRecoilValue(tagsAsArrayState)
-  const library = useRecoilValue(libraryState)
+  const [library, setLibraryState] = useRecoilState(libraryState)
   const selectedTags = library.tags
   const toggleTag = useToggleTag()
 
@@ -53,6 +54,21 @@ export const LibraryFiltersDrawer: FC<{
               />
               <ListItemIcon>
                 <ArrowForwardIosRounded />
+              </ListItemIcon>
+            </ListItem>
+            <ListItem
+              button
+              onClick={() => setLibraryState(old => ({
+                ...old,
+                downloadState: old.downloadState === DownloadState.Downloaded
+                  ? undefined
+                  : DownloadState.Downloaded
+              }))}
+            >
+              <ListItemText primary="Only show downloaded" />
+              <ListItemIcon>
+                {library.downloadState !== DownloadState.Downloaded && (<RadioButtonUncheckedOutlined />)}
+                {library.downloadState === DownloadState.Downloaded && (<CheckCircleRounded />)}
               </ListItemIcon>
             </ListItem>
           </List>
