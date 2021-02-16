@@ -9,7 +9,7 @@ import { useRecoilState, useRecoilValue } from 'recoil';
 import { downloadedBookIdsState } from '../books/states';
 import { bookActionDrawerState } from '../books/BookActionsDrawer';
 import { bookDownloadsSizeState } from '../download/states';
-import { bytesToMb } from '../utils';
+import { bytesToMb } from '../misc/utils';
 
 export const ManageStorageScreen = () => {
   const books = useRecoilValue(downloadedBookIdsState)

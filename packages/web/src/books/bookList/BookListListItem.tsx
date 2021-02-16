@@ -6,7 +6,7 @@ import { enrichedBookState } from '../states'
 import { ReadingStateState } from '@oboku/shared'
 import { ErrorRounded, LoopRounded, MenuBookRounded, MoreVert } from '@material-ui/icons'
 import { bookActionDrawerState } from '../BookActionsDrawer'
-import { useCSS } from '../../utils'
+import { useCSS } from '../../misc/utils'
 import { BookListCoverContainer } from './BookListCoverContainer'
 
 export const BookListListItem: FC<{

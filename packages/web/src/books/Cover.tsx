@@ -7,7 +7,7 @@ import { selectorFamily, useRecoilValue } from 'recoil'
 import { enrichedBookState } from './states'
 import { authState } from '../auth/authState'
 import { bluredTagIdsState } from '../tags/states'
-import { useCSS } from '../utils'
+import { useCSS } from '../misc/utils'
 
 const bookCoverState = selectorFamily({
   key: 'bookCoverState',

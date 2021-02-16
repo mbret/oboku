@@ -8,7 +8,7 @@ import { enrichedBookState } from '../states';
 import { ReadingStateState } from '@oboku/shared'
 import { ReadingProgress } from './ReadingProgress'
 import { DownloadState } from '../../download/states';
-import { useCSS } from '../../utils';
+import { useCSS } from '../../misc/utils';
 
 type Book = UnwrapRecoilValue<ReturnType<typeof enrichedBookState>>
 

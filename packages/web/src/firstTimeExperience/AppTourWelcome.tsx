@@ -6,7 +6,7 @@ import { Logo } from '../common/Logo';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { authState } from '../auth/authState';
 import { firstTimeExperienceState } from './firstTimeExperienceStates';
-import { useCSS } from '../utils';
+import { useCSS } from '../misc/utils';
 
 export const AppTourWelcome: React.FC = memo(() => {
   const [{ hasDoneWelcomeTour }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)

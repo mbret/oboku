@@ -28,6 +28,7 @@ import { localSettingsState } from '../settings/states';
 import { PackagingMetadataObjectWithMissingProperties } from './types';
 import { BookLoading } from './BookLoading';
 import { extractMetadataFromName } from '@oboku/shared/dist/directives';
+import { useWakeLock } from '../misc/useWakeLock';
 
 const screenfullApi = screenfull as Screenfull
 
@@ -57,7 +58,8 @@ export const ReaderScreen: FC<{}> = () => {
 
   useGenerateLocations(rendition)
   useResetStateOnUnmount()
-
+  const wakeLockActive = useWakeLock()
+  
   // @todo only show menu on short click
   const onRenditionClick = useCallback((e: MouseEvent) => {
     const { clientX } = e
@@ -287,6 +289,8 @@ export const ReaderScreen: FC<{}> = () => {
     )
   }
 
+  console.log('ReaderScreen', `wake lock is ${wakeLockActive}`)
+  
   return (
     <ReaderProvider rendition={rendition}>
       {file && (

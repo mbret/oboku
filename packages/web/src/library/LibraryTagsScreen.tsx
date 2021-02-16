@@ -8,7 +8,7 @@ import { LockActionDialog } from '../auth/LockActionDialog';
 import { tagsAsArrayState } from '../tags/states';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { isTagsTourOpenedState, firstTimeExperienceState } from '../firstTimeExperience/firstTimeExperienceStates';
-import { useCSS } from '../utils';
+import { useCSS } from '../misc/utils';
 
 export const LibraryTagsScreen = () => {
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)

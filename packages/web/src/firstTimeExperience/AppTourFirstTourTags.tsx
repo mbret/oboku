@@ -4,7 +4,7 @@ import TagSvg from '../assets/undraw_schedule_pnbk.svg'
 import { Link, Typography, useTheme } from '@material-ui/core';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { isTagsTourOpenedState, firstTimeExperienceState } from './firstTimeExperienceStates';
-import { useCSS } from '../utils';
+import { useCSS } from '../misc/utils';
 
 export const AppTourFirstTourTags: React.FC = memo(() => {
   const isTagsTourOpened = useRecoilValue(isTagsTourOpenedState)

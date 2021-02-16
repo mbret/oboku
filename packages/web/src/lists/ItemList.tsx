@@ -7,7 +7,7 @@ import { Report } from '../report';
 import { useRecoilValue } from 'recoil';
 import { localSettingsState } from '../settings/states';
 import { UseMeasureResult } from 'react-use/lib/useMeasure';
-import { useCSS } from '../utils';
+import { useCSS } from '../misc/utils';
 
 // Create the data provider and provide method which takes in two rows of data and return if those two are different or not.
 // THIS IS VERY IMPORTANT, FORGET PERFORMANCE IF THIS IS MESSED UP

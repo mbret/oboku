@@ -5,7 +5,7 @@ import { Link, Typography, useTheme } from '@material-ui/core';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { firstTimeExperienceState } from './firstTimeExperienceStates';
 import { isUploadBookDrawerOpenedState } from '../library/states';
-import { useCSS } from '../utils';
+import { useCSS } from '../misc/utils';
 
 export const AppTourFirstAddingBook: React.FC = memo(() => {
   const isUploadBookDrawerOpened = useRecoilValue(isUploadBookDrawerOpenedState)

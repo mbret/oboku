@@ -6,7 +6,7 @@ import { ArrowBackIosRounded, FullscreenExitRounded, FullscreenRounded } from '@
 import { useNavigation } from '../navigation/useNavigation'
 import screenfull, { Screenfull } from 'screenfull'
 import { Report } from '../report'
-import { useCSS } from '../utils'
+import { useCSS } from '../misc/utils'
 
 const screenfullApi = screenfull as Screenfull
 
