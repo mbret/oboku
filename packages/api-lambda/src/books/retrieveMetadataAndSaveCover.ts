@@ -190,7 +190,9 @@ const normalizeMetadata = (opf: OPF) => {
     title: typeof metadata['dc:title'] === 'object'
       ? metadata['dc:title']['#text']
       : metadata['title'] || metadata['dc:title'],
-    publisher: metadata['dc:publisher'] as string | undefined,
+    publisher: typeof metadata['dc:publisher'] === 'string' 
+    ? metadata['dc:publisher']
+    : metadata['dc:publisher']['#text'],
     rights: metadata['dc:rights'] as string | undefined,
     language: extractLanguage(metadata['dc:language']),
     date: metadata['dc:date']

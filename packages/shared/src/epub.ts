@@ -10,7 +10,7 @@ export type OPF = {
       'dc:creator'?: any,
       'dc:subject'?: any,
       'dc:language'?: any,
-      'dc:publisher'?: any,
+      'dc:publisher'?: { '#text': string, id: string } | string,
       'dc:rights'?: any,
     }
   }
