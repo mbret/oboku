@@ -79,14 +79,18 @@ export const load = async (data: Blob | File) => {
 
   if (data instanceof Blob) {
     const archive = await new Promise<any>((resolve, reject) => {
-      // @ts-ignore
-      loadArchiveFormats(['rar'], () => {
+      try {
         // @ts-ignore
-        archiveOpenFile(data, undefined, (archive, err) => {
-          if (err) return reject(err)
-          resolve(archive)
+        loadArchiveFormats(['rar'], () => {
+          // @ts-ignore
+          archiveOpenFile(data, undefined, (archive, err) => {
+            if (err) return reject(err)
+            resolve(archive)
+          })
         })
-      })
+      } catch (e) {
+        return reject(e)
+      }
     })
 
     if (archive.archive_type === 'rar') {

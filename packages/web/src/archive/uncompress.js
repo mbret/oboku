@@ -172,16 +172,17 @@ let g_on_loaded_cb = null;
   function archiveOpenFile(file, password, cb) {
     // Get the file's info
     let blob = file.slice();
-    let file_name = file.name;
+    let file_name = file.name || 'unknown';
     password = password || null;
 
     // Convert the blob into an array buffer
     let reader = new FileReader();
-    reader.onload = async function (evt) {
-      let array_buffer = reader.result;
 
-      // Open the file as an archive
+    reader.onload = async function (evt) {
       try {
+        let array_buffer = reader.result;
+
+        // Open the file as an archive
         let archive = await archiveOpenArrayBuffer(file_name, password, array_buffer, file);
         cb(archive, null);
       } catch (e) {
@@ -189,6 +190,9 @@ let g_on_loaded_cb = null;
       }
     };
     reader.readAsArrayBuffer(blob);
+    reader.onerror = (ev) => {
+      cb(null, ev);
+    }
   }
 
   async function archiveOpenArrayBuffer(file_name, password, array_buffer, data) {
