@@ -174,7 +174,10 @@ const findMissingCover = (opf: OPF) => {
   const manifest = opf.package?.manifest
   let href = ''
   manifest?.item?.find((item: any) => {
-    if (item.id.toLowerCase().indexOf('cover') > -1 && item['media-type'].indexOf('image') > -1) {
+    if (
+      item.id.toLowerCase().indexOf('cover') > -1 
+      && (item['media-type'].indexOf('image/') > -1 || item['media-type'].indexOf('page/jpeg') > -1 || item['media-type'].indexOf('page/png') > -1)
+    ) {
       href = item.href
     }
     return ''
