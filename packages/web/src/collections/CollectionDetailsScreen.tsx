@@ -48,8 +48,7 @@ export const CollectionDetailsScreen = () => {
           flex: 1,
         }}>
           <div style={{
-            // minHeight: 80,
-            paddingTop: theme.spacing(1) + 40,
+            paddingTop: theme.spacing(1) + 50,
             display: 'flex',
             alignItems: 'flex-end',
             paddingLeft: theme.spacing(2),
@@ -60,7 +59,7 @@ export const CollectionDetailsScreen = () => {
             backgroundSize: 'cover',
           }}>
             <div>
-              <Typography variant="h5" gutterBottom style={titleTypoStyle} >
+              <Typography variant="h5" style={titleTypoStyle} >
                 {collection?.name}
               </Typography>
               <Typography variant="subtitle1" gutterBottom style={titleTypoStyle}>

@@ -67,14 +67,18 @@ const useStyles = () => {
       position: 'relative',
       display: 'flex',
       flexFlow: 'column',
-      paddingLeft: theme.spacing(1),
-      paddingRight: theme.spacing(1),
+      // paddingLeft: theme.spacing(1),
+      // paddingRight: theme.spacing(1),
+      padding: theme.spacing(1),
+      // paddingRight: theme.spacing(1),
+      // paddingBottom: theme.spacing(1),
+      // paddingTop: theme.spacing(2),
     },
     coverContainer: {
       position: 'relative',
       display: 'flex',
       flex: 1,
-      marginTop: theme.spacing(1),
+      // marginTop: theme.spacing(1),
       minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
     },
     itemBottomContainer: {
@@ -85,7 +89,7 @@ const useStyles = () => {
       alignItems: 'center',
       paddingLeft: 2,
       paddingRight: 5,
-      marginBottom: theme.spacing(1),
+      // marginBottom: theme.spacing(1),
     },
     itemTitle: {
       whiteSpace: 'nowrap',
