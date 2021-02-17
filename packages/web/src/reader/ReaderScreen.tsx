@@ -114,6 +114,12 @@ export const ReaderScreen: FC<{}> = () => {
   }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, documentType, direction])
 
   useEffect(() => {
+    return () => {
+      setIsBookReady(false)
+    }
+  }, [setIsBookReady])
+
+  useEffect(() => {
     if (
       (
         localSettings.readingFullScreenSwitchMode === 'always'
@@ -244,7 +250,7 @@ export const ReaderScreen: FC<{}> = () => {
     rendition?.on('relocated', onRelocated);
 
     return () => rendition?.off('relocated', onRelocated)
-  }, [rendition, editBook, bookId, book, updateProgress, setCurrentLocation])
+  }, [rendition, editBook, bookId, book, updateProgress, setCurrentLocation, setIsBookReady])
 
   useUpdateBookState(bookId || '-1')
   useDirection(rendition)
@@ -368,7 +374,6 @@ const useVerticalCentererRendererHook = (rendition: Rendition | undefined) => {
 
         // align vertically the body in case of content height is lower
         if (height < windowInnerHeight) {
-          console.log(windowInnerHeight, height, windowInnerHeight - height, (windowInnerHeight - height) / 2, scaleX)
           $body.style.paddingTop = `${((windowInnerHeight - height) / 2) / scaleX}px`
           console.warn(`useVerticalCentererRendererHook -> re-center with padding of ${$body.style.paddingTop}`)
         }
@@ -379,8 +384,8 @@ const useVerticalCentererRendererHook = (rendition: Rendition | undefined) => {
           // style and dynamic in the reading. In this case we try to not override any margin behavior
           if (!$body.style.marginLeft) {
             $body.style.paddingLeft = `${((windowInnerWidth - width) / 2) / scaleX}px`
+            console.warn(`useVerticalCentererRendererHook -> re-center with padding of ${$body.style.paddingTop}`)
           }
-          console.warn(`useVerticalCentererRendererHook -> re-center with padding of ${$body.style.paddingTop}`)
         }
       }
     }
