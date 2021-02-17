@@ -57,7 +57,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
 
     if (METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType)) {
       const files: string[] = []
-      const coverAllowedExt = ['.jpg', '.png']
+      const coverAllowedExt = ['.jpg', 'jpeg', '.png']
       let isEpub = false
 
       await fs.createReadStream(filepath)
@@ -103,6 +103,8 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
 
     if (coverPath) {
       await saveCoverToBucket(ctx, ctx.book, filepath, folderBasePath, coverPath)
+    } else {
+      console.log(`No cover path found for ${filepath}`)
     }
 
     normalizedMetadata = normalizeMetadata(opfAsJson)

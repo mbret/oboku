@@ -1,3 +1,7 @@
+/**
+ * @todo handle error code ENOSPC
+ * @see https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/$252Faws$252Flambda$252Foboku-api-RefreshMetadataLongProcessFunction-1FN5C0L9PKJAY/log-events/2021$252F02$252F17$252F$255B$2524LATEST$255D3bc34158bfa44f278d8fd4aeb86e9202$3Fstart$3DPT3H
+ */
 import { getNormalizedHeader, lambda } from "../utils"
 import { atomicUpdate, findOne } from "@oboku/api-shared/src/db/helpers"
 import { withToken } from "../auth"
