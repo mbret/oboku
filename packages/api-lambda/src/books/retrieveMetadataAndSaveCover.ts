@@ -175,7 +175,7 @@ const findMissingCover = (opf: OPF) => {
   let href = ''
   manifest?.item?.find((item: any) => {
     if (
-      item.id.toLowerCase().indexOf('cover') > -1 
+      item.id.toLowerCase().indexOf('cover') > -1
       && (item['media-type'].indexOf('image/') > -1 || item['media-type'].indexOf('page/jpeg') > -1 || item['media-type'].indexOf('page/png') > -1)
     ) {
       href = item.href
@@ -193,9 +193,9 @@ const normalizeMetadata = (opf: OPF) => {
     title: typeof metadata['dc:title'] === 'object'
       ? metadata['dc:title']['#text']
       : metadata['title'] || metadata['dc:title'],
-    publisher: typeof metadata['dc:publisher'] === 'string' 
-    ? metadata['dc:publisher']
-    : metadata['dc:publisher']['#text'],
+    publisher: typeof metadata['dc:publisher'] === 'string'
+      ? metadata['dc:publisher']
+      : metadata['dc:publisher']['#text'],
     rights: metadata['dc:rights'] as string | undefined,
     language: extractLanguage(metadata['dc:language']),
     date: metadata['dc:date']

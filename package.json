@@ -20,7 +20,8 @@
     "start:api-shared": "cd packages/api-shared && yarn watch",
     "start": "concurrently -n api-server,api-lambda,api-shared,shared \"yarn start:api-server\" \"yarn start:api-lambda\" \"yarn start:api-shared\" \"yarn start:shared\"",
     "build:server": "cd packages/api-server && yarn build",
-    "deploy-server": "pm2 stop oboku-api && git fetch origin && git reset --hard origin/release && yarn && pm2 start oboku-api && pm2 log oboku-api"
+    "deploy-server": "pm2 stop oboku-api && git fetch origin && git reset --hard origin/release && yarn && pm2 start oboku-api && pm2 log oboku-api",
+    "dev:fix:sharp": "rm -rf node_modules/sharp && rm -rf packages/api-lambda/node_modules/sharp && cp -R packages/api-lambda/sharp-install/node_modules/sharp packages/api-lambda/node_modules/sharp"
   },
   "dependencies": {
     "concurrently": "^5.3.0",

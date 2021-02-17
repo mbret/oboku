@@ -388,10 +388,13 @@ const useVerticalCentererRendererHook = (rendition: Rendition | undefined) => {
           console.warn(`useVerticalCentererRendererHook -> re-center with padding of ${$body.style.paddingTop}`)
         }
 
-        // align vertically the body in case of content height is lower
+        // align horizontally the body in case of content height is lower
         if (width < windowInnerWidth) {
-          // console.log(windowInnerHeight, height, windowInnerHeight - height, (windowInnerHeight - height) / 2, scaleX)
-          $body.style.paddingLeft = `${((windowInnerWidth - width) / 2) / scaleX}px`
+          // sometime books will use margin themselves to play with alignment of images. this is to give some
+          // style and dynamic in the reading. In this case we try to not override any margin behavior
+          if (!$body.style.marginLeft) {
+            $body.style.paddingLeft = `${((windowInnerWidth - width) / 2) / scaleX}px`
+          }
           console.warn(`useVerticalCentererRendererHook -> re-center with padding of ${$body.style.paddingTop}`)
         }
       }
