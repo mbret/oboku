@@ -37,6 +37,7 @@ export const BookListGridItem: FC<{
       <BookListCoverContainer
         bookId={bookId}
         style={classes.coverContainer}
+        size="large"
       />
       <div
         style={classes.itemBottomContainer}

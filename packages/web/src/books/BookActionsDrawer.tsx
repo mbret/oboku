@@ -7,13 +7,15 @@ import { SyncRounded, DeleteForeverRounded } from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
 import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { ROUTES } from '../constants';
-import { useRefreshBookMetadata } from './helpers';
+import { useRefreshBookMetadata, useUpdateBook } from './helpers';
 import { useRemoveBook } from './helpers';
 import { Drawer, Divider, ListItemIcon, Typography, makeStyles } from '@material-ui/core';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
 import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { enrichedBookState } from './states';
 import { Cover } from './Cover';
+import { ReadingStateState } from '@oboku/shared';
+import { Report } from '../report';
 
 export const bookActionDrawerState = atom<{
   openedWith: undefined | string,
@@ -28,6 +30,7 @@ export const BookActionsDrawer = () => {
   const removeDownloadFile = useRemoveDownloadFile()
   const removeBook = useRemoveBook()
   const refreshBookMetadata = useRefreshBookMetadata()
+  const [updateBook] = useUpdateBook()
   const classes = useStyles()
 
   const handleClose = () => {
@@ -63,24 +66,38 @@ export const BookActionsDrawer = () => {
                 <ListItemText primary="Go to details" />
               </ListItem>
             )}
-            {/* {!actions && (
+            {!actions && book.readingStateCurrentState !== ReadingStateState.NotStarted && (
               <ListItem button
                 onClick={() => {
                   handleClose()
+                  updateBook({
+                    _id: book._id,
+                    readingStateCurrentState: ReadingStateState.NotStarted,
+                    readingStateCurrentBookmarkProgressPercent: 0,
+                    readingStateCurrentBookmarkProgressUpdatedAt: (new Date()).toISOString(),
+                    readingStateCurrentBookmarkLocation: null
+                  }).catch(Report.error)
                 }}
               >
                 <ListItemText primary="Mark as unread" />
               </ListItem>
-            )} */}
-            {/* {!actions && (
+            )}
+            {!actions && book.readingStateCurrentState !== ReadingStateState.Finished && (
               <ListItem button
                 onClick={() => {
                   handleClose()
+                  updateBook({
+                    _id: book._id,
+                    readingStateCurrentState: ReadingStateState.Finished,
+                    readingStateCurrentBookmarkProgressPercent: 1,
+                    readingStateCurrentBookmarkProgressUpdatedAt: (new Date()).toISOString(),
+                    readingStateCurrentBookmarkLocation: null
+                  }).catch(Report.error)
                 }}
               >
                 <ListItemText primary="Mark as finished" />
               </ListItem>
-            )} */}
+            )}
             {!actions && (
               <ListItem button
                 onClick={() => {
@@ -126,7 +143,7 @@ export const BookActionsDrawer = () => {
                 <ListItemText primary="Remove the book download" />
               </ListItem>
             )}
-            {(actions?.includes('removeDownload') || !actions) && (book.downloadState === 'downloaded' && book.isLocal) && (
+            {/* {(actions?.includes('removeDownload') || !actions) && (book.downloadState === 'downloaded' && book.isLocal) && (
               <ListItem button
                 onClick={() => {
                   handleClose()
@@ -141,7 +158,7 @@ export const BookActionsDrawer = () => {
                   secondary="This book is local, removing its content will remove it from your library as well"
                 />
               </ListItem>
-            )}
+            )} */}
           </List>
           {!actions && (
             <>

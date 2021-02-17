@@ -7,7 +7,7 @@ export const ReadingProgress: FC<{ style?: React.CSSProperties, progress: number
   const theme = useTheme()
   const [ref, layout] = useMeasure()
   let width = 0
-  
+
   if ("width" in layout) {
     width = layout.width
   }
@@ -16,6 +16,7 @@ export const ReadingProgress: FC<{ style?: React.CSSProperties, progress: number
     <div ref={ref as any} className={className} style={{
       width: '100%',
       textAlign: 'center',
+      paddingBottom: theme.spacing(1),
       ...style,
     }}>
       <MenuBookRounded style={{ opacity: '50%', fontSize: width * 0.4 }} />

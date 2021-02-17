@@ -1,6 +1,6 @@
 import React, { FC, memo, useEffect } from 'react'
 import { Chip, useTheme } from "@material-ui/core"
-import { CloudDownloadRounded, ErrorRounded, LoopRounded } from '@material-ui/icons';
+import { CheckCircleRounded, CloudDownloadRounded, ErrorRounded, LoopRounded } from '@material-ui/icons';
 import { useRafState } from 'react-use';
 import { Cover } from '../Cover';
 import { useRecoilValue, UnwrapRecoilValue } from 'recoil';
@@ -18,8 +18,9 @@ export const BookListCoverContainer: FC<{
   style?: React.CSSProperties,
   withReadingProgressStatus?: boolean
   withDownloadStatus?: boolean
-  withMetadaStatus?: boolean
-}> = memo(({ bookId, className, withMetadaStatus = true, style, withDownloadStatus = true, withReadingProgressStatus = true }) => {
+  withMetadaStatus?: boolean,
+  size?: 'small' | 'large'
+}> = memo(({ bookId, className, withMetadaStatus = true, style, withDownloadStatus = true, withReadingProgressStatus = true, size = 'small' }) => {
   const item = useRecoilValue(enrichedBookState(bookId))
   const classes = useStyles({ item });
   const [render, setRender] = useRafState(false)
@@ -40,6 +41,11 @@ export const BookListCoverContainer: FC<{
             {item?.downloadState !== DownloadState.Downloaded && (
               <div style={classes.downloadOverlay} />
             )}
+            {(withReadingProgressStatus && item?.readingStateCurrentState === ReadingStateState.Finished) && (
+              <div style={classes.finishIconContainer}>
+                <CheckCircleRounded style={classes.finishIcon} fontSize={size} />
+              </div>
+            )}
             <div
               style={classes.bodyContainer}>
               {(withMetadaStatus && item?.metadataUpdateStatus === 'fetching') && (
@@ -54,7 +60,7 @@ export const BookListCoverContainer: FC<{
               )}
               {item?.downloadState === 'none' && (
                 <div style={classes.pauseButton}>
-                  <CloudDownloadRounded color="secondary" />
+                  <CloudDownloadRounded color="secondary" fontSize={size} />
                 </div>
               )}
               {(withDownloadStatus && item?.downloadState === 'downloading') && (
@@ -62,7 +68,6 @@ export const BookListCoverContainer: FC<{
                   <Chip
                     color="secondary"
                     size="small"
-                    //  icon={<Pause />} 
                     label="downloading..."
                   />
                 </div>
@@ -99,6 +104,8 @@ const useStyles = ({ item }: { item: Book }) => {
     itemCoverCenterInfoText: {
 
     },
+    finishIconContainer: { position: 'absolute', right: 5, top: 5 },
+    finishIcon: { opacity: '70%', color: 'black' },
     bodyContainer: {
       position: 'absolute',
       height: '100%',

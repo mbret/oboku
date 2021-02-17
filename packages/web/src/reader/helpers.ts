@@ -94,7 +94,7 @@ export const useUpdateBookState = (bookId: string) => {
         readingStateCurrentBookmarkLocation: currentLocation?.start?.cfi,
         readingStateCurrentBookmarkProgressUpdatedAt: (new Date()).toISOString(),
         readingStateCurrentState: ReadingStateState.Reading,
-        ...currentApproximateProgress && {
+        ...(typeof currentApproximateProgress === 'number') && {
           readingStateCurrentBookmarkProgressPercent: currentApproximateProgress,
         },
         ...currentApproximateProgress === 1 && {
