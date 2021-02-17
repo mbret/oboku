@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef, useCallback, FC, useMemo } from 're
 import { useHistory, useParams } from 'react-router-dom'
 
 import { EpubView } from './EpubView'
-import { useWindowSize } from "react-use";
+import { useMeasure, useWindowSize } from "react-use";
 import { Box, Button, Link, Typography } from '@material-ui/core';
 import { Rendition, Contents, Location } from "epubjs";
 import { useUpdateBook } from '../books/helpers';
@@ -14,10 +14,10 @@ import { AppTourReader } from '../firstTimeExperience/AppTourReader';
 import { useHorizontalTappingZoneWidth } from './utils';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { bookState } from '../books/states';
-import { currentApproximateProgressState, currentChapterState, currentDirectionState, currentLocationState, currentPageState, isMenuShownState, layoutState, tocState, totalApproximativePagesState } from './states';
+import { currentApproximateProgressState, currentChapterState, currentDirectionState, currentLocationState, currentPageState, isBookReadyState, isMenuShownState, layoutState, tocState, totalApproximativePagesState } from './states';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
-import { useGenerateLocations, useResetStateOnUnmount, useUpdateBookState, useFile } from './helpers';
+import { useGenerateLocations, useResetStateOnUnmount, useUpdateBookState, useFile, useResizeBook } from './helpers';
 import { ReaderProvider } from './ReaderProvider';
 import { ComicReader } from './comic/ComicReader';
 import { clone } from 'ramda';
@@ -25,7 +25,7 @@ import screenfull, { Screenfull } from 'screenfull'
 import { Report } from '../report';
 import { IS_MOBILE_DEVICE } from '../constants';
 import { localSettingsState } from '../settings/states';
-import { PackagingMetadataObjectWithMissingProperties } from './types';
+import { PackagingMetadataObjectWithMissingProperties, RenditionOptions } from './types';
 import { BookLoading } from './BookLoading';
 import { extractMetadataFromName } from '@oboku/shared/dist/directives';
 import { useWakeLock } from '../misc/useWakeLock';
@@ -34,8 +34,7 @@ const screenfullApi = screenfull as Screenfull
 
 export const ReaderScreen: FC<{}> = () => {
   const readerRef = useRef<any>()
-  const rootRef = useRef<HTMLDivElement>()
-  const [isBookReady, setIsBookReady] = useState(false)
+  const [isBookReady, setIsBookReady] = useRecoilState(isBookReadyState)
   const setCurrentApproximateProgress = useSetRecoilState(currentApproximateProgressState)
   const [rendition, setRendition] = useState<Rendition | undefined>(undefined)
   const { bookId } = useParams<{ bookId?: string }>()
@@ -55,11 +54,13 @@ export const ReaderScreen: FC<{}> = () => {
   const history = useHistory()
   const localSettings = useRecoilValue(localSettingsState)
   const direction = useRecoilValue(currentDirectionState)
+  const [containerMeasureRef, { width: containerWidth, height: containerHeight }] = useMeasure()
 
   useGenerateLocations(rendition)
   useResetStateOnUnmount()
+  useResizeBook(rendition, containerWidth, containerHeight)
   const wakeLockActive = useWakeLock()
-  
+
   // @todo only show menu on short click
   const onRenditionClick = useCallback((e: MouseEvent) => {
     const { clientX } = e
@@ -173,23 +174,6 @@ export const ReaderScreen: FC<{}> = () => {
     })()
   }, [rendition, setToc])
 
-  // const onLocationChanged = (epubcifi: string) => {
-  //   console.log(
-  //     `onLocationChanged`,
-  //     epubcifi,
-  //     rendition?.book.locations.locationFromCfi(epubcifi),
-  //     rendition?.book.locations.currentLocation,
-  //     // rendition?.book.locations.percentageFromLocation(epubcifi),
-  //     rendition?.book.locations.percentageFromCfi(epubcifi),
-  //   )
-  //   editBook({
-  //     variables: {
-  //       id: bookId,
-  //       readingStateCurrentBookmarkLocation: epubcifi as string
-  //     }
-  //   })
-  // }
-
   useVerticalCentererRendererHook(rendition)
 
   useEffect(() => {
@@ -267,13 +251,14 @@ export const ReaderScreen: FC<{}> = () => {
 
   const { direction: metadataDirection } = (filename ? extractMetadataFromName(filename) : undefined || {})
 
-  const epubOptions = useMemo(() => ({
+  const epubOptions: RenditionOptions = useMemo(() => ({
     // spread: 'never' // never / always
     minSpreadWidth: 99999,
     // defaultDirection: 'ltr',
     ...metadataDirection && {
       defaultDirection: metadataDirection
-    }
+    },
+    resizeOnOrientationChange: false,
     // stylesheet: 'html { display: none; } ',
   }), [metadataDirection])
 
@@ -290,7 +275,7 @@ export const ReaderScreen: FC<{}> = () => {
   }
 
   console.log('ReaderScreen', `wake lock is ${wakeLockActive}`)
-  
+
   return (
     <ReaderProvider rendition={rendition}>
       {file && (
@@ -300,7 +285,7 @@ export const ReaderScreen: FC<{}> = () => {
             height: windowSize.height,
             width: windowSize.width,
           }}
-          ref={rootRef as any}
+          ref={containerMeasureRef as any}
         >
           {
             /**

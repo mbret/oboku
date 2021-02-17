@@ -4,6 +4,11 @@ import { ThenArg } from "../types";
 
 type Navigation = ThenArg<Rendition['book']['loaded']['navigation']>
 
+export const isBookReadyState = atom({
+  key: 'isBookReadyState',
+  default: false,
+})
+
 export const layoutState = atom<'fixed' | 'reflow' | undefined>({
   key: 'layoutState',
   default: undefined,

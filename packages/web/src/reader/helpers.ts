@@ -28,6 +28,24 @@ export const useResetStateOnUnmount = () => {
   }, [resetStates])
 }
 
+export const useResizeBook = (rendition: Rendition | undefined, containerWidth: number, containerHeight: number) => {
+  const isBookReady = useRecoilValue(states.isBookReadyState)
+
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>
+
+    if (isBookReady && rendition) {
+      timeout = setTimeout(() => {
+        rendition.resize(containerWidth, containerHeight)
+      }, 100)
+    }
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [rendition, containerWidth, containerHeight, isBookReady])
+}
+
 /**
  * Generate good enough page range for progress and current page.
  * We use 600 char as breaker as it's a good enough middle. 
