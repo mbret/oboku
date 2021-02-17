@@ -57,7 +57,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
 
     if (METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType)) {
       const files: string[] = []
-      const coverAllowedExt = ['.jpg', 'jpeg', '.png']
+      const coverAllowedExt = ['.jpg', '.jpeg', '.png']
       let isEpub = false
 
       await fs.createReadStream(filepath)
