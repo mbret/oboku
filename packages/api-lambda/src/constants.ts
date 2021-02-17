@@ -10,10 +10,6 @@ export const GOOGLE_CLIENT_SECRET_PATH = path.join(ROOT_DIR, process.env.GOOGLE_
 
 export const IS_PRODUCTION = process.env.ENV !== 'DEV'
 
-export const KNOWN_CONTENT_TYPES = [
-  'application/epub+zip',
-]
-
 export const COVER_MAXIMUM_SIZE_FOR_STORAGE = { width: 400, height: 600 }
 
 export const WASABI_AWS_ACCESS_KEY = process.env.WASABI_AWS_ACCESS_KEY || ''

@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as unzipper from 'unzipper'
 import { dataSourceFacade } from '@oboku/api-shared/src/dataSources/facade'
 import * as parser from 'fast-xml-parser'
-import { BookDocType, LinkDocType, OPF, READER_SUPPORTED_MIME_TYPES, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "@oboku/shared"
+import { BookDocType, LinkDocType, OPF, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "@oboku/shared"
 import { detectMimeTypeFromContent } from "../utils"
 import { PromiseReturnType } from "../types"
 import { COVER_MAXIMUM_SIZE_FOR_STORAGE, TMP_DIR } from '../constants'
@@ -51,8 +51,8 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     let normalizedMetadata: ReturnType<typeof normalizeMetadata> | undefined
     let coverPath: string | undefined
 
-    if (!READER_SUPPORTED_MIME_TYPES.includes(fallbackContentType || '')) {
-      fallbackContentType = await detectMimeTypeFromContent(filepath)
+    if (!METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType || '')) {
+      fallbackContentType = (await detectMimeTypeFromContent(filepath) || fallbackContentType)
     }
 
     if (METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType)) {
@@ -195,7 +195,9 @@ const normalizeMetadata = (opf: OPF) => {
       : metadata['title'] || metadata['dc:title'],
     publisher: typeof metadata['dc:publisher'] === 'string'
       ? metadata['dc:publisher']
-      : metadata['dc:publisher']['#text'],
+      : typeof metadata['dc:publisher'] === 'object'
+        ? metadata['dc:publisher']['#text']
+        : undefined,
     rights: metadata['dc:rights'] as string | undefined,
     language: extractLanguage(metadata['dc:language']),
     date: metadata['dc:date']

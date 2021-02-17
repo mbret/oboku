@@ -89,7 +89,6 @@ export const useUpdateBookState = (bookId: string) => {
   useDebounce(updateBook, 400, [currentLocationToWatch, updateBook])
 }
 
-// const comicMimeTypes = ['application/x-cbz']
 const epubMimeTypes = ['application/epub+zip']
 
 export const useFile = (bookId: string) => {
