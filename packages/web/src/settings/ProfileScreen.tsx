@@ -17,6 +17,8 @@ import { libraryState } from '../library/states';
 import { version } from '../../package.json'
 import { ROUTES } from '../constants';
 import { useDialog } from '../dialog';
+import { useIsDebugEnabled } from '../debug';
+import { toggleDebug } from '../debug';
 
 export const ProfileScreen = () => {
   const history = useHistory()
@@ -33,7 +35,8 @@ export const ProfileScreen = () => {
   const setLibraryState = useSetRecoilState(libraryState)
   const theme = useTheme()
   const dialog = useDialog()
-
+  const isDebugEnabled = useIsDebugEnabled()
+  
   return (
     <Box display="flex" flex={1} overflow="scroll" flexDirection="column">
       <TopBarNavigation title={'Profile'} showBack={false} />
@@ -152,6 +155,15 @@ export const ProfileScreen = () => {
               onClick={() => setIsLoadLibraryDebugOpened(true)}
             >
               <ListItemText primary="Load library from JSON file" />
+            </ListItem>
+            <ListItem
+              button
+              onClick={() => {
+                toggleDebug()
+                window.location.reload()
+              }}
+            >
+              <ListItemText primary={isDebugEnabled ? 'Disable debug mode' : 'Enable debug mode'} />
             </ListItem>
           </List>
           <LoadLibraryFromJsonDialog open={isLoadLibraryDebugOpened} onClose={() => setIsLoadLibraryDebugOpened(false)} />
