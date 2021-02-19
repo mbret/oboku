@@ -81,12 +81,14 @@ export const load = async (data: Blob | File) => {
     const archive = await new Promise<any>((resolve, reject) => {
       try {
         // @ts-ignore
-        loadArchiveFormats(['rar'], () => {
-          // @ts-ignore
-          archiveOpenFile(data, undefined, (archive, err) => {
-            if (err) return reject(err)
+        loadArchiveFormats(['rar'], async () => {
+          try {
+            // @ts-ignore
+            const archive = await archiveOpenFile(data, undefined)
             resolve(archive)
-          })
+          } catch (e) {
+            reject(e)
+          }
         })
       } catch (e) {
         return reject(e)
