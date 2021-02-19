@@ -5,6 +5,10 @@ import firebase from "firebase/app"
 import "firebase/analytics"
 import { FIREBASE_BASE_CONFIG } from '../constants'
 import { version } from '../../package.json'
+import localforage from 'localforage'
+
+// @ts-ignore
+window.localforage = localforage
 
 export const isDebugEnabled = () => {
   return localStorage.getItem('oboku_debug_enabled') === 'true'
