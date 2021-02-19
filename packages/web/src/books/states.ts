@@ -10,6 +10,8 @@ import { DataSourceType } from "@oboku/shared";
 
 export type Book = NonNullable<UnwrapRecoilValue<typeof normalizedBooksState>[number]>
 
+const isBookProtected = (protectedTags: string[], book: BookDocType) => intersection(protectedTags, book?.tags || []).length > 0
+
 export const normalizedBooksState = atom<Record<string, BookDocType | undefined>>({
   key: 'books',
   default: {}
@@ -37,6 +39,7 @@ export const enrichedBookState = selectorFamily({
   get: (bookId: string) => ({ get }) => {
     const book = get(bookState(bookId))
     const downloadState = get(bookDownloadsState(bookId))
+    const protectedTags = get(protectedTagIdsState)
 
     if (!book) return undefined
 
@@ -45,7 +48,8 @@ export const enrichedBookState = selectorFamily({
     return {
       ...book,
       ...downloadState || {},
-      isLocal: firstLink?.type === DataSourceType.FILE
+      isLocal: firstLink?.type === DataSourceType.FILE,
+      isProtected: isBookProtected(protectedTags, book)
     }
   }
 })

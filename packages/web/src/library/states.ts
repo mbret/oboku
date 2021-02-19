@@ -15,7 +15,7 @@ export type LibraryDocType = {
 export type LibrarySorting = 'date' | 'activity' | 'alpha'
 
 export const libraryState = atom<LibraryDocType>({
-  key: 'libraryState_persist',
+  key: 'libraryState',
   default: {
     isLibraryUnlocked: false,
     viewMode: LibraryViewMode.GRID,

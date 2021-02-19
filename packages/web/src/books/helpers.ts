@@ -15,6 +15,7 @@ import { useRecoilValue } from "recoil"
 import { normalizedBooksState, Book } from "./states"
 import * as R from 'ramda';
 import { sortByTitleComparator } from '@oboku/shared/dist/sorts'
+import { AtomicUpdateFunction } from "rxdb"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -54,6 +55,17 @@ export const useUpdateBook = () =>
     (db, { _id, ...rest }: Partial<BookDocType>) =>
       db.book.safeUpdate({ $set: rest }, collection => collection.findOne({ selector: { _id } }))
   )
+
+export const useAtomicUpdateBook = () => {
+  const database = useDatabase()
+
+  const updater = useCallback(async (id: string, mutationFunction: AtomicUpdateFunction<BookDocType>) => {
+    const book = await database?.book.findOne({ selector: { _id: id } }).exec()
+    return await book?.atomicUpdate(mutationFunction)
+  }, [database])
+
+  return [updater]
+}
 
 export const useRefreshBookMetadata = () => {
   const client = useAxiosClient()

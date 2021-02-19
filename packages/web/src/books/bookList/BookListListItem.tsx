@@ -4,10 +4,11 @@ import { useRecoilValue, useSetRecoilState } from 'recoil'
 import { useDefaultItemClickHandler } from './helpers'
 import { enrichedBookState } from '../states'
 import { ReadingStateState } from '@oboku/shared'
-import { DoneRounded, ErrorRounded, LoopRounded, MenuBookRounded, MoreVert } from '@material-ui/icons'
+import { DoneRounded, ErrorRounded, LoopRounded, MenuBookRounded, MoreVert, NoEncryptionRounded } from '@material-ui/icons'
 import { bookActionDrawerState } from '../BookActionsDrawer'
 import { useCSS } from '../../misc/utils'
 import { BookListCoverContainer } from './BookListCoverContainer'
+import { DownloadState } from '../../download/states'
 
 export const BookListListItem: FC<{
   bookId: string,
@@ -45,6 +46,7 @@ export const BookListListItem: FC<{
         withReadingProgressStatus={false}
         withDownloadStatus={false}
         withMetadaStatus={false}
+        withProtectedStatus={false}
       />
       <div style={{ display: 'flex', flex: 1, minHeight: 0, flexDirection: 'column', marginLeft: theme.spacing(1), overflow: 'hidden' }}>
         <Typography
@@ -58,7 +60,12 @@ export const BookListListItem: FC<{
           {book?.title || 'Unknown'}
         </Typography>
         <Typography noWrap color="textSecondary" variant="body2">{book?.creator || 'Unknown'}</Typography>
-        <div style={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        {/* <div style={{ display: 'flex', flex: 1, alignItems: 'flex-end', justifyContent: 'space-between' }}>
+          {book?.isProtected && (
+            <NoEncryptionRounded color="secondary" />
+          )}
+        </div> */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1, alignItems: 'flex-end' }}>
           <div>
             {book?.readingStateCurrentState === ReadingStateState.Finished && (
               <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -76,16 +83,23 @@ export const BookListListItem: FC<{
               </div>
             )}
           </div>
-          {(book?.metadataUpdateStatus === 'fetching') && (
-            <div style={{ display: 'flex', flexDirection: 'row' }}>
-              <Chip size="small" avatar={<LoopRounded className="icon-spin" />} label="metadata..." />
-            </div>
-          )}
-          {(book?.metadataUpdateStatus !== 'fetching' && !!book?.lastMetadataUpdateError) && (
-            <div style={{ display: 'flex', flexDirection: 'row' }}>
-              <Chip size="small" icon={<ErrorRounded color="primary" />} label="metadata" />
-            </div>
-          )}
+          <div style={{ display: 'flex', flexDirection: 'row' }}>
+            {/* {(book?.downloadState === DownloadState.Downloading) && (
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <Chip size="small" label="downloading..." />
+              </div>
+            )} */}
+            {(book?.metadataUpdateStatus === 'fetching') && (
+              <div style={{ display: 'flex', flexDirection: 'row', marginLeft: theme.spacing(1) }}>
+                <Chip size="small" avatar={<LoopRounded className="icon-spin" />} label="metadata..." />
+              </div>
+            )}
+            {(book?.metadataUpdateStatus !== 'fetching' && !!book?.lastMetadataUpdateError) && (
+              <div style={{ display: 'flex', flexDirection: 'row', marginLeft: theme.spacing(1) }}>
+                <Chip size="small" icon={<ErrorRounded color="primary" />} label="metadata" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {withDrawerActions && (

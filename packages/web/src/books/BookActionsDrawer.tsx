@@ -3,7 +3,7 @@ import React from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import { SyncRounded, DeleteForeverRounded } from '@material-ui/icons';
+import { SyncRounded, DeleteForeverRounded, RemoveRounded, CheckRounded, CollectionsRounded, NoSimRounded } from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
 import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { ROUTES } from '../constants';
@@ -79,6 +79,9 @@ export const BookActionsDrawer = () => {
                   }).catch(Report.error)
                 }}
               >
+                <ListItemIcon>
+                  <RemoveRounded />
+                </ListItemIcon>
                 <ListItemText primary="Mark as unread" />
               </ListItem>
             )}
@@ -95,6 +98,9 @@ export const BookActionsDrawer = () => {
                   }).catch(Report.error)
                 }}
               >
+                <ListItemIcon>
+                  <CheckRounded />
+                </ListItemIcon>
                 <ListItemText primary="Mark as finished" />
               </ListItem>
             )}
@@ -105,6 +111,9 @@ export const BookActionsDrawer = () => {
                   setOpenManageBookCollectionsDialog(bookId)
                 }}
               >
+                <ListItemIcon>
+                  <CollectionsRounded />
+                </ListItemIcon>
                 <ListItemText primary="Manage collections" />
               </ListItem>
             )}
@@ -138,7 +147,7 @@ export const BookActionsDrawer = () => {
                 }}
               >
                 <ListItemIcon>
-                  <DeleteForeverRounded />
+                  <NoSimRounded />
                 </ListItemIcon>
                 <ListItemText primary="Remove the book download" />
               </ListItem>

@@ -2,7 +2,7 @@ import { useRecoilCallback, useRecoilValue } from "recoil"
 import * as states from "./states"
 import { Rendition } from "epubjs"
 import { useEffect, useState } from "react"
-import { useUpdateBook } from "../books/helpers"
+import { useAtomicUpdateBook, useUpdateBook } from "../books/helpers"
 import { ReadingStateState } from "@oboku/shared"
 import { useDebounce } from "react-use"
 import { useBookFile } from "../download/useBookFile"
@@ -81,30 +81,32 @@ export const useGenerateLocations = (rendition: Rendition | undefined, words = 3
 }
 
 export const useUpdateBookState = (bookId: string) => {
-  const [editBook] = useUpdateBook()
+  const [updateBook] = useAtomicUpdateBook()
   const currentLocationToWatch = useRecoilValue(states.currentLocationState)
 
-  const updateBook = useRecoilCallback(({ snapshot }) => async () => {
+  const updater = useRecoilCallback(({ snapshot }) => async () => {
     const currentLocation = await snapshot.getPromise(states.currentLocationState)
     const currentApproximateProgress = await snapshot.getPromise(states.currentApproximateProgressState)
 
     if (currentLocation) {
-      editBook({
-        _id: bookId,
+      updateBook(bookId, old => ({
+        ...old,
         readingStateCurrentBookmarkLocation: currentLocation?.start?.cfi,
         readingStateCurrentBookmarkProgressUpdatedAt: (new Date()).toISOString(),
-        readingStateCurrentState: ReadingStateState.Reading,
+        ...(old.readingStateCurrentState !== ReadingStateState.Finished) && {
+          readingStateCurrentState: ReadingStateState.Reading,
+          ...currentApproximateProgress === 1 && {
+            readingStateCurrentState: ReadingStateState.Finished,
+          }
+        },
         ...(typeof currentApproximateProgress === 'number') && {
           readingStateCurrentBookmarkProgressPercent: currentApproximateProgress,
         },
-        ...currentApproximateProgress === 1 && {
-          readingStateCurrentState: ReadingStateState.Finished,
-        }
-      })
+      }))
     }
-  }, [editBook])
+  }, [updateBook, bookId])
 
-  useDebounce(updateBook, 400, [currentLocationToWatch, updateBook])
+  useDebounce(updater, 400, [currentLocationToWatch, updater])
 }
 
 const epubMimeTypes = ['application/epub+zip']

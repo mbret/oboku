@@ -66,6 +66,7 @@ export type RxDocumentMutation<Document = any, Variables = any> = { __doc: Docum
 // export function useRxMutation (
 //   query: (database: RxDatabase<MyDatabaseCollections>) => Promise<any> | undefined,
 // ): any
+
 export function useRxMutation(
   query: (database: RxDatabase<MyDatabaseCollections>, options: {}) => Promise<any> | undefined
 ): [() => Promise<any>, any]

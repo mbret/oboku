@@ -8,6 +8,7 @@ import { enrichedBookState } from './states'
 import { authState } from '../auth/authState'
 import { bluredTagIdsState } from '../tags/states'
 import { useCSS } from '../misc/utils'
+import { localSettingsState } from '../settings/states'
 
 const bookCoverState = selectorFamily({
   key: 'bookCoverState',
@@ -33,17 +34,19 @@ type Props = {
   fullWidth?: boolean,
   withShadow?: boolean,
   rounded?: boolean,
+  blurIfNeeded?: boolean
 }
 
-export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withShadow = false, rounded = true, ...rest }) => {
+export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withShadow = false, rounded = true, blurIfNeeded = true, ...rest }) => {
   const auth = useRecoilValue(authState)
   const isMounted = useMountedState()
   const book = useRecoilValue(bookCoverState(bookId))
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const classes = useStyle({ withShadow, fullWidth, rounded, isLoading })
-
   const assetHash = book?.lastMetadataUpdatedAt?.toString()
+  const localSettings = useRecoilValue(localSettingsState)
+  const shouldBlurCover = book?.isBlurred && blurIfNeeded && !localSettings.unblurWhenProtectedVisible
 
   const urlParams = new URLSearchParams({
     ...assetHash && {
@@ -69,7 +72,7 @@ export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withSha
           alt="img"
           src={placeholder}
           style={classes.img}
-          {...book?.isBlurred && {
+          {...shouldBlurCover && {
             className: `${classes.img} svgBlur`
           }}
           {...rest}
@@ -82,7 +85,7 @@ export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withSha
           alt="img"
           src={coverSrc}
           style={classes.img}
-          {...book?.isBlurred && {
+          {...shouldBlurCover && {
             className: `${classes.img} svgBlur`
           }}
           onLoad={() => {

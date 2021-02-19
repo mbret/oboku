@@ -18,7 +18,7 @@ export const useDownloadBook: UseDownloadHook = () => {
           fields: 'name,size'
         })
 
-        const mediaResponse = await axios.get(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+        const mediaResponse = await axios.get<Blob>(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
           headers: {
             Authorization: `Bearer ${gapi.auth.getToken().access_token}`
           },

@@ -1,6 +1,6 @@
 import React, { FC, memo, useEffect } from 'react'
 import { Chip, useTheme } from "@material-ui/core"
-import { CheckCircleRounded, CloudDownloadRounded, ErrorRounded, LoopRounded } from '@material-ui/icons';
+import { CheckCircleRounded, CloudDownloadRounded, ErrorRounded, LoopRounded, NoEncryptionRounded } from '@material-ui/icons';
 import { useRafState } from 'react-use';
 import { Cover } from '../Cover';
 import { useRecoilValue, UnwrapRecoilValue } from 'recoil';
@@ -19,8 +19,9 @@ export const BookListCoverContainer: FC<{
   withReadingProgressStatus?: boolean
   withDownloadStatus?: boolean
   withMetadaStatus?: boolean,
+  withProtectedStatus?: boolean,
   size?: 'small' | 'large'
-}> = memo(({ bookId, className, withMetadaStatus = true, style, withDownloadStatus = true, withReadingProgressStatus = true, size = 'small' }) => {
+}> = memo(({ bookId, className, withMetadaStatus = true, style, withDownloadStatus = true, withReadingProgressStatus = true, size = 'small', withProtectedStatus = true }) => {
   const item = useRecoilValue(enrichedBookState(bookId))
   const classes = useStyles({ item });
   const [render, setRender] = useRafState(false)
@@ -40,6 +41,11 @@ export const BookListCoverContainer: FC<{
             {item && <Cover bookId={item?._id} />}
             {item?.downloadState !== DownloadState.Downloaded && (
               <div style={classes.downloadOverlay} />
+            )}
+            {(withProtectedStatus && item?.isProtected) && (
+              <div style={classes.protectedIconContainer}>
+                <NoEncryptionRounded style={classes.protectedIcon} fontSize="small" />
+              </div>
             )}
             {(withReadingProgressStatus && item?.readingStateCurrentState === ReadingStateState.Finished) && (
               <div style={classes.finishIconContainer}>
@@ -106,6 +112,8 @@ const useStyles = ({ item }: { item: Book }) => {
     },
     finishIconContainer: { position: 'absolute', right: 5, top: 5 },
     finishIcon: { opacity: '70%', color: 'black' },
+    protectedIconContainer: { position: 'absolute', left: 5, top: 5, backgroundColor: 'black', borderRadius: 50, padding: 4, opacity: '70%' },
+    protectedIcon: { opacity: '100%', color: 'white' },
     bodyContainer: {
       position: 'absolute',
       height: '100%',

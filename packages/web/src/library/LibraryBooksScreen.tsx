@@ -2,9 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { BookList } from '../books/bookList/BookList';
 import {
   Button,
-  Toolbar, IconButton, Badge, Typography, useTheme,
+  Toolbar, IconButton, Badge, Typography, useTheme, makeStyles
 } from '@material-ui/core';
-import { AppsRounded, TuneRounded, ListRounded, SortRounded, LockOpenRounded } from '@material-ui/icons';
+import { AppsRounded, TuneRounded, ListRounded, SortRounded, NoEncryptionRounded, BlurOffRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
 import { UploadBookFromUriDialog } from '../upload/UploadBookFromUriDialog';
 import { UploadBookFromDataSource } from '../upload/UploadBookFromDataSource';
@@ -20,15 +20,18 @@ import { useBooksSortedBy } from '../books/helpers';
 import { SortByDialog } from '../books/bookList/SortByDialog';
 import { isUploadBookFromDeviceOpenedFromState } from '../upload/state';
 import { DownloadState } from '../download/states';
+import { localSettingsState } from '../settings/states';
 
 export const LibraryBooksScreen = () => {
-  const classes = useStyles();
+  const styles = useStyles();
+  const classes = useClasses();
   const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const [isUploadBookDrawerOpened, setIsUploadBookDrawerOpened] = useRecoilState(isUploadBookDrawerOpenedState)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const [isUploadBookFromUriDialogOpened, setIsUploadBookFromUriDialogOpened] = useState(false)
   const setIsUploadBookFromDeviceOpened = useSetRecoilState(isUploadBookFromDeviceOpenedFromState)
+  const localSettings = useRecoilValue(localSettingsState)
   const [isUploadBookFromDataSourceDialogOpened, setIsUploadBookFromDataSourceDialogOpened] = useState<ReturnType<typeof useDataSourcePlugins>[number] | undefined>(undefined)
   const setLibraryState = useSetRecoilState(libraryState)
   const dataSourcePlugins = useDataSourcePlugins()
@@ -75,11 +78,11 @@ export const LibraryBooksScreen = () => {
 
   const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
 
-  console.log('[LibraryBooksScreen]', books)
+  console.log('[LibraryBooksScreen]', books, theme.breakpoints.down('xs'))
 
   return (
     <div
-      style={classes.container}
+      style={styles.container}
     >
       {listHeaderDimTracker}
       <Toolbar style={{ borderBottom: `1px solid ${theme.palette.grey[200]}`, boxSizing: 'border-box' }}>
@@ -108,8 +111,19 @@ export const LibraryBooksScreen = () => {
           </Button>
         </div>
         {library?.isLibraryUnlocked && (
-          <div style={{ display: 'flex', flexFlow: 'row', alignItems: 'center', marginLeft: theme.spacing(1), overflow: 'hidden' }}>
-            <LockOpenRounded fontSize="small" />
+          <div className={classes.extraInfo}>
+            {localSettings.unblurWhenProtectedVisible && (
+              <IconButton disabled>
+                <BlurOffRounded fontSize="small" />
+              </IconButton>
+            )}
+            <IconButton
+              onClick={() => {
+                setLibraryState(prev => ({ ...prev, isLibraryUnlocked: false }))
+              }}
+            >
+              <NoEncryptionRounded fontSize="small" />
+            </IconButton>
           </div>
         )}
         <IconButton
@@ -152,7 +166,6 @@ export const LibraryBooksScreen = () => {
               <img
                 style={{
                   width: '100%',
-                  // maxWidth: theme.,
                 }}
                 src={EmptyLibraryAsset}
                 alt="libray"
@@ -216,3 +229,16 @@ const useStyles = () => {
     },
   }), [])
 }
+
+const useClasses = makeStyles(theme => ({
+  extraInfo: {
+    display: 'flex',
+    flexFlow: 'row',
+    alignItems: 'center',
+    marginLeft: theme.spacing(1),
+    overflow: 'hidden',
+    '@media (max-width:400px)': {
+      display: 'none'
+    }
+  }
+}))

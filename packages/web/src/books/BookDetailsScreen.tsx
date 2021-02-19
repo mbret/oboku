@@ -46,7 +46,7 @@ export const BookDetailsScreen = () => {
       <TopBarNavigation title="Book details" showBack={true} />
       <div style={styles.headerContent}>
         <div className={classes.coverContainer} >
-          {book && (<Cover bookId={book._id} />)}
+          {book && (<Cover bookId={book._id} blurIfNeeded={false} />)}
         </div>
       </div>
       <div style={styles.titleContainer}>

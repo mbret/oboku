@@ -20,6 +20,20 @@ export const SettingsScreen = () => {
         <List >
           <ListSubheader disableSticky>General</ListSubheader>
         </List>
+        <List >
+          <ListSubheader disableSticky>Privacy</ListSubheader>
+          <ListItem
+            button
+            onClick={() => {
+              setLocalSettings(old => ({ ...old, unblurWhenProtectedVisible: !old.unblurWhenProtectedVisible }))
+            }}
+          >
+            <ListItemText primary="Unblur cover when protected content is visible" />
+            <ListItemSecondaryAction>
+              {localSettings.unblurWhenProtectedVisible ? <CheckCircleRounded /> : <RadioButtonUncheckedOutlined />}
+            </ListItemSecondaryAction>
+          </ListItem>
+        </List>
         <List subheader={<ListSubheader disableSticky>Reading</ListSubheader>}>
           <ListItem
             button

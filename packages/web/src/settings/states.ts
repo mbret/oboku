@@ -1,6 +1,4 @@
-import {
-  atom,
-} from 'recoil'
+import { atom } from 'recoil'
 import { SettingsDocType } from '../rxdb'
 
 export const settingsState = atom<SettingsDocType | undefined>({
@@ -10,11 +8,13 @@ export const settingsState = atom<SettingsDocType | undefined>({
 
 export const localSettingsState = atom<{
   useNavigationArrows: boolean
-  readingFullScreenSwitchMode: 'automatic' | 'always' | 'never'
+  readingFullScreenSwitchMode: 'automatic' | 'always' | 'never',
+  unblurWhenProtectedVisible: boolean,
 }>({
   key: 'localSettingsState',
   default: {
     useNavigationArrows: false,
-    readingFullScreenSwitchMode: process.env.NODE_ENV !== 'production' ? 'never' : 'automatic'
+    readingFullScreenSwitchMode: process.env.NODE_ENV !== 'production' ? 'never' : 'automatic',
+    unblurWhenProtectedVisible: false,
   }
 })
