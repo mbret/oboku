@@ -36,7 +36,7 @@ export const ProfileScreen = () => {
   const theme = useTheme()
   const dialog = useDialog()
   const isDebugEnabled = useIsDebugEnabled()
-  
+
   return (
     <Box display="flex" flex={1} overflow="scroll" flexDirection="column">
       <TopBarNavigation title={'Profile'} showBack={false} />
@@ -147,28 +147,26 @@ export const ProfileScreen = () => {
           <ListItemText primary="Version" secondary={version} />
         </ListItem>
       </List>
-      {process.env.NODE_ENV !== 'production' && (
-        <>
-          <List subheader={<ListSubheader disableSticky>Developer options</ListSubheader>}>
-            <ListItem
-              button
-              onClick={() => setIsLoadLibraryDebugOpened(true)}
-            >
-              <ListItemText primary="Load library from JSON file" />
-            </ListItem>
-            <ListItem
-              button
-              onClick={() => {
-                toggleDebug()
-                window.location.reload()
-              }}
-            >
-              <ListItemText primary={isDebugEnabled ? 'Disable debug mode' : 'Enable debug mode'} />
-            </ListItem>
-          </List>
-          <LoadLibraryFromJsonDialog open={isLoadLibraryDebugOpened} onClose={() => setIsLoadLibraryDebugOpened(false)} />
-        </>
-      )}
+      <>
+        <List subheader={<ListSubheader disableSticky>Developer options</ListSubheader>}>
+          <ListItem
+            button
+            onClick={() => setIsLoadLibraryDebugOpened(true)}
+          >
+            <ListItemText primary="Load library from JSON file" />
+          </ListItem>
+          <ListItem
+            button
+            onClick={() => {
+              toggleDebug()
+              window.location.reload()
+            }}
+          >
+            <ListItemText primary={isDebugEnabled ? 'Disable debug mode' : 'Enable debug mode'} />
+          </ListItem>
+        </List>
+        <LoadLibraryFromJsonDialog open={isLoadLibraryDebugOpened} onClose={() => setIsLoadLibraryDebugOpened(false)} />
+      </>
       <List
         subheader={<ListSubheader disableSticky style={{ color: theme.palette.error.dark }}>Danger zone</ListSubheader>}
         style={{ backgroundColor: fade(theme.palette.error.light, 0.2) }}
