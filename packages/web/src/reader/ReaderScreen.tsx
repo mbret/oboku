@@ -28,7 +28,7 @@ import { localSettingsState } from '../settings/states';
 import { PackagingMetadataObjectWithMissingProperties, RenditionOptions } from './types';
 import { BookLoading } from './BookLoading';
 import { extractMetadataFromName } from '@oboku/shared/dist/directives';
-import { useWakeLock } from '../misc/useWakeLock';
+import { useWakeLock } from '../common/useWakeLock';
 
 const screenfullApi = screenfull as Screenfull
 

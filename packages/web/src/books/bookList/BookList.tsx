@@ -6,7 +6,7 @@ import { BookListGridItem } from './BookListGridItem';
 import { LibrarySorting } from '../../library/states';
 import { LibraryViewMode } from '../../rxdb';
 import { BookListListItem } from './BookListListItem';
-import { useCSS } from '../../misc/utils';
+import { useCSS } from '../../common/utils';
 
 type CellRenderer = ComponentProps<typeof ItemList>['rowRenderer']
 

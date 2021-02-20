@@ -9,7 +9,7 @@ import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
 import { UploadBookFromUriDialog } from '../upload/UploadBookFromUriDialog';
 import { UploadBookFromDataSource } from '../upload/UploadBookFromDataSource';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
-import { useCSS, useMeasureElement } from '../misc/utils';
+import { useCSS, useMeasureElement } from '../common/utils';
 import { LibraryViewMode } from '../rxdb';
 import { isUploadBookDrawerOpenedState, libraryState } from './states';
 import { booksAsArrayState } from '../books/states';
@@ -237,7 +237,7 @@ const useClasses = makeStyles(theme => ({
     alignItems: 'center',
     marginLeft: theme.spacing(1),
     overflow: 'hidden',
-    '@media (max-width:400px)': {
+    '@media (max-width:370px)': {
       display: 'none'
     }
   }

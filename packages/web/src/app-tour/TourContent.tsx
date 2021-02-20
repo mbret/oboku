@@ -11,7 +11,7 @@ import React, { useContext, useState } from 'react';
 // import Carousel from './Carousel';
 import { TourContext, TourKey } from './TourContext';
 // import { sizing } from '@material-ui/system'
-import { useCSS } from '../misc/utils';
+import { useCSS } from '../common/utils';
 
 type Props = {
   id: TourKey;

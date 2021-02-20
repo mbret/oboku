@@ -12,7 +12,7 @@ import { Cover } from '../books/Cover'
 import { useCreateCollection } from '../collections/helpers'
 import { useRecoilValue } from 'recoil'
 import { collectionsAsArrayState } from '../collections/states'
-import { useCSS } from '../misc/utils'
+import { useCSS } from '../common/utils'
 
 export const LibraryCollectionScreen = () => {
   const classes = useStyles()

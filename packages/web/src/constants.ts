@@ -1,4 +1,4 @@
-import { isMobileDetected } from "./misc/utils"
+import { isMobileDetected } from "./common/utils"
 
 export const API_URI = process.env.REACT_APP_API_URL || `https://${window.location.hostname}:4000`
 // export const API_URI = 'https://api.oboku.me'

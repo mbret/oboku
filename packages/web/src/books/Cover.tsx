@@ -1,13 +1,13 @@
 import React, { FC, memo, useEffect, useState } from 'react'
 import { useMountedState } from 'react-use'
-import { API_URI } from '../constants'
 import placeholder from '../assets/cover-placeholder.png'
 import { useTheme } from '@material-ui/core'
 import { selectorFamily, useRecoilValue } from 'recoil'
 import { enrichedBookState } from './states'
 import { authState } from '../auth/authState'
 import { bluredTagIdsState } from '../tags/states'
-import { useCSS } from '../misc/utils'
+import { useCSS } from '../common/utils'
+import { API_URI } from '../constants'
 import { localSettingsState } from '../settings/states'
 
 const bookCoverState = selectorFamily({

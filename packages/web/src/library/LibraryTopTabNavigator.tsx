@@ -8,7 +8,7 @@ import { ROUTES } from '../constants'
 import { LibraryCollectionScreen } from './LibraryCollectionScreen'
 import { useSyncLibrary } from './helpers'
 import { Sync } from '@material-ui/icons'
-import { useCSS } from '../misc/utils'
+import { useCSS } from '../common/utils'
 
 export const LibraryTopTabNavigator = () => {
   const location = useLocation()

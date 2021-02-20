@@ -1,4 +1,4 @@
-import { waitFor } from '../../misc/utils'
+import { waitFor } from '../../common/utils'
 import React, { FC, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Report } from '../../report'
 

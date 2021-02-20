@@ -7,7 +7,7 @@ import { bookActionDrawerState } from '../BookActionsDrawer';
 import { enrichedBookState } from '../states';
 import { useDefaultItemClickHandler } from './helpers';
 import { BookListCoverContainer } from './BookListCoverContainer';
-import { useCSS } from '../../misc/utils';
+import { useCSS } from '../../common/utils';
 
 export const BookListGridItem: FC<{
   bookId: string,

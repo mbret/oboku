@@ -10,7 +10,7 @@ import { useRecoilValue } from 'recoil';
 import { booksAsArrayState } from './books/states';
 import { ReadingStateState } from '@oboku/shared';
 import { useBooksSortedBy } from './books/helpers';
-import { useCSS } from './misc/utils';
+import { useCSS } from './common/utils';
 
 export const HomeScreen = () => {
   const classes = useStyles();

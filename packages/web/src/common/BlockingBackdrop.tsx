@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from 'react';
 import { Backdrop, CircularProgress, useTheme } from "@material-ui/core"
 import { useRecoilCallback, useRecoilValue } from 'recoil';
 import { atom, selector } from "recoil";
-import { useCSS } from '../misc/utils';
+import { useCSS } from '../common/utils';
 
 type Key = string
 

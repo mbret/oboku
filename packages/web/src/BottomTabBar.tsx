@@ -4,7 +4,7 @@ import { HomeOutlined, Home, LocalLibrary, LocalLibraryOutlined, Storage, Storag
 import { useHistory, useLocation } from 'react-router-dom'
 import { ROUTES } from './constants'
 import { useNetworkState } from 'react-use'
-import { useCSS } from './misc/utils'
+import { useCSS } from './common/utils'
 import { UploadBookFromDevice } from './upload/UploadBookFromDevice'
 import { useRecoilState } from 'recoil'
 import { isUploadBookFromDeviceOpenedFromState } from './upload/state'

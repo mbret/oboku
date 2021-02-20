@@ -16,7 +16,7 @@ import { bookState, bookTagsState, bookLinksState, bookCollectionsState, enriche
 import { tagsAsArrayState } from '../tags/states';
 import { normalizedLinksState } from '../links/states';
 import { useEditLink } from '../links/helpers';
-import { useCSS } from '../misc/utils';
+import { useCSS } from '../common/utils';
 
 type ScreenParams = {
   id: string

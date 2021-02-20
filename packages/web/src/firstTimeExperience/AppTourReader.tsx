@@ -5,7 +5,7 @@ import { useHorizontalTappingZoneWidth } from '../reader/utils';
 import { TouchAppRounded } from '@material-ui/icons';
 import { useRecoilState } from 'recoil';
 import { firstTimeExperienceState } from './firstTimeExperienceStates';
-import { useCSS } from '../misc/utils';
+import { useCSS } from '../common/utils';
 
 export const AppTourReader: React.FC = memo(() => {
   const [{ hasDoneReaderTour }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)

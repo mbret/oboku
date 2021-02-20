@@ -7,7 +7,7 @@ import { ArrowBackIosRounded, MoreVertRounded, Search } from '@material-ui/icons
 import { Box, fade, InputBase, makeStyles, useTheme } from '@material-ui/core';
 import { ROUTES } from './constants';
 import { useNavigation } from './navigation/useNavigation';
-import { useCSS } from './misc/utils';
+import { useCSS } from './common/utils';
 
 export const TopBarNavigation: FC<{
   title?: string,

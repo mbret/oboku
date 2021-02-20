@@ -1,4 +1,4 @@
-import { useCSS } from '../misc/utils';
+import { useCSS } from '../common/utils';
 // needs to be global
 import './BlurContainer.css';
 
