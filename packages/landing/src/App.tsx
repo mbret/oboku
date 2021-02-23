@@ -8,7 +8,6 @@ function App() {
     <ThemeProvider theme={theme}>
       <Home />
     </ThemeProvider>
-
   );
 }
 

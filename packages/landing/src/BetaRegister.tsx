@@ -15,7 +15,6 @@ export const BetaRegister = () => {
   const [sendEmail, { error, status }] = useSendMail()
 
   const onRequestAccess = async () => {
-    // setEmail('')
     sendEmail(email)
   }
 
