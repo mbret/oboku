@@ -11,13 +11,21 @@ const res = (response: APIGatewayProxyResult) => ({
   headers: {
     ...response.headers,
     'Access-Control-Allow-Methods': 'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT',
-    'Access-Control-Allow-Origin': '*'
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': '*',
   }
 })
 
 export const lambda = (cb: (event: APIGatewayProxyEvent, context: APIGatewayEventRequestContext) => Promise<APIGatewayProxyResult>) =>
   async (event: APIGatewayProxyEvent, context: APIGatewayEventRequestContext): Promise<APIGatewayProxyResult> => {
     try {
+      if (event.httpMethod.toLowerCase() === 'options') {
+        return res({
+          statusCode: 200,
+          body: JSON.stringify({})
+        })
+      }
+
       const response = await cb(event, context)
 
       return res(response)

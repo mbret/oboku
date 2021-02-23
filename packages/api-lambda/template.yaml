@@ -21,17 +21,23 @@ Globals:
   Api:
     BinaryMediaTypes:
       - "*/*"
-    Cors:
-      AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
-      AllowHeaders: "'*'"
-      AllowOrigin: "'*'"
-      AllowCredentials: false
+    # Cors:
+    #   AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+    #   AllowHeaders: "'*'"
+    #   AllowOrigin: "'*'"
+    #   AllowCredentials: false
   Function:
     Timeout: 900
     Environment:
       Variables:
         Foo: Bar
         ENV: !Ref Environment
+  # Auth:
+  #     DefaultAuthorizer: CognitoAuthorizer
+  #     Authorizers:
+  #       CognitoAuthorizer:
+  #         UserPoolArn: yourUserPool
+  #     AddDefaultAuthorizerToCorsPreflight: False
 
 Resources:
   RefreshMetadataFunction:
@@ -45,7 +51,7 @@ Resources:
           Type: Api
           Properties:
             Path: /refresh-metadata
-            Method: post
+            Method: ANY
   RefreshMetadataLongProcessFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -67,7 +73,7 @@ Resources:
           Type: Api
           Properties:
             Path: /sync-datasource
-            Method: post
+            Method: ANY
   SyncDataSourceLongProcessFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -89,7 +95,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /signin
-            Method: post
+            Method: ANY
   CoverFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -104,7 +110,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /cover/{id}
-            Method: get
+            Method: ANY
   SignupFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -116,7 +122,7 @@ Resources:
           Type: Api 
           Properties:
             Path: /signup
-            Method: post
+            Method: ANY
   RequestAccess:
     Type: AWS::Serverless::Function
     Properties:
@@ -124,10 +130,10 @@ Resources:
       Handler: main.fn
       Runtime: nodejs12.x
       Events:
-        Post:
+        AnyRequest:
           Type: Api 
           Properties:
             Path: /requestaccess
-            Method: post
+            Method: ANY
   CoverBucket:
     Type: AWS::S3::Bucket
