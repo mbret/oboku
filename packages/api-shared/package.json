@@ -7,10 +7,10 @@
     "watch": "nodemon"
   },
   "dependencies": {
-    "@oboku/shared": "1.0.0",
     "@types/node-fetch": "^2.5.8",
     "dropbox": "mbret/dropbox-sdk-js#main",
     "googleapis": "^67.0.0",
+    "jsonwebtoken": "^8.5.1",
     "nano": "^9.0.1",
     "node-fetch": "^2.6.1"
   }

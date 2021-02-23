@@ -1,0 +1,52 @@
+Arguments: 
+  /usr/local/bin/node /usr/local/lib/node_modules/yarn/lib/cli.js add jsonwebtoken --save
+
+PATH: 
+  /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Library/Apple/usr/bin:/Users/maxime.bret/Library/Android/sdk/emulator:/Users/maxime.bret/Library/Android/sdk/tools:/Users/maxime.bret/Library/Android/sdk/tools/bin:/Users/maxime.bret/Library/Android/sdk/platform-tools:/Users/maxime.bret/Library/Android/sdk/emulator:/Users/maxime.bret/Library/Android/sdk/tools:/Users/maxime.bret/Library/Android/sdk/tools/bin:/Users/maxime.bret/Library/Android/sdk/platform-tools
+
+Yarn version: 
+  1.22.10
+
+Node version: 
+  12.20.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/@oboku%2fshared: Not found
+      at Request.params.callback [as _callback] (/usr/local/lib/node_modules/yarn/lib/cli.js:66988:18)
+      at Request.self.callback (/usr/local/lib/node_modules/yarn/lib/cli.js:140662:22)
+      at Request.emit (events.js:314:20)
+      at Request.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:141634:10)
+      at Request.emit (events.js:314:20)
+      at IncomingMessage.<anonymous> (/usr/local/lib/node_modules/yarn/lib/cli.js:141556:12)
+      at Object.onceWrapper (events.js:420:28)
+      at IncomingMessage.emit (events.js:326:22)
+      at endReadableNT (_stream_readable.js:1241:12)
+      at processTicksAndRejections (internal/process/task_queues.js:84:21)
+
+npm manifest: 
+  {
+    "name": "@oboku/api-shared",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "license": "MIT",
+    "scripts": {
+      "watch": "nodemon"
+    },
+    "dependencies": {
+      "@oboku/shared": "1.0.0",
+      "@types/node-fetch": "^2.5.8",
+      "dropbox": "mbret/dropbox-sdk-js#main",
+      "googleapis": "^67.0.0",
+      "nano": "^9.0.1",
+      "node-fetch": "^2.6.1"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
