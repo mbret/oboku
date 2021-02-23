@@ -19,7 +19,7 @@ export const BetaRegister = () => {
   }
 
   return (
-    <form>
+    <form onSubmit={e => e.preventDefault()}>
       <TextField
         label="Your email"
         id="beta-email"
