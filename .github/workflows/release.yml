@@ -56,5 +56,5 @@ jobs:
           WASABI_AWS_ACCESS_KEY: ${{secrets.WASABI_AWS_ACCESS_KEY}}
           WASABI_AWS_SECRET_KEY: ${{secrets.WASABI_AWS_SECRET_KEY}}
           COUCH_DB_PROXY_SECRET: ${{secrets.COUCH_DB_PROXY_SECRET}}
-          COUCH_DB_URL: https://api.oboku.me:5985
+          COUCH_DB_URL: https://lecouch.xuatz.com
           GMAIL_APP_PASSWORD: ${{secrets.GMAIL_APP_PASSWORD}}
