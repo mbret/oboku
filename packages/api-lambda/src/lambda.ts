@@ -21,7 +21,7 @@ export const lambda = (cb: (event: APIGatewayProxyEvent, context: APIGatewayEven
     try {
       if (event.httpMethod.toLowerCase() === 'options') {
         return res({
-          statusCode: 200,
+          statusCode: 204,
           body: JSON.stringify({})
         })
       }
