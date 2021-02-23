@@ -109,16 +109,29 @@ export const dataSource: DataSource = {
       )
     }
 
-    const [items, rootFolderResponse] = await Promise.all([
-      await getContentsFromFolder(folderId),
-      await drive.files.get({
-        fileId: folderId
-      })
-    ])
+    try {
+      const [items, rootFolderResponse] = await Promise.all([
+        await getContentsFromFolder(folderId),
+        await drive.files.get({
+          fileId: folderId
+        })
+      ])
 
-    return {
-      items,
-      name: rootFolderResponse.data.name || '',
+      return {
+        items,
+        name: rootFolderResponse.data.name || '',
+      }
+    } catch (e) {
+      const errors = e?.response?.data?.error?.errors
+      if (errors && Array.isArray(errors)) {
+        errors.forEach((error: any) => {
+          if (error?.reason === 'rateLimitExceeded') {
+            throw helpers.createError('rateLimitExceeded')
+          }
+        })
+      }
+      
+      throw e
     }
   }
 }

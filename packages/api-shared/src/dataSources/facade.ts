@@ -1,4 +1,4 @@
-import { DataSourceType, Errors, LinkDocType, ObokuSharedError } from "@oboku/shared"
+import { DataSourceType, Errors, LinkDocType, ObokuSharedError } from "@oboku/shared/src"
 import { dataSource as googleDataSource } from "@oboku/api-shared/src/dataSources/google"
 import { dataSource as dropboxDataSource } from "@oboku/api-shared/src/dataSources/dropbox"
 import { dataSource as urlDataSource } from "@oboku/api-shared/src/dataSources/url"

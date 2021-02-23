@@ -1,4 +1,3 @@
-import { first } from "rxjs/operators"
 import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
 import { DataSourceDocType, DataSourceType } from '@oboku/shared'

@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dataSourceFacade = void 0;
-const shared_1 = require("@oboku/shared");
+const src_1 = require("@oboku/shared/src");
 const google_1 = require("@oboku/api-shared/src/dataSources/google");
 const dropbox_1 = require("@oboku/api-shared/src/dataSources/dropbox");
 const url_1 = require("@oboku/api-shared/src/dataSources/url");
@@ -20,9 +20,9 @@ const helpers_2 = require("../db/helpers");
 exports.dataSourceFacade = {
     dowload: (link, credentials) => __awaiter(void 0, void 0, void 0, function* () {
         switch (link.type) {
-            case shared_1.DataSourceType.DRIVE:
+            case src_1.DataSourceType.DRIVE:
                 return google_1.dataSource.download(link, credentials);
-            case shared_1.DataSourceType.DROPBOX:
+            case src_1.DataSourceType.DROPBOX:
                 return dropbox_1.dataSource.download(link, credentials);
             default:
                 return url_1.dataSource.download(link);
@@ -44,9 +44,9 @@ exports.dataSourceFacade = {
             const ctx = { dataSourceId, userEmail, credentials, dataSourceType: type };
             const runSync = () => {
                 switch (type) {
-                    case shared_1.DataSourceType.DRIVE:
+                    case src_1.DataSourceType.DRIVE:
                         return google_1.dataSource.sync(ctx, helpers);
-                    case shared_1.DataSourceType.DROPBOX:
+                    case src_1.DataSourceType.DROPBOX:
                         return dropbox_1.dataSource.sync(ctx, helpers);
                     default: { }
                 }
@@ -59,8 +59,8 @@ exports.dataSourceFacade = {
             console.log(`dataSourcesSync for ${dataSourceId} completed successfully`);
         }
         catch (e) {
-            let lastSyncErrorCode = shared_1.Errors.ERROR_DATASOURCE_UNKNOWN;
-            if (e instanceof shared_1.ObokuSharedError) {
+            let lastSyncErrorCode = src_1.Errors.ERROR_DATASOURCE_UNKNOWN;
+            if (e instanceof src_1.ObokuSharedError) {
                 lastSyncErrorCode = e.code;
             }
             yield helpers_2.atomicUpdate(db, 'datasource', dataSourceId, old => (Object.assign(Object.assign({}, old), { lastSyncErrorCode })));

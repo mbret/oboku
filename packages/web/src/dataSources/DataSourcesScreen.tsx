@@ -10,6 +10,7 @@ import { Error } from '@material-ui/icons';
 import { extractDataSourceData } from '@oboku/shared';
 import { useDataSourcePlugins } from './helpers';
 import { AddDataSource } from './AddDataSource';
+import { Errors } from "@oboku/shared"
 
 export const DataSourcesScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
@@ -46,6 +47,7 @@ export const DataSourcesScreen = () => {
         <List>
           {dataSources?.map(item => {
             const dataSource = dataSourcesPlugins.find(dataSource => dataSource.type === item.type)
+            console.log(item)
 
             return (
               <ListItem key={item._id} button onClick={() => setIsActionsDrawerOpenWith(item._id)}>
@@ -63,7 +65,13 @@ export const DataSourcesScreen = () => {
                     : item?.lastSyncErrorCode
                       ? (
                         <Box flexDirection="row" display="flex">
-                          <Error fontSize="small" style={{ marginRight: theme.spacing(1) }} /><Typography variant="body2">Sync did not succeed</Typography>
+                          <Error fontSize="small" style={{ marginRight: theme.spacing(1) }} />
+                          <Typography variant="body2">
+                            {`Sync did not succeed`}
+                            {item?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED && (
+                              `. Your datasource seems to have exceeded its allowed access limit`
+                            )}
+                          </Typography>
                         </Box>
                       )
                       : 'Syncing...'

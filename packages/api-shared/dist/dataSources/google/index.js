@@ -47,6 +47,7 @@ exports.dataSource = {
         };
     }),
     sync: (ctx, helpers) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b, _c;
         const auth = yield helpers_1.authorize(ctx);
         const drive = googleapis_1.google.drive({
             version: 'v3',
@@ -101,16 +102,30 @@ exports.dataSource = {
                 };
             })));
         });
-        const [items, rootFolderResponse] = yield Promise.all([
-            yield getContentsFromFolder(folderId),
-            yield drive.files.get({
-                fileId: folderId
-            })
-        ]);
-        return {
-            items,
-            name: rootFolderResponse.data.name || '',
-        };
+        try {
+            const [items, rootFolderResponse] = yield Promise.all([
+                yield getContentsFromFolder(folderId),
+                yield drive.files.get({
+                    fileId: folderId
+                })
+            ]);
+            return {
+                items,
+                name: rootFolderResponse.data.name || '',
+            };
+        }
+        catch (e) {
+            const errors = (_c = (_b = (_a = e === null || e === void 0 ? void 0 : e.response) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.error) === null || _c === void 0 ? void 0 : _c.errors;
+            console.log(JSON.stringify(errors));
+            if (errors && Array.isArray(errors)) {
+                errors.forEach((error) => {
+                    if ((error === null || error === void 0 ? void 0 : error.reason) === 'rateLimitExceeded') {
+                        throw helpers.createError('rateLimitExceeded');
+                    }
+                });
+            }
+            throw e;
+        }
     })
 };
 //# sourceMappingURL=index.js.map

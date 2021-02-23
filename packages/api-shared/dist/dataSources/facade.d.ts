@@ -1,6 +1,6 @@
 /// <reference types="node" />
 /// <reference types="request" />
-import { LinkDocType } from "@oboku/shared";
+import { LinkDocType } from "@oboku/shared/src";
 import createNano from 'nano';
 export declare const dataSourceFacade: {
     dowload: (link: LinkDocType, credentials?: any) => Promise<{

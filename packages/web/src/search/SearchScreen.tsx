@@ -1,5 +1,5 @@
-import { Box, fade, InputBase, makeStyles, useTheme } from '@material-ui/core'
-import React, { useMemo } from 'react'
+import { fade, InputBase, makeStyles, useTheme } from '@material-ui/core'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { BookList } from '../books/bookList/BookList'
 import { TopBarNavigation } from '../TopBarNavigation'
 import { useSearch } from './helpers'
@@ -7,23 +7,32 @@ import { useSearch } from './helpers'
 export const SearchScreen = () => {
   const { styles, classes } = useStyles()
   const [search, setSearch, results] = useSearch()
+  const inputRef = useRef<HTMLElement>()
+
+  const onSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    inputRef.current?.blur()
+  }, [])
 
   return (
-    <Box display="flex" flexDirection="column" overflow="hidden" flex={1} height="100%">
+    <div style={styles.container}>
       <TopBarNavigation showBack rightComponent={(
-        <div style={styles.search} >
+        <form style={styles.search} autoComplete="off" onSubmit={onSubmit} >
           <InputBase
             placeholder="Alice in wonderland, myTag, ..."
             value={search || ''}
+            inputRef={inputRef as any}
             autoFocus
             classes={{
               root: classes.inputRoot,
               input: classes.inputInput,
             }}
             inputProps={{ 'aria-label': 'search' }}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => {
+              setSearch(e.target.value)
+            }}
           />
-        </div>
+        </form>
       )} />
       <BookList
         data={results.map(book => book._id)}
@@ -33,7 +42,7 @@ export const SearchScreen = () => {
           overflow: 'hidden',
         }}
       />
-    </Box>
+    </div>
   )
 }
 
@@ -54,6 +63,13 @@ const useStyles = () => {
 
   const styles = useMemo(() => {
     return {
+      container: {
+        display: "flex",
+        flexDirection: "column" as const,
+        overflow: "hidden",
+        flex: 1,
+        height: "100%"
+      },
       search: {
         position: 'relative',
         borderRadius: theme.shape.borderRadius,

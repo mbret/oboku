@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createHelpers = void 0;
 const helpers_1 = require("@oboku/api-shared/src/db/helpers");
-const shared_1 = require("@oboku/shared");
+const src_1 = require("@oboku/shared/src");
 const directives_1 = require("@oboku/shared/src/directives");
 const createHelpers = (dataSourceId, refreshBookMetadata, db, getBookCover, userId) => {
     const helpers = {
@@ -40,9 +40,11 @@ const createHelpers = (dataSourceId, refreshBookMetadata, db, getBookCover, user
         createError: (code = 'unknown', previousError) => {
             switch (code) {
                 case 'unauthorized':
-                    return new shared_1.ObokuSharedError(shared_1.Errors.ERROR_DATASOURCE_UNAUTHORIZED, previousError);
+                    return new src_1.ObokuSharedError(src_1.Errors.ERROR_DATASOURCE_UNAUTHORIZED, previousError);
+                case 'rateLimitExceeded':
+                    return new src_1.ObokuSharedError(src_1.Errors.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED, previousError);
                 default:
-                    return new shared_1.ObokuSharedError(shared_1.Errors.ERROR_DATASOURCE_UNKNOWN, previousError);
+                    return new src_1.ObokuSharedError(src_1.Errors.ERROR_DATASOURCE_UNKNOWN, previousError);
             }
         },
         extractMetadataFromName: directives_1.extractMetadataFromName,

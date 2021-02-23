@@ -15,7 +15,7 @@ export const getNanoDbForUser = async (userEmail: string) => {
 export const getNano = async ({ jwtToken }: { jwtToken?: string } = {}) => {
   return createNano({
     url: COUCH_DB_URL,
-    log: (...args) => console.log('nano', JSON.stringify(...args)),
+    // log: (...args) => console.log('nano', JSON.stringify(...args)),
     requestDefaults: {
       headers: {
         "content-type": "application/json",

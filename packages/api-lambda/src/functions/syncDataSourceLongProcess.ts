@@ -31,9 +31,6 @@ export const fn = lambda(async (event) => {
       }
     })
 
-  // const refreshBookMetadata = async ({ bookId }: { bookId: string }) =>{
-  // }
-
   const isBookCoverExist = async ({ coverId }: { coverId: string }) => {
     try {
       await s3

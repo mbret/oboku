@@ -3,8 +3,7 @@ import {
   insert, findOne, DocType, ModelOf, addLinkToBook, find, addTagsFromNameToBook, getOrCreateTagFromName
 } from '@oboku/api-shared/src/db/helpers'
 import createNano from 'nano'
-import { DataSourceDocType, InsertableBookDocType, SafeMangoQuery, Errors, ObokuSharedError } from "@oboku/shared"
-import { uniq } from "ramda"
+import { InsertableBookDocType, SafeMangoQuery, Errors, ObokuSharedError } from "@oboku/shared/src"
 import { extractMetadataFromName } from '@oboku/shared/src/directives'
 
 export const createHelpers = (
@@ -50,10 +49,12 @@ export const createHelpers = (
     addTagsFromNameToBook: (bookId: string, tagNames: string[]) => addTagsFromNameToBook(db, bookId, tagNames),
     getOrcreateTagFromName: (name: string) => getOrCreateTagFromName(db, name),
     addLinkToBook: (bookId: string, linkId: string) => addLinkToBook(db, bookId, linkId),
-    createError: (code: 'unknown' | 'unauthorized' = 'unknown', previousError?: Error) => {
+    createError: (code: 'unknown' | 'unauthorized' | 'rateLimitExceeded' = 'unknown', previousError?: Error) => {
       switch (code) {
         case 'unauthorized':
           return new ObokuSharedError(Errors.ERROR_DATASOURCE_UNAUTHORIZED, previousError)
+        case 'rateLimitExceeded':
+          return new ObokuSharedError(Errors.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED, previousError)
         default:
           return new ObokuSharedError(Errors.ERROR_DATASOURCE_UNKNOWN, previousError)
       }
