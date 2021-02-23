@@ -19,6 +19,8 @@ export const fn = lambda(async (event: APIGatewayProxyEvent) => {
 
   let cover: Buffer | undefined
 
+  console.log('foo')
+  
   try {
     response = await s3
       .getObject({ Bucket: 'oboku-covers', Key: objectKey }).promise()
