@@ -76,7 +76,7 @@ export function useRxMutation<V, D>(
 export function useRxMutation(query) {
   const db = useDatabase()
   const dbRef = useRef(db)
-  const [error, setError] = useState()
+  const [error] = useState()
   dbRef.current = db
 
   const cb = useCallback(async (variables?: any) => {

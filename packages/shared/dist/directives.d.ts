@@ -11,4 +11,5 @@ export declare const extractMetadataFromName: (resourceId: string) => {
     tags: string[];
     isIgnored: boolean;
     direction: 'rtl' | 'ltr' | undefined;
+    isbn?: string | undefined;
 };

@@ -11,6 +11,8 @@ const authenticator = createAuthenticator({ privateKey: JWT_PRIVATE_KEY })
 export type Token = {
   userId: string,
   email: string,
+  sub: string,
+  '_couchdb.roles'?: string[]
 }
 
 export const createRefreshToken = (name: string, authSession: string) => {
@@ -18,9 +20,20 @@ export const createRefreshToken = (name: string, authSession: string) => {
 }
 
 export const generateToken = async (email: string, userId: string, expiresIn: string = '1d') => {
-  const tokenData: Token = { email, userId }
-
+  const tokenData: Token = { email, userId, sub: email, '_couchdb.roles': [email] }
+  
   return jwt.sign(tokenData, JWT_PRIVATE_KEY, { algorithm: 'RS256' })
+}
+
+export const generateAdminToken = async () => {
+  const data: Token = {
+    email: '',
+    userId: '',
+    sub: 'admin',
+    '_couchdb.roles': ['_admin']
+  }
+
+  return jwt.sign(data, JWT_PRIVATE_KEY, { algorithm: 'RS256' })
 }
 
 export const withToken = async (event: APIGatewayProxyEvent) => {

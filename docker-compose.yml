@@ -2,11 +2,21 @@ version: '3.1'
 
 services:
 
-  oboku-server:
-    image: oboku-server
+  couchdb:
+    image: couchdb
     restart: always
     ports:
-      - "443:443"
+      - "5984:5984"
+      - "5986:5986"
     volumes:
-      - /opt/oboku/etc/data:/opt/oboku/etc/data
-      - /opt/oboku/etc/tmp:/opt/oboku/etc/tmp
+      - /private/couchdb/local.d:/opt/couchdb/etc/local.d
+  nginx: 
+    image: nginx:latest
+    container_name: production_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./.secrets/:/etc/letsencrypt/
+    ports:
+      - 4003:4003
+      - 4000:4000
+

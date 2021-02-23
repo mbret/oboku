@@ -26,7 +26,7 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
   const { tours = {} } = useContext(TourContext) || {};
   const steps = tours[id]?.steps || {};
   // const swiperRef = useRef<Swiper>();
-  const [step, setStep] = useState(0);
+  const [step] = useState(0);
   // const [isCarouselMoving, setIsCarouselMoving] = useState(false);
   // const isTablet = false
   const numberOfSteps = Object.keys(steps).length;
@@ -63,7 +63,7 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
   //   a ${tabletBackdropSize},${tabletBackdropSize} 0 1,0 -${tabletBackdropSize * 2},0
   // `;
 
-  console.log('Tour Context', stepContents)
+  // console.log('Tour Context', stepContents)
   return (
     <Modal open={true}
       style={styles.modal}

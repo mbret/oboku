@@ -4,6 +4,6 @@ store.sqlite
 node_modules
 .yarn
 .env
-!secrets
-secrets/*
-!secrets/.gitkeep
+!.secrets
+.secrets/*
+!.secrets/.gitkeep

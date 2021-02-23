@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Book, Contents, EpubCFI, Rendition } from 'epubjs'
+import { Book, Contents, Rendition } from 'epubjs'
 import { BookOptions } from "epubjs/types/book"
 import { RenditionOptions } from "epubjs/types/rendition"
 import { Report } from "../report";

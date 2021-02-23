@@ -19,9 +19,9 @@ declare module "@material-ui/core/styles" {
   }
 }
 
-const light = 'rgba(0, 0, 0, 0.38)'
+// const light = 'rgba(0, 0, 0, 0.38)'
 const main = 'rgba(0, 0, 0, 0.54)'
-const dark = 'rgba(0, 0, 0, 0.87)'
+// const dark = 'rgba(0, 0, 0, 0.87)'
 
 export const theme = createMuiTheme({
   palette: {

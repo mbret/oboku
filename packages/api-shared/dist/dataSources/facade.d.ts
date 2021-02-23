@@ -8,7 +8,7 @@ export declare const dataSourceFacade: {
         metadata: {
             size?: string | undefined;
             contentType?: string | undefined;
-            name?: string | undefined;
+            name: string;
         };
     }>;
     sync: ({ dataSourceId, userEmail, credentials, refreshBookMetadata, db, isBookCoverExist }: {

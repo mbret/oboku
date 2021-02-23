@@ -15,7 +15,7 @@
   </p>
 
   <p align="center">
-    <b>This is the API repository. Please visit <a href="https://github.com/mbret/oboku">oboku</a> main repository for more information.</>
+    <b>This is the landing repository. Please visit <a href="https://github.com/mbret/oboku">oboku</a> main repository for more information.</>
   </p>
 </p>
 
@@ -52,6 +52,6 @@ Have a bug or a feature request? Please search for existing and closed issues. I
 
 ## Copyright and license
 
-Code released under the [MIT License](https://mbret/oboku-api/blob/master/LICENSE).
+Code released under the [MIT License](https://mbret/oboku-landing/blob/master/LICENSE).
 
 Enjoy :metal:

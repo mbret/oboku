@@ -22,11 +22,11 @@ exports.dataSource = {
                 .on('response', (response) => {
                 resolve({
                     stream,
-                    metadata: Object.assign(Object.assign({}, response.headers['content-length'] && {
+                    metadata: Object.assign(Object.assign(Object.assign({}, response.headers['content-length'] && {
                         size: response.headers['content-length']
                     }), response.headers['content-type'] && {
                         contentType: response.headers['content-type']
-                    }),
+                    }), { name: '' }),
                 });
             });
         });

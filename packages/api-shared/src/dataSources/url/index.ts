@@ -17,7 +17,8 @@ export const dataSource: DataSource = {
               },
               ...response.headers['content-type'] && {
                 contentType: response.headers['content-type']
-              }
+              },
+              name: ''
             },
           })
         })

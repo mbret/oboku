@@ -24,7 +24,7 @@ export type DataSource = {
     metadata: {
       size?: string,
       contentType?: string,
-      name?: string,
+      name: string,
     }
   }>
   sync: (options: {

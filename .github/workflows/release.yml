@@ -62,12 +62,14 @@ jobs:
           cd packages/api-lambda
 
           touch .env
+          echo "GOOGLE_API_KEY=$GOOGLE_API_KEY" >> .env
           echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env
           echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> .env
           echo "WASABI_AWS_ACCESS_KEY=$WASABI_AWS_ACCESS_KEY" >> .env
           echo "WASABI_AWS_SECRET_KEY=$WASABI_AWS_SECRET_KEY" >> .env
           echo "COUCH_DB_PROXY_SECRET=$COUCH_DB_PROXY_SECRET" >> .env
           echo "COUCH_DB_URL=$COUCH_DB_URL" >> .env
+          echo "GMAIL_APP_PASSWORD=$GMAIL_APP_PASSWORD" >> .env
 
           touch .secrets/jwt-private-key.key
           echo "$JWT_PRIVATE_KEY" > .secrets/jwt-private-key.key
@@ -80,9 +82,11 @@ jobs:
            ParameterKey=WasabiAwsSecretKey,ParameterValue=${{ secrets.WASABI_AWS_SECRET_KEY }} \
         env:
           JWT_PRIVATE_KEY: ${{secrets.JWT_PRIVATE_KEY}}
+          GOOGLE_API_KEY: ${{secrets.GOOGLE_API_KEY}}
           GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}}
           GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET}}
           WASABI_AWS_ACCESS_KEY: ${{secrets.WASABI_AWS_ACCESS_KEY}}
           WASABI_AWS_SECRET_KEY: ${{secrets.WASABI_AWS_SECRET_KEY}}
           COUCH_DB_PROXY_SECRET: ${{secrets.COUCH_DB_PROXY_SECRET}}
           COUCH_DB_URL: https://api.oboku.me:5985
+          GMAIL_APP_PASSWORD: ${{secrets.GMAIL_APP_PASSWORD}}

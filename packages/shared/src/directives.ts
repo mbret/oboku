@@ -10,12 +10,14 @@ export const extractMetadataFromName = (resourceId: string): {
   isNotACollection: boolean,
   tags: string[],
   isIgnored: boolean,
-  direction: 'rtl' | 'ltr' | undefined
+  direction: 'rtl' | 'ltr' | undefined,
+  isbn?: string | undefined
 } => {
   let isNotACollection = false
   let tags: string[] = []
   let isIgnored = false
   let direction = undefined
+  let isbn = undefined
 
   const directives = resourceId.match(/(\[oboku\~[^\]]*\])+/ig)?.map(str =>
     str.replace(/\[oboku~/, '')
@@ -35,6 +37,10 @@ export const extractMetadataFromName = (resourceId: string): {
         direction = value
       }
     }
+    if (directive.startsWith('isbn~')) {
+      const value = directive.replace(/isbn\~/, '')
+      isbn = value
+    }
     if (directive.startsWith('tags~')) {
       const newTags: string[] | undefined = directive.replace(/tags\~/, '').split(',')
       tags = [...tags, ...(newTags || [])]
@@ -46,5 +52,6 @@ export const extractMetadataFromName = (resourceId: string): {
     tags,
     isIgnored,
     direction,
+    isbn,
   }
 }

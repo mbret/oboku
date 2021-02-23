@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
-import * as Sentry from "@sentry/react";
-import { Integrations } from "@sentry/tracing";
+// import * as Sentry from "@sentry/react";
+// import { Integrations } from "@sentry/tracing";
 import firebase from "firebase/app"
 import "firebase/analytics"
 import { FIREBASE_BASE_CONFIG } from '../constants'
-import { version } from '../../package.json'
+// import { version } from '../../package.json'
 import localforage from 'localforage'
 
 // @ts-ignore

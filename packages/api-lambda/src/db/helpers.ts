@@ -1,24 +1,31 @@
 import { COUCH_DB_URL, COUCH_DB_PROXY_SECRET } from "../constants";
 import createNano from 'nano'
 import crypto from 'crypto'
+import { generateAdminToken, generateToken } from "../auth";
 
-export const getNanoDbForUser = (userEmail: string) => {
-  const couchDbSecret = crypto.createHmac('sha1', COUCH_DB_PROXY_SECRET)
+export const getNanoDbForUser = async (userEmail: string) => {
+  // const couchDbSecret = crypto.createHmac('sha1', COUCH_DB_PROXY_SECRET)
   const hexEncodedUserId = Buffer.from(userEmail).toString('hex')
 
-  const db = createNano({
+  const db = await getNano({ jwtToken: await generateToken(userEmail, hexEncodedUserId) })
+
+  return db.use(`userdb-${hexEncodedUserId}`)
+}
+
+export const getNano = async ({ jwtToken }: { jwtToken?: string } = {}) => {
+  return createNano({
     url: COUCH_DB_URL,
-    // log: (...args) => console.log('nano', JSON.stringify(...args)),
+    log: (...args) => console.log('nano', JSON.stringify(...args)),
     requestDefaults: {
       headers: {
         "content-type": "application/json",
         "accept": "application/json",
-        'X-Auth-CouchDB-Token': couchDbSecret.update(userEmail).digest('hex'),
-        'X-Auth-CouchDB-UserName': userEmail,
+        ...jwtToken && {
+          Authorization: `Bearer ${jwtToken}`
+        }
       }
     } as any
   })
-  return db.use(`userdb-${hexEncodedUserId}`)
 }
 
 /**
@@ -26,23 +33,21 @@ export const getNanoDbForUser = (userEmail: string) => {
  * WARNING: be very careful when using nano as admin since you will have full power.
  * As you know with gret power comes great responsabilities
  */
-export const getNano = ({ asAdmin }: { asAdmin: boolean } = { asAdmin: false }) => {
-  const couchDbSecret = crypto.createHmac('sha1', COUCH_DB_PROXY_SECRET)
-  const db = createNano({
-    url: COUCH_DB_URL,
-    // log: (...args) => console.log('nano', JSON.stringify(...args)),
-    requestDefaults: {
-      headers: {
-        "content-type": "application/json",
-        "accept": "application/json",
-        ...asAdmin && {
-          'X-Auth-CouchDB-Roles': '_admin',
-          'X-Auth-CouchDB-Token': couchDbSecret.update('admin').digest('hex'),
-          'X-Auth-CouchDB-UserName': 'admin',
-        },
-      }
-    } as any
-  })
+export const getAdminNano = async () => {
+  return getNano({ jwtToken: await generateAdminToken() })
+}
 
-  return db
+export const auth = async (username: string, userpass: string) => {
+  const db = await getNano()
+
+  try {
+    const response = await db.auth(username, userpass)
+    if (!response.ok || !response.name) {
+      return null
+    }
+    return response
+  } catch (e) {
+    if (e.statusCode === 401) return null
+    throw e
+  }
 }

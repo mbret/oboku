@@ -5,6 +5,7 @@
 import { RxCollection, RxDatabase, RxDatabaseCreator, RxJsonSchema, RxReplicationState, SyncOptions } from 'rxdb';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { overwritable } from 'rxdb/plugins/key-compression';
+import { resolve } from 'path';
 
 type ReplicationSyncOptions = Omit<SyncOptions, 'remote'> & {
   remote: PouchDB.Database<{}> | string
@@ -110,7 +111,7 @@ class Replication {
   protected _completeSubject = new Subject<boolean>();
   protected _errorSubject = new Subject<Error>()
   _pReplicationStates: Promise<RxReplicationState[]>
-  private filterCreationInterval: number | undefined
+  private filterCreationInterval: ReturnType<typeof setTimeout> | undefined
   syncOptions: (collectionName: string) => ReplicationSyncOptions
 
   /**
@@ -165,29 +166,37 @@ class Replication {
     this.terminated = false
 
     const tryToCreateFilter = async () => {
-      try {
-        await this.createFilter();
-      } catch (e) {
-        if (this.terminated) return
-        this._errorSubject.next(e);
-        this.filterCreationInterval = setTimeout(() => {
-          tryToCreateFilter()
-        }, 5000) as unknown as number
-      }
+      await new Promise<void>(async (resolve) => {
+        try {
+          await this.createFilter()
+          resolve()
+        } catch (e) {
+          if (this.terminated) return resolve()
+          this._errorSubject.next(e);
+          if (!this.syncOptions('').options?.retry) {
+            await this.cancel()
+            return resolve()
+          }
+          this.filterCreationInterval = setTimeout(() => {
+            tryToCreateFilter().then(resolve)
+          }, 5000)
+        }
+      })
     }
 
     try {
       await tryToCreateFilter()
-      await this._sync();
+      if (!this.terminated) {
+        await this._sync();
+      }
     } catch (e) {
-      console.warn('error during replication', e)
       this._errorSubject.next(e);
     }
   }
 
   public async cancel() {
     this.terminated = true
-    clearTimeout(this.filterCreationInterval);
+    clearTimeout(this.filterCreationInterval as unknown as number);
 
     this._subscribers.forEach((x) => x.unsubscribe());
     this._subscribers = [];

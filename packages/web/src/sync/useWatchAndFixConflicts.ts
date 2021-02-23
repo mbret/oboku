@@ -1,24 +1,27 @@
 import { useEffect } from "react"
-import { useAuth } from "../auth/helpers"
-import { API_SYNC_URL } from "../constants"
+import { API_COUCH_URI } from "../constants"
 import { Report } from "../report"
 import PouchDB from 'pouchdb'
+import { useRecoilValue } from "recoil"
+import { authState } from "../auth/authState"
 
 /**
  * For now we only delete whatever revision is in conflict.
  */
 export const useWatchAndFixConflicts = () => {
-  const { token } = useAuth() || {}
-  
+  const { token, dbName } = useRecoilValue(authState) || {}
+
   useEffect(() => {
     if (!token) return
 
-    const db = new PouchDB(API_SYNC_URL, {
+    const db = new PouchDB(`${API_COUCH_URI}/${dbName}`, {
       fetch: (url, opts) => {
         (opts?.headers as unknown as Map<string, string>).set('Authorization', `Bearer ${token}`)
         return PouchDB.fetch(url, opts)
       }
     })
+
+    // @todo retry automatically in case of failure
 
     const listener = db
       .changes({ conflicts: true, live: true, since: 'now', include_docs: true, })
@@ -40,5 +43,5 @@ export const useWatchAndFixConflicts = () => {
     return () => {
       listener.cancel()
     }
-  }, [token])
+  }, [token, dbName])
 }

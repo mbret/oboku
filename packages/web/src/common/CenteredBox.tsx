@@ -5,7 +5,7 @@ export const CenteredBox: FC<{ style: React.CSSProperties } & ComponentProps<typ
   const theme = useTheme()
 
   return (
-    <Box {...rest} style={{
+    <div {...rest} style={{
       maxWidth: theme.custom.maxWidthCenteredContent,
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
@@ -13,6 +13,6 @@ export const CenteredBox: FC<{ style: React.CSSProperties } & ComponentProps<typ
       ...style
     }}>
       {children}
-    </Box>
+    </div>
   )
 }

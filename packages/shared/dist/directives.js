@@ -22,6 +22,7 @@ var extractMetadataFromName = function (resourceId) {
     var tags = [];
     var isIgnored = false;
     var direction = undefined;
+    var isbn = undefined;
     var directives = (_a = resourceId.match(/(\[oboku\~[^\]]*\])+/ig)) === null || _a === void 0 ? void 0 : _a.map(function (str) {
         return str.replace(/\[oboku~/, '')
             .replace(/\]/, '');
@@ -39,6 +40,10 @@ var extractMetadataFromName = function (resourceId) {
                 direction = value;
             }
         }
+        if (directive.startsWith('isbn~')) {
+            var value = directive.replace(/isbn\~/, '');
+            isbn = value;
+        }
         if (directive.startsWith('tags~')) {
             var newTags = directive.replace(/tags\~/, '').split(',');
             tags = __spreadArrays(tags, (newTags || []));
@@ -48,7 +53,8 @@ var extractMetadataFromName = function (resourceId) {
         isNotACollection: isNotACollection,
         tags: tags,
         isIgnored: isIgnored,
-        direction: direction
+        direction: direction,
+        isbn: isbn
     };
 };
 exports.extractMetadataFromName = extractMetadataFromName;

@@ -39,9 +39,9 @@ exports.dataSource = {
         }, { responseType: 'stream' });
         return {
             stream: response.data,
-            metadata: Object.assign(Object.assign(Object.assign({}, metadata.size && {
+            metadata: Object.assign(Object.assign(Object.assign(Object.assign({}, metadata.size && {
                 size: metadata.size
-            }), metadata.name && {
+            }), { name: '' }), metadata.name && {
                 name: metadata.name
             }), { contentType: response.headers['content-type'] }),
         };

@@ -38,10 +38,11 @@ export const dataSource: DataSource = {
         ...metadata.size && {
           size: metadata.size
         },
+        name: '',
         ...metadata.name && {
           name: metadata.name
         },
-        contentType: response.headers['content-type']
+        contentType: response.headers['content-type'],
       },
     }
   },

@@ -1,9 +1,0 @@
-.tmp
-.data
-store.sqlite
-node_modules
-
-.env
-!secrets
-secrets/*
-!secrets/.gitkeep

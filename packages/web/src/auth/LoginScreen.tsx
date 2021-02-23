@@ -40,7 +40,7 @@ export const LoginScreen = () => {
       overflow: 'scroll'
     }}>
       <Header />
-      <form style={{}} noValidate autoComplete="off">
+      <form noValidate autoComplete="off" onSubmit={e => e.preventDefault()}>
         <TextField
           label="Email"
           type="email"
@@ -80,6 +80,7 @@ export const LoginScreen = () => {
           variant="outlined"
           disabled={!isValid}
           size="large"
+          type="submit"
           onClick={onSubmit}
         >
           Login

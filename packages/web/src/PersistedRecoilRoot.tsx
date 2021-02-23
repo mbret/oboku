@@ -4,6 +4,7 @@ import React, { createContext, FC, useContext, useEffect, useRef, useState } fro
 import { Subject, asyncScheduler } from "rxjs";
 import { throttleTime } from 'rxjs/operators'
 import { Report } from "./report";
+import { useCallback } from "react";
 
 const PersistedStatesContext = createContext<RecoilState<any>[]>([])
 
@@ -12,32 +13,37 @@ const usePersistance = () => {
   const subject = useRef(new Subject<{ [key: string]: any }>())
 
   useRecoilTransactionObserver_UNSTABLE(({ snapshot }) => {
-    let newState = {}
+    try {
+      let changes = {}
 
-    for (const modifiedAtom of snapshot.getNodes_UNSTABLE({ isModified: true })) {
-      // only persist the wanted state
-      if (!statesToPersist.find(state => state.key === modifiedAtom.key)) return
+      for (const modifiedAtom of snapshot.getNodes_UNSTABLE()) {
+        // only persist the wanted state
+        if (!statesToPersist.find(state => state.key === modifiedAtom.key)) continue
 
-      const atomLoadable = snapshot.getLoadable(modifiedAtom);
-      if (atomLoadable.state === 'hasValue') {
-        newState[modifiedAtom.key] = { value: atomLoadable.contents }
+        const atomLoadable = snapshot.getLoadable(modifiedAtom);
+
+        if (atomLoadable.state === 'hasValue') {
+          changes[modifiedAtom.key] = { value: atomLoadable.contents }
+        }
       }
-    }
 
-    subject.current.next(newState)
+      subject.current.next(changes)
+    } catch (e) {
+      Report.error(e)
+    }
   });
 
   useEffect(() => {
     const listener$ = subject.current
-      .pipe(throttleTime(500, asyncScheduler, { trailing: true }))
-      .subscribe(async (newState) => {
+      .pipe(throttleTime(500, asyncScheduler, { leading: false, trailing: true }))
+      .subscribe(async (changes) => {
         try {
           const prevValue = await localforage.getItem<string>(`local-user`)
-          localforage.setItem(
+          await localforage.setItem(
             `local-user`,
             JSON.stringify({
               ...prevValue ? JSON.parse(prevValue) : {},
-              ...newState
+              ...changes
             })
           )
         } catch (e) {
@@ -57,7 +63,7 @@ export const useResetStore = () => {
       reset(key)
     })
 
-    // force delete right awayt
+    // force delete right away
     await localforage.setItem(`local-user`, JSON.stringify({}))
   })
 }
@@ -74,6 +80,8 @@ export const PersistedRecoilRoot: FC<{
 }> = ({ children, states = [], onReady }) => {
   const [initialeState, setInitialState] = useState<{ [key: string]: { value: any } } | undefined>(undefined)
   const alreadyLoaded = useRef(!!initialeState)
+  // const alreadyInitialized = useRef(false)
+  // const alreadyInitializedV = alreadyInitialized.current
 
   useEffect(() => {
     (async () => {
@@ -86,7 +94,8 @@ export const PersistedRecoilRoot: FC<{
     })()
   }, [onReady])
 
-  const initializeState = ({ set }: MutableSnapshot) => {
+  const initializeState = useCallback(({ set }: MutableSnapshot) => {
+    console.log('PersistedRecoilRoot initializeState cb')
     if (initialeState) {
       Object.keys(initialeState || {}).forEach((key) => {
         const stateToRestore = states.find(state => state.key === key)
@@ -94,13 +103,16 @@ export const PersistedRecoilRoot: FC<{
           set(stateToRestore, initialeState[key].value);
         }
       })
-    }
-  }
+    };
+    // alreadyInitialized.current = true;
+  }, [initialeState, states])
+
+  console.log('PersistedRecoilRoot', initialeState)
 
   return (
     <PersistedStatesContext.Provider value={states}>
-      {initialeState ? (
-        <RecoilRoot initializeState={initializeState}>
+      {!!initialeState ? (
+        <RecoilRoot initializeState={initializeState} >
           <RecoilPersistor />
           {children}
         </RecoilRoot>

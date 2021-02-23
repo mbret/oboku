@@ -18,18 +18,19 @@ import { PersistedRecoilRoot } from './PersistedRecoilRoot';
 import { libraryState } from './library/states';
 import { normalizedBookDownloadsState } from './download/states';
 import { AppLoading } from './AppLoading';
-import { UserFeedback } from './UserFeedback';
 import { FirstTimeExperienceTours } from './firstTimeExperience/FirstTimeExperienceTours';
 import { firstTimeExperienceState } from './firstTimeExperience/firstTimeExperienceStates';
 import { localSettingsState } from './settings/states';
 import { DialogProvider } from './dialog';
 import { BlurContainer } from './books/BlurContainer';
+import { authState } from './auth/authState';
 
 const localStatesToPersist = [
   libraryState,
   normalizedBookDownloadsState,
   firstTimeExperienceState,
   localSettingsState,
+  authState,
 ]
 
 export function App() {

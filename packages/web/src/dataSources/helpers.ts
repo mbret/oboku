@@ -29,25 +29,7 @@ export const useSynchronizeDataSource = () => {
 
       await updateDataSource({ _id, lastSyncedAt: null, lastSyncErrorCode: null })
 
-      database?.sync({
-        collectionNames: ['datasource'],
-        syncOptions: () => ({
-          remote: client.getPouchDbRemoteInstance(),
-          direction: {
-            push: true,
-          },
-          options: {
-            retry: false,
-            live: false,
-            timeout: 5000,
-          }
-        })
-      })
-        .complete$
-        .pipe(first())
-        .subscribe(completed => {
-          completed && client.syncDataSource(_id, credentials.data).catch(Report.error)
-        })
+      await client.syncDataSource(_id, credentials.data).catch(Report.error)
     } catch (e) {
       Report.error(e)
     }

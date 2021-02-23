@@ -10,6 +10,9 @@ import { COVER_MAXIMUM_SIZE_FOR_STORAGE, TMP_DIR } from '../constants'
 import { S3 } from 'aws-sdk'
 import sharp from 'sharp'
 import { Logger } from '../utils/logger'
+import { extractMetadataFromName } from '@oboku/shared/src/directives'
+import { findByISBN } from './googleBooksApi'
+import axios from "axios"
 
 type Context = {
   userEmail: string,
@@ -38,27 +41,50 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     console.log(`syncMetadata processing ${ctx.book._id}`, filepath, metadata)
 
     let fallbackContentType = metadata.contentType
-    let opfAsJson: OPF = {
-      package: {
-        manifest: {},
-        metadata: {
-          "dc:title": metadata.name
-        }
-      }
-    }
     let folderBasePath = ''
     let contentLength = 0
-    let normalizedMetadata: ReturnType<typeof normalizeMetadata> | undefined
+    let normalizedMetadata: Partial<ReturnType<typeof normalizeMetadata>> = {
+      title: metadata.name
+    }
     let coverPath: string | undefined
+    let skipExtract = false
+    const metadataFromName = extractMetadataFromName(metadata.name)
 
-    if (!METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType || '')) {
+    if (metadataFromName.isbn) {
+      skipExtract = true
+      try {
+        const response = await findByISBN(metadataFromName.isbn)
+        if (response.status === 200 && Array.isArray(response.data.items) && response.data.items.length > 0) {
+          const item = response.data.items[0]
+          normalizedMetadata.creator = item.volumeInfo.authors[0]
+          normalizedMetadata.title = item.volumeInfo.title
+          normalizedMetadata.date = new Date(item.volumeInfo.publishedDate)
+          normalizedMetadata.publisher = item.volumeInfo.publisher
+          normalizedMetadata.language = item.volumeInfo.language
+          normalizedMetadata.subject = item.volumeInfo.categories
+          await saveCoverFromExternalLinkToBucket(ctx, ctx.book, item.volumeInfo.imageLinks.thumbnail)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
+    if (!skipExtract && !METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType || '')) {
       fallbackContentType = (await detectMimeTypeFromContent(filepath) || fallbackContentType)
     }
 
-    if (METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType)) {
+    if (!skipExtract && METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType)) {
       const files: string[] = []
       const coverAllowedExt = ['.jpg', '.jpeg', '.png']
       let isEpub = false
+      let opfAsJson: OPF = {
+        package: {
+          manifest: {},
+          metadata: {
+            "dc:title": metadata.name
+          }
+        }
+      }
 
       await fs.createReadStream(filepath)
         .pipe(unzipper.Parse({
@@ -95,32 +121,36 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
           .filter(file => coverAllowedExt.includes(path.extname(file).toLowerCase()))
           .sort()[0]
 
-    } else {
+      console.log(opfAsJson, opfAsJson?.package?.metadata)
+
+      normalizedMetadata = normalizeMetadata(opfAsJson)
+
+      if (coverPath) {
+        await saveCoverFromArchiveToBucket(ctx, ctx.book, filepath, folderBasePath, coverPath)
+      } else {
+        console.log(`No cover path found for ${filepath}`)
+      }
+
+    } else if (!skipExtract) {
       console.log(`retrieveMetadataAndSaveCover format not supported yet`)
     }
 
-    console.log(opfAsJson, opfAsJson?.package?.metadata)
-
-    if (coverPath) {
-      await saveCoverToBucket(ctx, ctx.book, filepath, folderBasePath, coverPath)
-    } else {
-      console.log(`No cover path found for ${filepath}`)
-    }
-
-    normalizedMetadata = normalizeMetadata(opfAsJson)
-
     console.log(`metadataDaemon Finished processing book ${ctx.book._id} with resource id ${ctx.link.resourceId}`)
 
+    const bookData = {
+      title: normalizedMetadata?.title,
+      creator: normalizedMetadata?.creator,
+      date: normalizedMetadata?.date?.getTime(),
+      publisher: normalizedMetadata?.publisher,
+      subject: normalizedMetadata?.subject,
+      lang: normalizedMetadata?.language,
+      lastMetadataUpdatedAt: new Date().getTime(),
+    }
+
+    Object.keys(bookData).forEach(key => (bookData as any)[key] === undefined && delete (bookData as any)[key])
+
     return {
-      book: {
-        title: normalizedMetadata?.title,
-        creator: normalizedMetadata?.creator,
-        date: normalizedMetadata?.date?.getTime(),
-        publisher: normalizedMetadata?.publisher,
-        subject: normalizedMetadata?.subject,
-        lang: normalizedMetadata?.language,
-        lastMetadataUpdatedAt: new Date().getTime(),
-      },
+      book: bookData,
       link: {
         contentLength
       }
@@ -138,7 +168,41 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
   }
 }
 
-const saveCoverToBucket = async (ctx: Context, book: BookDocType, epubFilepath: string, folderBasePath: string, coverPath: string) => {
+const saveCoverFromExternalLinkToBucket = async (ctx: Context, book: BookDocType, coverUrl: string) => {
+  const objectKey = `cover-${ctx.userId}-${book._id}`
+
+  Logger.log(`prepare to save cover ${objectKey}`)
+
+  try {
+    const response = await axios.get<ArrayBuffer>(coverUrl, {
+      responseType: 'arraybuffer'
+    })
+    const entryAsBuffer = Buffer.from(response.data)
+
+    const resized = await sharp(entryAsBuffer)
+      .resize({
+        withoutEnlargement: true,
+        width: COVER_MAXIMUM_SIZE_FOR_STORAGE.width,
+        height: COVER_MAXIMUM_SIZE_FOR_STORAGE.height,
+        fit: 'inside'
+      })
+      .webp()
+      .toBuffer()
+
+    await s3.putObject({
+      Bucket: 'oboku-covers',
+      Body: resized,
+      Key: objectKey,
+    }).promise()
+
+    Logger.log(`cover ${objectKey} has been saved/updated`)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+
+const saveCoverFromArchiveToBucket = async (ctx: Context, book: BookDocType, epubFilepath: string, folderBasePath: string, coverPath: string) => {
   if (coverPath) {
     const objectKey = `cover-${ctx.userId}-${book._id}`
 
@@ -216,7 +280,7 @@ const normalizeMetadata = (opf: OPF) => {
   }
 }
 
-const extractLanguage = (metadata: undefined | null | string | { ['#text']?: string }) => {
+const extractLanguage = (metadata?: undefined | null | string | { ['#text']?: string }): string | null => {
   if (!metadata) return null
 
   if (typeof metadata === 'string') return metadata
@@ -231,7 +295,7 @@ const downloadToTmpFolder = (ctx: Context, book: BookDocType, link: LinkDocType)
   metadata: PromiseReturnType<typeof dataSourceFacade.dowload>['metadata']
 }>(async (resolve, reject) => {
   try {
-    const { stream, metadata = {} } = await dataSourceFacade.dowload(link, ctx.credentials)
+    const { stream, metadata } = await dataSourceFacade.dowload(link, ctx.credentials)
 
     let filename = `${book._id}`
 

@@ -212,18 +212,20 @@ const EditContentPasswordDialog: FC<{
     <Dialog onClose={onInnerClose} open={open}>
       <DialogTitle>Set up your content password</DialogTitle>
       <DialogContent>
-        <DialogContentText >
-          This password will be needed to unlock and access books using a protected tag.
-        </DialogContentText>
-        <TextField
-          autoFocus
-          id="name"
-          label="Password"
-          type="password"
-          fullWidth
-          value={text}
-          onChange={e => setText(e.target.value)}
-        />
+        <form autoComplete="off" onSubmit={e => e.preventDefault()}>
+          <DialogContentText >
+            This password will be needed to unlock and access books using a protected tag.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            id="name"
+            label="Password"
+            type="password"
+            fullWidth
+            value={text}
+            onChange={e => setText(e.target.value)}
+          />
+        </form>
       </DialogContent>
       <DialogActions>
         <Button onClick={onInnerClose} color="primary">

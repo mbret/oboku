@@ -17,19 +17,6 @@ export const createUser = async (db: createNano.ServerScope, username: string, u
   await obokuDb.insert(newUser, newUser._id)
 }
 
-export const auth = async (db: createNano.ServerScope, username: string, userpass: string) => {
-  try {
-    const response = await db.auth(username, userpass)
-    if (!response.ok || !response.name) {
-      return null
-    }
-    return response
-  } catch (e) {
-    if (e.statusCode === 401) return null
-    throw e
-  }
-}
-
 export async function atomicUpdate<M extends DocType['rx_model'], K extends ModelOf<M>>(
   db: createNano.DocumentScope<unknown>,
   rxModel: M,

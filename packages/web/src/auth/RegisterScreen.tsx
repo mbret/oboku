@@ -16,7 +16,7 @@ export const RegisterScreen = () => {
   const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || '')
   const [password, setPassword] = useState(process.env.REACT_APP_PASSWORD || '')
   const [code, setCode] = useState('')
-  const isValid = useIsValid(email, password)
+  const isValid = useIsValid(email, password, code)
   const theme = useTheme()
   const [signUp, { error }] = useSignUp()
   let hasEmailTakenError = false
@@ -50,7 +50,7 @@ export const RegisterScreen = () => {
       flexShrink: 0
     }}>
       <Header />
-      <form style={{}} noValidate autoComplete="off">
+      <form noValidate autoComplete="off" onSubmit={e => e.preventDefault()}>
         <TextField
           label="Email"
           type="email"
@@ -104,6 +104,7 @@ export const RegisterScreen = () => {
           variant="outlined"
           size="large"
           disabled={!isValid}
+          type="submit"
           onClick={onSubmit}
         >
           Register
@@ -129,12 +130,12 @@ export const RegisterScreen = () => {
   );
 }
 
-const useIsValid = (email: string, password: string) => {
+const useIsValid = (email: string, password: string, code: string) => {
   const [isValid, setIsValid] = useState(false)
 
   useEffect(() => {
-    setIsValid(validators.signupSchema.isValidSync({ email, password }))
-  }, [email, password])
+    setIsValid(validators.signupSchema.isValidSync({ email, password, code }))
+  }, [email, password, code])
 
   return isValid
 }

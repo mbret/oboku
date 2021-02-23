@@ -34,7 +34,7 @@ export const fn = lambda(async (event) => {
     throw new Error(`Unable to parse event.body -> ${event.body}`)
   }
 
-  const db = getNanoDbForUser(email)
+  const db = await getNanoDbForUser(email)
 
   const book = await findOne(db, 'book', { selector: { _id: bookId } })
   if (!book) throw new Error(`Unable to find book ${bookId}`)

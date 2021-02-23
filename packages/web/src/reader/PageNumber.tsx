@@ -4,13 +4,12 @@ import { currentApproximateProgressState, currentChapterState, currentLocationSt
 import { useRecoilValue } from 'recoil';
 
 export const PageNumber: FC<{
-}> = ({ }) => {
+}> = () => {
   const theme = useTheme()
   const currentPage = useRecoilValue(currentPageState)
   const totalApproximativePages = useRecoilValue(totalApproximativePagesState)
   const layout = useRecoilValue(layoutState)
   const currentApproximateProgress = useRecoilValue(currentApproximateProgressState)
-  console.log('updateProgress', currentApproximateProgress)
   const roundedProgress = Math.floor((currentApproximateProgress || 0) * 100)
   const displayableProgress = roundedProgress > 0 ? roundedProgress : 1
   const currentChapter = useRecoilValue(currentChapterState)
@@ -19,8 +18,6 @@ export const PageNumber: FC<{
   const totalPagesCurrentChapter = currentLocation?.start.displayed.total
   const currentPageToDisplay = layout === 'fixed' ? ((currentPage || 0) + 1) : currentPageInChapter
   const totalPagesToDisplay = layout === 'fixed' ? totalApproximativePages : totalPagesCurrentChapter
-
-  const isLoading = currentApproximateProgress === undefined
 
   return (
     <Box display="flex" alignItems="center" mb={2}

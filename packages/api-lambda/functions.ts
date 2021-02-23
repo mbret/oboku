@@ -6,4 +6,5 @@ export const functions = [
   'syncDataSourceLongProcess',
   'refreshMetadata',
   'refreshMetadataLongProcess',
+  'requestAccess',
 ]

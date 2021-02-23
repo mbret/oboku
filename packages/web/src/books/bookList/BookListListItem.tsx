@@ -4,11 +4,10 @@ import { useRecoilValue, useSetRecoilState } from 'recoil'
 import { useDefaultItemClickHandler } from './helpers'
 import { enrichedBookState } from '../states'
 import { ReadingStateState } from '@oboku/shared'
-import { DoneRounded, ErrorRounded, LoopRounded, MenuBookRounded, MoreVert, NoEncryptionRounded } from '@material-ui/icons'
+import { DoneRounded, ErrorRounded, LoopRounded, MenuBookRounded, MoreVert } from '@material-ui/icons'
 import { bookActionDrawerState } from '../BookActionsDrawer'
 import { useCSS } from '../../common/utils'
 import { BookListCoverContainer } from './BookListCoverContainer'
-import { DownloadState } from '../../download/states'
 
 export const BookListListItem: FC<{
   bookId: string,

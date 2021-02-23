@@ -4,7 +4,9 @@ export declare type OPF = {
             item?: [];
         };
         metadata?: {
-            'dc:title'?: any;
+            'dc:title'?: string | {
+                '#text': string;
+            };
             'title'?: any;
             'dc:date'?: any;
             'dc:creator'?: any;

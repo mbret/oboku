@@ -47,7 +47,7 @@ export const fn = lambda(async (event) => {
 
   await dataSourceFacade.sync({
     dataSourceId,
-    db: getNanoDbForUser(email),
+    db: await getNanoDbForUser(email),
     refreshBookMetadata,
     isBookCoverExist,
     userEmail: email,

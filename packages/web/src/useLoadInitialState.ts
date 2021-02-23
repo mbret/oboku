@@ -5,7 +5,7 @@ import { useTagsInitialState } from "./tags/observers";
 import { useLinksInitialState } from "./links/observers";
 import { useCollectionsInitialState } from "./collections/observers";
 import { useDataSourcesInitialState } from "./dataSources/observers";
-import { useAuthStateReducer, useSettingsStateReducer } from "./sync/useObservers";
+import { useSettingsStateReducer } from "./sync/useObservers";
 import { Report } from "./report";
 
 /**
@@ -15,7 +15,6 @@ import { Report } from "./report";
  */
 export const useLoadInitialState = () => {
   const db = useDatabase()
-  const authReducer = useAuthStateReducer();
   const settingsReducer = useSettingsStateReducer();
   const isBookStateReady = useBooksInitialState()
   const isTagStateReady = useTagsInitialState()
@@ -28,9 +27,6 @@ export const useLoadInitialState = () => {
     if (db) {
       (async () => {
         try {
-          const auth = await db.auth.findOne().exec()
-          auth && authReducer({ operation: 'INIT', documentData: auth })
-
           const settings = await db.settings.findOne().exec()
           settings && settingsReducer({ operation: 'INIT', documentData: settings })
 
@@ -40,7 +36,7 @@ export const useLoadInitialState = () => {
         }
       })()
     }
-  }, [db, authReducer, settingsReducer])
+  }, [db, settingsReducer])
 
   return ready && isBookStateReady && isTagStateReady && isLinkStateReady && isCollectionStateReady && isDataSourceStateReady
 }

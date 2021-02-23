@@ -20,7 +20,7 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.retryFn = exports.addLinkToBook = exports.getOrCreateTagFromName = exports.addTagsFromNameToBook = exports.addTagsToBook = exports.createBook = exports.find = exports.findOne = exports.insert = exports.atomicUpdate = exports.auth = exports.createUser = void 0;
+exports.retryFn = exports.addLinkToBook = exports.getOrCreateTagFromName = exports.addTagsFromNameToBook = exports.addTagsToBook = exports.createBook = exports.find = exports.findOne = exports.insert = exports.atomicUpdate = exports.createUser = void 0;
 const shared_1 = require("@oboku/shared");
 const utils_1 = require("../utils");
 const couchDbEntities_1 = require("./couchDbEntities");
@@ -30,21 +30,6 @@ const createUser = (db, username, userpass) => __awaiter(void 0, void 0, void 0,
     yield obokuDb.insert(newUser, newUser._id);
 });
 exports.createUser = createUser;
-const auth = (db, username, userpass) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const response = yield db.auth(username, userpass);
-        if (!response.ok || !response.name) {
-            return null;
-        }
-        return response;
-    }
-    catch (e) {
-        if (e.statusCode === 401)
-            return null;
-        throw e;
-    }
-});
-exports.auth = auth;
 function atomicUpdate(db, rxModel, id, cb) {
     return __awaiter(this, void 0, void 0, function* () {
         return exports.retryFn(() => __awaiter(this, void 0, void 0, function* () {

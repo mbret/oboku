@@ -31,5 +31,6 @@ export declare const createHelpers: (dataSourceId: string, refreshBookMetadata: 
         tags: string[];
         isIgnored: boolean;
         direction: "ltr" | "rtl" | undefined;
+        isbn?: string | undefined;
     };
 };

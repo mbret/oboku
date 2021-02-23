@@ -38,6 +38,7 @@ export const dataSource: DataSource = {
 
     return {
       metadata: {
+        name: '',
         size: results.size.toString()
       },
       stream

@@ -117,5 +117,17 @@ Resources:
           Properties:
             Path: /signup
             Method: post
+  RequestAccess:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/requestAccess
+      Handler: main.fn
+      Runtime: nodejs12.x
+      Events:
+        Post:
+          Type: Api 
+          Properties:
+            Path: /requestaccess
+            Method: post
   CoverBucket:
     Type: AWS::S3::Bucket

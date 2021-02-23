@@ -2,9 +2,6 @@ import { useAxiosClient } from "../axiosClient"
 import { BookDocType, DataSourceType, ReadingStateState } from '@oboku/shared'
 import { useRxMutation } from "../rxdb/hooks"
 import { useDatabase } from "../rxdb"
-import { API_SYNC_URL } from "../constants"
-import { first } from 'rxjs/operators'
-import PouchDB from 'pouchdb'
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../report"
 import { useCallback, useMemo } from "react"
@@ -86,30 +83,7 @@ export const useRefreshBookMetadata = () => {
 
     await updateBook({ _id: bookId, metadataUpdateStatus: 'fetching' })
 
-    database?.sync({
-      collectionNames: ['link', 'book'],
-      syncOptions: () => ({
-        remote: new PouchDB(API_SYNC_URL, {
-          fetch: (url, opts) => {
-            (opts?.headers as unknown as Map<string, string>).set('Authorization', client.getAuthorizationHeader())
-            return PouchDB.fetch(url, opts)
-          }
-        }),
-        direction: {
-          push: true,
-        },
-        options: {
-          retry: false,
-          live: false,
-          timeout: 5000,
-        }
-      })
-    })
-      .complete$
-      .pipe(first())
-      .subscribe(completed => {
-        completed && client.refreshMetadata(bookId, credentials.data).catch(Report.error)
-      })
+    await client.refreshMetadata(bookId, credentials.data).catch(Report.error)
   }
 }
 

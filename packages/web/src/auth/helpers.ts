@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react"
-import { useRecoilValue } from "recoil"
+import { useRecoilCallback, useRecoilValue, useSetRecoilState } from "recoil"
 import { API_URI } from "../constants"
-import { AuthDocType, useRxMutation, useRxQuery } from "../rxdb"
 import { createServerError } from "../errors"
 import { useLock } from "../common/BlockingBackdrop"
 import { useReCreateDb, useDatabase } from "../rxdb"
@@ -9,26 +8,14 @@ import { authState } from "./authState"
 import { useResetStore } from "../PersistedRecoilRoot"
 import { Report } from "../report"
 
-export const useAuth = () =>
-  useRxQuery(db => db.auth.findOne().where('id').equals('auth'))
-
-export const useUpdateAuth = () =>
-  useRxMutation(
-    (db, variables: Partial<AuthDocType>) =>
-      db.auth.safeUpdate({ $set: variables }, collection => collection.findOne())
-  )
-
-export const useIsAuthenticated = () => !!useAuth()?.token
+export const useIsAuthenticated = () => !!useRecoilValue(authState)?.token
 
 export const useSignOut = () => {
-  const db = useDatabase()
+  const setAuthState = useSetRecoilState(authState)
 
   return useCallback(async () => {
-    const doc = await db?.auth.findOne().exec()
-    await doc?.atomicPatch({
-      token: null
-    })
-  }, [db])
+    setAuthState(undefined)
+  }, [setAuthState])
 }
 
 export const useAuthorize = () => {
@@ -58,11 +45,15 @@ export const useAuthorize = () => {
 }
 
 export const useSignIn = () => {
-  const db = useDatabase()
   const resetLocalState = useResetStore()
   const reCreateDb = useReCreateDb()
   const [lock, unlock] = useLock()
   const [error, setError] = useState<Error | undefined>(undefined)
+  const setAuthState = useSetRecoilState(authState)
+
+  const getAuthAsync = useRecoilCallback(({ snapshot }) => () => {
+    return snapshot.getPromise(authState)
+  })
 
   const cb = useCallback(async (email: string, password: string) => {
     try {
@@ -77,21 +68,21 @@ export const useSignIn = () => {
       if (!response.ok) {
         throw await createServerError(response)
       }
-      const { token, userId } = (await response.json())
-      const previousAuth = await db?.auth.findOne().exec()
-      let newDb = db
+      const { token, userId, dbName } = (await response.json())
+      const previousAuth = await getAuthAsync()
       if (previousAuth?.email !== email) {
         await resetLocalState()
-        newDb = await reCreateDb()
+        await reCreateDb()
       }
-      await newDb?.auth.safeUpdate({ $set: { token, email, userId } }, auth => auth.findOne())
+      setAuthState({ dbName, email, token, userId })
+      console.log('setAuthState', { dbName, email, token, userId })
       unlock('authorize')
     } catch (e) {
       Report.error(e)
       setError(e)
       unlock('authorize')
     }
-  }, [db, lock, unlock, reCreateDb, resetLocalState])
+  }, [lock, unlock, reCreateDb, resetLocalState, getAuthAsync, setAuthState])
 
   const data = { error }
 
@@ -103,6 +94,7 @@ export const useSignUp = () => {
   const reCreateDb = useReCreateDb()
   const resetLocalState = useResetStore()
   const [error, setError] = useState<Error | undefined>(undefined)
+  const setAuthState = useSetRecoilState(authState)
 
   const cb = useCallback(async (email: string, password: string, code) => {
     try {
@@ -117,16 +109,16 @@ export const useSignUp = () => {
       if (!response.ok) {
         throw await createServerError(response)
       }
-      const { token, userId } = (await response.json())
+      const { token, userId, dbName } = (await response.json())
       await resetLocalState()
-      const newDb = await reCreateDb()
-      await newDb?.auth.safeUpdate({ $set: { token, email, userId } }, auth => auth.findOne())
+      await reCreateDb()
+      setAuthState({ dbName, email, token, userId })
       unlock('authorize')
     } catch (e) {
       setError(e)
       unlock('authorize')
     }
-  }, [lock, unlock, reCreateDb, resetLocalState])
+  }, [lock, unlock, reCreateDb, resetLocalState, setAuthState])
 
   const data = { error }
 

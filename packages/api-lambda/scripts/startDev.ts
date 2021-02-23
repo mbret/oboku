@@ -6,8 +6,6 @@ concurrently(functions.map(fn => ({
   name: fn
 })), {
   prefix: 'name',
-  // killOthers: ['failure', 'success'],
-  // restartTries: 3,
 }).then(() => {
 
 }, console.error);

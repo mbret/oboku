@@ -19,19 +19,16 @@ import { CollectionDetailsScreen } from '../collections/CollectionDetailsScreen'
 import { RegisterScreen } from '../auth/RegisterScreen'
 import { BookActionsDrawer } from '../books/BookActionsDrawer'
 import { DataSourcesScreen } from '../dataSources/DataSourcesScreen'
-import { useAuth } from '../auth/helpers'
 import { SearchScreen } from '../search/SearchScreen'
 import { AuthCallbackScreen } from '../auth/AuthCallbackScreen'
 import { SettingsScreen } from '../settings/SettingsScreen'
 import { Box } from '@material-ui/core'
+import { useRecoilValue } from 'recoil'
+import { authState } from '../auth/authState'
 
 export const AppNavigator = () => {
-  const auth = useAuth()
+  const auth = useRecoilValue(authState)
   const isAuthenticated = !!auth?.token
-
-  console.log('AUTH', auth)
-
-  if (auth === undefined) return null
 
   return (
     <BrowserRouter basename={process.env.PUBLIC_URL} >
@@ -108,7 +105,7 @@ export const AppNavigator = () => {
 const BackBehaviorWatcher = () => {
   const history = useHistory()
 
-  console.log(history)
+  // console.log(history)
   useEffect(() => {
     window.onpopstate = function (event) {
       // alert(`location: ${document.location}, state: ${JSON.stringify(event.state)}`)
@@ -116,7 +113,7 @@ const BackBehaviorWatcher = () => {
 
     history.listen((location, action) => {
       // debugger
-      console.log(location, action)
+      // console.log(location, action)
 
       // history.push(ROUTES.HOME)
     })

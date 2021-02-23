@@ -8,5 +8,6 @@ exports.signinSchema = yup.object().shape({
 });
 exports.signupSchema = yup.object().shape({
     email: yup.string().email().required(),
-    password: yup.string().required()
+    password: yup.string().required(),
+    code: yup.string().required()
 });

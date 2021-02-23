@@ -4,6 +4,8 @@ import { useRecoilValue } from 'recoil';
 import { authState } from './authState';
 import { useAuthorize } from './helpers';
 
+const FORM_ID = 'LockActionBehindUserPasswordDialog'
+
 export const LockActionBehindUserPasswordDialog: FC<{
   action?: () => void
 }> = ({ action }) => {
@@ -50,7 +52,7 @@ export const LockActionBehindUserPasswordDialog: FC<{
         <DialogContentText>
           Make sure you are online to proceed since we need to authorize you with the server
         </DialogContentText>
-        <form>
+        <form noValidate id={FORM_ID} onSubmit={e => e.preventDefault()}>
           <input type="text" name="email" value={auth?.email || ''} autoComplete="email" style={{ display: 'none' }} readOnly />
           <TextField
             autoFocus
@@ -68,7 +70,7 @@ export const LockActionBehindUserPasswordDialog: FC<{
         <Button onClick={onClose} color="primary">
           Cancel
         </Button>
-        <Button onClick={onConfirm} color="primary">
+        <Button onClick={onConfirm} color="primary" type="submit" form={FORM_ID}>
           Continue
         </Button>
       </DialogActions>

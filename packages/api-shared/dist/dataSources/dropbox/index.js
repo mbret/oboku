@@ -44,6 +44,7 @@ exports.dataSource = {
         });
         return {
             metadata: {
+                name: '',
                 size: results.size.toString()
             },
             stream
