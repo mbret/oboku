@@ -7,6 +7,7 @@ import { PromiseReturnType } from "../types"
 import { NotFoundError } from "@oboku/api-shared/src/errors"
 import { S3 } from 'aws-sdk'
 
+// conss = 'asd'
 const s3 = new S3()
 
 export const fn = lambda(async (event: APIGatewayProxyEvent) => {
