@@ -83,7 +83,6 @@ const createOrUpdateBook = ({ ctx: { dataSourceType }, helpers, parents, item })
                 const insertedBook = yield helpers.createBook({
                     title: item.name
                 });
-                // logger.log(`createOrUpdateBook "${item.name}": new file detected, creating book`, insertedBook)
                 bookId = insertedBook.id;
             }
             const insertedLink = yield helpers.create('link', {

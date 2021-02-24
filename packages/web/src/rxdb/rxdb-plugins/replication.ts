@@ -139,7 +139,7 @@ class Replication {
     this._pReplicationStates = Promise.resolve([]);
 
     this._errorSubject.asObservable().subscribe(e => {
-      this._completeSubject.next(true)
+      this._completeSubject.next(false)
       this._completeSubject.complete()
     })
   }

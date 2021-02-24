@@ -152,7 +152,7 @@ export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {
     try {
       return await fn()
     } catch (e) {
-      if ((e.statusCode >= 500 || e.statusCode === 409) && currentRetry > 0) {
+      if ((e.message === 'error happened in your connection' || e.statusCode >= 500 || e.statusCode === 409) && currentRetry > 0) {
         await waitForRandomTime(1, 200)
         currentRetry--
         return await retryable()

@@ -13,6 +13,10 @@ import { normalizedBooksState, Book } from "./states"
 import * as R from 'ramda';
 import { sortByTitleComparator } from '@oboku/shared/dist/sorts'
 import { AtomicUpdateFunction } from "rxdb"
+import { useLock } from "../common/BlockingBackdrop"
+import { useNetworkState } from "react-use"
+import { useDialog } from "../dialog"
+import { useSync } from "../rxdb/useSync"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -47,12 +51,6 @@ export const useAddTagToBook = () =>
         .update({ $push: { tags: tagId } })
   )
 
-export const useUpdateBook = () =>
-  useRxMutation(
-    (db, { _id, ...rest }: Partial<BookDocType>) =>
-      db.book.safeUpdate({ $set: rest }, collection => collection.findOne({ selector: { _id } }))
-  )
-
 export const useAtomicUpdateBook = () => {
   const database = useDatabase()
 
@@ -67,10 +65,16 @@ export const useAtomicUpdateBook = () => {
 export const useRefreshBookMetadata = () => {
   const client = useAxiosClient()
   const database = useDatabase()
-  const [updateBook] = useUpdateBook()
+  const [updateBook] = useAtomicUpdateBook()
   const getDataSourceCredentials = useGetDataSourceCredentials()
-
+  const dialog = useDialog()
+  const network = useNetworkState()
+  const sync = useSync()
+  
   return async (bookId: string) => {
+    if (!network.online) {
+      return dialog({ preset: 'OFFLINE' })
+    }
     const book = await database?.book.findOne({ selector: { _id: bookId } }).exec()
     const firstLink = await database?.link.findOne({ selector: { _id: book?.links[0] } }).exec()
 
@@ -81,9 +85,15 @@ export const useRefreshBookMetadata = () => {
     if ('isError' in credentials && credentials.reason === 'cancelled') return
     if ('isError' in credentials) throw credentials.error || new Error('')
 
-    await updateBook({ _id: bookId, metadataUpdateStatus: 'fetching' })
+    await updateBook(bookId, old => ({ ...old, metadataUpdateStatus: 'fetching' }))
 
-    await client.refreshMetadata(bookId, credentials.data).catch(Report.error)
+    try {
+      await sync(['link', 'book'])
+      await client.refreshMetadata(bookId, credentials.data)
+    } catch (e) {
+      await updateBook(bookId, old => ({ ...old, metadataUpdateStatus: null, lastMetadataUpdateError: 'unknown' }))
+      Report.error(e)
+    }
   }
 }
 

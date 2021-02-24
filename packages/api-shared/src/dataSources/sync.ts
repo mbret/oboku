@@ -108,7 +108,6 @@ const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, i
         const insertedBook = await helpers.createBook({
           title: item.name
         })
-        // logger.log(`createOrUpdateBook "${item.name}": new file detected, creating book`, insertedBook)
         bookId = insertedBook.id
       }
 

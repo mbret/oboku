@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@material-ui/core";
 import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
 
-type Preset = 'NOT_IMPLEMENTED'
+type Preset = 'NOT_IMPLEMENTED' | 'OFFLINE'
 type DialogType = { title?: string, content?: string, id: string, preset?: Preset }
 
 const DialogContext = createContext<DialogType[]>([])
@@ -24,6 +24,11 @@ const enrichDialogWithPreset = (dialog?: DialogType) => {
       ...dialog,
       title: 'Not implemented',
       content: 'Sorry this feature is not yet implemented'
+    }
+    case 'OFFLINE': return {
+      ...dialog,
+      title: 'Offline is great but...',
+      content: 'You need to be online to proceed with this action'
     }
     default: return dialog
   }

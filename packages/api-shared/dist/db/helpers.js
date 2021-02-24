@@ -140,7 +140,7 @@ const retryFn = (fn, retry = 100) => __awaiter(void 0, void 0, void 0, function*
             return yield fn();
         }
         catch (e) {
-            if ((e.statusCode >= 500 || e.statusCode === 409) && currentRetry > 0) {
+            if ((e.message === 'error happened in your connection' || e.statusCode >= 500 || e.statusCode === 409) && currentRetry > 0) {
                 yield utils_1.waitForRandomTime(1, 200);
                 currentRetry--;
                 return yield retryable();

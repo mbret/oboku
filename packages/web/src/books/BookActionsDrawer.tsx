@@ -7,7 +7,7 @@ import { SyncRounded, DeleteForeverRounded, RemoveRounded, CheckRounded, Collect
 import { useHistory } from 'react-router-dom';
 import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { ROUTES } from '../constants';
-import { useRefreshBookMetadata, useUpdateBook } from './helpers';
+import { useAtomicUpdateBook, useRefreshBookMetadata } from './helpers';
 import { useRemoveBook } from './helpers';
 import { Drawer, Divider, ListItemIcon, Typography, makeStyles } from '@material-ui/core';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
@@ -30,7 +30,7 @@ export const BookActionsDrawer = () => {
   const removeDownloadFile = useRemoveDownloadFile()
   const removeBook = useRemoveBook()
   const refreshBookMetadata = useRefreshBookMetadata()
-  const [updateBook] = useUpdateBook()
+  const [updateBook] = useAtomicUpdateBook()
   const classes = useStyles()
 
   const handleClose = () => {
@@ -70,13 +70,13 @@ export const BookActionsDrawer = () => {
               <ListItem button
                 onClick={() => {
                   handleClose()
-                  updateBook({
-                    _id: book._id,
+                  updateBook(book._id, old => ({
+                    ...old,
                     readingStateCurrentState: ReadingStateState.NotStarted,
                     readingStateCurrentBookmarkProgressPercent: 0,
                     readingStateCurrentBookmarkProgressUpdatedAt: (new Date()).toISOString(),
                     readingStateCurrentBookmarkLocation: null
-                  }).catch(Report.error)
+                  })).catch(Report.error)
                 }}
               >
                 <ListItemIcon>
@@ -89,13 +89,13 @@ export const BookActionsDrawer = () => {
               <ListItem button
                 onClick={() => {
                   handleClose()
-                  updateBook({
-                    _id: book._id,
+                  updateBook(book._id, old => ({
+                    ...old,
                     readingStateCurrentState: ReadingStateState.Finished,
                     readingStateCurrentBookmarkProgressPercent: 1,
                     readingStateCurrentBookmarkProgressUpdatedAt: (new Date()).toISOString(),
                     readingStateCurrentBookmarkLocation: null
-                  }).catch(Report.error)
+                  })).catch(Report.error)
                 }}
               >
                 <ListItemIcon>
