@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.dataSource = exports.extractIdFromResourceId = exports.generateResourceId = exports.configure = void 0;
 const helpers_1 = require("./helpers");
 const googleapis_1 = require("googleapis");
-const shared_1 = require("@oboku/shared");
+const src_1 = require("@oboku/shared/src");
 const configure_1 = require("./configure");
 Object.defineProperty(exports, "configure", { enumerable: true, get: function () { return configure_1.configure; } });
 const generateResourceId = (driveId) => `drive-${driveId}`;
@@ -67,7 +67,7 @@ exports.dataSource = {
                     q: `
             '${id}' in parents and (
               mimeType='application/vnd.google-apps.folder' 
-              ${shared_1.READER_SUPPORTED_MIME_TYPES.map(mimeType => ` or mimeType='${mimeType}'`).join('')}
+              ${src_1.READER_SUPPORTED_MIME_TYPES.map(mimeType => ` or mimeType='${mimeType}'`).join('')}
             )
           `,
                     includeItemsFromAllDrives: true,

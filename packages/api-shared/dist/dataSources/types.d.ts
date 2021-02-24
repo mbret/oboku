@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { Request } from 'request';
-import { DataSourceType, LinkDocType } from "@oboku/shared";
+import { DataSourceType, LinkDocType } from '@oboku/shared/src';
 import { createHelpers } from './helpers';
 declare type NameWithMetadata = string;
 declare type ISOString = string;

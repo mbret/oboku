@@ -3,6 +3,7 @@ import { APIGatewayEventRequestContext, APIGatewayProxyEvent, APIGatewayProxyRes
 import { UnauthorizedError, BadRequestError, NotFoundError } from "@oboku/api-shared/src/errors"
 import { configure as configureLogger } from "@oboku/api-shared/src/Logger"
 import { Logger } from "./utils/logger"
+import { ObokuSharedError } from '@oboku/shared/src'
 
 configureLogger(Logger)
 
@@ -33,6 +34,12 @@ export const lambda = (cb: (event: APIGatewayProxyEvent, context: APIGatewayEven
       console.error(e)
       console.error(JSON.stringify({ stack: e.stack, code: e?.code }))
       console.error('response', e?.response)
+      if (e instanceof ObokuSharedError && e.previousError) {
+        const prevError = e.previousError as any
+        console.error(prevError)
+        console.error(JSON.stringify({ stack: prevError.stack, code: prevError?.code }))
+        console.error('response', prevError?.response)
+      }
       let body: {
         error?: string,
         errors: any[],
@@ -69,7 +76,7 @@ export const lambda = (cb: (event: APIGatewayProxyEvent, context: APIGatewayEven
 
       return res({
         statusCode: 500,
-        body: JSON.stringify(body), 
+        body: JSON.stringify(body),
       })
     }
   }

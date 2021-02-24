@@ -1,4 +1,4 @@
-import { Errors } from '@oboku/shared';
+import { Errors } from '@oboku/shared/src';
 export declare class ServerError extends Error {
     previousError?: any;
     constructor(previousError?: any);

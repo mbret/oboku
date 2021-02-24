@@ -1,5 +1,5 @@
 import { Request } from 'request'
-import { DataSourceType, LinkDocType } from "@oboku/shared";
+import { DataSourceType, LinkDocType } from '@oboku/shared/src'
 import { createHelpers } from './helpers';
 
 type NameWithMetadata = string

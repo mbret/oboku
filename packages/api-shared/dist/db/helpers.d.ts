@@ -1,5 +1,5 @@
 import createNano from 'nano';
-import { BookDocType, LinkDocType, DataSourceDocType, TagsDocType, CollectionDocType, SafeMangoQuery, InsertableBookDocType } from "@oboku/shared";
+import { BookDocType, LinkDocType, DataSourceDocType, TagsDocType, CollectionDocType, SafeMangoQuery, InsertableBookDocType } from '@oboku/shared/src';
 export declare type DocType = BookDocType | TagsDocType | DataSourceDocType | LinkDocType | CollectionDocType;
 export declare type ModelOf<Type extends DocType['rx_model']> = DocType extends (infer DT) ? DT extends DocType ? DT['rx_model'] extends Type ? DT : never : never : never;
 export declare const createUser: (db: createNano.ServerScope, username: string, userpass: string) => Promise<void>;

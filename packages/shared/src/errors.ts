@@ -15,6 +15,6 @@ export type ERROR =
 
 export class ObokuSharedError extends Error {
   constructor(public code: ERROR, public previousError?: Error) {
-    super()
+    super(previousError?.message || '')
   }
 }

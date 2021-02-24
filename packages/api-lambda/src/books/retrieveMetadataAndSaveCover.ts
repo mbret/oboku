@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as unzipper from 'unzipper'
 import { dataSourceFacade } from '@oboku/api-shared/src/dataSources/facade'
 import * as parser from 'fast-xml-parser'
-import { BookDocType, LinkDocType, OPF, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "@oboku/shared"
+import { BookDocType, LinkDocType, OPF, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from '@oboku/shared/src'
 import { detectMimeTypeFromContent } from "../utils"
 import { PromiseReturnType } from "../types"
 import { COVER_MAXIMUM_SIZE_FOR_STORAGE, TMP_DIR } from '../constants'

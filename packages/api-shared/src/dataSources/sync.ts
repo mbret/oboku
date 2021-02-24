@@ -1,4 +1,4 @@
-import { BookDocType, GoogleDriveDataSourceData } from "@oboku/shared"
+import { BookDocType, GoogleDriveDataSourceData } from '@oboku/shared/src'
 import { DataSource, SynchronizableDataSource } from "./types"
 import { createHelpers } from "./helpers"
 import { difference } from "ramda"

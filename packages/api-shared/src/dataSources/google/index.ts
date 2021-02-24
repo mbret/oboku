@@ -1,7 +1,7 @@
 import { DataSource, SynchronizableDataSource } from '../types'
 import { authorize } from './helpers'
 import { drive_v3, google } from 'googleapis'
-import { GoogleDriveDataSourceData, READER_SUPPORTED_MIME_TYPES } from '@oboku/shared'
+import { GoogleDriveDataSourceData, READER_SUPPORTED_MIME_TYPES } from '@oboku/shared/src'
 import { configure } from './configure'
 
 export { configure }

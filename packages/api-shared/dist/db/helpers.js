@@ -21,7 +21,7 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.retryFn = exports.addLinkToBook = exports.getOrCreateTagFromName = exports.addTagsFromNameToBook = exports.addTagsToBook = exports.createBook = exports.find = exports.findOne = exports.insert = exports.atomicUpdate = exports.createUser = void 0;
-const shared_1 = require("@oboku/shared");
+const src_1 = require("@oboku/shared/src");
 const utils_1 = require("../utils");
 const couchDbEntities_1 = require("./couchDbEntities");
 const createUser = (db, username, userpass) => __awaiter(void 0, void 0, void 0, function* () {
@@ -80,7 +80,7 @@ const createBook = (db, data = {}) => __awaiter(void 0, void 0, void 0, function
         readingStateCurrentBookmarkLocation: null,
         readingStateCurrentBookmarkProgressPercent: 0,
         readingStateCurrentBookmarkProgressUpdatedAt: null,
-        readingStateCurrentState: shared_1.ReadingStateState.NotStarted,
+        readingStateCurrentState: src_1.ReadingStateState.NotStarted,
         rights: null,
         rx_model: 'book',
         subject: null,

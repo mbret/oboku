@@ -23,7 +23,7 @@ exports.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED = '4002';
 var ObokuSharedError = /** @class */ (function (_super) {
     __extends(ObokuSharedError, _super);
     function ObokuSharedError(code, previousError) {
-        var _this = _super.call(this) || this;
+        var _this = _super.call(this, (previousError === null || previousError === void 0 ? void 0 : previousError.message) || '') || this;
         _this.code = code;
         _this.previousError = previousError;
         return _this;

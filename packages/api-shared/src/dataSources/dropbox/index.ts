@@ -5,7 +5,7 @@ import nodeFetch from 'node-fetch'
 import { Dropbox, files } from "dropbox";
 import { DataSource, SynchronizableDataSource } from "../types";
 import { Readable } from 'stream'
-import { DropboxDataSourceData, READER_SUPPORTED_EXTENSIONS } from "@oboku/shared";
+import { DropboxDataSourceData, READER_SUPPORTED_EXTENSIONS } from '@oboku/shared/src'
 import { PromiseReturnType } from "../../types";
 
 const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`dropbox-`, ``)

@@ -19,7 +19,7 @@ exports.dataSource = void 0;
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const dropbox_1 = require("dropbox");
 const stream_1 = require("stream");
-const shared_1 = require("@oboku/shared");
+const src_1 = require("@oboku/shared/src");
 const extractIdFromResourceId = (resourceId) => resourceId.replace(`dropbox-`, ``);
 const generateResourceId = (id) => `dropbox-${id}`;
 exports.dataSource = {
@@ -80,7 +80,7 @@ exports.dataSource = {
                     ...results,
                     ...response.result.entries
                         .filter(entry => entry['.tag'] === 'folder'
-                        || shared_1.READER_SUPPORTED_EXTENSIONS.some(extension => entry.name.endsWith(extension)))
+                        || src_1.READER_SUPPORTED_EXTENSIONS.some(extension => entry.name.endsWith(extension)))
                 ];
                 hasMore = response.result.has_more;
             }

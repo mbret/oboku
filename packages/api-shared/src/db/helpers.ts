@@ -1,8 +1,8 @@
 import createNano from 'nano'
 import {
-  BookDocType, LinkDocType, isBook, isLink, DataSourceDocType, isDataSource, isTag,
-  TagsDocType, isCollection, CollectionDocType, SafeMangoQuery, InsertableBookDocType, ReadingStateState
-} from "@oboku/shared"
+  BookDocType, LinkDocType, DataSourceDocType,
+  TagsDocType, CollectionDocType, SafeMangoQuery, InsertableBookDocType, ReadingStateState
+} from '@oboku/shared/src'
 import { waitForRandomTime } from "../utils"
 import { User } from './couchDbEntities'
 
