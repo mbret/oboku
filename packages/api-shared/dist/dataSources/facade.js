@@ -36,6 +36,9 @@ exports.dataSourceFacade = {
             const dataSource = yield helpers.findOne('datasource', { selector: { _id: dataSourceId } });
             if (!dataSource)
                 throw new Error('Data source not found');
+            if (dataSource.syncStatus !== 'fetching') {
+                yield helpers_2.atomicUpdate(db, 'datasource', dataSource._id, old => (Object.assign(Object.assign({}, old), { syncStatus: 'fetching' })));
+            }
             const { type } = dataSource;
             // we create the date now on purpose so that if something change on the datasource
             // during the process (which can take time), user will not be misled to believe its
@@ -55,7 +58,7 @@ exports.dataSourceFacade = {
             if (syncable) {
                 yield sync_1.sync(syncable, ctx, helpers);
             }
-            yield helpers_2.atomicUpdate(db, 'datasource', dataSourceId, old => (Object.assign(Object.assign({}, old), { lastSyncedAt, lastSyncErrorCode: null })));
+            yield helpers_2.atomicUpdate(db, 'datasource', dataSourceId, old => (Object.assign(Object.assign({}, old), { lastSyncedAt, lastSyncErrorCode: null, syncStatus: null })));
             console.log(`dataSourcesSync for ${dataSourceId} completed successfully`);
         }
         catch (e) {
@@ -63,7 +66,7 @@ exports.dataSourceFacade = {
             if (e instanceof src_1.ObokuSharedError) {
                 lastSyncErrorCode = e.code;
             }
-            yield helpers_2.atomicUpdate(db, 'datasource', dataSourceId, old => (Object.assign(Object.assign({}, old), { lastSyncErrorCode })));
+            yield helpers_2.atomicUpdate(db, 'datasource', dataSourceId, old => (Object.assign(Object.assign({}, old), { lastSyncErrorCode, syncStatus: null })));
             throw e;
         }
     })

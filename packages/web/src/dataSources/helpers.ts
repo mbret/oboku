@@ -1,6 +1,6 @@
 import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
-import { DataSourceDocType, DataSourceType } from '@oboku/shared'
+import { DataSourceDocType, DataSourceType, Errors } from '@oboku/shared'
 import { useRxMutation } from "../rxdb/hooks"
 import { Report } from "../report"
 import { useRecoilCallback } from "recoil"
@@ -8,14 +8,24 @@ import { plugins } from "./configure"
 import { useCallback, useMemo, useRef } from "react"
 import { UseDownloadHook } from "./types"
 import { useDialog } from "../dialog"
+import { useNetworkState } from "react-use"
+import { useSync } from "../rxdb/useSync"
+import { AtomicUpdateFunction } from "rxdb"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
   const database = useDatabase()
-  const [updateDataSource] = useUpdateDataSource()
+  const [updateDataSource] = useAtomicUpdateDataSource()
   const getDataSourceCredentials = useGetDataSourceCredentials()
+  const network = useNetworkState()
+  const dialog = useDialog()
+  const sync = useSync()
 
   return useRecoilCallback(({ snapshot }) => async (_id: string) => {
+    if (!network.online) {
+      return dialog({ preset: 'OFFLINE' })
+    }
+
     try {
       const dataSource = await database?.datasource.findOne({ selector: { _id } }).exec()
 
@@ -26,9 +36,15 @@ export const useSynchronizeDataSource = () => {
       if ('isError' in credentials && credentials.reason === 'cancelled') return
       if ('isError' in credentials) throw credentials.error || new Error('')
 
-      await updateDataSource({ _id, lastSyncedAt: null, lastSyncErrorCode: null })
+      await updateDataSource(_id, old => ({ ...old, syncStatus: 'fetching' }))
 
-      await client.syncDataSource(_id, credentials.data).catch(Report.error)
+      try {
+        await sync(['datasource'])
+        await client.syncDataSource(_id, credentials.data)
+      } catch (e) {
+        await updateDataSource(_id, old => ({ ...old, syncStatus: null, lastSyncErrorCode: Errors.ERROR_DATASOURCE_UNKNOWN }))
+        throw e
+      }
     } catch (e) {
       Report.error(e)
     }
@@ -39,21 +55,35 @@ export const useCreateDataSource = () => {
   type Payload = Omit<DataSourceDocType, '_id' | 'rx_model' | '_rev'>
   const synchronize = useSynchronizeDataSource()
   const [createDataSource] = useRxMutation((db, variables: Payload) => db?.datasource.post({ ...variables }))
+  const network = useNetworkState()
 
-  return async (data: Omit<Payload, 'lastSyncedAt' | 'createdAt' | 'modifiedAt'>) => {
-    const dataSource = await createDataSource({ ...data, lastSyncedAt: null, createdAt: new Date().toISOString(), modifiedAt: null })
-    await synchronize(dataSource._id)
+  return async (data: Omit<Payload, 'lastSyncedAt' | 'createdAt' | 'modifiedAt' | 'syncStatus'>) => {
+    const dataSource = await createDataSource({
+      ...data,
+      lastSyncedAt: null,
+      createdAt: new Date().toISOString(),
+      modifiedAt: null,
+      syncStatus: null,
+    })
+    if (network.online) {
+      await synchronize(dataSource._id)
+    }
   }
 }
 
 export const useRemoveDataSource = () =>
   useRxMutation((db, { id }: { id: string }) => db.datasource.findOne({ selector: { _id: id } }).remove())
 
-export const useUpdateDataSource = () =>
-  useRxMutation(
-    (db, { _id, ...rest }: Partial<DataSourceDocType> & Required<Pick<DataSourceDocType, '_id'>>) =>
-      db.datasource.safeUpdate({ $set: rest }, dataSource => dataSource.findOne({ selector: { _id } }))
-  )
+export const useAtomicUpdateDataSource = () => {
+  const database = useDatabase()
+
+  const updater = useCallback(async (id: string, mutationFunction: AtomicUpdateFunction<DataSourceDocType>) => {
+    const item = await database?.datasource.findOne({ selector: { _id: id } }).exec()
+    return await item?.atomicUpdate(mutationFunction)
+  }, [database])
+
+  return [updater]
+}
 
 export const useDataSourceHelpers = (id: typeof plugins[number]['uniqueResourceIdentifier']) => {
   return useMemo(() => ({

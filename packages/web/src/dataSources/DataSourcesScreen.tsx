@@ -47,7 +47,6 @@ export const DataSourcesScreen = () => {
         <List>
           {dataSources?.map(item => {
             const dataSource = dataSourcesPlugins.find(dataSource => dataSource.type === item.type)
-            console.log(item)
 
             return (
               <ListItem key={item._id} button onClick={() => setIsActionsDrawerOpenWith(item._id)}>
@@ -60,21 +59,25 @@ export const DataSourcesScreen = () => {
                 )}
                 <ListItemText
                   primary={<Typography noWrap>{extractDataSourceData(item)?.folderName || dataSource?.name}</Typography>}
-                  secondary={item?.lastSyncedAt
-                    ? `Last synced at ${(new Date(item?.lastSyncedAt)).toDateString()}`
-                    : item?.lastSyncErrorCode
-                      ? (
-                        <Box flexDirection="row" display="flex">
-                          <Error fontSize="small" style={{ marginRight: theme.spacing(1) }} />
-                          <Typography variant="body2">
-                            {`Sync did not succeed`}
-                            {item?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED && (
-                              `. Your datasource seems to have exceeded its allowed access limit`
-                            )}
-                          </Typography>
-                        </Box>
-                      )
-                      : 'Syncing...'
+                  secondary={
+                    item?.syncStatus === 'fetching'
+                      ? 'Syncing...'
+                      : item?.lastSyncErrorCode
+                        ? (
+                          <Box flexDirection="row" display="flex">
+                            <Error fontSize="small" style={{ marginRight: theme.spacing(1) }} />
+                            <Typography variant="body2">
+                              {`Sync did not succeed`}
+                              {item?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED && (
+                                `. Your datasource seems to have exceeded its allowed access limit`
+                              )}
+                            </Typography>
+                          </Box>
+                        )
+                        : item?.lastSyncedAt
+                          ? `Last synced at ${(new Date(item?.lastSyncedAt)).toDateString()}`
+                          : 'Not synced yet'
+
                   }
                 />
               </ListItem>

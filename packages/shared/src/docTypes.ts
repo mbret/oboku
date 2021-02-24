@@ -35,6 +35,7 @@ export type DataSourceDocType = {
   _rev: string;
   type: DataSourceType;
   lastSyncedAt: number | null;
+  syncStatus: null | 'fetching'
   lastSyncErrorCode?: string | null,
   credentials?: any
   data: string;

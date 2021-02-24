@@ -36,6 +36,13 @@ export const dataSourceFacade = {
 
       if (!dataSource) throw new Error('Data source not found')
 
+      if (dataSource.syncStatus !== 'fetching') {
+        await atomicUpdate(db, 'datasource', dataSource._id, old => ({
+          ...old,
+          syncStatus: 'fetching' as const,
+        }))
+      }
+
       const { type } = dataSource
 
       // we create the date now on purpose so that if something change on the datasource
@@ -64,6 +71,7 @@ export const dataSourceFacade = {
         ...old,
         lastSyncedAt,
         lastSyncErrorCode: null,
+        syncStatus: null,
       }))
 
       console.log(`dataSourcesSync for ${dataSourceId} completed successfully`)
@@ -76,6 +84,7 @@ export const dataSourceFacade = {
       await atomicUpdate(db, 'datasource', dataSourceId, old => ({
         ...old,
         lastSyncErrorCode,
+        syncStatus: null,
       }))
 
       throw e

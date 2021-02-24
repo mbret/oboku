@@ -139,6 +139,8 @@ class Replication {
     this._pReplicationStates = Promise.resolve([]);
 
     this._errorSubject.asObservable().subscribe(e => {
+      // @todo should be true in case of live replication since it never complete
+      // or even better not trigger anything
       this._completeSubject.next(false)
       this._completeSubject.complete()
     })

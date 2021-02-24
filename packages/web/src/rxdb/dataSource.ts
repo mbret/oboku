@@ -19,11 +19,12 @@ export type DataSourceCollection = RxCollection<DataSourceDocType, {}, DataSourc
 
 export const dataSourceSchema: RxJsonSchema<Omit<DataSourceDocType, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('datasource', {
   title: 'dataSourceSchema',
-  version: 1,
+  version: 2,
   type: 'object',
   properties: {
     type: { type: 'string', final: true },
     lastSyncedAt: { type: ['number', 'null'] },
+    syncStatus: { type: ['string', 'null'] },
     lastSyncErrorCode: { type: ['string', 'null'] },
     data: { type: 'string' },
     credentials: { type: ['object', 'null'] },
@@ -40,6 +41,13 @@ export const migrationStrategies = {
       ...oldDoc,
       createdAt: new Date().toISOString(),
       modifiedAt: null,
+    }
+  },
+  2: (oldDoc: DataSourceDocType): DataSourceDocType | null => {
+
+    return {
+      ...oldDoc,
+      syncStatus: null,
     }
   }
 }
