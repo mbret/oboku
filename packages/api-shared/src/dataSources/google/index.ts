@@ -3,6 +3,7 @@ import { authorize } from './helpers'
 import { drive_v3, google } from 'googleapis'
 import { GoogleDriveDataSourceData, READER_SUPPORTED_MIME_TYPES } from '@oboku/shared/src'
 import { configure } from './configure'
+import { createThrottler } from '../helpers'
 
 export { configure }
 
@@ -47,6 +48,7 @@ export const dataSource: DataSource = {
     }
   },
   sync: async (ctx, helpers) => {
+    const throttle = createThrottler(50)
     const auth = await authorize(ctx);
     const drive = google.drive({
       version: 'v3',
@@ -59,12 +61,11 @@ export const dataSource: DataSource = {
       throw helpers.createError('unknown')
     }
 
-    const getContentsFromFolder = async (id: string): Promise<SynchronizableDataSource['items']> => {
-      let pageToken: string | undefined
-      let isDone = false
-      let files: NonNullable<drive_v3.Schema$FileList['files']> = []
+    const getContentsFromFolder = throttle(async (id: string): Promise<SynchronizableDataSource['items']> => {
+      type Res = NonNullable<drive_v3.Schema$FileList['files']>;
 
-      while (!isDone) {
+      const getNextRes = throttle(async (pageToken?: string | undefined): Promise<Res> => {
+
         const response = await drive.files.list({
           spaces: 'drive',
           q: `
@@ -79,12 +80,18 @@ export const dataSource: DataSource = {
           supportsAllDrives: true,
           pageSize: 10,
         })
+
+        const data = response.data.files || []
         pageToken = response.data.nextPageToken || undefined
-        files = [...files, ...response.data.files || []]
         if (!pageToken) {
-          isDone = true
+          return data
+        } else {
+          const nextRes = await getNextRes(pageToken)
+          return [...data, ...nextRes]
         }
-      }
+      })
+
+      const files = await getNextRes()
 
       return Promise.all(files
         .filter(file => file.trashed !== true)
@@ -107,7 +114,7 @@ export const dataSource: DataSource = {
           }
         })
       )
-    }
+    })
 
     try {
       const [items, rootFolderResponse] = await Promise.all([
@@ -126,11 +133,11 @@ export const dataSource: DataSource = {
       if (errors && Array.isArray(errors)) {
         errors.forEach((error: any) => {
           if (error?.reason === 'rateLimitExceeded') {
-            throw helpers.createError('rateLimitExceeded')
+            throw helpers.createError('rateLimitExceeded', e)
           }
         })
       }
-      
+
       throw e
     }
   }

@@ -34,3 +34,4 @@ export declare const createHelpers: (dataSourceId: string, refreshBookMetadata: 
         isbn?: string | undefined;
     };
 };
+export declare const createThrottler: (ms: number) => <F extends (...args: any) => any>(fn: F) => (...args: Parameters<F>) => Promise<ReturnType<F>>;

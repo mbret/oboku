@@ -9,16 +9,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.dataSource = exports.extractIdFromResourceId = exports.generateResourceId = exports.configure = void 0;
+exports.dataSource = exports.wait = exports.extractIdFromResourceId = exports.generateResourceId = exports.configure = void 0;
 const helpers_1 = require("./helpers");
 const googleapis_1 = require("googleapis");
 const src_1 = require("@oboku/shared/src");
 const configure_1 = require("./configure");
 Object.defineProperty(exports, "configure", { enumerable: true, get: function () { return configure_1.configure; } });
+const helpers_2 = require("../helpers");
 const generateResourceId = (driveId) => `drive-${driveId}`;
 exports.generateResourceId = generateResourceId;
 const extractIdFromResourceId = (resourceId) => resourceId.replace(`drive-`, ``);
 exports.extractIdFromResourceId = extractIdFromResourceId;
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+exports.wait = wait;
 exports.dataSource = {
     download: (link, credentials) => __awaiter(void 0, void 0, void 0, function* () {
         if (!link.resourceId) {
@@ -48,6 +51,7 @@ exports.dataSource = {
     }),
     sync: (ctx, helpers) => __awaiter(void 0, void 0, void 0, function* () {
         var _a, _b, _c;
+        const throttle = helpers_2.createThrottler(50);
         const auth = yield helpers_1.authorize(ctx);
         const drive = googleapis_1.google.drive({
             version: 'v3',
@@ -57,11 +61,8 @@ exports.dataSource = {
         if (!folderId) {
             throw helpers.createError('unknown');
         }
-        const getContentsFromFolder = (id) => __awaiter(void 0, void 0, void 0, function* () {
-            let pageToken;
-            let isDone = false;
-            let files = [];
-            while (!isDone) {
+        const getContentsFromFolder = throttle((id) => __awaiter(void 0, void 0, void 0, function* () {
+            const getNextRes = throttle((pageToken) => __awaiter(void 0, void 0, void 0, function* () {
                 const response = yield drive.files.list({
                     spaces: 'drive',
                     q: `
@@ -76,12 +77,17 @@ exports.dataSource = {
                     supportsAllDrives: true,
                     pageSize: 10,
                 });
+                const data = response.data.files || [];
                 pageToken = response.data.nextPageToken || undefined;
-                files = [...files, ...response.data.files || []];
                 if (!pageToken) {
-                    isDone = true;
+                    return data;
                 }
-            }
+                else {
+                    const nextRes = yield getNextRes(pageToken);
+                    return [...data, ...nextRes];
+                }
+            }));
+            const files = yield getNextRes();
             return Promise.all(files
                 .filter(file => file.trashed !== true)
                 .map((file) => __awaiter(void 0, void 0, void 0, function* () {
@@ -101,7 +107,7 @@ exports.dataSource = {
                     modifiedAt: file.modifiedTime || new Date().toISOString()
                 };
             })));
-        });
+        }));
         try {
             const [items, rootFolderResponse] = yield Promise.all([
                 yield getContentsFromFolder(folderId),
@@ -119,7 +125,7 @@ exports.dataSource = {
             if (errors && Array.isArray(errors)) {
                 errors.forEach((error) => {
                     if ((error === null || error === void 0 ? void 0 : error.reason) === 'rateLimitExceeded') {
-                        throw helpers.createError('rateLimitExceeded');
+                        throw helpers.createError('rateLimitExceeded', e);
                     }
                 });
             }

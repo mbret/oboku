@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createHelpers = void 0;
+exports.createThrottler = exports.createHelpers = void 0;
 const helpers_1 = require("@oboku/api-shared/src/db/helpers");
 const src_1 = require("@oboku/shared/src");
 const directives_1 = require("@oboku/shared/src/directives");
@@ -52,4 +52,17 @@ const createHelpers = (dataSourceId, refreshBookMetadata, db, getBookCover, user
     return helpers;
 };
 exports.createHelpers = createHelpers;
+const createThrottler = (ms) => {
+    const list = [];
+    setInterval(() => {
+        const toProcess = list.pop();
+        if (toProcess) {
+            toProcess();
+        }
+    }, ms);
+    return (fn) => (...args) => new Promise((resolve, reject) => {
+        list.push(() => fn(...args).then(resolve).catch(reject));
+    });
+};
+exports.createThrottler = createThrottler;
 //# sourceMappingURL=helpers.js.map
