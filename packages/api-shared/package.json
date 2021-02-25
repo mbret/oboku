@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "main": "dist/index.js",
   "license": "MIT",
-  "scripts": {
-    "watch": "nodemon"
-  },
   "dependencies": {
     "@types/node-fetch": "^2.5.8",
     "dropbox": "mbret/dropbox-sdk-js#main",

@@ -7,6 +7,7 @@ import { DataSource, SynchronizableDataSource } from "../types";
 import { Readable } from 'stream'
 import { DropboxDataSourceData, READER_SUPPORTED_EXTENSIONS } from '@oboku/shared/src'
 import { PromiseReturnType } from "../../types";
+import { createThrottler } from '../helpers';
 
 const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`dropbox-`, ``)
 const generateResourceId = (id: string) => `dropbox-${id}`
@@ -45,6 +46,7 @@ export const dataSource: DataSource = {
     }
   },
   sync: async ({ credentials }, helpers) => {
+    const throttle = createThrottler(50)
     var dbx = new Dropbox({ accessToken: credentials.accessToken, fetch: nodeFetch })
 
     const { folderId } = await helpers.getDataSourceData<DropboxDataSourceData>()
@@ -53,17 +55,13 @@ export const dataSource: DataSource = {
       throw helpers.createError('unknown')
     }
 
-    const getContentsFromFolder = async (id: string): Promise<SynchronizableDataSource['items']> => {
-      let hasMore = true
-      let cursor: PromiseReturnType<typeof dbx.filesListFolder>['result']['cursor'] | undefined = undefined
-      let results: PromiseReturnType<typeof dbx.filesListFolder>['result']['entries'] = []
+    const getContentsFromFolder = throttle(async (id: string): Promise<SynchronizableDataSource['items']> => {
+      type Res = PromiseReturnType<typeof dbx.filesListFolder>['result']['entries']
 
-      while (hasMore) {
+      const getNextRes = throttle(async (cursor?: PromiseReturnType<typeof dbx.filesListFolder>['result']['cursor'] | undefined): Promise<Res> => {
         let response: PromiseReturnType<typeof dbx.filesListFolderContinue>
         if (cursor) {
-          response = await dbx.filesListFolderContinue({
-            cursor,
-          })
+          response = await dbx.filesListFolderContinue({ cursor, })
         } else {
           response = await dbx.filesListFolder({
             path: id,
@@ -72,17 +70,23 @@ export const dataSource: DataSource = {
             include_media_info: true,
           })
         }
-        cursor = response.result.cursor
-        results = [
-          ...results,
-          ...response.result.entries
-            .filter(entry =>
-              entry['.tag'] === 'folder'
-              || READER_SUPPORTED_EXTENSIONS.some(extension => entry.name.endsWith(extension))
-            )
-        ]
-        hasMore = response.result.has_more
-      }
+        const data = response.result.entries
+          .filter(entry =>
+            entry['.tag'] === 'folder'
+            || READER_SUPPORTED_EXTENSIONS.some(extension => entry.name.endsWith(extension))
+          )
+
+        if (response.result.has_more) {
+          return [
+            ...data,
+            ...(await getNextRes(response.result.cursor))
+          ]
+        } else {
+          return data
+        }
+      })
+
+      const results = await getNextRes()
 
       return Promise.all(results.map(async (item): Promise<SynchronizableDataSource['items'][number]> => {
         if (item[".tag"] === 'file') {
@@ -102,7 +106,7 @@ export const dataSource: DataSource = {
           modifiedAt: new Date().toISOString(),
         }
       }))
-    }
+    })
 
     const [items, rootFolderResponse] = await Promise.all([
       await getContentsFromFolder(folderId),

@@ -69,7 +69,7 @@ export const createThrottler = (ms: number) => {
   const list: (() => any)[] = []
 
   setInterval(() => {
-    const toProcess = list.pop()
+    const toProcess = list.shift()
     if (toProcess) {
       toProcess()
     }

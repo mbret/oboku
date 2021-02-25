@@ -9,7 +9,6 @@ import { EpubView } from './EpubView'
 import { useMeasure, useWindowSize } from "react-use";
 import { Box, Button, Link, Typography } from '@material-ui/core';
 import { Rendition, Contents, Location } from "epubjs";
-import { useUpdateBook } from '../books/helpers';
 import { AppTourReader } from '../firstTimeExperience/AppTourReader';
 import { useHorizontalTappingZoneWidth } from './utils';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
@@ -41,7 +40,6 @@ export const ReaderScreen: FC<{}> = () => {
   const { file, documentType, error: fileError, filename } = useFile(bookId || '-1')
   const book = useRecoilValue(bookState(bookId || '-1'))
   const windowSize = useWindowSize()
-  const [editBook] = useUpdateBook()
   const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
   const setIsMenuShown = useSetRecoilState(isMenuShownState)
   const [layout, setLayout] = useRecoilState(layoutState)
@@ -250,7 +248,7 @@ export const ReaderScreen: FC<{}> = () => {
     rendition?.on('relocated', onRelocated);
 
     return () => rendition?.off('relocated', onRelocated)
-  }, [rendition, editBook, bookId, book, updateProgress, setCurrentLocation, setIsBookReady])
+  }, [rendition, bookId, book, updateProgress, setCurrentLocation, setIsBookReady])
 
   useUpdateBookState(bookId || '-1')
   useDirection(rendition)

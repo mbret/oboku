@@ -1,1 +1,0 @@
-{"version":3,"file":"configure.js","sourceRoot":"","sources":["../../../src/dataSources/google/configure.ts"],"names":[],"mappings":";;;AAAA,IAAI,OAAO,GAAG;IACZ,SAAS,EAAE,EAAE;IACb,aAAa,EAAE,EAAE;CAClB,CAAA;AAEM,MAAM,UAAU,GAAG,GAAG,EAAE,CAAC,OAAO,CAAA;AAA1B,QAAA,UAAU,cAAgB;AAEhC,MAAM,SAAS,GAAG,CAAC,OAAuB,EAAE,EAAE;IACnD,OAAO,GAAG,OAAO,CAAA;AACnB,CAAC,CAAA;AAFY,QAAA,SAAS,aAErB"}
