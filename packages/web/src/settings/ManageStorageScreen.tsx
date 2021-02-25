@@ -14,6 +14,7 @@ import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { difference } from "ramda"
 import Alert from '@material-ui/lab/Alert'
 import { Report } from '../report';
+import { useEffect } from 'react';
 
 export const ManageStorageScreen = () => {
   const bookIds = useRecoilValue(downloadedBookIdsState)
@@ -27,11 +28,13 @@ export const ManageStorageScreen = () => {
 
   const removeExtraBooks = useCallback(() => {
     Promise.all(extraDownloadFilesIds.map(id => removeDownloadFile(id)))
-    .then(() => {
-      refetch()
-    })
-    .catch(Report.error)
+      .then(refetch)
+      .catch(Report.error)
   }, [refetch, extraDownloadFilesIds, removeDownloadFile])
+
+  useEffect(() => {
+    refetch()
+  }, [bookIds, refetch])
 
   return (
     <>

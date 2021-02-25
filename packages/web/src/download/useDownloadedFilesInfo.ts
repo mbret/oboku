@@ -1,5 +1,5 @@
 import localforage from 'localforage'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export const useDownloadedFilesInfo = () => {
   const [keys, setKeys] = useState<string[]>([])
@@ -13,8 +13,13 @@ export const useDownloadedFilesInfo = () => {
     })()
   }, [refetch])
 
+  const refetchFn = useCallback(() => {
+    setKeys([])
+    setRefetch(old => old + 1)
+  }, [])
+  
   return useMemo(() => ({
     bookIds: keys,
-    refetch: () => setRefetch(old => old + 1)
-  }), [keys])
+    refetch: refetchFn
+  }), [keys, refetchFn])
 }
