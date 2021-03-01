@@ -4,7 +4,9 @@
   "main": "dist/index.js",
   "license": "MIT",
   "dependencies": {
+    "@types/jsonwebtoken": "^8.5.0",
     "@types/node-fetch": "^2.5.8",
+    "@types/request": "^2.48.5",
     "dropbox": "mbret/dropbox-sdk-js#main",
     "googleapis": "^67.0.0",
     "jsonwebtoken": "^8.5.1",

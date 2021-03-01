@@ -8,6 +8,16 @@ import createNano from 'nano'
 import { atomicUpdate } from "../db/helpers"
 
 export const dataSourceFacade = {
+  getMetadata: async (link: LinkDocType, credentials?: any) => {
+    switch (link.type) {
+      case DataSourceType.DRIVE:
+        return googleDataSource.getMetadata(link, credentials)
+      case DataSourceType.DROPBOX:
+        return dropboxDataSource.getMetadata(link, credentials)
+      default:
+        return urlDataSource.getMetadata(link)
+    }
+  },
   dowload: async (link: LinkDocType, credentials?: any) => {
     switch (link.type) {
       case DataSourceType.DRIVE:

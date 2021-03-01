@@ -11,6 +11,22 @@ export const generateResourceId = (driveId: string) => `drive-${driveId}`
 export const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`drive-`, ``)
 
 export const dataSource: DataSource = {
+  getMetadata: async (link, credentials) => {
+    const auth = await authorize({ credentials });
+    const drive = google.drive({
+      version: 'v3',
+      auth
+    })
+
+    const metadata = (await drive.files.get({
+      fileId: extractIdFromResourceId(link.resourceId),
+      fields: 'size, name'
+    }, { responseType: 'json' })).data
+
+    return {
+      name: metadata.name || ''
+    }
+  },
   download: async (link, credentials) => {
     if (!link.resourceId) {
       throw new Error('Invalid google drive file uri')

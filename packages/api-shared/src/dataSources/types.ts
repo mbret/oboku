@@ -19,6 +19,11 @@ export type SynchronizableDataSource = {
 }
 
 export type DataSource = {
+  getMetadata: (link: LinkDocType, credentials?: any) => Promise<{
+    size?: string,
+    contentType?: string,
+    name: string,
+  }>
   download: (link: LinkDocType, credentials?: any) => Promise<{
     stream: NodeJS.ReadableStream | Request,
     metadata: {

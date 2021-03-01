@@ -13,13 +13,23 @@ const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`drop
 const generateResourceId = (id: string) => `dropbox-${id}`
 
 export const dataSource: DataSource = {
+  getMetadata: async (link, credentials) => {
+    var dbx = new Dropbox({ accessToken: credentials.accessToken, fetch: nodeFetch })
+    const fileId = extractIdFromResourceId(link.resourceId)
+
+    const response = await dbx.filesGetMetadata({
+      path: `${fileId}`
+    })
+
+    return {
+      name: response.result.name
+    }
+  },
   /**
    * @see https://www.dropbox.com/developers/documentation/http/documentation#files-download
    */
   download: async (link, credentials) => {
-    console.log(typeof nodeFetch)
     var dbx = new Dropbox({ accessToken: credentials.accessToken, fetch: nodeFetch })
-
     const fileId = extractIdFromResourceId(link.resourceId)
 
     const response = await dbx.filesDownload({

@@ -11,7 +11,7 @@
     // "outFile": ".build/main.js",
     "removeComments": true,
     // "moduleResolution": "node",
-    "sourceMap": false
+    "sourceMap": false,
   },
   // "include": ["**/*", "../tests/**/*"]
   "include": ["src/app.ts", "scripts/*", "webpack.config.ts"]

@@ -28,30 +28,43 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
   console.log(`syncMetadata run for user ${ctx.userEmail} with book ${ctx.book._id}`)
   let bookNameForDebug = ''
 
-  let tmpFilePath: string | undefined = undefined
+  let tmpFilePath: string | number = -1
 
   try {
     bookNameForDebug = ctx.book.title || ''
 
     console.log(`syncMetadata processing ${ctx.book._id} with resource id ${ctx.link.resourceId}`)
 
-    const { filepath, metadata } = await downloadToTmpFolder(ctx, ctx.book, ctx.link)
+    // try to prefetch metadata before trying to download the file
+    // in case some directive are needed to prevent downloading huge file.
+    const metadataPrefetch = await dataSourceFacade.getMetadata(ctx.link, ctx.credentials)
 
-    tmpFilePath = filepath
-    console.log(`syncMetadata processing ${ctx.book._id}`, filepath, metadata)
+    const metadataFromName = extractMetadataFromName(metadataPrefetch.name)
 
-    let fallbackContentType = metadata.contentType
+    let normalizedMetadata: Partial<ReturnType<typeof normalizeMetadata>> = {
+      title: metadataPrefetch.name
+    }
+    let fallbackContentType = 'unknown'
+    let skipExtract = !!metadataFromName.isbn
+
+    if (skipExtract) {
+      console.log(`syncMetadata processing ${ctx.book._id} will skip extract for isbn ${metadataFromName.isbn}`)
+    }
+
+    if (!skipExtract) {
+      const { filepath, metadata } = await downloadToTmpFolder(ctx, ctx.book, ctx.link)
+      tmpFilePath = filepath
+      normalizedMetadata.title = metadataPrefetch.name
+      fallbackContentType = metadata.contentType || fallbackContentType
+    }
+
+    console.log(`syncMetadata processing ${ctx.book._id}`, tmpFilePath, normalizedMetadata)
+
     let folderBasePath = ''
     let contentLength = 0
-    let normalizedMetadata: Partial<ReturnType<typeof normalizeMetadata>> = {
-      title: metadata.name
-    }
     let coverPath: string | undefined
-    let skipExtract = false
-    const metadataFromName = extractMetadataFromName(metadata.name)
 
-    if (metadataFromName.isbn) {
-      skipExtract = true
+    if (skipExtract && metadataFromName.isbn) {
       try {
         const response = await findByISBN(metadataFromName.isbn)
         if (response.status === 200 && Array.isArray(response.data.items) && response.data.items.length > 0) {
@@ -62,77 +75,79 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
           normalizedMetadata.publisher = item.volumeInfo.publisher
           normalizedMetadata.language = item.volumeInfo.language
           normalizedMetadata.subject = item.volumeInfo.categories
-          await saveCoverFromExternalLinkToBucket(ctx, ctx.book, item.volumeInfo.imageLinks.thumbnail)
+          await saveCoverFromExternalLinkToBucket(ctx, ctx.book, item.volumeInfo.imageLinks.thumbnail.replace('zoom=1', 'zoom=2'))
         }
       } catch (e) {
         console.error(e)
       }
     }
 
-    if (!skipExtract && !METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType || '')) {
-      fallbackContentType = (await detectMimeTypeFromContent(filepath) || fallbackContentType)
-    }
-
-    if (!skipExtract && METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType)) {
-      const files: string[] = []
-      const coverAllowedExt = ['.jpg', '.jpeg', '.png']
-      let isEpub = false
-      let opfAsJson: OPF = {
-        package: {
-          manifest: {},
-          metadata: {
-            "dc:title": metadata.name
+    if (!skipExtract && typeof tmpFilePath === 'string') {
+      if (!METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType || '')) {
+        fallbackContentType = (await detectMimeTypeFromContent(tmpFilePath) || fallbackContentType)
+      }
+  
+      if (METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType)) {
+        const files: string[] = []
+        const coverAllowedExt = ['.jpg', '.jpeg', '.png']
+        let isEpub = false
+        let opfAsJson: OPF = {
+          package: {
+            manifest: {},
+            metadata: {
+              "dc:title": normalizedMetadata.title
+            }
           }
         }
-      }
-
-      await fs.createReadStream(filepath)
-        .pipe(unzipper.Parse({
-          verbose: false
-        }))
-        .on('entry', async (entry: unzipper.Entry) => {
-          contentLength = contentLength + entry.vars.compressedSize
-          const filepath = entry.path
-
-          if (entry.type === 'File') {
-            files.push(entry.path)
-          }
-
-          if (filepath.endsWith('.opf')) {
-            isEpub = true
-            const filepathParts = filepath.split('/')
-            if (filepathParts.length > 1) {
-              folderBasePath = `${filepathParts[0]}/`
+  
+        await fs.createReadStream(tmpFilePath)
+          .pipe(unzipper.Parse({
+            verbose: false
+          }))
+          .on('entry', async (entry: unzipper.Entry) => {
+            contentLength = contentLength + entry.vars.compressedSize
+            const filepath = entry.path
+  
+            if (entry.type === 'File') {
+              files.push(entry.path)
             }
-            const xml = (await entry.buffer()).toString('utf8')
-            opfAsJson = parser.parse(xml, {
-              attributeNamePrefix: '',
-              ignoreAttributes: false,
-            })
-            entry.autodrain()
-          } else {
-            entry.autodrain()
-          }
-        }).promise()
-
-      coverPath = isEpub
-        ? findMissingCover(opfAsJson)
-        : files
-          .filter(file => coverAllowedExt.includes(path.extname(file).toLowerCase()))
-          .sort()[0]
-
-      console.log(opfAsJson, opfAsJson?.package?.metadata)
-
-      normalizedMetadata = normalizeMetadata(opfAsJson)
-
-      if (coverPath) {
-        await saveCoverFromArchiveToBucket(ctx, ctx.book, filepath, folderBasePath, coverPath)
+  
+            if (filepath.endsWith('.opf')) {
+              isEpub = true
+              const filepathParts = filepath.split('/')
+              if (filepathParts.length > 1) {
+                folderBasePath = `${filepathParts[0]}/`
+              }
+              const xml = (await entry.buffer()).toString('utf8')
+              opfAsJson = parser.parse(xml, {
+                attributeNamePrefix: '',
+                ignoreAttributes: false,
+              })
+              entry.autodrain()
+            } else {
+              entry.autodrain()
+            }
+          }).promise()
+  
+        coverPath = isEpub
+          ? findMissingCover(opfAsJson)
+          : files
+            .filter(file => coverAllowedExt.includes(path.extname(file).toLowerCase()))
+            .sort()[0]
+  
+        console.log(opfAsJson, opfAsJson?.package?.metadata)
+  
+        normalizedMetadata = normalizeMetadata(opfAsJson)
+  
+        if (coverPath) {
+          await saveCoverFromArchiveToBucket(ctx, ctx.book, tmpFilePath, folderBasePath, coverPath)
+        } else {
+          console.log(`No cover path found for ${tmpFilePath}`)
+        }
+  
       } else {
-        console.log(`No cover path found for ${filepath}`)
+        console.log(`retrieveMetadataAndSaveCover format not supported yet`)
       }
-
-    } else if (!skipExtract) {
-      console.log(`retrieveMetadataAndSaveCover format not supported yet`)
     }
 
     console.log(`metadataDaemon Finished processing book ${ctx.book._id} with resource id ${ctx.link.resourceId}`)
@@ -161,7 +176,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     throw e
   } finally {
     try {
-      if (tmpFilePath) {
+      if (typeof tmpFilePath === 'string') {
         await fs.promises.unlink(tmpFilePath)
       }
     } catch (e) { }

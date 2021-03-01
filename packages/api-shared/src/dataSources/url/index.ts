@@ -4,6 +4,7 @@ import { DataSource } from '../types'
 export type UriLinkData = { uri?: string }
 
 export const dataSource: DataSource = {
+  getMetadata: async () => ({ name: '' }),
   download: async (link) => {
     return new Promise((resolve, reject) => {
       const stream = request({ uri: link.resourceId })
