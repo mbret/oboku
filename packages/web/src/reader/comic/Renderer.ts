@@ -41,7 +41,10 @@ export class ComicRenderer extends Renderer {
     this.wrapper.innerHTML = ''
     const img = this.container?.ownerDocument.createElement('img')
     img?.setAttribute('src', `data:image/png;base64,${content}`)
-    img && this.wrapper?.appendChild(img)
+    if (img) {
+      img.style.pointerEvents = 'none'
+      this.wrapper?.appendChild(img)
+    }
   }
 
   destroy() {

@@ -1,11 +1,12 @@
-import { useRecoilCallback, useRecoilValue } from "recoil"
+import { useRecoilCallback, useRecoilValue, useSetRecoilState } from "recoil"
 import * as states from "./states"
 import { Rendition } from "epubjs"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useAtomicUpdateBook } from "../books/helpers"
 import { ReadingStateState } from "@oboku/shared"
-import { useDebounce } from "react-use"
+import { useDebounce, useWindowSize } from "react-use"
 import { useBookFile } from "../download/useBookFile"
+import { useHorizontalTappingZoneWidth } from "./utils"
 
 const statesToReset = [
   states.currentApproximateProgressState,
@@ -150,4 +151,110 @@ export const useFile = (bookId: string) => {
   }, [file])
 
   return data
+}
+
+export const useGestureHandler = (rendition: Rendition | undefined, hammer: HammerManager | undefined, documentType: "comic" | "epub" | "unknown" | undefined) => {
+  const navigator = useNavigator(rendition)
+  const windowSize = useWindowSize()
+  const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
+  const setIsMenuShown = useSetRecoilState(states.isMenuShownState)
+  
+  useEffect(() => {
+    const onPanMove = (ev: HammerInput) => {
+      console.log(`onPanMove`, ev.velocityX)
+      if (ev.isFinal) {
+        const velocity = ev.velocityX
+        if (velocity < -0.5) {
+          navigator.turnRight()
+        }
+        if (velocity > 0.5) {
+          navigator.turnLeft()
+        }
+      }
+    }
+
+    /**
+     * Beware that this event can come from both reader container and
+     * from within the epubjs iframe.
+     */
+    const onTap = (ev: HammerInput) => {
+      console.log(`onTap`, ev)
+      const { x: clientX } = ev.center
+
+      // let wrapper = rendition?.manager?.container;
+  
+      // let realClientXOffset = clientX - (windowSize.width * pageDisplayedIndex)
+      let realClientXOffset = clientX
+  
+      const iframeBoundingClientRect = ev.target.ownerDocument.defaultView?.frameElement?.getBoundingClientRect()
+  
+      // const epubViewContainer = e.target?.querySelector("p").closest(".near.ancestor")
+      // For now comic reader only render current page so there
+      // are no issue with weird offset
+      if (documentType === 'comic') {
+        realClientXOffset = clientX
+      }
+  
+      if (iframeBoundingClientRect) {
+        realClientXOffset += iframeBoundingClientRect.left
+      }
+  
+      const maxOffsetPrev = horizontalTappingZoneWidth
+      // const maxOffsetBottomMenu = verticalTappingZoneHeight
+      const minOffsetNext = windowSize.width - maxOffsetPrev
+      // const minOffsetBottomMenu = windowSize.height - maxOffsetBottomMenu
+  
+      console.log(
+        'mouse',
+        clientX,
+        iframeBoundingClientRect,
+        realClientXOffset,
+        maxOffsetPrev,
+      )
+  
+      if (realClientXOffset < maxOffsetPrev) {
+        navigator.turnLeft()
+      } else if (realClientXOffset > minOffsetNext) {
+        navigator.turnRight()
+      } else {
+        setIsMenuShown(val => !val)
+      }
+  
+      // else if (clientY < maxOffsetBottomMenu) {
+      //   setIsTopMenuShown(true)
+      // } else if (clientY > minOffsetBottomMenu) {
+      //   setIsBottomMenuShown(true)
+      // }
+    }
+
+    const onPanMoveEpubjsEvent: any = ({ detail: ev }: { detail: HammerInput }) => onPanMove(ev)
+    const onTapEpubjsEvent: any = ({ detail: ev }: { detail: HammerInput }) => onTap(ev)
+
+    window.document.addEventListener('hammer panmove panstart panend', onPanMoveEpubjsEvent, true)
+    window.document.addEventListener('hammer tap', onTapEpubjsEvent, true)
+    hammer?.on('panmove panstart panend', onPanMove)
+    hammer?.on('tap', onTap)
+
+    return () => {
+      window.document.removeEventListener('hammer panmove panstart panend', onPanMoveEpubjsEvent, true)
+      window.document.removeEventListener('hammer tap', onTapEpubjsEvent, true)
+      hammer?.off('panmove panstart panend', onPanMove)
+      hammer?.off('tap', onTap)
+    }
+  }, [rendition, hammer, navigator, horizontalTappingZoneWidth, documentType, setIsMenuShown, windowSize.width])
+}
+
+export const useNavigator = (rendition: Rendition | undefined) => {
+  const direction = useRecoilValue(states.currentDirectionState)
+
+  return useMemo(() => ({
+    turnRight: () => {
+      if (direction === 'ltr') rendition?.next()
+      else rendition?.prev()
+    },
+    turnLeft: () => {
+      if (direction === 'ltr') rendition?.prev()
+      else rendition?.next()
+    }
+  }), [direction, rendition])
 }

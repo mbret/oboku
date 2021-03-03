@@ -17,14 +17,14 @@ type LoadableFiles = NonNullable<PromiseReturnType<typeof load>>['files']
 export class Engine {
   protected container: HTMLElement | undefined
   // protected loaded = new Loader()
-  protected files$ = new BehaviorSubject<LoadableFiles | undefined>(undefined)
+  public files$ = new BehaviorSubject<LoadableFiles | undefined>(undefined)
   protected events: Event[] = []
   protected renderer: Renderer | undefined
   #loaded = new BehaviorSubject<PromiseReturnType<typeof load> | undefined>(undefined)
   protected wrapper: HTMLDivElement | undefined
   #actions$ = new Subject<{ name: 'display', data: any }>()
   protected epubOptions: RenditionOptions = {}
-  protected _currentLocation: {
+  public _currentLocation: {
     start: {
       index: number,
       cfi: undefined | string,
@@ -32,7 +32,9 @@ export class Engine {
         page: number
       }
     },
-    end: {}
+    end: {},
+    atStart: boolean,
+    atEnd: boolean
   } = {
       start: {
         index: 0,
@@ -41,7 +43,9 @@ export class Engine {
           page: 1
         }
       },
-      end: {}
+      end: {},
+      atStart: false,
+      atEnd: false
     }
 
   /**
@@ -125,7 +129,7 @@ export class Engine {
     return (this.files$.value || []).find(file => file.name === location)
   }
 
-  protected getCfiFromPercentage(value: number) {
+  public getCfiFromPercentage(value: number) {
 
   }
 
@@ -191,6 +195,7 @@ export class Engine {
     if (index < (this.files$.value || []).length - 1) {
       this.renderFile((this.files$.value || [])[index + 1])
     }
+    return Promise.resolve()
   }
 
   public prev() {
@@ -198,6 +203,7 @@ export class Engine {
     if (index > 0) {
       this.renderFile((this.files$.value || [])[index - 1])
     }
+    return Promise.resolve()
   }
 
   public destroy() {

@@ -8,15 +8,14 @@ import { useHistory, useParams } from 'react-router-dom'
 import { EpubView } from './EpubView'
 import { useMeasure, useWindowSize } from "react-use";
 import { Box, Button, Link, Typography } from '@material-ui/core';
-import { Rendition, Contents, Location } from "epubjs";
+import { Rendition, Location } from "epubjs";
 import { AppTourReader } from '../firstTimeExperience/AppTourReader';
-import { useHorizontalTappingZoneWidth } from './utils';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { bookState } from '../books/states';
-import { currentApproximateProgressState, currentChapterState, currentDirectionState, currentLocationState, currentPageState, isBookReadyState, isMenuShownState, layoutState, tocState, totalApproximativePagesState } from './states';
+import { currentApproximateProgressState, currentChapterState, currentDirectionState, currentLocationState, currentPageState, isBookReadyState, layoutState, tocState, totalApproximativePagesState } from './states';
 import { TopBar } from './TopBar';
 import { BottomBar } from './BottomBar';
-import { useGenerateLocations, useResetStateOnUnmount, useUpdateBookState, useFile, useResizeBook } from './helpers';
+import { useGenerateLocations, useResetStateOnUnmount, useUpdateBookState, useFile, useResizeBook, useGestureHandler } from './helpers';
 import { ReaderProvider } from './ReaderProvider';
 import { ComicReader } from './comic/ComicReader';
 import { clone } from 'ramda';
@@ -28,6 +27,8 @@ import { PackagingMetadataObjectWithMissingProperties, RenditionOptions } from '
 import { BookLoading } from './BookLoading';
 import { extractMetadataFromName } from '@oboku/shared/dist/directives';
 import { useWakeLock } from '../common/useWakeLock';
+import Hammer from 'hammerjs'
+import { useEpubjsPanRecognizerHook, useEpubjsVerticalCentererRendererHook } from './epubjsHelpers';
 
 const screenfullApi = screenfull as Screenfull
 
@@ -40,8 +41,6 @@ export const ReaderScreen: FC<{}> = () => {
   const { file, documentType, error: fileError, filename } = useFile(bookId || '-1')
   const book = useRecoilValue(bookState(bookId || '-1'))
   const windowSize = useWindowSize()
-  const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
-  const setIsMenuShown = useSetRecoilState(isMenuShownState)
   const [layout, setLayout] = useRecoilState(layoutState)
   const setCurrentPage = useSetRecoilState(currentPageState)
   const setTotalApproximativePages = useSetRecoilState(totalApproximativePagesState)
@@ -51,65 +50,19 @@ export const ReaderScreen: FC<{}> = () => {
   const firstLocation = useRef(book?.readingStateCurrentBookmarkLocation || undefined)
   const history = useHistory()
   const localSettings = useRecoilValue(localSettingsState)
-  const direction = useRecoilValue(currentDirectionState)
   const [containerMeasureRef, { width: containerWidth, height: containerHeight }] = useMeasure()
+  const [readerContainerHammer, setReaderContainerHammer] = useState<HammerManager | undefined>(undefined)
 
   useGenerateLocations(rendition)
   useResetStateOnUnmount()
   useResizeBook(rendition, containerWidth, containerHeight)
+  useGestureHandler(rendition, readerContainerHammer, documentType)
+
+  // epubjs specific hooks
+  useEpubjsVerticalCentererRendererHook(rendition)
+  useEpubjsPanRecognizerHook(rendition)
+  
   const wakeLockActive = useWakeLock()
-
-  // @todo only show menu on short click
-  const onRenditionClick = useCallback((e: MouseEvent) => {
-    const { clientX } = e
-
-    // let wrapper = rendition?.manager?.container;
-
-    // let realClientXOffset = clientX - (windowSize.width * pageDisplayedIndex)
-    let realClientXOffset = clientX
-
-    const iframeBoundingClientRect = e.view?.frameElement?.getBoundingClientRect()
-
-    // const epubViewContainer = e.target?.querySelector("p").closest(".near.ancestor")
-    // For now comic reader only render current page so there
-    // are no issue with weird offset
-    if (documentType === 'comic') {
-      realClientXOffset = clientX
-    }
-
-    if (iframeBoundingClientRect) {
-      realClientXOffset += iframeBoundingClientRect.left
-    }
-
-    const maxOffsetPrev = horizontalTappingZoneWidth
-    // const maxOffsetBottomMenu = verticalTappingZoneHeight
-    const minOffsetNext = windowSize.width - maxOffsetPrev
-    // const minOffsetBottomMenu = windowSize.height - maxOffsetBottomMenu
-
-    console.log(
-      'mouse',
-      clientX,
-      iframeBoundingClientRect,
-      realClientXOffset,
-      maxOffsetPrev,
-    )
-
-    if (realClientXOffset < maxOffsetPrev) {
-      if (direction === 'ltr') rendition?.prev()
-      else rendition?.next()
-    } else if (realClientXOffset > minOffsetNext) {
-      if (direction === 'ltr') rendition?.next()
-      else rendition?.prev()
-    } else {
-      setIsMenuShown(val => !val)
-    }
-
-    // else if (clientY < maxOffsetBottomMenu) {
-    //   setIsTopMenuShown(true)
-    // } else if (clientY > minOffsetBottomMenu) {
-    //   setIsBottomMenuShown(true)
-    // }
-  }, [windowSize, horizontalTappingZoneWidth, rendition, setIsMenuShown, documentType, direction])
 
   useEffect(() => {
     return () => {
@@ -148,7 +101,7 @@ export const ReaderScreen: FC<{}> = () => {
   }, [rendition, currentLocation, setCurrentChapter])
 
   useEffect(() => {
-    rendition?.on('click', onRenditionClick)
+    // rendition?.on('click', onRenditionClick)
 
     rendition?.on('displayError', e => {
       console.warn('displayError', e)
@@ -165,9 +118,9 @@ export const ReaderScreen: FC<{}> = () => {
     }
 
     return () => {
-      rendition?.off('click', onRenditionClick)
+      // rendition?.off('click', onRenditionClick)
     }
-  }, [rendition, onRenditionClick, setLayout])
+  }, [rendition, setLayout])
 
   useEffect(() => {
     if (!rendition) return
@@ -177,8 +130,6 @@ export const ReaderScreen: FC<{}> = () => {
       setToc(toc)
     })()
   }, [rendition, setToc])
-
-  useVerticalCentererRendererHook(rendition)
 
   useEffect(() => {
     rendition?.hooks.content.register(function (contents, b) {
@@ -305,7 +256,12 @@ export const ReaderScreen: FC<{}> = () => {
               width: windowSize.width,
               position: "relative",
             }}
-            onClick={e => onRenditionClick(e.nativeEvent)}
+            ref={ref => {
+              if (ref) {
+                setReaderContainerHammer(hammer => hammer ? hammer : new Hammer(ref))
+              }
+            }}
+            // onClick={e => onRenditionClick(e.nativeEvent)}
           >
             {documentType === 'epub' && (
               <>
@@ -353,49 +309,6 @@ export const ReaderScreen: FC<{}> = () => {
       <AppTourReader />
     </ReaderProvider >
   )
-}
-
-const useVerticalCentererRendererHook = (rendition: Rendition | undefined) => {
-  const layout = useRecoilValue(layoutState)
-
-  useEffect(() => {
-    const hook = (contents: Contents, view) => {
-      const $bodyList = contents.document.getElementsByTagName('body')
-      const $body = $bodyList.item(0)
-      const windowInnerHeight = contents.window.innerHeight
-      const windowInnerWidth = contents.window.innerWidth
-
-      if ($body) {
-        const height = $body.getBoundingClientRect().height
-        const width = $body.getBoundingClientRect().width
-        var scaleX = $body.getBoundingClientRect().width / $body.offsetWidth;
-
-        // align vertically the body in case of content height is lower
-        if (height < windowInnerHeight) {
-          $body.style.paddingTop = `${((windowInnerHeight - height) / 2) / scaleX}px`
-          console.warn(`useVerticalCentererRendererHook -> re-center with padding of ${$body.style.paddingTop}`)
-        }
-
-        // align horizontally the body in case of content height is lower
-        if (width < windowInnerWidth) {
-          // sometime books will use margin themselves to play with alignment of images. this is to give some
-          // style and dynamic in the reading. In this case we try to not override any margin behavior
-          if (!$body.style.marginLeft) {
-            $body.style.paddingLeft = `${((windowInnerWidth - width) / 2) / scaleX}px`
-            console.warn(`useVerticalCentererRendererHook -> re-center with padding of ${$body.style.paddingTop}`)
-          }
-        }
-      }
-    }
-
-    if (layout === 'fixed') {
-      rendition?.hooks.content.register(hook)
-    }
-
-    return () => {
-      rendition?.hooks.content.deregister(hook)
-    }
-  }, [rendition, layout])
 }
 
 const useDirection = (rendition?: Rendition) => {

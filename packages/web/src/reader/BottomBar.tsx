@@ -21,9 +21,9 @@ export const BottomBar = () => {
       style={{
         bottom: 0,
         top: 'auto',
-        height: 110,
+        height: 120,
         ...layout === 'reflow' && {
-          height: 130,
+          height: 140,
         },
         paddingBottom: 20,
         visibility: isMenuShow ? 'visible' : 'hidden',

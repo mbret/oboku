@@ -1,0 +1,4 @@
+img {
+  /* prevent cursor to drag image and so to act the same as the touch event */
+  pointer-events: none;
+}
