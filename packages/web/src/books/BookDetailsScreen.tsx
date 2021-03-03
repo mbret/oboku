@@ -127,7 +127,7 @@ export const BookDetailsScreen = () => {
               ? (
                 <>
                   {collections?.map(item => (
-                    <Chip label={item?.name} key={item?._id} />
+                    <Chip label={item?.displayableName} key={item?._id} />
                   ))}
                 </>
               )

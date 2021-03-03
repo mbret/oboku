@@ -122,6 +122,7 @@ export class Engine {
         this.#loaded.next(loaded)
         this.files$.next(loaded.files)
       } catch (e) {
+        console.error(e)
         this.#errorSubject$.next(e)
       }
     }

@@ -1,10 +1,11 @@
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import { CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
 import React, { FC } from 'react';
-import { Collection } from './states';
+import { UnwrapRecoilValue } from 'recoil';
+import { collectionsAsArrayState } from './states';
 
 export const CollectionSelectionList: FC<{
-  collections: Collection[],
+  collections: UnwrapRecoilValue<typeof collectionsAsArrayState>,
   onItemClick: (id: string) => void,
   isSelected: (id: string) => boolean,
 }> = ({ collections, onItemClick, isSelected }) => {
@@ -19,7 +20,7 @@ export const CollectionSelectionList: FC<{
             item?._id && onItemClick(item._id)
           }}
         >
-          <ListItemText primary={item?.name} />
+          <ListItemText primary={item?.displayableName} />
           {item?._id && isSelected(item?._id)
             ? <CheckCircleRounded />
             : <RadioButtonUncheckedOutlined />}

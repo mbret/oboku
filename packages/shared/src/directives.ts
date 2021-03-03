@@ -1,3 +1,5 @@
+const BASE_DETECTION_REGEX = `\\[oboku\\~[^\\]]*\\]`
+
 /**
 * Will extract any oboku normalized metadata that exist in the resource id string.
 * Use this method to enrich the content that is being synchronized
@@ -55,3 +57,8 @@ export const extractMetadataFromName = (resourceId: string): {
     isbn,
   }
 }
+
+export const removeDirectiveFromString = (str: string) => str
+  .replace(new RegExp(`( ${BASE_DETECTION_REGEX})+`, 'ig'), '')
+  .replace(new RegExp(`(${BASE_DETECTION_REGEX} )+`, 'ig'), '')
+  .replace(new RegExp(`(${BASE_DETECTION_REGEX})+`, 'ig'), '')

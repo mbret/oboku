@@ -3,7 +3,7 @@ import React, { useEffect, useState, FC } from "react";
 import { Edit, DeleteForeverRounded, DynamicFeedRounded } from "@material-ui/icons";
 import { useRemoveCollection, useUpdateCollection } from "./helpers";
 import { useRecoilValue } from "recoil";
-import { normalizedCollectionsState } from "./states";
+import { collectionState } from "./states";
 import { BooksSelectionDialog } from "./BooksSelectionDialog";
 
 export const CollectionActionsDrawer: FC<{
@@ -94,7 +94,7 @@ const EditCollectionDialog: FC<{
   onClose: () => void,
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState('')
-  const collection = useRecoilValue(normalizedCollectionsState)[id || '-1']
+  const collection = useRecoilValue(collectionState(id || '-1'))
   const [editCollection] = useUpdateCollection()
 
   const onInnerClose = () => {

@@ -92,7 +92,7 @@ export const LibraryCollectionScreen = () => {
                 setIsActionDialogOpenedWith(item?._id)
               }}
             >
-              <ListItemText primary={item?.name} secondary={`${item?.books?.length || 0} book(s)`} />
+              <ListItemText primary={item?.displayableName} secondary={`${item?.books?.length || 0} book(s)`} />
               <IconButton
                 disableFocusRipple
                 disableRipple

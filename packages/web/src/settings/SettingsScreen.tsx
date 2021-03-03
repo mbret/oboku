@@ -12,6 +12,8 @@ const fullScreenModes: Record<LocalSettings['readingFullScreenSwitchMode'], stri
 export const SettingsScreen = () => {
   const [localSettings, setLocalSettings] = useRecoilState(localSettingsState)
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
+
+  console.log(`debug SettingsScreen`, localSettings)
   
   return (
     <>
@@ -19,6 +21,20 @@ export const SettingsScreen = () => {
         <TopBarNavigation title={'Settings'} />
         <List >
           <ListSubheader disableSticky>General</ListSubheader>
+          <ListItem
+            button
+            onClick={() => {
+              setLocalSettings(old => ({ ...old, hideDirectivesFromCollectionName: !old.hideDirectivesFromCollectionName }))
+            }}
+          >
+            <ListItemText
+              primary="Automatically hide directives from collection name"
+              secondary={`Will display a collection named "My collection [oboku~foo]" as "My collection"`}
+            />
+            <ListItemSecondaryAction>
+              {localSettings.hideDirectivesFromCollectionName ? <CheckCircleRounded /> : <RadioButtonUncheckedOutlined />}
+            </ListItemSecondaryAction>
+          </ListItem>
         </List>
         <List >
           <ListSubheader disableSticky>Privacy</ListSubheader>
@@ -64,7 +80,7 @@ export const SettingsScreen = () => {
         <List>
           {(Object.keys(fullScreenModes) as LocalSettings['readingFullScreenSwitchMode'][]).map((text) => (
             <ListItem button key={text} onClick={() => {
-              setLocalSettings(old => ({ ...old, readingFullScreenSwitchMode: text}))
+              setLocalSettings(old => ({ ...old, readingFullScreenSwitchMode: text }))
               setIsDrawerOpened(false)
             }}>
               <ListItemText primary={fullScreenModes[text]} />

@@ -60,7 +60,7 @@ export const CollectionDetailsScreen = () => {
           }}>
             <div>
               <Typography variant="h5" style={titleTypoStyle} >
-                {collection?.name}
+                {collection?.displayableName}
               </Typography>
               <Typography variant="subtitle1" gutterBottom style={titleTypoStyle}>
                 {`${collection?.books?.length || 0} book(s)`}

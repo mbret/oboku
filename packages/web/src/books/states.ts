@@ -5,7 +5,7 @@ import { libraryState } from "../library/states";
 import { normalizedTagsState, protectedTagIdsState } from "../tags/states";
 import { normalizedLinksState } from "../links/states";
 import { bookDownloadsState, DownloadState, normalizedBookDownloadsState } from "../download/states";
-import { normalizedCollectionsState } from "../collections/states";
+import { collectionState, normalizedCollectionsState } from "../collections/states";
 import { DataSourceType } from "@oboku/shared";
 
 export type Book = NonNullable<UnwrapRecoilValue<typeof normalizedBooksState>[number]>
@@ -127,8 +127,7 @@ export const bookCollectionsState = selectorFamily({
   key: 'bookCollectionsState',
   get: (bookId: string) => ({ get }) => {
     const book = get(bookState(bookId))
-    const collections = get(normalizedCollectionsState)
 
-    return book?.collections?.map(id => collections[id])
+    return book?.collections?.map(id => get(collectionState(id)))
   }
 })

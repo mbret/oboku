@@ -7,7 +7,8 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
     return r;
 };
 exports.__esModule = true;
-exports.extractMetadataFromName = void 0;
+exports.removeDirectiveFromString = exports.extractMetadataFromName = void 0;
+var BASE_DETECTION_REGEX = "\\[oboku\\~[^\\]]*\\]";
 /**
 * Will extract any oboku normalized metadata that exist in the resource id string.
 * Use this method to enrich the content that is being synchronized
@@ -58,3 +59,8 @@ var extractMetadataFromName = function (resourceId) {
     };
 };
 exports.extractMetadataFromName = extractMetadataFromName;
+var removeDirectiveFromString = function (str) { return str
+    .replace(new RegExp("( " + BASE_DETECTION_REGEX + ")+", 'ig'), '')
+    .replace(new RegExp("(" + BASE_DETECTION_REGEX + " )+", 'ig'), '')
+    .replace(new RegExp("(" + BASE_DETECTION_REGEX + ")+", 'ig'), ''); };
+exports.removeDirectiveFromString = removeDirectiveFromString;

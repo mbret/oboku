@@ -1,6 +1,6 @@
 import { useRecoilTransactionObserver_UNSTABLE, RecoilRoot, useRecoilCallback, RecoilState, MutableSnapshot } from "recoil";
 import localforage from 'localforage'
-import React, { createContext, FC, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, FC, memo, useContext, useEffect, useRef, useState } from "react";
 import { Subject, asyncScheduler } from "rxjs";
 import { throttleTime } from 'rxjs/operators'
 import { Report } from "./report";
@@ -76,8 +76,9 @@ const RecoilPersistor = () => {
 
 export const PersistedRecoilRoot: FC<{
   states?: RecoilState<any>[],
+  migration?: (state: { [key: string]: { value: any } }) => { [key: string]: { value: any } },
   onReady: () => void
-}> = ({ children, states = [], onReady }) => {
+}> = memo(({ children, states = [], onReady, migration = (state) => state }) => {
   const [initialeState, setInitialState] = useState<{ [key: string]: { value: any } } | undefined>(undefined)
   const alreadyLoaded = useRef(!!initialeState)
   // const alreadyInitialized = useRef(false)
@@ -88,14 +89,15 @@ export const PersistedRecoilRoot: FC<{
       if (!alreadyLoaded.current) {
         const restored = await localforage.getItem<string>(`local-user`)
         alreadyLoaded.current = true
-        setInitialState(restored ? JSON.parse(restored) : {})
+        const loadedState = restored ? JSON.parse(restored) as { [key: string]: { value: any } } : {}
+        setInitialState(migration(loadedState))
         onReady()
       }
     })()
-  }, [onReady])
+  }, [onReady, migration])
 
   const initializeState = useCallback(({ set }: MutableSnapshot) => {
-    console.log('PersistedRecoilRoot initializeState cb')
+    console.log('PersistedRecoilRoot initializeState cb', initialeState)
     if (initialeState) {
       Object.keys(initialeState || {}).forEach((key) => {
         const stateToRestore = states.find(state => state.key === key)
@@ -119,4 +121,4 @@ export const PersistedRecoilRoot: FC<{
       ) : null}
     </PersistedStatesContext.Provider>
   )
-}
+})

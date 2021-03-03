@@ -13,3 +13,4 @@ export declare const extractMetadataFromName: (resourceId: string) => {
     direction: 'rtl' | 'ltr' | undefined;
     isbn?: string | undefined;
 };
+export declare const removeDirectiveFromString: (str: string) => string;

@@ -20,7 +20,7 @@ import { normalizedBookDownloadsState } from './download/states';
 import { AppLoading } from './AppLoading';
 import { FirstTimeExperienceTours } from './firstTimeExperience/FirstTimeExperienceTours';
 import { firstTimeExperienceState } from './firstTimeExperience/firstTimeExperienceStates';
-import { localSettingsState } from './settings/states';
+import { localSettingsState, localSettingsStateMigration } from './settings/states';
 import { DialogProvider } from './dialog';
 import { BlurContainer } from './books/BlurContainer';
 import { authState } from './auth/authState';
@@ -33,6 +33,10 @@ const localStatesToPersist = [
   authState,
 ]
 
+const localStateMigration = (state: { [key: string]: { value: any } }) => {
+  return localSettingsStateMigration(state)
+}
+
 export function App() {
   const [loading, setLoading] = useState(true)
   const [newServiceWorker, setNewServiceWorker] = useState<ServiceWorker | undefined>(undefined)
@@ -42,7 +46,11 @@ export function App() {
       <ThemeProvider theme={theme}>
         {loading && <AppLoading />}
         <RxDbProvider>
-          <PersistedRecoilRoot states={localStatesToPersist} onReady={() => setLoading(false)}>
+          <PersistedRecoilRoot
+            states={localStatesToPersist}
+            migration={localStateMigration}
+            onReady={() => setLoading(false)}
+          >
             <GoogleApiProvider>
               <AxiosProvider >
                 <DialogProvider>
