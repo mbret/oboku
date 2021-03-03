@@ -16,6 +16,7 @@ import { enrichedBookState } from './states';
 import { Cover } from './Cover';
 import { ReadingStateState } from '@oboku/shared';
 import { Report } from '../report';
+import { useModalNavitationControl } from '../navigation/helpers';
 
 export const bookActionDrawerState = atom<{
   openedWith: undefined | string,
@@ -32,16 +33,20 @@ export const BookActionsDrawer = () => {
   const refreshBookMetadata = useRefreshBookMetadata()
   const [updateBook] = useAtomicUpdateBook()
   const classes = useStyles()
+  const opened = !!bookId
 
-  const handleClose = () => {
-    setBookActionDrawerState({ openedWith: undefined })
-  };
+  const handleClose = useModalNavitationControl({
+    onExit: () => {
+      setBookActionDrawerState({ openedWith: undefined })
+    }
+  }, bookId)
+
 
   return (
     <Drawer
       anchor="bottom"
-      open={!!bookId}
-      onClose={handleClose}
+      open={opened}
+      onClose={() => handleClose()}
       transitionDuration={0}
     >
       {book && (
@@ -59,8 +64,9 @@ export const BookActionsDrawer = () => {
             {(actions?.includes('goToDetails') || !actions) && (
               <ListItem button
                 onClick={() => {
-                  handleClose()
-                  history.push(ROUTES.BOOK_DETAILS.replace(':id', book._id))
+                  handleClose(() => {
+                    history.push(ROUTES.BOOK_DETAILS.replace(':id', book._id))
+                  })
                 }}
               >
                 <ListItemText primary="Go to details" />
@@ -107,8 +113,9 @@ export const BookActionsDrawer = () => {
             {!actions && (
               <ListItem button
                 onClick={() => {
-                  handleClose()
-                  setOpenManageBookCollectionsDialog(bookId)
+                  handleClose(() => {
+                    setOpenManageBookCollectionsDialog(bookId)
+                  })
                 }}
               >
                 <ListItemIcon>
@@ -221,3 +228,4 @@ const useStyles = makeStyles((theme) => ({
   },
   topDetails: { display: 'flex', flexDirection: 'column', marginLeft: 10, overflow: 'hidden' }
 }))
+
