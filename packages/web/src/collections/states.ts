@@ -1,6 +1,8 @@
-import { atom, selector, selectorFamily } from "recoil";
+import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil";
 import { CollectionDocType } from '@oboku/shared'
 import { protectedBookIdsState } from "../books/states";
+import { removeDirectiveFromString } from "@oboku/shared/dist/directives";
+import { localSettingsState } from "../settings/states";
 
 export type Collection = CollectionDocType
 
@@ -9,14 +11,16 @@ export const normalizedCollectionsState = atom<Record<string, Collection | undef
   default: {}
 })
 
-export const collectionsAsArrayState = selector<Collection[]>({
+export const collectionsAsArrayState = selector({
   key: 'collectionsAsArrayState',
   get: ({ get }) => {
     const collections = get(normalizedCollectionsState)
 
     const ids = Object.keys(collections)
 
-    return ids.map(id => get(collectionState(id))) as NonNullable<typeof collections[number]>[]
+    type Collection = NonNullable<UnwrapRecoilValue<ReturnType<typeof collectionState>>>
+
+    return ids.map(id => get(collectionState(id))) as Collection[]
   }
 })
 
@@ -25,12 +29,16 @@ export const collectionState = selectorFamily({
   get: (id: string) => ({ get }) => {
     const collection = get(normalizedCollectionsState)[id]
     const bookIds = get(protectedBookIdsState)
+    const localSettings = get(localSettingsState)
 
     if (!collection) return undefined
 
     return {
       ...collection,
-      books: collection.books.filter(id => bookIds.includes(id))
+      books: collection.books.filter(id => bookIds.includes(id)),
+      displayableName: localSettings.hideDirectivesFromCollectionName
+        ? removeDirectiveFromString(collection.name)
+        : collection.name
     }
   }
 })

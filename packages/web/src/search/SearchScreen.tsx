@@ -1,12 +1,13 @@
 import { fade, InputBase, makeStyles, useTheme } from '@material-ui/core'
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { BookList } from '../books/bookList/BookList'
+import { useCSS } from '../common/utils'
 import { TopBarNavigation } from '../TopBarNavigation'
 import { useSearch } from './helpers'
 
 export const SearchScreen = () => {
   const { styles, classes } = useStyles()
-  const [search, setSearch, results] = useSearch()
+  const [value, search, results] = useSearch()
   const inputRef = useRef<HTMLElement>()
 
   const onSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
@@ -20,7 +21,7 @@ export const SearchScreen = () => {
         <form style={styles.search} autoComplete="off" onSubmit={onSubmit} >
           <InputBase
             placeholder="Alice in wonderland, myTag, ..."
-            value={search || ''}
+            value={value || ''}
             inputRef={inputRef as any}
             autoFocus
             classes={{
@@ -29,7 +30,7 @@ export const SearchScreen = () => {
             }}
             inputProps={{ 'aria-label': 'search' }}
             onChange={e => {
-              setSearch(e.target.value)
+              search(e.target.value)
             }}
           />
         </form>
@@ -61,27 +62,25 @@ const useStyles = () => {
   const theme = useTheme()
   const classes = useClasses()
 
-  const styles = useMemo(() => {
-    return {
-      container: {
-        display: "flex",
-        flexDirection: "column" as const,
-        overflow: "hidden",
-        flex: 1,
-        height: "100%"
+  const styles = useCSS(() => ({
+    container: {
+      display: "flex",
+      flexDirection: "column" as const,
+      overflow: "hidden",
+      flex: 1,
+      height: "100%"
+    },
+    search: {
+      position: 'relative',
+      borderRadius: theme.shape.borderRadius,
+      backgroundColor: fade(theme.palette.common.white, 0.15),
+      '&:hover': {
+        backgroundColor: fade(theme.palette.common.white, 0.25),
       },
-      search: {
-        position: 'relative',
-        borderRadius: theme.shape.borderRadius,
-        backgroundColor: fade(theme.palette.common.white, 0.15),
-        '&:hover': {
-          backgroundColor: fade(theme.palette.common.white, 0.25),
-        },
-        marginLeft: 0,
-        width: '100%',
-      } as React.CSSProperties,
-    }
-  }, [theme])
+      marginLeft: 0,
+      width: '100%',
+    },
+  }), [theme])
 
   return { styles, classes }
 };
