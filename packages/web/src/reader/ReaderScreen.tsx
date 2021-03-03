@@ -7,7 +7,7 @@ import { useHistory, useParams } from 'react-router-dom'
 
 import { EpubView } from './EpubView'
 import { useMeasure, useWindowSize } from "react-use";
-import { Box, Button, Link, Typography } from '@material-ui/core';
+import { Box, Button, Link, Typography, useTheme } from '@material-ui/core';
 import { Rendition, Location } from "epubjs";
 import { AppTourReader } from '../firstTimeExperience/AppTourReader';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
@@ -29,6 +29,7 @@ import { extractMetadataFromName } from '@oboku/shared/dist/directives';
 import { useWakeLock } from '../common/useWakeLock';
 import Hammer from 'hammerjs'
 import { useEpubjsPanRecognizerHook, useEpubjsVerticalCentererRendererHook } from './epubjsHelpers';
+import { useCSS } from '../common/utils';
 
 const screenfullApi = screenfull as Screenfull
 
@@ -39,6 +40,7 @@ export const ReaderScreen: FC<{}> = () => {
   const [rendition, setRendition] = useState<Rendition | undefined>(undefined)
   const { bookId } = useParams<{ bookId?: string }>()
   const { file, documentType, error: fileError, filename } = useFile(bookId || '-1')
+  const [isBookError, setIsBookError] = useState(false)
   const book = useRecoilValue(bookState(bookId || '-1'))
   const windowSize = useWindowSize()
   const [layout, setLayout] = useRecoilState(layoutState)
@@ -52,6 +54,7 @@ export const ReaderScreen: FC<{}> = () => {
   const localSettings = useRecoilValue(localSettingsState)
   const [containerMeasureRef, { width: containerWidth, height: containerHeight }] = useMeasure()
   const [readerContainerHammer, setReaderContainerHammer] = useState<HammerManager | undefined>(undefined)
+  const styles = useStyles()
 
   useGenerateLocations(rendition)
   useResetStateOnUnmount()
@@ -61,7 +64,7 @@ export const ReaderScreen: FC<{}> = () => {
   // epubjs specific hooks
   useEpubjsVerticalCentererRendererHook(rendition)
   useEpubjsPanRecognizerHook(rendition)
-  
+
   const wakeLockActive = useWakeLock()
 
   useEffect(() => {
@@ -219,13 +222,28 @@ export const ReaderScreen: FC<{}> = () => {
 
   if (fileError) {
     return (
-      <Box display="flex" flex={1} alignItems="center" justifyContent="center" flexDirection="column">
+      <div style={styles.infoContainer}>
         <Box mb={2}>
           <Typography variant="h6" align="center">Oups!</Typography>
           <Typography align="center">Sorry it looks like we are unable to load the book</Typography>
         </Box>
         <Button onClick={() => history.goBack()} variant="contained" color="primary">Go back</Button>
-      </Box>
+      </div>
+    )
+  }
+
+  if (isBookError) {
+    return (
+      <div style={styles.infoContainer}>
+        <Box mb={2}>
+          <Typography variant="h6" align="center">Oups!</Typography>
+          <Typography align="center">
+            Sorry it looks like we are unable to load the book.
+            If the problem persist try to restart the app.
+            If it still does not work, <Link href="https://docs.oboku.me/support" target="__blank">contact us</Link></Typography>
+        </Box>
+        <Button onClick={() => history.goBack()} variant="contained" color="primary">Go back</Button>
+      </div>
     )
   }
 
@@ -261,7 +279,7 @@ export const ReaderScreen: FC<{}> = () => {
                 setReaderContainerHammer(hammer => hammer ? hammer : new Hammer(ref))
               }
             }}
-            // onClick={e => onRenditionClick(e.nativeEvent)}
+          // onClick={e => onRenditionClick(e.nativeEvent)}
           >
             {documentType === 'epub' && (
               <>
@@ -286,6 +304,9 @@ export const ReaderScreen: FC<{}> = () => {
                   getRendition={setRendition}
                   location={firstLocation.current}
                   epubOptions={epubOptions}
+                  onError={() => {
+                    setIsBookError(true)
+                  }}
                 />
                 {!isBookReady && (
                   <BookLoading />
@@ -322,4 +343,22 @@ const useDirection = (rendition?: Rendition) => {
       setCurrentDirectionState('ltr')
     }
   }, [direction, setCurrentDirectionState])
+}
+
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
+    infoContainer: {
+      margin: 'auto',
+      maxWidth: 500,
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+      display: 'flex',
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column'
+    }
+  }), [theme])
 }

@@ -9,8 +9,9 @@ export const ComicReader = forwardRef<HTMLDivElement, {
   url: Blob | File
   location?: string,
   getRendition: (rendition: Rendition) => void
-  epubOptions: RenditionOptions
-}>(({ url, location, getRendition, epubOptions }, forwardRef) => {
+  epubOptions: RenditionOptions,
+  onError?: () => void
+}>(({ url, location, getRendition, epubOptions, onError }, forwardRef) => {
   const engine = useRef(new EpubJSInterface())
   const getRenditionRef = useRef(getRendition)
   getRenditionRef.current = getRendition
@@ -19,6 +20,17 @@ export const ComicReader = forwardRef<HTMLDivElement, {
     // @ts-ignore
     window.engine = engine.current
   }
+
+  useEffect(() => {
+    const subscription$ = engine.current.error$.subscribe((e) => {
+      Report.error(e)
+      onError && onError()
+    })
+
+    return () => {
+      subscription$.unsubscribe()
+    }
+  }, [onError])
 
   useEffect(() => {
     engine.current.load({ url }).catch(Report.error)

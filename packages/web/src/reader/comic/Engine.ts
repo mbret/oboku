@@ -3,7 +3,6 @@ import { filter, first } from 'rxjs/operators'
 import { load } from './Loader'
 import { createRenderer, Renderer } from './Renderer'
 import './style.css'
-import { Report } from '../../report'
 import { PromiseReturnType } from '../../types'
 import { RenditionOptions } from '../types'
 
@@ -23,6 +22,7 @@ export class Engine {
   #loaded = new BehaviorSubject<PromiseReturnType<typeof load> | undefined>(undefined)
   protected wrapper: HTMLDivElement | undefined
   #actions$ = new Subject<{ name: 'display', data: any }>()
+  #errorSubject$ = new Subject<Error>()
   protected epubOptions: RenditionOptions = {}
   public _currentLocation: {
     start: {
@@ -53,6 +53,10 @@ export class Engine {
    */
   public displayOptions = {
     fixedLayout: true
+  }
+
+  public get error$ () {
+    return this.#errorSubject$.asObservable();
   }
 
   /**
@@ -118,7 +122,7 @@ export class Engine {
         this.#loaded.next(loaded)
         this.files$.next(loaded.files)
       } catch (e) {
-        Report.error(e)
+        this.#errorSubject$.next(e)
       }
     }
 
