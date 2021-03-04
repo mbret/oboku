@@ -28,6 +28,7 @@ export const localSettingsStateMigration = (state: { [key: string]: { value: any
   [localSettingsState.key]: {
     value: {
       ...localSettingsStateDefaultValues,
+      // IMPORTANT, the state can be undefined if app is bootstrap the first time, need to type it here
       ...state[localSettingsState.key]?.value,
     }
   }

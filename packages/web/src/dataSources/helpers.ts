@@ -7,7 +7,7 @@ import { useRecoilCallback } from "recoil"
 import { plugins } from "./configure"
 import { useCallback, useMemo, useRef } from "react"
 import { UseDownloadHook } from "./types"
-import { useDialog } from "../dialog"
+import { useDialogManager } from "../dialog"
 import { useNetworkState } from "react-use"
 import { useSync } from "../rxdb/useSync"
 import { AtomicUpdateFunction } from "rxdb"
@@ -18,7 +18,7 @@ export const useSynchronizeDataSource = () => {
   const [updateDataSource] = useAtomicUpdateDataSource()
   const getDataSourceCredentials = useGetDataSourceCredentials()
   const network = useNetworkState()
-  const dialog = useDialog()
+  const dialog = useDialogManager()
   const sync = useSync()
 
   return useRecoilCallback(({ snapshot }) => async (_id: string) => {
@@ -96,7 +96,7 @@ export const useDataSourcePlugins = () => plugins
 
 export const useGetDataSourceCredentials = () => {
   const plugins = useDataSourcePlugins()
-  const dialog = useDialog()
+  const dialog = useDialogManager()
 
   // It's important to use array for plugins and be careful of the order since
   // it will trigger all hooks
@@ -128,7 +128,7 @@ export const useGetDataSourceCredentials = () => {
 
 export const useDownloadBookFromDataSource = () => {
   const plugins = useDataSourcePlugins()
-  const dialog = useDialog()
+  const dialog = useDialogManager()
 
   // It's important to use array for plugins and be careful of the order since
   // it will trigger all hooks

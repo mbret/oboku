@@ -16,7 +16,7 @@ import { useUpdateContentPassword } from './helpers';
 import { libraryState } from '../library/states';
 import { version } from '../../package.json'
 import { ROUTES } from '../constants';
-import { useDialog } from '../dialog';
+import { useDialogManager } from '../dialog';
 import { useIsDebugEnabled } from '../debug';
 import { toggleDebug } from '../debug';
 
@@ -34,7 +34,7 @@ export const ProfileScreen = () => {
   const resetFirstTimeExperience = useResetFirstTimeExperience()
   const setLibraryState = useSetRecoilState(libraryState)
   const theme = useTheme()
-  const dialog = useDialog()
+  const dialog = useDialogManager()
   const isDebugEnabled = useIsDebugEnabled()
 
   return (

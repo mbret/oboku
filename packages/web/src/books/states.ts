@@ -3,7 +3,7 @@ import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil";
 import { BookDocType } from '@oboku/shared'
 import { libraryState } from "../library/states";
 import { normalizedTagsState, protectedTagIdsState } from "../tags/states";
-import { normalizedLinksState } from "../links/states";
+import { linkState } from "../links/states";
 import { bookDownloadsState, DownloadState, normalizedBookDownloadsState } from "../download/states";
 import { collectionState, normalizedCollectionsState } from "../collections/states";
 import { DataSourceType } from "@oboku/shared";
@@ -43,7 +43,7 @@ export const enrichedBookState = selectorFamily({
 
     if (!book) return undefined
 
-    const firstLink = get(normalizedLinksState)[book.links[0]]
+    const firstLink = get(linkState(book.links[0]))
 
     return {
       ...book,
@@ -117,9 +117,8 @@ export const bookLinksState = selectorFamily({
   key: 'bookLinksState',
   get: (bookId: string) => ({ get }) => {
     const book = get(bookState(bookId))
-    const links = get(normalizedLinksState)
 
-    return book?.links?.map(id => links[id])
+    return book?.links?.map(id => get(linkState(id))) || []
   }
 })
 

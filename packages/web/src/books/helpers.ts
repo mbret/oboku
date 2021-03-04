@@ -15,7 +15,7 @@ import { sortByTitleComparator } from '@oboku/shared/dist/sorts'
 import { AtomicUpdateFunction } from "rxdb"
 import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
-import { useDialog } from "../dialog"
+import { useDialogManager } from "../dialog"
 import { useSync } from "../rxdb/useSync"
 
 export const useRemoveBook = () => {
@@ -67,10 +67,10 @@ export const useRefreshBookMetadata = () => {
   const database = useDatabase()
   const [updateBook] = useAtomicUpdateBook()
   const getDataSourceCredentials = useGetDataSourceCredentials()
-  const dialog = useDialog()
+  const dialog = useDialogManager()
   const network = useNetworkState()
   const sync = useSync()
-  
+
   return async (bookId: string) => {
     if (!network.online) {
       return dialog({ preset: 'OFFLINE' })

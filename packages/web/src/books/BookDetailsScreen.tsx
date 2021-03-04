@@ -17,6 +17,8 @@ import { tagsAsArrayState } from '../tags/states';
 import { normalizedLinksState } from '../links/states';
 import { useEditLink } from '../links/helpers';
 import { useCSS } from '../common/utils';
+import { useDataSourcePlugin } from '../dataSources/helpers';
+import { useDialogManager } from '../dialog';
 
 type ScreenParams = {
   id: string
@@ -32,11 +34,13 @@ export const BookDetailsScreen = () => {
   const { id } = useParams<ScreenParams>()
   const book = useRecoilValue(enrichedBookState(id))
   const tags = useRecoilValue(bookTagsState(id))
-  const links = useRecoilValue(bookLinksState(id))
+  const link = useRecoilValue(bookLinksState(id))[0]
   const collections = useRecoilValue(bookCollectionsState(id))
+  const dialog = useDialogManager()
   const setOpenManageBookCollectionsDialog = useSetRecoilState(openManageBookCollectionsDialog)
+  const dataSourcePlugin = useDataSourcePlugin(link?.type)
 
-  console.log('[BookDetailsScreen]', { book, tags, links })
+  console.log('[BookDetailsScreen]', { book, tags, link, dataSourcePlugin })
 
   return (
     <div style={{
@@ -137,15 +141,18 @@ export const BookDetailsScreen = () => {
           <MoreVertRounded />
         </ListItem>
       </List>
-      <List subheader={<ListSubheader>Links</ListSubheader>}>
-        {links?.map(item => (
+      <List subheader={<ListSubheader>Data source</ListSubheader>}>
+        {!!link && !!dataSourcePlugin && (
           <ListItem
-            key={item?._id}
+            key={link?._id}
             button
-            onClick={() => setIsLinkActionDrawerOpenWith(item?._id)}
+            onClick={() => dialog({ preset: 'NOT_IMPLEMENTED' })}
           >
+            <ListItemIcon>
+              <dataSourcePlugin.Icon />
+            </ListItemIcon>
             <ListItemText
-              primary={item?.resourceId}
+              primary={`${dataSourcePlugin?.name}`}
               primaryTypographyProps={{
                 style: {
                   paddingRight: 10,
@@ -154,11 +161,11 @@ export const BookDetailsScreen = () => {
                   textOverflow: 'ellipsis',
                 }
               }}
-              secondary="This is your metadata link"
+              secondary={`This book has been created from ${dataSourcePlugin.name}. Click to edit the data source`}
             />
             <MoreVertRounded />
           </ListItem>
-        ))}
+        )}
       </List>
       <TagsDialog id={id} open={isTagsDialogOpened} onClose={() => setIsTagsDialogOpened(false)} />
       <LinkActionsDrawer

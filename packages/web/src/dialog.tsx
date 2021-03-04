@@ -1,22 +1,63 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@material-ui/core";
-import { createContext, FC, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-type Preset = 'NOT_IMPLEMENTED' | 'OFFLINE'
-type DialogType = { title?: string, content?: string, id: string, preset?: Preset }
+type Preset = 'NOT_IMPLEMENTED' | 'OFFLINE' | 'CONFIRM'
+type DialogType = {
+  title?: string,
+  content?: string,
+  id: string,
+  preset?: Preset,
+  cancellable?: boolean,
+  cancelTitle?: string,
+  confirmTitle?: string,
+  onConfirm?: () => void,
+  onClose?: () => void
+  onCancel?: () => void
+}
 
 const DialogContext = createContext<DialogType[]>([])
 const ManageDialogContext = createContext({
   remove: (id: string) => { },
-  add: (options: { title?: string, content?: string, preset?: Preset }) => { },
+  add: (options: Omit<DialogType, 'id'>) => '-1' as string,
 })
 
-export const useDialog = () => {
+export const useDialogManager = () => {
   const { add } = useContext(ManageDialogContext)
 
   return useCallback(add, [add])
 }
 
-const enrichDialogWithPreset = (dialog?: DialogType) => {
+export const ObokuDialog: FC<Omit<DialogType, 'id'> & { open: boolean }> = ({ open, cancellable, content, onConfirm, preset, title, onClose }) => {
+  const dialog = useDialogManager()
+  const { remove } = useContext(ManageDialogContext)
+
+  console.log({ open, cancellable, content, onConfirm, preset, title, onClose })
+
+  useEffect(() => {
+    let id: string | undefined
+
+    if (open) {
+      id = dialog({
+        cancellable,
+        content,
+        onConfirm,
+        preset,
+        title,
+        onClose,
+      })
+    }
+
+    console.log(id)
+    return () => {
+      id && console.log('remove', id)
+      id && remove(id)
+    }
+  }, [open, cancellable, content, onConfirm, preset, title, dialog, onClose, remove])
+
+  return null
+}
+
+const enrichDialogWithPreset = (dialog?: DialogType): DialogType | undefined => {
   if (!dialog) return undefined
 
   switch (dialog.preset) {
@@ -30,6 +71,12 @@ const enrichDialogWithPreset = (dialog?: DialogType) => {
       title: 'Offline is great but...',
       content: 'You need to be online to proceed with this action'
     }
+    case 'CONFIRM': return {
+      ...dialog,
+      title: 'Hold on a minute!',
+      content: 'Are you sure you want to proceed with this action?',
+      cancellable: true,
+    }
     default: return dialog
   }
 }
@@ -40,11 +87,23 @@ const InnerDialog = () => {
 
   const currentDialog = enrichDialogWithPreset(dialogs[0])
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
+    console.log('asd', currentDialog)
+    currentDialog?.onClose && currentDialog.onClose()
     if (currentDialog) {
       remove(currentDialog.id)
     }
-  }
+  }, [remove, currentDialog])
+
+  const onCancel = useCallback(() => {
+    handleClose()
+    currentDialog?.onCancel && currentDialog.onCancel()
+  }, [handleClose, currentDialog])
+
+  const onConfirm = useCallback(() => {
+    handleClose()
+    currentDialog?.onConfirm && currentDialog.onConfirm()
+  }, [handleClose, currentDialog])
 
   return (
     <Dialog
@@ -58,18 +117,20 @@ const InnerDialog = () => {
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        {/* <Button onClick={handleClose} color="primary">
-          Disagree
-          </Button> */}
-        <Button onClick={handleClose} color="primary" autoFocus>
-          Ok
+        {currentDialog?.cancellable === true && (
+          <Button onClick={onCancel} color="primary">
+            {currentDialog.cancelTitle || 'Cancel'}
+          </Button>
+        )}
+        <Button onClick={onConfirm} color="primary" autoFocus>
+        {currentDialog?.confirmTitle || 'Ok'}
         </Button>
       </DialogActions>
     </Dialog>
   )
 }
 
-let id = 0
+let generatedId = 0
 
 /**
  * @todo use recoil or another way to not re-render all children
@@ -82,9 +143,11 @@ export const DialogProvider: FC<{}> = ({ children }) => {
     setDialogs(old => old.filter((dialog) => id !== dialog.id))
   }, [])
 
-  const add = useCallback((options: { title?: string, content?: string, preset?: Preset }) => {
-    id++
-    setDialogs(old => [...old, { ...options, id: id.toString() }])
+  const add = useCallback((options: Omit<DialogType, 'id'>) => {
+    generatedId++
+    setDialogs(old => [...old, { ...options, id: generatedId.toString() }])
+
+    return generatedId.toString()
   }, [])
 
   const controls = useMemo(() => ({
