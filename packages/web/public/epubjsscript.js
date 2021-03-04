@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 
-const hammertime = new Hammer(document.body);
+const hammertime = new Hammer(document.getElementsByTagName('html')[0]);
 hammertime.get('swipe').set({ direction: Hammer.DIRECTION_ALL })
 
 hammertime.on('panmove panstart panend', function (ev) {
