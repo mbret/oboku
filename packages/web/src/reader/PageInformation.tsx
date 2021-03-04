@@ -3,8 +3,9 @@ import { Box, Typography, useTheme } from '@material-ui/core';
 import { currentApproximateProgressState, currentChapterState, currentLocationState, currentPageState, layoutState, totalApproximativePagesState } from './states';
 import { useRecoilValue } from 'recoil';
 
-export const PageNumber: FC<{
-}> = () => {
+export const PageInformation: FC<{
+  style: React.CSSProperties
+}> = ({style}) => {
   const theme = useTheme()
   const currentPage = useRecoilValue(currentPageState)
   const totalApproximativePages = useRecoilValue(totalApproximativePagesState)
@@ -20,39 +21,41 @@ export const PageNumber: FC<{
   const totalPagesToDisplay = layout === 'fixed' ? totalApproximativePages : totalPagesCurrentChapter
 
   return (
-    <Box display="flex" alignItems="center" mb={2}
+    <div
       style={{
-        minHeight: 30,
+        ...style,
+        // minHeight: 30,
         ...layout === 'reflow' && {
-          minHeight: 60,
+          // minHeight: 50,
         },
         display: 'flex',
         justifyContent: 'center',
+        alignItems: 'center',
       }}>
       <>
         {layout === 'fixed'
           ? (
             <Typography style={{ fontWeight: theme.typography.fontWeightMedium }}>page {(currentPageToDisplay || 0)} of {totalPagesToDisplay}</Typography>
           ) : (
-            <Box justifyContent="center" alignItems="center" display="flex" flexDirection="column">
-              <Typography variant="body2">
+            <div style={{ width: '100%', justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
+              <Typography variant="body2" noWrap style={{ width: '90%', textAlign: 'center' }}>
                 {currentChapter?.label}
               </Typography>
-              <Box display="flex" mt={1}>
+              <div style={{ display: 'flex', marginTop: theme.spacing(1) }}>
                 <Typography >
                   page {(currentPageToDisplay || 0)} of {totalPagesToDisplay}
                 </Typography>
                 {currentApproximateProgress !== undefined && (
-                  <Box ml={2}>
+                  <div style={{ marginLeft: theme.spacing(2) }}>
                     <Typography style={{ fontWeight: theme.typography.fontWeightMedium }}>
                       ({displayableProgress} %)
                     </Typography>
-                  </Box>
+                  </div>
                 )}
-              </Box>
-            </Box>
+              </div>
+            </div>
           )}
       </>
-    </Box >
+    </div>
   )
 }

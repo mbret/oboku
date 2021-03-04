@@ -1,7 +1,7 @@
 import React from 'react'
 import { AppBar, Box, Typography, useTheme } from "@material-ui/core"
 import { useRecoilValue } from "recoil"
-import { PageNumber } from "./PageNumber"
+import { PageInformation } from "./PageInformation"
 import { isMenuShownState, currentPageState, totalApproximativePagesState, layoutState } from "./states"
 import { Scrubber } from './Scrubber'
 import { useTime } from '../common/useTime'
@@ -21,24 +21,26 @@ export const BottomBar = () => {
       style={{
         bottom: 0,
         top: 'auto',
-        height: 120,
+        height: 130,
         ...layout === 'reflow' && {
-          height: 140,
+          // height: 200,
         },
-        paddingBottom: 20,
+        paddingBottom: 40,
         visibility: isMenuShow ? 'visible' : 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         alignContent: 'center',
         position: 'fixed',
       }}
     >
       {isLoading ? (
-        <Typography style={{ fontWeight: theme.typography.fontWeightMedium }} align="center">Loading ...</Typography>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+          <Typography style={{ fontWeight: theme.typography.fontWeightMedium }} align="center">Loading ...</Typography>
+        </div>
       ) : (
           <>
-            <PageNumber />
+            <PageInformation style={{ flex: 1 }} />
             <Box pl={3} pr={3} display="flex">
               <Scrubber />
             </Box>
