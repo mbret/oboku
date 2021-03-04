@@ -28,7 +28,7 @@ export const localSettingsStateMigration = (state: { [key: string]: { value: any
   [localSettingsState.key]: {
     value: {
       ...localSettingsStateDefaultValues,
-      ...state[localSettingsState.key].value,
+      ...state[localSettingsState.key]?.value,
     }
   }
 })
