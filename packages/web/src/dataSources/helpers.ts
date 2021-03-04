@@ -159,3 +159,5 @@ export const useDownloadBookFromDataSource = () => {
 
   return useCallback(downloadBook, [getPluginFn, dialog])
 }
+
+export const useDataSourcePlugin = (type?: DataSourceType) => plugins.find(plugin => plugin.type === type)
