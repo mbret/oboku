@@ -14,7 +14,6 @@ const plugin: ObokuDataSourcePlugin = {
   UploadComponent: UploadComponent,
   useDownloadBook,
   useGetCredentials: () => async () => ({ data: {} }),
-  useRemoveBook: undefined,
 }
 
 export default plugin
