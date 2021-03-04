@@ -1,33 +1,43 @@
+import React, { FC, useState } from 'react'
+import { useAddBook } from '../../books/helpers'
+import { DataSourceType, plugins } from '@oboku/shared'
+import { useDataSourceHelpers } from '../helpers'
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from '@material-ui/core'
-import { DataSourceType } from '@oboku/shared'
-import React, { FC, useEffect, useState } from 'react'
 import * as yup from 'yup'
-import { useAddBook } from '../books/helpers'
 
 const schema = yup.object().shape({
   bookUrl: yup.string().url().required(),
 })
 
-export const UploadBookFromUriDialog: FC<{
-  open: boolean,
+export const UploadComponent: FC<{
   onClose: () => void
-}> = ({ open, onClose }) => {
+}> = ({ onClose }) => {
+  const [addBook] = useAddBook()
+  const { generateResourceId } = useDataSourceHelpers(plugins[DataSourceType.URI].uniqueResourceIdentifier,)
   const [bookUrl, setBookUrl] = useState(process.env.REACT_APP_HTTP_LINK || '')
   const isValid = schema.isValidSync({ bookUrl })
-  const [addBook] = useAddBook()
+  const filename = bookUrl.substring(bookUrl.lastIndexOf('/') + 1) || 'unknown'
 
   const handleConfirm = () => {
     setBookUrl('')
-    addBook({ link: { book: null, data: null, resourceId: bookUrl, type: DataSourceType.URI, createdAt: new Date().toISOString(), modifiedAt: null } })
+    addBook({
+      book: {
+        title: filename,
+      },
+      link: {
+        book: null,
+        data: null,
+        resourceId: generateResourceId(bookUrl),
+        type: DataSourceType.URI,
+        createdAt: new Date().toISOString(),
+        modifiedAt: null
+      }
+    })
     onClose()
   }
 
-  useEffect(() => {
-    setBookUrl('')
-  }, [open])
-
   return (
-    <Dialog onClose={onClose} open={open}>
+    <Dialog open fullScreen>
       <DialogTitle>Add a new book</DialogTitle>
       <DialogContent>
         <DialogContentText>

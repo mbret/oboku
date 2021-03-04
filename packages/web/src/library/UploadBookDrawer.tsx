@@ -1,7 +1,7 @@
 import React, { useState, FC } from 'react';
 import Dialog from '@material-ui/core/Dialog';
-import { DialogTitle, Drawer, List, ListItem, ListItemText, DialogActions, Button, ListItemIcon, SvgIcon } from '@material-ui/core';
-import { CheckCircleRounded, HttpRounded, RadioButtonUncheckedOutlined, SdStorageRounded } from '@material-ui/icons';
+import { DialogTitle, Drawer, List, ListItem, ListItemText, DialogActions, Button, ListItemIcon } from '@material-ui/core';
+import { CheckCircleRounded, RadioButtonUncheckedOutlined, SdStorageRounded } from '@material-ui/icons';
 import { getDisplayableReadingState, useToggleTag } from './helpers';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
 import { useRecoilState, useRecoilValue } from 'recoil';
@@ -12,7 +12,7 @@ import { useDataSourcePlugins } from '../dataSources/helpers';
 
 export const UploadBookDrawer: FC<{
   open: boolean,
-  onClose: (type?: 'uri' | 'device' | ReturnType<typeof useDataSourcePlugins>[number]['type'] | undefined) => void
+  onClose: (type?: 'device' | ReturnType<typeof useDataSourcePlugins>[number]['type'] | undefined) => void
 }> = ({ open, onClose }) => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] = useState(false)
@@ -35,15 +35,6 @@ export const UploadBookDrawer: FC<{
           <List>
             <ListItem
               button
-              onClick={() => onClose('uri')}
-            >
-              <ListItemIcon>
-                <HttpRounded />
-              </ListItemIcon>
-              <ListItemText primary="From uri" />
-            </ListItem>
-            <ListItem
-              button
               onClick={() => onClose('device')}
             >
               <ListItemIcon>
@@ -58,9 +49,7 @@ export const UploadBookDrawer: FC<{
                 key={dataSource.type}
               >
                 <ListItemIcon>
-                  <SvgIcon >
-                    <dataSource.Icon />
-                  </SvgIcon>
+                  <dataSource.Icon />
                 </ListItemIcon>
                 <ListItemText primary={`From ${dataSource.name}`} />
               </ListItem>

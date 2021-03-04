@@ -237,7 +237,7 @@ const registerOrUpdateCollection = async ({ item: { name, resourceId }, helpers,
   let collectionId: string | undefined
   /**
    * Try to get existing collection by same resource id
-   * If there is one we just update the folder name in case of
+   * If there is one and the name is different we update it
    */
   const sameCollectionByResourceId = await helpers.findOne('obokucollection', { selector: { resourceId, } })
   if (sameCollectionByResourceId) {
@@ -257,6 +257,7 @@ const registerOrUpdateCollection = async ({ item: { name, resourceId }, helpers,
       books: [],
       createdAt: new Date().toISOString(),
       modifiedAt: null,
+      dataSourceId: ctx.dataSourceId
     })
     collectionId = created.id
   }

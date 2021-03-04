@@ -6,7 +6,6 @@ import {
 } from '@material-ui/core';
 import { AppsRounded, TuneRounded, ListRounded, SortRounded, NoEncryptionRounded, BlurOffRounded } from '@material-ui/icons';
 import { LibraryFiltersDrawer } from './LibraryFiltersDrawer';
-import { UploadBookFromUriDialog } from '../upload/UploadBookFromUriDialog';
 import { UploadBookFromDataSource } from '../upload/UploadBookFromDataSource';
 import EmptyLibraryAsset from '../assets/empty-library.svg'
 import { useCSS, useMeasureElement } from '../common/utils';
@@ -29,7 +28,6 @@ export const LibraryBooksScreen = () => {
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const [isUploadBookDrawerOpened, setIsUploadBookDrawerOpened] = useRecoilState(isUploadBookDrawerOpenedState)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
-  const [isUploadBookFromUriDialogOpened, setIsUploadBookFromUriDialogOpened] = useState(false)
   const setIsUploadBookFromDeviceOpened = useSetRecoilState(isUploadBookFromDeviceOpenedFromState)
   const localSettings = useRecoilValue(localSettingsState)
   const [isUploadBookFromDataSourceDialogOpened, setIsUploadBookFromDataSourceDialogOpened] = useState<ReturnType<typeof useDataSourcePlugins>[number] | undefined>(undefined)
@@ -184,7 +182,6 @@ export const LibraryBooksScreen = () => {
             renderHeader={() => listHeader}
           />
         )}
-        <UploadBookFromUriDialog open={isUploadBookFromUriDialogOpened} onClose={() => setIsUploadBookFromUriDialogOpened(false)} />
         {isUploadBookFromDataSourceDialogOpened && <UploadBookFromDataSource openWith={isUploadBookFromDataSourceDialogOpened} onClose={() => setIsUploadBookFromDataSourceDialogOpened(undefined)} />}
         <SortByDialog
           value={library.sorting}
@@ -202,9 +199,6 @@ export const LibraryBooksScreen = () => {
           switch (type) {
             case 'device':
               setIsUploadBookFromDeviceOpened('local')
-              break
-            case 'uri':
-              setIsUploadBookFromUriDialogOpened(true)
               break
             default:
               const dataSource = dataSourcePlugins.find((dataSource) => type === dataSource.type)

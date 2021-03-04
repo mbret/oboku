@@ -1,8 +1,25 @@
 export type LinkDocType = {
   _id: string;
   _rev: string;
+  /**
+   * unique type.
+   * This is used to lookup plugin configurations
+   */
   type: DataSourceType;
+  /**
+   * Is used as unique identifier for the datasource specifically.
+   * This can be used to detect if an item already exist for a datasource
+   * during synchronization for example. 
+   * A good example is for example to use the google file/folder id as resource id.
+   * This way a quick lookup is possible to detect if the file/folder already exist.
+   * Datasources can use this field the way they want as long as they use the unique identifier helper
+   * function to generate/extract it.
+   */
   resourceId: string;
+  /**
+   * Extra data field that can be used by any datasource to store
+   * any form of data. Needs to be serialized as a string
+   */
   data: string | null;
   book: string | null;
   rx_model: 'link';
@@ -104,6 +121,7 @@ export type CollectionDocType = {
   rx_model: 'obokucollection';
   modifiedAt: string | null
   createdAt: string
+  dataSourceId: undefined | null | string
 };
 
 export function isTag(document: TagsDocType | unknown): document is TagsDocType {

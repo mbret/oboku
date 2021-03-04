@@ -87,7 +87,8 @@ export const useAtomicUpdateDataSource = () => {
 
 export const useDataSourceHelpers = (id: typeof plugins[number]['uniqueResourceIdentifier']) => {
   return useMemo(() => ({
-    generateResourceId: (resourceId: string) => `${id}-${resourceId}`
+    generateResourceId: (resourceId: string) => `${id}-${resourceId}`,
+    extractIdFromResourceId: (resourceId: string) => resourceId.replace(`${id}-`, ``)
   }), [id])
 }
 

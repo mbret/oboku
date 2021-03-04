@@ -16,6 +16,7 @@ exports.Errors = Errors;
 __exportStar(require("./docTypes"), exports);
 __exportStar(require("./epub"), exports);
 __exportStar(require("./constants"), exports);
+__exportStar(require("./plugins"), exports);
 var validators = require("./validators");
 exports.validators = validators;
 __exportStar(require("./errors"), exports);
