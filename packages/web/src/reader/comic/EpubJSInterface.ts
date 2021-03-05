@@ -1,8 +1,9 @@
 import { Engine } from "./Engine";
-import { Rendition, Contents, Book } from "epubjs"
+import { Rendition, Contents, Book,  } from "epubjs"
 export type RenditionOptions = NonNullable<Parameters<Book['renderTo']>[1]>
 
 type Loaded = Book['loaded']
+type Spine = Book['spine']
 type Section = Parameters<Rendition['injectIdentifier']>[1]
 
 class RenditionBridge {
@@ -87,22 +88,6 @@ class RenditionBridge {
     }
   }
 
-  /**
-   * @fallback epubjs
-   */
-  public get spine() {
-    return {
-      get: (page: number) => {
-        const file = (this.engine.files$.value || [])[page]
-        if (file) {
-          return {
-            href: file.name
-          }
-        }
-      },
-    }
-  }
-
   public destroy() {
     this.engine.destroy()
   }
@@ -124,7 +109,7 @@ class RenditionBridge {
   public direction(dir: string) { }
 
   public display(target?: string | number) {
-    return Promise.resolve()
+    return this.engine.display(target)
   }
 
   public flow(flow: string) { }
@@ -200,11 +185,29 @@ class RenditionBridge {
   public once(type: any, listener: any, ...args: any[]) { }
 }
 
+// packages/web/node_modules/epubjs/types/spine.d.ts
+class SpineBridge {
+  constructor(private engine: Engine) {
+    this.engine = engine
+  }
+
+  get(target?: string | number) {
+    const file = (this.engine.files$.value || [])[target || 0]
+    if (file) {
+      return {
+        href: file.name
+      }
+    }
+  }
+}
+
 class BookBridge {
   engine: Engine
+  spine: SpineBridge
 
   constructor(engine: Engine) {
     this.engine = engine
+    this.spine = new SpineBridge(engine)
   }
 
   public get packaging() {

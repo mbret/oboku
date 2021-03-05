@@ -172,15 +172,12 @@ export class Engine {
     })
   }
 
-  public display(path?: string) {
-    this.#actions$.next({ name: 'display', data: { path } })
-  }
-
-  protected onDisplay({ path }: { path?: string }) {
+  protected onDisplay({ path }: { path?: string | number }) {
     this.files$
       .pipe(filter(value => value !== undefined))
       .pipe(first())
       .subscribe((files = []) => {
+        if (typeof path === 'number') return
         if (this._currentLocation.start.cfi && this._currentLocation.start.cfi === path) return
         const defaultFile = files[0]
         if (path) {
@@ -209,6 +206,10 @@ export class Engine {
       this.renderFile((this.files$.value || [])[index - 1])
     }
     return Promise.resolve()
+  }
+
+  public display(path?: string | number) {
+    this.#actions$.next({ name: 'display', data: { path } })
   }
 
   public destroy() {
