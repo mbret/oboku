@@ -22,10 +22,10 @@ export const DrivePicker: FC<{
       // type: "file"
       // url: "https://drive.google.com/file/d/1CBRtljItFwiBfvbGPv51UBKI1016wCOn/view?usp=drive_web"
     }[]
-  }) => void,
+  } | Error) => void,
   select: 'folder' | 'file'
 }> = ({ show, onClose, select }) => {
-  const [getSignedGapi, gapi] = useGetLazySignedGapi()
+  const [getSignedGapi, gapi, { error }] = useGetLazySignedGapi()
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
   const accessToken = gapi?.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token
@@ -53,6 +53,12 @@ export const DrivePicker: FC<{
     return picker.build()
 
   }, [accessToken, select])
+
+  useEffect(() => {
+    if (error) {
+      onClose(error)
+    }
+  }, [error, onClose])
 
   useEffect(() => {
     if (show && !accessToken) {

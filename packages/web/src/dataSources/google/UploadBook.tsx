@@ -14,7 +14,9 @@ export const UploadBook: FC<{
   const { generateResourceId } = useDataSourceHelpers(UNIQUE_RESOURCE_IDENTIFIER)
 
   const onPick: ComponentProps<typeof DrivePicker>['onClose'] = async (data) => {
-    if (data.action !== 'loaded') {
+    if (data instanceof Error) {
+      onClose()
+    } else if (data.action !== 'loaded') {
       onClose()
       if (data.action === 'picked') {
         const docs = data?.docs || []

@@ -110,22 +110,29 @@ export const GoogleApiProvider: FC = ({ children }) => {
 
 export const useGetLazySignedGapi = () => {
   const [signedGoogleApi, , signIn] = useContext(GoogleAPIContext)
+  const [error, setError] = useState<undefined | Error>(undefined)
 
   const getter = useCallback(async () => {
-    const gapi = signedGoogleApi || await signIn()
-    if (gapi && gapi.auth2.getAuthInstance().isSignedIn.get()) {
-      if (!gapi.auth2.getAuthInstance().currentUser.get().hasGrantedScopes(SCOPE)) {
-        await gapi.auth2.getAuthInstance().currentUser.get().grant({ scope: SCOPE })
-      }
+    setError(undefined)
+    try {
+      const gapi = signedGoogleApi || await signIn()
+      if (gapi && gapi.auth2.getAuthInstance().isSignedIn.get()) {
+        if (!gapi.auth2.getAuthInstance().currentUser.get().hasGrantedScopes(SCOPE)) {
+          await gapi.auth2.getAuthInstance().currentUser.get().grant({ scope: SCOPE })
+        }
 
-      return {
-        gapi: gapi,
-        credentials: gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse()
+        return {
+          gapi: gapi,
+          credentials: gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse()
+        }
       }
+    } catch (e) {
+      console.error(e)
+      setError(new Error(e?.error))
     }
-  }, [signedGoogleApi, signIn])
+  }, [signedGoogleApi, signIn, setError])
 
-  return [getter, signedGoogleApi] as [typeof getter, typeof signedGoogleApi]
+  return [getter, signedGoogleApi, { error }] as [typeof getter, typeof signedGoogleApi, { error: typeof error }]
 }
 
 export const useGetCredentials = () => {
@@ -136,7 +143,7 @@ export const useGetCredentials = () => {
       const auth = (await getLazySignedGapi())?.credentials
 
       if (!auth) throw new Error('unknown')
-      
+
       return { data: auth as unknown as { [key: string]: string } }
     } catch (e) {
       if (e?.error === 'popup_closed_by_user') {
