@@ -49,9 +49,12 @@ export const useDownloadBook = () => {
         }
 
         const book = await database?.book.findOne({ selector: { _id: bookId } }).exec()
-        const firstLink = await database?.link.findOne({ selector: { _id: book?.links[0] } }).exec()
+        const firstLink = await database?.link.findOne({ selector: { _id: (book?.links[0] || null) } }).exec()
 
-        if (!firstLink) throw new Error('invalid link')
+        if (!firstLink) {
+          // @todo add dialog to tell book is broken
+          throw new Error('invalid link')
+        }
 
         // local file
         if (firstLink.type === DataSourceType.FILE && file) {
