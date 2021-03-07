@@ -11,6 +11,7 @@ import { booksAsArrayState } from './books/states';
 import { ReadingStateState } from '@oboku/shared';
 import { useBooksSortedBy } from './books/helpers';
 import { useCSS } from './common/utils';
+import { useTranslation } from 'react-i18next'
 
 export const HomeScreen = () => {
   const classes = useStyles();
@@ -21,6 +22,7 @@ export const HomeScreen = () => {
   const recentlyAddedBooks = useRecentlyAddedBooks()
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
   const itemWidth = 150
+  const { t } = useTranslation()
 
   console.log('[HomeScreen]', itemWidth / adjustedRatioWhichConsiderBottom)
 
@@ -57,8 +59,8 @@ export const HomeScreen = () => {
               size="large"
               onClick={() => history.replace(ROUTES.LIBRARY_BOOKS)}
             >
-              Explore my library
-          </Button>
+              {t(`button.title.exploreMyLibrary`)}
+            </Button>
           </div>
         )}
         {continueReadingBooks.length > 0 && (

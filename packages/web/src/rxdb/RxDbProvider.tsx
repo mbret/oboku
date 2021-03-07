@@ -1,4 +1,5 @@
 import React, { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useMountedState } from 'react-use'
 import { PromiseReturnType } from '../types'
 import { createDatabase } from './databases'
 
@@ -9,7 +10,8 @@ const DatabaseContext = createContext<{
 
 export const RxDbProvider: FC = ({ children }) => {
   const [db, setDb] = useState<PromiseReturnType<typeof createDatabase> | undefined>(undefined)
-
+  const isMounted = useMountedState()
+  
   const reCreate = useCallback(async () => {
     setDb(undefined)
     // at this point we expect useDatabase to be rendered
@@ -17,17 +19,22 @@ export const RxDbProvider: FC = ({ children }) => {
     // the db while it's being recreated
     await db?.remove()
     const newDb = await createDatabase()
-    setDb(newDb)
+
+    if (isMounted()) {
+      setDb(newDb)
+    }
 
     return newDb
-  }, [db])
+  }, [db, isMounted])
 
   useEffect(() => {
     (async () => {
       const newDb = await createDatabase()
-      setDb(newDb)
+      if (isMounted()) {
+        setDb(newDb)
+      }
     })()
-  }, [setDb])
+  }, [setDb, isMounted])
 
   const contextValue = useMemo(() => ({
     db,

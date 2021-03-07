@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, Suspense, useEffect, useState } from 'react';
 import { RoutineProcess } from './RoutineProcess';
 import { AppNavigator } from './navigation/AppNavigator';
 import { ThemeProvider } from '@material-ui/core';
@@ -24,6 +24,8 @@ import { localSettingsState, localSettingsStateMigration } from './settings/stat
 import { DialogProvider } from './dialog';
 import { BlurContainer } from './books/BlurContainer';
 import { authState } from './auth/authState';
+import './i18n'
+import { ErrorBoundary } from '@sentry/react';
 
 const localStatesToPersist = [
   libraryState,
@@ -42,38 +44,40 @@ export function App() {
   const [newServiceWorker, setNewServiceWorker] = useState<ServiceWorker | undefined>(undefined)
 
   return (
-    <>
+    <ErrorBoundary onError={e => { console.error(e) }}>
       <ThemeProvider theme={theme}>
-        {loading && <AppLoading />}
-        <RxDbProvider>
-          <PersistedRecoilRoot
-            states={localStatesToPersist}
-            migration={localStateMigration}
-            onReady={() => setLoading(false)}
-          >
-            <GoogleApiProvider>
-              <AxiosProvider >
-                <DialogProvider>
-                  <TourProvider>
-                    <AppNavigator />
-                    <FirstTimeExperienceTours />
-                    <UnlockLibraryDialog />
-                    <ManageBookCollectionsDialog />
-                    <RoutineProcess />
-                  </TourProvider>
-                  <UpdateAvailableDialog serviceWorker={newServiceWorker} />
-                  <RecoilSyncedWithDatabase />
-                  <BlockingBackdrop />
-                </DialogProvider>
-              </AxiosProvider>
-            </GoogleApiProvider>
-            {/* <UserFeedback /> */}
-          </PersistedRecoilRoot>
-        </RxDbProvider>
+        <Suspense fallback={<AppLoading />}>
+          {loading && <AppLoading />}
+          <RxDbProvider>
+            <PersistedRecoilRoot
+              states={localStatesToPersist}
+              migration={localStateMigration}
+              onReady={() => setLoading(false)}
+            >
+              <GoogleApiProvider>
+                <AxiosProvider >
+                  <DialogProvider>
+                    <TourProvider>
+                      <AppNavigator />
+                      <FirstTimeExperienceTours />
+                      <UnlockLibraryDialog />
+                      <ManageBookCollectionsDialog />
+                      <RoutineProcess />
+                    </TourProvider>
+                    <UpdateAvailableDialog serviceWorker={newServiceWorker} />
+                    <RecoilSyncedWithDatabase />
+                    <BlockingBackdrop />
+                  </DialogProvider>
+                </AxiosProvider>
+              </GoogleApiProvider>
+              {/* <UserFeedback /> */}
+            </PersistedRecoilRoot>
+          </RxDbProvider>
+        </Suspense>
       </ThemeProvider>
       <ServiceWorkerRegistrator onUpdateAvailable={sw => setNewServiceWorker(sw)} />
       <BlurContainer />
-    </>
+    </ErrorBoundary>
   );
 }
 

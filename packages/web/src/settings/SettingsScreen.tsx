@@ -21,6 +21,12 @@ export const SettingsScreen = () => {
         <TopBarNavigation title={'Settings'} />
         <List >
           <ListSubheader disableSticky>General</ListSubheader>
+          <ListItem>
+            <ListItemText
+              primary="Language"
+              secondary={navigator.language}
+            />
+          </ListItem>
           <ListItem
             button
             onClick={() => {

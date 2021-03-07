@@ -9,6 +9,7 @@ import { validators } from '@oboku/shared'
 import { useSignIn } from './helpers';
 import { ServerError } from '../errors';
 import { CenteredBox } from '../common/CenteredBox';
+import { useTranslation } from 'react-i18next';
 
 export const LoginScreen = () => {
   const history = useHistory()
@@ -17,6 +18,7 @@ export const LoginScreen = () => {
   const [signIn, { error }] = useSignIn()
   const theme = useTheme()
   const isValid = useIsValid(email, password)
+  const { t } = useTranslation()
   let hasInvalidInput = false
   let hasUnknownError = false
 
@@ -85,12 +87,12 @@ export const LoginScreen = () => {
           type="submit"
           onClick={onSubmit}
         >
-          Login
+          {t(`button.title.login`)}
         </Button>
         <div style={{ textAlign: 'center', margin: theme.spacing(2) }}>
           <Link color="textPrimary" href="#" onClick={() => alert('Not implemented yet')}>
             I forgot my password
-            </Link>
+          </Link>
         </div>
       </form>
       <OrDivider style={{

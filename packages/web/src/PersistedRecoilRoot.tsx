@@ -5,6 +5,7 @@ import { Subject, asyncScheduler } from "rxjs";
 import { throttleTime } from 'rxjs/operators'
 import { Report } from "./report";
 import { useCallback } from "react";
+import { useMountedState } from "react-use";
 
 const PersistedStatesContext = createContext<RecoilState<any>[]>([])
 
@@ -81,6 +82,7 @@ export const PersistedRecoilRoot: FC<{
 }> = memo(({ children, states = [], onReady, migration = (state) => state }) => {
   const [initialeState, setInitialState] = useState<{ [key: string]: { value: any } } | undefined>(undefined)
   const alreadyLoaded = useRef(!!initialeState)
+  const isMounted = useMountedState()
   // const alreadyInitialized = useRef(false)
   // const alreadyInitializedV = alreadyInitialized.current
 
@@ -90,11 +92,13 @@ export const PersistedRecoilRoot: FC<{
         const restored = await localforage.getItem<string>(`local-user`)
         alreadyLoaded.current = true
         const loadedState = restored ? JSON.parse(restored) as { [key: string]: { value: any } } : {}
-        setInitialState(migration(loadedState))
-        onReady()
+        if (isMounted()) {
+          setInitialState(migration(loadedState))
+          onReady()
+        }
       }
     })()
-  }, [onReady, migration])
+  }, [onReady, migration, isMounted])
 
   const initializeState = useCallback(({ set }: MutableSnapshot) => {
     console.log('PersistedRecoilRoot initializeState cb', initialeState)
