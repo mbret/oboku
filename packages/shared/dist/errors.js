@@ -13,13 +13,14 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 exports.__esModule = true;
-exports.ObokuSharedError = exports.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED = exports.ERROR_DATASOURCE_UNAUTHORIZED = exports.ERROR_DATASOURCE_UNKNOWN = exports.ERROR_INVALID_BETA_CODE = exports.BAD_USER_INPUT = exports.ERROR_EMAIL_TAKEN = void 0;
+exports.ObokuSharedError = exports.ERROR_DATASOURCE_NETWORK_UNREACHABLE = exports.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED = exports.ERROR_DATASOURCE_UNAUTHORIZED = exports.ERROR_DATASOURCE_UNKNOWN = exports.ERROR_INVALID_BETA_CODE = exports.BAD_USER_INPUT = exports.ERROR_EMAIL_TAKEN = void 0;
 exports.ERROR_EMAIL_TAKEN = '1000';
 exports.BAD_USER_INPUT = '2000';
 exports.ERROR_INVALID_BETA_CODE = '3000';
 exports.ERROR_DATASOURCE_UNKNOWN = '4000';
 exports.ERROR_DATASOURCE_UNAUTHORIZED = '4001';
 exports.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED = '4002';
+exports.ERROR_DATASOURCE_NETWORK_UNREACHABLE = '4003';
 var ObokuSharedError = /** @class */ (function (_super) {
     __extends(ObokuSharedError, _super);
     function ObokuSharedError(code, previousError) {

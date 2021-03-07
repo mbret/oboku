@@ -5,7 +5,6 @@
 import { RxCollection, RxDatabase, RxDatabaseCreator, RxJsonSchema, RxReplicationState, SyncOptions } from 'rxdb';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { overwritable } from 'rxdb/plugins/key-compression';
-import { resolve } from 'path';
 
 type ReplicationSyncOptions = Omit<SyncOptions, 'remote'> & {
   remote: PouchDB.Database<{}> | string

@@ -44,10 +44,7 @@ export const useSync = () => {
 
       replication$?.error$
         .pipe(first())
-        .subscribe(error => {
-          console.log('error', error)
-          reject(error)
-        })
+        .subscribe(reject)
     })
   }, [client, dbName, database])
 }

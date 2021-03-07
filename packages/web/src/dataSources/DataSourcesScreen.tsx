@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { Link, Button, Toolbar, List, ListItem, ListItemText, SvgIcon, ListItemIcon, Typography, Box, useTheme } from '@material-ui/core';
+import { Link, Button, Toolbar, List, ListItem, ListItemText, SvgIcon, ListItemIcon, Typography, useTheme } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import { DataSourcesAddDrawer } from './DataSourcesAddDrawer';
 import { DataSourcesActionsDrawer } from './DataSourcesActionsDrawer';
@@ -28,7 +28,7 @@ export const DataSourcesScreen = () => {
         overflow: 'scroll',
         flexFlow: 'column',
       }}>
-        <TopBarNavigation title={'Data sources'} showBack={false} />
+        <TopBarNavigation title={'Data sources links'} showBack={false} />
         <Alert severity="info">
           Automatically add books from an external source (eg: Google Drive shared folder). <Link href="https://docs.oboku.me" target="__blank">Learn more</Link>
         </Alert>
@@ -41,7 +41,7 @@ export const DataSourcesScreen = () => {
             color="primary"
             onClick={() => setIsDrawerOpened(true)}
           >
-            Add a new source
+            Add a new link
         </Button>
         </Toolbar>
         <List>
@@ -64,15 +64,18 @@ export const DataSourcesScreen = () => {
                       ? 'Syncing...'
                       : item?.lastSyncErrorCode
                         ? (
-                          <Box flexDirection="row" display="flex">
+                          <div style={{ flexDirection: 'row', display: 'flex', }}>
                             <Error fontSize="small" style={{ marginRight: theme.spacing(1) }} />
                             <Typography variant="body2">
                               {`Sync did not succeed`}
                               {item?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED && (
                                 `. Your datasource seems to have exceeded its allowed access limit`
                               )}
+                              {item?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_NETWORK_UNREACHABLE && (
+                                `. Our server seems unreachable, make sure you are online to start the synchronization`
+                              )}
                             </Typography>
-                          </Box>
+                          </div>
                         )
                         : item?.lastSyncedAt
                           ? `Last synced at ${(new Date(item?.lastSyncedAt)).toDateString()}`

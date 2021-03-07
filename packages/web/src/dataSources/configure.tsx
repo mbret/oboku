@@ -37,6 +37,7 @@ export const configureDataSources = () => {
     AddDataSource: dropboxPlugin.AddDataSource,
     useGetCredentials: useGetDropboxCredentials,
     useDownloadBook: dropboxPlugin.useDownloadBook,
+    useRemoveBook: dropboxPlugin.useRemoveBook,
     synchronizable: true,
   })
 
@@ -49,6 +50,7 @@ export const configureDataSources = () => {
     AddDataSource: googlePlugin.GoogleDriveDataSource,
     useGetCredentials: useGetGoogleCredentials,
     useDownloadBook: googlePlugin.useDownloadBook,
+    useRemoveBook: googlePlugin.useRemoveBook,
     synchronizable: true,
   })
 

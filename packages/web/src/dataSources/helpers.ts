@@ -42,7 +42,7 @@ export const useSynchronizeDataSource = () => {
         await sync(['datasource'])
         await client.syncDataSource(_id, credentials.data)
       } catch (e) {
-        await updateDataSource(_id, old => ({ ...old, syncStatus: null, lastSyncErrorCode: Errors.ERROR_DATASOURCE_UNKNOWN }))
+        await updateDataSource(_id, old => ({ ...old, syncStatus: null, lastSyncErrorCode: Errors.ERROR_DATASOURCE_NETWORK_UNREACHABLE }))
         throw e
       }
     } catch (e) {
@@ -161,3 +161,38 @@ export const useDownloadBookFromDataSource = () => {
 }
 
 export const useDataSourcePlugin = (type?: DataSourceType) => plugins.find(plugin => plugin.type === type)
+
+export const useRemoveBookFromDataSource = () => {
+  const plugins = useDataSourcePlugins()
+  const db = useDatabase()
+
+  // It's important to use array for plugins and be careful of the order since
+  // it will trigger all hooks
+  const preparedHooks = plugins.map(plugin => ({
+    type: plugin.type,
+    useRemoveBook: plugin.useRemoveBook && plugin.useRemoveBook()
+  }))
+
+  const getPluginFn = useRef<typeof preparedHooks>([])
+
+  getPluginFn.current = preparedHooks
+
+  return useCallback(async (bookId: string) => {
+    const book = await db?.book.findOne({ selector: { _id: bookId } }).exec()
+    const link = await db?.link.findOne({ selector: { _id: book?.links[0] || null } }).exec()
+
+    if (!link) {
+      throw new Error('Link not found')
+    }
+
+    const found = getPluginFn.current.find(plugin => plugin.type === link.type)
+
+    if (!found || !found.useRemoveBook) {
+      throw new Error('no datasource found for this link or useRemoveBook is undefined')
+    }
+
+    const res = await found.useRemoveBook(link)
+
+    return res
+  }, [getPluginFn, db])
+}

@@ -91,7 +91,8 @@ export type BookDocType = {
   collections: string[];
   title: string | null;
   rx_model: 'book';
-  modifiedAt: string | null
+  modifiedAt: string | null,
+  isAttachedToDataSource: boolean
 };
 
 export type TagsDocType = {

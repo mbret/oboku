@@ -1,5 +1,5 @@
 import React, { FC } from 'react'
-import { Box, Typography, useTheme } from '@material-ui/core';
+import { Typography, useTheme } from '@material-ui/core';
 import { currentApproximateProgressState, currentChapterState, currentLocationState, currentPageState, layoutState, totalApproximativePagesState } from './states';
 import { useRecoilValue } from 'recoil';
 

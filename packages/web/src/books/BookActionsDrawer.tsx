@@ -16,7 +16,10 @@ import { enrichedBookState } from './states';
 import { Cover } from './Cover';
 import { ReadingStateState } from '@oboku/shared';
 import { Report } from '../report';
+import { useDialogManager } from '../dialog';
+import { linkState } from '../links/states';
 import { useModalNavitationControl } from '../navigation/helpers';
+import { useDataSourcePlugin } from '../dataSources/helpers';
 
 export const bookActionDrawerState = atom<{
   openedWith: undefined | string,
@@ -28,11 +31,14 @@ export const BookActionsDrawer = () => {
   const [{ openedWith: bookId, actions }, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const history = useHistory()
   const book = useRecoilValue(enrichedBookState(bookId || '-1'))
+  const bookLink = useRecoilValue(linkState(book?.links[0] || '-1'))
   const removeDownloadFile = useRemoveDownloadFile()
   const removeBook = useRemoveBook()
   const refreshBookMetadata = useRefreshBookMetadata()
   const [updateBook] = useAtomicUpdateBook()
   const classes = useStyles()
+  const plugin = useDataSourcePlugin(bookLink?.type)
+  const dialog = useDialogManager()
   const opened = !!bookId
 
   const handleClose = useModalNavitationControl({
@@ -41,6 +47,53 @@ export const BookActionsDrawer = () => {
     }
   }, bookId)
 
+  const onRemovePress = useCallback(() => {
+    handleClose(() => {
+      if (book?._id) {
+        if (!book?.isAttachedToDataSource || !bookLink) {
+          dialog({
+            preset: 'CONFIRM',
+            title: 'Delete a book',
+            content: `You are about to delete a book, are you sure ?`,
+            onConfirm: () => {
+              removeBook({ id: book._id })
+            }
+          })
+        } else if (book?.isAttachedToDataSource && !bookLink.isRemovableFromDataSource) {
+          dialog({
+            preset: 'CONFIRM',
+            title: 'Delete a book',
+            content: `This book has been synchronized with one of your ${plugin?.name} data source. Oboku does not support deletion from ${plugin?.name} directly so consider deleting it there manually if you don't want the book to be synced again`,
+            onConfirm: () => {
+              removeBook({ id: book._id })
+            },
+          })
+        } else {
+          dialog({
+            preset: 'CONFIRM',
+            title: 'Delete a book',
+            content: `This book has been synchronized with one of your ${plugin?.name} data source. You can delete it from both oboku and ${plugin?.name} which will prevent the book to be synced again`,
+            actions: [
+              {
+                type: 'confirm',
+                title: 'both',
+                onClick: () => {
+                  removeBook({ id: book._id, withRemoteDeletion: true })
+                }
+              },
+              {
+                type: 'confirm',
+                title: 'only oboku',
+                onClick: () => {
+                  removeBook({ id: book._id })
+                }
+              }
+            ],
+          })
+        }
+      }
+    })
+  }, [handleClose, book, dialog, removeBook, bookLink, plugin])
 
   return (
     <Drawer
@@ -180,12 +233,7 @@ export const BookActionsDrawer = () => {
             <>
               <Divider />
               <List>
-                <ListItem button
-                  onClick={() => {
-                    handleClose()
-                    bookId && removeBook({ id: bookId })
-                  }}
-                >
+                <ListItem button onClick={onRemovePress}  >
                   <ListItemIcon>
                     <DeleteForeverRounded />
                   </ListItemIcon>

@@ -98,7 +98,16 @@ const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, i
     if (existingLink?.book) {
       existingBook = await helpers.findOne('book', { selector: { _id: existingLink.book } })
 
-      logger.log(`createOrUpdateBook "${item.name}": existingBook`, existingBook?._id)
+      if (existingBook) {
+        if (!existingBook.isAttachedToDataSource) {
+          logger.log(`createOrUpdateBook "${item.name}": isAttachedToDataSource is false and therefore will be migrated as true`, existingBook._id)
+          await helpers.atomicUpdate('book', existingBook._id, data => ({
+            ...data,
+            isAttachedToDataSource: true
+          }))
+        }
+        logger.log(`createOrUpdateBook "${item.name}": existingBook`, existingBook._id)
+      }
     }
 
     if (!existingLink || !existingBook) {
@@ -106,7 +115,8 @@ const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, i
       if (!bookId) {
         logger.log(`createOrUpdateBook "${item.name}": new file detected, creating book`)
         const insertedBook = await helpers.createBook({
-          title: item.name
+          title: item.name,
+          isAttachedToDataSource: true,
         })
         bookId = insertedBook.id
       }
@@ -173,7 +183,7 @@ const synchronizeBookWithParentCollections = async (bookId: string, parents: Syn
         }
       }
     })
-  
+
     if (collectionsThatHaveNotThisBookAsReferenceYet.length > 0) {
       logger.log(`synchronizeBookWithParentCollections ${bookId} has ${collectionsThatHaveNotThisBookAsReferenceYet.length} collection missing its reference`)
       await Promise.all(

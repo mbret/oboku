@@ -1,5 +1,6 @@
 import { atom, selector, selectorFamily } from "recoil";
-import { DataSourceType, LinkDocType } from '@oboku/shared'
+import { LinkDocType } from '@oboku/shared'
+import { plugins } from "../dataSources/configure";
 
 export const normalizedLinksState = atom<Record<string, LinkDocType | undefined>>({
   key: 'linksState',
@@ -23,9 +24,12 @@ export const linkState = selectorFamily({
 
     if (!link) return undefined
 
+    const linkPlugin = plugins.find(plugin => plugin.type === link.type)
+
     return {
       ...link,
-      hasRemoteDataSource: ![DataSourceType.FILE, DataSourceType.URI].includes(link.type)
+      isSynchronizable: !!linkPlugin?.synchronizable,
+      isRemovableFromDataSource: !!linkPlugin?.useRemoveBook,
     }
   }
 })

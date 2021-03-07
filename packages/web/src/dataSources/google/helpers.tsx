@@ -12,8 +12,12 @@ const defaultContextValue: ContextValue = [undefined, 'loading', async () => und
 
 const GoogleAPIContext = React.createContext(defaultContextValue)
 
-const SCOPE = `https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly`
-// const SCOPE = `https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/drive.file`
+// const SCOPE = `https://www.googleapis.com/auth/drive.metadata.readonly https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly`
+// const SCOPE = `https://www.googleapis.com/auth/drive.file`
+
+// We need this scope because we need to read / download / delete files outside of oboku scope.
+// This is one of the most sensitive scope.
+const SCOPE = `https://www.googleapis.com/auth/drive`
 
 /**
  * 

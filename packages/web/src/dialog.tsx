@@ -1,7 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@material-ui/core";
 import { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-type Preset = 'NOT_IMPLEMENTED' | 'OFFLINE' | 'CONFIRM'
+type Preset = 'NOT_IMPLEMENTED' | 'OFFLINE' | 'CONFIRM' | 'UNKNOWN_ERROR'
 type DialogType = {
   title?: string,
   content?: string,
@@ -10,6 +10,7 @@ type DialogType = {
   cancellable?: boolean,
   cancelTitle?: string,
   confirmTitle?: string,
+  actions?: { title: string, type: 'confirm', onClick: () => void }[]
   onConfirm?: () => void,
   onClose?: () => void
   onCancel?: () => void
@@ -31,8 +32,6 @@ export const ObokuDialog: FC<Omit<DialogType, 'id'> & { open: boolean }> = ({ op
   const dialog = useDialogManager()
   const { remove } = useContext(ManageDialogContext)
 
-  console.log({ open, cancellable, content, onConfirm, preset, title, onClose })
-
   useEffect(() => {
     let id: string | undefined
 
@@ -47,9 +46,7 @@ export const ObokuDialog: FC<Omit<DialogType, 'id'> & { open: boolean }> = ({ op
       })
     }
 
-    console.log(id)
     return () => {
-      id && console.log('remove', id)
       id && remove(id)
     }
   }, [open, cancellable, content, onConfirm, preset, title, dialog, onClose, remove])
@@ -71,11 +68,16 @@ const enrichDialogWithPreset = (dialog?: DialogType): DialogType | undefined => 
       title: 'Offline is great but...',
       content: 'You need to be online to proceed with this action'
     }
+    case 'UNKNOWN_ERROR': return {
+      ...dialog,
+      title: 'Oups, something went wrong!',
+      content: 'Something unexpected happened and oboku could not proceed with your action. Maybe you can try again?'
+    }
     case 'CONFIRM': return {
       ...dialog,
-      title: 'Hold on a minute!',
-      content: 'Are you sure you want to proceed with this action?',
-      cancellable: true,
+      title: dialog.title || 'Hold on a minute!',
+      content: dialog.content || 'Are you sure you want to proceed with this action?',
+      cancellable: dialog.cancellable !== undefined ? dialog.cancellable : true,
     }
     default: return dialog
   }
@@ -88,7 +90,6 @@ const InnerDialog = () => {
   const currentDialog = enrichDialogWithPreset(dialogs[0])
 
   const handleClose = useCallback(() => {
-    console.log('asd', currentDialog)
     currentDialog?.onClose && currentDialog.onClose()
     if (currentDialog) {
       remove(currentDialog.id)
@@ -104,6 +105,12 @@ const InnerDialog = () => {
     handleClose()
     currentDialog?.onConfirm && currentDialog.onConfirm()
   }, [handleClose, currentDialog])
+
+  const actions = currentDialog?.actions || [{
+    title: currentDialog?.confirmTitle || 'Ok',
+    onClick: () => { },
+    type: 'confirm'
+  }]
 
   return (
     <Dialog
@@ -122,9 +129,19 @@ const InnerDialog = () => {
             {currentDialog.cancelTitle || 'Cancel'}
           </Button>
         )}
-        <Button onClick={onConfirm} color="primary" autoFocus>
-        {currentDialog?.confirmTitle || 'Ok'}
-        </Button>
+        {actions.map((action, id) => (
+          <Button
+            key={id}
+            onClick={() => {
+              onConfirm()
+              action.onClick()
+            }}
+            color="primary"
+            autoFocus
+          >
+            {action.title}
+          </Button>
+        ))}
       </DialogActions>
     </Dialog>
   )

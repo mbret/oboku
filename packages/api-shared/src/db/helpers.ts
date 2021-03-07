@@ -86,6 +86,8 @@ export const createBook = async (db: createNano.DocumentScope<unknown>, data: Pa
     tags: [],
     title: null,
     modifiedAt: null,
+    isAttachedToDataSource: false,
+    ...data,
   }
 
   return insert(db, 'book', { ...insertData, ...data })

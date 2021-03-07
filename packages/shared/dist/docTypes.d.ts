@@ -85,6 +85,7 @@ export declare type BookDocType = {
     title: string | null;
     rx_model: 'book';
     modifiedAt: string | null;
+    isAttachedToDataSource: boolean;
 };
 export declare type TagsDocType = {
     _id: string;

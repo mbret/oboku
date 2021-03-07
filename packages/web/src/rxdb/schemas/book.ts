@@ -46,11 +46,15 @@ export const bookSchemaMigrationStrategies = {
     lastMetadataUpdateError: null,
     metadataUpdateStatus: null,
   }),
+  4: (oldDoc: BookDocType): BookDocType | null => ({
+    ...oldDoc,
+    isAttachedToDataSource: false,
+  }),
 }
 
 export const bookSchema: RxJsonSchema<Omit<BookDocType, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('book', {
   title: 'books',
-  version: 3,
+  version: 4,
   type: 'object',
   properties: {
     collections: { type: 'array', ref: 'obokucollection', items: { type: 'string' } },
@@ -72,6 +76,7 @@ export const bookSchema: RxJsonSchema<Omit<BookDocType, '_id' | 'rx_model' | '_r
     tags: { type: 'array', ref: 'tag', items: { type: 'string' } },
     title: { type: ['string', 'null'] },
     modifiedAt: { type: ['string', 'null'] },
+    isAttachedToDataSource: { type: ['boolean'] },
   },
   required: []
 })

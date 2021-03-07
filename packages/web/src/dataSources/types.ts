@@ -14,6 +14,7 @@ export type ObokuDataSourcePlugin = {
   }>,
   useGetCredentials: UseGetCredentials,
   useDownloadBook: UseDownloadHook,
+  useRemoveBook: UseRemoveBook | undefined,
 }
 
 export type UseDownloadHook = () => (link: LinkDocType, options?: {
@@ -25,6 +26,14 @@ export type UseDownloadHook = () => (link: LinkDocType, options?: {
   isError: true,
   error?: Error,
   reason: 'unknown' | 'cancelled' | 'popupBlocked'
+}>
+
+export type UseRemoveBook = () => (link: LinkDocType) => Promise<{
+  data: {}
+} | {
+  isError: true,
+  error?: Error,
+  reason: 'unknown'
 }>
 
 export type UseGetCredentials = () => () => Promise<{

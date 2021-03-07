@@ -5,7 +5,7 @@ import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../report"
 import { useCallback, useMemo } from "react"
-import { useGetDataSourceCredentials } from "../dataSources/helpers"
+import { useGetDataSourceCredentials, useRemoveBookFromDataSource } from "../dataSources/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { PromiseReturnType } from "../types"
 import { useRecoilValue } from "recoil"
@@ -21,13 +21,38 @@ import { useSync } from "../rxdb/useSync"
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
   const [removeBook] = useRxMutation((db, { id }: { id: string }) => db.book.findOne({ selector: { _id: id } }).remove())
+  const dialog = useDialogManager()
+  const [lock] = useLock()
+  const removeBookFromDataSource = useRemoveBookFromDataSource()
+  const network = useNetworkState()
 
-  return async ({ id }: { id: string }) => {
-    await Promise.all([
-      removeDownload(id),
-      removeBook({ id })
-    ])
-  }
+  return useCallback(async ({ id, withRemoteDeletion }: { id: string, withRemoteDeletion?: boolean }) => {
+    let unlock = () => { }
+    try {
+      if (withRemoteDeletion) {
+        if (!network.online) {
+          return dialog({ preset: 'OFFLINE' })
+        }
+        unlock = lock()
+        try {
+          await removeBookFromDataSource(id)
+        } catch (e) {
+          Report.error(e)
+
+          return dialog({ preset: 'UNKNOWN_ERROR' })
+        } finally {
+          unlock()
+        }
+      }
+
+      await Promise.all([
+        removeDownload(id),
+        removeBook({ id }),
+      ])
+    } catch (e) {
+      Report.error(e)
+    }
+  }, [lock, removeBook, removeDownload, removeBookFromDataSource, network, dialog])
 }
 
 export const useRemoveTagToBook = () => {
@@ -149,6 +174,7 @@ export const useAddBook = () => {
           creator: null,
           collections: [],
           modifiedAt: null,
+          isAttachedToDataSource: false,
           ...book,
         })
         refreshMetadata(newBook._id)

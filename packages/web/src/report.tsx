@@ -9,5 +9,8 @@ export const Report = {
   },
   captureMessage: (message: string, captureContext?: Parameters<typeof Sentry.captureMessage>[1]) => {
     Sentry.captureMessage(message, captureContext)
+  },
+  warn: (message: string) => {
+    console.warn(`[oboku:warning]`, message)
   }
 }

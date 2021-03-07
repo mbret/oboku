@@ -1,6 +1,7 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core'
 import React, { FC } from 'react'
 import { atom } from 'recoil'
+import { useLock } from './common/BlockingBackdrop'
 
 export const updateAvailableState = atom({
   key: 'updateAvailableState',
@@ -11,6 +12,7 @@ export const UpdateAvailableDialog: FC<{
   serviceWorker?: ServiceWorker
 }> = ({ serviceWorker }) => {
   const hasUpdate = !!serviceWorker
+  const [lock] = useLock()
 
   return (
     <Dialog
@@ -24,6 +26,7 @@ export const UpdateAvailableDialog: FC<{
       </DialogContent>
       <DialogActions>
         <Button onClick={() => {
+          lock()
           serviceWorker?.postMessage({ type: 'SKIP_WAITING' })
           window.location.reload()
         }} color="primary" autoFocus>

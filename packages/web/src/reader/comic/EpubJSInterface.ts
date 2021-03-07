@@ -3,7 +3,7 @@ import { Rendition, Contents, Book,  } from "epubjs"
 export type RenditionOptions = NonNullable<Parameters<Book['renderTo']>[1]>
 
 type Loaded = Book['loaded']
-type Spine = Book['spine']
+// type Spine = Book['spine']
 type Section = Parameters<Rendition['injectIdentifier']>[1]
 
 class RenditionBridge {
