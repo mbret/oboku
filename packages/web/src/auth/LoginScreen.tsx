@@ -33,11 +33,13 @@ export const LoginScreen = () => {
   }
 
   return (
-    <CenteredBox display="flex" flexDirection="column" style={{
+    <CenteredBox style={{
       flexShrink: 0,
       paddingTop: theme.spacing(4),
       paddingBottom: theme.spacing(4),
-      overflow: 'scroll'
+      overflow: 'scroll',
+      display: 'flex',
+      flexDirection: 'column'
     }}>
       <Header />
       <form noValidate autoComplete="off" onSubmit={e => e.preventDefault()}>

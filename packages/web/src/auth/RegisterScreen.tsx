@@ -43,11 +43,13 @@ export const RegisterScreen = () => {
   }
 
   return (
-    <CenteredBox display="flex" flexDirection="column" style={{
+    <CenteredBox style={{
       paddingTop: theme.spacing(4),
       paddingBottom: theme.spacing(4),
       overflow: 'scroll',
-      flexShrink: 0
+      flexShrink: 0,
+      display: 'flex',
+      flexDirection: 'column'
     }}>
       <Header />
       <form noValidate autoComplete="off" onSubmit={e => e.preventDefault()}>
