@@ -188,7 +188,7 @@ const List = memo(forwardRef<FixedSizeGrid, {
                 width: '100%',
                 maxHeight: computedItemHeight,
               }}>
-                {rowRenderer(data[itemIndex])}
+                {data[itemIndex] && rowRenderer(data[itemIndex])}
               </div>
             </div>
           )
