@@ -40,7 +40,7 @@ export const BookList: FC<{
     return viewMode === LibraryViewMode.GRID
       ? <BookListGridItem bookId={item} />
       : (
-        <div style={{ flex: 1, alignItems: 'center', display: 'flex' }}>
+        <div style={{ flex: 1, alignItems: 'center', display: 'flex', height: '100%' }}>
           <BookListListItem
             bookId={item}
             itemHeight={(itemHeight || 0) - listItemMargin}
