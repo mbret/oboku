@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import { SyncRounded, DeleteForeverRounded, RemoveRounded, CheckRounded, CollectionsRounded, NoSimRounded } from '@material-ui/icons';
+import { SyncRounded, DeleteForeverRounded, RemoveRounded, CheckRounded, CollectionsRounded, NoSimRounded, LocalOfferRounded } from '@material-ui/icons';
 import { useHistory } from 'react-router-dom';
 import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { ROUTES } from '../constants';
@@ -20,6 +20,8 @@ import { useDialogManager } from '../dialog';
 import { linkState } from '../links/states';
 import { useModalNavitationControl } from '../navigation/helpers';
 import { useDataSourcePlugin } from '../dataSources/helpers';
+import { useTranslation } from 'react-i18next'
+import { openManageBookTagsDialogState } from './ManageBookTagsDialog';
 
 export const bookActionDrawerState = atom<{
   openedWith: undefined | string,
@@ -28,6 +30,7 @@ export const bookActionDrawerState = atom<{
 
 export const BookActionsDrawer = () => {
   const setOpenManageBookCollectionsDialog = useSetRecoilState(openManageBookCollectionsDialog)
+  const setOpenManageBookTagsDialogState = useSetRecoilState(openManageBookTagsDialogState)
   const [{ openedWith: bookId, actions }, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const history = useHistory()
   const book = useRecoilValue(enrichedBookState(bookId || '-1'))
@@ -40,6 +43,7 @@ export const BookActionsDrawer = () => {
   const plugin = useDataSourcePlugin(bookLink?.type)
   const dialog = useDialogManager()
   const opened = !!bookId
+  const { t } = useTranslation()
 
   const handleClose = useModalNavitationControl({
     onExit: () => {
@@ -175,6 +179,20 @@ export const BookActionsDrawer = () => {
                   <CollectionsRounded />
                 </ListItemIcon>
                 <ListItemText primary="Manage collections" />
+              </ListItem>
+            )}
+            {!actions && (
+              <ListItem button
+                onClick={() => {
+                  handleClose(() => {
+                    setOpenManageBookTagsDialogState(bookId)
+                  })
+                }}
+              >
+                <ListItemIcon>
+                  <LocalOfferRounded />
+                </ListItemIcon>
+                <ListItemText primary={t('book.actionDrawer.manageTags')} />
               </ListItem>
             )}
             {/* {!actions && (

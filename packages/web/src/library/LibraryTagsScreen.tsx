@@ -1,4 +1,4 @@
-import React, { useState, FC, useEffect } from 'react';
+import { useState, FC, useEffect } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
 import { useCreateTag } from '../tags/helpers';

@@ -55,7 +55,7 @@ export const useRemoveBook = () => {
   }, [lock, removeBook, removeDownload, removeBookFromDataSource, network, dialog])
 }
 
-export const useRemoveTagToBook = () => {
+export const useRemoveTagFromBook = () => {
   const [removeTag] = useRxMutation(
     (db, { _id, tagId }: { _id: string, tagId: string }) =>
       db.book

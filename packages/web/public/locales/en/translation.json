@@ -1,4 +1,5 @@
 {
   "button.title.exploreMyLibrary": "Explore my library",
-  "button.title.login": "Login"
+  "button.title.login": "Login",
+  "book.actionDrawer.manageTags": "Manage tags"
 }

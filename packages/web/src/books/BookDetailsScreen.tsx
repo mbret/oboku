@@ -4,7 +4,7 @@ import { MoreVertRounded, EditRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
 import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider, makeStyles } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
-import { useAddTagToBook, useRemoveTagToBook } from './helpers';
+import { useAddTagToBook, useRemoveTagFromBook } from './helpers';
 import { TagsSelectionList } from '../tags/TagsSelectionList';
 import { Alert } from '@material-ui/lab';
 import { Cover } from './Cover';
@@ -272,7 +272,7 @@ const TagsDialog: FC<{
   const tags = useRecoilValue(tagsAsArrayState)
   const book = useRecoilValue(bookState(id))
   const [addTagToBook] = useAddTagToBook()
-  const removeTagToBook = useRemoveTagToBook()
+  const removeTagToBook = useRemoveTagFromBook()
   const bookTags = book?.tags
   const isSelected = (tagId: string) => !!bookTags?.find(itemId => itemId === tagId)
 

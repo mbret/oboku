@@ -11,6 +11,7 @@ const localSettingsStateDefaultValues = {
   readingFullScreenSwitchMode: process.env.NODE_ENV !== 'production' ? 'never' as const : 'automatic' as const,
   unblurWhenProtectedVisible: false,
   hideDirectivesFromCollectionName: true,
+  showCollectionWithProtectedContent: 'unlocked' as const,
 }
 
 export const localSettingsState = atom<{
@@ -18,6 +19,7 @@ export const localSettingsState = atom<{
   readingFullScreenSwitchMode: 'automatic' | 'always' | 'never',
   unblurWhenProtectedVisible: boolean,
   hideDirectivesFromCollectionName: boolean,
+  showCollectionWithProtectedContent: 'unlocked' | 'hasNormalContent',
 }>({
   key: 'localSettingsState',
   default: localSettingsStateDefaultValues

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { ComponentProps, useState } from 'react';
 import { CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
 import { Box, Drawer, List, ListItem, ListItemSecondaryAction, ListItemText, ListSubheader } from '@material-ui/core';
@@ -8,13 +8,18 @@ import { localSettingsState } from './states';
 type LocalSettings = UnwrapRecoilValue<typeof localSettingsState>
 
 const fullScreenModes: Record<LocalSettings['readingFullScreenSwitchMode'], string> = { automatic: 'Automatic (based on device)', always: 'Always', never: 'Never' }
+const showCollectionWithProtectedContentLabels: Record<LocalSettings['showCollectionWithProtectedContent'], string> = {
+  unlocked: 'Only when protected content are unlocked',
+  hasNormalContent: 'If the collection has non protected content as well',
+}
 
 export const SettingsScreen = () => {
   const [localSettings, setLocalSettings] = useRecoilState(localSettingsState)
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
+  const [isShowCollectionDrawerOpened, setIsShowCollectionDrawerOpened] = useState(false)
 
   console.log(`debug SettingsScreen`, localSettings)
-  
+
   return (
     <>
       <Box display="flex" flex={1} overflow="scroll" flexDirection="column">
@@ -40,6 +45,16 @@ export const SettingsScreen = () => {
             <ListItemSecondaryAction>
               {localSettings.hideDirectivesFromCollectionName ? <CheckCircleRounded /> : <RadioButtonUncheckedOutlined />}
             </ListItemSecondaryAction>
+          </ListItem>
+          <ListItem
+            button
+            onClick={() => {
+              setIsShowCollectionDrawerOpened(true)
+            }}
+          >
+            <ListItemText
+              primary="Show collections with protected content"
+              secondary={showCollectionWithProtectedContentLabels[localSettings.showCollectionWithProtectedContent]} />
           </ListItem>
         </List>
         <List >
@@ -94,6 +109,60 @@ export const SettingsScreen = () => {
           ))}
         </List>
       </Drawer>
+      <MultipleChoiceDrawer
+        open={isDrawerOpened}
+        onClose={() => setIsDrawerOpened(false)}
+        onChoiceSelect={(value) => {
+          setLocalSettings(old => ({ ...old, readingFullScreenSwitchMode: value }))
+          setIsDrawerOpened(false)
+        }}
+        selected={localSettings.readingFullScreenSwitchMode}
+        anchor="bottom"
+        choices={(Object.keys(fullScreenModes) as LocalSettings['readingFullScreenSwitchMode'][]).map((key) => ({ value: key, label: fullScreenModes[key] }))}
+      />
+      <MultipleChoiceDrawer
+        open={isShowCollectionDrawerOpened}
+        onClose={() => setIsShowCollectionDrawerOpened(false)}
+        onChoiceSelect={(value) => {
+          setLocalSettings(old => ({ ...old, showCollectionWithProtectedContent: value }))
+          setIsShowCollectionDrawerOpened(false)
+        }}
+        anchor="bottom"
+        selected={localSettings.showCollectionWithProtectedContent}
+        choices={(Object.keys(showCollectionWithProtectedContentLabels) as LocalSettings['showCollectionWithProtectedContent'][]).map((key) => ({
+          value: key,
+          label: showCollectionWithProtectedContentLabels[key]
+        }))}
+      />
     </>
   );
+}
+
+const MultipleChoiceDrawer = <Choice extends { value: string, label: string }>({ choices, onChoiceSelect, selected, ...rest }: {
+  choices: Choice[]
+  onChoiceSelect: (value: Choice['value']) => void
+  selected: Choice['value']
+} & ComponentProps<typeof Drawer>) => {
+  return (
+    <Drawer {...rest}>
+      <List>
+        {choices.map(({ value, label }) => (
+          <ListItem
+            button
+            key={value}
+            onClick={(e) => {
+              onChoiceSelect(value)
+            }}
+          >
+            <ListItemText
+              primary={label}
+              {...selected === value && {
+                secondary: `selected`
+              }}
+            />
+          </ListItem>
+        ))}
+      </List>
+    </Drawer>
+  )
 }

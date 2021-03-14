@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { TopBarNavigation } from '../TopBarNavigation'
 import { Typography, useTheme } from '@material-ui/core'
 import { useHistory, useParams } from 'react-router-dom'

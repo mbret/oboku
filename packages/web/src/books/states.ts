@@ -61,7 +61,7 @@ export const enrichedBookState = selectorFamily({
 export const downloadedBookIdsState = selector({
   key: 'downloadedBookIdsState',
   get: ({ get }) => {
-    const book = get(protectedBookIdsState)
+    const book = get(visibleBookIdsState)
     const downloadState = get(normalizedBookDownloadsState)
 
     return book.filter(id => downloadState[id]?.downloadState === DownloadState.Downloaded)
@@ -72,7 +72,7 @@ export const booksAsArrayState = selector({
   key: 'booksAsArray',
   get: ({ get }) => {
     const books = get(normalizedBooksState)
-    const bookIds = get(protectedBookIdsState)
+    const bookIds = get(visibleBookIdsState)
 
     return bookIds.map(id => {
       const downloadState = get(bookDownloadsState(id))
@@ -94,7 +94,7 @@ export const bookIdsState = selector({
   }
 })
 
-export const protectedBookIdsState = selector({
+export const visibleBookIdsState = selector({
   key: 'protectedBookIdsState',
   get: ({ get }) => {
     const books = get(normalizedBooksState)
