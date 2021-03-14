@@ -1,14 +1,12 @@
-import React, { ComponentProps, useCallback, FC, useMemo, memo } from 'react'
+import React, { useCallback, FC, useMemo, memo } from 'react'
 import { useTheme } from "@material-ui/core"
 import { useWindowSize } from 'react-use';
-import { ItemList } from '../../lists/ItemList';
 import { BookListGridItem } from './BookListGridItem';
 import { LibrarySorting } from '../../library/states';
 import { LibraryViewMode } from '../../rxdb';
 import { BookListListItem } from './BookListListItem';
 import { useCSS } from '../../common/utils';
-
-type CellRenderer = ComponentProps<typeof ItemList>['rowRenderer']
+import { ReactWindowList } from '../../lists/ReactWindowList';
 
 export const BookList: FC<{
   viewMode?: 'grid' | 'list',
@@ -22,17 +20,13 @@ export const BookList: FC<{
   density?: 'dense' | 'large',
   onItemClick?: (id: string) => void,
   withDrawerActions?: boolean
-}> = memo(({ viewMode = 'grid', renderHeader, headerHeight, density = 'large', isHorizontal = false, style, data, itemWidth, onItemClick, withDrawerActions }) => {
+}> = memo((props) => {
+  const { viewMode = 'grid', renderHeader, headerHeight, density = 'large', isHorizontal = false, style, data, itemWidth, onItemClick, withDrawerActions } = props
   const windowSize = useWindowSize()
   const classes = useStyle({ isHorizontal });
-  const hasHeader = !!renderHeader
   const theme = useTheme()
-  const listData = useMemo(() => {
-    if (hasHeader) return ['header' as const, ...data]
-    else return data
-  }, [data, hasHeader])
   const dynamicNumberOfItems = Math.round(windowSize.width / 200)
-  const itemsPerRow = viewMode === 'grid'
+  const itemsPerRow = (viewMode === 'grid' && !isHorizontal)
     ? dynamicNumberOfItems > 0 ? dynamicNumberOfItems : dynamicNumberOfItems
     : 1
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
@@ -42,12 +36,7 @@ export const BookList: FC<{
     ? undefined
     : (((windowSize.width > theme.breakpoints.values['sm'] ? 200 : 150) * theme.custom.coverAverageRatio) + listItemMargin) * densityMultiplier
 
-  const rowRenderer: CellRenderer = useCallback((_, item): any => {
-    if (item === 'header') {
-      if (renderHeader) return renderHeader()
-      return null
-    }
-
+  const rowRenderer = useCallback((item: string) => {
     return viewMode === LibraryViewMode.GRID
       ? <BookListGridItem bookId={item} />
       : (
@@ -60,19 +49,22 @@ export const BookList: FC<{
           />
         </div>
       )
-  }, [renderHeader, viewMode, itemHeight, listItemMargin, onItemClick, withDrawerActions])
+  }, [viewMode, itemHeight, listItemMargin, onItemClick, withDrawerActions])
+
+  console.log(`debug BookList render`, props)
+
+  const containerStyle = useMemo(() => ({ ...classes.container, ...style }), [style, classes])
 
   return (
-    <div style={{ ...classes.container, ...style }}>
-      <ItemList
-        data={listData}
+    <div style={containerStyle}>
+      <ReactWindowList
+        data={data}
         rowRenderer={rowRenderer}
         itemsPerRow={itemsPerRow}
-        // only used when grid layout
         preferredRatio={adjustedRatioWhichConsiderBottom}
         headerHeight={headerHeight}
         renderHeader={renderHeader}
-        isHorizontal={isHorizontal}
+        layout={isHorizontal ? 'horizontal' : 'vertical'}
         itemWidth={itemWidth}
         // only used when list layout
         itemHeight={itemHeight}

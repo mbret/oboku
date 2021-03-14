@@ -1,7 +1,6 @@
-import React, { FC, memo, useEffect } from 'react'
+import React, { FC, memo } from 'react'
 import { Chip, useTheme } from "@material-ui/core"
 import { CheckCircleRounded, CloudDownloadRounded, ErrorRounded, LoopRounded, NoEncryptionRounded } from '@material-ui/icons';
-import { useRafState } from 'react-use';
 import { Cover } from '../Cover';
 import { useRecoilValue, UnwrapRecoilValue } from 'recoil';
 import { enrichedBookState } from '../states';
@@ -24,72 +23,59 @@ export const BookListCoverContainer: FC<{
 }> = memo(({ bookId, className, withMetadaStatus = true, style, withDownloadStatus = true, withReadingProgressStatus = true, size = 'small', withProtectedStatus = true }) => {
   const item = useRecoilValue(enrichedBookState(bookId))
   const classes = useStyles({ item });
-  const [render, setRender] = useRafState(false)
-
-  useEffect(() => {
-    setRender(true)
-  }, [setRender])
 
   return (
     <div style={{ ...classes.coverContainer, ...style }} className={className}>
-      {!render
-        ? (
-          null
-        )
-        : (
-          <>
-            {item && <Cover bookId={item?._id} />}
-            {item?.downloadState !== DownloadState.Downloaded && (
-              <div style={classes.downloadOverlay} />
-            )}
-            {(withProtectedStatus && item?.isProtected) && (
-              <div style={classes.protectedIconContainer}>
-                <NoEncryptionRounded style={classes.protectedIcon} fontSize="small" />
-              </div>
-            )}
-            {(withReadingProgressStatus && item?.readingStateCurrentState === ReadingStateState.Finished) && (
-              <div style={classes.finishIconContainer}>
-                <CheckCircleRounded style={classes.finishIcon} fontSize={size} />
-              </div>
-            )}
-            <div
-              style={classes.bodyContainer}>
-              {(withMetadaStatus && item?.metadataUpdateStatus === 'fetching') && (
-                <div style={classes.itemCoverCenterInfo}>
-                  <Chip color="secondary" size="small" icon={<LoopRounded color="primary" className="icon-spin" />} label="metadata..." />
-                </div>
-              )}
-              {(withMetadaStatus && item?.metadataUpdateStatus !== 'fetching' && !!item?.lastMetadataUpdateError) && (
-                <div style={classes.itemCoverCenterInfo}>
-                  <Chip color="secondary" size="small" icon={<ErrorRounded color="primary" />} label="metadata" />
-                </div>
-              )}
-              {item?.downloadState === 'none' && (
-                <div style={classes.pauseButton}>
-                  <CloudDownloadRounded color="secondary" fontSize={size} />
-                </div>
-              )}
-              {(withDownloadStatus && item?.downloadState === 'downloading') && (
-                <div style={classes.pauseButton}>
-                  <Chip
-                    color="secondary"
-                    size="small"
-                    label="downloading..."
-                  />
-                </div>
-              )}
-            </div>
-            {withReadingProgressStatus && (
-              <>
-                {item?.readingStateCurrentState === ReadingStateState.Reading && (
-                  <ReadingProgress
-                    progress={(item?.readingStateCurrentBookmarkProgressPercent || 0) * 100}
-                    style={classes.readingProgress} />
-                )}
-              </>
-            )}
-          </>
+      {item && <Cover bookId={item?._id} />}
+      {item?.downloadState !== DownloadState.Downloaded && (
+        <div style={classes.downloadOverlay} />
+      )}
+      {(withProtectedStatus && item?.isProtected) && (
+        <div style={classes.protectedIconContainer}>
+          <NoEncryptionRounded style={classes.protectedIcon} fontSize="small" />
+        </div>
+      )}
+      {(withReadingProgressStatus && item?.readingStateCurrentState === ReadingStateState.Finished) && (
+        <div style={classes.finishIconContainer}>
+          <CheckCircleRounded style={classes.finishIcon} fontSize={size} />
+        </div>
+      )}
+      <div
+        style={classes.bodyContainer}>
+        {(withMetadaStatus && item?.metadataUpdateStatus === 'fetching') && (
+          <div style={classes.itemCoverCenterInfo}>
+            <Chip color="secondary" size="small" icon={<LoopRounded color="primary" className="icon-spin" />} label="metadata..." />
+          </div>
         )}
+        {(withMetadaStatus && item?.metadataUpdateStatus !== 'fetching' && !!item?.lastMetadataUpdateError) && (
+          <div style={classes.itemCoverCenterInfo}>
+            <Chip color="secondary" size="small" icon={<ErrorRounded color="primary" />} label="metadata" />
+          </div>
+        )}
+        {item?.downloadState === 'none' && (
+          <div style={classes.pauseButton}>
+            <CloudDownloadRounded color="secondary" fontSize={size} />
+          </div>
+        )}
+        {(withDownloadStatus && item?.downloadState === 'downloading') && (
+          <div style={classes.pauseButton}>
+            <Chip
+              color="secondary"
+              size="small"
+              label="downloading..."
+            />
+          </div>
+        )}
+      </div>
+      {withReadingProgressStatus && (
+        <>
+          {item?.readingStateCurrentState === ReadingStateState.Reading && (
+            <ReadingProgress
+              progress={(item?.readingStateCurrentBookmarkProgressPercent || 0) * 100}
+              style={classes.readingProgress} />
+          )}
+        </>
+      )}
     </div>
   )
 })

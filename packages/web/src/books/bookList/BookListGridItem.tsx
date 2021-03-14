@@ -1,7 +1,6 @@
-import React, { FC, memo, useEffect } from 'react'
+import React, { FC, memo } from 'react'
 import { Typography, useTheme } from "@material-ui/core"
 import { MoreVert } from '@material-ui/icons';
-import { useRafState } from 'react-use';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { bookActionDrawerState } from '../BookActionsDrawer';
 import { enrichedBookState } from '../states';
@@ -17,13 +16,6 @@ export const BookListGridItem: FC<{
   const onDefaultItemClick = useDefaultItemClickHandler()
   const classes = useStyles();
   const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
-  const [render, setRender] = useRafState(false)
-
-  useEffect(() => {
-    setRender(true)
-  }, [setRender])
-
-  if (!render) return null
 
   return (
     <div

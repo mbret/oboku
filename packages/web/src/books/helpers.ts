@@ -103,7 +103,10 @@ export const useRefreshBookMetadata = () => {
     const book = await database?.book.findOne({ selector: { _id: bookId } }).exec()
     const firstLink = await database?.link.findOne({ selector: { _id: book?.links[0] } }).exec()
 
-    if (!firstLink || firstLink?.type === DataSourceType.FILE) return
+    if (!firstLink || firstLink?.type === DataSourceType.FILE) {
+      Report.warn(`Trying to refresh metadata of file item ${bookId}`)
+      return
+    }
 
     const credentials = await getDataSourceCredentials(firstLink.type)
 

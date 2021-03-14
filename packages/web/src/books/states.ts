@@ -45,11 +45,15 @@ export const enrichedBookState = selectorFamily({
 
     const firstLink = get(linkState(book.links[0]))
 
+    const isLocal = firstLink?.type === DataSourceType.FILE
+
     return {
       ...book,
       ...downloadState || {},
-      isLocal: firstLink?.type === DataSourceType.FILE,
-      isProtected: isBookProtected(protectedTags, book)
+      isLocal,
+      isProtected: isBookProtected(protectedTags, book),
+      // hasLink: book.links.length > 0
+      canRefreshMetadata: book.links.length > 0 && !isLocal
     }
   }
 })

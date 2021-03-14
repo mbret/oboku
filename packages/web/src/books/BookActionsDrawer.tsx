@@ -186,7 +186,7 @@ export const BookActionsDrawer = () => {
                 <ListItemText primary="Manage tags" />
               </ListItem>
             )} */}
-            {!actions && (
+            {(!actions && book.canRefreshMetadata) && (
               <ListItem button
                 onClick={() => {
                   handleClose()
