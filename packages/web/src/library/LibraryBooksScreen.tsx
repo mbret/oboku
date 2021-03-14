@@ -20,6 +20,8 @@ import { SortByDialog } from '../books/bookList/SortByDialog';
 import { isUploadBookFromDeviceOpenedFromState } from '../upload/state';
 import { DownloadState } from '../download/states';
 import { localSettingsState } from '../settings/states';
+import { useCallback } from 'react';
+import { useRef } from 'react';
 
 export const LibraryBooksScreen = () => {
   const styles = useStyles();
@@ -34,28 +36,13 @@ export const LibraryBooksScreen = () => {
   const setLibraryState = useSetRecoilState(libraryState)
   const dataSourcePlugins = useDataSourcePlugins()
   const library = useRecoilValue(libraryState)
-  const filteredTags = library.tags
-  const unsortedBooks = useRecoilValue(booksAsArrayState)
-  const filteredBooks = unsortedBooks.filter(book => {
-    if (library.downloadState === DownloadState.Downloaded && book.downloadState.downloadState !== DownloadState.Downloaded) {
-      return false
-    }
-    if (filteredTags.length > 0 && !book?.tags?.some(b => filteredTags.includes(b))) {
-      return false
-    }
-    if (library.readingStates.length > 0 && !library.readingStates.includes(book.readingStateCurrentState)) {
-      return false
-    }
-    return true
-  })
-  const sortedList = useBooksSortedBy(filteredBooks, library.sorting)
   let numberOfFiltersApplied = 0
   if ((library?.tags.length || 0) > 0) numberOfFiltersApplied++
   if ((library?.readingStates.length || 0) > 0) numberOfFiltersApplied++
   if (library?.downloadState !== undefined) numberOfFiltersApplied++
-  const books = useMemo(() => sortedList.map(item => item._id), [sortedList])
+  const books = useBooks()
 
-  const addBookButton = (
+  const addBookButton = useMemo(() => (
     <Button
       style={{
         flex: 1,
@@ -66,17 +53,19 @@ export const LibraryBooksScreen = () => {
     >
       Add a new book
     </Button >
-  )
+  ), [setIsUploadBookDrawerOpened])
 
-  const listHeader = (
-    < Toolbar style={{ marginLeft: -theme.spacing(1), marginRight: -theme.spacing(1) }}>
+  const listHeader = useMemo(() => (
+    <Toolbar style={{ marginLeft: -theme.spacing(1), marginRight: -theme.spacing(1), flex: 1, }}>
       {addBookButton}
     </Toolbar>
-  )
+  ), [theme, addBookButton])
+
+  const bookListRenderHeader = useCallback(() => listHeader, [listHeader])
 
   const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
 
-  console.log('[LibraryBooksScreen]', books, theme.breakpoints.down('xs'))
+  console.log('debug LibraryBooksScreen render')
 
   return (
     <div
@@ -178,8 +167,8 @@ export const LibraryBooksScreen = () => {
             sorting={library.sorting}
             headerHeight={listHeaderHeight}
             data={books}
-            style={{ height: '100%' }}
-            renderHeader={() => listHeader}
+            style={styles.bookList}
+            renderHeader={bookListRenderHeader}
           />
         )}
         {isUploadBookFromDataSourceDialogOpened && <UploadBookFromDataSource openWith={isUploadBookFromDataSourceDialogOpened} onClose={() => setIsUploadBookFromDataSourceDialogOpened(undefined)} />}
@@ -188,9 +177,7 @@ export const LibraryBooksScreen = () => {
           onClose={() => setIsSortingDialogOpened(false)}
           open={isSortingDialogOpened}
           onChange={newSort => {
-            // requestAnimationFrame(() => {
             setLibraryState(prev => ({ ...prev, sorting: newSort }))
-            // })
           }}
         />
         <LibraryFiltersDrawer open={isFiltersDrawerOpened} onClose={() => setIsFiltersDrawerOpened(false)} />
@@ -221,6 +208,9 @@ const useStyles = () => {
       flex: 1,
       overflow: 'hidden'
     },
+    bookList: {
+      height: '100%'
+    }
   }), [])
 }
 
@@ -236,3 +226,37 @@ const useClasses = makeStyles(theme => ({
     }
   }
 }))
+
+const useBooks = () => {
+  const results = useRef<string[]>([])
+  const library = useRecoilValue(libraryState)
+  const filteredTags = library.tags
+  const unsortedBooks = useRecoilValue(booksAsArrayState)
+  const filteredBooks = unsortedBooks.filter(book => {
+    if (library.downloadState === DownloadState.Downloaded && book.downloadState.downloadState !== DownloadState.Downloaded) {
+      return false
+    }
+    if (filteredTags.length > 0 && !book?.tags?.some(b => filteredTags.includes(b))) {
+      return false
+    }
+    if (library.readingStates.length > 0 && !library.readingStates.includes(book.readingStateCurrentState)) {
+      return false
+    }
+    return true
+  })
+  const sortedList = useBooksSortedBy(filteredBooks, library.sorting)
+  const bookIds = sortedList.map(item => item._id)
+
+  if (bookIds.length !== results.current.length) {
+    results.current = bookIds
+  } else {
+    for (let i = 0; i < bookIds.length; i++) {
+      if (bookIds[i] !== results.current[i]) {
+        results.current = bookIds
+        break
+      }
+    }
+  }
+
+  return results.current
+}

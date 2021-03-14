@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from 'react';
 import { GavelRounded, LockOpenRounded, LockRounded, SettingsRounded, StorageRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../TopBarNavigation';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, fade, Link, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField, Typography, useTheme } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, fade, Link, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField, Typography, useTheme } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { useStorageUse } from './useStorageUse';
 import { unlockLibraryDialogState } from '../auth/UnlockLibraryDialog';
@@ -38,7 +38,7 @@ export const ProfileScreen = () => {
   const isDebugEnabled = useIsDebugEnabled()
 
   return (
-    <Box display="flex" flex={1} overflow="scroll" flexDirection="column">
+    <div style={{ display: 'flex', flex: 1, overflow: 'scroll', flexDirection: 'column' }}>
       <TopBarNavigation title={'Profile'} showBack={false} />
       <List >
         <ListSubheader disableSticky>Account</ListSubheader>
@@ -183,7 +183,7 @@ export const ProfileScreen = () => {
       </List>
       <LockActionBehindUserPasswordDialog action={lockedAction} />
       <EditContentPasswordDialog open={isEditContentPasswordDialogOpened} onClose={() => setIsEditContentPasswordDialogOpened(false)} />
-    </Box>
+    </div>
   );
 }
 

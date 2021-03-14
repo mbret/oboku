@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useRecoilValue } from "recoil"
 import { isMenuShownState } from "./states"
-import { AppBar, Box, IconButton, Toolbar } from "@material-ui/core"
+import { AppBar, IconButton, Toolbar } from "@material-ui/core"
 import { ArrowBackIosRounded, FullscreenExitRounded, FullscreenRounded } from '@material-ui/icons'
 import { useNavigation } from '../navigation/useNavigation'
 import screenfull, { Screenfull } from 'screenfull'
@@ -48,7 +48,7 @@ export const TopBar = () => {
         >
           <ArrowBackIosRounded />
         </IconButton>
-        <Box flexGrow={1} />
+        <div style={{ flexGrow: 1 }} />
         {screenfullApi.isEnabled && (
           <IconButton
             edge="end"

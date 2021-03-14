@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { Tab, Tabs, Box, IconButton, useTheme } from '@material-ui/core'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Tab, Tabs, IconButton, useTheme } from '@material-ui/core'
 import { useHistory, useLocation, Route, Switch, Redirect } from 'react-router-dom'
 import { LibraryBooksScreen } from './LibraryBooksScreen'
 import { LibraryTagsScreen } from './LibraryTagsScreen'
@@ -16,6 +16,7 @@ export const LibraryTopTabNavigator = () => {
   const classes = useStyles();
   const syncLibrary = useSyncLibrary()
   const [syncActive, setSyncActive] = useState(false)
+  const theme = useTheme()
 
   useEffect(() => {
     if (syncActive) {
@@ -25,22 +26,24 @@ export const LibraryTopTabNavigator = () => {
     }
   }, [syncActive])
 
+  const TopBarNavigationRightComponent = useMemo(() => (
+    <div style={{ marginLeft: theme.spacing(2) }}>
+      <IconButton disabled={syncActive} onClick={() => {
+        syncLibrary()
+        setSyncActive(true)
+      }} color="inherit">
+        <Sync />
+      </IconButton>
+    </div>
+  ), [syncLibrary, syncActive, theme])
+
   return (
     <div style={classes.container}>
       <TopBarNavigation
         title="Library"
         showBack={false}
         hasSearch
-        rightComponent={(
-          <Box ml={2}>
-            <IconButton disabled={syncActive} onClick={() => {
-              syncLibrary()
-              setSyncActive(true)
-            }} color="inherit">
-              <Sync />
-            </IconButton>
-          </Box>
-        )}
+        rightComponent={TopBarNavigationRightComponent}
       />
       <Tabs
         style={classes.tabsContainer}
@@ -84,7 +87,7 @@ const useStyles = () => {
     },
     tabsContainer: {
       border: `1px solid ${theme.palette.primary.light}`,
-      borderTop: 'none', borderLeft: 'none', borderRight: 'none' 
+      borderTop: 'none', borderLeft: 'none', borderRight: 'none'
     }
   }), [theme])
 }

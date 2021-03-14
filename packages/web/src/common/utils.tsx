@@ -36,3 +36,32 @@ export const useCSS = <T extends React.CSSProperties, K>(css: () => { [key in ke
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(css, deps)
 }
+
+/**
+ * Decimal adjustment of a number.
+ *
+ * @param {String}  type  The type of adjustment.
+ * @param {Number}  value The number.
+ * @param {Integer} exp   The exponent (the 10 logarithm of the adjustment base).
+ * @returns {Number} The adjusted value.
+ */
+export const decimalAdjust = (type: 'round', value: number, exp: number) => {
+  let newValue = value
+  // If the exp is undefined or zero...
+  if (typeof exp === 'undefined' || +exp === 0) {
+    return Math[type](newValue);
+  }
+  newValue = +newValue;
+  exp = +exp;
+  // If the value is not a number or the exp is not an integer...
+  if (isNaN(newValue) || !(typeof exp === 'number' && exp % 1 === 0)) {
+    return NaN;
+  }
+  // Shift
+  let shiftTmp = newValue.toString().split('e');
+  newValue = Math[type](+(shiftTmp[0] + 'e' + (shiftTmp[1] ? (+shiftTmp[1] - exp) : -exp)));
+  // Shift back
+  shiftTmp = newValue.toString().split('e');
+  
+  return +(shiftTmp[0] + 'e' + (shiftTmp[1] ? (+shiftTmp[1] + exp) : exp));
+}

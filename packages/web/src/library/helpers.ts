@@ -1,11 +1,12 @@
 import { ReadingStateState } from "@oboku/shared"
+import { useCallback } from "react"
 import { useRecoilCallback, useSetRecoilState } from "recoil"
 import { libraryState, syncState } from "./states"
 
 export const useSyncLibrary = () => {
   const setSyncState = useSetRecoilState(syncState)
 
-  return () => setSyncState(old => ({ ...old, syncRefresh: old.syncRefresh + 1 }))
+  return useCallback(() => setSyncState(old => ({ ...old, syncRefresh: old.syncRefresh + 1 })), [setSyncState])
 }
 
 export const useToggleTag = () =>

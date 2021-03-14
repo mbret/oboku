@@ -22,7 +22,6 @@ import { DataSourcesScreen } from '../dataSources/DataSourcesScreen'
 import { SearchScreen } from '../search/SearchScreen'
 import { AuthCallbackScreen } from '../auth/AuthCallbackScreen'
 import { SettingsScreen } from '../settings/SettingsScreen'
-import { Box } from '@material-ui/core'
 import { useRecoilValue } from 'recoil'
 import { authState } from '../auth/authState'
 
@@ -32,7 +31,7 @@ export const AppNavigator = () => {
 
   return (
     <BrowserRouter basename={process.env.PUBLIC_URL} >
-      <Box display="flex" flexDirection="column" flex={1} height="100%" flexShrink={0}>
+      <div style={{ flexShrink: 0, height: '100%', flex: 1, flexDirection: 'column', display: 'flex' }}>
         <Switch>
           <Route path={ROUTES.AUTH_CALLBACK}>
             <AuthCallbackScreen />
@@ -95,7 +94,7 @@ export const AppNavigator = () => {
               </Switch>
             )}
         </Switch>
-      </Box>
+      </div>
       <BookActionsDrawer />
       <BackBehaviorWatcher />
     </BrowserRouter>

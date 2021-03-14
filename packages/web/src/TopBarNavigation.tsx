@@ -1,10 +1,10 @@
-import React, { FC, ComponentProps } from 'react';
+import React, { FC, ComponentProps, memo } from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { ArrowBackIosRounded, MoreVertRounded, Search } from '@material-ui/icons';
-import { Box, fade, InputBase, makeStyles, useTheme } from '@material-ui/core';
+import { fade, InputBase, makeStyles, useTheme } from '@material-ui/core';
 import { ROUTES } from './constants';
 import { useNavigation } from './navigation/useNavigation';
 import { useCSS } from './common/utils';
@@ -17,7 +17,7 @@ export const TopBarNavigation: FC<{
   rightComponent?: React.ReactNode,
   hasSearch?: boolean,
   onMoreClick?: () => void
-}> = ({ title, showBack = true, position = 'static', color = 'primary', rightComponent, hasSearch = false, onMoreClick }) => {
+}> = memo(({ title, showBack = true, position = 'static', color = 'primary', rightComponent, hasSearch = false, onMoreClick }) => {
   const { styles, classes } = useStyles({ color });
   const { goBack, history } = useNavigation()
 
@@ -33,7 +33,7 @@ export const TopBarNavigation: FC<{
             <ArrowBackIosRounded />
           </IconButton>
         )}
-        <Box flexGrow={1}>
+        <div style={{ flexGrow: 1 }}>
           {!hasSearch && (
             <Typography variant="h6" style={styles.title}>
               {title}
@@ -57,7 +57,7 @@ export const TopBarNavigation: FC<{
               />
             </div>
           )}
-        </Box>
+        </div>
         {rightComponent}
         {!rightComponent && !!onMoreClick && (
           <IconButton
@@ -71,7 +71,7 @@ export const TopBarNavigation: FC<{
       </Toolbar>
     </AppBar>
   );
-}
+})
 
 const useClasses = makeStyles(theme => ({
   inputRoot: {

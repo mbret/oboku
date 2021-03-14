@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemText, Typography } from '@material-ui/core'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemText, Typography } from '@material-ui/core'
 import React, { FC, useCallback } from 'react'
 import { useAddBookFromFile } from '../books/helpers'
 import { useDropzone } from 'react-dropzone'
@@ -38,7 +38,7 @@ export const UploadBookFromDevice: FC<{
     >
       <DialogTitle>Add a book from device</DialogTitle>
       <DialogContent style={{ display: 'flex' }}>
-        <Box {...getRootProps({ className: 'dropzone' })} display="flex" flex={1} alignItems="center" justifyContent="center">
+        <div {...getRootProps({ className: 'dropzone' })} style={{ justifyContent: 'center', alignItems: 'center', flex: 1, display: 'flex' }}>
           <input {...getInputProps()} />
           {acceptedFiles.length > 0
             ? (
@@ -55,7 +55,7 @@ export const UploadBookFromDevice: FC<{
             : (
               <Typography>Drag 'n' drop some files here, or click to select files</Typography>
             )}
-        </Box>
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
