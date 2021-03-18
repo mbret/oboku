@@ -14,16 +14,24 @@
   "scripts": {
     "postinstall": "cd node_modules/dropbox && npm install && npm run build:cjs",
     "start:web": "cd packages/web && yarn start",
+    "start:web-prod": "cd packages/web && yarn start-prod",
+    "start:reader": "cd packages/reader && yarn start",
+    "start:reader-standalone": "cd packages/reader && yarn serve",
     "start:landing": "cd packages/landing && yarn start",
     "start:shared": "cd packages/shared && yarn watch",
     "start:api-lambda": "cd packages/api-lambda && yarn watch",
     "start": "concurrently -n api-lambda,shared \"yarn start:api-lambda\" \"yarn start:shared\"",
     "deploy-server": "pm2 stop oboku-api && git fetch origin && git reset --hard origin/release && yarn && pm2 start oboku-api && pm2 log oboku-api",
-    "dev:fix:sharp": "rm -rf node_modules/sharp && rm -rf packages/api-lambda/node_modules/sharp && cp -R packages/api-lambda/sharp-install/node_modules/sharp packages/api-lambda/node_modules/sharp"
+    "dev:fix:sharp": "rm -rf node_modules/sharp && rm -rf packages/api-lambda/node_modules/sharp && cp -R packages/api-lambda/sharp-install/node_modules/sharp packages/api-lambda/node_modules/sharp",
+    "tsc:web": "cd packages/web && yarn tsc",
+    "tsc:shared": "cd packages/shared && yarn tsc",
+    "tsc:api-lambda": "cd packages/api-lambda && yarn tsc",
+    "tsc:api-shared": "cd packages/api-shared && yarn tsc",
+    "tsc": "concurrently -n tsc:web,tsc:shared,tsc:api-lambda,tsc:api-shared \"yarn tsc:web\" \"yarn tsc:shared\" \"yarn tsc:api-lambda\" \"yarn tsc:api-shared\""
   },
   "dependencies": {
-    "concurrently": "^5.3.0",
-    "sharp": "^0.27.0"
+    "concurrently": "^6.0.0",
+    "sharp": "^0.27.2"
   },
   "devDependencies": {
     "webpack-bundle-analyzer": "^4.3.0",

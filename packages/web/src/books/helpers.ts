@@ -97,29 +97,33 @@ export const useRefreshBookMetadata = () => {
   const sync = useSync()
 
   return async (bookId: string) => {
-    if (!network.online) {
-      return dialog({ preset: 'OFFLINE' })
-    }
-    const book = await database?.book.findOne({ selector: { _id: bookId } }).exec()
-    const firstLink = await database?.link.findOne({ selector: { _id: book?.links[0] } }).exec()
-
-    if (!firstLink || firstLink?.type === DataSourceType.FILE) {
-      Report.warn(`Trying to refresh metadata of file item ${bookId}`)
-      return
-    }
-
-    const credentials = await getDataSourceCredentials(firstLink.type)
-
-    if ('isError' in credentials && credentials.reason === 'cancelled') return
-    if ('isError' in credentials) throw credentials.error || new Error('')
-
-    await updateBook(bookId, old => ({ ...old, metadataUpdateStatus: 'fetching' }))
-
     try {
-      await sync(['link', 'book'])
-      await client.refreshMetadata(bookId, credentials.data)
+      if (!network.online) {
+        return dialog({ preset: 'OFFLINE' })
+      }
+      const book = await database?.book.findOne({ selector: { _id: bookId } }).exec()
+      const firstLink = await database?.link.findOne({ selector: { _id: book?.links[0] } }).exec()
+
+      if (!firstLink || firstLink?.type === DataSourceType.FILE) {
+        Report.warn(`Trying to refresh metadata of file item ${bookId}`)
+        return
+      }
+
+      const credentials = await getDataSourceCredentials(firstLink.type)
+
+      if ('isError' in credentials && credentials.reason === 'cancelled') return
+      if ('isError' in credentials) throw credentials.error || new Error('')
+
+      await updateBook(bookId, old => ({ ...old, metadataUpdateStatus: 'fetching' }))
+
+      try {
+        await sync(['link', 'book'])
+        await client.refreshMetadata(bookId, credentials.data)
+      } catch (e) {
+        await updateBook(bookId, old => ({ ...old, metadataUpdateStatus: null, lastMetadataUpdateError: 'unknown' }))
+        throw e
+      }
     } catch (e) {
-      await updateBook(bookId, old => ({ ...old, metadataUpdateStatus: null, lastMetadataUpdateError: 'unknown' }))
       Report.error(e)
     }
   }

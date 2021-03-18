@@ -14,7 +14,7 @@
   "dependencies": {
     "@types/crypto-js": "^4.0.1",
     "crypto-js": "^4.0.0",
-    "typescript": "^4.0.5",
+    "typescript": "^4.2.3",
     "yup": "0.32.9"
   },
   "devDependencies": {

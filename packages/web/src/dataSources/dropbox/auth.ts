@@ -43,15 +43,16 @@ export const authUser = () => {
     const authType = 'code'
     const tokenAccessType = 'online'
     const state = Math.random().toString(36).substring(7)
-    const authUrl = dropboxAuth.getAuthenticationUrl(
-      redirectUri,
-      state,
-      authType,
-      tokenAccessType,
-      undefined,
-      'user',
-      usePKCE
-    )
+    const authUrl = dropboxAuth
+      .getAuthenticationUrl(
+        redirectUri,
+        state,
+        authType,
+        tokenAccessType,
+        undefined,
+        'user',
+        usePKCE
+      )
     const _oauthWindow = window.open(
       authUrl,
       'DropboxOAuth',
@@ -61,9 +62,6 @@ export const authUser = () => {
 
     /**
      * The function in charge of handling the redirect once the popup has completed.
-     *
-     * @param {MessageEvent} event - The incoming message from the popup window.
-     * @returns {void}
      */
     const handleRedirect = async (event: MessageEvent) => {
       if (timedOut) return
@@ -115,6 +113,5 @@ export const authUser = () => {
         resolve({ isError: true, reason: 'cancelled' })
       }
     }, 1000)
-
   })
 }

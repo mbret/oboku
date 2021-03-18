@@ -8,9 +8,12 @@
     "@types/node-fetch": "^2.5.8",
     "@types/request": "^2.48.5",
     "dropbox": "mbret/dropbox-sdk-js#main",
-    "googleapis": "^67.0.0",
+    "googleapis": "^67.1.1",
     "jsonwebtoken": "^8.5.1",
     "nano": "^9.0.1",
     "node-fetch": "^2.6.1"
+  },
+  "scripts": {
+    "tsc": "tsc"
   }
 }
