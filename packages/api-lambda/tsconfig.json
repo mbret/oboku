@@ -12,6 +12,7 @@
     "removeComments": true,
     // "moduleResolution": "node",
     "sourceMap": false,
+    "strict": true
   },
   // "include": ["**/*", "../tests/**/*"]
   "include": ["src/app.ts", "scripts/*", "webpack.config.ts"]

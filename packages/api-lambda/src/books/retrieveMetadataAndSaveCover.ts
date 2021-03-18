@@ -86,7 +86,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
       if (!METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType || '')) {
         fallbackContentType = (await detectMimeTypeFromContent(tmpFilePath) || fallbackContentType)
       }
-  
+
       if (METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType)) {
         const files: string[] = []
         const coverAllowedExt = ['.jpg', '.jpeg', '.png']
@@ -99,7 +99,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
             }
           }
         }
-  
+
         await fs.createReadStream(tmpFilePath)
           .pipe(unzipper.Parse({
             verbose: false
@@ -107,11 +107,11 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
           .on('entry', async (entry: unzipper.Entry) => {
             contentLength = contentLength + entry.vars.compressedSize
             const filepath = entry.path
-  
+
             if (entry.type === 'File') {
               files.push(entry.path)
             }
-  
+
             if (filepath.endsWith('.opf')) {
               isEpub = true
               const filepathParts = filepath.split('/')
@@ -128,23 +128,23 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
               entry.autodrain()
             }
           }).promise()
-  
+
         coverPath = isEpub
           ? findMissingCover(opfAsJson)
           : files
             .filter(file => coverAllowedExt.includes(path.extname(file).toLowerCase()))
             .sort()[0]
-  
+
         console.log(opfAsJson, opfAsJson?.package?.metadata)
-  
+
         normalizedMetadata = normalizeMetadata(opfAsJson)
-  
+
         if (coverPath) {
           await saveCoverFromArchiveToBucket(ctx, ctx.book, tmpFilePath, folderBasePath, coverPath)
         } else {
           console.log(`No cover path found for ${tmpFilePath}`)
         }
-  
+
       } else {
         console.log(`retrieveMetadataAndSaveCover format not supported yet`)
       }
@@ -253,12 +253,24 @@ const saveCoverFromArchiveToBucket = async (ctx: Context, book: BookDocType, epu
 
 const findMissingCover = (opf: OPF) => {
   const manifest = opf.package?.manifest
+  const meta = opf.package?.metadata?.meta || []
+  const coverInMeta = meta.find((item) => item?.name === 'cover' && item?.content?.length > 0)
   let href = ''
-  manifest?.item?.find((item: any) => {
+
+  const isImage = (item: (typeof manifest['item'])[number]) =>
+    item['media-type'] && (item['media-type'].indexOf('image/') > -1 || item['media-type'].indexOf('page/jpeg') > -1 || item['media-type'].indexOf('page/png') > -1)
+
+  if (coverInMeta) {
+    const item = manifest?.item?.find((item) => item.id === coverInMeta?.content && isImage(item))
+
+    if (item) {
+      return item?.href
+    }
+  }
+
+  manifest?.item?.find((item) => {
     if (
-      item.id.toLowerCase().indexOf('cover') > -1
-      && (item['media-type'].indexOf('image/') > -1 || item['media-type'].indexOf('page/jpeg') > -1 || item['media-type'].indexOf('page/png') > -1)
-    ) {
+      item.id.toLowerCase().indexOf('cover') > -1 && isImage(item)) {
       href = item.href
     }
     return ''
