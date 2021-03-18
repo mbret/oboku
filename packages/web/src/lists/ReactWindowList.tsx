@@ -62,7 +62,8 @@ const List = memo(forwardRef<FixedSizeGrid, {
   const listRef = useRef<FixedSizeGrid>()
   const scrollRef = useRef<GridOnScrollProps>()
   const computedItemWidth = itemWidth ? itemWidth : Math.floor(width / itemsPerRow)
-  const computedItemHeight = itemHeight || (computedItemWidth / preferredRatio)
+  // @todo move it out of this generic list
+  const computedItemHeight = itemHeight || Math.floor((computedItemWidth / preferredRatio))
   const columnCount = layout === 'horizontal' ? data.length : itemsPerRow
   const { useNavigationArrows } = useRecoilValue(localSettingsState)
   const classes = useClasses()

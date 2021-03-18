@@ -23,6 +23,7 @@ export const HomeScreen = () => {
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
   const itemWidth = 150
   const { t } = useTranslation()
+  const listHeight = Math.floor(itemWidth / adjustedRatioWhichConsiderBottom)
 
   console.log('[HomeScreen]', itemWidth / adjustedRatioWhichConsiderBottom)
 
@@ -73,8 +74,7 @@ export const HomeScreen = () => {
               itemWidth={itemWidth}
               data={continueReadingBookIds}
               style={{
-                height: itemWidth / adjustedRatioWhichConsiderBottom,
-                // border: '1px solid black'
+                height: listHeight
               }}
               viewMode="grid"
             />
@@ -90,8 +90,7 @@ export const HomeScreen = () => {
               itemWidth={itemWidth}
               data={recentlyAddedBooks}
               style={{
-                height: itemWidth / adjustedRatioWhichConsiderBottom,
-                // border: '1px solid black'
+                height: listHeight
               }}
               viewMode="grid"
             />
