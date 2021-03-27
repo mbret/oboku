@@ -69,7 +69,8 @@ const List = memo(forwardRef<FixedSizeGrid, {
   const classes = useClasses()
   const displayScrollerButtons = useNavigationArrows
   const isHorizontal = layout === 'horizontal'
-  const rowCount = data.length / columnCount
+  // 18/4=4.5 so we need to take ceil 5
+  const rowCount = Math.ceil(data.length / columnCount)
   const listHeightWithoutHeader = computedItemHeight * rowCount
   const listWidth = computedItemWidth * columnCount
   const maxLeftOffset = listWidth - width
@@ -137,24 +138,28 @@ const List = memo(forwardRef<FixedSizeGrid, {
     }
   }
 
-  const innerElementType = forwardRef<any, any>(({ style, children, ...rest }, ref) => (
-    <div
-      ref={ref as any}
-      style={{
-        ...style,
-        ...headerHeight && {
-          height: `${parseFloat(style.height) + headerHeight}px`
-        }
-      }}
-      {...rest}
-    >
-      <div style={{ position: 'absolute', left: 0, top: 0, width: '100%' }}>
-        {renderHeader && renderHeader()}
+  const innerElementType = forwardRef<any, any>(({ style, children, ...rest }, ref) => {
+    console.log('innerElementType', style)
+    return (
+      <div
+        ref={ref as any}
+        style={{
+          ...style,
+          ...headerHeight && {
+            height: `${parseFloat(style.height) + headerHeight}px`
+          }
+        }}
+        {...rest}
+      >
+        <div style={{ position: 'absolute', left: 0, top: 0, width: '100%' }}>
+          {renderHeader && renderHeader()}
+        </div>
+        {children}
       </div>
-      {children}
-    </div>
-  ))
+    )
+  })
 
+  console.log(`ReactWindowList`, { length: data.length, columnCount, rowCount })
 
   return (
     <>
