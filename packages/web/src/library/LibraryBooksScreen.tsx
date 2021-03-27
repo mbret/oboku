@@ -56,7 +56,7 @@ export const LibraryBooksScreen = () => {
   ), [setIsUploadBookDrawerOpened])
 
   const listHeader = useMemo(() => (
-    <Toolbar style={{ marginLeft: -theme.spacing(1), marginRight: -theme.spacing(1), flex: 1, }}>
+    <Toolbar style={{ paddingLeft: theme.spacing(1), paddingRight: theme.spacing(1), flex: 1, }}>
       {addBookButton}
     </Toolbar>
   ), [theme, addBookButton])
