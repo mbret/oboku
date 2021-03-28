@@ -253,11 +253,12 @@ const saveCoverFromArchiveToBucket = async (ctx: Context, book: BookDocType, epu
 
 const findMissingCover = (opf: OPF) => {
   const manifest = opf.package?.manifest
-  const meta = opf.package?.metadata?.meta || []
-  const coverInMeta = meta.find((item) => item?.name === 'cover' && item?.content?.length > 0)
+  const meta = opf.package?.metadata?.meta
+  const normalizedMeta = Array.isArray(meta) ? meta : meta ? [meta] : []
+  const coverInMeta = normalizedMeta.find((item) => item?.name === 'cover' && (item?.content?.length || 0) > 0)
   let href = ''
 
-  const isImage = (item: (typeof manifest['item'])[number]) =>
+  const isImage = (item: NonNullable<NonNullable<typeof manifest>['item']>[number]) =>
     item['media-type'] && (item['media-type'].indexOf('image/') > -1 || item['media-type'].indexOf('page/jpeg') > -1 || item['media-type'].indexOf('page/png') > -1)
 
   if (coverInMeta) {
@@ -269,9 +270,10 @@ const findMissingCover = (opf: OPF) => {
   }
 
   manifest?.item?.find((item) => {
+    const indexOfCover = item?.id?.toLowerCase().indexOf('cover')
     if (
-      item.id.toLowerCase().indexOf('cover') > -1 && isImage(item)) {
-      href = item.href
+      indexOfCover !== undefined && indexOfCover > -1 && isImage(item)) {
+      href = item.href || ''
     }
     return ''
   })
@@ -281,6 +283,7 @@ const findMissingCover = (opf: OPF) => {
 
 const normalizeMetadata = (opf: OPF) => {
   const metadata = opf.package?.metadata || {}
+  const creator = metadata['dc:creator']
 
   return {
     title: typeof metadata['dc:title'] === 'object'
@@ -299,11 +302,11 @@ const normalizeMetadata = (opf: OPF) => {
     subject: Array.isArray(metadata['dc:subject'])
       ? metadata['dc:subject'] as string[]
       : typeof metadata['dc:subject'] === 'string' ? [metadata['dc:subject']] as string[] : null,
-    creator: Array.isArray(metadata['dc:creator'])
-      ? metadata['dc:creator'][0]['#text']
-      : typeof metadata['dc:creator'] === 'object'
-        ? metadata['dc:creator']['#text'] as string | undefined
-        : metadata['dc:creator'] as string | undefined,
+    creator: Array.isArray(creator)
+      ? creator[0]['#text']
+      : typeof creator === 'object'
+        ? creator['#text']
+        : creator,
   }
 }
 

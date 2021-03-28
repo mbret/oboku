@@ -1,7 +1,11 @@
 export declare type OPF = {
     package?: {
         manifest?: {
-            item?: [];
+            item?: {
+                id?: string;
+                href?: string;
+                'media-type'?: string;
+            }[];
         };
         metadata?: {
             'dc:title'?: string | {
@@ -9,7 +13,11 @@ export declare type OPF = {
             };
             'title'?: any;
             'dc:date'?: any;
-            'dc:creator'?: any;
+            'dc:creator'?: {
+                '#text'?: string;
+            } | {
+                '#text'?: string;
+            }[];
             'dc:subject'?: any;
             'dc:language'?: any;
             'dc:publisher'?: {
@@ -17,6 +25,13 @@ export declare type OPF = {
                 id: string;
             } | string;
             'dc:rights'?: any;
+            meta?: {
+                name?: 'cover' | 'unknown';
+                content?: string;
+            } | {
+                name?: 'cover' | 'unknown';
+                content?: string;
+            }[];
         };
     };
 };
