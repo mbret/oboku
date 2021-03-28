@@ -6,7 +6,7 @@ import { useStorageUse } from './useStorageUse';
 import { LibraryViewMode } from '../rxdb';
 import { BookList } from '../books/bookList/BookList';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { downloadedBookIdsState } from '../books/states';
+import { downloadedBookWithUnsafeProtectedIdsState, visibleBookIdsState } from '../books/states';
 import { bookActionDrawerState } from '../books/BookActionsDrawer';
 import { useCSS } from '../common/utils';
 import { useDownloadedFilesInfo } from '../download/useDownloadedFilesInfo';
@@ -17,7 +17,8 @@ import { Report } from '../report';
 import { useEffect } from 'react';
 
 export const ManageStorageScreen = () => {
-  const bookIds = useRecoilValue(downloadedBookIdsState)
+  const bookIds = useRecoilValue(downloadedBookWithUnsafeProtectedIdsState)
+  const visibleBookIds = useRecoilValue(visibleBookIdsState)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])
   const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const styles = useStyles()
@@ -25,6 +26,7 @@ export const ManageStorageScreen = () => {
   const { bookIds: downloadedBookIds, refetch } = useDownloadedFilesInfo()
   const extraDownloadFilesIds = difference(downloadedBookIds, bookIds)
   const theme = useTheme()
+  const bookIdsToDisplay = bookIds.filter(id => visibleBookIds.includes(id))
 
   const removeExtraBooks = useCallback(() => {
     Promise.all(extraDownloadFilesIds.map(id => removeDownloadFile(id)))
@@ -64,10 +66,10 @@ export const ManageStorageScreen = () => {
         </Alert>
       )}
       <div style={styles.separator} />
-      {bookIds?.length > 0 && (
+      {bookIdsToDisplay?.length > 0 && (
         <BookList
           viewMode={LibraryViewMode.LIST}
-          data={bookIds}
+          data={bookIdsToDisplay}
           density="dense"
           withDrawerActions={false}
           style={{

@@ -139,7 +139,6 @@ const List = memo(forwardRef<FixedSizeGrid, {
   }
 
   const innerElementType = forwardRef<any, any>(({ style, children, ...rest }, ref) => {
-    console.log('innerElementType', style)
     return (
       <div
         ref={ref as any}
@@ -158,8 +157,6 @@ const List = memo(forwardRef<FixedSizeGrid, {
       </div>
     )
   })
-
-  console.log(`ReactWindowList`, { length: data.length, columnCount, rowCount })
 
   return (
     <>

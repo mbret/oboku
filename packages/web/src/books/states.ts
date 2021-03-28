@@ -58,10 +58,11 @@ export const enrichedBookState = selectorFamily({
   }
 })
 
-export const downloadedBookIdsState = selector({
-  key: 'downloadedBookIdsState',
+export const downloadedBookWithUnsafeProtectedIdsState = selector({
+  key: 'downloadedBookWithUnsafeProtectedIdsState',
   get: ({ get }) => {
-    const book = get(visibleBookIdsState)
+    const book = get(bookIdsState)
+    // const book = get(visibleBookIdsState)
     const downloadState = get(normalizedBookDownloadsState)
 
     return book.filter(id => downloadState[id]?.downloadState === DownloadState.Downloaded)
@@ -95,7 +96,7 @@ export const bookIdsState = selector({
 })
 
 export const visibleBookIdsState = selector({
-  key: 'protectedBookIdsState',
+  key: 'visibleBookIdsState',
   get: ({ get }) => {
     const books = get(normalizedBooksState)
     const { isLibraryUnlocked } = get(libraryState)

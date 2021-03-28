@@ -44,7 +44,7 @@ export const TagActionsDrawer: FC<{
               {!tag?.isProtected && (<RadioButtonUncheckedOutlined />)}
               {tag?.isProtected && (<CheckCircleRounded />)}
             </ListItemIcon>
-            <ListItemText primary="Mark this tag as protected" secondary="This will lock and hide books behind it. Use unlock features to display them" />
+            <ListItemText primary="Mark as protected" secondary="This will lock and hide books behind it. Use unlock features to display them" />
           </ListItem>
           <ListItem
             button
