@@ -22,15 +22,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - uses: actions/checkout@v2
+      - name: install
+        run: yarn
       - name: tsc
         run: |
-          yarn
-
+          yarn tsc
       - name: build & deploy
         run: |
-          yarn
           cd packages/api-lambda
-
           touch .env
           echo "GOOGLE_API_KEY=$GOOGLE_API_KEY" >> .env
           echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env

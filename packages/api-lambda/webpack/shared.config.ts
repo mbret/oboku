@@ -23,7 +23,8 @@ export const sharedConfig = (functionName: String): Configuration => ({
           options: {
             compilerOptions: {
               noEmit: false
-            }
+            },
+            onlyCompileBundledFiles: true,
           }
         }],
       },

@@ -11,5 +11,5 @@
   },
   // "include": ["**/*", "../tests/**/*"]
   // "include": ["src/app.ts", "scripts/*", "webpack.config.ts"]
-  "include": ["src/**/*"]
+  // "include": ["src/**/*"]
 }
