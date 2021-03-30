@@ -1,8 +1,8 @@
 import { lambda } from '../utils'
 import { generateToken } from "../auth"
 import { Errors, validators } from '@oboku/shared/src'
-import { BadRequestError } from '@oboku/api-shared/src/errors'
-import { createUser } from '@oboku/api-shared/src/db/helpers'
+import { BadRequestError } from '../errors'
+import { createUser } from '../db/helpers'
 import { auth, getAdminNano } from '../db/helpers'
 import { PromiseReturnType } from '../types'
 import { getEventBody } from '../utils/getEventBody'

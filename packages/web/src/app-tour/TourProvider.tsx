@@ -10,7 +10,6 @@ export const TourProvider: React.FC = memo(({ children }) => {
     setTours(prevState => ({
       ...prevState,
       [tour]: {
-        show: prevState[tour]?.show || false,
         steps: {
           ...prevState[tour]?.steps,
           [number]: step,
@@ -19,21 +18,10 @@ export const TourProvider: React.FC = memo(({ children }) => {
     }));
   }, []);
 
-  const toggleTour = useCallback((tour: TourKey, show: boolean) => {
-    setTours(prevState => ({
-      ...prevState,
-      [tour]: {
-        show,
-        steps: prevState[tour]?.steps || {},
-      },
-    }));
-  }, []);
-
   const tourContext = useMemo(() => ({
     tours,
     registerOrUpdateStep,
-    toggleTour,
-  }), [tours, registerOrUpdateStep, toggleTour]);
+  }), [tours, registerOrUpdateStep]);
 
   return (
     <TourContext.Provider value={tourContext}>

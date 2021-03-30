@@ -1,12 +1,13 @@
 import { getNormalizedHeader, lambda } from "../utils"
 import axios from "axios"
-import { dataSourceFacade } from "@oboku/api-shared/src/dataSources/facade"
+import { dataSourceFacade } from "../dataSources/facade"
 import { withToken } from "../auth"
 import { AWS_API_URI } from "../constants"
 import { getNanoDbForUser } from "../db/helpers"
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "../constants"
-import { configure as configureGoogleDataSource } from '@oboku/api-shared/src/dataSources/google'
+import { configure as configureGoogleDataSource } from '../dataSources/google'
 import { S3 } from 'aws-sdk'
+import { getEventBody } from "../utils/getEventBody"
 
 const s3 = new S3()
 
@@ -17,7 +18,7 @@ configureGoogleDataSource({
 
 export const fn = lambda(async (event) => {
   const { email } = await withToken(event)
-  const { dataSourceId } = JSON.parse(event.isBase64Encoded ? (Buffer.from(event.body, 'base64')).toString() : event.body)
+  const { dataSourceId } = getEventBody(event)
   const credentials = JSON.parse(getNormalizedHeader(event, 'oboku-credentials') || '{}')
   const authorization = getNormalizedHeader(event, 'authorization')
 

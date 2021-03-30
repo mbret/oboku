@@ -1,77 +1,177 @@
-import React, { memo } from 'react';
+import React, { FC, memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import TagSvg from '../assets/undraw_schedule_pnbk.svg'
+import Step2Cover from '../assets/undraw_Artificial_intelligence_re_enpp.svg'
 import { Link, Typography, useTheme } from '@material-ui/core';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import { isTagsTourOpenedState, firstTimeExperienceState } from './firstTimeExperienceStates';
-import { useCSS } from '../common/utils';
+import { useRecoilValue } from 'recoil';
+import { isTagsTourOpenedState } from './firstTimeExperienceStates';
+import { HeroCover } from './HeroCover';
+import { Slide } from './Slide';
+import { Content } from './Content';
+import { FirstTimeExperienceId } from './constants';
+import { useHasDoneFirstTimeExperience, useValidateFirstTimeExperience } from './helpers';
 
 export const AppTourFirstTourTags: React.FC = memo(() => {
   const isTagsTourOpened = useRecoilValue(isTagsTourOpenedState)
-  const [{ hasDoneFirstTimeTags }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)
-  const show = !hasDoneFirstTimeTags && isTagsTourOpened
-  const styles = useStyles();
+  const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS)
+  const validateFirstTimeExperience = useValidateFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS)
+  const show = !hasDoneFirstTimeExperience && isTagsTourOpened
   const theme = useTheme()
 
   return (
     <Tour
       unskippable
-      id="AppTourFirstTourTags"
+      id={FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS}
       show={show}
-      onClose={() => {
-        setFirstTimeExperienceState(old => ({ ...old, hasDoneFirstTimeTags: true }))
-      }}
+      onClose={validateFirstTimeExperience}
     >
       <Step
-        id="AppTourFirstTourTags"
+        id={FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS}
         number={1}
         content={(
-          <div style={styles.slide1}>
+          <Slide>
             <div style={{
+              flex: 0.4,
               display: 'flex',
-              flexFlow: 'column',
               alignItems: 'center',
-              maxWidth: theme.custom.maxWidthCenteredContent,
-              width: '80%',
-              paddingTop: theme.spacing(2)
+              flexFlow: 'column',
+              justifyContent: 'center',
+              backgroundColor: 'white',
+              width: '100%',
+              minHeight: 0,
             }}>
-              <img src={TagSvg} alt="cover" style={{
-                width: '100%',
-                objectFit: 'contain',
-                paddingBottom: theme.spacing(2)
-              }} />
-              <Typography >
-                You can use tags to better organize and search through your books. Group them by same interests
-                or use tags behaviors to blur covers, protect access and more to customize your content accessibility.
-                More information in the <Link href="https://docs.oboku.me" target="__blank">doc</Link>
-              </Typography>
+              <HeroCover src={TagSvg} style={{ margin: theme.spacing(3) }} />
             </div>
-          </div>
+            <Content style={{
+              flex: 0.6,
+            }}>
+              <Typography variant="h5" align="left" gutterBottom>
+                Tags
+              </Typography>
+              <Typography align="left" >
+                Using tags will help you organize, customize and search through your content more easily
+              </Typography>
+            </Content>
+          </Slide>
+        )}
+      />
+      <Step
+        id={FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS}
+        number={3}
+        content={(
+          <Slide>
+            <div style={{
+              flex: 0.4,
+              display: 'flex',
+              alignItems: 'center',
+              flexFlow: 'column',
+              justifyContent: 'center',
+              backgroundColor: 'white',
+              width: '100%',
+              minHeight: 0,
+            }}>
+              <HeroCover src={Step2Cover} style={{ margin: theme.spacing(3), }} />
+            </div>
+            <Content style={{
+              flex: 0.6,
+            }}>
+              <Typography variant="h5" align="left" gutterBottom>
+                Creating a tag (2)
+              </Typography>
+              <Typography align="left">
+                By using the powerful <Link href="https://docs.oboku.me/wiki/datasources#personalize-your-content-with-directives" target="__blank">directive</Link> feature you can let oboku automatically
+                create and manage tags for you. This is the most conveniant way if you are using data sources to synchronize your content
+              </Typography>
+            </Content>
+          </Slide>
+        )}
+      />
+      <Step
+        id={FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS}
+        number={4}
+        content={(
+          <Slide>
+            <Content>
+              <Typography variant="h5" align="left" gutterBottom>
+                Organize
+              </Typography>
+              <Typography align="left">
+                Once a tag is created you can assign it to your contents by clicking on the tag itself or your books action menu.
+                You can also use <Link href="https://docs.oboku.me/wiki/datasources#personalize-your-content-with-directives" target="__blank">directive</Link> to
+                let oboku assign tags automatically.
+              </Typography>
+            </Content>
+          </Slide>
+        )}
+      />
+      <Step
+        id={FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS}
+        number={5}
+        content={(
+          <Slide>
+            <Content>
+              <Typography variant="h5" align="left" gutterBottom>
+                Customize
+              </Typography>
+              <Typography align="left">
+                In addition to help organize and search through your content, each tags can be customized and apply
+                different behavior on your content. You can for example protect all the book assigned to a specific tag, blur their covers etc... More
+                customization will coming in the future
+              </Typography>
+            </Content>
+          </Slide>
+        )}
+      />
+      <Step
+        id={FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS}
+        number={6}
+        content={(
+          <Slide>
+            <Content>
+              <Typography variant="h5" align="left" gutterBottom>
+                More info
+              </Typography>
+              <Typography align="left">
+                To learn more about tags and how to use them please visit the <Link href="https://docs.oboku.me/wiki/tags" target="__blank">doc</Link>
+              </Typography>
+            </Content>
+          </Slide>
         )}
       />
     </Tour>
   );
 });
 
-const useStyles = () => {
+export const AppTourFirstTourTagsStep2: FC<{}> = ({ children }) => {
   const theme = useTheme()
 
-  return useCSS(() => ({
-    coverContainer: {
-      alignSelf: 'center',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    slide1: {
-      padding: theme.spacing(2),
-      boxSizing: 'border-box',
-      textAlign: 'center',
-      color: '#fff',
-      display: 'flex',
-      flex: 1,
-      flexFlow: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-  }), [theme])
+  return (
+    <Step
+      id={FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS}
+      number={2}
+      style={{
+        width: '100%'
+      }}
+      spotlightSize={150}
+      content={({ spotlightMeasures, spotlightSize }) => (
+        <Slide style={{
+          justifyContent: 'flex-start',
+          marginTop: (spotlightMeasures?.pageY || 0) + ((spotlightSize || 0) / 2) + theme.spacing(4)
+        }}>
+          <Content style={{
+            justifyContent: 'flex-start',
+          }}>
+            <Typography variant="h5" align="left" gutterBottom>
+              Creating a tag
+            </Typography>
+            <Typography align="left">
+              Using this button is the most straightforward way to create a tag but it is not the only one...
+          </Typography>
+          </Content>
+        </Slide>
+      )}
+    >
+      {children}
+    </Step>
+  )
 }

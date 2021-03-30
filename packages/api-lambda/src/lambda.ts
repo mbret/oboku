@@ -1,7 +1,7 @@
 import './loadEnv'
 import { APIGatewayEventRequestContext, APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda"
-import { UnauthorizedError, BadRequestError, NotFoundError } from "@oboku/api-shared/src/errors"
-import { configure as configureLogger } from "@oboku/api-shared/src/Logger"
+import { UnauthorizedError, BadRequestError, NotFoundError } from "./errors"
+import { configure as configureLogger } from "./Logger"
 import { Logger } from "./utils/logger"
 import { ObokuSharedError } from '@oboku/shared/src'
 

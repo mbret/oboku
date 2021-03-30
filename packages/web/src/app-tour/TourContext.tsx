@@ -1,16 +1,15 @@
 import React, { createContext } from 'react';
+import { FirstTimeExperience } from '../firstTimeExperience/constants';
 
-export type TourKey =
-  | 'AppTourReader'
-  | 'AppTourWelcome'
-  | 'AppTourFirstAddingBook'
-  | 'AppTourFirstTourTags'
+type Measures = { x: number, y: number, width: number, height: number, pageX: number, pageY: number }
+
+export type TourKey = typeof FirstTimeExperience[number]['id']
 
 export type Step = {
-  measures: undefined | { x: number, y: number, width: number, height: number, pageX: number, pageY: number };
+  measures: undefined | Measures;
   spotlightSize: undefined | number;
   spotlightMargin: undefined | number;
-  content: React.ReactNode | ((args: { onClose: () => void }) => React.ReactNode)
+  content: React.ReactNode | ((args: { onClose: () => void, spotlightMeasures: Measures | undefined, spotlightSize: undefined | number }) => React.ReactNode)
   withButtons: boolean
 };
 
@@ -18,11 +17,9 @@ type TourContextType = {
   tours: {
     [K in TourKey]?: {
       steps: { [key: string]: Step };
-      show: boolean;
     }
   },
   registerOrUpdateStep: (key: TourKey, stepNumber: number, step: Step) => void;
-  toggleTour: (key: TourKey, show: boolean) => void;
 };
 
 export const TourContext = createContext<TourContextType | undefined>(undefined);

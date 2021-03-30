@@ -3,29 +3,29 @@ import { Step, Tour } from '../app-tour';
 import FteCoverAsset from '../assets/fte-cover.svg'
 import { Typography, useTheme } from '@material-ui/core';
 import { Logo } from '../common/Logo';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilValue } from 'recoil';
 import { authState } from '../auth/authState';
-import { firstTimeExperienceState } from './firstTimeExperienceStates';
 import { useCSS } from '../common/utils';
+import { FirstTimeExperienceId } from './constants';
+import { useHasDoneFirstTimeExperience, useValidateFirstTimeExperience } from './helpers';
 
 export const AppTourWelcome: React.FC = memo(() => {
-  const [{ hasDoneWelcomeTour }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)
+  const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_WELCOME)
+  const validateFirstTimeExperience = useValidateFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_WELCOME)
   const { token } = useRecoilValue(authState) || {}
-  const show = !hasDoneWelcomeTour && !!token
+  const show = !hasDoneFirstTimeExperience && !!token
   const styles = useStyles();
   const theme = useTheme()
 
   return (
     <Tour
       unskippable
-      id="AppTourWelcome"
+      id={FirstTimeExperienceId.APP_TOUR_WELCOME}
       show={show}
-      onClose={() => {
-        setFirstTimeExperienceState(old => ({ ...old, hasDoneWelcomeTour: true }))
-      }}
+      onClose={validateFirstTimeExperience}
     >
       <Step
-        id="AppTourWelcome"
+        id={FirstTimeExperienceId.APP_TOUR_WELCOME}
         number={1}
         content={(
           <div style={styles.slide1}>

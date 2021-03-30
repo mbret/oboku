@@ -1,5 +1,5 @@
 import { fade, InputBase, makeStyles, useTheme } from '@material-ui/core'
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { BookList } from '../books/bookList/BookList'
 import { useCSS } from '../common/utils'
 import { TopBarNavigation } from '../TopBarNavigation'
@@ -14,6 +14,12 @@ export const SearchScreen = () => {
     e.preventDefault()
     inputRef.current?.blur()
   }, [])
+
+  useEffect(() =>{
+    return () => {
+      search(``)
+    }
+  }, [search])
 
   return (
     <div style={styles.container}>

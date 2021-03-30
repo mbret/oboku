@@ -7,14 +7,14 @@
   "author": "SAM CLI",
   "license": "MIT",
   "dependencies": {
-    "@types/aws-lambda": "^8.10.68",
+    "@types/aws-lambda": "^8.10.73",
     "@types/concurrently": "^6.0.1",
-    "@types/jsonwebtoken": "^8.5.0",
+    "@types/jsonwebtoken": "^8.5.1",
     "@types/nodemailer": "^6.4.1",
     "@types/sharp": "^0.27.1",
     "@types/unzipper": "^0.10.3",
     "aws-lambda": "^1.0.6",
-    "aws-sdk": "^2.866.0",
+    "aws-sdk": "^2.874.0",
     "axios": "^0.21.0",
     "copy-webpack-plugin": "^8.0.0",
     "fast-xml-parser": "^3.19.0",
@@ -32,7 +32,11 @@
     "unrar": "^0.2.0",
     "unzipper": "^0.10.11",
     "webpack": "^5.26.0",
-    "webpack-cli": "^4.3.0"
+    "webpack-cli": "^4.3.0",
+    "@types/node-fetch": "^2.5.8",
+    "@types/request": "^2.48.5",
+    "dropbox": "mbret/dropbox-sdk-js#main",
+    "googleapis": "^68.0.0"
   },
   "scripts": {
     "test": "mocha tests/unit/",

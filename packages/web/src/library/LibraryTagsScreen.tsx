@@ -7,36 +7,41 @@ import { BlurOnRounded, LocalOfferRounded, LockRounded } from '@material-ui/icon
 import { LockActionDialog } from '../auth/LockActionDialog';
 import { tagsAsArrayState } from '../tags/states';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { isTagsTourOpenedState, firstTimeExperienceState } from '../firstTimeExperience/firstTimeExperienceStates';
+import { isTagsTourOpenedState } from '../firstTimeExperience/firstTimeExperienceStates';
 import { useCSS } from '../common/utils';
+import { AppTourFirstTourTagsStep2 } from '../firstTimeExperience/AppTourFirstTourTags';
+import { useHasDoneFirstTimeExperience } from '../firstTimeExperience/helpers';
+import { FirstTimeExperienceId } from '../firstTimeExperience/constants';
 
 export const LibraryTagsScreen = () => {
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
   const classes = useStyles();
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
   const setIsTagsTourOpenedState = useSetRecoilState(isTagsTourOpenedState)
-  const { hasDoneFirstTimeTags } = useRecoilValue(firstTimeExperienceState)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] = useState<string | undefined>(undefined)
   const tags = useRecoilValue(tagsAsArrayState)
   const [addTag] = useCreateTag()
+  const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS)
 
   useEffect(() => {
-    !hasDoneFirstTimeTags && setIsTagsTourOpenedState(true)
-  }, [setIsTagsTourOpenedState, hasDoneFirstTimeTags])
+    !hasDoneFirstTimeExperience && setIsTagsTourOpenedState(true)
+  }, [setIsTagsTourOpenedState, hasDoneFirstTimeExperience])
 
   return (
     <div style={classes.container}>
       <Toolbar>
-        <Button
-          style={{
-            width: '100%'
-          }}
-          variant="outlined"
-          color="primary"
-          onClick={() => setIsAddTagDialogOpened(true)}
-        >
-          Create a new tag
-        </Button>
+        <AppTourFirstTourTagsStep2>
+          <Button
+            style={{
+              width: '100%'
+            }}
+            variant="outlined"
+            color="primary"
+            onClick={() => setIsAddTagDialogOpened(true)}
+          >
+            Create a new tag
+          </Button>
+        </AppTourFirstTourTagsStep2>
       </Toolbar>
       <List style={classes.list}>
         {tags && tags.map(tag => (

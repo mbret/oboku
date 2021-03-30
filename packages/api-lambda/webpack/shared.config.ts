@@ -18,7 +18,14 @@ export const sharedConfig = (functionName: String): Configuration => ({
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: [{
+          loader: 'ts-loader',
+          options: {
+            compilerOptions: {
+              noEmit: false
+            }
+          }
+        }],
       },
       {
         test: /\.node$/,

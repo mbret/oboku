@@ -3,15 +3,16 @@
  * @see https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logsV2:log-groups/log-group/$252Faws$252Flambda$252Foboku-api-RefreshMetadataLongProcessFunction-1FN5C0L9PKJAY/log-events/2021$252F02$252F17$252F$255B$2524LATEST$255D3bc34158bfa44f278d8fd4aeb86e9202$3Fstart$3DPT3H
  */
 import { getNormalizedHeader, lambda } from "../utils"
-import { atomicUpdate, findOne } from "@oboku/api-shared/src/db/helpers"
+import { atomicUpdate, findOne } from "../db/helpers"
 import { withToken } from "../auth"
 import { retrieveMetadataAndSaveCover } from "../books/retrieveMetadataAndSaveCover"
 import { getNanoDbForUser } from "../db/helpers"
 import * as fs from 'fs'
 import * as path from 'path'
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, TMP_DIR } from "../constants"
-import { configure as configureGoogleDataSource } from '@oboku/api-shared/src/dataSources/google'
-import { PromiseReturnType } from "@oboku/api-shared/src/types"
+import { configure as configureGoogleDataSource } from '../dataSources/google'
+import { PromiseReturnType } from "../types"
+import { getEventBody } from "../utils/getEventBody"
 
 configureGoogleDataSource({
   client_id: GOOGLE_CLIENT_ID,
@@ -29,7 +30,7 @@ export const fn = lambda(async (event) => {
   let bookId: string | undefined = undefined
 
   try {
-    bookId = JSON.parse(event.isBase64Encoded ? (Buffer.from(event.body, 'base64')).toString() : event.body).bookId
+    bookId = getEventBody(event).bookId
   } catch (e) {
     throw new Error(`Unable to parse event.body -> ${event.body}`)
   }

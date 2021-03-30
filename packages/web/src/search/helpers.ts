@@ -18,7 +18,7 @@ export const useSearch = () => {
     const res = books.filter(book => {
       const searchRegex = new RegExp(search || '', 'i')
 
-      console.log(searchRegex, book.title?.search(searchRegex))
+      // console.log(searchRegex, book.title?.search(searchRegex))
 
       const indexOfFirstMatch = book.title?.search(searchRegex) || 0
       return indexOfFirstMatch >= 0 ? true : false

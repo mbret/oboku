@@ -46,3 +46,5 @@ export const getAwsLambda = () => new aws.Lambda({
     endpoint: new aws.Endpoint('http://host.docker.internal:4002'),
   },
 })
+
+export const waitForRandomTime = (min: number, max: number) => new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * (max - min + 1) + min)))

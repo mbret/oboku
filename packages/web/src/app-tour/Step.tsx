@@ -1,9 +1,8 @@
-import React, { useContext, useEffect, memo } from 'react';
+import React, { useContext, useEffect, memo, useRef, useCallback } from 'react';
 import { useMeasure } from 'react-use';
-// import { View, LayoutRectangle, findNodeHandle, UIManager, ViewStyle } from 'react-native';
 import { Step as StepType, TourContext, TourKey } from './TourContext';
 
-type Props = {
+export const Step: React.FC<{
   number: number;
   content?: StepType['content'];
   style?: React.CSSProperties;
@@ -12,19 +11,22 @@ type Props = {
   spotlightMargin?: number;
   testID?: string;
   withButtons?: boolean
-};
-
-export const Step: React.FC<Props> = memo(({ withButtons = true, children, id, number, content, style, spotlightSize, spotlightMargin }) => {
-  const { tours = {}, registerOrUpdateStep } = useContext(TourContext) || {};
-  const [ref, layout] = useMeasure();
-  const tour = tours[id];
-  // const [layout, setLayout] = useState<LayoutRectangle | undefined>(undefined);
-  // const containerRef = useRef<any>();
+}> = memo(({ withButtons = true, children, id, number, content, style, spotlightSize, spotlightMargin }) => {
+  const { registerOrUpdateStep } = useContext(TourContext) || {};
+  const [measureRef, layout] = useMeasure();
+  const ref = useRef<HTMLElement>();
+  const registerRef = useCallback((_ref) => {
+    if (_ref) {
+      measureRef(_ref)
+      ref.current = _ref
+    }
+  }, [measureRef])
+  const hasChildren = !!children
 
   useEffect(() => {
     if ("width" in layout && !layout.width) return;
 
-    if (!children) {
+    if (!hasChildren) {
       registerOrUpdateStep && registerOrUpdateStep(id, number, {
         measures: undefined,
         spotlightSize,
@@ -33,30 +35,21 @@ export const Step: React.FC<Props> = memo(({ withButtons = true, children, id, n
         withButtons,
       });
     } else {
-      // const node = findNodeHandle(containerRef.current);
-      // node && UIManager.measureInWindow(node, (pageX, pageY, width, height) => {
-      if ("width" in layout) {
-        registerOrUpdateStep && registerOrUpdateStep(id, number, {
-          measures: { x: 0, y: 0, width: layout.width, height: layout.height, pageX: layout.x, pageY: layout.y },
-          spotlightSize,
-          spotlightMargin,
-          content,
-          withButtons,
-        });
-      }
-      // });
+      const boundingRect = ref.current?.getBoundingClientRect()
+      registerOrUpdateStep && registerOrUpdateStep(id, number, {
+        measures: { x: 0, y: 0, width: layout.width, height: layout.height, pageX: boundingRect?.x || 0, pageY: boundingRect?.y || 0 },
+        spotlightSize,
+        spotlightMargin,
+        content,
+        withButtons,
+      });
     }
-  }, [registerOrUpdateStep, id, number, layout, withButtons, content, tour?.show, children, spotlightSize, spotlightMargin]);
-
-  // const onLayout = useCallback(event => {
-  //   setLayout(event.nativeEvent.layout);
-  // }, []);
+  }, [registerOrUpdateStep, id, number, layout, withButtons, content, hasChildren, spotlightSize, spotlightMargin]);
 
   return (
     <div
-      ref={ref as any}
+      ref={registerRef}
       style={style}
-      // onLayout={onLayout}
     >
       {children}
     </div>

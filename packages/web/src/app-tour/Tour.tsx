@@ -1,6 +1,8 @@
-import React, { useContext, useEffect, memo } from 'react';
+import React, { useEffect, memo } from 'react';
+import { useRecoilState } from 'recoil';
+import { appTourState } from './states';
 import { TourContent } from './TourContent';
-import { TourContext, TourKey } from './TourContext';
+import { TourKey } from './TourContext';
 
 type Props = {
   id: TourKey;
@@ -10,15 +12,30 @@ type Props = {
 };
 
 export const Tour: React.FC<Props> = memo(({ children, id, show = false, unskippable, onClose }) => {
-  const { toggleTour } = useContext(TourContext) || {};
+  const [{ currentOpenedTour }, setAooTourState] = useRecoilState(appTourState)
 
   useEffect(() => {
-    toggleTour && toggleTour(id, show);
-  }, [show, id, toggleTour]);
+    if (!show) {
+      setAooTourState(old => {
+        if (old.currentOpenedTour === id) {
+          return { currentOpenedTour: undefined }
+        }
+        return old
+      })
+    }
+    if (show) {
+      setAooTourState(old => {
+        if (old.currentOpenedTour === undefined || old.currentOpenedTour !== id) {
+          return { currentOpenedTour: id }
+        }
+        return old
+      })
+    }
+  }, [show, currentOpenedTour, id, setAooTourState])
 
   return (
     <>
-      {show && (
+      {show && currentOpenedTour === id && (
         <TourContent
           id={id}
           unskippable={unskippable}

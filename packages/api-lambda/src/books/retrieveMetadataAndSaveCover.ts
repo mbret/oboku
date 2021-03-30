@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as unzipper from 'unzipper'
-import { dataSourceFacade } from '@oboku/api-shared/src/dataSources/facade'
+import { dataSourceFacade } from '../dataSources/facade'
 import * as parser from 'fast-xml-parser'
 import { BookDocType, LinkDocType, OPF, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from '@oboku/shared/src'
 import { detectMimeTypeFromContent } from "../utils"

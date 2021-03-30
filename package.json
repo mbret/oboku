@@ -26,8 +26,7 @@
     "tsc:web": "cd packages/web && yarn tsc",
     "tsc:shared": "cd packages/shared && yarn tsc",
     "tsc:api-lambda": "cd packages/api-lambda && yarn tsc",
-    "tsc:api-shared": "cd packages/api-shared && yarn tsc",
-    "tsc": "concurrently -n tsc:web,tsc:shared,tsc:api-lambda,tsc:api-shared \"yarn tsc:web\" \"yarn tsc:shared\" \"yarn tsc:api-lambda\" \"yarn tsc:api-shared\""
+    "tsc": "concurrently -n tsc:web,tsc:shared,tsc:api-lambda \"yarn tsc:web\" \"yarn tsc:shared\" \"yarn tsc:api-lambda\""
   },
   "dependencies": {
     "concurrently": "^6.0.0",

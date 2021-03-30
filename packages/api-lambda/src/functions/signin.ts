@@ -1,7 +1,7 @@
 import { lambda } from '../utils'
 import { generateToken } from "../auth"
 import * as validators from '@oboku/shared/src/validators'
-import { BadRequestError } from '@oboku/api-shared/src/errors'
+import { BadRequestError } from '../errors'
 import { auth } from '../db/helpers'
 import { getEventBody } from '../utils/getEventBody'
 

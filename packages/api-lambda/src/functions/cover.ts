@@ -4,14 +4,18 @@ import {
 } from "aws-lambda"
 import sharp from 'sharp'
 import { PromiseReturnType } from "../types"
-import { NotFoundError } from "@oboku/api-shared/src/errors"
+import { NotFoundError } from "../errors"
 import { S3 } from 'aws-sdk'
 
 const s3 = new S3()
 
 export const fn = lambda(async (event: APIGatewayProxyEvent) => {
-  const coverId = event.pathParameters.id
+  const coverId = event.pathParameters?.id
   const format = event.queryStringParameters?.format || 'image/webp'
+
+  if (!coverId) {
+    throw new NotFoundError()
+  }
 
   const objectKey = `cover-${coverId}`
 

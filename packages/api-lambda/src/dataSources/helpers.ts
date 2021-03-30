@@ -1,7 +1,7 @@
 import {
   atomicUpdate, createBook, addTagsToBook,
   insert, findOne, DocType, ModelOf, addLinkToBook, find, addTagsFromNameToBook, getOrCreateTagFromName
-} from '@oboku/api-shared/src/db/helpers'
+} from '../db/helpers'
 import createNano from 'nano'
 import { InsertableBookDocType, SafeMangoQuery, Errors, ObokuSharedError } from "@oboku/shared/src"
 import { extractMetadataFromName } from '@oboku/shared/src/directives'

@@ -3,28 +3,27 @@ import { Step, Tour } from '../app-tour';
 import { Box, Button, Typography, useTheme } from '@material-ui/core';
 import { useHorizontalTappingZoneWidth } from '../reader/utils';
 import { TouchAppRounded } from '@material-ui/icons';
-import { useRecoilState } from 'recoil';
-import { firstTimeExperienceState } from './firstTimeExperienceStates';
 import { useCSS } from '../common/utils';
+import { FirstTimeExperienceId } from './constants';
+import { useValidateFirstTimeExperience, useHasDoneFirstTimeExperience } from './helpers';
 
 export const AppTourReader: React.FC = memo(() => {
-  const [{ hasDoneReaderTour }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)
+  const validateFirstTimeExperience = useValidateFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_READER)
+  const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_READER)
   const theme = useTheme()
   const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
-  const show = !hasDoneReaderTour
+  const show = !hasDoneFirstTimeExperience
   const styles = useStyles();
 
   return (
     <Tour
       unskippable
-      id="AppTourReader"
+      id={FirstTimeExperienceId.APP_TOUR_READER}
       show={show}
-      onClose={() => {
-        setFirstTimeExperienceState(old => ({ ...old, hasDoneReaderTour: true }))
-      }}
+      onClose={validateFirstTimeExperience}
     >
       <Step
-        id="AppTourReader"
+        id={FirstTimeExperienceId.APP_TOUR_READER}
         number={1}
         withButtons={false}
         content={({ onClose }) => (

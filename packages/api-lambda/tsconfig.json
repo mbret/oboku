@@ -1,19 +1,15 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    // "module": "none",
-    // "module": "amd",
     "esModuleInterop": true,
     "target": "ES2017", // only version that works with aws node env
     "noImplicitAny": true,
-    // "sourceMap": true,
-    // "outDir": ".build",
-    // "outFile": ".build/main.js",
-    "removeComments": true,
-    // "moduleResolution": "node",
-    "sourceMap": false,
-    "strict": true
+    // "removeComments": true,
+    "strict": true,
+    "noEmit": true,
+    // "skipLibCheck": true
   },
   // "include": ["**/*", "../tests/**/*"]
-  "include": ["src/app.ts", "scripts/*", "webpack.config.ts"]
+  // "include": ["src/app.ts", "scripts/*", "webpack.config.ts"]
+  "include": ["src/**/*"]
 }

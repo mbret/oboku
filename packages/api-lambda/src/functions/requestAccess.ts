@@ -1,5 +1,5 @@
 import { lambda } from '../utils'
-import { BadRequestError } from '@oboku/api-shared/src/errors'
+import { BadRequestError } from '../errors'
 import { getEventBody } from '../utils/getEventBody'
 import * as nodemailer from 'nodemailer'
 import { GMAIL_APP_PASSWORD } from '../constants'

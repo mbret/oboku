@@ -1,12 +1,13 @@
 import { atom } from "recoil";
+import { FirstTimeExperienceId } from "./constants";
 
-export const firstTimeExperienceState = atom({
+export const firstTimeExperienceState = atom<{ [key in FirstTimeExperienceId]?: number }>({
   key: 'firstTimeExperienceState',
   default: {
-    hasDoneWelcomeTour: false,
-    hasDoneReaderTour: false,
-    hasDoneFirstTimeAddingBook: false,
-    hasDoneFirstTimeTags: false,
+    [FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS]: 0,
+    [FirstTimeExperienceId.APP_TOUR_READER]: 0,
+    [FirstTimeExperienceId.APP_TOUR_WELCOME]: 0,
+    [FirstTimeExperienceId.APP_TOUR_FIRST_ADDING_BOOK]: 0,
   }
 })
 

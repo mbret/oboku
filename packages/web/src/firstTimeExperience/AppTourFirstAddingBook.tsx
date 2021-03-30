@@ -2,29 +2,29 @@ import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import FteUploadAsset from '../assets/fte-upload.svg'
 import { Link, Typography, useTheme } from '@material-ui/core';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import { firstTimeExperienceState } from './firstTimeExperienceStates';
+import { useRecoilValue } from 'recoil';
 import { isUploadBookDrawerOpenedState } from '../library/states';
 import { useCSS } from '../common/utils';
+import { FirstTimeExperienceId } from './constants';
+import { useHasDoneFirstTimeExperience, useValidateFirstTimeExperience } from './helpers';
 
 export const AppTourFirstAddingBook: React.FC = memo(() => {
   const isUploadBookDrawerOpened = useRecoilValue(isUploadBookDrawerOpenedState)
-  const [{ hasDoneFirstTimeAddingBook }, setFirstTimeExperienceState] = useRecoilState(firstTimeExperienceState)
-  const show = !hasDoneFirstTimeAddingBook && isUploadBookDrawerOpened
+  const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_FIRST_ADDING_BOOK)
+  const validateFirstTimeExperience = useValidateFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_FIRST_ADDING_BOOK)
+  const show = !hasDoneFirstTimeExperience && isUploadBookDrawerOpened
   const styles = useStyles();
   const theme = useTheme()
 
   return (
     <Tour
       unskippable
-      id="AppTourFirstAddingBook"
+      id={FirstTimeExperienceId.APP_TOUR_FIRST_ADDING_BOOK}
       show={show}
-      onClose={() => {
-        setFirstTimeExperienceState(old => ({ ...old, hasDoneFirstTimeAddingBook: true }))
-      }}
+      onClose={validateFirstTimeExperience}
     >
       <Step
-        id="AppTourFirstAddingBook"
+        id={FirstTimeExperienceId.APP_TOUR_FIRST_ADDING_BOOK}
         number={1}
         content={(
           <div style={styles.slide1}>
