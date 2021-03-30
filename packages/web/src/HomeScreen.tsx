@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { TopBarNavigation } from './navigation/TopBarNavigation';
 import { Typography, useTheme, Button } from '@material-ui/core';
 import { BookList } from './books/bookList/BookList';
@@ -18,14 +18,16 @@ export const HomeScreen = () => {
   const theme = useTheme()
   const history = useHistory()
   const continueReadingBooks = useContinueReadingBooks()
-  const continueReadingBookIds = useMemo(() => continueReadingBooks.map(({ _id }) => _id), [continueReadingBooks])
   const recentlyAddedBooks = useRecentlyAddedBooks()
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
   const itemWidth = 150
   const { t } = useTranslation()
   const listHeight = Math.floor(itemWidth / adjustedRatioWhichConsiderBottom)
+  const listStyle = useMemo(() => ({
+    height: listHeight
+  }), [listHeight])
 
-  console.log('[HomeScreen]', itemWidth / adjustedRatioWhichConsiderBottom)
+  console.log(`HomeScreen render`, recentlyAddedBooks)
 
   return (
     <div style={{
@@ -72,10 +74,8 @@ export const HomeScreen = () => {
             <BookList
               isHorizontal
               itemWidth={itemWidth}
-              data={continueReadingBookIds}
-              style={{
-                height: listHeight
-              }}
+              data={continueReadingBooks}
+              style={listStyle}
               viewMode="grid"
             />
           </>
@@ -89,9 +89,7 @@ export const HomeScreen = () => {
               isHorizontal
               itemWidth={itemWidth}
               data={recentlyAddedBooks}
-              style={{
-                height: listHeight
-              }}
+              style={listStyle}
               viewMode="grid"
             />
           </>
@@ -105,17 +103,25 @@ const useContinueReadingBooks = () => {
   const booksAsArray = useRecoilValue(booksAsArrayState)
   const booksSortedByDate = useBooksSortedBy(booksAsArray, 'activity')
 
-  return booksSortedByDate
-    .filter(book => book.readingStateCurrentState === ReadingStateState.Reading)
+  return useMemo(() =>
+    booksSortedByDate
+      .filter(book => book.readingStateCurrentState === ReadingStateState.Reading)
+      .map(item => item._id)
+    ,
+    [booksSortedByDate]
+  )
 }
 
 const useRecentlyAddedBooks = () => {
   const books = useRecoilValue(booksAsArrayState)
-  const booksSortedByDate = R.sort(R.descend(R.prop('createdAt')), books)
 
-  return booksSortedByDate
-    .slice(0, 15)
-    .map(book => book._id)
+  return useMemo(() => {
+    const booksSortedByDate = R.sort(R.descend(R.prop('createdAt')), books)
+
+    return booksSortedByDate
+      .slice(0, 15)
+      .map(book => book._id)
+  }, [books])
 }
 
 const useStyles = () => {

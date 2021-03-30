@@ -1,4 +1,4 @@
-import { ComponentProps, FC, forwardRef, memo, useRef } from "react"
+import { ComponentProps, FC, forwardRef, memo, useMemo, useRef } from "react"
 import { FixedSizeGrid, GridOnScrollProps, VariableSizeList } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { useRecoilValue } from "recoil";
@@ -6,6 +6,7 @@ import { localSettingsState } from "../settings/states";
 import { ArrowBackIosRounded, ArrowForwardIosRounded, ExpandLessRounded, ExpandMoreRounded } from "@material-ui/icons";
 import { decimalAdjust, useCSS } from "../common/utils";
 import { useTheme } from "@material-ui/core";
+import { useCallback } from "react";
 
 export const ReactWindowList: FC<{
   rowRenderer: (index: string) => React.ReactNode,
@@ -18,23 +19,15 @@ export const ReactWindowList: FC<{
   headerHeight?: number,
   itemWidth?: number,
   itemHeight?: number,
-}> = memo(({ headerHeight, itemHeight, itemWidth, preferredRatio, ...rest }) => {
-  const listRef = useRef<FixedSizeGrid>()
-  const outerRef = useRef<HTMLDivElement>()
+}> = memo(({ headerHeight, itemHeight, ...rest }) => {
 
   return (
     <>
       <AutoSizer>
         {({ width, height }) => (
           <List
-            ref={listRef as any}
-            outerRef={outerRef}
             width={width}
             height={height}
-            headerHeight={headerHeight}
-            itemHeight={itemHeight}
-            itemWidth={itemWidth}
-            preferredRatio={preferredRatio}
             {...rest}
           />
         )}
@@ -138,7 +131,7 @@ const List = memo(forwardRef<FixedSizeGrid, {
     }
   }
 
-  const innerElementType = forwardRef<any, any>(({ style, children, ...rest }, ref) => {
+  const innerElementType = useMemo(() => forwardRef<any, any>(({ style, children, ...rest }, ref) => {
     return (
       <div
         ref={ref as any}
@@ -156,7 +149,28 @@ const List = memo(forwardRef<FixedSizeGrid, {
         {children}
       </div>
     )
-  })
+  }), [renderHeader, headerHeight])
+
+  const renderRow = useCallback(({ columnIndex, rowIndex, style, data, ...rest }) => {
+    const itemIndex = rowIndex * columnCount + columnIndex
+
+    return (
+      <div key={rowIndex} style={{
+        ...style,
+        ...headerHeight && {
+          top: `${parseFloat(style.top?.toString() || '0') + headerHeight}px`
+        }
+      }}>
+        <div style={{
+          height: '100%',
+          width: '100%',
+          maxHeight: computedItemHeight,
+        }}>
+          {data[itemIndex] && rowRenderer(data[itemIndex])}
+        </div>
+      </div>
+    )
+  }, [columnCount, rowRenderer, computedItemHeight, headerHeight])
 
   return (
     <>
@@ -174,28 +188,10 @@ const List = memo(forwardRef<FixedSizeGrid, {
         width={width}
         rowCount={rowCount}
         innerElementType={innerElementType}
+        itemData={data}
         {...rest}
       >
-        {({ columnIndex, rowIndex, style }) => {
-          const itemIndex = rowIndex * columnCount + columnIndex
-
-          return (
-            <div key={rowIndex} style={{
-              ...style,
-              ...headerHeight && {
-                top: `${parseFloat(style.top?.toString() || '0') + headerHeight}px`
-              }
-            }}>
-              <div style={{
-                height: '100%',
-                width: '100%',
-                maxHeight: computedItemHeight,
-              }}>
-                {data[itemIndex] && rowRenderer(data[itemIndex])}
-              </div>
-            </div>
-          )
-        }}
+        {renderRow}
       </FixedSizeGrid >
       {displayScrollerButtons && (
         <>
