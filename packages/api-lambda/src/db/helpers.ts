@@ -62,7 +62,7 @@ export const findOne = async <M extends DocType['rx_model'], D extends ModelOf<M
 }
 
 export const find = async <M extends DocType['rx_model'], D extends DocType>(db: createNano.DocumentScope<unknown>, rxModel: M, query: SafeMangoQuery<D>) => {
-  const response = await retryFn(() => db.find({ ...query, selector: { rx_model: rxModel, ...query?.selector as any }, limit: 1 }))
+  const response = await retryFn(() => db.find({ ...query, selector: { rx_model: rxModel, ...query?.selector as any } }))
 
   return response.docs
 }

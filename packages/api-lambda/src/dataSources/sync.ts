@@ -243,7 +243,6 @@ const registerOrUpdateCollection = async ({ item: { name, resourceId }, helpers,
   item: SynchronizableItem
   helpers: Helpers
 }) => {
-  logger.log(`registerOrUpdateCollection ${name} (${resourceId})`)
   let collectionId: string | undefined
   /**
    * Try to get existing collection by same resource id
@@ -253,9 +252,11 @@ const registerOrUpdateCollection = async ({ item: { name, resourceId }, helpers,
   if (sameCollectionByResourceId) {
     collectionId = sameCollectionByResourceId._id
     if (sameCollectionByResourceId.name !== name) {
+      logger.log(`registerOrUpdateCollection ${name} has been updated. The item will be updated to reflect datasource`)
       await helpers.atomicUpdate('obokucollection', sameCollectionByResourceId._id, old => ({ ...old, name }))
     }
   } else {
+    logger.log(`registerOrUpdateCollection ${name} does not exist yet and will be created`)
     /**
      * Otherwise we just create a new collection with this resource id
      * Note that there could be another collection with same name. But since it
@@ -278,10 +279,12 @@ const registerOrUpdateCollection = async ({ item: { name, resourceId }, helpers,
     const booksInCollection = await helpers.find('book', { selector: { _id: { $in: collection?.books || [] } } })
     const booksInCollectionAsIds = booksInCollection.map(({ _id }) => _id)
     const toRemove = difference(collection.books, booksInCollectionAsIds)
-    if (toRemove.length > 0)
+    if (toRemove.length > 0) {
+      logger.log(`registerOrUpdateCollection ${name} contains books that does not exist anymore and they will be removed from it`)
       await helpers.atomicUpdate('obokucollection', collection?._id, old => ({
         ...old,
         books: old.books.filter(id => !toRemove.includes(id))
       }))
+    }
   }
 }
