@@ -7,5 +7,5 @@ concurrently(functions.map(fn => ({
 })), {
   prefix: 'name',
 }).then(() => {
-
+  
 }, console.error);

@@ -1,6 +1,6 @@
 import { Drawer, ListItem, Divider, List, ListItemIcon, ListItemText, DialogContent, DialogTitle, Dialog, TextField, DialogActions, Button } from "@material-ui/core";
 import React, { useEffect, useState, FC } from "react";
-import { Edit, DeleteForeverRounded, DynamicFeedRounded } from "@material-ui/icons";
+import { Edit, DeleteForeverRounded, LibraryAddRounded } from "@material-ui/icons";
 import { useRemoveCollection, useUpdateCollection } from "./helpers";
 import { useRecoilValue } from "recoil";
 import { collectionState } from "./states";
@@ -49,14 +49,12 @@ export const CollectionActionsDrawer: FC<{
               <ListItemIcon><Edit /></ListItemIcon>
               <ListItemText primary="Rename" />
             </ListItem>
-          </List>
-          <List>
             <ListItem button onClick={() => {
               setOpenDrawer(false)
               setIsBookDialogOpened(true)
             }}>
-              <ListItemIcon><DynamicFeedRounded /></ListItemIcon>
-              <ListItemText primary="Add or Remove books" />
+              <ListItemIcon><LibraryAddRounded /></ListItemIcon>
+              <ListItemText primary="Manage books" />
             </ListItem>
           </List>
           <Divider />

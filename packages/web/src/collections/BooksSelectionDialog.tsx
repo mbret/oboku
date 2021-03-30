@@ -1,6 +1,6 @@
-import React, { FC } from 'react'
+import { FC } from 'react'
 import { BooksSelectionList } from '../books/BooksSelectionList'
-import { Dialog, DialogTitle } from '@material-ui/core'
+import { Dialog, DialogContent, DialogTitle } from '@material-ui/core'
 import { useRemoveCollectionFromBook, useAddCollectionToBook } from '../books/helpers'
 import { useRecoilValue } from 'recoil'
 import { booksAsArrayState } from '../books/states'
@@ -22,17 +22,19 @@ export const BooksSelectionDialog: FC<{
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Books in the collection</DialogTitle>
-      <BooksSelectionList
-        isSelected={isSelected}
-        onItemClick={(bookId) => {
-          if (isSelected(bookId)) {
-            collectionId && removeFromBook({ _id: bookId, collectionId })
-          } else {
-            collectionId && addToBook({ _id: bookId, collectionId })
-          }
-        }}
-        books={books}
-      />
+      <DialogContent>
+        <BooksSelectionList
+          isSelected={isSelected}
+          onItemClick={(bookId) => {
+            if (isSelected(bookId)) {
+              collectionId && removeFromBook({ _id: bookId, collectionId })
+            } else {
+              collectionId && addToBook({ _id: bookId, collectionId })
+            }
+          }}
+          books={books}
+        />
+      </DialogContent>
     </Dialog>
   )
 }

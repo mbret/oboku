@@ -4,10 +4,9 @@
     "esModuleInterop": true,
     "target": "ES2017", // only version that works with aws node env
     "noImplicitAny": true,
-    // "removeComments": true,
     "strict": true,
     "noEmit": true,
-    // "skipLibCheck": true
+    "forceConsistentCasingInFileNames": true,
   },
   // "include": ["**/*", "../tests/**/*"]
   // "include": ["src/app.ts", "scripts/*", "webpack.config.ts"]

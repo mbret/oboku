@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TopBarNavigation } from '../TopBarNavigation';
+import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { Link, Button, Toolbar, List, ListItem, ListItemText, SvgIcon, ListItemIcon, Typography, useTheme } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import { DataSourcesAddDrawer } from './DataSourcesAddDrawer';

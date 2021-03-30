@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { TopBarNavigation } from '../TopBarNavigation';
+import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { ListItem, List, ListItemText, LinearProgress, ListItemIcon, Typography, Box, useTheme, Button } from '@material-ui/core';
 import { StorageRounded } from '@material-ui/icons';
 import { useStorageUse } from './useStorageUse';

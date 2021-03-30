@@ -1,7 +1,7 @@
 import React, { FC, useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import { MoreVertRounded, EditRounded } from '@material-ui/icons';
-import { TopBarNavigation } from '../TopBarNavigation';
+import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider, makeStyles } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
 import { useAddTagToBook, useRemoveTagFromBook } from './helpers';
@@ -271,7 +271,7 @@ const TagsDialog: FC<{
 }> = ({ open, onClose, id }) => {
   const tags = useRecoilValue(tagsAsArrayState)
   const book = useRecoilValue(bookState(id))
-  const [addTagToBook] = useAddTagToBook()
+  const addTagToBook = useAddTagToBook()
   const removeTagToBook = useRemoveTagFromBook()
   const bookTags = book?.tags
   const isSelected = (tagId: string) => !!bookTags?.find(itemId => itemId === tagId)

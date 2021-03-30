@@ -13,7 +13,7 @@ export const ManageBookTagsDialog: FC<{}> = () => {
   const open = !!id
   const tags = useRecoilValue(tagsAsArrayState)
   const book = useRecoilValue(bookState(id || '-1'))
-  const [addToBook] = useAddTagToBook()
+  const addToBook = useAddTagToBook()
   const removeFromBook = useRemoveTagFromBook()
   const bookTags = book?.tags
 

@@ -1,6 +1,6 @@
 import { ComponentProps, useState } from 'react';
 import { CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
-import { TopBarNavigation } from '../TopBarNavigation';
+import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { Box, Drawer, List, ListItem, ListItemSecondaryAction, ListItemText, ListSubheader } from '@material-ui/core';
 import { useRecoilState, UnwrapRecoilValue } from 'recoil';
 import { localSettingsState } from './states';

@@ -2,7 +2,7 @@ import { fade, InputBase, makeStyles, useTheme } from '@material-ui/core'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { BookList } from '../books/bookList/BookList'
 import { useCSS } from '../common/utils'
-import { TopBarNavigation } from '../TopBarNavigation'
+import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { useSearch } from './helpers'
 
 export const SearchScreen = () => {

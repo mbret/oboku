@@ -3,7 +3,7 @@ import { Tab, Tabs, IconButton, useTheme } from '@material-ui/core'
 import { useHistory, useLocation, Route, Switch, Redirect } from 'react-router-dom'
 import { LibraryBooksScreen } from './LibraryBooksScreen'
 import { LibraryTagsScreen } from './LibraryTagsScreen'
-import { TopBarNavigation } from '../TopBarNavigation'
+import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { ROUTES } from '../constants'
 import { LibraryCollectionScreen } from './LibraryCollectionScreen'
 import { useSyncLibrary } from './helpers'

@@ -5,9 +5,9 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { ArrowBackIosRounded, MoreVertRounded, Search } from '@material-ui/icons';
 import { fade, InputBase, makeStyles, useTheme } from '@material-ui/core';
-import { ROUTES } from './constants';
-import { useNavigation } from './navigation/useNavigation';
-import { useCSS } from './common/utils';
+import { useNavigation } from './useNavigation';
+import { ROUTES } from '../constants';
+import { useCSS } from '../common/utils';
 
 export const TopBarNavigation: FC<{
   title?: string,

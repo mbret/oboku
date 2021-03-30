@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { TopBarNavigation } from '../TopBarNavigation'
+import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { Typography, useTheme } from '@material-ui/core'
 import { useHistory, useParams } from 'react-router-dom'
 import EmptyLibraryAsset from '../assets/empty-library.svg'

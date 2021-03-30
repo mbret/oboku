@@ -4,15 +4,17 @@ import {
   DialogTitle, Drawer, List, ListItem,
   ListItemText, ListItemIcon, DialogActions, Button, Divider, DialogContent, TextField
 } from '@material-ui/core';
-import { CheckCircleRounded, DeleteForeverRounded, EditRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
+import { CheckCircleRounded, DeleteForeverRounded, EditRounded, LibraryAddRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
 import { useRemoveTag, useUpdateTag } from './helpers';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { normalizedTagsState } from './states';
+import { isManageTagBooksDialogOpenedWithState } from './ManageTagBooksDialog';
 
 export const TagActionsDrawer: FC<{
   openWith: string | undefined,
   onClose: () => void
 }> = ({ openWith, onClose }) => {
+  const setIsManageTagBooksDialogOpenedWithState = useSetRecoilState(isManageTagBooksDialogOpenedWithState)
   const tag = useRecoilValue(normalizedTagsState)[openWith || '-1']
   const [editTag] = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] = useState<string | undefined>(undefined)
@@ -55,6 +57,13 @@ export const TagActionsDrawer: FC<{
               {tag?.isBlurEnabled && (<CheckCircleRounded />)}
             </ListItemIcon>
             <ListItemText primary="Blur covers" secondary="Apply a blur filter on book covers. Useful for sensitive content" />
+          </ListItem>
+          <ListItem button onClick={() => {
+            onClose()
+            setIsManageTagBooksDialogOpenedWithState(openWith)
+          }}>
+            <ListItemIcon><LibraryAddRounded /></ListItemIcon>
+            <ListItemText primary="Manage books" />
           </ListItem>
         </List>
         <Divider />

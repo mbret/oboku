@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { TopBarNavigation } from './TopBarNavigation';
+import { TopBarNavigation } from './navigation/TopBarNavigation';
 import { Typography, useTheme, Button } from '@material-ui/core';
 import { BookList } from './books/bookList/BookList';
 import { ROUTES } from './constants';

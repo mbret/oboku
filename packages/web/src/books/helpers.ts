@@ -64,17 +64,22 @@ export const useRemoveTagFromBook = () => {
   )
 
   return (variables: { bookId: string, tagId: string }) => {
-    removeTag({ _id: variables.bookId, tagId: variables.tagId })
+    removeTag({ _id: variables.bookId, tagId: variables.tagId }).catch(Report.error)
   }
 }
 
-export const useAddTagToBook = () =>
-  useRxMutation(
+export const useAddTagToBook = () => {
+  const [addTag] = useRxMutation(
     (db, { _id, tagId }: { _id: string, tagId: string }) =>
       db.book
         .findOne({ selector: { _id } })
         .update({ $push: { tags: tagId } })
   )
+
+  return (variables: Parameters<typeof addTag>[0]) => {
+    addTag(variables).catch(Report.error)
+  }
+}
 
 export const useAtomicUpdateBook = () => {
   const database = useDatabase()

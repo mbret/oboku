@@ -27,6 +27,7 @@ import { authState } from './auth/authState';
 import './i18n'
 import { ErrorBoundary } from '@sentry/react';
 import { ManageBookTagsDialog } from './books/ManageBookTagsDialog';
+import { ManageTagBooksDialog } from './tags/ManageTagBooksDialog';
 
 const localStatesToPersist = [
   libraryState,
@@ -64,6 +65,7 @@ export function App() {
                       <UnlockLibraryDialog />
                       <ManageBookCollectionsDialog />
                       <ManageBookTagsDialog />
+                      <ManageTagBooksDialog />
                       <RoutineProcess />
                     </TourProvider>
                     <UpdateAvailableDialog serviceWorker={newServiceWorker} />
