@@ -23,7 +23,9 @@ jobs:
           aws-region: us-east-1
       - uses: actions/checkout@v2
       - name: tsc
-        run: yarn tsc
+        run: |
+          yarn
+          yarn tsc
       - name: build & deploy
         run: |
           yarn
