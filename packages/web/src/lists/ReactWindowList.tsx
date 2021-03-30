@@ -19,7 +19,7 @@ export const ReactWindowList: FC<{
   headerHeight?: number,
   itemWidth?: number,
   itemHeight?: number,
-}> = memo(({ headerHeight, itemHeight, ...rest }) => {
+}> = memo(({ ...rest }) => {
 
   return (
     <>
@@ -151,7 +151,7 @@ const List = memo(forwardRef<FixedSizeGrid, {
     )
   }), [renderHeader, headerHeight])
 
-  const renderRow = useCallback(({ columnIndex, rowIndex, style, data, ...rest }) => {
+  const renderRow = useCallback(({ columnIndex, rowIndex, style, data }) => {
     const itemIndex = rowIndex * columnCount + columnIndex
 
     return (
