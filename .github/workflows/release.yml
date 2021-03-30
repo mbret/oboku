@@ -25,7 +25,7 @@ jobs:
       - name: tsc
         run: |
           yarn
-          yarn tsc
+
       - name: build & deploy
         run: |
           yarn
