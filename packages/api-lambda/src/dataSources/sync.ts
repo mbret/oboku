@@ -170,11 +170,17 @@ const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, i
 const synchronizeBookWithParentCollections = async (bookId: string, parents: SynchronizableItem[], helpers: Helpers) => {
   const parentResourceIds = parents?.map(parent => parent.resourceId) || []
 
-  logger.log(`synchronizeBookWithParentCollections "${bookId}":`, parentResourceIds)
-
   // Retrieve all the new collection to which attach the book and add the book in the list
   // if there is no collection we don't run the query since it will return everything because of the empty $or
   if (parentResourceIds.length > 0) {
+    /**
+     * Use case:
+     * Some collections does not have the book yet
+     * 
+     * Result:
+     * We attach all the parent collections to the book by combining them with existing collection of the book.
+     * Make sure to not remove any existing collection from the book and to avoid duplicate
+     */
     const collectionsThatHaveNotThisBookAsReferenceYet = await helpers.find('obokucollection', {
       selector: {
         $or: parentResourceIds.map(resourceId => ({ resourceId })),
@@ -185,7 +191,7 @@ const synchronizeBookWithParentCollections = async (bookId: string, parents: Syn
     })
 
     if (collectionsThatHaveNotThisBookAsReferenceYet.length > 0) {
-      logger.log(`synchronizeBookWithParentCollections ${bookId} has ${collectionsThatHaveNotThisBookAsReferenceYet.length} collection missing its reference`)
+      logger.log(`synchronizeBookWithParentCollections ${collectionsThatHaveNotThisBookAsReferenceYet.length} collections does not have ${bookId} attached to them yet`)
       await Promise.all(
         collectionsThatHaveNotThisBookAsReferenceYet
           .map(collection =>
@@ -196,46 +202,45 @@ const synchronizeBookWithParentCollections = async (bookId: string, parents: Syn
           )
       )
     }
+
+    const parentCollections = await helpers.find('obokucollection', {
+      selector: {
+        $or: parentResourceIds.map(resourceId => ({ resourceId })),
+      }
+    })
+    const parentCollectionIds = parentCollections.map(({ _id }) => _id)
+
+    /**
+     * Use case: 
+     * The book does not have one of the parent collection yet
+     * 
+     * Result:
+     * We attach all the parent collections to the book by combining them with existing collection of the book.
+     * Make sure to not remove any existing collection from the book and to avoid duplicate
+     */
+    const book = await helpers.findOne('book', { selector: { _id: bookId } })
+    if (book) {
+      const bookHasNotOneOfTheCollectionsYet = parentCollectionIds.some(collectionId => !book.collections.includes(collectionId))
+      if (bookHasNotOneOfTheCollectionsYet) {
+        logger.log(`synchronizeBookWithParentCollections ${bookId} has some missing parent collections. It will be updated to include them`)
+        await helpers.atomicUpdate('book', bookId, old => ({
+          ...old,
+          collections: [...new Set([...old.collections, ...parentCollectionIds])]
+        }))
+      }
+    }
   }
 
-  // Retrieve all the collections that has the book attached but are not a parent anymore
-  // @todo only retrieve collections that are from the sync folder
-  // const collectionsThatShouldNotBeAttachedToBookAnymore = await helpers.find('obokucollection', {
-  //   selector: {
-  //     resourceId: {
-  //       $nin: parentResourceIds,
-  //     },
-  //     books: {
-  //       $in: [bookId]
-  //     }
-  //   }
-  // })
-
-  // if (collectionsThatShouldNotBeAttachedToBookAnymore.length > 0) {
-  //   logger.log(`synchronizeBookWithParentCollections ${bookId} has ${collectionsThatShouldNotBeAttachedToBookAnymore.length} collection which should not reference it`)
-  // }
-
-  // await Promise.all(
-  //   collectionsThatShouldNotBeAttachedToBookAnymore
-  //     .map(collection =>
-  //       helpers.atomicUpdate('obokucollection', collection._id, old => ({
-  //         ...old,
-  //         books: [...old.books.filter(id => id !== bookId)]
-  //       }))
-  //     )
-  // )
-
-  // Attach the new parents to the book
-  const collectionIds = await helpers.find('obokucollection', {
-    selector: {
-      $or: parentResourceIds.map(resourceId => ({ resourceId })),
-    }
-  })
-
-  await helpers.atomicUpdate('book', bookId, old => ({
-    ...old,
-    collections: collectionIds.map(({ _id }) => _id)
-  }))
+  /**
+   * Use case:
+   * The book does not have parent collections
+   * 
+   * Result:
+   * We do not remove collection yet. See for the future
+   */
+  if (parentResourceIds.length === 0) {
+    // @todo remove collections from the book ?
+  }
 }
 
 const registerOrUpdateCollection = async ({ item: { name, resourceId }, helpers, ctx }: {
