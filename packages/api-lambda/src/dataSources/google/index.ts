@@ -1,3 +1,7 @@
+/**
+ * 401 credentials error
+ * [{"domain":"global","reason":"authError","message":"Invalid Credentials","locationType":"header","location":"Authorization"}]
+ */
 import { DataSource, SynchronizableDataSource } from '../types'
 import { authorize } from './helpers'
 import { drive_v3, google } from 'googleapis'
@@ -145,6 +149,9 @@ export const dataSource: DataSource = {
         name: rootFolderResponse.data.name || '',
       }
     } catch (e) {
+      if (e?.code === 401) {
+        throw helpers.createError('unauthorized', e)
+      }
       const errors = e?.response?.data?.error?.errors
       if (errors && Array.isArray(errors)) {
         errors.forEach((error: any) => {
