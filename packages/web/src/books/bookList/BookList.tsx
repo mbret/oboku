@@ -51,8 +51,6 @@ export const BookList: FC<{
       )
   }, [viewMode, itemHeight, listItemMargin, onItemClick, withDrawerActions])
 
-  console.log(`debug BookList render`, props)
-
   const containerStyle = useMemo(() => ({ ...classes.container, ...style }), [style, classes])
 
   return (

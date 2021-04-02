@@ -1,10 +1,14 @@
 import { FC } from 'react'
-import { BooksSelectionList } from '../books/BooksSelectionList'
-import { Dialog, DialogContent, DialogTitle } from '@material-ui/core'
+import { Button, Dialog, DialogContent, useTheme } from '@material-ui/core'
 import { useRemoveCollectionFromBook, useAddCollectionToBook } from '../books/helpers'
 import { useRecoilValue } from 'recoil'
 import { booksAsArrayState } from '../books/states'
 import { collectionState } from './states'
+import { useMemo } from 'react'
+import { useCallback } from 'react'
+import { useCSS } from '../common/utils'
+import { DialogTopBar } from '../navigation/DialogTopBar'
+import { SelectableBookList } from '../books/bookList/SelectableBookList'
 
 export const BooksSelectionDialog: FC<{
   onClose: () => void,
@@ -15,26 +19,67 @@ export const BooksSelectionDialog: FC<{
   const books = useRecoilValue(booksAsArrayState)
   const [addToBook] = useAddCollectionToBook()
   const [removeFromBook] = useRemoveCollectionFromBook()
-  const collectionBooks = collection?.books?.map(item => item) || []
+  const collectionBooks = useMemo(() => collection?.books?.map(item => item) || [], [collection])
+  const styles = useStyles()
 
-  const isSelected = (selectedId: string) => !!collectionBooks.find(id => id === selectedId)
+  const isSelected = useCallback((selectedId: string) => !!collectionBooks.find(id => id === selectedId), [collectionBooks])
+
+  const data = useMemo(() => books.map(item => ({
+    id: item._id,
+    selected: isSelected(item._id)
+  })), [books, isSelected])
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Books in the collection</DialogTitle>
-      <DialogContent>
-        <BooksSelectionList
-          isSelected={isSelected}
-          onItemClick={(bookId) => {
-            if (isSelected(bookId)) {
-              collectionId && removeFromBook({ _id: bookId, collectionId })
-            } else {
-              collectionId && addToBook({ _id: bookId, collectionId })
-            }
-          }}
-          books={books}
-        />
+    <Dialog open={open} onClose={onClose} fullScreen>
+      <DialogTopBar title="Manage books" onClose={onClose} />
+      <DialogContent style={styles.container}>
+        <div style={styles.listContainer}>
+          <SelectableBookList
+            style={styles.list}
+            onItemClick={(bookId) => {
+              if (isSelected(bookId)) {
+                collectionId && removeFromBook({ _id: bookId, collectionId })
+              } else {
+                collectionId && addToBook({ _id: bookId, collectionId })
+              }
+            }}
+            data={data}
+          />
+        </div>
+        <div style={styles.buttonContainer}>
+          <Button style={styles.button} variant="outlined" color="primary" onClick={onClose}>Ok</Button>
+        </div>
       </DialogContent>
     </Dialog>
   )
+}
+
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
+    container: {
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      flex: 1,
+      overflow: 'hidden',
+      padding: 0,
+    },
+    button: {
+      width: '100%',
+    },
+    listContainer: {
+      padding: `0px ${theme.spacing(1)}px`,
+      flex: 1,
+    },
+    list: {
+      flex: 1,
+      height: '100%',
+    },
+    buttonContainer: {
+      padding: `${theme.spacing(1)}px ${theme.spacing(1)}px`,
+      borderTop: `1px solid ${theme.palette['grey']['500']}`
+    }
+  }), [theme])
 }

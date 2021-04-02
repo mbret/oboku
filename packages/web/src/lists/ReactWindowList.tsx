@@ -9,9 +9,9 @@ import { useTheme } from "@material-ui/core";
 import { useCallback } from "react";
 
 export const ReactWindowList: FC<{
-  rowRenderer: (index: string) => React.ReactNode,
+  rowRenderer: (item: any, rowIndex: number) => React.ReactNode,
   layout: ComponentProps<typeof VariableSizeList>['layout'],
-  data: string[],
+  data: any[],
   itemsPerRow: number,
   preferredRatio?: number,
   className?: string,
@@ -39,7 +39,7 @@ export const ReactWindowList: FC<{
 const List = memo(forwardRef<FixedSizeGrid, {
   width: number,
   height: number,
-  rowRenderer: (index: string) => React.ReactNode,
+  rowRenderer: (item: string, rowIndex: number) => React.ReactNode,
   layout: ComponentProps<typeof VariableSizeList>['layout'],
   onScroll?: ComponentProps<typeof FixedSizeGrid>['onScroll'],
   data: string[],
@@ -166,7 +166,7 @@ const List = memo(forwardRef<FixedSizeGrid, {
           width: '100%',
           maxHeight: computedItemHeight,
         }}>
-          {data[itemIndex] && rowRenderer(data[itemIndex])}
+          {data[itemIndex] && rowRenderer(data[itemIndex], rowIndex)}
         </div>
       </div>
     )
