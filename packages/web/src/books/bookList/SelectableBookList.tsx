@@ -22,10 +22,9 @@ export const SelectableBookList: FC<{
   const rowRenderer = useCallback((item: { id: string, selected: boolean }, rowIndex: number) => (
     <SelectableBookListItem
       bookId={item.id}
-      itemHeight={(itemHeight)}
+      itemHeight={itemHeight - theme.spacing(0.5)}
       selected={item.selected}
       onItemClick={onItemClick}
-      paddingTop={rowIndex === 0 ? theme.spacing(0.5) : undefined}
       paddingBottom={theme.spacing(0.5)}
     />
   ), [itemHeight, theme, onItemClick])

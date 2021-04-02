@@ -78,7 +78,7 @@ const useStyles = () => {
       height: '100%',
     },
     buttonContainer: {
-      padding: `${theme.spacing(1)}px ${theme.spacing(1)}px`,
+      padding: `${theme.spacing(2)}px ${theme.spacing(2)}px`,
       borderTop: `1px solid ${theme.palette['grey']['500']}`
     }
   }), [theme])
