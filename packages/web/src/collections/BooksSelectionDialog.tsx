@@ -22,12 +22,18 @@ export const BooksSelectionDialog: FC<{
   const collectionBooks = useMemo(() => collection?.books?.map(item => item) || [], [collection])
   const styles = useStyles()
 
-  const isSelected = useCallback((selectedId: string) => !!collectionBooks.find(id => id === selectedId), [collectionBooks])
-
   const data = useMemo(() => books.map(item => ({
     id: item._id,
-    selected: isSelected(item._id)
-  })), [books, isSelected])
+    selected: !!collectionBooks.find(id => id === item._id)
+  })), [books, collectionBooks])
+
+  const onItemClick = useCallback(({ id: bookId, selected }: { id: string, selected: boolean }) => {
+    if (selected) {
+      collectionId && removeFromBook({ _id: bookId, collectionId })
+    } else {
+      collectionId && addToBook({ _id: bookId, collectionId })
+    }
+  }, [collectionId, addToBook, removeFromBook])
 
   return (
     <Dialog open={open} onClose={onClose} fullScreen>
@@ -36,13 +42,7 @@ export const BooksSelectionDialog: FC<{
         <div style={styles.listContainer}>
           <SelectableBookList
             style={styles.list}
-            onItemClick={(bookId) => {
-              if (isSelected(bookId)) {
-                collectionId && removeFromBook({ _id: bookId, collectionId })
-              } else {
-                collectionId && addToBook({ _id: bookId, collectionId })
-              }
-            }}
+            onItemClick={onItemClick}
             data={data}
           />
         </div>

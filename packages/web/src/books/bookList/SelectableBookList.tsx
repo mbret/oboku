@@ -8,7 +8,7 @@ import { ReactWindowList } from '../../lists/ReactWindowList';
 export const SelectableBookList: FC<{
   style?: React.CSSProperties,
   data: { id: string, selected: boolean }[],
-  onItemClick: (id: string) => void,
+  onItemClick: (id: { id: string, selected: boolean }) => void,
 }> = memo((props) => {
   const theme = useTheme()
   const { style, data, onItemClick } = props
@@ -19,13 +19,13 @@ export const SelectableBookList: FC<{
   const densityMultiplier = 1
   const itemHeight = (((windowSize.width > theme.breakpoints.values['sm'] ? 200 : 150) * theme.custom.coverAverageRatio)) * densityMultiplier
 
-  const rowRenderer = useCallback((item: { id: string, selected: boolean }, rowIndex: number) => (
+  const rowRenderer = useCallback((item: { id: string, selected: boolean }) => (
     <SelectableBookListItem
       bookId={item.id}
-      itemHeight={itemHeight - theme.spacing(0.5)}
+      itemHeight={itemHeight - theme.spacing(1)}
       selected={item.selected}
-      onItemClick={onItemClick}
-      paddingBottom={theme.spacing(0.5)}
+      onItemClick={() => onItemClick(item)}
+      paddingBottom={theme.spacing(1)}
     />
   ), [itemHeight, theme, onItemClick])
 

@@ -63,9 +63,9 @@ export const useRemoveTagFromBook = () => {
         .update({ $pullAll: { tags: [tagId] } })
   )
 
-  return (variables: { bookId: string, tagId: string }) => {
+  return useCallback((variables: { bookId: string, tagId: string }) => {
     removeTag({ _id: variables.bookId, tagId: variables.tagId }).catch(Report.error)
-  }
+  }, [removeTag])
 }
 
 export const useAddTagToBook = () => {
@@ -76,9 +76,9 @@ export const useAddTagToBook = () => {
         .update({ $push: { tags: tagId } })
   )
 
-  return (variables: Parameters<typeof addTag>[0]) => {
+  return useCallback((variables: Parameters<typeof addTag>[0]) => {
     addTag(variables).catch(Report.error)
-  }
+  }, [addTag])
 }
 
 export const useAtomicUpdateBook = () => {

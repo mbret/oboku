@@ -24,17 +24,23 @@ export const ManageTagBooksDialog: FC<{}> = () => {
   const tagId = isManageTagBooksDialogOpenedWith
   const styles = useStyles()
 
-  const isSelected = useCallback((selectedId: string) => !!tagBooks.find(id => id === selectedId), [tagBooks])
-
   const onClose = () => {
     setIsManageTagBooksDialogOpenedWith(undefined)
   }
 
   const data = useMemo(() => books.map(item => ({
     id: item._id,
-    selected: isSelected(item._id)
-  })), [books, isSelected])
+    selected: !!tagBooks.find(id => id === item._id)
+  })), [books, tagBooks])
 
+  const onItemClick = useCallback(({ id: bookId, selected }: { id: string, selected: boolean }) => {
+    if (selected) {
+      tagId && removeFromBook({ bookId, tagId })
+    } else {
+      tagId && addTagToBook({ _id: bookId, tagId })
+    }
+  }, [removeFromBook, addTagToBook, tagId])
+  
   return (
     <Dialog
       open={!!tagId}
@@ -48,13 +54,7 @@ export const ManageTagBooksDialog: FC<{}> = () => {
         <div style={styles.listContainer}>
           <SelectableBookList
             style={styles.list}
-            onItemClick={(bookId) => {
-              if (isSelected(bookId)) {
-                tagId && removeFromBook({ bookId, tagId })
-              } else {
-                tagId && addTagToBook({ _id: bookId, tagId })
-              }
-            }}
+            onItemClick={onItemClick}
             data={data}
           />
         </div>

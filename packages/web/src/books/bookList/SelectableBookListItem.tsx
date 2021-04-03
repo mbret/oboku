@@ -74,6 +74,7 @@ const useStyles = ({ coverWidth, paddingTop, paddingBottom, style }: { coverWidt
       overflow: 'hidden',
       paddingTop,
       paddingBottom,
+      height: '100%',
       ...style
     }
   }), [theme, coverWidth, paddingTop, paddingBottom, style])
