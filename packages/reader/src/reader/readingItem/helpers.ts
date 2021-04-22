@@ -1,0 +1,235 @@
+import { Context } from "../context"
+import { createReadingItemFrame, ReadingItemFrame } from "./readingItemFrame"
+import { Manifest } from "../types"
+import { getFirstVisibleNodeFromPoint } from "../utils/dom"
+import { CFI } from "../cfi"
+import { Subject, Subscription } from "rxjs"
+
+const pointerEvents = [
+  "pointercancel" as const,
+  "pointerdown" as const,
+  "pointerenter" as const,
+  "pointerleave" as const,
+  "pointermove" as const,
+  "pointerout" as const,
+  "pointerover" as const,
+  "pointerup" as const
+]
+const mouseEvents = [
+  'mousedown' as const,
+  'mouseup' as const,
+  'mouseenter' as const,
+  'mouseleave' as const,
+  'mousemove' as const,
+  'mouseout' as const,
+  'mouseover' as const,
+]
+
+export const createSharedHelpers = ({ item, context, containerElement, fetchResource }: {
+  item: Manifest['readingOrder'][number],
+  containerElement: HTMLElement,
+  context: Context,
+  fetchResource: `http` | ((item: Manifest['readingOrder'][number]) =>Promise<string>)
+}) => {
+  const subject = new Subject<{ event: 'selectionchange' | 'selectstart', data: Selection } | { event: 'layout' }>()
+  const element = createWrapperElement(containerElement, item)
+  const loadingElement = createLoadingElement(containerElement, item)
+  const readingItemFrame = createReadingItemFrame(element, item, context, { fetchResource })
+  let readingItemFrame$: Subscription | undefined
+
+  const injectStyle = (readingItemFrame: ReadingItemFrame, cssText: string) => {
+    readingItemFrame?.removeStyle('ur-css-link')
+    readingItemFrame?.addStyle('ur-css-link', cssText)
+  }
+
+  const bridgeAllMouseEvents = (frame: HTMLIFrameElement) => {
+    pointerEvents.forEach(event => {
+      frame?.contentDocument?.addEventListener(event, (e) => {
+        // @ts-ignore
+        document.getElementById(`BookViewIframeEventIntercept`).dispatchEvent(new PointerEvent(e.type, e))
+        // document.getElementById(`BookView`).dispatchEvent(new PointerEvent(e.type, e))
+      })
+    })
+    mouseEvents.forEach(event => {
+      frame?.contentDocument?.addEventListener(event, (e) => {
+        // @ts-ignore
+        document.getElementById(`BookViewIframeEventIntercept`).dispatchEvent(new MouseEvent(e.type, e))
+        // document.getElementById(`BookView`).dispatchEvent(new MouseEvent(e.type, e))
+      })
+    })
+  }
+
+  const adjustPositionOfElement = (edgeOffset: number | undefined) => {
+    if (!edgeOffset) return
+    if (context.isRTL()) {
+      element.style.right = `${edgeOffset}px`
+    } else {
+      element.style.left = `${edgeOffset}px`
+    }
+  }
+
+  const getFirstNodeAtOffset = (offset: number) => {
+    const frame = readingItemFrame?.getFrameElement()
+
+    // return frame?.contentDocument?.body.childNodes[0]
+
+    // return frame?.contentWindow?.document.caretRangeFromPoint(offset, 0).startContainer
+    if (frame?.contentWindow?.document) {
+      return getFirstVisibleNodeFromPoint(frame?.contentWindow?.document, offset, 0)
+    }
+    // if (frame) {
+    //   const element = Array.from(frame.contentWindow?.document.body.children || []).find(children => {
+    //     const { x, width } = children.getBoundingClientRect()
+
+    //     return (x + width) > offset
+    //   })
+
+    //   return element?.children[0]
+    // }
+
+    return undefined
+  }
+
+  const getCfi = (offset: number) => {
+    const node = getFirstNodeAtOffset(offset)
+    const doc = readingItemFrame.getFrameElement()?.contentWindow?.document
+
+    const itemAnchor = `[oboku:${encodeURIComponent(item.id)}]`
+
+    if (node && doc) {
+      const cfiString = CFI.generate(node, 0, itemAnchor)
+
+      return cfiString
+    }
+
+    return `epubcfi(/0${itemAnchor}) `
+  }
+
+  const resolveCfi = (cfiString: string | undefined) => {
+    if (!cfiString) return undefined
+
+    const cfi = new CFI(cfiString, {})
+
+    const doc = readingItemFrame.getFrameElement()?.contentWindow?.document
+
+    if (doc) {
+      const { node } = cfi.resolve(doc, {})
+
+      return node
+    }
+
+    return undefined
+  }
+
+  const getViewPortInformation = () => {
+    const { width: pageWidth, height: pageHeight } = context.getPageSize()
+    const viewportDimensions = readingItemFrame.getViewportDimensions()
+    const frameElement = readingItemFrame.getFrameElement()
+    if (element && frameElement?.contentDocument && frameElement?.contentWindow && viewportDimensions) {
+      const computedScale = Math.min(pageWidth / viewportDimensions.width, pageHeight / viewportDimensions.height)
+
+      return { computedScale, viewportDimensions }
+    }
+
+    return undefined
+  }
+
+  readingItemFrame$ = readingItemFrame.$.subscribe(({ event }) => {
+    if (event === 'isReady') {
+      if (loadingElement) {
+        loadingElement.style.opacity = `0`
+      }
+    }
+    if (event === 'layout') {
+      subject.next({ event: 'layout' })
+    }
+  })
+
+  const getFrameLayoutInformation = () => readingItemFrame.getFrameElement()?.getBoundingClientRect()
+
+  return {
+    /**
+     * @todo load iframe content later so that resources are less intensives.
+     * Right now we load iframe content and kinda block the following of the reader until
+     * every reading item have their iframe ready. Ideally we want to start loading iframe
+     * only from the first reading item navigated to and then progressively with the adjacent one
+     */
+    load: () => {
+      containerElement.appendChild(element)
+      element.appendChild(loadingElement)
+    },
+    adjustPositionOfElement,
+    createWrapperElement,
+    createLoadingElement,
+    injectStyle,
+    bridgeAllMouseEvents,
+    getCfi,
+    readingItemFrame,
+    element,
+    loadingElement,
+    resolveCfi,
+    getFrameLayoutInformation,
+    getViewPortInformation,
+    isContentReady: () => !!readingItemFrame?.getIsReady(),
+    destroy: () => {
+      loadingElement.remove()
+      element.remove()
+      readingItemFrame?.destroy()
+      readingItemFrame$?.unsubscribe()
+    },
+    $: subject,
+  }
+}
+
+const createWrapperElement = (containerElement: HTMLElement, item: Manifest['readingOrder'][number]) => {
+  const element = containerElement.ownerDocument.createElement('div')
+  element.id = item.id
+  element.classList.add('readingItem')
+  element.classList.add(`readingItem-${item.renditionLayout}`)
+  element.style.cssText = `
+    position: absolute;
+    overflow: hidden;
+  `
+
+  return element
+}
+
+const createLoadingElement = (containerElement: HTMLElement, item: Manifest['readingOrder'][number]) => {
+  const loadingElement = containerElement.ownerDocument.createElement('div')
+  loadingElement.classList.add(`loading`)
+  loadingElement.style.cssText = `
+    height: 100%;
+    width: 100vw;
+    opacity: 1;
+    text-align: center;
+    position: absolute;
+    pointer-events: none;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  `
+  // loadingElement.innerText = `loading chapter ${item.id}`
+  const logoElement = containerElement.ownerDocument.createElement('div')
+  logoElement.innerText = `oboku`
+  logoElement.style.cssText = `
+    font-size: 4em;
+    color: #cacaca;
+  `
+  const detailsElement = containerElement.ownerDocument.createElement('div')
+  detailsElement.innerText = `loading ${item.id}`
+  detailsElement.style.cssText = `
+    font-size: 1.2em;
+    color: rgb(202, 202, 202);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 300px;
+    width: 80%;
+  `
+  loadingElement.appendChild(logoElement)
+  loadingElement.appendChild(detailsElement)
+
+  return loadingElement
+}
