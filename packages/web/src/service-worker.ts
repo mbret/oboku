@@ -25,7 +25,35 @@ clientsClaim();
 // Their URLs are injected into the manifest variable below.
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
-precacheAndRoute(self.__WB_MANIFEST);
+if (process.env.NODE_ENV === 'production') {
+  precacheAndRoute([
+    ...self.__WB_MANIFEST,
+    {
+      url: '/epubjsscript.css',
+    },
+    {
+      url: '/epubjsscript.js',
+    },
+    {
+      url: '/hammer-2.0.8.min.js',
+    },
+    {
+      url: '/reader.css',
+    },
+    {
+      url: '/libunrar.js',
+    },
+    {
+      url: '/libunrar.js.mem',
+    },
+    // {
+    //   url: '/locales/en/translation.json',
+    // },
+    // {
+    //   url: '/locales/fr/translation.json',
+    // }
+  ]);
+}
 
 // Set up App Shell-style routing, so that all navigation requests
 // are fulfilled with your index.html shell. Learn more at
