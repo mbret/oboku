@@ -29,7 +29,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
       columnHeight,
       columnWidth,
       horizontalMargin,
-      verticalMargin: context.getHorizontalMargin()
+      verticalMargin: context.getVerticalMargin()
     }
   }
 
@@ -79,7 +79,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
         contentWidth = pages * pageWidth
 
         // debugger
-        console.log('PAGES', frameElement.contentWindow.document.body.scrollWidth, pageWidth, pages)
+        // console.log('PAGES', frameElement.contentWindow.document.body.scrollWidth, pageWidth, pages)
 
         readingItemFrame.layout({
           width: contentWidth,

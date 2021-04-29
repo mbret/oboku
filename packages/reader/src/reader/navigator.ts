@@ -1,6 +1,7 @@
 import { interval, Subscription } from "rxjs"
 import { debounce, filter, switchMap, takeUntil, tap } from "rxjs/operators"
 import { Report } from "../report"
+import { extractObokuMetadataFromCfi } from "./cfi"
 import { Context } from "./context"
 import { translateFramePositionIntoPage } from "./frames"
 import { buildChapterInfoFromReadingItem } from "./navigation"
@@ -30,7 +31,7 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
   const calculateOffsetForPageInReadingItem = (pageIndex: number, readingItem: ReadingItem) => {
     const { start, end } = readingItemManager.getPositionOf(readingItem)
 
-    console.log(`calculateOffsetForPagination`, lastUserExpectedNavigation, pageIndex, pagination.calculateClosestOffsetFromPage(pageIndex, readingItem), { start, end })
+    // console.log(`calculateOffsetForPagination`, lastUserExpectedNavigation, pageIndex, pagination.calculateClosestOffsetFromPage(pageIndex, readingItem), { start, end })
 
     if (lastUserExpectedNavigation?.type === 'turned-prev-chapter') {
       return end - context.getPageSize().width
@@ -43,10 +44,13 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
   }
 
   const turnLeft = ({ allowReadingItemChange = true }: { allowReadingItemChange?: boolean } = {}) => {
+    // console.warn('turnLeft')
     const currentXoffset = getCurrentOffset()
     const nextPosition = context.isRTL()
       ? currentXoffset + context.getPageSize().width
       : currentXoffset - context.getPageSize().width
+
+    // console.warn(`turnLeft`, { currentXoffset, nextPosition })
     navigateToOffsetOrCfi(nextPosition, { allowReadingItemChange })
   }
 
@@ -59,7 +63,7 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
   }
 
   const goToPageOfCurrentChapter = (pageIndex: number) => {
-    console.log(`goToPageOfCurrentChapter`, pageIndex, readingItemManager.getFocusedReadingItem())
+    // console.log(`goToPageOfCurrentChapter`, pageIndex, readingItemManager.getFocusedReadingItem())
     const readingItem = readingItemManager.getFocusedReadingItem()
     if (readingItem) {
       const newOffset = calculateOffsetForPageInReadingItem(pageIndex, readingItem)
@@ -84,16 +88,19 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
   }
 
   const calculateClosestOffsetForCfiInReadingItem = (cfi: string, readingItem: ReadingItem) => {
-    const { start } = readingItemManager.getPositionOf(readingItem)
-
+    // console.log(cfi)
     const cfiFoundNode = readingItem.resolveCfi(cfi)
-    const aroundOffset = (cfiFoundNode?.parentElement?.getBoundingClientRect().x || 0)
+    const offsetOfNodeInReadingItem = (cfiFoundNode?.parentElement?.getBoundingClientRect().x || 0)
+    const pageOffsetOfNodeInReadingItem = pagination.getClosestValidOffsetFromOffset(offsetOfNodeInReadingItem, readingItem)
+    const expectedOffset = getReadingOrderViewOffsetFromReadingItemOffset(pageOffsetOfNodeInReadingItem, readingItem)
+    // console.warn(cfiFoundNode?.parentElement, { offsetOfNodeInReadingItem, expectedOffset, pageOffsetOfNodeInReadingItem })
 
-    console.warn(readingItem.resolveCfi(cfi), cfiFoundNode?.parentElement, aroundOffset, pagination.getClosestValidOffsetFromOffset(aroundOffset, readingItem))
-
-    return start + pagination.getClosestValidOffsetFromOffset(aroundOffset, readingItem)
+    return expectedOffset
   }
 
+  /**
+   * @todo optimize this function to not being called several times
+   */
   const navigateToOffsetOrCfi = (offsetOrCfi: number | string, { allowReadingItemChange, startOfReadingItem }: {
     allowReadingItemChange?: boolean,
     startOfReadingItem?: boolean
@@ -107,20 +114,26 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
      * be adjusted later. At least we navigate and focus the right reading item
      */
     if (typeof offsetOrCfi === `string`) {
+      // if (lastUserExpectedNavigation?.type === 'navigate-from-cfi' && lastUserExpectedNavigation.data === offsetOrCfi) {
+      //   console.warn(`navigateToOffsetOrCfi`, `skip navigation for this cfi ${offsetOrCfi} since it is already saved as last action. Will use adjust from now`)
+      //   return
+      // }
+
       const [itemId] = offsetOrCfi.match(/(\[oboku\:[^\]]*\])+/ig) || []
       if (!itemId) {
         Report.warn(`ReadingOrderView`, `unable to extract item id from cfi ${offsetOrCfi}`)
       } else {
-        const sanitizedId = decodeURIComponent(
-          itemId
-            .replace(/\[oboku:/, '')
-            .replace(/\]/, '')
-        )
-        const readingItem = readingItemManager.get(sanitizedId)
+        // const sanitizedId = decodeURIComponent(
+        //   itemId
+        //     .replace(/\[oboku:/, '')
+        //     .replace(/\]/, '')
+        // )
+        const { itemId } = extractObokuMetadataFromCfi(offsetOrCfi)
+        const readingItem = itemId ? readingItemManager.get(itemId) : undefined
         if (readingItem) {
           offset = calculateClosestOffsetForCfiInReadingItem(offsetOrCfi, readingItem)
         } else {
-          Report.warn(`ReadingOrderView`, `unable to detect item id ${sanitizedId}`)
+          Report.warn(`ReadingOrderView`, `unable to detect item id from cfi ${offsetOrCfi}`)
         }
       }
     }
@@ -129,11 +142,11 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
     const distanceOfLastReadingItem = readingItemManager.getPositionOf(latestReadingItem || 0)
     const maximumOffset = distanceOfLastReadingItem.end - context.getPageSize().width
 
-    console.log(`movePositionTo`, offset, maximumOffset)
+    // console.log(`movePositionTo`, offset, maximumOffset)
 
     if (offset < 0 || (offset > maximumOffset)) return
 
-    console.log(`movePositionTo new translate`, offset)
+    // console.log(`movePositionTo new translate`, offset)
 
     const currentReadingItem = readingItemManager.getFocusedReadingItem()
     const potentialNewReadingItem = readingItemManager.getReadingItemAtOffset(offset) || readingItemManager.get(0)
@@ -144,16 +157,18 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
     const readingItemDistance = readingItemManager.getPositionOf(newReadingItem)
     const readingItemHasChanged = potentialNewReadingItem !== currentReadingItem
     const newReadingItemIsBeforeCurrent = !readingItemManager.isAfter(potentialNewReadingItem, currentReadingItem || potentialNewReadingItem)
-    console.log(`movePositionTo`, { currentReadingItem, potentialNewReadingItem, isNew: potentialNewReadingItem !== currentReadingItem })
+    // console.log(`movePositionTo`, { currentReadingItem, potentialNewReadingItem, isNew: potentialNewReadingItem !== currentReadingItem })
 
     if (readingItemHasChanged && allowReadingItemChange === false) {
-      console.warn(`movePositionTo`, `action cancelled because reading item will change and allowReadingItemChange = false`)
+      // console.warn(`movePositionTo`, `action cancelled because reading item will change and allowReadingItemChange = false`)
       return
     }
 
     adjustOffset(offset)
 
-    const offsetInCurrentReadingItem = offset - readingItemDistance.start
+    const offsetInCurrentReadingItem = getOffsetInCurrentReadingItem(offset, newReadingItem)
+
+    // console.log('pagination', { offset, readingItemDistance, rd: newReadingItem.getReadingDirection(), offsetInCurrentReadingItem })
 
     if (currentReadingItem !== undefined && readingItemHasChanged && newReadingItemIsBeforeCurrent && !startOfReadingItem) {
       lastUserExpectedNavigation = { type: 'turned-prev-chapter' }
@@ -170,6 +185,46 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
     }
   }
 
+  const getOffsetInCurrentReadingItem = (readingOrderViewOffset: number, readingItem: ReadingItem) => {
+    const { end, start } = readingItemManager.getPositionOf(readingItem)
+    const itemReadingDirection = readingItem.getReadingDirection()
+
+    /**
+     * For this case the global offset move from right to left but this specific item
+     * reads from left to right. This means that when the offset is at the start of the item
+     * it is in fact at his end. This behavior can be observed in `haruko` about chapter.
+     * @example
+     * <---------------------------------------------------- global offset
+     * item offset ------------------>
+     * [item2 (page0 - page1 - page2)] [item1 (page1 - page0)] [item0 (page0)]
+     */
+    if (context.isRTL() && itemReadingDirection === 'ltr') {
+      return (end - readingOrderViewOffset) - context.getPageSize().width
+    }
+
+    return readingOrderViewOffset - start
+  }
+
+  const getReadingOrderViewOffsetFromReadingItemOffset = (readingItemOffset: number, readingItem: ReadingItem) => {
+    const { end, start } = readingItemManager.getPositionOf(readingItem)
+    const itemReadingDirection = readingItem.getReadingDirection()
+
+    /**
+     * For this case the global offset move from right to left but this specific item
+     * reads from left to right. This means that when the offset is at the start of the item
+     * it is in fact at his end. This behavior can be observed in `haruko` about chapter.
+     * @example
+     * <---------------------------------------------------- global offset
+     * item offset ------------------>
+     * [item2 (page0 - page1 - page2)] [item1 (page1 - page0)] [item0 (page0)]
+     */
+    if (context.isRTL() && itemReadingDirection === 'ltr') {
+      return (end - readingItemOffset) - context.getPageSize().width
+    }
+
+    return start + readingItemOffset
+  }
+
   /**
    * Verify that current offset is within the current reading item and is at 
    * desired pagination.
@@ -179,6 +234,7 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
    * Pagination is in theory always right because when we move the offset we directly update
    * the pagination. It's after, when re-layout happens for various reason that the page can be at
    * the wrong offset
+   * @todo this is being called a lot, try to optimize
    */
   const adjustPositionForCurrentPagination = () => {
     const readingItem = readingItemManager.getFocusedReadingItem()
@@ -212,5 +268,6 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
     goTo,
     goToPageOfCurrentChapter,
     adjustPositionForCurrentPagination,
+    getOffsetInCurrentReadingItem,
   }
 }

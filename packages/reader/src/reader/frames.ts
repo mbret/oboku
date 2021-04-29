@@ -41,7 +41,7 @@ export const translateFramePositionIntoPage = (
   const scaledX = position.x * computedScale
   const offsetAdjustedX = Math.max(0, iframeLeft + scaledX)
 
-  console.log({ x: position.x, width: pageSize.width, result: (pageSize.width * pageIndex) + ((pageSize.width / numberOfPages)), scaledX, offsetAdjustedX, iframeLeft })
+  // console.log({ x: position.x, width: pageSize.width, result: (pageSize.width * pageIndex) + ((pageSize.width / numberOfPages)), scaledX, offsetAdjustedX, iframeLeft })
 
   return {
     x: offsetAdjustedX > pageSize.width

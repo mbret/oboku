@@ -75,7 +75,7 @@ export const createSelectionTracker = () => {
       const selection = frame?.contentWindow?.getSelection()
       if (!selection?.anchorNode || selection.type === 'None' || selection.type === 'Caret') return undefined
 
-      console.log(selection)
+      // console.log(selection)
       
       return selection
     },

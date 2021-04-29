@@ -2,10 +2,17 @@ import React, { useEffect, useState } from "react"
 import { createReader } from "../reader/reader"
 import { Manifest } from "../types"
 
-export const ObokuReader = ({ manifest, onReady, onReader }: {
+type LoadOptions = Parameters<ReturnType<typeof createReader>['load']>[1]
+type Pagination = ReturnType<ReturnType<typeof createReader>['getPagination']>
+
+export const ObokuReader = ({ manifest, onReady, onReader, loadOptions, onPaginationChange }: {
   manifest?: Manifest,
   onReady?: () => void,
-  onReader?: (reader: ReturnType<typeof createReader>) => void
+  onReader?: (reader: ReturnType<typeof createReader>) => void,
+  onPaginationChange?: (pagination: Pagination) => void,
+  loadOptions?: LoadOptions & {
+    spineIndexOrIdOrCfi?: string | number
+  }
 }) => {
   const [reader, setReader] = useState<ReturnType<typeof createReader> | undefined>(undefined)
 
@@ -18,6 +25,9 @@ export const ObokuReader = ({ manifest, onReady, onReader }: {
       if (data.event === 'ready') {
         onReady && onReady()
       }
+      if (data.event === 'paginationChange') {
+        onPaginationChange && onPaginationChange(reader.getPagination())
+      }
     })
 
     return () => readerSubscription$?.unsubscribe()
@@ -25,9 +35,9 @@ export const ObokuReader = ({ manifest, onReady, onReader }: {
 
   useEffect(() => {
     if (manifest && reader) {
-      reader.load(manifest)
+      reader.load(manifest, loadOptions, loadOptions?.spineIndexOrIdOrCfi)
     }
-  }, [manifest, reader])
+  }, [manifest, reader, loadOptions])
 
   useEffect(() => {
     return () => reader?.destroy()

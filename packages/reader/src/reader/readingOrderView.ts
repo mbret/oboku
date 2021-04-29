@@ -28,8 +28,6 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
   const navigator = createNavigator({ context, pagination, readingItemManager, element })
   let selectionSubscription: Subscription | undefined
   let readingItemManagerSubscription: Subscription | undefined
-  let subscriptions$: Subscription[] = []
-  let isSelecting = false
 
   const layout = () => {
     readingItemManager.layout()
@@ -52,8 +50,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
       const focusedItem = readingItemManager.getFocusedReadingItem()
       const newOffset = navigator.adjustPositionForCurrentPagination()
       if (focusedItem && newOffset !== undefined) {
-        const readingItemDistance = readingItemManager.getPositionOf(focusedItem)
-        const readingItemOffset = newOffset - readingItemDistance.start
+        const readingItemOffset = navigator.getOffsetInCurrentReadingItem(newOffset, focusedItem)
         /**
          * There are two reason we need to update pagination here
          * - after a layout change, pagination needs to be aware of new item dimensions to calculate correct number of pages, ...
@@ -106,6 +103,19 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
 
   return {
     ...navigator,
+    goToNextSpineItem: () => {
+      const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0
+      const numberOfSpineItems = context?.manifest.readingOrder.length || 1
+      if (currentSpineIndex < (numberOfSpineItems - 1)) {
+        navigator.goTo(currentSpineIndex + 1)
+      }
+    },
+    goToPreviousSpineItem: () => {
+      const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0
+      if (currentSpineIndex > 0) {
+        navigator.goTo(currentSpineIndex - 1)
+      }
+    },
     load,
     layout,
     getFocusedReadingItem,

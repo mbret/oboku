@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import { Reader } from "../reader/reader";
+import { Reader } from "../reader";
 import { Manifest } from "../reader/types";
 
 export const bookTitleState = selector({

@@ -2,6 +2,7 @@
 //@ts-ignore
 import JSZip, { loadAsync } from 'jszip'
 import { Report } from '../../report'
+import { generateArchiveFromTxtContent } from '../../streamer/generators/archives'
 import { Archive } from '../../streamer/types'
 
 let loading = false
@@ -34,18 +35,29 @@ export const loadEpub = Report.measurePerformance(`serviceWorker`, Infinity, asy
   loading = true
   archive = undefined
   const response = await fetch(url)
-  const epubData = await response.blob()
-  const jszip = await loadAsync(epubData)
-  archive = {
-    files: Object.values(jszip.files).map(file => ({
-      dir: file.dir,
-      name: file.name,
-      async: file.async.bind(file),
-      // this is private API
-      // @ts-ignore
-      size: file._data.uncompressedSize
-    }))
+
+  if (url.endsWith(`.txt`)) {
+    const content = await response.text()
+    archive = await generateArchiveFromTxtContent(content)
+  } else {
+    const epubData = await response.blob()
+    const jszip = await loadAsync(epubData)
+
+    archive = {
+      filename: jszip.name,
+      files: Object.values(jszip.files).map(file => ({
+        dir: file.dir,
+        name: file.name,
+        blob: () => file.async('blob'),
+        string: () => file.async('string'),
+        base64: () => file.async('base64'),
+        // this is private API
+        // @ts-ignore
+        size: file._data.uncompressedSize
+      }))
+    }
   }
+
   lastUrl = url
   loading = false
 

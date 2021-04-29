@@ -53,7 +53,7 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement,
       const contentHeight = visibleArea.height + context.getCalculatedInnerMargin()
 
       // debugger
-      console.log('PAGES', frameElement.contentWindow.document.body.scrollWidth, pageWidth)
+      // console.log('PAGES', frameElement.contentWindow.document.body.scrollWidth, pageWidth)
 
       const cssLink = buildDefaultStyle(getDimensions())
 

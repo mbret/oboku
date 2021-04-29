@@ -1,6 +1,6 @@
 import * as Hammer from 'hammerjs'
 import { Subject } from 'rxjs'
-import { Reader } from '../../reader/reader'
+import { Reader } from '../../reader'
 
 export const createGestureHandler = (container: HTMLElement, reader: Reader) => {
   const subject = new Subject<{ event: `tap` }>()

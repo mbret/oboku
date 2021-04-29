@@ -1,4 +1,3 @@
-import { parse } from 'fast-xml-parser'
 import xmldoc from 'xmldoc'
 import { parseTocFromNavPath } from '../parsers/nav'
 import { getArchiveOpfInfo } from '../archiveHelpers'
@@ -6,16 +5,6 @@ import { Archive } from '../types'
 import { Manifest } from '../../types'
 
 type SpineItemProperties = 'rendition:layout-reflowable' | 'page-spread-left' | 'page-spread-right'
-type Metadata = { meta: any, 'dc:title'?: { '#text': string } } | undefined
-type Meta = { '#text': string, '@_property': string } | { '#text': string, '@_property': string }[]
-type Spine = {
-  '@_page-progression-direction'?: 'rtl' | 'ltr',
-  itemref: any[]
-}
-type SpineItemRef = {
-  '@_idref': string
-  '@_properties'?: string
-}
 
 export const generateManifestFromEpub = async (archive: Archive, baseUrl: string): Promise<Manifest> => {
   const { data: opsFile, basePath: opfBasePath } = getArchiveOpfInfo(archive)
@@ -24,30 +13,9 @@ export const generateManifestFromEpub = async (archive: Archive, baseUrl: string
     throw new Error('No opf content')
   }
 
-  const data = await opsFile.async('string')
+  const data = await opsFile.string()
 
-  const parsedData = parse(data, {
-    attributeNamePrefix: "@_",
-    // attrNodeName: "attr", //default is 'false'
-    // textNodeName: "#text",
-    ignoreAttributes: false,
-    // ignoreNameSpace: false,
-    // allowBooleanAttributes: false,
-    parseNodeValue: true,
-    parseAttributeValue: true,
-    trimValues: false,
-    // cdataTagName: "__cdata", //default is 'false'
-    // cdataPositionChar: "\\c",
-    // parseTrueNumberOnly: false,
-    arrayMode: false, //"strict"
-    // attrValueProcessor: (val, attrName) => {
-    //   return val
-    // },
-
-    //default is a=>a
-    // tagValueProcessor: (val, tagName) => he.decode(val), //default is a=>a
-    // stopNodes: ["parse-me-as-string"]
-  })
+  console.log(data)
 
   const opfXmlDoc = new xmldoc.XmlDocument(data)
 
@@ -60,53 +28,58 @@ export const generateManifestFromEpub = async (archive: Archive, baseUrl: string
   if (navItem) {
     const tocFile = Object.values(archive.files).find(item => item.name.endsWith(navItem.attr.href || ''))
     if (tocFile) {
-      toc = parseTocFromNavPath(await tocFile.async('string'))
+      toc = parseTocFromNavPath(await tocFile.string())
     }
   }
 
-  const metadata = parsedData.package.metadata as Metadata
-  const meta = (metadata?.meta || []) as Meta
-  const metaAsArray = Array.isArray(meta) ? meta : [meta]
-  const defaultRenditionLayout = (metaAsArray.find((item) => item['@_property'] === `rendition:layout`)?.['#text']) as 'reflowable' | 'pre-paginated' | undefined
-  const spine = parsedData.package.spine as Spine
+  const metadataElm = opfXmlDoc.childNamed('metadata')
+  const manifestElm = opfXmlDoc.childNamed('manifest')
+  const spineElm = opfXmlDoc.childNamed('spine')
+  const titleElm = metadataElm?.childNamed(`dc:title`)
+  const metaElmChildren = metadataElm?.childrenNamed(`meta`) || []
+  const metaElmWithRendition = metaElmChildren.find(meta => meta.attr['property'] === `rendition:layout`)
 
-  console.log(archive.files)
+  const defaultRenditionLayout = metaElmWithRendition?.val as 'reflowable' | 'pre-paginated' | undefined
+  const title = titleElm?.val || ''
+  const pageProgressionDirection = spineElm?.attr['page-progression-direction'] as `ltr` | `rtl` | undefined
 
-  const spineItemIds: string[] = parsedData.package.spine.itemref.map((item: any) => item['@_idref'])
-  const manifestItemsFromSpine: any[] = parsedData.package.manifest.item.filter((item: any) => spineItemIds.includes(item['@_id']))
-  const archiveSpineItems = archive.files.filter(file => manifestItemsFromSpine.find(item => `${opfBasePath}/${item['@_href']}` === file.name))
+  const spineItemIds = spineElm?.childrenNamed(`itemref`).map((item) => item.attr['idref']) as string[]
+  const manifestItemsFromSpine = manifestElm?.childrenNamed(`item`).filter((item) => spineItemIds.includes(item.attr['id'] || ``)) || []
+  const archiveSpineItems = archive.files.filter(file => {
+    return manifestItemsFromSpine.find(item => {
+      if (!opfBasePath) return `${item.attr['href']}` === file.name
+      return `${opfBasePath}/${item.attr['href']}` === file.name
+    })
+  })
+
   const totalSize = archiveSpineItems.reduce((size, file) => file.size + size, 1)
 
-  console.log(data, manifestItemsFromSpine, archiveSpineItems)
-
   return {
+    filename: archive.filename,
     nav: {
       toc,
     },
-    renditionLayout: defaultRenditionLayout,
-    title: metadata?.['dc:title']?.['#text'] || '',
-    readingDirection: spine['@_page-progression-direction'] || 'ltr',
-    readingOrder: spine.itemref.map((spineItem: SpineItemRef) => {
-      const item = parsedData.package.manifest.item.find((item: any) => item['@_id'] === spineItem['@_idref'])
-      const href = item['@_href']
-      const properties = (spineItem[`@_properties`]?.split(` `) || []) as SpineItemProperties[]
+    renditionLayout: defaultRenditionLayout || 'reflowable',
+    title,
+    readingDirection: pageProgressionDirection || 'ltr',
+    readingOrder: spineElm?.childrenNamed(`itemref`).map((itemrefElm) => {
+      const manifestItem = manifestElm?.childrenNamed(`item`).find((item) => item.attr['id'] === itemrefElm?.attr['idref'])
+      const href = manifestItem?.attr['href'] || ``
+      const properties = (itemrefElm?.attr['properties']?.split(` `) || []) as SpineItemProperties[]
       const itemSize = archive.files.find(file => file.name.endsWith(href))?.size || 0
-      // console.log(item, spine, properties)
 
       return {
-        id: item['@_id'],
-        // href: `${event.request.url}/${item['@_href']}`,
-        path: opfBasePath ? `${opfBasePath}/${item['@_href']}` : `${item['@_href']}`,
-        href: opfBasePath ? `${baseUrl}/${opfBasePath}/${item['@_href']}` : `${baseUrl}/${item['@_href']}`,
+        id: manifestItem?.attr['id'] || ``,
+        path: opfBasePath ? `${opfBasePath}/${manifestItem?.attr['href']}` : `${manifestItem?.attr['href']}`,
+        href: opfBasePath ? `${baseUrl}/${opfBasePath}/${manifestItem?.attr['href']}` : `${baseUrl}/${manifestItem?.attr['href']}`,
         renditionLayout: defaultRenditionLayout || `reflowable`,
         ...properties.find(property => property === 'rendition:layout-reflowable') && {
           renditionLayout: `reflowable`,
         },
-        // progressionWeight: Math.floor((1 / spine.itemref.length) * 1000) / 1000,
         progressionWeight: itemSize / totalSize,
         size: itemSize
       }
-    })
+    }) || []
   }
 }
 
@@ -114,6 +87,7 @@ export const generateManifestFromArchive = async (archive: Archive, baseUrl: str
   const files = Object.values(archive.files).filter(file => !file.dir)
 
   return {
+    filename: archive.filename,
     nav: {
       toc: []
     },

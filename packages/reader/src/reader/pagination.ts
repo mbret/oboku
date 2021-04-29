@@ -36,7 +36,7 @@ export const createPagination = ({ context }: { context: Context }) => {
       const pageWidth = context.getPageSize().width
       numberOfPages = getNumberOfPages(readingItemWidth, context.getPageSize().width)
       pageIndex = getPageFromOffset(offsetInReadingItem, pageWidth, numberOfPages)
-      console.log(`Pagination`, `update with ${offsetInReadingItem}`, { readingItemWidth, pageIndex, numberOfPages })
+      // console.log(`Pagination`, `update with ${offsetInReadingItem}`, { readingItemWidth, pageIndex, numberOfPages })
       isAtEndOfChapter = readingItem.isContentReady() && pageIndex === (numberOfPages - 1)
       if (options.isAtEndOfChapter !== undefined) {
         isAtEndOfChapter = options.isAtEndOfChapter
@@ -49,9 +49,10 @@ export const createPagination = ({ context }: { context: Context }) => {
       // - resize
       // future changes would potentially only be resize (easy to track) and font size family change.
       // to track that we can have a hidden text element and track it and send event back
-      cfi = readingItem.getCfi(offsetInReadingItem)
+      cfi = readingItem.getCfi(pageIndex)
 
-      Report.log(`pagination`, `cfi`, cfi, readingItem.resolveCfi(cfi))
+      Report.log(`pagination`, `cfi`, cfi)
+      // Report.log(`pagination`, `cfi resolve`, readingItem.resolveCfi(cfi))
       // if (!!doc) {
       //   const s = readingItem.getFirstNodeAtOffset(offsetInReadingItem)
       //   if (s) {
@@ -87,7 +88,7 @@ export const createPagination = ({ context }: { context: Context }) => {
       const pageWidth = context.getPageSize().width
       const numberOfPages = getNumberOfPages(readingItemWidth, context.getPageSize().width)
 
-      console.log(`calculatePageFromOffset`, { readingItemWidth, pageWidth, numberOfPages })
+      // console.log(`calculatePageFromOffset`, { readingItemWidth, pageWidth, numberOfPages })
 
       return getClosestValidOffsetFromOffset(offsetInReadingItem, pageWidth, numberOfPages)
     },
@@ -96,8 +97,10 @@ export const createPagination = ({ context }: { context: Context }) => {
   }
 }
 
-const getNumberOfPages = (readingItemWidth: number, pageWidth: number) =>
-  readingItemWidth / pageWidth
+const getNumberOfPages = (readingItemWidth: number, pageWidth: number) => {
+  if (pageWidth === 0) return 1
+  return readingItemWidth / pageWidth
+}
 
 const getPageFromOffset = (offset: number, pageWidth: number, numberOfPages: number) => {
   const offsetValues = [...Array(numberOfPages)].map((_, i) => i * pageWidth)

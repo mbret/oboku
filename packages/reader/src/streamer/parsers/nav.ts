@@ -40,7 +40,7 @@ export const buildTOCFromNav = (doc: xmldoc.XmlDocument) => {
     navDataChildren = doc.descendantWithPath('body.section.nav.ol')?.children;
   }
 
-  console.log(navDataChildren)
+  // console.log(navDataChildren)
 
   if (navDataChildren && navDataChildren.length > 0) {
     navDataChildren

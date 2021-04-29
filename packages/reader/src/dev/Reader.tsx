@@ -3,11 +3,9 @@ import { useState } from 'react';
 import { useEffect } from "react"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { createGestureHandler } from "./gesture";
-import { createReader } from "../reader/reader";
+import { createReader } from "../reader";
 import { QuickMenu } from './QuickMenu';
 import { bookReadyState, isComicState, manifestState, paginationState } from './state';
-import JSZip, { loadAsync } from 'jszip'
-import { generateResourceResponse } from '../streamer';
 
 export const Reader = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -41,7 +39,7 @@ export const Reader = () => {
         setBookReady(true)
       }
       if (data.event === 'paginationChange') {
-        localStorage.setItem(`cfi`, reader.getPagination()?.cfi || ``)
+        localStorage.setItem(`cfi`, reader.getPagination()?.begin.cfi || ``)
         return setPaginationState(reader.getPagination())
       }
     })
@@ -58,31 +56,9 @@ export const Reader = () => {
 
         setManifestState(bookManifest)
 
+        console.warn('MANIFEST', bookManifest)
         reader.load(bookManifest, {
-          fetchResource: async (data) => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const epubPath = urlParams.get(`epub`);
-            const response = await fetch(`http://localhost:9000/epubs/${epubPath}`)
-
-            console.warn('ASDASDASD', data, response)
-            const epubData = await response.blob()
-            const jszip = await loadAsync(epubData)
-
-            const archive = {
-              files: Object.values(jszip.files).map(file => ({
-                dir: file.dir,
-                name: file.name,
-                async: file.async.bind(file),
-                // this is private API
-                // @ts-ignore
-                size: file._data.uncompressedSize
-              }))
-            }
-
-            // const value = await Object.values(jszip.files).find(file => file.name.endsWith(data.path))?.async('string')
-            const resourceResponse = await generateResourceResponse(archive, data.path)
-            return await resourceResponse.text()
-          }
+          fetchResource: 'http'
         }, localStorage.getItem(`cfi`) || 0)
         // reader.load(bookManifest, `epubcfi(/0[oboku:id-id2629773])`)
         // reader.load(bookManifest, 3)

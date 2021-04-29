@@ -11,7 +11,7 @@
     ],
     "strict": true,
     "jsx": "react",
-    "allowJs": true,
+    "allowJs": false,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "noUncheckedIndexedAccess": true,
@@ -19,5 +19,5 @@
     "emitDeclarationOnly": false,
     "sourceMap": true,
   },
-  "exclude": ["src/reader/utils/core.ts", "src/reader/cfi.ts", "webpack", "webpack.config.js", "dist"]
+  "exclude": ["webpack", "webpack.config.js", "dist"]
 }

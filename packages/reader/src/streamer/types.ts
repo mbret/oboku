@@ -4,10 +4,14 @@ interface Async {
 }
 
 export type Archive = {
+  filename: string,
   files: {
     dir: boolean
     name: string
-    async: Async
-    size: number
+    blob: () => Promise<Blob>
+    string: () => Promise<string>
+    base64: () => Promise<string>
+    size: number,
+    encodingFormat?: undefined | `text/plain`
   }[]
 }

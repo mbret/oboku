@@ -18,7 +18,8 @@ export const buildChapterInfoFromReadingItem = (manifest: Manifest, readingItem:
 const getChapterInfo = (path: string, tocItems: Manifest['nav']['toc']): ChapterInfo | undefined => {
 
   return tocItems.reduce((acc: ChapterInfo | undefined, item) => {
-    if (path.endsWith(item.path)) {
+    const itemPathWithoutAnchor = item.path.substr(0, item.path.indexOf('#'))
+    if (path.endsWith(itemPathWithoutAnchor)) {
       return {
         title: item.title
       }
@@ -39,15 +40,25 @@ const getChapterInfo = (path: string, tocItems: Manifest['nav']['toc']): Chapter
 
 export const getPercentageEstimate = (context: Context, readingOrderView: ReadingOrderView, pagination: Pagination) => {
   const currentSpineIndex = readingOrderView.getSpineItemIndex() || 0
+  const numberOfPages = pagination.getNumberOfPages()
   const currentPageIndex = pagination.getPageIndex() || 0
-  const estimateToThisItem = context.manifest.readingOrder
-    .slice(0, currentSpineIndex + 1)
+  const estimateBeforeThisItem = context.manifest.readingOrder
+    .slice(0, currentSpineIndex)
     .reduce((acc, item) => acc + item.progressionWeight, 0)
+  const currentItemWeight = context.manifest.readingOrder[currentSpineIndex]?.progressionWeight || 0
+  // const nextItem = context.manifest.readingOrder[currentSpineIndex + 1]
+  // const nextItemWeight = nextItem ? nextItem.progressionWeight : 1
+  // const progressWeightGap = (currentItemWeight + estimateBeforeThisItem) - estimateBeforeThisItem
 
-  const nextItem = context.manifest.readingOrder[currentSpineIndex + 1]
-  const nextItemWeight = nextItem ? nextItem.progressionWeight : 0
-  const progressWeightGap = (nextItemWeight + estimateToThisItem) - estimateToThisItem
+  const progressWithinThisItem = (currentPageIndex + 1) * (currentItemWeight / numberOfPages)
+  // console.log({currentPageIndex, progressWeightGap, nextItemWeight, estimateToThisItem: estimateBeforeThisItem}, pagination.getNumberOfPages())
+  const totalProgress = estimateBeforeThisItem + progressWithinThisItem
 
-  console.log(currentPageIndex, progressWeightGap, pagination.getNumberOfPages())
-  return estimateToThisItem + (currentPageIndex *  (progressWeightGap / pagination.getNumberOfPages()))
+  // because the rounding of weight use a lot of decimals we will end up with
+  // something like 0.999878 for the last page
+  if ((currentSpineIndex === context.manifest.readingOrder.length - 1) && (currentPageIndex === numberOfPages - 1)) {
+    return 1
+  }
+
+  return totalProgress
 }

@@ -1,16 +1,20 @@
+/**
+ * @see https://github.com/fread-ink/epub-cfi-resolver
+ * @latest a0d7e4e39d5b4adc9150e006e0b6d7af9513ae27
+ */
 'use strict';
 
 var ELEMENT_NODE = Node.ELEMENT_NODE;
 var TEXT_NODE = Node.TEXT_NODE;
 var CDATA_SECTION_NODE = Node.CDATA_SECTION_NODE;
 
-function cfiEscape(str) {
+function cfiEscape(str: string) {
   return str.replace(/[\[\]\^,();]/g, "^$&");
 }
 
 // Get indices of all matches of regExp in str
 // if `add` is non-null, add it to the matched indices
-function matchAll(str, regExp, add) {
+function matchAll(str: string, regExp: any, add: any) {
   add = add || 0;
   var matches = [];
   var offset = 0;
@@ -19,7 +23,9 @@ function matchAll(str, regExp, add) {
     m = str.match(regExp);
     if (!m) break
     matches.push(m.index + add);
+    // @ts-ignore
     offset += m.index + m.length;
+    // @ts-ignore
     str = str.slice(m.index + m.length);
   } while (offset < str.length);
 
@@ -27,12 +33,13 @@ function matchAll(str, regExp, add) {
 }
 
 // Get the number in a that has the smallest diff to n
-function closest(a, n) {
+function closest(a: any[], n: number) {
   var minDiff;
   var closest;
   var i, diff;
   for (i = 0; i < a.length; i++) {
     diff = Math.abs(a[i] - n);
+    // @ts-ignore
     if (!i || diff < minDiff) {
       diff = minDiff;
       closest = a[i];
@@ -46,7 +53,7 @@ function closest(a, n) {
 // calculate the count/index of the node
 // according to the CFI spec.
 // Also re-calculate offset if supplied and relevant
-function calcSiblingCount(nodes: NodeListOf<ChildNode>, n, offset) {
+function calcSiblingCount(nodes: NodeListOf<ChildNode>, n: number, offset: number) {
   var count = 0;
   var lastWasElement;
   var prevOffset = 0;
@@ -54,6 +61,7 @@ function calcSiblingCount(nodes: NodeListOf<ChildNode>, n, offset) {
   var i, node;
   for (i = 0; i < nodes.length; i++) {
     node = nodes[i];
+    // @ts-ignore
     if (node.nodeType === ELEMENT_NODE) {
       if (lastWasElement || firstNode) {
         count += 2;
@@ -62,7 +70,9 @@ function calcSiblingCount(nodes: NodeListOf<ChildNode>, n, offset) {
         count++;
       }
 
+      // @ts-ignore
       if (n === node) {
+        // @ts-ignore
         if (node.tagName.toLowerCase() === 'img') {
           return { count, offset };
         } else {
@@ -71,17 +81,21 @@ function calcSiblingCount(nodes: NodeListOf<ChildNode>, n, offset) {
       }
       prevOffset = 0;
       lastWasElement = true;
+      // @ts-ignore
     } else if (node.nodeType === TEXT_NODE ||
+      // @ts-ignore
       node.nodeType === CDATA_SECTION_NODE) {
       if (lastWasElement || firstNode) {
         count++;
         firstNode = false;
       }
 
+      // @ts-ignore
       if (n === node) {
         return { count, offset: offset + prevOffset };
       }
 
+      // @ts-ignore
       prevOffset += node.textContent.length;
       lastWasElement = false;
     } else {
@@ -91,7 +105,7 @@ function calcSiblingCount(nodes: NodeListOf<ChildNode>, n, offset) {
   throw new Error("The specified node was not found in the array of siblings");
 }
 
-function compareTemporal(a, b) {
+function compareTemporal(a: number, b: number) {
   const isA = (typeof a === 'number');
   const isB = (typeof b === 'number');
 
@@ -102,7 +116,7 @@ function compareTemporal(a, b) {
   return (a || 0.0) - (b || 0.0);
 }
 
-function compareSpatial(a, b) {
+function compareSpatial(a: any, b: any) {
   if (!a && !b) return 0;
   if (!a && b) return -1;
   if (a && !b) return 1;
@@ -114,8 +128,12 @@ function compareSpatial(a, b) {
 }
 
 class CFI {
+  isRange: boolean = false
+  parts: {}[]
+  opts: {}
+  cfi: string
 
-  constructor(str, opts) {
+  constructor(str: string, opts: {}) {
     this.opts = Object.assign({
       // If CFI is a Simple Range, pretend it isn't
       // by parsing only the start of the range
@@ -126,6 +144,7 @@ class CFI {
     }, opts || {});
 
     this.cfi = str;
+    this.parts = [];
     const isCFI = new RegExp(/^epubcfi\((.*)\)$/);
 
     str = str.trim();
@@ -133,8 +152,7 @@ class CFI {
     if (!m) throw new Error("Not a valid CFI");
     if (m.length < 2) return; // Empty CFI
 
-    str = m[1];
-    this.parts = [];
+    str = m[1] || '';
 
     var parsed, offset, newDoc;
     var subParts = [];
@@ -150,6 +168,7 @@ class CFI {
       if (newDoc || str.length - offset <= 0) {
         // Handle end if this was a range
         if (sawComma === 2) {
+          // @ts-ignore
           this.to = subParts;
         } else { // not a range
           this.parts.push(subParts);
@@ -168,6 +187,7 @@ class CFI {
           subParts = [];
         } else if (sawComma === 1) {
           if (subParts.length) {
+            // @ts-ignore
             this.from = subParts;
           }
           subParts = [];
@@ -176,25 +196,36 @@ class CFI {
         sawComma++;
       }
     }
+    // @ts-ignore
     if (this.from && this.from.length) {
+      // @ts-ignore
       if (this.opts.flattenRange || !this.to || !this.to.length) {
+        // @ts-ignore
         this.parts = this.parts.concat(this.from);
+        // @ts-ignore
         delete this.from;
+        // @ts-ignore
         delete this.to;
       } else {
         this.isRange = true;
       }
     }
+    // @ts-ignore
     if (this.opts.stricter) {
+      // @ts-ignore
       this.removeIllegalOpts();
     }
   }
 
-  removeIllegalOpts(parts) {
+  removeIllegalOpts(parts: any[]) {
     if (!parts) {
+      // @ts-ignore
       if (this.from) {
+        // @ts-ignore
         this.removeIllegalOpts(this.from);
+        // @ts-ignore
         if (!this.to) return;
+        // @ts-ignore
         parts = this.to;
       } else {
         parts = this.parts;
@@ -218,10 +249,12 @@ class CFI {
     var cfi = '';
     var o;
     while (node.parentNode) {
+      // @ts-ignore
       o = calcSiblingCount(node.parentNode.childNodes, node, offset);
       if (!cfi && o.offset) cfi = ':' + o.offset;
 
       // console.log(node)
+      // @ts-ignore
       cfi = '/' + o.count + ((node.id) ? '[' + cfiEscape(node.id) + ']' : '') + cfi;
 
       // debugger
@@ -235,22 +268,23 @@ class CFI {
   static generate(node: Node, offset?: number, extra?: {}) {
     var cfi;
 
-    // if (node instanceof Array) {
-    //   var strs = [];
-    //   for (let o of node) {
-    //     strs.push(this.generatePart(o.node, o.offset, extra));
-    //   }
-    //   cfi = strs.join('!');
-    // } else {
-    cfi = this.generatePart(node, offset, extra);
-    // }
+    if (node instanceof Array) {
+      var strs = [];
+      for (let o of node) {
+        strs.push(this.generatePart(o.node, o.offset, extra));
+      }
+      cfi = strs.join('!');
+    } else {
+      cfi = this.generatePart(node, offset, extra);
+    }
 
     if (extra) cfi += extra;
 
     return 'epubcfi(' + cfi + ')';
   }
 
-  static toParsed(cfi) {
+  static toParsed(cfi: any) {
+    // @ts-ignore
     if (typeof cfi === 'string') cif = new this(cfi);
     if (cfi.isRange) {
       return cfi.getFrom();
@@ -261,7 +295,7 @@ class CFI {
 
 
   // Takes two CFI paths and compares them
-  static comparePath(a, b) {
+  static comparePath(a: any[], b: any[]) {
     const max = Math.max(a.length, b.length);
 
     var i, cA, cB, diff;
@@ -278,14 +312,15 @@ class CFI {
   }
 
   // Sort an array of CFI objects
-  static sort(a) {
+  static sort(a: any) {
+    // @ts-ignore
     a.sort((a, b) => {
       return this.compare(a, b)
     });
   }
 
   // Takes two CFI objects and compares them.
-  static compare(a, b) {
+  static compare(a: any, b: any) {
     var oA = a.get();
     var oB = b.get();
     if (a.isRange || b.isRange) {
@@ -306,7 +341,7 @@ class CFI {
   }
 
   // Takes two parsed path parts (assuming path is split on '!') and compares them.
-  static compareParts(a, b) {
+  static compareParts(a: any, b: any) {
     const max = Math.max(a.length, b.length);
 
     var i, cA, cB, diff;
@@ -347,7 +382,7 @@ class CFI {
     return 0;
   }
 
-  decodeEntities(dom, str) {
+  decodeEntities(dom: Document, str: string) {
     try {
       const el = dom.createElement('textarea');
       el.innerHTML = str;
@@ -360,16 +395,18 @@ class CFI {
   }
 
   // decode HTML/XML entities and compute length
-  trueLength(dom, str) {
+  trueLength(dom: Document, str: string) {
     return this.decodeEntities(dom, str).length;
   }
 
   getFrom() {
     if (!this.isRange) throw new Error("Trying to get beginning of non-range CFI");
+    // @ts-ignore
     if (!this.from) {
       return this.deepClone(this.parts);
     }
     const parts = this.deepClone(this.parts);
+    // @ts-ignore
     parts[parts.length - 1] = parts[parts.length - 1].concat(this.from);
     return parts;
   }
@@ -377,6 +414,7 @@ class CFI {
   getTo() {
     if (!this.isRange) throw new Error("Trying to get end of non-range CFI");
     const parts = this.deepClone(this.parts);
+    // @ts-ignore
     parts[parts.length - 1] = parts[parts.length - 1].concat(this.to);
     return parts
   }
@@ -392,7 +430,7 @@ class CFI {
     return this.deepClone(this.parts);
   }
 
-  parseSideBias(o, loc) {
+  parseSideBias(o: any, loc: any) {
     if (!loc) return;
     const m = loc.trim().match(/^(.*);s=([ba])$/);
     if (!m || m.length < 3) {
@@ -418,7 +456,7 @@ class CFI {
     }
   }
 
-  parseSpatialRange(range) {
+  parseSpatialRange(range: any) {
     if (!range) return undefined;
     const m = range.trim().match(/^([\d\.]+):([\d\.]+)$/);
     if (!m || m.length < 3) return undefined;
@@ -432,7 +470,7 @@ class CFI {
     return o;
   }
 
-  parse(cfi) {
+  parse(cfi: any) {
     var o = {};
     const isNumber = new RegExp(/[\d]/);
     var f;
@@ -464,6 +502,7 @@ class CFI {
           continue;
         } else {
           if (f) {
+            // @ts-ignore
             o.nodeIndex = parseInt(f);
             f = null;
           }
@@ -483,6 +522,7 @@ class CFI {
           continue;
         } else {
           if (f) {
+            // @ts-ignore
             o.offset = parseInt(f);
             f = null;
           }
@@ -515,6 +555,7 @@ class CFI {
         } else {
           prevState = state;
           state = null;
+          // @ts-ignore
           if (f && seenColon) o.spatial = this.parseSpatialRange(f);
           f = null;
         }
@@ -531,6 +572,7 @@ class CFI {
           continue;
         } else {
           if (f) {
+            // @ts-ignore
             o.temporal = parseFloat(f);
           }
           prevState = state;
@@ -563,14 +605,17 @@ class CFI {
         }
 
         if (cur === ':' || cur === '~' || cur === '@') {
+          // @ts-ignore
           if (this.opts.stricter) {
             // We've already had a temporal or spatial indicator
             // and offset does not make sense and the same time
+            // @ts-ignore
             if (cur === ':' && (typeof o.temporal !== 'undefined' || typeof o.spatial !== 'undefined')) {
               break;
             }
             // We've already had an offset
             // and temporal or spatial do not make sense at the same time
+            // @ts-ignore
             if ((cur === '~' || cur === '@') && (typeof o.offset !== 'undefined')) {
               break;
             }
@@ -605,8 +650,10 @@ class CFI {
           this.parseSideBias(o, f);
           f = null;
         } else if (cur === ',' && !escape) {
+          // @ts-ignore
           o.textLocationAssertion = {};
           if (f) {
+            // @ts-ignore
             o.textLocationAssertion.pre = f;
           }
           f = null;
@@ -625,6 +672,7 @@ class CFI {
         if (cur === ']' && !escape) {
           prevState = state;
           state = null;
+          // @ts-ignore
           o.nodeID = f;
           f = null;
         } else {
@@ -641,15 +689,17 @@ class CFI {
       escape = false;
     }
 
+    // @ts-ignore
     if (!o.nodeIndex && o.nodeIndex !== 0) throw new Error("Missing child node index in CFI");
 
     return { parsed: o, offset: i, newDoc: (state === '!') };
   }
 
   // The CFI counts child nodes differently from the DOM
-  // Retrive the child of parentNode at the specified index
+  // Retrieve the child of parentNode at the specified index
   // according to the CFI standard way of counting
-  getChildNodeByCFIIndex(dom, parentNode, index, offset) {
+  getChildNodeByCFIIndex(dom: Document, parentNode: Element, index: number, offset: number) {
+    // console.log(`getChildNodeByCFIIndex`, { parentNode, index, offset })
     const children = parentNode.childNodes;
     if (!children.length) return { node: parentNode, offset: 0 };
 
@@ -662,8 +712,11 @@ class CFI {
     var cfiCount = 0;
     var lastChild;
     var i, child;
+
+    // console.log(children, children.length)
     for (i = 0; i < children.length; i++) {
       child = children[i];
+      // @ts-ignore
       switch (child.nodeType) {
         case ELEMENT_NODE:
 
@@ -674,6 +727,7 @@ class CFI {
           if (cfiCount % 2 === 0) {
             cfiCount += 2;
             if (cfiCount >= index) {
+              // @ts-ignore
               if (child.tagName.toLowerCase() === 'img' && offset) {
                 return { node: child, offset }
               }
@@ -682,6 +736,7 @@ class CFI {
           } else { // Previous node was a text node
             cfiCount += 1;
             if (cfiCount === index) {
+              // @ts-ignore
               if (child.tagName.toLowerCase() === 'img' && offset) {
                 return { node: child, offset }
               }
@@ -695,6 +750,7 @@ class CFI {
               if (!lastChild) {
                 return { node: parentNode, offset: 0 };
               }
+              // @ts-ignore
               return { node: lastChild, offset: this.trueLength(dom, lastChild.textContent) };
             }
           }
@@ -702,6 +758,7 @@ class CFI {
           break;
         case TEXT_NODE:
         case CDATA_SECTION_NODE:
+          // console.log('TEXT')
           // If this is the first node or the previous node was an element node
           if (cfiCount === 0 || cfiCount % 2 === 0) {
             cfiCount += 1;
@@ -714,6 +771,7 @@ class CFI {
             // If offset is greater than the length of the current text node
             // then we assume that the next node will also be a text node
             // and that we'll be combining them with the current node
+            // @ts-ignore
             let trueLength = this.trueLength(dom, child.textContent);
 
             if (offset >= trueLength) {
@@ -729,23 +787,29 @@ class CFI {
       }
     }
 
+    // console.log(lastChild, index, cfiCount)
+
     // index is pointing to the virtual node after the last child
     // as defined in the CFI spec
     if (index > cfiCount) {
       var o = { relativeToNode: 'after', offset: 0 };
       if (!lastChild) {
+        // @ts-ignore
         o.node = parentNode;
       } else {
+        // @ts-ignore
         o.node = lastChild;
       }
+      // @ts-ignore
       if (this.isTextNode(o.node)) {
+        // @ts-ignore
         o.offset = this.trueLength(dom, o.node.textContent.length);
       }
       return o;
     }
   }
 
-  isTextNode(node) {
+  isTextNode(node: Element) {
     if (!node) return false;
     if (node.nodeType === TEXT_NODE || node.nodeType === CDATA_SECTION_NODE) {
       return true;
@@ -754,7 +818,7 @@ class CFI {
   }
 
   // Use a Text Location Assertion to correct and offset
-  correctOffset(dom, node, offset, assertion) {
+  correctOffset(dom: Document, node: Element, offset: number, assertion: any) {
     var curNode = node;
 
     if (typeof assertion === 'string') {
@@ -769,7 +833,9 @@ class CFI {
       return { node, offset: 0 };
     }
 
+    // @ts-ignore
     while (this.isTextNode(curNode.previousSibling)) {
+      // @ts-ignore
       curNode = curNode.previousSibling;
     }
 
@@ -780,11 +846,13 @@ class CFI {
     var i = 0;
     while (this.isTextNode(curNode)) {
 
+      // @ts-ignore
       str = this.decodeEntities(dom, curNode.textContent);
       nodeLengths[i] = str.length;
       txt += str;
 
       if (!curNode.nextSibling) break;
+      // @ts-ignore
       curNode = curNode.nextSibling;
       i++;
     }
@@ -803,20 +871,24 @@ class CFI {
 
     i = 0;
     curNode = startNode;
+    // @ts-ignore
     while (newOffset >= nodeLengths[i]) {
 
+      // @ts-ignore
       newOffset -= nodeLengths[i];
       if (newOffset < 0) return { node, offset }
 
+      // @ts-ignore
       if (!curNode.nextSibling || i + 1 >= nodeOffsets.length) return { node, offset }
       i++;
+      // @ts-ignore
       curNode = curNode.nextSibling;
     }
 
     return { node: curNode, offset: newOffset };
   }
 
-  resolveNode(index: number, subparts, dom: Document, opts) {
+  resolveNode(index: number, subparts: { nodeIndex: number, nodeID?: string, offset?: number }[], dom: Document, opts: {}) {
     opts = Object.assign({}, opts || {});
     if (!dom) throw new Error("Missing DOM argument");
 
@@ -845,14 +917,18 @@ class CFI {
 
     var node = startNode;
     var startFrom = 0;
-    var i, subpart;
+    var i;
+    let subpart: typeof subparts[number] | undefined;
     for (i = subparts.length - 1; i >= 0; i--) {
       subpart = subparts[i];
+      // @ts-ignore
       if (!opts.ignoreIDs && subpart.nodeID && (node = dom.getElementById(subpart.nodeID))) {
         startFrom = i + 1;
         break;
       }
     }
+
+    // console.log(startNode, startFrom)
 
     if (!node) {
       node = startNode;
@@ -864,10 +940,17 @@ class CFI {
     for (i = startFrom; i < subparts.length; i++) {
       subpart = subparts[i];
 
-      o = this.getChildNodeByCFIIndex(dom, o.node, subpart.nodeIndex, subpart.offset);
+      if (subpart) {
+        // console.log(o, dom, o.node, subpart.nodeIndex, subpart.offset)
+        // @ts-ignore
+        o = this.getChildNodeByCFIIndex(dom, o.node, subpart.nodeIndex, subpart.offset);
 
-      if (subpart.textLocationAssertion) {
-        o = this.correctOffset(dom, o.node, subpart.offset, subpart.textLocationAssertion);
+        // @ts-ignore
+        if (subpart.textLocationAssertion) {
+          // console.log(subparts, subpart, o)
+          // @ts-ignore
+          o = this.correctOffset(dom, o.node, subpart.offset, subpart.textLocationAssertion);
+        }
       }
     }
 
@@ -883,7 +966,7 @@ class CFI {
   // the next part of the CFI
   // If the opt `ignoreIDs` is true then IDs
   // will not be used while resolving
-  resolveURI(index, dom, opts: { ignoreIDs?: boolean }) {
+  resolveURI(index: number, dom: Document, opts: { ignoreIDs?: boolean }) {
     opts = opts || {};
     if (index < 0 || index > this.parts.length - 2) {
       throw new Error("index is out of bounds");
@@ -892,18 +975,23 @@ class CFI {
     const subparts = this.parts[index];
     if (!subparts) throw new Error("Missing CFI part for index: " + index);
 
+    // @ts-ignore
     var o = this.resolveNode(index, subparts, dom, opts);
     // debugger
     var node = o.node;
 
+    // @ts-ignore
     const tagName = node.tagName.toLowerCase();
     if (tagName === 'itemref'
+      // @ts-ignore
       && node.parentNode.tagName.toLowerCase() === 'spine') {
-
+      // @ts-ignore
       const idref = node.getAttribute('idref');
       if (!idref) throw new Error("Referenced node had not 'idref' attribute");
+      // @ts-ignore
       node = dom.getElementById(idref);
       if (!node) throw new Error("Specified node is missing from manifest");
+      // @ts-ignore
       const href = node.getAttribute('href');
       if (!href) throw new Error("Manifest item is missing href attribute");
 
@@ -911,18 +999,21 @@ class CFI {
     }
 
     if (tagName === 'iframe' || tagName === 'embed') {
+      // @ts-ignore
       const src = node.getAttribute('src');
       if (!src) throw new Error(tagName + " element is missing 'src' attribute");
       return src;
     }
 
     if (tagName === 'object') {
+      // @ts-ignore
       const data = node.getAttribute('data');
       if (!data) throw new Error(tagName + " element is missing 'data' attribute");
       return data;
     }
 
     if (tagName === 'image' || tagName === 'use') {
+      // @ts-ignore
       const href = node.getAttribute('xlink:href');
       if (!href) throw new Error(tagName + " element is missing 'xlink:href' attribute");
       return href;
@@ -931,27 +1022,26 @@ class CFI {
     throw new Error("No URI found");
   }
 
-  deepClone(o) {
+  deepClone(o: any) {
     return JSON.parse(JSON.stringify(o));
   }
 
-  resolveLocation(dom: Document, parts) {
+  resolveLocation(dom: Document, parts: {}[]) {
     const index = parts.length - 1;
     const subparts = parts[index];
     if (!subparts) throw new Error("Missing CFI part for index: " + index);
 
+    // @ts-ignore
     var o = this.resolveNode(index, subparts, dom);
 
-    // debugger
+    // @ts-ignore
+    var lastPart = this.deepClone(subparts[subparts.length - 1]);
 
-    var lastpart = this.deepClone(subparts[subparts.length - 1]);
+    delete lastPart.nodeIndex;
+    // @ts-ignore
+    if (!lastPart.offset) delete o.offset;
 
-    delete lastpart.nodeIndex;
-    if (!lastpart.offset) delete o.offset;
-
-    Object.assign(lastpart, o);
-
-    return lastpart;
+    return { ...lastPart, ...o }
   }
 
   // Takes the Document or XMLDocument for the final
@@ -966,12 +1056,15 @@ class CFI {
       return this.resolveLocation(dom, this.parts);
     }
 
+    // @ts-ignore
     if (opts.range) {
       const range = dom.createRange();
       const from = this.getFrom();
       if (from.relativeToNode === 'before') {
+        // @ts-ignore
         range.setStartBefore(from.node, from.offset)
       } else if (from.relativeToNode === 'after') {
+        // @ts-ignore
         range.setStartAfter(from.node, from.offset)
       } else {
         range.setStart(from.node, from.offset);
@@ -979,8 +1072,10 @@ class CFI {
 
       const to = this.getTo();
       if (to.relativeToNode === 'before') {
+        // @ts-ignore
         range.setEndBefore(to.node, to.offset)
       } else if (to.relativeToNode === 'after') {
+        // @ts-ignore
         range.setEndAfter(to.node, to.offset)
       } else {
         range.setEnd(to.node, to.offset);
@@ -996,66 +1091,38 @@ class CFI {
     };
   }
 
-  async fetchAndParse(uri) {
-    return new Promise((resolv, reject) => {
-
-      const xhr = new XMLHttpRequest;
-
-      xhr.open('GET', uri);
-      xhr.responseType = 'document';
-
-      xhr.onload = function () {
-        if (xhr.readyState === xhr.DONE) {
-          if (xhr.status < 200 || xhr.status >= 300) {
-            reject(new Error("Failed to get: " + uri));
-            return;
-          }
-          resolv(xhr.responseXML);
-        }
-      }
-      xhr.onerror = function () {
-        reject(new Error("Failed to get: " + uri));
-      }
-
-      xhr.send();
-    });
-  }
-
-  // async resolve(uriOrDoc, fetchCB, opts) {
-  //   if (typeof fetchCB !== 'function') {
-  //     opts = fetchCB;
-  //     fetchCB = null
-  //   }
-  //   if (!fetchCB) {
-  //     if (typeof XMLHttpRequest === 'undefined') {
-  //       throw new Error("XMLHttpRequest not available. You must supply a function as the second argument.");
-  //     }
-  //     fetchCB = this.fetchAndParse;
-  //   }
-
-  //   var uri, doc;
-  //   if (typeof uriOrDoc === 'string') {
-  //     uri = uriOrDoc;
-  //   } else {
-  //     doc = uriOrDoc;
-  //   }
-  //   var i, part, uri;
-  //   for (i = 0; i < this.parts.length - 1; i++) {
-  //     doc = await fetchCB(uri);
-  //     uri = this.resolveURI(i, doc, opts);
-  //   }
-
-  //   doc = await fetchCB(uri);
-  //   return this.resolveLast(doc, opts);
-  // }
-
   resolve(doc: Document, opts: {}): { node: Node } | { node?: undefined } {
+    // @ts-ignore
     return this.resolveLast(doc, opts);
   }
-
 }
 
 export {
   CFI
 }
 
+export const extractObokuMetadataFromCfi = (cfi: string): {
+  cleanedCfi: string,
+  itemId?: string
+} => {
+  let isNotACollection = false
+  let tags: string[] = []
+  let isIgnored = false
+  let direction = undefined
+  let isbn = undefined
+
+  // epubcfi(/2/4/2[_preface]/2/1|[oboku:id-id2632344]) -> |[oboku:id-id2632344]
+  const directives = cfi.match(/(\|\[oboku\:[^\]]*\])+/ig)?.map(str =>
+    str.replace(/\|\[oboku:/, '')
+      .replace(/\]/, '')
+  ) || []
+  const itemId = directives[0]
+  const cleanedCfi = cfi.replace(/\|\[oboku:[^\]]*]/, '')
+
+  // console.log(directives)
+
+  return {
+    cleanedCfi,
+    itemId
+  }
+}

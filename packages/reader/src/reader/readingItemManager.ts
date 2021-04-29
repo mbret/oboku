@@ -1,4 +1,5 @@
 import { Subject } from "rxjs"
+import { Report } from "../report"
 import { Context } from "./context"
 import { createReadingItem, ReadingItem } from "./readingItem"
 
@@ -40,7 +41,7 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
     activeReadingItemIndex = orderedReadingItems.indexOf(readingItemToFocus)
 
     if (readingItemToFocus !== previousReadingItem) {
-      previousReadingItem?.unloadContent().catch(console.error)
+      previousReadingItem?.unloadContent().catch(Report.error)
       layout()
     }
 
@@ -90,7 +91,7 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
 
     const { start, end } = getPositionOf(focusedItem)
     const isOutside = offset < start || offset > end
-    console.log(`isOffsetOutsideOfFocusedItem`, { start, end, offset, isOutside })
+    // console.log(`isOffsetOutsideOfFocusedItem`, { start, end, offset, isOutside })
     // @todo rtl
     return isOutside
   }
@@ -131,7 +132,7 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
       })
 
       if (!detectedItem) {
-        console.warn(`unable to detect reading item at offset`, offset)
+        Report.warn(`unable to detect reading item at offset`, offset)
       }
 
       return detectedItem || getFocusedReadingItem()

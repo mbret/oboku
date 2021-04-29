@@ -10,7 +10,7 @@ export const createReadingItemFrame = (
   item: Manifest['readingOrder'][number],
   context: Context,
   { fetchResource }: {
-    fetchResource: `http` | ((item: Manifest['readingOrder'][number]) =>Promise<string>)
+    fetchResource: `http` | ((item: Manifest['readingOrder'][number]) => Promise<string>)
   }
 ) => {
   const subject = new Subject<{ event: 'isReady' | 'layout' }>()
@@ -89,7 +89,10 @@ export const createReadingItemFrame = (
           // frameElement.frameBorder = 'no'
           frameElement.setAttribute('sandbox', 'allow-same-origin allow-scripts')
           // frameElement.scrolling = 'no'
-          frameElement.onload = () => {
+          // frameElement.onerror = (e: any) => {
+          //   Report.error(e)
+          // }
+          frameElement.onload = (e) => {
             // debugger
             const t1 = performance.now();
             Report.metric({ name: `ReadingItemFrame load:3`, duration: t1 - t0 });
@@ -165,6 +168,13 @@ export const createReadingItemFrame = (
           frameElement.contentDocument.head.appendChild(userStyle)
         }
       }
+    },
+    getReadingDirection: (): 'ltr' | 'rtl' | undefined => {
+      if (frameElement?.contentWindow && frameElement?.contentDocument?.body) {
+        const direction = frameElement.contentWindow.getComputedStyle(frameElement.contentDocument.body).direction
+        if (['ltr', 'rtl'].includes(direction)) return direction as ('ltr' | 'rtl')
+      }
+      return undefined
     },
     destroy: () => {
       unload()

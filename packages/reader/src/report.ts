@@ -3,14 +3,14 @@ export const Report = {
   log: (...data: any[]) => {
     if (process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
-      console.log(`[obokuReader:log]`, ...data);
+      console.log(`[oboku-reader]`, ...data);
     }
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   warn: (...data: any[]) => {
     if (process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
-      console.warn(`[obokuReader:warn]`, ...data);
+      console.warn(`[oboku-reader]`, ...data);
     }
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,13 +21,13 @@ export const Report = {
   time: (label?: string | undefined) => {
     if (process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
-      console.time(`[obokuReader:metric] ${label}`);
+      console.time(`[oboku-reader] [metric] ${label}`);
     }
   },
   timeEnd: (label?: string | undefined) => {
     if (process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
-      console.timeEnd(`[obokuReader:metric] ${label}`);
+      console.timeEnd(`[oboku-reader] [metric] ${label}`);
     }
   },
   metric: (performanceEntry: PerformanceEntry | { name: string; duration: number }, targetDuration = Infinity) => {
@@ -35,11 +35,11 @@ export const Report = {
     if (process.env.NODE_ENV === 'development') {
       if (performanceEntry.duration <= targetDuration) {
         // eslint-disable-next-line no-console
-        console.log(`[obokuReader:metric] `, `${performanceEntry.name} took ${duration}ms`);
+        console.log(`[oboku-reader] [metric] `, `${performanceEntry.name} took ${duration}ms`);
       } else {
         // eslint-disable-next-line no-console
         console.warn(
-          `[obokuReader:metric] `,
+          `[oboku-reader] [metric] `,
           `${performanceEntry.name} took ${performanceEntry.duration}ms which is above the ${targetDuration}ms target for this function`,
         );
       }

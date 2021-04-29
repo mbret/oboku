@@ -5,6 +5,7 @@ type TocItem = {
 }
 
 export type Manifest = {
+  filename: string,
   nav: {
     toc: TocItem[]
   },

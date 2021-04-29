@@ -1,9 +1,10 @@
 import { Context } from "../context"
 import { createReadingItemFrame, ReadingItemFrame } from "./readingItemFrame"
 import { Manifest } from "../types"
-import { getFirstVisibleNodeFromPoint } from "../utils/dom"
-import { CFI } from "../cfi"
+import { getFirstVisibleNodeForViewport } from "../utils/dom"
+import { CFI, extractObokuMetadataFromCfi } from "../cfi"
 import { Subject, Subscription } from "rxjs"
+import { Report } from "../../report"
 
 const pointerEvents = [
   "pointercancel" as const,
@@ -29,7 +30,7 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
   item: Manifest['readingOrder'][number],
   containerElement: HTMLElement,
   context: Context,
-  fetchResource: `http` | ((item: Manifest['readingOrder'][number]) =>Promise<string>)
+  fetchResource: `http` | ((item: Manifest['readingOrder'][number]) => Promise<string>)
 }) => {
   const subject = new Subject<{ event: 'selectionchange' | 'selectstart', data: Selection } | { event: 'layout' }>()
   const element = createWrapperElement(containerElement, item)
@@ -68,14 +69,38 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
     }
   }
 
-  const getFirstNodeAtOffset = (offset: number) => {
+  const getFirstNodeOrRangeAtPage = (pageIndex: number) => {
+    const pageSize = context.getPageSize()
     const frame = readingItemFrame?.getFrameElement()
 
+    const yOffset = 0 + context.getVerticalMargin()
     // return frame?.contentDocument?.body.childNodes[0]
 
     // return frame?.contentWindow?.document.caretRangeFromPoint(offset, 0).startContainer
     if (frame?.contentWindow?.document) {
-      return getFirstVisibleNodeFromPoint(frame?.contentWindow?.document, offset, 0)
+
+      const viewport = {
+        left: pageIndex * pageSize.width,
+        right: (pageIndex * pageSize.width) + pageSize.width,
+        top: 0,
+        bottom: pageSize.height
+      }
+      const res = getFirstVisibleNodeForViewport(frame.contentWindow.document, viewport)
+
+      // console.warn(`getFirstNodeOrRangeAtPage`, res)
+      // const res = getFirstVisibleNodeFromPoint(frame?.contentWindow?.document, offsetInReadingItem, yOffset)
+
+
+      // if (res && `offsetNode` in res) {
+      //   console.warn(offsetInReadingItem, res, res.offsetNode.parentElement?.getBoundingClientRect())
+
+      //   return { node: res.offsetNode, offset: 0 }
+      // }
+      // if (res && `startContainer` in res) {
+      //   return { node: res.startContainer, offset: res.startOffset }
+      // }
+
+      return res
     }
     // if (frame) {
     //   const element = Array.from(frame.contentWindow?.document.body.children || []).find(children => {
@@ -90,32 +115,49 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
     return undefined
   }
 
-  const getCfi = (offset: number) => {
-    const node = getFirstNodeAtOffset(offset)
+  const getCfi = Report.measurePerformance(`getCfi`, 10, (pageIndex: number) => {
+    const nodeOrRange = getFirstNodeOrRangeAtPage(pageIndex)
     const doc = readingItemFrame.getFrameElement()?.contentWindow?.document
 
-    const itemAnchor = `[oboku:${encodeURIComponent(item.id)}]`
+    const itemAnchor = `|[oboku:${encodeURIComponent(item.id)}]`
 
-    if (node && doc) {
-      const cfiString = CFI.generate(node, 0, itemAnchor)
+    // console.warn(`getCfi`, nodeOrRange)
+    if (nodeOrRange && doc) {
+      const cfiString = CFI.generate(nodeOrRange.node, nodeOrRange.offset, itemAnchor)
+      // console.log('FOOO', CFI.generate(nodeOrRange.startContainer, nodeOrRange.startOffset))
 
       return cfiString
     }
 
     return `epubcfi(/0${itemAnchor}) `
-  }
+  })
 
   const resolveCfi = (cfiString: string | undefined) => {
     if (!cfiString) return undefined
 
-    const cfi = new CFI(cfiString, {})
+    const { cleanedCfi } = extractObokuMetadataFromCfi(cfiString)
+    const cfi = new CFI(cleanedCfi, {})
 
     const doc = readingItemFrame.getFrameElement()?.contentWindow?.document
 
     if (doc) {
-      const { node } = cfi.resolve(doc, {})
+      try {
+        // console.warn('FIII', cleanedCfi, cfi)
+        // console.log('FIII', (new CFI('epubcfi(/2/4/2[_preface]/10/1:175[oboku:id-id2632344]', {})).resolve(doc, {}))
+        // const { cleanedCfi: foo, itemId } = extractObokuMetadataFromCfi('epubcfi(/2/4/2[I_book_d1e1]/14/2[id2602563]/4/1:190|[oboku:id-id2442754])')
+        // const { cleanedCfi: foo, itemId } = extractObokuMetadataFromCfi('epubcfi(/2/4/2[I_book_d1e1]/14/2[id2602563]/4/1:100|[oboku:id-id2442754])')
+        // const cfiObject = (new CFI(foo, {}))
+        // const resolve = cfiObject.resolve(doc, {})
+        // console.warn('FIII', foo, (new CFI(foo, {})), resolve.node, resolve)
+        const { node } = cfi.resolve(doc, {})
 
-      return node
+        // console.log(cfi.resolve(doc, {}))
+
+        return node
+      } catch (e) {
+        Report.error(e)
+        return undefined
+      }
     }
 
     return undefined
@@ -176,6 +218,9 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
       element.remove()
       readingItemFrame?.destroy()
       readingItemFrame$?.unsubscribe()
+    },
+    getReadingDirection: () => {
+      return readingItemFrame.getReadingDirection() || context.manifest.readingDirection
     },
     $: subject,
   }
