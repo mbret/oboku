@@ -113,6 +113,17 @@ export const createReadingItemFrame = (
 
               isLoaded = true
 
+              // frameElement.contentDocument?.addEventListener('click', (e) => {
+              //   console.log(e, e.target instanceof HTMLAnchorElement)
+              //   e.preventDefault()
+              // })
+
+              // Array.from(frameElement.contentDocument?.links || []).forEach(link => {
+              //   link.addEventListener
+              // })
+
+              // console.warn(frameElement.contentDocument?.links)
+
               frameElement.contentDocument?.fonts.ready.then(() => {
                 if (frameElement && !isCancelled()) {
                   isReady = true

@@ -69,7 +69,7 @@ export const getReadingItemOffsetFromPageIndex = (pageWidth: number, pageIndex: 
 
 export const getNumberOfPages = (itemWidth: number, pageWidth: number) => {
   if ((pageWidth || 0) === 0 || (itemWidth || 0) === 0) return 1
-  return Math.max(1, itemWidth / pageWidth)
+  return Math.floor(Math.max(1, itemWidth / pageWidth))
 }
 
 export const getClosestValidOffsetFromApproximateOffsetInPages = (offset: number, pageWidth: number, itemWidth: number) => {
