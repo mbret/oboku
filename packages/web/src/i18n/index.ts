@@ -1,12 +1,17 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from 'i18next-browser-languagedetector'
-import Backend from "i18next-http-backend"
+import * as translations from './resources'
+
+const resources = Object.keys(translations).reduce((acc, key) => {
+  acc[key] = {
+    translation: translations[key]
+  }
+
+  return acc
+}, {})
 
 i18n
-  // load translation using http -> see /public/locales
-  // learn more: https://github.com/i18next/i18next-http-backend
-  .use(Backend)
   .use(LanguageDetector)
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
@@ -15,7 +20,8 @@ i18n
     keySeparator: false, // we do not use keys in form messages.welcome
     interpolation: {
       escapeValue: false // react already safes from xss
-    }
+    },
+    resources
   }, (error) => {
     error && console.error(error)
   });
