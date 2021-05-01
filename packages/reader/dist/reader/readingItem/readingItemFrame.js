@@ -99,6 +99,14 @@ export const createReadingItemFrame = (parent, item, context, { fetchResource })
                             frameElement.setAttribute('tab-index', '0');
                             onLoad(frameElement);
                             isLoaded = true;
+                            // frameElement.contentDocument?.addEventListener('click', (e) => {
+                            //   console.log(e, e.target instanceof HTMLAnchorElement)
+                            //   e.preventDefault()
+                            // })
+                            // Array.from(frameElement.contentDocument?.links || []).forEach(link => {
+                            //   link.addEventListener
+                            // })
+                            // console.warn(frameElement.contentDocument?.links)
                             (_a = frameElement.contentDocument) === null || _a === void 0 ? void 0 : _a.fonts.ready.then(() => {
                                 if (frameElement && !isCancelled()) {
                                     isReady = true;
