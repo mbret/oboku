@@ -28,3 +28,6 @@ yarn-error.log*
 
 .env
 .eslintcache
+
+# used for development only, generated otherwise
+public/service-worker.*

@@ -6124,21 +6124,6 @@ entities@^2.0.0:
   resolved "https://registry.yarnpkg.com/entities/-/entities-2.2.0.tgz#098dc90ebb83d8dffa089d55256b351d34c4da55"
   integrity sha512-p92if5Nz619I0w+akJrLZH0MX0Pb5DX39XOwQTtXSdQQOaYH03S1uIQp4mhOZtAXrxq4ViO67YTiLBo2638o9A==
 
-epubjs@^0.3.88:
-  version "0.3.88"
-  resolved "https://registry.yarnpkg.com/epubjs/-/epubjs-0.3.88.tgz#bc365e7e21893cf2d92717ce10927c1071275347"
-  integrity sha512-VRumULpUELYmYwzypyfbDwoSIqDp2LXOXCtY3o55o3YDW5Zm32UjtZuX/xaWFGqyZORNNMWWQ8VlMaY1djnDYg==
-  dependencies:
-    "@types/localforage" "0.0.34"
-    core-js "^3.6.5"
-    event-emitter "^0.3.5"
-    jszip "^3.4.0"
-    localforage "^1.7.3"
-    lodash "^4.17.15"
-    marks-pane "^1.0.9"
-    path-webpack "0.0.3"
-    xmldom "^0.3.0"
-
 errno@^0.1.3, errno@~0.1.1, errno@~0.1.7:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/errno/-/errno-0.1.8.tgz#8bb3e9c7d463be4976ff888f76b4809ebc2e811f"
@@ -12197,15 +12182,6 @@ react-lifecycles-compat@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-lifecycles-compat/-/react-lifecycles-compat-3.0.4.tgz#4f1a273afdfc8f3488a8c516bfda78f872352362"
   integrity sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==
-
-react-reader@^0.20.3:
-  version "0.20.3"
-  resolved "https://registry.yarnpkg.com/react-reader/-/react-reader-0.20.3.tgz#3c7f1dee8532bbc28508730a89a3d5b4d6fb43f7"
-  integrity sha512-PGhKj1afCg18HdQgz8Qy8eKzvg6aJtykOZx4YXWtGEbsj42EU/xxAjTBJN8yfgjUtO9d2wmnSNCPSE0T11u4lw==
-  dependencies:
-    epubjs "^0.3.88"
-    prop-types "^15.7.2"
-    react-swipeable "^6.0.0"
 
 react-refresh@^0.8.3:
   version "0.8.3"

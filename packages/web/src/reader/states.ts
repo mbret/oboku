@@ -1,17 +1,20 @@
-import { atom } from "recoil";
-import { Rendition, Location } from "epubjs"
-import { ThenArg } from "../types";
-
-type Navigation = ThenArg<Rendition['book']['loaded']['navigation']>
+import { atom, selector, useRecoilCallback } from "recoil";
+import { useEffect } from "react";
+import { Manifest, Pagination } from "@oboku/reader";
 
 export const isBookReadyState = atom({
   key: 'isBookReadyState',
   default: false,
 })
 
-export const layoutState = atom<'fixed' | 'reflow' | undefined>({
-  key: 'layoutState',
-  default: undefined,
+export const paginationState = atom<Pagination>({
+  key: `paginationState`,
+  default: undefined
+})
+
+export const manifestState = atom<Manifest | undefined>({
+  key: `manifestState`,
+  default: undefined
 })
 
 export const isMenuShownState = atom({
@@ -19,37 +22,87 @@ export const isMenuShownState = atom({
   default: false,
 })
 
-export const currentPageState = atom<number | undefined>({
-  key: 'currentPageState',
-  default: undefined,
+// =======> Please do not forget to add atom to the reset part !
+
+export const totalPageState = selector({
+  key: `totalPageState`,
+  get: ({ get }) => {
+    const { renditionLayout } = get(manifestState) || {}
+    const { numberOfSpineItems, begin } = get(paginationState) || {}
+
+    if (renditionLayout === 'reflowable') return begin?.numberOfPagesInChapter
+    return numberOfSpineItems
+  }
 })
 
-export const totalApproximativePagesState = atom<number | undefined>({
-  key: 'totalApproximativePagesState',
-  default: undefined,
+export const currentPageState = selector({
+  key: `currentPageState`,
+  get: ({ get }) => {
+    const { renditionLayout } = get(manifestState) || {}
+    const { begin } = get(paginationState) || {}
+
+    if (renditionLayout === 'reflowable') return begin?.pageIndexInChapter
+    return begin?.spineItemIndex
+  }
 })
 
-export const currentApproximateProgressState = atom<number | undefined>({
-  key: 'currentApproximateProgressState',
-  default: undefined
+export const chapterInfoState = selector({
+  key: `chapterInfoState`,
+  get: ({ get }) => {
+    const { begin } = get(paginationState) || {}
+
+    return {
+      title: begin?.chapterInfo?.title
+    }
+  }
 })
 
-export const tocState = atom<Navigation['toc']>({
-  key: 'tocState',
-  default: []
+export const totalBookProgressState = selector({
+  key: `totalBookProgressState`,
+  get: ({ get }) => {
+    const { percentageEstimateOfBook } = get(paginationState) || {}
+
+    return percentageEstimateOfBook
+  }
 })
 
-export const currentLocationState = atom<Location | undefined>({
-  key: 'currentLocationState',
-  default: undefined
+export const hasRightSpineItemState = selector({
+  key: `hasRightSpineItemState`,
+  get: ({ get }) => {
+    const { numberOfSpineItems = 1, begin } = get(paginationState) || {}
+    const { readingDirection } = get(manifestState) || {}
+    const { spineItemIndex = 0 } = begin || {}
+
+    if (readingDirection === 'ltr') return spineItemIndex < (numberOfSpineItems - 1)
+    return spineItemIndex > 0
+  }
 })
 
-export const currentChapterState = atom<Navigation['toc'][number] | undefined>({
-  key: 'currentChapterState',
-  default: undefined
+export const hasLeftSpineItemState = selector({
+  key: `hasLeftSpineItemState`,
+  get: ({ get }) => {
+    const { numberOfSpineItems = 1, begin } = get(paginationState) || {}
+    const { readingDirection } = get(manifestState) || {}
+    const { spineItemIndex = 0 } = begin || {}
+
+    if (readingDirection === 'ltr') return spineItemIndex > 0
+    return spineItemIndex < (numberOfSpineItems - 1)
+  }
 })
 
-export const currentDirectionState = atom<'ltr' | 'rtl'>({
-  key: 'currentDirectionState',
-  default: 'ltr'
-})
+const statesToReset = [
+  isBookReadyState,
+  paginationState,
+  isMenuShownState,
+  manifestState,
+]
+
+export const useResetStateOnUnMount = () => {
+  const resetStates = useRecoilCallback(({ reset }) => () => {
+    statesToReset.forEach(state => reset(state))
+  }, [])
+
+  useEffect(() => {
+    return () => resetStates()
+  }, [resetStates])
+}

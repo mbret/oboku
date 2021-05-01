@@ -2,7 +2,7 @@ import React, { FC, useEffect, useState } from 'react';
 import RcSlider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useRecoilValue } from 'recoil';
-import { currentPageState, layoutState, totalApproximativePagesState, currentApproximateProgressState, currentDirectionState } from './states';
+import { currentPageState, manifestState, totalPageState } from './states';
 import { useTheme } from '@material-ui/core';
 import { useReader } from './ReaderProvider';
 
@@ -10,27 +10,17 @@ export const Scrubber: FC<{
 
 }> = () => {
   const currentPage = useRecoilValue(currentPageState)
-  const totalApproximativePages = useRecoilValue(totalApproximativePagesState)
-  const currentApproximateProgress = useRecoilValue(currentApproximateProgressState)
-  const direction = useRecoilValue(currentDirectionState)
+  const totalPages = useRecoilValue(totalPageState)
+  const { readingDirection, renditionLayout } = useRecoilValue(manifestState) || {}
   const [value, setValue] = useState(currentPage || 0)
-  const layout = useRecoilValue(layoutState)
   const theme = useTheme()
   const reader = useReader()
-  const max = layout === 'reflow' ? 1 : (totalApproximativePages || 0) - 1
-  const step = layout === 'reflow' ? 0.01 : 1
+  const max = (totalPages || 1) - 1
+  const step = 1
 
   useEffect(() => {
-    if (layout === 'fixed') {
-      setValue(currentPage || 0)
-    }
-  }, [currentPage, layout])
-
-  useEffect(() => {
-    if (layout === 'reflow') {
-      setValue(currentApproximateProgress || 0)
-    }
-  }, [currentApproximateProgress, layout])
+    setValue(currentPage || 0)
+  }, [currentPage])
 
   return (
     <RcSlider
@@ -40,13 +30,14 @@ export const Scrubber: FC<{
       onChange={value => {
         setValue(value)
       }}
-      reverse={direction === 'rtl'}
+      reverse={readingDirection === 'rtl'}
       step={step}
       onAfterChange={(value) => {
-        if (layout === 'fixed') {
-          reader?.goToPage(value)
+        if (renditionLayout !== 'reflowable') {
+          console.log(value)
+          reader?.goTo(value)
         } else {
-          reader?.goToPageByBookPercentage(value)
+          reader?.goToPageOfCurrentChapter(value)
         }
       }}
       railStyle={{

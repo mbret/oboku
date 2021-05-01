@@ -1,0 +1,84 @@
+import { Manifest } from "@oboku/reader"
+import { useCallback, useEffect, useState } from "react"
+import { getBookFile } from "../download/useBookFile"
+import { Report } from "../report"
+import { getArchiveForRarFile } from "./streamer/getArchiveForFile"
+import '../archive'
+import { generateManifestResponse } from "@oboku/reader-streamer"
+import { STREAMER_URL_PREFIX } from "./streamer/serviceWorker"
+import { extractMetadataFromName } from "@oboku/shared/dist/directives"
+
+const useGetRarManifest = () => useCallback(async (bookId: string) => {
+  const file = await getBookFile(bookId)
+  const normalizedName = file?.name.toLowerCase()
+  if (file && normalizedName?.endsWith(`.cbr`)) {
+    const archive = await getArchiveForRarFile(file)
+
+    return generateManifestResponse(archive, { baseUrl: `/${STREAMER_URL_PREFIX}/rar` })
+  }
+
+  return undefined
+}, [])
+
+export const useManifest = (bookId: string | undefined) => {
+  const [manifest, setManifest] = useState<Manifest | undefined>(undefined)
+  const [isRarFile, setIsRarFile] = useState(false)
+  const [error, setError] = useState<{ code: `unknown` | `fileNotSupported` } | undefined>(undefined)
+  const getRarManifest = useGetRarManifest()
+
+  useEffect(() => {
+    setManifest(undefined)
+    setError(undefined)
+    setIsRarFile(false)
+  }, [bookId])
+
+  useEffect(() => {
+    (async () => {
+      if (bookId) {
+        try {
+          const response = await fetch(`${window.location.origin}/streamer/${bookId}/manifest`)
+
+          if (response.status === 415) {
+            // try to get manifest if it's a RAR
+            const rarResponse = await getRarManifest(bookId)
+            if (rarResponse) {
+              setIsRarFile(true)
+              const data = await rarResponse.json()
+              const newManifest = getNormalizedManifest(data)
+
+              Report.log(`manifest`, data)
+              
+              setManifest(newManifest)
+            } else {
+              setError({ code: `fileNotSupported` })
+            }
+          } else {
+            const data: Manifest = await response.json()
+            const newManifest = getNormalizedManifest(data)
+
+            Report.log(`manifest`, data)
+
+            setManifest(newManifest)
+          }
+        } catch (e) {
+          Report.error(e)
+          setError({ code: `unknown` })
+        }
+      }
+    })()
+  }, [bookId, getRarManifest])
+
+  return { manifest, error, isRarFile }
+}
+
+const getNormalizedManifest = (data: Manifest): Manifest => {
+  const { direction } = extractMetadataFromName(data.filename)
+  return {
+    ...data,
+    readingDirection: direction
+      ? direction
+      : data.filename.endsWith(`.cbz`)
+        ? 'rtl'
+        : data.readingDirection
+  }
+}

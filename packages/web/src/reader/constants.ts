@@ -1,0 +1,1 @@
+export const HORIZONTAL_TAPPING_RATIO = 0.15

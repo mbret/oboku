@@ -1,0 +1,169 @@
+/**
+ * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
+ * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
+ */
+import { useState, useEffect, useCallback, FC } from 'react'
+import { useHistory } from 'react-router-dom'
+import { useMeasure } from "react-use";
+import { Box, Button, Link, Typography, useTheme } from '@material-ui/core';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { bookState } from '../books/states';
+import { paginationState, isBookReadyState, manifestState } from './states';
+import { TopBar } from './TopBar';
+import { BottomBar } from './BottomBar';
+import { useBookResize } from './layout';
+import { useGestureHandler } from './gestures'
+import { useReader } from './ReaderProvider';
+import { BookLoading } from './BookLoading';
+import Hammer from 'hammerjs'
+import { useCSS } from '../common/utils';
+import { ObokuReader } from '@oboku/reader/dist/react'
+import { Pagination } from '@oboku/reader';
+import { useManifest } from './manifest';
+import { useRarStreamer } from './streamer/useRarStreamer';
+import { ComponentProps } from 'react';
+import { useUpdateBookState } from './bookHelpers';
+
+type ReaderInstance = Parameters<NonNullable<ComponentProps<typeof ObokuReader>['onReader']>>[0]
+type LoadOptions = NonNullable<ComponentProps<typeof ObokuReader>['loadOptions']>
+
+export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => void }> = ({ bookId, onReader }) => {
+  const reader = useReader()
+  const [isBookReady, setIsBookReady] = useRecoilState(isBookReadyState)
+  const setPaginationState = useSetRecoilState(paginationState)
+  const setManifestState = useSetRecoilState(manifestState)
+  const book = useRecoilValue(bookState(bookId || '-1'))
+  const history = useHistory()
+  const [containerMeasureRef, { width: containerWidth, height: containerHeight }] = useMeasure()
+  const [readerContainerHammer, setReaderContainerHammer] = useState<HammerManager | undefined>(undefined)
+  const styles = useStyles()
+  const [loadOptions, setLoadOptions] = useState<LoadOptions | undefined>()
+  const { manifest, isRarFile, error: manifestError } = useManifest(bookId)
+  const { fetchResource } = useRarStreamer(isRarFile ? bookId : undefined)
+
+  const isBookError = !!manifestError
+
+  useBookResize(reader, containerWidth, containerHeight)
+  useGestureHandler(reader, readerContainerHammer)
+  useUpdateBookState(bookId)
+
+  useEffect(() => {
+    return () => {
+      setIsBookReady(false)
+    }
+  }, [setIsBookReady])
+
+  useEffect(() => {
+    setManifestState(manifest)
+  }, [manifest, setManifestState])
+
+  const onBookReady = useCallback(() => {
+    setIsBookReady(true)
+  }, [setIsBookReady])
+
+  const onPaginationChange = useCallback((pagination: Pagination) => {
+    console.warn('PAGINATION', (pagination?.percentageEstimateOfBook || 0) * 100)
+    setPaginationState(pagination)
+  }, [setPaginationState])
+
+  useEffect(() => {
+    if (manifest && book && !loadOptions) {
+      if (isRarFile && fetchResource) {
+        setLoadOptions({
+          fetchResource,
+          spineIndexOrIdOrCfi: book.readingStateCurrentBookmarkLocation || undefined
+        })
+      }
+      if (!isRarFile) {
+        setLoadOptions({
+          spineIndexOrIdOrCfi: book.readingStateCurrentBookmarkLocation || undefined
+        })
+      }
+    }
+  }, [book, manifest, loadOptions, isRarFile, fetchResource])
+
+  if (isBookError) {
+    if (manifestError?.code === 'fileNotSupported') {
+      return (
+        <div style={styles.infoContainer}>
+          <Box mb={2}>
+            <Typography>
+              Oups! it looks like the book <b>{book?.title}</b> is not supported yet.
+                     If you would like to be able to open it please visit the <Link href="https://docs.oboku.me" target="__blank">documentation</Link> and try to reach out.
+                   </Typography>
+          </Box>
+          <Button onClick={() => history.goBack()} variant="contained" color="primary">Go back</Button>
+        </div>
+      )
+    }
+    return (
+      <div style={styles.infoContainer}>
+        <Box mb={2}>
+          <Typography variant="h6" align="center">Oups!</Typography>
+          <Typography align="center">
+            Sorry it looks like we are unable to load the book.
+            If the problem persist try to restart the app.
+             If it still does not work, <Link href="https://docs.oboku.me/support" target="__blank">contact us</Link></Typography>
+        </Box>
+        <Button onClick={() => history.goBack()} variant="contained" color="primary">Go back</Button>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        height: `100%`,
+        width: `100%`,
+      }}
+      ref={containerMeasureRef as any}
+    >
+      <div
+        style={{
+          height: `100%`,
+          width: `100%`,
+          position: "relative",
+        }}
+        ref={ref => {
+          if (ref) {
+            setReaderContainerHammer(hammer => hammer ? hammer : new Hammer(ref))
+          }
+        }}
+      >
+        {!!loadOptions && (
+          <ObokuReader
+            manifest={manifest}
+            loadOptions={loadOptions}
+            onReady={onBookReady}
+            onReader={onReader}
+            onPaginationChange={onPaginationChange}
+          />
+        )}
+        {!isBookReady && (
+          <BookLoading />
+        )}
+      </div>
+      <TopBar />
+      <BottomBar />
+    </div>
+  )
+}
+
+const useStyles = () => {
+  const theme = useTheme()
+
+  return useCSS(() => ({
+    infoContainer: {
+      margin: 'auto',
+      maxWidth: 500,
+      paddingLeft: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+      display: 'flex',
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column'
+    }
+  }), [theme])
+}

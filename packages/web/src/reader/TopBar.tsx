@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRecoilValue } from "recoil"
-import { isMenuShownState } from "./states"
-import { AppBar, IconButton, Toolbar } from "@material-ui/core"
+import { isMenuShownState, manifestState } from "./states"
+import { AppBar, IconButton, Toolbar, Typography, useTheme } from "@material-ui/core"
 import { ArrowBackIosRounded, FullscreenExitRounded, FullscreenRounded } from '@material-ui/icons'
 import { useNavigation } from '../navigation/useNavigation'
 import screenfull, { Screenfull } from 'screenfull'
@@ -15,6 +15,8 @@ export const TopBar = () => {
   const classes = useStyles({ isMenuShow })
   const { goBack } = useNavigation()
   const [isFullScreen, setIsFullScreen] = useState(screenfullApi.isEnabled && screenfullApi.isFullscreen)
+  const { title, filename } = useRecoilValue(manifestState) || {}
+  const theme = useTheme()
 
   const onToggleFullScreenClick = useCallback(() => {
     if (screenfullApi.isFullscreen) {
@@ -40,7 +42,7 @@ export const TopBar = () => {
       elevation={0}
       style={classes.appBar}
     >
-      <Toolbar >
+      <Toolbar style={{ flex: 1 }}>
         <IconButton
           edge="start"
           color="inherit"
@@ -48,16 +50,25 @@ export const TopBar = () => {
         >
           <ArrowBackIosRounded />
         </IconButton>
-        <div style={{ flexGrow: 1 }} />
-        {screenfullApi.isEnabled && (
-          <IconButton
-            edge="end"
-            color="inherit"
-            onClick={onToggleFullScreenClick}
-          >
-            {isFullScreen ? <FullscreenExitRounded /> : <FullscreenRounded />}
-          </IconButton>
-        )}
+        <Typography
+          variant="body1"
+          component="h1"
+          color="inherit"
+          noWrap style={{ flex: 1, textAlign: 'center', paddingLeft: theme.spacing(2), paddingRight: theme.spacing(2) }}
+        >
+          {title || filename}
+        </Typography>
+        <div>
+          {screenfullApi.isEnabled && (
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={onToggleFullScreenClick}
+            >
+              {isFullScreen ? <FullscreenExitRounded /> : <FullscreenRounded />}
+            </IconButton>
+          )}
+        </div>
       </Toolbar>
     </AppBar>
   )

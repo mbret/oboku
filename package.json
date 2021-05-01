@@ -17,16 +17,20 @@
     "start:web-prod": "cd packages/web && yarn start-prod",
     "start:reader": "cd packages/reader && yarn watch",
     "start:reader-standalone": "cd packages/reader && yarn serve",
+    "start:reader-streamer": "cd packages/reader-streamer && yarn start",
     "start:landing": "cd packages/landing && yarn start",
     "start:shared": "cd packages/shared && yarn watch",
     "start:api-lambda": "cd packages/api-lambda && yarn watch",
-    "start": "concurrently -n api-lambda,shared \"yarn start:api-lambda\" \"yarn start:shared\"",
+    "start:back": "concurrently -n api-lambda,shared \"yarn start:api-lambda\" \"yarn start:shared\"",
+    "start:front": "concurrently -n web,reader,reader-streamer \"yarn start:web\" \"yarn start:reader\" \"yarn start:reader-streamer\"",
+    "start:front-reader": "concurrently -n reader,reader-streamer \"yarn start:reader-standalone\" \"yarn start:reader-streamer\"",
     "deploy-server": "pm2 stop oboku-api && git fetch origin && git reset --hard origin/release && yarn && pm2 start oboku-api && pm2 log oboku-api",
     "dev:fix:sharp": "rm -rf node_modules/sharp && rm -rf packages/api-lambda/node_modules/sharp && cp -R packages/api-lambda/sharp-install/node_modules/sharp packages/api-lambda/node_modules/sharp",
     "tsc:web": "cd packages/web && yarn tsc",
     "tsc:shared": "cd packages/shared && yarn tsc",
     "tsc:api-lambda": "cd packages/api-lambda && yarn tsc",
-    "tsc": "concurrently -n tsc:web,tsc:shared,tsc:api-lambda \"yarn tsc:web\" \"yarn tsc:shared\" \"yarn tsc:api-lambda\""
+    "tsc:reader": "cd packages/reader && yarn tsc",
+    "tsc": "concurrently -n tsc:web,tsc:shared,tsc:api-lambda,tsc:reader \"yarn tsc:web\" \"yarn tsc:shared\" \"yarn tsc:api-lambda\" \"yarn tsc:reader\""
   },
   "dependencies": {
     "concurrently": "^6.0.0",

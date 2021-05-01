@@ -1,19 +1,23 @@
-import React from 'react'
-import { AppBar, Box, Typography, useTheme } from "@material-ui/core"
+import { AppBar, Box, IconButton, Typography, useTheme } from "@material-ui/core"
 import { useRecoilValue } from "recoil"
 import { PageInformation } from "./PageInformation"
-import { isMenuShownState, currentPageState, totalApproximativePagesState, layoutState } from "./states"
+import { isMenuShownState, isBookReadyState, totalPageState, hasRightSpineItemState, hasLeftSpineItemState } from "./states"
 import { Scrubber } from './Scrubber'
 import { useTime } from '../common/useTime'
+import { DoubleArrowRounded } from "@material-ui/icons"
+import { useReader } from "./ReaderProvider"
 
 export const BottomBar = () => {
   const isMenuShow = useRecoilValue(isMenuShownState)
-  const currentPage = useRecoilValue(currentPageState)
-  const totalPagesCurrentChapter = useRecoilValue(totalApproximativePagesState)
-  const isLoading = currentPage === undefined || totalPagesCurrentChapter === undefined
-  const layout = useRecoilValue(layoutState)
+  const isBookReady = useRecoilValue(isBookReadyState)
+  const isLoading = !isBookReady
+  const totalPages = useRecoilValue(totalPageState)
+  const hasRightSpineItem = useRecoilValue(hasRightSpineItemState)
+  const hasLeftSpineItem = useRecoilValue(hasLeftSpineItemState)
   const theme = useTheme()
   const time = useTime()
+  const reader = useReader()
+  const showScrubber = (totalPages || 1) > 1
 
   return (
     <AppBar
@@ -21,10 +25,10 @@ export const BottomBar = () => {
       style={{
         bottom: 0,
         top: 'auto',
-        height: 130,
-        ...layout === 'reflow' && {
-          // height: 200,
-        },
+        height: 150,
+        // ...layout === 'reflow' && {
+        //   height: 200,
+        // },
         paddingBottom: 40,
         visibility: isMenuShow ? 'visible' : 'hidden',
         display: 'flex',
@@ -39,13 +43,45 @@ export const BottomBar = () => {
           <Typography style={{ fontWeight: theme.typography.fontWeightMedium }} align="center">Loading ...</Typography>
         </div>
       ) : (
-          <>
-            <PageInformation style={{ flex: 1 }} />
-            <Box pl={3} pr={3} display="flex">
-              <Scrubber />
-            </Box>
-          </>
-        )}
+        <>
+          <PageInformation style={{ flex: 1 }} />
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            // flex: 1
+          }}>
+            <IconButton
+              color="inherit"
+              style={{ transform: `rotateY(180deg)` }}
+              disabled={!hasLeftSpineItem}
+              onClick={_ => {
+                reader?.goToLeftSpineItem()
+              }}
+            >
+              <DoubleArrowRounded />
+            </IconButton>
+            <div style={{
+              flex: 1
+            }}>
+              {showScrubber && (
+                <Box pl={3} pr={3} display="flex">
+                  <Scrubber />
+                </Box>
+              )}
+            </div>
+            <IconButton
+              color="inherit"
+              disabled={!hasRightSpineItem}
+              onClick={_ => {
+                reader?.goToRightSpineItem()
+              }}
+            >
+              <DoubleArrowRounded />
+            </IconButton>
+          </div>
+        </>
+      )}
       <div style={{ position: 'absolute', bottom: theme.spacing(1), left: theme.spacing(1) }}>
         <Typography variant="caption">{time.toLocaleTimeString(navigator.language, { hour: '2-digit', minute: '2-digit' })}</Typography>
       </div>
