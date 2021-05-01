@@ -8,9 +8,9 @@ export const useBookFile = (bookId: string) => {
 
   useEffect(() => {
     let terminated = false
-    
+
       ; (async () => {
-        const item = await localforage.getItem<BookFile>(`${DOWNLOAD_PREFIX}-${bookId}`)
+        const item = await getBookFile(bookId)
 
         if (!terminated) {
           setFile(item)
@@ -23,4 +23,10 @@ export const useBookFile = (bookId: string) => {
   }, [bookId])
 
   return file
+}
+
+export const getBookFile = (bookId: string) => {
+  console.warn(`${DOWNLOAD_PREFIX}-${bookId}`)
+  
+  return localforage.getItem<BookFile>(`${DOWNLOAD_PREFIX}-${bookId}`)
 }

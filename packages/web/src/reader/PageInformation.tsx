@@ -44,7 +44,7 @@ export const PageInformation: FC<{
               </Typography>
               <div style={{ display: 'flex', marginTop: theme.spacing(1) }}>
                 <Typography variant="body2">
-                  {currentPage === (totalPagesToDisplay - 1)
+                  {totalPagesToDisplay === 1
                     ? ``
                     : `page ${currentPageToDisplay} of ${totalPagesToDisplay}`}
                 </Typography>

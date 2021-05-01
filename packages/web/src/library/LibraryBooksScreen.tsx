@@ -22,6 +22,7 @@ import { DownloadState } from '../download/states';
 import { localSettingsState } from '../settings/states';
 import { useCallback } from 'react';
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next'
 
 export const LibraryBooksScreen = () => {
   const styles = useStyles();
@@ -41,6 +42,7 @@ export const LibraryBooksScreen = () => {
   if ((library?.readingStates.length || 0) > 0) numberOfFiltersApplied++
   if (library?.downloadState !== undefined) numberOfFiltersApplied++
   const books = useBooks()
+  const { t } = useTranslation()
 
   const addBookButton = useMemo(() => (
     <Button
@@ -51,9 +53,9 @@ export const LibraryBooksScreen = () => {
       color="primary"
       onClick={() => setIsUploadBookDrawerOpened(true)}
     >
-      Add a new book
+      {t(`library.button.book.add.title`)}
     </Button >
-  ), [setIsUploadBookDrawerOpened])
+  ), [setIsUploadBookDrawerOpened, t])
 
   const listHeader = useMemo(() => (
     <Toolbar style={{ paddingLeft: theme.spacing(1), paddingRight: theme.spacing(1), flex: 1, }}>

@@ -1,17 +1,16 @@
 import React, { memo } from 'react';
 import { Step, Tour } from '../app-tour';
 import { Box, Button, Typography, useTheme } from '@material-ui/core';
-import { useHorizontalTappingZoneWidth } from '../reader/utils';
 import { TouchAppRounded } from '@material-ui/icons';
 import { useCSS } from '../common/utils';
 import { FirstTimeExperienceId } from './constants';
 import { useValidateFirstTimeExperience, useHasDoneFirstTimeExperience } from './helpers';
+import { HORIZONTAL_TAPPING_RATIO } from '../reader/constants';
 
 export const AppTourReader: React.FC = memo(() => {
   const validateFirstTimeExperience = useValidateFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_READER)
   const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_READER)
   const theme = useTheme()
-  const horizontalTappingZoneWidth = useHorizontalTappingZoneWidth()
   const show = !hasDoneFirstTimeExperience
   const styles = useStyles();
 
@@ -47,7 +46,7 @@ export const AppTourReader: React.FC = memo(() => {
               <div style={{
                 borderRight: '1px dashed white',
                 height: '100%',
-                width: horizontalTappingZoneWidth,
+                width: `${HORIZONTAL_TAPPING_RATIO * 100}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -80,7 +79,7 @@ export const AppTourReader: React.FC = memo(() => {
               <div style={{
                 borderLeft: '1px dashed white',
                 height: '100%',
-                width: horizontalTappingZoneWidth,
+                width:`${HORIZONTAL_TAPPING_RATIO * 100}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',

@@ -147,8 +147,8 @@ let g_on_loaded_cb = null;
       // Load the archive format
       switch (archive_format) {
         case 'rar':
-          unrarMemoryFileLocation = path + 'libunrar.js.mem';
-          window.unrarMemoryFileLocation = path + 'libunrar.js.mem';
+          unrarMemoryFileLocation = process.env.PUBLIC_URL + '/libunrar.js.mem';
+          window.unrarMemoryFileLocation = process.env.PUBLIC_URL + '/libunrar.js.mem';
           loadScript(path + 'libunrar.js', checkForLoadDone);
           _loaded_archive_formats.push(archive_format);
           break;
