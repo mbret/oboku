@@ -67,7 +67,9 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
         const yOffset = 0 + context.getVerticalMargin();
         // return frame?.contentDocument?.body.childNodes[0]
         // return frame?.contentWindow?.document.caretRangeFromPoint(offset, 0).startContainer
-        if ((_a = frame === null || frame === void 0 ? void 0 : frame.contentWindow) === null || _a === void 0 ? void 0 : _a.document) {
+        if (((_a = frame === null || frame === void 0 ? void 0 : frame.contentWindow) === null || _a === void 0 ? void 0 : _a.document)
+            // very important because it is being used by next functions
+            && frame.contentWindow.document.body !== null) {
             const viewport = {
                 left: pageIndex * pageSize.width,
                 right: (pageIndex * pageSize.width) + pageSize.width,
