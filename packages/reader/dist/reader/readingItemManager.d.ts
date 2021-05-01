@@ -69,7 +69,7 @@ export declare const createReadingItemManager: ({ context }: {
             getIsLoaded: () => boolean;
             load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
             unload: () => void;
-            layout: (size: {
+            staticLayout: (size: {
                 width: number;
                 height: number;
             }) => void;
@@ -79,11 +79,15 @@ export declare const createReadingItemManager: ({ context }: {
             getReadingDirection: () => "ltr" | "rtl" | undefined;
             destroy: () => void;
             $: Subject<{
-                event: "layout" | "isReady";
+                event: "layout";
+                data: {
+                    isFirstLayout: boolean;
+                    isReady: boolean;
+                };
             }>;
         }, cssText: string) => void;
         bridgeAllMouseEvents: (frame: HTMLIFrameElement) => void;
-        getCfi: (offset: number) => string;
+        getCfi: (pageIndex: number) => string;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {
@@ -93,7 +97,7 @@ export declare const createReadingItemManager: ({ context }: {
             getIsLoaded: () => boolean;
             load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
             unload: () => void;
-            layout: (size: {
+            staticLayout: (size: {
                 width: number;
                 height: number;
             }) => void;
@@ -103,12 +107,19 @@ export declare const createReadingItemManager: ({ context }: {
             getReadingDirection: () => "ltr" | "rtl" | undefined;
             destroy: () => void;
             $: Subject<{
-                event: "layout" | "isReady";
+                event: "layout";
+                data: {
+                    isFirstLayout: boolean;
+                    isReady: boolean;
+                };
             }>;
         };
         element: HTMLDivElement;
         loadingElement: HTMLDivElement;
-        resolveCfi: (cfiString: string | undefined) => Node | undefined;
+        resolveCfi: (cfiString: string | undefined) => {
+            node: Node | undefined;
+            offset: number;
+        } | undefined;
         getFrameLayoutInformation: () => DOMRect | undefined;
         getViewPortInformation: () => {
             computedScale: number;
@@ -119,11 +130,16 @@ export declare const createReadingItemManager: ({ context }: {
         } | undefined;
         isContentReady: () => boolean;
         getReadingDirection: () => "ltr" | "rtl";
+        getIsReady: () => boolean;
         $: Subject<{
             event: "selectionchange" | "selectstart";
             data: Selection;
         } | {
             event: "layout";
+            data: {
+                isFirstLayout: boolean;
+                isReady: boolean;
+            };
         }>;
         item: {
             id: string;
@@ -195,7 +211,7 @@ export declare const createReadingItemManager: ({ context }: {
             getIsLoaded: () => boolean;
             load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
             unload: () => void;
-            layout: (size: {
+            staticLayout: (size: {
                 width: number;
                 height: number;
             }) => void;
@@ -205,11 +221,15 @@ export declare const createReadingItemManager: ({ context }: {
             getReadingDirection: () => "ltr" | "rtl" | undefined;
             destroy: () => void;
             $: Subject<{
-                event: "layout" | "isReady";
+                event: "layout";
+                data: {
+                    isFirstLayout: boolean;
+                    isReady: boolean;
+                };
             }>;
         }, cssText: string) => void;
         bridgeAllMouseEvents: (frame: HTMLIFrameElement) => void;
-        getCfi: (offset: number) => string;
+        getCfi: (pageIndex: number) => string;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {
@@ -219,7 +239,7 @@ export declare const createReadingItemManager: ({ context }: {
             getIsLoaded: () => boolean;
             load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
             unload: () => void;
-            layout: (size: {
+            staticLayout: (size: {
                 width: number;
                 height: number;
             }) => void;
@@ -229,12 +249,19 @@ export declare const createReadingItemManager: ({ context }: {
             getReadingDirection: () => "ltr" | "rtl" | undefined;
             destroy: () => void;
             $: Subject<{
-                event: "layout" | "isReady";
+                event: "layout";
+                data: {
+                    isFirstLayout: boolean;
+                    isReady: boolean;
+                };
             }>;
         };
         element: HTMLDivElement;
         loadingElement: HTMLDivElement;
-        resolveCfi: (cfiString: string | undefined) => Node | undefined;
+        resolveCfi: (cfiString: string | undefined) => {
+            node: Node | undefined;
+            offset: number;
+        } | undefined;
         getFrameLayoutInformation: () => DOMRect | undefined;
         getViewPortInformation: () => {
             computedScale: number;
@@ -245,11 +272,16 @@ export declare const createReadingItemManager: ({ context }: {
         } | undefined;
         isContentReady: () => boolean;
         getReadingDirection: () => "ltr" | "rtl";
+        getIsReady: () => boolean;
         $: Subject<{
             event: "selectionchange" | "selectstart";
             data: Selection;
         } | {
             event: "layout";
+            data: {
+                isFirstLayout: boolean;
+                isReady: boolean;
+            };
         }>;
         item: {
             id: string;
@@ -275,10 +307,7 @@ export declare const createReadingItemManager: ({ context }: {
         left?: number | undefined;
         right?: number | undefined;
         top?: number | undefined;
-        toJSON?: {
-            (): any;
-            (): any;
-        } | undefined;
+        toJSON?: (() => any) | undefined;
     };
     isOffsetOutsideOfFocusedItem: (offset: number) => boolean;
     getReadingItemAtOffset: (offset: number) => {
@@ -344,7 +373,7 @@ export declare const createReadingItemManager: ({ context }: {
             getIsLoaded: () => boolean;
             load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
             unload: () => void;
-            layout: (size: {
+            staticLayout: (size: {
                 width: number;
                 height: number;
             }) => void;
@@ -354,11 +383,15 @@ export declare const createReadingItemManager: ({ context }: {
             getReadingDirection: () => "ltr" | "rtl" | undefined;
             destroy: () => void;
             $: Subject<{
-                event: "layout" | "isReady";
+                event: "layout";
+                data: {
+                    isFirstLayout: boolean;
+                    isReady: boolean;
+                };
             }>;
         }, cssText: string) => void;
         bridgeAllMouseEvents: (frame: HTMLIFrameElement) => void;
-        getCfi: (offset: number) => string;
+        getCfi: (pageIndex: number) => string;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {
@@ -368,7 +401,7 @@ export declare const createReadingItemManager: ({ context }: {
             getIsLoaded: () => boolean;
             load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
             unload: () => void;
-            layout: (size: {
+            staticLayout: (size: {
                 width: number;
                 height: number;
             }) => void;
@@ -378,12 +411,19 @@ export declare const createReadingItemManager: ({ context }: {
             getReadingDirection: () => "ltr" | "rtl" | undefined;
             destroy: () => void;
             $: Subject<{
-                event: "layout" | "isReady";
+                event: "layout";
+                data: {
+                    isFirstLayout: boolean;
+                    isReady: boolean;
+                };
             }>;
         };
         element: HTMLDivElement;
         loadingElement: HTMLDivElement;
-        resolveCfi: (cfiString: string | undefined) => Node | undefined;
+        resolveCfi: (cfiString: string | undefined) => {
+            node: Node | undefined;
+            offset: number;
+        } | undefined;
         getFrameLayoutInformation: () => DOMRect | undefined;
         getViewPortInformation: () => {
             computedScale: number;
@@ -394,11 +434,16 @@ export declare const createReadingItemManager: ({ context }: {
         } | undefined;
         isContentReady: () => boolean;
         getReadingDirection: () => "ltr" | "rtl";
+        getIsReady: () => boolean;
         $: Subject<{
             event: "selectionchange" | "selectstart";
             data: Selection;
         } | {
             event: "layout";
+            data: {
+                isFirstLayout: boolean;
+                isReady: boolean;
+            };
         }>;
         item: {
             id: string;
@@ -471,7 +516,7 @@ export declare const createReadingItemManager: ({ context }: {
             getIsLoaded: () => boolean;
             load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
             unload: () => void;
-            layout: (size: {
+            staticLayout: (size: {
                 width: number;
                 height: number;
             }) => void;
@@ -481,11 +526,15 @@ export declare const createReadingItemManager: ({ context }: {
             getReadingDirection: () => "ltr" | "rtl" | undefined;
             destroy: () => void;
             $: Subject<{
-                event: "layout" | "isReady";
+                event: "layout";
+                data: {
+                    isFirstLayout: boolean;
+                    isReady: boolean;
+                };
             }>;
         }, cssText: string) => void;
         bridgeAllMouseEvents: (frame: HTMLIFrameElement) => void;
-        getCfi: (offset: number) => string;
+        getCfi: (pageIndex: number) => string;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {
@@ -495,7 +544,7 @@ export declare const createReadingItemManager: ({ context }: {
             getIsLoaded: () => boolean;
             load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
             unload: () => void;
-            layout: (size: {
+            staticLayout: (size: {
                 width: number;
                 height: number;
             }) => void;
@@ -505,12 +554,19 @@ export declare const createReadingItemManager: ({ context }: {
             getReadingDirection: () => "ltr" | "rtl" | undefined;
             destroy: () => void;
             $: Subject<{
-                event: "layout" | "isReady";
+                event: "layout";
+                data: {
+                    isFirstLayout: boolean;
+                    isReady: boolean;
+                };
             }>;
         };
         element: HTMLDivElement;
         loadingElement: HTMLDivElement;
-        resolveCfi: (cfiString: string | undefined) => Node | undefined;
+        resolveCfi: (cfiString: string | undefined) => {
+            node: Node | undefined;
+            offset: number;
+        } | undefined;
         getFrameLayoutInformation: () => DOMRect | undefined;
         getViewPortInformation: () => {
             computedScale: number;
@@ -521,11 +577,16 @@ export declare const createReadingItemManager: ({ context }: {
         } | undefined;
         isContentReady: () => boolean;
         getReadingDirection: () => "ltr" | "rtl";
+        getIsReady: () => boolean;
         $: Subject<{
             event: "selectionchange" | "selectstart";
             data: Selection;
         } | {
             event: "layout";
+            data: {
+                isFirstLayout: boolean;
+                isReady: boolean;
+            };
         }>;
         item: {
             id: string;

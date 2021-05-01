@@ -1,8 +1,6 @@
 import { Subject } from "rxjs";
 import { Report } from "../report";
 import { createContext as createBookContext } from "./context";
-import { normalizeEventPositions } from "./frames";
-import { getPercentageEstimate } from "./navigation";
 import { createPagination } from "./pagination";
 import { createReadingOrderView } from "./readingOrderView";
 export const createReader = ({ containerElement }) => {
@@ -38,9 +36,6 @@ export const createReader = ({ containerElement }) => {
         context === null || context === void 0 ? void 0 : context.setVisibleAreaRect(elementRect.x, elementRect.y, containerElementEvenWidth, dimensions.height);
         readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.layout();
     };
-    const goTo = (spineIndexOrIdOrCfi) => {
-        readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.goTo(spineIndexOrIdOrCfi);
-    };
     const load = (manifest, { fetchResource = 'http' } = {
         fetchResource: `http`
     }, spineIndexOrIdOrCfi) => {
@@ -56,14 +51,20 @@ export const createReader = ({ containerElement }) => {
             }
         });
         pagination = createPagination({ context });
-        readingOrderView = createReadingOrderView({ manifest: manifest, containerElement: element, context, pagination, options: { fetchResource } });
+        readingOrderView = createReadingOrderView({
+            manifest: manifest,
+            containerElement: element,
+            context,
+            pagination,
+            options: { fetchResource }
+        });
         readingOrderView.load();
-        layout();
         // @todo support navigating through specific reading item & position
         // this will trigger every layout needed from this point. This allow user to start navigating
         // through the book even before other chapter are ready
         // readingOrderView.moveTo(20)
-        goTo(spineIndexOrIdOrCfi || 0);
+        readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.goTo(spineIndexOrIdOrCfi || 0);
+        layout();
         paginationSubscription$ === null || paginationSubscription$ === void 0 ? void 0 : paginationSubscription$.unsubscribe();
         paginationSubscription$ = pagination.$.subscribe(({ event }) => {
             switch (event) {
@@ -90,79 +91,13 @@ export const createReader = ({ containerElement }) => {
         iframeEventIntercept.remove();
     };
     const publicApi = {
-        turnLeft: () => {
-            return readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.turnLeft();
-        },
-        turnRight: () => {
-            return readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.turnRight();
-        },
-        goTo,
-        goToPageOfCurrentChapter: (pageIndex) => {
-            return readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.goToPageOfCurrentChapter(pageIndex);
-        },
-        goToNextSpineItem: () => {
-            const currentSpineIndex = (readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.getSpineItemIndex()) || 0;
-            const numberOfSpineItems = (context === null || context === void 0 ? void 0 : context.manifest.readingOrder.length) || 1;
-            if (currentSpineIndex < (numberOfSpineItems - 1)) {
-                goTo(currentSpineIndex + 1);
-            }
-        },
-        goToPreviousSpineItem: () => {
-            const currentSpineIndex = (readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.getSpineItemIndex()) || 0;
-            if (currentSpineIndex > 0) {
-                goTo(currentSpineIndex - 1);
-            }
-        },
-        getPagination() {
-            if (!readingOrderView || !pagination || !context)
-                return undefined;
-            return {
-                begin: {
-                    // chapterIndex: number;
-                    chapterInfo: readingOrderView.getChapterInfo(),
-                    pageIndexInChapter: pagination.getPageIndex(),
-                    numberOfPagesInChapter: pagination.getNumberOfPages(),
-                    // pages: number;
-                    // pageIndexInBook: number;
-                    // pageIndexInChapter: number;
-                    // pagesOfChapter: number;
-                    // pagePercentageInChapter: number;
-                    // offsetPercentageInChapter: number;
-                    // domIndex: number;
-                    // charOffset: number;
-                    // serializeString?: string;
-                    spineItemIndex: readingOrderView.getSpineItemIndex(),
-                    cfi: pagination.getCfi(),
-                },
-                // end: ReadingLocation;
-                /**
-                 * This percentage is based of the weight (kb) of every items and the number of pages.
-                 * It is not accurate but gives a general good idea of the overall progress.
-                 * It is recommended to use this progress only for reflow books. For pre-paginated books
-                 * the number of pages and current index can be used instead since 1 page = 1 chapter.
-                 */
-                percentageEstimateOfBook: getPercentageEstimate(context, readingOrderView, pagination),
-                pagesOfBook: Infinity,
-                // chaptersOfBook: number;
-                // chapter: string;
-                // hasNextChapter: (readingOrderView.spineItemIndex || 0) < (manifest.readingOrder.length - 1),
-                // hasPreviousChapter: (readingOrderView.spineItemIndex || 0) < (manifest.readingOrder.length - 1),
-                numberOfSpineItems: context.manifest.readingOrder.length
-            };
-        },
-        normalizeEventPositions: (e) => {
-            if (e.target !== iframeEventIntercept) {
-                return e;
-            }
-            if (!context || !pagination)
-                return e;
-            return Object.assign({}, normalizeEventPositions(context, pagination, e, readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.getFocusedReadingItem()));
-        },
+        getReadingOrderView: () => readingOrderView,
+        getContext: () => context,
+        getPagination: () => pagination,
+        getIframeEventIntercept: () => iframeEventIntercept,
         layout,
         load,
         destroy,
-        isSelecting: () => readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.isSelecting(),
-        getSelection: () => readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.getSelection(),
         $: subject.asObservable()
     };
     return publicApi;

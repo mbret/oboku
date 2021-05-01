@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { createReader } from "../reader/reader";
+import { createReader } from "../reader";
 export const ObokuReader = ({ manifest, onReady, onReader, loadOptions, onPaginationChange }) => {
     const [reader, setReader] = useState(undefined);
     useEffect(() => {

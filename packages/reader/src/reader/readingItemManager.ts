@@ -5,6 +5,8 @@ import { createReadingItem, ReadingItem } from "./readingItem"
 
 export type ReadingItemManager = ReturnType<typeof createReadingItemManager>
 
+const NAMESPACE = `readingItemManager`
+
 export const createReadingItemManager = ({ context }: { context: Context }) => {
   const subject = new Subject<{ event: 'focus', data: ReadingItem } | { event: 'layout' }>()
   let orderedReadingItems: ReturnType<typeof createReadingItem>[] = []
@@ -40,17 +42,22 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
     const previousReadingItem = getFocusedReadingItem()
     activeReadingItemIndex = orderedReadingItems.indexOf(readingItemToFocus)
 
+    Report.log(NAMESPACE, `focus item ${activeReadingItemIndex}`, readingItemToFocus)
+    subject.next({ event: 'focus', data: readingItemToFocus })
+
     if (readingItemToFocus !== previousReadingItem) {
-      previousReadingItem?.unloadContent().catch(Report.error)
+      previousReadingItem
+        ?.unloadContent()
+        .catch(Report.error)
       layout()
     }
 
     // since layout triggers an event, things may have changed
-    getFocusedReadingItem()?.loadContent().then(() => {
-      layout()
-    })
-
-    subject.next({ event: 'focus', data: readingItemToFocus })
+    getFocusedReadingItem()
+      ?.loadContent()
+      .then(() => {
+        layout()
+      })
   }
 
   const get = (indexOrId: number | string) => {
@@ -100,8 +107,6 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
     add: (readingItem: ReadingItem) => {
       orderedReadingItems.push(readingItem)
 
-      readingItem.load()
-
       // @todo unsubscribe on unload
       readingItem.$.subscribe((event) => {
         if (event.event === 'layout') {
@@ -110,6 +115,8 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
           adjustPositionOfItems()
         }
       })
+
+      readingItem.load()
     },
     get,
     set: (readingItems: ReturnType<typeof createReadingItem>[]) => {
@@ -132,7 +139,7 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
       })
 
       if (!detectedItem) {
-        Report.warn(`unable to detect reading item at offset`, offset)
+        return getFocusedReadingItem()
       }
 
       return detectedItem || getFocusedReadingItem()

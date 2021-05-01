@@ -32,7 +32,7 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
   context: Context,
   fetchResource: `http` | ((item: Manifest['readingOrder'][number]) => Promise<string>)
 }) => {
-  const subject = new Subject<{ event: 'selectionchange' | 'selectstart', data: Selection } | { event: 'layout' }>()
+  const subject = new Subject<{ event: 'selectionchange' | 'selectstart', data: Selection } | { event: 'layout', data: { isFirstLayout: boolean, isReady: boolean } }>()
   const element = createWrapperElement(containerElement, item)
   const loadingElement = createLoadingElement(containerElement, item)
   const readingItemFrame = createReadingItemFrame(element, item, context, { fetchResource })
@@ -119,11 +119,15 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
     const nodeOrRange = getFirstNodeOrRangeAtPage(pageIndex)
     const doc = readingItemFrame.getFrameElement()?.contentWindow?.document
 
-    const itemAnchor = `|[oboku:${encodeURIComponent(item.id)}]`
+    const itemAnchor = `|[oboku~anchor~${encodeURIComponent(item.id)}]`
+    // because the current cfi library does not works well with offset we are just using custom
+    // format and do it manually after resolving the node
+    // @see https://github.com/fread-ink/epub-cfi-resolver/issues/8
+    const offset = `|[oboku~offset~${nodeOrRange?.offset || 0}]`
 
     // console.warn(`getCfi`, nodeOrRange)
     if (nodeOrRange && doc) {
-      const cfiString = CFI.generate(nodeOrRange.node, nodeOrRange.offset, itemAnchor)
+      const cfiString = CFI.generate(nodeOrRange.node, 0, `${itemAnchor}${offset}`)
       // console.log('FOOO', CFI.generate(nodeOrRange.startContainer, nodeOrRange.startOffset))
 
       return cfiString
@@ -135,7 +139,7 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
   const resolveCfi = (cfiString: string | undefined) => {
     if (!cfiString) return undefined
 
-    const { cleanedCfi } = extractObokuMetadataFromCfi(cfiString)
+    const { cleanedCfi, offset } = extractObokuMetadataFromCfi(cfiString)
     const cfi = new CFI(cleanedCfi, {})
 
     const doc = readingItemFrame.getFrameElement()?.contentWindow?.document
@@ -151,9 +155,9 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
         // console.warn('FIII', foo, (new CFI(foo, {})), resolve.node, resolve)
         const { node } = cfi.resolve(doc, {})
 
-        // console.log(cfi.resolve(doc, {}))
+        // console.warn(cleanedCfi, cfi.resolve(doc, {}), offset)
 
-        return node
+        return { node, offset }
       } catch (e) {
         Report.error(e)
         return undefined
@@ -176,14 +180,11 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
     return undefined
   }
 
-  readingItemFrame$ = readingItemFrame.$.subscribe(({ event }) => {
-    if (event === 'isReady') {
-      if (loadingElement) {
+  readingItemFrame$ = readingItemFrame.$.subscribe((event) => {
+    if (event.event === 'layout') {
+      if (event.data.isFirstLayout && event.data.isReady) {
         loadingElement.style.opacity = `0`
       }
-    }
-    if (event === 'layout') {
-      subject.next({ event: 'layout' })
     }
   })
 
@@ -222,6 +223,7 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
     getReadingDirection: () => {
       return readingItemFrame.getReadingDirection() || context.manifest.readingDirection
     },
+    getIsReady: () => readingItemFrame.getIsReady(),
     $: subject,
   }
 }

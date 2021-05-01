@@ -1104,25 +1104,23 @@ export {
 export const extractObokuMetadataFromCfi = (cfi: string): {
   cleanedCfi: string,
   itemId?: string
+  offset: number
 } => {
-  let isNotACollection = false
-  let tags: string[] = []
-  let isIgnored = false
-  let direction = undefined
-  let isbn = undefined
+  const [itemId] = cfi
+    .match(/\|(\[oboku\~anchor[^\]]*\])+/ig)
+    ?.map(s => s.replace(/\|\[oboku\~anchor\~/, '')
+      .replace(/\]/, '')) || []
+  const [offset] = cfi
+    .match(/\|(\[oboku\~offset[^\]]*\])+/ig)
+    ?.map(s => s.replace(/\|\[oboku\~offset\~/, '')
+      .replace(/\]/, '')) || []
+  const cleanedCfi = cfi.replace(/\|(\[oboku\~[^\]]*\~[^\]]*\])+/ig, '')
 
-  // epubcfi(/2/4/2[_preface]/2/1|[oboku:id-id2632344]) -> |[oboku:id-id2632344]
-  const directives = cfi.match(/(\|\[oboku\:[^\]]*\])+/ig)?.map(str =>
-    str.replace(/\|\[oboku:/, '')
-      .replace(/\]/, '')
-  ) || []
-  const itemId = directives[0]
-  const cleanedCfi = cfi.replace(/\|\[oboku:[^\]]*]/, '')
-
-  // console.log(directives)
+  // console.warn(itemId, offset)
 
   return {
     cleanedCfi,
-    itemId
+    itemId,
+    offset: parseInt(offset || '0') || 0
   }
 }

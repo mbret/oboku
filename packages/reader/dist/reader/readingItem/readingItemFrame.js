@@ -17,12 +17,6 @@ export const createReadingItemFrame = (parent, item, context, { fetchResource })
     let frameElement;
     let isReady = false;
     const src = item.href;
-    const setSize = (size) => {
-        if (frameElement) {
-            frameElement.style.width = `${size.width}px`;
-            frameElement.style.height = `${size.height}px`;
-        }
-    };
     const getViewportDimensions = () => {
         if (frameElement && frameElement.contentDocument) {
             const doc = frameElement.contentDocument;
@@ -108,8 +102,7 @@ export const createReadingItemFrame = (parent, item, context, { fetchResource })
                             (_a = frameElement.contentDocument) === null || _a === void 0 ? void 0 : _a.fonts.ready.then(() => {
                                 if (frameElement && !isCancelled()) {
                                     isReady = true;
-                                    subject.next({ event: 'isReady' });
-                                    subject.next({ event: 'layout' });
+                                    subject.next({ event: 'layout', data: { isFirstLayout: true, isReady: true } });
                                 }
                             });
                             resolve(true);
@@ -121,8 +114,17 @@ export const createReadingItemFrame = (parent, item, context, { fetchResource })
             }));
         })),
         unload,
-        layout: (size) => {
-            setSize(size);
+        /**
+         * Upward layout is used when the parent wants to manipulate the iframe without triggering
+         * `layout` event. This is a particular case needed for iframe because the parent can layout following
+         * an iframe `layout` event. Because the parent `layout` may change some of iframe properties we do not
+         * want the iframe to trigger a new `layout` even and have infinite loop.
+         */
+        staticLayout: (size) => {
+            if (frameElement) {
+                frameElement.style.width = `${size.width}px`;
+                frameElement.style.height = `${size.height}px`;
+            }
         },
         getFrameElement: () => frameElement,
         removeStyle: (id) => {

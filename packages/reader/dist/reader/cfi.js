@@ -21,7 +21,9 @@ function matchAll(str, regExp, add) {
         if (!m)
             break;
         matches.push(m.index + add);
+        // @ts-ignore
         offset += m.index + m.length;
+        // @ts-ignore
         str = str.slice(m.index + m.length);
     } while (offset < str.length);
     return matches;
@@ -33,6 +35,7 @@ function closest(a, n) {
     var i, diff;
     for (i = 0; i < a.length; i++) {
         diff = Math.abs(a[i] - n);
+        // @ts-ignore
         if (!i || diff < minDiff) {
             diff = minDiff;
             closest = a[i];
@@ -53,6 +56,7 @@ function calcSiblingCount(nodes, n, offset) {
     var i, node;
     for (i = 0; i < nodes.length; i++) {
         node = nodes[i];
+        // @ts-ignore
         if (node.nodeType === ELEMENT_NODE) {
             if (lastWasElement || firstNode) {
                 count += 2;
@@ -61,7 +65,9 @@ function calcSiblingCount(nodes, n, offset) {
             else {
                 count++;
             }
+            // @ts-ignore
             if (n === node) {
+                // @ts-ignore
                 if (node.tagName.toLowerCase() === 'img') {
                     return { count, offset };
                 }
@@ -71,16 +77,20 @@ function calcSiblingCount(nodes, n, offset) {
             }
             prevOffset = 0;
             lastWasElement = true;
+            // @ts-ignore
         }
         else if (node.nodeType === TEXT_NODE ||
+            // @ts-ignore
             node.nodeType === CDATA_SECTION_NODE) {
             if (lastWasElement || firstNode) {
                 count++;
                 firstNode = false;
             }
+            // @ts-ignore
             if (n === node) {
                 return { count, offset: offset + prevOffset };
             }
+            // @ts-ignore
             prevOffset += node.textContent.length;
             lastWasElement = false;
         }
@@ -148,6 +158,7 @@ class CFI {
             if (newDoc || str.length - offset <= 0) {
                 // Handle end if this was a range
                 if (sawComma === 2) {
+                    // @ts-ignore
                     this.to = subParts;
                 }
                 else { // not a range
@@ -166,6 +177,7 @@ class CFI {
                 }
                 else if (sawComma === 1) {
                     if (subParts.length) {
+                        // @ts-ignore
                         this.from = subParts;
                     }
                     subParts = [];
@@ -174,26 +186,37 @@ class CFI {
                 sawComma++;
             }
         }
+        // @ts-ignore
         if (this.from && this.from.length) {
+            // @ts-ignore
             if (this.opts.flattenRange || !this.to || !this.to.length) {
+                // @ts-ignore
                 this.parts = this.parts.concat(this.from);
+                // @ts-ignore
                 delete this.from;
+                // @ts-ignore
                 delete this.to;
             }
             else {
                 this.isRange = true;
             }
         }
+        // @ts-ignore
         if (this.opts.stricter) {
+            // @ts-ignore
             this.removeIllegalOpts();
         }
     }
     removeIllegalOpts(parts) {
         if (!parts) {
+            // @ts-ignore
             if (this.from) {
+                // @ts-ignore
                 this.removeIllegalOpts(this.from);
+                // @ts-ignore
                 if (!this.to)
                     return;
+                // @ts-ignore
                 parts = this.to;
             }
             else {
@@ -216,10 +239,12 @@ class CFI {
         var cfi = '';
         var o;
         while (node.parentNode) {
+            // @ts-ignore
             o = calcSiblingCount(node.parentNode.childNodes, node, offset);
             if (!cfi && o.offset)
                 cfi = ':' + o.offset;
             // console.log(node)
+            // @ts-ignore
             cfi = '/' + o.count + ((node.id) ? '[' + cfiEscape(node.id) + ']' : '') + cfi;
             // debugger
             // console.log(`generatePart`, node.parentNode, cfi)
@@ -244,6 +269,7 @@ class CFI {
         return 'epubcfi(' + cfi + ')';
     }
     static toParsed(cfi) {
+        // @ts-ignore
         if (typeof cfi === 'string')
             cif = new this(cfi);
         if (cfi.isRange) {
@@ -272,6 +298,7 @@ class CFI {
     }
     // Sort an array of CFI objects
     static sort(a) {
+        // @ts-ignore
         a.sort((a, b) => {
             return this.compare(a, b);
         });
@@ -355,10 +382,12 @@ class CFI {
     getFrom() {
         if (!this.isRange)
             throw new Error("Trying to get beginning of non-range CFI");
+        // @ts-ignore
         if (!this.from) {
             return this.deepClone(this.parts);
         }
         const parts = this.deepClone(this.parts);
+        // @ts-ignore
         parts[parts.length - 1] = parts[parts.length - 1].concat(this.from);
         return parts;
     }
@@ -366,6 +395,7 @@ class CFI {
         if (!this.isRange)
             throw new Error("Trying to get end of non-range CFI");
         const parts = this.deepClone(this.parts);
+        // @ts-ignore
         parts[parts.length - 1] = parts[parts.length - 1].concat(this.to);
         return parts;
     }
@@ -456,6 +486,7 @@ class CFI {
                 }
                 else {
                     if (f) {
+                        // @ts-ignore
                         o.nodeIndex = parseInt(f);
                         f = null;
                     }
@@ -476,6 +507,7 @@ class CFI {
                 }
                 else {
                     if (f) {
+                        // @ts-ignore
                         o.offset = parseInt(f);
                         f = null;
                     }
@@ -511,6 +543,7 @@ class CFI {
                 else {
                     prevState = state;
                     state = null;
+                    // @ts-ignore
                     if (f && seenColon)
                         o.spatial = this.parseSpatialRange(f);
                     f = null;
@@ -529,6 +562,7 @@ class CFI {
                 }
                 else {
                     if (f) {
+                        // @ts-ignore
                         o.temporal = parseFloat(f);
                     }
                     prevState = state;
@@ -558,14 +592,17 @@ class CFI {
                     }
                 }
                 if (cur === ':' || cur === '~' || cur === '@') {
+                    // @ts-ignore
                     if (this.opts.stricter) {
                         // We've already had a temporal or spatial indicator
                         // and offset does not make sense and the same time
+                        // @ts-ignore
                         if (cur === ':' && (typeof o.temporal !== 'undefined' || typeof o.spatial !== 'undefined')) {
                             break;
                         }
                         // We've already had an offset
                         // and temporal or spatial do not make sense at the same time
+                        // @ts-ignore
                         if ((cur === '~' || cur === '@') && (typeof o.offset !== 'undefined')) {
                             break;
                         }
@@ -597,8 +634,10 @@ class CFI {
                     f = null;
                 }
                 else if (cur === ',' && !escape) {
+                    // @ts-ignore
                     o.textLocationAssertion = {};
                     if (f) {
+                        // @ts-ignore
                         o.textLocationAssertion.pre = f;
                     }
                     f = null;
@@ -618,6 +657,7 @@ class CFI {
                 if (cur === ']' && !escape) {
                     prevState = state;
                     state = null;
+                    // @ts-ignore
                     o.nodeID = f;
                     f = null;
                 }
@@ -634,6 +674,7 @@ class CFI {
             }
             escape = false;
         }
+        // @ts-ignore
         if (!o.nodeIndex && o.nodeIndex !== 0)
             throw new Error("Missing child node index in CFI");
         return { parsed: o, offset: i, newDoc: (state === '!') };
@@ -657,6 +698,7 @@ class CFI {
         // console.log(children, children.length)
         for (i = 0; i < children.length; i++) {
             child = children[i];
+            // @ts-ignore
             switch (child.nodeType) {
                 case ELEMENT_NODE:
                     // If the previous node was also an element node
@@ -666,6 +708,7 @@ class CFI {
                     if (cfiCount % 2 === 0) {
                         cfiCount += 2;
                         if (cfiCount >= index) {
+                            // @ts-ignore
                             if (child.tagName.toLowerCase() === 'img' && offset) {
                                 return { node: child, offset };
                             }
@@ -675,6 +718,7 @@ class CFI {
                     else { // Previous node was a text node
                         cfiCount += 1;
                         if (cfiCount === index) {
+                            // @ts-ignore
                             if (child.tagName.toLowerCase() === 'img' && offset) {
                                 return { node: child, offset };
                             }
@@ -687,6 +731,7 @@ class CFI {
                             if (!lastChild) {
                                 return { node: parentNode, offset: 0 };
                             }
+                            // @ts-ignore
                             return { node: lastChild, offset: this.trueLength(dom, lastChild.textContent) };
                         }
                     }
@@ -707,6 +752,7 @@ class CFI {
                         // If offset is greater than the length of the current text node
                         // then we assume that the next node will also be a text node
                         // and that we'll be combining them with the current node
+                        // @ts-ignore
                         let trueLength = this.trueLength(dom, child.textContent);
                         if (offset >= trueLength) {
                             offset -= trueLength;
@@ -727,12 +773,16 @@ class CFI {
         if (index > cfiCount) {
             var o = { relativeToNode: 'after', offset: 0 };
             if (!lastChild) {
+                // @ts-ignore
                 o.node = parentNode;
             }
             else {
+                // @ts-ignore
                 o.node = lastChild;
             }
+            // @ts-ignore
             if (this.isTextNode(o.node)) {
+                // @ts-ignore
                 o.offset = this.trueLength(dom, o.node.textContent.length);
             }
             return o;
@@ -760,7 +810,9 @@ class CFI {
         if (!(this.isTextNode(node))) {
             return { node, offset: 0 };
         }
+        // @ts-ignore
         while (this.isTextNode(curNode.previousSibling)) {
+            // @ts-ignore
             curNode = curNode.previousSibling;
         }
         const startNode = curNode;
@@ -769,11 +821,13 @@ class CFI {
         var txt = '';
         var i = 0;
         while (this.isTextNode(curNode)) {
+            // @ts-ignore
             str = this.decodeEntities(dom, curNode.textContent);
             nodeLengths[i] = str.length;
             txt += str;
             if (!curNode.nextSibling)
                 break;
+            // @ts-ignore
             curNode = curNode.nextSibling;
             i++;
         }
@@ -789,13 +843,17 @@ class CFI {
         }
         i = 0;
         curNode = startNode;
+        // @ts-ignore
         while (newOffset >= nodeLengths[i]) {
+            // @ts-ignore
             newOffset -= nodeLengths[i];
             if (newOffset < 0)
                 return { node, offset };
+            // @ts-ignore
             if (!curNode.nextSibling || i + 1 >= nodeOffsets.length)
                 return { node, offset };
             i++;
+            // @ts-ignore
             curNode = curNode.nextSibling;
         }
         return { node: curNode, offset: newOffset };
@@ -830,6 +888,7 @@ class CFI {
         let subpart;
         for (i = subparts.length - 1; i >= 0; i--) {
             subpart = subparts[i];
+            // @ts-ignore
             if (!opts.ignoreIDs && subpart.nodeID && (node = dom.getElementById(subpart.nodeID))) {
                 startFrom = i + 1;
                 break;
@@ -845,9 +904,12 @@ class CFI {
             subpart = subparts[i];
             if (subpart) {
                 // console.log(o, dom, o.node, subpart.nodeIndex, subpart.offset)
+                // @ts-ignore
                 o = this.getChildNodeByCFIIndex(dom, o.node, subpart.nodeIndex, subpart.offset);
+                // @ts-ignore
                 if (subpart.textLocationAssertion) {
                     // console.log(subparts, subpart, o)
+                    // @ts-ignore
                     o = this.correctOffset(dom, o.node, subpart.offset, subpart.textLocationAssertion);
                 }
             }
@@ -871,36 +933,45 @@ class CFI {
         const subparts = this.parts[index];
         if (!subparts)
             throw new Error("Missing CFI part for index: " + index);
+        // @ts-ignore
         var o = this.resolveNode(index, subparts, dom, opts);
         // debugger
         var node = o.node;
+        // @ts-ignore
         const tagName = node.tagName.toLowerCase();
         if (tagName === 'itemref'
+            // @ts-ignore
             && node.parentNode.tagName.toLowerCase() === 'spine') {
+            // @ts-ignore
             const idref = node.getAttribute('idref');
             if (!idref)
                 throw new Error("Referenced node had not 'idref' attribute");
+            // @ts-ignore
             node = dom.getElementById(idref);
             if (!node)
                 throw new Error("Specified node is missing from manifest");
+            // @ts-ignore
             const href = node.getAttribute('href');
             if (!href)
                 throw new Error("Manifest item is missing href attribute");
             return href;
         }
         if (tagName === 'iframe' || tagName === 'embed') {
+            // @ts-ignore
             const src = node.getAttribute('src');
             if (!src)
                 throw new Error(tagName + " element is missing 'src' attribute");
             return src;
         }
         if (tagName === 'object') {
+            // @ts-ignore
             const data = node.getAttribute('data');
             if (!data)
                 throw new Error(tagName + " element is missing 'data' attribute");
             return data;
         }
         if (tagName === 'image' || tagName === 'use') {
+            // @ts-ignore
             const href = node.getAttribute('xlink:href');
             if (!href)
                 throw new Error(tagName + " element is missing 'xlink:href' attribute");
@@ -916,9 +987,12 @@ class CFI {
         const subparts = parts[index];
         if (!subparts)
             throw new Error("Missing CFI part for index: " + index);
+        // @ts-ignore
         var o = this.resolveNode(index, subparts, dom);
+        // @ts-ignore
         var lastPart = this.deepClone(subparts[subparts.length - 1]);
         delete lastPart.nodeIndex;
+        // @ts-ignore
         if (!lastPart.offset)
             delete o.offset;
         return Object.assign(Object.assign({}, lastPart), o);
@@ -933,13 +1007,16 @@ class CFI {
         if (!this.isRange) {
             return this.resolveLocation(dom, this.parts);
         }
+        // @ts-ignore
         if (opts.range) {
             const range = dom.createRange();
             const from = this.getFrom();
             if (from.relativeToNode === 'before') {
+                // @ts-ignore
                 range.setStartBefore(from.node, from.offset);
             }
             else if (from.relativeToNode === 'after') {
+                // @ts-ignore
                 range.setStartAfter(from.node, from.offset);
             }
             else {
@@ -947,9 +1024,11 @@ class CFI {
             }
             const to = this.getTo();
             if (to.relativeToNode === 'before') {
+                // @ts-ignore
                 range.setEndBefore(to.node, to.offset);
             }
             else if (to.relativeToNode === 'after') {
+                // @ts-ignore
                 range.setEndAfter(to.node, to.offset);
             }
             else {
@@ -964,26 +1043,25 @@ class CFI {
         };
     }
     resolve(doc, opts) {
+        // @ts-ignore
         return this.resolveLast(doc, opts);
     }
 }
 export { CFI };
 export const extractObokuMetadataFromCfi = (cfi) => {
-    var _a;
-    let isNotACollection = false;
-    let tags = [];
-    let isIgnored = false;
-    let direction = undefined;
-    let isbn = undefined;
-    // epubcfi(/2/4/2[_preface]/2/1|[oboku:id-id2632344]) -> |[oboku:id-id2632344]
-    const directives = ((_a = cfi.match(/(\|\[oboku\:[^\]]*\])+/ig)) === null || _a === void 0 ? void 0 : _a.map(str => str.replace(/\|\[oboku:/, '')
+    var _a, _b;
+    const [itemId] = ((_a = cfi
+        .match(/\|(\[oboku\~anchor[^\]]*\])+/ig)) === null || _a === void 0 ? void 0 : _a.map(s => s.replace(/\|\[oboku\~anchor\~/, '')
         .replace(/\]/, ''))) || [];
-    const itemId = directives[0];
-    const cleanedCfi = cfi.replace(/\|\[oboku:[^\]]*]/, '');
-    // console.log(directives)
+    const [offset] = ((_b = cfi
+        .match(/\|(\[oboku\~offset[^\]]*\])+/ig)) === null || _b === void 0 ? void 0 : _b.map(s => s.replace(/\|\[oboku\~offset\~/, '')
+        .replace(/\]/, ''))) || [];
+    const cleanedCfi = cfi.replace(/\|(\[oboku\~[^\]]*\~[^\]]*\])+/ig, '');
+    // console.warn(itemId, offset)
     return {
         cleanedCfi,
-        itemId
+        itemId,
+        offset: parseInt(offset || '0') || 0
     };
 };
 //# sourceMappingURL=cfi.js.map

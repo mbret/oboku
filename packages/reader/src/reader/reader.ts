@@ -66,7 +66,7 @@ export const createReader = ({ containerElement }: {
     }
 
     Report.log(`load`, { manifest, spineIndexOrIdOrCfi })
-    
+
     context = createBookContext(manifest)
 
     context$ = context.$.subscribe(data => {
@@ -76,16 +76,23 @@ export const createReader = ({ containerElement }: {
     })
 
     pagination = createPagination({ context })
-    readingOrderView = createReadingOrderView({ manifest: manifest, containerElement: element, context, pagination, options: { fetchResource } })
-    readingOrderView.load()
+    readingOrderView = createReadingOrderView({
+      manifest: manifest,
+      containerElement: element,
+      context,
+      pagination,
+      options: { fetchResource }
+    })
 
-    layout()
+    readingOrderView.load()
 
     // @todo support navigating through specific reading item & position
     // this will trigger every layout needed from this point. This allow user to start navigating
     // through the book even before other chapter are ready
     // readingOrderView.moveTo(20)
     readingOrderView?.goTo(spineIndexOrIdOrCfi || 0)
+
+    layout()
 
     paginationSubscription$?.unsubscribe()
     paginationSubscription$ = pagination.$.subscribe(({ event }) => {

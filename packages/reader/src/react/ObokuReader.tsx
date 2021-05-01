@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { createReader } from "../reader/reader"
+import { createReader } from "../reader"
 import { Manifest } from "../types"
 
 type LoadOptions = Parameters<ReturnType<typeof createReader>['load']>[1]

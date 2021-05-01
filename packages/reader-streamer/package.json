@@ -1,0 +1,22 @@
+{
+  "name": "@oboku/reader-streamer",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "webpack build --config ./webpack.config.js"
+  },
+  "dependencies": {
+    "@types/xmldoc": "^1.1.5",
+    "xmldoc": "^1.1.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.2.3",
+    "webpack": "^5.26",
+    "webpack-cli": "^4.5.0",
+    "concurrently": "^6.0.0",
+    "webpack-dev-server": "^3.11.2",
+    "copy-webpack-plugin": "^8.0.0",
+    "ts-loader": "^8.0.18"
+  }
+}

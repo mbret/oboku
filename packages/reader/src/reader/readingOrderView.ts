@@ -1,5 +1,6 @@
-import { interval, Subject, Subscription } from "rxjs"
-import { debounce, filter, switchMap, takeUntil, tap } from "rxjs/operators"
+import { EMPTY, interval, Subject, Subscription } from "rxjs"
+import { catchError, debounce, filter, switchMap, takeUntil, tap } from "rxjs/operators"
+import { Report } from "../report"
 import { Context } from "./context"
 import { translateFramePositionIntoPage } from "./frames"
 import { buildChapterInfoFromReadingItem } from "./navigation"
@@ -17,7 +18,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
   context: Context,
   pagination: Pagination,
   options: {
-    fetchResource: `http` | ((item: Manifest['readingOrder'][number]) =>Promise<string>)
+    fetchResource: `http` | ((item: Manifest['readingOrder'][number]) => Promise<string>)
   }
 }) => {
   const subject = new Subject()
@@ -28,6 +29,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
   const navigator = createNavigator({ context, pagination, readingItemManager, element })
   let selectionSubscription: Subscription | undefined
   let readingItemManagerSubscription: Subscription | undefined
+  let focusedReadingItemSubscription: Subscription | undefined
 
   const layout = () => {
     readingItemManager.layout()
@@ -45,59 +47,75 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
     })
   }
 
-  readingItemManagerSubscription = readingItemManager.$.subscribe((event) => {
-    if (event.event === 'layout') {
-      const focusedItem = readingItemManager.getFocusedReadingItem()
-      const newOffset = navigator.adjustPositionForCurrentPagination()
-      if (focusedItem && newOffset !== undefined) {
-        const readingItemOffset = navigator.getOffsetInCurrentReadingItem(newOffset, focusedItem)
-        /**
-         * There are two reason we need to update pagination here
-         * - after a layout change, pagination needs to be aware of new item dimensions to calculate correct number of pages, ...
-         * - after a layout change, offset can be desynchronized and we need to let pagination knows the new offset.
-         * The new offset could have a different page number because there are less page now, etc.
-         */
-        focusedItem && pagination.update(focusedItem, readingItemOffset)
+  readingItemManagerSubscription = readingItemManager.$.pipe(
+    tap((event) => {
+      if (event.event === 'layout') {
+        navigator.adjustReadingOffsetPosition({ shouldAdjustCfi: false })
       }
-    }
-
-    if (event.event === 'focus') {
-      const readingItem = event.data
-      const fingerTracker$ = readingItem.fingerTracker.$
-      const selectionTracker$ = readingItem.selectionTracker.$
-
-      selectionSubscription?.unsubscribe()
-      selectionSubscription = selectionTracker$
-        .pipe(filter(({ event }) => event === 'selectstart'))
-        .pipe(
-          switchMap(_ => fingerTracker$
-            .pipe(
-              filter(({ event }) => event === 'fingermove'),
-              debounce(() => interval(1000)),
-              takeUntil(fingerTracker$
-                .pipe(
-                  filter(({ event }) => event === 'fingerout'),
-                  tap(() => {
-
-                  })
-                )
-              ),
-              tap(({ data }) => {
-                if (data) {
-                  const fingerPosition = translateFramePositionIntoPage(context, pagination, data, readingItem)
-                  if (fingerPosition.x >= context.getPageSize().width) {
-                    navigator.turnRight({ allowReadingItemChange: false })
-                  } else if (fingerPosition.x <= context.getPageSize().width) {
-                    navigator.turnLeft({ allowReadingItemChange: false })
+  
+      if (event.event === 'focus') {
+        const readingItem = event.data
+        const fingerTracker$ = readingItem.fingerTracker.$
+        const selectionTracker$ = readingItem.selectionTracker.$
+  
+        if (readingItem.getIsReady()) {
+          // @todo maybe we need to adjust cfi here ? it should be fine since if it's already
+          // ready then the navigation should have caught the right cfi, if not the observable
+          // will catch it
+        }
+  
+        focusedReadingItemSubscription?.unsubscribe()
+        focusedReadingItemSubscription = readingItem.$.pipe(
+          tap(event => {
+            if (event.event === 'layout' && event.data.isFirstLayout && event.data.isReady) {
+              navigator.adjustReadingOffsetPosition({ shouldAdjustCfi: true })
+            }
+          }),
+          catchError(e => {
+            Report.error(e)
+  
+            return EMPTY
+          }),
+        ).subscribe()
+  
+        selectionSubscription?.unsubscribe()
+        selectionSubscription = selectionTracker$
+          .pipe(filter(({ event }) => event === 'selectstart'))
+          .pipe(
+            switchMap(_ => fingerTracker$
+              .pipe(
+                filter(({ event }) => event === 'fingermove'),
+                debounce(() => interval(1000)),
+                takeUntil(fingerTracker$
+                  .pipe(
+                    filter(({ event }) => event === 'fingerout'),
+                    tap(() => {
+  
+                    })
+                  )
+                ),
+                tap(({ data }) => {
+                  if (data) {
+                    const fingerPosition = translateFramePositionIntoPage(context, pagination, data, readingItem)
+                    if (fingerPosition.x >= context.getPageSize().width) {
+                      navigator.turnRight({ allowReadingItemChange: false })
+                    } else if (fingerPosition.x <= context.getPageSize().width) {
+                      navigator.turnLeft({ allowReadingItemChange: false })
+                    }
                   }
-                }
-              })
+                })
+              )
             )
           )
-        )
-        .subscribe()
-    }
-  })
+          .subscribe()
+      }
+    }),
+    catchError(e => {
+      Report.error(e)
+
+      return EMPTY
+    }),
+  ).subscribe()
 
   const getFocusedReadingItem = () => readingItemManager.getFocusedReadingItem()
 
@@ -130,6 +148,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
       readingItemManager.destroy()
       readingItemManagerSubscription?.unsubscribe()
       selectionSubscription?.unsubscribe()
+      focusedReadingItemSubscription?.unsubscribe()
       element.remove()
     },
     isSelecting: () => readingItemManager.getFocusedReadingItem()?.selectionTracker.isSelecting(),

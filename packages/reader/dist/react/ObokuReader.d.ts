@@ -1,4 +1,5 @@
-import { createReader } from "../reader/reader";
+/// <reference types="react" />
+import { createReader } from "../reader";
 import { Manifest } from "../types";
 declare type LoadOptions = Parameters<ReturnType<typeof createReader>['load']>[1];
 declare type Pagination = ReturnType<ReturnType<typeof createReader>['getPagination']>;

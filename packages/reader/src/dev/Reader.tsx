@@ -56,7 +56,7 @@ export const Reader = () => {
 
         setManifestState(bookManifest)
 
-        console.warn('MANIFEST', bookManifest)
+        console.warn('MANIFEST', {bookManifest, cfi: localStorage.getItem(`cfi`)})
         reader.load(bookManifest, {
           fetchResource: 'http'
         }, localStorage.getItem(`cfi`) || 0)

@@ -13,7 +13,13 @@ export declare const createReadingItemFrame: (parent: HTMLElement, item: Manifes
     getIsLoaded: () => boolean;
     load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
     unload: () => void;
-    layout: (size: {
+    /**
+     * Upward layout is used when the parent wants to manipulate the iframe without triggering
+     * `layout` event. This is a particular case needed for iframe because the parent can layout following
+     * an iframe `layout` event. Because the parent `layout` may change some of iframe properties we do not
+     * want the iframe to trigger a new `layout` even and have infinite loop.
+     */
+    staticLayout: (size: {
         width: number;
         height: number;
     }) => void;
@@ -23,6 +29,10 @@ export declare const createReadingItemFrame: (parent: HTMLElement, item: Manifes
     getReadingDirection: () => 'ltr' | 'rtl' | undefined;
     destroy: () => void;
     $: Subject<{
-        event: 'isReady' | 'layout';
+        event: 'layout';
+        data: {
+            isFirstLayout: boolean;
+            isReady: boolean;
+        };
     }>;
 };

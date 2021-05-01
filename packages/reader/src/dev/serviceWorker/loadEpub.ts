@@ -1,9 +1,6 @@
-/// <reference lib="webworker" />
-//@ts-ignore
 import JSZip, { loadAsync } from 'jszip'
 import { Report } from '../../report'
-import { generateArchiveFromTxtContent } from '../../streamer/generators/archives'
-import { Archive } from '../../streamer/types'
+import { generateArchiveFromTxtContent, Archive } from '@oboku/reader-streamer'
 
 let loading = false
 let archive: Archive | undefined = undefined

@@ -27,7 +27,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
             columnHeight,
             columnWidth,
             horizontalMargin,
-            verticalMargin: context.getHorizontalMargin()
+            verticalMargin: context.getVerticalMargin()
         };
     };
     const applySize = () => {
@@ -53,7 +53,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
             if (viewportDimensions) {
                 const computedScale = Math.min(pageWidth / viewportDimensions.width, pageHeight / viewportDimensions.height);
                 helpers.injectStyle(readingItemFrame, buildStyleForFakePrePaginated());
-                readingItemFrame.layout({
+                readingItemFrame.staticLayout({
                     width: viewportDimensions.width,
                     height: viewportDimensions.height,
                 });
@@ -72,7 +72,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
                 contentWidth = pages * pageWidth;
                 // debugger
                 // console.log('PAGES', frameElement.contentWindow.document.body.scrollWidth, pageWidth, pages)
-                readingItemFrame.layout({
+                readingItemFrame.staticLayout({
                     width: contentWidth,
                     height: contentHeight,
                 });
@@ -110,10 +110,10 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
             loadingElement.style.opacity = `1`;
         }
     });
-    readingItemFrame$ = helpers.readingItemFrame.$.subscribe(({ event }) => {
-        if (event === 'layout') {
+    readingItemFrame$ = helpers.readingItemFrame.$.subscribe((data) => {
+        if (data.event === 'layout') {
             layout();
-            helpers.$.next({ event: 'layout' });
+            helpers.$.next(data);
         }
     });
     return Object.assign(Object.assign({}, helpers), { getBoundingClientRect: () => element === null || element === void 0 ? void 0 : element.getBoundingClientRect(), loadContent,
@@ -139,7 +139,12 @@ const buildStyleForFakePrePaginated = () => {
       height: 100%;
       margin: 0;
     }
-
+    ${ /*
+      needed for hammer to work with things like velocity
+    */``}
+    html, body {
+      touch-action: pan-y;
+    }
     img {
       display: flex;
       max-width: 100%;

@@ -1,2 +1,12 @@
-export declare function createRangeOrCaretFromPoint(doc: Document, startX: number, startY: number): CaretPosition | Range | null | undefined;
-export declare const getFirstVisibleNodeFromPoint: (doc: Document, startX: number, startY: number) => Range | undefined;
+declare type ViewPort = {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+};
+export declare const getFirstVisibleNodeForViewport: (documentOrElement: Document | Element, viewport: ViewPort) => {
+    node: Node;
+    offset: number;
+} | undefined;
+export declare const getRangeFromNode: (node: Node, offset: number) => Range | undefined;
+export {};

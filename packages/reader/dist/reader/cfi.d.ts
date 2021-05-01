@@ -4,7 +4,7 @@ declare class CFI {
     opts: {};
     cfi: string;
     constructor(str: string, opts: {});
-    removeIllegalOpts(parts: any): void;
+    removeIllegalOpts(parts: any[]): void;
     static generatePart(node: Element | Node, offset?: number, extra?: {}): string;
     static generate(node: Node, offset?: number, extra?: {}): string;
     static toParsed(cfi: any): any;
@@ -12,8 +12,8 @@ declare class CFI {
     static sort(a: any): void;
     static compare(a: any, b: any): number;
     static compareParts(a: any, b: any): number;
-    decodeEntities(dom: any, str: any): any;
-    trueLength(dom: any, str: any): any;
+    decodeEntities(dom: Document, str: string): string;
+    trueLength(dom: Document, str: string): number;
     getFrom(): any;
     getTo(): any;
     get(): any;
@@ -38,13 +38,9 @@ declare class CFI {
         node: ChildNode | undefined;
         offset: number;
         relativeToNode?: undefined;
-    } | {
-        node: ChildNode;
-        offset: any;
-        relativeToNode?: undefined;
     } | undefined;
     isTextNode(node: Element): boolean;
-    correctOffset(dom: any, node: Element, offset: number, assertion: any): {
+    correctOffset(dom: Document, node: Element, offset: number, assertion: any): {
         node: Element;
         offset: any;
     };
@@ -56,7 +52,7 @@ declare class CFI {
         node: Document;
         offset: number;
     };
-    resolveURI(index: any, dom: any, opts: {
+    resolveURI(index: number, dom: Document, opts: {
         ignoreIDs?: boolean;
     }): any;
     deepClone(o: any): any;
@@ -72,4 +68,5 @@ export { CFI };
 export declare const extractObokuMetadataFromCfi: (cfi: string) => {
     cleanedCfi: string;
     itemId?: string | undefined;
+    offset: number;
 };

@@ -2,7 +2,6 @@ import ReactDOM from "react-dom";
 import React from 'react';
 import { App } from "./App";
 
-console.log(navigator.serviceWorker)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')

@@ -28,62 +28,58 @@
 //   }
 // }
 
-// export function createRangeOrCaretFromPoint(doc: Document, startX: number, startY: number) {
-//   if (typeof doc.caretPositionFromPoint != "undefined") {
-//     return doc.caretPositionFromPoint(startX, startY);
-//   } else if (typeof doc.caretRangeFromPoint != "undefined") {
-//     return doc.caretRangeFromPoint(startX, startY);
-//   }
-// }
+import { Report } from "../../report";
 
-// export const getFirstVisibleNodeFromPoint = (doc: Document, startX: number, startY: number) => {
-//   const res = createRangeOrCaretFromPoint(doc, startX, startY)
-
-//   return res
-// }
+function createRangeOrCaretFromPoint(doc: Document, startX: number, startY: number) {
+  if (typeof doc.caretPositionFromPoint != "undefined") {
+    return doc.caretPositionFromPoint(startX, startY);
+  } else if (typeof doc.caretRangeFromPoint != "undefined") {
+    return doc.caretRangeFromPoint(startX, startY);
+  }
+}
 
 type ViewPort = { left: number, right: number, top: number, bottom: number }
 
 export const getFirstVisibleNodeForViewport = (documentOrElement: Document | Element, viewport: ViewPort) => {
   const element = (`body` in documentOrElement)
-    ? getFirstVisibleElementForViewPort(documentOrElement, viewport)
-    : getFirstElementForViewport(documentOrElement, viewport)
+    ? getFirstVisibleElementForViewport(documentOrElement.body, viewport)
+    : getFirstVisibleElementForViewport(documentOrElement, viewport)
 
   const ownerDocument = `createRange` in documentOrElement ? documentOrElement : documentOrElement.ownerDocument
 
   if (element) {
     let lastValidRange: Range | undefined
-
+    let lastValidOffset = 0
     const range = ownerDocument.createRange()
 
     Array.from(element.childNodes).some(childNode => {
       range.selectNodeContents(childNode)
-      const childNodePosition = getElementOrNodePositionFromViewPort(range.getBoundingClientRect(), viewport)
-      if (childNodePosition !== 'before' && childNodePosition !== 'after') {
+      const rects = range.getClientRects()
+      const visibleRect = getFirstVisibleDOMRect(rects, viewport)
+
+      // At this point we know the range is valid and contains visible rect.
+      // This means we have a valid Node. We still need to know the visible offset to be 100% accurate 
+      if (visibleRect) {
         lastValidRange = range.cloneRange()
 
+        // now we will try to refine the search to get the offset
+        // this is an incredibly expensive operation so we will try to 
+        // use native functions to get something 
+        const rangeOrCaret = createRangeOrCaretFromPoint(ownerDocument, visibleRect.left, visibleRect.top)
+        // good news we found something with same node so we can assume the offset is already better than nothing
+        if (rangeOrCaret && `startContainer` in rangeOrCaret && rangeOrCaret.startContainer === lastValidRange.startContainer) {
+          lastValidOffset = rangeOrCaret.startOffset
+        }
+        if (rangeOrCaret && `offsetNode` in rangeOrCaret && rangeOrCaret.offsetNode === lastValidRange.startContainer) {
+          lastValidOffset = rangeOrCaret.offset
+        }
         return true
       }
       return false
     })
-    // console.warn(`getElementForViewPort`, viewport, element, { lastValidRange, childNodes: element.childNodes })
 
     if (lastValidRange) {
-
-      // we have a range, we now try to get the valid offset
-      // @todo rtl
-      // @todo vertical-lrt
-      // @todo vertical-rtl
-      // @todo THIS KILLS performances completely, find another way
-      let clientRect = lastValidRange.getBoundingClientRect()
-      // console.warn(`detect range`, {clientRect, viewport})
-      // while (lastValidRange.startOffset < lastValidRange.endOffset && clientRect.left < viewport.left) {
-      //   lastValidRange.setStart(lastValidRange.startContainer, lastValidRange.startOffset + 1)
-      //   clientRect = lastValidRange.getBoundingClientRect()
-      // }
-
-      // return { node: lastValidRange.startContainer, offset: lastValidRange.startOffset }
-      return { node: lastValidRange.startContainer, offset: 0 }
+      return { node: lastValidRange.startContainer, offset: lastValidOffset }
     }
 
     return { node: element, offset: 0 }
@@ -92,11 +88,7 @@ export const getFirstVisibleNodeForViewport = (documentOrElement: Document | Ele
   return undefined
 }
 
-function getFirstVisibleElementForViewPort(document: Document, viewport: ViewPort) {
-  return getFirstElementForViewport(document.body, viewport)
-}
-
-const getFirstElementForViewport = (element: Element, viewport: ViewPort) => {
+const getFirstVisibleElementForViewport = (element: Element, viewport: ViewPort) => {
   let lastValidElement: Element | undefined = undefined
   const positionFromViewport = getElementOrNodePositionFromViewPort(element.getBoundingClientRect(), viewport)
 
@@ -105,7 +97,7 @@ const getFirstElementForViewport = (element: Element, viewport: ViewPort) => {
   }
 
   Array.from(element.children).some(child => {
-    const childInViewPort = getFirstElementForViewport(child, viewport)
+    const childInViewPort = getFirstVisibleElementForViewport(child, viewport)
     if (childInViewPort) {
       lastValidElement = childInViewPort
 
@@ -129,4 +121,31 @@ function getElementOrNodePositionFromViewPort(domRect: DOMRect, { left, right }:
   // @todo rtl
   // @todo vertical-lrt
   // @todo vertical-rtl
+}
+
+function getFirstVisibleDOMRect(domRect: DOMRectList, viewport: ViewPort) {
+  return Array.from(domRect).find(domRect => {
+    const position = getElementOrNodePositionFromViewPort(domRect, viewport)
+
+    if (position !== 'before' && position !== 'after') {
+      return true
+    }
+    return false
+  })
+}
+
+export const getRangeFromNode = (node: Node, offset: number) => {
+  if (node.nodeType !== Node.CDATA_SECTION_NODE && node.nodeType !== Node.DOCUMENT_TYPE_NODE) {
+    const range = document.createRange()
+    range.selectNodeContents(node)
+    try {
+      range.setStart(node, offset || 0)
+    } catch (e) {
+      Report.error(e)
+    }
+
+    return range
+  }
+
+  return undefined
 }

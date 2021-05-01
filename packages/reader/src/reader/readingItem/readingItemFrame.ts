@@ -13,20 +13,13 @@ export const createReadingItemFrame = (
     fetchResource: `http` | ((item: Manifest['readingOrder'][number]) => Promise<string>)
   }
 ) => {
-  const subject = new Subject<{ event: 'isReady' | 'layout' }>()
+  const subject = new Subject<{ event: 'layout', data: { isFirstLayout: boolean, isReady: boolean } }>()
   let isLoaded = false
   let currentLoadingId = 0
   let loading = false
   let frameElement: HTMLIFrameElement | undefined
   let isReady = false
   const src = item.href
-
-  const setSize = (size: { width: number, height: number }) => {
-    if (frameElement) {
-      frameElement.style.width = `${size.width}px`
-      frameElement.style.height = `${size.height}px`
-    }
-  }
 
   const getViewportDimensions = () => {
     if (frameElement && frameElement.contentDocument) {
@@ -123,8 +116,7 @@ export const createReadingItemFrame = (
               frameElement.contentDocument?.fonts.ready.then(() => {
                 if (frameElement && !isCancelled()) {
                   isReady = true
-                  subject.next({ event: 'isReady' })
-                  subject.next({ event: 'layout' })
+                  subject.next({ event: 'layout', data: { isFirstLayout: true, isReady: true } })
                 }
               })
 
@@ -137,8 +129,17 @@ export const createReadingItemFrame = (
       })
     }),
     unload,
-    layout: (size: { width: number, height: number }) => {
-      setSize(size)
+    /**
+     * Upward layout is used when the parent wants to manipulate the iframe without triggering
+     * `layout` event. This is a particular case needed for iframe because the parent can layout following
+     * an iframe `layout` event. Because the parent `layout` may change some of iframe properties we do not
+     * want the iframe to trigger a new `layout` even and have infinite loop.
+     */
+    staticLayout: (size: { width: number, height: number }) => {
+      if (frameElement) {
+        frameElement.style.width = `${size.width}px`
+        frameElement.style.height = `${size.height}px`
+      }
     },
     getFrameElement: () => frameElement,
     removeStyle: (id: string) => {

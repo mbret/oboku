@@ -6,14 +6,15 @@ export declare const createPagination: ({ context }: {
 }) => {
     getPageIndex(): number | undefined;
     getNumberOfPages(): number;
-    getIsAtEndOfChapter(): boolean;
-    update: (readingItem: ReadingItem, offsetInReadingItem: number, options?: {
-        isAtEndOfChapter?: boolean | undefined;
+    update: (readingItem: ReadingItem, offsetInReadingItem: number, options: {
+        isAtEndOfChapter: boolean;
+        shouldUpdateCfi: boolean;
     }) => void;
     getCfi(): string | undefined;
-    getClosestValidOffsetFromOffset: (offsetInReadingItem: number, readingItem: ReadingItem) => number;
-    calculateClosestOffsetFromPage: (pageIndex: number, readingItem: ReadingItem) => number;
     $: import("rxjs").Observable<{
         event: 'change';
     }>;
 };
+export declare const getReadingItemOffsetFromPageIndex: (pageWidth: number, pageIndex: number, itemWidth: number) => number;
+export declare const getNumberOfPages: (itemWidth: number, pageWidth: number) => number;
+export declare const getClosestValidOffsetFromApproximateOffsetInPages: (offset: number, pageWidth: number, itemWidth: number) => number;

@@ -50,7 +50,7 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement,
             const cssLink = buildDefaultStyle(getDimensions());
             if (viewportDimensions) {
                 helpers.injectStyle(readingItemFrame, cssLink);
-                readingItemFrame.layout({
+                readingItemFrame.staticLayout({
                     width: viewportDimensions.width,
                     height: viewportDimensions.height,
                 });
@@ -63,7 +63,7 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement,
             }
             else {
                 helpers.injectStyle(readingItemFrame, cssLink);
-                readingItemFrame.layout({
+                readingItemFrame.staticLayout({
                     width: contentWidth,
                     height: contentHeight,
                 });
@@ -101,10 +101,10 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement,
             loadingElement.style.opacity = `1`;
         }
     });
-    helpers.readingItemFrame.$.subscribe(({ event }) => {
-        if (event === 'layout') {
+    helpers.readingItemFrame.$.subscribe((data) => {
+        if (data.event === 'layout') {
             layout();
-            helpers.$.next({ event: 'layout' });
+            helpers.$.next(data);
         }
     });
     return Object.assign(Object.assign({}, helpers), { getBoundingClientRect: () => element === null || element === void 0 ? void 0 : element.getBoundingClientRect(), loadContent,
@@ -146,6 +146,16 @@ const buildDefaultStyle = ({ columnHeight, columnWidth, horizontalMargin }) => {
     */``}
     html, body {
       touch-action: pan-y;
+    }
+    ${ /*
+      prevent drag of image instead of touch on firefox
+    */``}
+    img {
+      user-select: none;
+      ${ /*
+      prevent weird overflow or margin. Try `block` if `flex` has weird behavior
+    */``}
+      display: flex;
     }
   `;
 };

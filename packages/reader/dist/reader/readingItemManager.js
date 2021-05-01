@@ -1,5 +1,6 @@
 import { Subject } from "rxjs";
 import { Report } from "../report";
+const NAMESPACE = `readingItemManager`;
 export const createReadingItemManager = ({ context }) => {
     const subject = new Subject();
     let orderedReadingItems = [];
@@ -27,6 +28,8 @@ export const createReadingItemManager = ({ context }) => {
             return;
         const previousReadingItem = getFocusedReadingItem();
         activeReadingItemIndex = orderedReadingItems.indexOf(readingItemToFocus);
+        Report.log(NAMESPACE, `focus item ${activeReadingItemIndex}`, readingItemToFocus);
+        subject.next({ event: 'focus', data: readingItemToFocus });
         if (readingItemToFocus !== previousReadingItem) {
             previousReadingItem === null || previousReadingItem === void 0 ? void 0 : previousReadingItem.unloadContent().catch(Report.error);
             layout();
@@ -35,7 +38,6 @@ export const createReadingItemManager = ({ context }) => {
         (_a = getFocusedReadingItem()) === null || _a === void 0 ? void 0 : _a.loadContent().then(() => {
             layout();
         });
-        subject.next({ event: 'focus', data: readingItemToFocus });
     };
     const get = (indexOrId) => {
         if (typeof indexOrId === `number`)
@@ -71,7 +73,6 @@ export const createReadingItemManager = ({ context }) => {
     return {
         add: (readingItem) => {
             orderedReadingItems.push(readingItem);
-            readingItem.load();
             // @todo unsubscribe on unload
             readingItem.$.subscribe((event) => {
                 if (event.event === 'layout') {
@@ -80,6 +81,7 @@ export const createReadingItemManager = ({ context }) => {
                     adjustPositionOfItems();
                 }
             });
+            readingItem.load();
         },
         get,
         set: (readingItems) => {
@@ -101,7 +103,7 @@ export const createReadingItemManager = ({ context }) => {
                 return offset >= start && offset < end;
             });
             if (!detectedItem) {
-                Report.warn(`unable to detect reading item at offset`, offset);
+                return getFocusedReadingItem();
             }
             return detectedItem || getFocusedReadingItem();
         },
