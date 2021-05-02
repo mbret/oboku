@@ -18,7 +18,7 @@ import { ReadingStateState } from '@oboku/shared';
 import { Report } from '../report';
 import { useDialogManager } from '../dialog';
 import { linkState } from '../links/states';
-import { useModalNavitationControl } from '../navigation/helpers';
+import { useModalNavigationControl } from '../navigation/helpers';
 import { useDataSourcePlugin } from '../dataSources/helpers';
 import { useTranslation } from 'react-i18next'
 import { openManageBookTagsDialogState } from './ManageBookTagsDialog';
@@ -45,7 +45,7 @@ export const BookActionsDrawer = () => {
   const opened = !!bookId
   const { t } = useTranslation()
 
-  const handleClose = useModalNavitationControl({
+  const handleClose = useModalNavigationControl({
     onExit: () => {
       setBookActionDrawerState({ openedWith: undefined })
     }
