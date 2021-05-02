@@ -150,7 +150,8 @@ export const AppTourFirstTourTagsStep2: FC<{}> = ({ children }) => {
       id={FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS}
       number={2}
       style={{
-        width: '100%'
+        display: `flex`,
+        flex: 1
       }}
       spotlightSize={150}
       content={({ spotlightMeasures, spotlightSize }) => (

@@ -1,17 +1,17 @@
-import { useState, FC, useEffect } from 'react';
+import { useState, FC, useEffect, useCallback, useMemo } from 'react';
 import Dialog from '@material-ui/core/Dialog';
-import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, ListItem, ListItemText, List, ListItemIcon } from '@material-ui/core';
+import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, useTheme } from '@material-ui/core';
 import { useCreateTag } from '../tags/helpers';
 import { TagActionsDrawer } from '../tags/TagActionsDrawer';
-import { BlurOnRounded, LocalOfferRounded, LockRounded } from '@material-ui/icons';
 import { LockActionDialog } from '../auth/LockActionDialog';
-import { tagsAsArrayState } from '../tags/states';
+import { tagIdsState } from '../tags/states';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { isTagsTourOpenedState } from '../firstTimeExperience/firstTimeExperienceStates';
-import { useCSS } from '../common/utils';
-import { AppTourFirstTourTagsStep2 } from '../firstTimeExperience/AppTourFirstTourTags';
+import { useCSS, useMeasureElement } from '../common/utils';
 import { useHasDoneFirstTimeExperience } from '../firstTimeExperience/helpers';
 import { FirstTimeExperienceId } from '../firstTimeExperience/constants';
+import { TagList } from '../tags/tagList/TagList';
+import { AppTourFirstTourTagsStep2 } from '../firstTimeExperience/AppTourFirstTourTags';
 
 export const LibraryTagsScreen = () => {
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
@@ -19,56 +19,65 @@ export const LibraryTagsScreen = () => {
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
   const setIsTagsTourOpenedState = useSetRecoilState(isTagsTourOpenedState)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] = useState<string | undefined>(undefined)
-  const tags = useRecoilValue(tagsAsArrayState)
+  const tags = useRecoilValue(tagIdsState)
   const [addTag] = useCreateTag()
   const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS)
+  const theme = useTheme()
 
   useEffect(() => {
     !hasDoneFirstTimeExperience && setIsTagsTourOpenedState(true)
   }, [setIsTagsTourOpenedState, hasDoneFirstTimeExperience])
 
+  const addItemButton = useMemo(() => (
+    <Button
+      style={{
+        flex: 1,
+      }}
+      variant="outlined"
+      color="primary"
+      onClick={() => setIsAddTagDialogOpened(true)}
+    >
+      Create a new tag
+    </Button >
+  ), [setIsAddTagDialogOpened])
+
+  const measurableListHeader = useMemo(() => (
+    <Toolbar style={{ paddingLeft: theme.spacing(2), paddingRight: theme.spacing(2), flex: 1, }}>
+      {addItemButton}
+    </Toolbar>
+  ), [theme, addItemButton])
+
+  const listHeader = useMemo(() => (
+    <Toolbar style={{ paddingLeft: theme.spacing(2), paddingRight: theme.spacing(2), flex: 1, }}>
+      <AppTourFirstTourTagsStep2>
+        {addItemButton}
+      </AppTourFirstTourTagsStep2>
+    </Toolbar>
+  ), [theme, addItemButton])
+
+  const listRenderHeader = useCallback(() => listHeader, [listHeader])
+
+  const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(measurableListHeader)
+
   return (
     <div style={classes.container}>
-      <Toolbar>
-        <AppTourFirstTourTagsStep2>
-          <Button
-            style={{
-              width: '100%'
-            }}
-            variant="outlined"
-            color="primary"
-            onClick={() => setIsAddTagDialogOpened(true)}
-          >
-            Create a new tag
-          </Button>
-        </AppTourFirstTourTagsStep2>
-      </Toolbar>
-      <List style={classes.list}>
-        {tags && tags.map(tag => (
-          <ListItem
-            button
-            key={tag?._id}
-            onClick={() => {
-              const action = () => setIsTagActionsDrawerOpenedWith(tag?._id)
-              if (tag?.isProtected) {
-                setLockedAction(_ => action)
-              } else {
-                action()
-              }
-            }}
-          >
-            <ListItemIcon>
-              <LocalOfferRounded />
-            </ListItemIcon>
-            <ListItemText
-              primary={tag?.name}
-              secondary={`${tag?.isProtected ? '?' : tag?.books?.length || 0} book(s)`}
-            />
-            {tag?.isProtected && <LockRounded color="primary" />}
-            {tag?.isBlurEnabled && <BlurOnRounded color="primary" />}
-          </ListItem>
-        ))}
-      </List>
+      {listHeaderDimTracker}
+      <TagList
+        style={{
+          height: '100%'
+        }}
+        data={tags}
+        headerHeight={listHeaderHeight}
+        renderHeader={listRenderHeader}
+        onItemClick={(tag) => {
+          const action = () => setIsTagActionsDrawerOpenedWith(tag?._id)
+          if (tag?.isProtected) {
+            setLockedAction(_ => action)
+          } else {
+            action()
+          }
+        }}
+      />
       <AddTagDialog
         onConfirm={(name) => {
           if (name) {

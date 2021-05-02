@@ -215,7 +215,6 @@ const saveCoverFromExternalLinkToBucket = async (ctx: Context, book: BookDocType
   }
 }
 
-
 const saveCoverFromArchiveToBucket = async (ctx: Context, book: BookDocType, epubFilepath: string, folderBasePath: string, coverPath: string) => {
   if (coverPath) {
     const coverAbsolutePath = folderBasePath === `` ? coverPath : `${folderBasePath}/${coverPath}`
