@@ -46,7 +46,7 @@ export const AppTourReader: React.FC = memo(() => {
               <div style={{
                 borderRight: '1px dashed white',
                 height: '100%',
-                width: `${HORIZONTAL_TAPPING_RATIO * 100}`,
+                width: `${HORIZONTAL_TAPPING_RATIO * 100}%`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -79,7 +79,7 @@ export const AppTourReader: React.FC = memo(() => {
               <div style={{
                 borderLeft: '1px dashed white',
                 height: '100%',
-                width:`${HORIZONTAL_TAPPING_RATIO * 100}`,
+                width:`${HORIZONTAL_TAPPING_RATIO * 100}%`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
