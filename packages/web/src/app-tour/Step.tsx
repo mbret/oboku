@@ -10,8 +10,9 @@ export const Step: React.FC<{
   spotlightSize?: number;
   spotlightMargin?: number;
   testID?: string;
-  withButtons?: boolean
-}> = memo(({ withButtons = true, children, id, number, content, style, spotlightSize, spotlightMargin }) => {
+  withButtons?: boolean;
+  getSpotlightMeasures?: (element: HTMLElement) => DOMRect
+}> = memo(({ withButtons = true, children, id, number, content, style, spotlightSize, spotlightMargin, getSpotlightMeasures }) => {
   const { registerOrUpdateStep } = useContext(TourContext) || {};
   const [measureRef, layout] = useMeasure();
   const ref = useRef<HTMLElement>();
@@ -22,9 +23,11 @@ export const Step: React.FC<{
     }
   }, [measureRef])
   const hasChildren = !!children
+  const trackedElementLayoutWidth = layout.width
+  const trackedElementLayoutHeight = layout.height
 
   useEffect(() => {
-    if ("width" in layout && !layout.width) return;
+    // if (!trackedElementLayoutWidth || !trackedElementLayoutHeight) return;
 
     if (!hasChildren) {
       registerOrUpdateStep && registerOrUpdateStep(id, number, {
@@ -35,23 +38,38 @@ export const Step: React.FC<{
         withButtons,
       });
     } else {
-      const boundingRect = ref.current?.getBoundingClientRect()
+      const measurableElement = ref.current
+      const boundingRect = getSpotlightMeasures && measurableElement ? getSpotlightMeasures(measurableElement) : measurableElement?.getBoundingClientRect()
       registerOrUpdateStep && registerOrUpdateStep(id, number, {
-        measures: { x: 0, y: 0, width: layout.width, height: layout.height, pageX: boundingRect?.x || 0, pageY: boundingRect?.y || 0 },
+        measures: { x: 0, y: 0, width: boundingRect?.width || 0, height: boundingRect?.height || 0, pageX: boundingRect?.x || 0, pageY: boundingRect?.y || 0 },
         spotlightSize,
         spotlightMargin,
         content,
         withButtons,
       });
     }
-  }, [registerOrUpdateStep, id, number, layout, withButtons, content, hasChildren, spotlightSize, spotlightMargin]);
+  }, [getSpotlightMeasures, registerOrUpdateStep, id, number, trackedElementLayoutWidth, trackedElementLayoutHeight, withButtons, content, hasChildren, spotlightSize, spotlightMargin]);
 
   return (
     <div
+      // {...{
+      //   ...!hasChildren && {
+      //     ref: registerRef
+      //   }
+      // }}
       ref={registerRef}
       style={style}
     >
       {children}
+      {/* {React.Children.map(children, (child, index) => {
+        console.warn(id, child)
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child, {
+            ref: registerRef
+          })
+        }
+        return child
+      })} */}
     </div>
   );
 });

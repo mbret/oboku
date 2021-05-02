@@ -5,11 +5,13 @@ type Measures = { x: number, y: number, width: number, height: number, pageX: nu
 
 export type TourKey = typeof FirstTimeExperience[number]['id']
 
+export type ContentCallback = ((args: { onClose: () => void, spotlightMeasures: Measures | undefined, spotlightSize: undefined | number }) => React.ReactNode)
+
 export type Step = {
   measures: undefined | Measures;
   spotlightSize: undefined | number;
   spotlightMargin: undefined | number;
-  content: React.ReactNode | ((args: { onClose: () => void, spotlightMeasures: Measures | undefined, spotlightSize: undefined | number }) => React.ReactNode)
+  content: React.ReactNode | ContentCallback
   withButtons: boolean
 };
 
