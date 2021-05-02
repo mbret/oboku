@@ -21,7 +21,7 @@
     "start:landing": "cd packages/landing && yarn start",
     "start:shared": "cd packages/shared && yarn watch",
     "start:api-lambda": "cd packages/api-lambda && yarn watch",
-    "start:back": "concurrently -n api-lambda,shared \"yarn start:api-lambda\" \"yarn start:shared\"",
+    "start:back": "docker-compose up -d && concurrently -n api-lambda,shared \"yarn start:api-lambda\" \"yarn start:shared\"",
     "start:front": "concurrently -n web,reader,reader-streamer \"yarn start:web\" \"yarn start:reader\" \"yarn start:reader-streamer\"",
     "start:front-reader": "concurrently -n reader,reader-streamer \"yarn start:reader-standalone\" \"yarn start:reader-streamer\"",
     "deploy-server": "pm2 stop oboku-api && git fetch origin && git reset --hard origin/release && yarn && pm2 start oboku-api && pm2 log oboku-api",
