@@ -68,6 +68,9 @@ export const DataSourcesScreen = () => {
                             <Error fontSize="small" style={{ marginRight: theme.spacing(1) }} />
                             <Typography variant="body2">
                               {`Sync did not succeed`}
+                              {item?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_UNAUTHORIZED && (
+                                `. We could not connect to ${dataSource?.name}. If the problem persist try to reload the app`
+                              )}
                               {item?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED && (
                                 `. Your datasource seems to have exceeded its allowed access limit`
                               )}
