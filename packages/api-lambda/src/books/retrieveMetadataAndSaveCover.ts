@@ -35,14 +35,14 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
 
     console.log(`syncMetadata processing ${ctx.book._id} with resource id ${ctx.link.resourceId}`)
 
-    // try to prefetch metadata before trying to download the file
+    // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
-    const metadataPrefetch = await dataSourceFacade.getMetadata(ctx.link, ctx.credentials)
+    const metadataPreFetch = await dataSourceFacade.getMetadata(ctx.link, ctx.credentials)
 
-    const metadataFromName = extractMetadataFromName(metadataPrefetch.name)
+    const metadataFromName = extractMetadataFromName(metadataPreFetch.name)
 
     let normalizedMetadata: Partial<ReturnType<typeof normalizeMetadata>> = {
-      title: metadataPrefetch.name
+      title: metadataPreFetch.name
     }
     let fallbackContentType = 'unknown'
     let skipExtract = !!metadataFromName.isbn
@@ -54,15 +54,16 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     if (!skipExtract) {
       const { filepath, metadata } = await downloadToTmpFolder(ctx, ctx.book, ctx.link)
       tmpFilePath = filepath
-      normalizedMetadata.title = metadataPrefetch.name
+      normalizedMetadata.title = metadataPreFetch.name
       fallbackContentType = metadata.contentType || fallbackContentType
     }
 
     console.log(`syncMetadata processing ${ctx.book._id}`, tmpFilePath, normalizedMetadata)
 
-    let folderBasePath = ''
+    // ``, `META-INF`, `FOO/BAR`
+    let opfBasePath = ''
     let contentLength = 0
-    let coverPath: string | undefined
+    let coverRelativePath: string | undefined
 
     if (skipExtract && metadataFromName.isbn) {
       try {
@@ -114,10 +115,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
 
             if (filepath.endsWith('.opf')) {
               isEpub = true
-              const filepathParts = filepath.split('/')
-              if (filepathParts.length > 1) {
-                folderBasePath = `${filepathParts[0]}/`
-              }
+              opfBasePath = `${filepath.substring(0, filepath.lastIndexOf('/'))}`
               const xml = (await entry.buffer()).toString('utf8')
               opfAsJson = parser.parse(xml, {
                 attributeNamePrefix: '',
@@ -129,18 +127,19 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
             }
           }).promise()
 
-        coverPath = isEpub
-          ? findMissingCover(opfAsJson)
+        coverRelativePath = isEpub
+          ? findCoverPathFromOpf(opfAsJson)
           : files
             .filter(file => coverAllowedExt.includes(path.extname(file).toLowerCase()))
             .sort()[0]
 
-        console.log(opfAsJson, opfAsJson?.package?.metadata)
+        Logger.log(`coverRelativePath`, coverRelativePath)
+        Logger.log(`opfBasePath`, opfBasePath)
 
         normalizedMetadata = normalizeMetadata(opfAsJson)
 
-        if (coverPath) {
-          await saveCoverFromArchiveToBucket(ctx, ctx.book, tmpFilePath, folderBasePath, coverPath)
+        if (coverRelativePath) {
+          await saveCoverFromArchiveToBucket(ctx, ctx.book, tmpFilePath, opfBasePath, coverRelativePath)
         } else {
           console.log(`No cover path found for ${tmpFilePath}`)
         }
@@ -219,13 +218,14 @@ const saveCoverFromExternalLinkToBucket = async (ctx: Context, book: BookDocType
 
 const saveCoverFromArchiveToBucket = async (ctx: Context, book: BookDocType, epubFilepath: string, folderBasePath: string, coverPath: string) => {
   if (coverPath) {
+    const coverAbsolutePath = folderBasePath === `` ? coverPath : `${folderBasePath}/${coverPath}`
     const objectKey = `cover-${ctx.userId}-${book._id}`
 
     Logger.log(`prepare to save cover ${objectKey}`)
 
     const zip = fs.createReadStream(epubFilepath).pipe(unzipper.Parse({ forceStream: true }))
     for await (const entry of zip) {
-      if (entry.path === `${folderBasePath}${coverPath}`) {
+      if (entry.path === coverAbsolutePath) {
         const entryAsBuffer = await entry.buffer() as Buffer
         const resized = await sharp(entryAsBuffer)
           .resize({
@@ -251,7 +251,7 @@ const saveCoverFromArchiveToBucket = async (ctx: Context, book: BookDocType, epu
   }
 }
 
-const findMissingCover = (opf: OPF) => {
+const findCoverPathFromOpf = (opf: OPF) => {
   const manifest = opf.package?.manifest
   const meta = opf.package?.metadata?.meta
   const normalizedMeta = Array.isArray(meta) ? meta : meta ? [meta] : []
@@ -259,7 +259,11 @@ const findMissingCover = (opf: OPF) => {
   let href = ''
 
   const isImage = (item: NonNullable<NonNullable<typeof manifest>['item']>[number]) =>
-    item['media-type'] && (item['media-type'].indexOf('image/') > -1 || item['media-type'].indexOf('page/jpeg') > -1 || item['media-type'].indexOf('page/png') > -1)
+    item['media-type']
+    && (item['media-type'].indexOf('image/') > -1
+      || item['media-type'].indexOf('page/jpeg') > -1
+      || item['media-type'].indexOf('page/png') > -1
+    )
 
   if (coverInMeta) {
     const item = manifest?.item?.find((item) => item.id === coverInMeta?.content && isImage(item))
