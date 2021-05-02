@@ -22,6 +22,7 @@ import { DataSourcesScreen } from '../dataSources/DataSourcesScreen'
 import { SearchScreen } from '../search/SearchScreen'
 import { AuthCallbackScreen } from '../auth/AuthCallbackScreen'
 import { SettingsScreen } from '../settings/SettingsScreen'
+import { StatisticsScreen } from '../settings/StatisticsScreen'
 import { useRecoilValue } from 'recoil'
 import { authState } from '../auth/authState'
 
@@ -56,6 +57,9 @@ export const AppNavigator = () => {
                 </Route>
                 <Route path={`${ROUTES.SETTINGS}`} >
                   <SettingsScreen />
+                </Route>
+                <Route path={`${ROUTES.STATISTICS}`} >
+                  <StatisticsScreen />
                 </Route>
                 <BottomTabBar>
                   <Switch>

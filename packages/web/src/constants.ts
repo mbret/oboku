@@ -22,6 +22,7 @@ export const ROUTES = {
   COLLECTION_DETAILS: '/collection/:id',
   PROFILE: '/profile',
   SETTINGS: '/profile/settings',
+  STATISTICS: '/profile/statistics',
   DATASOURCES: '/datasources',
   LIBRARY_ROOT: '/library',
   LIBRARY_BOOKS: '/library/books',

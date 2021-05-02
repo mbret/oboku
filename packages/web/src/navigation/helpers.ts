@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useHistory } from "react-router-dom"
 import { v4 as uuidv4 } from 'uuid'
 
-export const useModalNavitationControl = ({ onExit }: { onExit: () => void }, id: string | undefined) => {
+export const useModalNavigationControl = ({ onExit }: { onExit: () => void }, id: string | undefined) => {
   const history = useHistory()
   const [currentHash, setCurrentHash] = useState<string | undefined>(undefined)
 

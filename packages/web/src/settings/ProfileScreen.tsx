@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import { GavelRounded, LockOpenRounded, LockRounded, SettingsRounded, StorageRounded } from '@material-ui/icons';
+import { BarChartRounded, GavelRounded, LockOpenRounded, LockRounded, SettingsRounded, StorageRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, fade, Link, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField, Typography, useTheme } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
@@ -76,6 +76,17 @@ export const ProfileScreen = () => {
           />
           {library?.isLibraryUnlocked && (<LockOpenRounded color="action" />)}
           {!library?.isLibraryUnlocked && (<LockRounded color="action" />)}
+        </ListItem>
+        <ListItem
+          button
+          onClick={() => {
+            history.push(ROUTES.STATISTICS)
+          }}
+        >
+          <ListItemIcon>
+            <BarChartRounded />
+          </ListItemIcon>
+          <ListItemText primary="Statistics" />
         </ListItem>
       </List>
       <List subheader={<ListSubheader disableSticky>Settings & device</ListSubheader>}>
