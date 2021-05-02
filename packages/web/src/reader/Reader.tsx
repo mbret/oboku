@@ -4,25 +4,25 @@
  */
 import { useState, useEffect, useCallback, FC } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useMeasure } from "react-use";
-import { Box, Button, Link, Typography, useTheme } from '@material-ui/core';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { bookState } from '../books/states';
-import { paginationState, isBookReadyState, manifestState } from './states';
-import { TopBar } from './TopBar';
-import { BottomBar } from './BottomBar';
-import { useBookResize } from './layout';
+import { useMeasure } from "react-use"
+import { Box, Button, Link, Typography, useTheme } from '@material-ui/core'
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
+import { bookState } from '../books/states'
+import { paginationState, isBookReadyState, manifestState } from './states'
+import { TopBar } from './TopBar'
+import { BottomBar } from './BottomBar'
+import { useBookResize } from './layout'
 import { useGestureHandler } from './gestures'
-import { useReader } from './ReaderProvider';
-import { BookLoading } from './BookLoading';
+import { useReader } from './ReaderProvider'
+import { BookLoading } from './BookLoading'
 import Hammer from 'hammerjs'
-import { useCSS } from '../common/utils';
+import { useCSS } from '../common/utils'
 import { ObokuReader } from '@oboku/reader/dist/react'
-import { Pagination } from '@oboku/reader';
-import { useManifest } from './manifest';
-import { useRarStreamer } from './streamer/useRarStreamer';
-import { ComponentProps } from 'react';
-import { useUpdateBookState } from './bookHelpers';
+import { Pagination } from '@oboku/reader'
+import { useManifest } from './manifest'
+import { useRarStreamer } from './streamer/useRarStreamer'
+import { ComponentProps } from 'react'
+import { useUpdateBookState } from './bookHelpers'
 
 type ReaderInstance = Parameters<NonNullable<ComponentProps<typeof ObokuReader>['onReader']>>[0]
 type LoadOptions = NonNullable<ComponentProps<typeof ObokuReader>['loadOptions']>

@@ -13,7 +13,10 @@ export const useUpdateBookState = (bookId: string) => {
   const updater = async () => {
     updateBook(bookId, old => ({
       ...old,
-      readingStateCurrentBookmarkLocation: cfi || null,
+      // cfi will be undefined at the beginning until pagination stabilize
+      ...cfi && {
+        readingStateCurrentBookmarkLocation: cfi || null,
+      },
       readingStateCurrentBookmarkProgressUpdatedAt: (new Date()).toISOString(),
       ...(old.readingStateCurrentState !== ReadingStateState.Finished) && {
         readingStateCurrentState: ReadingStateState.Reading,
