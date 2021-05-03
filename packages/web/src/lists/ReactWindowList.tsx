@@ -10,7 +10,7 @@ import { useCallback } from "react";
 
 export const ReactWindowList: FC<{
   rowRenderer: (item: any, rowIndex: number) => React.ReactNode,
-  layout: ComponentProps<typeof VariableSizeList>['layout'],
+  layout?: ComponentProps<typeof VariableSizeList>['layout'],
   data: any[],
   itemsPerRow: number,
   preferredRatio?: number,
@@ -40,7 +40,7 @@ const List = memo(forwardRef<FixedSizeGrid, {
   width: number,
   height: number,
   rowRenderer: (item: string, rowIndex: number) => React.ReactNode,
-  layout: ComponentProps<typeof VariableSizeList>['layout'],
+  layout?: ComponentProps<typeof VariableSizeList>['layout'],
   onScroll?: ComponentProps<typeof FixedSizeGrid>['onScroll'],
   data: string[],
   itemsPerRow: number,
