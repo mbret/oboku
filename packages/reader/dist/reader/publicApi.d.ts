@@ -11,7 +11,7 @@ export declare const createPublicApi: (reader: ReturnType<typeof createReader>) 
         }) => Promise<string>) | undefined;
     }, spineIndexOrIdOrCfi?: string | number | undefined) => void;
     destroy: () => void;
-    $: import("rxjs").Observable<{
+    $: import("rxjs").Observable<import("./context").ContextObservableEvents | {
         event: "paginationChange";
     } | {
         event: "iframe";
@@ -45,7 +45,21 @@ export declare const createPublicApi: (reader: ReturnType<typeof createReader>) 
         pagesOfBook: number;
         numberOfSpineItems: number;
     } | undefined;
-    normalizeEventPositions: (e: PointerEvent | MouseEvent | TouchEvent) => MouseEvent | TouchEvent;
+    getEventInformation: (e: PointerEvent | MouseEvent | TouchEvent) => {
+        event: PointerEvent | MouseEvent | TouchEvent;
+        normalizedEventPointerPositions: {
+            x?: number | undefined;
+            clientX?: number | undefined;
+        };
+        iframeOriginalEvent?: undefined;
+    } | {
+        event: PointerEvent | MouseEvent | TouchEvent;
+        iframeOriginalEvent: Event | undefined;
+        normalizedEventPointerPositions: {
+            x: number;
+            clientX?: number | undefined;
+        };
+    };
     isSelecting: () => boolean | undefined;
     getSelection: () => Selection | undefined;
 };

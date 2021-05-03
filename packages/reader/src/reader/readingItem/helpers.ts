@@ -6,26 +6,6 @@ import { CFI, extractObokuMetadataFromCfi } from "../cfi"
 import { Subject, Subscription } from "rxjs"
 import { Report } from "../../report"
 
-const pointerEvents = [
-  "pointercancel" as const,
-  "pointerdown" as const,
-  "pointerenter" as const,
-  "pointerleave" as const,
-  "pointermove" as const,
-  "pointerout" as const,
-  "pointerover" as const,
-  "pointerup" as const
-]
-const mouseEvents = [
-  'mousedown' as const,
-  'mouseup' as const,
-  'mouseenter' as const,
-  'mouseleave' as const,
-  'mousemove' as const,
-  'mouseout' as const,
-  'mouseover' as const,
-]
-
 export const createSharedHelpers = ({ item, context, containerElement, fetchResource }: {
   item: Manifest['readingOrder'][number],
   containerElement: HTMLElement,
@@ -41,23 +21,6 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
   const injectStyle = (readingItemFrame: ReadingItemFrame, cssText: string) => {
     readingItemFrame?.removeStyle('ur-css-link')
     readingItemFrame?.addStyle('ur-css-link', cssText)
-  }
-
-  const bridgeAllMouseEvents = (frame: HTMLIFrameElement) => {
-    pointerEvents.forEach(event => {
-      frame?.contentDocument?.addEventListener(event, (e) => {
-        // @ts-ignore
-        document.getElementById(`BookViewIframeEventIntercept`).dispatchEvent(new PointerEvent(e.type, e))
-        // document.getElementById(`BookView`).dispatchEvent(new PointerEvent(e.type, e))
-      })
-    })
-    mouseEvents.forEach(event => {
-      frame?.contentDocument?.addEventListener(event, (e) => {
-        // @ts-ignore
-        document.getElementById(`BookViewIframeEventIntercept`).dispatchEvent(new MouseEvent(e.type, e))
-        // document.getElementById(`BookView`).dispatchEvent(new MouseEvent(e.type, e))
-      })
-    })
   }
 
   const adjustPositionOfElement = (edgeOffset: number | undefined) => {
@@ -209,7 +172,6 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
     createWrapperElement,
     createLoadingElement,
     injectStyle,
-    bridgeAllMouseEvents,
     getCfi,
     readingItemFrame,
     element,

@@ -1,6 +1,8 @@
-import { Subject, Subscription } from "rxjs";
+import { merge, Subject, Subscription } from "rxjs";
+import { tap } from "rxjs/operators";
 import { Report } from "../report";
-import { Context, createContext as createBookContext } from "./context";
+import { IFRAME_EVENT_BRIDGE_ELEMENT_ID } from "./constants";
+import { Context, ContextObservableEvents, createContext as createBookContext } from "./context";
 import { createPagination } from "./pagination";
 import { createReadingOrderView, ReadingOrderView } from "./readingOrderView";
 import { Manifest } from "./types";
@@ -8,14 +10,15 @@ import { Manifest } from "./types";
 export const createReader = ({ containerElement }: {
   containerElement: HTMLElement
 }) => {
-  const subject = new Subject<{ event: 'paginationChange' } | { event: 'iframe', data: HTMLIFrameElement } | { event: 'ready' }>()
+  const subject = new Subject<{ event: 'paginationChange' } | { event: 'iframe', data: HTMLIFrameElement } | { event: 'ready' } | ContextObservableEvents>()
   let context: Context | undefined
   let pagination: ReturnType<typeof createPagination> | undefined
   const element = createWrapperElement(containerElement)
-  const iframeEventIntercept = createIframeMouseInterceptorElement(containerElement)
+  const iframeEventBridgeElement = createIframeEventBridgeElement(containerElement)
+  let iframeEventBridgeElementLastContext: { event: Event, iframeTarget: Event['target'] } | undefined = undefined
   let readingOrderView: ReadingOrderView | undefined
   let paginationSubscription$: Subscription | undefined
-  element.appendChild(iframeEventIntercept)
+  element.appendChild(iframeEventBridgeElement)
   containerElement.appendChild(element)
   let context$: Subscription | undefined
 
@@ -69,11 +72,31 @@ export const createReader = ({ containerElement }: {
 
     context = createBookContext(manifest)
 
-    context$ = context.$.subscribe(data => {
-      if (data.event === 'iframe') {
-        subject.next(data)
-      }
-    })
+    context$?.unsubscribe()
+    context$ = context.$
+      .pipe(tap(event => {
+        if (event.event === 'iframeEvent') {
+          const frameWindow = event.data.frame.contentWindow
+
+          if (!frameWindow) return
+
+          // safe way to detect PointerEvent
+          if (`pointerId` in event.data.event) {
+            const iframeEvent = event.data.event as PointerEvent
+            const bridgeEvent = new PointerEvent(iframeEvent.type, iframeEvent)
+            iframeEventBridgeElement.dispatchEvent(bridgeEvent)
+            iframeEventBridgeElementLastContext = { event: iframeEvent, iframeTarget: iframeEvent.target }
+          } else if (event.data.event instanceof (frameWindow as any).MouseEvent) {
+            const iframeEvent = event.data.event as MouseEvent
+            const bridgeEvent = new MouseEvent(iframeEvent.type, iframeEvent)
+            iframeEventBridgeElement.dispatchEvent(bridgeEvent)
+            iframeEventBridgeElementLastContext = { event: bridgeEvent, iframeTarget: iframeEvent.target }
+          } else {
+            iframeEventBridgeElementLastContext = undefined
+          }
+        }
+      }))
+      .subscribe(subject)
 
     pagination = createPagination({ context })
     readingOrderView = createReadingOrderView({
@@ -119,14 +142,18 @@ export const createReader = ({ containerElement }: {
     paginationSubscription$?.unsubscribe()
     context$?.unsubscribe()
     element.remove()
-    iframeEventIntercept.remove()
+    iframeEventBridgeElement.remove()
+    iframeEventBridgeElementLastContext = undefined
   }
 
   const publicApi = {
     getReadingOrderView: () => readingOrderView,
     getContext: () => context,
     getPagination: () => pagination,
-    getIframeEventIntercept: () => iframeEventIntercept,
+    getIframeEventBridge: () => ({
+      iframeEventBridgeElement,
+      iframeEventBridgeElementLastContext,
+    }),
     layout,
     load,
     destroy,
@@ -145,14 +172,14 @@ const createWrapperElement = (containerElement: HTMLElement) => {
   return element
 }
 
-const createIframeMouseInterceptorElement = (containerElement: HTMLElement) => {
-  const iframeEventIntercept = containerElement.ownerDocument.createElement('div')
-  iframeEventIntercept.id = `BookViewIframeEventIntercept`
-  iframeEventIntercept.style.cssText = `
+const createIframeEventBridgeElement = (containerElement: HTMLElement) => {
+  const iframeEventBridgeElement = containerElement.ownerDocument.createElement('div')
+  iframeEventBridgeElement.id = IFRAME_EVENT_BRIDGE_ELEMENT_ID
+  iframeEventBridgeElement.style.cssText = `
     position: absolute;
     height: 100%;
     width: 100%;
   `
 
-  return iframeEventIntercept
+  return iframeEventBridgeElement
 }

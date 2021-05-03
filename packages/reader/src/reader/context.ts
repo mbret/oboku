@@ -3,8 +3,10 @@ import { Manifest } from "./types"
 
 export type Context = ReturnType<typeof createContext>
 
+export type ContextObservableEvents = { event: 'linkClicked', data: HTMLAnchorElement } | { event: 'iframeEvent', data: { frame: HTMLIFrameElement, event: PointerEvent | MouseEvent } }
+
 export const createContext = (manifest: Manifest) => {
-  const subject = new Subject<{ event: 'iframe', data: HTMLIFrameElement }>()
+  const subject = new Subject<ContextObservableEvents>()
   const visibleAreaRect = {
     width: 0,
     height: 0,
@@ -51,7 +53,10 @@ export const createContext = (manifest: Manifest) => {
         height: visibleAreaRect.height,
       }
     },
-    $: subject,
+    $: subject.asObservable(),
+    emit: (data: ContextObservableEvents) => {
+      subject.next(data)
+    },
     manifest,
   }
 }

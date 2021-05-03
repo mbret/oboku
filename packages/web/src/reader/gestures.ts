@@ -11,19 +11,26 @@ export const useGestureHandler = (reader: Reader | undefined, hammer: HammerMana
 
   useEffect(() => {
     const onTap = ({ srcEvent }: HammerInput) => {
-        const normalizedEvent = reader?.normalizeEventPositions(srcEvent) || srcEvent
+      const { normalizedEventPointerPositions, iframeOriginalEvent } = reader?.getEventInformation(srcEvent) || {}
 
-        if (`x` in normalizedEvent) {
-          const { x } = normalizedEvent
+      if (iframeOriginalEvent?.target && `target` in iframeOriginalEvent.target) {
+        const target = iframeOriginalEvent.target as HTMLElement
+  
+        // don't do anything if it was clicked on link
+        if (target.nodeName === `a`) return
+      }
 
-          if (x < width * HORIZONTAL_TAPPING_RATIO) {
-            reader?.turnLeft()
-          } else if (x > width * (1 - HORIZONTAL_TAPPING_RATIO)) {
-            reader?.turnRight()
-          } else {
-            setIsMenuShown(val => !val)
-          }
+      if (normalizedEventPointerPositions && `x` in normalizedEventPointerPositions) {
+        const { x = 0 } = normalizedEventPointerPositions
+
+        if (x < width * HORIZONTAL_TAPPING_RATIO) {
+          reader?.turnLeft()
+        } else if (x > width * (1 - HORIZONTAL_TAPPING_RATIO)) {
+          reader?.turnRight()
+        } else {
+          setIsMenuShown(val => !val)
         }
+      }
     }
 
     const onPanMove = (ev: HammerInput) => {

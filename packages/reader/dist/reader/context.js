@@ -39,7 +39,10 @@ export const createContext = (manifest) => {
                 height: visibleAreaRect.height,
             };
         },
-        $: subject,
+        $: subject.asObservable(),
+        emit: (data) => {
+            subject.next(data);
+        },
         manifest,
     };
 };

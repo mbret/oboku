@@ -19,7 +19,6 @@ export declare const createSharedHelpers: ({ item, context, containerElement, fe
     createWrapperElement: (containerElement: HTMLElement, item: Manifest['readingOrder'][number]) => HTMLDivElement;
     createLoadingElement: (containerElement: HTMLElement, item: Manifest['readingOrder'][number]) => HTMLDivElement;
     injectStyle: (readingItemFrame: ReadingItemFrame, cssText: string) => void;
-    bridgeAllMouseEvents: (frame: HTMLIFrameElement) => void;
     getCfi: (pageIndex: number) => string;
     readingItemFrame: {
         getIsReady(): boolean;
@@ -28,7 +27,7 @@ export declare const createSharedHelpers: ({ item, context, containerElement, fe
             height: number;
         } | undefined;
         getIsLoaded: () => boolean;
-        load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+        load: () => Promise<unknown>;
         unload: () => void;
         staticLayout: (size: {
             width: number;
@@ -40,6 +39,9 @@ export declare const createSharedHelpers: ({ item, context, containerElement, fe
         getReadingDirection: () => "ltr" | "rtl" | undefined;
         destroy: () => void;
         $: Subject<{
+            event: "domReady";
+            data: HTMLIFrameElement;
+        } | {
             event: "layout";
             data: {
                 isFirstLayout: boolean;

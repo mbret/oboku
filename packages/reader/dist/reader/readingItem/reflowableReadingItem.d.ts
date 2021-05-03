@@ -66,7 +66,7 @@ export declare const createReflowableReadingItem: ({ item, context, containerEle
             height: number;
         } | undefined;
         getIsLoaded: () => boolean;
-        load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+        load: () => Promise<unknown>;
         unload: () => void;
         staticLayout: (size: {
             width: number;
@@ -78,6 +78,9 @@ export declare const createReflowableReadingItem: ({ item, context, containerEle
         getReadingDirection: () => "ltr" | "rtl" | undefined;
         destroy: () => void;
         $: import("rxjs").Subject<{
+            event: "domReady";
+            data: HTMLIFrameElement;
+        } | {
             event: "layout";
             data: {
                 isFirstLayout: boolean;
@@ -85,7 +88,6 @@ export declare const createReflowableReadingItem: ({ item, context, containerEle
             };
         }>;
     }, cssText: string) => void;
-    bridgeAllMouseEvents: (frame: HTMLIFrameElement) => void;
     getCfi: (pageIndex: number) => string;
     readingItemFrame: {
         getIsReady(): boolean;
@@ -94,7 +96,7 @@ export declare const createReflowableReadingItem: ({ item, context, containerEle
             height: number;
         } | undefined;
         getIsLoaded: () => boolean;
-        load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+        load: () => Promise<unknown>;
         unload: () => void;
         staticLayout: (size: {
             width: number;
@@ -106,6 +108,9 @@ export declare const createReflowableReadingItem: ({ item, context, containerEle
         getReadingDirection: () => "ltr" | "rtl" | undefined;
         destroy: () => void;
         $: import("rxjs").Subject<{
+            event: "domReady";
+            data: HTMLIFrameElement;
+        } | {
             event: "layout";
             data: {
                 isFirstLayout: boolean;

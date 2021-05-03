@@ -35,6 +35,7 @@ export const Reader = () => {
     })
 
     const readerSubscription$ = reader?.$.subscribe((data) => {
+      // console.log(data)
       if (data.event === 'ready') {
         setBookReady(true)
       }

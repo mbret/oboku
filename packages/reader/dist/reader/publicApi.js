@@ -93,16 +93,26 @@ export const createPublicApi = (reader) => {
                 numberOfSpineItems: context.manifest.readingOrder.length
             };
         },
-        normalizeEventPositions: (e) => {
+        getEventInformation: (e) => {
             var _a;
+            const { iframeEventBridgeElement, iframeEventBridgeElementLastContext } = reader.getIframeEventBridge();
             const pagination = reader.getPagination();
             const context = reader.getContext();
-            if (e.target !== reader.getIframeEventIntercept()) {
-                return e;
+            const normalizedEventPointerPositions = Object.assign(Object.assign({}, `clientX` in e && {
+                clientX: e.clientX,
+            }), `x` in e && {
+                x: e.x
+            });
+            if (e.target !== iframeEventBridgeElement) {
+                return { event: e, normalizedEventPointerPositions };
             }
             if (!context || !pagination)
-                return e;
-            return Object.assign({}, normalizeEventPositions(context, pagination, e, (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.getFocusedReadingItem()));
+                return { event: e, normalizedEventPointerPositions };
+            return {
+                event: e,
+                iframeOriginalEvent: iframeEventBridgeElementLastContext === null || iframeEventBridgeElementLastContext === void 0 ? void 0 : iframeEventBridgeElementLastContext.event,
+                normalizedEventPointerPositions: normalizeEventPositions(context, pagination, e, (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.getFocusedReadingItem())
+            };
         },
         isSelecting: () => { var _a; return (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.isSelecting(); },
         getSelection: () => { var _a; return (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.getSelection(); },

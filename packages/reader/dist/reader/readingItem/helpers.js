@@ -3,25 +3,6 @@ import { getFirstVisibleNodeForViewport } from "../utils/dom";
 import { CFI, extractObokuMetadataFromCfi } from "../cfi";
 import { Subject } from "rxjs";
 import { Report } from "../../report";
-const pointerEvents = [
-    "pointercancel",
-    "pointerdown",
-    "pointerenter",
-    "pointerleave",
-    "pointermove",
-    "pointerout",
-    "pointerover",
-    "pointerup"
-];
-const mouseEvents = [
-    'mousedown',
-    'mouseup',
-    'mouseenter',
-    'mouseleave',
-    'mousemove',
-    'mouseout',
-    'mouseover',
-];
 export const createSharedHelpers = ({ item, context, containerElement, fetchResource }) => {
     const subject = new Subject();
     const element = createWrapperElement(containerElement, item);
@@ -31,24 +12,6 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
     const injectStyle = (readingItemFrame, cssText) => {
         readingItemFrame === null || readingItemFrame === void 0 ? void 0 : readingItemFrame.removeStyle('ur-css-link');
         readingItemFrame === null || readingItemFrame === void 0 ? void 0 : readingItemFrame.addStyle('ur-css-link', cssText);
-    };
-    const bridgeAllMouseEvents = (frame) => {
-        pointerEvents.forEach(event => {
-            var _a;
-            (_a = frame === null || frame === void 0 ? void 0 : frame.contentDocument) === null || _a === void 0 ? void 0 : _a.addEventListener(event, (e) => {
-                // @ts-ignore
-                document.getElementById(`BookViewIframeEventIntercept`).dispatchEvent(new PointerEvent(e.type, e));
-                // document.getElementById(`BookView`).dispatchEvent(new PointerEvent(e.type, e))
-            });
-        });
-        mouseEvents.forEach(event => {
-            var _a;
-            (_a = frame === null || frame === void 0 ? void 0 : frame.contentDocument) === null || _a === void 0 ? void 0 : _a.addEventListener(event, (e) => {
-                // @ts-ignore
-                document.getElementById(`BookViewIframeEventIntercept`).dispatchEvent(new MouseEvent(e.type, e));
-                // document.getElementById(`BookView`).dispatchEvent(new MouseEvent(e.type, e))
-            });
-        });
     };
     const adjustPositionOfElement = (edgeOffset) => {
         if (!edgeOffset)
@@ -174,7 +137,6 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
         createWrapperElement,
         createLoadingElement,
         injectStyle,
-        bridgeAllMouseEvents,
         getCfi,
         readingItemFrame,
         element,

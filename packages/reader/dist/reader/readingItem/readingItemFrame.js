@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { Subject } from "rxjs";
 import { Report } from "../../report";
+import { applyHooks } from "./iframe/hooks";
 export const createReadingItemFrame = (parent, item, context, { fetchResource }) => {
     const subject = new Subject();
     let isLoaded = false;
@@ -53,14 +54,13 @@ export const createReadingItemFrame = (parent, item, context, { fetchResource })
         },
         getViewportDimensions,
         getIsLoaded: () => isLoaded,
-        load: Report.measurePerformance(`ReadingItemFrame load`, Infinity, (onLoad) => __awaiter(void 0, void 0, void 0, function* () {
+        load: Report.measurePerformance(`ReadingItemFrame load`, Infinity, () => __awaiter(void 0, void 0, void 0, function* () {
             if (loading)
                 return;
             loading = true;
             const currentLoading = ++currentLoadingId;
             const isCancelled = () => !(loading && currentLoading === currentLoadingId);
             frameElement = yield createFrame(parent);
-            context.$.next({ event: 'iframe', data: frameElement });
             const t0 = performance.now();
             if (fetchResource === 'http') {
                 frameElement.src = src;
@@ -70,43 +70,18 @@ export const createReadingItemFrame = (parent, item, context, { fetchResource })
             }
             return new Promise((resolve) => __awaiter(void 0, void 0, void 0, function* () {
                 if (frameElement && !isCancelled()) {
-                    // frameElement.frameBorder = 'no'
                     frameElement.setAttribute('sandbox', 'allow-same-origin allow-scripts');
-                    // frameElement.scrolling = 'no'
-                    // frameElement.onerror = (e: any) => {
-                    //   Report.error(e)
-                    // }
                     frameElement.onload = (e) => {
                         var _a;
-                        // debugger
                         const t1 = performance.now();
                         Report.metric({ name: `ReadingItemFrame load:3`, duration: t1 - t0 });
-                        // const base = frameElement?.contentDocument?.createElement('base')
-                        // if (base) {
-                        //   base.href = `/epubs/empowered.epub/OEBPS/`
-                        //   frameElement?.contentDocument?.head.appendChild(base)
-                        // }
-                        // let hammer = new Hammer(frameElement?.contentWindow?.document.body)
-                        // hammer.get('pan').set({ direction: Hammer.DIRECTION_ALL })
-                        // hammer.get('pinch').set({ enable: true })
-                        // hammer.get('press').set({ time: 500 })
-                        // hammer?.on('panmove panstart panend', (ev: HammerInput) => {
-                        //   console.log(`onPanMove`, ev.velocityX, ev.isFinal, ev)
-                        // })
                         if (frameElement && !isCancelled()) {
                             frameElement.onload = null;
                             frameElement.setAttribute('role', 'main');
                             frameElement.setAttribute('tab-index', '0');
-                            onLoad(frameElement);
                             isLoaded = true;
-                            // frameElement.contentDocument?.addEventListener('click', (e) => {
-                            //   console.log(e, e.target instanceof HTMLAnchorElement)
-                            //   e.preventDefault()
-                            // })
-                            // Array.from(frameElement.contentDocument?.links || []).forEach(link => {
-                            //   link.addEventListener
-                            // })
-                            // console.warn(frameElement.contentDocument?.links)
+                            applyHooks(context, parent.ownerDocument, frameElement);
+                            subject.next({ event: 'domReady', data: frameElement });
                             (_a = frameElement.contentDocument) === null || _a === void 0 ? void 0 : _a.fonts.ready.then(() => {
                                 if (frameElement && !isCancelled()) {
                                     isReady = true;
@@ -116,8 +91,6 @@ export const createReadingItemFrame = (parent, item, context, { fetchResource })
                             resolve(true);
                         }
                     };
-                    // frameElement.uri
-                    // frameElement.srcdoc = await (await fetch(src)).text()
                 }
             }));
         })),

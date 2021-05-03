@@ -48,7 +48,6 @@ if (process.env.NODE_ENV !== 'development') {
 
   if (!isDebugEnabled()) {
     console.log = () => { }
-    console.error = () => { }
     console.warn = () => { }
   }
 } else {

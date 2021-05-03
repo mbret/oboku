@@ -109,14 +109,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
   const loadContent = async () => {
     if (!readingItemFrame || readingItemFrame.getIsLoaded()) return
 
-    // @todo handle timeout for iframe loading
-    await readingItemFrame.load(frame => {
-      fingerTracker.track(frame)
-      selectionTracker.track(frame)
-      helpers.bridgeAllMouseEvents(frame)
-
-      applySize()
-    })
+    await readingItemFrame.load()
   }
 
   const unloadContent = async () => {
@@ -130,6 +123,13 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
   }
 
   readingItemFrame$ = helpers.readingItemFrame.$.subscribe((data) => {
+    if (data.event === `domReady`) {
+      fingerTracker.track(data.data)
+      selectionTracker.track(data.data)
+
+      applySize()
+    }
+
     if (data.event === 'layout') {
       layout()
       helpers.$.next(data)

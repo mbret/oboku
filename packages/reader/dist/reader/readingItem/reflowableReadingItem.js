@@ -94,13 +94,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
     const loadContent = () => __awaiter(void 0, void 0, void 0, function* () {
         if (!readingItemFrame || readingItemFrame.getIsLoaded())
             return;
-        // @todo handle timeout for iframe loading
-        yield readingItemFrame.load(frame => {
-            fingerTracker.track(frame);
-            selectionTracker.track(frame);
-            helpers.bridgeAllMouseEvents(frame);
-            applySize();
-        });
+        yield readingItemFrame.load();
     });
     const unloadContent = () => __awaiter(void 0, void 0, void 0, function* () {
         if (!readingItemFrame)
@@ -111,6 +105,11 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
         }
     });
     readingItemFrame$ = helpers.readingItemFrame.$.subscribe((data) => {
+        if (data.event === `domReady`) {
+            fingerTracker.track(data.data);
+            selectionTracker.track(data.data);
+            applySize();
+        }
         if (data.event === 'layout') {
             layout();
             helpers.$.next(data);

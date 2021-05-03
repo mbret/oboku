@@ -1,6 +1,8 @@
 export const normalizeEventPositions = (context, pagination, e, readingItem) => {
     // debugger
-    return Object.assign(Object.assign(Object.assign(Object.assign({}, e), { x: 0 }), `clientX` in e && {
+    return Object.assign(Object.assign({ 
+        // ...e,
+        x: 0 }, `clientX` in e && {
         clientX: e.clientX,
     }), `x` in e && {
         x: translateFramePositionIntoPage(context, pagination, { x: e.x, y: e.y }, readingItem).x

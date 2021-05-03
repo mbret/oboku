@@ -11,7 +11,7 @@ export declare const createReadingItemFrame: (parent: HTMLElement, item: Manifes
         height: number;
     } | undefined;
     getIsLoaded: () => boolean;
-    load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+    load: () => Promise<unknown>;
     unload: () => void;
     /**
      * Upward layout is used when the parent wants to manipulate the iframe without triggering
@@ -29,6 +29,9 @@ export declare const createReadingItemFrame: (parent: HTMLElement, item: Manifes
     getReadingDirection: () => 'ltr' | 'rtl' | undefined;
     destroy: () => void;
     $: Subject<{
+        event: 'domReady';
+        data: HTMLIFrameElement;
+    } | {
         event: 'layout';
         data: {
             isFirstLayout: boolean;

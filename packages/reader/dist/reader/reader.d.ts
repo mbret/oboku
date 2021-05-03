@@ -1,4 +1,5 @@
 import { Subject } from "rxjs";
+import { ContextObservableEvents } from "./context";
 import { Manifest } from "./types";
 export declare const createReader: ({ containerElement }: {
     containerElement: HTMLElement;
@@ -69,7 +70,7 @@ export declare const createReader: ({ containerElement }: {
                     height: number;
                 } | undefined;
                 getIsLoaded: () => boolean;
-                load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+                load: () => Promise<unknown>;
                 unload: () => void;
                 staticLayout: (size: {
                     width: number;
@@ -81,6 +82,9 @@ export declare const createReader: ({ containerElement }: {
                 getReadingDirection: () => "ltr" | "rtl" | undefined;
                 destroy: () => void;
                 $: Subject<{
+                    event: "domReady";
+                    data: HTMLIFrameElement;
+                } | {
                     event: "layout";
                     data: {
                         isFirstLayout: boolean;
@@ -88,7 +92,6 @@ export declare const createReader: ({ containerElement }: {
                     };
                 }>;
             }, cssText: string) => void;
-            bridgeAllMouseEvents: (frame: HTMLIFrameElement) => void;
             getCfi: (pageIndex: number) => string;
             readingItemFrame: {
                 getIsReady(): boolean;
@@ -97,7 +100,7 @@ export declare const createReader: ({ containerElement }: {
                     height: number;
                 } | undefined;
                 getIsLoaded: () => boolean;
-                load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+                load: () => Promise<unknown>;
                 unload: () => void;
                 staticLayout: (size: {
                     width: number;
@@ -109,6 +112,9 @@ export declare const createReader: ({ containerElement }: {
                 getReadingDirection: () => "ltr" | "rtl" | undefined;
                 destroy: () => void;
                 $: Subject<{
+                    event: "domReady";
+                    data: HTMLIFrameElement;
+                } | {
                     event: "layout";
                     data: {
                         isFirstLayout: boolean;
@@ -187,10 +193,8 @@ export declare const createReader: ({ containerElement }: {
             width: number;
             height: number;
         };
-        $: Subject<{
-            event: "iframe";
-            data: HTMLIFrameElement;
-        }>;
+        $: import("rxjs").Observable<ContextObservableEvents>;
+        emit: (data: ContextObservableEvents) => void;
         manifest: Manifest;
     } | undefined;
     getPagination: () => {
@@ -257,7 +261,7 @@ export declare const createReader: ({ containerElement }: {
                     height: number;
                 } | undefined;
                 getIsLoaded: () => boolean;
-                load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+                load: () => Promise<unknown>;
                 unload: () => void;
                 staticLayout: (size: {
                     width: number;
@@ -269,6 +273,9 @@ export declare const createReader: ({ containerElement }: {
                 getReadingDirection: () => "ltr" | "rtl" | undefined;
                 destroy: () => void;
                 $: Subject<{
+                    event: "domReady";
+                    data: HTMLIFrameElement;
+                } | {
                     event: "layout";
                     data: {
                         isFirstLayout: boolean;
@@ -276,7 +283,6 @@ export declare const createReader: ({ containerElement }: {
                     };
                 }>;
             }, cssText: string) => void;
-            bridgeAllMouseEvents: (frame: HTMLIFrameElement) => void;
             getCfi: (pageIndex: number) => string;
             readingItemFrame: {
                 getIsReady(): boolean;
@@ -285,7 +291,7 @@ export declare const createReader: ({ containerElement }: {
                     height: number;
                 } | undefined;
                 getIsLoaded: () => boolean;
-                load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+                load: () => Promise<unknown>;
                 unload: () => void;
                 staticLayout: (size: {
                     width: number;
@@ -297,6 +303,9 @@ export declare const createReader: ({ containerElement }: {
                 getReadingDirection: () => "ltr" | "rtl" | undefined;
                 destroy: () => void;
                 $: Subject<{
+                    event: "domReady";
+                    data: HTMLIFrameElement;
+                } | {
                     event: "layout";
                     data: {
                         isFirstLayout: boolean;
@@ -399,7 +408,7 @@ export declare const createReader: ({ containerElement }: {
                     height: number;
                 } | undefined;
                 getIsLoaded: () => boolean;
-                load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+                load: () => Promise<unknown>;
                 unload: () => void;
                 staticLayout: (size: {
                     width: number;
@@ -411,6 +420,9 @@ export declare const createReader: ({ containerElement }: {
                 getReadingDirection: () => "ltr" | "rtl" | undefined;
                 destroy: () => void;
                 $: Subject<{
+                    event: "domReady";
+                    data: HTMLIFrameElement;
+                } | {
                     event: "layout";
                     data: {
                         isFirstLayout: boolean;
@@ -418,7 +430,6 @@ export declare const createReader: ({ containerElement }: {
                     };
                 }>;
             }, cssText: string) => void;
-            bridgeAllMouseEvents: (frame: HTMLIFrameElement) => void;
             getCfi: (pageIndex: number) => string;
             readingItemFrame: {
                 getIsReady(): boolean;
@@ -427,7 +438,7 @@ export declare const createReader: ({ containerElement }: {
                     height: number;
                 } | undefined;
                 getIsLoaded: () => boolean;
-                load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+                load: () => Promise<unknown>;
                 unload: () => void;
                 staticLayout: (size: {
                     width: number;
@@ -439,6 +450,9 @@ export declare const createReader: ({ containerElement }: {
                 getReadingDirection: () => "ltr" | "rtl" | undefined;
                 destroy: () => void;
                 $: Subject<{
+                    event: "domReady";
+                    data: HTMLIFrameElement;
+                } | {
                     event: "layout";
                     data: {
                         isFirstLayout: boolean;
@@ -489,13 +503,19 @@ export declare const createReader: ({ containerElement }: {
             event: "change";
         }>;
     } | undefined;
-    getIframeEventIntercept: () => HTMLDivElement;
+    getIframeEventBridge: () => {
+        iframeEventBridgeElement: HTMLDivElement;
+        iframeEventBridgeElementLastContext: {
+            event: Event;
+            iframeTarget: Event['target'];
+        } | undefined;
+    };
     layout: () => void;
     load: (manifest: Manifest, { fetchResource }?: {
         fetchResource?: "http" | ((item: Manifest['readingOrder'][number]) => Promise<string>) | undefined;
     }, spineIndexOrIdOrCfi?: string | number | undefined) => void;
     destroy: () => void;
-    $: import("rxjs").Observable<{
+    $: import("rxjs").Observable<ContextObservableEvents | {
         event: 'paginationChange';
     } | {
         event: 'iframe';

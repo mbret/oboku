@@ -10,7 +10,7 @@ export const normalizeEventPositions = (
 ) => {
   // debugger
   return {
-    ...e,
+    // ...e,
     x: 0,
     ...`clientX` in e && {
       clientX: e.clientX,

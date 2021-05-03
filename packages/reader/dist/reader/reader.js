@@ -1,5 +1,7 @@
 import { Subject } from "rxjs";
+import { tap } from "rxjs/operators";
 import { Report } from "../report";
+import { IFRAME_EVENT_BRIDGE_ELEMENT_ID } from "./constants";
 import { createContext as createBookContext } from "./context";
 import { createPagination } from "./pagination";
 import { createReadingOrderView } from "./readingOrderView";
@@ -8,10 +10,11 @@ export const createReader = ({ containerElement }) => {
     let context;
     let pagination;
     const element = createWrapperElement(containerElement);
-    const iframeEventIntercept = createIframeMouseInterceptorElement(containerElement);
+    const iframeEventBridgeElement = createIframeEventBridgeElement(containerElement);
+    let iframeEventBridgeElementLastContext = undefined;
     let readingOrderView;
     let paginationSubscription$;
-    element.appendChild(iframeEventIntercept);
+    element.appendChild(iframeEventBridgeElement);
     containerElement.appendChild(element);
     let context$;
     const layout = () => {
@@ -45,11 +48,32 @@ export const createReader = ({ containerElement }) => {
         }
         Report.log(`load`, { manifest, spineIndexOrIdOrCfi });
         context = createBookContext(manifest);
-        context$ = context.$.subscribe(data => {
-            if (data.event === 'iframe') {
-                subject.next(data);
+        context$ === null || context$ === void 0 ? void 0 : context$.unsubscribe();
+        context$ = context.$
+            .pipe(tap(event => {
+            if (event.event === 'iframeEvent') {
+                const frameWindow = event.data.frame.contentWindow;
+                if (!frameWindow)
+                    return;
+                // safe way to detect PointerEvent
+                if (`pointerId` in event.data.event) {
+                    const iframeEvent = event.data.event;
+                    const bridgeEvent = new PointerEvent(iframeEvent.type, iframeEvent);
+                    iframeEventBridgeElement.dispatchEvent(bridgeEvent);
+                    iframeEventBridgeElementLastContext = { event: iframeEvent, iframeTarget: iframeEvent.target };
+                }
+                else if (event.data.event instanceof frameWindow.MouseEvent) {
+                    const iframeEvent = event.data.event;
+                    const bridgeEvent = new MouseEvent(iframeEvent.type, iframeEvent);
+                    iframeEventBridgeElement.dispatchEvent(bridgeEvent);
+                    iframeEventBridgeElementLastContext = { event: bridgeEvent, iframeTarget: iframeEvent.target };
+                }
+                else {
+                    iframeEventBridgeElementLastContext = undefined;
+                }
             }
-        });
+        }))
+            .subscribe(subject);
         pagination = createPagination({ context });
         readingOrderView = createReadingOrderView({
             manifest: manifest,
@@ -88,13 +112,17 @@ export const createReader = ({ containerElement }) => {
         paginationSubscription$ === null || paginationSubscription$ === void 0 ? void 0 : paginationSubscription$.unsubscribe();
         context$ === null || context$ === void 0 ? void 0 : context$.unsubscribe();
         element.remove();
-        iframeEventIntercept.remove();
+        iframeEventBridgeElement.remove();
+        iframeEventBridgeElementLastContext = undefined;
     };
     const publicApi = {
         getReadingOrderView: () => readingOrderView,
         getContext: () => context,
         getPagination: () => pagination,
-        getIframeEventIntercept: () => iframeEventIntercept,
+        getIframeEventBridge: () => ({
+            iframeEventBridgeElement,
+            iframeEventBridgeElementLastContext,
+        }),
         layout,
         load,
         destroy,
@@ -109,14 +137,14 @@ const createWrapperElement = (containerElement) => {
     element.style.setProperty(`position`, `relative`);
     return element;
 };
-const createIframeMouseInterceptorElement = (containerElement) => {
-    const iframeEventIntercept = containerElement.ownerDocument.createElement('div');
-    iframeEventIntercept.id = `BookViewIframeEventIntercept`;
-    iframeEventIntercept.style.cssText = `
+const createIframeEventBridgeElement = (containerElement) => {
+    const iframeEventBridgeElement = containerElement.ownerDocument.createElement('div');
+    iframeEventBridgeElement.id = IFRAME_EVENT_BRIDGE_ELEMENT_ID;
+    iframeEventBridgeElement.style.cssText = `
     position: absolute;
     height: 100%;
     width: 100%;
   `;
-    return iframeEventIntercept;
+    return iframeEventBridgeElement;
 };
 //# sourceMappingURL=reader.js.map

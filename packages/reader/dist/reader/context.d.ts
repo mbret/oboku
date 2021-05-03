@@ -1,6 +1,15 @@
-import { Subject } from "rxjs";
 import { Manifest } from "./types";
 export declare type Context = ReturnType<typeof createContext>;
+export declare type ContextObservableEvents = {
+    event: 'linkClicked';
+    data: HTMLAnchorElement;
+} | {
+    event: 'iframeEvent';
+    data: {
+        frame: HTMLIFrameElement;
+        event: PointerEvent | MouseEvent;
+    };
+};
 export declare const createContext: (manifest: Manifest) => {
     isRTL: () => boolean;
     getCalculatedInnerMargin: () => number;
@@ -17,9 +26,7 @@ export declare const createContext: (manifest: Manifest) => {
         width: number;
         height: number;
     };
-    $: Subject<{
-        event: 'iframe';
-        data: HTMLIFrameElement;
-    }>;
+    $: import("rxjs").Observable<ContextObservableEvents>;
+    emit: (data: ContextObservableEvents) => void;
     manifest: Manifest;
 };

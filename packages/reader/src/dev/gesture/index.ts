@@ -34,14 +34,21 @@ export const createGestureHandler = (container: HTMLElement, reader: Reader) => 
     const width = window.innerWidth
     const height = window.innerHeight
     const pageTurnMargin = 0.15
-    const normalizedEvent = reader.normalizeEventPositions(srcEvent)
+    const { normalizedEventPointerPositions, iframeOriginalEvent } = reader.getEventInformation(srcEvent)
 
-    console.log('handleSingleTap', srcEvent.target, srcEvent)
+    console.log('handleSingleTap', srcEvent.target, srcEvent, iframeOriginalEvent)
 
     if (reader.getSelection()) return
 
-    if (`x` in normalizedEvent) {
-      const { x } = normalizedEvent
+    if (iframeOriginalEvent?.target && `target` in iframeOriginalEvent.target) {
+      const target = iframeOriginalEvent.target as HTMLElement
+
+      // don't do anything if it was clicked on link
+      if (target.nodeName === `a`) return
+    }
+
+    if (`x` in normalizedEventPointerPositions) {
+      const { x = 0 } = normalizedEventPointerPositions
       // debugger
       console.log(`handleSingleTap`, x, width, width * pageTurnMargin, width * (1 - pageTurnMargin))
 

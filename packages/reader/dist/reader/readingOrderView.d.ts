@@ -77,7 +77,7 @@ export declare const createReadingOrderView: ({ manifest, containerElement, cont
                 height: number;
             } | undefined;
             getIsLoaded: () => boolean;
-            load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+            load: () => Promise<unknown>;
             unload: () => void;
             staticLayout: (size: {
                 width: number;
@@ -89,6 +89,9 @@ export declare const createReadingOrderView: ({ manifest, containerElement, cont
             getReadingDirection: () => "ltr" | "rtl" | undefined;
             destroy: () => void;
             $: Subject<{
+                event: "domReady";
+                data: HTMLIFrameElement;
+            } | {
                 event: "layout";
                 data: {
                     isFirstLayout: boolean;
@@ -96,7 +99,6 @@ export declare const createReadingOrderView: ({ manifest, containerElement, cont
                 };
             }>;
         }, cssText: string) => void;
-        bridgeAllMouseEvents: (frame: HTMLIFrameElement) => void;
         getCfi: (pageIndex: number) => string;
         readingItemFrame: {
             getIsReady(): boolean;
@@ -105,7 +107,7 @@ export declare const createReadingOrderView: ({ manifest, containerElement, cont
                 height: number;
             } | undefined;
             getIsLoaded: () => boolean;
-            load: (onLoad: (frame: HTMLIFrameElement) => void) => Promise<unknown>;
+            load: () => Promise<unknown>;
             unload: () => void;
             staticLayout: (size: {
                 width: number;
@@ -117,6 +119,9 @@ export declare const createReadingOrderView: ({ manifest, containerElement, cont
             getReadingDirection: () => "ltr" | "rtl" | undefined;
             destroy: () => void;
             $: Subject<{
+                event: "domReady";
+                data: HTMLIFrameElement;
+            } | {
                 event: "layout";
                 data: {
                     isFirstLayout: boolean;

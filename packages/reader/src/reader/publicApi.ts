@@ -11,7 +11,7 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
     }
   }
 
-  const goToPreviousSpineItem =() => {
+  const goToPreviousSpineItem = () => {
     const currentSpineIndex = reader.getReadingOrderView()?.getSpineItemIndex() || 0
     if (currentSpineIndex > 0) {
       reader.getReadingOrderView()?.goTo(currentSpineIndex - 1)
@@ -56,7 +56,7 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
       const readingOrderView = reader.getReadingOrderView()
       const context = reader.getContext()
       if (!readingOrderView || !pagination || !context) return undefined
-  
+
       return {
         begin: {
           // chapterIndex: number;
@@ -91,17 +91,28 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
         numberOfSpineItems: context.manifest.readingOrder.length
       }
     },
-    normalizeEventPositions: (e: PointerEvent | MouseEvent | TouchEvent) => {
+    getEventInformation: (e: PointerEvent | MouseEvent | TouchEvent) => {
+      const { iframeEventBridgeElement, iframeEventBridgeElementLastContext } = reader.getIframeEventBridge()
       const pagination = reader.getPagination()
       const context = reader.getContext()
-      if (e.target !== reader.getIframeEventIntercept()) {
-        return e
+      const normalizedEventPointerPositions = {
+        ...`clientX` in e && {
+          clientX: e.clientX,
+        },
+        ...`x` in e && {
+          x: e.x
+        }
       }
-  
-      if (!context || !pagination) return e
-  
+      if (e.target !== iframeEventBridgeElement) {
+        return { event: e, normalizedEventPointerPositions }
+      }
+
+      if (!context || !pagination) return { event: e, normalizedEventPointerPositions }
+
       return {
-        ...normalizeEventPositions(context, pagination, e, reader.getReadingOrderView()?.getFocusedReadingItem())
+        event: e,
+        iframeOriginalEvent: iframeEventBridgeElementLastContext?.event,
+        normalizedEventPointerPositions: normalizeEventPositions(context, pagination, e, reader.getReadingOrderView()?.getFocusedReadingItem())
       }
     },
     isSelecting: () => reader.getReadingOrderView()?.isSelecting(),
