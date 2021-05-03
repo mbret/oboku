@@ -13,11 +13,12 @@ export const useGestureHandler = (reader: Reader | undefined, hammer: HammerMana
     const onTap = ({ srcEvent }: HammerInput) => {
       const { normalizedEventPointerPositions, iframeOriginalEvent } = reader?.getEventInformation(srcEvent) || {}
 
-      if (iframeOriginalEvent?.target && `target` in iframeOriginalEvent.target) {
+      if (iframeOriginalEvent?.target) {
         const target = iframeOriginalEvent.target as HTMLElement
   
         // don't do anything if it was clicked on link
-        if (target.nodeName === `a`) return
+        // could also be a <span> inside a <a>, etc
+        if (target.nodeName === `a` || target.closest('a')) return
       }
 
       if (normalizedEventPointerPositions && `x` in normalizedEventPointerPositions) {

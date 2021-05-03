@@ -33,11 +33,9 @@ const hookAnchorLinks = (context: Context, frameDocument: Document) => {
   Array.from(frameDocument.querySelectorAll('a')).forEach(element => element.addEventListener('click', (e) => {
     if (e.target && `style` in e.target && `ELEMENT_NODE` in e.target) {
       const element = e.target as HTMLElement
-      if (element.nodeName === `a`) {
-        Report.warn(`prevented click on`, element)
-        context.emit({ event: `linkClicked`, data: element as HTMLAnchorElement })
-        e.preventDefault()
-      }
+      Report.warn(`prevented click on`, element)
+      context.emit({ event: `linkClicked`, data: element as HTMLAnchorElement })
+      e.preventDefault()
     }
   }))
 }
