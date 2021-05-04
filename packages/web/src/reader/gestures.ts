@@ -10,12 +10,14 @@ export const useGestureHandler = (reader: Reader | undefined, hammer: HammerMana
   const setIsMenuShown = useSetRecoilState(states.isMenuShownState)
 
   useEffect(() => {
-    const onTap = ({ srcEvent }: HammerInput) => {
-      const { normalizedEventPointerPositions, iframeOriginalEvent } = reader?.getEventInformation(srcEvent) || {}
+    const onTap = ({ srcEvent, center }: HammerInput) => {
+      const { normalizedEventPointerPositions, iframeOriginalEvent } = reader?.getEventInformation(srcEvent) || {
+        normalizedEventPointerPositions: { x: center.x }
+      }
 
       if (iframeOriginalEvent?.target) {
         const target = iframeOriginalEvent.target as HTMLElement
-  
+
         // don't do anything if it was clicked on link
         // could also be a <span> inside a <a>, etc
         if (target.nodeName === `a` || target.closest('a')) return
@@ -24,7 +26,9 @@ export const useGestureHandler = (reader: Reader | undefined, hammer: HammerMana
       if (normalizedEventPointerPositions && `x` in normalizedEventPointerPositions) {
         const { x = 0 } = normalizedEventPointerPositions
 
-        if (x < width * HORIZONTAL_TAPPING_RATIO) {
+        if (!reader) {
+          setIsMenuShown(val => !val)
+        } else if (x < width * HORIZONTAL_TAPPING_RATIO) {
           reader?.turnLeft()
         } else if (x > width * (1 - HORIZONTAL_TAPPING_RATIO)) {
           reader?.turnRight()
