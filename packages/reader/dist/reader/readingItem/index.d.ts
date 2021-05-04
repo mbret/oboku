@@ -1,15 +1,12 @@
 import { Context } from "../context";
 import { Manifest } from "../types";
 export declare type ReadingItem = ReturnType<typeof createReadingItem>;
-export declare const createReadingItem: ({ item, context, containerElement, fetchResource }: {
+export declare const createReadingItem: ({ item, context, containerElement }: {
     item: Manifest['readingOrder'][number];
     containerElement: HTMLElement;
     context: Context;
-    fetchResource: "http" | ((item: Manifest['readingOrder'][number]) => Promise<string>);
 }) => {
     getBoundingClientRect: () => DOMRect;
-    loadContent: () => Promise<void>;
-    unloadContent: () => Promise<void>;
     layout: () => {
         width: number;
         height: number;
@@ -90,6 +87,8 @@ export declare const createReadingItem: ({ item, context, containerElement, fetc
         }>;
     }, cssText: string) => void;
     getCfi: (pageIndex: number) => string;
+    loadContent: () => void;
+    unloadContent: () => Promise<void>;
     readingItemFrame: {
         getIsReady(): boolean;
         getViewportDimensions: () => {
@@ -155,8 +154,6 @@ export declare const createReadingItem: ({ item, context, containerElement, fetc
     };
 } | {
     getBoundingClientRect: () => DOMRect;
-    loadContent: () => Promise<void>;
-    unloadContent: () => Promise<void>;
     layout: () => {
         width: number;
         height: number;
@@ -237,6 +234,8 @@ export declare const createReadingItem: ({ item, context, containerElement, fetc
         }>;
     }, cssText: string) => void;
     getCfi: (pageIndex: number) => string;
+    loadContent: () => void;
+    unloadContent: () => Promise<void>;
     readingItemFrame: {
         getIsReady(): boolean;
         getViewportDimensions: () => {

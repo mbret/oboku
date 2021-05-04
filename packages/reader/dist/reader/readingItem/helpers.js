@@ -1,13 +1,22 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { createReadingItemFrame } from "./readingItemFrame";
 import { getFirstVisibleNodeForViewport } from "../utils/dom";
 import { CFI, extractObokuMetadataFromCfi } from "../cfi";
 import { Subject } from "rxjs";
 import { Report } from "../../report";
-export const createSharedHelpers = ({ item, context, containerElement, fetchResource }) => {
+export const createSharedHelpers = ({ item, context, containerElement }) => {
     const subject = new Subject();
     const element = createWrapperElement(containerElement, item);
     const loadingElement = createLoadingElement(containerElement, item);
-    const readingItemFrame = createReadingItemFrame(element, item, context, { fetchResource });
+    const readingItemFrame = createReadingItemFrame(element, item, context);
     let readingItemFrame$;
     const injectStyle = (readingItemFrame, cssText) => {
         readingItemFrame === null || readingItemFrame === void 0 ? void 0 : readingItemFrame.removeStyle('ur-css-link');
@@ -122,6 +131,15 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
         }
     });
     const getFrameLayoutInformation = () => { var _a; return (_a = readingItemFrame.getFrameElement()) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect(); };
+    const loadContent = () => {
+        readingItemFrame.load().catch(Report.error);
+    };
+    const unloadContent = () => __awaiter(void 0, void 0, void 0, function* () {
+        readingItemFrame.unload();
+        if (loadingElement) {
+            loadingElement.style.opacity = `1`;
+        }
+    });
     return {
         /**
          * @todo load iframe content later so that resources are less intensives.
@@ -138,6 +156,8 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
         createLoadingElement,
         injectStyle,
         getCfi,
+        loadContent,
+        unloadContent,
         readingItemFrame,
         element,
         loadingElement,

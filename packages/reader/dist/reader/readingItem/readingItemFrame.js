@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { Subject } from "rxjs";
 import { Report } from "../../report";
 import { applyHooks } from "./iframe/hooks";
-export const createReadingItemFrame = (parent, item, context, { fetchResource }) => {
+export const createReadingItemFrame = (parent, item, context) => {
     const subject = new Subject();
     let isLoaded = false;
     let currentLoadingId = 0;
@@ -62,7 +62,8 @@ export const createReadingItemFrame = (parent, item, context, { fetchResource })
             const isCancelled = () => !(loading && currentLoading === currentLoadingId);
             frameElement = yield createFrame(parent);
             const t0 = performance.now();
-            if (fetchResource === 'http') {
+            const fetchResource = context.getLoadOptions().fetchResource;
+            if (!fetchResource || fetchResource === 'http') {
                 frameElement.src = src;
             }
             else {

@@ -1,16 +1,7 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { createSharedHelpers } from "./helpers";
 import { createFingerTracker, createSelectionTracker } from "./trackers";
-export const createReflowableReadingItem = ({ item, context, containerElement, fetchResource }) => {
-    const helpers = createSharedHelpers({ context, item, containerElement, fetchResource });
+export const createReflowableReadingItem = ({ item, context, containerElement }) => {
+    const helpers = createSharedHelpers({ context, item, containerElement });
     let element = helpers.element;
     let loadingElement = helpers.loadingElement;
     let readingItemFrame = helpers.readingItemFrame;
@@ -91,19 +82,6 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
             x: element === null || element === void 0 ? void 0 : element.getBoundingClientRect().x
         };
     };
-    const loadContent = () => __awaiter(void 0, void 0, void 0, function* () {
-        if (!readingItemFrame || readingItemFrame.getIsLoaded())
-            return;
-        yield readingItemFrame.load();
-    });
-    const unloadContent = () => __awaiter(void 0, void 0, void 0, function* () {
-        if (!readingItemFrame)
-            return;
-        readingItemFrame.unload();
-        if (loadingElement) {
-            loadingElement.style.opacity = `1`;
-        }
-    });
     readingItemFrame$ = helpers.readingItemFrame.$.subscribe((data) => {
         if (data.event === `domReady`) {
             fingerTracker.track(data.data);
@@ -115,9 +93,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
             helpers.$.next(data);
         }
     });
-    return Object.assign(Object.assign({}, helpers), { getBoundingClientRect: () => element === null || element === void 0 ? void 0 : element.getBoundingClientRect(), loadContent,
-        unloadContent,
-        layout,
+    return Object.assign(Object.assign({}, helpers), { getBoundingClientRect: () => element === null || element === void 0 ? void 0 : element.getBoundingClientRect(), layout,
         fingerTracker,
         selectionTracker, destroy: () => {
             helpers.destroy();

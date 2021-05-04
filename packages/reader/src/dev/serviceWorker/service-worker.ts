@@ -34,7 +34,7 @@ const URL_PREFIX = `reader`
 worker.addEventListener('fetch', (event: any) => {
   const url = new URL(event.request.url)
 
-  console.log(`HANDLE`, url, url.pathname.startsWith(`/${URL_PREFIX}/`))
+  // console.log(`HANDLE`, url, url.pathname.startsWith(`/${URL_PREFIX}/`))
 
   if (url.pathname.startsWith(`/${URL_PREFIX}`)) {
 

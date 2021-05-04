@@ -8,15 +8,7 @@ export declare const ObokuReader: ({ manifest, onReady, onReader, loadOptions, o
     onReady?: (() => void) | undefined;
     onReader?: ((reader: ReturnType<typeof createReader>) => void) | undefined;
     onPaginationChange?: ((pagination: Pagination) => void) | undefined;
-    loadOptions?: ({
-        fetchResource?: "http" | ((item: {
-            id: string;
-            href: string;
-            path: string;
-            renditionLayout: "reflowable" | "pre-paginated";
-            progressionWeight: number;
-        }) => Promise<string>) | undefined;
-    } & {
+    loadOptions?: (import("../reader/types").LoadOptions & {
         spineIndexOrIdOrCfi?: string | number | undefined;
     }) | undefined;
 }) => JSX.Element;

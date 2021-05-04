@@ -39,7 +39,7 @@ export const createReader = ({ containerElement }) => {
         context === null || context === void 0 ? void 0 : context.setVisibleAreaRect(elementRect.x, elementRect.y, containerElementEvenWidth, dimensions.height);
         readingOrderView === null || readingOrderView === void 0 ? void 0 : readingOrderView.layout();
     };
-    const load = (manifest, { fetchResource = 'http' } = {
+    const load = (manifest, loadOptions = {
         fetchResource: `http`
     }, spineIndexOrIdOrCfi) => {
         if (context) {
@@ -47,7 +47,7 @@ export const createReader = ({ containerElement }) => {
             return;
         }
         Report.log(`load`, { manifest, spineIndexOrIdOrCfi });
-        context = createBookContext(manifest);
+        context = createBookContext(manifest, loadOptions);
         context$ === null || context$ === void 0 ? void 0 : context$.unsubscribe();
         context$ = context.$
             .pipe(tap(event => {
@@ -80,7 +80,6 @@ export const createReader = ({ containerElement }) => {
             containerElement: element,
             context,
             pagination,
-            options: { fetchResource }
         });
         readingOrderView.load();
         // @todo support navigating through specific reading item & position

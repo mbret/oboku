@@ -9,7 +9,7 @@ export const readerFetchListener = (event: FetchEvent) => {
 
   if (url.pathname.startsWith(`/${STREAMER_URL_PREFIX}`)) {
 
-    console.log(`HANDLE`, event.request.url, url.pathname.startsWith(`/${STREAMER_URL_PREFIX}/`))
+    // console.log(`HANDLE`, event.request.url, url.pathname.startsWith(`/${STREAMER_URL_PREFIX}/`))
 
     const { epubFileName } = extractInfoFromEvent(event)
 

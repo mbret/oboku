@@ -9,5 +9,5 @@ export declare const getArchiveOpfInfo: (archive: Archive) => {
         size: number;
         encodingFormat?: "text/plain" | undefined;
     } | undefined;
-    basePath: string | undefined;
+    basePath: string;
 };

@@ -6,16 +6,15 @@ import { CFI, extractObokuMetadataFromCfi } from "../cfi"
 import { Subject, Subscription } from "rxjs"
 import { Report } from "../../report"
 
-export const createSharedHelpers = ({ item, context, containerElement, fetchResource }: {
+export const createSharedHelpers = ({ item, context, containerElement }: {
   item: Manifest['readingOrder'][number],
   containerElement: HTMLElement,
   context: Context,
-  fetchResource: `http` | ((item: Manifest['readingOrder'][number]) => Promise<string>)
 }) => {
   const subject = new Subject<{ event: 'selectionchange' | 'selectstart', data: Selection } | { event: 'layout', data: { isFirstLayout: boolean, isReady: boolean } }>()
   const element = createWrapperElement(containerElement, item)
   const loadingElement = createLoadingElement(containerElement, item)
-  const readingItemFrame = createReadingItemFrame(element, item, context, { fetchResource })
+  const readingItemFrame = createReadingItemFrame(element, item, context)
   let readingItemFrame$: Subscription | undefined
 
   const injectStyle = (readingItemFrame: ReadingItemFrame, cssText: string) => {
@@ -157,6 +156,18 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
 
   const getFrameLayoutInformation = () => readingItemFrame.getFrameElement()?.getBoundingClientRect()
 
+  const loadContent = () => {
+    readingItemFrame.load().catch(Report.error)
+  }
+
+  const unloadContent = async () => {
+    readingItemFrame.unload()
+
+    if (loadingElement) {
+      loadingElement.style.opacity = `1`
+    }
+  }
+
   return {
     /**
      * @todo load iframe content later so that resources are less intensives.
@@ -173,6 +184,8 @@ export const createSharedHelpers = ({ item, context, containerElement, fetchReso
     createLoadingElement,
     injectStyle,
     getCfi,
+    loadContent,
+    unloadContent,
     readingItemFrame,
     element,
     loadingElement,

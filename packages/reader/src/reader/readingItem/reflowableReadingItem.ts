@@ -4,13 +4,12 @@ import { Manifest } from "../types"
 import { createSharedHelpers } from "./helpers"
 import { createFingerTracker, createSelectionTracker } from "./trackers"
 
-export const createReflowableReadingItem = ({ item, context, containerElement, fetchResource }: {
+export const createReflowableReadingItem = ({ item, context, containerElement }: {
   item: Manifest['readingOrder'][number],
   containerElement: HTMLElement,
   context: Context,
-  fetchResource: `http` | ((item: Manifest['readingOrder'][number]) =>Promise<string>)
 }) => {
-  const helpers = createSharedHelpers({ context, item, containerElement, fetchResource })
+  const helpers = createSharedHelpers({ context, item, containerElement })
   let element = helpers.element
   let loadingElement = helpers.loadingElement
   let readingItemFrame = helpers.readingItemFrame
@@ -106,22 +105,6 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
     }
   }
 
-  const loadContent = async () => {
-    if (!readingItemFrame || readingItemFrame.getIsLoaded()) return
-
-    await readingItemFrame.load()
-  }
-
-  const unloadContent = async () => {
-    if (!readingItemFrame) return
-
-    readingItemFrame.unload()
-
-    if (loadingElement) {
-      loadingElement.style.opacity = `1`
-    }
-  }
-
   readingItemFrame$ = helpers.readingItemFrame.$.subscribe((data) => {
     if (data.event === `domReady`) {
       fingerTracker.track(data.data)
@@ -139,8 +122,6 @@ export const createReflowableReadingItem = ({ item, context, containerElement, f
   return {
     ...helpers,
     getBoundingClientRect: () => element?.getBoundingClientRect(),
-    loadContent,
-    unloadContent,
     layout,
     fingerTracker,
     selectionTracker,

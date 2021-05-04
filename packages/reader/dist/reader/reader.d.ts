@@ -1,6 +1,6 @@
 import { Subject } from "rxjs";
 import { ContextObservableEvents } from "./context";
-import { Manifest } from "./types";
+import { LoadOptions, Manifest } from "./types";
 export declare const createReader: ({ containerElement }: {
     containerElement: HTMLElement;
 }) => {
@@ -11,8 +11,6 @@ export declare const createReader: ({ containerElement }: {
         layout: () => void;
         getFocusedReadingItem: () => {
             getBoundingClientRect: () => DOMRect;
-            loadContent: () => Promise<void>;
-            unloadContent: () => Promise<void>;
             layout: () => {
                 width: number;
                 height: number;
@@ -93,6 +91,8 @@ export declare const createReader: ({ containerElement }: {
                 }>;
             }, cssText: string) => void;
             getCfi: (pageIndex: number) => string;
+            loadContent: () => void;
+            unloadContent: () => Promise<void>;
             readingItemFrame: {
                 getIsReady(): boolean;
                 getViewportDimensions: () => {
@@ -179,6 +179,7 @@ export declare const createReader: ({ containerElement }: {
     } | undefined;
     getContext: () => {
         isRTL: () => boolean;
+        getLoadOptions: () => LoadOptions;
         getCalculatedInnerMargin: () => number;
         getVisibleAreaRect: () => {
             width: number;
@@ -202,8 +203,6 @@ export declare const createReader: ({ containerElement }: {
         getNumberOfPages(): number;
         update: (readingItem: {
             getBoundingClientRect: () => DOMRect;
-            loadContent: () => Promise<void>;
-            unloadContent: () => Promise<void>;
             layout: () => {
                 width: number;
                 height: number;
@@ -284,6 +283,8 @@ export declare const createReader: ({ containerElement }: {
                 }>;
             }, cssText: string) => void;
             getCfi: (pageIndex: number) => string;
+            loadContent: () => void;
+            unloadContent: () => Promise<void>;
             readingItemFrame: {
                 getIsReady(): boolean;
                 getViewportDimensions: () => {
@@ -349,8 +350,6 @@ export declare const createReader: ({ containerElement }: {
             };
         } | {
             getBoundingClientRect: () => DOMRect;
-            loadContent: () => Promise<void>;
-            unloadContent: () => Promise<void>;
             layout: () => {
                 width: number;
                 height: number;
@@ -431,6 +430,8 @@ export declare const createReader: ({ containerElement }: {
                 }>;
             }, cssText: string) => void;
             getCfi: (pageIndex: number) => string;
+            loadContent: () => void;
+            unloadContent: () => Promise<void>;
             readingItemFrame: {
                 getIsReady(): boolean;
                 getViewportDimensions: () => {
@@ -511,9 +512,7 @@ export declare const createReader: ({ containerElement }: {
         } | undefined;
     };
     layout: () => void;
-    load: (manifest: Manifest, { fetchResource }?: {
-        fetchResource?: "http" | ((item: Manifest['readingOrder'][number]) => Promise<string>) | undefined;
-    }, spineIndexOrIdOrCfi?: string | number | undefined) => void;
+    load: (manifest: Manifest, loadOptions?: LoadOptions, spineIndexOrIdOrCfi?: string | number | undefined) => void;
     destroy: () => void;
     $: import("rxjs").Observable<ContextObservableEvents | {
         event: 'paginationChange';

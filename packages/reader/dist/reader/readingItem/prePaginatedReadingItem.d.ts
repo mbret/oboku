@@ -1,15 +1,12 @@
 import { Subject } from "rxjs";
 import { Context } from "../context";
 import { Manifest } from "../types";
-export declare const createPrePaginatedReadingItem: ({ item, context, containerElement, fetchResource }: {
+export declare const createPrePaginatedReadingItem: ({ item, context, containerElement }: {
     item: Manifest['readingOrder'][number];
     containerElement: HTMLElement;
     context: Context;
-    fetchResource: "http" | ((item: Manifest['readingOrder'][number]) => Promise<string>);
 }) => {
     getBoundingClientRect: () => DOMRect;
-    loadContent: () => Promise<void>;
-    unloadContent: () => Promise<void>;
     layout: () => {
         width: number;
         height: number;
@@ -20,10 +17,7 @@ export declare const createPrePaginatedReadingItem: ({ item, context, containerE
         getFingerPositionInIframe(): {
             x: number;
             y: number;
-        } | undefined; /**
-         * if there is no frame it means the content is not active yet
-         * we will just use page to resize
-         */
+        } | undefined;
         destroy: () => void;
         $: import("rxjs").Observable<{
             event: "fingermove";
@@ -93,6 +87,8 @@ export declare const createPrePaginatedReadingItem: ({ item, context, containerE
         }>;
     }, cssText: string) => void;
     getCfi: (pageIndex: number) => string;
+    loadContent: () => void;
+    unloadContent: () => Promise<void>;
     readingItemFrame: {
         getIsReady(): boolean;
         getViewportDimensions: () => {

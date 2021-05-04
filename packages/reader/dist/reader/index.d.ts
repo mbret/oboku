@@ -4,15 +4,7 @@ export declare const createReader: ({ containerElement }: {
     containerElement: HTMLElement;
 }) => {
     layout: () => void;
-    load: (manifest: import("@oboku/reader-streamer/dist/types").Manifest, { fetchResource }?: {
-        fetchResource?: "http" | ((item: {
-            id: string;
-            href: string;
-            path: string;
-            renditionLayout: "reflowable" | "pre-paginated";
-            progressionWeight: number;
-        }) => Promise<string>) | undefined;
-    }, spineIndexOrIdOrCfi?: string | number | undefined) => void;
+    load: (manifest: import("@oboku/reader-streamer/dist/types").Manifest, loadOptions?: import("./types").LoadOptions, spineIndexOrIdOrCfi?: string | number | undefined) => void;
     destroy: () => void;
     $: import("rxjs").Observable<import("./context").ContextObservableEvents | {
         event: "paginationChange";

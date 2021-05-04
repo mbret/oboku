@@ -16,6 +16,13 @@ export const PageInformation: FC<{
   const currentPageToDisplay = (currentPage) + 1
   const totalPagesToDisplay = useRecoilValue(totalPageState) || 1
 
+  const buildTitleChain = (subChapterInfo: NonNullable<typeof chapterInfo>): string => {
+    if (subChapterInfo?.subChapter) {
+      return `${subChapterInfo.title} / ${buildTitleChain(subChapterInfo.subChapter)}`
+    }
+    return subChapterInfo?.title || ''
+  }
+
   return (
     <div
       style={{
@@ -40,7 +47,7 @@ export const PageInformation: FC<{
           ) : (
             <div style={{ width: '100%', justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
               <Typography variant="body2" noWrap style={{ width: '90%', textAlign: 'center' }}>
-                {chapterInfo?.title}
+                {chapterInfo && buildTitleChain(chapterInfo)}
               </Typography>
               <div style={{ display: 'flex', marginTop: theme.spacing(1) }}>
                 <Typography variant="body2">

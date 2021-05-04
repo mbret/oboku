@@ -40,11 +40,11 @@ export const createGestureHandler = (container: HTMLElement, reader: Reader) => 
 
     if (reader.getSelection()) return
 
-    if (iframeOriginalEvent?.target && `target` in iframeOriginalEvent.target) {
+    if (iframeOriginalEvent?.target) {
       const target = iframeOriginalEvent.target as HTMLElement
 
       // don't do anything if it was clicked on link
-      if (target.nodeName === `a`) return
+      if (target.nodeName === `a` || target.closest('a')) return
     }
 
     if (`x` in normalizedEventPointerPositions) {

@@ -4,13 +4,12 @@ import { Manifest } from "../types"
 import { createSharedHelpers } from "./helpers"
 import { createFingerTracker, createSelectionTracker } from "./trackers"
 
-export const createPrePaginatedReadingItem = ({ item, context, containerElement, fetchResource }: {
+export const createPrePaginatedReadingItem = ({ item, context, containerElement }: {
   item: Manifest['readingOrder'][number],
   containerElement: HTMLElement,
   context: Context,
-  fetchResource: `http` | ((item: Manifest['readingOrder'][number]) =>Promise<string>)
 }) => {
-  const helpers = createSharedHelpers({ context, item, containerElement, fetchResource })
+  const helpers = createSharedHelpers({ context, item, containerElement })
   let element = helpers.element
   let loadingElement = helpers.loadingElement
   let readingItemFrame = helpers.readingItemFrame
@@ -96,22 +95,6 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement,
     }
   }
 
-  const loadContent = async () => {
-    if (!readingItemFrame || readingItemFrame.getIsLoaded()) return
-
-    await readingItemFrame.load()
-  }
-
-  const unloadContent = async () => {
-    if (!readingItemFrame) return
-
-    readingItemFrame.unload()
-
-    if (loadingElement) {
-      loadingElement.style.opacity = `1`
-    }
-  }
-
   helpers.readingItemFrame.$.subscribe((data) => {
     if (data.event === `domReady`) {
       fingerTracker.track(data.data)
@@ -129,8 +112,6 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement,
   return {
     ...helpers,
     getBoundingClientRect: () => element?.getBoundingClientRect(),
-    loadContent,
-    unloadContent,
     layout,
     fingerTracker,
     selectionTracker,

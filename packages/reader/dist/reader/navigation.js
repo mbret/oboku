@@ -3,18 +3,19 @@ export const buildChapterInfoFromReadingItem = (manifest, readingItem) => {
     return getChapterInfo(path, manifest.nav.toc);
 };
 const getChapterInfo = (path, tocItems) => {
-    return tocItems.reduce((acc, item) => {
-        const itemPathWithoutAnchor = item.path.substr(0, item.path.indexOf('#'));
-        if (path.endsWith(itemPathWithoutAnchor)) {
+    return tocItems.reduce((acc, tocItem) => {
+        const indexOfHash = tocItem.path.indexOf('#');
+        const tocItemPathWithoutAnchor = indexOfHash > 0 ? tocItem.path.substr(0, indexOfHash) : tocItem.path;
+        if (path.endsWith(tocItemPathWithoutAnchor)) {
             return {
-                title: item.title
+                title: tocItem.title
             };
         }
-        const subInfo = getChapterInfo(path, item.contents);
+        const subInfo = getChapterInfo(path, tocItem.contents);
         if (subInfo) {
             return {
                 subChapter: subInfo,
-                title: item.title
+                title: tocItem.title
             };
         }
         return acc;

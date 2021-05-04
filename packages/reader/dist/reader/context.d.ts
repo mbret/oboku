@@ -1,4 +1,4 @@
-import { Manifest } from "./types";
+import { LoadOptions, Manifest } from "./types";
 export declare type Context = ReturnType<typeof createContext>;
 export declare type ContextObservableEvents = {
     event: 'linkClicked';
@@ -10,8 +10,9 @@ export declare type ContextObservableEvents = {
         event: PointerEvent | MouseEvent;
     };
 };
-export declare const createContext: (manifest: Manifest) => {
+export declare const createContext: (manifest: Manifest, loadOptions: LoadOptions) => {
     isRTL: () => boolean;
+    getLoadOptions: () => LoadOptions;
     getCalculatedInnerMargin: () => number;
     getVisibleAreaRect: () => {
         width: number;

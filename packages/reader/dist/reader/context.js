@@ -1,5 +1,5 @@
 import { Subject } from "rxjs";
-export const createContext = (manifest) => {
+export const createContext = (manifest, loadOptions) => {
     const subject = new Subject();
     const visibleAreaRect = {
         width: 0,
@@ -15,7 +15,7 @@ export const createContext = (manifest) => {
     const shouldDisplaySpread = () => false;
     return {
         isRTL: () => manifest.readingDirection === 'rtl',
-        // isRTL: () => false,
+        getLoadOptions: () => loadOptions,
         getCalculatedInnerMargin: () => 0,
         getVisibleAreaRect: () => visibleAreaRect,
         setVisibleAreaRect: (x, y, width, height) => {

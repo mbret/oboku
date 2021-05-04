@@ -2,9 +2,7 @@ import { Subject } from "rxjs";
 import { Manifest } from "../../types";
 import { Context } from "../context";
 export declare type ReadingItemFrame = ReturnType<typeof createReadingItemFrame>;
-export declare const createReadingItemFrame: (parent: HTMLElement, item: Manifest['readingOrder'][number], context: Context, { fetchResource }: {
-    fetchResource: "http" | ((item: Manifest['readingOrder'][number]) => Promise<string>);
-}) => {
+export declare const createReadingItemFrame: (parent: HTMLElement, item: Manifest['readingOrder'][number], context: Context) => {
     getIsReady(): boolean;
     getViewportDimensions: () => {
         width: number;

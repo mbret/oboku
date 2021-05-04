@@ -22,21 +22,21 @@ export const createReadingItemManager = ({ context }) => {
         subject.next({ event: 'layout' });
     };
     const focus = (indexOrReadingItem) => {
-        var _a;
         const readingItemToFocus = typeof indexOrReadingItem === `number` ? get(indexOrReadingItem) : indexOrReadingItem;
         if (!readingItemToFocus)
             return;
-        const previousReadingItem = getFocusedReadingItem();
-        activeReadingItemIndex = orderedReadingItems.indexOf(readingItemToFocus);
+        const newActiveReadingItemIndex = orderedReadingItems.indexOf(readingItemToFocus);
+        activeReadingItemIndex = newActiveReadingItemIndex;
         Report.log(NAMESPACE, `focus item ${activeReadingItemIndex}`, readingItemToFocus);
         subject.next({ event: 'focus', data: readingItemToFocus });
-        if (readingItemToFocus !== previousReadingItem) {
-            previousReadingItem === null || previousReadingItem === void 0 ? void 0 : previousReadingItem.unloadContent().catch(Report.error);
-            layout();
-        }
-        // since layout triggers an event, things may have changed
-        (_a = getFocusedReadingItem()) === null || _a === void 0 ? void 0 : _a.loadContent().then(() => {
-            layout();
+        const numberOfAdjacentSpineItemToPreLoad = context.getLoadOptions().numberOfAdjacentSpineItemToPreLoad || 0;
+        orderedReadingItems.forEach((orderedReadingItem, index) => {
+            if (index < (newActiveReadingItemIndex - numberOfAdjacentSpineItemToPreLoad) || index > (newActiveReadingItemIndex + numberOfAdjacentSpineItemToPreLoad)) {
+                orderedReadingItem.unloadContent();
+            }
+            else {
+                orderedReadingItem.loadContent();
+            }
         });
     };
     const get = (indexOrId) => {

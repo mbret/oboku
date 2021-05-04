@@ -16,21 +16,21 @@ export const buildChapterInfoFromReadingItem = (manifest: Manifest, readingItem:
 }
 
 const getChapterInfo = (path: string, tocItems: Manifest['nav']['toc']): ChapterInfo | undefined => {
-
-  return tocItems.reduce((acc: ChapterInfo | undefined, item) => {
-    const itemPathWithoutAnchor = item.path.substr(0, item.path.indexOf('#'))
-    if (path.endsWith(itemPathWithoutAnchor)) {
+  return tocItems.reduce((acc: ChapterInfo | undefined, tocItem) => {
+    const indexOfHash = tocItem.path.indexOf('#')
+    const tocItemPathWithoutAnchor = indexOfHash > 0 ? tocItem.path.substr(0, indexOfHash) : tocItem.path
+    if (path.endsWith(tocItemPathWithoutAnchor)) {
       return {
-        title: item.title
+        title: tocItem.title
       }
     }
 
-    const subInfo = getChapterInfo(path, item.contents)
+    const subInfo = getChapterInfo(path, tocItem.contents)
 
     if (subInfo) {
       return {
         subChapter: subInfo,
-        title: item.title
+        title: tocItem.title
       }
     }
 

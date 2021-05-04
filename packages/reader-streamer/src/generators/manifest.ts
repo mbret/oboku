@@ -1,5 +1,5 @@
 import xmldoc from 'xmldoc'
-import { parseTocFromNavPath } from '../parsers/nav'
+import { parseToc } from '../parsers/nav'
 import { getArchiveOpfInfo } from '../archiveHelpers'
 import { Archive, Manifest } from '../types'
 import { extractKoboInformationFromArchive } from '../parsers/kobo'
@@ -20,18 +20,7 @@ export const generateManifestFromEpub = async (archive: Archive, baseUrl: string
 
   const opfXmlDoc = new xmldoc.XmlDocument(data)
 
-  // Try to detect if there is a nav item
-  const navItem = opfXmlDoc.childNamed('manifest')?.childrenNamed('item')
-    .find((child) => child.attr.properties === 'nav');
-
-  let toc = []
-
-  if (navItem) {
-    const tocFile = Object.values(archive.files).find(item => item.name.endsWith(navItem.attr.href || ''))
-    if (tocFile) {
-      toc = parseTocFromNavPath(await tocFile.string())
-    }
-  }
+  const toc = (await parseToc(opfXmlDoc, archive, opfBasePath)) || []
 
   const metadataElm = opfXmlDoc.childNamed('metadata')
   const manifestElm = opfXmlDoc.childNamed('manifest')

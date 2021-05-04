@@ -3,14 +3,11 @@ import { Context } from "./context";
 import { Pagination } from "./pagination";
 import { Manifest } from "./types";
 export declare type ReadingOrderView = ReturnType<typeof createReadingOrderView>;
-export declare const createReadingOrderView: ({ manifest, containerElement, context, pagination, options }: {
+export declare const createReadingOrderView: ({ manifest, containerElement, context, pagination }: {
     manifest: Manifest;
     containerElement: HTMLElement;
     context: Context;
     pagination: Pagination;
-    options: {
-        fetchResource: "http" | ((item: Manifest['readingOrder'][number]) => Promise<string>);
-    };
 }) => {
     goToNextSpineItem: () => void;
     goToPreviousSpineItem: () => void;
@@ -18,8 +15,6 @@ export declare const createReadingOrderView: ({ manifest, containerElement, cont
     layout: () => void;
     getFocusedReadingItem: () => {
         getBoundingClientRect: () => DOMRect;
-        loadContent: () => Promise<void>;
-        unloadContent: () => Promise<void>;
         layout: () => {
             width: number;
             height: number;
@@ -100,6 +95,8 @@ export declare const createReadingOrderView: ({ manifest, containerElement, cont
             }>;
         }, cssText: string) => void;
         getCfi: (pageIndex: number) => string;
+        loadContent: () => void;
+        unloadContent: () => Promise<void>;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {

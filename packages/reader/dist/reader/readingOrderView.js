@@ -15,7 +15,7 @@ import { buildChapterInfoFromReadingItem } from "./navigation";
 import { createNavigator } from "./navigator";
 import { createReadingItem } from "./readingItem";
 import { createReadingItemManager } from "./readingItemManager";
-export const createReadingOrderView = ({ manifest, containerElement, context, pagination, options }) => {
+export const createReadingOrderView = ({ manifest, containerElement, context, pagination }) => {
     const subject = new Subject();
     const doc = containerElement.ownerDocument;
     const readingItemManager = createReadingItemManager({ context });
@@ -34,7 +34,6 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
                 item: resource,
                 containerElement: element,
                 context,
-                fetchResource: options.fetchResource
             });
             readingItemManager.add(readingItem);
         }));

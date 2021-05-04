@@ -1,15 +1,7 @@
 import { createReader } from "./reader";
 export declare const createPublicApi: (reader: ReturnType<typeof createReader>) => {
     layout: () => void;
-    load: (manifest: import("@oboku/reader-streamer").Manifest, { fetchResource }?: {
-        fetchResource?: "http" | ((item: {
-            id: string;
-            href: string;
-            path: string;
-            renditionLayout: "reflowable" | "pre-paginated";
-            progressionWeight: number;
-        }) => Promise<string>) | undefined;
-    }, spineIndexOrIdOrCfi?: string | number | undefined) => void;
+    load: (manifest: import("@oboku/reader-streamer").Manifest, loadOptions?: import("./types").LoadOptions, spineIndexOrIdOrCfi?: string | number | undefined) => void;
     destroy: () => void;
     $: import("rxjs").Observable<import("./context").ContextObservableEvents | {
         event: "paginationChange";

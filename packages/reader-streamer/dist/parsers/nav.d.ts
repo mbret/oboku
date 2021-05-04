@@ -1,3 +1,3 @@
 import xmldoc from 'xmldoc';
-export declare const buildTOCFromNav: (doc: xmldoc.XmlDocument) => any[];
-export declare const parseTocFromNavPath: (data: string) => any[];
+import { Archive } from '../types';
+export declare const parseToc: (opfXmlDoc: xmldoc.XmlDocument, archive: Archive, opfBasePath: string) => Promise<any[] | undefined>;

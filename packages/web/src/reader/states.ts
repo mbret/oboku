@@ -51,9 +51,7 @@ export const chapterInfoState = selector({
   get: ({ get }) => {
     const { begin } = get(paginationState) || {}
 
-    return {
-      title: begin?.chapterInfo?.title
-    }
+    return begin?.chapterInfo
   }
 })
 

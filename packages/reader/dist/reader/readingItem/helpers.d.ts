@@ -2,11 +2,10 @@ import { Context } from "../context";
 import { ReadingItemFrame } from "./readingItemFrame";
 import { Manifest } from "../types";
 import { Subject } from "rxjs";
-export declare const createSharedHelpers: ({ item, context, containerElement, fetchResource }: {
+export declare const createSharedHelpers: ({ item, context, containerElement }: {
     item: Manifest['readingOrder'][number];
     containerElement: HTMLElement;
     context: Context;
-    fetchResource: "http" | ((item: Manifest['readingOrder'][number]) => Promise<string>);
 }) => {
     /**
      * @todo load iframe content later so that resources are less intensives.
@@ -20,6 +19,8 @@ export declare const createSharedHelpers: ({ item, context, containerElement, fe
     createLoadingElement: (containerElement: HTMLElement, item: Manifest['readingOrder'][number]) => HTMLDivElement;
     injectStyle: (readingItemFrame: ReadingItemFrame, cssText: string) => void;
     getCfi: (pageIndex: number) => string;
+    loadContent: () => void;
+    unloadContent: () => Promise<void>;
     readingItemFrame: {
         getIsReady(): boolean;
         getViewportDimensions: () => {

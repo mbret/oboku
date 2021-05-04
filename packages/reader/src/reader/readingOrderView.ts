@@ -12,14 +12,11 @@ import { Manifest } from "./types"
 
 export type ReadingOrderView = ReturnType<typeof createReadingOrderView>
 
-export const createReadingOrderView = ({ manifest, containerElement, context, pagination, options }: {
+export const createReadingOrderView = ({ manifest, containerElement, context, pagination }: {
   manifest: Manifest,
   containerElement: HTMLElement
   context: Context,
   pagination: Pagination,
-  options: {
-    fetchResource: `http` | ((item: Manifest['readingOrder'][number]) => Promise<string>)
-  }
 }) => {
   const subject = new Subject()
   const doc = containerElement.ownerDocument
@@ -41,7 +38,6 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
         item: resource,
         containerElement: element,
         context,
-        fetchResource: options.fetchResource
       })
       readingItemManager.add(readingItem)
     })

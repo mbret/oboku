@@ -8,8 +8,6 @@ export declare const createReadingItemManager: ({ context }: {
     add: (readingItem: ReadingItem) => void;
     get: (indexOrId: number | string) => {
         getBoundingClientRect: () => DOMRect;
-        loadContent: () => Promise<void>;
-        unloadContent: () => Promise<void>;
         layout: () => {
             width: number;
             height: number;
@@ -90,6 +88,8 @@ export declare const createReadingItemManager: ({ context }: {
             }>;
         }, cssText: string) => void;
         getCfi: (pageIndex: number) => string;
+        loadContent: () => void;
+        unloadContent: () => Promise<void>;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {
@@ -155,8 +155,6 @@ export declare const createReadingItemManager: ({ context }: {
         };
     } | {
         getBoundingClientRect: () => DOMRect;
-        loadContent: () => Promise<void>;
-        unloadContent: () => Promise<void>;
         layout: () => {
             width: number;
             height: number;
@@ -237,6 +235,8 @@ export declare const createReadingItemManager: ({ context }: {
             }>;
         }, cssText: string) => void;
         getCfi: (pageIndex: number) => string;
+        loadContent: () => void;
+        unloadContent: () => Promise<void>;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {
@@ -322,8 +322,6 @@ export declare const createReadingItemManager: ({ context }: {
     isOffsetOutsideOfFocusedItem: (offset: number) => boolean;
     getReadingItemAtOffset: (offset: number) => {
         getBoundingClientRect: () => DOMRect;
-        loadContent: () => Promise<void>;
-        unloadContent: () => Promise<void>;
         layout: () => {
             width: number;
             height: number;
@@ -404,6 +402,8 @@ export declare const createReadingItemManager: ({ context }: {
             }>;
         }, cssText: string) => void;
         getCfi: (pageIndex: number) => string;
+        loadContent: () => void;
+        unloadContent: () => Promise<void>;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {
@@ -470,8 +470,6 @@ export declare const createReadingItemManager: ({ context }: {
     } | undefined;
     getFocusedReadingItem: () => {
         getBoundingClientRect: () => DOMRect;
-        loadContent: () => Promise<void>;
-        unloadContent: () => Promise<void>;
         layout: () => {
             width: number;
             height: number;
@@ -552,6 +550,8 @@ export declare const createReadingItemManager: ({ context }: {
             }>;
         }, cssText: string) => void;
         getCfi: (pageIndex: number) => string;
+        loadContent: () => void;
+        unloadContent: () => Promise<void>;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {

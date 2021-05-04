@@ -1,11 +1,11 @@
 import { Subject } from "rxjs"
-import { Manifest } from "./types"
+import { LoadOptions, Manifest } from "./types"
 
 export type Context = ReturnType<typeof createContext>
 
 export type ContextObservableEvents = { event: 'linkClicked', data: HTMLAnchorElement } | { event: 'iframeEvent', data: { frame: HTMLIFrameElement, event: PointerEvent | MouseEvent } }
 
-export const createContext = (manifest: Manifest) => {
+export const createContext = (manifest: Manifest, loadOptions: LoadOptions) => {
   const subject = new Subject<ContextObservableEvents>()
   const visibleAreaRect = {
     width: 0,
@@ -23,7 +23,7 @@ export const createContext = (manifest: Manifest) => {
 
   return {
     isRTL: () => manifest.readingDirection === 'rtl',
-    // isRTL: () => false,
+    getLoadOptions: () => loadOptions,
     getCalculatedInnerMargin: () => 0,
     getVisibleAreaRect: () => visibleAreaRect,
     setVisibleAreaRect: (

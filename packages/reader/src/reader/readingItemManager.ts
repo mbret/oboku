@@ -39,25 +39,20 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
 
     if (!readingItemToFocus) return
 
-    const previousReadingItem = getFocusedReadingItem()
-    activeReadingItemIndex = orderedReadingItems.indexOf(readingItemToFocus)
+    const newActiveReadingItemIndex = orderedReadingItems.indexOf(readingItemToFocus)
+    activeReadingItemIndex = newActiveReadingItemIndex
 
     Report.log(NAMESPACE, `focus item ${activeReadingItemIndex}`, readingItemToFocus)
     subject.next({ event: 'focus', data: readingItemToFocus })
 
-    if (readingItemToFocus !== previousReadingItem) {
-      previousReadingItem
-        ?.unloadContent()
-        .catch(Report.error)
-      layout()
-    }
-
-    // since layout triggers an event, things may have changed
-    getFocusedReadingItem()
-      ?.loadContent()
-      .then(() => {
-        layout()
-      })
+    const numberOfAdjacentSpineItemToPreLoad = context.getLoadOptions().numberOfAdjacentSpineItemToPreLoad || 0
+    orderedReadingItems.forEach((orderedReadingItem, index) => {
+      if (index < (newActiveReadingItemIndex - numberOfAdjacentSpineItemToPreLoad) || index > (newActiveReadingItemIndex + numberOfAdjacentSpineItemToPreLoad)) {
+        orderedReadingItem.unloadContent()
+      } else {
+        orderedReadingItem.loadContent()
+      }
+    })
   }
 
   const get = (indexOrId: number | string) => {

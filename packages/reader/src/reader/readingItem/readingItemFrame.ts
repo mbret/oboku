@@ -10,9 +10,6 @@ export const createReadingItemFrame = (
   parent: HTMLElement,
   item: Manifest['readingOrder'][number],
   context: Context,
-  { fetchResource }: {
-    fetchResource: `http` | ((item: Manifest['readingOrder'][number]) => Promise<string>)
-  }
 ) => {
   const subject = new Subject<{ event: 'domReady', data: HTMLIFrameElement } | { event: 'layout', data: { isFirstLayout: boolean, isReady: boolean } }>()
   let isLoaded = false
@@ -70,7 +67,8 @@ export const createReadingItemFrame = (
 
       const t0 = performance.now();
 
-      if (fetchResource === 'http') {
+      const fetchResource = context.getLoadOptions().fetchResource
+      if (!fetchResource || fetchResource === 'http') {
         frameElement.src = src
       } else {
         frameElement.srcdoc = await fetchResource(item)

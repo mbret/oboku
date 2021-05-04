@@ -59,7 +59,8 @@ export const Reader = () => {
 
         console.warn('MANIFEST', {bookManifest, cfi: localStorage.getItem(`cfi`)})
         reader.load(bookManifest, {
-          fetchResource: 'http'
+          fetchResource: 'http',
+          numberOfAdjacentSpineItemToPreLoad: 1
         }, localStorage.getItem(`cfi`) || 0)
         // reader.load(bookManifest, `epubcfi(/0[oboku:id-id2629773])`)
         // reader.load(bookManifest, 3)

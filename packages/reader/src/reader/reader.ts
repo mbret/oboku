@@ -1,11 +1,11 @@
-import { merge, Subject, Subscription } from "rxjs";
+import { Subject, Subscription } from "rxjs";
 import { tap } from "rxjs/operators";
 import { Report } from "../report";
 import { IFRAME_EVENT_BRIDGE_ELEMENT_ID } from "./constants";
 import { Context, ContextObservableEvents, createContext as createBookContext } from "./context";
 import { createPagination } from "./pagination";
 import { createReadingOrderView, ReadingOrderView } from "./readingOrderView";
-import { Manifest } from "./types";
+import { LoadOptions, Manifest } from "./types";
 
 export const createReader = ({ containerElement }: {
   containerElement: HTMLElement
@@ -56,9 +56,7 @@ export const createReader = ({ containerElement }: {
 
   const load = (
     manifest: Manifest,
-    { fetchResource = 'http' }: {
-      fetchResource?: `http` | ((item: Manifest['readingOrder'][number]) => Promise<string>)
-    } = {
+    loadOptions: LoadOptions = {
         fetchResource: `http`
       },
     spineIndexOrIdOrCfi?: string | number
@@ -70,7 +68,7 @@ export const createReader = ({ containerElement }: {
 
     Report.log(`load`, { manifest, spineIndexOrIdOrCfi })
 
-    context = createBookContext(manifest)
+    context = createBookContext(manifest, loadOptions)
 
     context$?.unsubscribe()
     context$ = context.$
@@ -104,7 +102,6 @@ export const createReader = ({ containerElement }: {
       containerElement: element,
       context,
       pagination,
-      options: { fetchResource }
     })
 
     readingOrderView.load()
