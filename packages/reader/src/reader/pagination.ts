@@ -33,7 +33,6 @@ export const createPagination = ({ context }: { context: Context }) => {
       const pageWidth = context.getPageSize().width
       numberOfPages = getNumberOfPages(readingItemWidth, context.getPageSize().width)
       pageIndex = getPageFromOffset(offsetInReadingItem, pageWidth, numberOfPages)
-      // console.log(`Pagination`, `update with ${offsetInReadingItem}`, { readingItemWidth, pageIndex, numberOfPages })
       // isAtEndOfChapter = readingItem.isContentReady() && pageIndex === (numberOfPages - 1)
       // if (options.isAtEndOfChapter) {
       //   isAtEndOfChapter = options.isAtEndOfChapter
@@ -60,7 +59,7 @@ export const createPagination = ({ context }: { context: Context }) => {
   }
 }
 
-export const getReadingItemOffsetFromPageIndex = (pageWidth: number, pageIndex: number, itemWidth: number) => {
+export const getItemOffsetFromPageIndex = (pageWidth: number, pageIndex: number, itemWidth: number) => {
   const lastPageOffset = itemWidth - pageWidth
   const logicalOffset = (itemWidth * (pageIndex * pageWidth)) / itemWidth
 

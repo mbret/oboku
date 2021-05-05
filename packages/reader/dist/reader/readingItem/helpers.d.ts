@@ -57,6 +57,7 @@ export declare const createSharedHelpers: ({ item, context, containerElement }: 
         offset: number;
     } | undefined;
     getFrameLayoutInformation: () => DOMRect | undefined;
+    getBoundingRectOfElementFromSelector: (selector: string) => DOMRect | undefined;
     getViewPortInformation: () => {
         computedScale: number;
         viewportDimensions: {

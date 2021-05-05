@@ -15,6 +15,6 @@ export declare const createPagination: ({ context }: {
         event: 'change';
     }>;
 };
-export declare const getReadingItemOffsetFromPageIndex: (pageWidth: number, pageIndex: number, itemWidth: number) => number;
+export declare const getItemOffsetFromPageIndex: (pageWidth: number, pageIndex: number, itemWidth: number) => number;
 export declare const getNumberOfPages: (itemWidth: number, pageWidth: number) => number;
 export declare const getClosestValidOffsetFromApproximateOffsetInPages: (offset: number, pageWidth: number, itemWidth: number) => number;

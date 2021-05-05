@@ -23,7 +23,7 @@ const getChapterInfo = (path, tocItems) => {
 };
 export const getPercentageEstimate = (context, readingOrderView, pagination) => {
     var _a;
-    const currentSpineIndex = readingOrderView.getSpineItemIndex() || 0;
+    const currentSpineIndex = readingOrderView.readingItemManager.getFocusedReadingItemIndex() || 0;
     const numberOfPages = pagination.getNumberOfPages();
     const currentPageIndex = pagination.getPageIndex() || 0;
     const estimateBeforeThisItem = context.manifest.readingOrder
@@ -34,7 +34,6 @@ export const getPercentageEstimate = (context, readingOrderView, pagination) => 
     // const nextItemWeight = nextItem ? nextItem.progressionWeight : 1
     // const progressWeightGap = (currentItemWeight + estimateBeforeThisItem) - estimateBeforeThisItem
     const progressWithinThisItem = (currentPageIndex + 1) * (currentItemWeight / numberOfPages);
-    // console.log({currentPageIndex, progressWeightGap, nextItemWeight, estimateToThisItem: estimateBeforeThisItem}, pagination.getNumberOfPages())
     const totalProgress = estimateBeforeThisItem + progressWithinThisItem;
     // because the rounding of weight use a lot of decimals we will end up with
     // something like 0.999878 for the last page

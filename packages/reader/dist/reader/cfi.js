@@ -243,18 +243,16 @@ class CFI {
             o = calcSiblingCount(node.parentNode.childNodes, node, offset);
             if (!cfi && o.offset)
                 cfi = ':' + o.offset;
-            // console.log(node)
             // @ts-ignore
             cfi = '/' + o.count + ((node.id) ? '[' + cfiEscape(node.id) + ']' : '') + cfi;
             // debugger
-            // console.log(`generatePart`, node.parentNode, cfi)
             node = node.parentNode;
         }
         return cfi;
     }
     static generate(node, offset, extra) {
         var cfi;
-        if (node instanceof Array) {
+        if (Array.isArray(node)) {
             var strs = [];
             for (let o of node) {
                 strs.push(this.generatePart(o.node, o.offset, extra));

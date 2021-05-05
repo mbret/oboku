@@ -25,6 +25,17 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
     let selectionSubscription;
     let readingItemManagerSubscription;
     let focusedReadingItemSubscription;
+    const contextSubscription = context.$.subscribe(data => {
+        if (data.event === 'linkClicked') {
+            const hrefUrl = new URL(data.data.href);
+            const hrefWithoutAnchor = `${hrefUrl.origin}${hrefUrl.pathname}`;
+            // internal link, we can handle
+            const hasExistingSpineItem = context.manifest.readingOrder.some(item => item.href === hrefWithoutAnchor);
+            if (hasExistingSpineItem) {
+                navigator.goTo(hrefUrl);
+            }
+        }
+    });
     const layout = () => {
         readingItemManager.layout();
     };
@@ -83,8 +94,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
         Report.error(e);
         return EMPTY;
     })).subscribe();
-    const getFocusedReadingItem = () => readingItemManager.getFocusedReadingItem();
-    return Object.assign(Object.assign({}, navigator), { goToNextSpineItem: () => {
+    return Object.assign(Object.assign({}, navigator), { readingItemManager, goToNextSpineItem: () => {
             const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0;
             const numberOfSpineItems = (context === null || context === void 0 ? void 0 : context.manifest.readingOrder.length) || 1;
             if (currentSpineIndex < (numberOfSpineItems - 1)) {
@@ -97,18 +107,15 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
             }
         }, load,
         layout,
-        getFocusedReadingItem,
         getChapterInfo() {
             const item = readingItemManager.getFocusedReadingItem();
             return item && buildChapterInfoFromReadingItem(manifest, item);
-        },
-        getSpineItemIndex() {
-            return readingItemManager.getFocusedReadingItemIndex();
         }, destroy: () => {
             readingItemManager.destroy();
             readingItemManagerSubscription === null || readingItemManagerSubscription === void 0 ? void 0 : readingItemManagerSubscription.unsubscribe();
             selectionSubscription === null || selectionSubscription === void 0 ? void 0 : selectionSubscription.unsubscribe();
             focusedReadingItemSubscription === null || focusedReadingItemSubscription === void 0 ? void 0 : focusedReadingItemSubscription.unsubscribe();
+            contextSubscription.unsubscribe();
             element.remove();
         }, isSelecting: () => { var _a; return (_a = readingItemManager.getFocusedReadingItem()) === null || _a === void 0 ? void 0 : _a.selectionTracker.isSelecting(); }, getSelection: () => { var _a; return (_a = readingItemManager.getFocusedReadingItem()) === null || _a === void 0 ? void 0 : _a.selectionTracker.getSelection(); }, $: subject });
 };

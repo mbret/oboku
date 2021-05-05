@@ -116,11 +116,12 @@ function getFirstVisibleDOMRect(domRect, viewport) {
     });
 }
 export const getRangeFromNode = (node, offset) => {
+    var _a;
     if (node.nodeType !== Node.CDATA_SECTION_NODE && node.nodeType !== Node.DOCUMENT_TYPE_NODE) {
-        const range = document.createRange();
-        range.selectNodeContents(node);
+        const range = (_a = node.ownerDocument) === null || _a === void 0 ? void 0 : _a.createRange();
+        range === null || range === void 0 ? void 0 : range.selectNodeContents(node);
         try {
-            range.setStart(node, offset || 0);
+            range === null || range === void 0 ? void 0 : range.setStart(node, offset || 0);
         }
         catch (e) {
             Report.error(e);

@@ -5,6 +5,7 @@ export declare const createReflowableReadingItem: ({ item, context, containerEle
     containerElement: HTMLElement;
     context: Context;
 }) => {
+    unloadContent: () => void;
     getBoundingClientRect: () => DOMRect;
     layout: () => {
         width: number;
@@ -90,7 +91,6 @@ export declare const createReflowableReadingItem: ({ item, context, containerEle
     }, cssText: string) => void;
     getCfi: (pageIndex: number) => string;
     loadContent: () => void;
-    unloadContent: () => Promise<void>;
     readingItemFrame: {
         getIsReady(): boolean;
         getViewportDimensions: () => {
@@ -127,6 +127,7 @@ export declare const createReflowableReadingItem: ({ item, context, containerEle
         offset: number;
     } | undefined;
     getFrameLayoutInformation: () => DOMRect | undefined;
+    getBoundingRectOfElementFromSelector: (selector: string) => DOMRect | undefined;
     getViewPortInformation: () => {
         computedScale: number;
         viewportDimensions: {

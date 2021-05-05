@@ -125,6 +125,7 @@ export declare const createReadingItem: ({ item, context, containerElement }: {
         offset: number;
     } | undefined;
     getFrameLayoutInformation: () => DOMRect | undefined;
+    getBoundingRectOfElementFromSelector: (selector: string) => DOMRect | undefined;
     getViewPortInformation: () => {
         computedScale: number;
         viewportDimensions: {
@@ -153,6 +154,7 @@ export declare const createReadingItem: ({ item, context, containerElement }: {
         progressionWeight: number;
     };
 } | {
+    unloadContent: () => void;
     getBoundingClientRect: () => DOMRect;
     layout: () => {
         width: number;
@@ -235,7 +237,6 @@ export declare const createReadingItem: ({ item, context, containerElement }: {
     }, cssText: string) => void;
     getCfi: (pageIndex: number) => string;
     loadContent: () => void;
-    unloadContent: () => Promise<void>;
     readingItemFrame: {
         getIsReady(): boolean;
         getViewportDimensions: () => {
@@ -272,6 +273,7 @@ export declare const createReadingItem: ({ item, context, containerElement }: {
         offset: number;
     } | undefined;
     getFrameLayoutInformation: () => DOMRect | undefined;
+    getBoundingRectOfElementFromSelector: (selector: string) => DOMRect | undefined;
     getViewPortInformation: () => {
         computedScale: number;
         viewportDimensions: {

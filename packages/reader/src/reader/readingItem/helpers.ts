@@ -53,12 +53,10 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
       }
       const res = getFirstVisibleNodeForViewport(frame.contentWindow.document, viewport)
 
-      // console.warn(`getFirstNodeOrRangeAtPage`, res)
       // const res = getFirstVisibleNodeFromPoint(frame?.contentWindow?.document, offsetInReadingItem, yOffset)
 
 
       // if (res && `offsetNode` in res) {
-      //   console.warn(offsetInReadingItem, res, res.offsetNode.parentElement?.getBoundingClientRect())
 
       //   return { node: res.offsetNode, offset: 0 }
       // }
@@ -91,7 +89,6 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
     // @see https://github.com/fread-ink/epub-cfi-resolver/issues/8
     const offset = `|[oboku~offset~${nodeOrRange?.offset || 0}]`
 
-    // console.warn(`getCfi`, nodeOrRange)
     if (nodeOrRange && doc) {
       const cfiString = CFI.generate(nodeOrRange.node, 0, `${itemAnchor}${offset}`)
       // console.log('FOOO', CFI.generate(nodeOrRange.startContainer, nodeOrRange.startOffset))
@@ -168,6 +165,13 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
     }
   }
 
+  const getBoundingRectOfElementFromSelector = (selector: string) => {
+    const frame = readingItemFrame.getFrameElement()
+    if (frame) {
+      return frame.contentDocument?.querySelector(selector)?.getBoundingClientRect()
+    }
+  }
+
   return {
     /**
      * @todo load iframe content later so that resources are less intensives.
@@ -191,6 +195,7 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
     loadingElement,
     resolveCfi,
     getFrameLayoutInformation,
+    getBoundingRectOfElementFromSelector,
     getViewPortInformation,
     isContentReady: () => !!readingItemFrame?.getIsReady(),
     destroy: () => {

@@ -77,7 +77,7 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
         if (data.event === `domReady`) {
             fingerTracker.track(data.data);
             selectionTracker.track(data.data);
-            applySize();
+            // applySize()
         }
         if (data.event === 'layout') {
             layout();

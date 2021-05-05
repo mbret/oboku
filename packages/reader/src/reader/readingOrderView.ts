@@ -28,6 +28,18 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
   let readingItemManagerSubscription: Subscription | undefined
   let focusedReadingItemSubscription: Subscription | undefined
 
+  const contextSubscription = context.$.subscribe(data => {
+    if (data.event === 'linkClicked') {
+      const hrefUrl = new URL(data.data.href)
+      const hrefWithoutAnchor = `${hrefUrl.origin}${hrefUrl.pathname}`
+      // internal link, we can handle
+      const hasExistingSpineItem = context.manifest.readingOrder.some(item => item.href === hrefWithoutAnchor)
+      if (hasExistingSpineItem) {
+        navigator.goTo(hrefUrl)
+      }
+    }
+  })
+
   const layout = () => {
     readingItemManager.layout()
   }
@@ -140,6 +152,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
       readingItemManagerSubscription?.unsubscribe()
       selectionSubscription?.unsubscribe()
       focusedReadingItemSubscription?.unsubscribe()
+      contextSubscription.unsubscribe()
       element.remove()
     },
     isSelecting: () => readingItemManager.getFocusedReadingItem()?.selectionTracker.isSelecting(),

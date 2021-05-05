@@ -3,7 +3,7 @@ import { getPercentageEstimate } from "./navigation";
 export const createPublicApi = (reader) => {
     const goToNextSpineItem = () => {
         var _a, _b, _c;
-        const currentSpineIndex = ((_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.getSpineItemIndex()) || 0;
+        const currentSpineIndex = ((_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.readingItemManager.getFocusedReadingItemIndex()) || 0;
         const numberOfSpineItems = ((_b = reader.getContext()) === null || _b === void 0 ? void 0 : _b.manifest.readingOrder.length) || 1;
         if (currentSpineIndex < (numberOfSpineItems - 1)) {
             (_c = reader.getReadingOrderView()) === null || _c === void 0 ? void 0 : _c.goTo(currentSpineIndex + 1);
@@ -11,7 +11,7 @@ export const createPublicApi = (reader) => {
     };
     const goToPreviousSpineItem = () => {
         var _a, _b;
-        const currentSpineIndex = ((_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.getSpineItemIndex()) || 0;
+        const currentSpineIndex = ((_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.readingItemManager.getFocusedReadingItemIndex()) || 0;
         if (currentSpineIndex > 0) {
             (_b = reader.getReadingOrderView()) === null || _b === void 0 ? void 0 : _b.goTo(currentSpineIndex - 1);
         }
@@ -54,9 +54,11 @@ export const createPublicApi = (reader) => {
             return goToNextSpineItem();
         },
         getPagination() {
+            var _a;
             const pagination = reader.getPagination();
             const readingOrderView = reader.getReadingOrderView();
             const context = reader.getContext();
+            const readingItemManager = (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.readingItemManager;
             if (!readingOrderView || !pagination || !context)
                 return undefined;
             return {
@@ -74,7 +76,7 @@ export const createPublicApi = (reader) => {
                     // domIndex: number;
                     // charOffset: number;
                     // serializeString?: string;
-                    spineItemIndex: readingOrderView.getSpineItemIndex(),
+                    spineItemIndex: readingItemManager === null || readingItemManager === void 0 ? void 0 : readingItemManager.getFocusedReadingItemIndex(),
                     cfi: pagination.getCfi(),
                 },
                 // end: ReadingLocation;
@@ -96,6 +98,7 @@ export const createPublicApi = (reader) => {
         getEventInformation: (e) => {
             var _a;
             const { iframeEventBridgeElement, iframeEventBridgeElementLastContext } = reader.getIframeEventBridge();
+            const readingItemManager = (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.readingItemManager;
             const pagination = reader.getPagination();
             const context = reader.getContext();
             const normalizedEventPointerPositions = Object.assign(Object.assign({}, `clientX` in e && {
@@ -111,7 +114,7 @@ export const createPublicApi = (reader) => {
             return {
                 event: e,
                 iframeOriginalEvent: iframeEventBridgeElementLastContext === null || iframeEventBridgeElementLastContext === void 0 ? void 0 : iframeEventBridgeElementLastContext.event,
-                normalizedEventPointerPositions: normalizeEventPositions(context, pagination, e, (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.getFocusedReadingItem())
+                normalizedEventPointerPositions: normalizeEventPositions(context, pagination, e, readingItemManager === null || readingItemManager === void 0 ? void 0 : readingItemManager.getFocusedReadingItem())
             };
         },
         isSelecting: () => { var _a; return (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.isSelecting(); },

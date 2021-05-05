@@ -105,12 +105,18 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
     }
   }
 
+  const unloadContent = () => {
+    helpers.unloadContent()
+
+    // layout()
+  }
+
   readingItemFrame$ = helpers.readingItemFrame.$.subscribe((data) => {
     if (data.event === `domReady`) {
       fingerTracker.track(data.data)
       selectionTracker.track(data.data)
 
-      applySize()
+      // applySize()
     }
 
     if (data.event === 'layout') {
@@ -121,6 +127,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
 
   return {
     ...helpers,
+    unloadContent,
     getBoundingClientRect: () => element?.getBoundingClientRect(),
     layout,
     fingerTracker,

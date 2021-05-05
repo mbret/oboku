@@ -44,13 +44,19 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
 
     Report.log(NAMESPACE, `focus item ${activeReadingItemIndex}`, readingItemToFocus)
     subject.next({ event: 'focus', data: readingItemToFocus })
+  }
 
+  const loadContents = () => {
     const numberOfAdjacentSpineItemToPreLoad = context.getLoadOptions().numberOfAdjacentSpineItemToPreLoad || 0
     orderedReadingItems.forEach((orderedReadingItem, index) => {
-      if (index < (newActiveReadingItemIndex - numberOfAdjacentSpineItemToPreLoad) || index > (newActiveReadingItemIndex + numberOfAdjacentSpineItemToPreLoad)) {
-        orderedReadingItem.unloadContent()
-      } else {
-        orderedReadingItem.loadContent()
+      if (activeReadingItemIndex !== undefined) {
+        if (index < (activeReadingItemIndex - numberOfAdjacentSpineItemToPreLoad) || index > (activeReadingItemIndex + numberOfAdjacentSpineItemToPreLoad)) {
+          orderedReadingItem.unloadContent()
+        } else {
+          if (!orderedReadingItem.getIsReady()) {
+            orderedReadingItem.loadContent()
+          }
+        }
       }
     })
   }
@@ -86,18 +92,6 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
 
   const getFocusedReadingItem = () => activeReadingItemIndex !== undefined ? orderedReadingItems[activeReadingItemIndex] : undefined
 
-  const isOffsetOutsideOfFocusedItem = (offset: number) => {
-    const focusedItem = getFocusedReadingItem()
-
-    if (!focusedItem) return true
-
-    const { start, end } = getPositionOf(focusedItem)
-    const isOutside = offset < start || offset > end
-    // console.log(`isOffsetOutsideOfFocusedItem`, { start, end, offset, isOutside })
-    // @todo rtl
-    return isOutside
-  }
-
   return {
     add: (readingItem: ReadingItem) => {
       orderedReadingItems.push(readingItem)
@@ -122,11 +116,11 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
     },
     layout,
     focus,
+    loadContents,
     isAfter: (item1: ReadingItem, item2: ReadingItem) => {
       return orderedReadingItems.indexOf(item1) > orderedReadingItems.indexOf(item2)
     },
     getPositionOf,
-    isOffsetOutsideOfFocusedItem,
     getReadingItemAtOffset: (offset: number) => {
       const detectedItem = orderedReadingItems.find(item => {
         const { start, end } = getPositionOf(item)

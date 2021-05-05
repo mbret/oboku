@@ -82,18 +82,22 @@ export const createReflowableReadingItem = ({ item, context, containerElement })
             x: element === null || element === void 0 ? void 0 : element.getBoundingClientRect().x
         };
     };
+    const unloadContent = () => {
+        helpers.unloadContent();
+        // layout()
+    };
     readingItemFrame$ = helpers.readingItemFrame.$.subscribe((data) => {
         if (data.event === `domReady`) {
             fingerTracker.track(data.data);
             selectionTracker.track(data.data);
-            applySize();
+            // applySize()
         }
         if (data.event === 'layout') {
             layout();
             helpers.$.next(data);
         }
     });
-    return Object.assign(Object.assign({}, helpers), { getBoundingClientRect: () => element === null || element === void 0 ? void 0 : element.getBoundingClientRect(), layout,
+    return Object.assign(Object.assign({}, helpers), { unloadContent, getBoundingClientRect: () => element === null || element === void 0 ? void 0 : element.getBoundingClientRect(), layout,
         fingerTracker,
         selectionTracker, destroy: () => {
             helpers.destroy();

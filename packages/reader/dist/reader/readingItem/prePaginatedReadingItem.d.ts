@@ -125,6 +125,7 @@ export declare const createPrePaginatedReadingItem: ({ item, context, containerE
         offset: number;
     } | undefined;
     getFrameLayoutInformation: () => DOMRect | undefined;
+    getBoundingRectOfElementFromSelector: (selector: string) => DOMRect | undefined;
     getViewPortInformation: () => {
         computedScale: number;
         viewportDimensions: {

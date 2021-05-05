@@ -126,6 +126,7 @@ export declare const createReadingItemManager: ({ context }: {
             offset: number;
         } | undefined;
         getFrameLayoutInformation: () => DOMRect | undefined;
+        getBoundingRectOfElementFromSelector: (selector: string) => DOMRect | undefined;
         getViewPortInformation: () => {
             computedScale: number;
             viewportDimensions: {
@@ -154,6 +155,7 @@ export declare const createReadingItemManager: ({ context }: {
             progressionWeight: number;
         };
     } | {
+        unloadContent: () => void;
         getBoundingClientRect: () => DOMRect;
         layout: () => {
             width: number;
@@ -236,7 +238,6 @@ export declare const createReadingItemManager: ({ context }: {
         }, cssText: string) => void;
         getCfi: (pageIndex: number) => string;
         loadContent: () => void;
-        unloadContent: () => Promise<void>;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {
@@ -273,6 +274,7 @@ export declare const createReadingItemManager: ({ context }: {
             offset: number;
         } | undefined;
         getFrameLayoutInformation: () => DOMRect | undefined;
+        getBoundingRectOfElementFromSelector: (selector: string) => DOMRect | undefined;
         getViewPortInformation: () => {
             computedScale: number;
             viewportDimensions: {
@@ -305,6 +307,7 @@ export declare const createReadingItemManager: ({ context }: {
     getLength(): number;
     layout: () => void;
     focus: (indexOrReadingItem: number | ReadingItem) => void;
+    loadContents: () => void;
     isAfter: (item1: ReadingItem, item2: ReadingItem) => boolean;
     getPositionOf: (readingItemOrIndex: ReadingItem | number) => {
         start: number;
@@ -319,8 +322,8 @@ export declare const createReadingItemManager: ({ context }: {
         top?: number | undefined;
         toJSON?: (() => any) | undefined;
     };
-    isOffsetOutsideOfFocusedItem: (offset: number) => boolean;
     getReadingItemAtOffset: (offset: number) => {
+        unloadContent: () => void;
         getBoundingClientRect: () => DOMRect;
         layout: () => {
             width: number;
@@ -403,7 +406,6 @@ export declare const createReadingItemManager: ({ context }: {
         }, cssText: string) => void;
         getCfi: (pageIndex: number) => string;
         loadContent: () => void;
-        unloadContent: () => Promise<void>;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {
@@ -440,6 +442,7 @@ export declare const createReadingItemManager: ({ context }: {
             offset: number;
         } | undefined;
         getFrameLayoutInformation: () => DOMRect | undefined;
+        getBoundingRectOfElementFromSelector: (selector: string) => DOMRect | undefined;
         getViewPortInformation: () => {
             computedScale: number;
             viewportDimensions: {
@@ -469,6 +472,7 @@ export declare const createReadingItemManager: ({ context }: {
         };
     } | undefined;
     getFocusedReadingItem: () => {
+        unloadContent: () => void;
         getBoundingClientRect: () => DOMRect;
         layout: () => {
             width: number;
@@ -551,7 +555,6 @@ export declare const createReadingItemManager: ({ context }: {
         }, cssText: string) => void;
         getCfi: (pageIndex: number) => string;
         loadContent: () => void;
-        unloadContent: () => Promise<void>;
         readingItemFrame: {
             getIsReady(): boolean;
             getViewportDimensions: () => {
@@ -588,6 +591,7 @@ export declare const createReadingItemManager: ({ context }: {
             offset: number;
         } | undefined;
         getFrameLayoutInformation: () => DOMRect | undefined;
+        getBoundingRectOfElementFromSelector: (selector: string) => DOMRect | undefined;
         getViewPortInformation: () => {
             computedScale: number;
             viewportDimensions: {

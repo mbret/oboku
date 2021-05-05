@@ -1,5 +1,5 @@
 import { Context } from "../context"
-import { getReadingItemOffsetFromPageIndex, getClosestValidOffsetFromApproximateOffsetInPages } from "../pagination"
+import { getItemOffsetFromPageIndex, getClosestValidOffsetFromApproximateOffsetInPages } from "../pagination"
 import { ReadingItem } from "../readingItem"
 import { ReadingItemManager } from "../readingItemManager"
 import { getRangeFromNode } from "../utils/dom"
@@ -28,10 +28,37 @@ export const createLocator = ({ readingItemManager, context }: {
     return readingOrderViewOffset - start
   }
 
+  const getReadingItemOffsetFromPageIndex = (pageIndex: number, readingItem: ReadingItem) => {
+    const itemWidth = (readingItem.getBoundingClientRect()?.width || 0)
+
+    return getItemOffsetFromPageIndex(context.getPageSize().width, pageIndex, itemWidth)
+  }
+
+  const getReadingItemOffsetFromAnchor = (anchor: string, readingItem: ReadingItem) => {
+    const itemWidth = (readingItem.getBoundingClientRect()?.width || 0)
+    const pageWidth = context.getPageSize().width
+    const anchorElementBoundingRect = readingItem.getBoundingRectOfElementFromSelector(anchor)
+
+    // @todo writing-direction
+    const offsetOfAnchor = anchorElementBoundingRect?.x || 0
+
+    return getClosestValidOffsetFromApproximateOffsetInPages(offsetOfAnchor, pageWidth, itemWidth)
+  }
+
   const getReadingItemOffsetFromCfi = (cfi: string, readingItem: ReadingItem) => {
     const { node, offset = 0 } = readingItem.resolveCfi(cfi) || {}
-    const range = node ? getRangeFromNode(node, offset) : undefined
-    const offsetOfNodeInReadingItem = range?.getBoundingClientRect().x || 0
+
+    // @todo writing-direction
+    let offsetOfNodeInReadingItem = 0
+
+    // for some reason `img` does not work with range (x always = 0)
+    if (node?.nodeName === `img`) {
+      offsetOfNodeInReadingItem = (node as HTMLElement).getBoundingClientRect().x
+    } else {
+      const range = node ? getRangeFromNode(node, offset) : undefined
+      offsetOfNodeInReadingItem = range?.getBoundingClientRect().x || offsetOfNodeInReadingItem
+    }
+
     const readingItemWidth = readingItem.getBoundingClientRect()?.width || 0
     const pageWidth = context.getPageSize().width
 
@@ -58,17 +85,11 @@ export const createLocator = ({ readingItemManager, context }: {
     return start + readingItemOffset
   }
 
-  const getReadingOrderViewOffsetFromReadingItemPage = (pageIndex: number, readingItem: ReadingItem) => {
-    const itemWidth = (readingItem.getBoundingClientRect()?.width || 0)
-    const readingItemOffset = getReadingItemOffsetFromPageIndex(context.getPageSize().width, pageIndex, itemWidth)
-
-    return getReadingOrderViewOffsetFromReadingItemOffset(readingItemOffset, readingItem)
-  }
-
   return {
-    getReadingOrderViewOffsetFromReadingItemPage,
     getReadingOrderViewOffsetFromReadingItemOffset,
     getReadingItemOffsetFromReadingOrderViewOffset,
     getReadingItemOffsetFromCfi,
+    getReadingItemOffsetFromPageIndex,
+    getReadingItemOffsetFromAnchor,
   }
 }

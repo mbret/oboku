@@ -44,11 +44,14 @@ export const createReadingItemFrame = (
   }
 
   const unload = () => {
-    isReady = false
-    isLoaded = false
-    loading = false
-    frameElement?.remove()
-    frameElement = undefined
+    if (loading || isReady) {
+      isReady = false
+      isLoaded = false
+      loading = false
+      frameElement?.remove()
+      frameElement = undefined
+      subject.next({ event: 'layout', data: { isFirstLayout: false, isReady: false } })
+    }
   }
 
   return {
@@ -58,7 +61,7 @@ export const createReadingItemFrame = (
     getViewportDimensions,
     getIsLoaded: () => isLoaded,
     load: Report.measurePerformance(`ReadingItemFrame load`, Infinity, async () => {
-      if (loading) return
+      if (loading || isReady) return
       loading = true
       const currentLoading = ++currentLoadingId
       const isCancelled = () => !(loading && currentLoading === currentLoadingId)
@@ -95,6 +98,7 @@ export const createReadingItemFrame = (
               frameElement.contentDocument?.fonts.ready.then(() => {
                 if (frameElement && !isCancelled()) {
                   isReady = true
+                  loading = false
                   subject.next({ event: 'layout', data: { isFirstLayout: true, isReady: true } })
                 }
               })

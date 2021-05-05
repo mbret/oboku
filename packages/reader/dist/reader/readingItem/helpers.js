@@ -49,10 +49,8 @@ export const createSharedHelpers = ({ item, context, containerElement }) => {
                 bottom: pageSize.height
             };
             const res = getFirstVisibleNodeForViewport(frame.contentWindow.document, viewport);
-            // console.warn(`getFirstNodeOrRangeAtPage`, res)
             // const res = getFirstVisibleNodeFromPoint(frame?.contentWindow?.document, offsetInReadingItem, yOffset)
             // if (res && `offsetNode` in res) {
-            //   console.warn(offsetInReadingItem, res, res.offsetNode.parentElement?.getBoundingClientRect())
             //   return { node: res.offsetNode, offset: 0 }
             // }
             // if (res && `startContainer` in res) {
@@ -78,7 +76,6 @@ export const createSharedHelpers = ({ item, context, containerElement }) => {
         // format and do it manually after resolving the node
         // @see https://github.com/fread-ink/epub-cfi-resolver/issues/8
         const offset = `|[oboku~offset~${(nodeOrRange === null || nodeOrRange === void 0 ? void 0 : nodeOrRange.offset) || 0}]`;
-        // console.warn(`getCfi`, nodeOrRange)
         if (nodeOrRange && doc) {
             const cfiString = CFI.generate(nodeOrRange.node, 0, `${itemAnchor}${offset}`);
             // console.log('FOOO', CFI.generate(nodeOrRange.startContainer, nodeOrRange.startOffset))
@@ -140,6 +137,13 @@ export const createSharedHelpers = ({ item, context, containerElement }) => {
             loadingElement.style.opacity = `1`;
         }
     });
+    const getBoundingRectOfElementFromSelector = (selector) => {
+        var _a, _b;
+        const frame = readingItemFrame.getFrameElement();
+        if (frame) {
+            return (_b = (_a = frame.contentDocument) === null || _a === void 0 ? void 0 : _a.querySelector(selector)) === null || _b === void 0 ? void 0 : _b.getBoundingClientRect();
+        }
+    };
     return {
         /**
          * @todo load iframe content later so that resources are less intensives.
@@ -163,6 +167,7 @@ export const createSharedHelpers = ({ item, context, containerElement }) => {
         loadingElement,
         resolveCfi,
         getFrameLayoutInformation,
+        getBoundingRectOfElementFromSelector,
         getViewPortInformation,
         isContentReady: () => !!(readingItemFrame === null || readingItemFrame === void 0 ? void 0 : readingItemFrame.getIsReady()),
         destroy: () => {

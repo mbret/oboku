@@ -253,12 +253,10 @@ class CFI {
       o = calcSiblingCount(node.parentNode.childNodes, node, offset);
       if (!cfi && o.offset) cfi = ':' + o.offset;
 
-      // console.log(node)
       // @ts-ignore
       cfi = '/' + o.count + ((node.id) ? '[' + cfiEscape(node.id) + ']' : '') + cfi;
 
       // debugger
-      // console.log(`generatePart`, node.parentNode, cfi)
       node = node.parentNode;
     }
 

@@ -51,7 +51,6 @@ export const getPercentageEstimate = (context: Context, readingOrderView: Readin
   // const progressWeightGap = (currentItemWeight + estimateBeforeThisItem) - estimateBeforeThisItem
 
   const progressWithinThisItem = (currentPageIndex + 1) * (currentItemWeight / numberOfPages)
-  // console.log({currentPageIndex, progressWeightGap, nextItemWeight, estimateToThisItem: estimateBeforeThisItem}, pagination.getNumberOfPages())
   const totalProgress = estimateBeforeThisItem + progressWithinThisItem
 
   // because the rounding of weight use a lot of decimals we will end up with

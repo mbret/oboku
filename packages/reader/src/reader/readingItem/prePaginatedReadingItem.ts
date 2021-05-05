@@ -100,7 +100,7 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
       fingerTracker.track(data.data)
       selectionTracker.track(data.data)
 
-      applySize()
+      // applySize()
     }
 
     if (data.event === 'layout') {
