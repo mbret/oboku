@@ -1114,11 +1114,9 @@ export const extractObokuMetadataFromCfi = (cfi: string): {
       .replace(/\]/, '')) || []
   const cleanedCfi = cfi.replace(/\|(\[oboku\~[^\]]*\~[^\]]*\])+/ig, '')
 
-  // console.warn(itemId, offset)
-
   return {
     cleanedCfi,
-    itemId,
+    itemId: itemId ? decodeURIComponent(itemId) : itemId,
     offset: parseInt(offset || '0') || 0
   }
 }

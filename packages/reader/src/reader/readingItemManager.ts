@@ -1,4 +1,4 @@
-import { Subject } from "rxjs"
+import { Subject, Subscription } from "rxjs"
 import { Report } from "../report"
 import { Context } from "./context"
 import { createReadingItem, ReadingItem } from "./readingItem"
@@ -11,6 +11,7 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
   const subject = new Subject<{ event: 'focus', data: ReadingItem } | { event: 'layout' }>()
   let orderedReadingItems: ReturnType<typeof createReadingItem>[] = []
   let activeReadingItemIndex: number | undefined = undefined
+  let readingItemSubscriptions: Subscription[] = []
 
   const layout = () => {
     orderedReadingItems.reduce((edgeOffset, item) => {
@@ -97,13 +98,15 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
       orderedReadingItems.push(readingItem)
 
       // @todo unsubscribe on unload
-      readingItem.$.subscribe((event) => {
+      const readingItemSubscription = readingItem.$.subscribe((event) => {
         if (event.event === 'layout') {
           // @todo at this point the inner item has an upstream layout so we only need to adjust
           // left/right position of it. We don't need to layout, maybe a `adjustPositionOfItems()` is enough
           adjustPositionOfItems()
         }
       })
+
+      readingItemSubscriptions.push(readingItemSubscription)
 
       readingItem.load()
     },
@@ -140,6 +143,8 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
     },
     destroy: () => {
       orderedReadingItems.forEach(item => item.destroy())
+      readingItemSubscriptions.forEach(subscription => subscription.unsubscribe())
+      readingItemSubscriptions = []
     },
     $: subject.asObservable()
   }
