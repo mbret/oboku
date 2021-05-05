@@ -5,6 +5,7 @@ export const createReadingItemManager = ({ context }) => {
     const subject = new Subject();
     let orderedReadingItems = [];
     let activeReadingItemIndex = undefined;
+    let readingItemSubscriptions = [];
     const layout = () => {
         orderedReadingItems.reduce((edgeOffset, item) => {
             const { width } = item.layout();
@@ -70,13 +71,14 @@ export const createReadingItemManager = ({ context }) => {
         add: (readingItem) => {
             orderedReadingItems.push(readingItem);
             // @todo unsubscribe on unload
-            readingItem.$.subscribe((event) => {
+            const readingItemSubscription = readingItem.$.subscribe((event) => {
                 if (event.event === 'layout') {
                     // @todo at this point the inner item has an upstream layout so we only need to adjust
                     // left/right position of it. We don't need to layout, maybe a `adjustPositionOfItems()` is enough
                     adjustPositionOfItems();
                 }
             });
+            readingItemSubscriptions.push(readingItemSubscription);
             readingItem.load();
         },
         get,
@@ -110,6 +112,8 @@ export const createReadingItemManager = ({ context }) => {
         },
         destroy: () => {
             orderedReadingItems.forEach(item => item.destroy());
+            readingItemSubscriptions.forEach(subscription => subscription.unsubscribe());
+            readingItemSubscriptions = [];
         },
         $: subject.asObservable()
     };

@@ -1055,10 +1055,9 @@ export const extractObokuMetadataFromCfi = (cfi) => {
         .match(/\|(\[oboku\~offset[^\]]*\])+/ig)) === null || _b === void 0 ? void 0 : _b.map(s => s.replace(/\|\[oboku\~offset\~/, '')
         .replace(/\]/, ''))) || [];
     const cleanedCfi = cfi.replace(/\|(\[oboku\~[^\]]*\~[^\]]*\])+/ig, '');
-    // console.warn(itemId, offset)
     return {
         cleanedCfi,
-        itemId,
+        itemId: itemId ? decodeURIComponent(itemId) : itemId,
         offset: parseInt(offset || '0') || 0
     };
 };
