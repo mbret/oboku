@@ -113,10 +113,9 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
     }),
   ).subscribe()
 
-  const getFocusedReadingItem = () => readingItemManager.getFocusedReadingItem()
-
   return {
     ...navigator,
+    readingItemManager,
     goToNextSpineItem: () => {
       const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0
       const numberOfSpineItems = context?.manifest.readingOrder.length || 1
@@ -132,13 +131,9 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
     },
     load,
     layout,
-    getFocusedReadingItem,
     getChapterInfo() {
       const item = readingItemManager.getFocusedReadingItem()
       return item && buildChapterInfoFromReadingItem(manifest, item)
-    },
-    getSpineItemIndex() {
-      return readingItemManager.getFocusedReadingItemIndex()
     },
     destroy: () => {
       readingItemManager.destroy()

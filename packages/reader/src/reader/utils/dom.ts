@@ -136,10 +136,10 @@ function getFirstVisibleDOMRect(domRect: DOMRectList, viewport: ViewPort) {
 
 export const getRangeFromNode = (node: Node, offset: number) => {
   if (node.nodeType !== Node.CDATA_SECTION_NODE && node.nodeType !== Node.DOCUMENT_TYPE_NODE) {
-    const range = document.createRange()
-    range.selectNodeContents(node)
+    const range = node.ownerDocument?.createRange()
+    range?.selectNodeContents(node)
     try {
-      range.setStart(node, offset || 0)
+      range?.setStart(node, offset || 0)
     } catch (e) {
       Report.error(e)
     }

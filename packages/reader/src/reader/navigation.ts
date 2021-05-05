@@ -39,7 +39,7 @@ const getChapterInfo = (path: string, tocItems: Manifest['nav']['toc']): Chapter
 }
 
 export const getPercentageEstimate = (context: Context, readingOrderView: ReadingOrderView, pagination: Pagination) => {
-  const currentSpineIndex = readingOrderView.getSpineItemIndex() || 0
+  const currentSpineIndex = readingOrderView.readingItemManager.getFocusedReadingItemIndex() || 0
   const numberOfPages = pagination.getNumberOfPages()
   const currentPageIndex = pagination.getPageIndex() || 0
   const estimateBeforeThisItem = context.manifest.readingOrder

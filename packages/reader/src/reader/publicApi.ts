@@ -4,7 +4,7 @@ import { createReader } from "./reader";
 
 export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
   const goToNextSpineItem = () => {
-    const currentSpineIndex = reader.getReadingOrderView()?.getSpineItemIndex() || 0
+    const currentSpineIndex = reader.getReadingOrderView()?.readingItemManager.getFocusedReadingItemIndex() || 0
     const numberOfSpineItems = reader.getContext()?.manifest.readingOrder.length || 1
     if (currentSpineIndex < (numberOfSpineItems - 1)) {
       reader.getReadingOrderView()?.goTo(currentSpineIndex + 1)
@@ -12,7 +12,7 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
   }
 
   const goToPreviousSpineItem = () => {
-    const currentSpineIndex = reader.getReadingOrderView()?.getSpineItemIndex() || 0
+    const currentSpineIndex = reader.getReadingOrderView()?.readingItemManager.getFocusedReadingItemIndex() || 0
     if (currentSpineIndex > 0) {
       reader.getReadingOrderView()?.goTo(currentSpineIndex - 1)
     }
@@ -55,6 +55,8 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
       const pagination = reader.getPagination()
       const readingOrderView = reader.getReadingOrderView()
       const context = reader.getContext()
+      const readingItemManager = reader.getReadingOrderView()?.readingItemManager
+
       if (!readingOrderView || !pagination || !context) return undefined
 
       return {
@@ -72,7 +74,7 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
           // domIndex: number;
           // charOffset: number;
           // serializeString?: string;
-          spineItemIndex: readingOrderView.getSpineItemIndex(),
+          spineItemIndex: readingItemManager?.getFocusedReadingItemIndex(),
           cfi: pagination.getCfi(),
         },
         // end: ReadingLocation;
@@ -93,6 +95,7 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
     },
     getEventInformation: (e: PointerEvent | MouseEvent | TouchEvent) => {
       const { iframeEventBridgeElement, iframeEventBridgeElementLastContext } = reader.getIframeEventBridge()
+      const readingItemManager = reader.getReadingOrderView()?.readingItemManager
       const pagination = reader.getPagination()
       const context = reader.getContext()
       const normalizedEventPointerPositions = {
@@ -112,7 +115,7 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
       return {
         event: e,
         iframeOriginalEvent: iframeEventBridgeElementLastContext?.event,
-        normalizedEventPointerPositions: normalizeEventPositions(context, pagination, e, reader.getReadingOrderView()?.getFocusedReadingItem())
+        normalizedEventPointerPositions: normalizeEventPositions(context, pagination, e, readingItemManager?.getFocusedReadingItem())
       }
     },
     isSelecting: () => reader.getReadingOrderView()?.isSelecting(),

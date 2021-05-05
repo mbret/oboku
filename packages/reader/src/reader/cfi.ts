@@ -268,7 +268,7 @@ class CFI {
   static generate(node: Node, offset?: number, extra?: {}) {
     var cfi;
 
-    if (node instanceof Array) {
+    if (Array.isArray(node)) {
       var strs = [];
       for (let o of node) {
         strs.push(this.generatePart(o.node, o.offset, extra));
