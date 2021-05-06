@@ -4,6 +4,8 @@ export const API_URI = process.env.REACT_APP_API_URL || `https://${window.locati
 export const API_COUCH_URI = process.env.REACT_APP_API_COUCH_URI || `https://${window.location.hostname}:4003`
 export const DOWNLOAD_PREFIX = `book-download`
 
+export const STREAMER_URL_PREFIX = `streamer`
+
 export const FIREBASE_BASE_CONFIG = {
   apiKey: "AIzaSyDJIkOKxOCf3WXrsPldQrEIY7LY237YSGU",
   authDomain: "oboku-api.firebaseapp.com",

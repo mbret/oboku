@@ -14,6 +14,7 @@ import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
 import appPackage from '../package.json'
+import { STREAMER_URL_PREFIX } from './constants';
 import { readerFetchListener } from './reader/streamer/serviceWorker'
 
 declare const self: ServiceWorkerGlobalScope;
@@ -74,7 +75,10 @@ if (process.env.NODE_ENV === 'production') {
 if (process.env.NODE_ENV === 'production') {
   registerRoute(
     // Add in any other file extensions or routing criteria as needed.
-    ({ url }) => url.origin === self.location.origin && url.pathname.endsWith('.png'),
+    ({ url }) =>
+      url.origin === self.location.origin
+      && !url.pathname.startsWith(`/${STREAMER_URL_PREFIX}`)
+      && url.pathname.endsWith('.png'),
     // Customize this strategy as needed, e.g., by changing to CacheFirst.
     new StaleWhileRevalidate({
       cacheName: 'images',

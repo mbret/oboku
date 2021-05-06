@@ -3,7 +3,7 @@ import { useRecoilValue } from "recoil"
 import { localSettingsState } from "../settings/states"
 import screenfull, { Screenfull } from 'screenfull'
 import { IS_MOBILE_DEVICE } from "../constants"
-import { Report } from "../report"
+import { Report } from "../debug/report"
 
 const screenfullApi = screenfull as Screenfull
 

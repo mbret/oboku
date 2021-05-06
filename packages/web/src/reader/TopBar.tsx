@@ -5,7 +5,7 @@ import { AppBar, IconButton, Toolbar, Typography, useTheme } from "@material-ui/
 import { ArrowBackIosRounded, FullscreenExitRounded, FullscreenRounded } from '@material-ui/icons'
 import { useNavigation } from '../navigation/useNavigation'
 import screenfull, { Screenfull } from 'screenfull'
-import { Report } from '../report'
+import { Report } from '../debug/report'
 import { useCSS } from '../common/utils'
 
 const screenfullApi = screenfull as Screenfull

@@ -1,12 +1,12 @@
 import { Manifest } from "@oboku/reader"
 import { useCallback, useEffect, useState } from "react"
 import { getBookFile } from "../download/useBookFile"
-import { Report } from "../report"
+import { Report } from "../debug/report"
 import { getArchiveForRarFile } from "./streamer/getArchiveForFile"
 import '../archive'
 import { generateManifestResponse } from "@oboku/reader-streamer"
-import { STREAMER_URL_PREFIX } from "./streamer/serviceWorker"
 import { extractMetadataFromName } from "@oboku/shared/dist/directives"
+import { STREAMER_URL_PREFIX } from "../constants"
 
 const useGetRarManifest = () => useCallback(async (bookId: string) => {
   const file = await getBookFile(bookId)
