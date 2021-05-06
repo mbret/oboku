@@ -1,3 +1,4 @@
+import { Report } from "../report";
 import { normalizeEventPositions } from "./frames";
 import { getPercentageEstimate } from "./navigation";
 import { createReader } from "./reader";
@@ -93,7 +94,7 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
         numberOfSpineItems: context.manifest.readingOrder.length
       }
     },
-    getEventInformation: (e: PointerEvent | MouseEvent | TouchEvent) => {
+    getEventInformation: Report.measurePerformance(`getEventInformation`, 10, (e: PointerEvent | MouseEvent | TouchEvent) => {
       const { iframeEventBridgeElement, iframeEventBridgeElementLastContext } = reader.getIframeEventBridge()
       const readingItemManager = reader.getReadingOrderView()?.readingItemManager
       const pagination = reader.getPagination()
@@ -117,7 +118,7 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
         iframeOriginalEvent: iframeEventBridgeElementLastContext?.event,
         normalizedEventPointerPositions: normalizeEventPositions(context, pagination, e, readingItemManager?.getFocusedReadingItem())
       }
-    },
+    }),
     isSelecting: () => reader.getReadingOrderView()?.isSelecting(),
     getSelection: () => reader.getReadingOrderView()?.getSelection(),
   }

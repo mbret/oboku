@@ -24,25 +24,25 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
     }
   }
 
-  const getCurrentOffset = () => Math.abs(element.getBoundingClientRect().x)
+  const getCurrentOffset = () => Math.floor(Math.abs(element.getBoundingClientRect().x))
 
-  const turnLeft = ({ allowReadingItemChange = true }: { allowReadingItemChange?: boolean } = {}) => {
+  const turnLeft = Report.measurePerformance(`${NAMESPACE} turnLeft`, 10, ({ allowReadingItemChange = true }: { allowReadingItemChange?: boolean } = {}) => {
     const currentXoffset = getCurrentOffset()
     const nextPosition = context.isRTL()
       ? currentXoffset + context.getPageSize().width
       : currentXoffset - context.getPageSize().width
 
     navigateToOffsetOrCfi(nextPosition, { allowReadingItemChange })
-  }
+  })
 
-  const turnRight = ({ allowReadingItemChange = true }: { allowReadingItemChange?: boolean } = {}) => {
+  const turnRight = Report.measurePerformance(`${NAMESPACE} turnRight`, 10, ({ allowReadingItemChange = true }: { allowReadingItemChange?: boolean } = {}) => {
     const currentXoffset = getCurrentOffset()
     const nextPosition = context.isRTL()
       ? currentXoffset - context.getPageSize().width
       : currentXoffset + context.getPageSize().width
 
     navigateToOffsetOrCfi(nextPosition, { allowReadingItemChange })
-  }
+  })
 
   const goToPageOfCurrentChapter = (pageIndex: number) => {
     const readingItem = readingItemManager.getFocusedReadingItem()
@@ -109,6 +109,7 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
 
     // prevent to go outside of edges
     if (offset < 0 || (offset > maximumOffset)) {
+      Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `prevent due to out of bound offset`)
       return
     }
 
@@ -141,6 +142,7 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
     const newReadingItemIsBeforeCurrent = !readingItemManager.isAfter(newReadingItem, currentReadingItem || newReadingItem)
 
     if (readingItemHasChanged && allowReadingItemChange === false) {
+      Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `prevent due to changing reading item but it is not allowed`)
       return
     }
 
@@ -166,6 +168,8 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
       isAtEndOfChapter: false,
       shouldUpdateCfi: lastUserExpectedNavigation?.type !== 'navigate-from-cfi'
     })
+
+    Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `navigate success`, { readingItemHasChanged, newReadingItem, offset, offsetInCurrentReadingItem })
 
     readingItemManager.loadContents()
   }
@@ -229,7 +233,7 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
       // using the last page is not accurate since we could have less pages
       const currentPageIndex = pagination.getPageIndex() || 0
       offsetInReadingItem = locator.getReadingItemOffsetFromPageIndex(currentPageIndex, readingItem)
-      Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `use guess strategy`, { })
+      Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `use guess strategy`, {})
     }
 
     expectedReadingOrderViewOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(offsetInReadingItem, readingItem)
