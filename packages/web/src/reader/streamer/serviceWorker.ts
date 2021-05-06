@@ -1,4 +1,5 @@
 import { generateResourceResponse } from '@oboku/reader-streamer'
+import { API_COUCH_URI } from '../../constants'
 import { Report } from '../../debug/report'
 import { FileNotFoundError, FileNotSupportedError, loadBook } from './loadBook'
 import { generateManifestResponse } from './manifest'
@@ -9,8 +10,10 @@ export const readerFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)
   const shouldIntercept = url.pathname.startsWith(`/${STREAMER_URL_PREFIX}`)
 
+  if (!url.href.startsWith(API_COUCH_URI)) {
+    console.log(`streamer`, `fetch listener`, url.href, { shouldIntercept })
+  }
   // Report.log(`streamer`, `fetch listener`, { url, shouldIntercept })
-  console.log(`streamer`, `fetch listener`, url.href, { shouldIntercept })
 
   if (shouldIntercept) {
 
