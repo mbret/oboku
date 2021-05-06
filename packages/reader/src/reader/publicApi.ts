@@ -33,6 +33,13 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
     goTo: (spineIndexOrIdOrCfi: number | string) => {
       reader.getReadingOrderView()?.goTo(spineIndexOrIdOrCfi)
     },
+    goToPath: (path: string) => {
+      const manifest = reader.getContext()?.manifest
+      const foundItem = manifest?.readingOrder.find(item => item.path === path)
+      if (foundItem) {
+        reader.getReadingOrderView()?.goTo(foundItem.id)
+      }
+    },
     goToPageOfCurrentChapter: (pageIndex: number) => {
       return reader.getReadingOrderView()?.goToPageOfCurrentChapter(pageIndex)
     },
@@ -121,5 +128,6 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
     }),
     isSelecting: () => reader.getReadingOrderView()?.isSelecting(),
     getSelection: () => reader.getReadingOrderView()?.getSelection(),
+    getManifest: () => reader.getContext()?.manifest,
   }
 }

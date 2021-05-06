@@ -17,6 +17,7 @@ export declare const createReader: ({ containerElement }: {
     turnLeft: () => void | undefined;
     turnRight: () => void | undefined;
     goTo: (spineIndexOrIdOrCfi: string | number) => void;
+    goToPath: (path: string) => void;
     goToPageOfCurrentChapter: (pageIndex: number) => void | undefined;
     goToNextSpineItem: () => void;
     goToPreviousSpineItem: () => void;
@@ -51,5 +52,6 @@ export declare const createReader: ({ containerElement }: {
     };
     isSelecting: () => boolean | undefined;
     getSelection: () => Selection | undefined;
+    getManifest: () => import("@oboku/reader-streamer/dist/types").Manifest | undefined;
 };
 export declare type Reader = ReturnType<typeof createReader>;

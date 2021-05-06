@@ -6,7 +6,8 @@ import { Manifest } from "./types";
 
 export type ChapterInfo = {
   title: string
-  subChapter?: ChapterInfo
+  subChapter?: ChapterInfo,
+  path: string
 }
 
 export const buildChapterInfoFromReadingItem = (manifest: Manifest, readingItem: ReadingItem) => {
@@ -21,7 +22,8 @@ const getChapterInfo = (path: string, tocItems: Manifest['nav']['toc']): Chapter
     const tocItemPathWithoutAnchor = indexOfHash > 0 ? tocItem.path.substr(0, indexOfHash) : tocItem.path
     if (path.endsWith(tocItemPathWithoutAnchor)) {
       return {
-        title: tocItem.title
+        title: tocItem.title,
+        path: tocItem.path
       }
     }
 
@@ -30,7 +32,8 @@ const getChapterInfo = (path: string, tocItems: Manifest['nav']['toc']): Chapter
     if (subInfo) {
       return {
         subChapter: subInfo,
-        title: tocItem.title
+        title: tocItem.title,
+        path: tocItem.path
       }
     }
 

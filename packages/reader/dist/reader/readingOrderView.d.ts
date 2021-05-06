@@ -2803,7 +2803,8 @@ export declare const createReadingOrderView: ({ manifest, containerElement, cont
     turnRight: (args_0?: {
         allowReadingItemChange?: boolean | undefined;
     } | undefined) => void;
-    goTo: (spineIndexOrSpineItemIdOrPathCfi: string | number | URL) => void;
+    goTo: (spineIndexOrSpineItemIdOrCfi: string | number) => void;
+    goToUrl: (url: string | URL) => void;
     goToPageOfCurrentChapter: (pageIndex: number) => void;
     adjustReadingOffsetPosition: ({ shouldAdjustCfi }: {
         shouldAdjustCfi: boolean;

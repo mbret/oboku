@@ -32,7 +32,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
             // internal link, we can handle
             const hasExistingSpineItem = context.manifest.readingOrder.some(item => item.href === hrefWithoutAnchor);
             if (hasExistingSpineItem) {
-                navigator.goTo(hrefUrl);
+                navigator.goToUrl(hrefUrl);
             }
         }
     });

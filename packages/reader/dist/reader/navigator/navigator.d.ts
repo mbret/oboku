@@ -15,7 +15,8 @@ export declare const createNavigator: ({ readingItemManager, context, pagination
     turnRight: (args_0?: {
         allowReadingItemChange?: boolean | undefined;
     } | undefined) => void;
-    goTo: (spineIndexOrSpineItemIdOrPathCfi: number | string | URL) => void;
+    goTo: (spineIndexOrSpineItemIdOrCfi: number | string) => void;
+    goToUrl: (url: string | URL) => void;
     goToPageOfCurrentChapter: (pageIndex: number) => void;
     adjustReadingOffsetPosition: ({ shouldAdjustCfi }: {
         shouldAdjustCfi: boolean;

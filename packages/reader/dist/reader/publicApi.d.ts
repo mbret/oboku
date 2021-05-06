@@ -14,6 +14,7 @@ export declare const createPublicApi: (reader: ReturnType<typeof createReader>) 
     turnLeft: () => void | undefined;
     turnRight: () => void | undefined;
     goTo: (spineIndexOrIdOrCfi: number | string) => void;
+    goToPath: (path: string) => void;
     goToPageOfCurrentChapter: (pageIndex: number) => void | undefined;
     goToNextSpineItem: () => void;
     goToPreviousSpineItem: () => void;
@@ -54,4 +55,5 @@ export declare const createPublicApi: (reader: ReturnType<typeof createReader>) 
     };
     isSelecting: () => boolean | undefined;
     getSelection: () => Selection | undefined;
+    getManifest: () => import("@oboku/reader-streamer").Manifest | undefined;
 };

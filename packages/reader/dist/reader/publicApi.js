@@ -34,6 +34,14 @@ export const createPublicApi = (reader) => {
             var _a;
             (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.goTo(spineIndexOrIdOrCfi);
         },
+        goToPath: (path) => {
+            var _a, _b;
+            const manifest = (_a = reader.getContext()) === null || _a === void 0 ? void 0 : _a.manifest;
+            const foundItem = manifest === null || manifest === void 0 ? void 0 : manifest.readingOrder.find(item => item.path === path);
+            if (foundItem) {
+                (_b = reader.getReadingOrderView()) === null || _b === void 0 ? void 0 : _b.goTo(foundItem.id);
+            }
+        },
         goToPageOfCurrentChapter: (pageIndex) => {
             var _a;
             return (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.goToPageOfCurrentChapter(pageIndex);
@@ -120,6 +128,7 @@ export const createPublicApi = (reader) => {
         }),
         isSelecting: () => { var _a; return (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.isSelecting(); },
         getSelection: () => { var _a; return (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.getSelection(); },
+        getManifest: () => { var _a; return (_a = reader.getContext()) === null || _a === void 0 ? void 0 : _a.manifest; },
     };
 };
 //# sourceMappingURL=publicApi.js.map
