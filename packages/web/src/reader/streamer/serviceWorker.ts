@@ -9,13 +9,14 @@ export const readerFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)
   const shouldIntercept = url.pathname.startsWith(`/${STREAMER_URL_PREFIX}`)
 
-  Report.log(`streamer`, `fetch listener`, { url, shouldIntercept })
+  // Report.log(`streamer`, `fetch listener`, { url, shouldIntercept })
+  console.log(`streamer`, `fetch listener`, { url, shouldIntercept })
 
   if (shouldIntercept) {
 
     const { epubFileName } = extractInfoFromEvent(event)
 
-    Report.log(`streamer`, `fetch listener intercepted`, { epubFileName })
+    console.log(`streamer`, `fetch listener intercepted`, { epubFileName })
 
     event.respondWith((async () => {
       try {
