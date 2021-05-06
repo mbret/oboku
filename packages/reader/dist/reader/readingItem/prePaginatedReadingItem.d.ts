@@ -6,7 +6,17 @@ export declare const createPrePaginatedReadingItem: ({ item, context, containerE
     containerElement: HTMLElement;
     context: Context;
 }) => {
-    getBoundingClientRect: () => DOMRect;
+    getBoundingClientRect: () => {
+        width: number;
+        x: number;
+        left: number;
+        y: number;
+        top: number;
+        height: number;
+        bottom: number;
+        right: number;
+        toJSON(): any;
+    };
     layout: () => {
         width: number;
         height: number;

@@ -7,7 +7,17 @@ export declare const createReadingItemManager: ({ context }: {
 }) => {
     add: (readingItem: ReadingItem) => void;
     get: (indexOrId: number | string) => {
-        getBoundingClientRect: () => DOMRect;
+        getBoundingClientRect: () => {
+            width: number;
+            x: number;
+            left: number;
+            y: number;
+            top: number;
+            height: number;
+            bottom: number;
+            right: number;
+            toJSON(): any;
+        };
         layout: () => {
             width: number;
             height: number;

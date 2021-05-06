@@ -9,12 +9,12 @@ export declare const createNavigator: ({ readingItemManager, context, pagination
 }) => {
     adjustOffset: (offset: number) => void;
     getCurrentOffset: () => number;
-    turnLeft: ({ allowReadingItemChange }?: {
+    turnLeft: (args_0?: {
         allowReadingItemChange?: boolean | undefined;
-    }) => void;
-    turnRight: ({ allowReadingItemChange }?: {
+    } | undefined) => void;
+    turnRight: (args_0?: {
         allowReadingItemChange?: boolean | undefined;
-    }) => void;
+    } | undefined) => void;
     goTo: (spineIndexOrSpineItemIdOrPathCfi: number | string | URL) => void;
     goToPageOfCurrentChapter: (pageIndex: number) => void;
     adjustReadingOffsetPosition: ({ shouldAdjustCfi }: {

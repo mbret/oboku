@@ -7,7 +7,17 @@ export declare const createReader: ({ containerElement }: {
     getReadingOrderView: () => {
         readingItemManager: {
             add: (readingItem: {
-                getBoundingClientRect: () => DOMRect;
+                getBoundingClientRect: () => {
+                    width: number;
+                    x: number;
+                    left: number;
+                    y: number;
+                    top: number;
+                    height: number;
+                    bottom: number;
+                    right: number;
+                    toJSON(): any;
+                };
                 layout: () => {
                     width: number;
                     height: number;
@@ -304,7 +314,17 @@ export declare const createReader: ({ containerElement }: {
                 };
             }) => void;
             get: (indexOrId: string | number) => {
-                getBoundingClientRect: () => DOMRect;
+                getBoundingClientRect: () => {
+                    width: number;
+                    x: number;
+                    left: number;
+                    y: number;
+                    top: number;
+                    height: number;
+                    bottom: number;
+                    right: number;
+                    toJSON(): any;
+                };
                 layout: () => {
                     width: number;
                     height: number;
@@ -601,7 +621,17 @@ export declare const createReader: ({ containerElement }: {
                 };
             } | undefined;
             set: (readingItems: ({
-                getBoundingClientRect: () => DOMRect;
+                getBoundingClientRect: () => {
+                    width: number;
+                    x: number;
+                    left: number;
+                    y: number;
+                    top: number;
+                    height: number;
+                    bottom: number;
+                    right: number;
+                    toJSON(): any;
+                };
                 layout: () => {
                     width: number;
                     height: number;
@@ -900,7 +930,17 @@ export declare const createReader: ({ containerElement }: {
             getLength(): number;
             layout: () => void;
             focus: (indexOrReadingItem: number | {
-                getBoundingClientRect: () => DOMRect;
+                getBoundingClientRect: () => {
+                    width: number;
+                    x: number;
+                    left: number;
+                    y: number;
+                    top: number;
+                    height: number;
+                    bottom: number;
+                    right: number;
+                    toJSON(): any;
+                };
                 layout: () => {
                     width: number;
                     height: number;
@@ -1198,7 +1238,17 @@ export declare const createReader: ({ containerElement }: {
             }) => void;
             loadContents: () => void;
             isAfter: (item1: {
-                getBoundingClientRect: () => DOMRect;
+                getBoundingClientRect: () => {
+                    width: number;
+                    x: number;
+                    left: number;
+                    y: number;
+                    top: number;
+                    height: number;
+                    bottom: number;
+                    right: number;
+                    toJSON(): any;
+                };
                 layout: () => {
                     width: number;
                     height: number;
@@ -1494,7 +1544,17 @@ export declare const createReader: ({ containerElement }: {
                     progressionWeight: number;
                 };
             }, item2: {
-                getBoundingClientRect: () => DOMRect;
+                getBoundingClientRect: () => {
+                    width: number;
+                    x: number;
+                    left: number;
+                    y: number;
+                    top: number;
+                    height: number;
+                    bottom: number;
+                    right: number;
+                    toJSON(): any;
+                };
                 layout: () => {
                     width: number;
                     height: number;
@@ -1791,7 +1851,17 @@ export declare const createReader: ({ containerElement }: {
                 };
             }) => boolean;
             getPositionOf: (readingItemOrIndex: number | {
-                getBoundingClientRect: () => DOMRect;
+                getBoundingClientRect: () => {
+                    width: number;
+                    x: number;
+                    left: number;
+                    y: number;
+                    top: number;
+                    height: number;
+                    bottom: number;
+                    right: number;
+                    toJSON(): any;
+                };
                 layout: () => {
                     width: number;
                     height: number;
@@ -2402,7 +2472,17 @@ export declare const createReader: ({ containerElement }: {
             $: import("rxjs").Observable<{
                 event: "focus";
                 data: {
-                    getBoundingClientRect: () => DOMRect;
+                    getBoundingClientRect: () => {
+                        width: number;
+                        x: number;
+                        left: number;
+                        y: number;
+                        top: number;
+                        height: number;
+                        bottom: number;
+                        right: number;
+                        toJSON(): any;
+                    };
                     layout: () => {
                         width: number;
                         height: number;
@@ -2713,12 +2793,12 @@ export declare const createReader: ({ containerElement }: {
         $: Subject<unknown>;
         adjustOffset: (offset: number) => void;
         getCurrentOffset: () => number;
-        turnLeft: ({ allowReadingItemChange }?: {
+        turnLeft: (args_0?: {
             allowReadingItemChange?: boolean | undefined;
-        }) => void;
-        turnRight: ({ allowReadingItemChange }?: {
+        } | undefined) => void;
+        turnRight: (args_0?: {
             allowReadingItemChange?: boolean | undefined;
-        }) => void;
+        } | undefined) => void;
         goTo: (spineIndexOrSpineItemIdOrPathCfi: string | number | URL) => void;
         goToPageOfCurrentChapter: (pageIndex: number) => void;
         adjustReadingOffsetPosition: ({ shouldAdjustCfi }: {
@@ -2750,7 +2830,17 @@ export declare const createReader: ({ containerElement }: {
         getPageIndex(): number | undefined;
         getNumberOfPages(): number;
         update: (readingItem: {
-            getBoundingClientRect: () => DOMRect;
+            getBoundingClientRect: () => {
+                width: number;
+                x: number;
+                left: number;
+                y: number;
+                top: number;
+                height: number;
+                bottom: number;
+                right: number;
+                toJSON(): any;
+            };
             layout: () => {
                 width: number;
                 height: number;

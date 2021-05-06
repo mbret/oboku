@@ -1,3 +1,4 @@
+import { Report } from "../report";
 import { normalizeEventPositions } from "./frames";
 import { getPercentageEstimate } from "./navigation";
 export const createPublicApi = (reader) => {
@@ -95,7 +96,7 @@ export const createPublicApi = (reader) => {
                 numberOfSpineItems: context.manifest.readingOrder.length
             };
         },
-        getEventInformation: (e) => {
+        getEventInformation: Report.measurePerformance(`getEventInformation`, 10, (e) => {
             var _a;
             const { iframeEventBridgeElement, iframeEventBridgeElementLastContext } = reader.getIframeEventBridge();
             const readingItemManager = (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.readingItemManager;
@@ -116,7 +117,7 @@ export const createPublicApi = (reader) => {
                 iframeOriginalEvent: iframeEventBridgeElementLastContext === null || iframeEventBridgeElementLastContext === void 0 ? void 0 : iframeEventBridgeElementLastContext.event,
                 normalizedEventPointerPositions: normalizeEventPositions(context, pagination, e, readingItemManager === null || readingItemManager === void 0 ? void 0 : readingItemManager.getFocusedReadingItem())
             };
-        },
+        }),
         isSelecting: () => { var _a; return (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.isSelecting(); },
         getSelection: () => { var _a; return (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.getSelection(); },
     };

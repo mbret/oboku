@@ -14,21 +14,21 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
             element.style.transform = `translateX(-${offset}px)`;
         }
     };
-    const getCurrentOffset = () => Math.abs(element.getBoundingClientRect().x);
-    const turnLeft = ({ allowReadingItemChange = true } = {}) => {
+    const getCurrentOffset = () => Math.floor(Math.abs(element.getBoundingClientRect().x));
+    const turnLeft = Report.measurePerformance(`${NAMESPACE} turnLeft`, 10, ({ allowReadingItemChange = true } = {}) => {
         const currentXoffset = getCurrentOffset();
         const nextPosition = context.isRTL()
             ? currentXoffset + context.getPageSize().width
             : currentXoffset - context.getPageSize().width;
         navigateToOffsetOrCfi(nextPosition, { allowReadingItemChange });
-    };
-    const turnRight = ({ allowReadingItemChange = true } = {}) => {
+    });
+    const turnRight = Report.measurePerformance(`${NAMESPACE} turnRight`, 10, ({ allowReadingItemChange = true } = {}) => {
         const currentXoffset = getCurrentOffset();
         const nextPosition = context.isRTL()
             ? currentXoffset - context.getPageSize().width
             : currentXoffset + context.getPageSize().width;
         navigateToOffsetOrCfi(nextPosition, { allowReadingItemChange });
-    };
+    });
     const goToPageOfCurrentChapter = (pageIndex) => {
         const readingItem = readingItemManager.getFocusedReadingItem();
         if (readingItem) {
@@ -86,6 +86,7 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
         let potentialNewReadingItem = readingItemManager.getReadingItemAtOffset(offset) || readingItemManager.get(0);
         // prevent to go outside of edges
         if (offset < 0 || (offset > maximumOffset)) {
+            Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `prevent due to out of bound offset`);
             return;
         }
         /**
@@ -116,6 +117,7 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
             return;
         const newReadingItemIsBeforeCurrent = !readingItemManager.isAfter(newReadingItem, currentReadingItem || newReadingItem);
         if (readingItemHasChanged && allowReadingItemChange === false) {
+            Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `prevent due to changing reading item but it is not allowed`);
             return;
         }
         adjustReadingOffset(offset);
@@ -139,6 +141,7 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
             isAtEndOfChapter: false,
             shouldUpdateCfi: (lastUserExpectedNavigation === null || lastUserExpectedNavigation === void 0 ? void 0 : lastUserExpectedNavigation.type) !== 'navigate-from-cfi'
         });
+        Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `navigate success`, { readingItemHasChanged, newReadingItem, offset, offsetInCurrentReadingItem });
         readingItemManager.loadContents();
     };
     /**

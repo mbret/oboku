@@ -84,7 +84,10 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
             helpers.$.next(data);
         }
     });
-    return Object.assign(Object.assign({}, helpers), { getBoundingClientRect: () => element === null || element === void 0 ? void 0 : element.getBoundingClientRect(), layout,
+    return Object.assign(Object.assign({}, helpers), { getBoundingClientRect: () => {
+            const rect = element === null || element === void 0 ? void 0 : element.getBoundingClientRect();
+            return Object.assign(Object.assign({}, rect), { width: Math.floor(rect.width), x: Math.floor(rect.x), left: Math.floor(rect.left), y: Math.floor(rect.y), top: Math.floor(rect.top), height: Math.floor(rect.height) });
+        }, layout,
         fingerTracker,
         selectionTracker, destroy: () => {
             helpers.destroy();
