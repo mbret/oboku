@@ -1,8 +1,3 @@
-interface Async {
-  (format: 'string' | 'base64'): Promise<string>
-  (format: 'blob'): Promise<Blob>
-}
-
 export type Archive = {
   filename: string,
   files: {
