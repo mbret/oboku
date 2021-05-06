@@ -10,7 +10,7 @@ export const readerFetchListener = (event: FetchEvent) => {
   const shouldIntercept = url.pathname.startsWith(`/${STREAMER_URL_PREFIX}`)
 
   // Report.log(`streamer`, `fetch listener`, { url, shouldIntercept })
-  console.log(`streamer`, `fetch listener`, { url, shouldIntercept })
+  console.log(`streamer`, `fetch listener`, url.href, { shouldIntercept })
 
   if (shouldIntercept) {
 
