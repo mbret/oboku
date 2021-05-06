@@ -112,6 +112,7 @@ export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => 
     )
   }
 
+  console.log(manifest, loadOptions)
   return (
     <div
       style={{
