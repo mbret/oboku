@@ -1,45 +1,38 @@
+import * as Sentry from "@sentry/react"
+import { isDebugEnabled } from "./isDebugEnabled";
+
 export const Report = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   log: (...data: any[]) => {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' || isDebugEnabled()) {
       // eslint-disable-next-line no-console
-      console.log(`[oboku-reader-streamer]`, ...data);
+      console.log(`[oboku:log]`, ...data);
     }
   },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warn: (...data: any[]) => {
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.warn(`[oboku-reader-streamer]`, ...data);
+  error: (err: any) => {
+    if (process.env.NODE_ENV !== 'development' || isDebugEnabled()) {
+      Sentry.captureException(err)
     }
+    console.error(err)
   },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: (...data: any[]) => {
-    // eslint-disable-next-line no-console
-    console.error(...data);
+  captureMessage: (message: string, captureContext?: Parameters<typeof Sentry.captureMessage>[1]) => {
+    Sentry.captureMessage(message, captureContext)
   },
-  time: (label?: string | undefined) => {
-    if (process.env.NODE_ENV === 'development') {
+  warn: (message: string) => {
+    if (process.env.NODE_ENV === 'development' || isDebugEnabled()) {
       // eslint-disable-next-line no-console
-      console.time(`[oboku-reader-streamer] [metric] ${label}`);
-    }
-  },
-  timeEnd: (label?: string | undefined) => {
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.timeEnd(`[oboku-reader-streamer] [metric] ${label}`);
+      console.warn(`[oboku:warning]`, message)
     }
   },
   metric: (performanceEntry: PerformanceEntry | { name: string; duration: number }, targetDuration = Infinity) => {
     const duration = typeof performanceEntry === 'number' ? performanceEntry : performanceEntry.duration;
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === 'development' || isDebugEnabled()) {
       if (performanceEntry.duration <= targetDuration) {
         // eslint-disable-next-line no-console
-        console.log(`[oboku-reader-streamer] [metric] `, `${performanceEntry.name} took ${duration}ms`);
+        console.log(`[oboku:metric] `, `${performanceEntry.name} took ${duration}ms`);
       } else {
         // eslint-disable-next-line no-console
         console.warn(
-          `[oboku-reader-streamer] [metric] `,
+          `[oboku:metric] `,
           `${performanceEntry.name} took ${performanceEntry.duration}ms which is above the ${targetDuration}ms target for this function`,
         );
       }
@@ -67,4 +60,4 @@ export const Report = {
       return response;
     };
   },
-};
+}

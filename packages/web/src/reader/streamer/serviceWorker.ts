@@ -1,4 +1,5 @@
 import { generateResourceResponse } from '@oboku/reader-streamer'
+import { Report } from '../../debug/report'
 import { FileNotFoundError, FileNotSupportedError, loadBook } from './loadBook'
 import { generateManifestResponse } from './manifest'
 
@@ -6,12 +7,15 @@ export const STREAMER_URL_PREFIX = `streamer`
 
 export const readerFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)
+  const shouldIntercept = url.pathname.startsWith(`/${STREAMER_URL_PREFIX}`)
 
-  if (url.pathname.startsWith(`/${STREAMER_URL_PREFIX}`)) {
+  Report.log(`streamer`, `fetch listener`, { url, shouldIntercept })
 
-    // console.log(`HANDLE`, event.request.url, url.pathname.startsWith(`/${STREAMER_URL_PREFIX}/`))
+  if (shouldIntercept) {
 
     const { epubFileName } = extractInfoFromEvent(event)
+
+    Report.log(`streamer`, `fetch listener intercepted`, { epubFileName })
 
     event.respondWith((async () => {
       try {

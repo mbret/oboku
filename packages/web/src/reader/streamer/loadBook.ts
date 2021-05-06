@@ -1,6 +1,6 @@
 import { Archive } from '@oboku/reader-streamer'
 import { getBookFile } from '../../download/useBookFile'
-import { Report } from '../../report'
+import { Report } from '../../debug/report'
 import { getArchiveForFile } from './getArchiveForFile'
 
 export class FileNotFoundError extends Error {}
