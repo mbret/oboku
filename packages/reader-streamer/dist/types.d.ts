@@ -14,6 +14,7 @@ declare type TocItem = {
     title: string;
     path: string;
     contents: TocItem[];
+    href: string;
 };
 export declare type Manifest = {
     filename: string;

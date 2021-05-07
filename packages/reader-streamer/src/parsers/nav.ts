@@ -1,10 +1,11 @@
 import xmldoc, { XmlElement } from 'xmldoc'
 import { Archive, Manifest } from '../types'
 
-const extractNavChapter = (li: XmlElement, opfBasePath: string) => {
+const extractNavChapter = (li: XmlElement, { opfBasePath, baseUrl }: { opfBasePath: string, baseUrl: string }) => {
   const chp: Manifest['nav']['toc'][number] = {
     contents: [],
     path: ``,
+    href: ``,
     title: ``,
   };
   let contentNode = li.childNamed('span') || li.childNamed('a');
@@ -18,19 +19,20 @@ const extractNavChapter = (li: XmlElement, opfBasePath: string) => {
   }
   if (node === 'a' && contentNode?.attr.href) {
     chp.path = opfBasePath ? `${opfBasePath}/${contentNode.attr.href}` : `${contentNode.attr.href}`
+    chp.href = opfBasePath ? `${baseUrl}/${opfBasePath}/${contentNode.attr.href}` : `${baseUrl}/${contentNode.attr.href}`
   }
   const sublistNode = li.childNamed('ol');
   if (sublistNode) {
     const children = sublistNode.childrenNamed('li');
     if (children && children.length > 0) {
-      chp.contents = children.map((child) => extractNavChapter(child, opfBasePath));
+      chp.contents = children.map((child) => extractNavChapter(child, { opfBasePath, baseUrl }));
     }
   }
 
   return chp;
 };
 
-const buildTOCFromNav = (doc: xmldoc.XmlDocument, opfBasePath: string) => {
+const buildTOCFromNav = (doc: xmldoc.XmlDocument, { opfBasePath, baseUrl }: { opfBasePath: string, baseUrl: string }) => {
   const toc: Manifest['nav']['toc'] = [];
 
   let navDataChildren;
@@ -45,13 +47,13 @@ const buildTOCFromNav = (doc: xmldoc.XmlDocument, opfBasePath: string) => {
   if (navDataChildren && navDataChildren.length > 0) {
     navDataChildren
       .filter((li) => (li as XmlElement).name === 'li')
-      .forEach((li) => toc.push(extractNavChapter(li as XmlElement, opfBasePath)));
+      .forEach((li) => toc.push(extractNavChapter(li as XmlElement, { opfBasePath, baseUrl })));
   }
 
   return toc;
 };
 
-const parseTocFromNavPath = async (opfXmlDoc: xmldoc.XmlDocument, archive: Archive, opfBasePath: string) => {
+const parseTocFromNavPath = async (opfXmlDoc: xmldoc.XmlDocument, archive: Archive, { opfBasePath, baseUrl }: { opfBasePath: string, baseUrl: string }) => {
   // Try to detect if there is a nav item
   const navItem = opfXmlDoc.childNamed('manifest')?.childrenNamed('item')
     .find((child) => child.attr.properties === 'nav');
@@ -60,41 +62,43 @@ const parseTocFromNavPath = async (opfXmlDoc: xmldoc.XmlDocument, archive: Archi
     const tocFile = Object.values(archive.files).find(item => item.name.endsWith(navItem.attr.href || ''))
     if (tocFile) {
       const doc = new xmldoc.XmlDocument(await tocFile.string())
-      return buildTOCFromNav(doc, opfBasePath)
+      return buildTOCFromNav(doc, { opfBasePath, baseUrl })
     }
   }
 }
 
-const extractNcxChapter = (point: xmldoc.XmlElement, opfBasePath: string) => {
+const extractNcxChapter = (point: xmldoc.XmlElement, { opfBasePath, baseUrl }: { opfBasePath: string, baseUrl: string }) => {
   const src = point?.childNamed('content')?.attr.src || ''
   const out: Manifest['nav']['toc'][number] = {
     title: point?.descendantWithPath('navLabel.text')?.val || '',
     path: opfBasePath ? `${opfBasePath}/${src}` : `${src}`,
+    href: opfBasePath ? `${baseUrl}/${opfBasePath}/${src}` : `${baseUrl}/${src}`,
     contents: []
   };
   const children = point.childrenNamed('navPoint');
   if (children && children.length > 0) {
-    out.contents = children.map((pt) => extractNcxChapter(pt, opfBasePath));
+    out.contents = children.map((pt) => extractNcxChapter(pt, { opfBasePath, baseUrl }));
   }
 
   return out;
 };
 
-const buildTOCFromNCX = (ncxData: xmldoc.XmlDocument, opfBasePath: string) => {
+const buildTOCFromNCX = (ncxData: xmldoc.XmlDocument, { opfBasePath, baseUrl }: { opfBasePath: string, baseUrl: string }) => {
   const toc: Manifest['nav']['toc'] = [];
 
   ncxData
     .childNamed('navMap')
     ?.childrenNamed('navPoint')
-    .forEach((point) => toc.push(extractNcxChapter(point, opfBasePath)));
+    .forEach((point) => toc.push(extractNcxChapter(point, { opfBasePath, baseUrl })));
 
   return toc;
 };
 
-const parseTocFromNcx = async ({ opfData, opfBasePath, archive }: {
+const parseTocFromNcx = async ({ opfData, opfBasePath, baseUrl, archive }: {
   opfData: xmldoc.XmlDocument,
   opfBasePath: string,
-  archive: Archive
+  archive: Archive,
+  baseUrl: string
 }) => {
   const spine = opfData.childNamed('spine');
   const ncxId = spine && spine.attr.toc;
@@ -112,19 +116,19 @@ const parseTocFromNcx = async ({ opfData, opfBasePath, archive }: {
       if (file) {
         const ncxData = new xmldoc.XmlDocument(await file.string())
 
-        return buildTOCFromNCX(ncxData, opfBasePath)
+        return buildTOCFromNCX(ncxData, { opfBasePath, baseUrl })
       }
     }
 
   }
 };
 
-export const parseToc = async (opfXmlDoc: xmldoc.XmlDocument, archive: Archive, opfBasePath: string) => {
-  const tocFromNcx = await parseTocFromNcx({ opfData: opfXmlDoc, opfBasePath, archive })
+export const parseToc = async (opfXmlDoc: xmldoc.XmlDocument, archive: Archive, { opfBasePath, baseUrl }: { opfBasePath: string, baseUrl: string }) => {
+  const tocFromNcx = await parseTocFromNcx({ opfData: opfXmlDoc, opfBasePath, archive, baseUrl })
 
   if (tocFromNcx) {
     return tocFromNcx
   }
 
-  return await parseTocFromNavPath(opfXmlDoc, archive, opfBasePath)
+  return await parseTocFromNavPath(opfXmlDoc, archive, { opfBasePath, baseUrl })
 }

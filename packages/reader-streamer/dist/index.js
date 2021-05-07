@@ -4528,7 +4528,7 @@ const generateManifestFromEpub = (archive, baseUrl) => __awaiter(void 0, void 0,
     const data = yield opsFile.string();
     console.log(data);
     const opfXmlDoc = new (xmldoc__WEBPACK_IMPORTED_MODULE_0___default().XmlDocument)(data);
-    const toc = (yield (0,_parsers_nav__WEBPACK_IMPORTED_MODULE_1__.parseToc)(opfXmlDoc, archive, opfBasePath)) || [];
+    const toc = (yield (0,_parsers_nav__WEBPACK_IMPORTED_MODULE_1__.parseToc)(opfXmlDoc, archive, { opfBasePath, baseUrl })) || [];
     const metadataElm = opfXmlDoc.childNamed('metadata');
     const manifestElm = opfXmlDoc.childNamed('manifest');
     const spineElm = opfXmlDoc.childNamed('spine');
@@ -4768,10 +4768,11 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
     });
 };
 
-const extractNavChapter = (li, opfBasePath) => {
+const extractNavChapter = (li, { opfBasePath, baseUrl }) => {
     const chp = {
         contents: [],
         path: ``,
+        href: ``,
         title: ``,
     };
     let contentNode = li.childNamed('span') || li.childNamed('a');
@@ -4785,17 +4786,18 @@ const extractNavChapter = (li, opfBasePath) => {
     }
     if (node === 'a' && (contentNode === null || contentNode === void 0 ? void 0 : contentNode.attr.href)) {
         chp.path = opfBasePath ? `${opfBasePath}/${contentNode.attr.href}` : `${contentNode.attr.href}`;
+        chp.href = opfBasePath ? `${baseUrl}/${opfBasePath}/${contentNode.attr.href}` : `${baseUrl}/${contentNode.attr.href}`;
     }
     const sublistNode = li.childNamed('ol');
     if (sublistNode) {
         const children = sublistNode.childrenNamed('li');
         if (children && children.length > 0) {
-            chp.contents = children.map((child) => extractNavChapter(child, opfBasePath));
+            chp.contents = children.map((child) => extractNavChapter(child, { opfBasePath, baseUrl }));
         }
     }
     return chp;
 };
-const buildTOCFromNav = (doc, opfBasePath) => {
+const buildTOCFromNav = (doc, { opfBasePath, baseUrl }) => {
     var _a, _b;
     const toc = [];
     let navDataChildren;
@@ -4809,11 +4811,11 @@ const buildTOCFromNav = (doc, opfBasePath) => {
     if (navDataChildren && navDataChildren.length > 0) {
         navDataChildren
             .filter((li) => li.name === 'li')
-            .forEach((li) => toc.push(extractNavChapter(li, opfBasePath)));
+            .forEach((li) => toc.push(extractNavChapter(li, { opfBasePath, baseUrl })));
     }
     return toc;
 };
-const parseTocFromNavPath = (opfXmlDoc, archive, opfBasePath) => __awaiter(void 0, void 0, void 0, function* () {
+const parseTocFromNavPath = (opfXmlDoc, archive, { opfBasePath, baseUrl }) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     // Try to detect if there is a nav item
     const navItem = (_a = opfXmlDoc.childNamed('manifest')) === null || _a === void 0 ? void 0 : _a.childrenNamed('item').find((child) => child.attr.properties === 'nav');
@@ -4821,32 +4823,33 @@ const parseTocFromNavPath = (opfXmlDoc, archive, opfBasePath) => __awaiter(void 
         const tocFile = Object.values(archive.files).find(item => item.name.endsWith(navItem.attr.href || ''));
         if (tocFile) {
             const doc = new (xmldoc__WEBPACK_IMPORTED_MODULE_0___default().XmlDocument)(yield tocFile.string());
-            return buildTOCFromNav(doc, opfBasePath);
+            return buildTOCFromNav(doc, { opfBasePath, baseUrl });
         }
     }
 });
-const extractNcxChapter = (point, opfBasePath) => {
+const extractNcxChapter = (point, { opfBasePath, baseUrl }) => {
     var _a, _b;
     const src = ((_a = point === null || point === void 0 ? void 0 : point.childNamed('content')) === null || _a === void 0 ? void 0 : _a.attr.src) || '';
     const out = {
         title: ((_b = point === null || point === void 0 ? void 0 : point.descendantWithPath('navLabel.text')) === null || _b === void 0 ? void 0 : _b.val) || '',
         path: opfBasePath ? `${opfBasePath}/${src}` : `${src}`,
+        href: opfBasePath ? `${baseUrl}/${opfBasePath}/${src}` : `${baseUrl}/${src}`,
         contents: []
     };
     const children = point.childrenNamed('navPoint');
     if (children && children.length > 0) {
-        out.contents = children.map((pt) => extractNcxChapter(pt, opfBasePath));
+        out.contents = children.map((pt) => extractNcxChapter(pt, { opfBasePath, baseUrl }));
     }
     return out;
 };
-const buildTOCFromNCX = (ncxData, opfBasePath) => {
+const buildTOCFromNCX = (ncxData, { opfBasePath, baseUrl }) => {
     var _a;
     const toc = [];
     (_a = ncxData
-        .childNamed('navMap')) === null || _a === void 0 ? void 0 : _a.childrenNamed('navPoint').forEach((point) => toc.push(extractNcxChapter(point, opfBasePath)));
+        .childNamed('navMap')) === null || _a === void 0 ? void 0 : _a.childrenNamed('navPoint').forEach((point) => toc.push(extractNcxChapter(point, { opfBasePath, baseUrl })));
     return toc;
 };
-const parseTocFromNcx = ({ opfData, opfBasePath, archive }) => __awaiter(void 0, void 0, void 0, function* () {
+const parseTocFromNcx = ({ opfData, opfBasePath, baseUrl, archive }) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
     const spine = opfData.childNamed('spine');
     const ncxId = spine && spine.attr.toc;
@@ -4858,17 +4861,17 @@ const parseTocFromNcx = ({ opfData, opfBasePath, archive }) => __awaiter(void 0,
             const file = Object.values(archive.files).find(item => item.name.endsWith(ncxPath));
             if (file) {
                 const ncxData = new (xmldoc__WEBPACK_IMPORTED_MODULE_0___default().XmlDocument)(yield file.string());
-                return buildTOCFromNCX(ncxData, opfBasePath);
+                return buildTOCFromNCX(ncxData, { opfBasePath, baseUrl });
             }
         }
     }
 });
-const parseToc = (opfXmlDoc, archive, opfBasePath) => __awaiter(void 0, void 0, void 0, function* () {
-    const tocFromNcx = yield parseTocFromNcx({ opfData: opfXmlDoc, opfBasePath, archive });
+const parseToc = (opfXmlDoc, archive, { opfBasePath, baseUrl }) => __awaiter(void 0, void 0, void 0, function* () {
+    const tocFromNcx = yield parseTocFromNcx({ opfData: opfXmlDoc, opfBasePath, archive, baseUrl });
     if (tocFromNcx) {
         return tocFromNcx;
     }
-    return yield parseTocFromNavPath(opfXmlDoc, archive, opfBasePath);
+    return yield parseTocFromNavPath(opfXmlDoc, archive, { opfBasePath, baseUrl });
 });
 
 

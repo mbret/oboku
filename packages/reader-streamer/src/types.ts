@@ -14,7 +14,8 @@ export type Archive = {
 type TocItem = {
   title: string,
   path: string,
-  contents: TocItem[]
+  contents: TocItem[],
+  href: string,
 }
 
 export type Manifest = {

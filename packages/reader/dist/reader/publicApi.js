@@ -42,6 +42,10 @@ export const createPublicApi = (reader) => {
                 (_b = reader.getReadingOrderView()) === null || _b === void 0 ? void 0 : _b.goTo(foundItem.id);
             }
         },
+        goToHref: (href) => {
+            var _a;
+            (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.goToUrl(href);
+        },
         goToPageOfCurrentChapter: (pageIndex) => {
             var _a;
             return (_a = reader.getReadingOrderView()) === null || _a === void 0 ? void 0 : _a.goToPageOfCurrentChapter(pageIndex);

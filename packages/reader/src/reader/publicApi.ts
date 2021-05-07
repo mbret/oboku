@@ -40,6 +40,9 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
         reader.getReadingOrderView()?.goTo(foundItem.id)
       }
     },
+    goToHref: (href: string) => {
+      reader.getReadingOrderView()?.goToUrl(href)
+    },
     goToPageOfCurrentChapter: (pageIndex: number) => {
       return reader.getReadingOrderView()?.goToPageOfCurrentChapter(pageIndex)
     },

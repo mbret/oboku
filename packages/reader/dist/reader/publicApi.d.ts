@@ -15,6 +15,7 @@ export declare const createPublicApi: (reader: ReturnType<typeof createReader>) 
     turnRight: () => void | undefined;
     goTo: (spineIndexOrIdOrCfi: number | string) => void;
     goToPath: (path: string) => void;
+    goToHref: (href: string) => void;
     goToPageOfCurrentChapter: (pageIndex: number) => void | undefined;
     goToNextSpineItem: () => void;
     goToPreviousSpineItem: () => void;

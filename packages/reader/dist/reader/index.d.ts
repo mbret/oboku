@@ -18,6 +18,7 @@ export declare const createReader: ({ containerElement }: {
     turnRight: () => void | undefined;
     goTo: (spineIndexOrIdOrCfi: string | number) => void;
     goToPath: (path: string) => void;
+    goToHref: (href: string) => void;
     goToPageOfCurrentChapter: (pageIndex: number) => void | undefined;
     goToNextSpineItem: () => void;
     goToPreviousSpineItem: () => void;

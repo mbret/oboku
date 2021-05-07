@@ -20,7 +20,7 @@ export const generateManifestFromEpub = async (archive: Archive, baseUrl: string
 
   const opfXmlDoc = new xmldoc.XmlDocument(data)
 
-  const toc = (await parseToc(opfXmlDoc, archive, opfBasePath)) || []
+  const toc = (await parseToc(opfXmlDoc, archive, { opfBasePath, baseUrl })) || []
 
   const metadataElm = opfXmlDoc.childNamed('metadata')
   const manifestElm = opfXmlDoc.childNamed('manifest')
