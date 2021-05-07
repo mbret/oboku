@@ -7,6 +7,7 @@ import { useWakeLock } from '../common/useWakeLock';
 import { useFullScreenSwitch } from './fullScreen';
 import { Reader } from './Reader';
 import { Reader as ReaderInstance } from '@oboku/reader';
+import { ContentsDialog } from './ContentsDialog';
 
 export const ReaderScreen: FC<{}> = () => {
   const [reader, setReader] = useState<ReaderInstance | undefined>(undefined)
@@ -26,6 +27,7 @@ export const ReaderScreen: FC<{}> = () => {
     <ReaderContext.Provider value={reader}>
       {bookId && <Reader bookId={bookId} onReader={onReader} />}
       <AppTourReader />
+      <ContentsDialog />
     </ReaderContext.Provider>
   )
 }
