@@ -128,7 +128,6 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
   return {
     ...helpers,
     unloadContent,
-    getBoundingClientRect: () => element?.getBoundingClientRect(),
     layout,
     fingerTracker,
     selectionTracker,

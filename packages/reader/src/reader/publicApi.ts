@@ -89,6 +89,7 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
           cfi: pagination.getCfi(),
         },
         // end: ReadingLocation;
+        spineItemReadingDirection: readingItemManager?.getFocusedReadingItem()?.getReadingDirection(),
         /**
          * This percentage is based of the weight (kb) of every items and the number of pages.
          * It is not accurate but gives a general good idea of the overall progress.

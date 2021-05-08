@@ -19,7 +19,11 @@ export const createLocator = ({ readingItemManager, context }: {
      * item offset ------------------>
      * [item2 (page0 - page1 - page2)] [item1 (page1 - page0)] [item0 (page0)]
      */
-    if (context.isRTL() && itemReadingDirection === 'ltr') {
+    // if (context.isRTL() && itemReadingDirection === 'ltr') {
+    //   return (end - readingOrderViewOffset) - context.getPageSize().width
+    // }
+
+    if (context.isRTL()) {
       return (end - readingOrderViewOffset) - context.getPageSize().width
     }
 
@@ -39,7 +43,13 @@ export const createLocator = ({ readingItemManager, context }: {
      * item offset ------------------>
      * [item2 (page0 - page1 - page2)] [item1 (page1 - page0)] [item0 (page0)]
      */
-    if (context.isRTL() && itemReadingDirection === 'ltr') {
+    // if (context.isRTL() && itemReadingDirection === 'ltr') {
+    //   return (end - readingItemOffset) - context.getPageSize().width
+    //   // return end - readingItemOffset
+    // }
+
+    console.warn(`getReadingOrderViewOffsetFromReadingItemOffset`, { end, start, readingItemOffset })
+    if (context.isRTL()) {
       return (end - readingItemOffset) - context.getPageSize().width
     }
 

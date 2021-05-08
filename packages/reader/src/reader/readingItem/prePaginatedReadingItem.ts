@@ -111,19 +111,6 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
 
   return {
     ...helpers,
-    getBoundingClientRect: () => {
-      const rect = element?.getBoundingClientRect()
-
-      return {
-        ...rect,
-        width: Math.floor(rect.width),
-        x: Math.floor(rect.x),
-        left: Math.floor(rect.left),
-        y: Math.floor(rect.y),
-        top: Math.floor(rect.top),
-        height: Math.floor(rect.height),
-      }
-    },
     layout,
     fingerTracker,
     selectionTracker,

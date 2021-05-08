@@ -1,10 +1,9 @@
 import { Context } from "../context"
 import { createReadingItemFrame, ReadingItemFrame } from "./readingItemFrame"
 import { Manifest } from "../types"
-import { getFirstVisibleNodeForViewport } from "../utils/dom"
-import { CFI, extractObokuMetadataFromCfi } from "../cfi"
 import { Subject, Subscription } from "rxjs"
 import { Report } from "../../report"
+import { createLocator } from "./locator"
 
 export const createSharedHelpers = ({ item, context, containerElement }: {
   item: Manifest['readingOrder'][number],
@@ -15,119 +14,25 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
   const element = createWrapperElement(containerElement, item)
   const loadingElement = createLoadingElement(containerElement, item)
   const readingItemFrame = createReadingItemFrame(element, item, context)
+  const readingItemLocator = createLocator({ context })
+
   let readingItemFrame$: Subscription | undefined
 
   const injectStyle = (readingItemFrame: ReadingItemFrame, cssText: string) => {
-    readingItemFrame?.removeStyle('ur-css-link')
-    readingItemFrame?.addStyle('ur-css-link', cssText)
+    readingItemFrame?.removeStyle('oboku-reader-css')
+    readingItemFrame?.addStyle('oboku-reader-css', cssText)
   }
 
   const adjustPositionOfElement = (edgeOffset: number | undefined) => {
-    if (!edgeOffset) return
+    if (edgeOffset === undefined) return
     if (context.isRTL()) {
+      // could also be negative left
+      // will push items on the left
       element.style.right = `${edgeOffset}px`
     } else {
+      // will push items on the right
       element.style.left = `${edgeOffset}px`
     }
-  }
-
-  const getFirstNodeOrRangeAtPage = (pageIndex: number) => {
-    const pageSize = context.getPageSize()
-    const frame = readingItemFrame?.getFrameElement()
-
-    const yOffset = 0 + context.getVerticalMargin()
-    // return frame?.contentDocument?.body.childNodes[0]
-
-    // return frame?.contentWindow?.document.caretRangeFromPoint(offset, 0).startContainer
-    if (
-      frame?.contentWindow?.document
-      // very important because it is being used by next functions
-      && frame.contentWindow.document.body !== null
-    ) {
-
-      const viewport = {
-        left: pageIndex * pageSize.width,
-        right: (pageIndex * pageSize.width) + pageSize.width,
-        top: 0,
-        bottom: pageSize.height
-      }
-      const res = getFirstVisibleNodeForViewport(frame.contentWindow.document, viewport)
-
-      // const res = getFirstVisibleNodeFromPoint(frame?.contentWindow?.document, offsetInReadingItem, yOffset)
-
-
-      // if (res && `offsetNode` in res) {
-
-      //   return { node: res.offsetNode, offset: 0 }
-      // }
-      // if (res && `startContainer` in res) {
-      //   return { node: res.startContainer, offset: res.startOffset }
-      // }
-
-      return res
-    }
-    // if (frame) {
-    //   const element = Array.from(frame.contentWindow?.document.body.children || []).find(children => {
-    //     const { x, width } = children.getBoundingClientRect()
-
-    //     return (x + width) > offset
-    //   })
-
-    //   return element?.children[0]
-    // }
-
-    return undefined
-  }
-
-  const getCfi = Report.measurePerformance(`getCfi`, 10, (pageIndex: number) => {
-    const nodeOrRange = getFirstNodeOrRangeAtPage(pageIndex)
-    const doc = readingItemFrame.getFrameElement()?.contentWindow?.document
-
-    const itemAnchor = `|[oboku~anchor~${encodeURIComponent(item.id)}]`
-    // because the current cfi library does not works well with offset we are just using custom
-    // format and do it manually after resolving the node
-    // @see https://github.com/fread-ink/epub-cfi-resolver/issues/8
-    const offset = `|[oboku~offset~${nodeOrRange?.offset || 0}]`
-
-    if (nodeOrRange && doc) {
-      const cfiString = CFI.generate(nodeOrRange.node, 0, `${itemAnchor}${offset}`)
-      // console.log('FOOO', CFI.generate(nodeOrRange.startContainer, nodeOrRange.startOffset))
-
-      return cfiString
-    }
-
-    return `epubcfi(/0${itemAnchor}) `
-  })
-
-  const resolveCfi = (cfiString: string | undefined) => {
-    if (!cfiString) return undefined
-
-    const { cleanedCfi, offset } = extractObokuMetadataFromCfi(cfiString)
-    const cfi = new CFI(cleanedCfi, {})
-
-    const doc = readingItemFrame.getFrameElement()?.contentWindow?.document
-
-    if (doc) {
-      try {
-        // console.warn('FIII', cleanedCfi, cfi)
-        // console.log('FIII', (new CFI('epubcfi(/2/4/2[_preface]/10/1:175[oboku:id-id2632344]', {})).resolve(doc, {}))
-        // const { cleanedCfi: foo, itemId } = extractObokuMetadataFromCfi('epubcfi(/2/4/2[I_book_d1e1]/14/2[id2602563]/4/1:190|[oboku:id-id2442754])')
-        // const { cleanedCfi: foo, itemId } = extractObokuMetadataFromCfi('epubcfi(/2/4/2[I_book_d1e1]/14/2[id2602563]/4/1:100|[oboku:id-id2442754])')
-        // const cfiObject = (new CFI(foo, {}))
-        // const resolve = cfiObject.resolve(doc, {})
-        // console.warn('FIII', foo, (new CFI(foo, {})), resolve.node, resolve)
-        const { node } = cfi.resolve(doc, {})
-
-        // console.warn(cleanedCfi, cfi.resolve(doc, {}), offset)
-
-        return { node, offset }
-      } catch (e) {
-        Report.error(e)
-        return undefined
-      }
-    }
-
-    return undefined
   }
 
   const getViewPortInformation = () => {
@@ -172,6 +77,20 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
     }
   }
 
+  const getBoundingClientRect = () => {
+    const rect = element.getBoundingClientRect()
+
+    return {
+      ...rect,
+      width: Math.floor(rect.width),
+      x: Math.floor(rect.x),
+      left: Math.floor(rect.left),
+      y: Math.floor(rect.y),
+      top: Math.floor(rect.top),
+      height: Math.floor(rect.height),
+    }
+  }
+
   return {
     /**
      * @todo load iframe content later so that resources are less intensives.
@@ -186,14 +105,13 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
     adjustPositionOfElement,
     createWrapperElement,
     createLoadingElement,
+    getBoundingClientRect,
     injectStyle,
-    getCfi,
     loadContent,
     unloadContent,
     readingItemFrame,
     element,
     loadingElement,
-    resolveCfi,
     getFrameLayoutInformation,
     getBoundingRectOfElementFromSelector,
     getViewPortInformation,

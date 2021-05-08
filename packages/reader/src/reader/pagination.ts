@@ -2,21 +2,17 @@ import { Subject } from "rxjs"
 import { Context } from "./context"
 import { ReadingItem } from "./readingItem"
 import { Report } from "../report"
+import { createLocator } from "./readingItem/locator"
 
 export type Pagination = ReturnType<typeof createPagination>
 
 export const createPagination = ({ context }: { context: Context }) => {
   const subject = new Subject<{ event: 'change' }>()
+  const readingItemLocator = createLocator({ context })
   let pageIndex: number | undefined
   let numberOfPages = 0
   // let isAtEndOfChapter = false
   let cfi: string | undefined = undefined
-
-  const getPageFromOffset = (offset: number, pageWidth: number, numberOfPages: number) => {
-    const offsetValues = [...Array(numberOfPages)].map((_, i) => i * pageWidth)
-  
-    return Math.max(0, offsetValues.findIndex(offsetRange => offset < (offsetRange + pageWidth)))
-  }
 
   return {
     getPageIndex() {
@@ -32,7 +28,8 @@ export const createPagination = ({ context }: { context: Context }) => {
       const readingItemWidth = readingItem.getBoundingClientRect()?.width || 0
       const pageWidth = context.getPageSize().width
       numberOfPages = getNumberOfPages(readingItemWidth, context.getPageSize().width)
-      pageIndex = getPageFromOffset(offsetInReadingItem, pageWidth, numberOfPages)
+      // pageIndex = getPageFromOffset(offsetInReadingItem, pageWidth, numberOfPages)
+      pageIndex = readingItemLocator.getReadingItemPageIndexFromOffset(offsetInReadingItem, readingItem)
       // isAtEndOfChapter = readingItem.isContentReady() && pageIndex === (numberOfPages - 1)
       // if (options.isAtEndOfChapter) {
       //   isAtEndOfChapter = options.isAtEndOfChapter
@@ -46,7 +43,7 @@ export const createPagination = ({ context }: { context: Context }) => {
       // future changes would potentially only be resize (easy to track) and font size family change.
       // to track that we can have a hidden text element and track it and send event back
       if (options.shouldUpdateCfi) {
-        cfi = readingItem.getCfi(pageIndex)
+        cfi = readingItemLocator.getCfi(pageIndex, readingItem)
         Report.log(`pagination`, `cfi`, pageIndex, cfi)
       }
 
@@ -57,6 +54,12 @@ export const createPagination = ({ context }: { context: Context }) => {
     },
     $: subject.asObservable()
   }
+}
+
+export const getPageFromOffset = (offset: number, pageWidth: number, numberOfPages: number) => {
+  const offsetValues = [...Array(numberOfPages)].map((_, i) => i * pageWidth)
+
+  return Math.max(0, offsetValues.findIndex(offsetRange => offset < (offsetRange + pageWidth)))
 }
 
 export const getItemOffsetFromPageIndex = (pageWidth: number, pageIndex: number, itemWidth: number) => {

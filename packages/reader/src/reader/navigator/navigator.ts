@@ -5,6 +5,7 @@ import { Pagination, getNumberOfPages } from "../pagination"
 import { ReadingItemManager } from "../readingItemManager"
 import { createLocator } from "./locator"
 import { createLocator as createReadingItemLocator } from "../readingItem/locator"
+import { ReadingItem } from "../readingItem"
 
 const NAMESPACE = `navigator`
 
@@ -16,7 +17,17 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
 }) => {
   const locator = createLocator({ context, readingItemManager })
   const readingItemLocator = createReadingItemLocator({ context })
-  let lastUserExpectedNavigation: { type: 'turned-prev-chapter' } | { type: 'navigate-from-cfi', data: string } | { type: 'navigate-from-anchor', data: string } | undefined = undefined
+  let lastUserExpectedNavigation:
+    | undefined
+    // always adjust at the first page
+    | { type: 'navigate-from-previous-item' }
+    // always adjust at the last page
+    | { type: 'navigate-from-next-item' }
+    // always adjust using this cfi
+    | { type: 'navigate-from-cfi', data: string }
+    // always adjust using this anchor
+    | { type: 'navigate-from-anchor', data: string }
+    = undefined
 
   const adjustReadingOffset = (offset: number) => {
     if (context.isRTL()) {
@@ -28,13 +39,61 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
 
   const getCurrentOffset = () => Math.floor(Math.abs(element.getBoundingClientRect().x))
 
+  const resolveReadingNavigationFromReadingOffset = (newOffset: number, { allowReadingItemChange }: {
+    allowReadingItemChange?: boolean,
+  }) => {
+    // let offset = typeof offsetOrCfi === `number` ? offsetOrCfi : 0
+    const latestReadingItem = readingItemManager.get(readingItemManager.getLength() - 1)
+    const distanceOfLastReadingItem = readingItemManager.getPositionOf(latestReadingItem || 0)
+    const maximumOffset = distanceOfLastReadingItem.end - context.getPageSize().width
+    const currentReadingItem = readingItemManager.getFocusedReadingItem()
+    let potentialNewReadingItem = readingItemManager.getReadingItemAtOffset(newOffset) || readingItemManager.get(0)
+
+    // prevent to go outside of edges
+    if (newOffset < 0 || (newOffset > maximumOffset)) {
+      Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `prevent due to out of bound offset`)
+      return
+    }
+
+    const readingItem = potentialNewReadingItem !== currentReadingItem ? potentialNewReadingItem : currentReadingItem
+    const readingItemHasChanged = readingItem !== currentReadingItem
+
+    if (!readingItem) {
+      Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `prevent due to no reading item found`)
+      return
+    }
+    const newReadingItemIsBeforeCurrent = !readingItemManager.isAfter(readingItem, currentReadingItem || readingItem)
+
+    const newReadingItemPosition = readingItemHasChanged
+      ? newReadingItemIsBeforeCurrent ? 'before' as const : 'after' as const
+      : undefined
+
+    if (readingItemHasChanged && allowReadingItemChange === false) {
+      Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `prevent due to changing reading item but it is not allowed`)
+      return
+    }
+
+    return { offset: newOffset, readingItem, readingItemHasChanged, newReadingItemPosition }
+  }
+
   const turnLeft = Report.measurePerformance(`${NAMESPACE} turnLeft`, 10, ({ allowReadingItemChange = true }: { allowReadingItemChange?: boolean } = {}) => {
     const currentXoffset = getCurrentOffset()
     const nextPosition = context.isRTL()
       ? currentXoffset + context.getPageSize().width
       : currentXoffset - context.getPageSize().width
 
-    navigateToOffsetOrCfi(nextPosition, { allowReadingItemChange })
+    const resolvedNavigation = resolveReadingNavigationFromReadingOffset(nextPosition, { allowReadingItemChange })
+
+    if (resolvedNavigation) {
+      if (resolvedNavigation.readingItemHasChanged) {
+        lastUserExpectedNavigation = {
+          type: resolvedNavigation.newReadingItemPosition === 'after' ? 'navigate-from-previous-item' : 'navigate-from-next-item'
+        }
+      } else {
+        lastUserExpectedNavigation = undefined
+      }
+      navigateTo(resolvedNavigation.offset, resolvedNavigation.readingItem)
+    }
   })
 
   const turnRight = Report.measurePerformance(`${NAMESPACE} turnRight`, 10, ({ allowReadingItemChange = true }: { allowReadingItemChange?: boolean } = {}) => {
@@ -43,35 +102,60 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
       ? currentXoffset - context.getPageSize().width
       : currentXoffset + context.getPageSize().width
 
-    navigateToOffsetOrCfi(nextPosition, { allowReadingItemChange })
+    const resolvedNavigation = resolveReadingNavigationFromReadingOffset(nextPosition, { allowReadingItemChange })
+
+    if (resolvedNavigation) {
+      if (resolvedNavigation.readingItemHasChanged) {
+        lastUserExpectedNavigation = {
+          type: resolvedNavigation.newReadingItemPosition === 'after' ? 'navigate-from-previous-item' : 'navigate-from-next-item'
+        }
+      } else {
+        lastUserExpectedNavigation = undefined
+      }
+      navigateTo(resolvedNavigation.offset, resolvedNavigation.readingItem)
+    }
   })
 
   const goToPageOfCurrentChapter = (pageIndex: number) => {
     const readingItem = readingItemManager.getFocusedReadingItem()
+
     if (readingItem) {
-      const newOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(
-        readingItemLocator.getReadingItemOffsetFromPageIndex(pageIndex, readingItem),
-        readingItem
-      )
-      navigateToOffsetOrCfi(newOffset)
+      const readingItemOffset = readingItemLocator.getReadingItemOffsetFromPageIndex(pageIndex, readingItem)
+      const readingOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(readingItemOffset, readingItem)
+      lastUserExpectedNavigation = undefined
+      navigateTo(readingOffset, readingItem)
     }
   }
 
-  /**
-   * This method always starts from beginning of item unless a cfi is provided
-   * or an url with anchor
-   */
-  const goTo = (spineIndexOrSpineItemIdOrCfi: number | string) => {
-    let offsetOfReadingItem: number | undefined = undefined
+  const goToCfi = (cfi: string) => {
+    const firstReadingItem = readingItemManager.get(0)
+    const { readingItemOffset, readingItem } = resolveReadingItemOffsetAndReadingItemFromCfi(cfi)
 
-    // cfi
+    if (readingItem && readingItemOffset !== undefined) {
+      const readingOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(readingItemOffset, readingItem)
+      lastUserExpectedNavigation = { type: 'navigate-from-cfi', data: cfi }
+      navigateTo(readingOffset, readingItem)
+    } else if (firstReadingItem) {
+      navigateTo(0, firstReadingItem)
+    }
+  }
+
+  const goToSpineItem = (indexOrId: number | string) => {
+    const readingItem = readingItemManager.get(indexOrId)
+    const offsetOfReadingItem = readingItem ? readingItemManager.getPositionOf(readingItem).start : 0
+    if (readingItem) {
+      const readingOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(offsetOfReadingItem, readingItem)
+      // always want to be at the beginning of the item
+      lastUserExpectedNavigation = { type: 'navigate-from-previous-item' }
+      navigateTo(readingOffset, readingItem)
+    }
+  }
+
+  const goTo = (spineIndexOrSpineItemIdOrCfi: number | string) => {
     if (typeof spineIndexOrSpineItemIdOrCfi === `string` && spineIndexOrSpineItemIdOrCfi.startsWith(`epubcfi`)) {
-      navigateToOffsetOrCfi(spineIndexOrSpineItemIdOrCfi)
+      goToCfi(spineIndexOrSpineItemIdOrCfi)
     } else {
-      // spine item id
-      const readingItem = readingItemManager.get(spineIndexOrSpineItemIdOrCfi)
-      offsetOfReadingItem = readingItem ? readingItemManager.getPositionOf(readingItem).start : 0
-      navigateToOffsetOrCfi(offsetOfReadingItem || 0, { startOfReadingItem: true })
+      goToSpineItem(spineIndexOrSpineItemIdOrCfi)
     }
   }
 
@@ -91,90 +175,54 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
         const readingItem = readingItemManager.get(existingSpineItem.id)
         if (readingItem) {
           offsetOfReadingItem = readingItemManager.getPositionOf(readingItem).start
-          navigateToOffsetOrCfi(offsetOfReadingItem || 0, { startOfReadingItem: true, anchor: validUrl.hash })
+          const readingOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(offsetOfReadingItem || 0, readingItem)
+          lastUserExpectedNavigation = { type: 'navigate-from-anchor', data: validUrl.hash }
+          navigateTo(readingOffset, readingItem)
         }
       }
     }
   }
 
-  /**
-   * @todo optimize this function to not being called several times
-   */
-  const navigateToOffsetOrCfi = (offsetOrCfi: number | string, { allowReadingItemChange, startOfReadingItem, anchor }: {
-    allowReadingItemChange?: boolean,
-    startOfReadingItem?: boolean,
-    anchor?: string
-  } = {}) => {
-    let offset = typeof offsetOrCfi === `number` ? offsetOrCfi : 0
-    const latestReadingItem = readingItemManager.get(readingItemManager.getLength() - 1)
-    const distanceOfLastReadingItem = readingItemManager.getPositionOf(latestReadingItem || 0)
-    const maximumOffset = distanceOfLastReadingItem.end - context.getPageSize().width
-    const currentReadingItem = readingItemManager.getFocusedReadingItem()
-    let potentialNewReadingItem = readingItemManager.getReadingItemAtOffset(offset) || readingItemManager.get(0)
-
-    // prevent to go outside of edges
-    if (offset < 0 || (offset > maximumOffset)) {
-      Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `prevent due to out of bound offset`)
-      return
-    }
-
-    /**
-     * handle cfi case.
-     * We lookup the offset of the correct reading item, then we try to lookup the node.
-     * There is a high change the iframe is not ready yet. This is why the cfi will mostly 
-     * be adjusted later. At least we navigate and focus the right reading item
-     */
-    if (typeof offsetOrCfi === `string`) {
-      const { itemId } = extractObokuMetadataFromCfi(offsetOrCfi)
-      if (!itemId) {
-        Report.warn(`ReadingOrderView`, `unable to extract item id from cfi ${offsetOrCfi}`)
+  const resolveReadingItemOffsetAndReadingItemFromCfi = (cfi: string) => {
+    let readingItemOffset = undefined
+    let readingItem: ReadingItem | undefined = undefined
+    const { itemId } = extractObokuMetadataFromCfi(cfi)
+    if (!itemId) {
+      Report.warn(`ReadingOrderView`, `unable to extract item id from cfi ${cfi}`)
+    } else {
+      const { itemId } = extractObokuMetadataFromCfi(cfi)
+      readingItem = (itemId ? readingItemManager.get(itemId) : undefined) || readingItemManager.get(0)
+      if (readingItem) {
+        readingItemOffset = readingItemLocator.getReadingItemOffsetFromCfi(cfi, readingItem)
       } else {
-        const { itemId } = extractObokuMetadataFromCfi(offsetOrCfi)
-        potentialNewReadingItem = (itemId ? readingItemManager.get(itemId) : undefined) || readingItemManager.get(0)
-        if (potentialNewReadingItem) {
-          offset = readingItemLocator.getReadingItemOffsetFromCfi(offsetOrCfi, potentialNewReadingItem)
-        } else {
-          Report.warn(`ReadingOrderView`, `unable to detect item id from cfi ${offsetOrCfi}`)
-        }
+        Report.warn(`ReadingOrderView`, `unable to detect item id from cfi ${cfi}`)
       }
     }
 
-    const newReadingItem = potentialNewReadingItem !== currentReadingItem ? potentialNewReadingItem : currentReadingItem
-    const readingItemHasChanged = newReadingItem !== currentReadingItem
+    return { readingItemOffset, readingItem }
+  }
 
-    if (!newReadingItem) return
-
-    const newReadingItemIsBeforeCurrent = !readingItemManager.isAfter(newReadingItem, currentReadingItem || newReadingItem)
-
-    if (readingItemHasChanged && allowReadingItemChange === false) {
-      Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `prevent due to changing reading item but it is not allowed`)
-      return
-    }
+  /**
+   * @todo optimize this function to not being called several times
+   */
+  const navigateTo = (offset: number, readingItem: ReadingItem) => {
+    const currentReadingItem = readingItemManager.getFocusedReadingItem()
+    const readingItemHasChanged = readingItem !== currentReadingItem
 
     adjustReadingOffset(offset)
 
-    const offsetInCurrentReadingItem = locator.getReadingItemOffsetFromReadingOrderViewOffset(offset, newReadingItem)
-
-    if (anchor) {
-      lastUserExpectedNavigation = { type: 'navigate-from-anchor', data: anchor }
-    } else if (currentReadingItem !== undefined && readingItemHasChanged && newReadingItemIsBeforeCurrent && !startOfReadingItem) {
-      lastUserExpectedNavigation = { type: 'turned-prev-chapter' }
-    } else if (typeof offsetOrCfi === `string`) {
-      lastUserExpectedNavigation = { type: 'navigate-from-cfi', data: offsetOrCfi }
-    } else {
-      lastUserExpectedNavigation = undefined
-    }
+    const offsetInCurrentReadingItem = locator.getReadingItemOffsetFromReadingOrderViewOffset(offset, readingItem)
 
     if (readingItemHasChanged) {
-      readingItemManager.focus(newReadingItem)
+      readingItemManager.focus(readingItem)
     }
 
-    pagination.update(newReadingItem, offsetInCurrentReadingItem, {
+    pagination.update(readingItem, offsetInCurrentReadingItem, {
       isAtEndOfChapter: false,
       shouldUpdateCfi: lastUserExpectedNavigation?.type !== 'navigate-from-cfi'
     })
 
-    Report.log(NAMESPACE, `navigateToOffsetOrCfi`, `navigate success`, { readingItemHasChanged, newReadingItem, offset, offsetInCurrentReadingItem })
+    Report.log(NAMESPACE, `navigateTo`, `navigate success`, { readingItemHasChanged, readingItem, offset, offsetInCurrentReadingItem, lastUserExpectedNavigation })
 
     readingItemManager.loadContents()
   }
@@ -208,14 +256,21 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
     if (lastUserExpectedNavigation?.type === 'navigate-from-cfi') {
       offsetInReadingItem = readingItemLocator.getReadingItemOffsetFromCfi(lastUserExpectedNavigation.data, readingItem)
       Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `navigate-from-cfi`, { cfi: lastUserExpectedNavigation.data })
-    } else if (lastUserExpectedNavigation?.type === 'turned-prev-chapter') {
+    } else if (lastUserExpectedNavigation?.type === 'navigate-from-next-item') {
       /**
-       * When `turned-prev-chapter` we always try to get the offset of the last page, that way
+       * When `navigate-from-next-item` we always try to get the offset of the last page, that way
        * we ensure reader is always redirected to last page
        */
       const numberOfPages = getNumberOfPages(readingItem.getBoundingClientRect().width, pageWidth)
       offsetInReadingItem = readingItemLocator.getReadingItemOffsetFromPageIndex(numberOfPages - 1, readingItem)
-      Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `turned-prev-chapter`, {})
+      Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `navigate-from-next-item`, {})
+    } else if (lastUserExpectedNavigation?.type === 'navigate-from-previous-item') {
+      /**
+       * When `navigate-from-previous-item'` 
+       * we always try stay on the first page of the item
+       */
+      offsetInReadingItem = readingItemLocator.getReadingItemOffsetFromPageIndex(0, readingItem)
+      Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `navigate-from-previous-item`, {})
     } else if (lastUserExpectedNavigation?.type === 'navigate-from-anchor') {
       /**
        * When `navigate-from-anchor` we just stay on the current reading item and try to get
@@ -243,6 +298,8 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
 
     expectedReadingOrderViewOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(offsetInReadingItem, readingItem)
 
+    Report.log(NAMESPACE, `adjustReadingOffsetPosition`, { offsetInReadingItem, expectedReadingOrderViewOffset })
+
     if (expectedReadingOrderViewOffset !== currentXoffset) {
       adjustReadingOffset(expectedReadingOrderViewOffset)
     }
@@ -263,7 +320,9 @@ export const createNavigator = ({ readingItemManager, context, pagination, eleme
     turnLeft,
     turnRight,
     goTo,
+    goToSpineItem,
     goToUrl,
+    goToCfi,
     goToPageOfCurrentChapter,
     adjustReadingOffsetPosition,
   }

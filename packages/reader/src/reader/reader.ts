@@ -59,14 +59,14 @@ export const createReader = ({ containerElement }: {
     loadOptions: LoadOptions = {
         fetchResource: `http`
       },
-    spineIndexOrIdOrCfi?: string | number
+    cfi?: string | null
   ) => {
     if (context) {
       Report.warn(`loading a new book is not supported yet`)
       return
     }
 
-    Report.log(`load`, { manifest, spineIndexOrIdOrCfi })
+    Report.log(`load`, { manifest, spineIndexOrIdOrCfi: cfi })
 
     context = createBookContext(manifest, loadOptions)
 
@@ -110,7 +110,11 @@ export const createReader = ({ containerElement }: {
     // this will trigger every layout needed from this point. This allow user to start navigating
     // through the book even before other chapter are ready
     // readingOrderView.moveTo(20)
-    readingOrderView?.goTo(spineIndexOrIdOrCfi || 0)
+    if (!cfi) {
+      readingOrderView.goToSpineItem(0)
+    } else {
+      readingOrderView.goToCfi(cfi)
+    }
 
     layout()
 

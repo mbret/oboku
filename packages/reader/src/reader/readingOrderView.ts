@@ -132,13 +132,13 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
       const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0
       const numberOfSpineItems = context?.manifest.readingOrder.length || 1
       if (currentSpineIndex < (numberOfSpineItems - 1)) {
-        navigator.goTo(currentSpineIndex + 1)
+        navigator.goToSpineItem(currentSpineIndex + 1)
       }
     },
     goToPreviousSpineItem: () => {
       const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0
       if (currentSpineIndex > 0) {
-        navigator.goTo(currentSpineIndex - 1)
+        navigator.goToSpineItem(currentSpineIndex - 1)
       }
     },
     load,
