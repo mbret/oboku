@@ -11,7 +11,6 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
 }) => {
   const helpers = createSharedHelpers({ context, item, containerElement })
   let element = helpers.element
-  let loadingElement = helpers.loadingElement
   let readingItemFrame = helpers.readingItemFrame
   const fingerTracker = createFingerTracker()
   const selectionTracker = createSelectionTracker()
@@ -54,7 +53,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
     const frameElement = readingItemFrame.getFrameElement()
     if (element && frameElement?.contentDocument && frameElement?.contentWindow) {
       let contentWidth = pageWidth
-      const contentHeight = visibleArea.height + context.getCalculatedInnerMargin()
+      let contentHeight = visibleArea.height + context.getCalculatedInnerMargin()
 
       if (viewportDimensions) {
         const computedScale = Math.min(pageWidth / viewportDimensions.width, pageHeight / viewportDimensions.height)
@@ -71,19 +70,27 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
         frameElement?.style.setProperty(`transform-origin`, `center center`)
       } else {
         helpers.injectStyle(readingItemFrame, buildStyleWithMultiColumn(getDimensions()))
-        const pages = Math.ceil(
-          // frameElement.contentDocument.documentElement.scrollWidth / pageWidth
-          frameElement.contentWindow.document.body.scrollWidth / pageWidth
-        )
-        contentWidth = pages * pageWidth
+        if (readingItemFrame.getWritingMode() === 'vertical-rl') {
+          const pages = Math.ceil(
+            frameElement.contentDocument.documentElement.scrollHeight / pageHeight
+          )
+          contentHeight = pages * pageHeight
 
-        // debugger
-        // console.log('PAGES', frameElement.contentWindow.document.body.scrollWidth, pageWidth, pages)
+          readingItemFrame.staticLayout({
+            width: contentWidth,
+            height: contentHeight,
+          })
+        } else {
+          const pages = Math.ceil(
+            frameElement.contentDocument.documentElement.scrollWidth / pageWidth
+          )
+          contentWidth = pages * pageWidth
 
-        readingItemFrame.staticLayout({
-          width: contentWidth,
-          height: contentHeight,
-        })
+          readingItemFrame.staticLayout({
+            width: contentWidth,
+            height: contentHeight,
+          })
+        }
       }
 
       element.style.width = `${contentWidth}px`
@@ -96,6 +103,11 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
   }
 
   const layout = () => {
+    const { width: pageWidth, height: pageHeight } = context.getPageSize()
+    // reset width of iframe to be able to retrieve real size later
+    readingItemFrame.getFrameElement()?.style.setProperty(`width`, `${pageWidth}px`)
+    readingItemFrame.getFrameElement()?.style.setProperty(`height`, `${pageHeight}px`)
+
     const newSize = applySize()
 
     return {
@@ -107,20 +119,16 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
 
   const unloadContent = () => {
     helpers.unloadContent()
-
-    // layout()
   }
 
   readingItemFrame$ = helpers.readingItemFrame.$.subscribe((data) => {
     if (data.event === `domReady`) {
       fingerTracker.track(data.data)
       selectionTracker.track(data.data)
-
-      // applySize()
     }
 
     if (data.event === 'layout') {
-      layout()
+      applySize()
       helpers.$.next(data)
     }
   })

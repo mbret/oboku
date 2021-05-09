@@ -86,6 +86,8 @@ export const createPublicApi = (reader: ReturnType<typeof createReader>) => {
           // charOffset: number;
           // serializeString?: string;
           spineItemIndex: readingItemManager?.getFocusedReadingItemIndex(),
+          spineItemPath: readingItemManager?.getFocusedReadingItem()?.item.path,
+          spineItemId: readingItemManager?.getFocusedReadingItem()?.item.id,
           cfi: pagination.getCfi(),
         },
         // end: ReadingLocation;

@@ -4,7 +4,7 @@ import { Report } from "../report";
 import { IFRAME_EVENT_BRIDGE_ELEMENT_ID } from "./constants";
 import { Context, ContextObservableEvents, createContext as createBookContext } from "./context";
 import { createPagination } from "./pagination";
-import { createReadingOrderView, ReadingOrderView } from "./readingOrderView";
+import { createReadingOrderView, ReadingOrderView } from "./readingOrderView/readingOrderView";
 import { LoadOptions, Manifest } from "./types";
 
 export const createReader = ({ containerElement }: {

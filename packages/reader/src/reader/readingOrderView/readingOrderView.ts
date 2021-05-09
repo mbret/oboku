@@ -1,14 +1,17 @@
 import { EMPTY, interval, Subject, Subscription } from "rxjs"
 import { catchError, debounce, filter, switchMap, takeUntil, tap } from "rxjs/operators"
-import { Report } from "../report"
-import { Context } from "./context"
-import { translateFramePositionIntoPage } from "./frames"
-import { buildChapterInfoFromReadingItem } from "./navigation"
-import { createNavigator } from "./navigator"
-import { Pagination } from "./pagination"
-import { createReadingItem } from "./readingItem"
-import { createReadingItemManager } from "./readingItemManager"
-import { Manifest } from "./types"
+import { Report } from "../../report"
+import { Context } from "../context"
+import { translateFramePositionIntoPage } from "../frames"
+import { buildChapterInfoFromReadingItem } from "../navigation"
+import { createViewportNavigator } from "./viewportNavigator"
+import { Pagination } from "../pagination"
+import { createReadingItem } from "../readingItem"
+import { createReadingItemManager } from "../readingItemManager"
+import { Manifest } from "../types"
+import { createLocator } from "./locator"
+
+const NAMESPACE = 'readingOrderView'
 
 export type ReadingOrderView = ReturnType<typeof createReadingOrderView>
 
@@ -23,7 +26,8 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
   const readingItemManager = createReadingItemManager({ context })
   const element = createElement(doc)
   containerElement.appendChild(element)
-  const navigator = createNavigator({ context, pagination, readingItemManager, element })
+  const viewportNavigator = createViewportNavigator({ context, pagination, readingItemManager, element })
+  const locator = createLocator({ context, readingItemManager })
   let selectionSubscription: Subscription | undefined
   let readingItemManagerSubscription: Subscription | undefined
   let focusedReadingItemSubscription: Subscription | undefined
@@ -35,7 +39,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
       // internal link, we can handle
       const hasExistingSpineItem = context.manifest.readingOrder.some(item => item.href === hrefWithoutAnchor)
       if (hasExistingSpineItem) {
-        navigator.goToUrl(hrefUrl)
+        viewportNavigator.goToUrl(hrefUrl)
       }
     }
   })
@@ -58,34 +62,37 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
   readingItemManagerSubscription = readingItemManager.$.pipe(
     tap((event) => {
       if (event.event === 'layout') {
-        navigator.adjustReadingOffsetPosition({ shouldAdjustCfi: false })
+        const focusedReadingItem = readingItemManager.getFocusedReadingItem()
+        if (focusedReadingItem) {
+          viewportNavigator.adjustReadingOffsetPosition(focusedReadingItem, { shouldAdjustCfi: false })
+        }
       }
-  
+
       if (event.event === 'focus') {
         const readingItem = event.data
         const fingerTracker$ = readingItem.fingerTracker.$
         const selectionTracker$ = readingItem.selectionTracker.$
-  
+
         if (readingItem.getIsReady()) {
           // @todo maybe we need to adjust cfi here ? it should be fine since if it's already
           // ready then the navigation should have caught the right cfi, if not the observable
           // will catch it
         }
-  
+
         focusedReadingItemSubscription?.unsubscribe()
         focusedReadingItemSubscription = readingItem.$.pipe(
           tap(event => {
             if (event.event === 'layout' && event.data.isFirstLayout && event.data.isReady) {
-              navigator.adjustReadingOffsetPosition({ shouldAdjustCfi: true })
+              viewportNavigator.adjustReadingOffsetPosition(readingItem, { shouldAdjustCfi: true })
             }
           }),
           catchError(e => {
             Report.error(e)
-  
+
             return EMPTY
           }),
         ).subscribe()
-  
+
         selectionSubscription?.unsubscribe()
         selectionSubscription = selectionTracker$
           .pipe(filter(({ event }) => event === 'selectstart'))
@@ -98,7 +105,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
                   .pipe(
                     filter(({ event }) => event === 'fingerout'),
                     tap(() => {
-  
+
                     })
                   )
                 ),
@@ -106,9 +113,9 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
                   if (data) {
                     const fingerPosition = translateFramePositionIntoPage(context, pagination, data, readingItem)
                     if (fingerPosition.x >= context.getPageSize().width) {
-                      navigator.turnRight({ allowReadingItemChange: false })
+                      viewportNavigator.turnRight({ allowReadingItemChange: false })
                     } else if (fingerPosition.x <= context.getPageSize().width) {
-                      navigator.turnLeft({ allowReadingItemChange: false })
+                      viewportNavigator.turnLeft({ allowReadingItemChange: false })
                     }
                   }
                 })
@@ -125,20 +132,52 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
     }),
   ).subscribe()
 
+  const navigatorSubscription = viewportNavigator.$
+    .pipe(tap(({ event, data }) => {
+      if (event === 'navigation') {
+
+        const currentReadingItem = readingItemManager.getFocusedReadingItem()
+        const readingItemForCurrentNavigation = data.readingItem || locator.getReadingItemFromOffset(data.x)
+
+        if (readingItemForCurrentNavigation) {
+          const readingItemHasChanged = readingItemForCurrentNavigation !== currentReadingItem
+          const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewOffset(data.x, readingItemForCurrentNavigation)
+
+          if (readingItemHasChanged) {
+            readingItemManager.focus(readingItemForCurrentNavigation)
+          }
+
+          const lastExpectedNavigation = viewportNavigator.getLastUserExpectedNavigation()
+
+          pagination.update(readingItemForCurrentNavigation, readingItemPosition.x, {
+            isAtEndOfChapter: false,
+            cfi: lastExpectedNavigation?.type === 'navigate-from-cfi'
+              ? lastExpectedNavigation.data
+              : undefined
+          })
+
+          Report.log(NAMESPACE, `navigateTo`, `navigate success`, { readingItemHasChanged, readingItemForCurrentNavigation, offset: data.x, readingItemPosition, lastExpectedNavigation })
+
+          readingItemManager.loadContents()
+        }
+      }
+    }))
+    .subscribe()
+
   return {
-    ...navigator,
+    ...viewportNavigator,
     readingItemManager,
     goToNextSpineItem: () => {
       const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0
       const numberOfSpineItems = context?.manifest.readingOrder.length || 1
       if (currentSpineIndex < (numberOfSpineItems - 1)) {
-        navigator.goToSpineItem(currentSpineIndex + 1)
+        viewportNavigator.goToSpineItem(currentSpineIndex + 1)
       }
     },
     goToPreviousSpineItem: () => {
       const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0
       if (currentSpineIndex > 0) {
-        navigator.goToSpineItem(currentSpineIndex - 1)
+        viewportNavigator.goToSpineItem(currentSpineIndex - 1)
       }
     },
     load,
@@ -153,6 +192,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
       selectionSubscription?.unsubscribe()
       focusedReadingItemSubscription?.unsubscribe()
       contextSubscription.unsubscribe()
+      navigatorSubscription.unsubscribe()
       element.remove()
     },
     isSelecting: () => readingItemManager.getFocusedReadingItem()?.selectionTracker.isSelecting(),

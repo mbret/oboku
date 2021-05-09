@@ -26,7 +26,7 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
   const adjustPositionOfElement = (edgeOffset: number | undefined) => {
     if (edgeOffset === undefined) return
     if (context.isRTL()) {
-      // could also be negative left
+      // could also be negative left but I am not in the mood
       // will push items on the left
       element.style.right = `${edgeOffset}px`
     } else {

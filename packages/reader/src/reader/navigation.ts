@@ -1,7 +1,7 @@
 import { Context } from "./context";
 import { Pagination } from "./pagination";
 import { ReadingItem } from "./readingItem";
-import { ReadingOrderView } from "./readingOrderView";
+import { ReadingOrderView } from "./readingOrderView/readingOrderView";
 import { Manifest } from "./types";
 
 export type ChapterInfo = {

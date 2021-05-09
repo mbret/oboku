@@ -12,13 +12,15 @@ export const createLocator = ({ context }: {
     const itemWidth = readingItem.getBoundingClientRect().width
     const itemReadingDirection = readingItem.getReadingDirection()
 
-    const relativeOffset = getItemOffsetFromPageIndex(context.getPageSize().width, pageIndex, itemWidth)
+    const ltrRelativeOffset = getItemOffsetFromPageIndex(context.getPageSize().width, pageIndex, itemWidth)
 
     if (itemReadingDirection === 'rtl') {
-      return (itemWidth - relativeOffset) - context.getPageSize().width
+      // const absoluteOffset = 
+      console.warn(`getReadingItemOffsetFromPageIndex`, { itemWidth, ltrRelativeOffset, pageIndex, page: context.getPageSize().width })
+      return (itemWidth - ltrRelativeOffset) - context.getPageSize().width
     }
 
-    return relativeOffset
+    return ltrRelativeOffset
   }
 
   const getReadingItemPageIndexFromOffset = (offset: number, readingItem: ReadingItem) => {
@@ -27,13 +29,22 @@ export const createLocator = ({ context }: {
     const pageWidth = context.getPageSize().width
     const numberOfPages = getNumberOfPages(itemWidth, pageWidth)
 
-    let offsetNormalizedForLtr = offset
+    let offsetNormalizedForLtr = Math.min(itemWidth, Math.max(0, offset))
 
     if (itemReadingDirection === 'rtl') {
-      offsetNormalizedForLtr = (itemWidth - offset) - context.getPageSize().width
+      offsetNormalizedForLtr = (itemWidth - offsetNormalizedForLtr) - context.getPageSize().width
     }
 
     const pageIndex = getPageFromOffset(offsetNormalizedForLtr, pageWidth, numberOfPages)
+
+    console.warn(`getReadingItemPageIndexFromOffset`, {
+      pageIndex,
+      offset: Math.min(itemWidth, Math.max(0, offset)),
+      offsetNormalizedForLtr,
+      pageWidth,
+      itemWidth,
+      numberOfPages
+    })
 
     return pageIndex
   }
@@ -178,11 +189,19 @@ export const createLocator = ({ context }: {
     return undefined
   }
 
+  const getReadingItemClosestOffsetFromUnsafeOffet = (unsafeOffset: number, readingItem: ReadingItem) => { 
+    const itemWidth = (readingItem.getBoundingClientRect()?.width || 0)
+    const pageWidth = context.getPageSize().width
+
+    return getClosestValidOffsetFromApproximateOffsetInPages(unsafeOffset, pageWidth, itemWidth)
+  }
+
   return {
     getReadingItemOffsetFromCfi,
     getReadingItemOffsetFromPageIndex,
     getReadingItemOffsetFromAnchor,
     getReadingItemPageIndexFromOffset,
+    getReadingItemClosestOffsetFromUnsafeOffet,
     getCfi,
     resolveCfi
   }

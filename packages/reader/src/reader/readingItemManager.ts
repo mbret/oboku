@@ -93,6 +93,18 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
 
   const getFocusedReadingItem = () => activeReadingItemIndex !== undefined ? orderedReadingItems[activeReadingItemIndex] : undefined
 
+  const isAfter = (item1: ReadingItem, item2: ReadingItem) => {
+    return orderedReadingItems.indexOf(item1) > orderedReadingItems.indexOf(item2)
+  }
+
+  const comparePositionOf = (toCompare: ReadingItem, withItem: ReadingItem) => {
+    if (isAfter(toCompare, withItem)) {
+      return 'after'
+    }
+
+    return 'before'
+  }
+
   return {
     add: (readingItem: ReadingItem) => {
       orderedReadingItems.push(readingItem)
@@ -120,15 +132,16 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
     layout,
     focus,
     loadContents,
-    isAfter: (item1: ReadingItem, item2: ReadingItem) => {
-      return orderedReadingItems.indexOf(item1) > orderedReadingItems.indexOf(item2)
-    },
+    isAfter,
+    comparePositionOf,
     getPositionOf,
     getReadingItemAtOffset: (offset: number) => {
       const detectedItem = orderedReadingItems.find(item => {
         const { start, end } = getPositionOf(item)
         return offset >= start && offset < end
       })
+
+      if (offset === 0 && !detectedItem) return orderedReadingItems[0]
 
       if (!detectedItem) {
         return getFocusedReadingItem()
@@ -140,6 +153,9 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
     getFocusedReadingItemIndex: () => {
       const item = getFocusedReadingItem()
       return item && orderedReadingItems.indexOf(item)
+    },
+    getReadingItemIndex: (readingItem: ReadingItem) => {
+      return orderedReadingItems.indexOf(readingItem)
     },
     destroy: () => {
       orderedReadingItems.forEach(item => item.destroy())

@@ -54,6 +54,12 @@ export const createReadingItemFrame = (
     }
   }
 
+  const getWritingMode = () => {
+    if (frameElement?.contentDocument) {
+      return frameElement?.contentWindow?.getComputedStyle(frameElement.contentDocument.body).writingMode as 'vertical-rl' | 'horizontal-tb' | undefined
+    }
+  }
+
   return {
     getIsReady() {
       return isReady
@@ -152,12 +158,18 @@ export const createReadingItemFrame = (
       }
     },
     getReadingDirection: (): 'ltr' | 'rtl' | undefined => {
+      const writingMode = getWritingMode()
+      if (writingMode === `vertical-rl`) {
+        return 'rtl'
+      }
+      
       if (frameElement?.contentWindow && frameElement?.contentDocument?.body) {
         const direction = frameElement.contentWindow.getComputedStyle(frameElement.contentDocument.body).direction
         if (['ltr', 'rtl'].includes(direction)) return direction as ('ltr' | 'rtl')
       }
       return undefined
     },
+    getWritingMode,
     destroy: () => {
       unload()
     },
