@@ -5,6 +5,8 @@ import { getItemOffsetFromPageIndex, getClosestValidOffsetFromApproximateOffsetI
 import { ReadingItem } from "../readingItem"
 import { getFirstVisibleNodeForViewport, getRangeFromNode } from "../utils/dom"
 
+const NAMESPACE = `readingItemLocator`
+
 export const createLocator = ({ context }: {
   context: Context,
 }) => {
@@ -52,7 +54,6 @@ export const createLocator = ({ context }: {
     const pageWidth = context.getPageSize().width
     const anchorElementBoundingRect = readingItem.getBoundingRectOfElementFromSelector(anchor)
 
-    // @todo writing-direction
     const offsetOfAnchor = anchorElementBoundingRect?.x || 0
 
     return getClosestValidOffsetFromApproximateOffsetInPages(offsetOfAnchor, pageWidth, itemWidth)
@@ -61,7 +62,6 @@ export const createLocator = ({ context }: {
   const getReadingItemOffsetFromCfi = (cfi: string, readingItem: ReadingItem) => {
     const { node, offset = 0 } = resolveCfi(cfi, readingItem) || {}
 
-    // @todo writing-direction
     let offsetOfNodeInReadingItem = 0
 
     // for some reason `img` does not work with range (x always = 0)
@@ -77,7 +77,7 @@ export const createLocator = ({ context }: {
 
     const val = getClosestValidOffsetFromApproximateOffsetInPages(offsetOfNodeInReadingItem, pageWidth, readingItemWidth)
 
-    console.warn(`getReadingItemOffsetFromCfi`, { node, offset, offsetOfNodeInReadingItem, itemOffset: val })
+    Report.log(NAMESPACE, `getReadingItemOffsetFromCfi`, { node, offset, offsetOfNodeInReadingItem, itemOffset: val })
 
     return val
   }
@@ -86,10 +86,6 @@ export const createLocator = ({ context }: {
     const pageSize = context.getPageSize()
     const frame = readingItem.readingItemFrame?.getFrameElement()
 
-    const yOffset = 0 + context.getVerticalMargin()
-    // return frame?.contentDocument?.body.childNodes[0]
-
-    // return frame?.contentWindow?.document.caretRangeFromPoint(offset, 0).startContainer
     if (
       frame?.contentWindow?.document
       // very important because it is being used by next functions
@@ -98,39 +94,16 @@ export const createLocator = ({ context }: {
 
       const left = getReadingItemOffsetFromPageIndex(pageIndex, readingItem)
       const viewport = {
-        // left: pageIndex * pageSize.width,
         left,
-        // right: (pageIndex * pageSize.width) + pageSize.width,
         right: left + pageSize.width,
         top: 0,
         bottom: pageSize.height
       }
 
-      // console.warn(`getFirstNodeOrRangeAtPage`, viewport)
       const res = getFirstVisibleNodeForViewport(frame.contentWindow.document, viewport)
-
-      // const res = getFirstVisibleNodeFromPoint(frame?.contentWindow?.document, offsetInReadingItem, yOffset)
-
-
-      // if (res && `offsetNode` in res) {
-
-      //   return { node: res.offsetNode, offset: 0 }
-      // }
-      // if (res && `startContainer` in res) {
-      //   return { node: res.startContainer, offset: res.startOffset }
-      // }
 
       return res
     }
-    // if (frame) {
-    //   const element = Array.from(frame.contentWindow?.document.body.children || []).find(children => {
-    //     const { x, width } = children.getBoundingClientRect()
-
-    //     return (x + width) > offset
-    //   })
-
-    //   return element?.children[0]
-    // }
 
     return undefined
   }
@@ -145,10 +118,8 @@ export const createLocator = ({ context }: {
     // @see https://github.com/fread-ink/epub-cfi-resolver/issues/8
     const offset = `|[oboku~offset~${nodeOrRange?.offset || 0}]`
 
-    console.warn(`getCfi`, { nodeOrRange })
     if (nodeOrRange && doc) {
       const cfiString = CFI.generate(nodeOrRange.node, 0, `${itemAnchor}${offset}`)
-      // console.log('FOOO', CFI.generate(nodeOrRange.startContainer, nodeOrRange.startOffset))
 
       return cfiString
     }
@@ -166,16 +137,7 @@ export const createLocator = ({ context }: {
 
     if (doc) {
       try {
-        // console.warn('FIII', cleanedCfi, cfi)
-        // console.log('FIII', (new CFI('epubcfi(/2/4/2[_preface]/10/1:175[oboku:id-id2632344]', {})).resolve(doc, {}))
-        // const { cleanedCfi: foo, itemId } = extractObokuMetadataFromCfi('epubcfi(/2/4/2[I_book_d1e1]/14/2[id2602563]/4/1:190|[oboku:id-id2442754])')
-        // const { cleanedCfi: foo, itemId } = extractObokuMetadataFromCfi('epubcfi(/2/4/2[I_book_d1e1]/14/2[id2602563]/4/1:100|[oboku:id-id2442754])')
-        // const cfiObject = (new CFI(foo, {}))
-        // const resolve = cfiObject.resolve(doc, {})
-        // console.warn('FIII', foo, (new CFI(foo, {})), resolve.node, resolve)
         const { node } = cfi.resolve(doc, {})
-
-        // console.warn(cleanedCfi, cfi.resolve(doc, {}), offset)
 
         return { node, offset }
       } catch (e) {

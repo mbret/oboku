@@ -18,7 +18,6 @@ export const createContext = (manifest: Manifest, loadOptions: LoadOptions) => {
   const marginTop = 0
   const marginBottom = 0
 
-  // @todo
   const shouldDisplaySpread = () => false
 
   return {

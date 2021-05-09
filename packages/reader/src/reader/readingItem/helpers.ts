@@ -95,12 +95,6 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
   }
 
   return {
-    /**
-     * @todo load iframe content later so that resources are less intensives.
-     * Right now we load iframe content and kinda block the following of the reader until
-     * every reading item have their iframe ready. Ideally we want to start loading iframe
-     * only from the first reading item navigated to and then progressively with the adjacent one
-     */
     load: () => {
       containerElement.appendChild(element)
       element.appendChild(loadingElement)

@@ -106,10 +106,6 @@ export const createReader = ({ containerElement }: {
 
     readingOrderView.load()
 
-    // @todo support navigating through specific reading item & position
-    // this will trigger every layout needed from this point. This allow user to start navigating
-    // through the book even before other chapter are ready
-    // readingOrderView.moveTo(20)
     if (!cfi) {
       readingOrderView.goToSpineItem(0)
     } else {

@@ -3,13 +3,11 @@ import { Context } from "../context"
 import { Pagination } from "../pagination"
 import { ReadingItemManager } from "../readingItemManager"
 import { createLocator } from "./locator"
-import { createLocator as createReadingItemLocator } from "../readingItem/locator"
-import { createNavigator as createReadingItemNavigator } from "../readingItem/navigator"
 import { createNavigator } from "./navigator"
 import { Subject } from "rxjs"
 import { ReadingItem } from "../readingItem"
 
-const NAMESPACE = `navigator`
+const NAMESPACE = `viewportNavigator`
 
 export const createViewportNavigator = ({ readingItemManager, context, pagination, element }: {
   readingItemManager: ReadingItemManager,
@@ -97,6 +95,7 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
   }
 
   const goToCfi = (cfi: string) => {
+    Report.log(NAMESPACE, `goToCfi`, { cfi })
     const navigation = navigator.getNavigationForCfi(cfi)
     lastUserExpectedNavigation = { type: 'navigate-from-cfi', data: cfi }
     navigateTo(navigation)
