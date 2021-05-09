@@ -72,7 +72,10 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
 
   const getBoundingRectOfElementFromSelector = (selector: string) => {
     const frame = readingItemFrame.getFrameElement()
-    if (frame) {
+    if (frame && selector) {
+      if (selector.startsWith(`#`)) {
+        return frame.contentDocument?.getElementById(selector.replace(`#`, ``))?.getBoundingClientRect()
+      }
       return frame.contentDocument?.querySelector(selector)?.getBoundingClientRect()
     }
   }

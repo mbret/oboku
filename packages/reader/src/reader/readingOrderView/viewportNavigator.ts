@@ -19,10 +19,8 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
 }) => {
   const navigator = createNavigator({ context, readingItemManager })
   const locator = createLocator({ context, readingItemManager })
-  const readingItemLocator = createReadingItemLocator({ context })
-  const readingItemNavigator = createReadingItemNavigator({ context })
   let isFirstNavigation = true
-  const subject = new Subject<{ event: 'navigation', data: { x: number, y: number, readingItem?: ReadingItem } }>()
+  const subject = new Subject<{ event: 'navigation', data: { x: number, y: number, readingItem?: ReadingItem } } | { event: 'adjust', data: { x: number, y: number } }>()
   let lastUserExpectedNavigation:
     | undefined
     // always adjust at the first page
@@ -166,21 +164,21 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
      * to there
      */
     if (lastUserExpectedNavigation?.type === 'navigate-from-cfi') {
-      offsetInReadingItem = readingItemLocator.getReadingItemOffsetFromCfi(lastUserExpectedNavigation.data, readingItem)
-      Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `navigate-from-cfi`, { cfi: lastUserExpectedNavigation.data })
+      expectedReadingOrderViewOffset = navigator.getNavigationForCfi(lastUserExpectedNavigation.data).x
+      Report.log(NAMESPACE, `navigate-from-cfi`, `use last cfi`)
     } else if (lastUserExpectedNavigation?.type === 'navigate-from-next-item') {
       /**
        * When `navigate-from-next-item` we always try to get the offset of the last page, that way
        * we ensure reader is always redirected to last page
        */
-      offsetInReadingItem = readingItemNavigator.getNavigationForLastPage(readingItem).x
+      expectedReadingOrderViewOffset = navigator.getNavigationForLastPage(readingItem).x
       Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `navigate-from-next-item`, {})
     } else if (lastUserExpectedNavigation?.type === 'navigate-from-previous-item') {
       /**
        * When `navigate-from-previous-item'` 
        * we always try stay on the first page of the item
        */
-      offsetInReadingItem = readingItemNavigator.getNavigationForPage(0, readingItem).x
+      expectedReadingOrderViewOffset = navigator.getNavigationForPage(0, readingItem).x
       Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `navigate-from-previous-item`, {})
     } else if (lastUserExpectedNavigation?.type === 'navigate-from-anchor') {
       /**
@@ -188,13 +186,13 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
        * the offset of that anchor.
        */
       const anchor = lastUserExpectedNavigation.data
-      offsetInReadingItem = readingItemLocator.getReadingItemOffsetFromAnchor(anchor, readingItem)
+      expectedReadingOrderViewOffset = navigator.getNavigationForAnchor(anchor, readingItem).x
     } else if (lastCfi) {
       /**
        * When there is no last navigation then we first look for any existing CFI. If there is a cfi we try to retrieve
        * the offset and navigate the user to it
        */
-      offsetInReadingItem = readingItemLocator.getReadingItemOffsetFromCfi(lastCfi, readingItem)
+      expectedReadingOrderViewOffset = navigator.getNavigationForCfi(lastCfi).x
       Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `use last cfi`)
     } else {
       /**
@@ -203,26 +201,17 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
       // @todo get x of first visible element and try to get the page for this element
       // using the last page is not accurate since we could have less pages
       const currentPageIndex = pagination.getPageIndex() || 0
-      offsetInReadingItem = readingItemLocator.getReadingItemOffsetFromPageIndex(currentPageIndex, readingItem)
+      expectedReadingOrderViewOffset = navigator.getNavigationForPage(currentPageIndex, readingItem).x
       Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `use guess strategy`, {})
     }
 
-    expectedReadingOrderViewOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(offsetInReadingItem, readingItem)
-
     Report.log(NAMESPACE, `adjustReadingOffsetPosition`, { offsetInReadingItem, expectedReadingOrderViewOffset, lastUserExpectedNavigation })
 
-    if (expectedReadingOrderViewOffset !== currentXoffset.x) {
+    if (areNavigationDifferent({ x: expectedReadingOrderViewOffset, y: 0 }, currentXoffset)) {
       adjustReadingOffset(expectedReadingOrderViewOffset)
     }
 
-    // because we adjusted the position, the offset may have changed and with it current page, etc
-    // because this is an adjustment we do not want to update the cfi (anchor)
-    // unless it has not been set yet or it is a basic /0 node
-    const shouldUpdateCfi = lastCfi === undefined
-      ? true
-      : lastCfi?.startsWith(`epubcfi(/0`) || shouldAdjustCfi
-
-    pagination.update(readingItem, offsetInReadingItem, { shouldUpdateCfi, isAtEndOfChapter: false })
+    subject.next({ event: 'adjust', data: { x: expectedReadingOrderViewOffset, y: 0 } })
   }
 
   return {

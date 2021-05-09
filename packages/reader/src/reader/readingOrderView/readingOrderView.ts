@@ -133,15 +133,15 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
   ).subscribe()
 
   const navigatorSubscription = viewportNavigator.$
-    .pipe(tap(({ event, data }) => {
-      if (event === 'navigation') {
+    .pipe(tap((data) => {
+      if (data.event === 'navigation') {
 
         const currentReadingItem = readingItemManager.getFocusedReadingItem()
-        const readingItemForCurrentNavigation = data.readingItem || locator.getReadingItemFromOffset(data.x)
+        const readingItemForCurrentNavigation = data.data.readingItem || locator.getReadingItemFromOffset(data.data.x)
 
         if (readingItemForCurrentNavigation) {
           const readingItemHasChanged = readingItemForCurrentNavigation !== currentReadingItem
-          const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewOffset(data.x, readingItemForCurrentNavigation)
+          const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewOffset(data.data.x, readingItemForCurrentNavigation)
 
           if (readingItemHasChanged) {
             readingItemManager.focus(readingItemForCurrentNavigation)
@@ -156,9 +156,28 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
               : undefined
           })
 
-          Report.log(NAMESPACE, `navigateTo`, `navigate success`, { readingItemHasChanged, readingItemForCurrentNavigation, offset: data.x, readingItemPosition, lastExpectedNavigation })
+          Report.log(NAMESPACE, `navigateTo`, `navigate success`, { readingItemHasChanged, readingItemForCurrentNavigation, offset: data, readingItemPosition, lastExpectedNavigation })
 
           readingItemManager.loadContents()
+        }
+      }
+
+      if (data.event === 'adjust') {
+        const currentReadingItem = readingItemManager.getFocusedReadingItem()
+        const lastCfi = pagination.getCfi()
+        // because we adjusted the position, the offset may have changed and with it current page, etc
+        // because this is an adjustment we do not want to update the cfi (anchor)
+        // unless it has not been set yet or it is a basic /0 node
+        const shouldUpdateCfi = lastCfi === undefined
+          ? true
+          : lastCfi?.startsWith(`epubcfi(/0`)
+        if (currentReadingItem) {
+          const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewOffset(data.data.x, currentReadingItem)
+          pagination.update(currentReadingItem, readingItemPosition.x, {
+            shouldUpdateCfi,
+            cfi: shouldUpdateCfi ? undefined : lastCfi,
+            isAtEndOfChapter: false
+          })
         }
       }
     }))

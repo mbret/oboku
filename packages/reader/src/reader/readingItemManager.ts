@@ -109,7 +109,6 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
     add: (readingItem: ReadingItem) => {
       orderedReadingItems.push(readingItem)
 
-      // @todo unsubscribe on unload
       const readingItemSubscription = readingItem.$.subscribe((event) => {
         if (event.event === 'layout') {
           // @todo at this point the inner item has an upstream layout so we only need to adjust

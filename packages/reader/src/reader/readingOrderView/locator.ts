@@ -1,11 +1,14 @@
 import { Context } from "../context"
 import { ReadingItem } from "../readingItem"
+import { createLocator as createReadingItemLocator } from "../readingItem/locator"
 import { ReadingItemManager } from "../readingItemManager"
 
 export const createLocator = ({ readingItemManager, context }: {
   readingItemManager: ReadingItemManager,
   context: Context,
 }) => {
+  const readingItemLocator = createReadingItemLocator({ context })
+
   const getReadingItemPositionFromReadingOrderViewOffset = (readingOrderViewOffset: number, readingItem: ReadingItem) => {
     const { end, start } = readingItemManager.getPositionOf(readingItem)
 
@@ -63,10 +66,19 @@ export const createLocator = ({ readingItemManager, context }: {
     return getReadingOrderViewOffsetFromReadingItemOffset(0, readingItem)
   }
 
+  const getReadingOrderViewPositionFromReadingOrderAnchor = (anchor: string, readingItem: ReadingItem) => {
+    const readingItemOffset = readingItemLocator.getReadingItemOffsetFromAnchor(anchor, readingItem)
+
+    const x = getReadingOrderViewOffsetFromReadingItemOffset(readingItemOffset, readingItem)
+
+    return { x, y: 0 }
+  }
+
   return {
     getReadingOrderViewOffsetFromReadingItemOffset,
     getReadingOrderViewOffsetFromReadingItem,
     getReadingItemPositionFromReadingOrderViewOffset,
     getReadingItemFromOffset,
+    getReadingOrderViewPositionFromReadingOrderAnchor,
   }
 }

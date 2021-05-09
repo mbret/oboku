@@ -15,8 +15,6 @@ export const createLocator = ({ context }: {
     const ltrRelativeOffset = getItemOffsetFromPageIndex(context.getPageSize().width, pageIndex, itemWidth)
 
     if (itemReadingDirection === 'rtl') {
-      // const absoluteOffset = 
-      console.warn(`getReadingItemOffsetFromPageIndex`, { itemWidth, ltrRelativeOffset, pageIndex, page: context.getPageSize().width })
       return (itemWidth - ltrRelativeOffset) - context.getPageSize().width
     }
 

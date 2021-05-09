@@ -136,8 +136,6 @@ export const createNavigator = ({ context, readingItemManager }: {
   }
 
   const getNavigationForUrl = (url: string | URL): NavigationEntry & { url: URL } | undefined => {
-    let offsetOfReadingItem: number | undefined = undefined
-    // url
     let validUrl: URL | undefined
     try {
       validUrl = url instanceof URL ? url : new URL(url)
@@ -150,15 +148,18 @@ export const createNavigator = ({ context, readingItemManager }: {
       if (existingSpineItem) {
         const readingItem = readingItemManager.get(existingSpineItem.id)
         if (readingItem) {
-          offsetOfReadingItem = readingItemManager.getPositionOf(readingItem).start
-          const readingOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(offsetOfReadingItem || 0, readingItem)
+          const position = getNavigationForAnchor(validUrl.hash, readingItem)
 
-          return { x: readingOffset, y: 0, readingItem, url: validUrl }
+          return { ...position, url: validUrl }
         }
       }
     }
 
     return undefined
+  }
+
+  const getNavigationForAnchor = (anchor: string, readingItem: ReadingItem) => {
+    return locator.getReadingOrderViewPositionFromReadingOrderAnchor(anchor, readingItem)
   }
 
   return {
@@ -169,5 +170,6 @@ export const createNavigator = ({ context, readingItemManager }: {
     getNavigationForRightPage,
     getNavigationForLeftPage,
     getNavigationForUrl,
+    getNavigationForAnchor,
   }
 }
