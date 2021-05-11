@@ -6,16 +6,17 @@ import { getNumberOfPages } from "../pagination";
 import { createLocator } from "./locator";
 
 type NavigationEntry = { x: number, y: number }
+type ReadingItemPosition = { x: number, y: number }
 
 export const createNavigator = ({ context }: { context: Context }) => {
   const readingItemLocator = createLocator({ context })
 
   // const getNavigationForLeftPage = (currentPageIndex: number, readingItem: ReadingItem): NavigationEntry => {
-  //   const currentViewport = readingItemLocator.getReadingItemOffsetFromPageIndex(currentPageIndex, readingItem)
+  //   const currentViewport = readingItemLocator.getReadingItemPositionFromPageIndex(currentPageIndex, readingItem)
 
   //   const nextViewport = currentViewport - context.getPageSize().width
 
-  //   const newPage = readingItemLocator.getReadingItemPageIndexFromOffset(nextViewport, readingItem)
+  //   const newPage = readingItemLocator.getReadingItemPageIndexFromPosition(nextViewport, readingItem)
 
   //   if (newPage !== currentPageIndex) {
   //     return { x: nextViewport, y: 0 }
@@ -24,31 +25,54 @@ export const createNavigator = ({ context }: { context: Context }) => {
   //   return { x: currentViewport, y: 0 }
   // }
 
-  const getNavigationForLeftPage = (fromOffset: number, readingItem: ReadingItem): NavigationEntry => {
-    const nextPotentialOffset = fromOffset - context.getPageSize().width
-    const nextValidPotentialOffset = readingItemLocator.getReadingItemClosestOffsetFromUnsafeOffet(nextPotentialOffset, readingItem)
+  const getNavigationForLeftPage = (position: ReadingItemPosition, readingItem: ReadingItem): NavigationEntry => {
+    let nextPotentialPosition = {
+      x: position.x - context.getPageSize().width,
+      y: position.y
+    }
 
-    return { x: nextValidPotentialOffset, y: 0 }
+    if (readingItem.isUsingVerticalWriting()) {
+      nextPotentialPosition = {
+        x: position.x,
+        y: position.y + context.getPageSize().height
+      }
+    }
+
+    return readingItemLocator.getReadingItemClosestPositionFromUnsafePosition(nextPotentialPosition, readingItem)
   }
 
-  const getNavigationForRightPage = (fromOffset: number, readingItem: ReadingItem): NavigationEntry => {
-    const nextPotentialOffset = fromOffset + context.getPageSize().width
-    const nextValidPotentialOffset = readingItemLocator.getReadingItemClosestOffsetFromUnsafeOffet(nextPotentialOffset, readingItem)
+  const getNavigationForRightPage = (position: ReadingItemPosition, readingItem: ReadingItem): NavigationEntry => {
+    let nextPotentialPosition = {
+      x: position.x + context.getPageSize().width,
+      y: position.y
+    }
 
-    return { x: nextValidPotentialOffset, y: 0 }
+    if (readingItem.isUsingVerticalWriting()) {
+      nextPotentialPosition = {
+        x: position.x,
+        y: position.y - context.getPageSize().height
+      }
+    }
+
+    return readingItemLocator.getReadingItemClosestPositionFromUnsafePosition(nextPotentialPosition, readingItem)
   }
 
   const getNavigationForLastPage = (readingItem: ReadingItem): NavigationEntry => {
-    const pageWidth = context.getPageSize().width
-    const numberOfPages = getNumberOfPages(readingItem.getBoundingClientRect().width, pageWidth)
-
-    return getNavigationForPage(numberOfPages - 1, readingItem)
+    if (readingItem.isUsingVerticalWriting()) {
+      const pageHeight = context.getPageSize().height
+      const numberOfPages = getNumberOfPages(readingItem.getBoundingClientRect().height, pageHeight)
+      return getNavigationForPage(numberOfPages - 1, readingItem)
+    } else {
+      const pageWidth = context.getPageSize().width
+      const numberOfPages = getNumberOfPages(readingItem.getBoundingClientRect().width, pageWidth)
+      return getNavigationForPage(numberOfPages - 1, readingItem)
+    }
   }
 
   const getNavigationForPage = (pageIndex: number, readingItem: ReadingItem): NavigationEntry => {
-    const currentViewport = readingItemLocator.getReadingItemOffsetFromPageIndex(pageIndex, readingItem)
+    const currentViewport = readingItemLocator.getReadingItemPositionFromPageIndex(pageIndex, readingItem)
 
-    return { x: currentViewport, y: 0 }
+    return currentViewport
   }
 
   const getNavigationForCfi = (cfi: string, readingItem: ReadingItem) => {

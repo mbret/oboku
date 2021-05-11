@@ -18,16 +18,15 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
 
   const getDimensions = () => {
     const pageSize = context.getPageSize()
-    const pageWidth = pageSize.width
-    const columnHeight = pageSize.height
     const horizontalMargin = context.getHorizontalMargin()
-    const columnWidth = pageWidth - (horizontalMargin * 2)
+    const columnWidth = pageSize.width - (horizontalMargin * 2)
+    const columnHeight = pageSize.height - (horizontalMargin * 2)
 
     return {
       columnHeight,
       columnWidth,
       horizontalMargin,
-      verticalMargin: context.getVerticalMargin()
+      // verticalMargin: context.getVerticalMargin()
     }
   }
 
@@ -175,11 +174,11 @@ const buildStyleForFakePrePaginated = () => {
   `
 }
 
-const buildStyleWithMultiColumn = ({ columnHeight, columnWidth, horizontalMargin, verticalMargin }: {
+const buildStyleWithMultiColumn = ({ columnHeight, columnWidth, horizontalMargin }: {
   columnWidth: number,
   columnHeight: number,
   horizontalMargin: number
-  verticalMargin: number
+  // verticalMargin: number
 }) => {
   return `
     parsererror {
@@ -192,7 +191,7 @@ const buildStyleWithMultiColumn = ({ columnHeight, columnWidth, horizontalMargin
     html, body {
       margin: 0;
       padding: 0 !important;
-      max-width: ${columnWidth}px !important;
+      -max-width: ${columnWidth}px !important;
     }
     ${/*
       body {
@@ -204,10 +203,11 @@ const buildStyleWithMultiColumn = ({ columnHeight, columnWidth, horizontalMargin
       padding: 0 !important;
       width: ${columnWidth}px !important;
       height: ${columnHeight}px !important;
-      margin-left: ${horizontalMargin}px !important;
-      margin-right: ${horizontalMargin}px !important;
-      padding-top: ${verticalMargin}px !important;
-      padding-bottom: ${verticalMargin}px !important;
+      -margin-left: ${horizontalMargin}px !important;
+      -margin-right: ${horizontalMargin}px !important;
+      margin: ${horizontalMargin}px ${horizontalMargin}px !important;
+      -padding-top: ${horizontalMargin}px !important;
+      -padding-bottom: ${horizontalMargin}px !important;
       overflow-y: hidden;
       column-width: ${columnWidth}px !important;
       column-gap: ${horizontalMargin * 2}px !important;
@@ -224,8 +224,11 @@ const buildStyleWithMultiColumn = ({ columnHeight, columnWidth, horizontalMargin
     html, body {
       touch-action: pan-y;
     }
+    ${/*
+      this messes up hard, be careful with this
+    */``}
     * {
-      d-max-width: ${columnWidth}px !important;
+      -max-width: ${columnWidth}px !important;
     }
     ${/*
       this is necessary to have a proper calculation when determining size
@@ -235,9 +238,12 @@ const buildStyleWithMultiColumn = ({ columnHeight, columnWidth, horizontalMargin
     */``}
     img, video, audio, object, svg {
       max-width: 100%;
-      d-max-width: ${columnWidth}px !important;
-      d-max-height: ${columnHeight}px !important;
+      max-width: ${columnWidth}px !important;
+      max-height: ${columnHeight}px !important;
       pointer-events: none;
+      -webkit-column-break-inside: avoid;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     figure {
       d-max-width: ${columnWidth}px !important;

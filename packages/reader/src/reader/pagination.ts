@@ -28,16 +28,16 @@ export const createPagination = ({ context }: { context: Context }) => {
     // },
     update: (
       readingItem: ReadingItem,
-      offsetInReadingItem: number,
-      options: { 
-        isAtEndOfChapter?: boolean, 
+      readingItemPosition: { x: number, y: number },
+      options: {
+        isAtEndOfChapter?: boolean,
         shouldUpdateCfi?: boolean,
         cfi?: string
-       }
+      }
     ) => {
       numberOfPages = readingItemPaginator.getReadingItemNumberOfPages(readingItem)
       // pageIndex = getPageFromOffset(offsetInReadingItem, pageWidth, numberOfPages)
-      pageIndex = readingItemLocator.getReadingItemPageIndexFromOffset(offsetInReadingItem, readingItem)
+      pageIndex = readingItemLocator.getReadingItemPageIndexFromPosition(readingItemPosition, readingItem)
       // isAtEndOfChapter = readingItem.isContentReady() && pageIndex === (numberOfPages - 1)
       // if (options.isAtEndOfChapter) {
       //   isAtEndOfChapter = options.isAtEndOfChapter

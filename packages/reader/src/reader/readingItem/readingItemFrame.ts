@@ -128,6 +128,8 @@ export const createReadingItemFrame = (
         frameElement.style.height = `${size.height}px`
       }
     },
+    // @todo block access, only public API to manipulate / get information (in order to memo / optimize)
+    // manipulate() with cb and return boolean whether re-layout or not
     getFrameElement: () => frameElement,
     removeStyle: (id: string) => {
       if (
@@ -162,7 +164,7 @@ export const createReadingItemFrame = (
       if (writingMode === `vertical-rl`) {
         return 'rtl'
       }
-      
+
       if (frameElement?.contentWindow && frameElement?.contentDocument?.body) {
         const direction = frameElement.contentWindow.getComputedStyle(frameElement.contentDocument.body).direction
         if (['ltr', 'rtl'].includes(direction)) return direction as ('ltr' | 'rtl')

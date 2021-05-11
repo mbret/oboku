@@ -119,6 +119,7 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
       readingItemFrame?.destroy()
       readingItemFrame$?.unsubscribe()
     },
+    isUsingVerticalWriting: () => readingItemFrame.getWritingMode()?.startsWith(`vertical`),
     getReadingDirection: () => {
       return readingItemFrame.getReadingDirection() || context.manifest.readingDirection
     },

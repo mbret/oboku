@@ -141,7 +141,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
 
         if (readingItemForCurrentNavigation) {
           const readingItemHasChanged = readingItemForCurrentNavigation !== currentReadingItem
-          const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewOffset(data.data.x, readingItemForCurrentNavigation)
+          const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewPosition(data.data, readingItemForCurrentNavigation)
 
           if (readingItemHasChanged) {
             readingItemManager.focus(readingItemForCurrentNavigation)
@@ -149,7 +149,7 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
 
           const lastExpectedNavigation = viewportNavigator.getLastUserExpectedNavigation()
 
-          pagination.update(readingItemForCurrentNavigation, readingItemPosition.x, {
+          pagination.update(readingItemForCurrentNavigation, readingItemPosition, {
             isAtEndOfChapter: false,
             cfi: lastExpectedNavigation?.type === 'navigate-from-cfi'
               ? lastExpectedNavigation.data
@@ -172,8 +172,8 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
           ? true
           : lastCfi?.startsWith(`epubcfi(/0`)
         if (currentReadingItem) {
-          const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewOffset(data.data.x, currentReadingItem)
-          pagination.update(currentReadingItem, readingItemPosition.x, {
+          const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewPosition(data.data, currentReadingItem)
+          pagination.update(currentReadingItem, readingItemPosition, {
             shouldUpdateCfi,
             cfi: shouldUpdateCfi ? undefined : lastCfi,
             isAtEndOfChapter: false

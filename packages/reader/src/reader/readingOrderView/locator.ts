@@ -3,13 +3,16 @@ import { ReadingItem } from "../readingItem"
 import { createLocator as createReadingItemLocator } from "../readingItem/locator"
 import { ReadingItemManager } from "../readingItemManager"
 
+type ReadingOrderViewPosition = { x: number, y: number }
+type ReadingItemPosition = { x: number, y: number }
+
 export const createLocator = ({ readingItemManager, context }: {
   readingItemManager: ReadingItemManager,
   context: Context,
 }) => {
   const readingItemLocator = createReadingItemLocator({ context })
 
-  const getReadingItemPositionFromReadingOrderViewOffset = (readingOrderViewOffset: number, readingItem: ReadingItem) => {
+  const getReadingItemPositionFromReadingOrderViewPosition = (position: ReadingOrderViewPosition, readingItem: ReadingItem): ReadingItemPosition => {
     const { end, start } = readingItemManager.getPositionOf(readingItem)
 
     /**
@@ -26,13 +29,13 @@ export const createLocator = ({ readingItemManager, context }: {
     // }
 
     if (context.isRTL()) {
-      return { x: (end - readingOrderViewOffset) - context.getPageSize().width, y: 0 }
+      return { x: (end - position.x) - context.getPageSize().width, y: position.y }
     }
 
-    return { x: readingOrderViewOffset - start, y: 0 }
+    return { x: position.x - start, y: position.y }
   }
 
-  const getReadingOrderViewOffsetFromReadingItemOffset = (readingItemOffset: number, readingItem: ReadingItem) => {
+  const getReadingOrderViewPositionFromReadingItemPosition = (readingItemPosition: ReadingItemPosition, readingItem: ReadingItem): ReadingOrderViewPosition => {
     const { end, start } = readingItemManager.getPositionOf(readingItem)
 
     /**
@@ -48,12 +51,18 @@ export const createLocator = ({ readingItemManager, context }: {
     //   return (end - readingItemOffset) - context.getPageSize().width
     // }
 
-    console.warn(`getReadingOrderViewOffsetFromReadingItemOffset`, { end, start, readingItemOffset, val: start + readingItemOffset })
+    // console.warn(`getReadingOrderViewPositionFromReadingItemPosition`, { end, start, readingItemPosition.x, val: start + readingItemPosition.x })
     if (context.isRTL()) {
-      return (end - readingItemOffset) - context.getPageSize().width
+      return {
+        x: (end - readingItemPosition.x) - context.getPageSize().width,
+        y: readingItemPosition.y
+      }
     }
 
-    return start + readingItemOffset
+    return {
+      x: start + readingItemPosition.x,
+      y: readingItemPosition.y
+    }
   }
 
   const getReadingItemFromOffset = (offset: number) => {
@@ -63,21 +72,21 @@ export const createLocator = ({ readingItemManager, context }: {
   }
 
   const getReadingOrderViewOffsetFromReadingItem = (readingItem: ReadingItem) => {
-    return getReadingOrderViewOffsetFromReadingItemOffset(0, readingItem)
+    return getReadingOrderViewPositionFromReadingItemPosition({ x: 0, y: 0 }, readingItem)
   }
 
   const getReadingOrderViewPositionFromReadingOrderAnchor = (anchor: string, readingItem: ReadingItem) => {
     const readingItemOffset = readingItemLocator.getReadingItemOffsetFromAnchor(anchor, readingItem)
 
-    const x = getReadingOrderViewOffsetFromReadingItemOffset(readingItemOffset, readingItem)
+    const position = getReadingOrderViewPositionFromReadingItemPosition({ x: readingItemOffset, y: 0 }, readingItem)
 
-    return { x, y: 0 }
+    return position
   }
 
   return {
-    getReadingOrderViewOffsetFromReadingItemOffset,
+    getReadingOrderViewPositionFromReadingItemPosition,
     getReadingOrderViewOffsetFromReadingItem,
-    getReadingItemPositionFromReadingOrderViewOffset,
+    getReadingItemPositionFromReadingOrderViewPosition,
     getReadingItemFromOffset,
     getReadingOrderViewPositionFromReadingOrderAnchor,
   }

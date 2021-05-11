@@ -31,11 +31,11 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
     | { type: 'navigate-from-anchor', data: string }
     = undefined
 
-  const adjustReadingOffset = (offset: number) => {
+  const adjustReadingOffset = ({ x, y }: { x: number, y: number }) => {
     if (context.isRTL()) {
-      element.style.transform = `translateX(${offset}px)`
+      element.style.transform = `translateX(${x}px) translateY(-${y}px)`
     } else {
-      element.style.transform = `translateX(-${offset}px)`
+      element.style.transform = `translateX(-${x}px) translateY(-${y}px)`
     }
   }
 
@@ -43,7 +43,7 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
 
   const getCurrentViewport = () => ({
     x: Math.floor(Math.abs(element.getBoundingClientRect().x)),
-    y: 0
+    y: Math.floor(Math.abs(element.getBoundingClientRect().y)),
   })
 
   const turnTo = (navigation: { x: number, y: number }, { allowReadingItemChange = true }: { allowReadingItemChange?: boolean } = {}) => {
@@ -71,15 +71,13 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
   }
 
   const turnLeft = Report.measurePerformance(`${NAMESPACE} turnLeft`, 10, ({ allowReadingItemChange = true }: { allowReadingItemChange?: boolean } = {}) => {
-    const currentXoffset = getCurrentViewport()
-    const navigation = navigator.getNavigationForLeftPage(currentXoffset.x)
+    const navigation = navigator.getNavigationForLeftPage(getCurrentViewport())
 
     turnTo(navigation, { allowReadingItemChange })
   })
 
   const turnRight = Report.measurePerformance(`${NAMESPACE} turnRight`, 10, ({ allowReadingItemChange = true }: { allowReadingItemChange?: boolean } = {}) => {
-    const currentXoffset = getCurrentViewport()
-    const navigation = navigator.getNavigationForRightPage(currentXoffset.x)
+    const navigation = navigator.getNavigationForRightPage(getCurrentViewport())
 
     turnTo(navigation, { allowReadingItemChange })
   })
@@ -136,7 +134,7 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
 
     isFirstNavigation = false
 
-    adjustReadingOffset(navigation.x)
+    adjustReadingOffset(navigation)
 
     subject.next({ event: 'navigation', data: navigation })
   }
@@ -153,9 +151,9 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
    * @todo this is being called a lot, try to optimize
    */
   const adjustReadingOffsetPosition = (readingItem: ReadingItem, { shouldAdjustCfi }: { shouldAdjustCfi: boolean }) => {
-    const currentXoffset = getCurrentViewport()
+    const currentViewportPosition = getCurrentViewport()
     const lastCfi = pagination.getCfi()
-    let expectedReadingOrderViewOffset = currentXoffset.x
+    let expectedReadingOrderViewPosition = currentViewportPosition
     let offsetInReadingItem = 0
 
     /**
@@ -163,21 +161,21 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
      * to there
      */
     if (lastUserExpectedNavigation?.type === 'navigate-from-cfi') {
-      expectedReadingOrderViewOffset = navigator.getNavigationForCfi(lastUserExpectedNavigation.data).x
+      expectedReadingOrderViewPosition = navigator.getNavigationForCfi(lastUserExpectedNavigation.data)
       Report.log(NAMESPACE, `navigate-from-cfi`, `use last cfi`)
     } else if (lastUserExpectedNavigation?.type === 'navigate-from-next-item') {
       /**
        * When `navigate-from-next-item` we always try to get the offset of the last page, that way
        * we ensure reader is always redirected to last page
        */
-      expectedReadingOrderViewOffset = navigator.getNavigationForLastPage(readingItem).x
+      expectedReadingOrderViewPosition = navigator.getNavigationForLastPage(readingItem)
       Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `navigate-from-next-item`, {})
     } else if (lastUserExpectedNavigation?.type === 'navigate-from-previous-item') {
       /**
        * When `navigate-from-previous-item'` 
        * we always try stay on the first page of the item
        */
-      expectedReadingOrderViewOffset = navigator.getNavigationForPage(0, readingItem).x
+      expectedReadingOrderViewPosition = navigator.getNavigationForPage(0, readingItem)
       Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `navigate-from-previous-item`, {})
     } else if (lastUserExpectedNavigation?.type === 'navigate-from-anchor') {
       /**
@@ -185,13 +183,14 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
        * the offset of that anchor.
        */
       const anchor = lastUserExpectedNavigation.data
-      expectedReadingOrderViewOffset = navigator.getNavigationForAnchor(anchor, readingItem).x
+      expectedReadingOrderViewPosition = navigator.getNavigationForAnchor(anchor, readingItem)
     } else if (lastCfi) {
       /**
        * When there is no last navigation then we first look for any existing CFI. If there is a cfi we try to retrieve
        * the offset and navigate the user to it
+       * @todo handle vertical writing, we are always redirected to page 1 currently
        */
-      expectedReadingOrderViewOffset = navigator.getNavigationForCfi(lastCfi).x
+      expectedReadingOrderViewPosition = navigator.getNavigationForCfi(lastCfi)
       Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `use last cfi`)
     } else {
       /**
@@ -200,17 +199,17 @@ export const createViewportNavigator = ({ readingItemManager, context, paginatio
       // @todo get x of first visible element and try to get the page for this element
       // using the last page is not accurate since we could have less pages
       const currentPageIndex = pagination.getPageIndex() || 0
-      expectedReadingOrderViewOffset = navigator.getNavigationForPage(currentPageIndex, readingItem).x
+      expectedReadingOrderViewPosition = navigator.getNavigationForPage(currentPageIndex, readingItem)
       Report.log(NAMESPACE, `adjustReadingOffsetPosition`, `use guess strategy`, {})
     }
 
-    Report.log(NAMESPACE, `adjustReadingOffsetPosition`, { offsetInReadingItem, expectedReadingOrderViewOffset, lastUserExpectedNavigation })
+    Report.log(NAMESPACE, `adjustReadingOffsetPosition`, { offsetInReadingItem, expectedReadingOrderViewOffset: expectedReadingOrderViewPosition, lastUserExpectedNavigation })
 
-    if (areNavigationDifferent({ x: expectedReadingOrderViewOffset, y: 0 }, currentXoffset)) {
-      adjustReadingOffset(expectedReadingOrderViewOffset)
+    if (areNavigationDifferent(expectedReadingOrderViewPosition, currentViewportPosition)) {
+      adjustReadingOffset(expectedReadingOrderViewPosition)
     }
 
-    subject.next({ event: 'adjust', data: { x: expectedReadingOrderViewOffset, y: 0 } })
+    subject.next({ event: 'adjust', data: expectedReadingOrderViewPosition })
   }
 
   return {

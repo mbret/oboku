@@ -7,6 +7,7 @@ import { createNavigator as createReadingItemNavigator } from "../readingItem/na
 import { createLocator } from "./locator"
 
 type NavigationEntry = { x: number, y: number, readingItem?: ReadingItem }
+type ReadingItemPosition = { x: number, y: number }
 
 const NAMESPACE = `readingOrderViewNavigator`
 
@@ -42,9 +43,9 @@ export const createNavigator = ({ context, readingItemManager }: {
       const readingItem = (itemId ? readingItemManager.get(itemId) : undefined) || readingItemManager.get(0)
       if (readingItem) {
         const navigation = readingItemNavigator.getNavigationForCfi(cfi, readingItem)
-        const readingOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(navigation.x, readingItem)
+        const readingOffset = locator.getReadingOrderViewPositionFromReadingItemPosition(navigation, readingItem)
 
-        return { x: readingOffset, y: 0, readingItem }
+        return { ...readingOffset, readingItem }
       } else {
         Report.warn(`ReadingOrderView`, `unable to detect item id from cfi ${cfi}`)
       }
@@ -55,81 +56,82 @@ export const createNavigator = ({ context, readingItemManager }: {
 
   const getNavigationForPage = (pageIndex: number, readingItem: ReadingItem): NavigationEntry => {
     const readingItemNavigation = readingItemNavigator.getNavigationForPage(pageIndex, readingItem)
-    const readingOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(readingItemNavigation.x, readingItem)
+    const readingOffset = locator.getReadingOrderViewPositionFromReadingItemPosition(readingItemNavigation, readingItem)
 
-    return { x: readingOffset, y: 0 }
+    return readingOffset
   }
 
   const getNavigationForLastPage = (readingItem: ReadingItem): NavigationEntry => {
     const readingItemNavigation = readingItemNavigator.getNavigationForLastPage(readingItem)
-    const readingOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(readingItemNavigation.x, readingItem)
+    const readingOffset = locator.getReadingOrderViewPositionFromReadingItemPosition(readingItemNavigation, readingItem)
 
-    return { x: readingOffset, y: 0 }
+    return readingOffset
   }
 
   const getNavigationForSpineIndexOrId = (indexOrId: number | string): NavigationEntry => {
     const readingItem = readingItemManager.get(indexOrId)
     if (readingItem) {
       const readingOffset = locator.getReadingOrderViewOffsetFromReadingItem(readingItem)
-      return { x: readingOffset, y: 0, readingItem }
+      return { ...readingOffset, readingItem }
     }
 
     return { x: 0, y: 0 }
   }
 
-  const getNavigationForRightPage = (fromOffset: number): NavigationEntry => {
-    const readingItem = locator.getReadingItemFromOffset(fromOffset)
-    const defaultNavigation = { x: fromOffset, y: 0 }
+  const getNavigationForRightPage = (position: ReadingItemPosition): NavigationEntry => {
+    const readingItem = locator.getReadingItemFromOffset(position.x)
+    const defaultNavigation = position
 
     if (!readingItem) {
       return defaultNavigation
     }
 
-    const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewOffset(fromOffset, readingItem)
-    const readingItemNavigation = readingItemNavigator.getNavigationForRightPage(readingItemPosition.x, readingItem)
-    const isNewNavigation = arePositionsDifferent(readingItemNavigation, readingItemPosition)
+    const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewPosition(position, readingItem)
+    const readingItemNavigation = readingItemNavigator.getNavigationForRightPage(readingItemPosition, readingItem)
+    const isNewNavigationInCurrentItem = arePositionsDifferent(readingItemNavigation, readingItemPosition)
 
-    if (!isNewNavigation) {
+    if (!isNewNavigationInCurrentItem) {
       let nextPosition = context.isRTL()
-        ? fromOffset - context.getPageSize().width
-        : fromOffset + context.getPageSize().width
+        ? position.x - context.getPageSize().width
+        : position.x + context.getPageSize().width
 
       if (isWithinNavigableRange({ x: nextPosition, y: 0 })) {
         return { x: nextPosition, y: 0 }
       }
     } else {
-      const readingOrderOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(readingItemNavigation.x, readingItem)
+      const readingOrderOffset = locator.getReadingOrderViewPositionFromReadingItemPosition(readingItemNavigation, readingItem)
 
-      return { x: readingOrderOffset, y: 0 }
+      return readingOrderOffset
     }
 
     return defaultNavigation
   }
 
-  const getNavigationForLeftPage = (fromOffset: number): NavigationEntry => {
-    const readingItem = locator.getReadingItemFromOffset(fromOffset)
-    const defaultNavigation = { x: fromOffset, y: 0, readingItem }
+  const getNavigationForLeftPage = (position: ReadingItemPosition): NavigationEntry => {
+    const readingItem = locator.getReadingItemFromOffset(position.x)
+    const defaultNavigation = { ...position, readingItem }
 
     if (!readingItem) {
       return defaultNavigation
     }
 
-    const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewOffset(fromOffset, readingItem)
-    const readingItemNavigation = readingItemNavigator.getNavigationForLeftPage(readingItemPosition.x, readingItem)
-    const isNewNavigation = arePositionsDifferent(readingItemNavigation, readingItemPosition)
+    const readingItemPosition = locator.getReadingItemPositionFromReadingOrderViewPosition(position, readingItem)
+    const readingItemNavigation = readingItemNavigator.getNavigationForLeftPage(readingItemPosition, readingItem)
+    const isNewNavigationInCurrentItem = arePositionsDifferent(readingItemNavigation, readingItemPosition)
 
-    if (!isNewNavigation) {
+    console.warn(`getNavigationForLeftPage`, { position, readingItemPosition, readingItemNavigation, isNewNavigationInCurrentItem })
+    if (!isNewNavigationInCurrentItem) {
       const nextPosition = context.isRTL()
-        ? fromOffset + context.getPageSize().width
-        : fromOffset - context.getPageSize().width
+        ? position.x + context.getPageSize().width
+        : position.x - context.getPageSize().width
 
       if (isWithinNavigableRange({ x: nextPosition, y: 0 })) {
         return { x: nextPosition, y: 0 }
       }
     } else {
-      const readingOrderOffset = locator.getReadingOrderViewOffsetFromReadingItemOffset(readingItemNavigation.x, readingItem)
+      const readingOrderPosition = locator.getReadingOrderViewPositionFromReadingItemPosition(readingItemNavigation, readingItem)
 
-      return { x: readingOrderOffset, y: 0, readingItem }
+      return { ...readingOrderPosition, readingItem }
     }
 
     return defaultNavigation

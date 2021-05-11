@@ -7,46 +7,60 @@ import { getFirstVisibleNodeForViewport, getRangeFromNode } from "../utils/dom"
 
 const NAMESPACE = `readingItemLocator`
 
+type ReadingItemPosition = { x: number, y: number }
+
 export const createLocator = ({ context }: {
   context: Context,
 }) => {
-  const getReadingItemOffsetFromPageIndex = (pageIndex: number, readingItem: ReadingItem) => {
-    const itemWidth = readingItem.getBoundingClientRect().width
+  const getReadingItemPositionFromPageIndex = (pageIndex: number, readingItem: ReadingItem): ReadingItemPosition => {
+    const { width: itemWidth, height: itemHeight } = readingItem.getBoundingClientRect()
     const itemReadingDirection = readingItem.getReadingDirection()
+
+    if (readingItem.isUsingVerticalWriting()) {
+      const ltrRelativeOffset = getItemOffsetFromPageIndex(context.getPageSize().height, pageIndex, itemHeight)
+
+      return {
+        x: 0,
+        y: ltrRelativeOffset
+      }
+    }
 
     const ltrRelativeOffset = getItemOffsetFromPageIndex(context.getPageSize().width, pageIndex, itemWidth)
 
     if (itemReadingDirection === 'rtl') {
-      return (itemWidth - ltrRelativeOffset) - context.getPageSize().width
+      return {
+        x: (itemWidth - ltrRelativeOffset) - context.getPageSize().width,
+        y: 0
+      }
     }
 
-    return ltrRelativeOffset
+    return {
+      x: ltrRelativeOffset,
+      y: 0
+    }
   }
 
-  const getReadingItemPageIndexFromOffset = (offset: number, readingItem: ReadingItem) => {
-    const itemWidth = readingItem.getBoundingClientRect().width
+  const getReadingItemPageIndexFromPosition = (position: ReadingItemPosition, readingItem: ReadingItem) => {
+    const { width: itemWidth, height: itemHeight } = readingItem.getBoundingClientRect()
     const itemReadingDirection = readingItem.getReadingDirection()
     const pageWidth = context.getPageSize().width
-    const numberOfPages = getNumberOfPages(itemWidth, pageWidth)
+    const pageHeight = context.getPageSize().height
 
-    let offsetNormalizedForLtr = Math.min(itemWidth, Math.max(0, offset))
+    let offsetNormalizedForLtr = Math.min(itemWidth, Math.max(0, position.x))
 
     if (itemReadingDirection === 'rtl') {
       offsetNormalizedForLtr = (itemWidth - offsetNormalizedForLtr) - context.getPageSize().width
     }
 
-    const pageIndex = getPageFromOffset(offsetNormalizedForLtr, pageWidth, numberOfPages)
+    if (readingItem.isUsingVerticalWriting()) {
+      const numberOfPages = getNumberOfPages(itemHeight, pageHeight)
 
-    console.warn(`getReadingItemPageIndexFromOffset`, {
-      pageIndex,
-      offset: Math.min(itemWidth, Math.max(0, offset)),
-      offsetNormalizedForLtr,
-      pageWidth,
-      itemWidth,
-      numberOfPages
-    })
+      return getPageFromOffset(position.y, pageHeight, numberOfPages)
+    } else {
+      const numberOfPages = getNumberOfPages(itemWidth, pageWidth)
 
-    return pageIndex
+      return getPageFromOffset(offsetNormalizedForLtr, pageWidth, numberOfPages)
+    }
   }
 
   const getReadingItemOffsetFromAnchor = (anchor: string, readingItem: ReadingItem) => {
@@ -82,6 +96,9 @@ export const createLocator = ({ context }: {
     return val
   }
 
+  /**
+   * @todo handle vertical
+   */
   const getFirstNodeOrRangeAtPage = (pageIndex: number, readingItem: ReadingItem) => {
     const pageSize = context.getPageSize()
     const frame = readingItem.readingItemFrame?.getFrameElement()
@@ -92,7 +109,7 @@ export const createLocator = ({ context }: {
       && frame.contentWindow.document.body !== null
     ) {
 
-      const left = getReadingItemOffsetFromPageIndex(pageIndex, readingItem)
+      const { y: left } = getReadingItemPositionFromPageIndex(pageIndex, readingItem)
       const viewport = {
         left,
         right: left + pageSize.width,
@@ -149,19 +166,25 @@ export const createLocator = ({ context }: {
     return undefined
   }
 
-  const getReadingItemClosestOffsetFromUnsafeOffet = (unsafeOffset: number, readingItem: ReadingItem) => { 
-    const itemWidth = (readingItem.getBoundingClientRect()?.width || 0)
-    const pageWidth = context.getPageSize().width
+  const getReadingItemClosestPositionFromUnsafePosition = (unsafePosition: ReadingItemPosition, readingItem: ReadingItem) => {
+    const { width, height } = readingItem.getBoundingClientRect()
 
-    return getClosestValidOffsetFromApproximateOffsetInPages(unsafeOffset, pageWidth, itemWidth)
+    const adjustedPosition = {
+      x: getClosestValidOffsetFromApproximateOffsetInPages(unsafePosition.x, context.getPageSize().width, width),
+      y: getClosestValidOffsetFromApproximateOffsetInPages(unsafePosition.y, context.getPageSize().height, height),
+    }
+
+    console.warn(`getReadingItemClosestPositionFromUnsafePosition`, { unsafePosition, adjustedPosition })
+
+    return adjustedPosition
   }
 
   return {
     getReadingItemOffsetFromCfi,
-    getReadingItemOffsetFromPageIndex,
+    getReadingItemPositionFromPageIndex,
     getReadingItemOffsetFromAnchor,
-    getReadingItemPageIndexFromOffset,
-    getReadingItemClosestOffsetFromUnsafeOffet,
+    getReadingItemPageIndexFromPosition,
+    getReadingItemClosestPositionFromUnsafePosition,
     getCfi,
     resolveCfi
   }
