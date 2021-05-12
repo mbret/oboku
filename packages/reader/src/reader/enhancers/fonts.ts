@@ -57,7 +57,6 @@ export const fontsEnhancer: Enhancer<{
   })
 
   const applyChangeToReadingItem = (requireLayout: boolean) => {
-    reader.readingOrderView.getFocusedReadingItem
     reader.readingOrderView.manipulateReadingItem(({ removeStyle, addStyle }) => {
       removeStyle('oboku-reader-fonts')
       addStyle('oboku-reader-fonts', getStyle())
