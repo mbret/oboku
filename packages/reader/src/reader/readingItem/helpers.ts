@@ -1,10 +1,12 @@
 import { Context } from "../context"
-import { createReadingItemFrame, ManipulatableFrame, ReadingItemFrame } from "./readingItemFrame"
+import { createFrameManipulator, createReadingItemFrame, ReadingItemFrame } from "./readingItemFrame"
 import { Manifest } from "../types"
 import { Subject, Subscription } from "rxjs"
 import { Report } from "../../report"
 
 export { Hook } from "./readingItemFrame"
+
+export type LoadingFrameHook = { name: `onLoad`, fn: (manipulableFrame: ReturnType<typeof createFrameManipulator>) => void }
 
 export const createSharedHelpers = ({ item, context, containerElement }: {
   item: Manifest['readingOrder'][number],
@@ -15,7 +17,9 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
   const element = createWrapperElement(containerElement, item)
   const loadingElement = createLoadingElement(containerElement, item)
   const readingItemFrame = createReadingItemFrame(element, item, context)
-
+  containerElement.appendChild(element)
+  element.appendChild(loadingElement)
+  let loadingFrameHooks: LoadingFrameHook[] = []
   let readingItemFrame$: Subscription | undefined
 
   const injectStyle = (readingItemFrame: ReadingItemFrame, cssText: string) => {
@@ -94,12 +98,25 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
     }
   }
 
+  const registerHook: ReturnType<typeof createReadingItemFrame>['registerHook'] = (name, fn) => {
+    readingItemFrame.registerHook(name, fn)
+    // we intercept the onload hook and we will use it on loading element as well
+    if (name === `onLoad`) {
+      loadingFrameHooks.push({ name, fn })
+    }
+  }
+
+  loadingElement.onload = () => {
+    loadingFrameHooks.forEach(({ name, fn }) => {
+      if (name === `onLoad`) {
+        fn(createFrameManipulator(loadingElement))
+      }
+    })
+  }
+
   return {
-    load: () => {
-      containerElement.appendChild(element)
-      element.appendChild(loadingElement)
-    },
-    registerHook: readingItemFrame.registerHook,
+    load: () => { },
+    registerHook,
     adjustPositionOfElement,
     createWrapperElement,
     createLoadingElement,
@@ -125,13 +142,15 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
       return readingItemFrame.getReadingDirection() || context.getReadingDirection()
     },
     getIsReady: () => readingItemFrame.getIsReady(),
-    getManipulableReadingItem: () => {
+    manipulateReadingItem: (cb: (manipulableFrame: ReturnType<typeof createFrameManipulator>) => boolean) => {
+      // we don't need the result of the manipulation of loading frame
+      cb(createFrameManipulator(loadingElement))
+
       const manipulableFrame = readingItemFrame.getManipulableFrame()
 
-      return {
-        loadingElement,
-        ...manipulableFrame
-      }
+      if (manipulableFrame) return cb(manipulableFrame)
+
+      return false
     },
     $: subject,
   }
@@ -150,23 +169,37 @@ const createWrapperElement = (containerElement: HTMLElement, item: Manifest['rea
   return element
 }
 
+/**
+ * We use iframe for loading element mainly to be able to use share hooks / manipulation
+ * with iframe. That way the loading element always match whatever style is applied to iframe.
+ */
 const createLoadingElement = (containerElement: HTMLElement, item: Manifest['readingOrder'][number]) => {
+  const frame = document.createElement('iframe')
+  frame.frameBorder = 'no'
+  frame.setAttribute('sandbox', 'allow-same-origin allow-scripts')
+  frame.setAttribute('role', 'main')
+  frame.setAttribute('tab-index', '0')
+
   const loadingElement = containerElement.ownerDocument.createElement('div')
   loadingElement.classList.add(`loading`)
   loadingElement.style.cssText = `
     height: 100%;
     width: 100vw;
-    opacity: 1;
     text-align: center;
-    position: absolute;
-    pointer-events: none;
-    background-color: white;
     display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
   `
-  // loadingElement.innerText = `loading chapter ${item.id}`
+  frame.style.cssText = `
+    height: 100%;
+    width: 100vw;
+    opacity: 1;
+    position: absolute;
+    pointer-events: none;
+    background-color: white;
+  `
+
   const logoElement = containerElement.ownerDocument.createElement('div')
   logoElement.innerText = `oboku`
   logoElement.style.cssText = `
@@ -187,5 +220,21 @@ const createLoadingElement = (containerElement: HTMLElement, item: Manifest['rea
   loadingElement.appendChild(logoElement)
   loadingElement.appendChild(detailsElement)
 
-  return loadingElement
+  frame.srcdoc = `
+    <html>
+      <head>
+        <style>
+          html, body {
+            height: 100%;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+          }
+        </style>
+      </head>
+      <body>${loadingElement.outerHTML}</body>
+    </html>
+  `
+
+  return frame
 }

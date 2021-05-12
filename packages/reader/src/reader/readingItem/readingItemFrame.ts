@@ -1,3 +1,4 @@
+import { IframeHTMLAttributes } from "react"
 import { Subject } from "rxjs"
 import { Report } from "../../report"
 import { Manifest } from "../../types"
@@ -25,47 +26,10 @@ export const createReadingItemFrame = (
   const src = item.href
   let hooks: Hook[] = []
 
-  const removeStyle = (id: string) => {
-    if (
-      frameElement &&
-      frameElement.contentDocument &&
-      frameElement.contentDocument.head
-    ) {
-      const styleElement = frameElement.contentDocument.getElementById(id)
-      if (styleElement) {
-        styleElement.remove()
-      }
-    }
-  }
-
-  const addStyle = (id: string, style: string, prepend = false) => {
-    if (
-      frameElement &&
-      frameElement.contentDocument &&
-      frameElement.contentDocument.head
-    ) {
-      const userStyle = document.createElement('style')
-      userStyle.id = id
-      userStyle.innerHTML = style
-      if (prepend) {
-        frameElement.contentDocument.head.prepend(userStyle)
-      } else {
-        frameElement.contentDocument.head.appendChild(userStyle)
-      }
-    }
-  }
-
   const getManipulableFrame = () => {
-    const helpers = {
-      removeStyle,
-      addStyle,
-    }
-
     if (isLoaded && frameElement) {
-      return { ...helpers, frame: frameElement }
+      return createFrameManipulator(frameElement)
     }
-
-    return { ...helpers, frame: undefined }
   }
 
   const getViewportDimensions = () => {
@@ -153,7 +117,7 @@ export const createReadingItemFrame = (
 
               hooks
                 .filter(hook => hook.name === `onLoad`)
-                .forEach(hook => manipulableFrame.frame && hook.fn(manipulableFrame))
+                .forEach(hook => manipulableFrame && hook.fn(manipulableFrame))
 
               subject.next({ event: 'domReady', data: frameElement })
 
@@ -238,3 +202,39 @@ const getAttributeValueFromString = (string: string, key: string) => {
 
   return (match && parseFloat(firstMatch)) || 0
 }
+
+const createRemoveStyleHelper = (frameElement: HTMLIFrameElement | undefined) => (id: string) => {
+  if (
+    frameElement &&
+    frameElement.contentDocument &&
+    frameElement.contentDocument.head
+  ) {
+    const styleElement = frameElement.contentDocument.getElementById(id)
+    if (styleElement) {
+      styleElement.remove()
+    }
+  }
+}
+
+const createAddStyleHelper = (frameElement: HTMLIFrameElement | undefined) => (id: string, style: string, prepend = false) => {
+  if (
+    frameElement &&
+    frameElement.contentDocument &&
+    frameElement.contentDocument.head
+  ) {
+    const userStyle = document.createElement('style')
+    userStyle.id = id
+    userStyle.innerHTML = style
+    if (prepend) {
+      frameElement.contentDocument.head.prepend(userStyle)
+    } else {
+      frameElement.contentDocument.head.appendChild(userStyle)
+    }
+  }
+}
+
+export const createFrameManipulator = (frameElement: HTMLIFrameElement) => ({
+  frame: frameElement,
+  removeStyle: createRemoveStyleHelper(frameElement),
+  addStyle: createAddStyleHelper(frameElement)
+})

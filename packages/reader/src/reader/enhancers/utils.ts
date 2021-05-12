@@ -20,6 +20,7 @@ export function composeEnhancer<A extends Enhancer<any>>(a: A): ComposeEnhancer<
 export function composeEnhancer<A extends Enhancer<any>, B extends Enhancer<any>>(a: A, b: B): ComposeEnhancer<A, B>
 export function composeEnhancer<A extends Enhancer<any>, B extends Enhancer<any>, C extends Enhancer<any>>(a: A, b: B, c: C): ComposeEnhancer<A, B, C>
 export function composeEnhancer<A extends Enhancer<any>, B extends Enhancer<any>, C extends Enhancer<any>, D extends Enhancer<any>>(a: A, b: B, c: C, D: D): ComposeEnhancer<A, B, C, D>
+export function composeEnhancer<A extends Enhancer<any>, B extends Enhancer<any>, C extends Enhancer<any>, D extends Enhancer<any>, E extends Enhancer<any>>(a: A, b: B, c: C, d: D, e: E): ComposeEnhancer<A, B, C, D, E>
 export function composeEnhancer(...funcs: any[]) {
   return compose(...funcs)
 }

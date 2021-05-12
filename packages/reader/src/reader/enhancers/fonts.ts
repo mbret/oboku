@@ -24,9 +24,9 @@ export const fontsEnhancer: Enhancer<{
   setFontWeight: (value: typeof FONT_WEIGHT[number] | `default`) => void,
 
   /**
-  * @description
-  * Set text align justification
-  */
+   * @description
+   * Set text align justification
+   */
   setFontJustification: (value: typeof FONT_JUSTIFICATION[number] | `default`) => void,
 }> = (next) => (options) => {
   const { fontScale = 1, lineHeight, fontWeight, fontJustification } = options
@@ -51,11 +51,6 @@ export const fontsEnhancer: Enhancer<{
     }
   `
 
-  reader.readingOrderView.registerReadingItemHook(`onLoad`, ({ frame, removeStyle, addStyle }) => {
-    removeStyle('oboku-reader-fonts')
-    addStyle('oboku-reader-fonts', getStyle())
-  })
-
   const applyChangeToReadingItem = (requireLayout: boolean) => {
     reader.readingOrderView.manipulateReadingItem(({ removeStyle, addStyle }) => {
       removeStyle('oboku-reader-fonts')
@@ -64,6 +59,11 @@ export const fontsEnhancer: Enhancer<{
       return requireLayout
     })
   }
+
+  reader.readingOrderView.registerReadingItemHook(`onLoad`, ({ removeStyle, addStyle }) => {
+    removeStyle('oboku-reader-fonts')
+    addStyle('oboku-reader-fonts', getStyle())
+  })
 
   return {
     ...reader,
