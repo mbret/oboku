@@ -84,7 +84,7 @@ export const navigationEnhancer: Enhancer<{
 
   reader.element.appendChild(iframeEventBridgeElement)
 
-  reader.readingOrderView.registerReadingItemHook(`onLoad`, frame => {
+  reader.readingOrderView.registerReadingItemHook(`onLoad`, ({ frame }) => {
     pointerEvents.forEach(event => {
       frame.contentDocument?.addEventListener(event, (e) => {
         handleIframeClickEvent(frame, e)
@@ -140,7 +140,6 @@ export const navigationEnhancer: Enhancer<{
     //   return goToNextSpineItem()
     // },
     getEventInformation: Report.measurePerformance(`getEventInformation`, 10, (e: PointerEvent | MouseEvent | TouchEvent) => {
-      const readingItemManager = reader.readingOrderView.readingItemManager
       const pagination = reader.pagination
       const context = reader.context
       const normalizedEventPointerPositions = {
@@ -171,7 +170,7 @@ export const navigationEnhancer: Enhancer<{
               context,
               pagination,
               { x: e.x, y: e.y },
-              readingItemManager.getFocusedReadingItem(),
+              reader.readingOrderView.getFocusedReadingItem(),
             ).x
           }
         }

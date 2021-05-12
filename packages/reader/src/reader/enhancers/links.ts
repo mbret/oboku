@@ -20,7 +20,7 @@ export const linksEnhancer: Enhancer<{
     }
   }
 
-  reader.readingOrderView.registerReadingItemHook(`onLoad`, frame => {
+  reader.readingOrderView.registerReadingItemHook(`onLoad`, ({ frame }) => {
     if (frame.contentDocument) {
       Array.from(frame.contentDocument.querySelectorAll('a')).forEach(element => element.addEventListener('click', (e) => {
         if (e.target && `style` in e.target && `ELEMENT_NODE` in e.target) {

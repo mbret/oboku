@@ -16,13 +16,12 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
   const element = createWrapperElement(containerElement, item)
   const loadingElement = createLoadingElement(containerElement, item)
   const readingItemFrame = createReadingItemFrame(element, item, context)
-  const readingItemLocator = createLocator({ context })
 
   let readingItemFrame$: Subscription | undefined
 
   const injectStyle = (readingItemFrame: ReadingItemFrame, cssText: string) => {
-    readingItemFrame?.removeStyle('oboku-reader-css')
-    readingItemFrame?.addStyle('oboku-reader-css', cssText)
+    readingItemFrame.getManipulableFrame()?.removeStyle('oboku-reader-css')
+    readingItemFrame.getManipulableFrame()?.addStyle('oboku-reader-css', cssText)
   }
 
   const adjustPositionOfElement = (edgeOffset: number | undefined) => {
@@ -40,7 +39,7 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
   const getViewPortInformation = () => {
     const { width: pageWidth, height: pageHeight } = context.getPageSize()
     const viewportDimensions = readingItemFrame.getViewportDimensions()
-    const frameElement = readingItemFrame.getFrameElement()
+    const frameElement = readingItemFrame.getManipulableFrame()?.frame
     if (element && frameElement?.contentDocument && frameElement?.contentWindow && viewportDimensions) {
       const computedScale = Math.min(pageWidth / viewportDimensions.width, pageHeight / viewportDimensions.height)
 
@@ -58,7 +57,7 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
     }
   })
 
-  const getFrameLayoutInformation = () => readingItemFrame.getFrameElement()?.getBoundingClientRect()
+  const getFrameLayoutInformation = () => readingItemFrame.getManipulableFrame()?.frame?.getBoundingClientRect()
 
   const loadContent = () => {
     readingItemFrame.load().catch(Report.error)
@@ -73,7 +72,7 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
   }
 
   const getBoundingRectOfElementFromSelector = (selector: string) => {
-    const frame = readingItemFrame.getFrameElement()
+    const frame = readingItemFrame.getManipulableFrame()?.frame
     if (frame && selector) {
       if (selector.startsWith(`#`)) {
         return frame.contentDocument?.getElementById(selector.replace(`#`, ``))?.getBoundingClientRect()

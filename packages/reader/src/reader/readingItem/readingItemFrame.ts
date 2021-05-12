@@ -4,7 +4,12 @@ import { Manifest } from "../../types"
 import { Context } from "../context"
 
 export type ReadingItemFrame = ReturnType<typeof createReadingItemFrame>
-export type Hook = { name: `onLoad`, fn: (frame: HTMLIFrameElement) => void }
+export type ManipulatableFrame = {
+  frame: HTMLIFrameElement,
+  removeStyle: (id: string) => void,
+  addStyle: (id: string, style: CSSStyleDeclaration['cssText']) => void,
+}
+export type Hook = { name: `onLoad`, fn: (manipulableFrame: ManipulatableFrame) => void }
 
 export const createReadingItemFrame = (
   parent: HTMLElement,
@@ -19,6 +24,42 @@ export const createReadingItemFrame = (
   let isReady = false
   const src = item.href
   let hooks: Hook[] = []
+
+  const removeStyle = (id: string) => {
+    if (
+      frameElement &&
+      frameElement.contentDocument &&
+      frameElement.contentDocument.head
+    ) {
+      const styleElement = frameElement.contentDocument.getElementById(id)
+      if (styleElement) {
+        styleElement.remove()
+      }
+    }
+  }
+
+  const addStyle = (id: string, style: string, prepend = false) => {
+    if (
+      frameElement &&
+      frameElement.contentDocument &&
+      frameElement.contentDocument.head
+    ) {
+      const userStyle = document.createElement('style')
+      userStyle.id = id
+      userStyle.innerHTML = style
+      if (prepend) {
+        frameElement.contentDocument.head.prepend(userStyle)
+      } else {
+        frameElement.contentDocument.head.appendChild(userStyle)
+      }
+    }
+  }
+
+  const getManipulableFrame = () => frameElement ? ({
+    frame: frameElement,
+    removeStyle,
+    addStyle,
+  }) : undefined
 
   const getViewportDimensions = () => {
     if (frameElement && frameElement.contentDocument) {
@@ -61,8 +102,8 @@ export const createReadingItemFrame = (
     }
   }
 
-  function registerHook(name: `onLoad`, hookFn: (frame: HTMLIFrameElement) => void): void
-  function registerHook(name: `onLoad`, hookFn: (frame: HTMLIFrameElement) => void) {
+  function registerHook(name: `onLoad`, hookFn: (manipulatableFrame: ManipulatableFrame) => void): void
+  function registerHook(name: `onLoad`, hookFn: (manipulatableFrame: ManipulatableFrame) => void) {
     hooks.push({ name, fn: hookFn })
   }
 
@@ -101,9 +142,11 @@ export const createReadingItemFrame = (
 
               isLoaded = true
 
+              const manipulableFrame = getManipulableFrame()
+
               hooks
                 .filter(hook => hook.name === `onLoad`)
-                .forEach(hook => frameElement && hook.fn(frameElement))
+                .forEach(hook => manipulableFrame && hook.fn(manipulableFrame))
 
               subject.next({ event: 'domReady', data: frameElement })
 
@@ -137,35 +180,7 @@ export const createReadingItemFrame = (
     },
     // @todo block access, only public API to manipulate / get information (in order to memo / optimize)
     // manipulate() with cb and return boolean whether re-layout or not
-    getFrameElement: () => frameElement,
-    removeStyle: (id: string) => {
-      if (
-        frameElement &&
-        frameElement.contentDocument &&
-        frameElement.contentDocument.head
-      ) {
-        const styleElement = frameElement.contentDocument.getElementById(id)
-        if (styleElement) {
-          styleElement.remove()
-        }
-      }
-    },
-    addStyle(id: string, style: string, prepend = false) {
-      if (
-        frameElement &&
-        frameElement.contentDocument &&
-        frameElement.contentDocument.head
-      ) {
-        const userStyle = document.createElement('style')
-        userStyle.id = id
-        userStyle.innerHTML = style
-        if (prepend) {
-          frameElement.contentDocument.head.prepend(userStyle)
-        } else {
-          frameElement.contentDocument.head.appendChild(userStyle)
-        }
-      }
-    },
+    getManipulableFrame,
     getReadingDirection: (): 'ltr' | 'rtl' | undefined => {
       const writingMode = getWritingMode()
       if (writingMode === `vertical-rl`) {

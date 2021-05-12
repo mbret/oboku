@@ -9,7 +9,7 @@ import { Pagination } from "../pagination"
 import { createReadingItem } from "../readingItem"
 import { createReadingItemManager } from "../readingItemManager"
 import { createLocator } from "./locator"
-import { Hook } from "../readingItem/readingItemFrame"
+import { Hook, ManipulatableFrame } from "../readingItem/readingItemFrame"
 
 const NAMESPACE = 'readingOrderView'
 
@@ -179,12 +179,12 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
     readingItemManager.getAll().forEach(item => item.registerHook(name, hookFn))
   }
 
-  const manipulateReadingItem = (cb: (frame: HTMLIFrameElement) => RequireLayout) => {
+  const manipulateReadingItem = (cb: (manipulableFrame: ManipulatableFrame) => RequireLayout) => {
     let shouldLayout = false
     readingItemManager.getAll().forEach(item => {
-      const frame = item.readingItemFrame.getFrameElement()
-      if (frame) {
-        const requireLayout = cb(frame)
+      const manipulableFrame = item.readingItemFrame.getManipulableFrame()
+      if (manipulableFrame) {
+        const requireLayout = cb(manipulableFrame)
         shouldLayout = requireLayout || shouldLayout
       }
     })
@@ -196,7 +196,9 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
 
   return {
     ...viewportNavigator,
-    readingItemManager,
+    // readingItemManager,
+    getFocusedReadingItem: () => readingItemManager.getFocusedReadingItem(),
+    getFocusedReadingItemIndex: () => readingItemManager.getFocusedReadingItemIndex(),
     registerReadingItemHook,
     manipulateReadingItem,
     goToNextSpineItem: () => {

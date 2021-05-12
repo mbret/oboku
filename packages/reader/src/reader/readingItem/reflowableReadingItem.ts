@@ -49,7 +49,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
 
     const viewportDimensions = readingItemFrame.getViewportDimensions()
     const visibleArea = context.getVisibleAreaRect()
-    const frameElement = readingItemFrame.getFrameElement()
+    const frameElement = readingItemFrame.getManipulableFrame()?.frame
     if (element && frameElement?.contentDocument && frameElement?.contentWindow) {
       let contentWidth = pageWidth
       let contentHeight = visibleArea.height + context.getCalculatedInnerMargin()
@@ -104,8 +104,8 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
   const layout = () => {
     const { width: pageWidth, height: pageHeight } = context.getPageSize()
     // reset width of iframe to be able to retrieve real size later
-    readingItemFrame.getFrameElement()?.style.setProperty(`width`, `${pageWidth}px`)
-    readingItemFrame.getFrameElement()?.style.setProperty(`height`, `${pageHeight}px`)
+    readingItemFrame.getManipulableFrame()?.frame.style.setProperty(`width`, `${pageWidth}px`)
+    readingItemFrame.getManipulableFrame()?.frame.style.setProperty(`height`, `${pageHeight}px`)
 
     const newSize = applySize()
 

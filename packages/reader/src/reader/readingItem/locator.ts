@@ -101,7 +101,7 @@ export const createLocator = ({ context }: {
    */
   const getFirstNodeOrRangeAtPage = (pageIndex: number, readingItem: ReadingItem) => {
     const pageSize = context.getPageSize()
-    const frame = readingItem.readingItemFrame?.getFrameElement()
+    const frame = readingItem.readingItemFrame?.getManipulableFrame()?.frame
 
     if (
       frame?.contentWindow?.document
@@ -127,7 +127,7 @@ export const createLocator = ({ context }: {
 
   const getCfi = Report.measurePerformance(`getCfi`, 10, (pageIndex: number, readingItem: ReadingItem) => {
     const nodeOrRange = getFirstNodeOrRangeAtPage(pageIndex, readingItem)
-    const doc = readingItem.readingItemFrame.getFrameElement()?.contentWindow?.document
+    const doc = readingItem.readingItemFrame.getManipulableFrame()?.frame?.contentWindow?.document
 
     const itemAnchor = `|[oboku~anchor~${encodeURIComponent(readingItem.item.id)}]`
     // because the current cfi library does not works well with offset we are just using custom
@@ -150,7 +150,7 @@ export const createLocator = ({ context }: {
     const { cleanedCfi, offset } = extractObokuMetadataFromCfi(cfiString)
     const cfi = new CFI(cleanedCfi, {})
 
-    const doc = readingItem.readingItemFrame.getFrameElement()?.contentWindow?.document
+    const doc = readingItem.readingItemFrame.getManipulableFrame()?.frame?.contentWindow?.document
 
     if (doc) {
       try {

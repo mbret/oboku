@@ -46,7 +46,7 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
 
     const { viewportDimensions, computedScale } = helpers.getViewPortInformation() || {}
     const visibleArea = context.getVisibleAreaRect()
-    const frameElement = readingItemFrame.getFrameElement()
+    const frameElement = readingItemFrame.getManipulableFrame()?.frame
     if (element && frameElement?.contentDocument && frameElement?.contentWindow) {
       let contentWidth = pageWidth
       const contentHeight = visibleArea.height + context.getCalculatedInnerMargin()

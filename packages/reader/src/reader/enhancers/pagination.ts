@@ -28,7 +28,8 @@ export const paginationEnhancer: Enhancer<{
       const pagination = reader.pagination
       const readingOrderView = reader.readingOrderView
       const context = reader.context
-      const readingItemManager = reader.readingOrderView.readingItemManager
+      const focusedReadingItem = reader.readingOrderView.getFocusedReadingItem()
+      const focusedReadingItemIndex = reader.readingOrderView.getFocusedReadingItemIndex()
 
       if (!readingOrderView || !pagination || !context) return undefined
 
@@ -47,13 +48,13 @@ export const paginationEnhancer: Enhancer<{
           // domIndex: number;
           // charOffset: number;
           // serializeString?: string;
-          spineItemIndex: readingItemManager?.getFocusedReadingItemIndex(),
-          spineItemPath: readingItemManager?.getFocusedReadingItem()?.item.path,
-          spineItemId: readingItemManager?.getFocusedReadingItem()?.item.id,
+          spineItemIndex: focusedReadingItemIndex,
+          spineItemPath: focusedReadingItem?.item.path,
+          spineItemId: focusedReadingItem?.item.id,
           cfi: pagination.getCfi(),
         },
         // end: ReadingLocation;
-        spineItemReadingDirection: readingItemManager?.getFocusedReadingItem()?.getReadingDirection(),
+        spineItemReadingDirection: focusedReadingItem?.getReadingDirection(),
         /**
          * This percentage is based of the weight (kb) of every items and the number of pages.
          * It is not accurate but gives a general good idea of the overall progress.
