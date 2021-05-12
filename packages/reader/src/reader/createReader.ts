@@ -2,6 +2,7 @@ import { fontsEnhancer, FONT_JUSTIFICATION, FONT_WEIGHT } from './enhancers/font
 import { linksEnhancer } from './enhancers/links'
 import { navigationEnhancer } from './enhancers/navigation'
 import { paginationEnhancer } from './enhancers/pagination'
+import { Theme, themeEnhancer } from './enhancers/theme'
 import { composeEnhancer } from './enhancers/utils'
 import { createReader as createInternalReader } from './reader'
 
@@ -16,6 +17,7 @@ export type EnhancerCreator<Ext = {}> = (
     lineHeight?: number,
     fontWeight?: typeof FONT_WEIGHT[number],
     fontJustification?: typeof FONT_JUSTIFICATION[number],
+    theme?: Theme,
   },
 ) => ReaderPublicApi & Ext
 
@@ -53,13 +55,15 @@ export const createReaderWithEnhancers = <Ext = {}>(options: {
   fontScale?: number,
   lineHeight?: number,
   fontWeight?: typeof FONT_WEIGHT[number],
-  fontJustification?: typeof FONT_JUSTIFICATION[number], 
+  fontJustification?: typeof FONT_JUSTIFICATION[number],
+  theme?: Theme,
 }, enhancer?: Enhancer<Ext>) => {
   const internalEnhancer = composeEnhancer(
     paginationEnhancer,
     navigationEnhancer,
     linksEnhancer,
     fontsEnhancer,
+    themeEnhancer,
   )
 
   if (enhancer) {

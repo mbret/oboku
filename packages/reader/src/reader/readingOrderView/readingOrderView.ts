@@ -6,7 +6,7 @@ import { translateFramePositionIntoPage } from "../frames"
 import { buildChapterInfoFromReadingItem } from "../navigation"
 import { createViewportNavigator } from "./viewportNavigator"
 import { Pagination } from "../pagination"
-import { createReadingItem } from "../readingItem"
+import { createReadingItem, ReadingItem } from "../readingItem"
 import { createReadingItemManager } from "../readingItemManager"
 import { createLocator } from "./locator"
 import { Hook, ManipulatableFrame } from "../readingItem/readingItemFrame"
@@ -16,6 +16,8 @@ const NAMESPACE = 'readingOrderView'
 export type ReadingOrderView = ReturnType<typeof createReadingOrderView>
 
 type RequireLayout = boolean
+
+type ManipulableReadingItem = ReturnType<ReadingItem['getManipulableReadingItem']>
 
 export const createReadingOrderView = ({ containerElement, context, pagination }: {
   containerElement: HTMLElement
@@ -179,10 +181,10 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
     readingItemManager.getAll().forEach(item => item.registerHook(name, hookFn))
   }
 
-  const manipulateReadingItem = (cb: (manipulableFrame: ManipulatableFrame) => RequireLayout) => {
+  const manipulateReadingItem = (cb: (manipulableFrame: ManipulableReadingItem) => RequireLayout) => {
     let shouldLayout = false
     readingItemManager.getAll().forEach(item => {
-      const manipulableFrame = item.readingItemFrame.getManipulableFrame()
+      const manipulableFrame = item.getManipulableReadingItem()
       if (manipulableFrame) {
         const requireLayout = cb(manipulableFrame)
         shouldLayout = requireLayout || shouldLayout

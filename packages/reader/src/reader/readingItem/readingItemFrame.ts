@@ -55,11 +55,18 @@ export const createReadingItemFrame = (
     }
   }
 
-  const getManipulableFrame = () => frameElement ? ({
-    frame: frameElement,
-    removeStyle,
-    addStyle,
-  }) : undefined
+  const getManipulableFrame = () => {
+    const helpers = {
+      removeStyle,
+      addStyle,
+    }
+
+    if (isLoaded && frameElement) {
+      return { ...helpers, frame: frameElement }
+    }
+
+    return { ...helpers, frame: undefined }
+  }
 
   const getViewportDimensions = () => {
     if (frameElement && frameElement.contentDocument) {
@@ -146,7 +153,7 @@ export const createReadingItemFrame = (
 
               hooks
                 .filter(hook => hook.name === `onLoad`)
-                .forEach(hook => manipulableFrame && hook.fn(manipulableFrame))
+                .forEach(hook => manipulableFrame.frame && hook.fn(manipulableFrame))
 
               subject.next({ event: 'domReady', data: frameElement })
 

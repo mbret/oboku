@@ -1,9 +1,8 @@
 import { Context } from "../context"
-import { createReadingItemFrame, ReadingItemFrame } from "./readingItemFrame"
+import { createReadingItemFrame, ManipulatableFrame, ReadingItemFrame } from "./readingItemFrame"
 import { Manifest } from "../types"
 import { Subject, Subscription } from "rxjs"
 import { Report } from "../../report"
-import { createLocator } from "./locator"
 
 export { Hook } from "./readingItemFrame"
 
@@ -126,6 +125,14 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
       return readingItemFrame.getReadingDirection() || context.getReadingDirection()
     },
     getIsReady: () => readingItemFrame.getIsReady(),
+    getManipulableReadingItem: () => {
+      const manipulableFrame = readingItemFrame.getManipulableFrame()
+
+      return {
+        loadingElement,
+        ...manipulableFrame
+      }
+    },
     $: subject,
   }
 }
