@@ -1,3 +1,4 @@
+import { fontsEnhancer } from './enhancers/fonts'
 import { linksEnhancer } from './enhancers/links'
 import { navigationEnhancer } from './enhancers/navigation'
 import { paginationEnhancer } from './enhancers/pagination'
@@ -11,6 +12,7 @@ export type Enhancer<Ext = {}> = (next: EnhancerCreator<Ext>) => EnhancerCreator
 export type EnhancerCreator<Ext = {}> = (
   options: {
     containerElement: HTMLElement,
+    fontScale?: number
   },
 ) => ReaderPublicApi & Ext
 
@@ -44,12 +46,14 @@ const exposeReader = <Api extends ReaderPublicApi>(reader: Api) => {
 }
 
 export const createReaderWithEnhancers = <Ext = {}>(options: {
-  containerElement: HTMLElement
+  containerElement: HTMLElement,
+  fontScale?: number
 }, enhancer?: Enhancer<Ext>) => {
   const internalEnhancer = composeEnhancer(
     paginationEnhancer,
     navigationEnhancer,
     linksEnhancer,
+    fontsEnhancer,
   )
 
   if (enhancer) {

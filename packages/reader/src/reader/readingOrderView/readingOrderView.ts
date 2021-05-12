@@ -15,6 +15,8 @@ const NAMESPACE = 'readingOrderView'
 
 export type ReadingOrderView = ReturnType<typeof createReadingOrderView>
 
+type RequireLayout = boolean
+
 export const createReadingOrderView = ({ containerElement, context, pagination }: {
   containerElement: HTMLElement
   context: Context,
@@ -177,10 +179,26 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
     readingItemManager.getAll().forEach(item => item.registerHook(name, hookFn))
   }
 
+  const manipulateReadingItem = (cb: (frame: HTMLIFrameElement) => RequireLayout) => {
+    let shouldLayout = false
+    readingItemManager.getAll().forEach(item => {
+      const frame = item.readingItemFrame.getFrameElement()
+      if (frame) {
+        const requireLayout = cb(frame)
+        shouldLayout = requireLayout || shouldLayout
+      }
+    })
+
+    if (shouldLayout) {
+      readingItemManager.layout()
+    }
+  }
+
   return {
     ...viewportNavigator,
     readingItemManager,
     registerReadingItemHook,
+    manipulateReadingItem,
     goToNextSpineItem: () => {
       const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0
       const numberOfSpineItems = context?.getManifest()?.readingOrder.length || 1
