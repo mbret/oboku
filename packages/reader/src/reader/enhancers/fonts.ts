@@ -1,6 +1,7 @@
 import { Enhancer } from "../createReader";
 
 export const FONT_WEIGHT = [100, 200, 300, 400, 500, 600, 700, 800, 900] as const
+export const FONT_JUSTIFICATION = ['center', 'left', 'right', 'justify'] as const
 
 export const fontsEnhancer: Enhancer<{
   /**
@@ -20,13 +21,20 @@ export const fontsEnhancer: Enhancer<{
    * @description
    * Set font weight of text
    */
-   setFontWeight: (value: typeof FONT_WEIGHT[number] | `default`) => void,
+  setFontWeight: (value: typeof FONT_WEIGHT[number] | `default`) => void,
+
+  /**
+  * @description
+  * Set text align justification
+  */
+  setFontJustification: (value: typeof FONT_JUSTIFICATION[number] | `default`) => void,
 }> = (next) => (options) => {
-  const { fontScale = 1, lineHeight, fontWeight } = options
+  const { fontScale = 1, lineHeight, fontWeight, fontJustification } = options
   const reader = next(options)
   let currentFontScale = fontScale
   let currentLineHeight = lineHeight
   let currentFontWeight = fontWeight
+  let currentJustification = fontJustification
 
   const getStyle = () => `
     body *:not([class^="mjx-"]) {
@@ -37,6 +45,9 @@ export const fontsEnhancer: Enhancer<{
       ${currentFontWeight !== undefined
       ? `font-weight: ${currentFontWeight} !important;`
       : ``}
+      ${currentJustification !== undefined
+      ? `text-align: ${currentJustification} !important;`
+      : ``}
     }
   `
 
@@ -45,12 +56,13 @@ export const fontsEnhancer: Enhancer<{
     addStyle('oboku-reader-fonts', getStyle())
   })
 
-  const applyChangeToReadingItem = () => {
+  const applyChangeToReadingItem = (requireLayout: boolean) => {
+    reader.readingOrderView.getFocusedReadingItem
     reader.readingOrderView.manipulateReadingItem(({ removeStyle, addStyle }) => {
       removeStyle('oboku-reader-fonts')
       addStyle('oboku-reader-fonts', getStyle())
 
-      return true
+      return requireLayout
     })
   }
 
@@ -58,15 +70,19 @@ export const fontsEnhancer: Enhancer<{
     ...reader,
     setFontScale: (scale: number) => {
       currentFontScale = scale
-      applyChangeToReadingItem()
+      applyChangeToReadingItem(true)
     },
     setLineHeight: (value: number | `default`) => {
       currentLineHeight = value === `default` ? undefined : value
-      applyChangeToReadingItem()
+      applyChangeToReadingItem(true)
     },
     setFontWeight: (value: typeof FONT_WEIGHT[number] | `default`) => {
       currentFontWeight = value === `default` ? undefined : value
-      applyChangeToReadingItem()
+      applyChangeToReadingItem(false)
+    },
+    setFontJustification: (value: typeof FONT_JUSTIFICATION[number] | `default`) => {
+      currentJustification = value === `default` ? undefined : value
+      applyChangeToReadingItem(false)
     }
   }
 }
