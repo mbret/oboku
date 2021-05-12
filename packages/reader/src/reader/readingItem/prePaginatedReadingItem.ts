@@ -1,7 +1,7 @@
-import { Subject, Subscription } from "rxjs"
+import { Subscription } from "rxjs"
 import { Context } from "../context"
 import { Manifest } from "../types"
-import { createSharedHelpers } from "./helpers"
+import { createCommonReadingItem } from "./commonReadingItem"
 import { createFingerTracker, createSelectionTracker } from "./trackers"
 
 export const createPrePaginatedReadingItem = ({ item, context, containerElement }: {
@@ -9,10 +9,10 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
   containerElement: HTMLElement,
   context: Context,
 }) => {
-  const helpers = createSharedHelpers({ context, item, containerElement })
-  let element = helpers.element
-  let loadingElement = helpers.loadingElement
-  let readingItemFrame = helpers.readingItemFrame
+  const commonReadingItem = createCommonReadingItem({ context, item, containerElement })
+  let element = commonReadingItem.element
+  let loadingElement = commonReadingItem.loadingElement
+  let readingItemFrame = commonReadingItem.readingItemFrame
   const fingerTracker = createFingerTracker()
   const selectionTracker = createSelectionTracker()
   let readingItemFrame$: Subscription | undefined
@@ -44,7 +44,7 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
       return { width, height }
     }
 
-    const { viewportDimensions, computedScale } = helpers.getViewPortInformation() || {}
+    const { viewportDimensions, computedScale } = commonReadingItem.getViewPortInformation() || {}
     const visibleArea = context.getVisibleAreaRect()
     const frameElement = readingItemFrame.getManipulableFrame()?.frame
     if (element && frameElement?.contentDocument && frameElement?.contentWindow) {
@@ -57,7 +57,7 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
       const cssLink = buildDefaultStyle(getDimensions())
 
       if (viewportDimensions) {
-        helpers.injectStyle(readingItemFrame, cssLink)
+        commonReadingItem.injectStyle(readingItemFrame, cssLink)
         readingItemFrame.staticLayout({
           width: viewportDimensions.width,
           height: viewportDimensions.height,
@@ -69,7 +69,7 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
         frameElement?.style.setProperty(`transform`, `translate(-50%, -50%) scale(${computedScale})`)
         frameElement?.style.setProperty(`transform-origin`, `center center`)
       } else {
-        helpers.injectStyle(readingItemFrame, cssLink)
+        commonReadingItem.injectStyle(readingItemFrame, cssLink)
         readingItemFrame.staticLayout({
           width: contentWidth,
           height: contentHeight,
@@ -95,7 +95,7 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
     }
   }
 
-  helpers.readingItemFrame.$.subscribe((data) => {
+  commonReadingItem.readingItemFrame.$.subscribe((data) => {
     if (data.event === `domReady`) {
       fingerTracker.track(data.data)
       selectionTracker.track(data.data)
@@ -105,17 +105,17 @@ export const createPrePaginatedReadingItem = ({ item, context, containerElement 
 
     if (data.event === 'layout') {
       layout()
-      helpers.$.next(data)
+      commonReadingItem.$.next(data)
     }
   })
 
   return {
-    ...helpers,
+    ...commonReadingItem,
     layout,
     fingerTracker,
     selectionTracker,
     destroy: () => {
-      helpers.destroy()
+      commonReadingItem.destroy()
       readingItemFrame$?.unsubscribe()
       fingerTracker.destroy()
       selectionTracker.destroy()

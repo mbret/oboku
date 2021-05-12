@@ -8,7 +8,7 @@ export { Hook } from "./readingItemFrame"
 
 export type LoadingFrameHook = { name: `onLoad`, fn: (manipulableFrame: ReturnType<typeof createFrameManipulator>) => void }
 
-export const createSharedHelpers = ({ item, context, containerElement }: {
+export const createCommonReadingItem = ({ item, context, containerElement }: {
   item: Manifest['readingOrder'][number],
   containerElement: HTMLElement,
   context: Context,
@@ -132,6 +132,7 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
     getViewPortInformation,
     isContentReady: () => !!readingItemFrame?.getIsReady(),
     destroy: () => {
+      loadingElement.onload = () => {}
       loadingElement.remove()
       element.remove()
       readingItemFrame?.destroy()

@@ -1,7 +1,7 @@
 import { Subscription } from "rxjs"
 import { Context } from "../context"
 import { Manifest } from "../types"
-import { createSharedHelpers } from "./helpers"
+import { createCommonReadingItem } from "./commonReadingItem"
 import { createFingerTracker, createSelectionTracker } from "./trackers"
 
 export const createReflowableReadingItem = ({ item, context, containerElement }: {
@@ -9,9 +9,9 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
   containerElement: HTMLElement,
   context: Context,
 }) => {
-  const helpers = createSharedHelpers({ context, item, containerElement })
-  let element = helpers.element
-  let readingItemFrame = helpers.readingItemFrame
+  const commonReadingItem = createCommonReadingItem({ context, item, containerElement })
+  let element = commonReadingItem.element
+  let readingItemFrame = commonReadingItem.readingItemFrame
   const fingerTracker = createFingerTracker()
   const selectionTracker = createSelectionTracker()
   let readingItemFrame$: Subscription | undefined
@@ -56,7 +56,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
 
       if (viewportDimensions) {
         const computedScale = Math.min(pageWidth / viewportDimensions.width, pageHeight / viewportDimensions.height)
-        helpers.injectStyle(readingItemFrame, buildStyleForFakePrePaginated())
+        commonReadingItem.injectStyle(readingItemFrame, buildStyleForFakePrePaginated())
         readingItemFrame.staticLayout({
           width: viewportDimensions.width,
           height: viewportDimensions.height,
@@ -68,7 +68,7 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
         frameElement?.style.setProperty(`transform`, `translate(-50%, -50%) scale(${computedScale})`)
         frameElement?.style.setProperty(`transform-origin`, `center center`)
       } else {
-        helpers.injectStyle(readingItemFrame, buildStyleWithMultiColumn(getDimensions()))
+        commonReadingItem.injectStyle(readingItemFrame, buildStyleWithMultiColumn(getDimensions()))
         if (readingItemFrame.getWritingMode() === 'vertical-rl') {
           const pages = Math.ceil(
             frameElement.contentDocument.documentElement.scrollHeight / pageHeight
@@ -117,10 +117,10 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
   }
 
   const unloadContent = () => {
-    helpers.unloadContent()
+    commonReadingItem.unloadContent()
   }
 
-  readingItemFrame$ = helpers.readingItemFrame.$.subscribe((data) => {
+  readingItemFrame$ = commonReadingItem.readingItemFrame.$.subscribe((data) => {
     if (data.event === `domReady`) {
       fingerTracker.track(data.data)
       selectionTracker.track(data.data)
@@ -128,18 +128,18 @@ export const createReflowableReadingItem = ({ item, context, containerElement }:
 
     if (data.event === 'layout') {
       applySize()
-      helpers.$.next(data)
+      commonReadingItem.$.next(data)
     }
   })
 
   return {
-    ...helpers,
+    ...commonReadingItem,
     unloadContent,
     layout,
     fingerTracker,
     selectionTracker,
     destroy: () => {
-      helpers.destroy()
+      commonReadingItem.destroy()
       readingItemFrame$?.unsubscribe()
       fingerTracker.destroy()
       selectionTracker.destroy()
