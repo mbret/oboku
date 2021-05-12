@@ -8,15 +8,14 @@ import { createViewportNavigator } from "./viewportNavigator"
 import { Pagination } from "../pagination"
 import { createReadingItem } from "../readingItem"
 import { createReadingItemManager } from "../readingItemManager"
-import { Manifest } from "../types"
 import { createLocator } from "./locator"
+import { Hook } from "../readingItem/readingItemFrame"
 
 const NAMESPACE = 'readingOrderView'
 
 export type ReadingOrderView = ReturnType<typeof createReadingOrderView>
 
-export const createReadingOrderView = ({ manifest, containerElement, context, pagination }: {
-  manifest: Manifest,
+export const createReadingOrderView = ({ containerElement, context, pagination }: {
   containerElement: HTMLElement
   context: Context,
   pagination: Pagination,
@@ -31,30 +30,20 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
   let selectionSubscription: Subscription | undefined
   let readingItemManagerSubscription: Subscription | undefined
   let focusedReadingItemSubscription: Subscription | undefined
-
-  const contextSubscription = context.$.subscribe(data => {
-    if (data.event === 'linkClicked') {
-      const hrefUrl = new URL(data.data.href)
-      const hrefWithoutAnchor = `${hrefUrl.origin}${hrefUrl.pathname}`
-      // internal link, we can handle
-      const hasExistingSpineItem = context.manifest.readingOrder.some(item => item.href === hrefWithoutAnchor)
-      if (hasExistingSpineItem) {
-        viewportNavigator.goToUrl(hrefUrl)
-      }
-    }
-  })
+  let readingItemHooks: Hook[] = []
 
   const layout = () => {
     readingItemManager.layout()
   }
 
   const load = () => {
-    manifest.readingOrder.map(async (resource) => {
+    context.getManifest()?.readingOrder.map(async (resource) => {
       const readingItem = createReadingItem({
         item: resource,
         containerElement: element,
         context,
       })
+      readingItemHooks.forEach(hook => readingItem.registerHook(hook.name, hook.fn))
       readingItemManager.add(readingItem)
     })
   }
@@ -183,12 +172,18 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
     }))
     .subscribe()
 
+  const registerReadingItemHook: ReturnType<typeof createReadingItem>['registerHook'] = (name, hookFn) => {
+    readingItemHooks.push({ name, fn: hookFn })
+    readingItemManager.getAll().forEach(item => item.registerHook(name, hookFn))
+  }
+
   return {
     ...viewportNavigator,
     readingItemManager,
+    registerReadingItemHook,
     goToNextSpineItem: () => {
       const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0
-      const numberOfSpineItems = context?.manifest.readingOrder.length || 1
+      const numberOfSpineItems = context?.getManifest()?.readingOrder.length || 1
       if (currentSpineIndex < (numberOfSpineItems - 1)) {
         viewportNavigator.goToSpineItem(currentSpineIndex + 1)
       }
@@ -203,14 +198,14 @@ export const createReadingOrderView = ({ manifest, containerElement, context, pa
     layout,
     getChapterInfo() {
       const item = readingItemManager.getFocusedReadingItem()
-      return item && buildChapterInfoFromReadingItem(manifest, item)
+      const manifest = context.getManifest()
+      return item && manifest && buildChapterInfoFromReadingItem(manifest, item)
     },
     destroy: () => {
       readingItemManager.destroy()
       readingItemManagerSubscription?.unsubscribe()
       selectionSubscription?.unsubscribe()
       focusedReadingItemSubscription?.unsubscribe()
-      contextSubscription.unsubscribe()
       navigatorSubscription.unsubscribe()
       element.remove()
     },

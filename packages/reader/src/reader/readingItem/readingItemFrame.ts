@@ -2,9 +2,9 @@ import { Subject } from "rxjs"
 import { Report } from "../../report"
 import { Manifest } from "../../types"
 import { Context } from "../context"
-import { applyHooks } from "./iframe/hooks"
 
 export type ReadingItemFrame = ReturnType<typeof createReadingItemFrame>
+export type Hook = { name: `onLoad`, fn: (frame: HTMLIFrameElement) => void }
 
 export const createReadingItemFrame = (
   parent: HTMLElement,
@@ -18,6 +18,7 @@ export const createReadingItemFrame = (
   let frameElement: HTMLIFrameElement | undefined
   let isReady = false
   const src = item.href
+  let hooks: Hook[] = []
 
   const getViewportDimensions = () => {
     if (frameElement && frameElement.contentDocument) {
@@ -60,12 +61,15 @@ export const createReadingItemFrame = (
     }
   }
 
+  function registerHook(name: `onLoad`, hookFn: (frame: HTMLIFrameElement) => void): void
+  function registerHook(name: `onLoad`, hookFn: (frame: HTMLIFrameElement) => void) {
+    hooks.push({ name, fn: hookFn })
+  }
+
   return {
-    getIsReady() {
-      return isReady
-    },
-    getViewportDimensions,
+    getIsReady: () => isReady,
     getIsLoaded: () => isLoaded,
+    getViewportDimensions,
     load: Report.measurePerformance(`ReadingItemFrame load`, Infinity, async () => {
       if (loading || isReady) return
       loading = true
@@ -76,7 +80,7 @@ export const createReadingItemFrame = (
 
       const t0 = performance.now();
 
-      const fetchResource = context.getLoadOptions().fetchResource
+      const fetchResource = context.getLoadOptions()?.fetchResource
       if (!fetchResource || fetchResource === 'http') {
         frameElement.src = src
       } else {
@@ -97,7 +101,9 @@ export const createReadingItemFrame = (
 
               isLoaded = true
 
-              applyHooks(context, parent.ownerDocument, frameElement)
+              hooks
+                .filter(hook => hook.name === `onLoad`)
+                .forEach(hook => frameElement && hook.fn(frameElement))
 
               subject.next({ event: 'domReady', data: frameElement })
 
@@ -116,6 +122,7 @@ export const createReadingItemFrame = (
       })
     }),
     unload,
+    registerHook,
     /**
      * Upward layout is used when the parent wants to manipulate the iframe without triggering
      * `layout` event. This is a particular case needed for iframe because the parent can layout following

@@ -5,6 +5,8 @@ import { Subject, Subscription } from "rxjs"
 import { Report } from "../../report"
 import { createLocator } from "./locator"
 
+export { Hook } from "./readingItemFrame"
+
 export const createSharedHelpers = ({ item, context, containerElement }: {
   item: Manifest['readingOrder'][number],
   containerElement: HTMLElement,
@@ -99,6 +101,7 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
       containerElement.appendChild(element)
       element.appendChild(loadingElement)
     },
+    registerHook: readingItemFrame.registerHook,
     adjustPositionOfElement,
     createWrapperElement,
     createLoadingElement,
@@ -121,7 +124,7 @@ export const createSharedHelpers = ({ item, context, containerElement }: {
     },
     isUsingVerticalWriting: () => readingItemFrame.getWritingMode()?.startsWith(`vertical`),
     getReadingDirection: () => {
-      return readingItemFrame.getReadingDirection() || context.manifest.readingDirection
+      return readingItemFrame.getReadingDirection() || context.getReadingDirection()
     },
     getIsReady: () => readingItemFrame.getIsReady(),
     $: subject,

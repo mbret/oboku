@@ -3,9 +3,11 @@ import { LoadOptions, Manifest } from "./types"
 
 export type Context = ReturnType<typeof createContext>
 
-export type ContextObservableEvents = { event: 'linkClicked', data: HTMLAnchorElement } | { event: 'iframeEvent', data: { frame: HTMLIFrameElement, event: PointerEvent | MouseEvent } }
+export type ContextObservableEvents = {}
 
-export const createContext = (manifest: Manifest, loadOptions: LoadOptions) => {
+export const createContext = () => {
+  let manifest: Manifest | undefined
+  let loadOptions: LoadOptions | undefined
   const subject = new Subject<ContextObservableEvents>()
   const visibleAreaRect = {
     width: 0,
@@ -21,7 +23,11 @@ export const createContext = (manifest: Manifest, loadOptions: LoadOptions) => {
   const shouldDisplaySpread = () => false
 
   return {
-    isRTL: () => manifest.readingDirection === 'rtl',
+    load: (newManifest: Manifest, newLoadOptions: LoadOptions) => {
+      manifest = newManifest
+      loadOptions = newLoadOptions
+    },
+    isRTL: () => manifest?.readingDirection === 'rtl',
     getLoadOptions: () => loadOptions,
     getCalculatedInnerMargin: () => 0,
     getVisibleAreaRect: () => visibleAreaRect,
@@ -56,6 +62,7 @@ export const createContext = (manifest: Manifest, loadOptions: LoadOptions) => {
     emit: (data: ContextObservableEvents) => {
       subject.next(data)
     },
-    manifest,
+    getManifest: () => manifest,
+    getReadingDirection: () => manifest?.readingDirection
   }
 }

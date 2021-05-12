@@ -146,7 +146,7 @@ export const createNavigator = ({ context, readingItemManager }: {
     }
     if (validUrl) {
       const urlWithoutAnchor = `${validUrl.origin}${validUrl.pathname}`
-      const existingSpineItem = context.manifest.readingOrder.find(item => item.href === urlWithoutAnchor)
+      const existingSpineItem = context.getManifest()?.readingOrder.find(item => item.href === urlWithoutAnchor)
       if (existingSpineItem) {
         const readingItem = readingItemManager.get(existingSpineItem.id)
         if (readingItem) {

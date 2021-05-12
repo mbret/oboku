@@ -45,10 +45,11 @@ export const getPercentageEstimate = (context: Context, readingOrderView: Readin
   const currentSpineIndex = readingOrderView.readingItemManager.getFocusedReadingItemIndex() || 0
   const numberOfPages = pagination.getNumberOfPages()
   const currentPageIndex = pagination.getPageIndex() || 0
-  const estimateBeforeThisItem = context.manifest.readingOrder
+  const readingOrderLength = context.getManifest()?.readingOrder.length || 0
+  const estimateBeforeThisItem = context.getManifest()?.readingOrder
     .slice(0, currentSpineIndex)
-    .reduce((acc, item) => acc + item.progressionWeight, 0)
-  const currentItemWeight = context.manifest.readingOrder[currentSpineIndex]?.progressionWeight || 0
+    .reduce((acc, item) => acc + item.progressionWeight, 0) || 0
+  const currentItemWeight = context.getManifest()?.readingOrder[currentSpineIndex]?.progressionWeight || 0
   // const nextItem = context.manifest.readingOrder[currentSpineIndex + 1]
   // const nextItemWeight = nextItem ? nextItem.progressionWeight : 1
   // const progressWeightGap = (currentItemWeight + estimateBeforeThisItem) - estimateBeforeThisItem
@@ -58,7 +59,7 @@ export const getPercentageEstimate = (context: Context, readingOrderView: Readin
 
   // because the rounding of weight use a lot of decimals we will end up with
   // something like 0.999878 for the last page
-  if ((currentSpineIndex === context.manifest.readingOrder.length - 1) && (currentPageIndex === numberOfPages - 1)) {
+  if ((currentSpineIndex === readingOrderLength - 1) && (currentPageIndex === numberOfPages - 1)) {
     return 1
   }
 

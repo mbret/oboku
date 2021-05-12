@@ -2,30 +2,6 @@ import { Context } from "./context"
 import { Pagination } from "./pagination"
 import { ReadingItem } from "./readingItem"
 
-export const normalizeEventPositions = (
-  context: Context,
-  pagination: Pagination,
-  e: PointerEvent | MouseEvent | TouchEvent,
-  readingItem: ReadingItem | undefined
-) => {
-  // debugger
-  return {
-    // ...e,
-    x: 0,
-    ...`clientX` in e && {
-      clientX: e.clientX,
-    },
-    ...`x` in e && {
-      x: translateFramePositionIntoPage(
-        context,
-        pagination,
-        { x: e.x, y: e.y },
-        readingItem,
-      ).x
-    }
-  }
-}
-
 export const translateFramePositionIntoPage = (
   context: Context,
   pagination: Pagination,

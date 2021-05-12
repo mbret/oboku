@@ -48,7 +48,7 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
   }
 
   const loadContents = () => {
-    const numberOfAdjacentSpineItemToPreLoad = context.getLoadOptions().numberOfAdjacentSpineItemToPreLoad || 0
+    const numberOfAdjacentSpineItemToPreLoad = context.getLoadOptions()?.numberOfAdjacentSpineItemToPreLoad || 0
     orderedReadingItems.forEach((orderedReadingItem, index) => {
       if (activeReadingItemIndex !== undefined) {
         if (index < (activeReadingItemIndex - numberOfAdjacentSpineItemToPreLoad) || index > (activeReadingItemIndex + numberOfAdjacentSpineItemToPreLoad)) {
@@ -122,6 +122,7 @@ export const createReadingItemManager = ({ context }: { context: Context }) => {
       readingItem.load()
     },
     get,
+    getAll: () => orderedReadingItems,
     set: (readingItems: ReturnType<typeof createReadingItem>[]) => {
       orderedReadingItems = readingItems
     },

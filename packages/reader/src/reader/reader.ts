@@ -1,26 +1,27 @@
 import { Subject, Subscription } from "rxjs";
-import { tap } from "rxjs/operators";
 import { Report } from "../report";
-import { IFRAME_EVENT_BRIDGE_ELEMENT_ID } from "./constants";
-import { Context, ContextObservableEvents, createContext as createBookContext } from "./context";
+import { createContext as createBookContext } from "./context";
 import { createPagination } from "./pagination";
-import { createReadingOrderView, ReadingOrderView } from "./readingOrderView/readingOrderView";
+import { createReadingOrderView } from "./readingOrderView/readingOrderView";
 import { LoadOptions, Manifest } from "./types";
+
+export type Reader = ReturnType<typeof createReader>
 
 export const createReader = ({ containerElement }: {
   containerElement: HTMLElement
 }) => {
-  const subject = new Subject<{ event: 'paginationChange' } | { event: 'iframe', data: HTMLIFrameElement } | { event: 'ready' } | ContextObservableEvents>()
-  let context: Context | undefined
-  let pagination: ReturnType<typeof createPagination> | undefined
+  const subject = new Subject<{ event: 'iframe', data: HTMLIFrameElement } | { event: 'ready' }>()
+  const paginationSubject = new Subject<{ event: 'change' }>()
+  const context = createBookContext()
+  const pagination = createPagination({ context })
   const element = createWrapperElement(containerElement)
-  const iframeEventBridgeElement = createIframeEventBridgeElement(containerElement)
-  let iframeEventBridgeElementLastContext: { event: Event, iframeTarget: Event['target'] } | undefined = undefined
-  let readingOrderView: ReadingOrderView | undefined
-  let paginationSubscription$: Subscription | undefined
-  element.appendChild(iframeEventBridgeElement)
+  const readingOrderView = createReadingOrderView({
+    containerElement: element,
+    context,
+    pagination,
+  })
+  let paginationSubscription: Subscription | undefined
   containerElement.appendChild(element)
-  let context$: Subscription | undefined
 
   const layout = () => {
     const dimensions = {
@@ -57,53 +58,18 @@ export const createReader = ({ containerElement }: {
   const load = (
     manifest: Manifest,
     loadOptions: LoadOptions = {
-        fetchResource: `http`
-      },
+      fetchResource: `http`
+    },
     cfi?: string | null
   ) => {
-    if (context) {
+    if (context.getManifest()) {
       Report.warn(`loading a new book is not supported yet`)
       return
     }
 
     Report.log(`load`, { manifest, spineIndexOrIdOrCfi: cfi })
 
-    context = createBookContext(manifest, loadOptions)
-
-    context$?.unsubscribe()
-    context$ = context.$
-      .pipe(tap(event => {
-        if (event.event === 'iframeEvent') {
-          const frameWindow = event.data.frame.contentWindow
-
-          if (!frameWindow) return
-
-          // safe way to detect PointerEvent
-          if (`pointerId` in event.data.event) {
-            const iframeEvent = event.data.event as PointerEvent
-            const bridgeEvent = new PointerEvent(iframeEvent.type, iframeEvent)
-            iframeEventBridgeElement.dispatchEvent(bridgeEvent)
-            iframeEventBridgeElementLastContext = { event: iframeEvent, iframeTarget: iframeEvent.target }
-          } else if (event.data.event instanceof (frameWindow as any).MouseEvent) {
-            const iframeEvent = event.data.event as MouseEvent
-            const bridgeEvent = new MouseEvent(iframeEvent.type, iframeEvent)
-            iframeEventBridgeElement.dispatchEvent(bridgeEvent)
-            iframeEventBridgeElementLastContext = { event: bridgeEvent, iframeTarget: iframeEvent.target }
-          } else {
-            iframeEventBridgeElementLastContext = undefined
-          }
-        }
-      }))
-      .subscribe(subject)
-
-    pagination = createPagination({ context })
-    readingOrderView = createReadingOrderView({
-      manifest: manifest,
-      containerElement: element,
-      context,
-      pagination,
-    })
-
+    context.load(manifest, loadOptions)
     readingOrderView.load()
 
     if (!cfi) {
@@ -114,13 +80,8 @@ export const createReader = ({ containerElement }: {
 
     layout()
 
-    paginationSubscription$?.unsubscribe()
-    paginationSubscription$ = pagination.$.subscribe(({ event }) => {
-      switch (event) {
-        case 'change':
-          return subject.next({ event: 'paginationChange' })
-      }
-    })
+    paginationSubscription?.unsubscribe()
+    paginationSubscription = pagination.$.subscribe(paginationSubject)
 
     subject.next({ event: 'ready' })
   }
@@ -136,28 +97,25 @@ export const createReader = ({ containerElement }: {
    */
   const destroy = () => {
     readingOrderView?.destroy()
-    paginationSubscription$?.unsubscribe()
-    context$?.unsubscribe()
+    paginationSubscription?.unsubscribe()
     element.remove()
-    iframeEventBridgeElement.remove()
-    iframeEventBridgeElementLastContext = undefined
   }
 
-  const publicApi = {
-    getReadingOrderView: () => readingOrderView,
-    getContext: () => context,
-    getPagination: () => pagination,
-    getIframeEventBridge: () => ({
-      iframeEventBridgeElement,
-      iframeEventBridgeElementLastContext,
-    }),
+  const reader = {
+    element,
+    pagination,
+    readingOrderView,
+    context,
+    getSelection: () => readingOrderView?.getSelection(),
+    isSelecting: () => readingOrderView?.isSelecting(),
     layout,
     load,
     destroy,
+    pagination$: paginationSubject.asObservable(),
     $: subject.asObservable()
   }
 
-  return publicApi
+  return reader
 }
 
 const createWrapperElement = (containerElement: HTMLElement) => {
@@ -167,16 +125,4 @@ const createWrapperElement = (containerElement: HTMLElement) => {
   element.style.setProperty(`position`, `relative`)
 
   return element
-}
-
-const createIframeEventBridgeElement = (containerElement: HTMLElement) => {
-  const iframeEventBridgeElement = containerElement.ownerDocument.createElement('div')
-  iframeEventBridgeElement.id = IFRAME_EVENT_BRIDGE_ELEMENT_ID
-  iframeEventBridgeElement.style.cssText = `
-    position: absolute;
-    height: 100%;
-    width: 100%;
-  `
-
-  return iframeEventBridgeElement
 }

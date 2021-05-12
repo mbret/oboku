@@ -1,17 +1,11 @@
-import { createPublicApi } from './publicApi'
-import { createReader as createInternalReader } from './reader'
-
 export { Manifest } from './types'
 
-export type Pagination = ReturnType<ReturnType<typeof createReader>['getPagination']>
-
-export const createReader = ({ containerElement }: {
-  containerElement: HTMLElement
-}) => {
-  const reader = createInternalReader({ containerElement })
-  const publicApi = createPublicApi(reader)
-
-  return publicApi
-}
+import { createReaderWithEnhancers as createReader } from './createReader'
 
 export type Reader = ReturnType<typeof createReader>
+export type Pagination = ReturnType<ReturnType<typeof createReader>['getPaginationInfo']>
+export type ReaderPublicApi = ReturnType<typeof createReader>
+
+export {
+  createReader
+}
