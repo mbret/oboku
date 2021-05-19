@@ -109,12 +109,14 @@ export const createLocator = ({ context }: {
       && frame.contentWindow.document.body !== null
     ) {
 
-      const { y: left } = getReadingItemPositionFromPageIndex(pageIndex, readingItem)
+      // @todo handle vertical jp
+      // top seems ok but left is not, it should probably not be 0 or something
+      const { x: left, y: top } = getReadingItemPositionFromPageIndex(pageIndex, readingItem)
       const viewport = {
         left,
         right: left + pageSize.width,
-        top: 0,
-        bottom: pageSize.height
+        top,
+        bottom: top + pageSize.height
       }
 
       const res = getFirstVisibleNodeForViewport(frame.contentWindow.document, viewport)

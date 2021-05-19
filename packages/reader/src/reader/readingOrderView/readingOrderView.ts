@@ -71,6 +71,25 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
     })
   }
 
+  const manipulateReadingItems = (cb: (payload: ManipulableReadingItemCallbackPayload & { index: number }) => RequireLayout) => {
+    let shouldLayout = false
+    readingItemManager.getAll().forEach((item, index) => {
+      shouldLayout = item.manipulateReadingItem((opts) => cb({ index, ...opts })) || shouldLayout
+    })
+
+    if (shouldLayout) {
+      readingItemManager.layout()
+    }
+  }
+
+  function registerHook(hook: Hook) {
+    hooks.push(hook)
+
+    if (hook.name === `readingItem.onLoad`) {
+      readingItemManager.getAll().forEach(item => item.registerHook({ name: `onLoad`, fn: hook.fn }))
+    }
+  }
+  
   readingItemManagerSubscription = readingItemManager.$.pipe(
     tap((event) => {
       if (event.event === 'layout') {
@@ -194,25 +213,6 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
       }
     }))
     .subscribe()
-
-  const manipulateReadingItems = (cb: (payload: ManipulableReadingItemCallbackPayload & { index: number }) => RequireLayout) => {
-    let shouldLayout = false
-    readingItemManager.getAll().forEach((item, index) => {
-      shouldLayout = item.manipulateReadingItem((opts) => cb({ index, ...opts })) || shouldLayout
-    })
-
-    if (shouldLayout) {
-      readingItemManager.layout()
-    }
-  }
-
-  function registerHook(hook: Hook) {
-    hooks.push(hook)
-
-    if (hook.name === `readingItem.onLoad`) {
-      readingItemManager.getAll().forEach(item => item.registerHook({ name: `onLoad`, fn: hook.fn }))
-    }
-  }
 
   return {
     ...viewportNavigator,
