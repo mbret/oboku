@@ -9,15 +9,25 @@ import { Pagination } from "../pagination"
 import { createReadingItem } from "../readingItem"
 import { createReadingItemManager } from "../readingItemManager"
 import { createLocator } from "./locator"
-import { createFrameManipulator, Hook } from "../readingItem/readingItemFrame"
+import { createFrameManipulator } from "../readingItem/readingItemFrame"
 
 const NAMESPACE = 'readingOrderView'
 
 export type ReadingOrderView = ReturnType<typeof createReadingOrderView>
 
+type ReadingItem = ReturnType<typeof createReadingItem>
+type ReadingItemHook = Parameters<ReadingItem['registerHook']>[0]
 type RequireLayout = boolean
+type ManipulableReadingItemCallback = Parameters<ReadingItem['manipulateReadingItem']>[0]
+type ManipulableReadingItemCallbackPayload = Parameters<ManipulableReadingItemCallback>[0]
 
-type ManipulableReadingItem = ReturnType<typeof createFrameManipulator>
+type Hook = {
+  name: `readingItem.onLoad`,
+  fn: Extract<ReadingItemHook, { name: 'onLoad' }>['fn']
+} | {
+  name: `readingItem.onCreated`,
+  fn: (payload: { container: HTMLElement, loadingElement: HTMLElement }) => void
+}
 
 export const createReadingOrderView = ({ containerElement, context, pagination }: {
   containerElement: HTMLElement
@@ -34,7 +44,7 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
   let selectionSubscription: Subscription | undefined
   let readingItemManagerSubscription: Subscription | undefined
   let focusedReadingItemSubscription: Subscription | undefined
-  let readingItemHooks: Hook[] = []
+  let hooks: Hook[] = []
 
   const layout = () => {
     readingItemManager.layout()
@@ -47,8 +57,17 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
         containerElement: element,
         context,
       })
-      readingItemHooks.forEach(hook => readingItem.registerHook(hook.name, hook.fn))
+      hooks.forEach(hook => {
+        if (hook.name === `readingItem.onLoad`) {
+          readingItem.registerHook({ name: `onLoad`, fn: hook.fn })
+        }
+      })
       readingItemManager.add(readingItem)
+    })
+    hooks.forEach(hook => {
+      if (hook.name === `readingItem.onCreated`) {
+        readingItemManager.getAll().forEach(item => hook.fn({ container: item.element, loadingElement: item.loadingElement }))
+      }
     })
   }
 
@@ -176,15 +195,10 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
     }))
     .subscribe()
 
-  const registerReadingItemHook: ReturnType<typeof createReadingItem>['registerHook'] = (name, hookFn) => {
-    readingItemHooks.push({ name, fn: hookFn })
-    readingItemManager.getAll().forEach(item => item.registerHook(name, hookFn))
-  }
-
-  const manipulateReadingItem = (cb: (manipulableFrame: ManipulableReadingItem) => RequireLayout) => {
+  const manipulateReadingItems = (cb: (payload: ManipulableReadingItemCallbackPayload & { index: number }) => RequireLayout) => {
     let shouldLayout = false
-    readingItemManager.getAll().forEach(item => {
-      shouldLayout = item.manipulateReadingItem(cb) || shouldLayout
+    readingItemManager.getAll().forEach((item, index) => {
+      shouldLayout = item.manipulateReadingItem((opts) => cb({ index, ...opts })) || shouldLayout
     })
 
     if (shouldLayout) {
@@ -192,12 +206,22 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
     }
   }
 
+  function registerHook(hook: Hook) {
+    hooks.push(hook)
+
+    if (hook.name === `readingItem.onLoad`) {
+      readingItemManager.getAll().forEach(item => item.registerHook({ name: `onLoad`, fn: hook.fn }))
+    }
+  }
+
   return {
     ...viewportNavigator,
+    element,
     getFocusedReadingItem: () => readingItemManager.getFocusedReadingItem(),
     getFocusedReadingItemIndex: () => readingItemManager.getFocusedReadingItemIndex(),
-    registerReadingItemHook,
-    manipulateReadingItem,
+    registerHook,
+    manipulateReadingItems,
+    // manipulateReadingItemElement,
     goToNextSpineItem: () => {
       const currentSpineIndex = readingItemManager.getFocusedReadingItemIndex() || 0
       const numberOfSpineItems = context?.getManifest()?.readingOrder.length || 1
@@ -225,6 +249,7 @@ export const createReadingOrderView = ({ containerElement, context, pagination }
       focusedReadingItemSubscription?.unsubscribe()
       navigatorSubscription.unsubscribe()
       element.remove()
+      hooks = []
     },
     isSelecting: () => readingItemManager.getFocusedReadingItem()?.selectionTracker.isSelecting(),
     getSelection: () => readingItemManager.getFocusedReadingItem()?.selectionTracker.getSelection(),

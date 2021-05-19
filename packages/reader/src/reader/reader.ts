@@ -5,7 +5,20 @@ import { createPagination } from "./pagination";
 import { createReadingOrderView } from "./readingOrderView/readingOrderView";
 import { LoadOptions, Manifest } from "./types";
 
+type ReadingOrderView = ReturnType<typeof createReadingOrderView>
+
 export type Reader = ReturnType<typeof createReader>
+
+const READING_ITEM_ON_LOAD_HOOK = 'readingItem.onLoad'
+const READING_ITEM_ON_CREATED_HOOK = 'readingItem.onCreated'
+
+type ReadingOrderViewHook = Parameters<ReadingOrderView['registerHook']>[0]
+type ManipulateReadingItemsCallback = Parameters<ReadingOrderView['manipulateReadingItems']>[0]
+
+type Hooks = {
+  [READING_ITEM_ON_LOAD_HOOK]: Extract<ReadingOrderViewHook, { name: 'readingItem.onLoad' }>
+  [READING_ITEM_ON_CREATED_HOOK]: Extract<ReadingOrderViewHook, { name: 'readingItem.onCreated' }>
+}
 
 export const createReader = ({ containerElement }: {
   containerElement: HTMLElement
@@ -101,11 +114,39 @@ export const createReader = ({ containerElement }: {
     element.remove()
   }
 
+  function registerHook(name: typeof READING_ITEM_ON_LOAD_HOOK, fn: Hooks[typeof READING_ITEM_ON_LOAD_HOOK]['fn']): void
+  function registerHook(name: typeof READING_ITEM_ON_CREATED_HOOK, fn: Hooks[typeof READING_ITEM_ON_CREATED_HOOK]['fn']): void
+  function registerHook(name: string, fn: any) {
+    if (name === READING_ITEM_ON_LOAD_HOOK) {
+      readingOrderView.registerHook({ name: `readingItem.onLoad`, fn })
+    }
+    if (name === READING_ITEM_ON_CREATED_HOOK) {
+      readingOrderView.registerHook({ name: `readingItem.onCreated`, fn })
+    }
+  }
+
+  const manipulateReadingItems = (cb: ManipulateReadingItemsCallback) => {
+    readingOrderView.manipulateReadingItems(cb)
+  }
+
+  const manipulateContainer = (cb: (container: HTMLElement) => void) => {
+    cb(element)
+  }
+
   const reader = {
-    element,
     pagination,
-    readingOrderView,
     context,
+    registerHook,
+    manipulateReadingItems,
+    manipulateContainer,
+    turnLeft: () => readingOrderView.turnLeft(),
+    turnRight: () => readingOrderView.turnRight(),
+    goToPageOfCurrentChapter: (pageIndex: number) => readingOrderView.goToPageOfCurrentChapter(pageIndex),
+    goTo: (spineIndexOrSpineItemIdOrCfi: string | number) => readingOrderView.goTo(spineIndexOrSpineItemIdOrCfi),
+    goToUrl: (url: string | URL) => readingOrderView.goToUrl(url),
+    getChapterInfo: () => readingOrderView?.getChapterInfo(),
+    getFocusedReadingItem: () => readingOrderView?.getFocusedReadingItem(),
+    getFocusedReadingItemIndex: () => readingOrderView?.getFocusedReadingItemIndex(),
     getSelection: () => readingOrderView?.getSelection(),
     isSelecting: () => readingOrderView?.isSelecting(),
     layout,

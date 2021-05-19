@@ -37,13 +37,15 @@ function createReader<Ext>(
 /**
  * Only expose a subset of reader API in order to protect against
  * wrong manipulation.
+ * To access the extended API, create an enhancer.
  */
 const exposeReader = <Api extends ReaderPublicApi>(reader: Api) => {
   const {
     context,
-    readingOrderView,
     pagination,
-    element,
+    manipulateContainer,
+    manipulateReadingItems,
+    getFocusedReadingItem,
     ...exposedReader
   } = reader
 

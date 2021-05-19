@@ -4,9 +4,14 @@ import { Manifest } from "../types"
 import { Subject, Subscription } from "rxjs"
 import { Report } from "../../report"
 
-export { Hook } from "./readingItemFrame"
-
-export type LoadingFrameHook = { name: `onLoad`, fn: (manipulableFrame: ReturnType<typeof createFrameManipulator>) => void }
+type Hook =
+  {
+    name: `onLoad`,
+    fn: (manipulableFrame: ReturnType<typeof createFrameManipulator> & {
+      container: HTMLElement,
+      loadingElement: HTMLElement
+    }) => void
+  }
 
 export const createCommonReadingItem = ({ item, context, containerElement }: {
   item: Manifest['readingOrder'][number],
@@ -19,7 +24,7 @@ export const createCommonReadingItem = ({ item, context, containerElement }: {
   const readingItemFrame = createReadingItemFrame(element, item, context)
   containerElement.appendChild(element)
   element.appendChild(loadingElement)
-  let loadingFrameHooks: LoadingFrameHook[] = []
+  let hooks: Hook[] = []
   let readingItemFrame$: Subscription | undefined
 
   const injectStyle = (readingItemFrame: ReadingItemFrame, cssText: string) => {
@@ -98,20 +103,14 @@ export const createCommonReadingItem = ({ item, context, containerElement }: {
     }
   }
 
-  const registerHook: ReturnType<typeof createReadingItemFrame>['registerHook'] = (name, fn) => {
-    readingItemFrame.registerHook(name, fn)
-    // we intercept the onload hook and we will use it on loading element as well
-    if (name === `onLoad`) {
-      loadingFrameHooks.push({ name, fn })
+  function registerHook(hook: Hook) {
+    hooks.push(hook)
+    if (hook.name === `onLoad`) {
+      readingItemFrame.registerHook({
+        name: `onLoad`,
+        fn: (iframeData) => hook.fn({ ...iframeData, container: element, loadingElement })
+      })
     }
-  }
-
-  loadingElement.onload = () => {
-    loadingFrameHooks.forEach(({ name, fn }) => {
-      if (name === `onLoad`) {
-        fn(createFrameManipulator(loadingElement))
-      }
-    })
   }
 
   return {
@@ -132,26 +131,29 @@ export const createCommonReadingItem = ({ item, context, containerElement }: {
     getViewPortInformation,
     isContentReady: () => !!readingItemFrame?.getIsReady(),
     destroy: () => {
-      loadingElement.onload = () => {}
+      loadingElement.onload = () => { }
       loadingElement.remove()
       element.remove()
       readingItemFrame?.destroy()
       readingItemFrame$?.unsubscribe()
+      hooks = []
     },
     isUsingVerticalWriting: () => readingItemFrame.getWritingMode()?.startsWith(`vertical`),
     getReadingDirection: () => {
       return readingItemFrame.getReadingDirection() || context.getReadingDirection()
     },
     getIsReady: () => readingItemFrame.getIsReady(),
-    manipulateReadingItem: (cb: (manipulableFrame: ReturnType<typeof createFrameManipulator>) => boolean) => {
-      // we don't need the result of the manipulation of loading frame
-      cb(createFrameManipulator(loadingElement))
-
+    manipulateReadingItem: (
+      cb: (manipulableFrame: {
+        container: HTMLElement,
+        loadingElement: HTMLElement
+      } & (ReturnType<typeof createFrameManipulator> | { frame: undefined, removeStyle: (id: string) => void, addStyle: (id: string, style: string) => void })) => boolean
+    ) => {
       const manipulableFrame = readingItemFrame.getManipulableFrame()
 
-      if (manipulableFrame) return cb(manipulableFrame)
+      if (manipulableFrame) return cb({ ...manipulableFrame, container: element, loadingElement })
 
-      return false
+      return cb({ container: element, loadingElement, frame: undefined, removeStyle: () => { }, addStyle: () => { } })
     },
     $: subject,
   }
@@ -175,11 +177,11 @@ const createWrapperElement = (containerElement: HTMLElement, item: Manifest['rea
  * with iframe. That way the loading element always match whatever style is applied to iframe.
  */
 const createLoadingElement = (containerElement: HTMLElement, item: Manifest['readingOrder'][number]) => {
-  const frame = document.createElement('iframe')
-  frame.frameBorder = 'no'
-  frame.setAttribute('sandbox', 'allow-same-origin allow-scripts')
-  frame.setAttribute('role', 'main')
-  frame.setAttribute('tab-index', '0')
+  // const frame = document.createElement('iframe')
+  // frame.frameBorder = 'no'
+  // frame.setAttribute('sandbox', 'allow-same-origin allow-scripts')
+  // frame.setAttribute('role', 'main')
+  // frame.setAttribute('tab-index', '0')
 
   const loadingElement = containerElement.ownerDocument.createElement('div')
   loadingElement.classList.add(`loading`)
@@ -191,15 +193,18 @@ const createLoadingElement = (containerElement: HTMLElement, item: Manifest['rea
     justify-content: center;
     align-items: center;
     flex-direction: column;
-  `
-  frame.style.cssText = `
-    height: 100%;
-    width: 100vw;
-    opacity: 1;
     position: absolute;
-    pointer-events: none;
-    background-color: white;
+    left: 0;
+    top: 0;
   `
+  // frame.style.cssText = `
+  //   height: 100%;
+  //   width: 100vw;
+  //   opacity: 1;
+  //   position: absolute;
+  //   pointer-events: none;
+  //   background-color: white;
+  // `
 
   const logoElement = containerElement.ownerDocument.createElement('div')
   logoElement.innerText = `oboku`
@@ -221,21 +226,22 @@ const createLoadingElement = (containerElement: HTMLElement, item: Manifest['rea
   loadingElement.appendChild(logoElement)
   loadingElement.appendChild(detailsElement)
 
-  frame.srcdoc = `
-    <html>
-      <head>
-        <style>
-          html, body {
-            height: 100%;
-            width: 100vw;
-            margin: 0;
-            padding: 0;
-          }
-        </style>
-      </head>
-      <body>${loadingElement.outerHTML}</body>
-    </html>
-  `
+  return loadingElement
+  // frame.srcdoc = `
+  //   <html>
+  //     <head>
+  //       <style>
+  //         html, body {
+  //           height: 100%;
+  //           width: 100vw;
+  //           margin: 0;
+  //           padding: 0;
+  //         }
+  //       </style>
+  //     </head>
+  //     <body>${loadingElement.outerHTML}</body>
+  //   </html>
+  // `
 
-  return frame
+  // return frame
 }

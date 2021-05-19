@@ -1,16 +1,15 @@
-import { IframeHTMLAttributes } from "react"
 import { Subject } from "rxjs"
 import { Report } from "../../report"
 import { Manifest } from "../../types"
 import { Context } from "../context"
 
 export type ReadingItemFrame = ReturnType<typeof createReadingItemFrame>
-export type ManipulatableFrame = {
+type ManipulatableFrame = {
   frame: HTMLIFrameElement,
   removeStyle: (id: string) => void,
   addStyle: (id: string, style: CSSStyleDeclaration['cssText']) => void,
 }
-export type Hook = { name: `onLoad`, fn: (manipulableFrame: ManipulatableFrame) => void }
+type Hook = { name: `onLoad`, fn: (manipulableFrame: ManipulatableFrame) => void }
 
 export const createReadingItemFrame = (
   parent: HTMLElement,
@@ -73,9 +72,8 @@ export const createReadingItemFrame = (
     }
   }
 
-  function registerHook(name: `onLoad`, hookFn: (manipulatableFrame: ManipulatableFrame) => void): void
-  function registerHook(name: `onLoad`, hookFn: (manipulatableFrame: ManipulatableFrame) => void) {
-    hooks.push({ name, fn: hookFn })
+  function registerHook(hook: Hook) {
+    hooks.push(hook)
   }
 
   return {
@@ -167,6 +165,7 @@ export const createReadingItemFrame = (
     getWritingMode,
     destroy: () => {
       unload()
+      hooks = []
     },
     $: subject,
   }
