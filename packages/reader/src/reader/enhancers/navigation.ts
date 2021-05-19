@@ -82,14 +82,17 @@ export const navigationEnhancer: Enhancer<{
     }
   }
 
-  reader.element.appendChild(iframeEventBridgeElement)
+  reader.manipulateContainer(container => {
+    container.appendChild(iframeEventBridgeElement)
+  })
 
-  reader.readingOrderView.registerReadingItemHook(`onLoad`, ({ frame }) => {
+  reader.registerHook(`readingItem.onLoad`, ({ frame }) => {
     pointerEvents.forEach(event => {
       frame.contentDocument?.addEventListener(event, (e) => {
         handleIframeClickEvent(frame, e)
       })
     })
+    
     mouseEvents.forEach(event => {
       frame.contentDocument?.addEventListener(event, (e) => {
         handleIframeClickEvent(frame, e)
@@ -106,10 +109,10 @@ export const navigationEnhancer: Enhancer<{
       iframeEventBridgeElement.remove()
       iframeEventBridgeElementLastContext = undefined
     },
-    turnLeft: () => reader.readingOrderView.turnLeft(),
-    turnRight: () => reader.readingOrderView.turnRight(),
-    goTo: (spineIndexOrIdOrCfi: number | string) => reader.readingOrderView.goTo(spineIndexOrIdOrCfi),
-    goToPageOfCurrentChapter: (pageIndex: number) => reader.readingOrderView.goToPageOfCurrentChapter(pageIndex),
+    turnLeft: () => reader.turnLeft(),
+    turnRight: () => reader.turnRight(),
+    goTo: (spineIndexOrIdOrCfi: number | string) => reader.goTo(spineIndexOrIdOrCfi),
+    goToPageOfCurrentChapter: (pageIndex: number) => reader.goToPageOfCurrentChapter(pageIndex),
     // goToPath: (path: string) => {
     //   const manifest = reader.context.manifest
     //   const foundItem = manifest?.readingOrder.find(item => item.path === path)
@@ -170,7 +173,7 @@ export const navigationEnhancer: Enhancer<{
               context,
               pagination,
               { x: e.x, y: e.y },
-              reader.readingOrderView.getFocusedReadingItem(),
+              reader.getFocusedReadingItem(),
             ).x
           }
         }

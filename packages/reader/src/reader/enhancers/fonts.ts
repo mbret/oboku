@@ -52,7 +52,7 @@ export const fontsEnhancer: Enhancer<{
   `
 
   const applyChangeToReadingItem = (requireLayout: boolean) => {
-    reader.readingOrderView.manipulateReadingItem(({ removeStyle, addStyle }) => {
+    reader.manipulateReadingItems(({ removeStyle, addStyle }) => {
       removeStyle('oboku-reader-fonts')
       addStyle('oboku-reader-fonts', getStyle())
 
@@ -60,7 +60,7 @@ export const fontsEnhancer: Enhancer<{
     })
   }
 
-  reader.readingOrderView.registerReadingItemHook(`onLoad`, ({ removeStyle, addStyle }) => {
+  reader.registerHook(`readingItem.onLoad`, ({ removeStyle, addStyle }) => {
     removeStyle('oboku-reader-fonts')
     addStyle('oboku-reader-fonts', getStyle())
   })

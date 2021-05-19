@@ -26,17 +26,16 @@ export const paginationEnhancer: Enhancer<{
     ...reader,
     getPaginationInfo: () => {
       const pagination = reader.pagination
-      const readingOrderView = reader.readingOrderView
       const context = reader.context
-      const focusedReadingItem = reader.readingOrderView.getFocusedReadingItem()
-      const focusedReadingItemIndex = reader.readingOrderView.getFocusedReadingItemIndex()
+      const focusedReadingItem = reader.getFocusedReadingItem()
+      const focusedReadingItemIndex = reader.getFocusedReadingItemIndex() || 0
 
-      if (!readingOrderView || !pagination || !context) return undefined
+      if (!pagination || !context) return undefined
 
       return {
         begin: {
           // chapterIndex: number;
-          chapterInfo: readingOrderView.getChapterInfo(),
+          chapterInfo: reader.getChapterInfo(),
           pageIndexInChapter: pagination.getPageIndex(),
           numberOfPagesInChapter: pagination.getNumberOfPages(),
           // pages: number;
@@ -61,7 +60,7 @@ export const paginationEnhancer: Enhancer<{
          * It is recommended to use this progress only for reflow books. For pre-paginated books
          * the number of pages and current index can be used instead since 1 page = 1 chapter. 
          */
-        percentageEstimateOfBook: getPercentageEstimate(context, readingOrderView, pagination),
+        percentageEstimateOfBook: getPercentageEstimate(context, focusedReadingItemIndex, pagination),
         pagesOfBook: Infinity,
         // chaptersOfBook: number;
         // chapter: string;
