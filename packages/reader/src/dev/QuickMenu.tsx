@@ -1,5 +1,6 @@
 import React from 'react'
 import { useRecoilValue } from 'recoil'
+import { useToggleFontsSettings } from './FontsSettings'
 import { Scrubber } from './Scrubber'
 import { bookTitleState, isComicState, manifestState, paginationState } from './state'
 
@@ -14,6 +15,7 @@ export const QuickMenu = ({ open, onPageChange, onReadingItemChange }: {
   const pageIndex = (pagination?.begin.pageIndexInChapter || 0) + 1
   const isComic = useRecoilValue(isComicState)
   const currentSpineItemIndex = pagination?.begin.spineItemIndex || 0
+  const toggleFontsSettings = useToggleFontsSettings()
 
   const buildTitleChain = (chapterInfo: NonNullable<typeof pagination>['begin']['chapterInfo']): string => {
     if (chapterInfo?.subChapter) {
@@ -35,12 +37,21 @@ export const QuickMenu = ({ open, onPageChange, onReadingItemChange }: {
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'space-around',
         }}>
           <div style={{
-            color: 'white'
+
+          }}></div>
+          <div style={{
+            color: 'white',
+            // flex: 1
           }}>
             {bookTitle}
+          </div>
+          <div style={{
+
+          }}>
+            <button onClick={toggleFontsSettings}>aA</button>
           </div>
         </div>
       )}

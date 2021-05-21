@@ -18,8 +18,8 @@ export const createGestureHandler = (container: HTMLElement, reader: Reader) => 
   hammer?.on('panmove panstart panend', onPanMove)
 
   function onPanMove(ev: HammerInput) {
-    // console.log(`onPanMove`, ev.velocityX, ev.isFinal, ev)
     if (ev.isFinal && !reader.isSelecting()) {
+      console.warn(`PAN MOVE`, ev)
       const velocity = ev.velocityX
       if (velocity < -0.5) {
         reader.turnRight()

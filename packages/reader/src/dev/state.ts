@@ -19,7 +19,7 @@ export const manifestState = atom<Manifest | undefined>({
   default: undefined
 })
 
-export const paginationState = atom<ReturnType<Reader['getPagination']> | undefined>({
+export const paginationState = atom<ReturnType<Reader['getPaginationInfo']> | undefined>({
   key: `paginationState`,
   default: undefined
 })

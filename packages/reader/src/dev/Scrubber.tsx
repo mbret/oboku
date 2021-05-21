@@ -25,6 +25,10 @@ export const Scrubber: FC<{
     return null
   }
 
+  const reverse = isComic 
+  ? manifest?.readingDirection === 'rtl'
+  : pagination?.spineItemReadingDirection === 'rtl'
+
   return (
     <RcSlider
       value={value}
@@ -33,7 +37,7 @@ export const Scrubber: FC<{
       onChange={value => {
         setValue(value)
       }}
-      reverse={manifest?.readingDirection === 'rtl'}
+      reverse={reverse}
       step={step}
       onAfterChange={(value) => {
         console.log(value)

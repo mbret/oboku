@@ -14,7 +14,8 @@ setInterval(() => {
   }
 }, 5 * 60 * 1000)
 
-export const loadEpub = Report.measurePerformance(`serviceWorker`, Infinity, async (url: string) => {
+// export const loadEpub = Report.measurePerformance(`serviceWorker`, Infinity, async (url: string) => {
+export const loadEpub = async (url: string) => {
   if (url !== lastUrl) {
     archive = undefined
     loading = false
@@ -59,4 +60,4 @@ export const loadEpub = Report.measurePerformance(`serviceWorker`, Infinity, asy
   loading = false
 
   return archive
-})
+}
