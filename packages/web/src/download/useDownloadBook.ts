@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import throttle from 'lodash.throttle';
 import { UnwrapRecoilValue, useSetRecoilState } from 'recoil';
 import { DownloadState, normalizedBookDownloadsState } from './states';
-import { Report } from '../report';
+import { Report } from '../debug/report';
 import { useDatabase } from '../rxdb';
 import { DOWNLOAD_PREFIX } from '../constants';
 import { useDownloadBookFromDataSource } from '../dataSources/helpers';

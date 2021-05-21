@@ -1,7 +1,7 @@
 import localforage from 'localforage';
 import { useSetRecoilState } from 'recoil';
 import { DOWNLOAD_PREFIX } from '../constants';
-import { Report } from '../report';
+import { Report } from '../debug/report';
 import { DownloadState, normalizedBookDownloadsState } from './states';
 
 export const useRemoveDownloadFile = () => {

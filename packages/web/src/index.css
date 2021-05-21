@@ -124,3 +124,7 @@ code {
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 } */
+
+.rc-slider-disabled {
+  background-color: inherit !important;
+}
