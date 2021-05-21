@@ -18,7 +18,7 @@ export const DialogTopBar: FC<{
         <IconButton edge="start" color="inherit" onClick={onClose} aria-label="close">
           <CloseRounded />
         </IconButton>
-        <Typography variant="h6" style={styles.title}>
+        <Typography variant="h6" style={styles.title} noWrap>
           {title}
         </Typography>
       </Toolbar>
