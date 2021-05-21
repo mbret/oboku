@@ -6,7 +6,7 @@ import { useLinksInitialState } from "./links/observers";
 import { useCollectionsInitialState } from "./collections/observers";
 import { useDataSourcesInitialState } from "./dataSources/observers";
 import { useSettingsStateReducer } from "./sync/useObservers";
-import { Report } from "./report";
+import { Report } from "./debug/report";
 
 /**
  * This hook will load anything needed from the database into the state.

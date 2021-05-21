@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { API_COUCH_URI } from "../constants"
-import { Report } from "../report"
+import { Report } from "../debug/report"
 import PouchDB from 'pouchdb'
 import { useRecoilValue } from "recoil"
 import { authState } from "../auth/authState"

@@ -6,13 +6,10 @@ import "firebase/analytics"
 import { FIREBASE_BASE_CONFIG } from '../constants'
 // import { version } from '../../package.json'
 import localforage from 'localforage'
+import { isDebugEnabled } from "./isDebugEnabled"
 
 // @ts-ignore
 window.localforage = localforage
-
-export const isDebugEnabled = () => {
-  return localStorage.getItem('oboku_debug_enabled') === 'true'
-}
 
 if (process.env.NODE_ENV !== 'development') {
   // Sentry.init({

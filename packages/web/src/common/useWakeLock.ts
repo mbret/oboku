@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { Report } from "../report";
+import { Report } from "../debug/report";
 import { PromiseReturnType } from "../types";
 
 export const useWakeLock = () => {

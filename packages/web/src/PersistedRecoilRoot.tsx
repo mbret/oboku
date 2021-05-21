@@ -3,7 +3,7 @@ import localforage from 'localforage'
 import React, { createContext, FC, memo, useContext, useEffect, useRef, useState } from "react";
 import { Subject, asyncScheduler } from "rxjs";
 import { throttleTime } from 'rxjs/operators'
-import { Report } from "./report";
+import { Report } from "./debug/report";
 import { useCallback } from "react";
 import { useMountedState } from "react-use";
 

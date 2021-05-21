@@ -13,7 +13,7 @@ import { useDownloadedFilesInfo } from '../download/useDownloadedFilesInfo';
 import { useRemoveDownloadFile } from '../download/useRemoveDownloadFile';
 import { difference } from "ramda"
 import Alert from '@material-ui/lab/Alert'
-import { Report } from '../report';
+import { Report } from '../debug/report';
 import { useEffect } from 'react';
 
 export const ManageStorageScreen = () => {
