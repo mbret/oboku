@@ -7,3 +7,4 @@ node_modules
 !.secrets
 .secrets/*
 !.secrets/.gitkeep
+yarn-error.log
