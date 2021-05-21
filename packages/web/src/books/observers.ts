@@ -2,7 +2,7 @@ import { BookDocType } from "@oboku/shared"
 import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
-import { Report } from "../report"
+import { Report } from "../debug/report"
 import { useDatabase } from "../rxdb"
 import { normalizedBooksState } from "./states"
 

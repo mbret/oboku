@@ -15,7 +15,7 @@ import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil'
 import { enrichedBookState } from './states';
 import { Cover } from './Cover';
 import { ReadingStateState } from '@oboku/shared';
-import { Report } from '../report';
+import { Report } from '../debug/report';
 import { useDialogManager } from '../dialog';
 import { linkState } from '../links/states';
 import { useModalNavigationControl } from '../navigation/helpers';
