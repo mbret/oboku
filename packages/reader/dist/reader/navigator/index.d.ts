@@ -1,1 +1,0 @@
-export { createNavigator } from './navigator';
