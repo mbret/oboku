@@ -10,13 +10,16 @@ export const Scrubber: FC<{
 
 }> = () => {
   const currentPage = useRecoilValue(currentPageState)
-  const totalPages = useRecoilValue(totalPageState)
+  const totalPages = useRecoilValue(totalPageState) || 1
   const { readingDirection, renditionLayout } = useRecoilValue(manifestState) || {}
   const [value, setValue] = useState(currentPage || 0)
   const theme = useTheme()
   const reader = useReader()
-  const max = (totalPages || 1) - 1
+  const max = totalPages <= 1
+    ? 2
+    : totalPages - 1
   const step = 1
+  const disabled = totalPages === 1
 
   useEffect(() => {
     setValue(currentPage || 0)
@@ -24,9 +27,10 @@ export const Scrubber: FC<{
 
   return (
     <RcSlider
-      value={value}
+      value={totalPages === 1 ? 1 : value}
       max={max}
       min={0}
+      disabled={disabled}
       onChange={value => {
         setValue(value)
       }}
@@ -42,10 +46,16 @@ export const Scrubber: FC<{
       }}
       railStyle={{
         backgroundColor: theme.palette.grey['800'],
+        ...disabled && {
+          backgroundColor: theme.palette.grey['400'],
+        },
         height: 5,
       }}
       trackStyle={{
         backgroundColor: theme.palette.grey['100'],
+        ...disabled && {
+          backgroundColor: theme.palette.grey['400'],
+        },
         height: 5,
       }}
       handleStyle={{
@@ -54,7 +64,7 @@ export const Scrubber: FC<{
         width: 25,
         height: 25,
         marginTop: -10,
-        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.14), 0px 3px 4px rgba(0, 0, 0, 0.12), 0px 1px 5px rgba(0, 0, 0, 0.2)',
+        // boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.14), 0px 3px 4px rgba(0, 0, 0, 0.12), 0px 1px 5px rgba(0, 0, 0, 0.2)',
       }}
     />
   );
