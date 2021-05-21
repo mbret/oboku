@@ -17,7 +17,8 @@ export const BottomBar = () => {
   const theme = useTheme()
   const time = useTime()
   const reader = useReader()
-  const showScrubber = (totalPages || 1) > 1
+  // const showScrubber = (totalPages || 1) > 1
+  const showScrubber = true
 
   return (
     <AppBar

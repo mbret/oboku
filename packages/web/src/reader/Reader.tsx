@@ -17,7 +17,7 @@ import { useReader } from './ReaderProvider'
 import { BookLoading } from './BookLoading'
 import Hammer from 'hammerjs'
 import { useCSS } from '../common/utils'
-import { ObokuReader } from '@oboku/reader/dist/react'
+import { Reader as ObokuReader } from '@oboku/reader-react'
 import { Pagination } from '@oboku/reader'
 import { useManifest } from './manifest'
 import { useRarStreamer } from './streamer/useRarStreamer'
@@ -71,13 +71,13 @@ export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => 
       if (isRarFile && fetchResource) {
         setLoadOptions({
           fetchResource,
-          spineIndexOrIdOrCfi: book.readingStateCurrentBookmarkLocation || undefined,
+          cfi: book.readingStateCurrentBookmarkLocation || undefined,
           numberOfAdjacentSpineItemToPreLoad : manifest.renditionLayout === 'pre-paginated' ? 1 : 0
         })
       }
       if (!isRarFile) {
         setLoadOptions({
-          spineIndexOrIdOrCfi: book.readingStateCurrentBookmarkLocation || undefined,
+          cfi: book.readingStateCurrentBookmarkLocation || undefined,
           numberOfAdjacentSpineItemToPreLoad : manifest.renditionLayout === 'pre-paginated' ? 1 : 0
         })
       }

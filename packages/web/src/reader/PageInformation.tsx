@@ -50,17 +50,15 @@ export const PageInformation: FC<{
                 {chapterInfo && buildTitleChain(chapterInfo)}
               </Typography>
               <div style={{ display: 'flex', marginTop: theme.spacing(1) }}>
-                <Typography variant="body2">
-                  {totalPagesToDisplay === 1
-                    ? ``
-                    : `page ${currentPageToDisplay} of ${totalPagesToDisplay}`}
-                </Typography>
+                {totalPagesToDisplay > 1 && (
+                  <Typography variant="body2" style={{ marginRight: theme.spacing(2) }}>
+                    page {currentPageToDisplay} of {totalPagesToDisplay}
+                  </Typography>
+                )}
                 {totalBookProgress !== undefined && (
-                  <div style={{ marginLeft: theme.spacing(2) }}>
-                    <Typography style={{ fontWeight: theme.typography.fontWeightMedium }} variant="body2">
-                      ({displayableProgress} %)
-                    </Typography>
-                  </div>
+                  <Typography style={{ fontWeight: theme.typography.fontWeightMedium }} variant="body2">
+                    ({displayableProgress} %)
+                  </Typography>
                 )}
               </div>
             </div>
