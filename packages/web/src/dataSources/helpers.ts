@@ -2,7 +2,7 @@ import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
 import { DataSourceDocType, DataSourceType, Errors } from '@oboku/shared'
 import { useRxMutation } from "../rxdb/hooks"
-import { Report } from "../report"
+import { Report } from "../debug/report"
 import { useRecoilCallback } from "recoil"
 import { plugins } from "./configure"
 import { useCallback, useMemo, useRef } from "react"

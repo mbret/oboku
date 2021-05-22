@@ -1,5 +1,5 @@
 import { ComponentProps, FC } from 'react'
-import { Report } from '../../report'
+import { Report } from '../../debug/report'
 import { DrivePicker } from './DrivePicker'
 import { BlockingScreen } from '../../common/BlockingBackdrop'
 import { useAddBook } from '../../books/helpers'

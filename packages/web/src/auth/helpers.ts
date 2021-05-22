@@ -6,7 +6,7 @@ import { useLock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
 import { authState } from "./authState"
 import { useResetStore } from "../PersistedRecoilRoot"
-import { Report } from "../report"
+import { Report } from "../debug/report"
 
 export const useIsAuthenticated = () => !!useRecoilValue(authState)?.token
 

@@ -1,7 +1,13 @@
+/* eslint-disable no-restricted-globals */
 import { isMobileDetected } from "./common/utils"
 
-export const API_URI = process.env.REACT_APP_API_URL || `https://${window.location.hostname}:4000`
-export const API_COUCH_URI = process.env.REACT_APP_API_COUCH_URI || `https://${window.location.hostname}:4003`
+// @ts-ignore
+const sw: ServiceWorkerGlobalScope = self as any
+
+const hostname = typeof window === "object" ? window?.location?.hostname : sw?.location?.hostname
+
+export const API_URI = process.env.REACT_APP_API_URL || `https://${hostname}:4000`
+export const API_COUCH_URI = process.env.REACT_APP_API_COUCH_URI || `https://${hostname}:4003`
 export const DOWNLOAD_PREFIX = `book-download`
 
 export const STREAMER_URL_PREFIX = `streamer`

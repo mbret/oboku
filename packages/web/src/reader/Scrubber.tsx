@@ -47,14 +47,16 @@ export const Scrubber: FC<{
       railStyle={{
         backgroundColor: theme.palette.grey['800'],
         ...disabled && {
-          backgroundColor: theme.palette.grey['400'],
+          // backgroundColor: theme.palette.grey['400'],
+          backgroundColor: theme.palette.action.disabled,
         },
         height: 5,
       }}
       trackStyle={{
         backgroundColor: theme.palette.grey['100'],
         ...disabled && {
-          backgroundColor: theme.palette.grey['400'],
+          // backgroundColor: theme.palette.grey['400'],
+          backgroundColor: 'transparent',
         },
         height: 5,
       }}

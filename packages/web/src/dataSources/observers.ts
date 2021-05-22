@@ -4,7 +4,7 @@ import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
 import { DataSourceDocType } from '@oboku/shared'
 import { normalizedDataSourcesState } from "./states"
-import { Report } from "../report"
+import { Report } from "../debug/report"
 
 export const useDataSourcesInitialState = () => {
   const db = useDatabase()
