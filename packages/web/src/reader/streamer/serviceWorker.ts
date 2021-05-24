@@ -1,4 +1,4 @@
-import { generateResourceResponse } from '@oboku/reader-streamer'
+import { getResourceFromArchive } from '@oboku/reader-streamer'
 import { STREAMER_URL_PREFIX } from '../../constants'
 import { FileNotFoundError, FileNotSupportedError, loadBook } from './loadBook'
 import { generateManifestResponse } from './manifest'
@@ -27,7 +27,7 @@ export const readerFetchListener = (event: FetchEvent) => {
          */
         const resourcePath = getResourcePath(event)
 
-        return await generateResourceResponse(archive, resourcePath)
+        return await getResourceFromArchive(archive, resourcePath)
       } catch (e) {
         console.error(e)
 

@@ -4,7 +4,7 @@ import { getBookFile } from "../download/useBookFile"
 import { Report } from "../debug/report"
 import { getArchiveForRarFile } from "./streamer/getArchiveForFile"
 import '../archive'
-import { generateManifestResponse } from "@oboku/reader-streamer"
+import { getManifestFromArchive } from "@oboku/reader-streamer"
 import { extractMetadataFromName } from "@oboku/shared/dist/directives"
 import { STREAMER_URL_PREFIX } from "../constants"
 
@@ -14,7 +14,7 @@ const useGetRarManifest = () => useCallback(async (bookId: string) => {
   if (file && normalizedName?.endsWith(`.cbr`)) {
     const archive = await getArchiveForRarFile(file)
 
-    return generateManifestResponse(archive, { baseUrl: `/${STREAMER_URL_PREFIX}/rar` })
+    return getManifestFromArchive(archive, { baseUrl: `/${STREAMER_URL_PREFIX}/rar` })
   }
 
   return undefined

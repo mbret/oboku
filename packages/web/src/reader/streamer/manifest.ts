@@ -1,9 +1,9 @@
-import { Archive, generateManifestResponse as streamerGenerateManifestResponse } from '@oboku/reader-streamer'
+import { Archive, getManifestFromArchive } from '@oboku/reader-streamer'
 
 export const generateManifestResponse = async (archive: Archive, { baseUrl }: {
   baseUrl: string;
 }) => {
-  const manifest = await streamerGenerateManifestResponse(archive, { baseUrl })
+  const manifest = await getManifestFromArchive(archive, { baseUrl })
 
   if (
     archive.filename.endsWith(`.cbz`)

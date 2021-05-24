@@ -18,11 +18,11 @@ import { BookLoading } from './BookLoading'
 import Hammer from 'hammerjs'
 import { useCSS } from '../common/utils'
 import { Reader as ObokuReader } from '@oboku/reader-react'
-import { Pagination } from '@oboku/reader'
 import { useManifest } from './manifest'
 import { useRarStreamer } from './streamer/useRarStreamer'
 import { ComponentProps } from 'react'
 import { useUpdateBookState } from './bookHelpers'
+import { Pagination } from './type'
 
 type ReaderInstance = Parameters<NonNullable<ComponentProps<typeof ObokuReader>['onReader']>>[0]
 type LoadOptions = NonNullable<ComponentProps<typeof ObokuReader>['loadOptions']>
@@ -62,7 +62,6 @@ export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => 
   }, [setIsBookReady])
 
   const onPaginationChange = useCallback((pagination: Pagination) => {
-    console.warn('PAGINATION', (pagination?.percentageEstimateOfBook || 0) * 100)
     setPaginationState(pagination)
   }, [setPaginationState])
 

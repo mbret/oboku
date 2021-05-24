@@ -1,4 +1,4 @@
-import { generateResourceResponse } from "@oboku/reader-streamer"
+import { getResourceFromArchive } from "@oboku/reader-streamer"
 import { useEffect } from "react"
 import { useCallback, useState } from "react"
 import { getBookFile } from "../../download/useBookFile"
@@ -38,7 +38,7 @@ export const useRarStreamer = (bookId: string | undefined) => {
   // @todo make it cancellable
   const fetchResource = useCallback(async (item) => {
     if (archive) {
-      return (await generateResourceResponse(archive, item.path)).text()
+      return (await getResourceFromArchive(archive, item.path)).text()
     }
     return ''
   }, [archive])

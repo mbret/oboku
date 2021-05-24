@@ -1,6 +1,7 @@
 import { atom, selector, useRecoilCallback } from "recoil";
 import { useEffect } from "react";
-import { Manifest, Pagination } from "@oboku/reader";
+import { Manifest } from "@oboku/reader";
+import { Pagination } from "./type";
 
 export const isBookReadyState = atom({
   key: 'isBookReadyState',

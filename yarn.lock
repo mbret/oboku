@@ -1849,24 +1849,24 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@oboku/reader-react@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@oboku/reader-react/-/reader-react-0.0.4.tgz#90b315a0da36caa4e7b7fe505ad33bee5184646e"
-  integrity sha512-eyTiLczJ7rlDL/1g3siSZ3vcEKGxzjJ4uFhWuwIOG8JFQrqC0vxWkavIStg9RVEcD+fc3YwLiH0ll/AxPndWUQ==
+"@oboku/reader-react@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@oboku/reader-react/-/reader-react-0.0.5.tgz#77a1e8eb506d4dc845f0e6209ef55e3249bef0f0"
+  integrity sha512-qDTxhikTjf6glUzMqdQlGm8mV8j1i1YJgqZbM7UzoxRGFh6Wgv2QLXJmBvCTZb/sPNBFM3odaXoRfGFWCJfUEg==
 
-"@oboku/reader-streamer@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@oboku/reader-streamer/-/reader-streamer-0.0.4.tgz#dde01eb33788ca816059acb437781884a944be07"
-  integrity sha512-GidNYo2NlsN0MhfqKDmQSnfbPVzfk1WU2vuX74ADbrAlb7mbHy9Zt7YMl83A9VB2qP/6/Wh2ULsqRhcbcWsl7Q==
+"@oboku/reader-streamer@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@oboku/reader-streamer/-/reader-streamer-0.0.5.tgz#15a57628c918b7b21d84e8e1723f807bd30612da"
+  integrity sha512-hzp0kOl5J1njgZZYntDJE/Jt95Lr+RQEC5CraOoO5oGIGsrrlzPFi0ApbwsW/Rw4BNB2LkZ2RVWppLUPrS0Vog==
   dependencies:
     "@types/xmldoc" "^1.1.5"
     buffer "6.0.3"
     xmldoc "^1.1.2"
 
-"@oboku/reader@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@oboku/reader/-/reader-0.0.6.tgz#6ccbeb60b80a9892727c5400319b5887054f98c0"
-  integrity sha512-bgJK2pDekoew3yFtTL48JYuIW8d6oNNIerJ/L8Q1oG3N4xXUGrgnI7P2XEYmbw0rH32/Q1B3syILednjSvDzNw==
+"@oboku/reader@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@oboku/reader/-/reader-0.0.8.tgz#8a061cd24db56dc2184cfbd78a4c23364560ed35"
+  integrity sha512-LAtVfrbLWsrFEOcw5gt0HyyraNfmechTvJClIZJaXT+4N2LIrV2UpnlQatbFF/QOTz9eVYlIvAuEPMTDqk/1/Q==
 
 "@pmmmwh/react-refresh-webpack-plugin@0.4.3":
   version "0.4.3"
