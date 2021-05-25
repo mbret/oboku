@@ -1,6 +1,6 @@
 {
   "name": "@oboku/web",
-  "version": "0.1.43",
+  "version": "0.1.44",
   "private": true,
   "engines": {
     "node": "12.x"
@@ -11,7 +11,7 @@
     "@material-ui/lab": "^4.0.0-alpha.57",
     "@oboku/reader": "^0.0.8",
     "@oboku/reader-react": "^0.0.5",
-    "@oboku/reader-streamer": "^0.0.5",
+    "@oboku/reader-streamer": "^0.0.6",
     "@sentry/react": "^6.2.2",
     "@sentry/tracing": "^6.2.2",
     "@types/gapi": "0.0.39",

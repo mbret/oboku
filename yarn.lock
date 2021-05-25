@@ -1854,10 +1854,10 @@
   resolved "https://registry.yarnpkg.com/@oboku/reader-react/-/reader-react-0.0.5.tgz#77a1e8eb506d4dc845f0e6209ef55e3249bef0f0"
   integrity sha512-qDTxhikTjf6glUzMqdQlGm8mV8j1i1YJgqZbM7UzoxRGFh6Wgv2QLXJmBvCTZb/sPNBFM3odaXoRfGFWCJfUEg==
 
-"@oboku/reader-streamer@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@oboku/reader-streamer/-/reader-streamer-0.0.5.tgz#15a57628c918b7b21d84e8e1723f807bd30612da"
-  integrity sha512-hzp0kOl5J1njgZZYntDJE/Jt95Lr+RQEC5CraOoO5oGIGsrrlzPFi0ApbwsW/Rw4BNB2LkZ2RVWppLUPrS0Vog==
+"@oboku/reader-streamer@^0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@oboku/reader-streamer/-/reader-streamer-0.0.6.tgz#7d00e670ce640b769abd99ed1b3244cf6424512f"
+  integrity sha512-6waUuM+QkjGEfDOhUNSt1c2eCGeHv07KMd7q1Zo3Uy0O8jTjP4RkliMmtN1dfn7wkpLWm40UQJPmnV+PBHzInA==
   dependencies:
     "@types/xmldoc" "^1.1.5"
     buffer "6.0.3"

@@ -1,4 +1,4 @@
-import { Archive } from "@oboku/reader-streamer";
+import { Archive, createArchiveFromText } from "@oboku/reader-streamer";
 import { loadAsync } from "jszip";
 import { RarArchive } from "../../archive/types";
 import { getBookFile } from "../../download/useBookFile";
@@ -16,6 +16,10 @@ export const getArchiveForFile = async (file: NonNullable<PromiseReturnType<type
     || epubMimeTypes.includes(file.data.type)
   ) {
     return getArchiveForZipFile(file)
+  }
+
+  if (normalizedName.endsWith(`.txt`)) {
+    return createArchiveFromText(file.data)
   }
 
   return undefined
