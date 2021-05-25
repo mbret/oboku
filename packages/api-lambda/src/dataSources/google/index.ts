@@ -5,14 +5,17 @@
 import { DataSource, SynchronizableDataSource } from '../types'
 import { authorize } from './helpers'
 import { drive_v3, google } from 'googleapis'
-import { GoogleDriveDataSourceData, READER_SUPPORTED_MIME_TYPES } from '@oboku/shared/src'
+import { GoogleDriveDataSourceData, READER_SUPPORTED_MIME_TYPES, READER_SUPPORTED_EXTENSIONS } from '@oboku/shared/src'
 import { configure } from './configure'
 import { createThrottler } from '../helpers'
+import path from 'path'
 
 export { configure }
 
 export const generateResourceId = (driveId: string) => `drive-${driveId}`
 export const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`drive-`, ``)
+
+const isFolder = (file: NonNullable<drive_v3.Schema$FileList['files']>[number]) => file.mimeType === 'application/vnd.google-apps.folder'
 
 export const dataSource: DataSource = {
   getMetadata: async (link, credentials) => {
@@ -114,9 +117,15 @@ export const dataSource: DataSource = {
       const files = await getNextRes()
 
       return Promise.all(files
-        .filter(file => file.trashed !== true)
+        .filter(file =>
+          file.trashed !== true
+          && (
+            isFolder(file)
+            || (READER_SUPPORTED_EXTENSIONS.includes(path.extname(file.name || '')))
+          )
+        )
         .map(async (file): Promise<SynchronizableDataSource['items'][number]> => {
-          if (file.mimeType === 'application/vnd.google-apps.folder') {
+          if (isFolder(file)) {
             return {
               type: 'folder',
               resourceId: generateResourceId(file.id || ''),
