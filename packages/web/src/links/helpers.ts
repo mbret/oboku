@@ -2,6 +2,7 @@ import { useRxMutation } from "../rxdb/hooks";
 import { LinkDocType, DataSourceType } from '@oboku/shared'
 import { useRefreshBookMetadata } from "../books/helpers";
 import { useDatabase } from "../rxdb";
+import { Report } from "../debug/report"
 
 type EditBookPayload = Partial<LinkDocType> & Required<Pick<LinkDocType, '_id'>>
 
