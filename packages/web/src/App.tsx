@@ -1,4 +1,4 @@
-import React, { FC, Suspense, useEffect, useState } from 'react';
+import { FC, Suspense, useEffect, useState } from 'react';
 import { RoutineProcess } from './RoutineProcess';
 import { AppNavigator } from './navigation/AppNavigator';
 import { ThemeProvider } from '@material-ui/core';
@@ -28,6 +28,7 @@ import './i18n'
 import { ErrorBoundary } from '@sentry/react';
 import { ManageBookTagsDialog } from './books/ManageBookTagsDialog';
 import { ManageTagBooksDialog } from './tags/ManageTagBooksDialog';
+import { useRef } from 'react';
 
 const localStatesToPersist = [
   libraryState,
@@ -74,12 +75,11 @@ export function App() {
                   </DialogProvider>
                 </AxiosProvider>
               </GoogleApiProvider>
-              {/* <UserFeedback /> */}
             </PersistedRecoilRoot>
           </RxDbProvider>
         </Suspense>
       </ThemeProvider>
-      <ServiceWorkerRegistrator onUpdateAvailable={sw => setNewServiceWorker(sw)} />
+      <ServiceWorkerRegistration onUpdateAvailable={sw => setNewServiceWorker(sw)} />
       <BlurContainer />
     </ErrorBoundary>
   );
@@ -92,18 +92,23 @@ const RecoilSyncedWithDatabase: FC = ({ children }) => {
   return null
 }
 
-const ServiceWorkerRegistrator: FC<{ onUpdateAvailable: (sw: ServiceWorker) => void }> = ({ onUpdateAvailable }) => {
+const ServiceWorkerRegistration: FC<{ onUpdateAvailable: (sw: ServiceWorker) => void }> = ({ onUpdateAvailable }) => {
+  const firstTime = useRef(true)
+
   useEffect(() => {
-    // If you want your app to work offline and load faster, you can change
-    // unregister() to register() below. Note this comes with some pitfalls.
-    // Learn more about service workers: https://cra.link/PWA
-    serviceWorkerRegistration.register({
-      onSuccess: () => console.warn('onSuccess'),
-      onUpdate: reg => reg.waiting && onUpdateAvailable(reg.waiting),
-      onWaitingServiceWorkerFound: async (reg) => {
-        reg.waiting && onUpdateAvailable(reg.waiting)
-      },
-    });
+    if (firstTime.current) {
+      firstTime.current = false
+      // If you want your app to work offline and load faster, you can change
+      // unregister() to register() below. Note this comes with some pitfalls.
+      // Learn more about service workers: https://cra.link/PWA
+      serviceWorkerRegistration.register({
+        onSuccess: () => console.warn('onSuccess'),
+        onUpdate: reg => reg.waiting && onUpdateAvailable(reg.waiting),
+        onWaitingServiceWorkerFound: async (reg) => {
+          reg.waiting && onUpdateAvailable(reg.waiting)
+        },
+      });
+    }
   }, [onUpdateAvailable])
 
   return null

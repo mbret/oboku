@@ -101,7 +101,6 @@ export const PersistedRecoilRoot: FC<{
   }, [onReady, migration, isMounted])
 
   const initializeState = useCallback(({ set }: MutableSnapshot) => {
-    console.log('PersistedRecoilRoot initializeState cb', initialeState)
     if (initialeState) {
       Object.keys(initialeState || {}).forEach((key) => {
         const stateToRestore = states.find(state => state.key === key)
@@ -112,8 +111,6 @@ export const PersistedRecoilRoot: FC<{
     };
     // alreadyInitialized.current = true;
   }, [initialeState, states])
-
-  console.log('PersistedRecoilRoot', initialeState)
 
   return (
     <PersistedStatesContext.Provider value={states}>

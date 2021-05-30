@@ -27,8 +27,6 @@ export const HomeScreen = () => {
     height: listHeight
   }), [listHeight])
 
-  console.log(`HomeScreen render`, recentlyAddedBooks)
-
   return (
     <div style={{
       display: 'flex',
