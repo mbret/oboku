@@ -1,17 +1,13 @@
 import { useMemo } from 'react';
-import { TopBarNavigation } from './navigation/TopBarNavigation';
+import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { Typography, useTheme, Button } from '@material-ui/core';
-import { BookList } from './books/bookList/BookList';
-import { ROUTES } from './constants';
-import * as R from 'ramda';
+import { BookList } from '../books/bookList/BookList';
+import { ROUTES } from '../constants';
 import { useHistory } from 'react-router-dom'
-import ContinueReadingAsset from './assets/continue-reading.svg'
-import { useRecoilValue } from 'recoil';
-import { booksAsArrayState } from './books/states';
-import { ReadingStateState } from '@oboku/shared';
-import { useBooksSortedBy } from './books/helpers';
-import { useCSS } from './common/utils';
+import ContinueReadingAsset from '../assets/continue-reading.svg'
+import { useCSS } from '../common/utils';
 import { useTranslation } from 'react-i18next'
+import { useContinueReadingBooks, useRecentlyAddedBooks } from './helpers';
 
 export const HomeScreen = () => {
   const classes = useStyles();
@@ -28,17 +24,9 @@ export const HomeScreen = () => {
   }), [listHeight])
 
   return (
-    <div style={{
-      display: 'flex',
-      flex: 1,
-      overflow: 'hidden',
-      flexFlow: 'column',
-    }}>
+    <div style={classes.container}>
       <TopBarNavigation title={'Home'} showBack={false} hasSearch />
-      <div style={{
-        height: '100%',
-        overflow: 'scroll'
-      }}>
+      <div style={classes.innerContainer}>
         {continueReadingBooks.length === 0 && (
           <div style={{
             width: '100%',
@@ -97,35 +85,20 @@ export const HomeScreen = () => {
   );
 }
 
-const useContinueReadingBooks = () => {
-  const booksAsArray = useRecoilValue(booksAsArrayState)
-  const booksSortedByDate = useBooksSortedBy(booksAsArray, 'activity')
-
-  return useMemo(() =>
-    booksSortedByDate
-      .filter(book => book.readingStateCurrentState === ReadingStateState.Reading)
-      .map(item => item._id)
-    ,
-    [booksSortedByDate]
-  )
-}
-
-const useRecentlyAddedBooks = () => {
-  const books = useRecoilValue(booksAsArrayState)
-
-  return useMemo(() => {
-    const booksSortedByDate = R.sort(R.descend(R.prop('createdAt')), books)
-
-    return booksSortedByDate
-      .slice(0, 15)
-      .map(book => book._id)
-  }, [books])
-}
-
 const useStyles = () => {
   const theme = useTheme()
 
   return useCSS(() => ({
+    container: {
+      display: 'flex',
+      flex: 1,
+      overflow: 'hidden',
+      flexFlow: 'column',
+    },
+    innerContainer: {
+      height: '100%',
+      overflow: 'scroll'
+    },
     title: {
       padding: theme.spacing(1),
       paddingTop: theme.spacing(2)

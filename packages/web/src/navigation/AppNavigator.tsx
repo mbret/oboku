@@ -6,7 +6,7 @@ import {
   Redirect,
   useHistory,
 } from "react-router-dom"
-import { HomeScreen } from '../HomeScreen'
+import { HomeScreen } from '../home/HomeScreen'
 import { LoginScreen } from '../auth/LoginScreen'
 import { ReaderScreen } from '../reader/ReaderScreen'
 import { BottomTabBar } from '../BottomTabBar'
