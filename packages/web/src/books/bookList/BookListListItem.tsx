@@ -35,6 +35,7 @@ export const BookListListItem: FC<{
         display: 'flex',
         overflow: 'hidden',
         height: computedHeight,
+        // height: '100%',
         cursor: 'pointer',
         flexGrow: 1,
       }}

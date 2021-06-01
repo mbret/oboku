@@ -67,8 +67,6 @@ export const LibraryBooksScreen = () => {
 
   const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
 
-  console.log('debug LibraryBooksScreen render')
-
   return (
     <div
       style={styles.container}
@@ -101,7 +99,7 @@ export const LibraryBooksScreen = () => {
         </div>
         {library?.isLibraryUnlocked && (
           <div className={classes.extraInfo}>
-            {localSettings.unblurWhenProtectedVisible && (
+            {localSettings.unBlurWhenProtectedVisible && (
               <IconButton disabled>
                 <BlurOffRounded fontSize="small" />
               </IconButton>

@@ -38,7 +38,6 @@ export const useSync = () => {
 
       replication$?.complete$
         .subscribe(isSuccess => {
-          console.log('complete', isSuccess)
           isSuccess && resolve()
         })
 

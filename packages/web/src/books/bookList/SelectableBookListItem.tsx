@@ -2,9 +2,9 @@ import { Typography, useTheme } from '@material-ui/core'
 import React, { FC } from 'react'
 import { useRecoilValue } from 'recoil'
 import { enrichedBookState } from '../states'
-import { CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons'
 import { useCSS } from '../../common/utils'
 import { BookListCoverContainer } from './BookListCoverContainer'
+import { Checkbox } from '../../common/Checkbox'
 
 export const SelectableBookListItem: FC<{
   bookId: string,
@@ -49,15 +49,13 @@ export const SelectableBookListItem: FC<{
         <Typography noWrap color="textSecondary" variant="body2">{book?.creator || 'Unknown'}</Typography>
       </div>
       <div style={{ alignSelf: 'center' }}>
-        {selected
-          ? <CheckCircleRounded />
-          : <RadioButtonUncheckedOutlined />}
+        <Checkbox selected={selected} />
       </div>
     </div>
   )
 }
 
-const useStyles = ({ coverWidth, paddingTop, paddingBottom, style }: { coverWidth: number, style?: React.CSSProperties, paddingTop?: number, paddingBottom?: number  }) => {
+const useStyles = ({ coverWidth, paddingTop, paddingBottom, style }: { coverWidth: number, style?: React.CSSProperties, paddingTop?: number, paddingBottom?: number }) => {
   const theme = useTheme()
 
   return useCSS(() => ({

@@ -1,47 +1,59 @@
-import { Button, Dialog, DialogActions, DialogTitle } from '@material-ui/core';
+import { useCallback, useMemo } from 'react';
 import { FC } from 'react';
-import { atom, useRecoilState, useRecoilValue } from 'recoil';
+import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil';
 import { tagsAsArrayState } from '../tags/states';
-import { TagsSelectionList } from '../tags/TagsSelectionList';
+import { TagsSelectionDialog } from '../tags/TagsSelectionDialog';
 import { useAddTagToBook, useRemoveTagFromBook } from './helpers';
 import { bookState } from './states';
 
-export const openManageBookTagsDialogState = atom<string | undefined>({ key: 'openManageBookTagsDialogState', default: undefined })
+const openManageBookTagsDialogState = atom<string | undefined>({ key: 'openManageBookTagsDialogState', default: undefined })
+
+export const useManageBookTagsDialog = () => {
+
+  const openManageBookTagsDialog = useRecoilCallback(({ set }) => (bookId: string) => {
+    set(openManageBookTagsDialogState, bookId)
+  }, [])
+
+  const closeManageBookTagsDialog = useRecoilCallback(({ set }) => () => {
+    set(openManageBookTagsDialogState, undefined)
+  })
+
+  return { openManageBookTagsDialog, closeManageBookTagsDialog }
+}
 
 export const ManageBookTagsDialog: FC<{}> = () => {
-  const [id, setOpenManageBookTagsDialogState] = useRecoilState(openManageBookTagsDialogState)
-  const open = !!id
+  const [bookId, setOpenManageBookTagsDialogState] = useRecoilState(openManageBookTagsDialogState)
+  const open = !!bookId
   const tags = useRecoilValue(tagsAsArrayState)
-  const book = useRecoilValue(bookState(id || '-1'))
-  const addToBook = useAddTagToBook()
+  const book = useRecoilValue(bookState(bookId || '-1'))
+  const addTagToBook = useAddTagToBook()
   const removeFromBook = useRemoveTagFromBook()
   const bookTags = book?.tags
 
-  const isSelected = (id: string) => !!bookTags?.find(item => item === id)
+  const onClose = useCallback(() => {
+    setOpenManageBookTagsDialogState(undefined)
+  }, [setOpenManageBookTagsDialogState])
+
+  const data = useMemo(() => tags.map(item => ({
+    id: item._id,
+    selected: !!bookTags?.find(id => id === item._id)
+  })), [tags, bookTags])
+
+  const onItemClick = useCallback(({ id: tagId, selected }: { id: string, selected: boolean }) => {
+    if (selected) {
+      bookId && removeFromBook({ bookId, tagId })
+    } else {
+      bookId && addTagToBook({ _id: bookId, tagId })
+    }
+  }, [removeFromBook, addTagToBook, bookId])
 
   return (
-    <Dialog
-      onClose={() => setOpenManageBookTagsDialogState(undefined)}
+    <TagsSelectionDialog
+      title="Manage tags"
       open={open}
-      // fullScreen
-    >
-      <DialogTitle>Book tags</DialogTitle>
-      {tags && <TagsSelectionList
-        tags={tags}
-        isSelected={isSelected}
-        onItemClick={tagId => {
-          if (isSelected(tagId)) {
-            id && removeFromBook({ bookId: id, tagId })
-          } else {
-            id && addToBook({ _id: id, tagId })
-          }
-        }}
-      />}
-      <DialogActions>
-        <Button onClick={() => setOpenManageBookTagsDialogState(undefined)} color="primary" autoFocus>
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+      onClose={onClose}
+      data={data}
+      onItemClick={onItemClick}
+    />
   )
 }

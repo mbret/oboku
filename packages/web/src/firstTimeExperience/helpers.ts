@@ -14,8 +14,6 @@ export const useHasDoneFirstTimeExperience = (id: FirstTimeExperienceId) => {
   const latestVersion = FirstTimeExperience.find(entry => entry.id === id)?.version || 0
   const currentdoneVersion = firstTimeExperience[id] || 0
 
-  console.log(id, currentdoneVersion, latestVersion, currentdoneVersion >= latestVersion)
-
   return currentdoneVersion >= latestVersion
 }
 

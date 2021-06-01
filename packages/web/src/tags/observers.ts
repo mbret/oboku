@@ -4,7 +4,7 @@ import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
 import { TagsDocType } from "@oboku/shared"
 import { normalizedTagsState } from "./states"
-import { Report } from "../report"
+import { Report } from "../debug/report"
 
 export const useTagsInitialState = () => {
   const db = useDatabase()

@@ -38,7 +38,6 @@ export const Scrubber: FC<{
       step={step}
       onAfterChange={(value) => {
         if (renditionLayout !== 'reflowable') {
-          console.log(value)
           reader?.goTo(value)
         } else {
           reader?.goToPageOfCurrentChapter(value)

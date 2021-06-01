@@ -4,21 +4,20 @@ import { MoreVertRounded, EditRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider, makeStyles } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
-import { useAddTagToBook, useRemoveTagFromBook } from './helpers';
-import { TagsSelectionList } from '../tags/TagsSelectionList';
+import { useRefreshBookMetadata } from './helpers';
 import { Alert } from '@material-ui/lab';
 import { Cover } from './Cover';
 import { useDownloadBook } from '../download/useDownloadBook';
 import { ROUTES } from '../constants';
 import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { bookState, bookTagsState, bookLinksState, bookCollectionsState, enrichedBookState } from './states';
-import { tagsAsArrayState } from '../tags/states';
+import { bookTagsState, bookLinksState, bookCollectionsState, enrichedBookState } from './states';
 import { normalizedLinksState } from '../links/states';
 import { useEditLink } from '../links/helpers';
 import { useCSS } from '../common/utils';
 import { useDataSourcePlugin } from '../dataSources/helpers';
 import { useDialogManager } from '../dialog';
+import { useManageBookTagsDialog } from './ManageBookTagsDialog';
 
 type ScreenParams = {
   id: string
@@ -29,7 +28,6 @@ export const BookDetailsScreen = () => {
   const theme = useTheme()
   const history = useHistory()
   const downloadFile = useDownloadBook()
-  const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<undefined | string>(undefined)
   const { id } = useParams<ScreenParams>()
   const book = useRecoilValue(enrichedBookState(id))
@@ -38,9 +36,9 @@ export const BookDetailsScreen = () => {
   const collections = useRecoilValue(bookCollectionsState(id))
   const dialog = useDialogManager()
   const setOpenManageBookCollectionsDialog = useSetRecoilState(openManageBookCollectionsDialog)
+  const { openManageBookTagsDialog } = useManageBookTagsDialog()
+  const refreshBookMetadata = useRefreshBookMetadata()
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
-
-  console.log('[BookDetailsScreen]', { book, tags, link, dataSourcePlugin })
 
   return (
     <div style={{
@@ -104,7 +102,7 @@ export const BookDetailsScreen = () => {
       <List component="nav" aria-label="main mailbox folders">
         <ListItem
           button
-          onClick={() => setIsTagsDialogOpened(true)}
+          onClick={() => openManageBookTagsDialog(id)}
         >
           <ListItemText
             primary="Tags"
@@ -166,8 +164,10 @@ export const BookDetailsScreen = () => {
             <MoreVertRounded />
           </ListItem>
         )}
+        {process.env.NODE_ENV === 'development' && (
+          <Button fullWidth variant="outlined" color="primary" onClick={() => { refreshBookMetadata(id) }}>debug:refresh_metadata</Button>
+        )}
       </List>
-      <TagsDialog id={id} open={isTagsDialogOpened} onClose={() => setIsTagsDialogOpened(false)} />
       <LinkActionsDrawer
         openWith={isLinkActionDrawerOpenWith}
         bookId={book?._id}
@@ -258,44 +258,6 @@ const EditLinkDialog: FC<{
           color="primary"
         >
           Save
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
-
-const TagsDialog: FC<{
-  open: boolean,
-  onClose: () => void,
-  id: string
-}> = ({ open, onClose, id }) => {
-  const tags = useRecoilValue(tagsAsArrayState)
-  const book = useRecoilValue(bookState(id))
-  const addTagToBook = useAddTagToBook()
-  const removeTagToBook = useRemoveTagFromBook()
-  const bookTags = book?.tags
-  const isSelected = (tagId: string) => !!bookTags?.find(itemId => itemId === tagId)
-
-  return (
-    <Dialog
-      onClose={onClose}
-      aria-labelledby="simple-dialog-title"
-      open={open}
-    >
-      <DialogTitle>Tags selection</DialogTitle>
-      {tags && (
-        <TagsSelectionList
-          tags={tags}
-          isSelected={isSelected}
-          onItemClick={tagId => {
-            if (!isSelected(tagId)) addTagToBook({ tagId, _id: id })
-            else removeTagToBook({ tagId, bookId: id })
-          }}
-        />
-      )}
-      <DialogActions>
-        <Button onClick={onClose} color="primary" autoFocus>
-          Close
         </Button>
       </DialogActions>
     </Dialog>

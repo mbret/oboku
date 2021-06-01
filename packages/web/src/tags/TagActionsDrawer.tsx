@@ -1,4 +1,4 @@
-import React, { useState, FC, useEffect } from 'react';
+import { useState, FC, useEffect } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import {
   DialogTitle, Drawer, List, ListItem,
@@ -117,8 +117,6 @@ const EditTagDialog: FC<{
   useEffect(() => {
     setName(prev => tagName || prev)
   }, [tagName, id])
-
-  console.log('EditTagDialog', id, tagName)
 
   return (
     <Dialog onClose={onInnerClose} open={open}>

@@ -15,8 +15,6 @@ export const SortByDialog: FC<{
 }> = ({ onClose, open, onChange, value = 'date' }) => {
   const [innerSorting, setInnerSorting] = useState<Sorting>(value)
 
-  console.log('SortByDialog', innerSorting, value)
-  
   useEffect(() => {
     if (value !== innerSorting) {
       setInnerSorting(value)

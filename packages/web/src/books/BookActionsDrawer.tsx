@@ -21,7 +21,7 @@ import { linkState } from '../links/states';
 import { useModalNavigationControl } from '../navigation/helpers';
 import { useDataSourcePlugin } from '../dataSources/helpers';
 import { useTranslation } from 'react-i18next'
-import { openManageBookTagsDialogState } from './ManageBookTagsDialog';
+import { useManageBookTagsDialog } from './ManageBookTagsDialog';
 
 export const bookActionDrawerState = atom<{
   openedWith: undefined | string,
@@ -30,7 +30,7 @@ export const bookActionDrawerState = atom<{
 
 export const BookActionsDrawer = () => {
   const setOpenManageBookCollectionsDialog = useSetRecoilState(openManageBookCollectionsDialog)
-  const setOpenManageBookTagsDialogState = useSetRecoilState(openManageBookTagsDialogState)
+  const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const [{ openedWith: bookId, actions }, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const history = useHistory()
   const book = useRecoilValue(enrichedBookState(bookId || '-1'))
@@ -185,7 +185,7 @@ export const BookActionsDrawer = () => {
               <ListItem button
                 onClick={() => {
                   handleClose(() => {
-                    setOpenManageBookTagsDialogState(bookId)
+                    bookId && openManageBookTagsDialog(bookId)
                   })
                 }}
               >

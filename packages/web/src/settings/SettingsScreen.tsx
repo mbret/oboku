@@ -18,8 +18,6 @@ export const SettingsScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isShowCollectionDrawerOpened, setIsShowCollectionDrawerOpened] = useState(false)
 
-  console.log(`debug SettingsScreen`, localSettings)
-
   return (
     <>
       <Box display="flex" flex={1} overflow="scroll" flexDirection="column">
@@ -62,12 +60,12 @@ export const SettingsScreen = () => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings(old => ({ ...old, unblurWhenProtectedVisible: !old.unblurWhenProtectedVisible }))
+              setLocalSettings(old => ({ ...old, unBlurWhenProtectedVisible: !old.unBlurWhenProtectedVisible }))
             }}
           >
             <ListItemText primary="Unblur cover when protected content is visible" />
             <ListItemSecondaryAction>
-              {localSettings.unblurWhenProtectedVisible ? <CheckCircleRounded /> : <RadioButtonUncheckedOutlined />}
+              {localSettings.unBlurWhenProtectedVisible ? <CheckCircleRounded /> : <RadioButtonUncheckedOutlined />}
             </ListItemSecondaryAction>
           </ListItem>
         </List>
@@ -84,6 +82,17 @@ export const SettingsScreen = () => {
           </ListItem>
         </List>
         <List subheader={<ListSubheader disableSticky>eReader devices (e-ink screens)</ListSubheader>}>
+          <ListItem
+            button
+            onClick={() => {
+              setLocalSettings(old => ({ ...old, useOptimizedTheme: !old.useOptimizedTheme }))
+            }}
+          >
+            <ListItemText primary="Optimized theme" secondary="Will use a more adapted app design (black & white, more contrast, ...)" />
+            <ListItemSecondaryAction>
+              {localSettings.useOptimizedTheme ? <CheckCircleRounded /> : <RadioButtonUncheckedOutlined />}
+            </ListItemSecondaryAction>
+          </ListItem>
           <ListItem
             button
             onClick={() => {

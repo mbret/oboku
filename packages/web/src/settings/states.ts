@@ -8,16 +8,18 @@ export const settingsState = atom<SettingsDocType | undefined>({
 
 const localSettingsStateDefaultValues = {
   useNavigationArrows: false,
+  useOptimizedTheme: false,
   readingFullScreenSwitchMode: process.env.NODE_ENV !== 'production' ? 'never' as const : 'automatic' as const,
-  unblurWhenProtectedVisible: false,
+  unBlurWhenProtectedVisible: false,
   hideDirectivesFromCollectionName: true,
   showCollectionWithProtectedContent: 'unlocked' as const,
 }
 
 export const localSettingsState = atom<{
   useNavigationArrows: boolean
+  useOptimizedTheme: boolean,
   readingFullScreenSwitchMode: 'automatic' | 'always' | 'never',
-  unblurWhenProtectedVisible: boolean,
+  unBlurWhenProtectedVisible: boolean,
   hideDirectivesFromCollectionName: boolean,
   showCollectionWithProtectedContent: 'unlocked' | 'hasNormalContent',
 }>({
