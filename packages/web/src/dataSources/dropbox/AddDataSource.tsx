@@ -1,13 +1,13 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemIcon, ListItemText, Typography } from '@material-ui/core'
 import { ArrowBackIosRounded, LocalOfferRounded } from '@material-ui/icons'
-import React, { ComponentProps, FC, useState } from 'react'
+import { ComponentProps, FC, useState } from 'react'
 import { useRecoilValue } from 'recoil'
 import { DropboxDataSourceData, DataSourceType } from '@oboku/shared'
-import { tagsAsArrayState } from '../../tags/states'
-import { TagsSelectionList } from '../../tags/TagsSelectionList'
+import { tagIdsState, tagsAsArrayState } from '../../tags/states'
 import { useCreateDataSource } from '../helpers'
 import { Picker } from './Picker'
 import { DropboxFile } from './types'
+import { TagsSelectionDialog } from '../../tags/TagsSelectionDialog'
 
 export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedTags, setSelectedTags] = useState<{ [key: string]: true | undefined }>({})
@@ -17,6 +17,7 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [folderChain, setFolderChain] = useState<DropboxFile[]>([{ name: '', id: 'root', isDir: true }])
   const currentFolder = folderChain[folderChain.length - 1]
   const tags = useRecoilValue(tagsAsArrayState)
+  const tagIds = useRecoilValue(tagIdsState)
   const [showPicker, setShowPicker] = useState(false)
 
   const onPick: ComponentProps<typeof Picker>['onClose'] = (files) => {
@@ -63,13 +64,13 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
           <Box flex={1} display="flex" justifyContent="center" alignItems="center">
             <Button color="primary" variant="contained" onClick={() => setShowPicker(true)}>
               Choose a folder
-        </Button>
+            </Button>
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} color="primary">
             Cancel
-        </Button>
+          </Button>
           <Button
             color="primary"
             disabled={!selectedFolder}
@@ -89,28 +90,24 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
             }}
           >
             Confirm
-        </Button>
+          </Button>
         </DialogActions>
-        <Dialog open={isTagSelectionOpen} onClose={() => setIsTagSelectionOpen(false)}>
-          <DialogTitle>Choose tags to apply automatically</DialogTitle>
-          <TagsSelectionList
-            tags={tags}
-            isSelected={(id) => !!selectedTags[id]}
-            onItemClick={(id) => {
-              if (selectedTags[id]) {
-                setSelectedTags(({ [id]: removed, ...rest }) => rest)
-              } else {
-                setSelectedTags((value) => ({ ...value, [id]: true }))
-              }
-            }}
-          />
-          <DialogActions>
-            <Button onClick={() => setIsTagSelectionOpen(false)} color="primary" autoFocus>
-              Close
-        </Button>
-          </DialogActions>
-        </Dialog>
       </Dialog >
+      <TagsSelectionDialog
+        data={tagIds}
+        open={isTagSelectionOpen}
+        hasBackNavigation
+        onClose={() => setIsTagSelectionOpen(false)}
+        title="Choose tags to apply automatically"
+        selected={(id) => !!selectedTags[id]}
+        onItemClick={({ id }) => {
+          if (selectedTags[id]) {
+            setSelectedTags(({ [id]: removed, ...rest }) => rest)
+          } else {
+            setSelectedTags((value) => ({ ...value, [id]: true }))
+          }
+        }}
+      />
       {showPicker && <Picker onClose={onPick} select="folder" multiselect={false} />}
     </>
   )

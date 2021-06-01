@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { FC } from 'react';
 import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil';
-import { tagsAsArrayState } from '../tags/states';
+import { tagIdsState } from '../tags/states';
 import { TagsSelectionDialog } from '../tags/TagsSelectionDialog';
 import { useAddTagToBook, useRemoveTagFromBook } from './helpers';
 import { bookState } from './states';
@@ -24,7 +24,7 @@ export const useManageBookTagsDialog = () => {
 export const ManageBookTagsDialog: FC<{}> = () => {
   const [bookId, setOpenManageBookTagsDialogState] = useRecoilState(openManageBookTagsDialogState)
   const open = !!bookId
-  const tags = useRecoilValue(tagsAsArrayState)
+  const tags = useRecoilValue(tagIdsState)
   const book = useRecoilValue(bookState(bookId || '-1'))
   const addTagToBook = useAddTagToBook()
   const removeFromBook = useRemoveTagFromBook()
@@ -34,10 +34,7 @@ export const ManageBookTagsDialog: FC<{}> = () => {
     setOpenManageBookTagsDialogState(undefined)
   }, [setOpenManageBookTagsDialogState])
 
-  const data = useMemo(() => tags.map(item => ({
-    id: item._id,
-    selected: !!bookTags?.find(id => id === item._id)
-  })), [tags, bookTags])
+  const selected = useCallback((item: string) => !!bookTags?.find(id => id === item), [bookTags])
 
   const onItemClick = useCallback(({ id: tagId, selected }: { id: string, selected: boolean }) => {
     if (selected) {
@@ -52,7 +49,8 @@ export const ManageBookTagsDialog: FC<{}> = () => {
       title="Manage tags"
       open={open}
       onClose={onClose}
-      data={data}
+      data={tags}
+      selected={selected}
       onItemClick={onItemClick}
     />
   )

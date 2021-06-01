@@ -1,6 +1,6 @@
 import { waitFor } from '../../common/utils'
 import React, { FC, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { Report } from '../../report'
+import { Report } from '../../debug/report'
 
 type ContextValue = [
   typeof gapi | undefined,

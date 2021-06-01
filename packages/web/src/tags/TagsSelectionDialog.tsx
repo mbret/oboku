@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, useMemo } from 'react'
 import { Button, Dialog, DialogContent, useTheme } from '@material-ui/core'
 import { DialogTopBar } from '../navigation/DialogTopBar'
 import { useCSS } from '../common/utils'
@@ -6,12 +6,18 @@ import { SelectableTagList } from './tagList/SelectableTagList'
 
 export const TagsSelectionDialog: FC<{
   onItemClick: (id: { id: string, selected: boolean }) => void,
-  data: { id: string, selected: boolean }[],
+  data: string[],
   onClose: () => void,
+  selected: (item: string) => boolean,
   open: boolean
   title?: string,
-}> = ({ onItemClick, data, onClose, open, title = `Tags selection` }) => {
+  hasBackNavigation?: boolean
+}> = ({ onItemClick, data, onClose, open, title = `Tags selection`, selected, hasBackNavigation }) => {
   const styles = useStyles()
+  const normalizedData = useMemo(() => data.map(item => ({
+    id: item,
+    selected: selected(item)
+  })), [data, selected])
 
   return (
     <Dialog
@@ -19,13 +25,13 @@ export const TagsSelectionDialog: FC<{
       onClose={onClose}
       fullScreen
     >
-      <DialogTopBar title={title} onClose={onClose} />
+      <DialogTopBar title={title} onClose={onClose} hasBackNavigation={hasBackNavigation} />
       <DialogContent style={styles.container}>
         <div style={styles.listContainer}>
           <SelectableTagList
             style={styles.list}
             onItemClick={onItemClick}
-            data={data}
+            data={normalizedData}
           />
         </div>
         <div style={styles.buttonContainer}>

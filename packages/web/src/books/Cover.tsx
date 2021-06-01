@@ -46,7 +46,7 @@ export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withSha
   const classes = useStyle({ withShadow, fullWidth, rounded, isLoading })
   const assetHash = book?.lastMetadataUpdatedAt?.toString()
   const localSettings = useRecoilValue(localSettingsState)
-  const shouldBlurCover = book?.isBlurred && blurIfNeeded && !localSettings.unblurWhenProtectedVisible
+  const shouldBlurCover = book?.isBlurred && blurIfNeeded && !localSettings.unBlurWhenProtectedVisible
 
   const urlParams = new URLSearchParams({
     ...assetHash && {

@@ -3,12 +3,12 @@ import Dialog from '@material-ui/core/Dialog';
 import { DialogTitle, Drawer, List, ListItem, ListItemText, ListItemIcon, DialogActions, Button } from '@material-ui/core';
 import { ArrowForwardIosRounded, CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
 import { getDisplayableReadingState, useToggleTag } from './helpers';
-import { TagsSelectionList } from '../tags/TagsSelectionList';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { tagsAsArrayState } from '../tags/states';
+import { tagIdsState } from '../tags/states';
 import { libraryState } from './states';
 import { ReadingStateState } from '@oboku/shared';
 import { DownloadState } from '../download/states';
+import { TagsSelectionDialog } from '../tags/TagsSelectionDialog';
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean,
@@ -16,7 +16,7 @@ export const LibraryFiltersDrawer: FC<{
 }> = ({ open, onClose }) => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] = useState(false)
-  const tags = useRecoilValue(tagsAsArrayState)
+  const tags = useRecoilValue(tagIdsState)
   const [library, setLibraryState] = useRecoilState(libraryState)
   const selectedTags = library.tags
   const toggleTag = useToggleTag()
@@ -74,27 +74,16 @@ export const LibraryFiltersDrawer: FC<{
           </List>
         </div>
       </Drawer >
-      <Dialog
-        onClose={() => setIsTagsDialogOpened(false)}
-        aria-labelledby="simple-dialog-title"
+      <TagsSelectionDialog
+        hasBackNavigation
         open={isTagsDialogOpened}
-      >
-        <DialogTitle>Tags selection</DialogTitle>
-        {tags && (
-          <TagsSelectionList
-            tags={tags}
-            isSelected={tagId => !!library.tags?.find(item => item === tagId)}
-            onItemClick={tagId => {
-              toggleTag(tagId)
-            }}
-          />
-        )}
-        <DialogActions>
-          <Button onClick={() => setIsTagsDialogOpened(false)} color="primary" autoFocus>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onClose={() => setIsTagsDialogOpened(false)}
+        data={tags}
+        selected={tagId => !!library.tags?.find(item => item === tagId)}
+        onItemClick={({ id }) => {
+          toggleTag(id)
+        }}
+      />
       <ReadingStateDialog open={isReadingStateDialogOpened} onClose={() => setIsReadingStateDialogOpened(false)} />
     </>
   );

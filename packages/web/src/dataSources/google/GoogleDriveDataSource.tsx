@@ -1,13 +1,13 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemIcon, ListItemText, Typography } from '@material-ui/core'
 import { ArrowBackIosRounded, LocalOfferRounded } from '@material-ui/icons'
-import React, { FC, useState } from 'react'
+import { FC, useState } from 'react'
 import { useRecoilValue } from 'recoil'
 import { GoogleDriveDataSourceData } from '@oboku/shared'
-import { tagsAsArrayState } from '../../tags/states'
-import { TagsSelectionList } from '../../tags/TagsSelectionList'
+import { tagIdsState, tagsAsArrayState } from '../../tags/states'
 import { useCreateDataSource } from '../helpers'
 import { DataSourceType } from '@oboku/shared'
 import { DrivePicker } from './DrivePicker'
+import { TagsSelectionDialog } from '../../tags/TagsSelectionDialog'
 
 export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedTags, setSelectedTags] = useState<{ [key: string]: true | undefined }>({})
@@ -17,6 +17,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
   const [folderChain, setFolderChain] = useState<{ name: string, id: string }[]>([{ name: '', id: 'root' }])
   const currentFolder = folderChain[folderChain.length - 1]
   const tags = useRecoilValue(tagsAsArrayState)
+  const tagIds = useRecoilValue(tagIdsState)
   const [showDrive, setShowDrive] = useState(false)
 
   const onPick = (data: any) => {
@@ -65,13 +66,13 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
           <Box flex={1} display="flex" justifyContent="center" alignItems="center">
             <Button color="primary" variant="contained" onClick={() => setShowDrive(true)}>
               Choose a folder
-        </Button>
+            </Button>
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} color="primary">
             Cancel
-        </Button>
+          </Button>
           <Button
             color="primary"
             disabled={!selectedFolder}
@@ -91,27 +92,23 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
             }}
           >
             Confirm
-        </Button>
+          </Button>
         </DialogActions>
-        <Dialog open={isTagSelectionOpen} onClose={() => setIsTagSelectionOpen(false)}>
-          <DialogTitle>Choose tags to apply automatically</DialogTitle>
-          <TagsSelectionList
-            tags={tags}
-            isSelected={(id) => !!selectedTags[id]}
-            onItemClick={(id) => {
-              if (selectedTags[id]) {
-                setSelectedTags(({ [id]: removed, ...rest }) => rest)
-              } else {
-                setSelectedTags((value) => ({ ...value, [id]: true }))
-              }
-            }}
-          />
-          <DialogActions>
-            <Button onClick={() => setIsTagSelectionOpen(false)} color="primary" autoFocus>
-              Close
-        </Button>
-          </DialogActions>
-        </Dialog>
+        <TagsSelectionDialog
+          open={isTagSelectionOpen}
+          onClose={() => setIsTagSelectionOpen(false)}
+          title="Choose tags to apply automatically"
+          data={tagIds}
+          hasBackNavigation
+          selected={(id) => !!selectedTags[id]}
+          onItemClick={({id}) => {
+            if (selectedTags[id]) {
+              setSelectedTags(({ [id]: removed, ...rest }) => rest)
+            } else {
+              setSelectedTags((value) => ({ ...value, [id]: true }))
+            }
+          }}
+        />
       </Dialog >
       <DrivePicker show={showDrive} onClose={onPick} select="folder" />
     </>
