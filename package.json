@@ -28,7 +28,7 @@
     "tsc": "concurrently -n tsc:web,tsc:shared,tsc:api-lambda \"yarn tsc:web\" \"yarn tsc:shared\" \"yarn tsc:api-lambda\""
   },
   "dependencies": {
-    "concurrently": "^6.0.0",
+    "concurrently": "^6.2.0",
     "sharp": "^0.27.2"
   },
   "devDependencies": {
