@@ -75,7 +75,6 @@ export const useSignIn = () => {
         await reCreateDb()
       }
       setAuthState({ dbName, email, token, userId })
-      console.log('setAuthState', { dbName, email, token, userId })
       unlock('authorize')
     } catch (e) {
       Report.error(e)
