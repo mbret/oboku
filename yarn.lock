@@ -1849,24 +1849,26 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@oboku/reader-react@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@oboku/reader-react/-/reader-react-0.0.5.tgz#77a1e8eb506d4dc845f0e6209ef55e3249bef0f0"
-  integrity sha512-qDTxhikTjf6glUzMqdQlGm8mV8j1i1YJgqZbM7UzoxRGFh6Wgv2QLXJmBvCTZb/sPNBFM3odaXoRfGFWCJfUEg==
+"@oboku/reader-react@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@oboku/reader-react/-/reader-react-0.0.7.tgz#04b5a15eaadb379fff4743885f427bd6f9653f6e"
+  integrity sha512-rpxpK/YZQvhOnjeNytlybeT2YA0FvVN3c1qgtdAVDhIJNjSI9F8UaeUbC2raRMcoIC6T5Xkdgqy0RPlggKy5Ew==
 
-"@oboku/reader-streamer@^0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@oboku/reader-streamer/-/reader-streamer-0.0.6.tgz#7d00e670ce640b769abd99ed1b3244cf6424512f"
-  integrity sha512-6waUuM+QkjGEfDOhUNSt1c2eCGeHv07KMd7q1Zo3Uy0O8jTjP4RkliMmtN1dfn7wkpLWm40UQJPmnV+PBHzInA==
+"@oboku/reader-streamer@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@oboku/reader-streamer/-/reader-streamer-0.0.8.tgz#44a5952e2132e6e40bd0bd34b81b62bc41c92253"
+  integrity sha512-bX1us4hHoCZF/eok/xBSl4uJxAqizht2/QmgQRVBbyEgCRF2jOHD7qqg4f01w2dnEeOGUQmpi2aHcoC/L1Bi1w==
   dependencies:
     "@types/xmldoc" "^1.1.5"
     buffer "6.0.3"
     xmldoc "^1.1.2"
 
-"@oboku/reader@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@oboku/reader/-/reader-0.0.8.tgz#8a061cd24db56dc2184cfbd78a4c23364560ed35"
-  integrity sha512-LAtVfrbLWsrFEOcw5gt0HyyraNfmechTvJClIZJaXT+4N2LIrV2UpnlQatbFF/QOTz9eVYlIvAuEPMTDqk/1/Q==
+"@oboku/reader@^0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@oboku/reader/-/reader-0.0.12.tgz#308df1452da38e65e6a33d8d41c7079a2d11012b"
+  integrity sha512-gRZ9GMXkDvX+rIQHRFuOnLbNFWayn8gf30Om2HWhtRlMwBiUUsTBU8Kq3qWP/wJTHTG1z9YF7H8FQKQfszlBjw==
+  dependencies:
+    "@types/css-font-loading-module" "*"
 
 "@pmmmwh/react-refresh-webpack-plugin@0.4.3":
   version "0.4.3"
@@ -2330,6 +2332,11 @@
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/@types/crypto-js/-/crypto-js-4.0.1.tgz#3a4bd24518b0e6c5940da4e2659eeb2ef0806963"
   integrity sha512-6+OPzqhKX/cx5xh+yO8Cqg3u3alrkhoxhE5ZOdSEv0DOzJ13lwJ6laqGU0Kv6+XDMFmlnGId04LtY22PsFLQUw==
+
+"@types/css-font-loading-module@*":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@types/css-font-loading-module/-/css-font-loading-module-0.0.4.tgz#94a835e27d1af444c65cba88523533c174463d64"
+  integrity sha512-ENdXf7MW4m9HeDojB2Ukbi7lYMIuQNBHVf98dbzaiG4EEJREBd6oleVAjrLRCrp7dm6CK1mmdmU9tcgF61acbw==
 
 "@types/debug@*":
   version "4.1.5"

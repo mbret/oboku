@@ -43,7 +43,7 @@ export const currentPageState = selector({
     const { begin } = get(paginationState) || {}
 
     if (renditionLayout === 'reflowable') return begin?.pageIndexInChapter
-    return begin?.spineItemIndex
+    return begin?.readingItemIndex
   }
 })
 
@@ -70,10 +70,10 @@ export const hasRightSpineItemState = selector({
   get: ({ get }) => {
     const { numberOfSpineItems = 1, begin } = get(paginationState) || {}
     const { readingDirection } = get(manifestState) || {}
-    const { spineItemIndex = 0 } = begin || {}
+    const { readingItemIndex = 0 } = begin || {}
 
-    if (readingDirection === 'ltr') return spineItemIndex < (numberOfSpineItems - 1)
-    return spineItemIndex > 0
+    if (readingDirection === 'ltr') return readingItemIndex < (numberOfSpineItems - 1)
+    return readingItemIndex > 0
   }
 })
 
@@ -82,10 +82,10 @@ export const hasLeftSpineItemState = selector({
   get: ({ get }) => {
     const { numberOfSpineItems = 1, begin } = get(paginationState) || {}
     const { readingDirection } = get(manifestState) || {}
-    const { spineItemIndex = 0 } = begin || {}
+    const { readingItemIndex = 0 } = begin || {}
 
-    if (readingDirection === 'ltr') return spineItemIndex > 0
-    return spineItemIndex < (numberOfSpineItems - 1)
+    if (readingDirection === 'ltr') return readingItemIndex > 0
+    return readingItemIndex < (numberOfSpineItems - 1)
   }
 })
 
