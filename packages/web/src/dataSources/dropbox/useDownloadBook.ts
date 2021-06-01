@@ -4,7 +4,7 @@ import { UseDownloadHook } from "../types"
 import { authUser } from "./auth"
 import { extractIdFromResourceId } from "./helpers"
 
-// this property is somewhow missing. must be a bug in dropbox
+// this property is somehow missing. must be a bug in dropbox
 // @see https://github.com/dropbox/dropbox-sdk-js/issues/304
 type ResponseWithFileBlob = DropboxResponse<files.FileMetadata> & {
   result?: {

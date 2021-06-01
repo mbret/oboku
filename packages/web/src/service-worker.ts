@@ -13,13 +13,10 @@ import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
-import appPackage from '../package.json'
 import { STREAMER_URL_PREFIX } from './constants';
 import { readerFetchListener } from './reader/streamer/serviceWorker'
 
 declare const self: ServiceWorkerGlobalScope;
-
-console.warn(appPackage.version)
 
 clientsClaim();
 
@@ -30,6 +27,9 @@ clientsClaim();
 if (process.env.NODE_ENV === 'production') {
   precacheAndRoute([
     ...self.__WB_MANIFEST,
+    {
+      url: '/dropin.js',
+    },
     {
       url: '/libunrar.js',
     },
