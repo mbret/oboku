@@ -8,10 +8,12 @@ import { useFullScreenSwitch } from './fullScreen';
 import { Reader } from './Reader';
 import { Reader as ReaderInstance } from '@oboku/reader';
 import { ContentsDialog } from './ContentsDialog';
+import { useTrackBookBeingRead } from './BackToReading';
 
 export const ReaderScreen: FC<{}> = () => {
   const [reader, setReader] = useState<ReaderInstance | undefined>(undefined)
   const { bookId } = useParams<{ bookId?: string }>()
+  useTrackBookBeingRead(bookId)
 
   useWakeLock()
   useResetStateOnUnMount()

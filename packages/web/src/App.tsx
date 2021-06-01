@@ -29,6 +29,7 @@ import { ErrorBoundary } from '@sentry/react';
 import { ManageBookTagsDialog } from './books/ManageBookTagsDialog';
 import { ManageTagBooksDialog } from './tags/ManageTagBooksDialog';
 import { useRef } from 'react';
+import { bookBeingReadState } from './reader/BackToReading';
 
 const localStatesToPersist = [
   libraryState,
@@ -36,6 +37,7 @@ const localStatesToPersist = [
   firstTimeExperienceState,
   localSettingsState,
   authState,
+  bookBeingReadState,
 ]
 
 const localStateMigration = (state: { [key: string]: { value: any } }) => {
