@@ -4,7 +4,7 @@ import { Edit, DeleteForeverRounded, LibraryAddRounded } from "@material-ui/icon
 import { useRemoveCollection, useUpdateCollection } from "./helpers";
 import { useRecoilValue } from "recoil";
 import { collectionState } from "./states";
-import { BooksSelectionDialog } from "./BooksSelectionDialog";
+import { ManageCollectionBooksDialog } from "./ManageCollectionBooksDialog";
 
 export const CollectionActionsDrawer: FC<{
   open: boolean,
@@ -66,7 +66,7 @@ export const CollectionActionsDrawer: FC<{
           </List>
         </div>
       </Drawer>
-      <BooksSelectionDialog
+      <ManageCollectionBooksDialog
         open={isBookDialogOpened}
         onClose={() => {
           setIsBookDialogOpened(false)
