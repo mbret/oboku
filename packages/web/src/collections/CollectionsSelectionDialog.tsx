@@ -1,18 +1,25 @@
-import { FC } from 'react'
+import { FC, useMemo } from 'react'
 import { Dialog, DialogContent, useTheme } from '@material-ui/core'
 import { DialogTopBar } from '../navigation/DialogTopBar'
 import { useCSS } from '../common/utils'
-import { SelectableBookList } from '../books/bookList/SelectableBookList'
+import { SelectableCollectionList } from './list/SelectableCollectionList'
 import { SelectionDialogBottom } from '../common/SelectionDialogBottom'
 
-export const BooksSelectionDialog: FC<{
+export const CollectionsSelectionDialog: FC<{
   onItemClick: (id: { id: string, selected: boolean }) => void,
-  data: { id: string, selected: boolean }[],
+  data: string[],
   onClose: () => void,
+  selected: (item: string) => boolean,
   open: boolean
-}> = ({ onItemClick, data, onClose, open }) => {
+  title?: string,
+  hasBackNavigation?: boolean
+}> = ({ onItemClick, data, onClose, open, title = `Collections selection`, selected, hasBackNavigation }) => {
   const styles = useStyles()
-  const numberOfItemsSelected = data.reduce((acc, { selected }) => acc + (selected ? 1 : 0), 0)
+  const normalizedData = useMemo(() => data.map(item => ({
+    id: item,
+    selected: selected(item)
+  })), [data, selected])
+  const numberOfItemsSelected = normalizedData.reduce((acc, { selected }) => acc + (selected ? 1 : 0), 0)
 
   return (
     <Dialog
@@ -20,13 +27,13 @@ export const BooksSelectionDialog: FC<{
       onClose={onClose}
       fullScreen
     >
-      <DialogTopBar title="Manage books" onClose={onClose} />
+      <DialogTopBar title={title} onClose={onClose} hasBackNavigation={hasBackNavigation} />
       <DialogContent style={styles.container}>
         <div style={styles.listContainer}>
-          <SelectableBookList
+          <SelectableCollectionList
             style={styles.list}
             onItemClick={onItemClick}
-            data={data}
+            data={normalizedData}
           />
         </div>
         <SelectionDialogBottom onClose={onClose} numberOfItemsSelected={numberOfItemsSelected} />
@@ -48,7 +55,6 @@ const useStyles = () => {
       padding: 0,
     },
     listContainer: {
-      padding: `0px ${theme.spacing(1)}px`,
       flex: 1,
     },
     list: {

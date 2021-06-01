@@ -1,17 +1,29 @@
-import { Button, Dialog, DialogActions, DialogTitle } from '@material-ui/core';
-import React, { FC } from 'react';
-import { atom, useRecoilState, useRecoilValue } from 'recoil';
-import { CollectionSelectionList } from '../collections/CollectionSelectionList';
-import { collectionsAsArrayState } from '../collections/states';
+import { FC, useCallback } from 'react';
+import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil';
+import { collectionIdsState } from '../collections/states';
 import { useAddCollectionToBook, useRemoveCollectionFromBook } from './helpers';
 import { bookState } from './states';
+import { CollectionsSelectionDialog } from '../collections/CollectionsSelectionDialog';
 
-export const openManageBookCollectionsDialog = atom<string | undefined>({ key: 'openManageBookCollectionsDialog', default: undefined })
+const openManageBookCollectionsDialogState = atom<string | undefined>({ key: 'openManageBookCollectionsDialogState', default: undefined })
+
+export const useManageBookCollectionsDialog = () => {
+
+  const openManageBookCollectionsDialog = useRecoilCallback(({ set }) => (bookId: string) => {
+    set(openManageBookCollectionsDialogState, bookId)
+  }, [])
+
+  const closeManageBookCollectionsDialog = useRecoilCallback(({ set }) => () => {
+    set(openManageBookCollectionsDialogState, undefined)
+  })
+
+  return { openManageBookCollectionsDialog, closeManageBookCollectionsDialog }
+}
 
 export const ManageBookCollectionsDialog: FC<{}> = () => {
-  const [id, setOpenManageBookCollectionsDialog] = useRecoilState(openManageBookCollectionsDialog)
+  const [id, setOpenManageBookCollectionsDialog] = useRecoilState(openManageBookCollectionsDialogState)
   const open = !!id
-  const collections = useRecoilValue(collectionsAsArrayState)
+  const collections = useRecoilValue(collectionIdsState)
   const book = useRecoilValue(bookState(id || '-1'))
   const [addToBook] = useAddCollectionToBook()
   const [removeFromBook] = useRemoveCollectionFromBook()
@@ -19,28 +31,24 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
 
   const isSelected = (id: string) => !!bookCollection?.find(item => item === id)
 
+  const onClose = useCallback(() => setOpenManageBookCollectionsDialog(undefined), [setOpenManageBookCollectionsDialog])
+
+  const onItemClick = useCallback(({ id: collectionId, selected }: { id: string, selected: boolean }) => {
+    if (selected) {
+      id && removeFromBook({ _id: id, collectionId })
+    } else {
+      id && addToBook({ _id: id, collectionId })
+    }
+  }, [removeFromBook, addToBook, id])
+
   return (
-    <Dialog
-      onClose={() => setOpenManageBookCollectionsDialog(undefined)}
+    <CollectionsSelectionDialog
+      title="Manage collections"
       open={open}
-    >
-      <DialogTitle>Collection selection</DialogTitle>
-      {collections && <CollectionSelectionList
-        collections={collections}
-        isSelected={isSelected}
-        onItemClick={collectionId => {
-          if (isSelected(collectionId)) {
-            id && removeFromBook({ _id: id, collectionId })
-          } else {
-            id && addToBook({ _id: id, collectionId })
-          }
-        }}
-      />}
-      <DialogActions>
-        <Button onClick={() => setOpenManageBookCollectionsDialog(undefined)} color="primary" autoFocus>
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+      onClose={onClose}
+      data={collections}
+      selected={isSelected}
+      onItemClick={onItemClick}
+    />
   )
 }

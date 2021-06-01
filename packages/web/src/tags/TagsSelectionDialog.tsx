@@ -1,8 +1,9 @@
 import { FC, useMemo } from 'react'
-import { Button, Dialog, DialogContent, useTheme } from '@material-ui/core'
+import { Dialog, DialogContent, useTheme } from '@material-ui/core'
 import { DialogTopBar } from '../navigation/DialogTopBar'
 import { useCSS } from '../common/utils'
 import { SelectableTagList } from './tagList/SelectableTagList'
+import { SelectionDialogBottom } from '../common/SelectionDialogBottom'
 
 export const TagsSelectionDialog: FC<{
   onItemClick: (id: { id: string, selected: boolean }) => void,
@@ -18,6 +19,7 @@ export const TagsSelectionDialog: FC<{
     id: item,
     selected: selected(item)
   })), [data, selected])
+  const numberOfItemsSelected = normalizedData.reduce((acc, { selected }) => acc + (selected ? 1 : 0), 0)
 
   return (
     <Dialog
@@ -34,9 +36,7 @@ export const TagsSelectionDialog: FC<{
             data={normalizedData}
           />
         </div>
-        <div style={styles.buttonContainer}>
-          <Button style={styles.button} variant="outlined" color="primary" onClick={onClose}>Ok</Button>
-        </div>
+        <SelectionDialogBottom onClose={onClose} numberOfItemsSelected={numberOfItemsSelected} />
       </DialogContent>
     </Dialog>
   )
@@ -54,9 +54,6 @@ const useStyles = () => {
       overflow: 'hidden',
       padding: 0,
     },
-    button: {
-      width: '100%',
-    },
     listContainer: {
       flex: 1,
     },
@@ -64,9 +61,5 @@ const useStyles = () => {
       flex: 1,
       height: '100%',
     },
-    buttonContainer: {
-      padding: `${theme.spacing(2)}px ${theme.spacing(2)}px`,
-      borderTop: `1px solid ${theme.palette['grey']['500']}`
-    }
   }), [theme])
 }

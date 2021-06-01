@@ -10,8 +10,8 @@ import { ROUTES } from '../constants';
 import { useAtomicUpdateBook, useRefreshBookMetadata } from './helpers';
 import { useRemoveBook } from './helpers';
 import { Drawer, Divider, ListItemIcon, Typography, makeStyles } from '@material-ui/core';
-import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
-import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { useManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
+import { atom, useRecoilState, useRecoilValue } from 'recoil';
 import { enrichedBookState } from './states';
 import { Cover } from './Cover';
 import { ReadingStateState } from '@oboku/shared';
@@ -29,7 +29,7 @@ export const bookActionDrawerState = atom<{
 }>({ key: 'bookActionDrawerState', default: { openedWith: undefined } })
 
 export const BookActionsDrawer = () => {
-  const setOpenManageBookCollectionsDialog = useSetRecoilState(openManageBookCollectionsDialog)
+  const {openManageBookCollectionsDialog} = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const [{ openedWith: bookId, actions }, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const history = useHistory()
@@ -171,7 +171,7 @@ export const BookActionsDrawer = () => {
               <ListItem button
                 onClick={() => {
                   handleClose(() => {
-                    setOpenManageBookCollectionsDialog(bookId)
+                    bookId && openManageBookCollectionsDialog(bookId)
                   })
                 }}
               >

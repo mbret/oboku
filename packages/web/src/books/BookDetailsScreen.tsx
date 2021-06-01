@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect } from 'react';
+import { FC, useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import { MoreVertRounded, EditRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../navigation/TopBarNavigation';
@@ -9,8 +9,8 @@ import { Alert } from '@material-ui/lab';
 import { Cover } from './Cover';
 import { useDownloadBook } from '../download/useDownloadBook';
 import { ROUTES } from '../constants';
-import { openManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
+import { useRecoilValue } from 'recoil';
 import { bookTagsState, bookLinksState, bookCollectionsState, enrichedBookState } from './states';
 import { normalizedLinksState } from '../links/states';
 import { useEditLink } from '../links/helpers';
@@ -35,7 +35,7 @@ export const BookDetailsScreen = () => {
   const link = useRecoilValue(bookLinksState(id))[0]
   const collections = useRecoilValue(bookCollectionsState(id))
   const dialog = useDialogManager()
-  const setOpenManageBookCollectionsDialog = useSetRecoilState(openManageBookCollectionsDialog)
+  const {openManageBookCollectionsDialog} = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const refreshBookMetadata = useRefreshBookMetadata()
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
@@ -121,7 +121,7 @@ export const BookDetailsScreen = () => {
         </ListItem>
         <ListItem
           button
-          onClick={() => setOpenManageBookCollectionsDialog(book?._id)}
+          onClick={() => book?._id && openManageBookCollectionsDialog(book?._id)}
         >
           <ListItemText
             primary="Collection"

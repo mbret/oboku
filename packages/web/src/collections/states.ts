@@ -36,6 +36,14 @@ export const collectionsAsArrayState = selector({
   }
 })
 
+export const collectionIdsState = selector({
+  key: 'collectionIdsState',
+  get: ({ get }) => {
+
+    return get(collectionsAsArrayState).map(({ _id }) => _id)
+  }
+})
+
 export const collectionState = selectorFamily({
   key: 'collectionState',
   get: (id: string) => ({ get }) => {
