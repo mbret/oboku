@@ -29,10 +29,11 @@ export const totalPageState = selector({
   key: `totalPageState`,
   get: ({ get }) => {
     const { renditionLayout } = get(manifestState) || {}
-    const { numberOfSpineItems, begin } = get(paginationState) || {}
+    const { numberOfTotalPages, begin } = get(paginationState) || {}
 
     if (renditionLayout === 'reflowable') return begin?.numberOfPagesInChapter
-    return numberOfSpineItems
+
+    return numberOfTotalPages
   }
 })
 
@@ -68,11 +69,11 @@ export const totalBookProgressState = selector({
 export const hasRightSpineItemState = selector({
   key: `hasRightSpineItemState`,
   get: ({ get }) => {
-    const { numberOfSpineItems = 1, begin } = get(paginationState) || {}
+    const { numberOfTotalPages = 1, begin } = get(paginationState) || {}
     const { readingDirection } = get(manifestState) || {}
     const { readingItemIndex = 0 } = begin || {}
 
-    if (readingDirection === 'ltr') return readingItemIndex < (numberOfSpineItems - 1)
+    if (readingDirection === 'ltr') return readingItemIndex < (numberOfTotalPages - 1)
     return readingItemIndex > 0
   }
 })
@@ -80,12 +81,12 @@ export const hasRightSpineItemState = selector({
 export const hasLeftSpineItemState = selector({
   key: `hasLeftSpineItemState`,
   get: ({ get }) => {
-    const { numberOfSpineItems = 1, begin } = get(paginationState) || {}
+    const { numberOfTotalPages = 1, begin } = get(paginationState) || {}
     const { readingDirection } = get(manifestState) || {}
     const { readingItemIndex = 0 } = begin || {}
 
     if (readingDirection === 'ltr') return readingItemIndex > 0
-    return readingItemIndex < (numberOfSpineItems - 1)
+    return readingItemIndex < (numberOfTotalPages - 1)
   }
 })
 

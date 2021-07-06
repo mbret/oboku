@@ -38,9 +38,9 @@ export const useRarStreamer = (bookId: string | undefined) => {
   // @todo make it cancellable
   const fetchResource = useCallback(async (item) => {
     if (archive) {
-      return (await getResourceFromArchive(archive, item.path)).text()
+      return (await getResourceFromArchive(archive, item.path))
     }
-    return ''
+    return new Response(``, { status: 404 })
   }, [archive])
 
   return { fetchResource: archive ? fetchResource : undefined }

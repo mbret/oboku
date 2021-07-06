@@ -28,9 +28,13 @@ export const loadBook = Report.measurePerformance(`serviceWorker`, Infinity, asy
     return archive
   }
   if (loading) {
-    return new Promise<Archive>(resolve => {
+    return new Promise<Archive>((resolve, reject) => {
       setTimeout(async () => {
-        resolve(await loadBook(bookId))
+        try {
+          resolve(await loadBook(bookId))
+        } catch (e) {
+          reject(e)
+        }
       }, 100)
     })
   }

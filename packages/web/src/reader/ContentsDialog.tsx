@@ -48,7 +48,7 @@ export const ContentsDialog: FC<{}> = () => {
           color="primary"
           onClick={() => {
             toggleContentsDialog()
-            reader?.goToHref(tocItem.href)
+            reader?.goToUrl(tocItem.href)
           }}
           style={{
             paddingLeft: theme.spacing(lvl * 2)

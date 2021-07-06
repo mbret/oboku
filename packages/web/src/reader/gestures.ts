@@ -10,21 +10,19 @@ export const useGestureHandler = (reader: Reader | undefined, hammer: HammerMana
   const setIsMenuShown = useSetRecoilState(states.isMenuShownState)
 
   useEffect(() => {
-    const onTap = ({ srcEvent, center }: HammerInput) => {
-      const { normalizedEventPointerPositions, iframeOriginalEvent } = reader?.getEventInformation(srcEvent) || {
-        normalizedEventPointerPositions: { x: center.x }
-      }
+    const onTap = ({ srcEvent }: HammerInput) => {
+      const normalizedEvent = reader?.normalizeEventForViewport(srcEvent) || srcEvent
 
-      if (iframeOriginalEvent?.target) {
-        const target = iframeOriginalEvent.target as HTMLElement
+      if (normalizedEvent?.target) {
+        const target = normalizedEvent.target as HTMLElement
 
         // don't do anything if it was clicked on link
         // could also be a <span> inside a <a>, etc
         if (target.nodeName === `a` || target.closest('a')) return
       }
 
-      if (normalizedEventPointerPositions && `x` in normalizedEventPointerPositions) {
-        const { x = 0 } = normalizedEventPointerPositions
+      if (normalizedEvent && `x` in normalizedEvent) {
+        const { x = 0 } = normalizedEvent
 
         if (!reader) {
           setIsMenuShown(val => !val)

@@ -29,14 +29,15 @@ export const readerFetchListener = (event: FetchEvent) => {
 
         return await getResourceFromArchive(archive, resourcePath)
       } catch (e) {
-        console.error(e)
-
         if (e instanceof FileNotSupportedError) {
           return new Response(e.message, { status: 415 })
         }
         if (e instanceof FileNotFoundError) {
           return new Response(e.message, { status: 404 })
         }
+
+        console.error(e)
+
         return new Response(e.message, { status: 500 })
       }
     })())

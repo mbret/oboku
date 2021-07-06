@@ -1,3 +1,7 @@
+/**
+ * @important
+ * Service Worker
+ */
 import { Archive, getManifestFromArchive } from '@oboku/reader-streamer'
 
 export const generateManifestResponse = async (archive: Archive, { baseUrl }: {

@@ -26,6 +26,7 @@ import { Pagination } from './type'
 
 type ReaderInstance = Parameters<NonNullable<ComponentProps<typeof ObokuReader>['onReader']>>[0]
 type LoadOptions = NonNullable<ComponentProps<typeof ObokuReader>['loadOptions']>
+type ReaderOptions = NonNullable<ComponentProps<typeof ObokuReader>['options']>
 
 export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => void }> = ({ bookId, onReader }) => {
   const reader = useReader()
@@ -40,7 +41,9 @@ export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => 
   const [loadOptions, setLoadOptions] = useState<LoadOptions | undefined>()
   const { manifest, isRarFile, error: manifestError } = useManifest(bookId)
   const { fetchResource } = useRarStreamer(isRarFile ? bookId : undefined)
-
+  const [readerOptions] = useState<ReaderOptions>({
+    forceSinglePageMode: true
+  })
   const isBookError = !!manifestError
 
   useBookResize(reader, containerWidth, containerHeight)
@@ -71,13 +74,13 @@ export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => 
         setLoadOptions({
           fetchResource,
           cfi: book.readingStateCurrentBookmarkLocation || undefined,
-          numberOfAdjacentSpineItemToPreLoad : manifest.renditionLayout === 'pre-paginated' ? 1 : 0
+          numberOfAdjacentSpineItemToPreLoad: manifest.renditionLayout === 'pre-paginated' ? 1 : 0
         })
       }
       if (!isRarFile) {
         setLoadOptions({
           cfi: book.readingStateCurrentBookmarkLocation || undefined,
-          numberOfAdjacentSpineItemToPreLoad : manifest.renditionLayout === 'pre-paginated' ? 1 : 0
+          numberOfAdjacentSpineItemToPreLoad: manifest.renditionLayout === 'pre-paginated' ? 1 : 0
         })
       }
     }
@@ -90,8 +93,8 @@ export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => 
           <Box mb={2}>
             <Typography>
               Oups! it looks like the book <b>{book?.title}</b> is not supported yet.
-                     If you would like to be able to open it please visit the <Link href="https://docs.oboku.me" target="__blank">documentation</Link> and try to reach out.
-                   </Typography>
+              If you would like to be able to open it please visit the <Link href="https://docs.oboku.me" target="__blank">documentation</Link> and try to reach out.
+            </Typography>
           </Box>
           <Button onClick={() => history.goBack()} variant="contained" color="primary">Go back</Button>
         </div>
@@ -104,7 +107,7 @@ export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => 
           <Typography align="center">
             Sorry it looks like we are unable to load the book.
             If the problem persist try to restart the app.
-             If it still does not work, <Link href="https://docs.oboku.me/support" target="__blank">contact us</Link></Typography>
+            If it still does not work, <Link href="https://docs.oboku.me/support" target="__blank">contact us</Link></Typography>
         </Box>
         <Button onClick={() => history.goBack()} variant="contained" color="primary">Go back</Button>
       </div>
@@ -112,6 +115,7 @@ export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => 
   }
 
   console.log(manifest, loadOptions)
+
   return (
     <div
       style={{
@@ -135,6 +139,7 @@ export const Reader: FC<{ bookId: string, onReader: (reader: ReaderInstance) => 
       >
         {!!loadOptions && (
           <ObokuReader
+            options={readerOptions}
             manifest={manifest}
             loadOptions={loadOptions}
             onReady={onBookReady}

@@ -1,4 +1,5 @@
-import { Archive, createArchiveFromText } from "@oboku/reader-streamer";
+import { Archive, createArchiveFromJszip, createArchiveFromText } from "@oboku/reader-streamer";
+import { createArchiveFromArrayBufferList } from "@oboku/reader-streamer";
 import { loadAsync } from "jszip";
 import { RarArchive } from "../../archive/types";
 import { getBookFile } from "../../download/useBookFile";
@@ -28,19 +29,7 @@ export const getArchiveForFile = async (file: NonNullable<PromiseReturnType<type
 const getArchiveForZipFile = async (file: NonNullable<PromiseReturnType<typeof getBookFile>>) => {
   const jszip = await loadAsync(file.data)
 
-  return {
-    filename: file.name,
-    files: Object.values(jszip.files).map(file => ({
-      dir: file.dir,
-      name: file.name,
-      blob: () => file.async('blob'),
-      string: () => file.async('string'),
-      base64: () => file.async('base64'),
-      // this is private API
-      // @ts-ignore
-      size: file._data.uncompressedSize,
-    }))
-  }
+  return createArchiveFromJszip(jszip, { orderByAlpha: true })
 }
 
 /**
@@ -55,48 +44,24 @@ export const getArchiveForRarFile = async (file: NonNullable<PromiseReturnType<t
       loadArchiveFormats(['rar'], async () => {
         try {
           // @ts-ignore
-          const archive: RarArchive = await archiveOpenFile(file.data, undefined)
+          const rarArchive: RarArchive = await archiveOpenFile(file.data, undefined)
 
-          masterResolve({
-            filename: file.name,
-            files: archive.entries.map(file => ({
-              dir: !file.is_file,
+          const archive = await createArchiveFromArrayBufferList(
+            rarArchive.entries.map(file => ({
+              isDir: !file.is_file,
               name: file.name,
-              blob: () => new Promise<Blob>((resolve, reject) => {
+              size: file.size_uncompressed,
+              data: () => new Promise<ArrayBuffer>((resolve, reject) => {
                 file.readData((data, error) => {
                   if (error) return reject(error)
-                  resolve(new Blob([data]))
+                  resolve(data)
                 })
-              }),
-              string: () => new Promise<string>((resolve, reject) => {
-                file.readData((data, error) => {
-                  if (error) return reject(error)
-                  let binary = '';
-                  let bytes = new Uint8Array(data);
-                  let len = bytes.byteLength;
-                  for (let i = 0; i < len; i++) {
-                    binary += String.fromCharCode(bytes[i]);
-                  }
-                  resolve(window.btoa(binary))
-                })
-              }),
-              base64: () => new Promise<string>((resolve, reject) => {
-                file.readData((data, error) => {
-                  if (error) return reject(error)
-                  let binary = '';
-                  let bytes = new Uint8Array(data);
-                  let len = bytes.byteLength;
-                  for (let i = 0; i < len; i++) {
-                    binary += String.fromCharCode(bytes[i]);
-                  }
-                  resolve(window.btoa(binary))
-                })
-              }),
-              // this is private API
-              // @ts-ignore
-              size: file.size_uncompressed
-            }))
-          })
+              })
+            })),
+            { orderByAlpha: true }
+          )
+
+          masterResolve(archive)
         } catch (e) {
           reject(e)
         }
