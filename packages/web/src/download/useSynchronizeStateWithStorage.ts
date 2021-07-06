@@ -11,12 +11,12 @@ const getKeys = async () => (await localforage.keys())
 export const useSynchronizeStateWithStorage = () => {
 
   const restoreStateForFinishedDownloadIfNeeded = useRecoilCallback(({ snapshot, set }) => async () => {
+    const state = await snapshot.getPromise(normalizedBookDownloadsState)
     const keys = await getKeys()
 
     await Promise.all(
       keys
         .map(async function restoreStateForFinishedDownloadIfNeeded(bookId) {
-          const state = await snapshot.getPromise(normalizedBookDownloadsState)
           const readingState = state[bookId]
           if (readingState?.downloadState !== DownloadState.Downloaded) {
             const item = await localforage.getItem<Blob>(`${DOWNLOAD_PREFIX}-${bookId}`)
@@ -36,8 +36,8 @@ export const useSynchronizeStateWithStorage = () => {
   }, [])
 
   const removeBooksThatAreNotPresentPhysicallyAnymore = useRecoilCallback(({ snapshot, set }) => async () => {
-    const keys = await getKeys()
     const state = await snapshot.getPromise(normalizedBookDownloadsState)
+    const keys = await getKeys()
     const bookInProgressOrDownloadedButNotPresentAnymore = Object
       .keys(state)
       .filter(id => !keys.includes(id) && state[id]?.downloadState !== DownloadState.None)
