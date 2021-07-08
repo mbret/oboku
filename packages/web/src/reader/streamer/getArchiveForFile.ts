@@ -29,7 +29,7 @@ export const getArchiveForFile = async (file: NonNullable<PromiseReturnType<type
 const getArchiveForZipFile = async (file: NonNullable<PromiseReturnType<typeof getBookFile>>) => {
   const jszip = await loadAsync(file.data)
 
-  return createArchiveFromJszip(jszip, { orderByAlpha: true })
+  return createArchiveFromJszip(jszip, { orderByAlpha: true, name: file.name })
 }
 
 /**
@@ -58,7 +58,7 @@ export const getArchiveForRarFile = async (file: NonNullable<PromiseReturnType<t
                 })
               })
             })),
-            { orderByAlpha: true }
+            { orderByAlpha: true, name: file.name }
           )
 
           masterResolve(archive)

@@ -73,6 +73,7 @@ export const useManifest = (bookId: string | undefined) => {
 
 const getNormalizedManifest = (data: Manifest): Manifest => {
   const { direction } = extractMetadataFromName(data.filename)
+
   return {
     ...data,
     readingDirection: direction
