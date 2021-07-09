@@ -10,15 +10,21 @@ let loading = false
 let archive: Archive | undefined = undefined
 let lastUrl: string | undefined
 
-setInterval(() => {
-  if (!loading && archive) {
-    Report.log(`serviceWorker`, `cleaning up unused epub archive reference (after 5mn)`)
-    archive = undefined
-    lastUrl = undefined
-  }
-}, 5 * 60 * 1000)
+let cleanupInterval: NodeJS.Timeout | number
+
+const cleanup = () => {
+  clearInterval(cleanupInterval as NodeJS.Timeout)
+  cleanupInterval = setInterval(() => {
+    if (!loading && archive) {
+      Report.log(`serviceWorker`, `cleaning up unused epub archive reference (after 5mn)`)
+      archive = undefined
+      lastUrl = undefined
+    }
+  }, 5 * 60 * 1000)
+}
 
 export const loadBook = Report.measurePerformance(`serviceWorker`, Infinity, async (bookId: string) => {
+  cleanup()
   if (bookId !== lastUrl) {
     archive = undefined
     loading = false
