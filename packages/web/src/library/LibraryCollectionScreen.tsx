@@ -1,4 +1,4 @@
-import { useState, FC, useMemo, useCallback } from 'react'
+import { useState, FC, useMemo, useCallback, ComponentProps } from 'react'
 import Dialog from '@material-ui/core/Dialog'
 import {
   Button, DialogActions, DialogContent, DialogTitle, TextField,
@@ -7,30 +7,43 @@ import {
 import { ROUTES } from '../constants'
 import { useHistory } from 'react-router-dom'
 import { useCreateCollection } from '../collections/helpers'
-import { useRecoilValue } from 'recoil'
+import { atom, useRecoilState, useRecoilValue } from 'recoil'
 import { collectionIdsState } from '../collections/states'
 import { useCSS, useMeasureElement } from '../common/utils'
 import { CollectionList } from '../collections/list/CollectionList'
+import { useDebouncedCallback } from 'use-debounce/lib'
+
+type Scroll = Parameters<NonNullable<ComponentProps<typeof CollectionList>['onScroll']>>[0]
+
+const libraryCollectionScreenPreviousScrollState = atom<Scroll>({
+  key: `libraryCollectionScreenPreviousScrollState`,
+  default: { horizontalScrollDirection: `backward`, scrollLeft: 0, scrollTop: 0, scrollUpdateWasRequested: false, verticalScrollDirection: `forward` }
+})
 
 export const LibraryCollectionScreen = () => {
   const classes = useStyles()
   const history = useHistory()
   const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] = useState(false)
+  const [libraryCollectionScreenPreviousScroll, setLibraryCollectionScreenPreviousScroll] = useRecoilState(libraryCollectionScreenPreviousScrollState)
   const collections = useRecoilValue(collectionIdsState)
+
+  const onScroll = useDebouncedCallback((value: Scroll) => {
+    setLibraryCollectionScreenPreviousScroll(value)
+  }, 300)
 
   const listHeader = useMemo(() => (
     <Toolbar>
-        <Button
-          style={{
-            width: '100%'
-          }}
-          variant="outlined"
-          color="primary"
-          onClick={() => setIsAddCollectionDialogOpened(true)}
-        >
-          Create a new collection
-        </Button>
-      </Toolbar>
+      <Button
+        style={{
+          width: '100%'
+        }}
+        variant="outlined"
+        color="primary"
+        onClick={() => setIsAddCollectionDialogOpened(true)}
+      >
+        Create a new collection
+      </Button>
+    </Toolbar>
   ), [setIsAddCollectionDialogOpened])
 
   const listRenderHeader = useCallback(() => listHeader, [listHeader])
@@ -50,6 +63,9 @@ export const LibraryCollectionScreen = () => {
         onItemClick={(item) => {
           history.push(ROUTES.COLLECTION_DETAILS.replace(':id', item._id))
         }}
+        onScroll={onScroll}
+        initialScrollLeft={libraryCollectionScreenPreviousScroll.scrollLeft}
+        initialScrollTop={libraryCollectionScreenPreviousScroll.scrollTop}
       />
       <AddCollectionDialog
         onClose={() => setIsAddCollectionDialogOpened(false)}

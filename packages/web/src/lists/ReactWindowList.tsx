@@ -19,6 +19,9 @@ export const ReactWindowList: FC<{
   headerHeight?: number,
   itemWidth?: number,
   itemHeight?: number,
+  onScroll?: ComponentProps<typeof List>['onScroll'],
+  initialScrollLeft?: ComponentProps<typeof List>['initialScrollLeft'],
+  initialScrollTop?: ComponentProps<typeof List>['initialScrollTop'],
 }> = memo(({ ...rest }) => {
 
   return (
@@ -42,6 +45,8 @@ const List = memo(forwardRef<FixedSizeGrid, {
   rowRenderer: (item: string, rowIndex: number) => React.ReactNode,
   layout?: ComponentProps<typeof VariableSizeList>['layout'],
   onScroll?: ComponentProps<typeof FixedSizeGrid>['onScroll'],
+  initialScrollLeft?: ComponentProps<typeof FixedSizeGrid>['initialScrollLeft'],
+  initialScrollTop?: ComponentProps<typeof FixedSizeGrid>['initialScrollTop'],
   data: string[],
   itemsPerRow: number,
   preferredRatio?: number,
@@ -51,7 +56,7 @@ const List = memo(forwardRef<FixedSizeGrid, {
   itemWidth?: number,
   itemHeight?: number,
   outerRef?: any,
-}>(({ rowRenderer, data, outerRef, itemsPerRow, itemHeight, preferredRatio = 1, renderHeader, headerHeight, layout, itemWidth, width, height, ...rest }, _) => {
+}>(({ rowRenderer, data, outerRef, itemsPerRow, itemHeight, preferredRatio = 1, renderHeader, headerHeight, layout, itemWidth, width, height, onScroll, ...rest }, _) => {
   const listRef = useRef<FixedSizeGrid>()
   const scrollRef = useRef<GridOnScrollProps>()
   const computedItemWidth = itemWidth ? itemWidth : Math.floor(width / itemsPerRow)
@@ -179,6 +184,7 @@ const List = memo(forwardRef<FixedSizeGrid, {
         outerRef={outerRef}
         onScroll={scroll => {
           scrollRef.current = scroll
+          onScroll && onScroll(scroll)
         }}
         columnCount={columnCount}
         columnWidth={computedItemWidth}
