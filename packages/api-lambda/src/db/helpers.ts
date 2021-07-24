@@ -40,11 +40,11 @@ export const insert = async <M extends DocType['rx_model'], D extends ModelOf<M>
   rxModel: M,
   data: Omit<D, 'rx_model' | '_id' | '_rev'>
 ) => {
-  const dinalData = { ...data, rx_model: rxModel }
+  const finalData = { ...data, rx_model: rxModel }
 
-  const doc = await db.insert(dinalData as any)
+  const doc = await db.insert(finalData as any)
 
-  if (!doc.ok) throw new Error('Unable to create docuemnt')
+  if (!doc.ok) throw new Error('Unable to create document')
 
   return doc
 }
