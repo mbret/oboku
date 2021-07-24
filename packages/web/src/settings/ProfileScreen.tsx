@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState } from 'react';
 import { BarChartRounded, GavelRounded, LockOpenRounded, LockRounded, SettingsRounded, StorageRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../navigation/TopBarNavigation';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, fade, Link, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField, Typography, useTheme } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, alpha, Link, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField, Typography, useTheme } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { useStorageUse } from './useStorageUse';
 import { unlockLibraryDialogState } from '../auth/UnlockLibraryDialog';
@@ -180,7 +180,7 @@ export const ProfileScreen = () => {
       </>
       <List
         subheader={<ListSubheader disableSticky style={{ color: theme.palette.error.dark }}>Danger zone</ListSubheader>}
-        style={{ backgroundColor: fade(theme.palette.error.light, 0.2) }}
+        style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
       >
         <ListItem button onClick={() => dialog({ preset: 'NOT_IMPLEMENTED' })}>
           <ListItemText

@@ -2,9 +2,9 @@
  * @see https://material-ui.com/customization/default-theme/
  * @see https://material-ui.com/customization/palette/
  */
-import { createMuiTheme } from '@material-ui/core/styles'
+import { createTheme } from '@material-ui/core/styles'
 
-export const theme = createMuiTheme({
+export const theme = createTheme({
   palette: {
     primary: {
       main: 'rgb(225, 100, 50, 1)',

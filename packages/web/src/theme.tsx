@@ -2,7 +2,7 @@
  * @see https://material-ui.com/customization/default-theme/
  * @see https://material-ui.com/customization/palette/
  */
-import { createMuiTheme } from '@material-ui/core/styles'
+import { createTheme } from '@material-ui/core/styles'
 
 declare module "@material-ui/core/styles" {
   interface Theme {
@@ -23,7 +23,7 @@ declare module "@material-ui/core/styles" {
 const main = 'rgba(0, 0, 0, 0.54)'
 // const dark = 'rgba(0, 0, 0, 0.87)'
 
-export const theme = createMuiTheme({
+export const theme = createTheme({
   palette: {
     primary: {
       // light,

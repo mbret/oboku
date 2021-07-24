@@ -4,7 +4,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { ArrowBackIosRounded, MoreVertRounded, Search } from '@material-ui/icons';
-import { fade, InputBase, makeStyles, useTheme } from '@material-ui/core';
+import { alpha, InputBase, makeStyles, useTheme } from '@material-ui/core';
 import { useNavigation } from './useNavigation';
 import { ROUTES } from '../constants';
 import { useCSS } from '../common/utils';
@@ -86,9 +86,9 @@ const useClasses = makeStyles(theme => ({
   search: {
     position: 'relative',
     borderRadius: theme.shape.borderRadius,
-    backgroundColor: fade(theme.palette.common.white, 0.15),
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
     '&:hover': {
-      backgroundColor: fade(theme.palette.common.white, 0.25),
+      backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
     marginLeft: 0,
     width: '100%',

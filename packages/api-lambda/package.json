@@ -7,8 +7,8 @@
   "author": "SAM CLI",
   "license": "MIT",
   "dependencies": {
-    "@types/aws-lambda": "^8.10.73",
-    "@types/concurrently": "^6.2.0",
+    "@types/aws-lambda": "^8.10.80",
+    "@types/concurrently": "^6.2.1",
     "@types/jsonwebtoken": "^8.5.4",
     "@types/nodemailer": "^6.4.4",
     "@types/sharp": "^0.27.1",
