@@ -13,11 +13,11 @@
   "license": "ISC",
   "dependencies": {
     "@types/crypto-js": "^4.0.1",
-    "crypto-js": "^4.0.0",
+    "crypto-js": "^4.1.1",
     "typescript": "^4.3.2",
     "yup": "0.32.9"
   },
   "devDependencies": {
-    "nodemon": "^2.0.6"
+    "nodemon": "^2.0.12"
   }
 }
