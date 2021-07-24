@@ -1,4 +1,4 @@
-import React, { useCallback, FC, useMemo, memo } from 'react'
+import React, { useCallback, FC, useMemo, memo, ComponentProps } from 'react'
 import { useTheme } from "@material-ui/core"
 import { useCSS } from '../../common/utils';
 import { ReactWindowList } from '../../lists/ReactWindowList';
@@ -11,8 +11,8 @@ export const CollectionList: FC<{
   style?: React.CSSProperties,
   data: string[],
   onItemClick?: (tag: CollectionDocType) => void,
-}> = memo((props) => {
-  const { renderHeader, headerHeight, style, data, onItemClick } = props
+} & Omit<ComponentProps<typeof ReactWindowList>, `rowRenderer` | `itemsPerRow`>> = memo((props) => {
+  const { renderHeader, headerHeight, style, data, onItemClick, ...rest } = props
   const classes = useStyle();
 
   const rowRenderer = useCallback((item: string) => (
@@ -30,6 +30,7 @@ export const CollectionList: FC<{
         headerHeight={headerHeight}
         renderHeader={renderHeader}
         itemHeight={250}
+        {...rest}
       />
     </div>
   )

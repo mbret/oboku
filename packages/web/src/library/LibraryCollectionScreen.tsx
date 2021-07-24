@@ -50,19 +50,19 @@ export const LibraryCollectionScreen = () => {
 
   const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
 
+  const onItemClick = useCallback((item) => {
+    history.push(ROUTES.COLLECTION_DETAILS.replace(':id', item._id))
+  }, [history])
+
   return (
     <div style={classes.container}>
       {listHeaderDimTracker}
       <CollectionList
-        style={{
-          height: '100%'
-        }}
+        style={classes.list}
         data={collections}
         headerHeight={listHeaderHeight}
         renderHeader={listRenderHeader}
-        onItemClick={(item) => {
-          history.push(ROUTES.COLLECTION_DETAILS.replace(':id', item._id))
-        }}
+        onItemClick={onItemClick}
         onScroll={onScroll}
         initialScrollLeft={libraryCollectionScreenPreviousScroll.scrollLeft}
         initialScrollTop={libraryCollectionScreenPreviousScroll.scrollTop}
@@ -130,6 +130,7 @@ const useStyles = () => {
       overflow: 'auto'
     },
     list: {
+      height: '100%'
     },
   }), [theme])
 }
