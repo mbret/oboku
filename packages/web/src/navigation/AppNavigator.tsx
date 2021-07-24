@@ -26,6 +26,7 @@ import { StatisticsScreen } from '../settings/StatisticsScreen'
 import { useRecoilValue } from 'recoil'
 import { authState } from '../auth/authState'
 import { BackToReading } from '../reader/BackToReading'
+import { CollectionActionsDrawer } from '../collections/CollectionActionsDrawer'
 
 export const AppNavigator = () => {
   const auth = useRecoilValue(authState)
@@ -101,6 +102,7 @@ export const AppNavigator = () => {
         </Switch>
       </div>
       <BookActionsDrawer />
+      <CollectionActionsDrawer />
       <BackBehaviorWatcher />
       <BackToReading />
     </BrowserRouter>

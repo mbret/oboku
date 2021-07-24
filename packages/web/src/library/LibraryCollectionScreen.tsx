@@ -1,31 +1,25 @@
-import React, { useState, FC } from 'react'
+import { useState, FC, useMemo, useCallback } from 'react'
 import Dialog from '@material-ui/core/Dialog'
 import {
   Button, DialogActions, DialogContent, DialogTitle, TextField,
-  Toolbar, IconButton, ListItem, ListItemText, List, useTheme
+  Toolbar, useTheme
 } from '@material-ui/core'
-import { MoreVert } from '@material-ui/icons'
 import { ROUTES } from '../constants'
 import { useHistory } from 'react-router-dom'
-import { CollectionActionsDrawer } from '../collections/CollectionActionsDrawer'
-import { Cover } from '../books/Cover'
 import { useCreateCollection } from '../collections/helpers'
 import { useRecoilValue } from 'recoil'
-import { collectionsAsArrayState } from '../collections/states'
-import { useCSS } from '../common/utils'
+import { collectionIdsState } from '../collections/states'
+import { useCSS, useMeasureElement } from '../common/utils'
+import { CollectionList } from '../collections/list/CollectionList'
 
 export const LibraryCollectionScreen = () => {
   const classes = useStyles()
   const history = useHistory()
   const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] = useState(false)
-  const [isActionDialogOpenedWith, setIsActionDialogOpenedWith] = useState<string | undefined>(undefined)
-  const collections = useRecoilValue(collectionsAsArrayState)
-  const theme = useTheme()
-  const cardHeight = 200
+  const collections = useRecoilValue(collectionIdsState)
 
-  return (
-    <div style={classes.container}>
-      <Toolbar>
+  const listHeader = useMemo(() => (
+    <Toolbar>
         <Button
           style={{
             width: '100%'
@@ -37,81 +31,26 @@ export const LibraryCollectionScreen = () => {
           Create a new collection
         </Button>
       </Toolbar>
-      <List style={classes.list}>
-        {collections && collections.map(item => (
-          <ListItem
-            button
-            key={item?._id}
-            style={classes.listItem}
-            onClick={() => {
-              item?._id && history.push(ROUTES.COLLECTION_DETAILS.replace(':id', item._id))
-            }}
-          >
-            <div style={{ ...classes.itemCard, height: cardHeight }}>
-              <div style={classes.itemBottomRadius} />
-              <div style={{
-                width: '100%',
-                zIndex: 1,
-                display: 'flex',
-                justifyContent: 'center',
-              }}>
-                {item?.books?.slice(0, 3).map((bookItem, i) => {
-                  const length = (item?.books?.length || 0)
-                  const coverHeight = 200 * (length < 3 ? 0.6 : 0.5)
+  ), [setIsAddCollectionDialogOpened])
 
-                  if (!bookItem) return null
+  const listRenderHeader = useCallback(() => listHeader, [listHeader])
 
-                  return (
-                    <Cover
-                      key={bookItem}
-                      bookId={bookItem}
-                      withShadow
-                      style={{
-                        height: coverHeight,
-                        width: coverHeight * theme.custom.coverAverageRatio,
-                        ...(length > 2 && i === 1) && {
-                          marginTop: -10,
-                        },
-                        marginRight: 5,
-                        marginLeft: 5,
-                      }}
-                    />
-                  )
-                })}
-              </div>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                flexFlow: 'row',
-                width: '100%',
-                alignItems: 'center'
-              }}
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsActionDialogOpenedWith(item?._id)
-              }}
-            >
-              <ListItemText primary={item?.displayableName} secondary={`${item?.books?.length || 0} book(s)`} />
-              <IconButton
-                disableFocusRipple
-                disableRipple
-                disableTouchRipple
-                edge="end"
-              >
-                <MoreVert />
-              </IconButton>
-            </div>
-          </ListItem>
-        ))}
-      </List>
-      {isActionDialogOpenedWith && (
-        <CollectionActionsDrawer
-          open={!!isActionDialogOpenedWith}
-          id={isActionDialogOpenedWith}
-          onClose={() => setIsActionDialogOpenedWith(undefined)}
-        />
-      )}
+  const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
+
+  return (
+    <div style={classes.container}>
+      {listHeaderDimTracker}
+      <CollectionList
+        style={{
+          height: '100%'
+        }}
+        data={collections}
+        headerHeight={listHeaderHeight}
+        renderHeader={listRenderHeader}
+        onItemClick={(item) => {
+          history.push(ROUTES.COLLECTION_DETAILS.replace(':id', item._id))
+        }}
+      />
       <AddCollectionDialog
         onClose={() => setIsAddCollectionDialogOpened(false)}
         open={isAddCollectionDialogOpened}
@@ -175,30 +114,6 @@ const useStyles = () => {
       overflow: 'auto'
     },
     list: {
-    },
-    listItem: {
-      paddingRight: theme.spacing(2),
-      paddingLeft: theme.spacing(2),
-      flexFlow: 'column',
-      position: 'relative',
-    },
-    itemCard: {
-      backgroundColor: theme.palette.grey[200],
-      width: '100%',
-      display: 'flex',
-      borderRadius: 10,
-      overflow: 'hidden',
-      position: 'relative',
-      alignItems: 'center',
-    },
-    itemBottomRadius: {
-      backgroundColor: theme.palette.grey[300],
-      height: '50%',
-      width: '100%',
-      borderTopLeftRadius: '50%',
-      borderTopRightRadius: '50%',
-      alignSelf: 'flex-end',
-      position: 'absolute',
     },
   }), [theme])
 }

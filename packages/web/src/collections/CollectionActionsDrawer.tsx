@@ -1,84 +1,127 @@
 import { Drawer, ListItem, Divider, List, ListItemIcon, ListItemText, DialogContent, DialogTitle, Dialog, TextField, DialogActions, Button } from "@material-ui/core";
-import React, { useEffect, useState, FC } from "react";
-import { Edit, DeleteForeverRounded, LibraryAddRounded } from "@material-ui/icons";
+import { useEffect, useState, FC } from "react";
+import { Edit, DeleteForeverRounded, DynamicFeedRounded, LibraryAddRounded } from "@material-ui/icons";
 import { useRemoveCollection, useUpdateCollection } from "./helpers";
-import { useRecoilValue } from "recoil";
+import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { collectionState } from "./states";
 import { ManageCollectionBooksDialog } from "./ManageCollectionBooksDialog";
+import { useModalNavigationControl } from "../navigation/helpers";
+import { useCallback } from "react";
+import { useRef } from "react";
 
-export const CollectionActionsDrawer: FC<{
-  open: boolean,
-  id: string,
-  onClose: () => void,
-  onRemove?: () => void,
-}> = ({ open, id, onClose, onRemove }) => {
-  const [isEditCollectionDialogOpenedWithId, setIsEditCollectionDialogOpenedWithId] = useState<string | undefined>(undefined)
-  const [removeCollection] = useRemoveCollection()
-  const [isBookDialogOpened, setIsBookDialogOpened] = useState(false)
-  const [openDrawer, setOpenDrawer] = useState(false)
+const collectionActionDrawerState = atom<{
+  openedWith: undefined | string,
+}>({ key: 'collectionActionDrawerState', default: { openedWith: undefined } })
+
+const collectionActionDrawerChangesState = atom<undefined | [string, `delete`]>({
+  key: `collectionActionDrawerChangesState`,
+  default: undefined
+})
+
+export const useCollectionActionsDrawer = (id: string, onChanges?: (change: `delete`) => void) => {
+  const [, setCollectionActionDrawer] = useRecoilState(collectionActionDrawerState)
+  const collectionActionDrawerChanges = useRecoilValue(collectionActionDrawerChangesState)
+  // we use this to only ever emit once every changes
+  // this also ensure when first subscribing to the hook we do not trigger the previous changes
+  const latestChangesEmittedRef = useRef(collectionActionDrawerChanges)
+
+  const open = useCallback(() => {
+    setCollectionActionDrawer({ openedWith: id })
+  }, [setCollectionActionDrawer, id])
 
   useEffect(() => {
-    setOpenDrawer(open)
-  }, [open])
+    if (collectionActionDrawerChanges) {
+      if (collectionActionDrawerChanges !== latestChangesEmittedRef.current) {
+        const [changeForId, change] = collectionActionDrawerChanges
+        if (changeForId === id) {
+          onChanges && onChanges(change)
+          latestChangesEmittedRef.current = collectionActionDrawerChanges
+        }
+      }
+    }
+  }, [collectionActionDrawerChanges, onChanges, id])
 
-  const handleClose = () => {
-    onClose()
-  };
+  return {
+    open,
+  }
+}
 
-  const onRemoveCollection = (id: string | undefined) => {
+export const CollectionActionsDrawer: FC<{}> = () => {
+  const [{ openedWith: collectionId }, setCollectionActionDrawerState] = useRecoilState(collectionActionDrawerState)
+  const setCollectionActionDrawerChanges = useSetRecoilState(collectionActionDrawerChangesState)
+  const [isEditCollectionDialogOpenedWithId, setIsEditCollectionDialogOpenedWithId] = useState<string | undefined>(undefined)
+  const [removeCollection] = useRemoveCollection()
+  const [isManageBookDialogOpened, setIsManageBookDialogOpened] = useState(false)
+  const subActionOpened = !!isEditCollectionDialogOpenedWithId
+
+  const handleClose = useModalNavigationControl({
+    onExit: () => {
+      setCollectionActionDrawerState({ openedWith: undefined })
+      setIsEditCollectionDialogOpenedWithId(undefined)
+      setIsManageBookDialogOpened(false)
+    }
+  }, collectionId)
+
+  const opened = !!collectionId
+
+  const onRemoveCollection = (id: string) => {
     handleClose()
-    onRemove && onRemove()
+    setCollectionActionDrawerChanges([id, `delete`])
     id && removeCollection({ _id: id })
   }
+
+  if (!collectionId) return null
 
   return (
     <>
       <Drawer
         anchor="bottom"
-        open={openDrawer}
-        onClose={handleClose}
+        open={opened && !subActionOpened}
+        onClose={() => handleClose()}
       >
-        <div
-          role="presentation"
-        >
-          <List>
-            <ListItem button onClick={() => {
-              setOpenDrawer(false)
-              setIsEditCollectionDialogOpenedWithId(id)
-            }}>
-              <ListItemIcon><Edit /></ListItemIcon>
-              <ListItemText primary="Rename" />
-            </ListItem>
-            <ListItem button onClick={() => {
-              setOpenDrawer(false)
-              setIsBookDialogOpened(true)
-            }}>
-              <ListItemIcon><LibraryAddRounded /></ListItemIcon>
-              <ListItemText primary="Manage books" />
-            </ListItem>
-          </List>
-          <Divider />
-          <List>
-            <ListItem button onClick={() => onRemoveCollection(id)}>
-              <ListItemIcon><DeleteForeverRounded /></ListItemIcon>
-              <ListItemText primary="Remove" />
-            </ListItem>
-          </List>
-        </div>
+        <List>
+          <ListItem button onClick={() => {
+            setIsEditCollectionDialogOpenedWithId(collectionId)
+          }}>
+            <ListItemIcon><Edit /></ListItemIcon>
+            <ListItemText primary="Rename" />
+          </ListItem>
+          {/* <ListItem button onClick={() => {
+            // delete this collection
+            // create a new local one without resource id
+          }}>
+            <ListItemIcon><DynamicFeedRounded /></ListItemIcon>
+            <ListItemText
+              primary="Make this collection local"
+              secondary="This collection will no longer be synchronized with the data source it originated from"
+            />
+          </ListItem> */}
+          <ListItem button onClick={() => {
+            setIsManageBookDialogOpened(true)
+          }}>
+            <ListItemIcon><LibraryAddRounded /></ListItemIcon>
+            <ListItemText primary="Manage books" />
+          </ListItem>
+        </List>
+        <Divider />
+        <List>
+          <ListItem button onClick={() => onRemoveCollection(collectionId)}>
+            <ListItemIcon><DeleteForeverRounded /></ListItemIcon>
+            <ListItemText primary="Remove" />
+          </ListItem>
+        </List>
       </Drawer>
       <ManageCollectionBooksDialog
-        open={isBookDialogOpened}
+        open={isManageBookDialogOpened}
         onClose={() => {
-          setIsBookDialogOpened(false)
-          handleClose()
+          setIsManageBookDialogOpened(false)
         }}
-        collectionId={id}
+        collectionId={collectionId}
       />
       <EditCollectionDialog
         id={isEditCollectionDialogOpenedWithId}
         onClose={() => {
           setIsEditCollectionDialogOpenedWithId(undefined)
-          handleClose()
         }}
         open={!!isEditCollectionDialogOpenedWithId}
       />

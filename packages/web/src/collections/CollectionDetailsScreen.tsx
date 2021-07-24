@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { TopBarNavigation } from '../navigation/TopBarNavigation';
 import { Typography, useTheme } from '@material-ui/core'
 import { useHistory, useParams } from 'react-router-dom'
@@ -6,7 +6,7 @@ import EmptyLibraryAsset from '../assets/empty-library.svg'
 import CollectionBgSvg from '../assets/series-bg.svg'
 import { useRecoilValue } from 'recoil'
 import { collectionState } from './states'
-import { CollectionActionsDrawer } from './CollectionActionsDrawer'
+import { useCollectionActionsDrawer } from './CollectionActionsDrawer'
 import { BookListWithControls } from '../books/bookList/BookListWithControls'
 
 type ScreenParams = {
@@ -19,7 +19,11 @@ export const CollectionDetailsScreen = () => {
   const { id } = useParams<ScreenParams>()
   const collection = useRecoilValue(collectionState(id || '-1'))
   const data = useMemo(() => collection?.books?.map(book => book || '-1'), [collection?.books]) || []
-  const [isActionDialogOpened, setIsActionDialogOpened] = useState(false)
+  const { open: openActionDrawer } = useCollectionActionsDrawer(id, changes => {
+    if (changes === `delete`) {
+      history.goBack()
+    }
+  })
 
   const titleTypoStyle = {
     color: 'white',
@@ -37,9 +41,7 @@ export const CollectionDetailsScreen = () => {
           showBack={true}
           position="absolute"
           color="transparent"
-          onMoreClick={() => {
-            setIsActionDialogOpened(true)
-          }}
+          onMoreClick={openActionDrawer}
         />
         <div style={{
           display: 'flex',
@@ -101,14 +103,6 @@ export const CollectionDetailsScreen = () => {
           />
         </div>
       </div>
-      {collection?._id && (
-        <CollectionActionsDrawer
-          open={isActionDialogOpened}
-          id={collection?._id}
-          onClose={() => setIsActionDialogOpened(false)}
-          onRemove={() => history.goBack()}
-        />
-      )}
     </>
   )
 }
