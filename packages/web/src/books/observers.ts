@@ -18,6 +18,7 @@ export const useBooksInitialState = () => {
           const books = await db.book.find().exec()
           const booksAsMap = books.reduce((map: UnwrapRecoilValue<typeof normalizedBooksState>, obj) => {
             map[obj._id] = obj.toJSON()
+
             return map
           }, {})
           setBooks(booksAsMap)
@@ -40,6 +41,7 @@ export const useBooksObservers = () => {
   useEffect(() => {
     db?.book.$.subscribe((changeEvent: RxChangeEvent<BookDocType>) => {
       console.warn('CHANGE EVENT', changeEvent)
+
       switch (changeEvent.operation) {
         case 'INSERT': {
           return setBooks(state => ({

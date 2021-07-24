@@ -18,6 +18,7 @@ export const useTagsInitialState = () => {
           const tags = await db.tag.find().exec()
           const tagsAsMap = tags.reduce((map: UnwrapRecoilValue<typeof normalizedTagsState>, obj) => {
             map[obj._id] = obj.toJSON()
+            
             return map
           }, {})
           setTags(tagsAsMap)

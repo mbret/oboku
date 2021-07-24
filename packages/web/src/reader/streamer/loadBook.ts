@@ -9,7 +9,6 @@ export class FileNotSupportedError extends Error {}
 let loading = false
 let archive: Archive | undefined = undefined
 let lastUrl: string | undefined
-
 let cleanupInterval: NodeJS.Timeout | number
 
 const cleanup = () => {
