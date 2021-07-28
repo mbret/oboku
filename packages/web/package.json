@@ -86,7 +86,7 @@
     "@types/react-router-dom": "^5.1.8",
     "@types/uuid": "^8.3.1",
     "concurrently": "^6.2.0",
-    "ts-loader": "^9.2.3",
+    "ts-loader": "^9.2.4",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.2"
   },

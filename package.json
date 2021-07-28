@@ -12,7 +12,6 @@
     "./packages/*"
   ],
   "scripts": {
-    "postinstall": "cd node_modules/dropbox && npm install && npm run build:cjs",
     "start:web": "cd packages/web && yarn start",
     "start:web-prod": "cd packages/web && yarn start-prod",
     "start:landing": "cd packages/landing && yarn start",

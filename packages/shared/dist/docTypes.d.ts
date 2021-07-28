@@ -134,6 +134,7 @@ interface MangoQuery<RxDocType> {
             [key in (keyof RxDocType)]?: RxDocType[key] | MangoQuerySelector<RxDocType[key]>;
         }[];
     };
+    fields?: (keyof RxDocType)[];
 }
 export declare type MangoQuerySelector<T> = T;
 export declare type SafeMangoQuery<RxDocType = any> = MangoQuery<RxDocType>;

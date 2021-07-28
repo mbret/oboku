@@ -192,7 +192,7 @@ interface MangoQuery<RxDocType> {
   // JSON array specifying which fields of each object should be returned. If it is omitted,
   // the entire object is returned.
   // http://docs.couchdb.org/en/latest/api/database/find.html#filtering-fields
-  // fields?: string[];
+  fields?: (keyof RxDocType)[];
 
   // Instruct a query to use a specific index.
   // Specified either as "<design_document>" or ["<design_document>", "<index_name>"].

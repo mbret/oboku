@@ -11,8 +11,8 @@ const config: Configuration = {
     ...baseConfig.plugins || [],
     new CopyPlugin({
       patterns: [
-        { from: __dirname + "/../../../node_modules/sharp/vendor/8.10.5/lib", to: "lib" },
-        // { from: __dirname + "/../node_modules/sharp/vendor/8.10.5/lib", to: "lib" },
+        { from: __dirname + "/../../../node_modules/sharp/vendor/8.10.6/lib", to: "lib" },
+        // { from: __dirname + "/../sharp-install/node_modules/sharp/vendor/8.10.6/lib", to: "lib" },
       ],
     }),
   ]
