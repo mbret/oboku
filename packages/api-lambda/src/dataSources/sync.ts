@@ -91,7 +91,7 @@ const syncFolder = async ({ ctx, helpers, hasCollectionAsParent, item, lvl, pare
     await registerOrUpdateCollection({ ctx, item, helpers })
   }
 
-  logger.log(`syncFolder ${item.name}: with items ${item.items?.length || 0} items`)
+  // logger.log(`syncFolder ${item.name}: with items ${item.items?.length || 0} items`)
 
   await Promise.all((item.items || []).map(async subItem => {
     if (isFile(subItem)) {
@@ -232,6 +232,8 @@ const updateTagsForBook = async (bookId: string, tagNames: string[], helpers: He
  */
 const synchronizeBookWithParentCollections = async (bookId: string, parents: SynchronizeAbleItem[], helpers: Helpers) => {
   const parentResourceIds = parents?.map(parent => parent.resourceId) || []
+
+  logger.log(`synchronizeBookWithParentCollections`, `${bookId} with ${parentResourceIds.length} parentResourceIds ${parentResourceIds}`)
 
   // Retrieve all the new collection to which attach the book and add the book in the list
   // if there is no collection we don't run the query since it will return everything because of the empty $or
