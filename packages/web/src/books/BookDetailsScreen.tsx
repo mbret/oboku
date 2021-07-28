@@ -18,6 +18,7 @@ import { useCSS } from '../common/utils';
 import { useDataSourcePlugin } from '../dataSources/helpers';
 import { useDialogManager } from '../dialog';
 import { useManageBookTagsDialog } from './ManageBookTagsDialog';
+import { useIsDebugEnabled } from '../debug';
 
 type ScreenParams = {
   id: string
@@ -35,10 +36,11 @@ export const BookDetailsScreen = () => {
   const link = useRecoilValue(bookLinksState(id))[0]
   const collections = useRecoilValue(bookCollectionsState(id))
   const dialog = useDialogManager()
-  const {openManageBookCollectionsDialog} = useManageBookCollectionsDialog()
+  const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const refreshBookMetadata = useRefreshBookMetadata()
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
+  const isDebugEnabled = useIsDebugEnabled()
 
   return (
     <div style={{
@@ -97,6 +99,12 @@ export const BookDetailsScreen = () => {
           <Typography variant="body1" >Language:&nbsp;</Typography>
           <Typography variant="body2" >{book?.lang}</Typography>
         </Box>
+        {isDebugEnabled && (
+          <Box display="flex" flexDirection="row" alignItems="center">
+            <Typography variant="body1" >id:&nbsp;</Typography>
+            <Typography variant="body2" >{book?._id}</Typography>
+          </Box>
+        )}
       </Box>
       <Box paddingX={2} marginY={3} marginBottom={2}><Divider light /></Box>
       <List component="nav" aria-label="main mailbox folders">
