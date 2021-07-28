@@ -3,7 +3,7 @@
  */
 import nodeFetch from 'node-fetch'
 import { Dropbox, files } from "dropbox";
-import { DataSource, SynchronizableDataSource } from "../types";
+import { DataSource, SynchronizeAbleDataSource } from "../types";
 import { Readable } from 'stream'
 import { DropboxDataSourceData, READER_SUPPORTED_EXTENSIONS } from '@oboku/shared/src'
 import { PromiseReturnType } from "../../types";
@@ -65,7 +65,7 @@ export const dataSource: DataSource = {
       throw helpers.createError('unknown')
     }
 
-    const getContentsFromFolder = throttle(async (id: string): Promise<SynchronizableDataSource['items']> => {
+    const getContentsFromFolder = throttle(async (id: string): Promise<SynchronizeAbleDataSource['items']> => {
       type Res = PromiseReturnType<typeof dbx.filesListFolder>['result']['entries']
 
       const getNextRes = throttle(async (cursor?: PromiseReturnType<typeof dbx.filesListFolder>['result']['cursor'] | undefined): Promise<Res> => {
@@ -98,7 +98,7 @@ export const dataSource: DataSource = {
 
       const results = await getNextRes()
 
-      return Promise.all(results.map(async (item): Promise<SynchronizableDataSource['items'][number]> => {
+      return Promise.all(results.map(async (item): Promise<SynchronizeAbleDataSource['items'][number]> => {
         if (item[".tag"] === 'file') {
           return {
             type: 'file',

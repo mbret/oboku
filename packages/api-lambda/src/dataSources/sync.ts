@@ -1,31 +1,66 @@
 import { BookDocType, GoogleDriveDataSourceData } from '@oboku/shared/src'
-import { DataSource, SynchronizableDataSource } from "./types"
+import { DataSource, SynchronizeAbleDataSource } from "./types"
 import { createHelpers } from "./helpers"
-import { difference } from "ramda"
+import { difference, uniq } from "ramda"
 import { Logger } from "../Logger"
 
 const logger = Logger.namespace('sync')
 
 type Helpers = Parameters<DataSource['sync']>[1]
 type Context = Parameters<DataSource['sync']>[0]
-type SynchronizableItem = SynchronizableDataSource['items'][number]
+type SynchronizeAbleItem = SynchronizeAbleDataSource['items'][number]
 
-function isFolder(item: SynchronizableDataSource | SynchronizableItem): item is SynchronizableItem {
-  return (item as SynchronizableItem).type === 'folder'
+function isFolder(item: SynchronizeAbleDataSource | SynchronizeAbleItem): item is SynchronizeAbleItem {
+  return (item as SynchronizeAbleItem).type === 'folder'
 }
 
-function isFile(item: SynchronizableDataSource | SynchronizableItem): item is SynchronizableItem {
-  return (item as SynchronizableItem).type === 'file'
+function isFile(item: SynchronizeAbleDataSource | SynchronizeAbleItem): item is SynchronizeAbleItem {
+  return (item as SynchronizeAbleItem).type === 'file'
 }
 
 export const sync = async (
-  synchronizable: SynchronizableDataSource,
+  synchronizeAble: SynchronizeAbleDataSource,
   ctx: Context,
   helpers: ReturnType<typeof createHelpers>
 ) => {
   console.log(`dataSourcesSync run for user ${ctx.userEmail} with dataSource ${ctx.dataSourceId}`)
 
-  await syncFolder({ ctx, helpers, item: synchronizable, hasCollectionAsParent: false, lvl: 0, parents: [] })
+  await syncTags({ ctx, helpers, item: synchronizeAble, hasCollectionAsParent: false, lvl: 0, parents: [] })
+  await syncFolder({ ctx, helpers, item: synchronizeAble, hasCollectionAsParent: false, lvl: 0, parents: [] })
+}
+
+const getItemTags = (item: SynchronizeAbleDataSource | SynchronizeAbleItem, helpers: Helpers): string[] => {
+  const metadataForFolder = helpers.extractMetadataFromName(item.name)
+
+  const subTagsAsMap = ((item.items || []).map(subItem => {
+    return getItemTags(subItem, helpers)
+  }))
+
+  const subTags = subTagsAsMap.reduce((acc, tags) => [...acc, ...tags], [])
+
+  return [...metadataForFolder.tags, ...subTags]
+}
+
+/**
+ * We first go through all folders and items and create the tags. This way we avoid concurrent tags creation and we can later
+ * easily retrieve tags ids.
+ */
+const syncTags = async ({ ctx, helpers, hasCollectionAsParent, item, lvl, parents }: {
+  ctx: Context,
+  helpers: Helpers,
+  lvl: number,
+  hasCollectionAsParent: boolean,
+  item: SynchronizeAbleDataSource | SynchronizeAbleItem,
+  parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
+}) => {
+  const tagNames = uniq(getItemTags(item, helpers))
+
+  await Promise.all(tagNames.map(async (tag) => {
+    const { created, id } = await helpers.createTagFromName(tag, true)
+    if (created) {
+      logger.log(`syncTags ${tag} created with id ${id}`)
+    }
+  }))
 }
 
 const syncFolder = async ({ ctx, helpers, hasCollectionAsParent, item, lvl, parents }: {
@@ -33,22 +68,22 @@ const syncFolder = async ({ ctx, helpers, hasCollectionAsParent, item, lvl, pare
   helpers: Helpers,
   lvl: number,
   hasCollectionAsParent: boolean,
-  item: SynchronizableDataSource | SynchronizableItem,
-  parents: (SynchronizableItem | SynchronizableDataSource)[]
+  item: SynchronizeAbleDataSource | SynchronizeAbleItem,
+  parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
 }) => {
   const metadataForFolder = helpers.extractMetadataFromName(item.name)
-  logger.log(`syncFolder ${item.name}: metadata `, metadataForFolder)
+  // logger.log(`syncFolder ${item.name}: metadata `, metadataForFolder)
 
   const isCollection = isFolder(item) && !hasCollectionAsParent && lvl > 0 && !metadataForFolder.isNotACollection
 
   if (metadataForFolder.isIgnored) {
-    logger.log(`syncFolder ${item.name}: ignore`)
+    // logger.log(`syncFolder ${item.name}: ignore`)
     return
   }
 
-  await Promise.all(metadataForFolder.tags.map(name => helpers.getOrcreateTagFromName(name)))
+  await Promise.all(metadataForFolder.tags.map(name => helpers.getOrCreateTagFromName(name)))
 
-  // Do not regsiter as collection if
+  // Do not register as collection if
   // - root
   // - metadata says otherwise
   // - parent is not already a collection
@@ -81,18 +116,18 @@ const syncFolder = async ({ ctx, helpers, hasCollectionAsParent, item, lvl, pare
 
 const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, item }: {
   ctx: Context,
-  parents: (SynchronizableItem | SynchronizableDataSource)[],
-  item: SynchronizableItem,
+  parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[],
+  item: SynchronizeAbleItem,
   helpers: Helpers,
 }) => {
   try {
-    logger.log(`createOrUpdateBook "${item.name}":`, item.resourceId)
-    const parentTags = parents.reduce((tags: string[], parent) => [...tags, ...helpers.extractMetadataFromName(parent.name).tags], [])
+    // logger.log(`createOrUpdateBook "${item.name}":`, item.resourceId)
+    const parentTagNames = parents.reduce((tags: string[], parent) => [...tags, ...helpers.extractMetadataFromName(parent.name).tags], [])
     const metadata = helpers.extractMetadataFromName(item.name)
-    const parentFolders = parents.filter(parent => isFolder(parent)) as SynchronizableItem[]
+    const parentFolders = parents.filter(parent => isFolder(parent)) as SynchronizeAbleItem[]
     const existingLink = await helpers.findOne('link', { selector: { resourceId: item.resourceId } })
 
-    logger.log(`createOrUpdateBook "${item.name}": existingLink`, existingLink?._id)
+    // logger.log(`createOrUpdateBook "${item.name}": existingLink`, existingLink?._id)
 
     let existingBook: BookDocType | null = null
     if (existingLink?.book) {
@@ -106,7 +141,7 @@ const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, i
             isAttachedToDataSource: true
           }))
         }
-        logger.log(`createOrUpdateBook "${item.name}": existingBook`, existingBook._id)
+        // logger.log(`createOrUpdateBook "${item.name}": existingBook`, existingBook._id)
       }
     }
 
@@ -130,7 +165,7 @@ const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, i
         modifiedAt: null,
       })
       await helpers.addLinkToBook(bookId, insertedLink.id)
-      await helpers.addTagsFromNameToBook(bookId, [...metadata.tags, ...parentTags])
+      await updateTagsForBook(bookId, [...metadata.tags, ...parentTagNames], helpers)
       await synchronizeBookWithParentCollections(bookId, parentFolders, helpers)
 
       helpers.refreshBookMetadata({ bookId: bookId }).catch(logger.error)
@@ -142,16 +177,19 @@ const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, i
       // We check the last updated date of the book
       const lastMetadataUpdatedAt = new Date(existingBook?.lastMetadataUpdatedAt || 0)
       if (lastMetadataUpdatedAt < new Date(item.modifiedAt || 0) || !(await helpers.isBookCoverExist(existingBook._id))) {
+      // if (lastMetadataUpdatedAt < new Date(item.modifiedAt || 0)) {
         // console.log(`dataSourcesSync book file ${item.resourceId} has a more recent modifiedTime ${item.modifiedAt} than its lastMetadataUpdatedAt ${lastMetadataUpdatedAt}, triggering metadata refresh`)
 
         helpers.refreshBookMetadata({ bookId: existingBook?._id }).catch(logger.error)
+        logger.log(`book ${existingLink.book} has changed in metadata, refresh triggered ${lastMetadataUpdatedAt} ${new Date(item.modifiedAt || 0)}`)
       } else {
-        logger.log(`book ${existingLink.book} has no changes detected, skip metadata refresh`)
+        // logger.log(`book ${existingLink.book} has no changes detected, skip metadata refresh`)
       }
 
       await synchronizeBookWithParentCollections(existingBook._id, parentFolders, helpers)
 
-      await helpers.addTagsFromNameToBook(existingBook._id, [...metadata.tags, ...parentTags])
+      await updateTagsForBook(existingBook._id, [...metadata.tags, ...parentTagNames], helpers)
+
       // Finally we update the tags to the book if needed
       const { applyTags } = await helpers.getDataSourceData<GoogleDriveDataSourceData>()
       await helpers.addTagsToBook(existingBook._id, applyTags || [])
@@ -164,10 +202,35 @@ const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, i
 }
 
 /**
+ * We only add new tags for now, we never remove any old tags.
+ * @param tagNames use the name and lookup the id inside the method. Do not pass id.
+ */
+const updateTagsForBook = async (bookId: string, tagNames: string[], helpers: Helpers) => {
+  try {
+    const { tags: existingTags } = await helpers.findOne(`book`, {
+      selector: { _id: bookId },
+      fields: [`tags`]
+    }) || {}
+
+    const tags = await helpers.find(`tag`, { selector: { name: { $in: tagNames } }, fields: [`_id`] })
+    const tagIds = tags.map(tag => tag._id)
+
+    const someNewTagsDoesNotExistYet = tagIds?.some(tag => !existingTags?.includes(tag))
+    if (someNewTagsDoesNotExistYet) {
+      await helpers.addTagsToBook(bookId, tagIds)
+      logger.log(`book ${bookId} has new tags detected and has been updated`)
+    }
+  } catch (e) {
+    logger.error(`updateTagsForBook something went wrong for book ${bookId}`)
+    logger.error(e)
+  }
+}
+
+/**
  * For every parents of the book we will lookup if there are collections that exist without
  * referencing it. If so then we will attach the collection and the book together
  */
-const synchronizeBookWithParentCollections = async (bookId: string, parents: SynchronizableItem[], helpers: Helpers) => {
+const synchronizeBookWithParentCollections = async (bookId: string, parents: SynchronizeAbleItem[], helpers: Helpers) => {
   const parentResourceIds = parents?.map(parent => parent.resourceId) || []
 
   // Retrieve all the new collection to which attach the book and add the book in the list
@@ -245,7 +308,7 @@ const synchronizeBookWithParentCollections = async (bookId: string, parents: Syn
 
 const registerOrUpdateCollection = async ({ item: { name, resourceId }, helpers, ctx }: {
   ctx: Context,
-  item: SynchronizableItem
+  item: SynchronizeAbleItem
   helpers: Helpers
 }) => {
   let collectionId: string | undefined

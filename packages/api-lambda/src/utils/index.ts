@@ -6,7 +6,7 @@ import { APIGatewayProxyEvent } from "aws-lambda"
 import aws from "aws-sdk"
 export { lambda } from '../lambda'
 
-export const detectMimeTypeFromContent = async (filepath: string) => {
+export const detectMimeTypeFromContent = async (filepath: string): Promise<typeof READER_SUPPORTED_MIME_TYPES[number] | undefined> => {
   let mimeType: typeof READER_SUPPORTED_MIME_TYPES[number] | undefined = undefined
   try {
     await fs.createReadStream(filepath)

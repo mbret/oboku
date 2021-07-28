@@ -5,17 +5,17 @@ import { createHelpers } from './helpers';
 type NameWithMetadata = string
 type ISOString = string
 
-type SynchronizableItem = {
+type SynchronizeAbleItem = {
   type: 'file' | 'folder',
   resourceId: string,
   name: NameWithMetadata,
-  items?: SynchronizableItem[]
+  items?: SynchronizeAbleItem[]
   modifiedAt: ISOString
 }
 
-export type SynchronizableDataSource = {
+export type SynchronizeAbleDataSource = {
   name: string,
-  items: SynchronizableItem[]
+  items: SynchronizeAbleItem[]
 }
 
 export type DataSource = {
@@ -37,5 +37,5 @@ export type DataSource = {
     dataSourceId: string,
     credentials?: any,
     dataSourceType: DataSourceType
-  }, helper: ReturnType<typeof createHelpers>) => Promise<SynchronizableDataSource>,
+  }, helper: ReturnType<typeof createHelpers>) => Promise<SynchronizeAbleDataSource>,
 }

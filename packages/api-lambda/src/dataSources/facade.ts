@@ -18,7 +18,7 @@ export const dataSourceFacade = {
         return urlDataSource.getMetadata(link)
     }
   },
-  dowload: async (link: LinkDocType, credentials?: any) => {
+  download: async (link: LinkDocType, credentials?: any) => {
     switch (link.type) {
       case DataSourceType.DRIVE:
         return googleDataSource.download(link, credentials)

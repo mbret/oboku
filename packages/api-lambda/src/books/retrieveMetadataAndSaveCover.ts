@@ -9,10 +9,12 @@ import { PromiseReturnType } from "../types"
 import { COVER_MAXIMUM_SIZE_FOR_STORAGE, TMP_DIR } from '../constants'
 import { S3 } from 'aws-sdk'
 import sharp from 'sharp'
-import { Logger } from '../utils/logger'
 import { extractMetadataFromName } from '@oboku/shared/src/directives'
 import { findByISBN } from './googleBooksApi'
 import axios from "axios"
+import { Logger } from '../Logger'
+
+const logger = Logger.namespace('retrieveMetadataAndSaveCover')
 
 type Context = {
   userEmail: string,
@@ -44,7 +46,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     let normalizedMetadata: Partial<ReturnType<typeof normalizeMetadata>> = {
       title: metadataPreFetch.name
     }
-    let fallbackContentType = 'unknown'
+    let contentType = metadataPreFetch.contentType
     let skipExtract = !!metadataFromName.isbn
 
     if (skipExtract) {
@@ -55,10 +57,10 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
       const { filepath, metadata } = await downloadToTmpFolder(ctx, ctx.book, ctx.link)
       tmpFilePath = filepath
       normalizedMetadata.title = metadataPreFetch.name
-      fallbackContentType = metadata.contentType || fallbackContentType
+      contentType = metadata.contentType || contentType
     }
 
-    console.log(`syncMetadata processing ${ctx.book._id}`, tmpFilePath, normalizedMetadata)
+    console.log(`syncMetadata processing ${ctx.book._id}`, tmpFilePath, normalizedMetadata, contentType)
 
     // ``, `META-INF`, `FOO/BAR`
     let opfBasePath = ''
@@ -84,11 +86,12 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     }
 
     if (!skipExtract && typeof tmpFilePath === 'string') {
-      if (!METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType || '')) {
-        fallbackContentType = (await detectMimeTypeFromContent(tmpFilePath) || fallbackContentType)
+      // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
+      if (!contentType) {
+        contentType = (await detectMimeTypeFromContent(tmpFilePath) || contentType)
       }
 
-      if (METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(fallbackContentType)) {
+      if (contentType && METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)) {
         const files: string[] = []
         const coverAllowedExt = ['.jpg', '.jpeg', '.png']
         let isEpub = false
@@ -145,7 +148,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
         }
 
       } else {
-        console.log(`retrieveMetadataAndSaveCover format not supported yet`)
+        logger.log(`${contentType} cannot be extracted to retrieve information (cover, etc)`)
       }
     }
 
@@ -325,10 +328,10 @@ const extractLanguage = (metadata?: undefined | null | string | { ['#text']?: st
 
 const downloadToTmpFolder = (ctx: Context, book: BookDocType, link: LinkDocType) => new Promise<{
   filepath: string,
-  metadata: PromiseReturnType<typeof dataSourceFacade.dowload>['metadata']
+  metadata: PromiseReturnType<typeof dataSourceFacade.download>['metadata']
 }>(async (resolve, reject) => {
   try {
-    const { stream, metadata } = await dataSourceFacade.dowload(link, ctx.credentials)
+    const { stream, metadata } = await dataSourceFacade.download(link, ctx.credentials)
 
     let filename = `${book._id}`
 

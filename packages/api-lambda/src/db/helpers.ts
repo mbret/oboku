@@ -1,6 +1,5 @@
-import { COUCH_DB_URL, COUCH_DB_PROXY_SECRET } from "../constants";
+import { COUCH_DB_URL } from "../constants";
 import createNano from 'nano'
-import crypto from 'crypto'
 import { generateAdminToken, generateToken } from "../auth";
 import {
   BookDocType, LinkDocType, DataSourceDocType,
@@ -50,7 +49,12 @@ export const insert = async <M extends DocType['rx_model'], D extends ModelOf<M>
 }
 
 export const findOne = async <M extends DocType['rx_model'], D extends ModelOf<M>>(db: createNano.DocumentScope<unknown>, rxModel: M, query: SafeMangoQuery<D>) => {
-  const response = await retryFn(() => db.find({ ...query, selector: { rx_model: rxModel, ...query?.selector as any }, limit: 1 }))
+  const { fields, ...restQuery } = query
+  let fieldsWithRequiredFields = fields
+  if (Array.isArray(fieldsWithRequiredFields)) {
+    fieldsWithRequiredFields.push(`rx_model`)
+  }
+  const response = await retryFn(() => db.find({ ...restQuery, fields: fields as string[], selector: { rx_model: rxModel, ...query?.selector as any }, limit: 1 }))
 
   if (response.docs.length === 0) return null
 
@@ -62,7 +66,8 @@ export const findOne = async <M extends DocType['rx_model'], D extends ModelOf<M
 }
 
 export const find = async <M extends DocType['rx_model'], D extends DocType>(db: createNano.DocumentScope<unknown>, rxModel: M, query: SafeMangoQuery<D>) => {
-  const response = await retryFn(() => db.find({ ...query, selector: { rx_model: rxModel, ...query?.selector as any } }))
+  const { fields, ...restQuery } = query
+  const response = await retryFn(() => db.find({ ...restQuery, fields: fields as string[], selector: { rx_model: rxModel, ...query?.selector as any } }))
 
   return response.docs
 }
@@ -110,13 +115,17 @@ export const addTagsToBook = async (db: createNano.DocumentScope<unknown>, bookI
   ])
 }
 
-export const addTagsFromNameToBook = async (db: createNano.DocumentScope<unknown>, bookId: string, tagNames: string[]) => {
-  if (tagNames.length === 0) return
-  // Get all tag ids and create one if it does not exist
-  const tagIds = await Promise.all(tagNames.map(async (name) => getOrCreateTagFromName(db, name)))
+/**
+ * Attach or create and attach given tags to the book.
+ * The tag is automatically retrieved from name or created if it does not exist.
+ */
+// export const addTagsFromNameToBook = async (db: createNano.DocumentScope<unknown>, bookId: string, tagNames: string[]) => {
+//   if (tagNames.length === 0) return
+//   // Get all tag ids and create one if it does not exist
+//   const tagIds = await Promise.all(tagNames.map(async (name) => getOrCreateTagFromName(db, name)))
 
-  return await addTagsToBook(db, bookId, tagIds)
-}
+//   return await addTagsToBook(db, bookId, tagIds)
+// }
 
 export const getOrCreateTagFromName = (db: createNano.DocumentScope<unknown>, name: string) => {
   return retryFn(async () => {
@@ -137,12 +146,43 @@ export const getOrCreateTagFromName = (db: createNano.DocumentScope<unknown>, na
   })
 }
 
+/**
+ * 
+ * @param silent Will not throw an exception if the tag already exists and return its id.
+ * @returns 
+ */
+export const createTagFromName = (db: createNano.DocumentScope<unknown>, name: string, silent: boolean) => {
+  return retryFn(async () => {
+    const existingTag = await findOne(db, 'tag', { selector: { name } })
+
+    if (existingTag) {
+      if (silent) {
+        return { id: existingTag._id, created: false }
+      } else {
+        throw new Error(`Tag already exists`)
+      }
+    }
+
+    const insertedTag = await insert(db, 'tag', {
+      isProtected: false,
+      books: [],
+      name,
+      createdAt: new Date().toISOString(),
+      modifiedAt: null,
+    })
+
+    return { id: insertedTag.id, created: true }
+  })
+}
+
 export const addLinkToBook = async (db: createNano.DocumentScope<unknown>, bookId: string, linkId: string) => {
   return Promise.all([
-    atomicUpdate(db, 'book', bookId, old => ({
-      ...old,
-      links: [...old.links.filter(id => id !== linkId), linkId]
-    })),
+    atomicUpdate(db, 'book', bookId, old => {
+      return {
+        ...old,
+        links: [...old.links.filter(id => id !== linkId), linkId]
+      }
+    }),
     atomicUpdate(db, 'link', linkId, old => ({
       ...old,
       book: bookId

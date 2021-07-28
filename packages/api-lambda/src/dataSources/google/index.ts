@@ -2,7 +2,7 @@
  * 401 credentials error
  * [{"domain":"global","reason":"authError","message":"Invalid Credentials","locationType":"header","location":"Authorization"}]
  */
-import { DataSource, SynchronizableDataSource } from '../types'
+import { DataSource, SynchronizeAbleDataSource } from '../types'
 import { authorize } from './helpers'
 import { drive_v3, google } from 'googleapis'
 import { GoogleDriveDataSourceData, READER_SUPPORTED_MIME_TYPES, READER_SUPPORTED_EXTENSIONS } from '@oboku/shared/src'
@@ -27,11 +27,12 @@ export const dataSource: DataSource = {
 
     const metadata = (await drive.files.get({
       fileId: extractIdFromResourceId(link.resourceId),
-      fields: 'size, name'
+      fields: 'size, name, mimeType'
     }, { responseType: 'json' })).data
 
     return {
-      name: metadata.name || ''
+      name: metadata.name || '',
+      contentType: metadata.mimeType || undefined,
     }
   },
   download: async (link, credentials) => {
@@ -84,7 +85,7 @@ export const dataSource: DataSource = {
       throw helpers.createError('unknown')
     }
 
-    const getContentsFromFolder = throttle(async (id: string): Promise<SynchronizableDataSource['items']> => {
+    const getContentsFromFolder = throttle(async (id: string): Promise<SynchronizeAbleDataSource['items']> => {
       type Res = NonNullable<drive_v3.Schema$FileList['files']>;
 
       const getNextRes = throttle(async (pageToken?: string | undefined): Promise<Res> => {
@@ -124,7 +125,7 @@ export const dataSource: DataSource = {
             || (READER_SUPPORTED_EXTENSIONS.includes(path.extname(file.name || '')))
           )
         )
-        .map(async (file): Promise<SynchronizableDataSource['items'][number]> => {
+        .map(async (file): Promise<SynchronizeAbleDataSource['items'][number]> => {
           if (isFolder(file)) {
             return {
               type: 'folder',

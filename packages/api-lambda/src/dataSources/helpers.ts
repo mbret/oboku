@@ -1,6 +1,6 @@
 import {
   atomicUpdate, createBook, addTagsToBook,
-  insert, findOne, DocType, ModelOf, addLinkToBook, find, addTagsFromNameToBook, getOrCreateTagFromName
+  insert, findOne, DocType, ModelOf, addLinkToBook, find, getOrCreateTagFromName, createTagFromName
 } from '../db/helpers'
 import createNano from 'nano'
 import { InsertableBookDocType, SafeMangoQuery, Errors, ObokuSharedError } from "@oboku/shared/src"
@@ -46,8 +46,8 @@ export const createHelpers = (
       data: Omit<D, 'rx_model' | '_id' | '_rev'>
     ) => insert(db, model, data),
     addTagsToBook: (bookId: string, tagIds: string[]) => addTagsToBook(db, bookId, tagIds),
-    addTagsFromNameToBook: (bookId: string, tagNames: string[]) => addTagsFromNameToBook(db, bookId, tagNames),
-    getOrcreateTagFromName: (name: string) => getOrCreateTagFromName(db, name),
+    // addTagsFromNameToBook: (bookId: string, tagNames: string[]) => addTagsFromNameToBook(db, bookId, tagNames),
+    getOrCreateTagFromName: (name: string) => getOrCreateTagFromName(db, name),
     addLinkToBook: (bookId: string, linkId: string) => addLinkToBook(db, bookId, linkId),
     createError: (code: 'unknown' | 'unauthorized' | 'rateLimitExceeded' = 'unknown', previousError?: Error) => {
       switch (code) {
@@ -60,6 +60,7 @@ export const createHelpers = (
       }
     },
     extractMetadataFromName,
+    createTagFromName: (name: string, silent: boolean) => createTagFromName(db, name, silent)
   }
 
   return helpers
