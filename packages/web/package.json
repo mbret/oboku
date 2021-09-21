@@ -24,7 +24,7 @@
     "@types/react-virtualized-auto-sizer": "^1.0.1",
     "@types/react-window": "^1.8.4",
     "@types/yup": "^0.29.13",
-    "axios": "^0.21.0",
+    "axios": "^0.21.4",
     "crypto-browserify": "^3.12.0",
     "dropbox": "^8.2.0",
     "firebase": "^8.8.0",
@@ -86,7 +86,7 @@
     "@types/react-router-dom": "^5.1.8",
     "@types/uuid": "^8.3.1",
     "concurrently": "^6.2.0",
-    "ts-loader": "^9.2.4",
+    "ts-loader": "^9.2.6",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.2"
   },
