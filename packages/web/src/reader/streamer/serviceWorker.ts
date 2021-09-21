@@ -1,7 +1,7 @@
 import { getResourceFromArchive } from '@oboku/reader-streamer'
-import { STREAMER_URL_PREFIX } from '../../constants'
-import { FileNotFoundError, FileNotSupportedError, loadBook } from './loadBook'
-import { generateManifestResponse } from './manifest'
+import { STREAMER_URL_PREFIX } from '../../constants.shared'
+import { FileNotFoundError, FileNotSupportedError, loadBook } from './loadBook.sw'
+import { generateManifestResponse } from './manifest.sw'
 
 export const readerFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)

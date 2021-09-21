@@ -6,7 +6,7 @@ import { getArchiveForRarFile } from "./streamer/getArchiveForFile"
 import '../archive'
 import { getManifestFromArchive } from "@oboku/reader-streamer"
 import { extractMetadataFromName } from "@oboku/shared/dist/directives"
-import { STREAMER_URL_PREFIX } from "../constants"
+import { STREAMER_URL_PREFIX } from "../constants.shared"
 
 const useGetRarManifest = () => useCallback(async (bookId: string) => {
   const file = await getBookFile(bookId)
