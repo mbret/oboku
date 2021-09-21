@@ -1,3 +1,8 @@
+/**
+ * This file is being used only during development.
+ * This is because during development the service worker file is not being updated.
+ * It only is updated when building with CRA.
+ */
 const path = require('path');
 const { DefinePlugin } = require('webpack');
 
@@ -7,6 +12,9 @@ module.exports = {
   },
   mode: 'development',
   devtool: 'source-map',
+  optimization: {
+    minimize: false
+  },
   module: {
     rules: [
       {
