@@ -1,7 +1,7 @@
 import { getResourceFromArchive } from "@oboku/reader-streamer"
 import { useEffect } from "react"
 import { useCallback, useState } from "react"
-import { getBookFile } from "../../download/useBookFile"
+import { getBookFile } from "../../download/getBookFile.shared"
 import { PromiseReturnType } from "../../types"
 import { getArchiveForRarFile } from "./getArchiveForFile"
 

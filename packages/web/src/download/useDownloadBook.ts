@@ -5,7 +5,7 @@ import { UnwrapRecoilValue, useSetRecoilState } from 'recoil';
 import { DownloadState, normalizedBookDownloadsState } from './states';
 import { Report } from '../debug/report';
 import { useDatabase } from '../rxdb';
-import { DOWNLOAD_PREFIX } from '../constants';
+import { DOWNLOAD_PREFIX } from '../constants.shared';
 import { useDownloadBookFromDataSource } from '../dataSources/helpers';
 import { BookFile } from './types';
 import { DataSourceType } from '@oboku/shared';

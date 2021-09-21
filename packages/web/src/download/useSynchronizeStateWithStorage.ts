@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import localforage from 'localforage'
-import { DOWNLOAD_PREFIX } from "../constants";
+import { DOWNLOAD_PREFIX } from "../constants.shared";
 import { useRecoilCallback } from "recoil";
 import { normalizedBookDownloadsState, DownloadState } from "./states";
 

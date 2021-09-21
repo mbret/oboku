@@ -1,4 +1,4 @@
-import { getBookFile } from "../../download/useBookFile";
+import { getBookFile } from "../../download/getBookFile.shared";
 import { PromiseReturnType } from "../../types";
 
 export const isFileRarArchive = (file: NonNullable<PromiseReturnType<typeof getBookFile>>) => {

@@ -2,7 +2,7 @@ import { Archive, createArchiveFromJszip, createArchiveFromText } from "@oboku/r
 import { createArchiveFromArrayBufferList } from "@oboku/reader-streamer";
 import { loadAsync } from "jszip";
 import { RarArchive } from "../../archive/types";
-import { getBookFile } from "../../download/useBookFile";
+import { getBookFile } from "../../download/getBookFile.shared";
 import { PromiseReturnType } from "../../types";
 
 const epubMimeTypes = ['application/epub+zip']

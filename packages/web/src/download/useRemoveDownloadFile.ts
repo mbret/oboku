@@ -1,6 +1,6 @@
 import localforage from 'localforage';
 import { useSetRecoilState } from 'recoil';
-import { DOWNLOAD_PREFIX } from '../constants';
+import { DOWNLOAD_PREFIX } from '../constants.shared';
 import { Report } from '../debug/report';
 import { DownloadState, normalizedBookDownloadsState } from './states';
 
