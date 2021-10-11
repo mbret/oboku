@@ -34,9 +34,15 @@ export const TopBar = () => {
       setIsFullScreen(screenfullApi.isFullscreen)
     }
 
-    screenfullApi.on('change', cb)
+    if (screenfullApi.isEnabled) {
+      screenfullApi.on('change', cb)
+    }
 
-    return () => screenfullApi.off('change', cb)
+    return () => {
+      if (screenfullApi.isEnabled) {
+        screenfullApi.off('change', cb)
+      }
+    }
   }, [])
 
   return (
