@@ -74,7 +74,7 @@ export const useDownloadBook = () => {
         } else {
           Report.error(`Something is wrong as you are trying to download local book without passing the local file. Either you forgot to download properly the book back when the user added it or there is a invalid state and the book should open instead.`)
 
-          // we don't do nothing so the state will be automatically marked as downloaded, we try to use a fail safe.
+          throw new Error(`Cannot download local file from another device`)
         }
       } else {
         const dataSourceResponse = await downloadBook(firstLink, {
