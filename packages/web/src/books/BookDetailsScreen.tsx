@@ -68,7 +68,7 @@ export const BookDetailsScreen = () => {
         paddingRight: theme.spacing(2),
       }}>
         {book?.downloadState === 'none' && (
-          <Button fullWidth variant="outlined" color="primary" onClick={() => downloadFile(book._id)}>Download</Button>
+          <Button fullWidth variant="outlined" color="primary" onClick={() => downloadFile(book)}>Download</Button>
         )}
         {book?.downloadState === 'downloading' && (
           <Button fullWidth variant="outlined" color="primary" disabled >Downloading...</Button>

@@ -221,7 +221,7 @@ export const useAddBookFromFile = () => {
       }
     }) || {}
     if (book) {
-      await downloadFile(book._id, file)
+      await downloadFile(book, file)
     }
   }, [addBook, downloadFile])
 }

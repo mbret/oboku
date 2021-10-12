@@ -105,6 +105,10 @@ export const useGetDataSourceCredentials = () => {
   getPluginCredentials.current = plugins.map(plugin => ({ type: plugin.type, getCredentials: plugin.useGetCredentials() }))
 
   return useCallback(async (linkType: DataSourceType) => {
+    if (linkType === DataSourceType.FILE) {
+      return { data: {} }
+    }
+
     const found = getPluginCredentials.current.find(plugin => plugin.type === linkType)
     if (found) {
       const res = await found.getCredentials()
@@ -133,13 +137,13 @@ export const useDownloadBookFromDataSource = () => {
   // It's important to use array for plugins and be careful of the order since
   // it will trigger all hooks
   type UseDownloadBook = ReturnType<typeof plugins[number]['useDownloadBook']>
-  const getPluginFn = useRef<(Pick<typeof plugins[number], 'type'> & { useDownloadBook: UseDownloadBook })[]>([])
-  getPluginFn.current = plugins.map(plugin => ({ type: plugin.type, useDownloadBook: plugin.useDownloadBook() }))
+  const getPluginFn = useRef<(Pick<typeof plugins[number], 'type'> & { downloadBook: UseDownloadBook })[]>([])
+  getPluginFn.current = plugins.map(plugin => ({ type: plugin.type, downloadBook: plugin.useDownloadBook() }))
 
   const downloadBook: ReturnType<UseDownloadHook> = async (link, options) => {
     const found = getPluginFn.current.find(plugin => plugin.type === link.type)
     if (found) {
-      const res = await found.useDownloadBook(link, options)
+      const res = await found.downloadBook(link, options)
 
       if ('isError' in res && res.reason === 'popupBlocked') {
         dialog({
