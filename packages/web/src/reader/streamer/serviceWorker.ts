@@ -1,7 +1,6 @@
-import { getResourceFromArchive } from '@oboku/reader-streamer'
+import { getManifestFromArchive, getResourceFromArchive } from '@oboku/reader-streamer'
 import { STREAMER_URL_PREFIX } from '../../constants.shared'
 import { FileNotFoundError, FileNotSupportedError, loadBook } from './loadBook.sw'
-import { generateManifestResponse } from './manifest.sw'
 
 export const readerFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)
@@ -19,7 +18,7 @@ export const readerFetchListener = (event: FetchEvent) => {
          * Hit to manifest
          */
         if (url.pathname.endsWith(`/manifest`)) {
-          return await generateManifestResponse(archive, { baseUrl: `${url.origin}/${STREAMER_URL_PREFIX}/${epubFileName}` })
+          return await getManifestFromArchive(archive, { baseUrl: `${url.origin}/${STREAMER_URL_PREFIX}/${epubFileName}` })
         }
 
         /**
@@ -27,7 +26,9 @@ export const readerFetchListener = (event: FetchEvent) => {
          */
         const resourcePath = getResourcePath(event)
 
-        return await getResourceFromArchive(archive, resourcePath)
+        const response = await getResourceFromArchive(archive, resourcePath)
+
+        return response
       } catch (e) {
         if (e instanceof FileNotSupportedError) {
           return new Response(e.message, { status: 415 })

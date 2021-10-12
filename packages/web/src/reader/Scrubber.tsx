@@ -33,16 +33,16 @@ export const Scrubber: FC<{
       disabled={disabled}
       onChange={value => {
         setValue(value)
-      }}
-      reverse={readingDirection === 'rtl'}
-      step={step}
-      onAfterChange={(value) => {
+
+        // @todo onChange will change directly when moving scrubber, on after change is good however it triggers twice
         if (renditionLayout !== 'reflowable') {
-          reader?.goTo(value)
+          reader?.goToSpineItem(value)
         } else {
           reader?.goToPageOfCurrentChapter(value)
         }
       }}
+      reverse={readingDirection === 'rtl'}
+      step={step}
       railStyle={{
         backgroundColor: theme.palette.grey['800'],
         ...disabled && {

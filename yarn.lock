@@ -1867,26 +1867,32 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@oboku/reader-react@^0.0.12":
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/@oboku/reader-react/-/reader-react-0.0.12.tgz#a505911334ecd50c4fc17760ff9d170a8ccffb9e"
-  integrity sha512-ZqfbVEJNkk5/5Rb5DysdnTDexgzXJh2DVrFJaD67quK52wX4yon5ew2ts2NT8m/169b1nHiV6cZMqZykGB5xOg==
+"@oboku/reader-react@^0.0.16":
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/@oboku/reader-react/-/reader-react-0.0.16.tgz#e0ebdbdbb9f92dc0f66c3544d5c11f0464b86a0c"
+  integrity sha512-2tnjuu/NTeqxkyy2RAp9eYDoYlBlAScIeSuZ79PXHBl9B4hoTLljyIXEhjU23aFXflfyQNzfIZXPsMBihl5zDg==
 
-"@oboku/reader-streamer@^0.0.17":
-  version "0.0.17"
-  resolved "https://registry.yarnpkg.com/@oboku/reader-streamer/-/reader-streamer-0.0.17.tgz#7adb625019c2f120d1b3934ac5ed093028199b77"
-  integrity sha512-7std1lz8V/KPsVBv253ZPyVdZV0v3OwvzkjVLbgw0BzUe87+J06IAqtYrZE+01fw/kVuVp7W63BHY8e50E8Ofw==
+"@oboku/reader-streamer@^0.0.22":
+  version "0.0.22"
+  resolved "https://registry.yarnpkg.com/@oboku/reader-streamer/-/reader-streamer-0.0.22.tgz#37da42e9905350af2bdc8dfff8e6e2ecf8e48c31"
+  integrity sha512-CCrfrrW3OGgRu2AT7zE42H3teYgnLhm71/bs7bOI1zfmZrWq2/SdHwDRH3jOlkdK/iTeTp7AOW0ui+RMfTq/OA==
   dependencies:
+    "@oboku/shared" "^0.0.4"
     "@types/xmldoc" "^1.1.5"
     buffer "6.0.3"
     xmldoc "^1.1.2"
 
-"@oboku/reader@^0.0.32":
-  version "0.0.32"
-  resolved "https://registry.yarnpkg.com/@oboku/reader/-/reader-0.0.32.tgz#0582cd262e81b6504e20e0c0dd929755bd00055c"
-  integrity sha512-rU8h5tXPgUWh0feit4fwn4j20QSnD7/fKAG4y/4QVwurWDT+kW4wSUx52zsD6+qHEtL6n2bIt46R0dFjasECPQ==
+"@oboku/reader@^0.0.36":
+  version "0.0.36"
+  resolved "https://registry.yarnpkg.com/@oboku/reader/-/reader-0.0.36.tgz#61a1e4c9793f19afdd6be1e6129beb26e6d62e87"
+  integrity sha512-Yd3I+86PVRhdMvVe30WVUHaViU7pxgCnzi/EznKzY75EJcwuYl/ruqcefWOfgLxPpGemRvw2qPeuJimMpDkeOw==
   dependencies:
-    "@types/css-font-loading-module" "*"
+    "@oboku/shared" "^0.0.4"
+
+"@oboku/shared@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@oboku/shared/-/shared-0.0.4.tgz#8c6464019abcada6aa2402d6226fe57580a87647"
+  integrity sha512-kGGE5+7Fw5uuTk/CRat/AuDe2Ttzy9A+xHRNdKsbKhLELcTZmm0x5jAX/bwJKuOORzgsSeGno6uJbXYVku9+IQ==
 
 "@pmmmwh/react-refresh-webpack-plugin@0.4.3":
   version "0.4.3"
@@ -2350,11 +2356,6 @@
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/@types/crypto-js/-/crypto-js-4.0.2.tgz#4524325a175bf819fec6e42560c389ce1fb92c97"
   integrity sha512-sCVniU+h3GcGqxOmng11BRvf9TfN9yIs8KKjB8C8d75W69cpTfZG80gau9yTx5SxF3gvHGbJhdESzzvnjtf3Og==
-
-"@types/css-font-loading-module@*":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@types/css-font-loading-module/-/css-font-loading-module-0.0.4.tgz#94a835e27d1af444c65cba88523533c174463d64"
-  integrity sha512-ENdXf7MW4m9HeDojB2Ukbi7lYMIuQNBHVf98dbzaiG4EEJREBd6oleVAjrLRCrp7dm6CK1mmdmU9tcgF61acbw==
 
 "@types/debug@*":
   version "4.1.5"
@@ -13672,10 +13673,10 @@ rxjs@^6.6.3:
   dependencies:
     tslib "^1.9.0"
 
-rxjs@^7.2.0:
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.2.0.tgz#5cd12409639e9514a71c9f5f9192b2c4ae94de31"
-  integrity sha512-aX8w9OpKrQmiPKfT1bqETtUr9JygIz6GZ+gql8v7CijClsP0laoFUdKzxFAoWuRdSlOdU2+crss+cMf+cqMTnw==
+rxjs@^7.4.0:
+  version "7.4.0"
+  resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.4.0.tgz#a12a44d7eebf016f5ff2441b87f28c9a51cebc68"
+  integrity sha512-7SQDi7xeTMCJpqViXh8gL/lebcwlp3d831F05+9B44A4B0WfsEwUQHR64gsH1kvJ+Ep/J9K2+n1hVl1CsGN23w==
   dependencies:
     tslib "~2.1.0"
 

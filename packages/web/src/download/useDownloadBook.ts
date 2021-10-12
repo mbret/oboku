@@ -74,6 +74,7 @@ export const useDownloadBook = () => {
         } else {
           Report.error(`Something is wrong as you are trying to download local book without passing the local file. Either you forgot to download properly the book back when the user added it or there is a invalid state and the book should open instead.`)
 
+          // @todo show a dialog
           throw new Error(`Cannot download local file from another device`)
         }
       } else {
