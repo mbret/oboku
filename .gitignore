@@ -8,3 +8,4 @@ node_modules
 .secrets/*
 !.secrets/.gitkeep
 yarn-error.log
+.DS_STORE
