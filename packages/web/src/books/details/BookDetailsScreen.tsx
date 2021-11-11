@@ -2,23 +2,21 @@ import { FC, useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import { MoreVertRounded, EditRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../../navigation/TopBarNavigation';
-import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider, makeStyles } from '@material-ui/core';
+import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider, makeStyles } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
-import { useRefreshBookMetadata } from '../helpers';
 import { Alert } from '@material-ui/lab';
 import { Cover } from '../Cover';
 import { useDownloadBook } from '../../download/useDownloadBook';
 import { ROUTES } from '../../constants';
 import { useManageBookCollectionsDialog } from '../ManageBookCollectionsDialog';
 import { useRecoilValue } from 'recoil';
-import { bookTagsState, bookLinksState, bookCollectionsState, enrichedBookState } from '../states';
+import { bookTagsState, bookCollectionsState, enrichedBookState } from '../states';
 import { normalizedLinksState } from '../../links/states';
 import { useEditLink } from '../../links/helpers';
 import { useCSS } from '../../common/utils';
-import { useDataSourcePlugin } from '../../dataSources/helpers';
-import { useDialogManager } from '../../dialog';
 import { useManageBookTagsDialog } from '../ManageBookTagsDialog';
 import { useIsDebugEnabled } from '../../debug';
+import { DataSourceSection } from './DateSourceSection';
 
 type ScreenParams = {
   id: string
@@ -33,13 +31,10 @@ export const BookDetailsScreen = () => {
   const { id } = useParams<ScreenParams>()
   const book = useRecoilValue(enrichedBookState(id))
   const tags = useRecoilValue(bookTagsState(id))
-  const link = useRecoilValue(bookLinksState(id))[0]
   const collections = useRecoilValue(bookCollectionsState(id))
-  const dialog = useDialogManager()
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
-  const refreshBookMetadata = useRefreshBookMetadata()
-  const dataSourcePlugin = useDataSourcePlugin(link?.type)
+  
   const isDebugEnabled = useIsDebugEnabled()
 
   return (
@@ -147,35 +142,7 @@ export const BookDetailsScreen = () => {
           <MoreVertRounded />
         </ListItem>
       </List>
-      <List subheader={<ListSubheader>Data source</ListSubheader>}>
-        {!!link && !!dataSourcePlugin && (
-          <ListItem
-            key={link?._id}
-            button
-            onClick={() => dialog({ preset: 'NOT_IMPLEMENTED' })}
-          >
-            <ListItemIcon>
-              <dataSourcePlugin.Icon />
-            </ListItemIcon>
-            <ListItemText
-              primary={`${dataSourcePlugin?.name}`}
-              primaryTypographyProps={{
-                style: {
-                  paddingRight: 10,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }
-              }}
-              secondary={`This book has been created from ${dataSourcePlugin.name}. Click to edit the data source`}
-            />
-            <MoreVertRounded />
-          </ListItem>
-        )}
-        {process.env.NODE_ENV === 'development' && (
-          <Button fullWidth variant="outlined" color="primary" onClick={() => { refreshBookMetadata(id) }}>debug:refresh_metadata</Button>
-        )}
-      </List>
+      <DataSourceSection bookId={id} />
       <LinkActionsDrawer
         openWith={isLinkActionDrawerOpenWith}
         bookId={book?._id}
