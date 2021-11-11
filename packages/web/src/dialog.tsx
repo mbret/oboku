@@ -69,9 +69,9 @@ const enrichDialogWithPreset = (dialog?: DialogType): DialogType | undefined => 
       content: 'You need to be online to proceed with this action'
     }
     case 'UNKNOWN_ERROR': return {
-      ...dialog,
       title: 'Oups, something went wrong!',
-      content: 'Something unexpected happened and oboku could not proceed with your action. Maybe you can try again?'
+      content: 'Something unexpected happened and oboku could not proceed with your action. Maybe you can try again?',
+      ...dialog,
     }
     case 'CONFIRM': return {
       ...dialog,
