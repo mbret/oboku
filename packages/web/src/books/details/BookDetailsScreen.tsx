@@ -1,24 +1,24 @@
 import { FC, useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import { MoreVertRounded, EditRounded } from '@material-ui/icons';
-import { TopBarNavigation } from '../navigation/TopBarNavigation';
+import { TopBarNavigation } from '../../navigation/TopBarNavigation';
 import { List, ListItem, ListItemIcon, ListItemText, Dialog, DialogTitle, DialogActions, Chip, ListSubheader, Typography, Drawer, DialogContent, TextField, useTheme, Box, Divider, makeStyles } from '@material-ui/core';
 import { useHistory, useParams } from 'react-router-dom';
-import { useRefreshBookMetadata } from './helpers';
+import { useRefreshBookMetadata } from '../helpers';
 import { Alert } from '@material-ui/lab';
-import { Cover } from './Cover';
-import { useDownloadBook } from '../download/useDownloadBook';
-import { ROUTES } from '../constants';
-import { useManageBookCollectionsDialog } from './ManageBookCollectionsDialog';
+import { Cover } from '../Cover';
+import { useDownloadBook } from '../../download/useDownloadBook';
+import { ROUTES } from '../../constants';
+import { useManageBookCollectionsDialog } from '../ManageBookCollectionsDialog';
 import { useRecoilValue } from 'recoil';
-import { bookTagsState, bookLinksState, bookCollectionsState, enrichedBookState } from './states';
-import { normalizedLinksState } from '../links/states';
-import { useEditLink } from '../links/helpers';
-import { useCSS } from '../common/utils';
-import { useDataSourcePlugin } from '../dataSources/helpers';
-import { useDialogManager } from '../dialog';
-import { useManageBookTagsDialog } from './ManageBookTagsDialog';
-import { useIsDebugEnabled } from '../debug';
+import { bookTagsState, bookLinksState, bookCollectionsState, enrichedBookState } from '../states';
+import { normalizedLinksState } from '../../links/states';
+import { useEditLink } from '../../links/helpers';
+import { useCSS } from '../../common/utils';
+import { useDataSourcePlugin } from '../../dataSources/helpers';
+import { useDialogManager } from '../../dialog';
+import { useManageBookTagsDialog } from '../ManageBookTagsDialog';
+import { useIsDebugEnabled } from '../../debug';
 
 type ScreenParams = {
   id: string
