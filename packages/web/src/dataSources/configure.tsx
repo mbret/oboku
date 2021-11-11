@@ -5,7 +5,6 @@ import { ReactComponent as GoogleDriveAsset } from '../assets/google-drive.svg'
 import { ReactComponent as DropboxIconAsset } from '../assets/dropbox.svg'
 import { UploadBook } from "./google/UploadBook"
 import { DataSourceType } from "@oboku/shared"
-import { useGetCredentials as useGetGoogleCredentials } from "./google/helpers"
 import { useGetCredentials as useGetDropboxCredentials } from "./dropbox/helpers"
 import * as googlePlugin from "./google"
 import * as dropboxPlugin from "./dropbox"

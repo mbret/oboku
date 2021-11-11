@@ -23,3 +23,15 @@ export const useEditLink = () => {
     }
   }
 }
+
+// export const useRemoveLink = () => {
+//   const db = useDatabase()
+
+//   return async (linkId: string) => {
+//     const link = await db?.link.findOne({ selector: { _id: linkId } }).exec()
+//     if (!link) {
+//       return Report.warn(`trying to remove link ${linkId} but it does not exist`)
+//     }
+//     return await link.remove()
+//   }
+// }

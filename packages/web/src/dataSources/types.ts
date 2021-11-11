@@ -24,8 +24,8 @@ export type UseDownloadHook = () => (link: LinkDocType, options?: {
   name: string
 } | {
   isError: true,
-  error?: Error,
-  reason: 'unknown' | 'cancelled' | 'popupBlocked'
+  error?: any,
+  reason: 'unknown' | 'cancelled' | 'popupBlocked' | `notFound`
 }>
 
 export type UseRemoveBook = () => (link: LinkDocType) => Promise<{

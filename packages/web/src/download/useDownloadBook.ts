@@ -11,6 +11,7 @@ import { BookFile } from './types';
 import { BookDocType, DataSourceType } from '@oboku/shared';
 import { useGetLazySignedGapi } from '../dataSources/google/helpers';
 import { linkState } from '../links/states';
+import { useDialogManager } from '../dialog';
 
 export const useDownloadBook = () => {
   const getDataSourceCredentials = useGetDataSourceCredentials()
@@ -18,6 +19,7 @@ export const useDownloadBook = () => {
   const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
   const database = useDatabase()
   const [getLazySignedGapi] = useGetLazySignedGapi()
+  const dialog = useDialogManager()
 
   const setDownloadData = useCallback((bookId: string, data: UnwrapRecoilValue<typeof normalizedBookDownloadsState>[number]) => {
     setBookDownloadsState(prev => ({
@@ -95,7 +97,27 @@ export const useDownloadBook = () => {
           return
         }
 
-        if ('isError' in dataSourceResponse) throw dataSourceResponse.error || new Error(dataSourceResponse.reason)
+        if ('isError' in dataSourceResponse && dataSourceResponse.reason === 'notFound') {
+          setDownloadData(bookId, {
+            downloadState: DownloadState.None,
+          })
+          // @todo shorten this description and redirect to the documentation
+          dialog({
+            preset: `UNKNOWN_ERROR`,
+            title: `Unable to download`,
+            content: `
+              oboku could not find the book from the linked data source. 
+              This can happens if you removed the book from the data source or if you replaced it with another file.
+              Make sure the book is on your data source and try to fix the link for this book in the details screen to target the file. 
+              Attention, if you add the book on your data source and synchronize again, oboku will duplicate the book.
+            `
+          })
+          return
+        }
+
+        if ('isError' in dataSourceResponse) {
+          throw dataSourceResponse.error || new Error(dataSourceResponse.reason)
+        }
         // const response = await client.downloadBook(bookId, credentials || {}, {
         //   onDownloadProgress: (event: ProgressEvent) => {
         //     if ((event.target as XMLHttpRequest).getAllResponseHeaders().indexOf('oboku-content-length')) {
