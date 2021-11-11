@@ -24,6 +24,7 @@ module.exports = {
           options: {
             compilerOptions: {
               noEmit: false,
+              files: [`src/service-worker.ts`]
             }
           }
         }],
