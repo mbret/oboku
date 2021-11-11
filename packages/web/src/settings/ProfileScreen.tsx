@@ -1,7 +1,7 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { BarChartRounded, GavelRounded, LockOpenRounded, LockRounded, SettingsRounded, StorageRounded } from '@material-ui/icons';
 import { TopBarNavigation } from '../navigation/TopBarNavigation';
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, alpha, Link, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField, Typography, useTheme } from '@material-ui/core';
+import { Button, Dialog, DialogActions, Checkbox, DialogContent, DialogContentText, DialogTitle, alpha, Link, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField, Typography, useTheme, FormControlLabel } from '@material-ui/core';
 import { useHistory } from 'react-router-dom';
 import { useStorageUse } from './useStorageUse';
 import { unlockLibraryDialogState } from '../auth/UnlockLibraryDialog';
@@ -17,13 +17,18 @@ import { libraryState } from '../library/states';
 import { version } from '../../package.json'
 import { ROUTES } from '../constants';
 import { useDialogManager } from '../dialog';
-import { useIsDebugEnabled } from '../debug';
 import { toggleDebug } from '../debug';
+import { useIsMountedState$ } from '../common/useIsMountedState$';
+import { useDatabase } from '../rxdb';
+import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from 'rxjs';
+import { Report } from '../debug/report';
+import { isDebugEnabled } from '../debug/isDebugEnabled.shared';
 
 export const ProfileScreen = () => {
   const history = useHistory()
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
   const [isEditContentPasswordDialogOpened, setIsEditContentPasswordDialogOpened] = useState(false)
+  const [isDeleteMyDataDialogOpened, setIsDeleteMyDataDialogOpened] = useState(false)
   const [isLoadLibraryDebugOpened, setIsLoadLibraryDebugOpened] = useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([])
   const [, isUnlockLibraryDialogOpened] = useRecoilState(unlockLibraryDialogState)
@@ -35,7 +40,6 @@ export const ProfileScreen = () => {
   const setLibraryState = useSetRecoilState(libraryState)
   const theme = useTheme()
   const dialog = useDialogManager()
-  const isDebugEnabled = useIsDebugEnabled()
 
   return (
     <div style={{ display: 'flex', flex: 1, overflow: 'scroll', flexDirection: 'column' }}>
@@ -168,13 +172,16 @@ export const ProfileScreen = () => {
           </ListItem>
           <ListItem
             button
-            onClick={() => {
-              toggleDebug()
-              window.location.reload()
-            }}
+            onClick={toggleDebug}
           >
-            <ListItemText primary={isDebugEnabled ? 'Disable debug mode' : 'Enable debug mode'} />
+            <ListItemText primary={isDebugEnabled() ? 'Disable debug mode' : 'Enable debug mode'} />
           </ListItem>
+          {/* <ListItem
+            button
+            onClick={() => setIsDeleteMyDataDialogOpened(true)}
+          >
+            <ListItemText primary="Delete my data" />
+          </ListItem> */}
         </List>
         <LoadLibraryFromJsonDialog open={isLoadLibraryDebugOpened} onClose={() => setIsLoadLibraryDebugOpened(false)} />
       </>
@@ -194,8 +201,137 @@ export const ProfileScreen = () => {
       </List>
       <LockActionBehindUserPasswordDialog action={lockedAction} />
       <EditContentPasswordDialog open={isEditContentPasswordDialogOpened} onClose={() => setIsEditContentPasswordDialogOpened(false)} />
+      <DeleteMyDataDialog open={isDeleteMyDataDialogOpened} onClose={() => setIsDeleteMyDataDialogOpened(false)} />
     </div>
   );
+}
+
+const DeleteMyDataDialog: FC<{
+  open: boolean,
+  onClose: () => void,
+}> = ({ onClose, open }) => {
+  const [isTagChecked, setIsTagChecked] = useState(false)
+  const [isBookChecked, setIsBookChecked] = useState(false)
+  const [isCollectionChecked, setIsCollectionChecked] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const { unMount$ } = useIsMountedState$()
+  const db = useDatabase()
+
+  const onSubmit = useCallback(async () => {
+    setIsDeleting(true)
+
+    if (db) {
+      const deleteTags$ = from(db.tag.find().exec())
+        .pipe(
+          switchMap(res => from(db.tag.bulkRemove(res.map(r => r._id)))),
+        )
+
+      const deleteBooks$ = from(db.book.find().exec())
+        .pipe(
+          switchMap(res => from(db.book.bulkRemove(res.map(r => r._id)))),
+        )
+
+      const deleteLinks$ = from(db.link.find().exec())
+        .pipe(
+          switchMap(res => from(db.link.bulkRemove(res.map(r => r._id)))),
+        )
+
+      const deleteCollections$ = from(db.obokucollection.find().exec())
+        .pipe(
+          switchMap(res => from(db.obokucollection.bulkRemove(res.map(r => r._id)))),
+        )
+
+      forkJoin([
+        isTagChecked ? deleteTags$ : of(undefined),
+        isBookChecked ? deleteBooks$ : of(undefined),
+        isBookChecked ? deleteLinks$ : of(undefined),
+        isCollectionChecked ? deleteCollections$ : of(undefined),
+      ])
+        .pipe(
+          catchError((e) => {
+            Report.error(e)
+
+            return of(undefined)
+          }),
+          tap(() => {
+            onClose()
+          }),
+          takeUntil(unMount$)
+        )
+        .subscribe()
+    }
+  }, [onClose, db, unMount$, isTagChecked, isBookChecked, isCollectionChecked])
+
+  useEffect(() => {
+    setIsDeleting(false)
+    setIsTagChecked(false)
+    setIsBookChecked(false)
+    setIsCollectionChecked(false)
+  }, [open])
+
+  return (
+    <Dialog onClose={onClose} open={open}>
+      <DialogTitle>Delete my data</DialogTitle>
+      <DialogContent>
+        <form autoComplete="off" onSubmit={e => e.preventDefault()}>
+          <DialogContentText >
+            This action is permanent.
+          </DialogContentText>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isTagChecked}
+                disabled={isDeleting}
+                onChange={() => {
+                  setIsTagChecked(v => !v)
+                }}
+                name="tags"
+              />
+            }
+            label="Delete all my tags"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isBookChecked}
+                disabled={isDeleting}
+                onChange={() => {
+                  setIsBookChecked(v => !v)
+                }}
+                name="books"
+              />
+            }
+            label="Delete all my books"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isCollectionChecked}
+                disabled={isDeleting}
+                onChange={() => {
+                  setIsCollectionChecked(v => !v)
+                }}
+                name="collections"
+              />
+            }
+            label="Delete all my collections"
+          />
+        </form>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={onSubmit}
+          color="primary"
+          disabled={isDeleting}
+        >
+          {isDeleting ? `Deleting...` : `Confirm`}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
 }
 
 const EditContentPasswordDialog: FC<{

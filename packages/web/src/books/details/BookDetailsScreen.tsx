@@ -15,8 +15,8 @@ import { normalizedLinksState } from '../../links/states';
 import { useEditLink } from '../../links/helpers';
 import { useCSS } from '../../common/utils';
 import { useManageBookTagsDialog } from '../ManageBookTagsDialog';
-import { useIsDebugEnabled } from '../../debug';
 import { DataSourceSection } from './DateSourceSection';
+import { isDebugEnabled } from '../../debug/isDebugEnabled.shared';
 
 type ScreenParams = {
   id: string
@@ -35,8 +35,6 @@ export const BookDetailsScreen = () => {
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
   
-  const isDebugEnabled = useIsDebugEnabled()
-
   return (
     <div style={{
       flex: 1,
@@ -94,7 +92,7 @@ export const BookDetailsScreen = () => {
           <Typography variant="body1" >Language:&nbsp;</Typography>
           <Typography variant="body2" >{book?.lang}</Typography>
         </Box>
-        {isDebugEnabled && (
+        {isDebugEnabled() && (
           <Box display="flex" flexDirection="row" alignItems="center">
             <Typography variant="body1" >id:&nbsp;</Typography>
             <Typography variant="body2" >{book?._id}</Typography>

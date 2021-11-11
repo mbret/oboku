@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/react"
-import { isDebugEnabled } from "./isDebugEnabled";
+import { isDebugEnabled } from "./isDebugEnabled.shared";
 
 export const Report = {
   log: (...data: any[]) => {

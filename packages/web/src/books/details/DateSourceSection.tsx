@@ -3,6 +3,7 @@ import { MoreVertRounded } from "@material-ui/icons"
 import { FC } from "react"
 import { useRecoilValue } from "recoil"
 import { useDataSourcePlugin } from "../../dataSources/helpers"
+import { DebugInfo } from "../../debug/DebugInfo"
 import { useDialogManager } from "../../dialog"
 import { useRefreshBookMetadata } from "../helpers"
 import { bookLinksState } from "../states"
@@ -39,6 +40,7 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
           <MoreVertRounded />
         </ListItem>
       )}
+      <DebugInfo info={{ id: link?._id || `` }} mb={2} />
       {process.env.NODE_ENV === 'development' && (
         <Button fullWidth variant="outlined" color="primary" onClick={() => { refreshBookMetadata(bookId) }}>debug:refresh_metadata</Button>
       )}

@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react"
 // import * as Sentry from "@sentry/react";
 // import { Integrations } from "@sentry/tracing";
 import firebase from "firebase/app"
@@ -6,7 +5,7 @@ import "firebase/analytics"
 import { FIREBASE_BASE_CONFIG } from '../constants'
 // import { version } from '../../package.json'
 import localforage from 'localforage'
-import { isDebugEnabled } from "./isDebugEnabled"
+import { isDebugEnabled } from "./isDebugEnabled.shared"
 
 // @ts-ignore
 window.localforage = localforage
@@ -31,7 +30,7 @@ if (process.env.NODE_ENV !== 'development') {
   //         }
   //       })
   //     }
-  
+
   //     return event
   //   },
   //   // We recommend adjusting this value in production, or using tracesSampler
@@ -51,44 +50,11 @@ if (process.env.NODE_ENV !== 'development') {
   console.log(process.env)
 }
 
-type DebugEvent = CustomEvent<boolean>
-
-export const enableDebug = () => {
-  localStorage.setItem('oboku_debug_enabled', 'true')
-  document.dispatchEvent(new CustomEvent('oboku_debug_change', {
-    detail: true
-  }))
-}
-
-export const disableDebug = () => {
-  localStorage.setItem('oboku_debug_enabled', 'false')
-  document.dispatchEvent(new CustomEvent('oboku_debug_change', {
-    detail: false
-  }))
-}
-
 export const toggleDebug = () => {
   if (isDebugEnabled()) {
-    disableDebug()
+    localStorage.setItem('oboku_debug_enabled', 'false')
   } else {
-    enableDebug()
+    localStorage.setItem('oboku_debug_enabled', 'true')
   }
-}
-
-export const useIsDebugEnabled = () => {
-  const [isEnabled, setIsEnabled] = useState(isDebugEnabled())
-
-  useEffect(() => {
-    const listener = ((event: DebugEvent) => {
-      setIsEnabled(event.detail)
-    }) as EventListener
-
-    document.addEventListener('oboku_debug_change', listener)
-
-    return () => {
-      document.removeEventListener('oboku_debug_change', listener)
-    }
-  }, [])
-
-  return isEnabled
+  window.location.reload()
 }
