@@ -1,5 +1,14 @@
 import { DataSourceType, LinkDocType } from "@oboku/shared";
 
+type Item = {
+  resourceId: string
+}
+
+type SelectionError = {
+  code: `unknown`,
+  originalError?: any
+}
+
 export type ObokuDataSourcePlugin = {
   uniqueResourceIdentifier: string
   type: DataSourceType
@@ -12,6 +21,10 @@ export type ObokuDataSourcePlugin = {
   AddDataSource: React.FunctionComponent<{
     onClose: () => void
   }>,
+  SelectItemComponent?: React.FunctionComponent<{
+    open: boolean,
+    onClose: (error?: SelectionError | undefined, item?: Item | undefined) => void,
+  }>
   useGetCredentials: UseGetCredentials,
   useDownloadBook: UseDownloadHook,
   useRemoveBook: UseRemoveBook | undefined,

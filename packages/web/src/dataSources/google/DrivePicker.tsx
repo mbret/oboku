@@ -42,16 +42,32 @@ export const DrivePicker: FC<{
     }
   }, [error, onClose])
 
+  // @ts-ignore
+  window.picker = picker
+
   useEffect(() => {
-    if (show && !accessToken) {
-      getSignedGapi()
-    }
     if (show && accessToken) {
       picker.setVisible(true)
     } else {
       picker.setVisible(false)
     }
-  }, [show, picker, accessToken, getSignedGapi])
+  }, [show, picker, accessToken])
+
+  useEffect(() => {
+    if (show && !accessToken) {
+      getSignedGapi()
+    }
+  }, [getSignedGapi, show, accessToken])
+
+  useEffect(() => {
+    if (!show && picker) {
+      picker.dispose()
+    }
+
+    return () => {
+      picker.dispose()
+    }
+  }, [picker, show])
 
   return null
 }

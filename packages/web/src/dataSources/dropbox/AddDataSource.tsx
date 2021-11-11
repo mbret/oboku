@@ -45,7 +45,7 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
             <ListItem>
               <Typography noWrap>Selected: {selectedFolder?.name || 'None'}</Typography>
             </ListItem>
-            {currentFolder.id !== 'root' && (
+            {currentFolder?.id !== 'root' && (
               <ListItem>
                 <Button
                   style={{

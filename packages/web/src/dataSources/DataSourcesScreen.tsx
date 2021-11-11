@@ -28,9 +28,9 @@ export const DataSourcesScreen = () => {
         overflow: 'scroll',
         flexFlow: 'column',
       }}>
-        <TopBarNavigation title={'Data sources links'} showBack={false} />
+        <TopBarNavigation title={'Data Sources'} showBack={false} />
         <Alert severity="info">
-          Automatically add books from an external source (eg: Google Drive shared folder). <Link href="https://docs.oboku.me" target="__blank">Learn more</Link>
+          Automatically synchronize books from an external source (eg: Google Drive shared folder). <Link href="https://docs.oboku.me" target="__blank">Learn more</Link>
         </Alert>
         <Toolbar>
           <Button
@@ -41,7 +41,7 @@ export const DataSourcesScreen = () => {
             color="primary"
             onClick={() => setIsDrawerOpened(true)}
           >
-            Add a new link
+            Add a new source
         </Button>
         </Toolbar>
         <List>

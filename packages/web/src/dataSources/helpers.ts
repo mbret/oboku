@@ -82,7 +82,7 @@ export const useAtomicUpdateDataSource = () => {
     return await item?.atomicUpdate(mutationFunction)
   }, [database])
 
-  return [updater]
+  return [updater] as [typeof updater]
 }
 
 export const useDataSourceHelpers = (id: typeof plugins[number]['uniqueResourceIdentifier']) => {

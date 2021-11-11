@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
+import { getBookFile } from "./getBookFile.shared"
 import { BookFile } from "./types"
-import localforage from 'localforage';
-import { DOWNLOAD_PREFIX } from "../constants";
 
 export const useBookFile = (bookId: string) => {
   const [file, setFile] = useState<BookFile | null | undefined>(undefined)
@@ -23,10 +22,4 @@ export const useBookFile = (bookId: string) => {
   }, [bookId])
 
   return file
-}
-
-export const getBookFile = (bookId: string) => {
-  console.warn(`${DOWNLOAD_PREFIX}-${bookId}`)
-  
-  return localforage.getItem<BookFile>(`${DOWNLOAD_PREFIX}-${bookId}`)
 }

@@ -40,10 +40,11 @@ export const enrichedBookState = selectorFamily({
     const book = get(bookState(bookId))
     const downloadState = get(bookDownloadsState(bookId))
     const protectedTags = get(protectedTagIdsState)
+    const linkId = book?.links[0]
 
-    if (!book) return undefined
+    if (!book || !linkId) return undefined
 
-    const firstLink = get(linkState(book.links[0]))
+    const firstLink = get(linkState(linkId))
 
     const isLocal = firstLink?.type === DataSourceType.FILE
 

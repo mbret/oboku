@@ -1,4 +1,5 @@
 export { useDownloadBook } from './useDownloadBook'
 export { useRemoveBook } from './useRemoveBook'
-export { GoogleDriveDataSource } from './GoogleDriveDataSource'
+export { GoogleDriveDataSource as AddDataSource } from './GoogleDriveDataSource'
+export { SelectItem as SelectItemComponent } from './SelectItem'
 export { useGetCredentials } from './helpers'

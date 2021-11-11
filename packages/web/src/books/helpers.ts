@@ -89,7 +89,7 @@ export const useAtomicUpdateBook = () => {
     return await book?.atomicUpdate(mutationFunction)
   }, [database])
 
-  return [updater]
+  return [updater] as [typeof updater]
 }
 
 export const useRefreshBookMetadata = () => {
@@ -198,7 +198,7 @@ export const useAddBook = () => {
     }
   }
 
-  return [addBook]
+  return [addBook] as [typeof addBook]
 }
 
 export const useAddBookFromFile = () => {

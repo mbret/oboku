@@ -20,7 +20,8 @@
     "noEmit": true,
     "downlevelIteration": true,
     "jsx": "react-jsx",
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true
   },
   "include": [
     "src",

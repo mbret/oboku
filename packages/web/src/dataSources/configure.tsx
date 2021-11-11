@@ -46,11 +46,8 @@ export const configureDataSources = () => {
     name: 'Google Drive',
     Icon: GoogleDriveIcon,
     UploadComponent: UploadBook,
-    AddDataSource: googlePlugin.GoogleDriveDataSource,
-    useGetCredentials: googlePlugin.useGetCredentials,
-    useDownloadBook: googlePlugin.useDownloadBook,
-    useRemoveBook: googlePlugin.useRemoveBook,
     synchronizable: true,
+    ...googlePlugin
   })
 
   plugins.push(linkPlugin)
