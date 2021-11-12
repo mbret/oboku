@@ -2,6 +2,8 @@ import { useDatabase } from './RxDbProvider'
 
 type Database = NonNullable<ReturnType<typeof useDatabase>>
 
+const EXEC_PARALLEL = true
+
 export const applyHooks = (db: Database) => {
   db.book.postSave(async function (data, d) {
     const tagsFromWhichToRemoveBook = await db.tag.find({
@@ -170,4 +172,28 @@ export const applyHooks = (db: Database) => {
       }
     }))
   }, true)
+
+  updateRelationBetweenLinksAndBooksHook(db)
+}
+
+const updateRelationBetweenLinksAndBooksHook = (db: Database) => {
+  db.link.postInsert(async (data) => {
+    // @todo there is a bug, it triggers twice the insert event
+    const bookId = data.book
+    // when a link is added update the book with its id
+    if (bookId) {
+      await db.book
+        .safeUpdate({
+          $set: {
+            links: [data._id]
+          }
+        }, collection => collection.safeFind({
+          selector: {
+            _id: {
+              $in: [bookId]
+            }
+          }
+        }))
+    }
+  }, EXEC_PARALLEL)
 }
