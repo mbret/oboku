@@ -56,6 +56,7 @@ type SettingsCollectionMethods = {
     cb: (collection: SettingsCollection) => RxQuery
   ) => Promise<SettingsDocument>
 }
+
 type TagsCollectionMethods = {
   post: (json: Omit<TagsDocType, '_id' | 'rx_model' | '_rev'>) => Promise<TagsDocument>,
   safeUpdate: (
@@ -65,12 +66,13 @@ type TagsCollectionMethods = {
 }
 
 type LinkCollectionMethods = {
-  post: (json: Omit<LinkDocType, '_id' | 'rx_model' | '_rev'>) => Promise<LinkDocument>,
+  safeInsert: (json: Omit<LinkDocType, '_id' | 'rx_model' | '_rev'>) => Promise<LinkDocument>,
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<LinkDocType>,
     cb: (collection: LinkCollection) => RxQuery
   ) => Promise<TagsDocument>,
   safeFind: (updateObj: SafeMangoQuery<LinkDocType>) => RxQuery<LinkDocType, RxDocument<LinkDocType, LinkDocMethods>[]>
+  safeFindOne: (updateObj: SafeMangoQuery<LinkDocType>) => RxQuery<LinkDocType, RxDocument<LinkDocType, LinkDocMethods> | null>
 }
 
 type SettingsCollection = RxCollection<SettingsDocType, any, SettingsCollectionMethods>
@@ -176,7 +178,7 @@ const tagsCollectionMethods: TagsCollectionMethods = {
 };
 
 const linkCollectionMethods: LinkCollectionMethods = {
-  post: async function (this: LinkCollection, json) {
+  safeInsert: async function (this: LinkCollection, json) {
     return this.insert(json as LinkDocType)
   },
   safeUpdate: async function (this: LinkCollection, json, cb) {
@@ -184,6 +186,9 @@ const linkCollectionMethods: LinkCollectionMethods = {
   },
   safeFind: function (this: LinkCollection, json) {
     return this.find(json)
+  },
+  safeFindOne: function (this: LinkCollection, json) {
+    return this.findOne(json)
   }
 }
 

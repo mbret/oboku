@@ -2,7 +2,7 @@ import { BookDocType, InsertableBookDocType } from "@oboku/shared";
 import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb";
 import { MongoUpdateSyntax } from "../../types";
 import { withReplicationSchema } from "../rxdb-plugins/replication";
-import { SafeUpdateMongoUpdateSyntax } from "../types";
+import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types";
 
 type BookDocMethods = {
   safeUpdate: (updateObj: MongoUpdateSyntax<BookDocType>) => Promise<any>
@@ -14,8 +14,10 @@ type BookCollectionMethods = {
   post: (json: Omit<InsertableBookDocType, 'rx_model'>) => Promise<BookDocument>,
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<BookDocType>,
-    cb: (collection: BookCollection) => RxQuery
+    getter: (collection: BookCollection) => RxQuery
   ) => Promise<BookDocument>
+  safeFind: (updateObj: SafeMangoQuery<BookDocType>) => RxQuery<BookDocType, RxDocument<BookDocType, BookDocMethods>[]>
+  safeFindOne: (updateObj: SafeMangoQuery<BookDocType>) => RxQuery<BookDocType, RxDocument<BookDocType, BookDocMethods> | null>
 }
 
 export type BookCollection = RxCollection<BookDocType, BookDocMethods, BookCollectionMethods>
@@ -30,9 +32,15 @@ export const bookCollectionMethods: BookCollectionMethods = {
   post: async function (this: BookCollection, json) {
     return this.insert(json as BookDocType)
   },
-  safeUpdate: async function (this: BookCollection, json, cb) {
-    return cb(this).update(json)
+  safeUpdate: async function (this: BookCollection, json, getter) {
+    return getter(this).update(json)
   },
+  safeFind: function (this: BookCollection, json) {
+    return this.find(json)
+  },
+  safeFindOne: function (this: BookCollection, json) {
+    return this.findOne(json)
+  }
 }
 
 export const bookSchemaMigrationStrategies = {
