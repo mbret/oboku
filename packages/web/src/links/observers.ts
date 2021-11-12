@@ -38,8 +38,9 @@ export const useLinksObservers = () => {
   const [, setLinks] = useRecoilState(normalizedLinksState)
 
   useEffect(() => {
-    db?.link.$.subscribe((changeEvent: RxChangeEvent<LinkDocType>) => {
-      console.warn('CHANGE EVENT', changeEvent)
+    const subscription = db?.link.$.subscribe((changeEvent: RxChangeEvent<LinkDocType>) => {
+      Report.log(`links.observer`, `RxChangeEvent`, changeEvent)
+
       switch (changeEvent.operation) {
         case 'INSERT': {
           return setLinks(state => ({
@@ -58,5 +59,9 @@ export const useLinksObservers = () => {
         }
       }
     })
+
+    return () => {
+      subscription?.unsubscribe()
+    }
   }, [db, setLinks])
 }
