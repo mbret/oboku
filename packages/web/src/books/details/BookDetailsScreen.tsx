@@ -17,6 +17,7 @@ import { useCSS } from '../../common/utils';
 import { useManageBookTagsDialog } from '../ManageBookTagsDialog';
 import { DataSourceSection } from './DateSourceSection';
 import { isDebugEnabled } from '../../debug/isDebugEnabled.shared';
+import { useRemoveDownloadFile } from '../../download/useRemoveDownloadFile';
 
 type ScreenParams = {
   id: string
@@ -34,7 +35,8 @@ export const BookDetailsScreen = () => {
   const collections = useRecoilValue(bookCollectionsState(id))
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
-  
+  const removeDownloadFile = useRemoveDownloadFile()
+
   return (
     <div style={{
       flex: 1,
@@ -54,7 +56,7 @@ export const BookDetailsScreen = () => {
           By {book?.creator || 'Unknown'}
         </Typography>
       </div>
-      <Box marginBottom={1} style={{
+      <Box marginBottom={1} flexDirection="column" style={{
         display: 'flex',
         width: '100%',
         paddingLeft: theme.spacing(2),
@@ -68,6 +70,11 @@ export const BookDetailsScreen = () => {
         )}
         {book?.downloadState === 'downloaded' && (
           <Button fullWidth variant="outlined" color="primary" onClick={() => history.push(ROUTES.READER.replace(':id', book._id))}>Read</Button>
+        )}
+        {book?.downloadState === 'downloaded' && (
+          <Box mt={2}>
+            <Button fullWidth variant="outlined" color="secondary" onClick={() => removeDownloadFile(book._id)}>Remove the book download</Button>
+          </Box>
         )}
       </Box>
       {book?.metadataUpdateStatus === 'fetching' && (

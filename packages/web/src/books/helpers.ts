@@ -154,18 +154,18 @@ export const useAddBook = () => {
   const database = useDatabase()
   const refreshMetadata = useRefreshBookMetadata()
 
-  type Return = { book: PromiseReturnType<NonNullable<typeof database>['book']['post']>, link: PromiseReturnType<NonNullable<typeof database>['link']['post']> }
+  type Return = { book: PromiseReturnType<NonNullable<typeof database>['book']['post']>, link: PromiseReturnType<NonNullable<typeof database>['link']['safeInsert']> }
 
   const addBook = async ({
     book,
     link
   }: {
     book?: Partial<Parameters<NonNullable<typeof database>['book']['post']>[0]>
-    link: Parameters<NonNullable<typeof database>['link']['post']>[0]
+    link: Parameters<NonNullable<typeof database>['link']['safeInsert']>[0]
   }): Promise<Return | undefined> => {
     try {
       if (database) {
-        const linkAdded = await database.link.post(link)
+        const linkAdded = await database.link.safeInsert(link)
         const newBook = await database.book.post({
           lastMetadataUpdatedAt: null,
           lastMetadataUpdateError: null,
