@@ -1,5 +1,4 @@
 import { FC, Suspense, useEffect, useState } from 'react';
-import { RoutineProcess } from './RoutineProcess';
 import { AppNavigator } from './navigation/AppNavigator';
 import { ThemeProvider } from '@material-ui/core';
 import { theme } from './theme';
@@ -30,6 +29,7 @@ import { ManageBookTagsDialog } from './books/ManageBookTagsDialog';
 import { ManageTagBooksDialog } from './tags/ManageTagBooksDialog';
 import { useRef } from 'react';
 import { bookBeingReadState } from './reader/BackToReading';
+import { Effects } from './Effects';
 
 const localStatesToPersist = [
   libraryState,
@@ -69,11 +69,11 @@ export function App() {
                       <ManageBookCollectionsDialog />
                       <ManageBookTagsDialog />
                       <ManageTagBooksDialog />
-                      <RoutineProcess />
                     </TourProvider>
                     <UpdateAvailableDialog serviceWorker={newServiceWorker} />
                     <RecoilSyncedWithDatabase />
                     <BlockingBackdrop />
+                    <Effects />
                   </DialogProvider>
                 </AxiosProvider>
               </GoogleApiProvider>

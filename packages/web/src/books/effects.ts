@@ -79,9 +79,9 @@ const useUpsertBookLinkActionEffect = () => {
         }),
         ignoreElements()
       )
-    , [refreshBookMetadata])
+    , [refreshBookMetadata, removeDanglingLinks])
 }
 
-export const useBooksActionEffect = () => {
+export const useBooksActionEffects = () => {
   useUpsertBookLinkActionEffect()
 }

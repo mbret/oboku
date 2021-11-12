@@ -1,14 +1,12 @@
 import { useEffect } from 'react'
+import { useSynchronizeStateWithStorageEffect } from './useSynchronizeStateWithStorage'
 // import localforage from 'localforage';
-import { useSynchronizeStateWithStorage } from './download/useSynchronizeStateWithStorage';
 
 // const POLLING_INTERVAL = 30000
 
-export const RoutineProcess = () => {
+export const useDownloadsEffects = () => {
+  useSynchronizeStateWithStorageEffect()
   useRevertInvalidDownloads()
-  useSynchronizeStateWithStorage()
-
-  return null
 }
 
 const useRevertInvalidDownloads = () => {

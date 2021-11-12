@@ -8,7 +8,7 @@ const getKeys = async () => (await localforage.keys())
   .filter(key => key.startsWith(DOWNLOAD_PREFIX))
   .map(key => key.replace(`${DOWNLOAD_PREFIX}-`, ''))
 
-export const useSynchronizeStateWithStorage = () => {
+export const useSynchronizeStateWithStorageEffect = () => {
 
   const restoreStateForFinishedDownloadIfNeeded = useRecoilCallback(({ snapshot, set }) => async () => {
     const state = await snapshot.getPromise(normalizedBookDownloadsState)
