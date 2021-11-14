@@ -4,43 +4,41 @@ import { isMenuShownState, manifestState, isBookReadyState } from "./states"
 import { AppBar, IconButton, Toolbar, Typography, useTheme } from "@material-ui/core"
 import { ArrowBackIosRounded, FullscreenExitRounded, FullscreenRounded, ListRounded } from '@material-ui/icons'
 import { useNavigation } from '../navigation/useNavigation'
-import screenfull, { Screenfull } from 'screenfull'
+import screenfull from 'screenfull'
 import { Report } from '../debug/report'
 import { useCSS } from '../common/utils'
 import { useToggleContentsDialog } from './ContentsDialog'
-
-const screenfullApi = screenfull as Screenfull
 
 export const TopBar = () => {
   const isMenuShow = useRecoilValue(isMenuShownState)
   const isBookReady = useRecoilValue(isBookReadyState)
   const classes = useStyles({ isMenuShow })
   const { goBack } = useNavigation()
-  const [isFullScreen, setIsFullScreen] = useState(screenfullApi.isEnabled && screenfullApi.isFullscreen)
+  const [isFullScreen, setIsFullScreen] = useState(screenfull.isEnabled && screenfull.isFullscreen)
   const { title, filename } = useRecoilValue(manifestState) || {}
   const theme = useTheme()
   const toggleContentsDialog = useToggleContentsDialog()
 
   const onToggleFullScreenClick = useCallback(() => {
-    if (screenfullApi.isFullscreen) {
-      screenfullApi.exit().catch(Report.error)
-    } else if (!screenfullApi.isFullscreen) {
-      screenfullApi.request(undefined, { navigationUI: 'hide' }).catch(Report.error)
+    if (screenfull.isFullscreen) {
+      screenfull.exit().catch(Report.error)
+    } else if (!screenfull.isFullscreen) {
+      screenfull.request(undefined, { navigationUI: 'hide' }).catch(Report.error)
     }
   }, [])
 
   useEffect(() => {
     const cb = () => {
-      setIsFullScreen(screenfullApi.isFullscreen)
+      setIsFullScreen(screenfull.isFullscreen)
     }
 
-    if (screenfullApi.isEnabled) {
-      screenfullApi.on('change', cb)
+    if (screenfull.isEnabled) {
+      screenfull.on('change', cb)
     }
 
     return () => {
-      if (screenfullApi.isEnabled) {
-        screenfullApi.off('change', cb)
+      if (screenfull.isEnabled) {
+        screenfull.off('change', cb)
       }
     }
   }, [])
@@ -75,7 +73,7 @@ export const TopBar = () => {
           >
             <ListRounded />
           </IconButton>
-          {screenfullApi.isEnabled && (
+          {screenfull.isEnabled && (
             <IconButton
               edge="end"
               color="inherit"
