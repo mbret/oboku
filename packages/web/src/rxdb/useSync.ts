@@ -21,7 +21,7 @@ export const useSync = () => {
         syncOptions: () => ({
           remote: new PouchDB(`${API_COUCH_URI}/${dbName}`, {
             fetch: (url, opts) => {
-              (opts?.headers as unknown as Map<string, string>).set('Authorization', client.getAuthorizationHeader())
+              (opts?.headers as unknown as Map<string, string>).set('Authorization', client.getAuthorizationHeader() || ``)
               return PouchDB.fetch(url, opts)
             }
           }),
