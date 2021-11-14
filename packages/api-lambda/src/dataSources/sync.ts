@@ -283,9 +283,9 @@ const synchronizeBookWithParentCollections = async (bookId: string, parents: Syn
      * We attach all the parent collections to the book by combining them with existing collection of the book.
      * Make sure to not remove any existing collection from the book and to avoid duplicate
      */
-    const book = await helpers.findOne('book', { selector: { _id: bookId } })
-    if (book) {
-      const bookHasNotOneOfTheCollectionsYet = parentCollectionIds.some(collectionId => !book.collections.includes(collectionId))
+    const { collections: bookCollections } = await helpers.findOne('book', { selector: { _id: bookId }, fields: [`collections`] }) || {}
+    if (bookCollections) {
+      const bookHasNotOneOfTheCollectionsYet = parentCollectionIds.some(collectionId => !bookCollections.includes(collectionId))
       if (bookHasNotOneOfTheCollectionsYet) {
         logger.log(`synchronizeBookWithParentCollections ${bookId} has some missing parent collections. It will be updated to include them`)
         await helpers.atomicUpdate('book', bookId, old => ({
