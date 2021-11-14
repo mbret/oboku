@@ -18,6 +18,6 @@
     "yup": "0.32.11"
   },
   "devDependencies": {
-    "nodemon": "^2.0.12"
+    "nodemon": "^2.0.15"
   }
 }
