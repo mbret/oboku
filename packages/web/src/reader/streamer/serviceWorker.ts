@@ -39,7 +39,7 @@ export const readerFetchListener = (event: FetchEvent) => {
 
         console.error(e)
 
-        return new Response(e.message, { status: 500 })
+        return new Response((e as any)?.message, { status: 500 })
       }
     })())
   }

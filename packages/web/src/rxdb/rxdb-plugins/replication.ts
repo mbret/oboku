@@ -173,7 +173,7 @@ class Replication {
           resolve()
         } catch (e) {
           if (this.terminated) return resolve()
-          this._errorSubject.next(e);
+          this._errorSubject.next(e as any);
           if (!this.syncOptions('').options?.retry) {
             await this.cancel()
             return resolve()
@@ -191,7 +191,7 @@ class Replication {
         await this._sync();
       }
     } catch (e) {
-      this._errorSubject.next(e);
+      this._errorSubject.next(e as any);
     }
   }
 
@@ -330,7 +330,7 @@ class Replication {
         await db.put({ ...doc, _rev: meta?._rev })
       }
     } catch (e) {
-      if (e.status === 404) {
+      if ((e as any)?.status === 404) {
         await db.put(doc)
       } else {
         throw e

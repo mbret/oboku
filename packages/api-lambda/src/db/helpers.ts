@@ -197,7 +197,7 @@ export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {
     try {
       return await fn()
     } catch (e) {
-      if ((e.message === 'error happened in your connection' || e.statusCode >= 500 || e.statusCode === 409) && currentRetry > 0) {
+      if (((e as any)?.message === 'error happened in your connection' || (e as any)?.statusCode >= 500 || (e as any)?.statusCode === 409) && currentRetry > 0) {
         await waitForRandomTime(1, 200)
         currentRetry--
         return await retryable()
@@ -253,7 +253,7 @@ export const auth = async (username: string, userpass: string) => {
     }
     return response
   } catch (e) {
-    if (e.statusCode === 401) return null
+    if ((e as any)?.statusCode === 401) return null
     throw e
   }
 }

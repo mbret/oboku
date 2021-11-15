@@ -78,7 +78,7 @@ export const useSignIn = () => {
       unlock('authorize')
     } catch (e) {
       Report.error(e)
-      setError(e)
+      setError(e as any)
       unlock('authorize')
     }
   }, [lock, unlock, reCreateDb, resetLocalState, getAuthAsync, setAuthState])
@@ -114,7 +114,7 @@ export const useSignUp = () => {
       setAuthState({ dbName, email, token, userId })
       unlock('authorize')
     } catch (e) {
-      setError(e)
+      setError(e as any)
       unlock('authorize')
     }
   }, [lock, unlock, reCreateDb, resetLocalState, setAuthState])

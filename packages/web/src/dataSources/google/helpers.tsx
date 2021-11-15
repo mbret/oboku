@@ -132,7 +132,7 @@ export const useGetLazySignedGapi = () => {
       }
     } catch (e) {
       console.error(e)
-      setError(new Error(e?.error))
+      setError(new Error((e as any)?.error))
     }
   }, [signedGoogleApi, signIn, setError])
 
@@ -150,10 +150,10 @@ export const useGetCredentials = () => {
 
       return { data: auth as unknown as { [key: string]: string } }
     } catch (e) {
-      if (e?.error === 'popup_closed_by_user') {
+      if ((e as any)?.error === 'popup_closed_by_user') {
         return { isError: true, reason: 'cancelled' } as { isError: true, reason: 'cancelled' }
       }
-      if (e?.error === 'popup_blocked_by_browser') {
+      if ((e as any)?.error === 'popup_blocked_by_browser') {
         return { isError: true, reason: 'popupBlocked' } as { isError: true, reason: 'popupBlocked' }
       }
       throw e

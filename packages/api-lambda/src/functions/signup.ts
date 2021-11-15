@@ -25,7 +25,7 @@ export const fn = lambda(async (event) => {
     const res = (await db.get(code)) as PromiseReturnType<typeof db.get> & { email?: string }
     foundEmail = res.email
   } catch (e) {
-    if (e.statusCode !== 404) {
+    if ((e as any)?.statusCode !== 404) {
       throw e
     }
   }
@@ -36,7 +36,7 @@ export const fn = lambda(async (event) => {
   try {
     await createUser(superAdminSensitiveNanoInstance, email, password)
   } catch (e) {
-    if (e?.statusCode === 409) {
+    if ((e as any)?.statusCode === 409) {
       throw new BadRequestError([{ code: Errors.ERROR_EMAIL_TAKEN }])
     }
     throw e
