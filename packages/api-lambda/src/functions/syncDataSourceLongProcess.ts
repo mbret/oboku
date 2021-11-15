@@ -20,7 +20,7 @@ export const fn = lambda(async (event) => {
   const { email } = await withToken(event)
   const { dataSourceId } = getEventBody(event)
   const credentials = JSON.parse(getNormalizedHeader(event, 'oboku-credentials') || '{}')
-  const authorization = getNormalizedHeader(event, 'authorization')
+  const authorization = getNormalizedHeader(event, 'authorization') || ``
 
   const refreshBookMetadata = ({ bookId }: { bookId: string }) =>
     axios.post(`${AWS_API_URI}/refresh-metadata`, JSON.stringify({ bookId }), {
@@ -38,7 +38,7 @@ export const fn = lambda(async (event) => {
         .headObject({ Bucket: 'oboku-covers', Key: `cover-${coverId}` }).promise()
       return true
     } catch (e) {
-      if (e.code === 'NotFound') return false
+      if ((e as any).code === 'NotFound') return false
       throw e
     }
   }
