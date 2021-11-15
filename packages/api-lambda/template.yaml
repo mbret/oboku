@@ -45,7 +45,7 @@ Resources:
     Properties:
       CodeUri: dist/refreshMetadata
       Handler: main.fn
-      Runtime: nodejs12.x
+      Runtime: nodejs14.x
       Events:
         Post:
           Type: Api
@@ -57,7 +57,7 @@ Resources:
     Properties:
       CodeUri: dist/refreshMetadataLongProcess
       Handler: main.fn
-      Runtime: nodejs12.x
+      Runtime: nodejs14.x
       MemorySize: 512
       Policies:
         S3CrudPolicy:
@@ -67,7 +67,7 @@ Resources:
     Properties:
       CodeUri: dist/syncDataSource
       Handler: main.fn
-      Runtime: nodejs12.x
+      Runtime: nodejs14.x
       Events:
         Post:
           Type: Api
@@ -79,7 +79,7 @@ Resources:
     Properties:
       CodeUri: dist/syncDataSourceLongProcess
       Handler: main.fn
-      Runtime: nodejs12.x
+      Runtime: nodejs14.x
       MemorySize: 512
       Policies:
         S3ReadPolicy:
@@ -89,7 +89,7 @@ Resources:
     Properties:
       CodeUri: dist/signin
       Handler: main.fn
-      Runtime: nodejs12.x
+      Runtime: nodejs14.x
       Events:
         Post:
           Type: Api 
@@ -101,7 +101,7 @@ Resources:
     Properties:
       CodeUri: dist/cover
       Handler: main.fn
-      Runtime: nodejs12.x
+      Runtime: nodejs14.x
       Policies:
         S3ReadPolicy:
           BucketName: !Ref CoverBucketName
@@ -116,7 +116,7 @@ Resources:
     Properties:
       CodeUri: dist/signup
       Handler: main.fn
-      Runtime: nodejs12.x
+      Runtime: nodejs14.x
       Events:
         Post:
           Type: Api 
@@ -128,7 +128,7 @@ Resources:
     Properties:
       CodeUri: dist/requestAccess
       Handler: main.fn
-      Runtime: nodejs12.x
+      Runtime: nodejs14.x
       Events:
         AnyRequest:
           Type: Api 

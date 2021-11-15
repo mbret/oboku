@@ -26,6 +26,7 @@ export const fn = lambda(async (event: APIGatewayProxyEvent) => {
   try {
     response = await s3
       .getObject({ Bucket: 'oboku-covers', Key: objectKey }).promise()
+
     if (response.Body instanceof Buffer) {
       cover = response.Body
     } else {
@@ -45,9 +46,11 @@ export const fn = lambda(async (event: APIGatewayProxyEvent) => {
       height: 320,
       fit: 'inside'
     })
+
   const converted = format === 'image/jpeg' ? resized.toFormat('jpeg').jpeg({
     force: true
   }) : resized.webp()
+
   const buffer = await converted.toBuffer()
 
   return {
@@ -55,7 +58,6 @@ export const fn = lambda(async (event: APIGatewayProxyEvent) => {
     body: buffer.toString('base64'),
     isBase64Encoded: true,
     headers: {
-      // 'Content-type': format,
       'Content-Length': buffer.byteLength,
       'Content-type': 'image/webp',
       'Cache-Control': 'public, max-age=31536000, immutable'

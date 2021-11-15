@@ -32,8 +32,8 @@ export const lambda = (cb: (event: APIGatewayProxyEvent, context: APIGatewayEven
       return res(response)
     } catch (e) {
       console.error(e)
-      console.error(JSON.stringify({ stack: e.stack, code: e?.code }))
-      console.error('response', e?.response)
+      console.error(JSON.stringify({ stack: (e as any).stack, code: (e as any)?.code }))
+      console.error('response', (e as any)?.response)
       if (e instanceof ObokuSharedError && e.previousError) {
         const prevError = e.previousError as any
         console.error(prevError)
@@ -48,7 +48,7 @@ export const lambda = (cb: (event: APIGatewayProxyEvent, context: APIGatewayEven
       } = { errors: [] }
 
       if (process.env.ENV === 'DEV') {
-        body = { ...body, error: e.toString(), stack: e.stack, code: e.code }
+        body = { ...body, error: (e as any).toString(), stack: (e as any).stack, code: (e as any).code }
       }
 
       if (e instanceof NotFoundError) {

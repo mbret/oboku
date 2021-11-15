@@ -17,10 +17,10 @@
     "start:landing": "cd packages/landing && yarn start",
     "start:shared": "cd packages/shared && yarn watch",
     "start:api-lambda": "cd packages/api-lambda && yarn watch",
-    "start:back": "docker-compose up -d && concurrently -n api-lambda \"yarn start:api-lambda\"",
+    "start:back": "docker compose up -d && concurrently -n api-lambda \"yarn start:api-lambda\"",
     "start:front": "concurrently -n web,shared \"yarn start:web\" \"yarn start:shared\"",
     "deploy-server": "pm2 stop oboku-api && git fetch origin && git reset --hard origin/release && yarn && pm2 start oboku-api && pm2 log oboku-api",
-    "dev:fix:sharp": "rm -rf node_modules/sharp && rm -rf packages/api-lambda/node_modules/sharp && cd packages/api-lambda/sharp-install && npm install && cd ../../../ && cp -R packages/api-lambda/sharp-install/node_modules/sharp packages/api-lambda/node_modules/sharp",
+    "dev:fix:sharp": "rm -rf node_modules/sharp && rm -rf packages/api-lambda/node_modules/sharp && cd packages/api-lambda/sharp-install && SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp && cd ../../../ && cp -R packages/api-lambda/sharp-install/node_modules/sharp packages/api-lambda/node_modules/sharp",
     "tsc:web": "cd packages/web && yarn tsc",
     "tsc:shared": "cd packages/shared && yarn tsc",
     "tsc:api-lambda": "cd packages/api-lambda && yarn tsc",
@@ -28,10 +28,10 @@
   },
   "dependencies": {
     "concurrently": "^6.2.0",
-    "sharp": "^0.28.3"
+    "sharp": "^0.29.2"
   },
   "devDependencies": {
-    "webpack-bundle-analyzer": "^4.3.0",
+    "webpack-bundle-analyzer": "^4.5.0",
     "webpack-node-externals": "^2.5.2"
   }
 }
