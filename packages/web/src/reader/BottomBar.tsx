@@ -1,7 +1,7 @@
 import { AppBar, Box, IconButton, Typography, useTheme } from "@material-ui/core"
 import { useRecoilValue } from "recoil"
 import { PageInformation } from "./PageInformation"
-import { isMenuShownState, isBookReadyState, totalPageState, hasRightSpineItemState, hasLeftSpineItemState } from "./states"
+import { isMenuShownState, isBookReadyState, hasRightSpineItemState, hasLeftSpineItemState } from "./states"
 import { Scrubber } from './Scrubber'
 import { useTime } from '../common/useTime'
 import { DoubleArrowRounded } from "@material-ui/icons"
@@ -11,7 +11,6 @@ export const BottomBar = () => {
   const isMenuShow = useRecoilValue(isMenuShownState)
   const isBookReady = useRecoilValue(isBookReadyState)
   const isLoading = !isBookReady
-  const totalPages = useRecoilValue(totalPageState)
   const hasRightSpineItem = useRecoilValue(hasRightSpineItemState)
   const hasLeftSpineItem = useRecoilValue(hasLeftSpineItemState)
   const theme = useTheme()

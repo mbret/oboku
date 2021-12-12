@@ -2,7 +2,7 @@ import { useSetRecoilState } from "recoil"
 import * as states from "./states"
 import { useEffect } from "react"
 import { useWindowSize } from "react-use"
-import { Reader } from '@oboku/reader'
+import { Reader } from '@prose-reader/core'
 import { HORIZONTAL_TAPPING_RATIO } from "./constants"
 
 export const useGestureHandler = (reader: Reader | undefined, hammer: HammerManager | undefined) => {

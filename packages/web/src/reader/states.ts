@@ -1,6 +1,6 @@
 import { atom, selector, useRecoilCallback } from "recoil";
 import { useEffect } from "react";
-import { Manifest } from "@oboku/reader";
+import { Manifest } from "@prose-reader/core";
 import { Pagination } from "./type";
 
 export const isBookReadyState = atom({
@@ -8,7 +8,7 @@ export const isBookReadyState = atom({
   default: false,
 })
 
-export const paginationState = atom<Pagination>({
+export const paginationState = atom<Pagination | undefined>({
   key: `paginationState`,
   default: undefined
 })
@@ -29,9 +29,9 @@ export const totalPageState = selector({
   key: `totalPageState`,
   get: ({ get }) => {
     const { renditionLayout } = get(manifestState) || {}
-    const { numberOfTotalPages, begin } = get(paginationState) || {}
+    const { numberOfTotalPages, beginNumberOfPagesInChapter } = get(paginationState) || {}
 
-    if (renditionLayout === 'reflowable') return begin?.numberOfPagesInChapter
+    if (renditionLayout === 'reflowable') return beginNumberOfPagesInChapter
 
     return numberOfTotalPages
   }
@@ -41,19 +41,20 @@ export const currentPageState = selector({
   key: `currentPageState`,
   get: ({ get }) => {
     const { renditionLayout } = get(manifestState) || {}
-    const { begin } = get(paginationState) || {}
+    const { beginPageIndexInChapter, beginSpineItemIndex } = get(paginationState) || {}
 
-    if (renditionLayout === 'reflowable') return begin?.pageIndexInChapter
-    return begin?.readingItemIndex
+    if (renditionLayout === 'reflowable') return beginPageIndexInChapter
+
+    return beginSpineItemIndex
   }
 })
 
 export const chapterInfoState = selector({
   key: `chapterInfoState`,
   get: ({ get }) => {
-    const { begin } = get(paginationState) || {}
+    const { beginChapterInfo } = get(paginationState) || {}
 
-    return begin?.chapterInfo
+    return beginChapterInfo
   }
 })
 
@@ -69,24 +70,24 @@ export const totalBookProgressState = selector({
 export const hasRightSpineItemState = selector({
   key: `hasRightSpineItemState`,
   get: ({ get }) => {
-    const { numberOfTotalPages = 1, begin } = get(paginationState) || {}
+    const { numberOfTotalPages = 1, beginSpineItemIndex = 0 } = get(paginationState) || {}
     const { readingDirection } = get(manifestState) || {}
-    const { readingItemIndex = 0 } = begin || {}
 
-    if (readingDirection === 'ltr') return readingItemIndex < (numberOfTotalPages - 1)
-    return readingItemIndex > 0
+    if (readingDirection === 'ltr') return beginSpineItemIndex < (numberOfTotalPages - 1)
+
+    return beginSpineItemIndex > 0
   }
 })
 
 export const hasLeftSpineItemState = selector({
   key: `hasLeftSpineItemState`,
   get: ({ get }) => {
-    const { numberOfTotalPages = 1, begin } = get(paginationState) || {}
+    const { numberOfTotalPages = 1, beginSpineItemIndex = 0 } = get(paginationState) || {}
     const { readingDirection } = get(manifestState) || {}
-    const { readingItemIndex = 0 } = begin || {}
 
-    if (readingDirection === 'ltr') return readingItemIndex > 0
-    return readingItemIndex < (numberOfTotalPages - 1)
+    if (readingDirection === 'ltr') return beginSpineItemIndex > 0
+
+    return beginSpineItemIndex < (numberOfTotalPages - 1)
   }
 })
 

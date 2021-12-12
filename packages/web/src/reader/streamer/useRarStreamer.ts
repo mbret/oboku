@@ -1,4 +1,4 @@
-import { getResourceFromArchive } from "@oboku/reader-streamer"
+import { getResourceFromArchive } from "@prose-reader/streamer"
 import { useEffect } from "react"
 import { useCallback, useState } from "react"
 import { getBookFile } from "../../download/getBookFile.shared"

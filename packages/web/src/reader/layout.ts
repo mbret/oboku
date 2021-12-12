@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { Reader } from "@oboku/reader"
+import { Reader } from "@prose-reader/core"
 
 export const useBookResize = (reader: Reader | undefined, containerWidth: number, containerHeight: number) => {
   useEffect(() => {

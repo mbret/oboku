@@ -6,16 +6,15 @@ import { useDebounce } from "react-use"
 
 export const useUpdateBookState = (bookId: string) => {
   const [updateBook] = useAtomicUpdateBook()
-  const { begin } = useRecoilValue(paginationState) || {}
+  const { beginCfi } = useRecoilValue(paginationState) || {}
   const totalBookProgress = useRecoilValue(totalBookProgressState)
-  const { cfi } = begin || {}
 
   const updater = async () => {
     updateBook(bookId, old => ({
       ...old,
       // cfi will be undefined at the beginning until pagination stabilize
-      ...cfi && {
-        readingStateCurrentBookmarkLocation: cfi || null,
+      ...beginCfi && {
+        readingStateCurrentBookmarkLocation: beginCfi || null,
       },
       readingStateCurrentBookmarkProgressUpdatedAt: (new Date()).toISOString(),
       ...(old.readingStateCurrentState !== ReadingStateState.Finished) && {
@@ -30,5 +29,5 @@ export const useUpdateBookState = (bookId: string) => {
     }))
   }
 
-  useDebounce(updater, 400, [updateBook, cfi, totalBookProgress])
+  useDebounce(updater, 400, [updateBook, beginCfi, totalBookProgress])
 }

@@ -1987,33 +1987,6 @@
     mkdirp "^1.0.4"
     rimraf "^3.0.2"
 
-"@oboku/reader-react@^0.0.16":
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/@oboku/reader-react/-/reader-react-0.0.16.tgz#e0ebdbdbb9f92dc0f66c3544d5c11f0464b86a0c"
-  integrity sha512-2tnjuu/NTeqxkyy2RAp9eYDoYlBlAScIeSuZ79PXHBl9B4hoTLljyIXEhjU23aFXflfyQNzfIZXPsMBihl5zDg==
-
-"@oboku/reader-streamer@^0.0.22":
-  version "0.0.22"
-  resolved "https://registry.yarnpkg.com/@oboku/reader-streamer/-/reader-streamer-0.0.22.tgz#37da42e9905350af2bdc8dfff8e6e2ecf8e48c31"
-  integrity sha512-CCrfrrW3OGgRu2AT7zE42H3teYgnLhm71/bs7bOI1zfmZrWq2/SdHwDRH3jOlkdK/iTeTp7AOW0ui+RMfTq/OA==
-  dependencies:
-    "@oboku/shared" "^0.0.4"
-    "@types/xmldoc" "^1.1.5"
-    buffer "6.0.3"
-    xmldoc "^1.1.2"
-
-"@oboku/reader@^0.0.36":
-  version "0.0.36"
-  resolved "https://registry.yarnpkg.com/@oboku/reader/-/reader-0.0.36.tgz#61a1e4c9793f19afdd6be1e6129beb26e6d62e87"
-  integrity sha512-Yd3I+86PVRhdMvVe30WVUHaViU7pxgCnzi/EznKzY75EJcwuYl/ruqcefWOfgLxPpGemRvw2qPeuJimMpDkeOw==
-  dependencies:
-    "@oboku/shared" "^0.0.4"
-
-"@oboku/shared@^0.0.4":
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/@oboku/shared/-/shared-0.0.4.tgz#8c6464019abcada6aa2402d6226fe57580a87647"
-  integrity sha512-kGGE5+7Fw5uuTk/CRat/AuDe2Ttzy9A+xHRNdKsbKhLELcTZmm0x5jAX/bwJKuOORzgsSeGno6uJbXYVku9+IQ==
-
 "@pmmmwh/react-refresh-webpack-plugin@0.4.3":
   version "0.4.3"
   resolved "https://registry.yarnpkg.com/@pmmmwh/react-refresh-webpack-plugin/-/react-refresh-webpack-plugin-0.4.3.tgz#1eec460596d200c0236bf195b078a5d1df89b766"
@@ -2030,6 +2003,33 @@
   version "1.0.0-next.12"
   resolved "https://registry.yarnpkg.com/@polka/url/-/url-1.0.0-next.12.tgz#431ec342a7195622f86688bbda82e3166ce8cb28"
   integrity sha512-6RglhutqrGFMO1MNUXp95RBuYIuc8wTnMAV5MUhLmjTOy78ncwOw7RgeQ/HeymkKXRhZd0s2DNrM1rL7unk3MQ==
+
+"@prose-reader/core@^0.0.40":
+  version "0.0.40"
+  resolved "https://registry.yarnpkg.com/@prose-reader/core/-/core-0.0.40.tgz#01d747192a5e4bc2d985a3f29556876dce4022d9"
+  integrity sha512-qoRNc7o5UkiyPiSYCvxRPJtV3zqMLC8P0p2FlH4ZEaD/R3R960hfNrPGrOh3cSxu7llzTNZSKQXXB/Y/dOCK/g==
+  dependencies:
+    "@prose-reader/shared" "^0.0.5"
+
+"@prose-reader/react@^0.0.20":
+  version "0.0.20"
+  resolved "https://registry.yarnpkg.com/@prose-reader/react/-/react-0.0.20.tgz#9ad5863c80c0ec55d8c0d0d9b88ed60a67771636"
+  integrity sha512-N+1Xg3TmkStO6ylmxCVitfS5LR/FqXoObpNMesrwyHzEb5nMs7V/wSuB9tim6etae4IrVr42MM4gF/gXRXAzSw==
+
+"@prose-reader/shared@^0.0.5":
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/@prose-reader/shared/-/shared-0.0.5.tgz#f94efb6b15e492ef5df8876003b980e3faa431c5"
+  integrity sha512-pKMZjzgCHc1UUOF5ZwkAq0z6H4FI13JHww45h2DUlzoeZ5kYIl8vfW9s4oacAkAyh80JP6YoSEdpPjn3oLxVRg==
+
+"@prose-reader/streamer@^0.0.29":
+  version "0.0.29"
+  resolved "https://registry.yarnpkg.com/@prose-reader/streamer/-/streamer-0.0.29.tgz#409825857d46f796680bd3ee0329a136ba4009ce"
+  integrity sha512-e2Ank6b7Csg54qcEsG/DmxYAL6wDK5v3+aJaQfPfQcSnGJKl/n0HPsSHz0TsfA+VC8wHu2zdSeZbo5w0cLoj2A==
+  dependencies:
+    "@prose-reader/shared" "^0.0.5"
+    "@types/xmldoc" "^1.1.5"
+    buffer "6.0.3"
+    xmldoc "^1.1.2"
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"

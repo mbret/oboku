@@ -1,10 +1,8 @@
 import { FC, memo } from 'react'
 import { ListItem, ListItemText, useTheme } from "@material-ui/core"
 import { useCSS } from '../../common/utils';
-import { BlurOnRounded, LockRounded } from '@material-ui/icons';
 import { useRecoilValue } from 'recoil';
 import { normalizedCollectionsState } from '../states';
-import { TagsDocType } from '@oboku/shared';
 import { Checkbox } from '../../common/Checkbox';
 
 export const SelectableCollectionListItem: FC<{

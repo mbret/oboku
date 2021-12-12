@@ -1,4 +1,4 @@
-import { getManifestFromArchive, getResourceFromArchive } from '@oboku/reader-streamer'
+import { getManifestFromArchive, getResourceFromArchive } from '@prose-reader/streamer'
 import { STREAMER_URL_PREFIX } from '../../constants.shared'
 import { FileNotFoundError, FileNotSupportedError, loadBook } from './loadBook.sw'
 

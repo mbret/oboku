@@ -1,5 +1,5 @@
-import { Archive, createArchiveFromJszip, createArchiveFromText } from "@oboku/reader-streamer";
-import { createArchiveFromArrayBufferList } from "@oboku/reader-streamer";
+import { Archive, createArchiveFromJszip, createArchiveFromText } from "@prose-reader/streamer";
+import { createArchiveFromArrayBufferList } from "@prose-reader/streamer";
 import { loadAsync } from "jszip";
 import { RarArchive } from "../../archive/types";
 import { getBookFile } from "../../download/getBookFile.shared";

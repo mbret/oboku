@@ -1,10 +1,10 @@
-import { Manifest } from "@oboku/reader"
+import { Manifest } from "@prose-reader/core"
 import { useCallback, useEffect, useState } from "react"
 import { getBookFile } from "../download/getBookFile.shared"
 import { Report } from "../debug/report"
 import { getArchiveForRarFile } from "./streamer/getArchiveForFile"
 import '../archive'
-import { getManifestFromArchive } from "@oboku/reader-streamer"
+import { getManifestFromArchive } from "@prose-reader/streamer"
 import { extractMetadataFromName } from "@oboku/shared/dist/directives"
 import { STREAMER_URL_PREFIX } from "../constants.shared"
 

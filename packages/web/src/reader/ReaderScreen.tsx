@@ -6,7 +6,7 @@ import { ReaderContext } from './ReaderProvider';
 import { useWakeLock } from '../common/useWakeLock';
 import { useFullScreenSwitch } from './fullScreen';
 import { Reader } from './Reader';
-import { Reader as ReaderInstance } from '@oboku/reader';
+import { Reader as ReaderInstance } from '@prose-reader/core';
 import { ContentsDialog } from './ContentsDialog';
 import { useTrackBookBeingRead } from './BackToReading';
 
@@ -27,7 +27,12 @@ export const ReaderScreen: FC<{}> = () => {
 
   return (
     <ReaderContext.Provider value={reader}>
-      {bookId && <Reader bookId={bookId} onReader={onReader} />}
+      {bookId && (
+        <Reader
+          bookId={bookId}
+          onReader={onReader}
+        />
+      )}
       <AppTourReader />
       <ContentsDialog />
     </ReaderContext.Provider>

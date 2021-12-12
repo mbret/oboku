@@ -1,4 +1,4 @@
-import { Archive } from '@oboku/reader-streamer'
+import { Archive } from '@prose-reader/streamer'
 import { getBookFile } from '../../download/getBookFile.shared'
 import { Report } from '../../debug/report'
 import { getArchiveForFile } from './getArchiveForFile'
