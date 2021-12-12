@@ -159,14 +159,14 @@ export const dataSource: DataSource = {
         name: rootFolderResponse.data.name || '',
       }
     } catch (e) {
-      if (e?.code === 401) {
-        throw helpers.createError('unauthorized', e)
+      if ((e as any)?.code === 401) {
+        throw helpers.createError('unauthorized', e as Error)
       }
-      const errors = e?.response?.data?.error?.errors
+      const errors = (e as any)?.response?.data?.error?.errors
       if (errors && Array.isArray(errors)) {
         errors.forEach((error: any) => {
           if (error?.reason === 'rateLimitExceeded') {
-            throw helpers.createError('rateLimitExceeded', e)
+            throw helpers.createError('rateLimitExceeded', e as Error)
           }
         })
       }
