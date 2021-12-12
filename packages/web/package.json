@@ -24,7 +24,7 @@
     "axios": "^0.24.0",
     "crypto-browserify": "^3.12.0",
     "dropbox": "^8.2.0",
-    "firebase": "^9.4.1",
+    "firebase": "^9.6.1",
     "fontsource-roboto": "^4.0.0",
     "hammerjs": "^2.0.8",
     "i18next": "^21.4.2",
