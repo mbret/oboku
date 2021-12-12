@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListItem, ListItemText, Typography } from '@material-ui/core'
-import React, { FC, useCallback } from 'react'
+import { FC, useCallback } from 'react'
 import { useAddBookFromFile } from '../books/helpers'
 import { useDropzone } from 'react-dropzone'
 import { Report } from '../debug/report'
