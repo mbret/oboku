@@ -10,10 +10,13 @@ import { COVER_MAXIMUM_SIZE_FOR_STORAGE, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS
 import { S3 } from 'aws-sdk'
 import sharp from 'sharp'
 import { extractMetadataFromName } from '@oboku/shared/src/directives'
-import { findByISBN } from './googleBooksApi'
+import { findByISBN } from '../google/googleBooksApi'
 import axios from "axios"
 import { Logger } from '../Logger'
 import { saveCoverFromArchiveToBucket } from './saveCoverFromArchiveToBucket'
+import { NormalizedMetadata } from './types'
+import { parseOpfMetadata } from './parseOpfMetadata'
+import { parseGoogleMetadata } from './parseGoogleMetadata'
 
 const logger = Logger.namespace('retrieveMetadataAndSaveCover')
 
@@ -44,7 +47,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
 
     const metadataFromName = extractMetadataFromName(metadataPreFetch.name)
 
-    let normalizedMetadata: Partial<ReturnType<typeof normalizeMetadata>> = {
+    let normalizedMetadata: Partial<NormalizedMetadata> = {
       title: metadataPreFetch.name
     }
     let contentType = metadataPreFetch.contentType
@@ -71,14 +74,13 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     if (skipExtract && metadataFromName.isbn) {
       try {
         const response = await findByISBN(metadataFromName.isbn)
-        if (response.status === 200 && Array.isArray(response.data.items) && response.data.items.length > 0) {
-          const item = response.data.items[0]
-          normalizedMetadata.creator = item.volumeInfo.authors[0]
-          normalizedMetadata.title = item.volumeInfo.title
-          normalizedMetadata.date = new Date(item.volumeInfo.publishedDate)
-          normalizedMetadata.publisher = item.volumeInfo.publisher
-          normalizedMetadata.language = item.volumeInfo.language
-          normalizedMetadata.subject = item.volumeInfo.categories
+        const googleMetadata = parseGoogleMetadata(response)
+        normalizedMetadata = {
+          ...normalizedMetadata,
+          ...googleMetadata
+        }
+        if (Array.isArray(response.items) && response.items.length > 0) {
+          const item = response.items[0]
           await saveCoverFromExternalLinkToBucket(ctx, ctx.book, item.volumeInfo.imageLinks.thumbnail.replace('zoom=1', 'zoom=2'))
         }
       } catch (e) {
@@ -140,7 +142,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
         Logger.log(`coverRelativePath`, coverRelativePath)
         Logger.log(`opfBasePath`, opfBasePath)
 
-        normalizedMetadata = normalizeMetadata(opfAsJson)
+        normalizedMetadata = parseOpfMetadata(opfAsJson)
 
         if (coverRelativePath) {
           await saveCoverFromArchiveToBucket(ctx, ctx.book, tmpFilePath, opfBasePath, coverRelativePath)
@@ -251,45 +253,6 @@ const findCoverPathFromOpf = (opf: OPF) => {
   })
 
   return href
-}
-
-const normalizeMetadata = (opf: OPF) => {
-  const metadata = opf.package?.metadata || {}
-  const creator = metadata['dc:creator']
-
-  return {
-    title: typeof metadata['dc:title'] === 'object'
-      ? metadata['dc:title']['#text']
-      : metadata['title'] || metadata['dc:title'],
-    publisher: typeof metadata['dc:publisher'] === 'string'
-      ? metadata['dc:publisher']
-      : typeof metadata['dc:publisher'] === 'object'
-        ? metadata['dc:publisher']['#text']
-        : undefined,
-    rights: metadata['dc:rights'] as string | undefined,
-    language: extractLanguage(metadata['dc:language']),
-    date: metadata['dc:date']
-      ? new Date(metadata['dc:date'])
-      : undefined,
-    subject: Array.isArray(metadata['dc:subject'])
-      ? metadata['dc:subject'] as string[]
-      : typeof metadata['dc:subject'] === 'string' ? [metadata['dc:subject']] as string[] : null,
-    creator: Array.isArray(creator)
-      ? creator[0]['#text']
-      : typeof creator === 'object'
-        ? creator['#text']
-        : creator,
-  }
-}
-
-const extractLanguage = (metadata?: undefined | null | string | { ['#text']?: string }): string | null => {
-  if (!metadata) return null
-
-  if (typeof metadata === 'string') return metadata
-
-  if (metadata['#text']) return metadata['#text']
-
-  return null
 }
 
 const downloadToTmpFolder = (ctx: Context, book: BookDocType, link: LinkDocType) => new Promise<{
