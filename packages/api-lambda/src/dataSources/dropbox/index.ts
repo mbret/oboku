@@ -83,7 +83,7 @@ export const dataSource: DataSource = {
         const data = response.result.entries
           .filter(entry =>
             entry['.tag'] === 'folder'
-            || READER_SUPPORTED_EXTENSIONS.some(extension => entry.name.endsWith(extension))
+            || READER_SUPPORTED_EXTENSIONS.some(extension => entry.name.toLowerCase().endsWith(extension))
           )
 
         if (response.result.has_more) {

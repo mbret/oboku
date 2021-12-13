@@ -25,3 +25,4 @@ export const COUCH_DB_URL = process.env.COUCH_DB_URL || 'https://api.oboku.me:59
 export const GOOGLE_BOOK_API_URL = 'https://www.googleapis.com/books/v1'
 
 export const AWS_API_URI = IS_PRODUCTION ? 'https://tbgjkqn0m5.execute-api.us-east-1.amazonaws.com/Prod' : 'http://host.docker.internal:4001'
+export const METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS = ['application/x-cbz', 'application/epub+zip', 'application/zip']

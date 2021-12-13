@@ -3,16 +3,17 @@ import * as path from 'path'
 import * as unzipper from 'unzipper'
 import { dataSourceFacade } from '../dataSources/facade'
 import * as parser from 'fast-xml-parser'
-import { BookDocType, LinkDocType, OPF, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from '@oboku/shared/src'
+import { BookDocType, LinkDocType, OPF } from '@oboku/shared/src'
 import { detectMimeTypeFromContent } from "../utils"
 import { PromiseReturnType } from "../types"
-import { COVER_MAXIMUM_SIZE_FOR_STORAGE, TMP_DIR } from '../constants'
+import { COVER_MAXIMUM_SIZE_FOR_STORAGE, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS, TMP_DIR } from '../constants'
 import { S3 } from 'aws-sdk'
 import sharp from 'sharp'
 import { extractMetadataFromName } from '@oboku/shared/src/directives'
 import { findByISBN } from './googleBooksApi'
 import axios from "axios"
 import { Logger } from '../Logger'
+import { saveCoverFromArchiveToBucket } from './saveCoverFromArchiveToBucket'
 
 const logger = Logger.namespace('retrieveMetadataAndSaveCover')
 
@@ -215,41 +216,6 @@ const saveCoverFromExternalLinkToBucket = async (ctx: Context, book: BookDocType
     Logger.log(`cover ${objectKey} has been saved/updated`)
   } catch (e) {
     console.error(e)
-  }
-}
-
-const saveCoverFromArchiveToBucket = async (ctx: Context, book: BookDocType, epubFilepath: string, folderBasePath: string, coverPath: string) => {
-  if (coverPath) {
-    const coverAbsolutePath = folderBasePath === `` ? coverPath : `${folderBasePath}/${coverPath}`
-    const objectKey = `cover-${ctx.userId}-${book._id}`
-
-    Logger.log(`prepare to save cover ${objectKey}`)
-
-    const zip = fs.createReadStream(epubFilepath).pipe(unzipper.Parse({ forceStream: true }))
-    for await (const entry of zip) {
-      if (entry.path === coverAbsolutePath) {
-        const entryAsBuffer = await entry.buffer() as Buffer
-        const resized = await sharp(entryAsBuffer)
-          .resize({
-            withoutEnlargement: true,
-            width: COVER_MAXIMUM_SIZE_FOR_STORAGE.width,
-            height: COVER_MAXIMUM_SIZE_FOR_STORAGE.height,
-            fit: 'inside'
-          })
-          .webp()
-          .toBuffer()
-
-        await s3.putObject({
-          Bucket: 'oboku-covers',
-          Body: resized,
-          Key: objectKey,
-        }).promise()
-
-        Logger.log(`cover ${objectKey} has been saved/updated`)
-      } else {
-        entry.autodrain()
-      }
-    }
   }
 }
 

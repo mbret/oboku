@@ -122,7 +122,7 @@ export const dataSource: DataSource = {
           file.trashed !== true
           && (
             isFolder(file)
-            || (READER_SUPPORTED_EXTENSIONS.includes(path.extname(file.name || '')))
+            || (READER_SUPPORTED_EXTENSIONS.includes(path.extname(file.name || ``).toLowerCase()))
           )
         )
         .map(async (file): Promise<SynchronizeAbleDataSource['items'][number]> => {
