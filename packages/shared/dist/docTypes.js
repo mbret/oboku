@@ -1,13 +1,6 @@
 "use strict";
 exports.__esModule = true;
-exports.extractDataSourceData = exports.isCollection = exports.isDataSource = exports.isLink = exports.isBook = exports.isTag = exports.ReadingStateState = exports.DataSourceType = void 0;
-var DataSourceType;
-(function (DataSourceType) {
-    DataSourceType["URI"] = "URI";
-    DataSourceType["DRIVE"] = "DRIVE";
-    DataSourceType["DROPBOX"] = "DROPBOX";
-    DataSourceType["FILE"] = "FILE";
-})(DataSourceType = exports.DataSourceType || (exports.DataSourceType = {}));
+exports.extractDataSourceData = exports.isCollection = exports.isDataSource = exports.isLink = exports.isBook = exports.isTag = exports.ReadingStateState = void 0;
 var ReadingStateState;
 (function (ReadingStateState) {
     ReadingStateState["Finished"] = "FINISHED";

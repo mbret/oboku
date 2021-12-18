@@ -1,3 +1,5 @@
+import { DataSourceType } from "./dataSources";
+
 export type LinkDocType = {
   _id: string;
   _rev: string;
@@ -27,13 +29,6 @@ export type LinkDocType = {
   modifiedAt: string | null
   createdAt: string
 };
-
-export enum DataSourceType {
-  URI = "URI",
-  DRIVE = "DRIVE",
-  DROPBOX = "DROPBOX",
-  FILE = 'FILE'
-}
 
 export type GoogleDriveDataSourceData = {
   applyTags: string[]
