@@ -24,7 +24,8 @@
     "tsc:web": "cd packages/web && yarn tsc",
     "tsc:shared": "cd packages/shared && yarn tsc",
     "tsc:api-lambda": "cd packages/api-lambda && yarn tsc",
-    "tsc": "concurrently -n tsc:web,tsc:shared,tsc:api-lambda \"yarn tsc:web\" \"yarn tsc:shared\" \"yarn tsc:api-lambda\""
+    "tsc": "concurrently -n tsc:web,tsc:shared,tsc:api-lambda \"yarn tsc:web\" \"yarn tsc:shared\" \"yarn tsc:api-lambda\"",
+    "test": "lerna exec --parallel -- yarn test"
   },
   "dependencies": {
     "concurrently": "^6.4.0",
@@ -32,7 +33,8 @@
   },
   "devDependencies": {
     "webpack-bundle-analyzer": "^4.5.0",
-    "webpack-node-externals": "^3.0.0"
+    "webpack-node-externals": "^3.0.0",
+    "lerna": "^4.0.0"
   },
   "resolutions": {
     "@types/react": "17.0.34"
