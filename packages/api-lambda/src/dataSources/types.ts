@@ -24,6 +24,7 @@ export type DataSourcePlugin = {
     size?: string,
     contentType?: string,
     name: string,
+    coverUrl?: string,
     shouldDownload: boolean
   }>
   download: (link: LinkDocType, credentials?: any) => Promise<{

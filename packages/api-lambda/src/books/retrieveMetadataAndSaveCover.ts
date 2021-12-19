@@ -6,12 +6,10 @@ import * as parser from 'fast-xml-parser'
 import { BookDocType, LinkDocType, OPF } from '@oboku/shared/src'
 import { detectMimeTypeFromContent } from "../utils"
 import { PromiseReturnType } from "../types"
-import { COVER_MAXIMUM_SIZE_FOR_STORAGE, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS, TMP_DIR } from '../constants'
+import { METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS, TMP_DIR } from '../constants'
 import { S3 } from 'aws-sdk'
-import sharp from 'sharp'
 import { extractDirectivesFromName } from '@oboku/shared/src/directives'
 import { findByISBN } from '../google/googleBooksApi'
-import axios from "axios"
 import { Logger } from '../Logger'
 import { saveCoverFromArchiveToBucket } from './saveCoverFromArchiveToBucket'
 import { NormalizedMetadata } from './types'
@@ -72,24 +70,29 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     let contentLength = 0
     let coverRelativePath: string | undefined
 
-    if (skipExtract && resourceDirectives.isbn) {
-      try {
-        const response = await findByISBN(resourceDirectives.isbn)
-        const googleMetadata = parseGoogleMetadata(response)
-        normalizedMetadata = {
-          ...normalizedMetadata,
-          ...googleMetadata
+    if (skipExtract) {
+      // isbn takes priority over anything else since the user wants to use it on purpose
+      if (resourceDirectives.isbn) {
+        try {
+          const response = await findByISBN(resourceDirectives.isbn)
+          const googleMetadata = parseGoogleMetadata(response)
+          normalizedMetadata = {
+            ...normalizedMetadata,
+            ...googleMetadata
+          }
+          if (Array.isArray(response.items) && response.items.length > 0) {
+            const item = response.items[0]
+            await saveCoverFromExternalLinkToBucket(ctx, ctx.book, item.volumeInfo.imageLinks.thumbnail.replace('zoom=1', 'zoom=2'))
+          }
+        } catch (e) {
+          console.error(e)
         }
-        if (Array.isArray(response.items) && response.items.length > 0) {
-          const item = response.items[0]
-          await saveCoverFromExternalLinkToBucket(ctx, ctx.book, item.volumeInfo.imageLinks.thumbnail.replace('zoom=1', 'zoom=2'))
+      } else {
+        if (metadataPreFetch.coverUrl) {
+          await saveCoverFromExternalLinkToBucket(ctx, ctx.book, metadataPreFetch.coverUrl)
         }
-      } catch (e) {
-        console.error(e)
       }
     }
-
-    // if (skipExtract && metadataPreFetch.)
     
     if (!skipExtract && typeof tmpFilePath === 'string') {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
