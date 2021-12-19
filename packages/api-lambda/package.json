@@ -44,7 +44,8 @@
     "compile": "mkdir -p dist && cp package-build.json dist/package.json && ts-node scripts/compile.ts",
     "compile:dev": "ts-node scripts/startDev.ts",
     "start:dev": "concurrently --kill-others -n webpack,api,lambda \"yarn compile:dev\" \"sam local start-api -p 4001 --host 0.0.0.0 --parameter-overrides Environment=DEV\" \"sam local start-lambda -p 4002 --parameter-overrides Environment=DEV\"",
-    "watch": "yarn start:dev"
+    "watch": "yarn start:dev",
+    "tsc": "tsc --noEmit true"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",

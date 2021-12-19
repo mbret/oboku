@@ -22,11 +22,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - uses: actions/checkout@v2
-      - name: install
+      - name: Install nodejs dependencies
         run: yarn
-      - name: tsc
+      - name: Run typescript for backend
         run: |
-          yarn tsc
+          yarn tsc:back
       - name: build & deploy
         run: |
           cd packages/api-lambda

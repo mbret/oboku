@@ -25,7 +25,8 @@
     "tsc:shared": "cd packages/shared && yarn tsc",
     "tsc:api-lambda": "cd packages/api-lambda && yarn tsc",
     "tsc": "concurrently -n tsc:web,tsc:shared,tsc:api-lambda \"yarn tsc:web\" \"yarn tsc:shared\" \"yarn tsc:api-lambda\"",
-    "test": "lerna exec --parallel -- yarn test"
+    "test": "lerna exec --parallel -- yarn test",
+    "tsc:back": "lerna exec --scope @oboku/api-lambda --scope @oboku/shared yarn tsc"
   },
   "dependencies": {
     "concurrently": "^6.4.0",
