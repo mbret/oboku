@@ -1,11 +1,10 @@
 import * as fs from 'fs'
 import * as unzipper from 'unzipper'
 import { BookDocType } from '@oboku/shared/src'
-import { COVER_MAXIMUM_SIZE_FOR_STORAGE } from '../constants'
 import { S3 } from 'aws-sdk'
-import sharp from 'sharp'
 import { Logger } from '../Logger'
 import { asError } from '../utils/asError'
+import { saveCoverFromBufferToBucket } from './saveCoverFromBufferToBucket'
 
 const logger = Logger.namespace('saveCoverFromArchiveToBucket')
 
@@ -33,21 +32,7 @@ export const saveCoverFromArchiveToBucket = async (ctx: Context, book: BookDocTy
       if (entry.path === coverAbsolutePath) {
         const entryAsBuffer = await entry.buffer() as Buffer
 
-        const resized = await sharp(entryAsBuffer)
-          .resize({
-            withoutEnlargement: true,
-            width: COVER_MAXIMUM_SIZE_FOR_STORAGE.width,
-            height: COVER_MAXIMUM_SIZE_FOR_STORAGE.height,
-            fit: 'inside'
-          })
-          .webp()
-          .toBuffer()
-
-        await s3.putObject({
-          Bucket: 'oboku-covers',
-          Body: resized,
-          Key: objectKey,
-        }).promise()
+        await saveCoverFromBufferToBucket(entryAsBuffer, objectKey)
 
         logger.log(`cover ${objectKey} has been saved/updated`)
       } else {

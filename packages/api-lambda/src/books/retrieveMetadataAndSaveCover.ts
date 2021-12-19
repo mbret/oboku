@@ -9,7 +9,7 @@ import { PromiseReturnType } from "../types"
 import { COVER_MAXIMUM_SIZE_FOR_STORAGE, METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS, TMP_DIR } from '../constants'
 import { S3 } from 'aws-sdk'
 import sharp from 'sharp'
-import { extractMetadataFromName } from '@oboku/shared/src/directives'
+import { extractDirectivesFromName } from '@oboku/shared/src/directives'
 import { findByISBN } from '../google/googleBooksApi'
 import axios from "axios"
 import { Logger } from '../Logger'
@@ -17,6 +17,7 @@ import { saveCoverFromArchiveToBucket } from './saveCoverFromArchiveToBucket'
 import { NormalizedMetadata } from './types'
 import { parseOpfMetadata } from './parseOpfMetadata'
 import { parseGoogleMetadata } from './parseGoogleMetadata'
+import { saveCoverFromExternalLinkToBucket } from './saveCoverFromExternalLinkToBucket'
 
 const logger = Logger.namespace('retrieveMetadataAndSaveCover')
 
@@ -45,16 +46,16 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     // in case some directive are needed to prevent downloading huge file.
     const metadataPreFetch = await dataSourceFacade.getMetadata(ctx.link, ctx.credentials)
 
-    const metadataFromName = extractMetadataFromName(metadataPreFetch.name)
+    const resourceDirectives = extractDirectivesFromName(metadataPreFetch.name)
 
     let normalizedMetadata: Partial<NormalizedMetadata> = {
       title: metadataPreFetch.name
     }
     let contentType = metadataPreFetch.contentType
-    let skipExtract = !!metadataFromName.isbn
+    let skipExtract = !metadataPreFetch.shouldDownload || !!resourceDirectives.isbn
 
     if (skipExtract) {
-      console.log(`syncMetadata processing ${ctx.book._id} will skip extract for isbn ${metadataFromName.isbn}`)
+      console.log(`syncMetadata processing ${ctx.book._id} will skip extract for resource ${ctx.book._id} with isbn ${resourceDirectives.isbn}`)
     }
 
     if (!skipExtract) {
@@ -71,9 +72,9 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     let contentLength = 0
     let coverRelativePath: string | undefined
 
-    if (skipExtract && metadataFromName.isbn) {
+    if (skipExtract && resourceDirectives.isbn) {
       try {
-        const response = await findByISBN(metadataFromName.isbn)
+        const response = await findByISBN(resourceDirectives.isbn)
         const googleMetadata = parseGoogleMetadata(response)
         normalizedMetadata = {
           ...normalizedMetadata,
@@ -88,6 +89,8 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
       }
     }
 
+    // if (skipExtract && metadataPreFetch.)
+    
     if (!skipExtract && typeof tmpFilePath === 'string') {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
       if (!contentType) {
@@ -185,39 +188,6 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
         await fs.promises.unlink(tmpFilePath)
       }
     } catch (e) { }
-  }
-}
-
-const saveCoverFromExternalLinkToBucket = async (ctx: Context, book: BookDocType, coverUrl: string) => {
-  const objectKey = `cover-${ctx.userId}-${book._id}`
-
-  Logger.log(`prepare to save cover ${objectKey}`)
-
-  try {
-    const response = await axios.get<ArrayBuffer>(coverUrl, {
-      responseType: 'arraybuffer'
-    })
-    const entryAsBuffer = Buffer.from(response.data)
-
-    const resized = await sharp(entryAsBuffer)
-      .resize({
-        withoutEnlargement: true,
-        width: COVER_MAXIMUM_SIZE_FOR_STORAGE.width,
-        height: COVER_MAXIMUM_SIZE_FOR_STORAGE.height,
-        fit: 'inside'
-      })
-      .webp()
-      .toBuffer()
-
-    await s3.putObject({
-      Bucket: 'oboku-covers',
-      Body: resized,
-      Key: objectKey,
-    }).promise()
-
-    Logger.log(`cover ${objectKey} has been saved/updated`)
-  } catch (e) {
-    console.error(e)
   }
 }
 

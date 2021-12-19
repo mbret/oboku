@@ -18,11 +18,13 @@ export type SynchronizeAbleDataSource = {
   items: SynchronizeAbleItem[]
 }
 
-export type DataSource = {
+export type DataSourcePlugin = {
+  type: DataSourceType,
   getMetadata: (link: LinkDocType, credentials?: any) => Promise<{
     size?: string,
     contentType?: string,
     name: string,
+    shouldDownload: boolean
   }>
   download: (link: LinkDocType, credentials?: any) => Promise<{
     stream: NodeJS.ReadableStream | Request,

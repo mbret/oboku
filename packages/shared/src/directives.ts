@@ -8,7 +8,7 @@ const BASE_DETECTION_REGEX = `\\[oboku\\~[^\\]]*\\]`
 * "foo [oboku~tags~bar]" -> { tags: ['bar'] }
 * "foo [oboku~tags~bar,bar2]" -> { tags: ['bar', 'bar2'] }
 */
-export const extractMetadataFromName = (resourceId: string): {
+export const extractDirectivesFromName = (resourceId: string): {
   isNotACollection: boolean,
   tags: string[],
   isIgnored: boolean,

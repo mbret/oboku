@@ -1,10 +1,10 @@
-import { DataSourceType, plugins } from '@oboku/shared/src'
+import { dataSourcePlugins } from '@oboku/shared/src'
 import request from 'request'
-import { DataSource } from '../types'
+import { DataSourcePlugin } from '../types'
 
 export type UriLinkData = { uri?: string }
 
-const UNIQUE_RESOURCE_ID = plugins[DataSourceType.URI].uniqueResourceIdentifier
+const UNIQUE_RESOURCE_ID = dataSourcePlugins.URI.uniqueResourceIdentifier
 
 const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`${UNIQUE_RESOURCE_ID}-`, ``)
 const extractNameFromUri = (resourceId: string) => {
@@ -12,11 +12,12 @@ const extractNameFromUri = (resourceId: string) => {
   return downloadLink.substring(downloadLink.lastIndexOf('/') + 1) || 'unknown'
 }
 
-export const dataSource: DataSource = {
+export const dataSource: DataSourcePlugin = {
+  ...dataSourcePlugins.URI,
   getMetadata: async (link) => {
     const filename = extractNameFromUri(link.resourceId)
 
-    return { name: filename }
+    return { name: filename, shouldDownload: true }
   },
   download: async (link) => {
     return new Promise(async (resolve, reject) => {
@@ -24,6 +25,8 @@ export const dataSource: DataSource = {
 
       return resolve({
         metadata: await dataSource.getMetadata(link),
+        // @todo request is deprecated, switch to something else
+        // @see https://github.com/request/request/issues/3143
         stream: request({ uri: downloadLink })
       })
     })

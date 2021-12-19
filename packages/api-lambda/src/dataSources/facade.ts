@@ -1,32 +1,30 @@
 import { DataSourceType, Errors, LinkDocType, ObokuSharedError } from "@oboku/shared/src"
-import { dataSource as googleDataSource } from "../dataSources/google"
-import { dataSource as dropboxDataSource } from "../dataSources/dropbox"
-import { dataSource as urlDataSource } from "../dataSources/link"
 import { createHelpers } from "./helpers"
 import { sync } from "./sync"
 import createNano from 'nano'
 import { atomicUpdate } from "../db/helpers"
+import { plugins } from "./plugins"
+
+const urlPlugin = plugins.find(({ type }) => type === DataSourceType.URI)
 
 export const dataSourceFacade = {
   getMetadata: async (link: LinkDocType, credentials?: any) => {
-    switch (link.type) {
-      case DataSourceType.DRIVE:
-        return googleDataSource.getMetadata(link, credentials)
-      case DataSourceType.DROPBOX:
-        return dropboxDataSource.getMetadata(link, credentials)
-      default:
-        return urlDataSource.getMetadata(link)
+    const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
+
+    if (plugin) {
+      return plugin.getMetadata(link, credentials)
     }
+
+    throw new Error(`No dataSource found for action`)
   },
   download: async (link: LinkDocType, credentials?: any) => {
-    switch (link.type) {
-      case DataSourceType.DRIVE:
-        return googleDataSource.download(link, credentials)
-      case DataSourceType.DROPBOX:
-        return dropboxDataSource.download(link, credentials)
-      default:
-        return urlDataSource.download(link)
+    const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
+
+    if (plugin) {
+      return plugin.download(link, credentials)
     }
+
+    throw new Error(`No dataSource found for action`)
   },
   sync: async ({ dataSourceId, userEmail, credentials, refreshBookMetadata, db, isBookCoverExist }: {
     dataSourceId: string,
@@ -60,21 +58,12 @@ export const dataSourceFacade = {
       // latest changes have been synced
       const lastSyncedAt = new Date().getTime()
       const ctx = { dataSourceId, userEmail, credentials, dataSourceType: type }
+      const plugin = plugins.find(({ type }) => type === type)
 
-      const runSync = () => {
-        switch (type) {
-          case DataSourceType.DRIVE:
-            return googleDataSource.sync(ctx, helpers)
-          case DataSourceType.DROPBOX:
-            return dropboxDataSource.sync(ctx, helpers)
-          default: { }
-        }
-      }
+      const synchronizeAbleDataSource = await plugin?.sync(ctx, helpers)
 
-      const syncable = await runSync()
-
-      if (syncable) {
-        await sync(syncable, ctx, helpers)
+      if (synchronizeAbleDataSource) {
+        await sync(synchronizeAbleDataSource, ctx, helpers)
       }
 
       await atomicUpdate(db, 'datasource', dataSourceId, old => ({

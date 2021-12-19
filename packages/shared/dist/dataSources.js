@@ -1,7 +1,7 @@
 "use strict";
 var _a;
 exports.__esModule = true;
-exports.dataSourcePlugins = exports.DataSourceType = void 0;
+exports.dataSourceHelpers = exports.extractIdFromResourceId = exports.generateResourceId = exports.dataSourcePlugins = exports.DataSourceType = void 0;
 var DataSourceType;
 (function (DataSourceType) {
     DataSourceType["URI"] = "URI";
@@ -12,16 +12,20 @@ var DataSourceType;
 })(DataSourceType = exports.DataSourceType || (exports.DataSourceType = {}));
 exports.dataSourcePlugins = (_a = {},
     _a[DataSourceType.DRIVE] = {
-        uniqueResourceIdentifier: 'drive'
+        uniqueResourceIdentifier: 'drive',
+        type: DataSourceType.DRIVE
     },
     _a[DataSourceType.DROPBOX] = {
-        uniqueResourceIdentifier: 'dropbox'
+        uniqueResourceIdentifier: 'dropbox',
+        type: DataSourceType.DROPBOX
     },
     _a[DataSourceType.FILE] = {
-        uniqueResourceIdentifier: 'oboku-file'
+        uniqueResourceIdentifier: 'oboku-file',
+        type: DataSourceType.FILE
     },
     _a[DataSourceType.URI] = {
-        uniqueResourceIdentifier: 'oboku-link'
+        uniqueResourceIdentifier: 'oboku-link',
+        type: DataSourceType.URI
     },
     _a[DataSourceType.NHENTAI] = {
         uniqueResourceIdentifier: 'nhentai',
@@ -30,3 +34,11 @@ exports.dataSourcePlugins = (_a = {},
         type: DataSourceType.NHENTAI
     },
     _a);
+var generateResourceId = function (uniqueResourceIdentifier, resourceId) { return uniqueResourceIdentifier + "-" + resourceId; };
+exports.generateResourceId = generateResourceId;
+var extractIdFromResourceId = function (uniqueResourceIdentifier, resourceId) { return resourceId.replace(uniqueResourceIdentifier + "-", ""); };
+exports.extractIdFromResourceId = extractIdFromResourceId;
+exports.dataSourceHelpers = {
+    generateResourceId: exports.generateResourceId,
+    extractIdFromResourceId: exports.extractIdFromResourceId
+};

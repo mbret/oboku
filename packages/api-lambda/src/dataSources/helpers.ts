@@ -4,7 +4,7 @@ import {
 } from '../db/helpers'
 import createNano from 'nano'
 import { InsertableBookDocType, SafeMangoQuery, Errors, ObokuSharedError } from "@oboku/shared/src"
-import { extractMetadataFromName } from '@oboku/shared/src/directives'
+import { extractDirectivesFromName } from '@oboku/shared/src/directives'
 
 export const createHelpers = (
   dataSourceId: string,
@@ -59,7 +59,7 @@ export const createHelpers = (
           return new ObokuSharedError(Errors.ERROR_DATASOURCE_UNKNOWN, previousError)
       }
     },
-    extractMetadataFromName,
+    extractMetadataFromName: extractDirectivesFromName,
     createTagFromName: (name: string, silent: boolean) => createTagFromName(db, name, silent)
   }
 

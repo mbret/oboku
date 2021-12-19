@@ -1,13 +1,13 @@
 import { BookDocType, GoogleDriveDataSourceData } from '@oboku/shared/src'
-import { DataSource, SynchronizeAbleDataSource } from "./types"
+import { DataSourcePlugin, SynchronizeAbleDataSource } from "./types"
 import { createHelpers } from "./helpers"
 import { difference, uniq } from "ramda"
 import { Logger } from "../Logger"
 
 const logger = Logger.namespace('sync')
 
-type Helpers = Parameters<DataSource['sync']>[1]
-type Context = Parameters<DataSource['sync']>[0]
+type Helpers = Parameters<DataSourcePlugin['sync']>[1]
+type Context = Parameters<DataSourcePlugin['sync']>[0]
 type SynchronizeAbleItem = SynchronizeAbleDataSource['items'][number]
 
 function isFolder(item: SynchronizeAbleDataSource | SynchronizeAbleItem): item is SynchronizeAbleItem {

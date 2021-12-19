@@ -9,7 +9,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 exports.__esModule = true;
-exports.removeDirectiveFromString = exports.extractMetadataFromName = void 0;
+exports.removeDirectiveFromString = exports.extractDirectivesFromName = void 0;
 var BASE_DETECTION_REGEX = "\\[oboku\\~[^\\]]*\\]";
 /**
 * Will extract any oboku normalized metadata that exist in the resource id string.
@@ -19,7 +19,7 @@ var BASE_DETECTION_REGEX = "\\[oboku\\~[^\\]]*\\]";
 * "foo [oboku~tags~bar]" -> { tags: ['bar'] }
 * "foo [oboku~tags~bar,bar2]" -> { tags: ['bar', 'bar2'] }
 */
-var extractMetadataFromName = function (resourceId) {
+var extractDirectivesFromName = function (resourceId) {
     var _a;
     var isNotACollection = false;
     var tags = [];
@@ -60,7 +60,7 @@ var extractMetadataFromName = function (resourceId) {
         isbn: isbn
     };
 };
-exports.extractMetadataFromName = extractMetadataFromName;
+exports.extractDirectivesFromName = extractDirectivesFromName;
 var removeDirectiveFromString = function (str) { return str
     .replace(new RegExp("( " + BASE_DETECTION_REGEX + ")+", 'ig'), '')
     .replace(new RegExp("(" + BASE_DETECTION_REGEX + " )+", 'ig'), '')

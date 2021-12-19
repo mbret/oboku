@@ -6,7 +6,7 @@
 * "foo [oboku~tags~bar]" -> { tags: ['bar'] }
 * "foo [oboku~tags~bar,bar2]" -> { tags: ['bar', 'bar2'] }
 */
-export declare const extractMetadataFromName: (resourceId: string) => {
+export declare const extractDirectivesFromName: (resourceId: string) => {
     isNotACollection: boolean;
     tags: string[];
     isIgnored: boolean;

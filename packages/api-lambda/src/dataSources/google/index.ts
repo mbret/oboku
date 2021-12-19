@@ -2,10 +2,10 @@
  * 401 credentials error
  * [{"domain":"global","reason":"authError","message":"Invalid Credentials","locationType":"header","location":"Authorization"}]
  */
-import { DataSource, SynchronizeAbleDataSource } from '../types'
+import { DataSourcePlugin, SynchronizeAbleDataSource } from '../types'
 import { authorize } from './helpers'
 import { drive_v3, google } from 'googleapis'
-import { GoogleDriveDataSourceData, READER_SUPPORTED_MIME_TYPES, READER_SUPPORTED_EXTENSIONS } from '@oboku/shared/src'
+import { GoogleDriveDataSourceData, READER_SUPPORTED_MIME_TYPES, READER_SUPPORTED_EXTENSIONS, dataSourcePlugins } from '@oboku/shared/src'
 import { configure } from './configure'
 import { createThrottler } from '../helpers'
 import path from 'path'
@@ -17,7 +17,8 @@ export const extractIdFromResourceId = (resourceId: string) => resourceId.replac
 
 const isFolder = (file: NonNullable<drive_v3.Schema$FileList['files']>[number]) => file.mimeType === 'application/vnd.google-apps.folder'
 
-export const dataSource: DataSource = {
+export const dataSource: DataSourcePlugin = {
+  ...dataSourcePlugins.DRIVE,
   getMetadata: async (link, credentials) => {
     const auth = await authorize({ credentials });
     const drive = google.drive({
@@ -33,6 +34,7 @@ export const dataSource: DataSource = {
     return {
       name: metadata.name || '',
       contentType: metadata.mimeType || undefined,
+      shouldDownload: true
     }
   },
   download: async (link, credentials) => {
