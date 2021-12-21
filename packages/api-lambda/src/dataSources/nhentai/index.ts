@@ -26,7 +26,15 @@ export const plugin: DataSourcePlugin = {
      * website for cover on the gallery home and is usually resized. We want to use the <a> in order to work with the original size.
      * We get something like `/g/1235/1/`
      */
-    const coverUrl = `${BASE_URI}${$(`#cover a`).attr().href}`
+    const coverPageUrl = `${BASE_URI}${$(`#cover a`).attr().href}`
+
+    /**
+     * Then we parse the cover page url and retrieve the original raw file link
+     */
+    const coverPageResponse = await fetch(coverPageUrl)
+    const coverPage$ = load(await coverPageResponse.text())
+
+    const coverUrl = coverPage$(`#image-container img`).attr().src
 
     return {
       name: title,

@@ -12,7 +12,7 @@ type Context = {
 
 const s3 = new S3()
 
-export const saveCoverFromExternalLinkToBucket = async (ctx: Context, book: BookDocType, coverUrl: string) => {
+export const saveCoverFromExternalLinkToBucket = async (ctx: Context, book: Pick<BookDocType, `_id`>, coverUrl: string) => {
   const objectKey = `cover-${ctx.userId}-${book._id}`
 
   logger.log(`prepare to save cover ${objectKey}`)
