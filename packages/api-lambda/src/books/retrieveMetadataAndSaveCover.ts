@@ -63,7 +63,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
       contentType = metadata.contentType || contentType
     }
 
-    console.log(`syncMetadata processing ${ctx.book._id}`, tmpFilePath, normalizedMetadata, contentType)
+    console.log(`syncMetadata processing ${ctx.book._id}`, tmpFilePath, { metadataPreFetch, normalizedMetadata }, contentType)
 
     // ``, `META-INF`, `FOO/BAR`
     let opfBasePath = ''
@@ -93,7 +93,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
         }
       }
     }
-    
+
     if (!skipExtract && typeof tmpFilePath === 'string') {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
       if (!contentType) {
