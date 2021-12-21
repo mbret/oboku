@@ -17,6 +17,7 @@ __exportStar(require("./docTypes"), exports);
 __exportStar(require("./epub"), exports);
 __exportStar(require("./constants"), exports);
 __exportStar(require("./dataSources"), exports);
+__exportStar(require("./sorting"), exports);
 var validators = require("./validators");
 exports.validators = validators;
 __exportStar(require("./errors"), exports);
