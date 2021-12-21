@@ -4,7 +4,7 @@ import { Logger } from '../Logger'
 import axios from 'axios'
 import { saveCoverFromBufferToBucket } from './saveCoverFromBufferToBucket'
 
-const logger = Logger.namespace('saveCoverFromArchiveToBucket')
+const logger = Logger.namespace('saveCoverFromExternalLinkToBucket')
 
 type Context = {
   userId: string,
