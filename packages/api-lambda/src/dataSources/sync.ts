@@ -30,7 +30,7 @@ export const sync = async (
 }
 
 const getItemTags = (item: SynchronizeAbleDataSource | SynchronizeAbleItem, helpers: Helpers): string[] => {
-  const metadataForFolder = helpers.extractMetadataFromName(item.name)
+  const metadataForFolder = helpers.extractDirectivesFromName(item.name)
 
   const subTagsAsMap = ((item.items || []).map(subItem => {
     return getItemTags(subItem, helpers)
@@ -71,7 +71,7 @@ const syncFolder = async ({ ctx, helpers, hasCollectionAsParent, item, lvl, pare
   item: SynchronizeAbleDataSource | SynchronizeAbleItem,
   parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
 }) => {
-  const metadataForFolder = helpers.extractMetadataFromName(item.name)
+  const metadataForFolder = helpers.extractDirectivesFromName(item.name)
   // logger.log(`syncFolder ${item.name}: metadata `, metadataForFolder)
 
   const isCollection = isFolder(item) && !hasCollectionAsParent && lvl > 0 && !metadataForFolder.isNotACollection
@@ -122,8 +122,8 @@ const createOrUpdateBook = async ({ ctx: { dataSourceType }, helpers, parents, i
 }) => {
   try {
     // logger.log(`createOrUpdateBook "${item.name}":`, item.resourceId)
-    const parentTagNames = parents.reduce((tags: string[], parent) => [...tags, ...helpers.extractMetadataFromName(parent.name).tags], [])
-    const metadata = helpers.extractMetadataFromName(item.name)
+    const parentTagNames = parents.reduce((tags: string[], parent) => [...tags, ...helpers.extractDirectivesFromName(parent.name).tags], [])
+    const metadata = helpers.extractDirectivesFromName(item.name)
     const parentFolders = parents.filter(parent => isFolder(parent)) as SynchronizeAbleItem[]
     const existingLink = await helpers.findOne('link', { selector: { resourceId: item.resourceId } })
 

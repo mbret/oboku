@@ -59,7 +59,7 @@ export const createHelpers = (
           return new ObokuSharedError(Errors.ERROR_DATASOURCE_UNKNOWN, previousError)
       }
     },
-    extractMetadataFromName: extractDirectivesFromName,
+    extractDirectivesFromName,
     createTagFromName: (name: string, silent: boolean) => createTagFromName(db, name, silent)
   }
 
