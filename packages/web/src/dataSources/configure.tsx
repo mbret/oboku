@@ -8,6 +8,7 @@ import { DataSourceType } from "@oboku/shared"
 import { useGetCredentials as useGetDropboxCredentials } from "./dropbox/helpers"
 import * as googlePlugin from "./google"
 import * as dropboxPlugin from "./dropbox"
+import { plugin as nhentai } from "./nhentai"
 import linkPlugin from "./link"
 import { ObokuDataSourcePlugin } from "./types"
 import { SvgIcon } from "@material-ui/core"
@@ -51,4 +52,5 @@ export const configureDataSources = () => {
   })
 
   plugins.push(linkPlugin)
+  plugins.push(nhentai)
 }
