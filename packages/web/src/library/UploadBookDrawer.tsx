@@ -2,12 +2,15 @@ import { FC } from 'react';
 import { Drawer, List, ListItem, ListItemText, ListItemIcon } from '@material-ui/core';
 import { SdStorageRounded } from '@material-ui/icons';
 import { useDataSourcePlugins } from '../dataSources/helpers';
+import { useRecoilValue } from 'recoil';
+import { localSettingsState } from '../settings/states';
 
 export const UploadBookDrawer: FC<{
   open: boolean,
   onClose: (type?: 'device' | ReturnType<typeof useDataSourcePlugins>[number]['type'] | undefined) => void
 }> = ({ open, onClose }) => {
   const dataSourcePlugins = useDataSourcePlugins()
+  const { showSensitiveDataSources } = useRecoilValue(localSettingsState)
 
   return (
     <>
@@ -30,18 +33,20 @@ export const UploadBookDrawer: FC<{
               </ListItemIcon>
               <ListItemText primary="From device" />
             </ListItem>
-            {dataSourcePlugins.filter(({ UploadComponent, sensitive }) => !!UploadComponent && sensitive !== true).map(dataSource => (
-              <ListItem
-                button
-                onClick={() => onClose(dataSource.type)}
-                key={dataSource.type}
-              >
-                <ListItemIcon>
-                  {dataSource.Icon && <dataSource.Icon />}
-                </ListItemIcon>
-                <ListItemText primary={`From ${dataSource.name}`} />
-              </ListItem>
-            ))}
+            {dataSourcePlugins
+              .filter(({ UploadComponent, sensitive }) => !!UploadComponent && (showSensitiveDataSources ? true : sensitive !== true))
+              .map(dataSource => (
+                <ListItem
+                  button
+                  onClick={() => onClose(dataSource.type)}
+                  key={dataSource.type}
+                >
+                  <ListItemIcon>
+                    {dataSource.Icon && <dataSource.Icon />}
+                  </ListItemIcon>
+                  <ListItemText primary={`From ${dataSource.name}`} />
+                </ListItem>
+              ))}
           </List>
         </div>
       </Drawer >

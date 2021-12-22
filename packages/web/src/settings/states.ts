@@ -13,6 +13,7 @@ const localSettingsStateDefaultValues = {
   unBlurWhenProtectedVisible: false,
   hideDirectivesFromCollectionName: true,
   showCollectionWithProtectedContent: 'unlocked' as const,
+  showSensitiveDataSources: false
 }
 
 export const localSettingsState = atom<{
@@ -22,6 +23,7 @@ export const localSettingsState = atom<{
   unBlurWhenProtectedVisible: boolean,
   hideDirectivesFromCollectionName: boolean,
   showCollectionWithProtectedContent: 'unlocked' | 'hasNormalContent',
+  showSensitiveDataSources: boolean,
 }>({
   key: 'localSettingsState',
   default: localSettingsStateDefaultValues

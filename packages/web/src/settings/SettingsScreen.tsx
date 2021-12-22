@@ -44,6 +44,23 @@ export const SettingsScreen = () => {
               {localSettings.hideDirectivesFromCollectionName ? <CheckCircleRounded /> : <RadioButtonUncheckedOutlined />}
             </ListItemSecondaryAction>
           </ListItem>
+        </List>
+        <List >
+          <ListSubheader disableSticky>Privacy & sensitive content</ListSubheader>
+          <ListItem
+            button
+            onClick={() => {
+              setLocalSettings(old => ({ ...old, showSensitiveDataSources: !old.showSensitiveDataSources }))
+            }}
+          >
+            <ListItemText
+              primary="Show sensitive data sources"
+              secondary="Some data sources deal with sensitive content or website and are hidden by default"
+            />
+            <ListItemSecondaryAction>
+              {localSettings.showSensitiveDataSources ? <CheckCircleRounded /> : <RadioButtonUncheckedOutlined />}
+            </ListItemSecondaryAction>
+          </ListItem>
           <ListItem
             button
             onClick={() => {
@@ -54,9 +71,6 @@ export const SettingsScreen = () => {
               primary="Show collections with protected content"
               secondary={showCollectionWithProtectedContentLabels[localSettings.showCollectionWithProtectedContent]} />
           </ListItem>
-        </List>
-        <List >
-          <ListSubheader disableSticky>Privacy</ListSubheader>
           <ListItem
             button
             onClick={() => {
