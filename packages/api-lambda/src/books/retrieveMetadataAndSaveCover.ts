@@ -47,7 +47,10 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     const resourceDirectives = extractDirectivesFromName(metadataPreFetch.name)
 
     let normalizedMetadata: Partial<NormalizedMetadata> = {
-      title: metadataPreFetch.name
+      title: metadataPreFetch.name,
+      creator: (metadataPreFetch.creators || [])[0],
+      language: (metadataPreFetch.languages || [])[0],
+      subject: metadataPreFetch.subjects
     }
     let contentType = metadataPreFetch.contentType
     let skipExtract = !metadataPreFetch.shouldDownload || !!resourceDirectives.isbn

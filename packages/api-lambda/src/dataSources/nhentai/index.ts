@@ -21,6 +21,38 @@ export const plugin: DataSourcePlugin = {
      * first h1.title contains title. There can be several title such as original japanese one but will usually be inside h2 or others
      */
     const title = $(`h1.title`).text()
+
+    let languages: string[] = []
+    let creators: string[] = []
+    let subjects: string[] = []
+
+    $(`.tag-container.field-name`).contents().each((_, e) => {
+      // #text
+      if (e.nodeType === 3) {
+        const label = $(e).text().trim()
+        switch (label) {
+          case `Languages:`: {
+            $(e).next(`.tags`).find(`.name`).each((_, spanNode) => {
+              languages.push($(spanNode).text())
+            })
+            break
+          }
+          case `Artists:`: {
+            $(e).next(`.tags`).find(`.name`).each((_, spanNode) => {
+              creators.push($(spanNode).text())
+            })
+            break
+          }
+          case `Tags:`: {
+            $(e).next(`.tags`).find(`.name`).each((_, spanNode) => {
+              subjects.push($(spanNode).text())
+            })
+            break
+          }
+          default:
+        }
+      }
+    })
     /**
      * there are both <a> and <img> inside. The a link target the 1 item of the book and is original size. The <img> is used by the
      * website for cover on the gallery home and is usually resized. We want to use the <a> in order to work with the original size.
@@ -38,6 +70,9 @@ export const plugin: DataSourcePlugin = {
 
     return {
       name: title,
+      languages,
+      creators,
+      subjects,
       coverUrl,
       /**
        * we have nothing to download.

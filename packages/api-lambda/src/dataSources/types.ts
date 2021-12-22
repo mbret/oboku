@@ -24,6 +24,9 @@ export type DataSourcePlugin = {
     size?: string,
     contentType?: string,
     name: string,
+    languages?: string[],
+    subjects?: string[],
+    creators?: string[],
     coverUrl?: string,
     shouldDownload: boolean
   }>
