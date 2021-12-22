@@ -62,6 +62,8 @@ export const applyHooks = (db: Database) => {
       })
     }))
 
+    // Update all the tags that are referenced by this book but are
+    // not yet linked
     const tagsFromWhichToAddBook = await db.tag.find({
       selector: {
         books: {
