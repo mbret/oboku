@@ -31,7 +31,8 @@ exports.dataSourcePlugins = (_a = {},
         uniqueResourceIdentifier: 'nhentai',
         name: "nhentai",
         synchronizable: false,
-        type: DataSourceType.NHENTAI
+        type: DataSourceType.NHENTAI,
+        sensitive: true
     },
     _a);
 var generateResourceId = function (uniqueResourceIdentifier, resourceId) { return uniqueResourceIdentifier + "-" + resourceId; };

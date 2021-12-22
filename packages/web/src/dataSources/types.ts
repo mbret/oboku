@@ -1,4 +1,4 @@
-import { DataSourceType, LinkDocType } from "@oboku/shared";
+import { DataSourcePlugin, LinkDocType } from "@oboku/shared";
 
 type Item = {
   resourceId: string
@@ -9,11 +9,7 @@ type SelectionError = {
   originalError?: any
 }
 
-export type ObokuDataSourcePlugin = {
-  uniqueResourceIdentifier: string
-  type: DataSourceType
-  synchronizable: boolean,
-  name: string
+export type ObokuDataSourcePlugin = DataSourcePlugin & {
   Icon?: React.FunctionComponent<{}>
   UploadComponent?: React.FunctionComponent<{
     onClose: (bookToAdd?: { resourceId: string, tags?: string[] }) => void,

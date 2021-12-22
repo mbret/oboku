@@ -5,29 +5,15 @@ export declare enum DataSourceType {
     FILE = "FILE",
     NHENTAI = "NHENTAI"
 }
+export declare type DataSourcePlugin = {
+    uniqueResourceIdentifier: string;
+    name?: string;
+    synchronizable?: boolean;
+    type: DataSourceType;
+    sensitive?: boolean;
+};
 export declare const dataSourcePlugins: {
-    DRIVE: {
-        uniqueResourceIdentifier: string;
-        type: DataSourceType;
-    };
-    DROPBOX: {
-        uniqueResourceIdentifier: string;
-        type: DataSourceType;
-    };
-    FILE: {
-        uniqueResourceIdentifier: string;
-        type: DataSourceType;
-    };
-    URI: {
-        uniqueResourceIdentifier: string;
-        type: DataSourceType;
-    };
-    NHENTAI: {
-        uniqueResourceIdentifier: string;
-        name: string;
-        synchronizable: boolean;
-        type: DataSourceType;
-    };
+    [key in DataSourceType]: DataSourcePlugin;
 };
 export declare const generateResourceId: (uniqueResourceIdentifier: string, resourceId: string) => string;
 export declare const extractIdFromResourceId: (uniqueResourceIdentifier: string, resourceId: string) => string;

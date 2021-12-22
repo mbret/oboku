@@ -6,7 +6,15 @@ export enum DataSourceType {
   NHENTAI = `NHENTAI`
 }
 
-export const dataSourcePlugins = {
+export type DataSourcePlugin = {
+  uniqueResourceIdentifier: string,
+  name?: string,
+  synchronizable?: boolean,
+  type: DataSourceType,
+  sensitive?: boolean
+}
+
+export const dataSourcePlugins: { [key in DataSourceType]: DataSourcePlugin } = {
   [DataSourceType.DRIVE]: {
     uniqueResourceIdentifier: 'drive',
     type: DataSourceType.DRIVE
@@ -27,7 +35,8 @@ export const dataSourcePlugins = {
     uniqueResourceIdentifier: 'nhentai',
     name: `nhentai`,
     synchronizable: false,
-    type: DataSourceType.NHENTAI
+    type: DataSourceType.NHENTAI,
+    sensitive: true
   },
 }
 
