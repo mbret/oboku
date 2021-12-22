@@ -1,6 +1,6 @@
 import { atom, selector, selectorFamily } from "recoil"
 import { TagsDocType } from "@oboku/shared"
-import { bookIdsState } from "../books/states"
+// import { bookIdsState } from "../books/states"
 
 export const normalizedTagsState = atom<Record<string, TagsDocType | undefined>>({
   key: 'tagsState',
@@ -11,13 +11,13 @@ export const tagState = selectorFamily({
   key: 'tagState',
   get: (id: string) => ({ get }) => {
     const tag = get(normalizedTagsState)[id]
-    const bookIds = get(bookIdsState)
+    // const bookIds = get(bookIdsState)
 
     if (!tag) return undefined
 
     return {
       ...tag,
-      books: tag.books.filter(id => bookIds.includes(id))
+      // books: tag.books.filter(id => bookIds.includes(id))
     }
   },
 })
