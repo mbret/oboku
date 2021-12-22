@@ -30,14 +30,14 @@ export const UploadBookDrawer: FC<{
               </ListItemIcon>
               <ListItemText primary="From device" />
             </ListItem>
-            {dataSourcePlugins.map(dataSource => (
+            {dataSourcePlugins.filter(({ UploadComponent }) => !!UploadComponent).map(dataSource => (
               <ListItem
                 button
                 onClick={() => onClose(dataSource.type)}
                 key={dataSource.type}
               >
                 <ListItemIcon>
-                  <dataSource.Icon />
+                  {dataSource.Icon && <dataSource.Icon />}
                 </ListItemIcon>
                 <ListItemText primary={`From ${dataSource.name}`} />
               </ListItem>

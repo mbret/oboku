@@ -1,5 +1,5 @@
 import { useAxiosClient } from "../axiosClient"
-import { BookDocType, DataSourceType, ReadingStateState } from '@oboku/shared'
+import { BookDocType, DataSourceType, ReadingStateState, sortByTitleComparator } from '@oboku/shared'
 import { useRxMutation } from "../rxdb/hooks"
 import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
@@ -11,12 +11,12 @@ import { PromiseReturnType } from "../types"
 import { useRecoilValue } from "recoil"
 import { normalizedBooksState, Book } from "./states"
 import * as R from 'ramda';
-import { sortByTitleComparator } from '@oboku/shared/dist/sorts'
 import { AtomicUpdateFunction } from "rxdb"
 import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
 import { useDialogManager } from "../dialog"
 import { useSync } from "../rxdb/useSync"
+import { filter } from 'ramda'
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -156,16 +156,15 @@ export const useAddBook = () => {
 
   type Return = { book: PromiseReturnType<NonNullable<typeof database>['book']['post']>, link: PromiseReturnType<NonNullable<typeof database>['link']['safeInsert']> }
 
-  const addBook = async ({
-    book,
-    link
-  }: {
+  const addBook = async ({ book, link }: {
     book?: Partial<Parameters<NonNullable<typeof database>['book']['post']>[0]>
     link: Parameters<NonNullable<typeof database>['link']['safeInsert']>[0]
   }): Promise<Return | undefined> => {
     try {
       if (database) {
         const linkAdded = await database.link.safeInsert(link)
+
+        const { tags, ...rest } = book || {}
         const newBook = await database.book.post({
           lastMetadataUpdatedAt: null,
           lastMetadataUpdateError: null,
@@ -177,7 +176,7 @@ export const useAddBook = () => {
           readingStateCurrentState: ReadingStateState.NotStarted,
           createdAt: Date.now(),
           lang: null,
-          tags: [],
+          tags: tags || [],
           links: [linkAdded.primary],
           date: null,
           publisher: null,
@@ -187,7 +186,7 @@ export const useAddBook = () => {
           collections: [],
           modifiedAt: null,
           isAttachedToDataSource: false,
-          ...book,
+          ...rest,
         })
         refreshMetadata(newBook._id)
 

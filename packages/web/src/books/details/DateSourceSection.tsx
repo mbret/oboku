@@ -34,7 +34,7 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
             }}
           >
             <ListItemIcon>
-              <dataSourcePlugin.Icon />
+              {dataSourcePlugin.Icon && <dataSourcePlugin.Icon />}
             </ListItemIcon>
             <ListItemText
               primary={`${dataSourcePlugin?.name}`}

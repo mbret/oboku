@@ -92,8 +92,12 @@ export const BookDetailsScreen = () => {
           <Typography variant="body2" >{book?.publisher}</Typography>
         </Box>
         <Box display="flex" flexDirection="row" alignItems="center">
+          <Typography variant="body1" >Creator:&nbsp;</Typography>
+          <Typography variant="body2" >{book?.creator}</Typography>
+        </Box>
+        <Box display="flex" flexDirection="row" alignItems="center">
           <Typography variant="body1" >Genre:&nbsp;</Typography>
-          <Typography variant="body2" >{book?.subject}</Typography>
+          <Typography variant="body2" >{book?.subject?.join(`, `)}</Typography>
         </Box>
         <Box display="flex" flexDirection="row" alignItems="center">
           <Typography variant="body1" >Language:&nbsp;</Typography>

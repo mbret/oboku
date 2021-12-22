@@ -6,7 +6,7 @@ import { Report } from "../debug/report"
 import { useRecoilCallback } from "recoil"
 import { plugins } from "./configure"
 import { useCallback, useMemo, useRef } from "react"
-import { UseDownloadHook } from "./types"
+import { ObokuDataSourcePlugin, UseDownloadHook } from "./types"
 import { useDialogManager } from "../dialog"
 import { useNetworkState } from "react-use"
 import { useSync } from "../rxdb/useSync"
@@ -85,7 +85,9 @@ export const useAtomicUpdateDataSource = () => {
   return [updater] as [typeof updater]
 }
 
-export const useDataSourceHelpers = (id: typeof plugins[number]['uniqueResourceIdentifier']) => {
+export const useDataSourceHelpers = (idOrObj: typeof plugins[number]['uniqueResourceIdentifier'] | { uniqueResourceIdentifier: string }) => {
+  const id = typeof idOrObj === `string` ? idOrObj : idOrObj.uniqueResourceIdentifier
+
   return useMemo(() => ({
     generateResourceId: (resourceId: string) => `${id}-${resourceId}`,
     extractIdFromResourceId: (resourceId: string) => resourceId.replace(`${id}-`, ``)
@@ -100,9 +102,9 @@ export const useGetDataSourceCredentials = () => {
 
   // It's important to use array for plugins and be careful of the order since
   // it will trigger all hooks
-  type GetCredentials = ReturnType<typeof plugins[number]['useGetCredentials']>
+  type GetCredentials = ReturnType<NonNullable<ObokuDataSourcePlugin[`useGetCredentials`]>> | undefined
   const getPluginCredentials = useRef<(Pick<typeof plugins[number], 'type'> & { getCredentials: GetCredentials })[]>([])
-  getPluginCredentials.current = plugins.map(plugin => ({ type: plugin.type, getCredentials: plugin.useGetCredentials() }))
+  getPluginCredentials.current = plugins.map(plugin => ({ type: plugin.type, getCredentials: plugin.useGetCredentials && plugin.useGetCredentials() }))
 
   return useCallback(async (linkType: DataSourceType) => {
     if (linkType === DataSourceType.FILE) {
@@ -111,7 +113,7 @@ export const useGetDataSourceCredentials = () => {
 
     const found = getPluginCredentials.current.find(plugin => plugin.type === linkType)
     if (found) {
-      const res = await found.getCredentials()
+      const res = found.getCredentials ? await found.getCredentials() : { data: {} }
 
       if ('isError' in res && res.reason === 'popupBlocked') {
         dialog({
@@ -136,13 +138,16 @@ export const useDownloadBookFromDataSource = () => {
 
   // It's important to use array for plugins and be careful of the order since
   // it will trigger all hooks
-  type UseDownloadBook = ReturnType<typeof plugins[number]['useDownloadBook']>
+  type UseDownloadBook = ReturnType<NonNullable<ObokuDataSourcePlugin[`useDownloadBook`]>> | undefined
   const getPluginFn = useRef<(Pick<typeof plugins[number], 'type'> & { downloadBook: UseDownloadBook })[]>([])
-  getPluginFn.current = plugins.map(plugin => ({ type: plugin.type, downloadBook: plugin.useDownloadBook() }))
+  getPluginFn.current = plugins.map(plugin => ({ type: plugin.type, downloadBook: plugin.useDownloadBook && plugin.useDownloadBook() }))
 
   const downloadBook: ReturnType<UseDownloadHook> = async (link, options) => {
     const found = getPluginFn.current.find(plugin => plugin.type === link.type)
     if (found) {
+      if (!found.downloadBook) {
+        throw new Error('this datasource cannot download')
+      }
       const res = await found.downloadBook(link, options)
 
       if ('isError' in res && res.reason === 'popupBlocked') {
@@ -164,7 +169,7 @@ export const useDownloadBookFromDataSource = () => {
   return useCallback(downloadBook, [getPluginFn, dialog])
 }
 
-export const useDataSourcePlugin = (type?: DataSourceType) => plugins.find(plugin => plugin.type === type)
+export const useDataSourcePlugin = (type?: DataSourceType) => useMemo(() => plugins.find(plugin => plugin.type === type), [type])
 
 export const useRemoveBookFromDataSource = () => {
   const plugins = useDataSourcePlugins()

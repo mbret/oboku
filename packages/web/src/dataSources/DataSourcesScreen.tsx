@@ -53,7 +53,7 @@ export const DataSourcesScreen = () => {
                 {dataSource && (
                   <ListItemIcon>
                     <SvgIcon >
-                      <dataSource.Icon />
+                      {dataSource.Icon && <dataSource.Icon />}
                     </SvgIcon>
                   </ListItemIcon>
                 )}

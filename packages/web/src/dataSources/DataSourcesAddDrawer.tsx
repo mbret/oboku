@@ -1,6 +1,6 @@
 import { Drawer, ListItem, List, ListItemIcon, ListItemText } from "@material-ui/core";
 import { DataSourceType } from "@oboku/shared";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useDataSourcePlugins } from "./helpers";
 
 export const DataSourcesAddDrawer: FC<{
@@ -23,7 +23,7 @@ export const DataSourcesAddDrawer: FC<{
             {dataSourcesPlugins.map(dataSource => (
               <ListItem button onClick={() => onClose(dataSource.type)} key={dataSource.type}>
                 <ListItemIcon>
-                  <dataSource.Icon />
+                  {dataSource.Icon && <dataSource.Icon />}
                 </ListItemIcon>
                 <ListItemText primary={`From ${dataSource.name}`} />
               </ListItem>

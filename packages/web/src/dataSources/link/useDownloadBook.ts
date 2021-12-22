@@ -1,10 +1,10 @@
 import { useDataSourceHelpers } from "../helpers"
 import axios from "axios"
 import { useCallback } from "react"
-import { DataSourceType, plugins } from "@oboku/shared"
+import { DataSourceType, dataSourcePlugins } from "@oboku/shared"
 
 export const useDownloadBook = () => {
-  const { extractIdFromResourceId } = useDataSourceHelpers(plugins[DataSourceType.URI].uniqueResourceIdentifier)
+  const { extractIdFromResourceId } = useDataSourceHelpers(dataSourcePlugins[DataSourceType.URI].uniqueResourceIdentifier)
 
   return useCallback(async (link, options) => {
     const downloadLink = extractIdFromResourceId(link.resourceId)

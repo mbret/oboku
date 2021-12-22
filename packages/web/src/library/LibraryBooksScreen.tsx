@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { BookList } from '../books/bookList/BookList';
 import {
   Button,
@@ -14,7 +14,6 @@ import { isUploadBookDrawerOpenedState, libraryState } from './states';
 import { booksAsArrayState } from '../books/states';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { UploadBookDrawer } from './UploadBookDrawer';
-import { useDataSourcePlugins } from '../dataSources/helpers';
 import { useBooksSortedBy } from '../books/helpers';
 import { SortByDialog } from '../books/bookList/SortByDialog';
 import { isUploadBookFromDeviceOpenedFromState } from '../upload/state';
@@ -23,6 +22,7 @@ import { localSettingsState } from '../settings/states';
 import { useCallback } from 'react';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next'
+import { DataSourceType } from '@oboku/shared';
 
 export const LibraryBooksScreen = () => {
   const styles = useStyles();
@@ -33,9 +33,8 @@ export const LibraryBooksScreen = () => {
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const setIsUploadBookFromDeviceOpened = useSetRecoilState(isUploadBookFromDeviceOpenedFromState)
   const localSettings = useRecoilValue(localSettingsState)
-  const [isUploadBookFromDataSourceDialogOpened, setIsUploadBookFromDataSourceDialogOpened] = useState<ReturnType<typeof useDataSourcePlugins>[number] | undefined>(undefined)
+  const [isUploadBookFromDataSourceDialogOpened, setIsUploadBookFromDataSourceDialogOpened] = useState<DataSourceType | undefined>(undefined)
   const setLibraryState = useSetRecoilState(libraryState)
-  const dataSourcePlugins = useDataSourcePlugins()
   const library = useRecoilValue(libraryState)
   let numberOfFiltersApplied = 0
   if ((library?.tags.length || 0) > 0) numberOfFiltersApplied++
@@ -66,6 +65,8 @@ export const LibraryBooksScreen = () => {
   const bookListRenderHeader = useCallback(() => listHeader, [listHeader])
 
   const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
+
+  useEffect(() => () => setIsUploadBookDrawerOpened(false), [setIsUploadBookDrawerOpened])
 
   return (
     <div
@@ -171,7 +172,12 @@ export const LibraryBooksScreen = () => {
             renderHeader={bookListRenderHeader}
           />
         )}
-        {isUploadBookFromDataSourceDialogOpened && <UploadBookFromDataSource openWith={isUploadBookFromDataSourceDialogOpened} onClose={() => setIsUploadBookFromDataSourceDialogOpened(undefined)} />}
+        {isUploadBookFromDataSourceDialogOpened && (
+          <UploadBookFromDataSource
+            openWith={isUploadBookFromDataSourceDialogOpened}
+            onClose={() => setIsUploadBookFromDataSourceDialogOpened(undefined)}
+          />
+        )}
         <SortByDialog
           value={library.sorting}
           onClose={() => setIsSortingDialogOpened(false)}
@@ -181,19 +187,19 @@ export const LibraryBooksScreen = () => {
           }}
         />
         <LibraryFiltersDrawer open={isFiltersDrawerOpened} onClose={() => setIsFiltersDrawerOpened(false)} />
-        <UploadBookDrawer open={isUploadBookDrawerOpened} onClose={(type) => {
-          setIsUploadBookDrawerOpened(false)
-          switch (type) {
-            case 'device':
-              setIsUploadBookFromDeviceOpened('local')
-              break
-            default:
-              const dataSource = dataSourcePlugins.find((dataSource) => type === dataSource.type)
-              if (dataSource) {
-                setIsUploadBookFromDataSourceDialogOpened(dataSource)
-              }
-          }
-        }} />
+        <UploadBookDrawer
+          open={isUploadBookDrawerOpened}
+          onClose={(type) => {
+            setIsUploadBookDrawerOpened(false)
+            switch (type) {
+              case 'device':
+                setIsUploadBookFromDeviceOpened('local')
+                break
+              default:
+                setIsUploadBookFromDataSourceDialogOpened(type)
+            }
+          }}
+        />
       </div>
     </div >
   );

@@ -9,6 +9,8 @@ export const AddDataSource: FC<{
   if (!openWith) return null
 
   return (
-    <openWith.AddDataSource onClose={onClose} />
+    <>
+      {openWith.AddDataSource && <openWith.AddDataSource onClose={onClose} />}
+    </>
   )
 }

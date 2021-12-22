@@ -14,20 +14,21 @@ export type ObokuDataSourcePlugin = {
   type: DataSourceType
   synchronizable: boolean,
   name: string
-  Icon: React.FunctionComponent<{}>
-  UploadComponent: React.FunctionComponent<{
-    onClose: () => void
+  Icon?: React.FunctionComponent<{}>
+  UploadComponent?: React.FunctionComponent<{
+    onClose: (bookToAdd?: { resourceId: string, tags?: string[] }) => void,
+    title: string
   }>,
-  AddDataSource: React.FunctionComponent<{
+  AddDataSource?: React.FunctionComponent<{
     onClose: () => void
   }>,
   SelectItemComponent?: React.FunctionComponent<{
     open: boolean,
     onClose: (error?: SelectionError | undefined, item?: Item | undefined) => void,
   }>
-  useGetCredentials: UseGetCredentials,
-  useDownloadBook: UseDownloadHook,
-  useRemoveBook: UseRemoveBook | undefined,
+  useGetCredentials?: UseGetCredentials,
+  useDownloadBook?: UseDownloadHook,
+  useRemoveBook?: UseRemoveBook | undefined,
 }
 
 export type UseDownloadHook = () => (link: LinkDocType, options?: {

@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react'
 import { useAddBook } from '../../books/helpers'
-import { DataSourceType, plugins } from '@oboku/shared'
+import { DataSourceType, dataSourcePlugins } from '@oboku/shared'
 import { useDataSourceHelpers } from '../helpers'
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from '@material-ui/core'
 import * as yup from 'yup'
@@ -13,7 +13,7 @@ export const UploadComponent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
   const [addBook] = useAddBook()
-  const { generateResourceId } = useDataSourceHelpers(plugins[DataSourceType.URI].uniqueResourceIdentifier,)
+  const { generateResourceId } = useDataSourceHelpers(dataSourcePlugins[DataSourceType.URI].uniqueResourceIdentifier,)
   const [bookUrl, setBookUrl] = useState(process.env.REACT_APP_HTTP_LINK || '')
   const isValid = schema.isValidSync({ bookUrl })
   const filename = bookUrl.substring(bookUrl.lastIndexOf('/') + 1) || 'unknown'
