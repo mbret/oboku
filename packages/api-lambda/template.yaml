@@ -84,6 +84,18 @@ Resources:
       Policies:
         S3ReadPolicy:
           BucketName: !Ref CoverBucketName
+  CorsProxyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/corsProxy
+      Handler: main.fn
+      Runtime: nodejs14.x
+      Events:
+        AnyRequest:
+          Type: Api 
+          Properties:
+            Path: /cors
+            Method: ANY
   SigninFunction:
     Type: AWS::Serverless::Function
     Properties:

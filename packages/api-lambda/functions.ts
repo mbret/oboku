@@ -1,4 +1,5 @@
 export const functions = [
+  `corsProxy`,
   'signin',
   'signup',
   'cover',
