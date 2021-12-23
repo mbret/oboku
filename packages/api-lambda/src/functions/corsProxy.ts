@@ -34,11 +34,14 @@ export const fn = lambda(async (event) => {
   console.log(`Got response from ${url} ---> {statusCode: ${res.status}}`);
 
   const body = await res.text();
+  const passthroughHeaders = res.headers.raw()
+
+  console.log(`headers to pass through`, passthroughHeaders)
 
   return {
     statusCode: res.status,
     headers: {
-      ...res.headers.raw(),
+      ...passthroughHeaders,
       'Access-Control-Allow-Origin': '*', // Required for CORS support to work
       'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
     },
