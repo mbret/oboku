@@ -34,7 +34,10 @@ export const fn = lambda(async (event) => {
   console.log(`Got response from ${url} ---> {statusCode: ${res.status}}`);
 
   const body = await res.text();
-  const passthroughHeaders = res.headers.raw()
+  const passthroughHeaders = Array.from(res.headers.keys()).reduce((acc, key) => ({
+    ...acc,
+    [key]: res.headers.get(key)
+  }), {})
 
   console.log(`headers to pass through`, passthroughHeaders)
 
