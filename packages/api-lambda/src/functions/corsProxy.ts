@@ -54,6 +54,7 @@ export const fn = lambda(async (event) => {
     headers: {
       // ...passthroughHeaders,
       'content-type': res.headers.get('content-type') || ``,
+      'content-length': res.headers.get('content-length') || ``,
       'Access-Control-Allow-Origin': '*', // Required for CORS support to work
       'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
     },
