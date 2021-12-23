@@ -33,7 +33,8 @@ export const fn = lambda(async (event) => {
   });
   console.log(`Got response from ${url} ---> {statusCode: ${res.status}}`);
 
-  const body = await res.text();
+  const bodyBuffer = await res.buffer()
+  // const body = await res.text();
   const passthroughHeaders = Array
     .from(res.headers.keys())
     .reduce((acc, key) => ({
@@ -54,11 +55,13 @@ export const fn = lambda(async (event) => {
     headers: {
       // ...passthroughHeaders,
       'content-type': res.headers.get('content-type') || ``,
-      'content-length': res.headers.get('content-length') || ``,
+      // 'content-length': res.headers.get('content-length') || ``,
+      'Content-Length': bodyBuffer.byteLength,
       'Access-Control-Allow-Origin': '*', // Required for CORS support to work
       'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
     },
-    body,
+    body: bodyBuffer.toString('base64'),
+    isBase64Encoded: true
   };
 })
 
