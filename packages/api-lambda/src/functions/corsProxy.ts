@@ -48,11 +48,12 @@ export const fn = lambda(async (event) => {
     'Access-Control-Allow-Origin': '*', // Required for CORS support to work
     'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
   })
-  
+
   return {
     statusCode: res.status,
     headers: {
-      ...passthroughHeaders,
+      // ...passthroughHeaders,
+      'content-type': res.headers.get('content-type'),
       'Access-Control-Allow-Origin': '*', // Required for CORS support to work
       'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
     },
