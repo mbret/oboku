@@ -1,6 +1,6 @@
 import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
-import { DataSourceDocType, DataSourceType, Errors } from '@oboku/shared'
+import { DataSourceDocType, Errors } from '@oboku/shared'
 import { useRxMutation } from "../rxdb/hooks"
 import { Report } from "../debug/report"
 import { useRecoilCallback } from "recoil"
@@ -94,10 +94,7 @@ export const useDataSourceHelpers = (idOrObj: typeof plugins[number]['uniqueReso
   }), [id])
 }
 
-export const useDataSourcePlugins = () => plugins
-
 export const useGetDataSourceCredentials = () => {
-  const plugins = useDataSourcePlugins()
   const dialog = useDialogManager()
 
   // It's important to use array for plugins and be careful of the order since
@@ -106,8 +103,8 @@ export const useGetDataSourceCredentials = () => {
   const getPluginCredentials = useRef<(Pick<typeof plugins[number], 'type'> & { getCredentials: GetCredentials })[]>([])
   getPluginCredentials.current = plugins.map(plugin => ({ type: plugin.type, getCredentials: plugin.useGetCredentials && plugin.useGetCredentials() }))
 
-  return useCallback(async (linkType: DataSourceType) => {
-    if (linkType === DataSourceType.FILE) {
+  return useCallback(async (linkType: string) => {
+    if (linkType === `FILE`) {
       return { data: {} }
     }
 
@@ -133,7 +130,6 @@ export const useGetDataSourceCredentials = () => {
 }
 
 export const useDownloadBookFromDataSource = () => {
-  const plugins = useDataSourcePlugins()
   const dialog = useDialogManager()
 
   // It's important to use array for plugins and be careful of the order since
@@ -169,10 +165,9 @@ export const useDownloadBookFromDataSource = () => {
   return useCallback(downloadBook, [getPluginFn, dialog])
 }
 
-export const useDataSourcePlugin = (type?: DataSourceType) => useMemo(() => plugins.find(plugin => plugin.type === type), [type])
+export const useDataSourcePlugin = (type?: string) => useMemo(() => plugins.find(plugin => plugin.type === type), [type])
 
 export const useRemoveBookFromDataSource = () => {
-  const plugins = useDataSourcePlugins()
   const db = useDatabase()
 
   // It's important to use array for plugins and be careful of the order since

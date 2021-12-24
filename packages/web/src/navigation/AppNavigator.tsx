@@ -18,7 +18,7 @@ import { BookDetailsScreen } from '../books/details/BookDetailsScreen'
 import { CollectionDetailsScreen } from '../collections/CollectionDetailsScreen'
 import { RegisterScreen } from '../auth/RegisterScreen'
 import { BookActionsDrawer } from '../books/BookActionsDrawer'
-import { DataSourcesScreen } from '../dataSources/DataSourcesScreen'
+import { SyncSourcesScreen } from '../dataSources/SyncSourcesScreen'
 import { SearchScreen } from '../search/SearchScreen'
 import { AuthCallbackScreen } from '../auth/AuthCallbackScreen'
 import { SettingsScreen } from '../settings/SettingsScreen'
@@ -75,7 +75,7 @@ export const AppNavigator = () => {
                       <HomeScreen />
                     </Route>
                     <Route exact path={ROUTES.DATASOURCES}>
-                      <DataSourcesScreen />
+                      <SyncSourcesScreen />
                     </Route>
                     <Route path="/">
                       <Redirect to="/" />

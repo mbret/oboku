@@ -1,4 +1,3 @@
-import { DataSourceType } from '@oboku/shared'
 import { ComponentProps, FC, useCallback } from 'react'
 import { useAddBook } from '../books/helpers'
 import { useDataSourcePlugin } from '../dataSources/helpers'
@@ -7,7 +6,7 @@ import { ObokuDataSourcePlugin } from '../dataSources/types'
 type UploadComponentProps = ComponentProps<NonNullable<ObokuDataSourcePlugin[`UploadComponent`]>>
 
 export const UploadBookFromDataSource: FC<{
-  openWith: DataSourceType | undefined,
+  openWith: string | undefined,
   onClose: () => void
 }> = ({ openWith, onClose: onFinalClose }) => {
   const [addBook] = useAddBook()

@@ -3,7 +3,7 @@ import { useEffect } from "react"
 import { useCallback, useState } from "react"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { PromiseReturnType } from "../../types"
-import { getArchiveForRarFile } from "./getArchiveForFile"
+import { getArchiveForRarFile } from "./getArchiveForFile.shared"
 
 export const useRarStreamer = (bookId: string | undefined) => {
   const [archive, setArchive] = useState<PromiseReturnType<typeof getArchiveForRarFile> | undefined>()

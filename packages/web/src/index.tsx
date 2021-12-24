@@ -7,7 +7,6 @@ import 'fontsource-roboto/500.css'
 import 'fontsource-roboto/700.css'
 import 'react-responsive-carousel/lib/styles/carousel.min.css'
 import './index.css';
-import { configureDataSources } from './dataSources/configure';
 import { App } from './App';
 import reportWebVitals from './reportWebVitals'
 import * as Sentry from "@sentry/react"
@@ -59,5 +58,3 @@ reportWebVitals(({ id, name, delta }) => {
     // ...
   })
 })
-
-configureDataSources()

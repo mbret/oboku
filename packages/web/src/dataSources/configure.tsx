@@ -1,19 +1,15 @@
-import * as googleConstants from "./google/constants"
 import * as dropboxConstants from "./dropbox/constants"
 import { UploadBook as UploadBookFromDropbox } from "./dropbox/UploadBook"
-import { ReactComponent as GoogleDriveAsset } from '../assets/google-drive.svg'
 import { ReactComponent as DropboxIconAsset } from '../assets/dropbox.svg'
-import { UploadBook } from "./google/UploadBook"
-import { DataSourceType } from "@oboku/shared"
 import { useGetCredentials as useGetDropboxCredentials } from "./dropbox/helpers"
-import * as googlePlugin from "./google"
 import * as dropboxPlugin from "./dropbox"
 import { plugin as nhentai } from "./nhentai"
+import { plugin as google } from "./google"
 import linkPlugin from "./link"
 import { ObokuDataSourcePlugin } from "./types"
 import { SvgIcon } from "@material-ui/core"
 
-export const plugins: ObokuDataSourcePlugin[] = []
+const plugins: ObokuDataSourcePlugin[] = []
 
 const DropboxIcon = () => (
   <SvgIcon>
@@ -21,36 +17,23 @@ const DropboxIcon = () => (
   </SvgIcon>
 )
 
-const GoogleDriveIcon = () => (
-  <SvgIcon>
-    <GoogleDriveAsset />
-  </SvgIcon>
-)
+plugins.push({
+  uniqueResourceIdentifier: dropboxConstants.UNIQUE_RESOURCE_IDENTIFIER,
+  type: `DROPBOX`,
+  name: 'Dropbox',
+  Icon: DropboxIcon,
+  UploadComponent: UploadBookFromDropbox,
+  AddDataSource: dropboxPlugin.AddDataSource,
+  useGetCredentials: useGetDropboxCredentials,
+  useDownloadBook: dropboxPlugin.useDownloadBook,
+  useRemoveBook: dropboxPlugin.useRemoveBook,
+  synchronizable: true,
+})
 
-export const configureDataSources = () => {
-  plugins.push({
-    uniqueResourceIdentifier: dropboxConstants.UNIQUE_RESOURCE_IDENTIFIER,
-    type: DataSourceType.DROPBOX,
-    name: 'Dropbox',
-    Icon: DropboxIcon,
-    UploadComponent: UploadBookFromDropbox,
-    AddDataSource: dropboxPlugin.AddDataSource,
-    useGetCredentials: useGetDropboxCredentials,
-    useDownloadBook: dropboxPlugin.useDownloadBook,
-    useRemoveBook: dropboxPlugin.useRemoveBook,
-    synchronizable: true,
-  })
+plugins.push(google)
+plugins.push(linkPlugin)
+plugins.push(nhentai)
 
-  plugins.push({
-    uniqueResourceIdentifier: googleConstants.UNIQUE_RESOURCE_IDENTIFIER,
-    type: DataSourceType.DRIVE,
-    name: 'Google Drive',
-    Icon: GoogleDriveIcon,
-    UploadComponent: UploadBook,
-    synchronizable: true,
-    ...googlePlugin
-  })
-
-  plugins.push(linkPlugin)
-  plugins.push(nhentai)
+export {
+  plugins
 }

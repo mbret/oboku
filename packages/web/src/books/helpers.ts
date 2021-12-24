@@ -1,5 +1,5 @@
 import { useAxiosClient } from "../axiosClient"
-import { BookDocType, DataSourceType, ReadingStateState, sortByTitleComparator } from '@oboku/shared'
+import { BookDocType, ReadingStateState, sortByTitleComparator } from '@oboku/shared'
 import { useRxMutation } from "../rxdb/hooks"
 import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
@@ -16,7 +16,6 @@ import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
 import { useDialogManager } from "../dialog"
 import { useSync } from "../rxdb/useSync"
-import { filter } from 'ramda'
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -109,7 +108,7 @@ export const useRefreshBookMetadata = () => {
       const book = await database?.book.findOne({ selector: { _id: bookId } }).exec()
       const firstLink = await database?.link.findOne({ selector: { _id: book?.links[0] } }).exec()
 
-      if (!firstLink || firstLink?.type === DataSourceType.FILE) {
+      if (!firstLink || firstLink?.type === `FILE`) {
         Report.warn(`Trying to refresh metadata of file item ${bookId}`)
         return
       }
@@ -210,7 +209,7 @@ export const useAddBookFromFile = () => {
         book: null,
         data: null,
         resourceId: 'file',
-        type: DataSourceType.FILE,
+        type: `FILE`,
         createdAt: new Date().toISOString(),
         modifiedAt: null
       },

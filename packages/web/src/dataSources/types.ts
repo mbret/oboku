@@ -1,4 +1,4 @@
-import { DataSourcePlugin, LinkDocType } from "@oboku/shared";
+import { DataSourceDocType, DataSourcePlugin, LinkDocType } from "@oboku/shared";
 
 type Item = {
   resourceId: string
@@ -7,6 +7,12 @@ type Item = {
 type SelectionError = {
   code: `unknown`,
   originalError?: any
+}
+
+type StreamValue = {
+  baseUri: string,
+  response: Response,
+  progress: number
 }
 
 export type ObokuDataSourcePlugin = DataSourcePlugin & {
@@ -25,13 +31,14 @@ export type ObokuDataSourcePlugin = DataSourcePlugin & {
   useGetCredentials?: UseGetCredentials,
   useDownloadBook?: UseDownloadHook,
   useRemoveBook?: UseRemoveBook | undefined,
+  useSyncSourceInfo?: UseSyncSourceInfo
 }
 
-export type UseDownloadHook = () => (link: LinkDocType, options?: {
-  onDownloadProgress: (event: ProgressEvent, totalSize: number) => void
+export type UseDownloadHook = () => (link: LinkDocType, options: {
+  onDownloadProgress: (progress: number) => void,
 }) => Promise<{
-  data: Blob | File,
-  name: string
+  data: Blob | File | ReadableStream<StreamValue>,
+  name?: string
 } | {
   isError: true,
   error?: any,
@@ -53,3 +60,7 @@ export type UseGetCredentials = () => () => Promise<{
 } | {
   data: { [key: string]: string }
 }>
+
+export type UseSyncSourceInfo = (dataSource: DataSourceDocType) => {
+  name?: string
+}

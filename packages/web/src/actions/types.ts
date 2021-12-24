@@ -1,12 +1,10 @@
-import { DataSourceType } from "@oboku/shared";
-
 export type BookAction =
   | {
     type: `UPSERT_BOOK_LINK`,
     data: {
       bookId: string,
       linkResourceId: string,
-      linkType: DataSourceType,
+      linkType: string,
     }
   }
   | {

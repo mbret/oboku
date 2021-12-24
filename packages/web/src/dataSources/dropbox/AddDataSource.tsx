@@ -2,7 +2,7 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, List, L
 import { ArrowBackIosRounded, LocalOfferRounded } from '@material-ui/icons'
 import { ComponentProps, FC, useState } from 'react'
 import { useRecoilValue } from 'recoil'
-import { DropboxDataSourceData, DataSourceType } from '@oboku/shared'
+import { DropboxDataSourceData } from '@oboku/shared'
 import { tagIdsState, tagsAsArrayState } from '../../tags/states'
 import { useCreateDataSource } from '../helpers'
 import { Picker } from './Picker'
@@ -83,7 +83,7 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
                   folderName: selectedFolder.name
                 }
                 addDataSource({
-                  type: DataSourceType.DROPBOX,
+                  type: `DROPBOX`,
                   data: JSON.stringify(customData),
                 })
               }

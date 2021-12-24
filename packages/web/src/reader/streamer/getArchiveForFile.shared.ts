@@ -5,7 +5,7 @@ import { RarArchive } from "../../archive/types";
 import { getBookFile } from "../../download/getBookFile.shared";
 import { PromiseReturnType } from "../../types";
 
-const epubMimeTypes = ['application/epub+zip']
+const jsZipCompatibleMimeTypes = [`application/epub+zip`, `application/x-cbz`]
 
 export const getArchiveForFile = async (file: NonNullable<PromiseReturnType<typeof getBookFile>>): Promise<Archive | undefined> => {
 
@@ -14,9 +14,11 @@ export const getArchiveForFile = async (file: NonNullable<PromiseReturnType<type
   if (
     normalizedName.endsWith(`.epub`)
     || normalizedName.endsWith(`.cbz`)
-    || epubMimeTypes.includes(file.data.type)
+    || jsZipCompatibleMimeTypes.includes(file.data.type)
   ) {
-    return getArchiveForZipFile(file)
+    const jszip = await loadAsync(file.data)
+
+    return createArchiveFromJszip(jszip, { orderByAlpha: true, name: file.name })
   }
 
   if (normalizedName.endsWith(`.txt`)) {
@@ -24,12 +26,6 @@ export const getArchiveForFile = async (file: NonNullable<PromiseReturnType<type
   }
 
   return undefined
-}
-
-const getArchiveForZipFile = async (file: NonNullable<PromiseReturnType<typeof getBookFile>>) => {
-  const jszip = await loadAsync(file.data)
-
-  return createArchiveFromJszip(jszip, { orderByAlpha: true, name: file.name })
 }
 
 /**

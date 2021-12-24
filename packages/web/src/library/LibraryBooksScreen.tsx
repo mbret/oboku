@@ -22,7 +22,6 @@ import { localSettingsState } from '../settings/states';
 import { useCallback } from 'react';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next'
-import { DataSourceType } from '@oboku/shared';
 
 export const LibraryBooksScreen = () => {
   const styles = useStyles();
@@ -33,7 +32,7 @@ export const LibraryBooksScreen = () => {
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const setIsUploadBookFromDeviceOpened = useSetRecoilState(isUploadBookFromDeviceOpenedFromState)
   const localSettings = useRecoilValue(localSettingsState)
-  const [isUploadBookFromDataSourceDialogOpened, setIsUploadBookFromDataSourceDialogOpened] = useState<DataSourceType | undefined>(undefined)
+  const [isUploadBookFromDataSourceDialogOpened, setIsUploadBookFromDataSourceDialogOpened] = useState<string | undefined>(undefined)
   const setLibraryState = useSetRecoilState(libraryState)
   const library = useRecoilValue(libraryState)
   let numberOfFiltersApplied = 0

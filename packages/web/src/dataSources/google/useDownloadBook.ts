@@ -41,7 +41,8 @@ export const useDownloadBook: UseDownloadHook = () => {
           },
           responseType: 'blob',
           onDownloadProgress: (event: ProgressEvent) => {
-            options?.onDownloadProgress(event, parseInt(info.result.size || '1') || 1)
+            const totalSize = parseInt(info.result.size || '1') || 1
+            options?.onDownloadProgress(event.loaded / totalSize)
           }
         })
 

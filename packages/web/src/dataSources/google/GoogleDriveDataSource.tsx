@@ -2,10 +2,9 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, List, L
 import { ArrowBackIosRounded, LocalOfferRounded } from '@material-ui/icons'
 import { FC, useState } from 'react'
 import { useRecoilValue } from 'recoil'
-import { GoogleDriveDataSourceData } from '@oboku/shared'
 import { tagIdsState, tagsAsArrayState } from '../../tags/states'
 import { useCreateDataSource } from '../helpers'
-import { DataSourceType } from '@oboku/shared'
+import { GoogleDriveDataSourceData } from '@oboku/shared'
 import { DrivePicker } from './DrivePicker'
 import { TagsSelectionDialog } from '../../tags/TagsSelectionDialog'
 
@@ -85,7 +84,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({ onClose }) 
                   folderName: selectedFolder.name
                 }
                 addDataSource({
-                  type: DataSourceType.DRIVE,
+                  type: `DRIVE`,
                   data: JSON.stringify(customData),
                 })
               }

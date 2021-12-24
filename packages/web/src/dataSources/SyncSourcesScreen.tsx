@@ -7,18 +7,18 @@ import { DataSourcesActionsDrawer } from './DataSourcesActionsDrawer';
 import { dataSourcesAsArrayState } from './states';
 import { useRecoilValue } from 'recoil';
 import { Error } from '@material-ui/icons';
-import { extractDataSourceData } from '@oboku/shared';
-import { useDataSourcePlugins } from './helpers';
+import { DataSourceDocType } from '@oboku/shared';
+import { plugins as dataSourcePlugins } from './configure';
 import { AddDataSource } from './AddDataSource';
 import { Errors } from "@oboku/shared"
+import { ObokuDataSourcePlugin } from './types';
 
-export const DataSourcesScreen = () => {
+export const SyncSourcesScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
-  const [isAddDataSourceOpenedWith, setIsAddDataSourceOpenedWith] = useState<ReturnType<typeof useDataSourcePlugins>[number] | undefined>(undefined)
+  const [isAddDataSourceOpenedWith, setIsAddDataSourceOpenedWith] = useState<ObokuDataSourcePlugin | undefined>(undefined)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<string | undefined>(undefined)
-  const dataSources = useRecoilValue(dataSourcesAsArrayState)
+  const syncSources = useRecoilValue(dataSourcesAsArrayState)
   const theme = useTheme()
-  const dataSourcesPlugins = useDataSourcePlugins()
 
   return (
     <>
@@ -42,14 +42,14 @@ export const DataSourcesScreen = () => {
             onClick={() => setIsDrawerOpened(true)}
           >
             Add a new source
-        </Button>
+          </Button>
         </Toolbar>
         <List>
-          {dataSources?.map(item => {
-            const dataSource = dataSourcesPlugins.find(dataSource => dataSource.type === item.type)
+          {syncSources?.map(syncSource => {
+            const dataSource = dataSourcePlugins.find(dataSource => dataSource.type === syncSource.type)
 
             return (
-              <ListItem key={item._id} button onClick={() => setIsActionsDrawerOpenWith(item._id)}>
+              <ListItem key={syncSource._id} button onClick={() => setIsActionsDrawerOpenWith(syncSource._id)}>
                 {dataSource && (
                   <ListItemIcon>
                     <SvgIcon >
@@ -58,30 +58,30 @@ export const DataSourcesScreen = () => {
                   </ListItemIcon>
                 )}
                 <ListItemText
-                  primary={<Typography noWrap>{extractDataSourceData(item)?.folderName || dataSource?.name}</Typography>}
+                  primary={<SyncSourceLabel syncSource={syncSource} />}
                   secondary={
-                    item?.syncStatus === 'fetching'
+                    syncSource?.syncStatus === 'fetching'
                       ? 'Syncing...'
-                      : item?.lastSyncErrorCode
+                      : syncSource?.lastSyncErrorCode
                         ? (
                           <div style={{ flexDirection: 'row', display: 'flex', }}>
                             <Error fontSize="small" style={{ marginRight: theme.spacing(1) }} />
                             <Typography variant="body2">
                               {`Sync did not succeed`}
-                              {item?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_UNAUTHORIZED && (
+                              {syncSource?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_UNAUTHORIZED && (
                                 `. We could not connect to ${dataSource?.name}. If the problem persist try to reload the app`
                               )}
-                              {item?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED && (
+                              {syncSource?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED && (
                                 `. Your datasource seems to have exceeded its allowed access limit`
                               )}
-                              {item?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_NETWORK_UNREACHABLE && (
+                              {syncSource?.lastSyncErrorCode === Errors.ERROR_DATASOURCE_NETWORK_UNREACHABLE && (
                                 `. Our server seems unreachable, make sure you are online to start the synchronization`
                               )}
                             </Typography>
                           </div>
                         )
-                        : item?.lastSyncedAt
-                          ? `Last synced at ${(new Date(item?.lastSyncedAt)).toDateString()}`
+                        : syncSource?.lastSyncedAt
+                          ? `Last synced at ${(new Date(syncSource?.lastSyncedAt)).toDateString()}`
                           : 'Not synced yet'
 
                   }
@@ -93,7 +93,7 @@ export const DataSourcesScreen = () => {
       </div>
       <DataSourcesAddDrawer open={isDrawerOpened} onClose={(type) => {
         setIsDrawerOpened(false)
-        const dataSource = dataSourcesPlugins.find((dataSource) => type === dataSource.type)
+        const dataSource = dataSourcePlugins.find((dataSource) => type === dataSource.type)
         if (dataSource) {
           setIsAddDataSourceOpenedWith(dataSource)
         }
@@ -102,4 +102,14 @@ export const DataSourcesScreen = () => {
       {isAddDataSourceOpenedWith && <AddDataSource onClose={() => setIsAddDataSourceOpenedWith(undefined)} openWith={isAddDataSourceOpenedWith} />}
     </>
   );
+}
+
+const SyncSourceLabel = ({ syncSource }: { syncSource: DataSourceDocType }) => {
+  const dataSource = dataSourcePlugins.find(dataSource => dataSource.type === syncSource.type)
+
+  const { name = dataSource?.name } = (dataSource?.useSyncSourceInfo && dataSource.useSyncSourceInfo(syncSource)) || {}
+
+  return (
+    <Typography noWrap>{name}</Typography>
+  )
 }

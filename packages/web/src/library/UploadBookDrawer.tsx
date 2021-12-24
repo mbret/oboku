@@ -1,15 +1,14 @@
 import { FC } from 'react';
 import { Drawer, List, ListItem, ListItemText, ListItemIcon } from '@material-ui/core';
 import { SdStorageRounded } from '@material-ui/icons';
-import { useDataSourcePlugins } from '../dataSources/helpers';
+import { plugins as dataSourcePlugins } from '../dataSources';
 import { useRecoilValue } from 'recoil';
 import { localSettingsState } from '../settings/states';
 
 export const UploadBookDrawer: FC<{
   open: boolean,
-  onClose: (type?: 'device' | ReturnType<typeof useDataSourcePlugins>[number]['type'] | undefined) => void
+  onClose: (type?: 'device' | string | undefined) => void
 }> = ({ open, onClose }) => {
-  const dataSourcePlugins = useDataSourcePlugins()
   const { showSensitiveDataSources } = useRecoilValue(localSettingsState)
 
   return (

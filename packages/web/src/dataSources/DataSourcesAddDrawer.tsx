@@ -1,13 +1,12 @@
 import { Drawer, ListItem, List, ListItemIcon, ListItemText } from "@material-ui/core";
-import { DataSourceType } from "@oboku/shared";
 import { FC } from "react";
-import { useDataSourcePlugins } from "./helpers";
+import { plugins } from "./configure";
 
 export const DataSourcesAddDrawer: FC<{
   open: boolean,
-  onClose: (key?: DataSourceType) => void,
+  onClose: (key?: string) => void,
 }> = ({ open, onClose }) => {
-  const dataSourcesPlugins = useDataSourcePlugins().filter(plugin => plugin.synchronizable)
+  const dataSourcesPlugins = plugins.filter(plugin => plugin.synchronizable)
 
   return (
     <>

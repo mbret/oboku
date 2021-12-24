@@ -8,10 +8,12 @@ import { useDatabase } from '../rxdb';
 import { DOWNLOAD_PREFIX } from '../constants.shared';
 import { useDownloadBookFromDataSource, useGetDataSourceCredentials } from '../dataSources/helpers';
 import { BookFile } from './types';
-import { BookDocType, DataSourceType } from '@oboku/shared';
+import { BookDocType } from '@oboku/shared';
 import { useGetLazySignedGapi } from '../dataSources/google/helpers';
 import { linkState } from '../links/states';
 import { useDialogManager } from '../dialog';
+import { bytesToMb } from '../common/utils';
+import { createCbzFromReadableStream } from './createCbzFromReadableStream';
 
 export const useDownloadBook = () => {
   const getDataSourceCredentials = useGetDataSourceCredentials()
@@ -70,7 +72,7 @@ export const useDownloadBook = () => {
         return
       }
 
-      if (firstLink.type === DataSourceType.FILE) {
+      if (firstLink.type === `FILE`) {
         if (localFile) {
           await localforage.setItem<BookFile>(`${DOWNLOAD_PREFIX}-${bookId}`, { data: localFile, name: localFile.name })
         } else {
@@ -80,24 +82,24 @@ export const useDownloadBook = () => {
           throw new Error(`Cannot download local file from another device`)
         }
       } else {
-        const dataSourceResponse = await downloadBook(firstLink, {
-          onDownloadProgress: (event: ProgressEvent, totalSize: number) => {
-            // if ((event.target as XMLHttpRequest).getAllResponseHeaders().indexOf('oboku-content-length')) {
-            // const contentLength = parseInt((event.target as XMLHttpRequest).getResponseHeader('oboku-content-length') || '1')
-            // throttleSetProgress(Math.round((event.loaded / contentLength) * 100))
-            throttleSetProgress(Math.round((event.loaded / totalSize) * 100))
-            // }
-          }
-        })
+        const onDownloadProgress = (progress: number) => {
+          // if ((event.target as XMLHttpRequest).getAllResponseHeaders().indexOf('oboku-content-length')) {
+          // const contentLength = parseInt((event.target as XMLHttpRequest).getResponseHeader('oboku-content-length') || '1')
+          // throttleSetProgress(Math.round((event.loaded / contentLength) * 100))
+          throttleSetProgress(Math.round((progress) * 100))
+          // }
+        }
 
-        if ('isError' in dataSourceResponse && dataSourceResponse.reason === 'cancelled') {
+        const downloadResponse = await downloadBook(firstLink, { onDownloadProgress, })
+
+        if ('isError' in downloadResponse && downloadResponse.reason === 'cancelled') {
           setDownloadData(bookId, {
             downloadState: DownloadState.None,
           })
           return
         }
 
-        if ('isError' in dataSourceResponse && dataSourceResponse.reason === 'notFound') {
+        if ('isError' in downloadResponse && downloadResponse.reason === 'notFound') {
           setDownloadData(bookId, {
             downloadState: DownloadState.None,
           })
@@ -115,18 +117,22 @@ export const useDownloadBook = () => {
           return
         }
 
-        if ('isError' in dataSourceResponse) {
-          throw dataSourceResponse.error || new Error(dataSourceResponse.reason)
+        if ('isError' in downloadResponse) {
+          throw downloadResponse.error || new Error(downloadResponse.reason)
         }
-        // const response = await client.downloadBook(bookId, credentials || {}, {
-        //   onDownloadProgress: (event: ProgressEvent) => {
-        //     if ((event.target as XMLHttpRequest).getAllResponseHeaders().indexOf('oboku-content-length')) {
-        //       const contentLength = parseInt((event.target as XMLHttpRequest).getResponseHeader('oboku-content-length') || '1')
-        //       throttleSetProgress(Math.round((event.loaded / contentLength) * 100))
-        //     }
-        //   }
-        // })
-        await localforage.setItem<BookFile>(`${DOWNLOAD_PREFIX}-${bookId}`, dataSourceResponse)
+
+        const data = downloadResponse.data instanceof Blob
+          ? downloadResponse.data
+          // when the plugin returns a stream we will create the archive ourselves based on the nature
+          // of the stream.
+          : await createCbzFromReadableStream(downloadResponse.data, { onData: ({ progress }) => onDownloadProgress(progress) })
+
+        Report.log(`Saving ${bookId} into storage for a size of ${bytesToMb(data.size)} mb`)
+
+        await localforage.setItem<BookFile>(`${DOWNLOAD_PREFIX}-${bookId}`, {
+          data,
+          name: downloadResponse.name || generateFilenameFromBlob(data, bookId)
+        })
       }
 
       setDownloadData(bookId, {
@@ -140,4 +146,13 @@ export const useDownloadBook = () => {
       Report.error(e)
     }
   }, [setDownloadData, database, downloadBook, getLazySignedGapi])
+}
+
+const generateFilenameFromBlob = (data: Blob, bookId: string) => {
+  switch (data.type) {
+    case `application/x-cbz`:
+      return `${bookId}.cbz`
+    default:
+      return bookId
+  }
 }

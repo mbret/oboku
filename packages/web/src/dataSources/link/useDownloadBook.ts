@@ -1,10 +1,11 @@
 import { useDataSourceHelpers } from "../helpers"
 import axios from "axios"
 import { useCallback } from "react"
-import { DataSourceType, dataSourcePlugins } from "@oboku/shared"
+import { dataSourcePlugins } from "@oboku/shared"
+import { UseDownloadHook } from "../types"
 
-export const useDownloadBook = () => {
-  const { extractIdFromResourceId } = useDataSourceHelpers(dataSourcePlugins[DataSourceType.URI].uniqueResourceIdentifier)
+export const useDownloadBook: UseDownloadHook = () => {
+  const { extractIdFromResourceId } = useDataSourceHelpers(dataSourcePlugins[`URI`]?.uniqueResourceIdentifier || ``)
 
   return useCallback(async (link, options) => {
     const downloadLink = extractIdFromResourceId(link.resourceId)
@@ -20,7 +21,7 @@ export const useDownloadBook = () => {
           ...event?.currentTarget
         }
         const total = parseFloat(currentTarget.responseHeaders['Content-Length'])
-        options?.onDownloadProgress(event, total)
+        options?.onDownloadProgress(event.loaded / total)
       }
     })
 

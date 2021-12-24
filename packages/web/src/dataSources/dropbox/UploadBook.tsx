@@ -7,7 +7,6 @@ import { Report } from '../../debug/report'
 import { BlockingScreen } from '../../common/BlockingBackdrop'
 import { useAddBook } from '../../books/helpers'
 import { DropboxFile } from './types'
-import { DataSourceType } from '@oboku/shared'
 import { useDataSourceHelpers } from '../helpers'
 import { UNIQUE_RESOURCE_IDENTIFIER } from './constants'
 
@@ -46,7 +45,7 @@ export const UploadBook: FC<{
                 book: null,
                 data: null,
                 resourceId: generateResourceId(doc.id),
-                type: DataSourceType.DROPBOX,
+                type: `DROPBOX`,
                 createdAt: new Date().toISOString(),
                 modifiedAt: null
               }

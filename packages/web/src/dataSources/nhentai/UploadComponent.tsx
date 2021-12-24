@@ -15,7 +15,7 @@ const schema = yup.object().shape({
 type Props = ComponentProps<NonNullable<ObokuDataSourcePlugin[`UploadComponent`]>>
 
 export const UploadComponent: FC<Props> = ({ onClose, title }) => {
-  const { generateResourceId } = useDataSourceHelpers(dataSourcePlugins.NHENTAI)
+  const { generateResourceId } = useDataSourceHelpers(dataSourcePlugins.NHENTAI!)
   const [galleryId, setGalleryId] = useState(``)
   const [tags, setTags] = useState<string[]>([])
   const isValid = schema.isValidSync({ galleryId })
