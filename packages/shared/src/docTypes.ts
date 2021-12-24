@@ -1,5 +1,3 @@
-import { DataSourceType } from "./dataSources";
-
 export type LinkDocType = {
   _id: string;
   _rev: string;
@@ -7,7 +5,7 @@ export type LinkDocType = {
    * unique type.
    * This is used to lookup plugin configurations
    */
-  type: DataSourceType;
+  type: string;
   /**
    * Is used as unique identifier for the datasource specifically.
    * This can be used to detect if an item already exist for a datasource
@@ -30,22 +28,10 @@ export type LinkDocType = {
   createdAt: string
 };
 
-export type GoogleDriveDataSourceData = {
-  applyTags: string[]
-  folderId: string
-  folderName?: string
-};
-
-export type DropboxDataSourceData = {
-  folderId: string
-  folderName: string
-  applyTags: string[]
-}
-
 export type DataSourceDocType = {
   _id: string;
   _rev: string;
-  type: DataSourceType;
+  type: string;
   lastSyncedAt: number | null;
   syncStatus: null | 'fetching'
   lastSyncErrorCode?: string | null,
@@ -138,20 +124,6 @@ export function isDataSource(document: DataSourceDocType | unknown): document is
 
 export function isCollection(document: CollectionDocType | unknown): document is CollectionDocType {
   return (document as CollectionDocType).rx_model === 'obokucollection'
-}
-
-type DataOf<D extends DataSourceDocType> =
-  D['type'] extends (DataSourceType.DRIVE)
-  ? GoogleDriveDataSourceData
-  : D['type'] extends (DataSourceType.DROPBOX)
-  ? DropboxDataSourceData
-  : GoogleDriveDataSourceData | DropboxDataSourceData
-
-export const extractDataSourceData = <D extends DataSourceDocType, Data extends DataOf<D>>({ data }: D): Data | undefined => {
-  try {
-    return JSON.parse(data)
-  } catch (e) { }
-  return undefined
 }
 
 type MangoOperator = '$lt' | '$lte' | '$eq' | '$ne' | '$gte' | '$gt' |

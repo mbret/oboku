@@ -1,11 +1,11 @@
-import { DataSourceType, Errors, LinkDocType, ObokuSharedError } from "@oboku/shared/src"
+import { Errors, LinkDocType, ObokuSharedError } from "@oboku/shared/src"
 import { createHelpers } from "./helpers"
 import { sync } from "./sync"
 import createNano from 'nano'
 import { atomicUpdate } from "../db/helpers"
 import { plugins } from "./plugins"
 
-const urlPlugin = plugins.find(({ type }) => type === DataSourceType.URI)
+const urlPlugin = plugins.find(({ type }) => type === `URI`)
 
 export const dataSourceFacade = {
   getMetadata: async (link: LinkDocType, credentials?: any) => {

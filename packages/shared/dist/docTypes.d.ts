@@ -1,4 +1,3 @@
-import { DataSourceType } from "./dataSources";
 export declare type LinkDocType = {
     _id: string;
     _rev: string;
@@ -6,7 +5,7 @@ export declare type LinkDocType = {
      * unique type.
      * This is used to lookup plugin configurations
      */
-    type: DataSourceType;
+    type: string;
     /**
      * Is used as unique identifier for the datasource specifically.
      * This can be used to detect if an item already exist for a datasource
@@ -28,20 +27,10 @@ export declare type LinkDocType = {
     modifiedAt: string | null;
     createdAt: string;
 };
-export declare type GoogleDriveDataSourceData = {
-    applyTags: string[];
-    folderId: string;
-    folderName?: string;
-};
-export declare type DropboxDataSourceData = {
-    folderId: string;
-    folderName: string;
-    applyTags: string[];
-};
 export declare type DataSourceDocType = {
     _id: string;
     _rev: string;
-    type: DataSourceType;
+    type: string;
     lastSyncedAt: number | null;
     syncStatus: null | 'fetching';
     lastSyncErrorCode?: string | null;
@@ -115,8 +104,6 @@ export declare function isBook(document: BookDocType | unknown): document is Boo
 export declare function isLink(document: LinkDocType | unknown): document is LinkDocType;
 export declare function isDataSource(document: DataSourceDocType | unknown): document is DataSourceDocType;
 export declare function isCollection(document: CollectionDocType | unknown): document is CollectionDocType;
-declare type DataOf<D extends DataSourceDocType> = D['type'] extends (DataSourceType.DRIVE) ? GoogleDriveDataSourceData : D['type'] extends (DataSourceType.DROPBOX) ? DropboxDataSourceData : GoogleDriveDataSourceData | DropboxDataSourceData;
-export declare const extractDataSourceData: <D extends DataSourceDocType, Data extends DataOf<D>>({ data }: D) => Data;
 declare type ConditionOperator<T> = {
     $nin?: any[];
     $in?: any[];

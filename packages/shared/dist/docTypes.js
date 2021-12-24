@@ -1,6 +1,6 @@
 "use strict";
 exports.__esModule = true;
-exports.extractDataSourceData = exports.isCollection = exports.isDataSource = exports.isLink = exports.isBook = exports.isTag = exports.ReadingStateState = void 0;
+exports.isCollection = exports.isDataSource = exports.isLink = exports.isBook = exports.isTag = exports.ReadingStateState = void 0;
 var ReadingStateState;
 (function (ReadingStateState) {
     ReadingStateState["Finished"] = "FINISHED";
@@ -27,12 +27,3 @@ function isCollection(document) {
     return document.rx_model === 'obokucollection';
 }
 exports.isCollection = isCollection;
-var extractDataSourceData = function (_a) {
-    var data = _a.data;
-    try {
-        return JSON.parse(data);
-    }
-    catch (e) { }
-    return undefined;
-};
-exports.extractDataSourceData = extractDataSourceData;

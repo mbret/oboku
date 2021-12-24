@@ -1,5 +1,5 @@
 import { Request } from 'request'
-import { DataSourceType, LinkDocType } from '@oboku/shared/src'
+import { LinkDocType } from '@oboku/shared/src'
 import { createHelpers } from './helpers';
 
 type NameWithMetadata = string
@@ -19,7 +19,7 @@ export type SynchronizeAbleDataSource = {
 }
 
 export type DataSourcePlugin = {
-  type: DataSourceType,
+  type: string,
   getMetadata: (link: LinkDocType, credentials?: any) => Promise<{
     size?: string,
     contentType?: string,
@@ -42,6 +42,6 @@ export type DataSourcePlugin = {
     userEmail: string,
     dataSourceId: string,
     credentials?: any,
-    dataSourceType: DataSourceType
+    dataSourceType: string
   }, helper: ReturnType<typeof createHelpers>) => Promise<SynchronizeAbleDataSource>,
 }

@@ -1,41 +1,47 @@
-export enum DataSourceType {
-  URI = "URI",
-  DRIVE = "DRIVE",
-  DROPBOX = "DROPBOX",
-  FILE = 'FILE',
-  NHENTAI = `NHENTAI`
-}
+import { DataSourceDocType } from "..";
 
 export type DataSourcePlugin = {
   uniqueResourceIdentifier: string,
   name?: string,
   synchronizable?: boolean,
-  type: DataSourceType,
+  type: string,
   sensitive?: boolean
 }
 
-export const dataSourcePlugins: { [key in DataSourceType]: DataSourcePlugin } = {
-  [DataSourceType.DRIVE]: {
+export type GoogleDriveDataSourceData = {
+  applyTags: string[]
+  folderId: string
+  folderName?: string
+};
+
+export type DropboxDataSourceData = {
+  folderId: string
+  folderName: string
+  applyTags: string[]
+}
+
+export const dataSourcePlugins: { [key: string]: DataSourcePlugin } = {
+  DRIVE: {
     uniqueResourceIdentifier: 'drive',
-    type: DataSourceType.DRIVE
+    type: `DRIVE`
   },
-  [DataSourceType.DROPBOX]: {
+  DROPBOX: {
     uniqueResourceIdentifier: 'dropbox',
-    type: DataSourceType.DROPBOX
+    type: `DROPBOX`
   },
-  [DataSourceType.FILE]: {
+  FILE: {
     uniqueResourceIdentifier: 'oboku-file',
-    type: DataSourceType.FILE
+    type: `FILE`
   },
-  [DataSourceType.URI]: {
+  URI: {
     uniqueResourceIdentifier: 'oboku-link',
-    type: DataSourceType.URI
+    type: `URI`
   },
-  [DataSourceType.NHENTAI]: {
+  NHENTAI: {
     uniqueResourceIdentifier: 'nhentai',
     name: `nhentai`,
     synchronizable: false,
-    type: DataSourceType.NHENTAI,
+    type: `NHENTAI`,
     sensitive: true
   },
 }
@@ -44,7 +50,16 @@ export const generateResourceId = (uniqueResourceIdentifier: string, resourceId:
 
 export const extractIdFromResourceId = (uniqueResourceIdentifier: string, resourceId: string) => resourceId.replace(`${uniqueResourceIdentifier}-`, ``)
 
+export const extractSyncSourceData = <Data extends Record<any, any>>({ data }: DataSourceDocType) => {
+  try {
+    return JSON.parse(data) as Data
+  } catch (e) {
+    return undefined
+  }
+}
+
 export const dataSourceHelpers = {
   generateResourceId,
   extractIdFromResourceId,
+  extractSyncSourceData,
 }

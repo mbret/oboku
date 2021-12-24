@@ -8,6 +8,6 @@ export declare const ERROR_DATASOURCE_NETWORK_UNREACHABLE = "4003";
 export declare type ERROR = typeof ERROR_EMAIL_TAKEN | typeof BAD_USER_INPUT | typeof ERROR_INVALID_BETA_CODE | typeof ERROR_DATASOURCE_UNKNOWN | typeof ERROR_DATASOURCE_UNAUTHORIZED | typeof ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED;
 export declare class ObokuSharedError extends Error {
     code: ERROR;
-    previousError?: Error;
-    constructor(code: ERROR, previousError?: Error);
+    previousError?: Error | undefined;
+    constructor(code: ERROR, previousError?: Error | undefined);
 }
