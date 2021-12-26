@@ -12,13 +12,10 @@
     "./packages/*"
   ],
   "scripts": {
-    "start:web": "cd packages/web && yarn start",
     "start:web-prod": "cd packages/web && yarn start-prod",
-    "start:landing": "cd packages/landing && yarn start",
-    "start:shared": "cd packages/shared && yarn watch",
     "start:api-lambda": "cd packages/api-lambda && yarn watch",
     "start:back": "docker compose up -d && concurrently -n api-lambda \"yarn start:api-lambda\"",
-    "start:front": "concurrently -n web,shared \"yarn start:web\" \"yarn start:shared\"",
+    "start:front": "lerna exec --parallel --ignore @oboku/api-lambda  -- yarn start",
     "deploy-server": "pm2 stop oboku-api && git fetch origin && git reset --hard origin/release && yarn && pm2 start oboku-api && pm2 log oboku-api",
     "dev:fix:sharp": "rm -rf node_modules/sharp && rm -rf packages/api-lambda/node_modules/sharp && cd packages/api-lambda/sharp-install && SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp && cd ../../../ && cp -R packages/api-lambda/sharp-install/node_modules/sharp packages/api-lambda/node_modules/sharp",
     "tsc:web": "cd packages/web && yarn tsc",
@@ -38,6 +35,8 @@
     "lerna": "^4.0.0"
   },
   "resolutions": {
-    "@types/react": "17.0.34"
+    "@types/react": "17.0.34",
+    "react-dom": "17.0.1",
+    "react": "17.0.1"
   }
 }
