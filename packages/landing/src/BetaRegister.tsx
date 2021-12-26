@@ -66,12 +66,12 @@ const useIsValid = (email: string) => {
 }
 
 const useSendMail = () => {
-  const [error, setEror] = useState(undefined)
+  const [error, setError] = useState(undefined)
   const [status, setStatus] = useState<undefined | 'complete' | 'fetching'>(undefined)
 
   const cb = async (email: string) => {
     setStatus('fetching')
-    setEror(undefined)
+    setError(undefined)
     try {
       const response = await fetch(`${API_URI}/requestaccess`, {
         method: 'POST',
@@ -84,7 +84,7 @@ const useSendMail = () => {
         throw new Error()
       }
     } catch (e) {
-      setEror(e)
+      setError(e as any)
     } finally {
       setStatus('complete')
     }
