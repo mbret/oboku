@@ -1,16 +1,16 @@
-import { dataSourceHelpers, dataSourcePlugins } from "@oboku/shared/src";
-import { DataSourcePlugin } from "../types";
+import { dataSourceHelpers } from "@oboku/shared/src";
 import { load } from "cheerio";
 import { BASE_URI } from "./constants";
 import fetch from "node-fetch";
+import { DataSourcePlugin } from "@oboku/plugin-back";
 
 export const plugin: DataSourcePlugin = {
-  ...dataSourcePlugins.NHENTAI,
+  type: `NHENTAI`,
   download: async (link) => {
     throw new Error(`Not implemented`)
   },
   getMetadata: async (link) => {
-    const galleryId = dataSourceHelpers.extractIdFromResourceId(dataSourcePlugins.NHENTAI.uniqueResourceIdentifier, link.resourceId)
+    const galleryId = dataSourceHelpers.extractIdFromResourceId(`nhentai`, link.resourceId)
     const uri = `${BASE_URI}/g/${galleryId}`
 
     const response = await fetch(uri)

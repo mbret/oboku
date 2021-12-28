@@ -2,7 +2,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, List, ListIt
 import { FC, useCallback } from 'react'
 import { useAddBookFromFile } from '../books/helpers'
 import { useDropzone } from 'react-dropzone'
-import { Report } from '../debug/report'
+import { Report } from '../debug/report.shared'
 import { READER_SUPPORTED_EXTENSIONS } from '@oboku/shared'
 
 export const UploadBookFromDevice: FC<{

@@ -14,6 +14,7 @@ module.exports = {
     `request`,
     `node-fetch`,
     `cheerio`,
+    `nano`,
     /^@oboku\/.+$/
   ],
   ...IS_PROD && {

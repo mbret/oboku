@@ -13,8 +13,8 @@ module.exports = {
   externals: [
     `react`,
     `react-dom`,
-    `@material-ui/core`,
-    `@oboku/plugin-front`,
+    /^@material-ui\/.+$/,
+    /^@oboku\/.+$/,
     `yup`
   ],
   ...IS_PROD && {
@@ -27,13 +27,7 @@ module.exports = {
       {
         test: /\.tsx?$/,
         use: [{
-          loader: `ts-loader`,
-          options: {
-            compilerOptions: {
-              noEmit: false,
-              declaration: true
-            }
-          }
+          loader: `ts-loader`
         }]
       }
     ]

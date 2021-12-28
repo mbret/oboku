@@ -1,10 +1,9 @@
-import { dataSourcePlugins } from '@oboku/shared/src'
+import { DataSourcePlugin } from '@oboku/plugin-back'
 import request from 'request'
-import { DataSourcePlugin } from '../types'
 
 export type UriLinkData = { uri?: string }
 
-const UNIQUE_RESOURCE_ID = dataSourcePlugins.URI.uniqueResourceIdentifier
+const UNIQUE_RESOURCE_ID = `oboku-link`
 
 const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`${UNIQUE_RESOURCE_ID}-`, ``)
 const extractNameFromUri = (resourceId: string) => {
@@ -13,7 +12,7 @@ const extractNameFromUri = (resourceId: string) => {
 }
 
 export const dataSource: DataSourcePlugin = {
-  ...dataSourcePlugins.URI,
+  type: `URI`,
   getMetadata: async (link) => {
     const filename = extractNameFromUri(link.resourceId)
 

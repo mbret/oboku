@@ -3,17 +3,17 @@
  */
 import nodeFetch from 'node-fetch'
 import { Dropbox, files } from "dropbox";
-import { DataSourcePlugin, SynchronizeAbleDataSource } from "../types";
 import { Readable } from 'stream'
-import { DropboxDataSourceData, READER_SUPPORTED_EXTENSIONS, dataSourcePlugins } from '@oboku/shared/src'
+import { DropboxDataSourceData, READER_SUPPORTED_EXTENSIONS } from '@oboku/shared/src'
 import { PromiseReturnType } from "../../types";
 import { createThrottler } from '../helpers';
+import { DataSourcePlugin, SynchronizeAbleDataSource } from '@oboku/plugin-back';
 
 const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`dropbox-`, ``)
 const generateResourceId = (id: string) => `dropbox-${id}`
 
 export const dataSource: DataSourcePlugin = {
-  ...dataSourcePlugins.DROPBOX,
+  type: `DROPBOX`,
   getMetadata: async (link, credentials) => {
     var dbx = new Dropbox({ accessToken: credentials.accessToken, fetch: nodeFetch })
     const fileId = extractIdFromResourceId(link.resourceId)

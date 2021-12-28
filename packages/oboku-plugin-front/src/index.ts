@@ -1,11 +1,12 @@
-import { DataSourceDocType, LinkDocType } from "@oboku/shared"
+import { DataSourceDocType, LinkDocType, dataSourceHelpers } from "@oboku/shared"
 import { ComponentProps, FC, FunctionComponent } from "react"
 import { Button } from '@material-ui/core'
 
 import * as yup from 'yup'
 
 export {
-  yup
+  yup,
+  dataSourceHelpers
 }
 
 type Item = {

@@ -1,7 +1,9 @@
 import { Request } from 'request'
-import { LinkDocType, dataSourceHelpers } from '@oboku/shared/src'
+import { LinkDocType, dataSourceHelpers, InsertableBookDocType, SafeMangoQuery, DocType, ModelOf } from '@oboku/shared/src'
+import { extractDirectivesFromName } from '@oboku/shared/src/directives'
 import * as cheerio from "cheerio"
 import fetch from "node-fetch"
+import createNano from 'nano'
 
 export {
   dataSourceHelpers,
@@ -25,7 +27,44 @@ export type SynchronizeAbleDataSource = {
   items: SynchronizeAbleItem[]
 }
 
-type Helpers = {}
+type Helpers = {
+  refreshBookMetadata: (opts: { bookId: string }) => Promise<any>,
+  getDataSourceData: <Data>() => Promise<Partial<Data>>,
+  isBookCoverExist: (bookId: string) => Promise<boolean>,
+  createBook: (data?: Partial<InsertableBookDocType>) => Promise<createNano.DocumentInsertResponse>,
+  findOne: <M extends DocType['rx_model'], D extends ModelOf<M>>(
+    model: M,
+    query: SafeMangoQuery<D>
+  ) => Promise<({
+    _id: string;
+    _rev: string;
+  } & D) | null>,
+  find: <M extends DocType['rx_model'], D extends ModelOf<M>>(
+    model: M,
+    query: SafeMangoQuery<D>
+  ) => Promise<{
+    _id: string;
+    _rev: string;
+  }[]>,
+  atomicUpdate: <M extends DocType['rx_model'], K extends ModelOf<M>>(
+    model: M,
+    id: string,
+    cb: (oldData: createNano.DocumentGetResponse & K) => Partial<K>
+  ) => Promise<unknown>,
+  create: <M extends DocType['rx_model'], D extends ModelOf<M>>(
+    model: M,
+    data: Omit<D, 'rx_model' | '_id' | '_rev'>
+  ) => Promise<createNano.DocumentInsertResponse>,
+  addTagsToBook: (bookId: string, tagIds: string[]) => void,
+  getOrCreateTagFromName: (name: string) => void,
+  addLinkToBook: (bookId: string, linkId: string) => void,
+  createError: (code: 'unknown' | 'unauthorized' | 'rateLimitExceeded', previousError?: Error) => void,
+  extractDirectivesFromName: typeof extractDirectivesFromName,
+  createTagFromName: (name: string, silent: boolean) => Promise<{
+    id: string;
+    created: boolean;
+  }>
+}
 
 export type DataSourcePlugin = {
   type: string,

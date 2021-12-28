@@ -13,8 +13,7 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "noUncheckedIndexedAccess": true,
-    "declaration": true,
-    "noEmit": true
+    "declaration": false,
   },
   "exclude": ["webpack.config.js", "**/dist", "**/*.test.ts"]
 }

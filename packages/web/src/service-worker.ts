@@ -14,7 +14,7 @@ import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
 import { STREAMER_URL_PREFIX } from './constants.shared';
-import { readerFetchListener } from './reader/streamer/serviceWorker'
+import { readerFetchListener } from './reader/streamer/serviceWorker.sw'
 
 declare const self: ServiceWorkerGlobalScope;
 

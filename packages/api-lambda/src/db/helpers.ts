@@ -2,15 +2,10 @@ import { COUCH_DB_URL } from "../constants";
 import createNano from 'nano'
 import { generateAdminToken, generateToken } from "../auth";
 import {
-  BookDocType, LinkDocType, DataSourceDocType,
-  TagsDocType, CollectionDocType, SafeMangoQuery, InsertableBookDocType, ReadingStateState
+  SafeMangoQuery, InsertableBookDocType, ReadingStateState, DocType, ModelOf
 } from '@oboku/shared/src'
 import { waitForRandomTime } from "../utils"
 import { User } from './couchDbEntities'
-
-export type DocType = BookDocType | TagsDocType | DataSourceDocType | LinkDocType | CollectionDocType
-
-export type ModelOf<Type extends DocType['rx_model']> = DocType extends (infer DT) ? DT extends DocType ? DT['rx_model'] extends Type ? DT : never : never : never
 
 export const createUser = async (db: createNano.ServerScope, username: string, userpass: string) => {
   const obokuDb = db.use('_users')

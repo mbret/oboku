@@ -9,16 +9,19 @@
   "scripts": {
     "start": "concurrently -n front,back \"yarn start:front\" \"yarn start:back\"",
     "start:front": "concurrently -n src,types \"yarn start-src:front\" \"yarn start-types:front\"",
-    "start-types:front": "yarn tsc -w --project tsconfig.front.json --preserveWatchOutput --declaration --noEmit false --emitDeclarationOnly",
-    "build-types:front": "yarn tsc --project tsconfig.front.json --declaration --noEmit false --emitDeclarationOnly",
+    "start-types:front": "tsc -w --project tsconfig.front.json --preserveWatchOutput --declaration --noEmit false --emitDeclarationOnly",
+    "build-types:front": "tsc --project tsconfig.front.json --declaration --noEmit false --emitDeclarationOnly",
     "start-src:front": "webpack build --config ./webpack.config.front.js --watch",
     "build-src:front": "webpack build --config ./webpack.config.front.js",
     "start:back": "concurrently -n src,types \"yarn start-src:back\" \"yarn start-types:back\"",
     "start-src:back": "webpack build --config ./webpack.config.back.js --watch",
     "build-src:back": "webpack build --config ./webpack.config.back.js",
-    "start-types:back": "yarn tsc -w --project tsconfig.back.json --preserveWatchOutput --declaration --noEmit false --emitDeclarationOnly",
-    "build-types:back": "yarn tsc --project tsconfig.back.json --declaration --noEmit false --emitDeclarationOnly",
+    "start-types:back": "tsc -w --project tsconfig.back.json --preserveWatchOutput --declaration --noEmit false --emitDeclarationOnly",
+    "build-types:back": "tsc --project tsconfig.back.json --declaration --noEmit false --emitDeclarationOnly",
     "lint": "eslint '**/*.{js,ts,tsx}'",
+    "tsc": "concurrently -n front,back \"yarn tsc:front\" \"yarn tsc:back\"",
+    "tsc:front": "tsc --project tsconfig.front.json",
+    "tsc:back": "tsc --project tsconfig.back.json",
     "test": "jest"
   },
   "dependencies": {

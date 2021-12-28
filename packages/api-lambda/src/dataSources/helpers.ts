@@ -1,9 +1,9 @@
 import {
   atomicUpdate, createBook, addTagsToBook,
-  insert, findOne, DocType, ModelOf, addLinkToBook, find, getOrCreateTagFromName, createTagFromName
+  insert, findOne, addLinkToBook, find, getOrCreateTagFromName, createTagFromName
 } from '../db/helpers'
 import createNano from 'nano'
-import { InsertableBookDocType, SafeMangoQuery, Errors, ObokuSharedError } from "@oboku/shared/src"
+import { InsertableBookDocType, SafeMangoQuery, Errors, ObokuSharedError, DocType, ModelOf } from "@oboku/shared/src"
 import { extractDirectivesFromName } from '@oboku/shared/src/directives'
 
 export const createHelpers = (
