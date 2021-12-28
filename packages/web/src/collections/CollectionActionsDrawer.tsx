@@ -1,6 +1,6 @@
 import { Drawer, ListItem, Divider, List, ListItemIcon, ListItemText, DialogContent, DialogTitle, Dialog, TextField, DialogActions, Button } from "@material-ui/core";
 import { useEffect, useState, FC } from "react";
-import { Edit, DeleteForeverRounded, DynamicFeedRounded, LibraryAddRounded } from "@material-ui/icons";
+import { Edit, DeleteForeverRounded, LibraryAddRounded } from "@material-ui/icons";
 import { useRemoveCollection, useUpdateCollection } from "./helpers";
 import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import { collectionState } from "./states";
