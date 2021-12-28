@@ -23,6 +23,9 @@
     "web-vitals": "^0.2.4",
     "yup": "0.32.11"
   },
+  "devDependencies": {
+    "eslint-config-react-app": "^6.0.0"
+  },
   "scripts": {
     "start": "PORT=3001 react-scripts start",
     "build": "react-scripts build",
