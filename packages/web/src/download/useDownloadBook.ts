@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import throttle from 'lodash.throttle';
 import { UnwrapRecoilValue, useRecoilCallback, useSetRecoilState } from 'recoil';
 import { DownloadState, normalizedBookDownloadsState } from './states';
-import { Report } from '../debug/report';
+import { Report } from '../debug/report.shared';
 import { useDatabase } from '../rxdb';
 import { DOWNLOAD_PREFIX } from '../constants.shared';
 import { useDownloadBookFromDataSource, useGetDataSourceCredentials } from '../dataSources/helpers';
@@ -90,7 +90,7 @@ export const useDownloadBook = () => {
           // }
         }
 
-        const downloadResponse = await downloadBook(firstLink, { onDownloadProgress, })
+        const downloadResponse = await downloadBook(firstLink, { onDownloadProgress })
 
         if ('isError' in downloadResponse && downloadResponse.reason === 'cancelled') {
           setDownloadData(bookId, {

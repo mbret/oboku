@@ -1,12 +1,4 @@
-import { DataSourceDocType } from "..";
-
-export type DataSourcePlugin = {
-  uniqueResourceIdentifier: string,
-  name?: string,
-  synchronizable?: boolean,
-  type: string,
-  sensitive?: boolean
-}
+import { DataSourceDocType } from "../docTypes";
 
 export type GoogleDriveDataSourceData = {
   applyTags: string[]
@@ -18,32 +10,6 @@ export type DropboxDataSourceData = {
   folderId: string
   folderName: string
   applyTags: string[]
-}
-
-export const dataSourcePlugins: { [key: string]: DataSourcePlugin } = {
-  DRIVE: {
-    uniqueResourceIdentifier: 'drive',
-    type: `DRIVE`
-  },
-  DROPBOX: {
-    uniqueResourceIdentifier: 'dropbox',
-    type: `DROPBOX`
-  },
-  FILE: {
-    uniqueResourceIdentifier: 'oboku-file',
-    type: `FILE`
-  },
-  URI: {
-    uniqueResourceIdentifier: 'oboku-link',
-    type: `URI`
-  },
-  NHENTAI: {
-    uniqueResourceIdentifier: 'nhentai',
-    name: `nhentai`,
-    synchronizable: false,
-    type: `NHENTAI`,
-    sensitive: true
-  },
 }
 
 export const generateResourceId = (uniqueResourceIdentifier: string, resourceId: string) => `${uniqueResourceIdentifier}-${resourceId}`

@@ -1,6 +1,6 @@
 import { Archive } from '@prose-reader/streamer'
 import { getBookFile } from '../../download/getBookFile.shared'
-import { Report } from '../../debug/report'
+import { Report } from '../../debug/report.shared'
 import { getArchiveForFile } from './getArchiveForFile.shared'
 
 export class FileNotFoundError extends Error {}

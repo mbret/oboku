@@ -11,11 +11,11 @@ import { DataSourceDocType } from '@oboku/shared';
 import { plugins as dataSourcePlugins } from './configure';
 import { AddDataSource } from './AddDataSource';
 import { Errors } from "@oboku/shared"
-import { ObokuDataSourcePlugin } from './types';
+import { ObokuPlugin } from "@oboku/plugin-front"
 
 export const SyncSourcesScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
-  const [isAddDataSourceOpenedWith, setIsAddDataSourceOpenedWith] = useState<ObokuDataSourcePlugin | undefined>(undefined)
+  const [isAddDataSourceOpenedWith, setIsAddDataSourceOpenedWith] = useState<ObokuPlugin | undefined>(undefined)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<string | undefined>(undefined)
   const syncSources = useRecoilValue(dataSourcesAsArrayState)
   const theme = useTheme()

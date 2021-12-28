@@ -1,7 +1,7 @@
 import { DataSourceDocType, dataSourceHelpers, GoogleDriveDataSourceData } from "@oboku/shared";
-import { ObokuDataSourcePlugin } from "../types";
+import { ObokuPlugin } from "@oboku/plugin-front"
 
-export const useSyncSourceInfo: ObokuDataSourcePlugin[`useSyncSourceInfo`] = (syncSource: DataSourceDocType) => {
+export const useSyncSourceInfo: ObokuPlugin[`useSyncSourceInfo`] = (syncSource: DataSourceDocType) => {
   const data = dataSourceHelpers.extractSyncSourceData<GoogleDriveDataSourceData>(syncSource)
 
   return {

@@ -5,7 +5,7 @@ import { AppBar, IconButton, Toolbar, Typography, useTheme } from "@material-ui/
 import { ArrowBackIosRounded, FullscreenExitRounded, FullscreenRounded, ListRounded } from '@material-ui/icons'
 import { useNavigation } from '../navigation/useNavigation'
 import screenfull from 'screenfull'
-import { Report } from '../debug/report'
+import { Report } from '../debug/report.shared'
 import { useCSS } from '../common/utils'
 import { useToggleContentsDialog } from './ContentsDialog'
 

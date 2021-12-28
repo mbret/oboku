@@ -1,6 +1,6 @@
 import { Dropbox, DropboxResponse, files } from "dropbox"
 import { useCallback } from "react"
-import { UseDownloadHook } from "../types"
+import { ObokuPlugin } from "@oboku/plugin-front"
 import { authUser } from "./auth"
 import { extractIdFromResourceId } from "./helpers"
 
@@ -12,7 +12,7 @@ type ResponseWithFileBlob = DropboxResponse<files.FileMetadata> & {
   }
 }
 
-export const useDownloadBook: UseDownloadHook = () => {
+export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
   return useCallback(async (link) => {
 
     const auth = await authUser()

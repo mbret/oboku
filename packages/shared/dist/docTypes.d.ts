@@ -120,4 +120,6 @@ interface MangoQuery<RxDocType> {
 }
 export declare type MangoQuerySelector<T> = T;
 export declare type SafeMangoQuery<RxDocType = any> = MangoQuery<RxDocType>;
+export declare type DocType = BookDocType | TagsDocType | DataSourceDocType | LinkDocType | CollectionDocType;
+export declare type ModelOf<Type extends DocType['rx_model']> = DocType extends (infer DT) ? DT extends DocType ? DT['rx_model'] extends Type ? DT : never : never : never;
 export {};

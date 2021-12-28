@@ -1,14 +1,13 @@
 import { HttpRounded } from "@material-ui/icons"
-import { dataSourcePlugins } from "@oboku/shared"
-import { ObokuDataSourcePlugin } from "../types"
+import { ObokuPlugin } from "@oboku/plugin-front"
 import { UploadComponent } from "./UploadComponent"
 import { useDownloadBook } from "./useDownloadBook"
 
-const plugin: ObokuDataSourcePlugin = {
+const plugin: ObokuPlugin = {
   type: `URI`,
   name: 'Link',
   synchronizable: false,
-  uniqueResourceIdentifier: dataSourcePlugins[`URI`]?.uniqueResourceIdentifier || ``,
+  uniqueResourceIdentifier: `oboku-link`,
   Icon: HttpRounded,
   AddDataSource: () => null,
   UploadComponent: UploadComponent,

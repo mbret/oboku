@@ -1,11 +1,11 @@
 import axios from "axios"
 import { useCallback } from "react"
 import { PromiseReturnType } from "../../types"
-import { UseDownloadHook } from "../types"
+import { ObokuPlugin } from "@oboku/plugin-front"
 import { extractIdFromResourceId, useGetLazySignedGapi } from "./helpers"
 import { isDriveResponseError } from "./types"
 
-export const useDownloadBook: UseDownloadHook = () => {
+export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
   const [getLazySignedGapi] = useGetLazySignedGapi()
 
   return useCallback(async (link, options) => {

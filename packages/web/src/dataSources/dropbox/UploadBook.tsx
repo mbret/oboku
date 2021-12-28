@@ -3,7 +3,7 @@
  * @see https://www.dropbox.com/lp/developers/reference/oauth-guide
  */
 import React, { FC, useEffect, useState } from 'react'
-import { Report } from '../../debug/report'
+import { Report } from '../../debug/report.shared'
 import { BlockingScreen } from '../../common/BlockingBackdrop'
 import { useAddBook } from '../../books/helpers'
 import { DropboxFile } from './types'

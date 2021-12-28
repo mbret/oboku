@@ -1,8 +1,8 @@
 import { FC } from "react"
-import { ObokuDataSourcePlugin } from "./types"
+import { ObokuPlugin } from "@oboku/plugin-front"
 
 export const AddDataSource: FC<{
-  openWith: ObokuDataSourcePlugin | undefined,
+  openWith: ObokuPlugin | undefined,
   onClose: () => void
 }> = ({ openWith, onClose }) => {
 

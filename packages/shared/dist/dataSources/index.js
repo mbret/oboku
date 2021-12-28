@@ -1,31 +1,6 @@
 "use strict";
 exports.__esModule = true;
-exports.dataSourceHelpers = exports.extractSyncSourceData = exports.extractIdFromResourceId = exports.generateResourceId = exports.dataSourcePlugins = void 0;
-exports.dataSourcePlugins = {
-    DRIVE: {
-        uniqueResourceIdentifier: 'drive',
-        type: "DRIVE"
-    },
-    DROPBOX: {
-        uniqueResourceIdentifier: 'dropbox',
-        type: "DROPBOX"
-    },
-    FILE: {
-        uniqueResourceIdentifier: 'oboku-file',
-        type: "FILE"
-    },
-    URI: {
-        uniqueResourceIdentifier: 'oboku-link',
-        type: "URI"
-    },
-    NHENTAI: {
-        uniqueResourceIdentifier: 'nhentai',
-        name: "nhentai",
-        synchronizable: false,
-        type: "NHENTAI",
-        sensitive: true
-    }
-};
+exports.dataSourceHelpers = exports.extractSyncSourceData = exports.extractIdFromResourceId = exports.generateResourceId = void 0;
 var generateResourceId = function (uniqueResourceIdentifier, resourceId) { return uniqueResourceIdentifier + "-" + resourceId; };
 exports.generateResourceId = generateResourceId;
 var extractIdFromResourceId = function (uniqueResourceIdentifier, resourceId) { return resourceId.replace(uniqueResourceIdentifier + "-", ""); };

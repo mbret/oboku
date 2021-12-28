@@ -1,12 +1,15 @@
-import { dataSourcePlugins } from "@oboku/shared";
-import { ObokuDataSourcePlugin } from "../types";
+import { ObokuPlugin } from "@oboku/plugin-front"
 import { UploadComponent } from "./UploadComponent";
 import { SvgIcon } from "@material-ui/core"
 import { ReactComponent as IconSvg } from './icon.svg'
 import { useDownloadBook } from './useDownloadBook'
 
-export const plugin: ObokuDataSourcePlugin = {
-  ...dataSourcePlugins.NHENTAI!,
+export const plugin: ObokuPlugin = {
+  uniqueResourceIdentifier: 'nhentai',
+  name: `nhentai`,
+  synchronizable: false,
+  type: `NHENTAI`,
+  sensitive: true,
   UploadComponent,
   useDownloadBook,
   Icon: () => (

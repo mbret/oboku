@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { RxDatabase, RxQuery } from "rxdb"
 import { Subscription } from "rxjs"
-import { Report } from "../debug/report"
+import { Report } from "../debug/report.shared"
 import type { DocTypes, MyDatabaseCollections } from "."
 import { PromiseReturnType } from "../types"
 import { useDatabase } from "./RxDbProvider"

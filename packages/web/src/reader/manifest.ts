@@ -1,7 +1,7 @@
 import { Manifest } from "@prose-reader/core"
 import { useCallback, useEffect, useState } from "react"
 import { getBookFile } from "../download/getBookFile.shared"
-import { Report } from "../debug/report"
+import { Report } from "../debug/report.shared"
 import { getArchiveForRarFile } from "./streamer/getArchiveForFile.shared"
 import '../archive'
 import { getManifestFromArchive } from "@prose-reader/streamer"

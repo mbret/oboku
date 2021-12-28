@@ -1,44 +1,34 @@
 import { useCallback } from "react"
-import { UseDownloadHook } from "../types"
-import { dataSourceHelpers, dataSourcePlugins } from "@oboku/shared";
-import { BASE_URI } from "./constants"
-import { API_URI } from "../../constants"
+import { ObokuPlugin } from "@oboku/plugin-front"
+import { dataSourceHelpers } from "@oboku/shared";
+import { BASE_URI, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 
 type StreamOutput = { baseUri: string, response: Response, progress: number }
 
-export const useDownloadBook: UseDownloadHook = () => {
+export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({ apiUri }) => {
   return useCallback(async ({ resourceId }) => {
-    const galleryId = dataSourceHelpers.extractIdFromResourceId(dataSourcePlugins.NHENTAI!.uniqueResourceIdentifier, resourceId)
+    const galleryId = dataSourceHelpers.extractIdFromResourceId(UNIQUE_RESOURCE_IDENTIFIER, resourceId)
 
-    let reader: ReadableStreamDefaultReader<StreamOutput> | undefined
+    const uri = `${BASE_URI}/g/${galleryId}`
+    const response = await fetch(`${apiUri}/cors?url=${uri}`, {
+      referrerPolicy: `no-referrer`
+    })
 
-    try {
-      const uri = `${BASE_URI}/g/${galleryId}`
-      const response = await fetch(`${API_URI}/cors?url=${uri}`, {
-        referrerPolicy: `no-referrer`
-      })
+    const data = await response.text()
 
-      const data = await response.text()
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(data, `text/html`)
 
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(data, `text/html`)
+    const thumbnailPages = resolvePagesForGallery(doc)
+    const pagesGalleryId = resolvePagesGalleryRealId(doc)
 
-      const thumbnailPages = resolvePagesForGallery(doc)
-      const pagesGalleryId = resolvePagesGalleryRealId(doc)
-
-      if (!pagesGalleryId || thumbnailPages.length === 0) {
-        throw new Error(`Unable to find book data`)
-      }
-
-      const stream = getGalleryPages(pagesGalleryId, thumbnailPages)
-
-      return { data: stream }
-    } catch (e) {
-      // cancel stream in case of
-      reader?.cancel().catch(() => { })
-
-      throw e
+    if (!pagesGalleryId || thumbnailPages.length === 0) {
+      throw new Error(`Unable to find book data`)
     }
+
+    const stream = getGalleryPages(apiUri, pagesGalleryId, thumbnailPages)
+
+    return { data: stream }
   }, [])
 }
 
@@ -65,11 +55,11 @@ const resolvePagesGalleryRealId = (doc: Document) => {
   return imgGalleryId
 }
 
-function getUrlExtension( url: string ) {
+function getUrlExtension(url: string) {
   return url.split(/[#?]/)[0]?.split('.')?.pop()?.trim();
 }
 
-const getGalleryPages = (galleryId: string, thumbnailPages: string[]) => {
+const getGalleryPages = (apiUri: string, galleryId: string, thumbnailPages: string[]) => {
   let cancelled = false
 
   return new ReadableStream<StreamOutput>({
@@ -78,10 +68,9 @@ const getGalleryPages = (galleryId: string, thumbnailPages: string[]) => {
         const downloadPage = async (index: number) => {
           const currentThumbSrc = thumbnailPages[index] || `dummy.jpg`
           const extension = getUrlExtension(currentThumbSrc) || `jpg`
-          console.log(thumbnailPages, currentThumbSrc, extension)
           const imgBaseUri = `${index + 1}.${extension}`
           const imgUri = `https://i.nhentai.net/galleries/${galleryId}/${imgBaseUri}`
-          const response = await fetch(`${API_URI}/cors?url=${imgUri}`, {
+          const response = await fetch(`${apiUri}/cors?url=${imgUri}`, {
             referrerPolicy: `no-referrer`
           })
 

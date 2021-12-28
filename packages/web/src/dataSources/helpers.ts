@@ -2,15 +2,16 @@ import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
 import { DataSourceDocType, Errors } from '@oboku/shared'
 import { useRxMutation } from "../rxdb/hooks"
-import { Report } from "../debug/report"
+import { Report } from "../debug/report.shared"
 import { useRecoilCallback } from "recoil"
 import { plugins } from "./configure"
 import { useCallback, useMemo, useRef } from "react"
-import { ObokuDataSourcePlugin, UseDownloadHook } from "./types"
+import { ObokuPlugin } from "@oboku/plugin-front"
 import { useDialogManager } from "../dialog"
 import { useNetworkState } from "react-use"
 import { useSync } from "../rxdb/useSync"
 import { AtomicUpdateFunction } from "rxdb"
+import { API_URI } from "../constants"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
@@ -99,7 +100,7 @@ export const useGetDataSourceCredentials = () => {
 
   // It's important to use array for plugins and be careful of the order since
   // it will trigger all hooks
-  type GetCredentials = ReturnType<NonNullable<ObokuDataSourcePlugin[`useGetCredentials`]>> | undefined
+  type GetCredentials = ReturnType<NonNullable<ObokuPlugin[`useGetCredentials`]>> | undefined
   const getPluginCredentials = useRef<(Pick<typeof plugins[number], 'type'> & { getCredentials: GetCredentials })[]>([])
   getPluginCredentials.current = plugins.map(plugin => ({ type: plugin.type, getCredentials: plugin.useGetCredentials && plugin.useGetCredentials() }))
 
@@ -134,11 +135,11 @@ export const useDownloadBookFromDataSource = () => {
 
   // It's important to use array for plugins and be careful of the order since
   // it will trigger all hooks
-  type UseDownloadBook = ReturnType<NonNullable<ObokuDataSourcePlugin[`useDownloadBook`]>> | undefined
+  type UseDownloadBook = ReturnType<NonNullable<ObokuPlugin[`useDownloadBook`]>> | undefined
   const getPluginFn = useRef<(Pick<typeof plugins[number], 'type'> & { downloadBook: UseDownloadBook })[]>([])
-  getPluginFn.current = plugins.map(plugin => ({ type: plugin.type, downloadBook: plugin.useDownloadBook && plugin.useDownloadBook() }))
+  getPluginFn.current = plugins.map(plugin => ({ type: plugin.type, downloadBook: plugin.useDownloadBook && plugin.useDownloadBook({ apiUri: API_URI }) }))
 
-  const downloadBook: ReturnType<UseDownloadHook> = async (link, options) => {
+  const downloadBook: ReturnType<NonNullable<ObokuPlugin[`useDownloadBook`]>> = async (link, options) => {
     const found = getPluginFn.current.find(plugin => plugin.type === link.type)
     if (found) {
       if (!found.downloadBook) {

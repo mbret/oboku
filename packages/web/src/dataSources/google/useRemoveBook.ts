@@ -1,8 +1,8 @@
 import { useCallback } from "react"
-import { UseRemoveBook } from "../types"
+import { ObokuPlugin } from "@oboku/plugin-front"
 import { extractIdFromResourceId, useGetLazySignedGapi } from "./helpers"
 
-export const useRemoveBook: UseRemoveBook = () => {
+export const useRemoveBook: ObokuPlugin[`useRemoveBook`] = () => {
   const [getLazySignedGapi] = useGetLazySignedGapi()
 
   return useCallback(async (link) => {

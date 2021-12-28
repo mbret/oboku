@@ -3,7 +3,7 @@ import { BookDocType, ReadingStateState, sortByTitleComparator } from '@oboku/sh
 import { useRxMutation } from "../rxdb/hooks"
 import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
-import { Report } from "../debug/report"
+import { Report } from "../debug/report.shared"
 import { useCallback, useMemo } from "react"
 import { useGetDataSourceCredentials, useRemoveBookFromDataSource } from "../dataSources/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"

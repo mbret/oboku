@@ -1,6 +1,6 @@
 import { EMPTY, from, switchMap, map, ignoreElements, zip, catchError } from "rxjs";
 import { ofType, useActionEffect } from "../actions";
-import { Report } from "../debug/report";
+import { Report } from "../debug/report.shared";
 import { useRemoveDanglingLinks } from "../links/helpers";
 import { useDatabase } from "../rxdb";
 import { useRefreshBookMetadata } from "./helpers";

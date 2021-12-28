@@ -20,6 +20,7 @@ export const createCbzFromReadableStream = async (stream: ReadableStream<StreamV
 
     return data
   } catch (e) {
+    // cancel in case of
     reader.cancel().catch(() => { })
 
     throw e

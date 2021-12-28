@@ -1,21 +1,21 @@
 import { ComponentProps } from "react"
-import { ObokuDataSourcePlugin } from "../types"
+import { ObokuPlugin } from "@oboku/plugin-front"
 import { FC, useState } from 'react'
-import { dataSourcePlugins } from '@oboku/shared'
 import { useDataSourceHelpers } from '../helpers'
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from '@material-ui/core'
 import * as yup from 'yup'
 import { ButtonDialog } from "../../common/ButtonDialog"
 import { TagsSelector } from "../../tags/TagsSelector"
+import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 
 const schema = yup.object().shape({
   galleryId: yup.number().required(),
 })
 
-type Props = ComponentProps<NonNullable<ObokuDataSourcePlugin[`UploadComponent`]>>
+type Props = ComponentProps<NonNullable<ObokuPlugin[`UploadComponent`]>>
 
 export const UploadComponent: FC<Props> = ({ onClose, title }) => {
-  const { generateResourceId } = useDataSourceHelpers(dataSourcePlugins.NHENTAI!)
+  const { generateResourceId } = useDataSourceHelpers(UNIQUE_RESOURCE_IDENTIFIER)
   const [galleryId, setGalleryId] = useState(``)
   const [tags, setTags] = useState<string[]>([])
   const isValid = schema.isValidSync({ galleryId })

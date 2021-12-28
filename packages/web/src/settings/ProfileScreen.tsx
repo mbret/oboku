@@ -21,7 +21,7 @@ import { toggleDebug } from '../debug';
 import { useIsMountedState$ } from '../common/useIsMountedState$';
 import { useDatabase } from '../rxdb';
 import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from 'rxjs';
-import { Report } from '../debug/report';
+import { Report } from '../debug/report.shared';
 import { isDebugEnabled } from '../debug/isDebugEnabled.shared';
 
 export const ProfileScreen = () => {

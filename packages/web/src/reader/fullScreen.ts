@@ -3,7 +3,7 @@ import { useRecoilValue } from "recoil"
 import { localSettingsState } from "../settings/states"
 import screenfull from 'screenfull'
 import { IS_MOBILE_DEVICE } from "../constants"
-import { Report } from "../debug/report"
+import { Report } from "../debug/report.shared"
 
 export const useFullScreenSwitch = () => {
   const localSettings = useRecoilValue(localSettingsState)

@@ -6,10 +6,11 @@ import * as dropboxPlugin from "./dropbox"
 import { plugin as nhentai } from "./nhentai"
 import { plugin as google } from "./google"
 import linkPlugin from "./link"
-import { ObokuDataSourcePlugin } from "./types"
+import { ObokuPlugin } from "@oboku/plugin-front"
+import { plugin as imhentai } from "@oboku/plugin-imhentai/dist/front"
 import { SvgIcon } from "@material-ui/core"
 
-const plugins: ObokuDataSourcePlugin[] = []
+const plugins: ObokuPlugin[] = []
 
 const DropboxIcon = () => (
   <SvgIcon>
@@ -33,6 +34,7 @@ plugins.push({
 plugins.push(google)
 plugins.push(linkPlugin)
 plugins.push(nhentai)
+plugins.push(imhentai)
 
 export {
   plugins

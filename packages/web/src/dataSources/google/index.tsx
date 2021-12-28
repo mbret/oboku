@@ -1,4 +1,4 @@
-import { ObokuDataSourcePlugin } from '../types'
+import { ObokuPlugin } from "@oboku/plugin-front"
 import { UNIQUE_RESOURCE_IDENTIFIER } from './constants'
 import { ReactComponent as GoogleDriveAsset } from '../../assets/google-drive.svg'
 import { SvgIcon } from "@material-ui/core"
@@ -17,7 +17,7 @@ const GoogleDriveIcon = () => (
   </SvgIcon>
 )
 
-export const plugin: ObokuDataSourcePlugin = {
+export const plugin: ObokuPlugin = {
   uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   type: `DRIVE`,
   name: 'Google Drive',

@@ -3,9 +3,9 @@ import { DrivePicker } from './DrivePicker'
 import { BlockingScreen } from '../../common/BlockingBackdrop'
 import { useDataSourceHelpers } from '../helpers'
 import { UNIQUE_RESOURCE_IDENTIFIER } from './constants'
-import { ObokuDataSourcePlugin } from '../types'
+import { ObokuPlugin } from "@oboku/plugin-front"
 
-export const SelectItem: ObokuDataSourcePlugin[`SelectItemComponent`] = ({ onClose, open }) => {
+export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({ onClose, open }) => {
   const { generateResourceId } = useDataSourceHelpers(UNIQUE_RESOURCE_IDENTIFIER)
 
   const onPick: ComponentProps<typeof DrivePicker>['onClose'] = async (data) => {
