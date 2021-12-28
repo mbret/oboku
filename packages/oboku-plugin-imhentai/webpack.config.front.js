@@ -4,7 +4,7 @@ const IS_PROD = process.env.NODE_ENV !== `development`
 
 module.exports = {
   entry: {
-    index: `./src/front/index.ts`
+    index: `./src/front/index.tsx`
   },
   mode: IS_PROD ? `production` : `development`,
   ...!IS_PROD && {
@@ -34,6 +34,13 @@ module.exports = {
             configFile: require.resolve(`./tsconfig.front.json`)
           }
         }]
+      },
+      {
+        test: /\.(jpg|png|svg)$/,
+        loader: "url-loader",
+        options: {
+          limit: Infinity // everything
+        }
       }
     ]
   },

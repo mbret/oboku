@@ -1,7 +1,8 @@
-import { ObokuPlugin } from "@oboku/plugin-front"
+import { ImgIcon, ObokuPlugin } from "@oboku/plugin-front"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "../shared/constants"
 import { UploadComponent } from "./UploadComponent"
 import { useDownloadBook } from "./useDownloadBook"
+import logo from './logo.png'
 
 export const plugin: ObokuPlugin = {
   type: TYPE,
@@ -10,5 +11,6 @@ export const plugin: ObokuPlugin = {
   sensitive: true,
   synchronizable: false,
   UploadComponent,
-  useDownloadBook
+  useDownloadBook,
+  Icon: () => <ImgIcon src={logo} />
 }

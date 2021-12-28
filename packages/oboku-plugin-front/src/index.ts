@@ -4,6 +4,8 @@ import { Button } from '@material-ui/core'
 
 import * as yup from 'yup'
 
+export { ImgIcon } from './ImgIcon'
+
 export {
   yup,
   dataSourceHelpers

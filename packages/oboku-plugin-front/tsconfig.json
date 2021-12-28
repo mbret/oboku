@@ -14,6 +14,7 @@
     "allowSyntheticDefaultImports": true,
     "noUncheckedIndexedAccess": true,
     "declaration": false,
+    "jsx": "react-jsx"
   },
   "exclude": ["webpack.config.js", "**/dist", "**/*.test.ts"]
 }
