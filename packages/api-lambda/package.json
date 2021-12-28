@@ -20,7 +20,7 @@
     "aws-sdk": "^2.1028.0",
     "axios": "^0.24.0",
     "copy-webpack-plugin": "^9.1.0",
-    "dropbox": "10.20.0",
+    "dropbox": "10.23.0",
     "fast-xml-parser": "^3.21.1",
     "googleapis": "^91.0.0",
     "jsonwebtoken": "^8.5.1",

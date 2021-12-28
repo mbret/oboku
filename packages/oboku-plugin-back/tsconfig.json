@@ -2,19 +2,14 @@
   "compilerOptions": {
     "outDir": "dist",
     "noImplicitAny": true,
-    "module": "es6",
-    "target": "es6",
-    "lib": [
-      "DOM",
-      "esnext"
-    ],
+    "module": "commonjs",
+    "target": "ES2017", // only version that works with aws node env
     "sourceMap": true,
     "strict": true,
-    "allowJs": false,
-    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "noUncheckedIndexedAccess": true,
     "declaration": false
   },
+  "include": ["src"],
   "exclude": ["webpack.config.js", "**/dist", "**/*.test.ts"]
 }

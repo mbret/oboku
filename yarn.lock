@@ -7479,10 +7479,10 @@ double-ended-queue@2.1.0-0:
   resolved "https://registry.yarnpkg.com/double-ended-queue/-/double-ended-queue-2.1.0-0.tgz#103d3527fd31528f40188130c841efdd78264e5c"
   integrity sha1-ED01J/0xUo9AGIEwyEHv3XgmTlw=
 
-dropbox@10.20.0:
-  version "10.20.0"
-  resolved "https://registry.yarnpkg.com/dropbox/-/dropbox-10.20.0.tgz#46d2c3c02ec4b81c1233f37e3507d622bfd5ecfd"
-  integrity sha512-MiJqv3i9eCpK3MBJCEDIFlgIQ4fKSOaWNcW/hCjUI6bszssT8hhmV1LbQDqwNP/N5BNgjWFSWDrm8BJnezXe3g==
+dropbox@10.23.0:
+  version "10.23.0"
+  resolved "https://registry.yarnpkg.com/dropbox/-/dropbox-10.23.0.tgz#2a4215021b801d39ee0987d08155cd2d30f513d9"
+  integrity sha512-nG+3BlJijQj9+/aNyUDAJgnBegBQ4r3mD8ijP1iwHJ6ICX9mPdZaf7MN0p+efu47ex9XJLr1U1VsKXznsMmgiQ==
   dependencies:
     node-fetch "^2.6.1"
 

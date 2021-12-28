@@ -12,7 +12,7 @@
     "build-src": "webpack build --config ./webpack.config.js",
     "start-types": "yarn tsc -w --preserveWatchOutput --declaration --noEmit false --emitDeclarationOnly",
     "build-types": "yarn tsc --declaration --noEmit false --emitDeclarationOnly",
-    "build": "concurrently -n src,types \"yarn build-src\" \"yarn build-types\"",
+    "build": "concurrently -n build-src,build-types \"yarn build-src\" \"yarn build-types\"",
     "lint": "eslint '**/*.{js,ts,tsx}'",
     "test": "jest"
   },
