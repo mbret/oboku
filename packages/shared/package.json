@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 0",
     "tsc": "tsc --noEmit true",
     "watch": "nodemon",
-    "start": "yarn watch"
+    "start": "yarn watch",
+    "build": "echo build"
   },
   "author": "",
   "license": "ISC",

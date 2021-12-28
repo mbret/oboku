@@ -27,6 +27,8 @@ jobs:
       - name: Run typescript for backend
         run: |
           yarn tsc:back
+      - name: build repo
+        run: yarn build
       - name: build & deploy
         run: |
           cd packages/api-lambda

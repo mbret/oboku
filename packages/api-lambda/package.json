@@ -7,6 +7,7 @@
   "author": "SAM CLI",
   "license": "MIT",
   "dependencies": {
+    "@oboku/plugin-back": "0.0.1",
     "@types/aws-lambda": "^8.10.85",
     "@types/concurrently": "^6.4.0",
     "@types/jsonwebtoken": "^8.5.5",
@@ -41,6 +42,7 @@
   },
   "scripts": {
     "test": "jest",
+    "build": "echo build",
     "compile": "mkdir -p dist && cp package-build.json dist/package.json && ts-node scripts/compile.ts",
     "compile:dev": "ts-node scripts/startDev.ts",
     "start:dev": "concurrently --kill-others -n webpack,api,lambda \"yarn compile:dev\" \"sam local start-api -p 4001 --host 0.0.0.0 --parameter-overrides Environment=DEV\" \"sam local start-lambda -p 4002 --parameter-overrides Environment=DEV\"",
