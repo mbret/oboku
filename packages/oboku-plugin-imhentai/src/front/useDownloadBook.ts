@@ -1,6 +1,5 @@
 import { useCallback } from "react"
-import { ObokuPlugin } from "@oboku/plugin-front"
-import { dataSourceHelpers } from "@oboku/shared"
+import { ObokuPlugin, dataSourceHelpers } from "@oboku/plugin-front"
 import { BASE_URI, UNIQUE_RESOURCE_IDENTIFIER } from "../shared/constants"
 
 type StreamOutput = { baseUri: string, response: Response, progress: number }

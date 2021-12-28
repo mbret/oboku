@@ -1,0 +1,7 @@
+{ 
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+  },
+  "exclude": ["**/back", "webpack.config.js", "**/dist", "**/*.test.ts"]
+}

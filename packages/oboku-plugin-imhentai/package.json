@@ -7,9 +7,17 @@
     "/dist"
   ],
   "scripts": {
-    "start": "NODE_ENV=development webpack build --config ./webpack.config.js --watch",
-    "build": "NODE_ENV=development webpack build --config ./webpack.config.js",
-    "build:prod": "NODE_ENV=production webpack build --config ./webpack.config.js",
+    "start": "concurrently -n front,back \"yarn start:front\" \"yarn start:back\"",
+    "start:front": "concurrently -n src,types \"yarn start-src:front\" \"yarn start-types:front\"",
+    "start-types:front": "yarn tsc -w --project tsconfig.front.json --preserveWatchOutput --declaration --noEmit false --emitDeclarationOnly",
+    "build-types:front": "yarn tsc --project tsconfig.front.json --declaration --noEmit false --emitDeclarationOnly",
+    "start-src:front": "webpack build --config ./webpack.config.front.js --watch",
+    "build-src:front": "webpack build --config ./webpack.config.front.js",
+    "start:back": "concurrently -n src,types \"yarn start-src:back\" \"yarn start-types:back\"",
+    "start-src:back": "webpack build --config ./webpack.config.back.js --watch",
+    "build-src:back": "webpack build --config ./webpack.config.back.js",
+    "start-types:back": "yarn tsc -w --project tsconfig.back.json --preserveWatchOutput --declaration --noEmit false --emitDeclarationOnly",
+    "build-types:back": "yarn tsc --project tsconfig.back.json --declaration --noEmit false --emitDeclarationOnly",
     "lint": "eslint '**/*.{js,ts,tsx}'",
     "test": "jest"
   },
@@ -17,6 +25,7 @@
 
   },
   "devDependencies": {
+    "concurrently": "^6.4.0",
     "@babel/preset-typescript": "^7.16.0",
     "@types/jest": "^27.0.3",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
@@ -31,7 +40,6 @@
     "ts-loader": "^8.2.0",
     "typescript": "*",
     "webpack": "^4.44.2",
-    "webpack-cli": "^4.9.1",
-    "webpack-dev-server": "^4.6.0"
+    "webpack-cli": "^4.9.1"
   }
 }

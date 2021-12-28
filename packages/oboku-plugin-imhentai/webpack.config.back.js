@@ -4,17 +4,13 @@ const IS_PROD = process.env.NODE_ENV !== `development`
 
 module.exports = {
   entry: {
-    front: `./src/front/index.ts`,
-    back: `./src/front/index.ts`
+    index: `./src/back/index.ts`
   },
   mode: IS_PROD ? `production` : `development`,
   ...!IS_PROD && {
     devtool: `source-map`
   },
   externals: [
-    `react`,
-    `react-dom`,
-    /^@material-ui\/.+$/,
     /^@oboku\/.+$/
   ],
   ...IS_PROD && {
@@ -30,9 +26,9 @@ module.exports = {
           loader: `ts-loader`,
           options: {
             compilerOptions: {
-              noEmit: false,
-              declaration: true
-            }
+              noEmit: false
+            },
+            configFile: require.resolve(`./tsconfig.back.json`)
           }
         }]
       }
@@ -43,7 +39,7 @@ module.exports = {
   },
   output: {
     filename: `[name].js`,
-    path: path.resolve(__dirname, `dist`),
+    path: path.resolve(__dirname, `dist/back`),
     libraryTarget: `commonjs`
   }
 }
