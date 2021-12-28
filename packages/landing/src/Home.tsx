@@ -1,6 +1,5 @@
 import { Box, Button, Link, Typography, useTheme } from '@material-ui/core';
-import { AndroidRounded, LanguageRounded } from '@material-ui/icons';
-import React from 'react'
+import { LanguageRounded } from '@material-ui/icons';
 import landingLogoAsset from './assets/landing-logo.svg';
 import { BetaRegister } from './BetaRegister'
 import { OrDivider } from './OrDivider'
