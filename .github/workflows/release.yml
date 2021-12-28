@@ -26,7 +26,7 @@ jobs:
         run: yarn
       - name: Run typescript for backend
         run: |
-          yarn tsc:back
+          yarn tsc
       - name: build repo
         run: yarn build
       - name: build & deploy
