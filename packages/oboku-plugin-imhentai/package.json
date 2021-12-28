@@ -28,10 +28,12 @@
     "test": "jest"
   },
   "peerDependencies": {
-    "@oboku/plugin-back": "0.0.1"
+    "@oboku/plugin-back": "0.0.1",
+    "@oboku/plugin-front": "0.0.1"
   },
   "devDependencies": {
     "@oboku/plugin-back": "0.0.1",
+    "@oboku/plugin-front": "0.0.1",
     "concurrently": "^6.4.0",
     "@babel/preset-typescript": "^7.16.0",
     "@types/jest": "^27.0.3",
