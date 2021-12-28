@@ -1,5 +1,5 @@
 import { BookDocType, GoogleDriveDataSourceData } from '@oboku/shared/src'
-import { DataSourcePlugin, SynchronizeAbleDataSource } from "./types"
+import { DataSourcePlugin, SynchronizeAbleDataSource } from "@oboku/plugin-back"
 import { createHelpers } from "./helpers"
 import { difference, uniq } from "ramda"
 import { Logger } from "../Logger"
