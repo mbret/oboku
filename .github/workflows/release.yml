@@ -24,11 +24,11 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install nodejs dependencies
         run: yarn
+      - name: build repo
+        run: yarn build
       - name: Run typescript for backend
         run: |
           yarn tsc
-      - name: build repo
-        run: yarn build
       - name: build & deploy
         run: |
           cd packages/api-lambda
