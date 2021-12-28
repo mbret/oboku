@@ -40,7 +40,7 @@ if (process.env.NODE_ENV !== 'development') {
   // Sentry.setTag('npm_version', version)
 
   firebase.initializeApp(FIREBASE_BASE_CONFIG)
-  const analytics = getAnalytics()
+  getAnalytics()
 
   if (!isDebugEnabled()) {
     console.log = () => { }

@@ -62,7 +62,7 @@ var extractDirectivesFromName = function (resourceId) {
 };
 exports.extractDirectivesFromName = extractDirectivesFromName;
 var removeDirectiveFromString = function (str) { return str
-    .replace(new RegExp("( ".concat(BASE_DETECTION_REGEX, ")+"), 'ig'), '')
-    .replace(new RegExp("(".concat(BASE_DETECTION_REGEX, " )+"), 'ig'), '')
-    .replace(new RegExp("(".concat(BASE_DETECTION_REGEX, ")+"), 'ig'), ''); };
+    .replace(new RegExp("( " + BASE_DETECTION_REGEX + ")+", 'ig'), '')
+    .replace(new RegExp("(" + BASE_DETECTION_REGEX + " )+", 'ig'), '')
+    .replace(new RegExp("(" + BASE_DETECTION_REGEX + ")+", 'ig'), ''); };
 exports.removeDirectiveFromString = removeDirectiveFromString;

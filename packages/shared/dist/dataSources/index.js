@@ -1,9 +1,9 @@
 "use strict";
 exports.__esModule = true;
 exports.dataSourceHelpers = exports.extractSyncSourceData = exports.extractIdFromResourceId = exports.generateResourceId = void 0;
-var generateResourceId = function (uniqueResourceIdentifier, resourceId) { return "".concat(uniqueResourceIdentifier, "-").concat(resourceId); };
+var generateResourceId = function (uniqueResourceIdentifier, resourceId) { return uniqueResourceIdentifier + "-" + resourceId; };
 exports.generateResourceId = generateResourceId;
-var extractIdFromResourceId = function (uniqueResourceIdentifier, resourceId) { return resourceId.replace("".concat(uniqueResourceIdentifier, "-"), ""); };
+var extractIdFromResourceId = function (uniqueResourceIdentifier, resourceId) { return resourceId.replace(uniqueResourceIdentifier + "-", ""); };
 exports.extractIdFromResourceId = extractIdFromResourceId;
 var extractSyncSourceData = function (_a) {
     var data = _a.data;

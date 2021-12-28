@@ -29,7 +29,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({ apiUri }) => {
     const stream = getGalleryPages(apiUri, pagesGalleryId, thumbnailPages)
 
     return { data: stream }
-  }, [])
+  }, [apiUri])
 }
 
 const resolvePagesForGallery = (doc: Document) => {
