@@ -12,8 +12,8 @@ export const IS_PRODUCTION = process.env.ENV !== 'DEV'
 
 export const COVER_MAXIMUM_SIZE_FOR_STORAGE = { width: 400, height: 600 }
 
-export const WASABI_AWS_ACCESS_KEY = process.env.WASABI_AWS_ACCESS_KEY || ''
-export const WASABI_AWS_SECRET_KEY = process.env.WASABI_AWS_SECRET_KEY || ''
+export const WASABI_AWS_ACCESS_KEY = process.env.WASABI_AWS_ACCESS_KEY || 'to_set'
+export const WASABI_AWS_SECRET_KEY = process.env.WASABI_AWS_SECRET_KEY || 'to_set'
 
 export const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD
 
