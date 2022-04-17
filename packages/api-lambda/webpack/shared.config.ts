@@ -24,7 +24,9 @@ export const sharedConfig = (functionName: String): Configuration => ({
             compilerOptions: {
               noEmit: false
             },
-            onlyCompileBundledFiles: true,
+            // This will speed up compilation enormously but disable type check
+            // make sure to run `yarn tsc` before publishing
+            transpileOnly: true,
           }
         }],
       },

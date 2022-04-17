@@ -212,6 +212,7 @@ const updateTagsForBook = async (bookId: string, tagNames: string[], helpers: He
       fields: [`tags`]
     }) || {}
 
+    // @todo check same bug as collection
     const tags = await helpers.find(`tag`, { selector: { name: { $in: tagNames } }, fields: [`_id`] })
     const tagIds = tags.map(tag => tag._id)
 

@@ -34,21 +34,22 @@ export const fn = lambda(async (event) => {
   console.log(`Got response from ${url} ---> {statusCode: ${res.status}}`);
 
   const bodyBuffer = await res.buffer()
+  // text did not work before
   // const body = await res.text();
-  const passthroughHeaders = Array
-    .from(res.headers.keys())
-    .reduce((acc, key) => ({
-      ...acc,
-      [key]: res.headers.get(key)
-    }), {})
+  // const passthroughHeaders = Array
+  //   .from(res.headers.keys())
+  //   .reduce((acc, key) => ({
+  //     ...acc,
+  //     [key]: res.headers.get(key)
+  //   }), {})
 
-  console.log(`headers to pass through`, passthroughHeaders)
+  // console.log(`headers to pass through`, passthroughHeaders)
 
-  console.log(`Final headers`, {
-    ...passthroughHeaders,
-    'Access-Control-Allow-Origin': '*', // Required for CORS support to work
-    'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
-  })
+  // console.log(`Final headers`, {
+  //   ...passthroughHeaders,
+  //   'Access-Control-Allow-Origin': '*', // Required for CORS support to work
+  //   'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+  // })
 
   return {
     statusCode: res.status,
