@@ -1,6 +1,0 @@
-{
-  "watch": ["src", "../api-shared/src"],
-  "ignore": [],
-  "ext": "ts",
-  "exec": "yarn compile"
-}

@@ -1,8 +1,0 @@
-{
-  "name": "lambda",
-  "version": "1.0.0",
-  "description": "hello world sample for NodeJS",
-  "main": "main.js",
-  "author": "SAM CLI",
-  "license": "MIT"
-}
