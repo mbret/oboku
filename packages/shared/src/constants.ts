@@ -1,2 +1,0 @@
-export const READER_SUPPORTED_MIME_TYPES = ['application/x-cbz' as const, 'application/epub+zip' as const, 'text/xml' as const, 'application/x-cbr' as const, 'application/zip' as const]
-export const READER_SUPPORTED_EXTENSIONS = ['.epub', '.txt', '.cbz', '.cbr']
