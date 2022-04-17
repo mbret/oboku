@@ -1,5 +1,5 @@
 {
-  "name": "@oboku/workspace",
+  "name": "@oboku/web-workspace",
   "version": "1.0.0",
   "private": true,
   "repository": "git@github.com:mbret/oboku.git",
@@ -12,19 +12,13 @@
     "./packages/*"
   ],
   "scripts": {
-    "start:web-prod": "cd packages/web && yarn start-prod",
-    "start:api-lambda": "cd packages/api-lambda && yarn watch",
-    "start:back": "docker compose up -d && concurrently -n api-lambda \"yarn start:api-lambda\"",
-    "start": "NODE_ENV=development lerna exec --parallel --ignore @oboku/api-lambda  -- yarn start",
+    "start": "NODE_ENV=development lerna exec --parallel -- yarn start",
     "build": "NODE_ENV=development lerna run build",
-    "deploy-server": "pm2 stop oboku-api && git fetch origin && git reset --hard origin/release && yarn && pm2 start oboku-api && pm2 log oboku-api",
-    "dev:fix:sharp": "rm -rf node_modules/sharp && rm -rf packages/api-lambda/node_modules/sharp && cd packages/api-lambda/sharp-install && SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp && cd ../../../ && cp -R packages/api-lambda/sharp-install/node_modules/sharp packages/api-lambda/node_modules/sharp",
     "test": "lerna exec --parallel -- yarn test",
     "tsc": "lerna exec --parallel -- yarn tsc"
   },
   "dependencies": {
-    "concurrently": "^6.4.0",
-    "sharp": "^0.29.2"
+    "concurrently": "^7.0.0"
   },
   "devDependencies": {
     "lerna": "^4.0.0",
@@ -32,8 +26,8 @@
     "webpack-node-externals": "^3.0.0"
   },
   "resolutions": {
-    "@types/react": "17.0.34",
-    "react-dom": "17.0.1",
-    "react": "17.0.1"
+    "@types/react": "17.0.39",
+    "react-dom": "17.0.2",
+    "react": "17.0.2"
   }
 }

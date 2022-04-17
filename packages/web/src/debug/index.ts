@@ -1,7 +1,7 @@
 // import * as Sentry from "@sentry/react";
 // import { Integrations } from "@sentry/tracing";
-import firebase from "firebase/compat/app"
-import { getAnalytics } from "firebase/analytics";
+// import firebase from "firebase/compat/app"
+// import { getAnalytics } from "firebase/analytics";
 import { FIREBASE_BASE_CONFIG } from '../constants'
 // import { version } from '../../package.json'
 import localforage from 'localforage'
@@ -39,8 +39,8 @@ if (process.env.NODE_ENV !== 'development') {
   // })
   // Sentry.setTag('npm_version', version)
 
-  firebase.initializeApp(FIREBASE_BASE_CONFIG)
-  getAnalytics()
+  // firebase.initializeApp(FIREBASE_BASE_CONFIG)
+  // getAnalytics()
 
   if (!isDebugEnabled()) {
     console.log = () => { }

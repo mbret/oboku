@@ -11,7 +11,7 @@ import { atom, useRecoilState, useRecoilValue } from 'recoil'
 import { collectionIdsState } from '../collections/states'
 import { useCSS, useMeasureElement } from '../common/utils'
 import { CollectionList } from '../collections/list/CollectionList'
-import { useDebouncedCallback } from 'use-debounce/lib'
+import { useDebouncedCallback } from 'use-debounce'
 
 type Scroll = Parameters<NonNullable<ComponentProps<typeof CollectionList>['onScroll']>>[0]
 
