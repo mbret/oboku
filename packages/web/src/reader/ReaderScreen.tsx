@@ -10,6 +10,8 @@ import { Reader as ReaderInstance } from '@prose-reader/core';
 import { ContentsDialog } from './ContentsDialog';
 import { useTrackBookBeingRead } from './BackToReading';
 
+// @todo add ISBN label in book details
+
 export const ReaderScreen: FC<{}> = () => {
   const [reader, setReader] = useState<ReaderInstance | undefined>(undefined)
   const { bookId } = useParams<{ bookId?: string }>()
