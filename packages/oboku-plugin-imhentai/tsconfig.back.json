@@ -1,4 +1,0 @@
-{ 
-  "extends": "./tsconfig.json",
-  "exclude": ["**/front", "webpack.config.js", "**/dist", "**/*.test.ts"]
-}
