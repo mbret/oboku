@@ -54,9 +54,9 @@ export const Cover: FC<Props> = memo(({ bookId, style, fullWidth = true, withSha
     }
   })
 
-  const originalSrc = book ? `${API_URI}/cover/${auth?.userId}-${book._id}?${urlParams.toString()}` : undefined
+  const originalSrc = book ? `${API_URI}/covers/${auth?.userId}-${book._id}?${urlParams.toString()}` : undefined
   urlParams.append('format', 'image/jpeg')
-  const originalJpgSrc = book ? `${API_URI}/cover/${auth?.userId}-${book._id}?${urlParams.toString()}` : undefined
+  const originalJpgSrc = book ? `${API_URI}/covers/${auth?.userId}-${book._id}?${urlParams.toString()}` : undefined
 
   const coverSrc = originalSrc && !hasError ? originalSrc : placeholder
   const coverSrcJpg = originalJpgSrc && !hasError ? originalJpgSrc : placeholder
