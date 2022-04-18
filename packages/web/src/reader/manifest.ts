@@ -5,7 +5,7 @@ import { Report } from "../debug/report.shared"
 import { getArchiveForRarFile } from "./streamer/getArchiveForFile.shared"
 import '../archive'
 import { getManifestFromArchive } from "@prose-reader/streamer"
-import { extractDirectivesFromName } from "@oboku/shared/dist/directives"
+import { directives } from "@oboku/shared"
 import { STREAMER_URL_PREFIX } from "../constants.shared"
 
 const useGetRarManifest = () => useCallback(async (bookId: string) => {
@@ -72,7 +72,7 @@ export const useManifest = (bookId: string | undefined) => {
 }
 
 const getNormalizedManifest = (data: Manifest): Manifest => {
-  const { direction } = extractDirectivesFromName(data.filename)
+  const { direction } = directives.extractDirectivesFromName(data.filename)
 
   return {
     ...data,

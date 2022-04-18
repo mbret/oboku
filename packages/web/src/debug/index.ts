@@ -2,7 +2,7 @@
 // import { Integrations } from "@sentry/tracing";
 // import firebase from "firebase/compat/app"
 // import { getAnalytics } from "firebase/analytics";
-import { FIREBASE_BASE_CONFIG } from '../constants'
+// import { FIREBASE_BASE_CONFIG } from '../constants'
 // import { version } from '../../package.json'
 import localforage from 'localforage'
 import { isDebugEnabled } from "./isDebugEnabled.shared"

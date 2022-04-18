@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core'
-import { hashContentPassword } from '@oboku/shared/dist/crypto';
+import { crypto } from '@oboku/shared';
 import React, { FC, useEffect, useState } from 'react'
 import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { libraryState } from '../library/states';
@@ -21,7 +21,7 @@ export const UnlockLibraryDialog: FC<{}> = () => {
   }
 
   const onConfirm = async () => {
-    const hashedPassword = await hashContentPassword(text)
+    const hashedPassword = await crypto.hashContentPassword(text)
     if (contentPassword === hashedPassword) {
       setLibraryState(prev => ({ ...prev, isLibraryUnlocked: true }))
       onClose()

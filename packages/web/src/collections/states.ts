@@ -1,7 +1,6 @@
 import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil";
-import { CollectionDocType } from '@oboku/shared'
+import { CollectionDocType, directives } from '@oboku/shared'
 import { visibleBookIdsState } from "../books/states";
-import { removeDirectiveFromString } from "@oboku/shared/dist/directives";
 import { localSettingsState } from "../settings/states";
 
 export type Collection = CollectionDocType
@@ -57,7 +56,7 @@ export const collectionState = selectorFamily({
       ...collection,
       books: collection.books.filter(id => bookIds.includes(id)),
       displayableName: localSettings.hideDirectivesFromCollectionName
-        ? removeDirectiveFromString(collection.name)
+        ? directives.removeDirectiveFromString(collection.name)
         : collection.name
     }
   }

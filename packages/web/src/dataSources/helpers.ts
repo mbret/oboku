@@ -1,6 +1,6 @@
 import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
-import { DataSourceDocType, Errors } from '@oboku/shared'
+import { DataSourceDocType, ObokuErrorCode } from '@oboku/shared'
 import { useRxMutation } from "../rxdb/hooks"
 import { Report } from "../debug/report.shared"
 import { useRecoilCallback } from "recoil"
@@ -43,7 +43,7 @@ export const useSynchronizeDataSource = () => {
         await sync(['datasource'])
         await client.syncDataSource(_id, credentials.data)
       } catch (e) {
-        await updateDataSource(_id, old => ({ ...old, syncStatus: null, lastSyncErrorCode: Errors.ERROR_DATASOURCE_NETWORK_UNREACHABLE }))
+        await updateDataSource(_id, old => ({ ...old, syncStatus: null, lastSyncErrorCode: ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE }))
         throw e
       }
     } catch (e) {

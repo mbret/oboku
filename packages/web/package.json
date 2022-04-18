@@ -3,7 +3,9 @@
   "version": "0.1.48",
   "private": true,
   "dependencies": {
-    "@oboku/plugin-imhentai": "0.0.30",
+    "@oboku/plugin-imhentai-front": "^0.0.10",
+    "@oboku/plugin-front": "^0.0.13",
+    "@oboku/shared": "^0.0.13",
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.60",
@@ -80,10 +82,10 @@
     "yup": "0.32.11"
   },
   "peerDependencies": {
-    "@oboku/plugin-front": "0.0.1"
+    "@oboku/plugin-front": "0.0.9"
   },
   "devDependencies": {
-    "@oboku/plugin-front": "0.0.1",
+    "@oboku/plugin-front": "0.0.9",
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",

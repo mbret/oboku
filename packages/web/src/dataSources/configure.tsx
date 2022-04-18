@@ -7,7 +7,7 @@ import { plugin as nhentai } from "./nhentai"
 import { plugin as google } from "./google"
 import linkPlugin from "./link"
 import { ObokuPlugin } from "@oboku/plugin-front"
-import { plugin as imhentai } from "@oboku/plugin-imhentai/dist/front"
+import { plugin as imhentai } from "@oboku/plugin-imhentai-front"
 import { SvgIcon } from "@material-ui/core"
 
 const plugins: ObokuPlugin[] = []

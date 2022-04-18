@@ -1,4 +1,4 @@
-import { hashContentPassword } from "@oboku/shared/dist/crypto"
+import { crypto } from "@oboku/shared"
 import { SettingsDocType, useRxMutation } from "../rxdb"
 
 export const useUpdateSettings = () =>
@@ -11,7 +11,7 @@ export const useUpdateContentPassword = () => {
   const [updateSettings] = useUpdateSettings()
 
   return async (password: string) => {
-    const hashed = await hashContentPassword(password)
+    const hashed = await crypto.hashContentPassword(password)
 
     await updateSettings({ contentPassword: hashed })
   }

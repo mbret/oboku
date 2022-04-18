@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme, Button, TextField } from '@material-ui/core';
 import { Alert } from '@material-ui/lab'
-import { ERROR_EMAIL_TAKEN, ERROR_INVALID_BETA_CODE } from '@oboku/shared'
 import { OrDivider } from '../common/OrDivider';
 import { Header } from './Header';
 import { useHistory } from 'react-router-dom';
@@ -9,7 +8,7 @@ import { ROUTES } from '../constants';
 import { useSignUp } from './helpers'
 import { ServerError } from '../errors';
 import { CenteredBox } from '../common/CenteredBox';
-import { validators } from '@oboku/shared'
+import { validators, ObokuErrorCode } from '@oboku/shared'
 
 export const RegisterScreen = () => {
   const history = useHistory()
@@ -28,10 +27,10 @@ export const RegisterScreen = () => {
   }
   if (error instanceof ServerError) {
     error.errors.forEach(({ code }) => {
-      if (code === ERROR_EMAIL_TAKEN) {
+      if (code === ObokuErrorCode.ERROR_EMAIL_TAKEN) {
         hasEmailTakenError = true
         hasUnknownError = false
-      } else if (code === ERROR_INVALID_BETA_CODE) {
+      } else if (code === ObokuErrorCode.ERROR_INVALID_BETA_CODE) {
         hasBetaCodeError = true
         hasUnknownError = false
       }

@@ -1,6 +1,4 @@
-import { BAD_USER_INPUT, ERROR_EMAIL_TAKEN, ERROR_INVALID_BETA_CODE } from "@oboku/shared"
-
-type ErrorCode = typeof ERROR_EMAIL_TAKEN | typeof BAD_USER_INPUT | typeof ERROR_INVALID_BETA_CODE
+import { ObokuErrorCode } from "@oboku/shared"
 
 export const createServerError = async (response: Response) => {
   try {
@@ -15,7 +13,7 @@ export const createServerError = async (response: Response) => {
 }
 
 export class ServerError extends Error {
-  constructor(public response: Response, public errors: { code?: ErrorCode }[]) {
+  constructor(public response: Response, public errors: { code?: ObokuErrorCode }[]) {
     super('Error with server')
     this.response = response
     this.name = 'ServerError'
