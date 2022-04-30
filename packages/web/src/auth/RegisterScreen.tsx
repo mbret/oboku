@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { useTheme, Button, TextField } from '@material-ui/core';
-import { Alert } from '@material-ui/lab'
-import { OrDivider } from '../common/OrDivider';
-import { Header } from './Header';
-import { useHistory } from 'react-router-dom';
-import { ROUTES } from '../constants';
-import { useSignUp } from './helpers'
-import { ServerError } from '../errors';
-import { CenteredBox } from '../common/CenteredBox';
-import { validators, ObokuErrorCode } from '@oboku/shared'
+import React, { useState, useEffect } from "react"
+import { useTheme, Button, TextField } from "@material-ui/core"
+import { Alert } from "@material-ui/lab"
+import { OrDivider } from "../common/OrDivider"
+import { Header } from "./Header"
+import { useHistory } from "react-router-dom"
+import { ROUTES } from "../constants"
+import { useSignUp } from "./helpers"
+import { ServerError } from "../errors"
+import { CenteredBox } from "../common/CenteredBox"
+import { validators, ObokuErrorCode } from "@oboku/shared"
 
 export const RegisterScreen = () => {
   const history = useHistory()
-  const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || '')
-  const [password, setPassword] = useState(process.env.REACT_APP_PASSWORD || '')
-  const [code, setCode] = useState('')
+  const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || "")
+  const [password, setPassword] = useState(
+    process.env.REACT_APP_PASSWORD || ""
+  )
+  const [code, setCode] = useState("")
   const isValid = useIsValid(email, password, code)
   const theme = useTheme()
   const [signUp, { error }] = useSignUp()
@@ -42,27 +44,29 @@ export const RegisterScreen = () => {
   }
 
   return (
-    <CenteredBox style={{
-      paddingTop: theme.spacing(4),
-      paddingBottom: theme.spacing(4),
-      overflow: 'scroll',
-      flexShrink: 0,
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
+    <CenteredBox
+      style={{
+        paddingTop: theme.spacing(4),
+        paddingBottom: theme.spacing(4),
+        overflow: "scroll",
+        flexShrink: 0,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Header />
-      <form noValidate autoComplete="off" onSubmit={e => e.preventDefault()}>
+      <form noValidate autoComplete="off" onSubmit={(e) => e.preventDefault()}>
         <TextField
           label="Email"
           type="email"
           variant="outlined"
           autoComplete="email"
           style={{
-            width: '100%',
+            width: "100%",
             marginBottom: theme.spacing(2),
           }}
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <TextField
           label="Password"
@@ -70,36 +74,40 @@ export const RegisterScreen = () => {
           autoComplete="current-password"
           variant="outlined"
           style={{
-            width: '100%',
+            width: "100%",
             marginBottom: theme.spacing(2),
           }}
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
         />
         <TextField
           label="Beta code"
           type="text"
           variant="outlined"
           style={{
-            width: '100%',
+            width: "100%",
             marginBottom: theme.spacing(2),
           }}
           value={code}
-          onChange={e => setCode(e.target.value)}
+          onChange={(e) => setCode(e.target.value)}
         />
         {hasEmailTakenError && (
           <Alert severity="info">This email is already taken</Alert>
         )}
         {hasUnknownError && (
-          <Alert severity="info" >Something went wrong. Could you try again?</Alert>
+          <Alert severity="info">
+            Something went wrong. Could you try again?
+          </Alert>
         )}
         {hasBetaCodeError && (
-          <Alert severity="info" >This beta code is not valid for this email</Alert>
+          <Alert severity="info">
+            This beta code is not valid for this email
+          </Alert>
         )}
         <Button
           style={{
             marginTop: theme.spacing(2),
-            width: '100%',
+            width: "100%",
           }}
           color="primary"
           variant="outlined"
@@ -111,12 +119,14 @@ export const RegisterScreen = () => {
           Register
         </Button>
       </form>
-      <OrDivider style={{
-        marginTop: theme.spacing(2)
-      }} />
+      <OrDivider
+        style={{
+          marginTop: theme.spacing(2),
+        }}
+      />
       <Button
         style={{
-          width: '100%',
+          width: "100%",
         }}
         color="primary"
         variant="outlined"
@@ -126,9 +136,9 @@ export const RegisterScreen = () => {
         }}
       >
         Login
-        </Button>
+      </Button>
     </CenteredBox>
-  );
+  )
 }
 
 const useIsValid = (email: string, password: string, code: string) => {

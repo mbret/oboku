@@ -36,19 +36,19 @@ export const collectionSchema: RxJsonSchema<CollectionDocSchema> = withReplicati
 })
 
 export const collectionMigrationStrategies = {
-  1: (oldDoc: CollectionDocType): CollectionDocType | null => {
+  1: (oldDoc: Omit<CollectionDocType, `createdAt` | `modifiedAt`>): CollectionDocType | null => {
 
     return {
-      ...oldDoc,
       createdAt: new Date().toISOString(),
       modifiedAt: null,
+      ...oldDoc,
     }
   },
-  2: (oldDoc: CollectionDocType): CollectionDocType | null => {
+  2: (oldDoc: Omit<CollectionDocType, `dataSourceId`>): CollectionDocType | null => {
 
     return {
-      ...oldDoc,
       dataSourceId: null,
+      ...oldDoc,
     }
   }
 }

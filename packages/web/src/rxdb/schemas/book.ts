@@ -44,19 +44,19 @@ export const bookCollectionMethods: BookCollectionMethods = {
 }
 
 export const bookSchemaMigrationStrategies = {
-  1: (oldDoc: BookDocType): BookDocType | null => ({
-    ...oldDoc,
+  1: (oldDoc: Omit<BookDocType, `modifiedAt`>): BookDocType | null => ({
     modifiedAt: null,
+    ...oldDoc,
   }),
   2: (oldDoc: BookDocType): BookDocType | null => oldDoc,
-  3: (oldDoc: BookDocType): BookDocType | null => ({
-    ...oldDoc,
+  3: (oldDoc: Omit<BookDocType, `lastMetadataUpdateError` | `metadataUpdateStatus`>): BookDocType | null => ({
     lastMetadataUpdateError: null,
     metadataUpdateStatus: null,
-  }),
-  4: (oldDoc: BookDocType): BookDocType | null => ({
     ...oldDoc,
+  }),
+  4: (oldDoc: Omit<BookDocType, `isAttachedToDataSource`>): BookDocType | null => ({
     isAttachedToDataSource: false,
+    ...oldDoc,
   }),
 }
 

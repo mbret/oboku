@@ -35,19 +35,19 @@ export const dataSourceSchema: RxJsonSchema<Omit<DataSourceDocType, '_id' | 'rx_
 })
 
 export const migrationStrategies = {
-  1: (oldDoc: DataSourceDocType): DataSourceDocType | null => {
+  1: (oldDoc: Omit<DataSourceDocType, `createdAt` | `modifiedAt`>): DataSourceDocType | null => {
 
     return {
-      ...oldDoc,
       createdAt: new Date().toISOString(),
       modifiedAt: null,
+      ...oldDoc,
     }
   },
-  2: (oldDoc: DataSourceDocType): DataSourceDocType | null => {
+  2: (oldDoc: Omit<DataSourceDocType, `syncStatus`>): DataSourceDocType | null => {
 
     return {
-      ...oldDoc,
       syncStatus: null,
+      ...oldDoc,
     }
   }
 }

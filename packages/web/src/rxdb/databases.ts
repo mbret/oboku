@@ -116,10 +116,10 @@ const tagsSchema: RxJsonSchema<Required<Omit<TagsDocType, '_id' | 'rx_model' | '
 })
 
 const tagsSchemaMigrationStrategies = {
-  1: (oldDoc: TagsDocType): TagsDocType | null => ({
-    ...oldDoc,
+  1: (oldDoc: Omit<TagsDocType, `createdAt` | `modifiedAt`>): TagsDocType | null => ({
     createdAt: new Date().toISOString(),
     modifiedAt: null,
+    ...oldDoc,
   }),
   2: (oldDoc: TagsDocType): TagsDocType | null => oldDoc
 }
@@ -141,12 +141,12 @@ const linkSchema: RxJsonSchema<Omit<Required<LinkDocType>, '_id' | 'rx_model' | 
 })
 
 const linkSchemaMigrationStrategies = {
-  1: (oldDoc: TagsDocType): TagsDocType | null => {
+  1: (oldDoc: Omit<TagsDocType, `createdAt` | `modifiedAt`>): TagsDocType | null => {
 
     return {
-      ...oldDoc,
       createdAt: new Date().toISOString(),
       modifiedAt: null,
+      ...oldDoc,
     }
   }
 }

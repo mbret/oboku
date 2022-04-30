@@ -96,7 +96,7 @@
   "scripts": {
     "predeploy": "npm run build",
     "start": "concurrently -n react,sw \"yarn start-react\" \"yarn start-sw-dev\"",
-    "start-react": "react-scripts start",
+    "start-react": "PORT=3000 react-scripts start",
     "start-sw-dev": "webpack build --watch --config ./webpack.serviceWorker.config.js",
     "build-sw-dev": "webpack build --config ./webpack.serviceWorker.config.js",
     "build": "react-scripts build",
