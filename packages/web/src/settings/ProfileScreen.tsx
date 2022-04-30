@@ -273,10 +273,8 @@ const DeleteMyDataDialog: FC<{
     <Dialog onClose={onClose} open={open}>
       <DialogTitle>Delete my data</DialogTitle>
       <DialogContent>
-        <form autoComplete="off" onSubmit={e => e.preventDefault()}>
-          <DialogContentText >
-            This action is permanent.
-          </DialogContentText>
+        <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
+          <DialogContentText>This action is permanent.</DialogContentText>
           <FormControlLabel
             control={
               <Checkbox
