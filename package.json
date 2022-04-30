@@ -6,7 +6,7 @@
   "author": "Maxime Bret <bret.maxime@gmail.com>",
   "license": "MIT",
   "engines": {
-    "node": "16.x"
+    "node": "14.x"
   },
   "workspaces": [
     "./packages/*"
