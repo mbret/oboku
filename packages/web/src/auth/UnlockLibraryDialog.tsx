@@ -1,18 +1,29 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core'
-import { crypto } from '@oboku/shared';
-import React, { FC, useEffect, useState } from 'react'
-import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { libraryState } from '../library/states';
-import { settingsState } from '../settings/states';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField
+} from "@material-ui/core"
+import { crypto } from "@oboku/shared"
+import React, { FC, useEffect, useState } from "react"
+import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
+import { libraryState } from "../library/states"
+import { settingsState } from "../settings/states"
 
-export const unlockLibraryDialogState = atom({ key: 'unlockLibraryDialog', default: false })
+export const unlockLibraryDialogState = atom({
+  key: "unlockLibraryDialog",
+  default: false
+})
 
-const FORM_ID = 'UnlockLibraryDialog'
+const FORM_ID = "UnlockLibraryDialog"
 
 export const UnlockLibraryDialog: FC<{}> = () => {
-  const [text, setText] = useState('')
+  const [text, setText] = useState("")
   const settings = useRecoilValue(settingsState)
-  const [isOpened, setIsOpened] = useRecoilState(unlockLibraryDialogState);
+  const [isOpened, setIsOpened] = useRecoilState(unlockLibraryDialogState)
   const setLibraryState = useSetRecoilState(libraryState)
   const contentPassword = settings?.contentPassword
 
@@ -23,24 +34,30 @@ export const UnlockLibraryDialog: FC<{}> = () => {
   const onConfirm = async () => {
     const hashedPassword = await crypto.hashContentPassword(text)
     if (contentPassword === hashedPassword) {
-      setLibraryState(prev => ({ ...prev, isLibraryUnlocked: true }))
+      setLibraryState((prev) => ({ ...prev, isLibraryUnlocked: true }))
       onClose()
     }
   }
 
   useEffect(() => {
-    setText('')
+    setText("")
   }, [isOpened])
 
   return (
-    <Dialog onClose={onClose} open={isOpened} >
+    <Dialog onClose={onClose} open={isOpened}>
       <DialogTitle>Unlock library protected contents</DialogTitle>
       <DialogContent>
         {!!contentPassword && (
-          <form noValidate id={FORM_ID} autoComplete="off" onSubmit={e => e.preventDefault()}>
+          <form
+            noValidate
+            id={FORM_ID}
+            autoComplete="off"
+            onSubmit={(e) => e.preventDefault()}
+          >
             <DialogContentText>
-              By entering your content password you will make every protected content visible. do not forget to lock it back when needed
-              </DialogContentText>
+              By entering your content password you will make every protected
+              content visible. do not forget to lock it back when needed
+            </DialogContentText>
             <TextField
               autoFocus
               id="name"
@@ -48,7 +65,7 @@ export const UnlockLibraryDialog: FC<{}> = () => {
               type="password"
               fullWidth
               value={text}
-              onChange={e => setText(e.target.value)}
+              onChange={(e) => setText(e.target.value)}
             />
           </form>
         )}
@@ -61,8 +78,17 @@ export const UnlockLibraryDialog: FC<{}> = () => {
       <DialogActions>
         {!!contentPassword && (
           <>
-            <Button onClick={onClose} color="primary">Cancel</Button>
-            <Button onClick={onConfirm} color="primary" type="submit" form={FORM_ID}>Unlock</Button>
+            <Button onClick={onClose} color="primary">
+              Cancel
+            </Button>
+            <Button
+              onClick={onConfirm}
+              color="primary"
+              type="submit"
+              form={FORM_ID}
+            >
+              Unlock
+            </Button>
           </>
         )}
         {!contentPassword && (

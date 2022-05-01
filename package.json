@@ -15,16 +15,18 @@
     "start": "NODE_ENV=development lerna exec --parallel -- yarn start",
     "build": "NODE_ENV=development lerna run build",
     "test": "lerna exec --parallel -- yarn test",
-    "tsc": "lerna exec --parallel -- yarn tsc"
+    "tsc": "lerna exec --parallel -- yarn tsc",
+    "format": "prettier -w ."
   },
   "devDependencies": {
     "concurrently": "^7.1.0",
     "lerna": "^4.0.0",
+    "prettier": "^2.6.2",
     "ts-loader": "8.2.0",
+    "typescript": "^4.6.4",
     "webpack-bundle-analyzer": "^4.5.0",
-    "webpack-node-externals": "^3.0.0",
     "webpack-cli": "^4.9.2",
-    "typescript": "^4.6.4"
+    "webpack-node-externals": "^3.0.0"
   },
   "resolutions": {
     "@types/react": "17.0.39",

@@ -1,35 +1,44 @@
-import React, { useCallback, FC, useMemo, memo } from 'react'
+import React, { useCallback, FC, useMemo, memo } from "react"
 import { useTheme } from "@material-ui/core"
-import { useWindowSize } from 'react-use';
-import { SelectableBookListItem } from './SelectableBookListItem';
-import { useCSS } from '../../common/utils';
-import { ReactWindowList } from '../../lists/ReactWindowList';
+import { useWindowSize } from "react-use"
+import { SelectableBookListItem } from "./SelectableBookListItem"
+import { useCSS } from "../../common/utils"
+import { ReactWindowList } from "../../lists/ReactWindowList"
 
 export const SelectableBookList: FC<{
-  style?: React.CSSProperties,
-  data: { id: string, selected: boolean }[],
-  onItemClick: (id: { id: string, selected: boolean }) => void,
+  style?: React.CSSProperties
+  data: { id: string; selected: boolean }[]
+  onItemClick: (id: { id: string; selected: boolean }) => void
 }> = memo((props) => {
   const theme = useTheme()
   const { style, data, onItemClick } = props
   const windowSize = useWindowSize()
-  const classes = useStyle({ isHorizontal: false });
+  const classes = useStyle({ isHorizontal: false })
   const itemsPerRow = 1
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
   const densityMultiplier = 1
-  const itemHeight = (((windowSize.width > theme.breakpoints.values['sm'] ? 200 : 150) * theme.custom.coverAverageRatio)) * densityMultiplier
+  const itemHeight =
+    (windowSize.width > theme.breakpoints.values["sm"] ? 200 : 150) *
+    theme.custom.coverAverageRatio *
+    densityMultiplier
 
-  const rowRenderer = useCallback((item: { id: string, selected: boolean }) => (
-    <SelectableBookListItem
-      bookId={item.id}
-      itemHeight={itemHeight - theme.spacing(1)}
-      selected={item.selected}
-      onItemClick={() => onItemClick(item)}
-      paddingBottom={theme.spacing(1)}
-    />
-  ), [itemHeight, theme, onItemClick])
+  const rowRenderer = useCallback(
+    (item: { id: string; selected: boolean }) => (
+      <SelectableBookListItem
+        bookId={item.id}
+        itemHeight={itemHeight - theme.spacing(1)}
+        selected={item.selected}
+        onItemClick={() => onItemClick(item)}
+        paddingBottom={theme.spacing(1)}
+      />
+    ),
+    [itemHeight, theme, onItemClick]
+  )
 
-  const containerStyle = useMemo(() => ({ ...classes.container, ...style }), [style, classes])
+  const containerStyle = useMemo(
+    () => ({ ...classes.container, ...style }),
+    [style, classes]
+  )
 
   return (
     <div style={containerStyle}>
@@ -48,9 +57,12 @@ export const SelectableBookList: FC<{
 const useStyle = ({ isHorizontal }: { isHorizontal: boolean }) => {
   const theme = useTheme()
 
-  return useCSS(() => ({
-    container: {
-      display: 'flex',
-    },
-  }), [theme, isHorizontal])
+  return useCSS(
+    () => ({
+      container: {
+        display: "flex"
+      }
+    }),
+    [theme, isHorizontal]
+  )
 }

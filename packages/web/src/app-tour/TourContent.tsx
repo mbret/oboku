@@ -1,9 +1,16 @@
-import { Backdrop, Box, Button, makeStyles, Modal, useTheme } from '@material-ui/core'
-import React, { useContext, useEffect, useRef, useState } from 'react'
-import { useWindowSize } from 'react-use'
-import { Step, TourContext, TourKey } from './TourContext'
-import { useCSS } from '../common/utils'
-import { Carousel } from 'react-responsive-carousel'
+import {
+  Backdrop,
+  Box,
+  Button,
+  makeStyles,
+  Modal,
+  useTheme
+} from "@material-ui/core"
+import React, { useContext, useEffect, useRef, useState } from "react"
+import { useWindowSize } from "react-use"
+import { Step, TourContext, TourKey } from "./TourContext"
+import { useCSS } from "../common/utils"
+import { Carousel } from "react-responsive-carousel"
 
 type Props = {
   id: TourKey
@@ -12,9 +19,15 @@ type Props = {
 }
 
 const getSpotlightSize = (step: Step | undefined) => {
-  const containerMeasure = step?.measures || { pageX: 0, pageY: 0, width: 0, height: 0 }
+  const containerMeasure = step?.measures || {
+    pageX: 0,
+    pageY: 0,
+    width: 0,
+    height: 0
+  }
   const margin = step?.spotlightMargin || 30
-  const spotlightSize = (step?.spotlightSize || ((containerMeasure?.width || 0) + margin))
+  const spotlightSize =
+    step?.spotlightSize || (containerMeasure?.width || 0) + margin
 
   return spotlightSize
 }
@@ -29,12 +42,20 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
   const [isCarouselMoving, setIsCarouselMoving] = useState(false)
   const numberOfSteps = Object.keys(steps || {}).length
   const currentStep = steps ? steps[step + 1] : undefined
-  const containerMeasure = currentStep?.measures || { pageX: 0, pageY: 0, width: 0, height: 0 }
+  const containerMeasure = currentStep?.measures || {
+    pageX: 0,
+    pageY: 0,
+    width: 0,
+    height: 0
+  }
   const displaySpotlight = !isCarouselMoving && !!currentStep?.measures
-  const styles = useStyles({ numberOfSteps, withButtons: !!currentStep?.withButtons })
+  const styles = useStyles({
+    numberOfSteps,
+    withButtons: !!currentStep?.withButtons
+  })
   const isFinalStep = step === numberOfSteps - 1
   const stepsAsArray = Object.values(steps || {})
-  const stepContents = stepsAsArray.map(item => item.content)
+  const stepContents = stepsAsArray.map((item) => item.content)
   const [carouselKey, setCarouselKey] = useState(0)
 
   /**
@@ -47,15 +68,16 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
    * @see https://stackoverflow.com/questions/5737975/circle-drawing-with-svgs-arc-path
    */
   const spotlightSize = getSpotlightSize(currentStep)
-  const spotlightSvgX = (containerMeasure?.pageX + (containerMeasure?.width / 2) - (spotlightSize / 2))
-  const spotlightSvgY = (containerMeasure?.pageY + (containerMeasure?.height / 2))
+  const spotlightSvgX =
+    containerMeasure?.pageX + containerMeasure?.width / 2 - spotlightSize / 2
+  const spotlightSvgY = containerMeasure?.pageY + containerMeasure?.height / 2
   const svgSpotlightPath = `
     M${spotlightSvgX},${spotlightSvgY}Za1 1 0 1 0 ${spotlightSize} 0 1 1 0 1 0-${spotlightSize} 0
   `
   const mobileSvgBackgroundFillerPath = `M0,0H${windowWidth}V${windowHeight}H0V0Z`
 
   useEffect(() => {
-    setCarouselKey(value => value + 1)
+    setCarouselKey((value) => value + 1)
   }, [stepsAsArray.length])
 
   return (
@@ -68,22 +90,20 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
       BackdropComponent={Backdrop}
       BackdropProps={{
         style: {
-          backgroundColor: 'transparent'
+          backgroundColor: "transparent"
         }
       }}
     >
       <>
         <div>
-          <svg
-            pointerEvents="none"
-            width={windowWidth}
-            height={windowHeight}
-          >
+          <svg pointerEvents="none" width={windowWidth} height={windowHeight}>
             <path
               fill={`rgba(0, 0, 0, 0.9)`}
               fillRule="evenodd"
               strokeWidth={1}
-              d={`${mobileSvgBackgroundFillerPath} ${displaySpotlight ? svgSpotlightPath : ''}`}
+              d={`${mobileSvgBackgroundFillerPath} ${
+                displaySpotlight ? svgSpotlightPath : ""
+              }`}
             />
           </svg>
         </div>
@@ -114,12 +134,16 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
               >
                 {stepContents.map((stepContent, index) => (
                   <div key={index} style={styles.stepContainer}>
-                    {typeof stepContent !== 'function' && stepContent}
-                    {typeof stepContent === 'function' && stepContent({
-                      onClose,
-                      spotlightMeasures: tours[id]?.steps[index + 1]?.measures,
-                      spotlightSize: getSpotlightSize(tours[id]?.steps[index + 1])
-                    })}
+                    {typeof stepContent !== "function" && stepContent}
+                    {typeof stepContent === "function" &&
+                      stepContent({
+                        onClose,
+                        spotlightMeasures:
+                          tours[id]?.steps[index + 1]?.measures,
+                        spotlightSize: getSpotlightSize(
+                          tours[id]?.steps[index + 1]
+                        )
+                      })}
                   </div>
                 ))}
               </Carousel>
@@ -127,10 +151,14 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
           </div>
           {currentStep?.withButtons && (
             <div style={styles.bottomContainer}>
-              <Box style={styles.nexButtonContainer} justifyContent="center" display="flex">
+              <Box
+                style={styles.nexButtonContainer}
+                justifyContent="center"
+                display="flex"
+              >
                 <Button
                   // style={styles.nextButton}
-                  variant={isFinalStep ? 'contained' : 'outlined'}
+                  variant={isFinalStep ? "contained" : "outlined"}
                   size="large"
                   onClick={() => {
                     if (isFinalStep) {
@@ -139,7 +167,9 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
                       swiperRef.current?.increment()
                     }
                   }}
-                >{!isFinalStep ? 'next' : 'Got it'}</Button>
+                >
+                  {!isFinalStep ? "next" : "Got it"}
+                </Button>
               </Box>
             </div>
           )}
@@ -149,61 +179,70 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
   )
 }
 
-const useClasses = makeStyles(theme => ({
+const useClasses = makeStyles((theme) => ({
   carouselInner: {
-    width: '100%',
-    '& .carousel-slider': {
-      height: '100%',
+    width: "100%",
+    "& .carousel-slider": {
+      height: "100%"
     },
-    '& .slider-wrapper': {
-      height: '100%',
+    "& .slider-wrapper": {
+      height: "100%"
     },
-    '& .slider': {
-      height: '100%',
+    "& .slider": {
+      height: "100%"
     }
-  },
+  }
 }))
 
-const useStyles = ({ numberOfSteps, withButtons }: { numberOfSteps: number, withButtons: boolean }) => {
+const useStyles = ({
+  numberOfSteps,
+  withButtons
+}: {
+  numberOfSteps: number
+  withButtons: boolean
+}) => {
   const BULLET_SAFE_AREA = 40
   const theme = useTheme()
 
-  return useCSS(() => ({
-    modal: {
-      // We disable the focus ring for mouse, touch and keyboard users.
-      // At some point, it would be better to keep it for keyboard users.
-      // :focus-ring CSS pseudo-class will help.
-      outline: 'none',
-      '& > :lastChild': {
-        // outline: 'none',
+  return useCSS(
+    () => ({
+      modal: {
+        // We disable the focus ring for mouse, touch and keyboard users.
+        // At some point, it would be better to keep it for keyboard users.
+        // :focus-ring CSS pseudo-class will help.
+        outline: "none",
+        "& > :lastChild": {
+          // outline: 'none',
+        }
       },
-    },
-    container: {
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      position: 'absolute',
-      top: 0,
-      flexFlow: 'column',
-    },
-    carouselContainer: {
-      flex: 1,
-      display: 'flex',
-      ...withButtons && {
-        paddingBottom: theme.spacing(2),
+      container: {
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        position: "absolute",
+        top: 0,
+        flexFlow: "column"
       },
-    },
-    bottomContainer: {
-      flex: 0.2,
-    },
-    stepContainer: {
-      flex: 1,
-      ...numberOfSteps > 1 && {
-        paddingBottom: BULLET_SAFE_AREA,
+      carouselContainer: {
+        flex: 1,
+        display: "flex",
+        ...(withButtons && {
+          paddingBottom: theme.spacing(2)
+        })
       },
-      height: '100%',
-      display: 'flex',
-    },
-    nexButtonContainer: { alignItems: 'center', marginBottom: 20 },
-  }), [theme, numberOfSteps, withButtons])
+      bottomContainer: {
+        flex: 0.2
+      },
+      stepContainer: {
+        flex: 1,
+        ...(numberOfSteps > 1 && {
+          paddingBottom: BULLET_SAFE_AREA
+        }),
+        height: "100%",
+        display: "flex"
+      },
+      nexButtonContainer: { alignItems: "center", marginBottom: 20 }
+    }),
+    [theme, numberOfSteps, withButtons]
+  )
 }

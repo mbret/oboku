@@ -6,7 +6,10 @@ export const useNavigation = () => {
   const history = useHistory()
 
   const goBack = useCallback(() => {
-    if (window.history.state === null && history.location.pathname !== ROUTES.HOME) {
+    if (
+      window.history.state === null &&
+      history.location.pathname !== ROUTES.HOME
+    ) {
       history.replace(ROUTES.HOME)
     } else {
       history.goBack()

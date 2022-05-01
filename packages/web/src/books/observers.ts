@@ -13,14 +13,17 @@ export const useBooksInitialState = () => {
 
   useEffect(() => {
     if (db) {
-      (async () => {
+      ;(async () => {
         try {
           const books = await db.book.find().exec()
-          const booksAsMap = books.reduce((map: UnwrapRecoilValue<typeof normalizedBooksState>, obj) => {
-            map[obj._id] = obj.toJSON()
+          const booksAsMap = books.reduce(
+            (map: UnwrapRecoilValue<typeof normalizedBooksState>, obj) => {
+              map[obj._id] = obj.toJSON()
 
-            return map
-          }, {})
+              return map
+            },
+            {}
+          )
           setBooks(booksAsMap)
 
           setIsReady(true)
@@ -40,31 +43,32 @@ export const useBooksObservers = () => {
 
   useEffect(() => {
     db?.book.$.subscribe((changeEvent: RxChangeEvent<BookDocType>) => {
-      console.warn('CHANGE EVENT', changeEvent)
+      console.warn("CHANGE EVENT", changeEvent)
 
       switch (changeEvent.operation) {
-        case 'INSERT': {
-          return setBooks(state => ({
+        case "INSERT": {
+          return setBooks((state) => ({
             ...state,
             [changeEvent.documentData._id]: changeEvent.documentData
           }))
         }
-        case 'UPDATE': {
-          return setBooks(state => {
+        case "UPDATE": {
+          return setBooks((state) => {
             return {
               ...state,
               [changeEvent.documentData._id]: {
                 ...state[changeEvent.documentData._id]!,
-                ...changeEvent.documentData,
-              },
+                ...changeEvent.documentData
+              }
             }
           })
         }
-        case 'DELETE': {
-          return setBooks(({ [changeEvent.documentData._id]: deletedTag, ...rest }) => rest)
+        case "DELETE": {
+          return setBooks(
+            ({ [changeEvent.documentData._id]: deletedTag, ...rest }) => rest
+          )
         }
       }
     })
   }, [db, setBooks])
 }
-

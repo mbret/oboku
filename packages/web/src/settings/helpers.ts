@@ -2,9 +2,10 @@ import { crypto } from "@oboku/shared"
 import { SettingsDocType, useRxMutation } from "../rxdb"
 
 export const useUpdateSettings = () =>
-  useRxMutation(
-    (db, variables: Partial<SettingsDocType>) =>
-      db.settings.safeUpdate({ $set: variables }, collection => collection.findOne())
+  useRxMutation((db, variables: Partial<SettingsDocType>) =>
+    db.settings.safeUpdate({ $set: variables }, (collection) =>
+      collection.findOne()
+    )
   )
 
 export const useUpdateContentPassword = () => {

@@ -1,20 +1,33 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from "react"
 import { useRecoilValue } from "recoil"
 import { isMenuShownState, manifestState, isBookReadyState } from "./states"
-import { AppBar, IconButton, Toolbar, Typography, useTheme } from "@material-ui/core"
-import { ArrowBackIosRounded, FullscreenExitRounded, FullscreenRounded, ListRounded } from '@material-ui/icons'
-import { useNavigation } from '../navigation/useNavigation'
-import screenfull from 'screenfull'
-import { Report } from '../debug/report.shared'
-import { useCSS } from '../common/utils'
-import { useToggleContentsDialog } from './ContentsDialog'
+import {
+  AppBar,
+  IconButton,
+  Toolbar,
+  Typography,
+  useTheme
+} from "@material-ui/core"
+import {
+  ArrowBackIosRounded,
+  FullscreenExitRounded,
+  FullscreenRounded,
+  ListRounded
+} from "@material-ui/icons"
+import { useNavigation } from "../navigation/useNavigation"
+import screenfull from "screenfull"
+import { Report } from "../debug/report.shared"
+import { useCSS } from "../common/utils"
+import { useToggleContentsDialog } from "./ContentsDialog"
 
 export const TopBar = () => {
   const isMenuShow = useRecoilValue(isMenuShownState)
   const isBookReady = useRecoilValue(isBookReadyState)
   const classes = useStyles({ isMenuShow })
   const { goBack } = useNavigation()
-  const [isFullScreen, setIsFullScreen] = useState(screenfull.isEnabled && screenfull.isFullscreen)
+  const [isFullScreen, setIsFullScreen] = useState(
+    screenfull.isEnabled && screenfull.isFullscreen
+  )
   const { title, filename } = useRecoilValue(manifestState) || {}
   const theme = useTheme()
   const toggleContentsDialog = useToggleContentsDialog()
@@ -23,7 +36,9 @@ export const TopBar = () => {
     if (screenfull.isFullscreen) {
       screenfull.exit().catch(Report.error)
     } else if (!screenfull.isFullscreen) {
-      screenfull.request(undefined, { navigationUI: 'hide' }).catch(Report.error)
+      screenfull
+        .request(undefined, { navigationUI: "hide" })
+        .catch(Report.error)
     }
   }, [])
 
@@ -33,35 +48,33 @@ export const TopBar = () => {
     }
 
     if (screenfull.isEnabled) {
-      screenfull.on('change', cb)
+      screenfull.on("change", cb)
     }
 
     return () => {
       if (screenfull.isEnabled) {
-        screenfull.off('change', cb)
+        screenfull.off("change", cb)
       }
     }
   }, [])
 
   return (
-    <AppBar
-      position="fixed"
-      elevation={0}
-      style={classes.appBar}
-    >
+    <AppBar position="fixed" elevation={0} style={classes.appBar}>
       <Toolbar style={{ flex: 1 }}>
-        <IconButton
-          edge="start"
-          color="inherit"
-          onClick={goBack}
-        >
+        <IconButton edge="start" color="inherit" onClick={goBack}>
           <ArrowBackIosRounded />
         </IconButton>
         <Typography
           variant="body1"
           component="h1"
           color="inherit"
-          noWrap style={{ flex: 1, textAlign: 'center', paddingLeft: theme.spacing(2), paddingRight: theme.spacing(2) }}
+          noWrap
+          style={{
+            flex: 1,
+            textAlign: "center",
+            paddingLeft: theme.spacing(2),
+            paddingRight: theme.spacing(2)
+          }}
         >
           {title || filename}
         </Typography>
@@ -89,12 +102,15 @@ export const TopBar = () => {
 }
 
 const useStyles = ({ isMenuShow }: { isMenuShow: boolean }) => {
-  return useCSS(() => ({
-    appBar: {
-      top: 0,
-      left: 0,
-      width: '100%',
-      visibility: isMenuShow ? 'visible' : 'hidden'
-    }
-  }), [isMenuShow])
+  return useCSS(
+    () => ({
+      appBar: {
+        top: 0,
+        left: 0,
+        width: "100%",
+        visibility: isMenuShow ? "visible" : "hidden"
+      }
+    }),
+    [isMenuShow]
+  )
 }

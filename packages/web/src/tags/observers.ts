@@ -13,14 +13,17 @@ export const useTagsInitialState = () => {
 
   useEffect(() => {
     if (db) {
-      (async () => {
+      ;(async () => {
         try {
           const tags = await db.tag.find().exec()
-          const tagsAsMap = tags.reduce((map: UnwrapRecoilValue<typeof normalizedTagsState>, obj) => {
-            map[obj._id] = obj.toJSON()
-            
-            return map
-          }, {})
+          const tagsAsMap = tags.reduce(
+            (map: UnwrapRecoilValue<typeof normalizedTagsState>, obj) => {
+              map[obj._id] = obj.toJSON()
+
+              return map
+            },
+            {}
+          )
           setTags(tagsAsMap)
 
           setIsReady(true)
@@ -40,22 +43,24 @@ export const useTagsObservers = () => {
 
   useEffect(() => {
     db?.tag.$.subscribe((changeEvent: RxChangeEvent<TagsDocType>) => {
-      console.warn('CHANGE EVENT', changeEvent)
+      console.warn("CHANGE EVENT", changeEvent)
       switch (changeEvent.operation) {
-        case 'INSERT': {
-          return setTags(state => ({
+        case "INSERT": {
+          return setTags((state) => ({
             ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData,
+            [changeEvent.documentData._id]: changeEvent.documentData
           }))
         }
-        case 'UPDATE': {
-          return setTags(state => ({
+        case "UPDATE": {
+          return setTags((state) => ({
             ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData,
+            [changeEvent.documentData._id]: changeEvent.documentData
           }))
         }
-        case 'DELETE': {
-          return setTags(({ [changeEvent.documentData._id]: deletedTag, ...rest }) => rest)
+        case "DELETE": {
+          return setTags(
+            ({ [changeEvent.documentData._id]: deletedTag, ...rest }) => rest
+          )
         }
       }
     })

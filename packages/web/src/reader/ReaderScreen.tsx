@@ -1,14 +1,14 @@
-import { useState, FC, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
-import { AppTourReader } from '../firstTimeExperience/AppTourReader';
-import { useResetStateOnUnMount } from './states';
-import { ReaderContext } from './ReaderProvider';
-import { useWakeLock } from '../common/useWakeLock';
-import { useFullScreenSwitch } from './fullScreen';
-import { Reader } from './Reader';
-import { Reader as ReaderInstance } from '@prose-reader/core';
-import { ContentsDialog } from './ContentsDialog';
-import { useTrackBookBeingRead } from './BackToReading';
+import { useState, FC, useCallback } from "react"
+import { useParams } from "react-router-dom"
+import { AppTourReader } from "../firstTimeExperience/AppTourReader"
+import { useResetStateOnUnMount } from "./states"
+import { ReaderContext } from "./ReaderProvider"
+import { useWakeLock } from "../common/useWakeLock"
+import { useFullScreenSwitch } from "./fullScreen"
+import { Reader } from "./Reader"
+import { Reader as ReaderInstance } from "@prose-reader/core"
+import { ContentsDialog } from "./ContentsDialog"
+import { useTrackBookBeingRead } from "./BackToReading"
 
 // @todo add ISBN label in book details
 
@@ -21,20 +21,18 @@ export const ReaderScreen: FC<{}> = () => {
   useResetStateOnUnMount()
   useFullScreenSwitch()
 
-  const onReader = useCallback((reader: ReaderInstance) => {
-    setReader(reader)
-    // @ts-ignore
-    window.reader = reader
-  }, [setReader])
+  const onReader = useCallback(
+    (reader: ReaderInstance) => {
+      setReader(reader)
+      // @ts-ignore
+      window.reader = reader
+    },
+    [setReader]
+  )
 
   return (
     <ReaderContext.Provider value={reader}>
-      {bookId && (
-        <Reader
-          bookId={bookId}
-          onReader={onReader}
-        />
-      )}
+      {bookId && <Reader bookId={bookId} onReader={onReader} />}
       <AppTourReader />
       <ContentsDialog />
     </ReaderContext.Provider>

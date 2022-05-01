@@ -2,25 +2,25 @@
  * @see https://material-ui.com/customization/default-theme/
  * @see https://material-ui.com/customization/palette/
  */
-import { createTheme } from '@material-ui/core/styles'
+import { createTheme } from "@material-ui/core/styles"
 
 declare module "@material-ui/core/styles" {
   interface Theme {
     custom: {
-      maxWidthCenteredContent: number,
-      coverAverageRatio: number,
+      maxWidthCenteredContent: number
+      coverAverageRatio: number
     }
   }
   interface ThemeOptions {
     custom: {
-      maxWidthCenteredContent: number,
-      coverAverageRatio: number,
+      maxWidthCenteredContent: number
+      coverAverageRatio: number
     }
   }
 }
 
 // const light = 'rgba(0, 0, 0, 0.38)'
-const main = 'rgba(0, 0, 0, 0.54)'
+const main = "rgba(0, 0, 0, 0.54)"
 // const dark = 'rgba(0, 0, 0, 0.87)'
 
 export const theme = createTheme({
@@ -30,8 +30,8 @@ export const theme = createTheme({
       // main: grey[700],
       // main: '#FF7863',
       // main: '#FF6363',
-      main: 'rgb(225, 100, 50, 1)', // #e16432
-      // main: '#ff5722', 
+      main: "rgb(225, 100, 50, 1)" // #e16432
+      // main: '#ff5722',
       // main,
       // dark,
     },
@@ -40,45 +40,43 @@ export const theme = createTheme({
     // },
     secondary: {
       // light,
-      main,
+      main
       // dark,
-    },
+    }
   },
   transitions: {
     // So we have `transition: none;` everywhere
-    create: () => 'none',
+    create: () => "none"
   },
   // @see https://material-ui.com/getting-started/faq/
   overrides: {
     // Name of the component ⚛️
     MuiCssBaseline: {
       // Name of the rule
-      '@global': {
-        '*, *::before, *::after': {
-          transition: 'none !important',
-          animation: 'none !important',
-        },
-      },
+      "@global": {
+        "*, *::before, *::after": {
+          transition: "none !important",
+          animation: "none !important"
+        }
+      }
     },
     MuiBottomNavigation: {
-      root: {
-
-      }
+      root: {}
     },
     MuiBottomNavigationAction: {
       root: {
         // disable the lift up effect when an icon is selected
-        padding: '0 !important'
-      },
+        padding: "0 !important"
+      }
     },
     MuiListItem: {
       secondaryAction: {
         // paddingRight: 70
-      },
+      }
     },
     MuiDialog: {
       paperWidthSm: {
-        minWidth: 260,
+        minWidth: 260
       }
     },
     // MuiBottomNavigationAction: {
@@ -93,10 +91,10 @@ export const theme = createTheme({
     },
     MuiButton: {
       root: {
-        color: '#fff',
+        color: "#fff"
       },
       outlined: {
-        border: '1px solid rgba(255, 255, 255, 1)'
+        border: "1px solid rgba(255, 255, 255, 1)"
         // color: '#fff',
       }
     }
@@ -105,18 +103,16 @@ export const theme = createTheme({
     // Name of the component ⚛️
     MuiButtonBase: {
       // The properties to apply
-      disableRipple: true, // No more ripple, on the whole application 💣!
-    },
+      disableRipple: true // No more ripple, on the whole application 💣!
+    }
   },
-  zIndex: {
-    
-  },
+  zIndex: {},
   custom: {
     maxWidthCenteredContent: 320,
 
     // Average ratio (w/h) for books cover. This ratio may be used
     // to help designing fixed height carousel or card. This average takes
     // into account the deviation
-    coverAverageRatio: 9 / 14,
+    coverAverageRatio: 9 / 14
   }
-});
+})

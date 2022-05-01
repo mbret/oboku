@@ -4,13 +4,13 @@
 // import { getAnalytics } from "firebase/analytics";
 // import { FIREBASE_BASE_CONFIG } from '../constants'
 // import { version } from '../../package.json'
-import localforage from 'localforage'
+import localforage from "localforage"
 import { isDebugEnabled } from "./isDebugEnabled.shared"
 
 // @ts-ignore
 window.localforage = localforage
 
-if (process.env.NODE_ENV !== 'development') {
+if (process.env.NODE_ENV !== "development") {
   // Sentry.init({
   //   dsn: "https://0d7a61df8dba4122be660fcc1161bf49@o490447.ingest.sentry.io/5554285",
   //   autoSessionTracking: true,
@@ -43,8 +43,8 @@ if (process.env.NODE_ENV !== 'development') {
   // getAnalytics()
 
   if (!isDebugEnabled()) {
-    console.log = () => { }
-    console.warn = () => { }
+    console.log = () => {}
+    console.warn = () => {}
   }
 } else {
   console.log(process.env)
@@ -52,9 +52,9 @@ if (process.env.NODE_ENV !== 'development') {
 
 export const toggleDebug = () => {
   if (isDebugEnabled()) {
-    localStorage.setItem('oboku_debug_enabled', 'false')
+    localStorage.setItem("oboku_debug_enabled", "false")
   } else {
-    localStorage.setItem('oboku_debug_enabled', 'true')
+    localStorage.setItem("oboku_debug_enabled", "true")
   }
   window.location.reload()
 }

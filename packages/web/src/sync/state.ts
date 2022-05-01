@@ -1,6 +1,6 @@
-import { atom } from "recoil";
+import { atom } from "recoil"
 
 export const lastAliveSyncState = atom<number | undefined>({
-  key: 'lastAliveSyncState',
+  key: "lastAliveSyncState",
   default: undefined
 })

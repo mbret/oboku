@@ -10,22 +10,22 @@ export const useUpdateBookState = (bookId: string) => {
   const totalBookProgress = useRecoilValue(totalBookProgressState)
 
   const updater = async () => {
-    updateBook(bookId, old => ({
+    updateBook(bookId, (old) => ({
       ...old,
       // cfi will be undefined at the beginning until pagination stabilize
-      ...beginCfi && {
-        readingStateCurrentBookmarkLocation: beginCfi || null,
-      },
-      readingStateCurrentBookmarkProgressUpdatedAt: (new Date()).toISOString(),
-      ...(old.readingStateCurrentState !== ReadingStateState.Finished) && {
+      ...(beginCfi && {
+        readingStateCurrentBookmarkLocation: beginCfi || null
+      }),
+      readingStateCurrentBookmarkProgressUpdatedAt: new Date().toISOString(),
+      ...(old.readingStateCurrentState !== ReadingStateState.Finished && {
         readingStateCurrentState: ReadingStateState.Reading,
-        ...totalBookProgress === 1 && {
-          readingStateCurrentState: ReadingStateState.Finished,
-        }
-      },
-      ...(typeof totalBookProgress === 'number') && {
-        readingStateCurrentBookmarkProgressPercent: totalBookProgress,
-      },
+        ...(totalBookProgress === 1 && {
+          readingStateCurrentState: ReadingStateState.Finished
+        })
+      }),
+      ...(typeof totalBookProgress === "number" && {
+        readingStateCurrentBookmarkProgressPercent: totalBookProgress
+      })
     }))
   }
 

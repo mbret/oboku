@@ -1,4 +1,11 @@
-import { Button, List, ListItem, ListItemIcon, ListItemText, ListSubheader } from "@material-ui/core"
+import {
+  Button,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader
+} from "@material-ui/core"
 import { MoreVertRounded } from "@material-ui/icons"
 import { FC, useState } from "react"
 import { useRecoilValue } from "recoil"
@@ -27,7 +34,7 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
             button
             onClick={() => {
               if (!dataSourcePlugin?.SelectItemComponent) {
-                dialog({ preset: 'NOT_IMPLEMENTED' })
+                dialog({ preset: "NOT_IMPLEMENTED" })
               } else {
                 setIsSelectItemOpened(true)
               }
@@ -41,9 +48,9 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
               primaryTypographyProps={{
                 style: {
                   paddingRight: 10,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis"
                 }
               }}
               secondary={`This book has been created from ${dataSourcePlugin.name}. Click to edit the data source`}
@@ -52,34 +59,41 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
           </ListItem>
         )}
         <DebugInfo info={{ id: link?._id || `` }} mb={2} />
-        {process.env.NODE_ENV === 'development' && (
-          <Button fullWidth variant="outlined" color="primary" onClick={() => { refreshBookMetadata(bookId) }}>debug:refresh_metadata</Button>
+        {process.env.NODE_ENV === "development" && (
+          <Button
+            fullWidth
+            variant="outlined"
+            color="primary"
+            onClick={() => {
+              refreshBookMetadata(bookId)
+            }}
+          >
+            debug:refresh_metadata
+          </Button>
         )}
       </List>
-      {
-        dataSourcePlugin?.SelectItemComponent && (
-          <dataSourcePlugin.SelectItemComponent
-            open={isSelectItemOpened}
-            onClose={async (error, item) => {
-              if (error) {
-                Report.error(error)
-              } else {
-                setIsSelectItemOpened(false)
-                if (item) {
-                  execute({
-                    type: `UPSERT_BOOK_LINK`,
-                    data: {
-                      bookId,
-                      linkResourceId: item.resourceId,
-                      linkType: dataSourcePlugin.type,
-                    }
-                  })
-                }
+      {dataSourcePlugin?.SelectItemComponent && (
+        <dataSourcePlugin.SelectItemComponent
+          open={isSelectItemOpened}
+          onClose={async (error, item) => {
+            if (error) {
+              Report.error(error)
+            } else {
+              setIsSelectItemOpened(false)
+              if (item) {
+                execute({
+                  type: `UPSERT_BOOK_LINK`,
+                  data: {
+                    bookId,
+                    linkResourceId: item.resourceId,
+                    linkType: dataSourcePlugin.type
+                  }
+                })
               }
-            }}
-          />
-        )
-      }
+            }
+          }}
+        />
+      )}
     </>
   )
 }

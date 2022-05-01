@@ -3,27 +3,32 @@ import { useCallback, useEffect, useState } from "react"
 import { getBookFile } from "../download/getBookFile.shared"
 import { Report } from "../debug/report.shared"
 import { getArchiveForRarFile } from "./streamer/getArchiveForFile.shared"
-import '../archive'
+import "../archive"
 import { getManifestFromArchive } from "@prose-reader/streamer"
 import { directives } from "@oboku/shared"
 import { STREAMER_URL_PREFIX } from "../constants.shared"
 
-const useGetRarManifest = () => useCallback(async (bookId: string) => {
-  const file = await getBookFile(bookId)
-  const normalizedName = file?.name.toLowerCase()
-  if (file && normalizedName?.endsWith(`.cbr`)) {
-    const archive = await getArchiveForRarFile(file)
+const useGetRarManifest = () =>
+  useCallback(async (bookId: string) => {
+    const file = await getBookFile(bookId)
+    const normalizedName = file?.name.toLowerCase()
+    if (file && normalizedName?.endsWith(`.cbr`)) {
+      const archive = await getArchiveForRarFile(file)
 
-    return getManifestFromArchive(archive, { baseUrl: `/${STREAMER_URL_PREFIX}/rar` })
-  }
+      return getManifestFromArchive(archive, {
+        baseUrl: `/${STREAMER_URL_PREFIX}/rar`
+      })
+    }
 
-  return undefined
-}, [])
+    return undefined
+  }, [])
 
 export const useManifest = (bookId: string | undefined) => {
   const [manifest, setManifest] = useState<Manifest | undefined>(undefined)
   const [isRarFile, setIsRarFile] = useState(false)
-  const [error, setError] = useState<{ code: `unknown` | `fileNotSupported` } | undefined>(undefined)
+  const [error, setError] = useState<
+    { code: `unknown` | `fileNotSupported` } | undefined
+  >(undefined)
   const getRarManifest = useGetRarManifest()
 
   useEffect(() => {
@@ -33,10 +38,12 @@ export const useManifest = (bookId: string | undefined) => {
   }, [bookId])
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       if (bookId) {
         try {
-          const response = await fetch(`${window.location.origin}/streamer/${bookId}/manifest`)
+          const response = await fetch(
+            `${window.location.origin}/streamer/${bookId}/manifest`
+          )
 
           if (response.status === 415) {
             // try to get manifest if it's a RAR
@@ -47,7 +54,7 @@ export const useManifest = (bookId: string | undefined) => {
               const newManifest = getNormalizedManifest(data)
 
               Report.log(`manifest`, data)
-              
+
               setManifest(newManifest)
             } else {
               setError({ code: `fileNotSupported` })
@@ -79,7 +86,7 @@ const getNormalizedManifest = (data: Manifest): Manifest => {
     readingDirection: direction
       ? direction
       : data.filename.endsWith(`.cbz`)
-        ? 'rtl'
-        : data.readingDirection
+      ? "rtl"
+      : data.readingDirection
   }
 }

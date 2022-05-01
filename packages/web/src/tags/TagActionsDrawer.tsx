@@ -1,23 +1,41 @@
-import { useState, FC, useEffect } from 'react';
-import Dialog from '@material-ui/core/Dialog';
+import { useState, FC, useEffect } from "react"
+import Dialog from "@material-ui/core/Dialog"
 import {
-  DialogTitle, Drawer, List, ListItem,
-  ListItemText, ListItemIcon, DialogActions, Button, Divider, DialogContent, TextField
-} from '@material-ui/core';
-import { CheckCircleRounded, DeleteForeverRounded, EditRounded, LibraryAddRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
-import { useRemoveTag, useUpdateTag } from './helpers';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { normalizedTagsState } from './states';
-import { isManageTagBooksDialogOpenedWithState } from './ManageTagBooksDialog';
+  DialogTitle,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  DialogActions,
+  Button,
+  Divider,
+  DialogContent,
+  TextField
+} from "@material-ui/core"
+import {
+  CheckCircleRounded,
+  DeleteForeverRounded,
+  EditRounded,
+  LibraryAddRounded,
+  RadioButtonUncheckedOutlined
+} from "@material-ui/icons"
+import { useRemoveTag, useUpdateTag } from "./helpers"
+import { useRecoilValue, useSetRecoilState } from "recoil"
+import { normalizedTagsState } from "./states"
+import { isManageTagBooksDialogOpenedWithState } from "./ManageTagBooksDialog"
 
 export const TagActionsDrawer: FC<{
-  openWith: string | undefined,
+  openWith: string | undefined
   onClose: () => void
 }> = ({ openWith, onClose }) => {
-  const setIsManageTagBooksDialogOpenedWithState = useSetRecoilState(isManageTagBooksDialogOpenedWithState)
-  const tag = useRecoilValue(normalizedTagsState)[openWith || '-1']
+  const setIsManageTagBooksDialogOpenedWithState = useSetRecoilState(
+    isManageTagBooksDialogOpenedWithState
+  )
+  const tag = useRecoilValue(normalizedTagsState)[openWith || "-1"]
   const [editTag] = useUpdateTag()
-  const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] = useState<string | undefined>(undefined)
+  const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
+    useState<string | undefined>(undefined)
   const [removeTag] = useRemoveTag()
 
   return (
@@ -40,29 +58,46 @@ export const TagActionsDrawer: FC<{
           </ListItem>
           <ListItem
             button
-            onClick={() => openWith && editTag({ _id: openWith, isProtected: !tag?.isProtected })}
+            onClick={() =>
+              openWith &&
+              editTag({ _id: openWith, isProtected: !tag?.isProtected })
+            }
           >
             <ListItemIcon>
-              {!tag?.isProtected && (<RadioButtonUncheckedOutlined />)}
-              {tag?.isProtected && (<CheckCircleRounded />)}
+              {!tag?.isProtected && <RadioButtonUncheckedOutlined />}
+              {tag?.isProtected && <CheckCircleRounded />}
             </ListItemIcon>
-            <ListItemText primary="Mark as protected" secondary="This will lock and hide books behind it. Use unlock features to display them" />
+            <ListItemText
+              primary="Mark as protected"
+              secondary="This will lock and hide books behind it. Use unlock features to display them"
+            />
           </ListItem>
           <ListItem
             button
-            onClick={() => openWith && editTag({ _id: openWith, isBlurEnabled: !tag?.isBlurEnabled })}
+            onClick={() =>
+              openWith &&
+              editTag({ _id: openWith, isBlurEnabled: !tag?.isBlurEnabled })
+            }
           >
             <ListItemIcon>
-              {!tag?.isBlurEnabled && (<RadioButtonUncheckedOutlined />)}
-              {tag?.isBlurEnabled && (<CheckCircleRounded />)}
+              {!tag?.isBlurEnabled && <RadioButtonUncheckedOutlined />}
+              {tag?.isBlurEnabled && <CheckCircleRounded />}
             </ListItemIcon>
-            <ListItemText primary="Blur covers" secondary="Apply a blur filter on book covers. Useful for sensitive content" />
+            <ListItemText
+              primary="Blur covers"
+              secondary="Apply a blur filter on book covers. Useful for sensitive content"
+            />
           </ListItem>
-          <ListItem button onClick={() => {
-            onClose()
-            setIsManageTagBooksDialogOpenedWithState(openWith)
-          }}>
-            <ListItemIcon><LibraryAddRounded /></ListItemIcon>
+          <ListItem
+            button
+            onClick={() => {
+              onClose()
+              setIsManageTagBooksDialogOpenedWithState(openWith)
+            }}
+          >
+            <ListItemIcon>
+              <LibraryAddRounded />
+            </ListItemIcon>
             <ListItemText primary="Manage books" />
           </ListItem>
         </List>
@@ -81,7 +116,7 @@ export const TagActionsDrawer: FC<{
             <ListItemText primary="Remove" />
           </ListItem>
         </List>
-      </Drawer >
+      </Drawer>
       <EditTagDialog
         id={isEditTagDialogOpenedWithId}
         onClose={() => {
@@ -91,20 +126,21 @@ export const TagActionsDrawer: FC<{
         open={!!isEditTagDialogOpenedWithId}
       />
     </>
-  );
+  )
 }
 
 const EditTagDialog: FC<{
-  open: boolean,
-  id: string | undefined,
-  onClose: () => void,
+  open: boolean
+  id: string | undefined
+  onClose: () => void
 }> = ({ onClose, open, id }) => {
-  const [name, setName] = useState('')
-  const { name: tagName } = useRecoilValue(normalizedTagsState)[id || '-1'] || {}
+  const [name, setName] = useState("")
+  const { name: tagName } =
+    useRecoilValue(normalizedTagsState)[id || "-1"] || {}
   const [editTag] = useUpdateTag()
 
   const onInnerClose = () => {
-    setName('')
+    setName("")
     onClose()
   }
 
@@ -115,7 +151,7 @@ const EditTagDialog: FC<{
   }
 
   useEffect(() => {
-    setName(prev => tagName || prev)
+    setName((prev) => tagName || prev)
   }, [tagName, id])
 
   return (
@@ -129,7 +165,7 @@ const EditTagDialog: FC<{
           type="text"
           fullWidth
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
       </DialogContent>
       <DialogActions>

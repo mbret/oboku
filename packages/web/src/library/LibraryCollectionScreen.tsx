@@ -1,58 +1,82 @@
-import { useState, FC, useMemo, useCallback, ComponentProps } from 'react'
-import Dialog from '@material-ui/core/Dialog'
+import { useState, FC, useMemo, useCallback, ComponentProps } from "react"
+import Dialog from "@material-ui/core/Dialog"
 import {
-  Button, DialogActions, DialogContent, DialogTitle, TextField,
-  Toolbar, useTheme
-} from '@material-ui/core'
-import { ROUTES } from '../constants'
-import { useHistory } from 'react-router-dom'
-import { useCreateCollection } from '../collections/helpers'
-import { atom, useRecoilState, useRecoilValue } from 'recoil'
-import { collectionIdsState } from '../collections/states'
-import { useCSS, useMeasureElement } from '../common/utils'
-import { CollectionList } from '../collections/list/CollectionList'
-import { useDebouncedCallback } from 'use-debounce'
+  Button,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Toolbar,
+  useTheme
+} from "@material-ui/core"
+import { ROUTES } from "../constants"
+import { useHistory } from "react-router-dom"
+import { useCreateCollection } from "../collections/helpers"
+import { atom, useRecoilState, useRecoilValue } from "recoil"
+import { collectionIdsState } from "../collections/states"
+import { useCSS, useMeasureElement } from "../common/utils"
+import { CollectionList } from "../collections/list/CollectionList"
+import { useDebouncedCallback } from "use-debounce"
 
-type Scroll = Parameters<NonNullable<ComponentProps<typeof CollectionList>['onScroll']>>[0]
+type Scroll = Parameters<
+  NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
+>[0]
 
 const libraryCollectionScreenPreviousScrollState = atom<Scroll>({
   key: `libraryCollectionScreenPreviousScrollState`,
-  default: { horizontalScrollDirection: `backward`, scrollLeft: 0, scrollTop: 0, scrollUpdateWasRequested: false, verticalScrollDirection: `forward` }
+  default: {
+    horizontalScrollDirection: `backward`,
+    scrollLeft: 0,
+    scrollTop: 0,
+    scrollUpdateWasRequested: false,
+    verticalScrollDirection: `forward`
+  }
 })
 
 export const LibraryCollectionScreen = () => {
   const classes = useStyles()
   const history = useHistory()
-  const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] = useState(false)
-  const [libraryCollectionScreenPreviousScroll, setLibraryCollectionScreenPreviousScroll] = useRecoilState(libraryCollectionScreenPreviousScrollState)
+  const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] =
+    useState(false)
+  const [
+    libraryCollectionScreenPreviousScroll,
+    setLibraryCollectionScreenPreviousScroll
+  ] = useRecoilState(libraryCollectionScreenPreviousScrollState)
   const collections = useRecoilValue(collectionIdsState)
 
   const onScroll = useDebouncedCallback((value: Scroll) => {
     setLibraryCollectionScreenPreviousScroll(value)
   }, 300)
 
-  const listHeader = useMemo(() => (
-    <Toolbar>
-      <Button
-        style={{
-          width: '100%'
-        }}
-        variant="outlined"
-        color="primary"
-        onClick={() => setIsAddCollectionDialogOpened(true)}
-      >
-        Create a new collection
-      </Button>
-    </Toolbar>
-  ), [setIsAddCollectionDialogOpened])
+  const listHeader = useMemo(
+    () => (
+      <Toolbar>
+        <Button
+          style={{
+            width: "100%"
+          }}
+          variant="outlined"
+          color="primary"
+          onClick={() => setIsAddCollectionDialogOpened(true)}
+        >
+          Create a new collection
+        </Button>
+      </Toolbar>
+    ),
+    [setIsAddCollectionDialogOpened]
+  )
 
   const listRenderHeader = useCallback(() => listHeader, [listHeader])
 
-  const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(listHeader)
+  const [listHeaderDimTracker, { height: listHeaderHeight }] =
+    useMeasureElement(listHeader)
 
-  const onItemClick = useCallback((item) => {
-    history.push(ROUTES.COLLECTION_DETAILS.replace(':id', item._id))
-  }, [history])
+  const onItemClick = useCallback(
+    (item) => {
+      history.push(ROUTES.COLLECTION_DETAILS.replace(":id", item._id))
+    },
+    [history]
+  )
 
   return (
     <div style={classes.container}>
@@ -76,14 +100,14 @@ export const LibraryCollectionScreen = () => {
 }
 
 const AddCollectionDialog: FC<{
-  open: boolean,
-  onClose: () => void,
+  open: boolean
+  onClose: () => void
 }> = ({ onClose, open }) => {
-  const [name, setName] = useState('')
+  const [name, setName] = useState("")
   const [addCollection] = useCreateCollection()
 
   const onInnerClose = () => {
-    setName('')
+    setName("")
     onClose()
   }
 
@@ -98,7 +122,7 @@ const AddCollectionDialog: FC<{
           type="text"
           fullWidth
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
       </DialogContent>
       <DialogActions>
@@ -124,13 +148,16 @@ const AddCollectionDialog: FC<{
 const useStyles = () => {
   const theme = useTheme()
 
-  return useCSS(() => ({
-    container: {
-      flex: 1,
-      overflow: 'auto'
-    },
-    list: {
-      height: '100%'
-    },
-  }), [theme])
+  return useCSS(
+    () => ({
+      container: {
+        flex: 1,
+        overflow: "auto"
+      },
+      list: {
+        height: "100%"
+      }
+    }),
+    [theme]
+  )
 }

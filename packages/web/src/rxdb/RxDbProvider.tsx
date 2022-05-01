@@ -1,17 +1,27 @@
-import React, { createContext, FC, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useMountedState } from 'react-use'
-import { PromiseReturnType } from '../types'
-import { createDatabase } from './databases'
+import React, {
+  createContext,
+  FC,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from "react"
+import { useMountedState } from "react-use"
+import { PromiseReturnType } from "../types"
+import { createDatabase } from "./databases"
 
 const DatabaseContext = createContext<{
-  db: PromiseReturnType<typeof createDatabase> | undefined,
+  db: PromiseReturnType<typeof createDatabase> | undefined
   reCreate: () => ReturnType<typeof createDatabase>
-}>({ db: undefined, reCreate: () => ({}) as any })
+}>({ db: undefined, reCreate: () => ({} as any) })
 
 export const RxDbProvider: FC = ({ children }) => {
-  const [db, setDb] = useState<PromiseReturnType<typeof createDatabase> | undefined>(undefined)
+  const [db, setDb] = useState<
+    PromiseReturnType<typeof createDatabase> | undefined
+  >(undefined)
   const isMounted = useMountedState()
-  
+
   const reCreate = useCallback(async () => {
     setDb(undefined)
     // at this point we expect useDatabase to be rendered
@@ -28,7 +38,7 @@ export const RxDbProvider: FC = ({ children }) => {
   }, [db, isMounted])
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       const newDb = await createDatabase()
       if (isMounted()) {
         setDb(newDb)
@@ -36,10 +46,13 @@ export const RxDbProvider: FC = ({ children }) => {
     })()
   }, [setDb, isMounted])
 
-  const contextValue = useMemo(() => ({
-    db,
-    reCreate,
-  }), [db, reCreate])
+  const contextValue = useMemo(
+    () => ({
+      db,
+      reCreate
+    }),
+    [db, reCreate]
+  )
 
   return (
     <DatabaseContext.Provider value={contextValue}>

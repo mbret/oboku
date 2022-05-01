@@ -19,7 +19,7 @@ export const useAction = () => {
   }, [])
 
   return {
-    execute,
+    execute
     // action
   }
 }

@@ -1,24 +1,24 @@
-import './debug'
-import React from 'react';
-import ReactDOM from 'react-dom';
-import 'fontsource-roboto/300.css'
-import 'fontsource-roboto/400.css'
-import 'fontsource-roboto/500.css'
-import 'fontsource-roboto/700.css'
-import 'react-responsive-carousel/lib/styles/carousel.min.css'
-import './index.css';
-import { App } from './App';
-import reportWebVitals from './reportWebVitals'
+import "./debug"
+import React from "react"
+import ReactDOM from "react-dom"
+import "fontsource-roboto/300.css"
+import "fontsource-roboto/400.css"
+import "fontsource-roboto/500.css"
+import "fontsource-roboto/700.css"
+import "react-responsive-carousel/lib/styles/carousel.min.css"
+import "./index.css"
+import { App } from "./App"
+import reportWebVitals from "./reportWebVitals"
 import * as Sentry from "@sentry/react"
-import { randomBytes, createHash } from 'crypto-browserify'
-import ReactGA from 'react-ga'
+import { randomBytes, createHash } from "crypto-browserify"
+import ReactGA from "react-ga"
 
 // @ts-ignore
 window.crypto.randomBytes = randomBytes
 // @ts-ignore
 window.crypto.createHash = createHash
 
-ReactGA.initialize('UA-43281094-4')
+ReactGA.initialize("UA-43281094-4")
 
 ReactDOM.render(
   <React.StrictMode>
@@ -26,8 +26,8 @@ ReactDOM.render(
       <App />
     </Sentry.ErrorBoundary>
   </React.StrictMode>,
-  document.getElementById('root')
-);
+  document.getElementById("root")
+)
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
@@ -45,11 +45,11 @@ reportWebVitals(({ id, name, delta }) => {
     // Google Analytics metrics must be integers, so the value is rounded.
     // For CLS the value is first multiplied by 1000 for greater precision
     // (note: increase the multiplier for greater precision if needed).
-    value: Math.round(name === 'CLS' ? delta * 1000 : delta),
+    value: Math.round(name === "CLS" ? delta * 1000 : delta),
     // Use a non-interaction event to avoid affecting bounce rate.
     nonInteraction: true,
     // Use `sendBeacon()` if the browser supports it.
-    transport: 'beacon',
+    transport: "beacon"
 
     // OPTIONAL: any additional params or debug info here.
     // See: https://web.dev/debug-web-vitals-in-the-field/

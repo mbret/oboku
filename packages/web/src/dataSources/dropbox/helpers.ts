@@ -1,6 +1,6 @@
-import { useCallback } from "react";
-import { authUser } from "./auth";
-import { DropboxAuth } from "dropbox";
+import { useCallback } from "react"
+import { authUser } from "./auth"
+import { DropboxAuth } from "dropbox"
 
 export const useGetCredentials = () => {
   return useCallback(async () => {
@@ -18,4 +18,5 @@ export const useGetCredentials = () => {
   }, [])
 }
 
-export const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`dropbox-`, ``)
+export const extractIdFromResourceId = (resourceId: string) =>
+  resourceId.replace(`dropbox-`, ``)

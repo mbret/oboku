@@ -1,12 +1,12 @@
-import { getBookFile } from "../../download/getBookFile.shared";
-import { PromiseReturnType } from "../../types";
+import { getBookFile } from "../../download/getBookFile.shared"
+import { PromiseReturnType } from "../../types"
 
-export const isFileRarArchive = (file: NonNullable<PromiseReturnType<typeof getBookFile>>) => {
+export const isFileRarArchive = (
+  file: NonNullable<PromiseReturnType<typeof getBookFile>>
+) => {
   const normalizedName = file.name.toLowerCase()
 
-  if (
-    normalizedName.endsWith(`.cbr`)
-  ) {
+  if (normalizedName.endsWith(`.cbr`)) {
     return true
   }
 

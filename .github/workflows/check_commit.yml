@@ -6,7 +6,7 @@ name: check_commit
 # events but only for the master branch
 on:
   push:
-    branches: [ none ]
+    branches: [none]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.4
         with:
-          node-version: '12'
+          node-version: "12"
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
@@ -41,14 +41,14 @@ jobs:
           git commit -am "release"
           git push --set-upstream origin release --force
           git push
-          
+
   deploy-aws:
     runs-on: ubuntu-latest
     steps:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.4
         with:
-          node-version: '12'
+          node-version: "12"
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:

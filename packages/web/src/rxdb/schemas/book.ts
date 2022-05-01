@@ -1,8 +1,8 @@
-import { BookDocType, InsertableBookDocType } from "@oboku/shared";
-import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb";
-import { MongoUpdateSyntax } from "../../types";
-import { withReplicationSchema } from "../rxdb-plugins/replication";
-import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types";
+import { BookDocType, InsertableBookDocType } from "@oboku/shared"
+import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
+import { MongoUpdateSyntax } from "../../types"
+import { withReplicationSchema } from "../rxdb-plugins/replication"
+import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
 
 type BookDocMethods = {
   safeUpdate: (updateObj: MongoUpdateSyntax<BookDocType>) => Promise<any>
@@ -11,22 +11,30 @@ type BookDocMethods = {
 export type BookDocument = RxDocument<BookDocType, BookDocMethods>
 
 type BookCollectionMethods = {
-  post: (json: Omit<InsertableBookDocType, 'rx_model'>) => Promise<BookDocument>,
+  post: (json: Omit<InsertableBookDocType, "rx_model">) => Promise<BookDocument>
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<BookDocType>,
     getter: (collection: BookCollection) => RxQuery
   ) => Promise<BookDocument>
-  safeFind: (updateObj: SafeMangoQuery<BookDocType>) => RxQuery<BookDocType, RxDocument<BookDocType, BookDocMethods>[]>
-  safeFindOne: (updateObj: SafeMangoQuery<BookDocType>) => RxQuery<BookDocType, RxDocument<BookDocType, BookDocMethods> | null>
+  safeFind: (
+    updateObj: SafeMangoQuery<BookDocType>
+  ) => RxQuery<BookDocType, RxDocument<BookDocType, BookDocMethods>[]>
+  safeFindOne: (
+    updateObj: SafeMangoQuery<BookDocType>
+  ) => RxQuery<BookDocType, RxDocument<BookDocType, BookDocMethods> | null>
 }
 
-export type BookCollection = RxCollection<BookDocType, BookDocMethods, BookCollectionMethods>
+export type BookCollection = RxCollection<
+  BookDocType,
+  BookDocMethods,
+  BookCollectionMethods
+>
 
 export const bookDocMethods: BookDocMethods = {
   safeUpdate: function (this: BookDocument, updateObj) {
     return this.update(updateObj)
   }
-};
+}
 
 export const bookCollectionMethods: BookCollectionMethods = {
   post: async function (this: BookCollection, json) {
@@ -46,45 +54,58 @@ export const bookCollectionMethods: BookCollectionMethods = {
 export const bookSchemaMigrationStrategies = {
   1: (oldDoc: Omit<BookDocType, `modifiedAt`>): BookDocType | null => ({
     modifiedAt: null,
-    ...oldDoc,
+    ...oldDoc
   }),
   2: (oldDoc: BookDocType): BookDocType | null => oldDoc,
-  3: (oldDoc: Omit<BookDocType, `lastMetadataUpdateError` | `metadataUpdateStatus`>): BookDocType | null => ({
+  3: (
+    oldDoc: Omit<
+      BookDocType,
+      `lastMetadataUpdateError` | `metadataUpdateStatus`
+    >
+  ): BookDocType | null => ({
     lastMetadataUpdateError: null,
     metadataUpdateStatus: null,
-    ...oldDoc,
+    ...oldDoc
   }),
-  4: (oldDoc: Omit<BookDocType, `isAttachedToDataSource`>): BookDocType | null => ({
+  4: (
+    oldDoc: Omit<BookDocType, `isAttachedToDataSource`>
+  ): BookDocType | null => ({
     isAttachedToDataSource: false,
-    ...oldDoc,
-  }),
+    ...oldDoc
+  })
 }
 
-export const bookSchema: RxJsonSchema<Omit<BookDocType, '_id' | 'rx_model' | '_rev'>> = withReplicationSchema('book', {
-  title: 'books',
+export const bookSchema: RxJsonSchema<
+  Omit<BookDocType, "_id" | "rx_model" | "_rev">
+> = withReplicationSchema("book", {
+  title: "books",
   version: 4,
-  type: 'object',
+  type: "object",
   properties: {
-    collections: { type: 'array', ref: 'obokucollection', items: { type: 'string' } },
-    createdAt: { type: ['number'] },
-    creator: { type: ['string', 'null'] },
-    date: { type: ['number', 'null'] },
-    lang: { type: ['string', 'null'] },
-    lastMetadataUpdatedAt: { type: ['number', 'null'] },
-    lastMetadataUpdateError: { type: ['string', 'null'] },
-    metadataUpdateStatus: { type: ['string', 'null'] },
-    links: { ref: 'link', type: 'array', items: { type: 'string' } },
-    publisher: { type: ['string', 'null'] },
-    readingStateCurrentBookmarkLocation: { type: ['string', 'null'] },
-    readingStateCurrentBookmarkProgressPercent: { type: ['number'] },
-    readingStateCurrentBookmarkProgressUpdatedAt: { type: ['string', 'null'] },
-    readingStateCurrentState: { type: ['string'] },
-    rights: { type: ['string', 'null'] },
-    subject: { type: ['array', 'null'], items: { type: 'string' } },
-    tags: { type: 'array', ref: 'tag', items: { type: 'string' } },
-    title: { type: ['string', 'null'] },
-    modifiedAt: { type: ['string', 'null'] },
-    isAttachedToDataSource: { type: ['boolean'] },
+    collections: {
+      type: "array",
+      ref: "obokucollection",
+      items: { type: "string" }
+    },
+    createdAt: { type: ["number"] },
+    creator: { type: ["string", "null"] },
+    date: { type: ["number", "null"] },
+    lang: { type: ["string", "null"] },
+    lastMetadataUpdatedAt: { type: ["number", "null"] },
+    lastMetadataUpdateError: { type: ["string", "null"] },
+    metadataUpdateStatus: { type: ["string", "null"] },
+    links: { ref: "link", type: "array", items: { type: "string" } },
+    publisher: { type: ["string", "null"] },
+    readingStateCurrentBookmarkLocation: { type: ["string", "null"] },
+    readingStateCurrentBookmarkProgressPercent: { type: ["number"] },
+    readingStateCurrentBookmarkProgressUpdatedAt: { type: ["string", "null"] },
+    readingStateCurrentState: { type: ["string"] },
+    rights: { type: ["string", "null"] },
+    subject: { type: ["array", "null"], items: { type: "string" } },
+    tags: { type: "array", ref: "tag", items: { type: "string" } },
+    title: { type: ["string", "null"] },
+    modifiedAt: { type: ["string", "null"] },
+    isAttachedToDataSource: { type: ["boolean"] }
   },
   required: []
 })

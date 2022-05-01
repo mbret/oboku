@@ -11,9 +11,6 @@ export const useIsMountedState$ = () => {
 
   return {
     state$: isMountedStateSubject$.asObservable(),
-    unMount$: isMountedStateSubject$.asObservable()
-      .pipe(
-        filter(v => !v)
-      )
+    unMount$: isMountedStateSubject$.asObservable().pipe(filter((v) => !v))
   }
 }

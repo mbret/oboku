@@ -1,12 +1,15 @@
-import JSZip from 'jszip'
+import JSZip from "jszip"
 
 type StreamValue = {
-  baseUri: string,
-  response: Response,
+  baseUri: string
+  response: Response
   progress: number
 }
 
-export const createCbzFromReadableStream = async (stream: ReadableStream<StreamValue>, { onData }: { onData: (value: StreamValue) => void }) => {
+export const createCbzFromReadableStream = async (
+  stream: ReadableStream<StreamValue>,
+  { onData }: { onData: (value: StreamValue) => void }
+) => {
   const reader = stream.getReader()
 
   try {
@@ -16,18 +19,25 @@ export const createCbzFromReadableStream = async (stream: ReadableStream<StreamV
 
     reader.cancel()
 
-    const data = await zip.generateAsync({ type: `blob`, mimeType: `application/x-cbz` })
+    const data = await zip.generateAsync({
+      type: `blob`,
+      mimeType: `application/x-cbz`
+    })
 
     return data
   } catch (e) {
     // cancel in case of
-    reader.cancel().catch(() => { })
+    reader.cancel().catch(() => {})
 
     throw e
   }
 }
 
-const processValue = async (reader: ReadableStreamDefaultReader<StreamValue>, zip: JSZip, onData: (data: StreamValue) => void): Promise<void> => {
+const processValue = async (
+  reader: ReadableStreamDefaultReader<StreamValue>,
+  zip: JSZip,
+  onData: (data: StreamValue) => void
+): Promise<void> => {
   const { done, value } = await reader.read()
   if (done) {
     return

@@ -4,14 +4,18 @@ import { actionSubject$ } from "./actionSubject$"
 import { Action } from "./types"
 import { useAction } from "./useAction"
 
-export const useActionEffect = <Input extends Action, Output extends Input = Input>(effect: (action$: Observable<Input>) => Observable<Output>, deps?: DependencyList) => {
+export const useActionEffect = <
+  Input extends Action,
+  Output extends Input = Input
+>(
+  effect: (action$: Observable<Input>) => Observable<Output>,
+  deps?: DependencyList
+) => {
   const { execute } = useAction()
 
   useEffect(() => {
     const subscription = effect(actionSubject$.asObservable() as any)
-      .pipe(
-        tap(execute)
-      )
+      .pipe(tap(execute))
       .subscribe()
 
     return () => {

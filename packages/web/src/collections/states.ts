@@ -1,63 +1,72 @@
-import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil";
-import { CollectionDocType, directives } from '@oboku/shared'
-import { visibleBookIdsState } from "../books/states";
-import { localSettingsState } from "../settings/states";
+import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil"
+import { CollectionDocType, directives } from "@oboku/shared"
+import { visibleBookIdsState } from "../books/states"
+import { localSettingsState } from "../settings/states"
 
 export type Collection = CollectionDocType
 
-export const normalizedCollectionsState = atom<Record<string, Collection | undefined>>({
-  key: 'collectionsState',
+export const normalizedCollectionsState = atom<
+  Record<string, Collection | undefined>
+>({
+  key: "collectionsState",
   default: {}
 })
 
 export const collectionsAsArrayState = selector({
-  key: 'collectionsAsArrayState',
+  key: "collectionsAsArrayState",
   get: ({ get }) => {
     const localSettings = get(localSettingsState)
     const collections = get(normalizedCollectionsState)
     const bookIds = get(visibleBookIdsState)
     const ids = Object.keys(collections)
 
-    type Collection = NonNullable<UnwrapRecoilValue<ReturnType<typeof collectionState>>>
+    type Collection = NonNullable<
+      UnwrapRecoilValue<ReturnType<typeof collectionState>>
+    >
 
     return ids
-      .filter(id => {
+      .filter((id) => {
         const collection = collections[id]
-        if (localSettings.showCollectionWithProtectedContent === 'unlocked') {
-          const hasSomeNonVisibleBook = collection?.books.some(bookId => !bookIds.includes(bookId))
+        if (localSettings.showCollectionWithProtectedContent === "unlocked") {
+          const hasSomeNonVisibleBook = collection?.books.some(
+            (bookId) => !bookIds.includes(bookId)
+          )
           return !hasSomeNonVisibleBook
         } else {
-          const hasSomeVisibleBook = collection?.books.some(bookId => bookIds.includes(bookId))
-          return hasSomeVisibleBook || (collection?.books.length === 0)
+          const hasSomeVisibleBook = collection?.books.some((bookId) =>
+            bookIds.includes(bookId)
+          )
+          return hasSomeVisibleBook || collection?.books.length === 0
         }
       })
-      .map(id => get(collectionState(id))) as Collection[]
+      .map((id) => get(collectionState(id))) as Collection[]
   }
 })
 
 export const collectionIdsState = selector({
-  key: 'collectionIdsState',
+  key: "collectionIdsState",
   get: ({ get }) => {
-
     return get(collectionsAsArrayState).map(({ _id }) => _id)
   }
 })
 
 export const collectionState = selectorFamily({
-  key: 'collectionState',
-  get: (id: string) => ({ get }) => {
-    const collection = get(normalizedCollectionsState)[id]
-    const bookIds = get(visibleBookIdsState)
-    const localSettings = get(localSettingsState)
+  key: "collectionState",
+  get:
+    (id: string) =>
+    ({ get }) => {
+      const collection = get(normalizedCollectionsState)[id]
+      const bookIds = get(visibleBookIdsState)
+      const localSettings = get(localSettingsState)
 
-    if (!collection) return undefined
+      if (!collection) return undefined
 
-    return {
-      ...collection,
-      books: collection.books.filter(id => bookIds.includes(id)),
-      displayableName: localSettings.hideDirectivesFromCollectionName
-        ? directives.removeDirectiveFromString(collection.name)
-        : collection.name
+      return {
+        ...collection,
+        books: collection.books.filter((id) => bookIds.includes(id)),
+        displayableName: localSettings.hideDirectivesFromCollectionName
+          ? directives.removeDirectiveFromString(collection.name)
+          : collection.name
+      }
     }
-  }
 })

@@ -1,48 +1,50 @@
-import React, { useEffect, memo } from 'react';
-import { useRecoilState } from 'recoil';
-import { appTourState } from './states';
-import { TourContent } from './TourContent';
-import { TourKey } from './TourContext';
+import React, { useEffect, memo } from "react"
+import { useRecoilState } from "recoil"
+import { appTourState } from "./states"
+import { TourContent } from "./TourContent"
+import { TourKey } from "./TourContext"
 
 type Props = {
-  id: TourKey;
-  show?: boolean;
-  unskippable?: boolean;
-  onClose: () => void;
-};
+  id: TourKey
+  show?: boolean
+  unskippable?: boolean
+  onClose: () => void
+}
 
-export const Tour: React.FC<Props> = memo(({ children, id, show = false, unskippable, onClose }) => {
-  const [{ currentOpenedTour }, setAooTourState] = useRecoilState(appTourState)
+export const Tour: React.FC<Props> = memo(
+  ({ children, id, show = false, unskippable, onClose }) => {
+    const [{ currentOpenedTour }, setAooTourState] =
+      useRecoilState(appTourState)
 
-  useEffect(() => {
-    if (!show) {
-      setAooTourState(old => {
-        if (old.currentOpenedTour === id) {
-          return { currentOpenedTour: undefined }
-        }
-        return old
-      })
-    }
-    if (show) {
-      setAooTourState(old => {
-        if (old.currentOpenedTour === undefined || old.currentOpenedTour !== id) {
-          return { currentOpenedTour: id }
-        }
-        return old
-      })
-    }
-  }, [show, currentOpenedTour, id, setAooTourState])
+    useEffect(() => {
+      if (!show) {
+        setAooTourState((old) => {
+          if (old.currentOpenedTour === id) {
+            return { currentOpenedTour: undefined }
+          }
+          return old
+        })
+      }
+      if (show) {
+        setAooTourState((old) => {
+          if (
+            old.currentOpenedTour === undefined ||
+            old.currentOpenedTour !== id
+          ) {
+            return { currentOpenedTour: id }
+          }
+          return old
+        })
+      }
+    }, [show, currentOpenedTour, id, setAooTourState])
 
-  return (
-    <>
-      {show && currentOpenedTour === id && (
-        <TourContent
-          id={id}
-          unskippable={unskippable}
-          onClose={onClose}
-        />
-      )}
-      {children}
-    </>
-  );
-});
+    return (
+      <>
+        {show && currentOpenedTour === id && (
+          <TourContent id={id} unskippable={unskippable} onClose={onClose} />
+        )}
+        {children}
+      </>
+    )
+  }
+)

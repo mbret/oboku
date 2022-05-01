@@ -1,14 +1,22 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core'
-import { crypto } from '@oboku/shared';
-import React, { FC, useEffect, useState } from 'react'
-import { useRecoilValue } from 'recoil';
-import { settingsState } from '../settings/states';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField
+} from "@material-ui/core"
+import { crypto } from "@oboku/shared"
+import React, { FC, useEffect, useState } from "react"
+import { useRecoilValue } from "recoil"
+import { settingsState } from "../settings/states"
 
 export const LockActionDialog: FC<{
   action?: () => void
 }> = ({ action }) => {
   const [open, setOpen] = useState(false)
-  const [text, setText] = useState('')
+  const [text, setText] = useState("")
   const settings = useRecoilValue(settingsState)
 
   const onClose = () => {
@@ -24,7 +32,7 @@ export const LockActionDialog: FC<{
   }
 
   useEffect(() => {
-    setText('')
+    setText("")
   }, [open])
 
   useEffect(() => {
@@ -38,7 +46,8 @@ export const LockActionDialog: FC<{
       <DialogTitle>Please enter your content password to continue</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          This is required because the action you want to perform involve your protected contents
+          This is required because the action you want to perform involve your
+          protected contents
         </DialogContentText>
         <TextField
           autoFocus
@@ -47,7 +56,7 @@ export const LockActionDialog: FC<{
           type="password"
           fullWidth
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={(e) => setText(e.target.value)}
         />
       </DialogContent>
       <DialogActions>

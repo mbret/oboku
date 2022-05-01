@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react"
 import { API_COUCH_URI } from "../constants"
 import { Report } from "../debug/report.shared"
-import PouchDB from 'pouchdb'
+import PouchDB from "pouchdb"
 import { useRecoilValue } from "recoil"
 import { authState } from "../auth/authState"
 import { useNetworkState } from "react-use"
@@ -10,12 +10,16 @@ import { catchError, switchMap } from "rxjs/operators"
 import { retryBackoff } from "../common/rxjsOperators"
 import { isPouchError } from "../rxdb/utils"
 
-const getDb = (dbName: string, token: string) => new PouchDB(`${API_COUCH_URI}/${dbName}`, {
-  fetch: (url, opts) => {
-    (opts?.headers as unknown as Map<string, string>).set('Authorization', `Bearer ${token}`)
-    return PouchDB.fetch(url, opts)
-  }
-})
+const getDb = (dbName: string, token: string) =>
+  new PouchDB(`${API_COUCH_URI}/${dbName}`, {
+    fetch: (url, opts) => {
+      ;(opts?.headers as unknown as Map<string, string>).set(
+        "Authorization",
+        `Bearer ${token}`
+      )
+      return PouchDB.fetch(url, opts)
+    }
+  })
 
 const useWatchForLiveConflicts = (db: PouchDB.Database<{}> | undefined) => {
   useEffect(() => {
@@ -24,21 +28,34 @@ const useWatchForLiveConflicts = (db: PouchDB.Database<{}> | undefined) => {
     // @todo retry automatically in case of failure
 
     const listener = db
-      .changes({ conflicts: true, live: true, since: 'now', include_docs: true, })
-      .on('change', async (change) => {
+      .changes({
+        conflicts: true,
+        live: true,
+        since: "now",
+        include_docs: true
+      })
+      .on("change", async (change) => {
         try {
-          if (change.doc?._id && change.doc._conflicts && change.doc?._conflicts.length > 0) {
+          if (
+            change.doc?._id &&
+            change.doc._conflicts &&
+            change.doc?._conflicts.length > 0
+          ) {
             const docId = change.doc._id
-            await Promise.all(change.doc?._conflicts.map(async (rev) => {
-              console.warn(`FOOOO conflict detected for doc ${docId} with revision ${rev}. Trying to delete conflict revision`)
-              return db.remove(docId, rev)
-            }))
+            await Promise.all(
+              change.doc?._conflicts.map(async (rev) => {
+                console.warn(
+                  `FOOOO conflict detected for doc ${docId} with revision ${rev}. Trying to delete conflict revision`
+                )
+                return db.remove(docId, rev)
+              })
+            )
           }
         } catch (e) {
           Report.error(e)
         }
       })
-      .on('error', Report.error)
+      .on("error", Report.error)
 
     return () => {
       listener.cancel()
@@ -49,43 +66,54 @@ const useWatchForLiveConflicts = (db: PouchDB.Database<{}> | undefined) => {
 /**
  * This run at least once when the user start the app.
  * then run every time he switch network status.
- * 
+ *
  * This should be enough for most cases since we already have a live listener for the change feed.
  */
-const useTryToResolveOldRemainingConflicts = (db: PouchDB.Database<{}> | undefined) => {
+const useTryToResolveOldRemainingConflicts = (
+  db: PouchDB.Database<{}> | undefined
+) => {
   const { online } = useNetworkState()
 
   useEffect(() => {
     if (!db || !online) return
 
-    const createView$ = defer(() => from(db.put({
-      _id: '_design/conflict_docs',
-      views: {
-        all: {
-          map: `function (doc) { if(doc._conflicts) { emit(doc._id, doc._conflicts); } }`
-        }
-      }
-    })))
-      .pipe(retryBackoff({
+    const createView$ = defer(() =>
+      from(
+        db.put({
+          _id: "_design/conflict_docs",
+          views: {
+            all: {
+              map: `function (doc) { if(doc._conflicts) { emit(doc._id, doc._conflicts); } }`
+            }
+          }
+        })
+      )
+    ).pipe(
+      retryBackoff({
         initialInterval: 100,
-        shouldRetry: err => !isPouchError(err) || (err.status || 500) >= 500,
-      }))
+        shouldRetry: (err) => !isPouchError(err) || (err.status || 500) >= 500
+      })
+    )
 
-    const conflicts$ = defer(() => from(db.query(`conflict_docs/all`, { include_docs: true })))
-      .pipe(retryBackoff({
+    const conflicts$ = defer(() =>
+      from(db.query(`conflict_docs/all`, { include_docs: true }))
+    ).pipe(
+      retryBackoff({
         initialInterval: 100,
-        shouldRetry: err => !isPouchError(err) || (err.status || 500) >= 500,
-      }))
+        shouldRetry: (err) => !isPouchError(err) || (err.status || 500) >= 500
+      })
+    )
 
-    const view$ = defer(() => from(db.get('_design/conflict_docs')))
-      .pipe(retryBackoff({
+    const view$ = defer(() => from(db.get("_design/conflict_docs"))).pipe(
+      retryBackoff({
         initialInterval: 100,
-        shouldRetry: err => !isPouchError(err) || (err.status || 500) >= 500,
-      }))
+        shouldRetry: (err) => !isPouchError(err) || (err.status || 500) >= 500
+      })
+    )
 
     const conflictResolver$ = view$
       .pipe(
-        catchError(err => {
+        catchError((err) => {
           if (err.status === 404) {
             return createView$
           }
@@ -95,24 +123,33 @@ const useTryToResolveOldRemainingConflicts = (db: PouchDB.Database<{}> | undefin
         switchMap(() => conflicts$),
         switchMap((response) => {
           if (response.total_rows > 0) {
-            return from(Promise.all(response.rows.map(async (row) => {
-              const docId = row.id
-              const conflicts = (row.value as string[])
-              return Promise.all(conflicts.map(async rev => {
-                console.warn(`conflict detected for doc ${docId} with revision ${rev}. Trying to delete conflict revision`)
-                return db.remove(docId, rev)
-              }))
-            })))
+            return from(
+              Promise.all(
+                response.rows.map(async (row) => {
+                  const docId = row.id
+                  const conflicts = row.value as string[]
+                  return Promise.all(
+                    conflicts.map(async (rev) => {
+                      console.warn(
+                        `conflict detected for doc ${docId} with revision ${rev}. Trying to delete conflict revision`
+                      )
+                      return db.remove(docId, rev)
+                    })
+                  )
+                })
+              )
+            )
           }
 
           return EMPTY
         }),
-        catchError(err => {
+        catchError((err) => {
           Report.error(err)
 
           return EMPTY
-        }),
-      ).subscribe()
+        })
+      )
+      .subscribe()
 
     return () => {
       conflictResolver$.unsubscribe()

@@ -1,21 +1,35 @@
-import React, { useState, FC } from 'react';
-import Dialog from '@material-ui/core/Dialog';
-import { DialogTitle, Drawer, List, ListItem, ListItemText, ListItemIcon, DialogActions, Button } from '@material-ui/core';
-import { ArrowForwardIosRounded, CheckCircleRounded, RadioButtonUncheckedOutlined } from '@material-ui/icons';
-import { getDisplayableReadingState, useToggleTag } from './helpers';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import { tagIdsState } from '../tags/states';
-import { libraryState } from './states';
-import { ReadingStateState } from '@oboku/shared';
-import { DownloadState } from '../download/states';
-import { TagsSelectionDialog } from '../tags/TagsSelectionDialog';
+import React, { useState, FC } from "react"
+import Dialog from "@material-ui/core/Dialog"
+import {
+  DialogTitle,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  DialogActions,
+  Button
+} from "@material-ui/core"
+import {
+  ArrowForwardIosRounded,
+  CheckCircleRounded,
+  RadioButtonUncheckedOutlined
+} from "@material-ui/icons"
+import { getDisplayableReadingState, useToggleTag } from "./helpers"
+import { useRecoilState, useRecoilValue } from "recoil"
+import { tagIdsState } from "../tags/states"
+import { libraryState } from "./states"
+import { ReadingStateState } from "@oboku/shared"
+import { DownloadState } from "../download/states"
+import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 
 export const LibraryFiltersDrawer: FC<{
-  open: boolean,
+  open: boolean
   onClose: () => void
 }> = ({ open, onClose }) => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
-  const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] = useState(false)
+  const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] =
+    useState(false)
   const tags = useRecoilValue(tagIdsState)
   const [library, setLibraryState] = useRecoilState(libraryState)
   const selectedTags = library.tags
@@ -29,15 +43,17 @@ export const LibraryFiltersDrawer: FC<{
         onClose={onClose}
         transitionDuration={0}
       >
-        <div
-          role="presentation"
-        >
+        <div role="presentation">
           <List>
-            <ListItem
-              button
-              onClick={() => setIsTagsDialogOpened(true)}
-            >
-              <ListItemText primary="Tags" secondary={(selectedTags?.length || 0) > 0 ? 'You have selected tags' : 'Any'} />
+            <ListItem button onClick={() => setIsTagsDialogOpened(true)}>
+              <ListItemText
+                primary="Tags"
+                secondary={
+                  (selectedTags?.length || 0) > 0
+                    ? "You have selected tags"
+                    : "Any"
+                }
+              />
               <ListItemIcon>
                 <ArrowForwardIosRounded />
               </ListItemIcon>
@@ -48,9 +64,13 @@ export const LibraryFiltersDrawer: FC<{
             >
               <ListItemText
                 primary="Reading state"
-                secondary={(library.readingStates.length > 0)
-                  ? library.readingStates.map(s => getDisplayableReadingState(s)).join(', ')
-                  : 'Any'}
+                secondary={
+                  library.readingStates.length > 0
+                    ? library.readingStates
+                        .map((s) => getDisplayableReadingState(s))
+                        .join(", ")
+                    : "Any"
+                }
               />
               <ListItemIcon>
                 <ArrowForwardIosRounded />
@@ -58,48 +78,61 @@ export const LibraryFiltersDrawer: FC<{
             </ListItem>
             <ListItem
               button
-              onClick={() => setLibraryState(old => ({
-                ...old,
-                downloadState: old.downloadState === DownloadState.Downloaded
-                  ? undefined
-                  : DownloadState.Downloaded
-              }))}
+              onClick={() =>
+                setLibraryState((old) => ({
+                  ...old,
+                  downloadState:
+                    old.downloadState === DownloadState.Downloaded
+                      ? undefined
+                      : DownloadState.Downloaded
+                }))
+              }
             >
               <ListItemText primary="Only show downloaded" />
               <ListItemIcon>
-                {library.downloadState !== DownloadState.Downloaded && (<RadioButtonUncheckedOutlined />)}
-                {library.downloadState === DownloadState.Downloaded && (<CheckCircleRounded />)}
+                {library.downloadState !== DownloadState.Downloaded && (
+                  <RadioButtonUncheckedOutlined />
+                )}
+                {library.downloadState === DownloadState.Downloaded && (
+                  <CheckCircleRounded />
+                )}
               </ListItemIcon>
             </ListItem>
           </List>
         </div>
-      </Drawer >
+      </Drawer>
       <TagsSelectionDialog
         hasBackNavigation
         open={isTagsDialogOpened}
         onClose={() => setIsTagsDialogOpened(false)}
         data={tags}
-        selected={tagId => !!library.tags?.find(item => item === tagId)}
+        selected={(tagId) => !!library.tags?.find((item) => item === tagId)}
         onItemClick={({ id }) => {
           toggleTag(id)
         }}
       />
-      <ReadingStateDialog open={isReadingStateDialogOpened} onClose={() => setIsReadingStateDialogOpened(false)} />
+      <ReadingStateDialog
+        open={isReadingStateDialogOpened}
+        onClose={() => setIsReadingStateDialogOpened(false)}
+      />
     </>
-  );
+  )
 }
 
-const ReadingStateDialog: FC<{ open: boolean, onClose: () => void }> = ({ open, onClose }) => {
+const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
+  open,
+  onClose
+}) => {
   const [library, setLibrary] = useRecoilState(libraryState)
 
-  const readingStates = [ReadingStateState.NotStarted, ReadingStateState.Reading, ReadingStateState.Finished]
+  const readingStates = [
+    ReadingStateState.NotStarted,
+    ReadingStateState.Reading,
+    ReadingStateState.Finished
+  ]
 
   return (
-    <Dialog
-      onClose={onClose}
-      aria-labelledby="simple-dialog-title"
-      open={open}
-    >
+    <Dialog onClose={onClose} aria-labelledby="simple-dialog-title" open={open}>
       <DialogTitle>Reading state</DialogTitle>
       {readingStates.map((readingState) => (
         <ListItem
@@ -107,16 +140,26 @@ const ReadingStateDialog: FC<{ open: boolean, onClose: () => void }> = ({ open, 
           key={readingState}
           onClick={() => {
             if (library.readingStates.includes(readingState)) {
-              setLibrary(old => ({ ...old, readingStates: old.readingStates.filter(s => s !== readingState) }))
+              setLibrary((old) => ({
+                ...old,
+                readingStates: old.readingStates.filter(
+                  (s) => s !== readingState
+                )
+              }))
             } else {
-              setLibrary(old => ({ ...old, readingStates: [...old.readingStates, readingState] }))
+              setLibrary((old) => ({
+                ...old,
+                readingStates: [...old.readingStates, readingState]
+              }))
             }
           }}
         >
           <ListItemText primary={getDisplayableReadingState(readingState)} />
-          {library.readingStates.includes(readingState)
-            ? <CheckCircleRounded />
-            : <RadioButtonUncheckedOutlined />}
+          {library.readingStates.includes(readingState) ? (
+            <CheckCircleRounded />
+          ) : (
+            <RadioButtonUncheckedOutlined />
+          )}
         </ListItem>
       ))}
       <DialogActions>

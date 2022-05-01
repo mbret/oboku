@@ -1,1 +1,1 @@
-import './uncompress'
+import "./uncompress"

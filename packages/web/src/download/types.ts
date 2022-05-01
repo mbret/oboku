@@ -1,4 +1,4 @@
 export type BookFile = {
-  data: Blob | File,
+  data: Blob | File
   name: string
 }

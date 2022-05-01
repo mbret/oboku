@@ -8,13 +8,13 @@ export const useBookFile = (bookId: string) => {
   useEffect(() => {
     let terminated = false
 
-      ; (async () => {
-        const item = await getBookFile(bookId)
+    ;(async () => {
+      const item = await getBookFile(bookId)
 
-        if (!terminated) {
-          setFile(item)
-        }
-      })()
+      if (!terminated) {
+        setFile(item)
+      }
+    })()
 
     return () => {
       terminated = true

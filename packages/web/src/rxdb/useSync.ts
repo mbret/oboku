@@ -12,38 +12,43 @@ export const useSync = () => {
   const client = useAxiosClient()
   const { dbName } = useRecoilValue(authState) || {}
 
-  type CollectionNames = Parameters<NonNullable<typeof database>['sync']>[0]['collectionNames']
+  type CollectionNames = Parameters<
+    NonNullable<typeof database>["sync"]
+  >[0]["collectionNames"]
 
-  return useCallback((collectionNames: CollectionNames) => {
-    return new Promise<void>((resolve, reject) => {
-      const replication$ = database?.sync({
-        collectionNames,
-        syncOptions: () => ({
-          remote: new PouchDB(`${API_COUCH_URI}/${dbName}`, {
-            fetch: (url, opts) => {
-              (opts?.headers as unknown as Map<string, string>).set('Authorization', client.getAuthorizationHeader()?.toString() || ``)
-              return PouchDB.fetch(url, opts)
+  return useCallback(
+    (collectionNames: CollectionNames) => {
+      return new Promise<void>((resolve, reject) => {
+        const replication$ = database?.sync({
+          collectionNames,
+          syncOptions: () => ({
+            remote: new PouchDB(`${API_COUCH_URI}/${dbName}`, {
+              fetch: (url, opts) => {
+                ;(opts?.headers as unknown as Map<string, string>).set(
+                  "Authorization",
+                  client.getAuthorizationHeader()?.toString() || ``
+                )
+                return PouchDB.fetch(url, opts)
+              }
+            }),
+            direction: {
+              push: true
+            },
+            options: {
+              retry: false,
+              live: false
+              // timeout: 5000,
             }
-          }),
-          direction: {
-            push: true,
-          },
-          options: {
-            retry: false,
-            live: false,
-            // timeout: 5000,
-          }
+          })
         })
-      })
 
-      replication$?.complete$
-        .subscribe(isSuccess => {
+        replication$?.complete$.subscribe((isSuccess) => {
           isSuccess && resolve()
         })
 
-      replication$?.error$
-        .pipe(first())
-        .subscribe(reject)
-    })
-  }, [client, dbName, database])
+        replication$?.error$.pipe(first()).subscribe(reject)
+      })
+    },
+    [client, dbName, database]
+  )
 }

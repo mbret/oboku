@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
-import { CollectionDocType } from '@oboku/shared'
+import { CollectionDocType } from "@oboku/shared"
 import { normalizedCollectionsState } from "./states"
 import { Report } from "../debug/report.shared"
 
@@ -13,13 +13,19 @@ export const useCollectionsInitialState = () => {
 
   useEffect(() => {
     if (db) {
-      (async () => {
+      ;(async () => {
         try {
           const collections = await db.obokucollection.find().exec()
-          const collectionsAsMap = collections.reduce((map: UnwrapRecoilValue<typeof normalizedCollectionsState>, obj) => {
-            map[obj._id] = obj.toJSON()
-            return map
-          }, {})
+          const collectionsAsMap = collections.reduce(
+            (
+              map: UnwrapRecoilValue<typeof normalizedCollectionsState>,
+              obj
+            ) => {
+              map[obj._id] = obj.toJSON()
+              return map
+            },
+            {}
+          )
           setCollections(collectionsAsMap)
 
           setIsReady(true)
@@ -38,26 +44,33 @@ export const useCollectionsObservers = () => {
   const [, setCollections] = useRecoilState(normalizedCollectionsState)
 
   useEffect(() => {
-    const sub = db?.obokucollection.$.subscribe((changeEvent: RxChangeEvent<CollectionDocType>) => {
-      console.warn('CHANGE EVENT', changeEvent)
-      switch (changeEvent.operation) {
-        case 'INSERT': {
-          return setCollections(state => ({
-            ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData,
-          }))
-        }
-        case 'UPDATE': {
-          return setCollections(state => ({
-            ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData,
-          }))
-        }
-        case 'DELETE': {
-          return setCollections(({ [changeEvent.documentData._id]: deletedCollection, ...rest }) => rest)
+    const sub = db?.obokucollection.$.subscribe(
+      (changeEvent: RxChangeEvent<CollectionDocType>) => {
+        console.warn("CHANGE EVENT", changeEvent)
+        switch (changeEvent.operation) {
+          case "INSERT": {
+            return setCollections((state) => ({
+              ...state,
+              [changeEvent.documentData._id]: changeEvent.documentData
+            }))
+          }
+          case "UPDATE": {
+            return setCollections((state) => ({
+              ...state,
+              [changeEvent.documentData._id]: changeEvent.documentData
+            }))
+          }
+          case "DELETE": {
+            return setCollections(
+              ({
+                [changeEvent.documentData._id]: deletedCollection,
+                ...rest
+              }) => rest
+            )
+          }
         }
       }
-    })
+    )
 
     return () => sub?.unsubscribe()
   }, [db, setCollections])

@@ -1,26 +1,52 @@
-import { Drawer, ListItem, Divider, List, ListItemIcon, ListItemText, DialogContent, DialogTitle, Dialog, TextField, DialogActions, Button } from "@material-ui/core";
-import { useEffect, useState, FC } from "react";
-import { Edit, DeleteForeverRounded, LibraryAddRounded } from "@material-ui/icons";
-import { useRemoveCollection, useUpdateCollection } from "./helpers";
-import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
-import { collectionState } from "./states";
-import { ManageCollectionBooksDialog } from "./ManageCollectionBooksDialog";
-import { useModalNavigationControl } from "../navigation/helpers";
-import { useCallback } from "react";
-import { useRef } from "react";
+import {
+  Drawer,
+  ListItem,
+  Divider,
+  List,
+  ListItemIcon,
+  ListItemText,
+  DialogContent,
+  DialogTitle,
+  Dialog,
+  TextField,
+  DialogActions,
+  Button
+} from "@material-ui/core"
+import { useEffect, useState, FC } from "react"
+import {
+  Edit,
+  DeleteForeverRounded,
+  LibraryAddRounded
+} from "@material-ui/icons"
+import { useRemoveCollection, useUpdateCollection } from "./helpers"
+import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
+import { collectionState } from "./states"
+import { ManageCollectionBooksDialog } from "./ManageCollectionBooksDialog"
+import { useModalNavigationControl } from "../navigation/helpers"
+import { useCallback } from "react"
+import { useRef } from "react"
 
 const collectionActionDrawerState = atom<{
-  openedWith: undefined | string,
-}>({ key: 'collectionActionDrawerState', default: { openedWith: undefined } })
+  openedWith: undefined | string
+}>({ key: "collectionActionDrawerState", default: { openedWith: undefined } })
 
-const collectionActionDrawerChangesState = atom<undefined | [string, `delete`]>({
-  key: `collectionActionDrawerChangesState`,
-  default: undefined
-})
+const collectionActionDrawerChangesState = atom<undefined | [string, `delete`]>(
+  {
+    key: `collectionActionDrawerChangesState`,
+    default: undefined
+  }
+)
 
-export const useCollectionActionsDrawer = (id: string, onChanges?: (change: `delete`) => void) => {
-  const [, setCollectionActionDrawer] = useRecoilState(collectionActionDrawerState)
-  const collectionActionDrawerChanges = useRecoilValue(collectionActionDrawerChangesState)
+export const useCollectionActionsDrawer = (
+  id: string,
+  onChanges?: (change: `delete`) => void
+) => {
+  const [, setCollectionActionDrawer] = useRecoilState(
+    collectionActionDrawerState
+  )
+  const collectionActionDrawerChanges = useRecoilValue(
+    collectionActionDrawerChangesState
+  )
   // we use this to only ever emit once every changes
   // this also ensure when first subscribing to the hook we do not trigger the previous changes
   const latestChangesEmittedRef = useRef(collectionActionDrawerChanges)
@@ -42,25 +68,35 @@ export const useCollectionActionsDrawer = (id: string, onChanges?: (change: `del
   }, [collectionActionDrawerChanges, onChanges, id])
 
   return {
-    open,
+    open
   }
 }
 
 export const CollectionActionsDrawer: FC<{}> = () => {
-  const [{ openedWith: collectionId }, setCollectionActionDrawerState] = useRecoilState(collectionActionDrawerState)
-  const setCollectionActionDrawerChanges = useSetRecoilState(collectionActionDrawerChangesState)
-  const [isEditCollectionDialogOpenedWithId, setIsEditCollectionDialogOpenedWithId] = useState<string | undefined>(undefined)
+  const [{ openedWith: collectionId }, setCollectionActionDrawerState] =
+    useRecoilState(collectionActionDrawerState)
+  const setCollectionActionDrawerChanges = useSetRecoilState(
+    collectionActionDrawerChangesState
+  )
+  const [
+    isEditCollectionDialogOpenedWithId,
+    setIsEditCollectionDialogOpenedWithId
+  ] = useState<string | undefined>(undefined)
   const [removeCollection] = useRemoveCollection()
-  const [isManageBookDialogOpened, setIsManageBookDialogOpened] = useState(false)
+  const [isManageBookDialogOpened, setIsManageBookDialogOpened] =
+    useState(false)
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
 
-  const handleClose = useModalNavigationControl({
-    onExit: () => {
-      setCollectionActionDrawerState({ openedWith: undefined })
-      setIsEditCollectionDialogOpenedWithId(undefined)
-      setIsManageBookDialogOpened(false)
-    }
-  }, collectionId)
+  const handleClose = useModalNavigationControl(
+    {
+      onExit: () => {
+        setCollectionActionDrawerState({ openedWith: undefined })
+        setIsEditCollectionDialogOpenedWithId(undefined)
+        setIsManageBookDialogOpened(false)
+      }
+    },
+    collectionId
+  )
 
   const opened = !!collectionId
 
@@ -80,10 +116,15 @@ export const CollectionActionsDrawer: FC<{}> = () => {
         onClose={() => handleClose()}
       >
         <List>
-          <ListItem button onClick={() => {
-            setIsEditCollectionDialogOpenedWithId(collectionId)
-          }}>
-            <ListItemIcon><Edit /></ListItemIcon>
+          <ListItem
+            button
+            onClick={() => {
+              setIsEditCollectionDialogOpenedWithId(collectionId)
+            }}
+          >
+            <ListItemIcon>
+              <Edit />
+            </ListItemIcon>
             <ListItemText primary="Rename" />
           </ListItem>
           {/* <ListItem button onClick={() => {
@@ -96,17 +137,24 @@ export const CollectionActionsDrawer: FC<{}> = () => {
               secondary="This collection will no longer be synchronized with the data source it originated from"
             />
           </ListItem> */}
-          <ListItem button onClick={() => {
-            setIsManageBookDialogOpened(true)
-          }}>
-            <ListItemIcon><LibraryAddRounded /></ListItemIcon>
+          <ListItem
+            button
+            onClick={() => {
+              setIsManageBookDialogOpened(true)
+            }}
+          >
+            <ListItemIcon>
+              <LibraryAddRounded />
+            </ListItemIcon>
             <ListItemText primary="Manage books" />
           </ListItem>
         </List>
         <Divider />
         <List>
           <ListItem button onClick={() => onRemoveCollection(collectionId)}>
-            <ListItemIcon><DeleteForeverRounded /></ListItemIcon>
+            <ListItemIcon>
+              <DeleteForeverRounded />
+            </ListItemIcon>
             <ListItemText primary="Remove" />
           </ListItem>
         </List>
@@ -126,20 +174,20 @@ export const CollectionActionsDrawer: FC<{}> = () => {
         open={!!isEditCollectionDialogOpenedWithId}
       />
     </>
-  );
+  )
 }
 
 const EditCollectionDialog: FC<{
-  open: boolean,
-  id: string | undefined,
-  onClose: () => void,
+  open: boolean
+  id: string | undefined
+  onClose: () => void
 }> = ({ onClose, open, id }) => {
-  const [name, setName] = useState('')
-  const collection = useRecoilValue(collectionState(id || '-1'))
+  const [name, setName] = useState("")
+  const collection = useRecoilValue(collectionState(id || "-1"))
   const [editCollection] = useUpdateCollection()
 
   const onInnerClose = () => {
-    setName('')
+    setName("")
     onClose()
   }
 
@@ -150,7 +198,7 @@ const EditCollectionDialog: FC<{
   }
 
   useEffect(() => {
-    setName(prev => collection?.name || prev)
+    setName((prev) => collection?.name || prev)
   }, [collection?.name, id])
 
   return (
@@ -164,7 +212,7 @@ const EditCollectionDialog: FC<{
           type="text"
           fullWidth
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
       </DialogContent>
       <DialogActions>

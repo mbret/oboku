@@ -1,26 +1,30 @@
-import { Drawer, ListItem, List, ListItemIcon, ListItemText } from "@material-ui/core";
-import { FC } from "react";
-import { plugins } from "./configure";
+import {
+  Drawer,
+  ListItem,
+  List,
+  ListItemIcon,
+  ListItemText
+} from "@material-ui/core"
+import { FC } from "react"
+import { plugins } from "./configure"
 
 export const DataSourcesAddDrawer: FC<{
-  open: boolean,
-  onClose: (key?: string) => void,
+  open: boolean
+  onClose: (key?: string) => void
 }> = ({ open, onClose }) => {
-  const dataSourcesPlugins = plugins.filter(plugin => plugin.synchronizable)
+  const dataSourcesPlugins = plugins.filter((plugin) => plugin.synchronizable)
 
   return (
     <>
-      <Drawer
-        anchor="bottom"
-        open={open}
-        onClose={() => onClose()}
-      >
-        <div
-          role="presentation"
-        >
+      <Drawer anchor="bottom" open={open} onClose={() => onClose()}>
+        <div role="presentation">
           <List>
-            {dataSourcesPlugins.map(dataSource => (
-              <ListItem button onClick={() => onClose(dataSource.type)} key={dataSource.type}>
+            {dataSourcesPlugins.map((dataSource) => (
+              <ListItem
+                button
+                onClick={() => onClose(dataSource.type)}
+                key={dataSource.type}
+              >
                 <ListItemIcon>
                   {dataSource.Icon && <dataSource.Icon />}
                 </ListItemIcon>
@@ -31,5 +35,5 @@ export const DataSourcesAddDrawer: FC<{
         </div>
       </Drawer>
     </>
-  );
+  )
 }

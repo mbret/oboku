@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { useSynchronizeStateWithStorageEffect } from './useSynchronizeStateWithStorage'
+import { useEffect } from "react"
+import { useSynchronizeStateWithStorageEffect } from "./useSynchronizeStateWithStorage"
 // import localforage from 'localforage';
 
 // const POLLING_INTERVAL = 30000
@@ -14,7 +14,6 @@ const useRevertInvalidDownloads = () => {
 
   useEffect(() => {
     // Report.error('todo')
-
     //   (async () => {
     //     try {
     //       const subscription = client.watchQuery({
@@ -22,7 +21,6 @@ const useRevertInvalidDownloads = () => {
     //       }).subscribe(async ({ data }) => {
     //         subscription.unsubscribe()
     //         const books = data.books || []
-
     //         try {
     //           const toUpdate = await Promise.all(books.map(async (book) => {
     //             if (book?.downloadState !== 'none') {
@@ -30,7 +28,6 @@ const useRevertInvalidDownloads = () => {
     //               return download ? null : book?.id
     //             }
     //           }))
-
     //           toUpdate.forEach(bookId => {
     //             const ref = client.identify({ __typename: 'Book', id: bookId })
     //             ref && client.modify('Book', {

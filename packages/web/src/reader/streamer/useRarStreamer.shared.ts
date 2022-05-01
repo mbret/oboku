@@ -6,7 +6,9 @@ import { PromiseReturnType } from "../../types"
 import { getArchiveForRarFile } from "./getArchiveForFile.shared"
 
 export const useRarStreamer = (bookId: string | undefined) => {
-  const [archive, setArchive] = useState<PromiseReturnType<typeof getArchiveForRarFile> | undefined>()
+  const [archive, setArchive] = useState<
+    PromiseReturnType<typeof getArchiveForRarFile> | undefined
+  >()
 
   useEffect(() => {
     let cancelled = false
@@ -14,7 +16,7 @@ export const useRarStreamer = (bookId: string | undefined) => {
     if (!bookId) {
       setArchive(undefined)
     }
-    (async () => {
+    ;(async () => {
       if (bookId) {
         const file = await getBookFile(bookId)
         if (file) {
@@ -31,17 +33,23 @@ export const useRarStreamer = (bookId: string | undefined) => {
     }
   }, [bookId])
 
-  useEffect(() => () => {
-    setArchive(undefined)
-  }, [])
+  useEffect(
+    () => () => {
+      setArchive(undefined)
+    },
+    []
+  )
 
   // @todo make it cancellable
-  const fetchResource = useCallback(async (item) => {
-    if (archive) {
-      return (await getResourceFromArchive(archive, item.path))
-    }
-    return new Response(``, { status: 404 })
-  }, [archive])
+  const fetchResource = useCallback(
+    async (item) => {
+      if (archive) {
+        return await getResourceFromArchive(archive, item.path)
+      }
+      return new Response(``, { status: 404 })
+    },
+    [archive]
+  )
 
   return { fetchResource: archive ? fetchResource : undefined }
 }

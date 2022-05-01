@@ -1,25 +1,29 @@
-import { FC, useEffect, useState } from 'react'
-import { SelectProps } from '@material-ui/core'
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import { makeStyles } from '@material-ui/core/styles';
+import { FC, useEffect, useState } from "react"
+import { SelectProps } from "@material-ui/core"
+import Input from "@material-ui/core/Input"
+import InputLabel from "@material-ui/core/InputLabel"
+import MenuItem from "@material-ui/core/MenuItem"
+import FormControl from "@material-ui/core/FormControl"
+import Select from "@material-ui/core/Select"
+import { makeStyles } from "@material-ui/core/styles"
 import { useRecoilValue } from "recoil"
 import { tagIdsState, tagState } from "./states"
 import { TagChip } from "./TagChip"
 
-export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({ onChange: onUpChange }) => {
-  const classes = useStyles();
+export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
+  onChange: onUpChange
+}) => {
+  const classes = useStyles()
   const tags = useRecoilValue(tagIdsState)
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
 
   const onChange: NonNullable<SelectProps[`onChange`]> = (event) => {
-    setSelectedTags(event.target.value as string[]);
+    setSelectedTags(event.target.value as string[])
   }
 
-  const renderValue = (selected: string[]): ReturnType<NonNullable<SelectProps[`renderValue`]>> => (
+  const renderValue = (
+    selected: string[]
+  ): ReturnType<NonNullable<SelectProps[`renderValue`]>> => (
     <div className={classes.chips}>
       {selected.map((value) => (
         <TagChip key={value} id={value} className={classes.chip} />
@@ -49,18 +53,14 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({ onCha
           </MenuItem>
         ))}
       </Select>
-    </FormControl >
+    </FormControl>
   )
 }
 
 const TagName: FC<{ id: string }> = ({ id }) => {
   const { name } = useRecoilValue(tagState(id)) || {}
 
-  return (
-    <>
-      {name}
-    </>
-  )
+  return <>{name}</>
 }
 
 const useStyles = makeStyles((theme) => ({
@@ -69,13 +69,13 @@ const useStyles = makeStyles((theme) => ({
     width: `100%`
   },
   chips: {
-    display: 'flex',
-    flexWrap: 'wrap',
+    display: "flex",
+    flexWrap: "wrap"
   },
   chip: {
-    margin: theme.spacing(0.5),
+    margin: theme.spacing(0.5)
   },
   noLabel: {
-    marginTop: theme.spacing(3),
-  },
-}));
+    marginTop: theme.spacing(3)
+  }
+}))

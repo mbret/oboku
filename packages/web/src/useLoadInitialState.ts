@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
-import { useBooksInitialState } from "./books/observers";
+import { useBooksInitialState } from "./books/observers"
 import { useDatabase } from "./rxdb"
-import { useTagsInitialState } from "./tags/observers";
-import { useLinksInitialState } from "./links/observers";
-import { useCollectionsInitialState } from "./collections/observers";
-import { useDataSourcesInitialState } from "./dataSources/observers";
-import { useSettingsStateReducer } from "./sync/useObservers";
-import { Report } from "./debug/report.shared";
+import { useTagsInitialState } from "./tags/observers"
+import { useLinksInitialState } from "./links/observers"
+import { useCollectionsInitialState } from "./collections/observers"
+import { useDataSourcesInitialState } from "./dataSources/observers"
+import { useSettingsStateReducer } from "./sync/useObservers"
+import { Report } from "./debug/report.shared"
 
 /**
  * This hook will load anything needed from the database into the state.
@@ -15,7 +15,7 @@ import { Report } from "./debug/report.shared";
  */
 export const useLoadInitialState = () => {
   const db = useDatabase()
-  const settingsReducer = useSettingsStateReducer();
+  const settingsReducer = useSettingsStateReducer()
   const isBookStateReady = useBooksInitialState()
   const isTagStateReady = useTagsInitialState()
   const isLinkStateReady = useLinksInitialState()
@@ -25,10 +25,11 @@ export const useLoadInitialState = () => {
 
   useEffect(() => {
     if (db) {
-      (async () => {
+      ;(async () => {
         try {
           const settings = await db.settings.findOne().exec()
-          settings && settingsReducer({ operation: 'INIT', documentData: settings })
+          settings &&
+            settingsReducer({ operation: "INIT", documentData: settings })
 
           setIsReady(true)
         } catch (e) {
@@ -38,5 +39,12 @@ export const useLoadInitialState = () => {
     }
   }, [db, settingsReducer])
 
-  return ready && isBookStateReady && isTagStateReady && isLinkStateReady && isCollectionStateReady && isDataSourceStateReady
+  return (
+    ready &&
+    isBookStateReady &&
+    isTagStateReady &&
+    isLinkStateReady &&
+    isCollectionStateReady &&
+    isDataSourceStateReady
+  )
 }

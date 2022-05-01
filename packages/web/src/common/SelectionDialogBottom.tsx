@@ -1,13 +1,28 @@
 import { Button, Typography, useTheme } from "@material-ui/core"
 import { useCSS } from "./utils"
 
-export const SelectionDialogBottom = ({ onClose, numberOfItemsSelected }: { onClose: () => void, numberOfItemsSelected: number }) => {
+export const SelectionDialogBottom = ({
+  onClose,
+  numberOfItemsSelected
+}: {
+  onClose: () => void
+  numberOfItemsSelected: number
+}) => {
   const styles = useStyles()
 
   return (
     <div style={styles.buttonContainer}>
-      <Typography gutterBottom align="center" variant="body2">{numberOfItemsSelected} item(s) selected</Typography>
-      <Button style={styles.button} variant="outlined" color="primary" onClick={onClose}>Ok</Button>
+      <Typography gutterBottom align="center" variant="body2">
+        {numberOfItemsSelected} item(s) selected
+      </Typography>
+      <Button
+        style={styles.button}
+        variant="outlined"
+        color="primary"
+        onClick={onClose}
+      >
+        Ok
+      </Button>
     </div>
   )
 }
@@ -15,13 +30,18 @@ export const SelectionDialogBottom = ({ onClose, numberOfItemsSelected }: { onCl
 const useStyles = () => {
   const theme = useTheme()
 
-  return useCSS(() => ({
-    buttonContainer: {
-      padding: `${theme.spacing(1)}px ${theme.spacing(2)}px ${theme.spacing(2)}px ${theme.spacing(2)}px`,
-      borderTop: `1px solid ${theme.palette['grey']['500']}`
-    },
-    button: {
-      width: '100%',
-    },
-  }), [theme])
+  return useCSS(
+    () => ({
+      buttonContainer: {
+        padding: `${theme.spacing(1)}px ${theme.spacing(2)}px ${theme.spacing(
+          2
+        )}px ${theme.spacing(2)}px`,
+        borderTop: `1px solid ${theme.palette["grey"]["500"]}`
+      },
+      button: {
+        width: "100%"
+      }
+    }),
+    [theme]
+  )
 }

@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useRecoilValue } from "recoil"
 import { localSettingsState } from "../settings/states"
-import screenfull from 'screenfull'
+import screenfull from "screenfull"
 import { IS_MOBILE_DEVICE } from "../constants"
 import { Report } from "../debug/report.shared"
 
@@ -10,12 +10,15 @@ export const useFullScreenSwitch = () => {
 
   useEffect(() => {
     if (
-      (
-        localSettings.readingFullScreenSwitchMode === 'always'
-        || (localSettings.readingFullScreenSwitchMode === 'automatic' && IS_MOBILE_DEVICE)
-      )
-      && screenfull.isEnabled && !screenfull.isFullscreen) {
-        screenfull.request(undefined, { navigationUI: 'hide' }).catch(Report.error)
+      (localSettings.readingFullScreenSwitchMode === "always" ||
+        (localSettings.readingFullScreenSwitchMode === "automatic" &&
+          IS_MOBILE_DEVICE)) &&
+      screenfull.isEnabled &&
+      !screenfull.isFullscreen
+    ) {
+      screenfull
+        .request(undefined, { navigationUI: "hide" })
+        .catch(Report.error)
     }
 
     return () => {

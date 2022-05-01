@@ -7,10 +7,7 @@
 // }
 
 export const useLoadLibraryFromJson = () => {
-
-  return (json: any) => {
-
-  }
+  return (json: any) => {}
   // const client = useApolloClient()
   // const addBook = useAddBook()
   // const createTag = useCreateTag()

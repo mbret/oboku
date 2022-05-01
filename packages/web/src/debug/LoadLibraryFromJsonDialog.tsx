@@ -1,22 +1,29 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@material-ui/core'
-import React, { FC, useEffect, useState } from 'react'
-import { useLoadLibraryFromJson } from './useLoadLibraryFromJson'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField
+} from "@material-ui/core"
+import React, { FC, useEffect, useState } from "react"
+import { useLoadLibraryFromJson } from "./useLoadLibraryFromJson"
 
 export const LoadLibraryFromJsonDialog: FC<{
-  open: boolean,
+  open: boolean
   onClose: () => void
 }> = ({ open, onClose }) => {
-  const [json, setJson] = useState('')
+  const [json, setJson] = useState("")
   const loadFromJson = useLoadLibraryFromJson()
 
   const handleConfirm = () => {
-    setJson('')
+    setJson("")
     loadFromJson(json)
     onClose()
   }
 
   useEffect(() => {
-    setJson('')
+    setJson("")
   }, [open])
 
   return (
@@ -30,7 +37,7 @@ export const LoadLibraryFromJsonDialog: FC<{
           type="text"
           fullWidth
           value={json}
-          onChange={e => setJson(e.target.value)}
+          onChange={(e) => setJson(e.target.value)}
         />
       </DialogContent>
       <DialogActions>

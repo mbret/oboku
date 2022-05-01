@@ -1,54 +1,73 @@
 import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
 import { withReplicationSchema } from "../rxdb-plugins/replication"
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
-import { CollectionDocType } from '@oboku/shared'
+import { CollectionDocType } from "@oboku/shared"
 
-type CollectionDocSchema = Required<Omit<CollectionDocType, '_id' | 'rx_model' | '_rev'>>
+type CollectionDocSchema = Required<
+  Omit<CollectionDocType, "_id" | "rx_model" | "_rev">
+>
 
 export type CollectionDocMethods = {}
 
-export type CollectionDocument = RxDocument<CollectionDocType, CollectionDocMethods>
+export type CollectionDocument = RxDocument<
+  CollectionDocType,
+  CollectionDocMethods
+>
 
 type CollectionCollectionMethods = {
-  post: (json: Omit<CollectionDocType, '_id' | 'rx_model' | '_rev'>) => Promise<CollectionDocument>,
+  post: (
+    json: Omit<CollectionDocType, "_id" | "rx_model" | "_rev">
+  ) => Promise<CollectionDocument>
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<CollectionDocType>,
     cb: (collection: CollectionCollection) => RxQuery
-  ) => Promise<CollectionDocument>,
-  safeFind: (updateObj: SafeMangoQuery<CollectionDocType>) => RxQuery<CollectionDocType, RxDocument<CollectionDocType, CollectionDocMethods>[]>
+  ) => Promise<CollectionDocument>
+  safeFind: (
+    updateObj: SafeMangoQuery<CollectionDocType>
+  ) => RxQuery<
+    CollectionDocType,
+    RxDocument<CollectionDocType, CollectionDocMethods>[]
+  >
 }
 
-export type CollectionCollection = RxCollection<CollectionDocType, {}, CollectionCollectionMethods>
+export type CollectionCollection = RxCollection<
+  CollectionDocType,
+  {},
+  CollectionCollectionMethods
+>
 
-export const collectionSchema: RxJsonSchema<CollectionDocSchema> = withReplicationSchema('obokucollection', {
-  title: 'obokucollection',
-  version: 2,
-  type: 'object',
-  properties: {
-    name: { type: 'string' },
-    books: { type: 'array', ref: 'book', items: { type: 'string' } },
-    resourceId: { type: ['string', 'null'], },
-    createdAt: { type: 'string' },
-    modifiedAt: { type: ['string', 'null'] },
-    dataSourceId: { type: ['string', 'null'] },
-  },
-  required: ['name']
-})
+export const collectionSchema: RxJsonSchema<CollectionDocSchema> =
+  withReplicationSchema("obokucollection", {
+    title: "obokucollection",
+    version: 2,
+    type: "object",
+    properties: {
+      name: { type: "string" },
+      books: { type: "array", ref: "book", items: { type: "string" } },
+      resourceId: { type: ["string", "null"] },
+      createdAt: { type: "string" },
+      modifiedAt: { type: ["string", "null"] },
+      dataSourceId: { type: ["string", "null"] }
+    },
+    required: ["name"]
+  })
 
 export const collectionMigrationStrategies = {
-  1: (oldDoc: Omit<CollectionDocType, `createdAt` | `modifiedAt`>): CollectionDocType | null => {
-
+  1: (
+    oldDoc: Omit<CollectionDocType, `createdAt` | `modifiedAt`>
+  ): CollectionDocType | null => {
     return {
       createdAt: new Date().toISOString(),
       modifiedAt: null,
-      ...oldDoc,
+      ...oldDoc
     }
   },
-  2: (oldDoc: Omit<CollectionDocType, `dataSourceId`>): CollectionDocType | null => {
-
+  2: (
+    oldDoc: Omit<CollectionDocType, `dataSourceId`>
+  ): CollectionDocType | null => {
     return {
       dataSourceId: null,
-      ...oldDoc,
+      ...oldDoc
     }
   }
 }
@@ -63,4 +82,4 @@ export const collectionCollectionMethods: CollectionCollectionMethods = {
   safeFind: function (this: CollectionCollection, json) {
     return this.find(json)
   }
-};
+}

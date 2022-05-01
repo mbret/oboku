@@ -1,5 +1,12 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target" : { "namespace": "android_app", "package_name": "me.oboku.app.twa",
-                   "sha256_cert_fingerprints": ["23:2D:D3:7B:9B:E7:57:73:BD:F2:B9:68:9E:7F:3D:8F:09:DA:67:F9:88:BA:B1:52:81:EA:29:94:FC:45:D2:36"] }
-    }]
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "me.oboku.app.twa",
+      "sha256_cert_fingerprints": [
+        "23:2D:D3:7B:9B:E7:57:73:BD:F2:B9:68:9E:7F:3D:8F:09:DA:67:F9:88:BA:B1:52:81:EA:29:94:FC:45:D2:36"
+      ]
+    }
+  }
+]

@@ -1,17 +1,25 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@material-ui/core'
-import React, { FC, useEffect, useState } from 'react'
-import { useRecoilValue } from 'recoil';
-import { authState } from './authState';
-import { useAuthorize } from './helpers';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField
+} from "@material-ui/core"
+import React, { FC, useEffect, useState } from "react"
+import { useRecoilValue } from "recoil"
+import { authState } from "./authState"
+import { useAuthorize } from "./helpers"
 
-const FORM_ID = 'LockActionBehindUserPasswordDialog'
+const FORM_ID = "LockActionBehindUserPasswordDialog"
 
 export const LockActionBehindUserPasswordDialog: FC<{
   action?: () => void
 }> = ({ action }) => {
   const [open, setOpen] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [text, setText] = useState('')
+  const [text, setText] = useState("")
   const auth = useRecoilValue(authState)
   const authorize = useAuthorize()
 
@@ -21,7 +29,8 @@ export const LockActionBehindUserPasswordDialog: FC<{
 
   const onConfirm = () => {
     authorize({
-      variables: { password: text }, onSuccess: () => {
+      variables: { password: text },
+      onSuccess: () => {
         setSuccess(true)
       }
     })
@@ -36,7 +45,7 @@ export const LockActionBehindUserPasswordDialog: FC<{
 
   useEffect(() => {
     setSuccess(false)
-    setText('')
+    setText("")
   }, [open])
 
   useEffect(() => {
@@ -50,10 +59,18 @@ export const LockActionBehindUserPasswordDialog: FC<{
       <DialogTitle>Please enter your account password to continue</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Make sure you are online to proceed since we need to authorize you with the server
+          Make sure you are online to proceed since we need to authorize you
+          with the server
         </DialogContentText>
-        <form noValidate id={FORM_ID} onSubmit={e => e.preventDefault()}>
-          <input type="text" name="email" value={auth?.email || ''} autoComplete="email" style={{ display: 'none' }} readOnly />
+        <form noValidate id={FORM_ID} onSubmit={(e) => e.preventDefault()}>
+          <input
+            type="text"
+            name="email"
+            value={auth?.email || ""}
+            autoComplete="email"
+            style={{ display: "none" }}
+            readOnly
+          />
           <TextField
             autoFocus
             id="name"
@@ -62,7 +79,7 @@ export const LockActionBehindUserPasswordDialog: FC<{
             fullWidth
             value={text}
             autoComplete="current-password"
-            onChange={e => setText(e.target.value)}
+            onChange={(e) => setText(e.target.value)}
           />
         </form>
       </DialogContent>
@@ -70,7 +87,12 @@ export const LockActionBehindUserPasswordDialog: FC<{
         <Button onClick={onClose} color="primary">
           Cancel
         </Button>
-        <Button onClick={onConfirm} color="primary" type="submit" form={FORM_ID}>
+        <Button
+          onClick={onConfirm}
+          color="primary"
+          type="submit"
+          form={FORM_ID}
+        >
           Continue
         </Button>
       </DialogActions>

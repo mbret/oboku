@@ -5,7 +5,7 @@ import { useDownloadBook } from "./useDownloadBook"
 
 const plugin: ObokuPlugin = {
   type: `URI`,
-  name: 'Link',
+  name: "Link",
   synchronizable: false,
   uniqueResourceIdentifier: `oboku-link`,
   Icon: HttpRounded,
@@ -13,7 +13,7 @@ const plugin: ObokuPlugin = {
   UploadComponent: UploadComponent,
   useDownloadBook,
   useGetCredentials: () => async () => ({ data: {} }),
-  useRemoveBook: undefined,
+  useRemoveBook: undefined
 }
 
 export default plugin

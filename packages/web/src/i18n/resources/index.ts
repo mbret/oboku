@@ -1,7 +1,4 @@
-import en from './en/translation.json'
-import fr from './fr/translation.json'
+import en from "./en/translation.json"
+import fr from "./fr/translation.json"
 
-export {
-  en,
-  fr
-}
+export { en, fr }

@@ -1,11 +1,20 @@
-import { FC, useState } from 'react'
-import { useAddBook } from '../../books/helpers'
-import { useDataSourceHelpers } from '../helpers'
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from '@material-ui/core'
-import * as yup from 'yup'
+import { FC, useState } from "react"
+import { useAddBook } from "../../books/helpers"
+import { useDataSourceHelpers } from "../helpers"
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField,
+  Typography
+} from "@material-ui/core"
+import * as yup from "yup"
 
 const schema = yup.object().shape({
-  bookUrl: yup.string().url().required(),
+  bookUrl: yup.string().url().required()
 })
 
 export const UploadComponent: FC<{
@@ -13,15 +22,15 @@ export const UploadComponent: FC<{
 }> = ({ onClose }) => {
   const [addBook] = useAddBook()
   const { generateResourceId } = useDataSourceHelpers(`oboku-link`)
-  const [bookUrl, setBookUrl] = useState(process.env.REACT_APP_HTTP_LINK || '')
+  const [bookUrl, setBookUrl] = useState(process.env.REACT_APP_HTTP_LINK || "")
   const isValid = schema.isValidSync({ bookUrl })
-  const filename = bookUrl.substring(bookUrl.lastIndexOf('/') + 1) || 'unknown'
+  const filename = bookUrl.substring(bookUrl.lastIndexOf("/") + 1) || "unknown"
 
   const handleConfirm = () => {
-    setBookUrl('')
+    setBookUrl("")
     addBook({
       book: {
-        title: filename,
+        title: filename
       },
       link: {
         book: null,
@@ -41,12 +50,16 @@ export const UploadComponent: FC<{
       <DialogContent>
         <DialogContentText>
           <Typography gutterBottom>
-            oboku <b>does not</b> store any file on its own. Adding a book means creating a new book reference with one or several links.
-          A link is the location where your file is stored. At the moment oboku only support <b>direct download</b> and <b>google drive public link</b>
+            oboku <b>does not</b> store any file on its own. Adding a book means
+            creating a new book reference with one or several links. A link is
+            the location where your file is stored. At the moment oboku only
+            support <b>direct download</b> and <b>google drive public link</b>
           </Typography>
           <b>Here are some examples: </b>
           <Typography noWrap>https://my_nas_url.com/file/45646578</Typography>
-          <Typography noWrap>https://drive.google.com/file/d/1kGGQnvm...</Typography>
+          <Typography noWrap>
+            https://drive.google.com/file/d/1kGGQnvm...
+          </Typography>
         </DialogContentText>
         <TextField
           autoFocus
@@ -55,7 +68,7 @@ export const UploadComponent: FC<{
           type="text"
           fullWidth
           value={bookUrl}
-          onChange={e => setBookUrl(e.target.value)}
+          onChange={(e) => setBookUrl(e.target.value)}
         />
       </DialogContent>
       <DialogActions>

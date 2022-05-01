@@ -1,7 +1,11 @@
 import { useEffect } from "react"
 import { Reader } from "@prose-reader/core"
 
-export const useBookResize = (reader: Reader | undefined, containerWidth: number, containerHeight: number) => {
+export const useBookResize = (
+  reader: Reader | undefined,
+  containerWidth: number,
+  containerHeight: number
+) => {
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>
 

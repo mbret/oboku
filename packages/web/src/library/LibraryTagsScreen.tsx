@@ -1,70 +1,103 @@
-import { useState, FC, useEffect, useCallback, useMemo } from 'react';
-import Dialog from '@material-ui/core/Dialog';
-import { Button, DialogActions, DialogContent, DialogTitle, TextField, Toolbar, useTheme } from '@material-ui/core';
-import { useCreateTag } from '../tags/helpers';
-import { TagActionsDrawer } from '../tags/TagActionsDrawer';
-import { LockActionDialog } from '../auth/LockActionDialog';
-import { tagIdsState } from '../tags/states';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { isTagsTourOpenedState } from '../firstTimeExperience/firstTimeExperienceStates';
-import { useCSS, useMeasureElement } from '../common/utils';
-import { useHasDoneFirstTimeExperience } from '../firstTimeExperience/helpers';
-import { FirstTimeExperienceId } from '../firstTimeExperience/constants';
-import { TagList } from '../tags/tagList/TagList';
-import { AppTourFirstTourTagsStep2 } from '../firstTimeExperience/AppTourFirstTourTags';
+import { useState, FC, useEffect, useCallback, useMemo } from "react"
+import Dialog from "@material-ui/core/Dialog"
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Toolbar,
+  useTheme
+} from "@material-ui/core"
+import { useCreateTag } from "../tags/helpers"
+import { TagActionsDrawer } from "../tags/TagActionsDrawer"
+import { LockActionDialog } from "../auth/LockActionDialog"
+import { tagIdsState } from "../tags/states"
+import { useRecoilValue, useSetRecoilState } from "recoil"
+import { isTagsTourOpenedState } from "../firstTimeExperience/firstTimeExperienceStates"
+import { useCSS, useMeasureElement } from "../common/utils"
+import { useHasDoneFirstTimeExperience } from "../firstTimeExperience/helpers"
+import { FirstTimeExperienceId } from "../firstTimeExperience/constants"
+import { TagList } from "../tags/tagList/TagList"
+import { AppTourFirstTourTagsStep2 } from "../firstTimeExperience/AppTourFirstTourTags"
 
 export const LibraryTagsScreen = () => {
-  const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
-  const classes = useStyles();
+  const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(
+    undefined
+  )
+  const classes = useStyles()
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
   const setIsTagsTourOpenedState = useSetRecoilState(isTagsTourOpenedState)
-  const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] = useState<string | undefined>(undefined)
+  const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] =
+    useState<string | undefined>(undefined)
   const tags = useRecoilValue(tagIdsState)
   const [addTag] = useCreateTag()
-  const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS)
+  const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(
+    FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS
+  )
   const theme = useTheme()
 
   useEffect(() => {
     !hasDoneFirstTimeExperience && setIsTagsTourOpenedState(true)
   }, [setIsTagsTourOpenedState, hasDoneFirstTimeExperience])
 
-  const addItemButton = useMemo(() => (
-    <Button
-      style={{
-        flex: 1,
-      }}
-      variant="outlined"
-      color="primary"
-      onClick={() => setIsAddTagDialogOpened(true)}
-    >
-      Create a new tag
-    </Button >
-  ), [setIsAddTagDialogOpened])
+  const addItemButton = useMemo(
+    () => (
+      <Button
+        style={{
+          flex: 1
+        }}
+        variant="outlined"
+        color="primary"
+        onClick={() => setIsAddTagDialogOpened(true)}
+      >
+        Create a new tag
+      </Button>
+    ),
+    [setIsAddTagDialogOpened]
+  )
 
-  const measurableListHeader = useMemo(() => (
-    <Toolbar style={{ paddingLeft: theme.spacing(2), paddingRight: theme.spacing(2), flex: 1, }}>
-      {addItemButton}
-    </Toolbar>
-  ), [theme, addItemButton])
-
-  const listHeader = useMemo(() => (
-    <Toolbar style={{ paddingLeft: theme.spacing(2), paddingRight: theme.spacing(2), flex: 1, }}>
-      <AppTourFirstTourTagsStep2>
+  const measurableListHeader = useMemo(
+    () => (
+      <Toolbar
+        style={{
+          paddingLeft: theme.spacing(2),
+          paddingRight: theme.spacing(2),
+          flex: 1
+        }}
+      >
         {addItemButton}
-      </AppTourFirstTourTagsStep2>
-    </Toolbar>
-  ), [theme, addItemButton])
+      </Toolbar>
+    ),
+    [theme, addItemButton]
+  )
+
+  const listHeader = useMemo(
+    () => (
+      <Toolbar
+        style={{
+          paddingLeft: theme.spacing(2),
+          paddingRight: theme.spacing(2),
+          flex: 1
+        }}
+      >
+        <AppTourFirstTourTagsStep2>{addItemButton}</AppTourFirstTourTagsStep2>
+      </Toolbar>
+    ),
+    [theme, addItemButton]
+  )
 
   const listRenderHeader = useCallback(() => listHeader, [listHeader])
 
-  const [listHeaderDimTracker, { height: listHeaderHeight }] = useMeasureElement(measurableListHeader)
+  const [listHeaderDimTracker, { height: listHeaderHeight }] =
+    useMeasureElement(measurableListHeader)
 
   return (
     <div style={classes.container}>
       {listHeaderDimTracker}
       <TagList
         style={{
-          height: '100%'
+          height: "100%"
         }}
         data={tags}
         headerHeight={listHeaderHeight}
@@ -72,7 +105,7 @@ export const LibraryTagsScreen = () => {
         onItemClick={(tag) => {
           const action = () => setIsTagActionsDrawerOpenedWith(tag?._id)
           if (tag?.isProtected) {
-            setLockedAction(_ => action)
+            setLockedAction((_) => action)
           } else {
             action()
           }
@@ -93,17 +126,17 @@ export const LibraryTagsScreen = () => {
         onClose={() => setIsTagActionsDrawerOpenedWith(undefined)}
       />
     </div>
-  );
+  )
 }
 
 const AddTagDialog: FC<{
-  open: boolean,
-  onConfirm: (name: string) => void,
-  onClose: () => void,
+  open: boolean
+  onConfirm: (name: string) => void
+  onClose: () => void
 }> = ({ onClose, onConfirm, open }) => {
-  const [name, setName] = useState('')
+  const [name, setName] = useState("")
   const onInnerClose = () => {
-    setName('')
+    setName("")
     onClose()
   }
 
@@ -118,7 +151,7 @@ const AddTagDialog: FC<{
           type="text"
           fullWidth
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
         />
       </DialogContent>
       <DialogActions>
@@ -140,12 +173,14 @@ const AddTagDialog: FC<{
 }
 
 const useStyles = () => {
-  return useCSS(() => ({
-    container: {
-      flex: 1,
-      overflow: 'auto'
-    },
-    list: {
-    },
-  }), [])
+  return useCSS(
+    () => ({
+      container: {
+        flex: 1,
+        overflow: "auto"
+      },
+      list: {}
+    }),
+    []
+  )
 }

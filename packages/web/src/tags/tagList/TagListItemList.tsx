@@ -1,10 +1,19 @@
-import { FC, memo } from 'react'
-import { ListItem, ListItemIcon, ListItemText, useTheme } from "@material-ui/core"
-import { useCSS } from '../../common/utils';
-import { BlurOnRounded, LocalOfferRounded, LockRounded } from '@material-ui/icons';
-import { useRecoilValue } from 'recoil';
-import { normalizedTagsState } from '../states';
-import { TagsDocType } from '@oboku/shared';
+import { FC, memo } from "react"
+import {
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  useTheme
+} from "@material-ui/core"
+import { useCSS } from "../../common/utils"
+import {
+  BlurOnRounded,
+  LocalOfferRounded,
+  LockRounded
+} from "@material-ui/icons"
+import { useRecoilValue } from "recoil"
+import { normalizedTagsState } from "../states"
+import { TagsDocType } from "@oboku/shared"
 
 export const TagListItemList: FC<{
   id: string
@@ -24,7 +33,9 @@ export const TagListItemList: FC<{
       </ListItemIcon>
       <ListItemText
         primary={tag?.name}
-        secondary={`${tag?.isProtected ? '?' : tag?.books?.length || 0} book(s)`}
+        secondary={`${
+          tag?.isProtected ? "?" : tag?.books?.length || 0
+        } book(s)`}
       />
       {tag?.isProtected && <LockRounded color="primary" />}
       {tag?.isBlurEnabled && <BlurOnRounded color="primary" />}
@@ -35,9 +46,12 @@ export const TagListItemList: FC<{
 const useStyle = () => {
   const theme = useTheme()
 
-  return useCSS(() => ({
-    container: {
-      height: `100%`
-    },
-  }), [theme])
+  return useCSS(
+    () => ({
+      container: {
+        height: `100%`
+      }
+    }),
+    [theme]
+  )
 }

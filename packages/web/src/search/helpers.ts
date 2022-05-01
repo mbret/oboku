@@ -8,15 +8,15 @@ export const useSearch = () => {
   const [search, setSearch] = useRecoilState(searchState)
   const [results, setResults] = useState<typeof books>([])
   const books = useRecoilValue(booksAsArrayState)
-  const sortedResults = useBooksSortedBy(results, 'alpha')
-  
+  const sortedResults = useBooksSortedBy(results, "alpha")
+
   useEffect(() => {
     if (!search) {
       return setResults([])
     }
-    
-    const res = books.filter(book => {
-      const searchRegex = new RegExp(search || '', 'i')
+
+    const res = books.filter((book) => {
+      const searchRegex = new RegExp(search || "", "i")
 
       // console.log(searchRegex, book.title?.search(searchRegex))
 
@@ -27,5 +27,9 @@ export const useSearch = () => {
     setResults(res)
   }, [search, books])
 
-  return [search, setSearch, sortedResults] as [typeof search, typeof setSearch, typeof sortedResults]
+  return [search, setSearch, sortedResults] as [
+    typeof search,
+    typeof setSearch,
+    typeof sortedResults
+  ]
 }

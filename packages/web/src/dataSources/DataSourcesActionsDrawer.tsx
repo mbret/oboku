@@ -1,11 +1,18 @@
-import { Drawer, ListItem, List, ListItemIcon, ListItemText, Divider } from "@material-ui/core";
-import React, { FC } from "react";
-import { SyncRounded, DeleteForeverRounded } from "@material-ui/icons";
-import { useSynchronizeDataSource, useRemoveDataSource } from './helpers'
+import {
+  Drawer,
+  ListItem,
+  List,
+  ListItemIcon,
+  ListItemText,
+  Divider
+} from "@material-ui/core"
+import React, { FC } from "react"
+import { SyncRounded, DeleteForeverRounded } from "@material-ui/icons"
+import { useSynchronizeDataSource, useRemoveDataSource } from "./helpers"
 
 export const DataSourcesActionsDrawer: FC<{
-  openWith: string,
-  onClose: () => void,
+  openWith: string
+  onClose: () => void
 }> = ({ openWith, onClose }) => {
   const syncDataSource = useSynchronizeDataSource()
   // const renewAuthorization = useRenewDataSourceCredentials()
@@ -13,17 +20,18 @@ export const DataSourcesActionsDrawer: FC<{
 
   return (
     <>
-      <Drawer
-        anchor="bottom"
-        open={true}
-        onClose={onClose}
-      >
+      <Drawer anchor="bottom" open={true} onClose={onClose}>
         <List>
-          <ListItem button onClick={() => {
-            syncDataSource(openWith)
-            onClose()
-          }}>
-            <ListItemIcon><SyncRounded /></ListItemIcon>
+          <ListItem
+            button
+            onClick={() => {
+              syncDataSource(openWith)
+              onClose()
+            }}
+          >
+            <ListItemIcon>
+              <SyncRounded />
+            </ListItemIcon>
             <ListItemText primary="Synchronize" />
           </ListItem>
           {/* <ListItem button onClick={() => {
@@ -36,7 +44,8 @@ export const DataSourcesActionsDrawer: FC<{
         </List>
         <Divider />
         <List>
-          <ListItem button
+          <ListItem
+            button
             onClick={() => {
               onClose()
               remove({ id: openWith })
@@ -50,5 +59,5 @@ export const DataSourcesActionsDrawer: FC<{
         </List>
       </Drawer>
     </>
-  );
+  )
 }

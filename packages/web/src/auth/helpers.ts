@@ -22,11 +22,17 @@ export const useAuthorize = () => {
   const [lock, unlock] = useLock()
   const auth = useRecoilValue(authState)
 
-  return async ({ variables: { password }, onSuccess }: { variables: { password: string }, onSuccess: () => void }) => {
+  return async ({
+    variables: { password },
+    onSuccess
+  }: {
+    variables: { password: string }
+    onSuccess: () => void
+  }) => {
     try {
-      lock('authorize')
+      lock("authorize")
       const response = await fetch(`${API_URI}/signin`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({ email: auth?.email, password }),
         headers: {
           "Content-Type": "application/json"
@@ -35,11 +41,11 @@ export const useAuthorize = () => {
       if (!response.ok) {
         throw await createServerError(response)
       }
-      unlock('authorize')
+      unlock("authorize")
       onSuccess()
     } catch (e) {
       Report.error(e)
-      unlock('authorize')
+      unlock("authorize")
     }
   }
 }
@@ -55,33 +61,36 @@ export const useSignIn = () => {
     return snapshot.getPromise(authState)
   })
 
-  const cb = useCallback(async (email: string, password: string) => {
-    try {
-      lock('authorize')
-      const response = await fetch(`${API_URI}/signin`, {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-        headers: {
-          "Content-Type": "application/json"
+  const cb = useCallback(
+    async (email: string, password: string) => {
+      try {
+        lock("authorize")
+        const response = await fetch(`${API_URI}/signin`, {
+          method: "POST",
+          body: JSON.stringify({ email, password }),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+        if (!response.ok) {
+          throw await createServerError(response)
         }
-      })
-      if (!response.ok) {
-        throw await createServerError(response)
+        const { token, userId, dbName } = await response.json()
+        const previousAuth = await getAuthAsync()
+        if (previousAuth?.email !== email) {
+          await resetLocalState()
+          await reCreateDb()
+        }
+        setAuthState({ dbName, email, token, userId })
+        unlock("authorize")
+      } catch (e) {
+        Report.error(e)
+        setError(e as any)
+        unlock("authorize")
       }
-      const { token, userId, dbName } = (await response.json())
-      const previousAuth = await getAuthAsync()
-      if (previousAuth?.email !== email) {
-        await resetLocalState()
-        await reCreateDb()
-      }
-      setAuthState({ dbName, email, token, userId })
-      unlock('authorize')
-    } catch (e) {
-      Report.error(e)
-      setError(e as any)
-      unlock('authorize')
-    }
-  }, [lock, unlock, reCreateDb, resetLocalState, getAuthAsync, setAuthState])
+    },
+    [lock, unlock, reCreateDb, resetLocalState, getAuthAsync, setAuthState]
+  )
 
   const data = { error }
 
@@ -95,29 +104,32 @@ export const useSignUp = () => {
   const [error, setError] = useState<Error | undefined>(undefined)
   const setAuthState = useSetRecoilState(authState)
 
-  const cb = useCallback(async (email: string, password: string, code) => {
-    try {
-      lock('authorize')
-      const response = await fetch(`${API_URI}/signup`, {
-        method: 'POST',
-        body: JSON.stringify({ email, password, code }),
-        headers: {
-          "Content-Type": "application/json"
+  const cb = useCallback(
+    async (email: string, password: string, code) => {
+      try {
+        lock("authorize")
+        const response = await fetch(`${API_URI}/signup`, {
+          method: "POST",
+          body: JSON.stringify({ email, password, code }),
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+        if (!response.ok) {
+          throw await createServerError(response)
         }
-      })
-      if (!response.ok) {
-        throw await createServerError(response)
+        const { token, userId, dbName } = await response.json()
+        await resetLocalState()
+        await reCreateDb()
+        setAuthState({ dbName, email, token, userId })
+        unlock("authorize")
+      } catch (e) {
+        setError(e as any)
+        unlock("authorize")
       }
-      const { token, userId, dbName } = (await response.json())
-      await resetLocalState()
-      await reCreateDb()
-      setAuthState({ dbName, email, token, userId })
-      unlock('authorize')
-    } catch (e) {
-      setError(e as any)
-      unlock('authorize')
-    }
-  }, [lock, unlock, reCreateDb, resetLocalState, setAuthState])
+    },
+    [lock, unlock, reCreateDb, resetLocalState, setAuthState]
+  )
 
   const data = { error }
 

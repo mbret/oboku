@@ -13,9 +13,7 @@ import { validators, ObokuErrorCode } from "@oboku/shared"
 export const RegisterScreen = () => {
   const history = useHistory()
   const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || "")
-  const [password, setPassword] = useState(
-    process.env.REACT_APP_PASSWORD || ""
-  )
+  const [password, setPassword] = useState(process.env.REACT_APP_PASSWORD || "")
   const [code, setCode] = useState("")
   const isValid = useIsValid(email, password, code)
   const theme = useTheme()
@@ -51,7 +49,7 @@ export const RegisterScreen = () => {
         overflow: "scroll",
         flexShrink: 0,
         display: "flex",
-        flexDirection: "column",
+        flexDirection: "column"
       }}
     >
       <Header />
@@ -63,7 +61,7 @@ export const RegisterScreen = () => {
           autoComplete="email"
           style={{
             width: "100%",
-            marginBottom: theme.spacing(2),
+            marginBottom: theme.spacing(2)
           }}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -75,7 +73,7 @@ export const RegisterScreen = () => {
           variant="outlined"
           style={{
             width: "100%",
-            marginBottom: theme.spacing(2),
+            marginBottom: theme.spacing(2)
           }}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -86,7 +84,7 @@ export const RegisterScreen = () => {
           variant="outlined"
           style={{
             width: "100%",
-            marginBottom: theme.spacing(2),
+            marginBottom: theme.spacing(2)
           }}
           value={code}
           onChange={(e) => setCode(e.target.value)}
@@ -107,7 +105,7 @@ export const RegisterScreen = () => {
         <Button
           style={{
             marginTop: theme.spacing(2),
-            width: "100%",
+            width: "100%"
           }}
           color="primary"
           variant="outlined"
@@ -121,12 +119,12 @@ export const RegisterScreen = () => {
       </form>
       <OrDivider
         style={{
-          marginTop: theme.spacing(2),
+          marginTop: theme.spacing(2)
         }}
       />
       <Button
         style={{
-          width: "100%",
+          width: "100%"
         }}
         color="primary"
         variant="outlined"

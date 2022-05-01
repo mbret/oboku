@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { RxChangeEvent } from "rxdb"
 import { useDatabase } from "../rxdb"
-import { LinkDocType } from '@oboku/shared'
+import { LinkDocType } from "@oboku/shared"
 import { normalizedLinksState } from "./states"
 import { Report } from "../debug/report.shared"
 
@@ -13,13 +13,16 @@ export const useLinksInitialState = () => {
 
   useEffect(() => {
     if (db) {
-      (async () => {
+      ;(async () => {
         try {
           const links = await db.link.find().exec()
-          const linksAsMap = links.reduce((map: UnwrapRecoilValue<typeof normalizedLinksState>, obj) => {
-            map[obj._id] = obj.toJSON()
-            return map
-          }, {})
+          const linksAsMap = links.reduce(
+            (map: UnwrapRecoilValue<typeof normalizedLinksState>, obj) => {
+              map[obj._id] = obj.toJSON()
+              return map
+            },
+            {}
+          )
           setLinks(linksAsMap)
 
           setIsReady(true)
@@ -38,27 +41,31 @@ export const useLinksObservers = () => {
   const [, setLinks] = useRecoilState(normalizedLinksState)
 
   useEffect(() => {
-    const subscription = db?.link.$.subscribe((changeEvent: RxChangeEvent<LinkDocType>) => {
-      Report.log(`links.observer`, `RxChangeEvent`, changeEvent)
+    const subscription = db?.link.$.subscribe(
+      (changeEvent: RxChangeEvent<LinkDocType>) => {
+        Report.log(`links.observer`, `RxChangeEvent`, changeEvent)
 
-      switch (changeEvent.operation) {
-        case 'INSERT': {
-          return setLinks(state => ({
-            ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData,
-          }))
-        }
-        case 'UPDATE': {
-          return setLinks(state => ({
-            ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData,
-          }))
-        }
-        case 'DELETE': {
-          return setLinks(({ [changeEvent.documentData._id]: deletedTag, ...rest }) => rest)
+        switch (changeEvent.operation) {
+          case "INSERT": {
+            return setLinks((state) => ({
+              ...state,
+              [changeEvent.documentData._id]: changeEvent.documentData
+            }))
+          }
+          case "UPDATE": {
+            return setLinks((state) => ({
+              ...state,
+              [changeEvent.documentData._id]: changeEvent.documentData
+            }))
+          }
+          case "DELETE": {
+            return setLinks(
+              ({ [changeEvent.documentData._id]: deletedTag, ...rest }) => rest
+            )
+          }
         }
       }
-    })
+    )
 
     return () => {
       subscription?.unsubscribe()
