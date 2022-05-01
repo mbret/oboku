@@ -3,5 +3,4 @@
 /dist
 /coverage
 /packages/web/build
-/packages/web/public/dropin.js
-/packages/web/public/libunrar.js
+/packages/web/public/*.js
