@@ -40,7 +40,6 @@ export function useRxQuery<D extends DocTypes, R extends D | null | D[]>(
         setRes(results)
         setInc((inc) => inc + 1)
       })
-
       ;(async () => {
         try {
           const result = await memoizedQuery?.exec()
