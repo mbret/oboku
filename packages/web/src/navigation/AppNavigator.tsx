@@ -27,6 +27,7 @@ import { useRecoilValue } from 'recoil'
 import { authState } from '../auth/authState'
 import { BackToReading } from '../reader/BackToReading'
 import { CollectionActionsDrawer } from '../collections/CollectionActionsDrawer'
+import { ProblemsScreen } from '../problems/ProblemsScreen'
 
 export const AppNavigator = () => {
   const auth = useRecoilValue(authState)
@@ -44,6 +45,9 @@ export const AppNavigator = () => {
               <Switch>
                 <Route path="/reader/:bookId" >
                   <ReaderScreen />
+                </Route>
+                <Route path={`${ROUTES.PROBLEMS}`} >
+                  <ProblemsScreen />
                 </Route>
                 <Route exact path={ROUTES.BOOK_DETAILS} >
                   <BookDetailsScreen />

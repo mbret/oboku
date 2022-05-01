@@ -37,4 +37,5 @@ export const ROUTES = {
   AUTH_CALLBACK: '/auth_callback',
   READER: '/reader/:id',
   SEARCH: '/search',
+  PROBLEMS: '/problems',
 }

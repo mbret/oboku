@@ -1,37 +1,72 @@
-import React, { FC, useCallback, useEffect, useState } from 'react';
-import { BarChartRounded, GavelRounded, LockOpenRounded, LockRounded, SettingsRounded, StorageRounded } from '@material-ui/icons';
-import { TopBarNavigation } from '../navigation/TopBarNavigation';
-import { Button, Dialog, DialogActions, Checkbox, DialogContent, DialogContentText, DialogTitle, alpha, Link, List, ListItem, ListItemIcon, ListItemText, ListSubheader, TextField, Typography, useTheme, FormControlLabel } from '@material-ui/core';
-import { useHistory } from 'react-router-dom';
-import { useStorageUse } from './useStorageUse';
-import { unlockLibraryDialogState } from '../auth/UnlockLibraryDialog';
-import { useResetFirstTimeExperience } from '../firstTimeExperience/helpers';
-import { LoadLibraryFromJsonDialog } from '../debug/LoadLibraryFromJsonDialog';
-import { LockActionBehindUserPasswordDialog } from '../auth/LockActionBehindUserPasswordDialog';
-import { useSignOut } from '../auth/helpers';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
-import { authState } from '../auth/authState';
-import { settingsState } from './states';
-import { useUpdateContentPassword } from './helpers';
-import { libraryState } from '../library/states';
-import { version } from '../../package.json'
-import { ROUTES } from '../constants';
-import { useDialogManager } from '../dialog';
-import { toggleDebug } from '../debug';
-import { useIsMountedState$ } from '../common/useIsMountedState$';
-import { useDatabase } from '../rxdb';
-import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from 'rxjs';
-import { Report } from '../debug/report.shared';
-import { isDebugEnabled } from '../debug/isDebugEnabled.shared';
+import React, { FC, useCallback, useEffect, useState } from "react"
+import {
+  BarChartRounded,
+  GavelRounded,
+  LockOpenRounded,
+  LockRounded,
+  SettingsRounded,
+  StorageRounded
+} from "@material-ui/icons"
+import { TopBarNavigation } from "../navigation/TopBarNavigation"
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  Checkbox,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  alpha,
+  Link,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  TextField,
+  Typography,
+  useTheme,
+  FormControlLabel
+} from "@material-ui/core"
+import { useHistory } from "react-router-dom"
+import { useStorageUse } from "./useStorageUse"
+import { unlockLibraryDialogState } from "../auth/UnlockLibraryDialog"
+import { useResetFirstTimeExperience } from "../firstTimeExperience/helpers"
+import { LoadLibraryFromJsonDialog } from "../debug/LoadLibraryFromJsonDialog"
+import { LockActionBehindUserPasswordDialog } from "../auth/LockActionBehindUserPasswordDialog"
+import { useSignOut } from "../auth/helpers"
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
+import { authState } from "../auth/authState"
+import { settingsState } from "./states"
+import { useUpdateContentPassword } from "./helpers"
+import { libraryState } from "../library/states"
+import { version } from "../../package.json"
+import { ROUTES } from "../constants"
+import { useDialogManager } from "../dialog"
+import { toggleDebug } from "../debug"
+import { useIsMountedState$ } from "../common/rxjs/useIsMountedState$"
+import { useDatabase } from "../rxdb"
+import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
+import { Report } from "../debug/report.shared"
+import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 
 export const ProfileScreen = () => {
   const history = useHistory()
-  const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(undefined)
-  const [isEditContentPasswordDialogOpened, setIsEditContentPasswordDialogOpened] = useState(false)
-  const [isDeleteMyDataDialogOpened, setIsDeleteMyDataDialogOpened] = useState(false)
-  const [isLoadLibraryDebugOpened, setIsLoadLibraryDebugOpened] = useState(false)
+  const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(
+    undefined
+  )
+  const [
+    isEditContentPasswordDialogOpened,
+    setIsEditContentPasswordDialogOpened
+  ] = useState(false)
+  const [isDeleteMyDataDialogOpened, setIsDeleteMyDataDialogOpened] =
+    useState(false)
+  const [isLoadLibraryDebugOpened, setIsLoadLibraryDebugOpened] =
+    useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([])
-  const [, isUnlockLibraryDialogOpened] = useRecoilState(unlockLibraryDialogState)
+  const [, isUnlockLibraryDialogOpened] = useRecoilState(
+    unlockLibraryDialogState
+  )
   const auth = useRecoilValue(authState)
   const settings = useRecoilValue(settingsState)
   const library = useRecoilValue(libraryState)
@@ -42,44 +77,66 @@ export const ProfileScreen = () => {
   const dialog = useDialogManager()
 
   return (
-    <div style={{ display: 'flex', flex: 1, overflow: 'scroll', flexDirection: 'column' }}>
-      <TopBarNavigation title={'Profile'} showBack={false} />
-      <List >
+    <div
+      style={{
+        display: "flex",
+        flex: 1,
+        overflow: "scroll",
+        flexDirection: "column"
+      }}
+    >
+      <TopBarNavigation title={"Profile"} showBack={false} />
+      <List>
         <ListSubheader disableSticky>Account</ListSubheader>
-        <ListItem
-          button
-          onClick={_ => signOut()}
-        >
+        <ListItem button onClick={(_) => signOut()}>
           <ListItemText primary="Sign out" secondary={auth?.email} />
         </ListItem>
         <ListItem
           button
           onClick={() => {
             if (settings?.contentPassword) {
-              setLockedAction(_ => () => setIsEditContentPasswordDialogOpened(true))
+              setLockedAction(
+                (_) => () => setIsEditContentPasswordDialogOpened(true)
+              )
             } else {
               setIsEditContentPasswordDialogOpened(true)
             }
           }}
         >
-          <ListItemText primary="Protected contents password" secondary={settings?.contentPassword ? 'Change my password' : 'Initialize my password'} />
+          <ListItemText
+            primary="Protected contents password"
+            secondary={
+              settings?.contentPassword
+                ? "Change my password"
+                : "Initialize my password"
+            }
+          />
         </ListItem>
         <ListItem
           button
           onClick={() => {
             if (library?.isLibraryUnlocked) {
-              setLibraryState(prev => ({ ...prev, isLibraryUnlocked: false }))
+              setLibraryState((prev) => ({
+                ...prev,
+                isLibraryUnlocked: false
+              }))
             } else {
               isUnlockLibraryDialogOpened(true)
             }
           }}
         >
           <ListItemText
-            primary={library?.isLibraryUnlocked ? 'Protected contents are visible' : 'Protected contents are hidden'}
-            secondary={library?.isLibraryUnlocked ? 'Click to lock' : 'Click to unlock'}
+            primary={
+              library?.isLibraryUnlocked
+                ? "Protected contents are visible"
+                : "Protected contents are hidden"
+            }
+            secondary={
+              library?.isLibraryUnlocked ? "Click to lock" : "Click to unlock"
+            }
           />
-          {library?.isLibraryUnlocked && (<LockOpenRounded color="action" />)}
-          {!library?.isLibraryUnlocked && (<LockRounded color="action" />)}
+          {library?.isLibraryUnlocked && <LockOpenRounded color="action" />}
+          {!library?.isLibraryUnlocked && <LockRounded color="action" />}
         </ListItem>
         <ListItem
           button
@@ -93,7 +150,11 @@ export const ProfileScreen = () => {
           <ListItemText primary="Statistics" />
         </ListItem>
       </List>
-      <List subheader={<ListSubheader disableSticky>Settings & device</ListSubheader>}>
+      <List
+        subheader={
+          <ListSubheader disableSticky>Settings & device</ListSubheader>
+        }
+      >
         <ListItem
           button
           onClick={() => {
@@ -114,34 +175,48 @@ export const ProfileScreen = () => {
           <ListItemIcon>
             <StorageRounded />
           </ListItemIcon>
-          <ListItemText primary="Manage storage" secondary={`${usedInMb} MB (${(quotaUsed * 100).toFixed(2)}%) used of ${quotaInGb} GB`} />
+          <ListItemText
+            primary="Manage storage"
+            secondary={`${usedInMb} MB (${(quotaUsed * 100).toFixed(
+              2
+            )}%) used of ${quotaInGb} GB`}
+          />
         </ListItem>
       </List>
-      <List subheader={<ListSubheader disableSticky>Help and feedback</ListSubheader>}>
-        <ListItem
-          button
-        >
+      <List
+        subheader={
+          <ListSubheader disableSticky>Help and feedback</ListSubheader>
+        }
+      >
+        <ListItem button>
           <ListItemText
             primary="Do you need any help?"
-            secondary={(
-              <Typography variant="body2" color="textSecondary">You can visit our <Link target="__blank" href="https://docs.oboku.me/support">support page</Link></Typography>
-            )}
+            secondary={
+              <Typography variant="body2" color="textSecondary">
+                You can visit our{" "}
+                <Link target="__blank" href="https://docs.oboku.me/support">
+                  support page
+                </Link>
+              </Typography>
+            }
           />
         </ListItem>
-        <ListItem
-          button
-        >
+        <ListItem button>
           <ListItemText
             primary="I have a request"
-            secondary={(
-              <Typography variant="body2" color="textSecondary">Whether it is a bug, a feature request or anything else, please visit the <Link target="__blank" href="https://docs.oboku.me">doc</Link> to find all useful links</Typography>
-            )}
+            secondary={
+              <Typography variant="body2" color="textSecondary">
+                Whether it is a bug, a feature request or anything else, please
+                visit the{" "}
+                <Link target="__blank" href="https://docs.oboku.me">
+                  doc
+                </Link>{" "}
+                to find all useful links
+              </Typography>
+            }
           />
         </ListItem>
-        <ListItem
-          button
-          onClick={resetFirstTimeExperience}
-        >
+        <ListItem button onClick={resetFirstTimeExperience}>
           <ListItemText
             primary="Restart the welcome tour"
             secondary="This will display all the first time tours overlay again. Useful for a quick reminder on how to use the app"
@@ -149,10 +224,7 @@ export const ProfileScreen = () => {
         </ListItem>
       </List>
       <List subheader={<ListSubheader disableSticky>About</ListSubheader>}>
-        <ListItem
-          button
-          onClick={() => dialog({ preset: 'NOT_IMPLEMENTED' })}
-        >
+        <ListItem button onClick={() => dialog({ preset: "NOT_IMPLEMENTED" })}>
           <ListItemIcon>
             <GavelRounded />
           </ListItemIcon>
@@ -163,18 +235,20 @@ export const ProfileScreen = () => {
         </ListItem>
       </List>
       <>
-        <List subheader={<ListSubheader disableSticky>Developer options</ListSubheader>}>
-          <ListItem
-            button
-            onClick={() => setIsLoadLibraryDebugOpened(true)}
-          >
+        <List
+          subheader={
+            <ListSubheader disableSticky>Developer options</ListSubheader>
+          }
+        >
+          <ListItem button onClick={() => setIsLoadLibraryDebugOpened(true)}>
             <ListItemText primary="Load library from JSON file" />
           </ListItem>
-          <ListItem
-            button
-            onClick={toggleDebug}
-          >
-            <ListItemText primary={isDebugEnabled() ? 'Disable debug mode' : 'Enable debug mode'} />
+          <ListItem button onClick={toggleDebug}>
+            <ListItemText
+              primary={
+                isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
+              }
+            />
           </ListItem>
           {/* <ListItem
             button
@@ -183,32 +257,48 @@ export const ProfileScreen = () => {
             <ListItemText primary="Delete my data" />
           </ListItem> */}
         </List>
-        <LoadLibraryFromJsonDialog open={isLoadLibraryDebugOpened} onClose={() => setIsLoadLibraryDebugOpened(false)} />
+        <LoadLibraryFromJsonDialog
+          open={isLoadLibraryDebugOpened}
+          onClose={() => setIsLoadLibraryDebugOpened(false)}
+        />
       </>
       <List
-        subheader={<ListSubheader disableSticky style={{ color: theme.palette.error.dark }}>Danger zone</ListSubheader>}
+        subheader={
+          <ListSubheader
+            disableSticky
+            style={{ color: theme.palette.error.dark }}
+          >
+            Danger zone
+          </ListSubheader>
+        }
         style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
       >
-        <ListItem button onClick={() => dialog({ preset: 'NOT_IMPLEMENTED' })}>
+        <ListItem button onClick={() => history.push(ROUTES.PROBLEMS)}>
           <ListItemText
-            primary="Repair my account"
-            secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one of the options"
+            primary="Repair my account / anomalies"
+            secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one this section"
           />
         </ListItem>
-        <ListItem button onClick={() => dialog({ preset: 'NOT_IMPLEMENTED' })}>
+        <ListItem button onClick={() => dialog({ preset: "NOT_IMPLEMENTED" })}>
           <ListItemText primary="Delete my account" />
         </ListItem>
       </List>
       <LockActionBehindUserPasswordDialog action={lockedAction} />
-      <EditContentPasswordDialog open={isEditContentPasswordDialogOpened} onClose={() => setIsEditContentPasswordDialogOpened(false)} />
-      <DeleteMyDataDialog open={isDeleteMyDataDialogOpened} onClose={() => setIsDeleteMyDataDialogOpened(false)} />
+      <EditContentPasswordDialog
+        open={isEditContentPasswordDialogOpened}
+        onClose={() => setIsEditContentPasswordDialogOpened(false)}
+      />
+      <DeleteMyDataDialog
+        open={isDeleteMyDataDialogOpened}
+        onClose={() => setIsDeleteMyDataDialogOpened(false)}
+      />
     </div>
-  );
+  )
 }
 
 const DeleteMyDataDialog: FC<{
-  open: boolean,
-  onClose: () => void,
+  open: boolean
+  onClose: () => void
 }> = ({ onClose, open }) => {
   const [isTagChecked, setIsTagChecked] = useState(false)
   const [isBookChecked, setIsBookChecked] = useState(false)
@@ -221,31 +311,29 @@ const DeleteMyDataDialog: FC<{
     setIsDeleting(true)
 
     if (db) {
-      const deleteTags$ = from(db.tag.find().exec())
-        .pipe(
-          switchMap(res => from(db.tag.bulkRemove(res.map(r => r._id)))),
-        )
+      const deleteTags$ = from(db.tag.find().exec()).pipe(
+        switchMap((res) => from(db.tag.bulkRemove(res.map((r) => r._id))))
+      )
 
-      const deleteBooks$ = from(db.book.find().exec())
-        .pipe(
-          switchMap(res => from(db.book.bulkRemove(res.map(r => r._id)))),
-        )
+      const deleteBooks$ = from(db.book.find().exec()).pipe(
+        switchMap((res) => from(db.book.bulkRemove(res.map((r) => r._id))))
+      )
 
-      const deleteLinks$ = from(db.link.find().exec())
-        .pipe(
-          switchMap(res => from(db.link.bulkRemove(res.map(r => r._id)))),
-        )
+      const deleteLinks$ = from(db.link.find().exec()).pipe(
+        switchMap((res) => from(db.link.bulkRemove(res.map((r) => r._id))))
+      )
 
-      const deleteCollections$ = from(db.obokucollection.find().exec())
-        .pipe(
-          switchMap(res => from(db.obokucollection.bulkRemove(res.map(r => r._id)))),
+      const deleteCollections$ = from(db.obokucollection.find().exec()).pipe(
+        switchMap((res) =>
+          from(db.obokucollection.bulkRemove(res.map((r) => r._id)))
         )
+      )
 
       forkJoin([
         isTagChecked ? deleteTags$ : of(undefined),
         isBookChecked ? deleteBooks$ : of(undefined),
         isBookChecked ? deleteLinks$ : of(undefined),
-        isCollectionChecked ? deleteCollections$ : of(undefined),
+        isCollectionChecked ? deleteCollections$ : of(undefined)
       ])
         .pipe(
           catchError((e) => {
@@ -281,7 +369,7 @@ const DeleteMyDataDialog: FC<{
                 checked={isTagChecked}
                 disabled={isDeleting}
                 onChange={() => {
-                  setIsTagChecked(v => !v)
+                  setIsTagChecked((v) => !v)
                 }}
                 name="tags"
               />
@@ -294,7 +382,7 @@ const DeleteMyDataDialog: FC<{
                 checked={isBookChecked}
                 disabled={isDeleting}
                 onChange={() => {
-                  setIsBookChecked(v => !v)
+                  setIsBookChecked((v) => !v)
                 }}
                 name="books"
               />
@@ -307,7 +395,7 @@ const DeleteMyDataDialog: FC<{
                 checked={isCollectionChecked}
                 disabled={isDeleting}
                 onChange={() => {
-                  setIsCollectionChecked(v => !v)
+                  setIsCollectionChecked((v) => !v)
                 }}
                 name="collections"
               />
@@ -320,11 +408,7 @@ const DeleteMyDataDialog: FC<{
         <Button onClick={onClose} color="primary">
           Cancel
         </Button>
-        <Button
-          onClick={onSubmit}
-          color="primary"
-          disabled={isDeleting}
-        >
+        <Button onClick={onSubmit} color="primary" disabled={isDeleting}>
           {isDeleting ? `Deleting...` : `Confirm`}
         </Button>
       </DialogActions>
@@ -333,13 +417,13 @@ const DeleteMyDataDialog: FC<{
 }
 
 const EditContentPasswordDialog: FC<{
-  open: boolean,
-  onClose: () => void,
+  open: boolean
+  onClose: () => void
 }> = ({ onClose, open }) => {
   const updatePassword = useUpdateContentPassword()
   const settings = useRecoilValue(settingsState)
-  const [text, setText] = useState('')
-  const contentPassword = settings?.contentPassword || ''
+  const [text, setText] = useState("")
+  const contentPassword = settings?.contentPassword || ""
 
   const onInnerClose = () => {
     onClose()
@@ -350,16 +434,17 @@ const EditContentPasswordDialog: FC<{
   }, [contentPassword])
 
   useEffect(() => {
-    setText('')
+    setText("")
   }, [open])
 
   return (
     <Dialog onClose={onInnerClose} open={open}>
       <DialogTitle>Set up your content password</DialogTitle>
       <DialogContent>
-        <form autoComplete="off" onSubmit={e => e.preventDefault()}>
-          <DialogContentText >
-            This password will be needed to unlock and access books using a protected tag.
+        <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
+          <DialogContentText>
+            This password will be needed to unlock and access books using a
+            protected tag.
           </DialogContentText>
           <TextField
             autoFocus
@@ -368,7 +453,7 @@ const EditContentPasswordDialog: FC<{
             type="password"
             fullWidth
             value={text}
-            onChange={e => setText(e.target.value)}
+            onChange={(e) => setText(e.target.value)}
           />
         </form>
       </DialogContent>

@@ -8,7 +8,7 @@ type BookDocMethods = {
   safeUpdate: (updateObj: MongoUpdateSyntax<BookDocType>) => Promise<any>
 }
 
-type BookDocument = RxDocument<BookDocType, BookDocMethods>
+export type BookDocument = RxDocument<BookDocType, BookDocMethods>
 
 type BookCollectionMethods = {
   post: (json: Omit<InsertableBookDocType, 'rx_model'>) => Promise<BookDocument>,

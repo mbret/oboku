@@ -30,6 +30,8 @@
   "resolutions": {
     "@types/react": "17.0.39",
     "react-dom": "17.0.2",
-    "react": "17.0.2"
+    "react": "17.0.2",
+    "//": "See https://stackoverflow.com/questions/70368760/react-uncaught-referenceerror-process-is-not-defined",
+    "react-error-overlay": "6.0.9"
   }
 }

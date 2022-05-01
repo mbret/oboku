@@ -44,6 +44,8 @@ export const applyHooks = (db: Database) => {
         }
       }, collection => collection.safeFind({
         selector: {
+          // if at least one of the books is data._id it will work.
+          // be careful with $nin
           books: {
             $nin: [data._id]
           },
@@ -67,6 +69,8 @@ export const applyHooks = (db: Database) => {
     const tagsFromWhichToAddBook = await db.tag.find({
       selector: {
         books: {
+          // if at least one of the books is data._id it will work.
+          // be careful with $nin
           $nin: [data._id]
         },
         _id: {

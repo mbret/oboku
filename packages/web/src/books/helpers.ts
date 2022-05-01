@@ -228,7 +228,7 @@ export const useBookIdsSortedBy = (ids: string[], sorting: 'date' | 'activity' |
   const normalizedBooks = useRecoilValue(normalizedBooksState)
 
   return useMemo(() => {
-    const books = ids.map(id => normalizedBooks[id]) as Book[]
+    const books = ids.map(id => normalizedBooks[id]).filter(maybeBook => !!maybeBook) as Book[]
 
     return sortBooksBy(books, sorting).map(({ _id }) => _id)
   }, [normalizedBooks, ids, sorting])

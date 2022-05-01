@@ -1,25 +1,37 @@
-import React, { useCallback, FC, useMemo, memo, ComponentProps } from 'react'
+import React, { useCallback, FC, useMemo, memo, ComponentProps } from "react"
 import { useTheme } from "@material-ui/core"
-import { useCSS } from '../../common/utils';
-import { ReactWindowList } from '../../lists/ReactWindowList';
-import { CollectionListItemList } from './CollectionListItemList';
-import { CollectionDocType } from '@oboku/shared';
+import { useCSS } from "../../common/utils"
+import { ReactWindowList } from "../../lists/ReactWindowList"
+import { CollectionListItemList } from "./CollectionListItemList"
+import { CollectionDocType } from "@oboku/shared"
 
-export const CollectionList: FC<{
-  renderHeader?: () => React.ReactNode,
-  headerHeight?: number,
-  style?: React.CSSProperties,
-  data: string[],
-  onItemClick?: (tag: CollectionDocType) => void,
-} & Omit<ComponentProps<typeof ReactWindowList>, `rowRenderer` | `itemsPerRow`>> = memo((props) => {
-  const { renderHeader, headerHeight, style, data, onItemClick, ...rest } = props
-  const classes = useStyle();
+export const CollectionList: FC<
+  {
+    renderHeader?: () => React.ReactNode
+    headerHeight?: number
+    style?: React.CSSProperties
+    data: string[]
+    onItemClick?: (tag: CollectionDocType) => void
+  } & Omit<
+    ComponentProps<typeof ReactWindowList>,
+    `rowRenderer` | `itemsPerRow` | `data`
+  >
+> = memo((props) => {
+  const { renderHeader, headerHeight, style, data, onItemClick, ...rest } =
+    props
+  const classes = useStyle()
 
-  const rowRenderer = useCallback((item: string) => (
-    <CollectionListItemList id={item} onItemClick={onItemClick} />
-  ), [onItemClick])
+  const rowRenderer = useCallback(
+    (item: string) => (
+      <CollectionListItemList id={item} onItemClick={onItemClick} />
+    ),
+    [onItemClick]
+  )
 
-  const containerStyle = useMemo(() => ({ ...classes.container, ...style }), [style, classes])
+  const containerStyle = useMemo(
+    () => ({ ...classes.container, ...style }),
+    [style, classes]
+  )
 
   return (
     <div style={containerStyle}>
@@ -39,9 +51,12 @@ export const CollectionList: FC<{
 const useStyle = () => {
   const theme = useTheme()
 
-  return useCSS(() => ({
-    container: {
-      display: 'flex',
-    },
-  }), [theme])
+  return useCSS(
+    () => ({
+      container: {
+        display: "flex"
+      }
+    }),
+    [theme]
+  )
 }
