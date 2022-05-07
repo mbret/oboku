@@ -100,10 +100,10 @@ export const PersistedRecoilRoot: FC<{
   onReady: () => void
 }> = memo(
   ({ children, states = [], onReady, migration = (state) => state }) => {
-    const [initialeState, setInitialState] = useState<
+    const [initialState, setInitialState] = useState<
       { [key: string]: { value: any } } | undefined
     >(undefined)
-    const alreadyLoaded = useRef(!!initialeState)
+    const alreadyLoaded = useRef(!!initialState)
     const isMounted = useMountedState()
     // const alreadyInitialized = useRef(false)
     // const alreadyInitializedV = alreadyInitialized.current
@@ -126,22 +126,22 @@ export const PersistedRecoilRoot: FC<{
 
     const initializeState = useCallback(
       ({ set }: MutableSnapshot) => {
-        if (initialeState) {
-          Object.keys(initialeState || {}).forEach((key) => {
+        if (initialState) {
+          Object.keys(initialState || {}).forEach((key) => {
             const stateToRestore = states.find((state) => state.key === key)
             if (stateToRestore) {
-              set(stateToRestore, initialeState[key]!.value)
+              set(stateToRestore, initialState[key]!.value)
             }
           })
         }
         // alreadyInitialized.current = true;
       },
-      [initialeState, states]
+      [initialState, states]
     )
 
     return (
       <PersistedStatesContext.Provider value={states}>
-        {!!initialeState ? (
+        {!!initialState ? (
           <RecoilRoot initializeState={initializeState}>
             <RecoilPersistor />
             {children}
