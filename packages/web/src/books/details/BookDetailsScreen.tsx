@@ -20,7 +20,7 @@ import {
   Divider,
   makeStyles
 } from "@material-ui/core"
-import { useHistory, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { Alert } from "@material-ui/lab"
 import { Cover } from "../Cover"
 import { useDownloadBook } from "../../download/useDownloadBook"
@@ -47,12 +47,12 @@ type ScreenParams = {
 export const BookDetailsScreen = () => {
   const { styles, classes } = useStyles()
   const theme = useTheme()
-  const history = useHistory()
+  const navigate = useNavigate()
   const downloadFile = useDownloadBook()
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<
     undefined | string
   >(undefined)
-  const { id } = useParams<ScreenParams>()
+  const { id = `-1` } = useParams<ScreenParams>()
   const book = useRecoilValue(enrichedBookState(id))
   const tags = useRecoilValue(bookTagsState(id))
   const collections = useRecoilValue(bookCollectionsState(id))
@@ -109,7 +109,7 @@ export const BookDetailsScreen = () => {
             fullWidth
             variant="outlined"
             color="primary"
-            onClick={() => history.push(ROUTES.READER.replace(":id", book._id))}
+            onClick={() => navigate(ROUTES.READER.replace(":id", book._id))}
           >
             Read
           </Button>

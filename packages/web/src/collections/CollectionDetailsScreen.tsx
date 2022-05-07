@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Typography, useTheme } from "@material-ui/core"
-import { useHistory, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import CollectionBgSvg from "../assets/series-bg.svg"
 import { useRecoilValue } from "recoil"
@@ -15,8 +15,8 @@ type ScreenParams = {
 
 export const CollectionDetailsScreen = () => {
   const theme = useTheme()
-  const history = useHistory()
-  const { id } = useParams<ScreenParams>()
+  const navigate = useNavigate()
+  const { id = `-1` } = useParams<ScreenParams>()
   const collection = useRecoilValue(collectionState(id || "-1"))
   const data =
     useMemo(
@@ -27,7 +27,7 @@ export const CollectionDetailsScreen = () => {
     id,
     (changes) => {
       if (changes === `delete`) {
-        history.goBack()
+        navigate(-1)
       }
     }
   )

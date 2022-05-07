@@ -8,7 +8,7 @@ import { useFullScreenSwitch } from "./fullScreen"
 import { Reader } from "./Reader"
 import { Reader as ReaderInstance } from "@prose-reader/core"
 import { ContentsDialog } from "./ContentsDialog"
-import { useTrackBookBeingRead } from "./BackToReading"
+import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
 
 // @todo add ISBN label in book details
 

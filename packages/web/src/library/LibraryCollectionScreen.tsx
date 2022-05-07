@@ -10,7 +10,7 @@ import {
   useTheme
 } from "@material-ui/core"
 import { ROUTES } from "../constants"
-import { useHistory } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useCreateCollection } from "../collections/helpers"
 import { atom, useRecoilState, useRecoilValue } from "recoil"
 import { collectionIdsState } from "../collections/states"
@@ -35,7 +35,7 @@ const libraryCollectionScreenPreviousScrollState = atom<Scroll>({
 
 export const LibraryCollectionScreen = () => {
   const classes = useStyles()
-  const history = useHistory()
+  const navigate = useNavigate()
   const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] =
     useState(false)
   const [
@@ -73,9 +73,9 @@ export const LibraryCollectionScreen = () => {
 
   const onItemClick = useCallback(
     (item) => {
-      history.push(ROUTES.COLLECTION_DETAILS.replace(":id", item._id))
+      navigate(ROUTES.COLLECTION_DETAILS.replace(":id", item._id))
     },
-    [history]
+    [navigate]
   )
 
   return (

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useTheme, Button, TextField, Link } from "@material-ui/core"
 import { Alert } from "@material-ui/lab"
 import { OrDivider } from "../common/OrDivider"
-import { useHistory } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { ROUTES } from "../constants"
 import { Header } from "./Header"
 import { validators } from "@oboku/shared"
@@ -12,7 +12,7 @@ import { CenteredBox } from "../common/CenteredBox"
 import { useTranslation } from "react-i18next"
 
 export const LoginScreen = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || "")
   const [password, setPassword] = useState(process.env.REACT_APP_PASSWORD || "")
   const [signIn, { error }] = useSignIn()
@@ -114,7 +114,7 @@ export const LoginScreen = () => {
         color="primary"
         size="large"
         onClick={() => {
-          history.replace(ROUTES.REGISTER)
+          navigate(ROUTES.REGISTER, { replace: true })
         }}
       >
         Register

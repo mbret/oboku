@@ -31,8 +31,8 @@ import { ErrorBoundary } from "@sentry/react"
 import { ManageBookTagsDialog } from "./books/ManageBookTagsDialog"
 import { ManageTagBooksDialog } from "./tags/ManageTagBooksDialog"
 import { useRef } from "react"
-import { bookBeingReadState } from "./reader/BackToReading"
 import { Effects } from "./Effects"
+import { bookBeingReadState } from "./reading/states"
 
 const localStatesToPersist = [
   libraryState,

@@ -11,7 +11,7 @@ import {
   NoSimRounded,
   LocalOfferRounded
 } from "@material-ui/icons"
-import { useHistory } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { ROUTES } from "../constants"
 import { useAtomicUpdateBook, useRefreshBookMetadata } from "./helpers"
@@ -31,7 +31,7 @@ import { ReadingStateState } from "@oboku/shared"
 import { Report } from "../debug/report.shared"
 import { useDialogManager } from "../dialog"
 import { linkState } from "../links/states"
-import { useModalNavigationControl } from "../navigation/helpers"
+import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "./ManageBookTagsDialog"
@@ -46,7 +46,7 @@ export const BookActionsDrawer = () => {
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const [{ openedWith: bookId, actions }, setBookActionDrawerState] =
     useRecoilState(bookActionDrawerState)
-  const history = useHistory()
+  const navigate = useNavigate()
   const book = useRecoilValue(enrichedBookState(bookId || "-1"))
   const bookLink = useRecoilValue(linkState(book?.links[0] || "-1"))
   const removeDownloadFile = useRemoveDownloadFile()
@@ -147,7 +147,7 @@ export const BookActionsDrawer = () => {
                 button
                 onClick={() => {
                   handleClose(() => {
-                    history.push(ROUTES.BOOK_DETAILS.replace(":id", book._id))
+                    navigate(ROUTES.BOOK_DETAILS.replace(":id", book._id))
                   })
                 }}
               >

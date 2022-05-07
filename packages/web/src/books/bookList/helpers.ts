@@ -1,4 +1,4 @@
-import { useHistory } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useRecoilCallback } from "recoil"
 import { ROUTES } from "../../constants"
 import { useDownloadBook } from "../../download/useDownloadBook"
@@ -6,7 +6,7 @@ import { enrichedBookState } from "../states"
 
 export const useDefaultItemClickHandler = () => {
   const downloadFile = useDownloadBook()
-  const history = useHistory()
+  const navigate = useNavigate()
 
   return useRecoilCallback(
     ({ snapshot }) =>
@@ -16,7 +16,7 @@ export const useDefaultItemClickHandler = () => {
         if (item?.downloadState === "none") {
           item?._id && downloadFile(item)
         } else if (item?.downloadState === "downloaded") {
-          history.push(ROUTES.READER.replace(":id", item?._id))
+          navigate(ROUTES.READER.replace(":id", item?._id))
         }
       },
     []

@@ -3,7 +3,7 @@ import { useTheme, Button, TextField } from "@material-ui/core"
 import { Alert } from "@material-ui/lab"
 import { OrDivider } from "../common/OrDivider"
 import { Header } from "./Header"
-import { useHistory } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { ROUTES } from "../constants"
 import { useSignUp } from "./helpers"
 import { ServerError } from "../errors"
@@ -11,7 +11,7 @@ import { CenteredBox } from "../common/CenteredBox"
 import { validators, ObokuErrorCode } from "@oboku/shared"
 
 export const RegisterScreen = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || "")
   const [password, setPassword] = useState(process.env.REACT_APP_PASSWORD || "")
   const [code, setCode] = useState("")
@@ -130,7 +130,7 @@ export const RegisterScreen = () => {
         variant="outlined"
         size="large"
         onClick={() => {
-          history.replace(ROUTES.LOGIN)
+          navigate(ROUTES.LOGIN, { replace: true })
         }}
       >
         Login

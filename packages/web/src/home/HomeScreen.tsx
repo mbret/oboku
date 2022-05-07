@@ -3,7 +3,7 @@ import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Typography, useTheme, Button } from "@material-ui/core"
 import { BookList } from "../books/bookList/BookList"
 import { ROUTES } from "../constants"
-import { useHistory } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import ContinueReadingAsset from "../assets/continue-reading.svg"
 import { useCSS } from "../common/utils"
 import { useTranslation } from "react-i18next"
@@ -12,7 +12,7 @@ import { useContinueReadingBooks, useRecentlyAddedBooks } from "./helpers"
 export const HomeScreen = () => {
   const classes = useStyles()
   const theme = useTheme()
-  const history = useHistory()
+  const navigate = useNavigate()
   const continueReadingBooks = useContinueReadingBooks()
   const recentlyAddedBooks = useRecentlyAddedBooks()
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
@@ -63,7 +63,7 @@ export const HomeScreen = () => {
               variant="outlined"
               color="primary"
               size="large"
-              onClick={() => history.replace(ROUTES.LIBRARY_BOOKS)}
+              onClick={() => navigate(ROUTES.LIBRARY_BOOKS, { replace: true })}
             >
               {t(`button.title.exploreMyLibrary`)}
             </Button>

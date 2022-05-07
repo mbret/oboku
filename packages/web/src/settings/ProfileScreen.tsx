@@ -28,7 +28,7 @@ import {
   useTheme,
   FormControlLabel
 } from "@material-ui/core"
-import { useHistory } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useStorageUse } from "./useStorageUse"
 import { unlockLibraryDialogState } from "../auth/UnlockLibraryDialog"
 import { useResetFirstTimeExperience } from "../firstTimeExperience/helpers"
@@ -51,7 +51,7 @@ import { Report } from "../debug/report.shared"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 
 export const ProfileScreen = () => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(
     undefined
   )
@@ -141,7 +141,7 @@ export const ProfileScreen = () => {
         <ListItem
           button
           onClick={() => {
-            history.push(ROUTES.STATISTICS)
+            navigate(ROUTES.STATISTICS)
           }}
         >
           <ListItemIcon>
@@ -158,7 +158,7 @@ export const ProfileScreen = () => {
         <ListItem
           button
           onClick={() => {
-            history.push(ROUTES.SETTINGS)
+            navigate(ROUTES.SETTINGS)
           }}
         >
           <ListItemIcon>
@@ -169,7 +169,7 @@ export const ProfileScreen = () => {
         <ListItem
           button
           onClick={() => {
-            history.push(`${ROUTES.PROFILE}/manage-storage`)
+            navigate(`${ROUTES.PROFILE}/manage-storage`)
           }}
         >
           <ListItemIcon>
@@ -273,7 +273,7 @@ export const ProfileScreen = () => {
         }
         style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
       >
-        <ListItem button onClick={() => history.push(ROUTES.PROBLEMS)}>
+        <ListItem button onClick={() => navigate(ROUTES.PROBLEMS)}>
           <ListItemText
             primary="Repair my account / anomalies"
             secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one this section"

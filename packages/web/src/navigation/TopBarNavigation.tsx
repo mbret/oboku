@@ -9,9 +9,10 @@ import {
   Search
 } from "@material-ui/icons"
 import { alpha, InputBase, makeStyles, useTheme } from "@material-ui/core"
-import { useNavigation } from "./useNavigation"
+import { useSafeGoBack } from "./useSafeGoBack"
 import { ROUTES } from "../constants"
 import { useCSS } from "../common/utils"
+import { useNavigate } from "react-router-dom"
 
 export const TopBarNavigation: FC<{
   title?: string
@@ -32,7 +33,8 @@ export const TopBarNavigation: FC<{
     onMoreClick
   }) => {
     const { styles, classes } = useStyles({ color })
-    const { goBack, history } = useNavigation()
+    const { goBack } = useSafeGoBack()
+    const navigate = useNavigate()
 
     return (
       <AppBar position={position} elevation={0} color={color}>
@@ -52,7 +54,7 @@ export const TopBarNavigation: FC<{
               <div
                 className={classes.search}
                 onClick={() => {
-                  history.push(ROUTES.SEARCH)
+                  navigate(ROUTES.SEARCH)
                 }}
               >
                 <div style={styles.searchIcon}>

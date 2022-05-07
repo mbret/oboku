@@ -15,7 +15,7 @@ import {
   AccountCircleOutlined,
   PortableWifiOffRounded
 } from "@material-ui/icons"
-import { useHistory, useLocation } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { ROUTES } from "./constants"
 import { useNetworkState } from "react-use"
 import { useCSS } from "./common/utils"
@@ -25,7 +25,7 @@ import { isUploadBookFromDeviceOpenedFromState } from "./upload/state"
 
 export const BottomTabBar = ({ children }) => {
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const classes = useStyles()
   const [isUploadBookFromDeviceOpened, setIsUploadBookFromDeviceOpened] =
     useRecoilState(isUploadBookFromDeviceOpenedFromState)
@@ -48,7 +48,7 @@ export const BottomTabBar = ({ children }) => {
       <BottomNavigation
         value={normalizedPath}
         onChange={(event, newValue) => {
-          history.push(newValue)
+          navigate(newValue)
         }}
         style={classes.root}
         showLabels={true}

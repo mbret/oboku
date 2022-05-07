@@ -22,7 +22,7 @@ import { useRemoveCollection, useUpdateCollection } from "./helpers"
 import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { collectionState } from "./states"
 import { ManageCollectionBooksDialog } from "./ManageCollectionBooksDialog"
-import { useModalNavigationControl } from "../navigation/helpers"
+import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { useCallback } from "react"
 import { useRef } from "react"
 

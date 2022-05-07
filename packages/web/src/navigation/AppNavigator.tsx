@@ -1,10 +1,10 @@
-import { useEffect } from "react"
 import {
   BrowserRouter,
-  Switch,
+  Routes,
   Route,
-  Redirect,
-  useHistory
+  Navigate,
+  Outlet,
+  useLocation
 } from "react-router-dom"
 import { HomeScreen } from "../home/HomeScreen"
 import { LoginScreen } from "../auth/LoginScreen"
@@ -25,9 +25,19 @@ import { SettingsScreen } from "../settings/SettingsScreen"
 import { StatisticsScreen } from "../settings/StatisticsScreen"
 import { useRecoilValue } from "recoil"
 import { authState } from "../auth/authState"
-import { BackToReading } from "../reader/BackToReading"
+import { BackToReadingDialog } from "../reading/BackToReadingDialog"
 import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer"
 import { ProblemsScreen } from "../problems/ProblemsScreen"
+import { LibraryBooksScreen } from "../library/LibraryBooksScreen"
+import { LibraryCollectionScreen } from "../library/LibraryCollectionScreen"
+import { LibraryTagsScreen } from "../library/LibraryTagsScreen"
+import { useEffect, useRef } from "react"
+
+const BottomTabBarRouteWrapper = () => (
+  <BottomTabBar>
+    <Outlet />
+  </BottomTabBar>
+)
 
 export const AppNavigator = () => {
   const auth = useRecoilValue(authState)
@@ -44,96 +54,89 @@ export const AppNavigator = () => {
           display: "flex"
         }}
       >
-        <Switch>
-          <Route path={ROUTES.AUTH_CALLBACK}>
-            <AuthCallbackScreen />
-          </Route>
+        <Routes>
+          <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallbackScreen />} />
           {isAuthenticated ? (
-            <Switch>
-              <Route path="/reader/:bookId">
-                <ReaderScreen />
-              </Route>
-              <Route path={`${ROUTES.PROBLEMS}`}>
-                <ProblemsScreen />
-              </Route>
-              <Route exact path={ROUTES.BOOK_DETAILS}>
-                <BookDetailsScreen />
-              </Route>
-              <Route exact path={ROUTES.COLLECTION_DETAILS}>
-                <CollectionDetailsScreen />
-              </Route>
-              <Route exact path={ROUTES.SEARCH}>
-                <SearchScreen />
-              </Route>
-              <Route path={`${ROUTES.PROFILE}/manage-storage`}>
-                <ManageStorageScreen />
-              </Route>
-              <Route path={`${ROUTES.SETTINGS}`}>
-                <SettingsScreen />
-              </Route>
-              <Route path={`${ROUTES.STATISTICS}`}>
-                <StatisticsScreen />
-              </Route>
-              <BottomTabBar>
-                <Switch>
-                  <Route exact path={ROUTES.PROFILE}>
-                    <ProfileScreen />
-                  </Route>
-                  <Route path="/library">
-                    <LibraryTopTabNavigator />
-                  </Route>
-                  <Route exact path="/">
-                    <HomeScreen />
-                  </Route>
-                  <Route exact path={ROUTES.DATASOURCES}>
-                    <SyncSourcesScreen />
-                  </Route>
-                  <Route path="/">
-                    <Redirect to="/" />
-                  </Route>
-                </Switch>
-              </BottomTabBar>
-            </Switch>
-          ) : (
-            <Switch>
-              <Route exact path={ROUTES.LOGIN}>
-                <LoginScreen />
-              </Route>
-              <Route exact path={ROUTES.REGISTER}>
-                <RegisterScreen />
-              </Route>
-              <Redirect
-                to={{
-                  pathname: ROUTES.LOGIN
-                }}
+            <>
+              <Route path="/reader/:bookId" element={<ReaderScreen />} />
+              <Route path={`${ROUTES.PROBLEMS}`} element={<ProblemsScreen />} />
+              <Route
+                path={ROUTES.BOOK_DETAILS}
+                element={<BookDetailsScreen />}
               />
-            </Switch>
+              <Route
+                path={ROUTES.COLLECTION_DETAILS}
+                element={<CollectionDetailsScreen />}
+              />
+              <Route path={ROUTES.SEARCH} element={<SearchScreen />} />
+              <Route
+                path={`${ROUTES.PROFILE}/manage-storage`}
+                element={<ManageStorageScreen />}
+              />
+              <Route path={`${ROUTES.SETTINGS}`} element={<SettingsScreen />} />
+              <Route
+                path={`${ROUTES.STATISTICS}`}
+                element={<StatisticsScreen />}
+              />
+              <Route path="*" element={<BottomTabBarRouteWrapper />}>
+                <Route index element={<HomeScreen />} />
+                <Route path="profile" element={<ProfileScreen />} />
+                <Route path="library" element={<LibraryTopTabNavigator />}>
+                  <Route path="books" element={<LibraryBooksScreen />} />
+                  <Route
+                    path="collections"
+                    element={<LibraryCollectionScreen />}
+                  />
+                  <Route path="tags" element={<LibraryTagsScreen />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Route>
+                <Route path="datasources" element={<SyncSourcesScreen />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Route>
+            </>
+          ) : (
+            <>
+              <Route path={ROUTES.LOGIN} element={<LoginScreen />} />
+              <Route path={ROUTES.REGISTER} element={<RegisterScreen />} />
+              <Route
+                path="*"
+                element={
+                  <Navigate
+                    to={{
+                      pathname: ROUTES.LOGIN
+                    }}
+                    replace
+                  />
+                }
+              />
+            </>
           )}
-        </Switch>
+        </Routes>
       </div>
       <BookActionsDrawer />
       <CollectionActionsDrawer />
-      <BackBehaviorWatcher />
-      <BackToReading />
+      <BackToReadingDialog />
+      <TrackHistoryCanGoBack />
     </BrowserRouter>
   )
 }
 
-const BackBehaviorWatcher = () => {
-  const history = useHistory()
+const TrackHistoryCanGoBack = () => {
+  const { pathname } = useLocation()
+  const isFirstChange = useRef(true)
 
-  // console.log(history)
   useEffect(() => {
-    window.onpopstate = function (event) {
-      // alert(`location: ${document.location}, state: ${JSON.stringify(event.state)}`)
+    if (!isFirstChange.current) {
+      window.history.replaceState(
+        {
+          ...window.history.state,
+          __obokuCanGoBack: true
+        },
+        ``
+      )
     }
-
-    history.listen((location, action) => {
-      // debugger
-      // console.log(location, action)
-      // history.push(ROUTES.HOME)
-    })
-  }, [history])
+    isFirstChange.current = false
+  }, [pathname])
 
   return null
 }

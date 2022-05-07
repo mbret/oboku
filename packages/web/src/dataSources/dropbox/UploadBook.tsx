@@ -28,6 +28,7 @@ export const UploadBook: FC<{
       console.log("CALLED AGAIN")
       // @ts-ignore
       Dropbox.choose &&
+        // @ts-ignore
         Dropbox.choose({
           multiselect: true,
           linkType: "direct",

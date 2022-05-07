@@ -1,24 +1,15 @@
-import React, { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Tab, Tabs, IconButton, useTheme } from "@material-ui/core"
-import {
-  useHistory,
-  useLocation,
-  Route,
-  Switch,
-  Redirect
-} from "react-router-dom"
-import { LibraryBooksScreen } from "./LibraryBooksScreen"
-import { LibraryTagsScreen } from "./LibraryTagsScreen"
+import { useNavigate, useLocation, Outlet } from "react-router-dom"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../constants"
-import { LibraryCollectionScreen } from "./LibraryCollectionScreen"
 import { useSyncLibrary } from "./helpers"
 import { Sync } from "@material-ui/icons"
 import { useCSS } from "../common/utils"
 
 export const LibraryTopTabNavigator = () => {
   const location = useLocation()
-  const history = useHistory()
+  const navigate = useNavigate()
   const classes = useStyles()
   const syncLibrary = useSyncLibrary()
   const [syncActive, setSyncActive] = useState(false)
@@ -63,7 +54,7 @@ export const LibraryTopTabNavigator = () => {
         value={location.pathname}
         indicatorColor="primary"
         onChange={(e, value) => {
-          history.replace(value)
+          navigate(value, { replace: true })
         }}
       >
         <Tab
@@ -88,20 +79,7 @@ export const LibraryTopTabNavigator = () => {
           disableTouchRipple
         />
       </Tabs>
-      <Switch>
-        <Route exact path={ROUTES.LIBRARY_BOOKS}>
-          <LibraryBooksScreen />
-        </Route>
-        <Route exact path={ROUTES.LIBRARY_COLLECTIONS}>
-          <LibraryCollectionScreen />
-        </Route>
-        <Route exact path={ROUTES.LIBRARY_TAGS}>
-          <LibraryTagsScreen />
-        </Route>
-        <Route path="/">
-          <Redirect to={ROUTES.HOME} />
-        </Route>
-      </Switch>
+      <Outlet />
     </div>
   )
 }

@@ -3,7 +3,7 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
 import { useState, useEffect, useCallback, FC } from "react"
-import { useHistory } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useMeasure } from "react-use"
 import { Box, Button, Link, Typography, useTheme } from "@material-ui/core"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
@@ -37,7 +37,7 @@ export const Reader: FC<{
   const setPaginationState = useSetRecoilState(paginationState)
   const setManifestState = useSetRecoilState(manifestState)
   const book = useRecoilValue(bookState(bookId || "-1"))
-  const history = useHistory()
+  const navigate = useNavigate()
   const [
     containerMeasureRef,
     { width: containerWidth, height: containerHeight }
@@ -116,7 +116,7 @@ export const Reader: FC<{
             </Typography>
           </Box>
           <Button
-            onClick={() => history.goBack()}
+            onClick={() => navigate(-1)}
             variant="contained"
             color="primary"
           >
@@ -140,7 +140,7 @@ export const Reader: FC<{
           </Typography>
         </Box>
         <Button
-          onClick={() => history.goBack()}
+          onClick={() => navigate(-1)}
           variant="contained"
           color="primary"
         >

@@ -23,6 +23,7 @@ export const Picker: FC<{
     if (Dropbox) {
       // @ts-ignore
       Dropbox.choose &&
+        // @ts-ignore
         Dropbox.choose({
           multiselect,
           ...(select === "folder" && {

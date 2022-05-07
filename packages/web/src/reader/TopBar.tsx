@@ -14,7 +14,7 @@ import {
   FullscreenRounded,
   ListRounded
 } from "@material-ui/icons"
-import { useNavigation } from "../navigation/useNavigation"
+import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import screenfull from "screenfull"
 import { Report } from "../debug/report.shared"
 import { useCSS } from "../common/utils"
@@ -24,7 +24,7 @@ export const TopBar = () => {
   const isMenuShow = useRecoilValue(isMenuShownState)
   const isBookReady = useRecoilValue(isBookReadyState)
   const classes = useStyles({ isMenuShow })
-  const { goBack } = useNavigation()
+  const { goBack } = useSafeGoBack()
   const [isFullScreen, setIsFullScreen] = useState(
     screenfull.isEnabled && screenfull.isFullscreen
   )
