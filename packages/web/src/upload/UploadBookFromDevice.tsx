@@ -13,7 +13,7 @@ import { FC, useCallback } from "react"
 import { useAddBookFromFile } from "../books/helpers"
 import { useDropzone } from "react-dropzone"
 import { Report } from "../debug/report.shared"
-import { READER_SUPPORTED_EXTENSIONS } from "@oboku/shared"
+import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
 
 export const UploadBookFromDevice: FC<{
   openFrom: false | "local" | "outside"
@@ -21,7 +21,7 @@ export const UploadBookFromDevice: FC<{
 }> = ({ onClose, openFrom }) => {
   const addBookFromFile = useAddBookFromFile()
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
-    accept: READER_SUPPORTED_EXTENSIONS.join(",")
+    accept: READER_ACCEPTED_EXTENSIONS
   })
 
   const handleConfirm = async () => {

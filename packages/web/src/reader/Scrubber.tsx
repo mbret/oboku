@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import RcSlider from "rc-slider"
 import "rc-slider/assets/index.css"
 import { useRecoilValue } from "recoil"
@@ -29,13 +29,15 @@ export const Scrubber: FC<{}> = () => {
       min={0}
       disabled={disabled}
       onChange={(value) => {
-        setValue(value)
+        if (typeof value === `number`) {
+          setValue(value)
 
-        // @todo onChange will change directly when moving scrubber, on after change is good however it triggers twice
-        if (renditionLayout !== "reflowable") {
-          reader?.goToSpineItem(value)
-        } else {
-          reader?.goToPageOfCurrentChapter(value)
+          // @todo onChange will change directly when moving scrubber, on after change is good however it triggers twice
+          if (renditionLayout !== "reflowable") {
+            reader?.goToSpineItem(value)
+          } else {
+            reader?.goToPageOfCurrentChapter(value)
+          }
         }
       }}
       reverse={readingDirection === "rtl"}
