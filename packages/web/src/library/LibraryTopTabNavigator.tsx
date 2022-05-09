@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react"
-import { Tab, Tabs, IconButton, useTheme } from "@material-ui/core"
+import { Tab, Tabs, IconButton, useTheme } from "@mui/material"
 import { useNavigate, useLocation, Outlet } from "react-router-dom"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../constants"
 import { useSyncLibrary } from "./helpers"
-import { Sync } from "@material-ui/icons"
+import { Sync } from "@mui/icons-material"
 import { useCSS } from "../common/utils"
 
 export const LibraryTopTabNavigator = () => {
@@ -33,7 +33,7 @@ export const LibraryTopTabNavigator = () => {
             setSyncActive(true)
           }}
           color="inherit"
-        >
+          size="large">
           <Sync />
         </IconButton>
       </div>

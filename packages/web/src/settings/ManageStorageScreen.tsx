@@ -10,8 +10,8 @@ import {
   Box,
   useTheme,
   Button
-} from "@material-ui/core"
-import { StorageRounded } from "@material-ui/icons"
+} from "@mui/material"
+import { StorageRounded } from "@mui/icons-material"
 import { useStorageUse } from "./useStorageUse"
 import { LibraryViewMode } from "../rxdb"
 import { BookList } from "../books/bookList/BookList"
@@ -25,7 +25,7 @@ import { useCSS } from "../common/utils"
 import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { difference } from "ramda"
-import Alert from "@material-ui/lab/Alert"
+import Alert from '@mui/material/Alert'
 import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
 

@@ -6,8 +6,8 @@ import {
   ListItem,
   List,
   ListItemIcon
-} from "@material-ui/core"
-import { RadioButtonUnchecked, RadioButtonChecked } from "@material-ui/icons"
+} from "@mui/material"
+import { RadioButtonUnchecked, RadioButtonChecked } from "@mui/icons-material"
 
 type Sorting = "alpha" | "date" | "activity"
 

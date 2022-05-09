@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback, FC } from "react"
 import { useNavigate } from "react-router-dom"
 import { useMeasure } from "react-use"
-import { Box, Button, Link, Typography, useTheme } from "@material-ui/core"
+import { Box, Button, Link, Typography, useTheme } from "@mui/material"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { bookState } from "../books/states"
 import { paginationState, isBookReadyState, manifestState } from "./states"

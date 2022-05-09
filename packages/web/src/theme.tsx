@@ -2,16 +2,16 @@
  * @see https://material-ui.com/customization/default-theme/
  * @see https://material-ui.com/customization/palette/
  */
-import { createTheme } from "@material-ui/core/styles"
+import { createTheme, adaptV4Theme } from "@mui/material/styles";
 
-declare module "@material-ui/core/styles" {
+declare module "@mui/material/styles" {
   interface Theme {
     custom: {
       maxWidthCenteredContent: number
       coverAverageRatio: number
     }
   }
-  interface ThemeOptions {
+  interface DeprecatedThemeOptions {
     custom: {
       maxWidthCenteredContent: number
       coverAverageRatio: number
@@ -23,7 +23,7 @@ declare module "@material-ui/core/styles" {
 const main = "rgba(0, 0, 0, 0.54)"
 // const dark = 'rgba(0, 0, 0, 0.87)'
 
-export const theme = createTheme({
+export const theme = createTheme(adaptV4Theme({
   palette: {
     primary: {
       // light,
@@ -115,4 +115,4 @@ export const theme = createTheme({
     // into account the deviation
     coverAverageRatio: 9 / 14
   }
-})
+}))

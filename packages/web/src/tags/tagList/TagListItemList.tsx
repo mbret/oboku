@@ -4,13 +4,13 @@ import {
   ListItemIcon,
   ListItemText,
   useTheme
-} from "@material-ui/core"
+} from "@mui/material"
 import { useCSS } from "../../common/utils"
 import {
   BlurOnRounded,
   LocalOfferRounded,
   LockRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { useRecoilValue } from "recoil"
 import { normalizedTagsState } from "../states"
 import { TagsDocType } from "@oboku/shared"

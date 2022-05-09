@@ -11,13 +11,13 @@ import {
   TextField,
   DialogActions,
   Button
-} from "@material-ui/core"
+} from "@mui/material"
 import { useEffect, useState, FC } from "react"
 import {
   Edit,
   DeleteForeverRounded,
   LibraryAddRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { useRemoveCollection, useUpdateCollection } from "./helpers"
 import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { collectionState } from "./states"

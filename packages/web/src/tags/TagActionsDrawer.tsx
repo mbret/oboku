@@ -1,5 +1,5 @@
 import { useState, FC, useEffect } from "react"
-import Dialog from "@material-ui/core/Dialog"
+import Dialog from "@mui/material/Dialog"
 import {
   DialogTitle,
   Drawer,
@@ -12,14 +12,14 @@ import {
   Divider,
   DialogContent,
   TextField
-} from "@material-ui/core"
+} from "@mui/material"
 import {
   CheckCircleRounded,
   DeleteForeverRounded,
   EditRounded,
   LibraryAddRounded,
   RadioButtonUncheckedOutlined
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { useRemoveTag, useUpdateTag } from "./helpers"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 import { normalizedTagsState } from "./states"

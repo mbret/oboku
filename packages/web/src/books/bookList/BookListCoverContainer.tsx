@@ -1,12 +1,12 @@
 import React, { FC, memo } from "react"
-import { Chip, useTheme } from "@material-ui/core"
+import { Chip, useTheme } from "@mui/material"
 import {
   CheckCircleRounded,
   CloudDownloadRounded,
   ErrorRounded,
   LoopRounded,
   NoEncryptionRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { Cover } from "../Cover"
 import { useRecoilValue, UnwrapRecoilValue } from "recoil"
 import { enrichedBookState } from "../states"

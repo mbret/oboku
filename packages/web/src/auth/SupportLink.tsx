@@ -1,5 +1,5 @@
 import React from "react"
-import { Box, Link, Typography } from "@material-ui/core"
+import { Box, Link, Typography } from "@mui/material"
 
 export const SupportLink = () => {
   return (

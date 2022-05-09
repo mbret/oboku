@@ -1,6 +1,6 @@
 import React, { FC } from "react"
-import { Typography, useTheme } from "@material-ui/core"
-import { MenuBookRounded } from "@material-ui/icons"
+import { Typography, useTheme } from "@mui/material"
+import { MenuBookRounded } from "@mui/icons-material"
 import { useMeasure } from "react-use"
 
 export const ReadingProgress: FC<{

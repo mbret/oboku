@@ -1,6 +1,6 @@
 import { FC, useState, useEffect } from "react"
-import Button from "@material-ui/core/Button"
-import { MoreVertRounded, EditRounded } from "@material-ui/icons"
+import Button from "@mui/material/Button"
+import { MoreVertRounded, EditRounded } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   List,
@@ -18,10 +18,10 @@ import {
   useTheme,
   Box,
   Divider,
-  makeStyles
-} from "@material-ui/core"
+} from "@mui/material";
+import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate, useParams } from "react-router-dom"
-import { Alert } from "@material-ui/lab"
+import { Alert } from '@mui/material';
 import { Cover } from "../Cover"
 import { useDownloadBook } from "../../download/useDownloadBook"
 import { ROUTES } from "../../constants"
@@ -312,7 +312,7 @@ const EditLinkDialog: FC<{
 const useClasses = makeStyles((theme) => ({
   coverContainer: {
     width: "80%",
-    [theme.breakpoints.down("sm")]: {
+    [theme.breakpoints.down('md')]: {
       width: "40%"
     },
     maxWidth: theme.custom.maxWidthCenteredContent

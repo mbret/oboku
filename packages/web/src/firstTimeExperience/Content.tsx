@@ -1,5 +1,5 @@
 import React, { FC } from "react"
-import { useTheme } from "@material-ui/core"
+import { useTheme } from "@mui/material"
 import { useCSS } from "../common/utils"
 
 export const Content: FC<{ style?: React.CSSProperties }> = ({

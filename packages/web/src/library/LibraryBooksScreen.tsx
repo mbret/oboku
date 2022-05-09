@@ -1,14 +1,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { BookList } from "../books/bookList/BookList"
-import {
-  Button,
-  Toolbar,
-  IconButton,
-  Badge,
-  Typography,
-  useTheme,
-  makeStyles
-} from "@material-ui/core"
+import { Button, Toolbar, IconButton, Badge, Typography, useTheme } from "@mui/material";
+import makeStyles from '@mui/styles/makeStyles';
 import {
   AppsRounded,
   TuneRounded,
@@ -16,7 +9,7 @@ import {
   SortRounded,
   NoEncryptionRounded,
   BlurOffRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { LibraryFiltersDrawer } from "./LibraryFiltersDrawer"
 import { UploadBookFromDataSource } from "../upload/UploadBookFromDataSource"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
@@ -110,7 +103,7 @@ export const LibraryBooksScreen = () => {
           boxSizing: "border-box"
         }}
       >
-        <IconButton edge="start" onClick={() => setIsFiltersDrawerOpened(true)}>
+        <IconButton edge="start" onClick={() => setIsFiltersDrawerOpened(true)} size="large">
           {numberOfFiltersApplied > 0 ? (
             <Badge badgeContent={numberOfFiltersApplied} color="primary">
               <TuneRounded />
@@ -144,7 +137,7 @@ export const LibraryBooksScreen = () => {
         {library?.isLibraryUnlocked && (
           <div className={classes.extraInfo}>
             {localSettings.unBlurWhenProtectedVisible && (
-              <IconButton disabled>
+              <IconButton disabled size="large">
                 <BlurOffRounded fontSize="small" />
               </IconButton>
             )}
@@ -155,7 +148,7 @@ export const LibraryBooksScreen = () => {
                   isLibraryUnlocked: false
                 }))
               }}
-            >
+              size="large">
               <NoEncryptionRounded fontSize="small" />
             </IconButton>
           </div>
@@ -170,7 +163,7 @@ export const LibraryBooksScreen = () => {
                   : LibraryViewMode.GRID
             }))
           }}
-        >
+          size="large">
           {library?.viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
         </IconButton>
       </Toolbar>
@@ -268,7 +261,7 @@ export const LibraryBooksScreen = () => {
         />
       </div>
     </div>
-  )
+  );
 }
 
 const useStyles = () => {

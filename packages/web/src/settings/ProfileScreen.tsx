@@ -6,7 +6,7 @@ import {
   LockRounded,
   SettingsRounded,
   StorageRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
   Button,
@@ -27,7 +27,7 @@ import {
   Typography,
   useTheme,
   FormControlLabel
-} from "@material-ui/core"
+} from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { useStorageUse } from "./useStorageUse"
 import { unlockLibraryDialogState } from "../auth/UnlockLibraryDialog"

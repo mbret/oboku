@@ -1,7 +1,7 @@
 import { ObokuPlugin } from "@oboku/plugin-front"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { ReactComponent as GoogleDriveAsset } from "../../assets/google-drive.svg"
-import { SvgIcon } from "@material-ui/core"
+import { SvgIcon } from "@mui/material"
 import { UploadBook } from "./UploadBook"
 
 import { useDownloadBook } from "./useDownloadBook"

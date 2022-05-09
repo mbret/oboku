@@ -1,6 +1,6 @@
 import { FC, Suspense, useEffect, useState } from "react"
 import { AppNavigator } from "./navigation/AppNavigator"
-import { ThemeProvider } from "@material-ui/core"
+import { ThemeProvider, Theme, StyledEngineProvider } from "@mui/material";
 import { theme } from "./theme"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { UnlockLibraryDialog } from "./auth/UnlockLibraryDialog"
@@ -34,6 +34,13 @@ import { useRef } from "react"
 import { Effects } from "./Effects"
 import { bookBeingReadState } from "./reading/states"
 
+
+declare module '@mui/styles/defaultTheme' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme {}
+}
+
+
 const localStatesToPersist = [
   libraryState,
   normalizedBookDownloadsState,
@@ -59,43 +66,45 @@ export function App() {
         console.error(e)
       }}
     >
-      <ThemeProvider theme={theme}>
-        <Suspense fallback={<AppLoading />}>
-          {loading && <AppLoading />}
-          <RxDbProvider>
-            <PersistedRecoilRoot
-              states={localStatesToPersist}
-              migration={localStateMigration}
-              onReady={() => setLoading(false)}
-            >
-              <GoogleApiProvider>
-                <AxiosProvider>
-                  <DialogProvider>
-                    <TourProvider>
-                      <AppNavigator />
-                      <FirstTimeExperienceTours />
-                      <UnlockLibraryDialog />
-                      <ManageBookCollectionsDialog />
-                      <ManageBookTagsDialog />
-                      <ManageTagBooksDialog />
-                    </TourProvider>
-                    <UpdateAvailableDialog serviceWorker={newServiceWorker} />
-                    <RecoilSyncedWithDatabase />
-                    <BlockingBackdrop />
-                    <Effects />
-                  </DialogProvider>
-                </AxiosProvider>
-              </GoogleApiProvider>
-            </PersistedRecoilRoot>
-          </RxDbProvider>
-        </Suspense>
-      </ThemeProvider>
+      <StyledEngineProvider injectFirst>
+        <ThemeProvider theme={theme}>
+          <Suspense fallback={<AppLoading />}>
+            {loading && <AppLoading />}
+            <RxDbProvider>
+              <PersistedRecoilRoot
+                states={localStatesToPersist}
+                migration={localStateMigration}
+                onReady={() => setLoading(false)}
+              >
+                <GoogleApiProvider>
+                  <AxiosProvider>
+                    <DialogProvider>
+                      <TourProvider>
+                        <AppNavigator />
+                        <FirstTimeExperienceTours />
+                        <UnlockLibraryDialog />
+                        <ManageBookCollectionsDialog />
+                        <ManageBookTagsDialog />
+                        <ManageTagBooksDialog />
+                      </TourProvider>
+                      <UpdateAvailableDialog serviceWorker={newServiceWorker} />
+                      <RecoilSyncedWithDatabase />
+                      <BlockingBackdrop />
+                      <Effects />
+                    </DialogProvider>
+                  </AxiosProvider>
+                </GoogleApiProvider>
+              </PersistedRecoilRoot>
+            </RxDbProvider>
+          </Suspense>
+        </ThemeProvider>
+      </StyledEngineProvider>
       <ServiceWorkerRegistration
         onUpdateAvailable={(sw) => setNewServiceWorker(sw)}
       />
       <BlurContainer />
     </ErrorBoundary>
-  )
+  );
 }
 
 const RecoilSyncedWithDatabase: FC = ({ children }) => {

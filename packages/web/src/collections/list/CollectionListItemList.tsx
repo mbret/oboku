@@ -1,7 +1,7 @@
 import { FC, memo } from "react"
-import { IconButton, ListItem, ListItemText, useTheme } from "@material-ui/core"
+import { IconButton, ListItem, ListItemText, useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
-import { MoreVert } from "@material-ui/icons"
+import { MoreVert } from "@mui/icons-material"
 import { useRecoilValue } from "recoil"
 import { collectionState } from "../states"
 import { CollectionDocType } from "@oboku/shared"
@@ -80,12 +80,12 @@ export const CollectionListItemList: FC<{
           disableRipple
           disableTouchRipple
           edge="end"
-        >
+          size="large">
           <MoreVert />
         </IconButton>
       </div>
     </ListItem>
-  )
+  );
 })
 
 const useStyle = () => {

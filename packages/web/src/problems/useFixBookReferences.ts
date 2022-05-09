@@ -54,5 +54,5 @@ export const useFixBookReferences = () => {
       }
     },
     [db, removeDanglingCollectionsFromBook]
-  )
+  );
 }

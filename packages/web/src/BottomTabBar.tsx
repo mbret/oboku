@@ -3,7 +3,7 @@ import {
   BottomNavigationAction,
   BottomNavigation,
   useTheme
-} from "@material-ui/core"
+} from "@mui/material"
 import {
   HomeOutlined,
   Home,
@@ -14,7 +14,7 @@ import {
   AccountCircleRounded,
   AccountCircleOutlined,
   PortableWifiOffRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { useNavigate, useLocation } from "react-router-dom"
 import { ROUTES } from "./constants"
 import { useNetworkState } from "react-use"

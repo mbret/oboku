@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from "react"
-import { Backdrop, CircularProgress, useTheme } from "@material-ui/core"
+import { Backdrop, CircularProgress, useTheme } from "@mui/material"
 import { useRecoilCallback, useRecoilValue } from "recoil"
 import { atom, selector } from "recoil"
 import { useCSS } from "../common/utils"

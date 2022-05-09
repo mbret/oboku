@@ -5,9 +5,9 @@ import {
   ListItemIcon,
   ListItemText,
   Divider
-} from "@material-ui/core"
+} from "@mui/material"
 import React, { FC } from "react"
-import { SyncRounded, DeleteForeverRounded } from "@material-ui/icons"
+import { SyncRounded, DeleteForeverRounded } from "@mui/icons-material"
 import { useSynchronizeDataSource, useRemoveDataSource } from "./helpers"
 
 export const DataSourcesActionsDrawer: FC<{

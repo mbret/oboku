@@ -7,13 +7,13 @@ import {
   Toolbar,
   Typography,
   useTheme
-} from "@material-ui/core"
+} from "@mui/material"
 import {
   ArrowBackIosRounded,
   FullscreenExitRounded,
   FullscreenRounded,
   ListRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import screenfull from "screenfull"
 import { Report } from "../debug/report.shared"
@@ -61,7 +61,7 @@ export const TopBar = () => {
   return (
     <AppBar position="fixed" elevation={0} style={classes.appBar}>
       <Toolbar style={{ flex: 1 }}>
-        <IconButton edge="start" color="inherit" onClick={goBack}>
+        <IconButton edge="start" color="inherit" onClick={goBack} size="large">
           <ArrowBackIosRounded />
         </IconButton>
         <Typography
@@ -83,22 +83,18 @@ export const TopBar = () => {
             color="inherit"
             disabled={!isBookReady}
             onClick={toggleContentsDialog}
-          >
+            size="large">
             <ListRounded />
           </IconButton>
           {screenfull.isEnabled && (
-            <IconButton
-              edge="end"
-              color="inherit"
-              onClick={onToggleFullScreenClick}
-            >
+            <IconButton edge="end" color="inherit" onClick={onToggleFullScreenClick} size="large">
               {isFullScreen ? <FullscreenExitRounded /> : <FullscreenRounded />}
             </IconButton>
           )}
         </div>
       </Toolbar>
     </AppBar>
-  )
+  );
 }
 
 const useStyles = ({ isMenuShow }: { isMenuShow: boolean }) => {

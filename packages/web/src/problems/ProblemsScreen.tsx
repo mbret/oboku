@@ -4,14 +4,14 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText
-} from "@material-ui/core"
+} from "@mui/material"
 import { difference, groupBy } from "ramda"
 import { Fragment, memo, useMemo } from "react"
 import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
 import { Report } from "../debug/report.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useDatabase } from "../rxdb"
-import { BuildRounded } from "@material-ui/icons"
+import { BuildRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
 import { useFixBookReferences } from "./useFixBookReferences"
 import { useDuplicatedResourceIdLinks } from "./useDuplicateLinks"
@@ -22,7 +22,7 @@ import {
   useDuplicatedBookTitles,
   useFixDuplicatedBookTitles
 } from "./useDuplicateBooksTitles"
-import { Alert } from "@material-ui/lab"
+import { Alert } from '@mui/material';
 
 export const ProblemsScreen = memo(() => {
   const database = useDatabase()

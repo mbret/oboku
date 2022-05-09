@@ -1,6 +1,6 @@
 import { ObokuPlugin } from "@oboku/plugin-front"
 import { UploadComponent } from "./UploadComponent"
-import { SvgIcon } from "@material-ui/core"
+import { SvgIcon } from "@mui/material"
 import { ReactComponent as IconSvg } from "./icon.svg"
 import { useDownloadBook } from "./useDownloadBook"
 

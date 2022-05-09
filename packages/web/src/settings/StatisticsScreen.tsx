@@ -5,7 +5,7 @@ import {
   ListItem,
   ListItemText,
   ListSubheader
-} from "@material-ui/core"
+} from "@mui/material"
 import { useRecoilValue } from "recoil"
 import { bookIdsState } from "../books/states"
 import { collectionsAsArrayState } from "../collections/states"

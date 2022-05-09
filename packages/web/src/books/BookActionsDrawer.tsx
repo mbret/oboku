@@ -1,7 +1,7 @@
 import { useCallback } from "react"
-import List from "@material-ui/core/List"
-import ListItem from "@material-ui/core/ListItem"
-import ListItemText from "@material-ui/core/ListItemText"
+import List from "@mui/material/List"
+import ListItem from "@mui/material/ListItem"
+import ListItemText from "@mui/material/ListItemText"
 import {
   SyncRounded,
   DeleteForeverRounded,
@@ -10,19 +10,14 @@ import {
   CollectionsRounded,
   NoSimRounded,
   LocalOfferRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { useNavigate } from "react-router-dom"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { ROUTES } from "../constants"
 import { useAtomicUpdateBook, useRefreshBookMetadata } from "./helpers"
 import { useRemoveBook } from "./helpers"
-import {
-  Drawer,
-  Divider,
-  ListItemIcon,
-  Typography,
-  makeStyles
-} from "@material-ui/core"
+import { Drawer, Divider, ListItemIcon, Typography } from "@mui/material";
+import makeStyles from '@mui/styles/makeStyles';
 import { useManageBookCollectionsDialog } from "./ManageBookCollectionsDialog"
 import { atom, useRecoilState, useRecoilValue } from "recoil"
 import { enrichedBookState } from "./states"

@@ -1,5 +1,5 @@
 import React, { useState, FC } from "react"
-import Dialog from "@material-ui/core/Dialog"
+import Dialog from "@mui/material/Dialog"
 import {
   DialogTitle,
   Drawer,
@@ -9,12 +9,12 @@ import {
   ListItemIcon,
   DialogActions,
   Button
-} from "@material-ui/core"
+} from "@mui/material"
 import {
   ArrowForwardIosRounded,
   CheckCircleRounded,
   RadioButtonUncheckedOutlined
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { getDisplayableReadingState, useToggleTag } from "./helpers"
 import { useRecoilState, useRecoilValue } from "recoil"
 import { tagIdsState } from "../tags/states"

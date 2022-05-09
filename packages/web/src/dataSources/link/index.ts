@@ -1,4 +1,4 @@
-import { HttpRounded } from "@material-ui/icons"
+import { HttpRounded } from "@mui/icons-material"
 import { ObokuPlugin } from "@oboku/plugin-front"
 import { UploadComponent } from "./UploadComponent"
 import { useDownloadBook } from "./useDownloadBook"

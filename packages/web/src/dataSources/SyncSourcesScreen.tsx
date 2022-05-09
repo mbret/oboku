@@ -11,13 +11,13 @@ import {
   ListItemIcon,
   Typography,
   useTheme
-} from "@material-ui/core"
-import { Alert } from "@material-ui/lab"
+} from "@mui/material"
+import { Alert } from '@mui/material';
 import { DataSourcesAddDrawer } from "./DataSourcesAddDrawer"
 import { DataSourcesActionsDrawer } from "./DataSourcesActionsDrawer"
 import { dataSourcesAsArrayState } from "./states"
 import { useRecoilValue } from "recoil"
-import { Error } from "@material-ui/icons"
+import { Error } from "@mui/icons-material"
 import { DataSourceDocType } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "./configure"
 import { AddDataSource } from "./AddDataSource"

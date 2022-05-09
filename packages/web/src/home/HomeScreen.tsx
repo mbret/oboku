@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { Typography, useTheme, Button } from "@material-ui/core"
+import { Typography, useTheme, Button } from "@mui/material"
 import { BookList } from "../books/bookList/BookList"
 import { ROUTES } from "../constants"
 import { useNavigate } from "react-router-dom"

@@ -8,7 +8,7 @@ import {
   ListItem,
   ListItemText,
   Typography
-} from "@material-ui/core"
+} from "@mui/material"
 import { FC, useCallback } from "react"
 import { useAddBookFromFile } from "../books/helpers"
 import { useDropzone } from "react-dropzone"

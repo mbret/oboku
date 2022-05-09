@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { Typography, useTheme } from "@material-ui/core"
+import { Typography, useTheme } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import CollectionBgSvg from "../assets/series-bg.svg"

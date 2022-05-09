@@ -1,5 +1,5 @@
 import { ComponentProps } from "react"
-import Chip from "@material-ui/core/Chip"
+import Chip from "@mui/material/Chip"
 import { useRecoilValue } from "recoil"
 import { tagState } from "./states"
 
