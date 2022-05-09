@@ -40,7 +40,7 @@ import { authState } from "../auth/authState"
 import { settingsState } from "./states"
 import { useUpdateContentPassword } from "./helpers"
 import { libraryState } from "../library/states"
-import { version } from "../../package.json"
+import packageJson from "../../package.json"
 import { ROUTES } from "../constants"
 import { useDialogManager } from "../dialog"
 import { toggleDebug } from "../debug"
@@ -231,7 +231,7 @@ export const ProfileScreen = () => {
           <ListItemText primary="Terms of Service" />
         </ListItem>
         <ListItem>
-          <ListItemText primary="Version" secondary={version} />
+          <ListItemText primary="Version" secondary={packageJson.version} />
         </ListItem>
       </List>
       <>
