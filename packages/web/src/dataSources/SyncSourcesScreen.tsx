@@ -12,7 +12,7 @@ import {
   Typography,
   useTheme
 } from "@mui/material"
-import { Alert } from '@mui/material';
+import { Alert } from "@mui/material"
 import { DataSourcesAddDrawer } from "./DataSourcesAddDrawer"
 import { DataSourcesActionsDrawer } from "./DataSourcesActionsDrawer"
 import { dataSourcesAsArrayState } from "./states"
@@ -35,115 +35,117 @@ export const SyncSourcesScreen = () => {
   const syncSources = useRecoilValue(dataSourcesAsArrayState)
   const theme = useTheme()
 
-  return <>
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        overflow: "scroll",
-        flexFlow: "column"
-      }}
-    >
-      <TopBarNavigation title={"Data Sources"} showBack={false} />
-      <Alert severity="info">
-        Automatically synchronize books from an external source (eg: Google
-        Drive shared folder).{" "}
-        <Link href="https://docs.oboku.me" target="__blank" underline="hover">
-          Learn more
-        </Link>
-      </Alert>
-      <Toolbar>
-        <Button
-          style={{
-            width: "100%"
-          }}
-          variant="outlined"
-          color="primary"
-          onClick={() => setIsDrawerOpened(true)}
-        >
-          Add a new source
-        </Button>
-      </Toolbar>
-      <List>
-        {syncSources?.map((syncSource) => {
-          const dataSource = dataSourcePlugins.find(
-            (dataSource) => dataSource.type === syncSource.type
-          )
+  return (
+    <>
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          overflow: "scroll",
+          flexFlow: "column"
+        }}
+      >
+        <TopBarNavigation title={"Data Sources"} showBack={false} />
+        <Alert severity="info">
+          Automatically synchronize books from an external source (eg: Google
+          Drive shared folder).{" "}
+          <Link href="https://docs.oboku.me" target="__blank" underline="hover">
+            Learn more
+          </Link>
+        </Alert>
+        <Toolbar>
+          <Button
+            style={{
+              width: "100%"
+            }}
+            variant="outlined"
+            color="primary"
+            onClick={() => setIsDrawerOpened(true)}
+          >
+            Add a new source
+          </Button>
+        </Toolbar>
+        <List>
+          {syncSources?.map((syncSource) => {
+            const dataSource = dataSourcePlugins.find(
+              (dataSource) => dataSource.type === syncSource.type
+            )
 
-          return (
-            <ListItem
-              key={syncSource._id}
-              button
-              onClick={() => setIsActionsDrawerOpenWith(syncSource._id)}
-            >
-              {dataSource && (
-                <ListItemIcon>
-                  <SvgIcon>{dataSource.Icon && <dataSource.Icon />}</SvgIcon>
-                </ListItemIcon>
-              )}
-              <ListItemText
-                primary={<SyncSourceLabel syncSource={syncSource} />}
-                secondary={
-                  syncSource?.syncStatus === "fetching" ? (
-                    "Syncing..."
-                  ) : syncSource?.lastSyncErrorCode ? (
-                    <div style={{ flexDirection: "row", display: "flex" }}>
-                      <Error
-                        fontSize="small"
-                        style={{ marginRight: theme.spacing(1) }}
-                      />
-                      <Typography variant="body2">
-                        {`Sync did not succeed`}
-                        {syncSource?.lastSyncErrorCode ===
-                          ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED &&
-                          `. We could not connect to ${dataSource?.name}. If the problem persist try to reload the app`}
-                        {syncSource?.lastSyncErrorCode ===
-                          ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED &&
-                          `. Your datasource seems to have exceeded its allowed access limit`}
-                        {syncSource?.lastSyncErrorCode ===
-                          ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE &&
-                          `. Our server seems unreachable, make sure you are online to start the synchronization`}
-                      </Typography>
-                    </div>
-                  ) : syncSource?.lastSyncedAt ? (
-                    `Last synced at ${new Date(
-                      syncSource?.lastSyncedAt
-                    ).toDateString()}`
-                  ) : (
-                    "Not synced yet"
-                  )
-                }
-              />
-            </ListItem>
+            return (
+              <ListItem
+                key={syncSource._id}
+                button
+                onClick={() => setIsActionsDrawerOpenWith(syncSource._id)}
+              >
+                {dataSource && (
+                  <ListItemIcon>
+                    <SvgIcon>{dataSource.Icon && <dataSource.Icon />}</SvgIcon>
+                  </ListItemIcon>
+                )}
+                <ListItemText
+                  primary={<SyncSourceLabel syncSource={syncSource} />}
+                  secondary={
+                    syncSource?.syncStatus === "fetching" ? (
+                      "Syncing..."
+                    ) : syncSource?.lastSyncErrorCode ? (
+                      <div style={{ flexDirection: "row", display: "flex" }}>
+                        <Error
+                          fontSize="small"
+                          style={{ marginRight: theme.spacing(1) }}
+                        />
+                        <Typography variant="body2">
+                          {`Sync did not succeed`}
+                          {syncSource?.lastSyncErrorCode ===
+                            ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED &&
+                            `. We could not connect to ${dataSource?.name}. If the problem persist try to reload the app`}
+                          {syncSource?.lastSyncErrorCode ===
+                            ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED &&
+                            `. Your datasource seems to have exceeded its allowed access limit`}
+                          {syncSource?.lastSyncErrorCode ===
+                            ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE &&
+                            `. Our server seems unreachable, make sure you are online to start the synchronization`}
+                        </Typography>
+                      </div>
+                    ) : syncSource?.lastSyncedAt ? (
+                      `Last synced at ${new Date(
+                        syncSource?.lastSyncedAt
+                      ).toDateString()}`
+                    ) : (
+                      "Not synced yet"
+                    )
+                  }
+                />
+              </ListItem>
+            )
+          })}
+        </List>
+      </div>
+      <DataSourcesAddDrawer
+        open={isDrawerOpened}
+        onClose={(type) => {
+          setIsDrawerOpened(false)
+          const dataSource = dataSourcePlugins.find(
+            (dataSource) => type === dataSource.type
           )
-        })}
-      </List>
-    </div>
-    <DataSourcesAddDrawer
-      open={isDrawerOpened}
-      onClose={(type) => {
-        setIsDrawerOpened(false)
-        const dataSource = dataSourcePlugins.find(
-          (dataSource) => type === dataSource.type
-        )
-        if (dataSource) {
-          setIsAddDataSourceOpenedWith(dataSource)
-        }
-      }}
-    />
-    {isActionsDrawerOpenWith && (
-      <DataSourcesActionsDrawer
-        openWith={isActionsDrawerOpenWith}
-        onClose={() => setIsActionsDrawerOpenWith(undefined)}
+          if (dataSource) {
+            setIsAddDataSourceOpenedWith(dataSource)
+          }
+        }}
       />
-    )}
-    {isAddDataSourceOpenedWith && (
-      <AddDataSource
-        onClose={() => setIsAddDataSourceOpenedWith(undefined)}
-        openWith={isAddDataSourceOpenedWith}
-      />
-    )}
-  </>;
+      {isActionsDrawerOpenWith && (
+        <DataSourcesActionsDrawer
+          openWith={isActionsDrawerOpenWith}
+          onClose={() => setIsActionsDrawerOpenWith(undefined)}
+        />
+      )}
+      {isAddDataSourceOpenedWith && (
+        <AddDataSource
+          onClose={() => setIsAddDataSourceOpenedWith(undefined)}
+          openWith={isAddDataSourceOpenedWith}
+        />
+      )}
+    </>
+  )
 }
 
 const SyncSourceLabel = ({ syncSource }: { syncSource: DataSourceDocType }) => {

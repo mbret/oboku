@@ -1,5 +1,5 @@
-import { Backdrop, Box, Button, Modal, useTheme } from "@mui/material";
-import makeStyles from '@mui/styles/makeStyles';
+import { Backdrop, Box, Button, Modal, useTheme } from "@mui/material"
+import makeStyles from "@mui/styles/makeStyles"
 import React, { useContext, useEffect, useRef, useState } from "react"
 import { useWindowSize } from "react-use"
 import { Step, TourContext, TourKey } from "./TourContext"

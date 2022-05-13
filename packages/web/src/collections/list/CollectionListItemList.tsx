@@ -80,12 +80,13 @@ export const CollectionListItemList: FC<{
           disableRipple
           disableTouchRipple
           edge="end"
-          size="large">
+          size="large"
+        >
           <MoreVert />
         </IconButton>
       </div>
     </ListItem>
-  );
+  )
 })
 
 const useStyle = () => {

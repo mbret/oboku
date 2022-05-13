@@ -1,6 +1,6 @@
 import { Box, Typography, useTheme } from "@mui/material"
 import { ComponentProps, FC } from "react"
-import makeStyles from '@mui/styles/makeStyles';
+import makeStyles from "@mui/styles/makeStyles"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
 import TableCell from "@mui/material/TableCell"

@@ -72,7 +72,7 @@ const resolvePagesGalleryRealId = (doc: Document) => {
 }
 
 function getUrlExtension(url: string) {
-  return url.split(/[#?]/)[0]?.split(".")?.pop()?.trim();
+  return url.split(/[#?]/)[0]?.split(".")?.pop()?.trim()
 }
 
 const getGalleryPages = (

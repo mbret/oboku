@@ -16,8 +16,8 @@ import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { ROUTES } from "../constants"
 import { useAtomicUpdateBook, useRefreshBookMetadata } from "./helpers"
 import { useRemoveBook } from "./helpers"
-import { Drawer, Divider, ListItemIcon, Typography } from "@mui/material";
-import makeStyles from '@mui/styles/makeStyles';
+import { Drawer, Divider, ListItemIcon, Typography } from "@mui/material"
+import makeStyles from "@mui/styles/makeStyles"
 import { useManageBookCollectionsDialog } from "./ManageBookCollectionsDialog"
 import { atom, useRecoilState, useRecoilValue } from "recoil"
 import { enrichedBookState } from "./states"

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { useTheme, Button, TextField, Link } from "@mui/material"
-import { Alert } from '@mui/material';
+import { Alert } from "@mui/material"
 import { OrDivider } from "../common/OrDivider"
 import { useNavigate } from "react-router-dom"
 import { ROUTES } from "../constants"
@@ -96,7 +96,8 @@ export const LoginScreen = () => {
             color="textPrimary"
             href="#"
             onClick={() => alert("Not implemented yet")}
-            underline="hover">
+            underline="hover"
+          >
             I forgot my password
           </Link>
         </div>
@@ -120,7 +121,7 @@ export const LoginScreen = () => {
         Register
       </Button>
     </CenteredBox>
-  );
+  )
 }
 
 const useIsValid = (email: string, password: string) => {

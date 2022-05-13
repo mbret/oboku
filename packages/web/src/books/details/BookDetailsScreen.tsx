@@ -17,11 +17,11 @@ import {
   TextField,
   useTheme,
   Box,
-  Divider,
-} from "@mui/material";
-import makeStyles from '@mui/styles/makeStyles';
+  Divider
+} from "@mui/material"
+import makeStyles from "@mui/styles/makeStyles"
 import { useNavigate, useParams } from "react-router-dom"
-import { Alert } from '@mui/material';
+import { Alert } from "@mui/material"
 import { Cover } from "../Cover"
 import { useDownloadBook } from "../../download/useDownloadBook"
 import { ROUTES } from "../../constants"
@@ -312,7 +312,7 @@ const EditLinkDialog: FC<{
 const useClasses = makeStyles((theme) => ({
   coverContainer: {
     width: "80%",
-    [theme.breakpoints.down('md')]: {
+    [theme.breakpoints.down("md")]: {
       width: "40%"
     },
     maxWidth: theme.custom.maxWidthCenteredContent

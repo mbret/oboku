@@ -1,6 +1,6 @@
 import { FC, Suspense, useEffect, useState } from "react"
 import { AppNavigator } from "./navigation/AppNavigator"
-import { ThemeProvider, Theme, StyledEngineProvider } from "@mui/material";
+import { ThemeProvider, Theme, StyledEngineProvider } from "@mui/material"
 import { theme } from "./theme"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { UnlockLibraryDialog } from "./auth/UnlockLibraryDialog"
@@ -34,12 +34,10 @@ import { useRef } from "react"
 import { Effects } from "./Effects"
 import { bookBeingReadState } from "./reading/states"
 
-
-declare module '@mui/styles/defaultTheme' {
+declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface DefaultTheme extends Theme {}
 }
-
 
 const localStatesToPersist = [
   libraryState,
@@ -104,7 +102,7 @@ export function App() {
       />
       <BlurContainer />
     </ErrorBoundary>
-  );
+  )
 }
 
 const RecoilSyncedWithDatabase: FC = ({ children }) => {
