@@ -1,5 +1,5 @@
 import { FC, memo } from "react"
-import { ListItem, ListItemText, useTheme } from "@material-ui/core"
+import { ListItem, ListItemText, useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { useRecoilValue } from "recoil"
 import { normalizedCollectionsState } from "../states"

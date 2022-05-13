@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback, FC } from "react"
 import { useNavigate } from "react-router-dom"
 import { useMeasure } from "react-use"
-import { Box, Button, Link, Typography, useTheme } from "@material-ui/core"
+import { Box, Button, Link, Typography, useTheme } from "@mui/material"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { bookState } from "../books/states"
 import { paginationState, isBookReadyState, manifestState } from "./states"
@@ -109,7 +109,7 @@ export const Reader: FC<{
             <Typography>
               Oups! it looks like the book <b>{book?.title}</b> is not supported
               yet. If you would like to be able to open it please visit the{" "}
-              <Link href="https://docs.oboku.me" target="__blank">
+              <Link href="https://docs.oboku.me" target="__blank" underline="hover">
                 documentation
               </Link>{" "}
               and try to reach out.
@@ -123,7 +123,7 @@ export const Reader: FC<{
             Go back
           </Button>
         </div>
-      )
+      );
     }
     return (
       <div style={styles.infoContainer}>
@@ -134,7 +134,7 @@ export const Reader: FC<{
           <Typography align="center">
             Sorry it looks like we are unable to load the book. If the problem
             persist try to restart the app. If it still does not work,{" "}
-            <Link href="https://docs.oboku.me/support" target="__blank">
+            <Link href="https://docs.oboku.me/support" target="__blank" underline="hover">
               contact us
             </Link>
           </Typography>
@@ -147,7 +147,7 @@ export const Reader: FC<{
           Go back
         </Button>
       </div>
-    )
+    );
   }
 
   console.log(manifest, loadOptions)

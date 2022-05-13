@@ -6,7 +6,7 @@ import {
   LockRounded,
   SettingsRounded,
   StorageRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
   Button,
@@ -27,7 +27,7 @@ import {
   Typography,
   useTheme,
   FormControlLabel
-} from "@material-ui/core"
+} from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { useStorageUse } from "./useStorageUse"
 import { unlockLibraryDialogState } from "../auth/UnlockLibraryDialog"
@@ -194,7 +194,7 @@ export const ProfileScreen = () => {
             secondary={
               <Typography variant="body2" color="textSecondary">
                 You can visit our{" "}
-                <Link target="__blank" href="https://docs.oboku.me/support">
+                <Link target="__blank" href="https://docs.oboku.me/support" underline="hover">
                   support page
                 </Link>
               </Typography>
@@ -208,7 +208,7 @@ export const ProfileScreen = () => {
               <Typography variant="body2" color="textSecondary">
                 Whether it is a bug, a feature request or anything else, please
                 visit the{" "}
-                <Link target="__blank" href="https://docs.oboku.me">
+                <Link target="__blank" href="https://docs.oboku.me" underline="hover">
                   doc
                 </Link>{" "}
                 to find all useful links
@@ -293,7 +293,7 @@ export const ProfileScreen = () => {
         onClose={() => setIsDeleteMyDataDialogOpened(false)}
       />
     </div>
-  )
+  );
 }
 
 const DeleteMyDataDialog: FC<{

@@ -10,7 +10,7 @@ import {
   DialogTitle,
   TextField,
   Typography
-} from "@material-ui/core"
+} from "@mui/material"
 import * as yup from "yup"
 import { ButtonDialog } from "../../common/ButtonDialog"
 import { TagsSelector } from "../../tags/TagsSelector"

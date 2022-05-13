@@ -1,4 +1,4 @@
-import { useTheme } from "@material-ui/core"
+import { useTheme } from "@mui/material"
 import { FC } from "react"
 
 export const HeroCover: FC<{ src: string; style?: React.CSSProperties }> = ({

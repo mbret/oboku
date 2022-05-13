@@ -6,7 +6,7 @@ import {
   DialogContentText,
   DialogTitle,
   TextField
-} from "@material-ui/core"
+} from "@mui/material"
 import React, { FC, useEffect, useState } from "react"
 import { useRecoilValue } from "recoil"
 import { authState } from "./authState"

@@ -1,7 +1,7 @@
 import React, { memo } from "react"
 import { Step, Tour } from "../app-tour"
 import FteCoverAsset from "../assets/fte-cover.svg"
-import { Typography, useTheme } from "@material-ui/core"
+import { Typography, useTheme } from "@mui/material"
 import { Logo } from "../common/Logo"
 import { useRecoilValue } from "recoil"
 import { authState } from "../auth/authState"

@@ -1,7 +1,7 @@
 import React, { FC, memo, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
 import placeholder from "../assets/cover-placeholder.png"
-import { useTheme } from "@material-ui/core"
+import { useTheme } from "@mui/material"
 import { selectorFamily, useRecoilValue } from "recoil"
 import { enrichedBookState } from "./states"
 import { authState } from "../auth/authState"

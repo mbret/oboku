@@ -1,12 +1,12 @@
 import React, { FC, memo } from "react"
-import { Chip, useTheme } from "@material-ui/core"
+import { Chip, useTheme } from "@mui/material"
 import {
   CheckCircleRounded,
   CloudDownloadRounded,
   ErrorRounded,
   LoopRounded,
   NoEncryptionRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { Cover } from "../Cover"
 import { useRecoilValue, UnwrapRecoilValue } from "recoil"
 import { enrichedBookState } from "../states"
@@ -67,7 +67,7 @@ export const BookListCoverContainer: FC<{
           {withMetadaStatus && item?.metadataUpdateStatus === "fetching" && (
             <div style={classes.itemCoverCenterInfo}>
               <Chip
-                color="secondary"
+                color="primary"
                 size="small"
                 icon={<LoopRounded color="primary" className="icon-spin" />}
                 label="metadata..."
@@ -88,12 +88,12 @@ export const BookListCoverContainer: FC<{
             )}
           {item?.downloadState === "none" && (
             <div style={classes.pauseButton}>
-              <CloudDownloadRounded color="secondary" fontSize={size} />
+              <CloudDownloadRounded color="action" fontSize={size} />
             </div>
           )}
           {withDownloadStatus && item?.downloadState === "downloading" && (
             <div style={classes.pauseButton}>
-              <Chip color="secondary" size="small" label="downloading..." />
+              <Chip color="primary" size="small" label="downloading..." />
             </div>
           )}
         </div>

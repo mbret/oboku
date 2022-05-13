@@ -1,4 +1,4 @@
-import { Chip, Typography, useTheme } from "@material-ui/core"
+import { Chip, Typography, useTheme } from "@mui/material"
 import React, { FC } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 import { useDefaultItemClickHandler } from "./helpers"
@@ -10,7 +10,7 @@ import {
   LoopRounded,
   MenuBookRounded,
   MoreVert
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { bookActionDrawerState } from "../BookActionsDrawer"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"

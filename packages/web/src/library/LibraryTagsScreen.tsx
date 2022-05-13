@@ -1,5 +1,5 @@
 import { useState, FC, useEffect, useCallback, useMemo } from "react"
-import Dialog from "@material-ui/core/Dialog"
+import Dialog from "@mui/material/Dialog"
 import {
   Button,
   DialogActions,
@@ -8,7 +8,7 @@ import {
   TextField,
   Toolbar,
   useTheme
-} from "@material-ui/core"
+} from "@mui/material"
 import { useCreateTag } from "../tags/helpers"
 import { TagActionsDrawer } from "../tags/TagActionsDrawer"
 import { LockActionDialog } from "../auth/LockActionDialog"

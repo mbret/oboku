@@ -1,5 +1,5 @@
 import { FC } from "react"
-import { Dialog, DialogContent, useTheme } from "@material-ui/core"
+import { Dialog, DialogContent, useTheme } from "@mui/material"
 import { DialogTopBar } from "../navigation/DialogTopBar"
 import { useCSS } from "../common/utils"
 import { SelectableBookList } from "../books/bookList/SelectableBookList"
@@ -51,7 +51,7 @@ const useStyles = () => {
         padding: 0
       },
       listContainer: {
-        padding: `0px ${theme.spacing(1)}px`,
+        padding: `0px ${theme.spacing(1)}`,
         flex: 1
       },
       list: {

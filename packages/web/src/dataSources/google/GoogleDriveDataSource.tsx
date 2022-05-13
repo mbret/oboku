@@ -10,8 +10,8 @@ import {
   ListItemIcon,
   ListItemText,
   Typography
-} from "@material-ui/core"
-import { ArrowBackIosRounded, LocalOfferRounded } from "@material-ui/icons"
+} from "@mui/material"
+import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
 import { FC, useState } from "react"
 import { useRecoilValue } from "recoil"
 import { tagIdsState, tagsAsArrayState } from "../../tags/states"

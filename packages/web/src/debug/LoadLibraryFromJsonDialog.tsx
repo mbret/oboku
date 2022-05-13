@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogTitle,
   TextField
-} from "@material-ui/core"
+} from "@mui/material"
 import React, { FC, useEffect, useState } from "react"
 import { useLoadLibraryFromJson } from "./useLoadLibraryFromJson"
 

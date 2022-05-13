@@ -1,7 +1,7 @@
 import React, { memo } from "react"
 import { Step, Tour } from "../app-tour"
-import { Box, Button, Typography, useTheme } from "@material-ui/core"
-import { TouchAppRounded } from "@material-ui/icons"
+import { Box, Button, Typography, useTheme } from "@mui/material"
+import { TouchAppRounded } from "@mui/icons-material"
 import { useCSS } from "../common/utils"
 import { FirstTimeExperienceId } from "./constants"
 import {

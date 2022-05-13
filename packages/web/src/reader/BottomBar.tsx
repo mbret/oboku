@@ -4,7 +4,7 @@ import {
   IconButton,
   Typography,
   useTheme
-} from "@material-ui/core"
+} from "@mui/material"
 import { useRecoilValue } from "recoil"
 import { PageInformation } from "./PageInformation"
 import {
@@ -15,7 +15,7 @@ import {
 } from "./states"
 import { Scrubber } from "./Scrubber"
 import { useTime } from "../common/useTime"
-import { DoubleArrowRounded } from "@material-ui/icons"
+import { DoubleArrowRounded } from "@mui/icons-material"
 import { useReader } from "./ReaderProvider"
 
 export const BottomBar = () => {
@@ -83,7 +83,7 @@ export const BottomBar = () => {
               onClick={(_) => {
                 reader?.goToLeftSpineItem()
               }}
-            >
+              size="large">
               <DoubleArrowRounded />
             </IconButton>
             <div
@@ -103,7 +103,7 @@ export const BottomBar = () => {
               onClick={(_) => {
                 reader?.goToRightSpineItem()
               }}
-            >
+              size="large">
               <DoubleArrowRounded />
             </IconButton>
           </div>
@@ -124,5 +124,5 @@ export const BottomBar = () => {
         </Typography>
       </div>
     </AppBar>
-  )
+  );
 }

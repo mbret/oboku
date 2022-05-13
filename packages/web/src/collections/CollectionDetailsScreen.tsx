@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { Typography, useTheme } from "@material-ui/core"
+import { Typography, useTheme } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import CollectionBgSvg from "../assets/series-bg.svg"
@@ -62,7 +62,7 @@ export const CollectionDetailsScreen = () => {
         >
           <div
             style={{
-              paddingTop: theme.spacing(1) + 50,
+              paddingTop: `calc(${theme.spacing(1)} + ${50}px)`,
               display: "flex",
               alignItems: "flex-end",
               paddingLeft: theme.spacing(2),

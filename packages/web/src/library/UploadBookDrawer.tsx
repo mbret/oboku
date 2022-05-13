@@ -5,8 +5,8 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon
-} from "@material-ui/core"
-import { SdStorageRounded } from "@material-ui/icons"
+} from "@mui/material"
+import { SdStorageRounded } from "@mui/icons-material"
 import { plugins as dataSourcePlugins } from "../dataSources"
 import { useRecoilValue } from "recoil"
 import { localSettingsState } from "../settings/states"

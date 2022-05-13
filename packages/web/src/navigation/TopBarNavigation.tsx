@@ -1,14 +1,15 @@
 import React, { FC, ComponentProps, memo } from "react"
-import AppBar from "@material-ui/core/AppBar"
-import Toolbar from "@material-ui/core/Toolbar"
-import Typography from "@material-ui/core/Typography"
-import IconButton from "@material-ui/core/IconButton"
+import AppBar from "@mui/material/AppBar"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
+import IconButton from "@mui/material/IconButton"
 import {
   ArrowBackIosRounded,
   MoreVertRounded,
   Search
-} from "@material-ui/icons"
-import { alpha, InputBase, makeStyles, useTheme } from "@material-ui/core"
+} from "@mui/icons-material"
+import { alpha, InputBase, useTheme } from "@mui/material";
+import makeStyles from '@mui/styles/makeStyles';
 import { useSafeGoBack } from "./useSafeGoBack"
 import { ROUTES } from "../constants"
 import { useCSS } from "../common/utils"
@@ -40,7 +41,7 @@ export const TopBarNavigation: FC<{
       <AppBar position={position} elevation={0} color={color}>
         <Toolbar>
           {showBack && (
-            <IconButton edge="start" style={styles.menuButton} onClick={goBack}>
+            <IconButton edge="start" style={styles.menuButton} onClick={goBack} size="large">
               <ArrowBackIosRounded />
             </IconButton>
           )}
@@ -78,13 +79,13 @@ export const TopBarNavigation: FC<{
               edge="end"
               style={styles.menuButtonEnd}
               onClick={onMoreClick}
-            >
+              size="large">
               <MoreVertRounded />
             </IconButton>
           )}
         </Toolbar>
       </AppBar>
-    )
+    );
   }
 )
 
@@ -95,7 +96,7 @@ const useClasses = makeStyles((theme) => ({
   },
   inputInput: {
     padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
     width: "100%"
   },
   search: {

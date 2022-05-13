@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react"
-import { useTheme, Button, TextField } from "@material-ui/core"
-import { Alert } from "@material-ui/lab"
+import { useTheme, Button, TextField } from "@mui/material"
+import { Alert } from '@mui/material';
 import { OrDivider } from "../common/OrDivider"
 import { Header } from "./Header"
 import { useNavigate } from "react-router-dom"

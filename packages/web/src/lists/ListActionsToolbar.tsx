@@ -1,11 +1,11 @@
 import React, { ComponentProps, FC, useState } from "react"
-import { Toolbar, IconButton, useTheme, Button } from "@material-ui/core"
+import { Toolbar, IconButton, useTheme, Button } from "@mui/material"
 import {
   AppsRounded,
   ListRounded,
   LockOpenRounded,
   SortRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { useRecoilValue } from "recoil"
 import { libraryState } from "../library/states"
 import { SortByDialog } from "../books/bookList/SortByDialog"
@@ -41,7 +41,6 @@ export const ListActionsToolbar: FC<{
         >
           <Button
             variant="text"
-            color="secondary"
             onClick={() => setIsSortingDialogOpened(true)}
             startIcon={<SortRounded />}
           >
@@ -66,9 +65,11 @@ export const ListActionsToolbar: FC<{
           </div>
         )}
         <IconButton
+          color="primary"
           onClick={() => {
             onViewModeChange(viewMode === "grid" ? "list" : "grid")
           }}
+          size="large"
         >
           {viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
         </IconButton>

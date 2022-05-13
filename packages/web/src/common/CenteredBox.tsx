@@ -1,4 +1,4 @@
-import { useTheme } from "@material-ui/core"
+import { useTheme } from "@mui/material"
 import React, { FC } from "react"
 
 export const CenteredBox: FC<{ style: React.CSSProperties }> = ({

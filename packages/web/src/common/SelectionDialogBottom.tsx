@@ -1,4 +1,4 @@
-import { Button, Typography, useTheme } from "@material-ui/core"
+import { Button, Typography, useTheme } from "@mui/material"
 import { useCSS } from "./utils"
 
 export const SelectionDialogBottom = ({
@@ -33,9 +33,9 @@ const useStyles = () => {
   return useCSS(
     () => ({
       buttonContainer: {
-        padding: `${theme.spacing(1)}px ${theme.spacing(2)}px ${theme.spacing(
+        padding: `${theme.spacing(1)} ${theme.spacing(2)} ${theme.spacing(
           2
-        )}px ${theme.spacing(2)}px`,
+        )} ${theme.spacing(2)}`,
         borderTop: `1px solid ${theme.palette["grey"]["500"]}`
       },
       button: {

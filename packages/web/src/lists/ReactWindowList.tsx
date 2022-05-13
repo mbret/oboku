@@ -12,9 +12,9 @@ import {
   ArrowForwardIosRounded,
   ExpandLessRounded,
   ExpandMoreRounded
-} from "@material-ui/icons"
+} from "@mui/icons-material"
 import { decimalAdjust, useCSS } from "../common/utils"
-import { useTheme } from "@material-ui/core"
+import { useTheme } from "@mui/material"
 import { useCallback } from "react"
 
 export const ReactWindowList: FC<{

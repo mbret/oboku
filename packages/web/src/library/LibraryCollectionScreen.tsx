@@ -1,5 +1,5 @@
 import { useState, FC, useMemo, useCallback, ComponentProps } from "react"
-import Dialog from "@material-ui/core/Dialog"
+import Dialog from "@mui/material/Dialog"
 import {
   Button,
   DialogActions,
@@ -8,7 +8,7 @@ import {
   TextField,
   Toolbar,
   useTheme
-} from "@material-ui/core"
+} from "@mui/material"
 import { ROUTES } from "../constants"
 import { useNavigate } from "react-router-dom"
 import { useCreateCollection } from "../collections/helpers"

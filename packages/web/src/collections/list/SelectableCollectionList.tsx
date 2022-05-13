@@ -1,5 +1,5 @@
 import React, { useCallback, FC, useMemo, memo } from "react"
-import { useTheme } from "@material-ui/core"
+import { useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { ReactWindowList } from "../../lists/ReactWindowList"
 import { SelectableCollectionListItem } from "./SelectableCollectionListItem"

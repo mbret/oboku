@@ -4,7 +4,7 @@ import {
   List,
   ListItemIcon,
   ListItemText
-} from "@material-ui/core"
+} from "@mui/material"
 import { FC } from "react"
 import { plugins } from "./configure"
 

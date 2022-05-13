@@ -3,7 +3,7 @@ import RcSlider from "rc-slider"
 import "rc-slider/assets/index.css"
 import { useRecoilValue } from "recoil"
 import { currentPageState, manifestState, totalPageState } from "./states"
-import { useTheme } from "@material-ui/core"
+import { useTheme } from "@mui/material"
 import { useReader } from "./ReaderProvider"
 
 export const Scrubber: FC<{}> = () => {

@@ -9,8 +9,8 @@ import {
   Tab,
   Tabs,
   useTheme
-} from "@material-ui/core"
-import { FiberManualRecordRounded } from "@material-ui/icons"
+} from "@mui/material"
+import { FiberManualRecordRounded } from "@mui/icons-material"
 import React from "react"
 import { FC } from "react"
 import { atom, useRecoilCallback, useRecoilValue } from "recoil"

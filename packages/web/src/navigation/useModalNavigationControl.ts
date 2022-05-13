@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { v4 as uuidv4 } from "uuid"
 
@@ -8,11 +8,13 @@ export const useModalNavigationControl = (
 ) => {
   const navigate = useNavigate()
   const [currentHash, setCurrentHash] = useState<string | undefined>(undefined)
+  const closeCb = useRef<() => void>()
 
   useEffect(() => {
     const onHashChange = () => {
       if (currentHash && window.location.hash !== currentHash) {
         onExit()
+        closeCb.current && closeCb.current()
         setCurrentHash(undefined)
       }
     }
@@ -33,16 +35,16 @@ export const useModalNavigationControl = (
     }
   }, [id, navigate])
 
-  return useCallback(
+  const close = useCallback(
     (cb?: () => void) => {
+      closeCb.current = cb
       // Here we want to navigate first so that any heavy stuff that
       // might happens in the callback will not slow down dialog
       // closing process
       navigate(-1)
-      setTimeout(() => {
-        cb && cb()
-      })
     },
     [navigate]
   )
+
+  return close
 }

@@ -1,5 +1,5 @@
 import { FC, useMemo } from "react"
-import { Dialog, DialogContent, useTheme } from "@material-ui/core"
+import { Dialog, DialogContent, useTheme } from "@mui/material"
 import { DialogTopBar } from "../navigation/DialogTopBar"
 import { useCSS } from "../common/utils"
 import { SelectableTagList } from "./tagList/SelectableTagList"

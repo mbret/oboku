@@ -1,7 +1,7 @@
 import React, { memo } from "react"
 import { Step, Tour } from "../app-tour"
 import FteUploadAsset from "../assets/fte-upload.svg"
-import { Link, Typography, useTheme } from "@material-ui/core"
+import { Link, Typography, useTheme } from "@mui/material"
 import { useRecoilValue } from "recoil"
 import { isUploadBookDrawerOpenedState } from "../library/states"
 import { useCSS } from "../common/utils"
@@ -61,7 +61,7 @@ export const AppTourFirstAddingBook: React.FC = memo(() => {
                 <Link
                   href="https://docs.oboku.me/wiki/adding-a-book"
                   target="__blank"
-                >
+                  underline="hover">
                   doc
                 </Link>
               </Typography>
@@ -70,7 +70,7 @@ export const AppTourFirstAddingBook: React.FC = memo(() => {
         }
       />
     </Tour>
-  )
+  );
 })
 
 const useStyles = () => {

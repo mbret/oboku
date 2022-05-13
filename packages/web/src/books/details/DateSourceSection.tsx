@@ -5,8 +5,8 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader
-} from "@material-ui/core"
-import { MoreVertRounded } from "@material-ui/icons"
+} from "@mui/material"
+import { MoreVertRounded } from "@mui/icons-material"
 import { FC, useState } from "react"
 import { useRecoilValue } from "recoil"
 import { useAction } from "../../actions"

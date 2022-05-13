@@ -1,6 +1,6 @@
 import React, { FC, memo } from "react"
-import { Typography, useTheme } from "@material-ui/core"
-import { MoreVert } from "@material-ui/icons"
+import { Typography, useTheme } from "@mui/material"
+import { MoreVert } from "@mui/icons-material"
 import { useRecoilState, useRecoilValue } from "recoil"
 import { bookActionDrawerState } from "../BookActionsDrawer"
 import { enrichedBookState } from "../states"

@@ -2,7 +2,7 @@ import React, { FC, memo } from "react"
 import { Step, Tour } from "../app-tour"
 import TagSvg from "../assets/undraw_schedule_pnbk.svg"
 import Step2Cover from "../assets/undraw_Artificial_intelligence_re_enpp.svg"
-import { Link, Typography, useTheme } from "@material-ui/core"
+import { Link, Typography, useTheme } from "@mui/material"
 import { useRecoilValue } from "recoil"
 import { isTagsTourOpenedState } from "./firstTimeExperienceStates"
 import { HeroCover } from "./HeroCover"
@@ -102,7 +102,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
                 <Link
                   href="https://docs.oboku.me/wiki/datasources#personalize-your-content-with-directives"
                   target="__blank"
-                >
+                  underline="hover">
                   directive
                 </Link>{" "}
                 feature you can let oboku automatically create and manage tags
@@ -129,7 +129,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
                 <Link
                   href="https://docs.oboku.me/wiki/datasources#personalize-your-content-with-directives"
                   target="__blank"
-                >
+                  underline="hover">
                   directive
                 </Link>{" "}
                 to let oboku assign tags automatically.
@@ -169,7 +169,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
               </Typography>
               <Typography align="left">
                 To learn more about tags and how to use them please visit the{" "}
-                <Link href="https://docs.oboku.me/wiki/tags" target="__blank">
+                <Link href="https://docs.oboku.me/wiki/tags" target="__blank" underline="hover">
                   doc
                 </Link>
               </Typography>
@@ -178,7 +178,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
         }
       />
     </Tour>
-  )
+  );
 })
 
 export const AppTourFirstTourTagsStep2: FC<{}> = ({ children }) => {

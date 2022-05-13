@@ -1,5 +1,5 @@
 import React, { FC } from "react"
-import { Typography, useTheme } from "@material-ui/core"
+import { Typography, useTheme } from "@mui/material"
 import {
   chapterInfoState,
   totalBookProgressState,
