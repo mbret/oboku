@@ -80,5 +80,5 @@ export const useFixLinks = () => {
       }
     },
     [database]
-  );
+  )
 }

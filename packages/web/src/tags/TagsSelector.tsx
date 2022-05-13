@@ -5,7 +5,7 @@ import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import FormControl from "@mui/material/FormControl"
 import Select from "@mui/material/Select"
-import makeStyles from '@mui/styles/makeStyles';
+import makeStyles from "@mui/styles/makeStyles"
 import { useRecoilValue } from "recoil"
 import { tagIdsState, tagState } from "./states"
 import { TagChip } from "./TagChip"

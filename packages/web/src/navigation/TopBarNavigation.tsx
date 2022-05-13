@@ -8,8 +8,8 @@ import {
   MoreVertRounded,
   Search
 } from "@mui/icons-material"
-import { alpha, InputBase, useTheme } from "@mui/material";
-import makeStyles from '@mui/styles/makeStyles';
+import { alpha, InputBase, useTheme } from "@mui/material"
+import makeStyles from "@mui/styles/makeStyles"
 import { useSafeGoBack } from "./useSafeGoBack"
 import { ROUTES } from "../constants"
 import { useCSS } from "../common/utils"
@@ -41,7 +41,12 @@ export const TopBarNavigation: FC<{
       <AppBar position={position} elevation={0} color={color}>
         <Toolbar>
           {showBack && (
-            <IconButton edge="start" style={styles.menuButton} onClick={goBack} size="large">
+            <IconButton
+              edge="start"
+              style={styles.menuButton}
+              onClick={goBack}
+              size="large"
+            >
               <ArrowBackIosRounded />
             </IconButton>
           )}
@@ -79,13 +84,14 @@ export const TopBarNavigation: FC<{
               edge="end"
               style={styles.menuButtonEnd}
               onClick={onMoreClick}
-              size="large">
+              size="large"
+            >
               <MoreVertRounded />
             </IconButton>
           )}
         </Toolbar>
       </AppBar>
-    );
+    )
   }
 )
 

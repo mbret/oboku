@@ -105,14 +105,14 @@ export const theme = createTheme({
       light: `#E7835B`,
       main: "#e16432", // #e16432
       dark: `#9D4623`
-    },
+    }
     // text: {
     //   primary: 'rgb(255, 255, 255)',
     // },
     // secondary: {
-      // light,
-      // main: "rgb(225, 100, 50, 1)"
-      // dark,
+    // light,
+    // main: "rgb(225, 100, 50, 1)"
+    // dark,
     // }
   }
 })

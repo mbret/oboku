@@ -33,7 +33,8 @@ export const LibraryTopTabNavigator = () => {
             setSyncActive(true)
           }}
           color="inherit"
-          size="large">
+          size="large"
+        >
           <Sync />
         </IconButton>
       </div>

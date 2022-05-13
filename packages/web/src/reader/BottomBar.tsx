@@ -1,10 +1,4 @@
-import {
-  AppBar,
-  Box,
-  IconButton,
-  Typography,
-  useTheme
-} from "@mui/material"
+import { AppBar, Box, IconButton, Typography, useTheme } from "@mui/material"
 import { useRecoilValue } from "recoil"
 import { PageInformation } from "./PageInformation"
 import {
@@ -83,7 +77,8 @@ export const BottomBar = () => {
               onClick={(_) => {
                 reader?.goToLeftSpineItem()
               }}
-              size="large">
+              size="large"
+            >
               <DoubleArrowRounded />
             </IconButton>
             <div
@@ -103,7 +98,8 @@ export const BottomBar = () => {
               onClick={(_) => {
                 reader?.goToRightSpineItem()
               }}
-              size="large">
+              size="large"
+            >
               <DoubleArrowRounded />
             </IconButton>
           </div>
@@ -124,5 +120,5 @@ export const BottomBar = () => {
         </Typography>
       </div>
     </AppBar>
-  );
+  )
 }

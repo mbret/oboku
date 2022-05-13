@@ -194,7 +194,11 @@ export const ProfileScreen = () => {
             secondary={
               <Typography variant="body2" color="textSecondary">
                 You can visit our{" "}
-                <Link target="__blank" href="https://docs.oboku.me/support" underline="hover">
+                <Link
+                  target="__blank"
+                  href="https://docs.oboku.me/support"
+                  underline="hover"
+                >
                   support page
                 </Link>
               </Typography>
@@ -208,7 +212,11 @@ export const ProfileScreen = () => {
               <Typography variant="body2" color="textSecondary">
                 Whether it is a bug, a feature request or anything else, please
                 visit the{" "}
-                <Link target="__blank" href="https://docs.oboku.me" underline="hover">
+                <Link
+                  target="__blank"
+                  href="https://docs.oboku.me"
+                  underline="hover"
+                >
                   doc
                 </Link>{" "}
                 to find all useful links
@@ -293,7 +301,7 @@ export const ProfileScreen = () => {
         onClose={() => setIsDeleteMyDataDialogOpened(false)}
       />
     </div>
-  );
+  )
 }
 
 const DeleteMyDataDialog: FC<{

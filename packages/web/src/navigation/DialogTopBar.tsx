@@ -21,7 +21,8 @@ export const DialogTopBar: FC<{
           color="inherit"
           onClick={onClose}
           aria-label="close"
-          size="large">
+          size="large"
+        >
           {hasBackNavigation ? <ArrowBackIosRounded /> : <CloseRounded />}
         </IconButton>
         <Typography variant="h6" style={styles.title} noWrap>
@@ -29,7 +30,7 @@ export const DialogTopBar: FC<{
         </Typography>
       </Toolbar>
     </AppBar>
-  );
+  )
 })
 
 const useStyles = () => {

@@ -83,18 +83,24 @@ export const TopBar = () => {
             color="inherit"
             disabled={!isBookReady}
             onClick={toggleContentsDialog}
-            size="large">
+            size="large"
+          >
             <ListRounded />
           </IconButton>
           {screenfull.isEnabled && (
-            <IconButton edge="end" color="inherit" onClick={onToggleFullScreenClick} size="large">
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={onToggleFullScreenClick}
+              size="large"
+            >
               {isFullScreen ? <FullscreenExitRounded /> : <FullscreenRounded />}
             </IconButton>
           )}
         </div>
       </Toolbar>
     </AppBar>
-  );
+  )
 }
 
 const useStyles = ({ isMenuShow }: { isMenuShow: boolean }) => {

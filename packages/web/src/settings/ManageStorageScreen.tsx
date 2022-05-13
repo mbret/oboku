@@ -25,7 +25,7 @@ import { useCSS } from "../common/utils"
 import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { difference } from "ramda"
-import Alert from '@mui/material/Alert'
+import Alert from "@mui/material/Alert"
 import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
 

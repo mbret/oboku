@@ -1,10 +1,5 @@
 import { FC, memo } from "react"
-import {
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  useTheme
-} from "@mui/material"
+import { ListItem, ListItemIcon, ListItemText, useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import {
   BlurOnRounded,

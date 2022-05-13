@@ -1,10 +1,4 @@
-import {
-  Box,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText
-} from "@mui/material"
+import { Box, List, ListItem, ListItemIcon, ListItemText } from "@mui/material"
 import { difference, groupBy } from "ramda"
 import { Fragment, memo, useMemo } from "react"
 import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
@@ -22,7 +16,7 @@ import {
   useDuplicatedBookTitles,
   useFixDuplicatedBookTitles
 } from "./useDuplicateBooksTitles"
-import { Alert } from '@mui/material';
+import { Alert } from "@mui/material"
 
 export const ProblemsScreen = memo(() => {
   const database = useDatabase()

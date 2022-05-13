@@ -54,5 +54,5 @@ export const useFixBooksDanglingLinks = () => {
       }
     },
     [db, removeDanglingLinksFromBook]
-  );
+  )
 }
