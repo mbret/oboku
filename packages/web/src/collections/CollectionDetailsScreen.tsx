@@ -62,7 +62,7 @@ export const CollectionDetailsScreen = () => {
         >
           <div
             style={{
-              paddingTop: theme.spacing(1) + 50,
+              paddingTop: `calc(${theme.spacing(1)} + ${50}px)`,
               display: "flex",
               alignItems: "flex-end",
               paddingLeft: theme.spacing(2),

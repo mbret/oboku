@@ -12,7 +12,7 @@
     "@mui/lab": "^5.0.0-alpha.80",
     "@mui/material": "^5.6.4",
     "@mui/styles": "^5.6.2",
-    "@oboku/plugin-front": "^0.5.0",
+    "@oboku/plugin-front": "^0.6.0",
     "@oboku/plugin-imhentai-front": "^0.0.10",
     "@oboku/shared": "^0.5.0",
     "@prose-reader/core": "^0.0.46",

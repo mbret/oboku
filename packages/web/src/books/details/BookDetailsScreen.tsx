@@ -119,7 +119,7 @@ export const BookDetailsScreen = () => {
             <Button
               fullWidth
               variant="outlined"
-              color="secondary"
+              color="primary"
               onClick={() => removeDownloadFile(book._id)}
             >
               Remove the book download

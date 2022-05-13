@@ -22,61 +22,64 @@ export const ListActionsToolbar: FC<{
   const library = useRecoilValue(libraryState)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
 
-  return <>
-    <Toolbar
-      style={{
-        borderBottom: `1px solid ${theme.palette.grey[200]}`,
-        boxSizing: "border-box"
-      }}
-    >
-      <div
+  return (
+    <>
+      <Toolbar
         style={{
-          flexGrow: 1,
-          justifyContent: "flex-start",
-          flexFlow: "row",
-          display: "flex",
-          alignItems: "center"
+          borderBottom: `1px solid ${theme.palette.grey[200]}`,
+          boxSizing: "border-box"
         }}
       >
-        <Button
-          variant="text"
-          color="secondary"
-          onClick={() => setIsSortingDialogOpened(true)}
-          startIcon={<SortRounded />}
-        >
-          {sorting === "activity"
-            ? "Recent activity"
-            : sorting === "alpha"
-            ? "A > Z"
-            : "Date added"}
-        </Button>
-      </div>
-      {library?.isLibraryUnlocked && (
         <div
           style={{
-            display: "flex",
+            flexGrow: 1,
+            justifyContent: "flex-start",
             flexFlow: "row",
-            alignItems: "center",
-            marginLeft: theme.spacing(1),
-            overflow: "hidden"
+            display: "flex",
+            alignItems: "center"
           }}
         >
-          <LockOpenRounded fontSize="small" />
+          <Button
+            variant="text"
+            onClick={() => setIsSortingDialogOpened(true)}
+            startIcon={<SortRounded />}
+          >
+            {sorting === "activity"
+              ? "Recent activity"
+              : sorting === "alpha"
+              ? "A > Z"
+              : "Date added"}
+          </Button>
         </div>
-      )}
-      <IconButton
-        onClick={() => {
-          onViewModeChange(viewMode === "grid" ? "list" : "grid")
-        }}
-        size="large">
-        {viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
-      </IconButton>
-    </Toolbar>
-    <SortByDialog
-      value={sorting}
-      onClose={() => setIsSortingDialogOpened(false)}
-      open={isSortingDialogOpened}
-      onChange={onSortingChange}
-    />
-  </>;
+        {library?.isLibraryUnlocked && (
+          <div
+            style={{
+              display: "flex",
+              flexFlow: "row",
+              alignItems: "center",
+              marginLeft: theme.spacing(1),
+              overflow: "hidden"
+            }}
+          >
+            <LockOpenRounded fontSize="small" />
+          </div>
+        )}
+        <IconButton
+          color="primary"
+          onClick={() => {
+            onViewModeChange(viewMode === "grid" ? "list" : "grid")
+          }}
+          size="large"
+        >
+          {viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
+        </IconButton>
+      </Toolbar>
+      <SortByDialog
+        value={sorting}
+        onClose={() => setIsSortingDialogOpened(false)}
+        open={isSortingDialogOpened}
+        onChange={onSortingChange}
+      />
+    </>
+  )
 }

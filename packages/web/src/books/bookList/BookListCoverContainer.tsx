@@ -67,7 +67,7 @@ export const BookListCoverContainer: FC<{
           {withMetadaStatus && item?.metadataUpdateStatus === "fetching" && (
             <div style={classes.itemCoverCenterInfo}>
               <Chip
-                color="secondary"
+                color="primary"
                 size="small"
                 icon={<LoopRounded color="primary" className="icon-spin" />}
                 label="metadata..."
@@ -88,12 +88,12 @@ export const BookListCoverContainer: FC<{
             )}
           {item?.downloadState === "none" && (
             <div style={classes.pauseButton}>
-              <CloudDownloadRounded color="secondary" fontSize={size} />
+              <CloudDownloadRounded color="action" fontSize={size} />
             </div>
           )}
           {withDownloadStatus && item?.downloadState === "downloading" && (
             <div style={classes.pauseButton}>
-              <Chip color="secondary" size="small" label="downloading..." />
+              <Chip color="primary" size="small" label="downloading..." />
             </div>
           )}
         </div>

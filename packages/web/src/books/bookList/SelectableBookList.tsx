@@ -26,13 +26,13 @@ export const SelectableBookList: FC<{
     (item: { id: string; selected: boolean }) => (
       <SelectableBookListItem
         bookId={item.id}
-        itemHeight={itemHeight - theme.spacing(1)}
+        itemHeight={itemHeight - 4}
         selected={item.selected}
         onItemClick={() => onItemClick(item)}
-        paddingBottom={theme.spacing(1)}
+        paddingBottom={4}
       />
     ),
-    [itemHeight, theme, onItemClick]
+    [itemHeight, onItemClick]
   )
 
   const containerStyle = useMemo(

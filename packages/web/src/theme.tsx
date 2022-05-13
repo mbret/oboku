@@ -2,7 +2,7 @@
  * @see https://material-ui.com/customization/default-theme/
  * @see https://material-ui.com/customization/palette/
  */
-import { createTheme, adaptV4Theme } from "@mui/material/styles";
+import { createTheme, adaptV4Theme } from "@mui/material/styles"
 
 declare module "@mui/material/styles" {
   interface Theme {
@@ -23,27 +23,7 @@ declare module "@mui/material/styles" {
 const main = "rgba(0, 0, 0, 0.54)"
 // const dark = 'rgba(0, 0, 0, 0.87)'
 
-export const theme = createTheme(adaptV4Theme({
-  palette: {
-    primary: {
-      // light,
-      // main: grey[700],
-      // main: '#FF7863',
-      // main: '#FF6363',
-      main: "rgb(225, 100, 50, 1)" // #e16432
-      // main: '#ff5722',
-      // main,
-      // dark,
-    },
-    // text: {
-    //   primary: 'rgb(255, 255, 255)',
-    // },
-    secondary: {
-      // light,
-      main
-      // dark,
-    }
-  },
+const mui4Theme = adaptV4Theme({
   transitions: {
     // So we have `transition: none;` everywhere
     create: () => "none"
@@ -88,16 +68,16 @@ export const theme = createTheme(adaptV4Theme({
       root: {
         // color: '#fff',
       }
-    },
-    MuiButton: {
-      root: {
-        color: "#fff"
-      },
-      outlined: {
-        border: "1px solid rgba(255, 255, 255, 1)"
-        // color: '#fff',
-      }
     }
+    // MuiButton: {
+    //   root: {
+    //     color: "#fff"
+    //   },
+    //   outlined: {
+    //     border: "1px solid rgba(255, 255, 255, 1)"
+    //     // color: '#fff',
+    //   }
+    // }
   },
   props: {
     // Name of the component ⚛️
@@ -115,4 +95,24 @@ export const theme = createTheme(adaptV4Theme({
     // into account the deviation
     coverAverageRatio: 9 / 14
   }
-}))
+})
+
+export const theme = createTheme({
+  ...mui4Theme,
+  palette: {
+    mode: `light`,
+    primary: {
+      light: `#E7835B`,
+      main: "#e16432", // #e16432
+      dark: `#9D4623`
+    },
+    // text: {
+    //   primary: 'rgb(255, 255, 255)',
+    // },
+    // secondary: {
+      // light,
+      // main: "rgb(225, 100, 50, 1)"
+      // dark,
+    // }
+  }
+})

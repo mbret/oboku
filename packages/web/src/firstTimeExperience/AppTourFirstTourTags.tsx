@@ -102,7 +102,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
                 <Link
                   href="https://docs.oboku.me/wiki/datasources#personalize-your-content-with-directives"
                   target="__blank"
-                >
+                  underline="hover">
                   directive
                 </Link>{" "}
                 feature you can let oboku automatically create and manage tags
@@ -129,7 +129,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
                 <Link
                   href="https://docs.oboku.me/wiki/datasources#personalize-your-content-with-directives"
                   target="__blank"
-                >
+                  underline="hover">
                   directive
                 </Link>{" "}
                 to let oboku assign tags automatically.
@@ -169,7 +169,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
               </Typography>
               <Typography align="left">
                 To learn more about tags and how to use them please visit the{" "}
-                <Link href="https://docs.oboku.me/wiki/tags" target="__blank">
+                <Link href="https://docs.oboku.me/wiki/tags" target="__blank" underline="hover">
                   doc
                 </Link>
               </Typography>
@@ -178,7 +178,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
         }
       />
     </Tour>
-  )
+  );
 })
 
 export const AppTourFirstTourTagsStep2: FC<{}> = ({ children }) => {

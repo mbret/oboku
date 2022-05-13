@@ -61,7 +61,7 @@ export const AppTourFirstAddingBook: React.FC = memo(() => {
                 <Link
                   href="https://docs.oboku.me/wiki/adding-a-book"
                   target="__blank"
-                >
+                  underline="hover">
                   doc
                 </Link>
               </Typography>
@@ -70,7 +70,7 @@ export const AppTourFirstAddingBook: React.FC = memo(() => {
         }
       />
     </Tour>
-  )
+  );
 })
 
 const useStyles = () => {

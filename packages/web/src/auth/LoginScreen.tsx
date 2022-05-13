@@ -96,7 +96,7 @@ export const LoginScreen = () => {
             color="textPrimary"
             href="#"
             onClick={() => alert("Not implemented yet")}
-          >
+            underline="hover">
             I forgot my password
           </Link>
         </div>
@@ -120,7 +120,7 @@ export const LoginScreen = () => {
         Register
       </Button>
     </CenteredBox>
-  )
+  );
 }
 
 const useIsValid = (email: string, password: string) => {

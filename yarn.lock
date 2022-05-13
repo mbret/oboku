@@ -4661,10 +4661,12 @@
     node-gyp "^7.1.0"
     read-package-json-fast "^2.0.1"
 
-"@oboku/plugin-front@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@oboku/plugin-front/-/plugin-front-0.5.0.tgz#69b922715086721972f7fe0b18542d63bf127420"
-  integrity sha512-R67Ey0flCuOFZrN+X4ihCG4ljr9XGCOmUo95Z5RZ2wWK5dMNJa2hM55sIU4+o8RA/KReYO34TLJjZRrWYXTjmA==
+"@oboku/plugin-front@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@oboku/plugin-front/-/plugin-front-0.6.0.tgz#9eda0c21f953029e84509723eb8bc92e1091dda1"
+  integrity sha512-g1KM24TMYgofOqqvvmr8sOBhQlVsSveDyszPZ+nkGkJQxGG8zz4QFFS41RgHYPojGUggmZpGs/M1q9LTznZOww==
+  dependencies:
+    "@emotion/styled" "^11.8.1"
 
 "@oboku/plugin-imhentai-front@^0.0.10":
   version "0.0.10"
