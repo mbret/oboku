@@ -9,9 +9,9 @@
     "@material-ui/icons": "^4.11.3",
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/icons-material": "^5.6.2",
-    "@mui/lab": "^5.0.0-alpha.80",
-    "@mui/material": "^5.6.4",
-    "@mui/styles": "^5.6.2",
+    "@mui/lab": "^5.0.0-alpha.81",
+    "@mui/material": "^5.7.0",
+    "@mui/styles": "^5.7.0",
     "@oboku/plugin-front": "^0.6.0",
     "@oboku/plugin-imhentai-front": "^0.0.10",
     "@oboku/shared": "^0.5.0",
@@ -48,7 +48,7 @@
     "firebase": "^9.8.1",
     "fontsource-roboto": "^4.0.0",
     "hammerjs": "^2.0.8",
-    "i18next": "^21.8.0",
+    "i18next": "^21.8.2",
     "i18next-browser-languagedetector": "^6.1.4",
     "jszip": "^3.9.1",
     "localforage": "^1.10.0",
@@ -102,7 +102,8 @@
     "test": "react-scripts test",
     "start-prod": "npm run build && npm run serve-prod",
     "serve-prod": "serve -s build -l 3000",
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "webpack": "webpack -v"
   },
   "eslintConfig": {
     "extends": [
