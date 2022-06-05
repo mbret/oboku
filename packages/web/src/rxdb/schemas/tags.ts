@@ -6,10 +6,9 @@ import {
   RxJsonSchema,
   RxQuery
 } from "rxdb"
-import { migrateDocumentData } from "rxdb/plugins/migration"
 import { MongoUpdateSyntax } from "../../types"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
-import { RxDBReplicationModelCouchDBPluginCollection } from "../rxdb-plugins/RxDBReplicationModelCouchDBPlugin"
+import type { RxDBReplicationModelCouchDBPluginCollection } from "../rxdb-plugins/RxDBReplicationModelCouchDBPlugin"
 import { SafeUpdateMongoUpdateSyntax } from "../types"
 import { generateId } from "./utils"
 
