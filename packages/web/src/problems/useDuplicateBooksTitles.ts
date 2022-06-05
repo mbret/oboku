@@ -1,6 +1,7 @@
-import { ReadingStateState } from "@oboku/shared"
+import { BookDocType, ReadingStateState } from "@oboku/shared"
 import { groupBy, mergeWith } from "ramda"
 import { useCallback, useMemo } from "react"
+import { DeepMutable } from "rxdb/dist/types/types"
 import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
@@ -48,7 +49,9 @@ export const useFixDuplicatedBookTitles = () => {
                 .exec()
 
               const docsAsJson = docsWithSameTitle
-                .map((document) => document.toJSON())
+                .map(
+                  (document) => document.toJSON() as DeepMutable<BookDocType>
+                )
                 .sort((a, b) => {
                   // if the book is not started we prioritize the other one (who might be equal or greater)
                   if (

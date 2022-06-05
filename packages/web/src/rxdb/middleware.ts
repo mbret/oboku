@@ -66,7 +66,7 @@ export const applyHooks = (db: Database) => {
     // @todo bulk
     await Promise.all(
       tagsFromWhichToRemoveBook.map(async (tag) => {
-        await tag.safeUpdate({
+        await tag.updateSafe({
           $pullAll: {
             books: [data._id]
           }
@@ -94,7 +94,7 @@ export const applyHooks = (db: Database) => {
     // @todo bulk
     await Promise.all(
       tagsFromWhichToAddBook.map(async (tag) => {
-        await tag.safeUpdate({
+        await tag.updateSafe({
           $push: {
             books: data._id
           }
@@ -108,7 +108,7 @@ export const applyHooks = (db: Database) => {
      * When a book is removed, dettach it from all tags
      * that contains its reference
      */
-    await db.tag.safeUpdate(
+    await db.tag.updateSafe(
       {
         $pullAll: {
           books: [data._id]

@@ -1,14 +1,14 @@
 import { useEffect, useMemo } from "react"
-import { API_COUCH_URI } from "../constants"
-import { Report } from "../debug/report.shared"
+import { API_COUCH_URI } from "../../constants"
+import { Report } from "../../debug/report.shared"
 import PouchDB from "pouchdb"
 import { useRecoilValue } from "recoil"
-import { authState } from "../auth/authState"
+import { authState } from "../../auth/authState"
 import { useNetworkState } from "react-use"
 import { defer, EMPTY, from, throwError } from "rxjs"
 import { catchError, switchMap } from "rxjs/operators"
-import { retryBackoff } from "../common/rxjsOperators"
-import { isPouchError } from "../rxdb/utils"
+import { retryBackoff } from "../../common/rxjsOperators"
+import { isPouchError } from "../utils"
 
 const getDb = (dbName: string, token: string) =>
   new PouchDB(`${API_COUCH_URI}/${dbName}`, {
@@ -45,7 +45,7 @@ const useWatchForLiveConflicts = (db: PouchDB.Database<{}> | undefined) => {
             await Promise.all(
               change.doc?._conflicts.map(async (rev) => {
                 console.warn(
-                  `FOOOO conflict detected for doc ${docId} with revision ${rev}. Trying to delete conflict revision`
+                  `conflict detected for doc ${docId} with revision ${rev}. Trying to delete conflict revision`
                 )
                 return db.remove(docId, rev)
               })

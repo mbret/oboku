@@ -1,5 +1,7 @@
+import { CollectionDocType } from "@oboku/shared"
 import { mergeWith } from "ramda"
 import { useCallback } from "react"
+import { DeepMutable } from "rxdb/dist/types/types"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 
@@ -24,8 +26,9 @@ export const useFixCollections = () => {
                 .find({ selector: { resourceId: resourceId ?? `-1` } })
                 .exec()
 
-              const collectionsAsJson = docsWithSameResourceId.map((document) =>
-                document.toJSON()
+              const collectionsAsJson = docsWithSameResourceId.map(
+                (document) =>
+                  document.toJSON() as DeepMutable<CollectionDocType>
               )
 
               const mergedDoc = collectionsAsJson?.reduce(

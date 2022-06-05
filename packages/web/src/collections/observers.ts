@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
-import { RxChangeEvent } from "rxdb"
+import { RxChangeEvent, RxDocumentData } from "rxdb"
 import { useDatabase } from "../rxdb"
 import { CollectionDocType } from "@oboku/shared"
 import { normalizedCollectionsState } from "./states"
 import { Report } from "../debug/report.shared"
+import { DeepMutable } from "rxdb/dist/types/types"
 
 export const useCollectionsInitialState = () => {
   const db = useDatabase()
@@ -21,7 +22,7 @@ export const useCollectionsInitialState = () => {
               map: UnwrapRecoilValue<typeof normalizedCollectionsState>,
               obj
             ) => {
-              map[obj._id] = obj.toJSON()
+              map[obj._id] = obj.toJSON() as DeepMutable<CollectionDocType>
               return map
             },
             {}
@@ -49,23 +50,26 @@ export const useCollectionsObservers = () => {
         console.warn("CHANGE EVENT", changeEvent)
         switch (changeEvent.operation) {
           case "INSERT": {
+            const nonReadOnlyDocumentData =
+              changeEvent.documentData as RxDocumentData<CollectionDocType>
+
             return setCollections((state) => ({
               ...state,
-              [changeEvent.documentData._id]: changeEvent.documentData
+              [changeEvent.documentData._id]: nonReadOnlyDocumentData
             }))
           }
           case "UPDATE": {
+            const nonReadOnlyDocumentData =
+              changeEvent.documentData as RxDocumentData<CollectionDocType>
+
             return setCollections((state) => ({
               ...state,
-              [changeEvent.documentData._id]: changeEvent.documentData
+              [changeEvent.documentData._id]: nonReadOnlyDocumentData
             }))
           }
           case "DELETE": {
             return setCollections(
-              ({
-                [changeEvent.documentData._id]: deletedCollection,
-                ...rest
-              }) => rest
+              ({ [changeEvent.documentId]: deletedCollection, ...rest }) => rest
             )
           }
         }

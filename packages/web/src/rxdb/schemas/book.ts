@@ -1,8 +1,9 @@
 import { BookDocType, InsertableBookDocType } from "@oboku/shared"
 import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
 import { MongoUpdateSyntax } from "../../types"
-import { withReplicationSchema } from "../rxdb-plugins/replication"
+import { getReplicationProperties } from "../rxdb-plugins/replication"
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
+import { generateId } from "./utils"
 
 type BookDocMethods = {
   safeUpdate: (updateObj: MongoUpdateSyntax<BookDocType>) => Promise<any>
@@ -38,7 +39,7 @@ export const bookDocMethods: BookDocMethods = {
 
 export const bookCollectionMethods: BookCollectionMethods = {
   post: async function (this: BookCollection, json) {
-    return this.insert(json as BookDocType)
+    return this.insert({ _id: generateId(), ...json } as BookDocType)
   },
   safeUpdate: async function (this: BookCollection, json, getter) {
     return getter(this).update(json)
@@ -72,16 +73,18 @@ export const bookSchemaMigrationStrategies = {
   ): BookDocType | null => ({
     isAttachedToDataSource: false,
     ...oldDoc
-  })
+  }),
+  // v10 -> v12
+  5: (doc: BookDocType) => doc
 }
 
-export const bookSchema: RxJsonSchema<
-  Omit<BookDocType, "_id" | "rx_model" | "_rev">
-> = withReplicationSchema("book", {
+export const bookSchema: RxJsonSchema<Omit<BookDocType, `_rev`>> = {
   title: "books",
-  version: 4,
+  version: 5,
   type: "object",
+  primaryKey: `_id`,
   properties: {
+    _id: { type: `string`, maxLength: 50 },
     collections: {
       type: "array",
       ref: "obokucollection",
@@ -105,7 +108,8 @@ export const bookSchema: RxJsonSchema<
     tags: { type: "array", ref: "tag", items: { type: "string" } },
     title: { type: ["string", "null"] },
     modifiedAt: { type: ["string", "null"] },
-    isAttachedToDataSource: { type: ["boolean"] }
+    isAttachedToDataSource: { type: ["boolean"] },
+    ...getReplicationProperties(`book`)
   },
   required: []
-})
+}

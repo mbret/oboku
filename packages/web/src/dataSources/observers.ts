@@ -5,6 +5,7 @@ import { useDatabase } from "../rxdb"
 import { DataSourceDocType } from "@oboku/shared"
 import { normalizedDataSourcesState } from "./states"
 import { Report } from "../debug/report.shared"
+import { DeepMutable } from "rxdb/dist/types/types"
 
 export const useDataSourcesInitialState = () => {
   const db = useDatabase()
@@ -21,7 +22,7 @@ export const useDataSourcesInitialState = () => {
               map: UnwrapRecoilValue<typeof normalizedDataSourcesState>,
               obj
             ) => {
-              map[obj._id] = obj.toJSON()
+              map[obj._id] = obj.toJSON() as DeepMutable<DataSourceDocType>
               return map
             },
             {}
@@ -62,14 +63,12 @@ export const useDataSourcesObservers = () => {
           }
           case "DELETE": {
             return setDataSources((old) => {
-              const exist = old[changeEvent.documentData._id]
+              const exist = old[changeEvent.documentId]
 
               if (!exist) return old
 
-              const {
-                [changeEvent.documentData._id]: deletedDataSource,
-                ...rest
-              } = old
+              const { [changeEvent.documentId]: deletedDataSource, ...rest } =
+                old
 
               return rest
             })

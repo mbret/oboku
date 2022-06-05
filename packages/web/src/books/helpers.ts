@@ -23,6 +23,7 @@ import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
 import { useDialogManager } from "../dialog"
 import { useSync } from "../rxdb/useSync"
+import { catchError, EMPTY, from, map, switchMap } from "rxjs"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -116,6 +117,7 @@ export const useAtomicUpdateBook = () => {
       const book = await database?.book
         .findOne({ selector: { _id: id } })
         .exec()
+
       return await book?.atomicUpdate(mutationFunction)
     },
     [database]
@@ -155,22 +157,39 @@ export const useRefreshBookMetadata = () => {
       if ("isError" in credentials && credentials.reason === "cancelled") return
       if ("isError" in credentials) throw credentials.error || new Error("")
 
-      await updateBook(bookId, (old) => ({
-        ...old,
-        metadataUpdateStatus: "fetching"
-      }))
+      if (!database) return
 
-      try {
-        await sync(["link", "book"])
-        await client.refreshMetadata(bookId, credentials.data)
-      } catch (e) {
-        await updateBook(bookId, (old) => ({
+      from(
+        updateBook(bookId, (old) => ({
           ...old,
-          metadataUpdateStatus: null,
-          lastMetadataUpdateError: "unknown"
+          metadataUpdateStatus: "fetching"
         }))
-        throw e
-      }
+      )
+        .pipe(
+          switchMap(() => sync([database.link, database.book])),
+          switchMap(() =>
+            from(client.refreshMetadata(bookId, credentials.data))
+          ),
+          catchError((e) =>
+            from(
+              updateBook(bookId, (old) => ({
+                ...old,
+                metadataUpdateStatus: null,
+                lastMetadataUpdateError: "unknown"
+              }))
+            ).pipe(
+              map((_) => {
+                throw e
+              })
+            )
+          ),
+          catchError((e) => {
+            Report.error(e)
+
+            return EMPTY
+          })
+        )
+        .subscribe()
     } catch (e) {
       Report.error(e)
     }

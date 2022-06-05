@@ -1,26 +1,21 @@
 import { useCallback, useEffect } from "react"
-import {
-  RxChangeEvent,
-  RxDocument,
-  RxReplicationState,
-  SyncOptions
-} from "rxdb"
-import { useIsAuthenticated, useSignOut } from "../auth/helpers"
-import { API_COUCH_URI } from "../constants"
-import { SettingsDocType, useDatabase } from "../rxdb"
+import { RxChangeEvent, RxDocument } from "rxdb"
+import { useIsAuthenticated, useSignOut } from "../../auth/helpers"
+import { API_COUCH_URI } from "../../constants"
+import { SettingsDocType, useDatabase } from ".."
 import PouchDB from "pouchdb"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
-import { syncState } from "../library/states"
-import { settingsState } from "../settings/states"
-import { useBooksObservers } from "../books/observers"
-import { useTagsObservers } from "../tags/observers"
-import { useLinksObservers } from "../links/observers"
-import { useCollectionsObservers } from "../collections/observers"
-import { useDataSourcesObservers } from "../dataSources/observers"
-import { Subscription } from "rxjs"
+import { syncState } from "../../library/states"
+import { settingsState } from "../../settings/states"
+import { useBooksObservers } from "../../books/observers"
+import { useTagsObservers } from "../../tags/observers"
+import { useLinksObservers } from "../../links/observers"
+import { useCollectionsObservers } from "../../collections/observers"
+import { useDataSourcesObservers } from "../../dataSources/observers"
 import { lastAliveSyncState } from "./state"
 import { useWatchAndFixConflicts } from "./useWatchAndFixConflicts"
-import { authState } from "../auth/authState"
+import { authState } from "../../auth/authState"
+import { syncCollections } from "../replication/syncCollections"
 
 type callback = Parameters<typeof PouchDB["sync"]>[3]
 type PouchError = NonNullable<Parameters<NonNullable<callback>>[0]>
@@ -67,38 +62,7 @@ export const useObservers = () => {
   useWatchAndFixConflicts()
 
   useEffect(() => {
-    let syncStates: (
-      | RxReplicationState
-      | ReturnType<NonNullable<typeof database>["sync"]>
-    )[]
-    let subscriptions: Subscription[] = []
-
-    const attachEventsToSubscription = (state: typeof syncStates[number]) => {
-      // state?.active$.subscribe((active: boolean) => {
-      //   setSyncState(old => ({ ...old, isSyncing: active }))
-      // })
-      subscriptions.push(
-        state?.alive$.subscribe((alive) => {
-          if (alive) {
-            setLastAliveSyncState(Date.now())
-          }
-        })
-      )
-      // state?.change$.subscribe(data => console.warn(`sync change`, data))
-      // state?.denied$.subscribe(data => console.warn(`sync denied`, data))
-      subscriptions.push(
-        state?.error$.subscribe((error: PouchError) => {
-          console.warn(`sync error`, error)
-          if (error.status === 401) {
-            signOut()
-          }
-        })
-      )
-      // state?.complete$.subscribe(data => console.warn(`sync complete`, data))
-      // state?.docs$.subscribe(data => console.warn(`sync docs`, data))
-    }
-
-    const syncOptions = (name: string): SyncOptions => ({
+    const syncOptions = () => ({
       remote: new PouchDB(`${API_COUCH_URI}/${dbName}`, {
         fetch: (url, opts) => {
           ;(opts?.headers as unknown as Map<string, string>).set(
@@ -119,27 +83,47 @@ export const useObservers = () => {
     })
 
     if (isAuthenticated && database) {
-      syncStates = [
-        database?.sync({
-          syncOptions,
-          collectionNames: [
-            "tag",
-            "book",
-            "link",
-            "settings",
-            "datasource",
-            "obokucollection"
-          ]
+      const syncState = syncCollections(
+        [
+          database.book,
+          database.tag,
+          database.link,
+          database.settings,
+          database.datasource,
+          database.obokucollection
+        ],
+        syncOptions
+      )
+
+      const subscriptions = [
+        // syncState.active$.subscribe((active: boolean) => {
+        //   console.log(`SYNC active`, active)
+        // }),
+        syncState.alive$.subscribe((alive) => {
+          console.log(`SYNC alive`, alive)
+          if (alive) {
+            setLastAliveSyncState(Date.now())
+          }
+        }),
+        // syncState.change$.subscribe((data) =>
+        //   console.warn(`SYNC change`, data)
+        // ),
+        // syncState.complete$.subscribe((data) =>
+        //   console.warn(`SYNC complete`, data)
+        // ),
+        syncState.error$.subscribe((error: PouchError) => {
+          console.warn(`sync error`, error)
+          // 403 -> forbidden access
+          if (error.status === 401 || error.status === 403) {
+            signOut()
+          }
         })
       ]
-      syncStates?.forEach(attachEventsToSubscription)
-    }
 
-    return () => {
-      subscriptions?.forEach((sub) => sub.unsubscribe())
-      subscriptions = []
-      syncStates?.forEach((state) => state.cancel())
-      syncStates = []
+      return () => {
+        syncState?.cancel()
+        subscriptions.forEach((subscription) => subscription.unsubscribe())
+      }
     }
   }, [
     database,

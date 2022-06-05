@@ -1,7 +1,8 @@
 import { BookDocType } from "@oboku/shared"
 import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
-import { RxChangeEvent } from "rxdb"
+import { RxChangeEvent, RxDocumentData } from "rxdb"
+import { DeepMutable } from "rxdb/dist/types/types"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 import { normalizedBooksState } from "./states"
@@ -18,7 +19,8 @@ export const useBooksInitialState = () => {
           const books = await db.book.find().exec()
           const booksAsMap = books.reduce(
             (map: UnwrapRecoilValue<typeof normalizedBooksState>, obj) => {
-              map[obj._id] = obj.toJSON()
+              const id = obj._id
+              map[id] = obj.toJSON() as DeepMutable<BookDocType>
 
               return map
             },
@@ -47,28 +49,36 @@ export const useBooksObservers = () => {
 
       switch (changeEvent.operation) {
         case "INSERT": {
+          const nonReadOnlyDocumentData =
+            changeEvent.documentData as RxDocumentData<BookDocType>
+
           return setBooks((state) => ({
             ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData
+            [changeEvent.documentData._id]: nonReadOnlyDocumentData
           }))
         }
         case "UPDATE": {
+          const nonReadOnlyDocumentData =
+            changeEvent.documentData as RxDocumentData<BookDocType>
+
           return setBooks((state) => {
             return {
               ...state,
               [changeEvent.documentData._id]: {
                 ...state[changeEvent.documentData._id]!,
-                ...changeEvent.documentData
+                ...nonReadOnlyDocumentData
               }
             }
           })
         }
         case "DELETE": {
           return setBooks(
-            ({ [changeEvent.documentData._id]: deletedTag, ...rest }) => rest
+            ({ [changeEvent.documentId]: deletedTag, ...rest }) => rest
           )
         }
       }
     })
+
+    // @todo cleanup observers
   }, [db, setBooks])
 }
