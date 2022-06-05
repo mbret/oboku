@@ -1,7 +1,16 @@
-import { RxDocument, RxJsonSchema, RxQuery, RxCollection } from "rxdb"
+import {
+  RxDocument,
+  RxJsonSchema,
+  RxQuery,
+  RxCollection,
+  getDefaultRxDocumentMeta,
+  MigrationStrategies
+} from "rxdb"
 import { DataSourceDocType } from "@oboku/shared"
-import { withReplicationSchema } from "./rxdb-plugins/replication"
-import { SafeUpdateMongoUpdateSyntax } from "./types"
+import { SafeUpdateMongoUpdateSyntax } from "../types"
+import { getReplicationProperties } from "../rxdb-plugins/replication"
+import { generateId } from "./utils"
+import { migrateDocumentData } from "rxdb/plugins/migration"
 
 export type DataSourceDocMethods = {}
 
@@ -27,12 +36,14 @@ export type DataSourceCollection = RxCollection<
 >
 
 export const dataSourceSchema: RxJsonSchema<
-  Omit<DataSourceDocType, "_id" | "rx_model" | "_rev">
-> = withReplicationSchema("datasource", {
+  Omit<DataSourceDocType, "rx_model" | "_rev">
+> = {
   title: "dataSourceSchema",
-  version: 2,
+  version: 3,
   type: "object",
+  primaryKey: `_id`,
   properties: {
+    _id: { type: `string`, maxLength: 50 },
     type: { type: "string", final: true },
     lastSyncedAt: { type: ["number", "null"] },
     syncStatus: { type: ["string", "null"] },
@@ -40,12 +51,13 @@ export const dataSourceSchema: RxJsonSchema<
     data: { type: "string" },
     credentials: { type: ["object", "null"] },
     createdAt: { type: "string" },
-    modifiedAt: { type: ["string", "null"] }
+    modifiedAt: { type: ["string", "null"] },
+    ...getReplicationProperties(`datasource`)
   },
   required: []
-})
+}
 
-export const migrationStrategies = {
+export const migrationStrategies: MigrationStrategies = {
   1: (
     oldDoc: Omit<DataSourceDocType, `createdAt` | `modifiedAt`>
   ): DataSourceDocType | null => {
@@ -62,12 +74,14 @@ export const migrationStrategies = {
       syncStatus: null,
       ...oldDoc
     }
-  }
+  },
+  // v10 -> v12
+  3: (doc) => doc
 }
 
 export const dataSourceCollectionMethods: DataSourceCollectionMethods = {
   post: async function (this: DataSourceCollection, json) {
-    return this.insert(json as DataSourceDocType)
+    return this.insert({ _id: generateId(), ...json } as DataSourceDocType)
   },
   safeUpdate: async function (this: DataSourceCollection, json, cb) {
     return cb(this).update(json)

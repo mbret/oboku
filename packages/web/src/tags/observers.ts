@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
-import { RxChangeEvent } from "rxdb"
+import { RxChangeEvent, RxDocumentData } from "rxdb"
 import { useDatabase } from "../rxdb"
 import { TagsDocType } from "@oboku/shared"
 import { normalizedTagsState } from "./states"
 import { Report } from "../debug/report.shared"
+import { DeepMutable } from "rxdb/dist/types/types"
 
 export const useTagsInitialState = () => {
   const db = useDatabase()
@@ -18,7 +19,7 @@ export const useTagsInitialState = () => {
           const tags = await db.tag.find().exec()
           const tagsAsMap = tags.reduce(
             (map: UnwrapRecoilValue<typeof normalizedTagsState>, obj) => {
-              map[obj._id] = obj.toJSON()
+              map[obj._id] = obj.toJSON() as DeepMutable<TagsDocType>
 
               return map
             },
@@ -46,20 +47,26 @@ export const useTagsObservers = () => {
       console.warn("CHANGE EVENT", changeEvent)
       switch (changeEvent.operation) {
         case "INSERT": {
+          const nonReadOnlyDocumentData =
+            changeEvent.documentData as RxDocumentData<TagsDocType>
+
           return setTags((state) => ({
             ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData
+            [changeEvent.documentData._id]: nonReadOnlyDocumentData
           }))
         }
         case "UPDATE": {
+          const nonReadOnlyDocumentData =
+            changeEvent.documentData as RxDocumentData<TagsDocType>
+
           return setTags((state) => ({
             ...state,
-            [changeEvent.documentData._id]: changeEvent.documentData
+            [changeEvent.documentData._id]: nonReadOnlyDocumentData
           }))
         }
         case "DELETE": {
           return setTags(
-            ({ [changeEvent.documentData._id]: deletedTag, ...rest }) => rest
+            ({ [changeEvent.documentId]: deletedTag, ...rest }) => rest
           )
         }
       }

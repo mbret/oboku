@@ -5,7 +5,7 @@ import { useTagsInitialState } from "./tags/observers"
 import { useLinksInitialState } from "./links/observers"
 import { useCollectionsInitialState } from "./collections/observers"
 import { useDataSourcesInitialState } from "./dataSources/observers"
-import { useSettingsStateReducer } from "./sync/useObservers"
+import { useSettingsStateReducer } from "./rxdb/sync/useObservers"
 import { Report } from "./debug/report.shared"
 
 /**

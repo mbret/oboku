@@ -5,6 +5,7 @@ import { useDatabase } from "../rxdb"
 import { LinkDocType } from "@oboku/shared"
 import { normalizedLinksState } from "./states"
 import { Report } from "../debug/report.shared"
+import { DeepMutable } from "rxdb/dist/types/types"
 
 export const useLinksInitialState = () => {
   const db = useDatabase()
@@ -18,7 +19,7 @@ export const useLinksInitialState = () => {
           const links = await db.link.find().exec()
           const linksAsMap = links.reduce(
             (map: UnwrapRecoilValue<typeof normalizedLinksState>, obj) => {
-              map[obj._id] = obj.toJSON()
+              map[obj._id] = obj.toJSON() as DeepMutable<LinkDocType>
               return map
             },
             {}
@@ -60,7 +61,7 @@ export const useLinksObservers = () => {
           }
           case "DELETE": {
             return setLinks(
-              ({ [changeEvent.documentData._id]: deletedTag, ...rest }) => rest
+              ({ [changeEvent.documentId]: deletedTag, ...rest }) => rest
             )
           }
         }

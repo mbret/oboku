@@ -12,11 +12,13 @@ import { useNetworkState } from "react-use"
 import { useSync } from "../rxdb/useSync"
 import { AtomicUpdateFunction } from "rxdb"
 import { API_URI } from "../constants"
+import { catchError, EMPTY, from, switchMap, map, of } from "rxjs"
+import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
   const database = useDatabase()
-  const [updateDataSource] = useAtomicUpdateDataSource()
+  const { atomicUpdateDataSource } = useAtomicUpdateDataSource()
   const getDataSourceCredentials = useGetDataSourceCredentials()
   const network = useNetworkState()
   const dialog = useDialogManager()
@@ -27,34 +29,47 @@ export const useSynchronizeDataSource = () => {
       return dialog({ preset: "OFFLINE" })
     }
 
-    try {
-      const dataSource = await database?.datasource
-        .findOne({ selector: { _id } })
-        .exec()
+    if (!database) return
 
-      if (!dataSource) return
+    from(database.datasource.findOne({ selector: { _id } }).exec())
+      .pipe(
+        isNotNullOrUndefined(),
+        switchMap((dataSource) => getDataSourceCredentials(dataSource.type)),
+        switchMap((credentials) => {
+          if ("isError" in credentials && credentials.reason === "cancelled")
+            return EMPTY
 
-      const credentials = await getDataSourceCredentials(dataSource.type)
+          if ("isError" in credentials) throw credentials.error || new Error("")
 
-      if ("isError" in credentials && credentials.reason === "cancelled") return
-      if ("isError" in credentials) throw credentials.error || new Error("")
+          return atomicUpdateDataSource(_id, (old) => {
+            console.log(old)
+            old.syncStatus = `fetching`
 
-      await updateDataSource(_id, (old) => ({ ...old, syncStatus: "fetching" }))
+            return old
+          }).pipe(
+            switchMap(() => sync([database.datasource])),
+            switchMap(() => from(client.syncDataSource(_id, credentials.data)))
+          )
+        }),
+        catchError((e) =>
+          atomicUpdateDataSource(_id, (old) => ({
+            ...old,
+            syncStatus: null,
+            lastSyncErrorCode:
+              ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE
+          })).pipe(
+            map((_) => {
+              throw e
+            })
+          )
+        ),
+        catchError((e) => {
+          Report.error(e)
 
-      try {
-        await sync(["datasource"])
-        await client.syncDataSource(_id, credentials.data)
-      } catch (e) {
-        await updateDataSource(_id, (old) => ({
-          ...old,
-          syncStatus: null,
-          lastSyncErrorCode: ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE
-        }))
-        throw e
-      }
-    } catch (e) {
-      Report.error(e)
-    }
+          return EMPTY
+        })
+      )
+      .subscribe()
   })
 }
 
@@ -93,20 +108,20 @@ export const useRemoveDataSource = () =>
 export const useAtomicUpdateDataSource = () => {
   const database = useDatabase()
 
-  const updater = useCallback(
-    async (
-      id: string,
-      mutationFunction: AtomicUpdateFunction<DataSourceDocType>
-    ) => {
-      const item = await database?.datasource
-        .findOne({ selector: { _id: id } })
-        .exec()
-      return await item?.atomicUpdate(mutationFunction)
-    },
+  const atomicUpdateDataSource = useCallback(
+    (id: string, mutationFunction: AtomicUpdateFunction<DataSourceDocType>) =>
+      of(database).pipe(
+        isNotNullOrUndefined(),
+        switchMap((db) =>
+          from(db.datasource.findOne({ selector: { _id: id } }).exec())
+        ),
+        isNotNullOrUndefined(),
+        switchMap((item) => from(item.atomicUpdate(mutationFunction)))
+      ),
     [database]
   )
 
-  return [updater] as [typeof updater]
+  return { atomicUpdateDataSource }
 }
 
 export const useDataSourceHelpers = (

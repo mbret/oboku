@@ -1,7 +1,8 @@
 import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
-import { withReplicationSchema } from "../rxdb-plugins/replication"
+import { getReplicationProperties } from "../rxdb-plugins/replication"
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
 import { CollectionDocType } from "@oboku/shared"
+import { generateId } from "./utils"
 
 type CollectionDocSchema = Required<
   Omit<CollectionDocType, "_id" | "rx_model" | "_rev">
@@ -36,21 +37,23 @@ export type CollectionCollection = RxCollection<
   CollectionCollectionMethods
 >
 
-export const collectionSchema: RxJsonSchema<CollectionDocSchema> =
-  withReplicationSchema("obokucollection", {
-    title: "obokucollection",
-    version: 2,
-    type: "object",
-    properties: {
-      name: { type: "string" },
-      books: { type: "array", ref: "book", items: { type: "string" } },
-      resourceId: { type: ["string", "null"] },
-      createdAt: { type: "string" },
-      modifiedAt: { type: ["string", "null"] },
-      dataSourceId: { type: ["string", "null"] }
-    },
-    required: ["name"]
-  })
+export const collectionSchema: RxJsonSchema<Omit<CollectionDocType, `_rev`>> = {
+  title: "obokucollection",
+  version: 3,
+  type: "object",
+  primaryKey: `_id`,
+  properties: {
+    _id: { type: `string`, maxLength: 50 },
+    name: { type: "string" },
+    books: { type: "array", ref: "book", items: { type: "string" } },
+    resourceId: { type: ["string", "null"] },
+    createdAt: { type: "string" },
+    modifiedAt: { type: ["string", "null"] },
+    dataSourceId: { type: ["string", "null"] },
+    ...getReplicationProperties(`obokucollection`)
+  },
+  required: ["name"]
+}
 
 export const collectionMigrationStrategies = {
   1: (
@@ -69,12 +72,14 @@ export const collectionMigrationStrategies = {
       dataSourceId: null,
       ...oldDoc
     }
-  }
+  },
+  // v10 -> v12
+  3: (doc: CollectionDocType) => doc
 }
 
 export const collectionCollectionMethods: CollectionCollectionMethods = {
   post: async function (this: CollectionCollection, json) {
-    return this.insert(json as CollectionDocType)
+    return this.insert({ _id: generateId(), ...json } as CollectionDocType)
   },
   safeUpdate: async function (this: CollectionCollection, json, cb) {
     return cb(this).update(json)

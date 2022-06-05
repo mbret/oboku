@@ -33,7 +33,7 @@ export const TagActionsDrawer: FC<{
     isManageTagBooksDialogOpenedWithState
   )
   const tag = useRecoilValue(normalizedTagsState)[openWith || "-1"]
-  const [editTag] = useUpdateTag()
+  const editTag = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
     useState<string | undefined>(undefined)
   const [removeTag] = useRemoveTag()
@@ -137,7 +137,7 @@ const EditTagDialog: FC<{
   const [name, setName] = useState("")
   const { name: tagName } =
     useRecoilValue(normalizedTagsState)[id || "-1"] || {}
-  const [editTag] = useUpdateTag()
+  const editTag = useUpdateTag()
 
   const onInnerClose = () => {
     setName("")

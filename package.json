@@ -19,7 +19,7 @@
     "format": "prettier -w ."
   },
   "devDependencies": {
-    "concurrently": "^7.1.0",
+    "concurrently": "^7.2.1",
     "lerna": "^4.0.0",
     "prettier": "^2.6.2",
     "ts-loader": "8.2.0",
