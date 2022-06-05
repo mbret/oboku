@@ -4,10 +4,6 @@ import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
 import { CollectionDocType } from "@oboku/shared"
 import { generateId } from "./utils"
 
-type CollectionDocSchema = Required<
-  Omit<CollectionDocType, "_id" | "rx_model" | "_rev">
->
-
 export type CollectionDocMethods = {}
 
 export type CollectionDocument = RxDocument<
@@ -17,7 +13,7 @@ export type CollectionDocument = RxDocument<
 
 type CollectionCollectionMethods = {
   post: (
-    json: Omit<CollectionDocType, "_id" | "rx_model" | "_rev">
+    json: Omit<CollectionDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>
   ) => Promise<CollectionDocument>
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<CollectionDocType>,
@@ -37,7 +33,9 @@ export type CollectionCollection = RxCollection<
   CollectionCollectionMethods
 >
 
-export const collectionSchema: RxJsonSchema<Omit<CollectionDocType, `_rev`>> = {
+export const collectionSchema: RxJsonSchema<
+  Omit<CollectionDocType, `_rev` | `rxdbMeta`>
+> = {
   title: "obokucollection",
   version: 3,
   type: "object",

@@ -74,7 +74,10 @@ export const useSynchronizeDataSource = () => {
 }
 
 export const useCreateDataSource = () => {
-  type Payload = Omit<DataSourceDocType, "_id" | "rx_model" | "_rev">
+  type Payload = Omit<
+    DataSourceDocType,
+    "_id" | "rx_model" | "_rev" | `rxdbMeta`
+  >
   const synchronize = useSynchronizeDataSource()
   const [createDataSource] = useRxMutation((db, variables: Payload) =>
     db?.datasource.post({ ...variables })

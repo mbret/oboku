@@ -1,4 +1,4 @@
-import { LinkDocType, SafeMangoQuery, TagsDocType } from "@oboku/shared"
+import { LinkDocType, SafeMangoQuery } from "@oboku/shared"
 import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
 import { MongoUpdateSyntax } from "../../types"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
@@ -18,7 +18,7 @@ type LinkDocMethods = {
 type LinkDocument = RxDocument<LinkDocType, LinkDocMethods>
 type LinkCollectionMethods = {
   safeInsert: (
-    json: Omit<LinkDocType, "_id" | "rx_model" | "_rev">
+    json: Omit<LinkDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>
   ) => Promise<LinkDocument>
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<LinkDocType>,
@@ -32,7 +32,7 @@ type LinkCollectionMethods = {
   ) => RxQuery<LinkDocType, RxDocument<LinkDocType, LinkDocMethods> | null>
 }
 
-const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev`>> = {
+const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev` | `rxdbMeta`>> = {
   title: "link",
   version: 2,
   type: "object",

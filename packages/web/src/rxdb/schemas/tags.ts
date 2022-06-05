@@ -17,7 +17,7 @@ type DocMethods = {
 
 type CollectionMethods = {
   insertSafe: (
-    json: Omit<TagsDocType, `_id` | "rx_model" | "_rev">
+    json: Omit<TagsDocType, `_id` | "rx_model" | "_rev" | `rxdbMeta`>
   ) => Promise<TagsDocument>
   updateSafe: (
     json: SafeUpdateMongoUpdateSyntax<TagsDocType>,
@@ -33,9 +33,9 @@ export type TagCollection = RxCollection<
   CollectionMethods
 >
 
-const schema: RxJsonSchema<Omit<TagsDocType, `_rev`>> = {
+const schema: RxJsonSchema<Omit<TagsDocType, `_rev` | `rxdbMeta`>> = {
   title: "tag",
-  version: 3,
+  version: 4,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -46,8 +46,6 @@ const schema: RxJsonSchema<Omit<TagsDocType, `_rev`>> = {
     books: { type: ["array"], items: { type: "string" } },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
-    // @ts-ignore
-    _meta: { type: `object` },
     ...getReplicationProperties(`tag`)
   },
   required: ["isProtected", "name", "books"]
@@ -78,7 +76,8 @@ const migrationStrategies: MigrationStrategies = {
   }),
   2: (oldDoc: TagsDocType): TagsDocType | null => oldDoc,
   // v10 -> v12
-  3: (doc: TagsDocType) => doc
+  3: (doc: TagsDocType) => doc,
+  4: (doc: TagsDocType) => doc
 }
 
 export const tag = {

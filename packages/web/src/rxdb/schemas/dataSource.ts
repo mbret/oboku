@@ -3,14 +3,12 @@ import {
   RxJsonSchema,
   RxQuery,
   RxCollection,
-  getDefaultRxDocumentMeta,
   MigrationStrategies
 } from "rxdb"
 import { DataSourceDocType } from "@oboku/shared"
 import { SafeUpdateMongoUpdateSyntax } from "../types"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
 import { generateId } from "./utils"
-import { migrateDocumentData } from "rxdb/plugins/migration"
 
 export type DataSourceDocMethods = {}
 
@@ -21,7 +19,7 @@ export type DataSourceDocument = RxDocument<
 
 type DataSourceCollectionMethods = {
   post: (
-    json: Omit<DataSourceDocType, "_id" | "rx_model" | "_rev">
+    json: Omit<DataSourceDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>
   ) => Promise<DataSourceDocument>
   safeUpdate: (
     json: SafeUpdateMongoUpdateSyntax<DataSourceDocType>,
@@ -36,7 +34,7 @@ export type DataSourceCollection = RxCollection<
 >
 
 export const dataSourceSchema: RxJsonSchema<
-  Omit<DataSourceDocType, "rx_model" | "_rev">
+  Omit<DataSourceDocType, "rx_model" | "_rev" | `rxdbMeta`>
 > = {
   title: "dataSourceSchema",
   version: 3,
