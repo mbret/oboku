@@ -8,7 +8,6 @@ import {
 } from "rxdb"
 import { MongoUpdateSyntax } from "../../types"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
-import type { RxDBReplicationModelCouchDBPluginCollection } from "../rxdb-plugins/RxDBReplicationModelCouchDBPlugin"
 import { SafeUpdateMongoUpdateSyntax } from "../types"
 import { generateId } from "./utils"
 
@@ -31,7 +30,7 @@ export type TagsDocument = RxDocument<TagsDocType, DocMethods>
 export type TagCollection = RxCollection<
   TagsDocType,
   DocMethods,
-  CollectionMethods & RxDBReplicationModelCouchDBPluginCollection
+  CollectionMethods
 >
 
 const schema: RxJsonSchema<Omit<TagsDocType, `_rev`>> = {
