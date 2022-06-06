@@ -4,7 +4,6 @@ import { useDatabase } from "./rxdb"
 import { useTagsInitialState } from "./tags/observers"
 import { useLinksInitialState } from "./links/observers"
 import { useCollectionsInitialState } from "./collections/observers"
-import { useDataSourcesInitialState } from "./dataSources/observers"
 import { useSettingsStateReducer } from "./rxdb/sync/useObservers"
 import { Report } from "./debug/report.shared"
 
@@ -20,7 +19,6 @@ export const useLoadInitialState = () => {
   const isTagStateReady = useTagsInitialState()
   const isLinkStateReady = useLinksInitialState()
   const isCollectionStateReady = useCollectionsInitialState()
-  const isDataSourceStateReady = useDataSourcesInitialState()
   const [ready, setIsReady] = useState(false)
 
   useEffect(() => {
@@ -44,7 +42,6 @@ export const useLoadInitialState = () => {
     isBookStateReady &&
     isTagStateReady &&
     isLinkStateReady &&
-    isCollectionStateReady &&
-    isDataSourceStateReady
+    isCollectionStateReady
   )
 }

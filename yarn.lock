@@ -4696,10 +4696,10 @@
     node-gyp "^8.4.1"
     read-package-json-fast "^2.0.3"
 
-"@oboku/plugin-front@^0.8.0":
-  version "0.8.0"
-  resolved "https://registry.yarnpkg.com/@oboku/plugin-front/-/plugin-front-0.8.0.tgz#4835c6f1d4aca7ff5237e9e5da3f5f3ec30211de"
-  integrity sha512-JQUrpxa/umhaqgWLvfhLjV9S/+SFyK6B1XZjrCCFi9dPbjrcjFZ68TrgwEIygRgtafirg7g//moDaJETbOGI8Q==
+"@oboku/plugin-front@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@oboku/plugin-front/-/plugin-front-0.10.0.tgz#ea2f510b69027bb01a2be27bdad28ec237fc7e23"
+  integrity sha512-i9yCylfmo7GGRQlSpjKlbA81KB+hV7Vf1zUkouy2Bj2EIvuJVX7AIyZEFuDxwleboAu4+g3yKj221WmtFFXPOQ==
   dependencies:
     "@emotion/styled" "^11.8.1"
 
@@ -4715,10 +4715,10 @@
   resolved "https://registry.yarnpkg.com/@oboku/plugin-imhentai-shared/-/plugin-imhentai-shared-0.1.0.tgz#e66247e88546a2dbad032038ee073d5326e4548b"
   integrity sha512-I+BzIOtKubXMKcc7mnDO/kw3sHpq9237ZfBM5HmVOB85yCUNImZmxkVuIRXEIe4mQSf9TJw2PwsrLAveJynWKw==
 
-"@oboku/shared@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@oboku/shared/-/shared-0.6.0.tgz#649821a5d8e55982bf65365417b4494ce8d91072"
-  integrity sha512-qv0Z6ekk5xmfjLNjNnEtVC1ZO3zNHcXZdbhcURMIWEkW1pfc6RIieU8fyo82Ouf/aar0AqGar9GIIc/P0EYoDQ==
+"@oboku/shared@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@oboku/shared/-/shared-0.8.0.tgz#2fa728f13e296740f7f677d835ebad162b125fb2"
+  integrity sha512-1HPXok6T0s7xirkK1/12B4A2qKe7YeEIEhAs8splBUJRJ37yhQv9kd6mKI7v+oEi5iB9lUUwkOAdDG81nIlPag==
 
 "@octokit/auth-token@^2.4.4":
   version "2.5.0"
@@ -4928,6 +4928,19 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
+"@react-rxjs/core@^0.9.6":
+  version "0.9.6"
+  resolved "https://registry.yarnpkg.com/@react-rxjs/core/-/core-0.9.6.tgz#7f4f61403009c53a09d36a1a389b5ba4a0c5fccd"
+  integrity sha512-OEyGPca1LXz06iLZMJyFniE3fFaqNvS/+jdpk7gtNFLGmwCo5H6HPAGFEEhui90A0BpLR1hSzDHy3L9b3I9rZw==
+  dependencies:
+    "@rxstate/core" "^0.0.1"
+    use-sync-external-store "^1.0.0"
+
+"@react-rxjs/utils@^0.9.5":
+  version "0.9.5"
+  resolved "https://registry.yarnpkg.com/@react-rxjs/utils/-/utils-0.9.5.tgz#e880e7bec46f6153f9402e9acc42b28225a468d2"
+  integrity sha512-RXVw8JAnBvKb23CixtrH7w5CKiiJodyck8T0s8o94XSor5XfsqpDrDk8Cq8iwyrxvvSL3+BoNAA+WCbVFTVhcg==
+
 "@rollup/plugin-node-resolve@^7.1.1":
   version "7.1.3"
   resolved "https://registry.yarnpkg.com/@rollup/plugin-node-resolve/-/plugin-node-resolve-7.1.3.tgz#80de384edfbd7bfc9101164910f86078151a3eca"
@@ -4955,6 +4968,11 @@
     "@types/estree" "0.0.39"
     estree-walker "^1.0.1"
     picomatch "^2.2.2"
+
+"@rxstate/core@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@rxstate/core/-/core-0.0.1.tgz#899c8c863b1c251368cde9b23bcc79a10da87a70"
+  integrity sha512-be8446G5eapl6X8IAuYvvYY78CnyuXX7pASAYG2Ww95hCbqfNLSYXqknvWeUJ4ovO63l5xdM29ct0uUysKDyog==
 
 "@sentry/browser@7.0.0":
   version "7.0.0"
@@ -19233,6 +19251,11 @@ use-debounce@8.0.1:
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/use-debounce/-/use-debounce-8.0.1.tgz#5f3e11b067bdf9f2c554a20b4764e38b48022664"
   integrity sha512-6tGAFJKJ0qCalecaV7/gm/M6n238nmitNppvR89ff1yfwSFjwFKR7IQZzIZf1KZRQhqNireBzytzU6jgb29oVg==
+
+use-sync-external-store@^1.0.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/use-sync-external-store/-/use-sync-external-store-1.1.0.tgz#3343c3fe7f7e404db70f8c687adf5c1652d34e82"
+  integrity sha512-SEnieB2FPKEVne66NpXPd1Np4R1lTNKfjuy3XdIoPQKYBAFdzbzSZlSn1KJZUiihQLQC5Znot4SBz1EOTBwQAQ==
 
 use@^3.1.0:
   version "3.1.1"

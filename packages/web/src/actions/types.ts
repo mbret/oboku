@@ -1,3 +1,5 @@
+import { DataSourceAction } from "../dataSources/actions/types"
+
 export type BookAction =
   | {
       type: `UPSERT_BOOK_LINK`
@@ -12,4 +14,4 @@ export type BookAction =
       data: string
     }
 
-export type Action = BookAction
+export type Action = BookAction | DataSourceAction

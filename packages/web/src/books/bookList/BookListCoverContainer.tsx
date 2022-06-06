@@ -79,7 +79,7 @@ export const BookListCoverContainer: FC<{
             !!item?.lastMetadataUpdateError && (
               <div style={classes.itemCoverCenterInfo}>
                 <Chip
-                  color="secondary"
+                  color="primary"
                   size="small"
                   icon={<ErrorRounded color="primary" />}
                   label="metadata"

@@ -7,8 +7,15 @@ import {
   Divider
 } from "@mui/material"
 import React, { FC } from "react"
-import { SyncRounded, DeleteForeverRounded } from "@mui/icons-material"
+import {
+  SyncRounded,
+  DeleteForeverRounded,
+  RadioButtonUncheckedOutlined,
+  CheckCircleRounded
+} from "@mui/icons-material"
 import { useSynchronizeDataSource, useRemoveDataSource } from "./helpers"
+import { useDataSource } from "./useDataSource"
+import { useAction } from "../actions"
 
 export const DataSourcesActionsDrawer: FC<{
   openWith: string
@@ -17,6 +24,8 @@ export const DataSourcesActionsDrawer: FC<{
   const syncDataSource = useSynchronizeDataSource()
   // const renewAuthorization = useRenewDataSourceCredentials()
   const [remove] = useRemoveDataSource()
+  const { execute } = useAction()
+  const dataSource = useDataSource(openWith)
 
   return (
     <>
@@ -42,6 +51,24 @@ export const DataSourcesActionsDrawer: FC<{
             <ListItemText primary="Renew authorization" />
           </ListItem> */}
         </List>
+        <ListItem
+          button
+          onClick={() =>
+            execute({
+              type: `TOGGLE_DATASOURCE_PROTECTED`,
+              data: { id: openWith }
+            })
+          }
+        >
+          <ListItemIcon>
+            {!dataSource?.isProtected && <RadioButtonUncheckedOutlined />}
+            {dataSource?.isProtected && <CheckCircleRounded />}
+          </ListItemIcon>
+          <ListItemText
+            primary="Mark as protected"
+            secondary="This will lock and hide books behind it. Use unlock features to display them"
+          />
+        </ListItem>
         <Divider />
         <List>
           <ListItem

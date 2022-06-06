@@ -55,8 +55,8 @@ if (process.env.NODE_ENV === "development") {
   // NOTICE: Schema validation can be CPU expensive and increases your build size.
   // You should always use a scehma validation plugin in developement mode.
   // For most use cases, you should not use a validation plugin in production.
-  // addRxPlugin(RxDBValidatePlugin)
-  // addRxPlugin(RxDBDevModePlugin)
+  addRxPlugin(RxDBValidatePlugin)
+  addRxPlugin(RxDBDevModePlugin)
 }
 
 addPouchPlugin(require("pouchdb-adapter-idb"))
@@ -123,7 +123,7 @@ export const settingsMigrationStrategies = {
   1: (doc: SettingsDocType) => doc
 }
 
-type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
+export type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 
 export const createDatabase = async () => {
   const db = await createRxDatabase<MyDatabaseCollections>({

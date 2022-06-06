@@ -11,7 +11,6 @@ import { useBooksObservers } from "../../books/observers"
 import { useTagsObservers } from "../../tags/observers"
 import { useLinksObservers } from "../../links/observers"
 import { useCollectionsObservers } from "../../collections/observers"
-import { useDataSourcesObservers } from "../../dataSources/observers"
 import { lastAliveSyncState } from "./state"
 import { useWatchAndFixConflicts } from "./useWatchAndFixConflicts"
 import { authState } from "../../auth/authState"
@@ -58,7 +57,6 @@ export const useObservers = () => {
   useTagsObservers()
   useLinksObservers()
   useCollectionsObservers()
-  useDataSourcesObservers()
   useWatchAndFixConflicts()
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
   Link,
@@ -15,14 +15,13 @@ import {
 import { Alert } from "@mui/material"
 import { DataSourcesAddDrawer } from "./DataSourcesAddDrawer"
 import { DataSourcesActionsDrawer } from "./DataSourcesActionsDrawer"
-import { dataSourcesAsArrayState } from "./states"
-import { useRecoilValue } from "recoil"
-import { Error } from "@mui/icons-material"
+import { Error, LockRounded } from "@mui/icons-material"
 import { DataSourceDocType } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "./configure"
 import { AddDataSource } from "./AddDataSource"
 import { ObokuErrorCode } from "@oboku/shared"
 import { ObokuPlugin } from "@oboku/plugin-front"
+import { useDataSources } from "./useDataSources"
 
 export const SyncSourcesScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
@@ -32,7 +31,7 @@ export const SyncSourcesScreen = () => {
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<
     string | undefined
   >(undefined)
-  const syncSources = useRecoilValue(dataSourcesAsArrayState)
+  const syncSources = useDataSources()
   const theme = useTheme()
 
   return (
@@ -115,6 +114,7 @@ export const SyncSourcesScreen = () => {
                     )
                   }
                 />
+                {syncSource?.isProtected && <LockRounded color="primary" />}
               </ListItem>
             )
           })}

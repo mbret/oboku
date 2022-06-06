@@ -153,6 +153,7 @@ export const BookListListItem: FC<{
                   <Chip
                     size="small"
                     icon={<ErrorRounded color="primary" />}
+                    color="primary"
                     label="metadata"
                   />
                 </div>

@@ -37,7 +37,7 @@ export const dataSourceSchema: RxJsonSchema<
   Omit<DataSourceDocType, "rx_model" | "_rev" | `rxdbMeta`>
 > = {
   title: "dataSourceSchema",
-  version: 3,
+  version: 4,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -50,6 +50,7 @@ export const dataSourceSchema: RxJsonSchema<
     credentials: { type: ["object", "null"] },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
+    isProtected: { type: ["boolean"], final: false },
     ...getReplicationProperties(`datasource`)
   },
   required: []
@@ -74,7 +75,8 @@ export const migrationStrategies: MigrationStrategies = {
     }
   },
   // v10 -> v12
-  3: (doc) => doc
+  3: (doc) => doc,
+  4: (doc) => doc,
 }
 
 export const dataSourceCollectionMethods: DataSourceCollectionMethods = {
