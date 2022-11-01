@@ -7,7 +7,7 @@ import {
   RxQuery
 } from "rxdb"
 import { getReplicationProperties } from "./rxdb-plugins/replication"
-import { MongoUpdateSyntax, PromiseReturnType } from "../types"
+import { PromiseReturnType } from "../types"
 import {
   CollectionCollection,
   collectionCollectionMethods,
@@ -15,7 +15,7 @@ import {
   collectionMigrationStrategies
 } from "./schemas/collection"
 import { applyHooks } from "./middleware"
-import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "./types"
+import { SafeUpdateMongoUpdateSyntax } from "./types"
 import {
   dataSourceSchema,
   dataSourceCollectionMethods,
@@ -30,7 +30,6 @@ import { RxDBReplicationCouchDBPlugin } from "rxdb/plugins/replication-couchdb"
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
 import {
   RxDBMigrationPlugin,
-  migrateDocumentData
 } from "rxdb/plugins/migration"
 import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode"
 import { getRxStoragePouch, addPouchPlugin } from "rxdb/plugins/pouchdb"

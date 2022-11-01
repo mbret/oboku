@@ -51,9 +51,9 @@ export const Reader: FC<{
   >()
   const { manifest, isRarFile, error: manifestError } = useManifest(bookId)
   const { fetchResource } = useRarStreamer(isRarFile ? bookId : undefined)
-  const [readerOptions] = useState<ReactReaderOptions>({
-    forceSinglePageMode: true
-  })
+  const [readerOptions, setReaderOptions] = useState<
+    ReactReaderOptions | undefined
+  >()
   const isBookError = !!manifestError
 
   useBookResize(reader, containerWidth, containerHeight)
@@ -83,19 +83,21 @@ export const Reader: FC<{
 
   useEffect(() => {
     if (manifest && book && !loadOptions) {
+      setReaderOptions({
+        forceSinglePageMode: true,
+        numberOfAdjacentSpineItemToPreLoad:
+          manifest.renditionLayout === "pre-paginated" ? 1 : 0
+      })
+
       if (isRarFile && fetchResource) {
         setLoadOptions({
           fetchResource,
-          cfi: book.readingStateCurrentBookmarkLocation || undefined,
-          numberOfAdjacentSpineItemToPreLoad:
-            manifest.renditionLayout === "pre-paginated" ? 1 : 0
+          cfi: book.readingStateCurrentBookmarkLocation || undefined
         })
       }
       if (!isRarFile) {
         setLoadOptions({
-          cfi: book.readingStateCurrentBookmarkLocation || undefined,
-          numberOfAdjacentSpineItemToPreLoad:
-            manifest.renditionLayout === "pre-paginated" ? 1 : 0
+          cfi: book.readingStateCurrentBookmarkLocation || undefined
         })
       }
     }
@@ -183,7 +185,7 @@ export const Reader: FC<{
           }
         }}
       >
-        {!!loadOptions && (
+        {!!loadOptions && !!readerOptions && (
           <ObokuReader
             options={readerOptions}
             manifest={manifest}
