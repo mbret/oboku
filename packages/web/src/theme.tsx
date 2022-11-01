@@ -19,10 +19,6 @@ declare module "@mui/material/styles" {
   }
 }
 
-// const light = 'rgba(0, 0, 0, 0.38)'
-const main = "rgba(0, 0, 0, 0.54)"
-// const dark = 'rgba(0, 0, 0, 0.87)'
-
 const mui4Theme = adaptV4Theme({
   transitions: {
     // So we have `transition: none;` everywhere
