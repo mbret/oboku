@@ -28,9 +28,7 @@ import { RxDBValidatePlugin } from "rxdb/plugins/validate"
 import { RxDBUpdatePlugin } from "rxdb/plugins/update"
 import { RxDBReplicationCouchDBPlugin } from "rxdb/plugins/replication-couchdb"
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
-import {
-  RxDBMigrationPlugin,
-} from "rxdb/plugins/migration"
+import { RxDBMigrationPlugin } from "rxdb/plugins/migration"
 import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode"
 import { getRxStoragePouch, addPouchPlugin } from "rxdb/plugins/pouchdb"
 import {

@@ -76,7 +76,7 @@ export const migrationStrategies: MigrationStrategies = {
   },
   // v10 -> v12
   3: (doc) => doc,
-  4: (doc) => doc,
+  4: (doc) => doc
 }
 
 export const dataSourceCollectionMethods: DataSourceCollectionMethods = {
