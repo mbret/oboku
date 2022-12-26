@@ -13,8 +13,8 @@ import { ExpirationPlugin } from "workbox-expiration"
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching"
 import { registerRoute } from "workbox-routing"
 import { StaleWhileRevalidate } from "workbox-strategies"
-import { STREAMER_URL_PREFIX } from "./constants.shared"
-import { readerFetchListener } from "./reader/streamer/serviceWorker.sw"
+import { STREAMER_URL_PREFIX } from "../src/constants.shared"
+import { readerFetchListener } from "../src/reader/streamer/serviceWorker.sw"
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -24,7 +24,7 @@ clientsClaim()
 // Their URLs are injected into the manifest variable below.
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
-if (process.env.NODE_ENV === "production") {
+if (import.meta.env.PROD) {
   precacheAndRoute([
     ...self.__WB_MANIFEST,
     {
@@ -43,7 +43,7 @@ if (process.env.NODE_ENV === "production") {
 // are fulfilled with your index.html shell. Learn more at
 // https://developers.google.com/web/fundamentals/architecture/app-shell
 const fileExtensionRegexp = new RegExp("/[^/?]+\\.[^/]+$")
-if (process.env.NODE_ENV === "production") {
+if (import.meta.env.PROD) {
   registerRoute(
     // Return false to exempt requests from being fulfilled by index.html.
     ({ request, url }: { request: Request; url: URL }) => {
@@ -72,7 +72,7 @@ if (process.env.NODE_ENV === "production") {
 
 // An example runtime caching route for requests that aren't handled by the
 // precache, in this case same-origin .png requests like those from in public/
-if (process.env.NODE_ENV === "production") {
+if (import.meta.env.PROD) {
   registerRoute(
     // Add in any other file extensions or routing criteria as needed.
     ({ url }) =>
