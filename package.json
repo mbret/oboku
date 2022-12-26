@@ -12,8 +12,8 @@
     "./packages/*"
   ],
   "scripts": {
-    "start": "NODE_ENV=development lerna exec --parallel -- yarn start",
-    "build": "NODE_ENV=development lerna run build",
+    "start": "lerna exec --parallel -- yarn start",
+    "build": "lerna run build",
     "test": "lerna exec --parallel -- yarn test",
     "tsc": "lerna exec --parallel -- yarn tsc",
     "format": "prettier -w ."
