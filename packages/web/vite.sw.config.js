@@ -18,18 +18,21 @@ export default defineConfig(({ mode }) => ({
     }
   },
   build: {
-    minify: mode !== "development",
+    copyPublicDir: false,
+    // since the sw created is inside our src file we want to preserve the original
+    // code as much as possible. The app bundler will minify later
+    minify: false,
+    sourcemap: false,
+    // @important
+    // otherwise it will wipe /public folder
+    emptyOutDir: false,
     lib: {
       entry: "./sw/service-worker.ts",
       name: "sw",
       fileName: "service-worker",
       formats: ["iife"]
     },
-    outDir: "./public",
-    sourcemap: true,
-    // @important
-    // otherwise it will wipe /public folder
-    emptyOutDir: false,
+    outDir: "./src",
     rollupOptions: {
       output: {
         chunkFileNames: "[name].js",
