@@ -48,7 +48,7 @@ export default defineConfig(({ mode }) => ({
         maximumFileSizeToCacheInBytes: 5e6
       },
       srcDir: "src",
-      filename: "sw.ts",
+      filename: "service-worker.ts",
       ...(mode === "development" && {
         devOptions: {
           enabled: true

@@ -7,6 +7,7 @@
     "target": "es5",
     "jsx": "react",
     "allowJs": true,
+    "skipLibCheck": true,
     "moduleResolution": "node"
   },
   "include": ["src"]

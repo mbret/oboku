@@ -46,7 +46,7 @@ export function register(config?: Config) {
 
     window.addEventListener("load", () => {
       const swUrl =
-        import.meta.env.MODE === "production" ? "/sw.js" : "/dev-sw.js?dev-sw"
+        import.meta.env.MODE === "production" ? "/service-worker.js" : "/dev-sw.js?dev-sw"
 
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
