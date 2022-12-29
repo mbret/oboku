@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "build": "tsc && vite build",
-    "start": "vite build --watch"
+    "start": "vite build --watch --mode development"
   },
   "dependencies": {
     "@oboku/plugin-imhentai-shared": "0.1.0",

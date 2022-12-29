@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsc && vite build",
-    "start": "vite build --watch"
+    "start": "vite build --watch --mode development"
   },
   "devDependencies": {}
 }
