@@ -44,7 +44,7 @@ export const AppNavigator = () => {
   const isAuthenticated = !!auth?.token
 
   return (
-    <BrowserRouter basename={process.env.PUBLIC_URL}>
+    <BrowserRouter>
       <div
         style={{
           flexShrink: 0,

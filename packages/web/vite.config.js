@@ -3,6 +3,7 @@ import { VitePWA } from "vite-plugin-pwa"
 import react from "@vitejs/plugin-react"
 import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
+import path from "path"
 
 export default defineConfig(({ mode }) => ({
   build: {
@@ -17,7 +18,7 @@ export default defineConfig(({ mode }) => ({
       define: {
         global: "globalThis"
       },
-      inject: ["./process-shim.js"]
+      inject: [path.resolve(__dirname, "./stream-shim.js")]
     }
   },
   /**
@@ -25,7 +26,7 @@ export default defineConfig(({ mode }) => ({
    */
   resolve: {
     alias: {
-      stream: "./stream-shim.js"
+      stream: path.resolve(__dirname, "./stream-shim.js")
     }
   },
   plugins: [

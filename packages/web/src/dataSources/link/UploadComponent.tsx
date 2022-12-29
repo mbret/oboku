@@ -22,7 +22,7 @@ export const UploadComponent: FC<{
 }> = ({ onClose }) => {
   const [addBook] = useAddBook()
   const { generateResourceId } = useDataSourceHelpers(`oboku-link`)
-  const [bookUrl, setBookUrl] = useState(process.env.REACT_APP_HTTP_LINK || "")
+  const [bookUrl, setBookUrl] = useState(import.meta.env.VITE_HTTP_LINK || "")
   const isValid = schema.isValidSync({ bookUrl })
   const filename = bookUrl.substring(bookUrl.lastIndexOf("/") + 1) || "unknown"
 
