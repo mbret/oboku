@@ -1,0 +1,29 @@
+{
+  "name": "@oboku/plugin-imhentai-front",
+  "version": "0.1.0",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/oboku-plugin-imhentai-front.umd.cjs",
+  "module": "./dist/oboku-plugin-imhentai-front.js",
+  "exports": {
+    ".": {
+      "import": "./dist/oboku-plugin-imhentai-front.js",
+      "require": "./dist/oboku-plugin-imhentai-front.umd.cjs"
+    }
+  },
+  "license": "MIT",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "build": "tsc && vite build",
+    "start": "vite build --watch"
+  },
+  "dependencies": {
+    "@oboku/plugin-imhentai-shared": "0.1.0",
+    "@oboku/plugin-front": "0.10.0",
+    "react": "*",
+    "@mui/material": "*"
+  },
+  "gitHead": "69a7f0d6e4708171ba99f5b57646526e1efc4cc4"
+}

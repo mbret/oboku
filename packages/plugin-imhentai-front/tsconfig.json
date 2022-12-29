@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "noImplicitAny": true,
+    "module": "es6",
+    "target": "es6",
+    "lib": [
+      "DOM",
+      "esnext"
+    ],
+    "strict": true,
+    "allowJs": false,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "noUncheckedIndexedAccess": true,
+    "declaration": false,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "skipLibCheck": true
+  },
+  "exclude": ["webpack.config.js", "**/dist", "**/*.test.ts"]
+}

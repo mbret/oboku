@@ -1,0 +1,36 @@
+{
+  "name": "@oboku/plugin-front",
+  "version": "0.10.0",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/oboku-plugin-front.umd.cjs",
+  "module": "./dist/oboku-plugin-front.js",
+  "exports": {
+    ".": {
+      "import": "./dist/oboku-plugin-front.js",
+      "require": "./dist/oboku-plugin-front.umd.cjs"
+    }
+  },
+  "license": "MIT",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "start": "vite build --watch",
+    "build": "tsc && vite build"
+  },
+  "peerDependencies": {
+    "@emotion/react": "*",
+    "@mui/icons-material": "*",
+    "@mui/lab": "^5.0.0-alpha.114",
+    "@mui/material": "*",
+    "react": "*",
+    "react-dom": "*",
+    "@emotion/styled": "*",
+    "@oboku/shared": "*",
+    "yup": "*"
+  },
+  "devDependencies": {
+    "@oboku/shared": "*"
+  }
+}

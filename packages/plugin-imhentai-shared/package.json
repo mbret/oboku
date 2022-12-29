@@ -1,0 +1,20 @@
+{
+  "name": "@oboku/plugin-imhentai-shared",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/oboku-plugin-imhentai-shared.umd.cjs",
+  "module": "./dist/oboku-plugin-imhentai-shared.js",
+  "exports": {
+    ".": {
+      "import": "./dist/oboku-plugin-imhentai-shared.js",
+      "require": "./dist/oboku-plugin-imhentai-shared.umd.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsc && vite build",
+    "start": "vite build --watch"
+  },
+  "devDependencies": {}
+}

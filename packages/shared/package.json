@@ -1,0 +1,26 @@
+{
+  "name": "@oboku/shared",
+  "version": "0.8.0",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/oboku-shared.umd.cjs",
+  "module": "./dist/oboku-shared.js",
+  "exports": {
+    ".": {
+      "import": "./dist/oboku-shared.js",
+      "require": "./dist/oboku-shared.umd.cjs"
+    }
+  },
+  "license": "MIT",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "start": "vite build --watch",
+    "build": "tsc && vite build"
+  },
+  "peerDependencies": {
+    "crypto-js": "4.x",
+    "yup": "0.32.x"
+  }
+}
