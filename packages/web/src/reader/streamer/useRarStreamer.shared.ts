@@ -1,4 +1,4 @@
-import { getResourceFromArchive } from "@prose-reader/streamer"
+import { generateResourceFromArchive } from "@prose-reader/streamer"
 import { useEffect } from "react"
 import { useCallback, useState } from "react"
 import { getBookFile } from "../../download/getBookFile.shared"
@@ -44,7 +44,9 @@ export const useRarStreamer = (bookId: string | undefined) => {
   const fetchResource = useCallback(
     async (item) => {
       if (archive) {
-        return await getResourceFromArchive(archive, item.path)
+        const resource = await generateResourceFromArchive(archive, item.path)
+
+        return new Response(resource.body, { ...resource.params, status: 200 })
       }
       return new Response(``, { status: 404 })
     },

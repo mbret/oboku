@@ -59,7 +59,7 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
           </ListItem>
         )}
         <DebugInfo info={{ id: link?._id || `` }} mb={2} />
-        {process.env.NODE_ENV === "development" && (
+        {import.meta.env.DEV && (
           <Button
             fullWidth
             variant="outlined"

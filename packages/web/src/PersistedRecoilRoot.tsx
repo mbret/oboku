@@ -6,10 +6,11 @@ import {
   MutableSnapshot
 } from "recoil"
 import localforage from "localforage"
-import React, {
+import {
   createContext,
   FC,
   memo,
+  ReactNode,
   useContext,
   useEffect,
   useRef,
@@ -98,6 +99,7 @@ export const PersistedRecoilRoot: FC<{
     [key: string]: { value: any }
   }
   onReady: () => void
+  children: ReactNode
 }> = memo(
   ({ children, states = [], onReady, migration = (state) => state }) => {
     const [initialState, setInitialState] = useState<

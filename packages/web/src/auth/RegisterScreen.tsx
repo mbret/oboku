@@ -12,8 +12,8 @@ import { validators, ObokuErrorCode } from "@oboku/shared"
 
 export const RegisterScreen = () => {
   const navigate = useNavigate()
-  const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || "")
-  const [password, setPassword] = useState(process.env.REACT_APP_PASSWORD || "")
+  const [email, setEmail] = useState(import.meta.env.VITE_EMAIL || "")
+  const [password, setPassword] = useState(import.meta.env.VITE_PASSWORD || "")
   const [code, setCode] = useState("")
   const isValid = useIsValid(email, password, code)
   const theme = useTheme()

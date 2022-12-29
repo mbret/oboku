@@ -10,7 +10,7 @@ const localSettingsStateDefaultValues = {
   useNavigationArrows: false,
   useOptimizedTheme: false,
   readingFullScreenSwitchMode:
-    process.env.NODE_ENV !== "production"
+    import.meta.env.DEV
       ? ("never" as const)
       : ("automatic" as const),
   unBlurWhenProtectedVisible: false,

@@ -8,8 +8,8 @@ const hostname =
     ? window?.location?.hostname
     : sw?.location?.hostname
 
-export const API_URI = process.env.REACT_APP_API_URL || `https://${hostname}:4000`
-export const API_COUCH_URI = process.env.REACT_APP_API_COUCH_URI || `https://${hostname}:4003`
+export const API_URI = import.meta.env.VITE_API_URL || `https://${hostname}:4000`
+export const API_COUCH_URI = import.meta.env.VITE_API_COUCH_URI || `https://${hostname}:4003`
 
 export const FIREBASE_BASE_CONFIG = {
   apiKey: "AIzaSyDJIkOKxOCf3WXrsPldQrEIY7LY237YSGU",

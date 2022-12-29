@@ -10,7 +10,7 @@ import { isDebugEnabled } from "./isDebugEnabled.shared"
 // @ts-ignore
 window.localforage = localforage
 
-if (process.env.NODE_ENV !== "development") {
+if (!import.meta.env.DEV) {
   // Sentry.init({
   //   dsn: "https://0d7a61df8dba4122be660fcc1161bf49@o490447.ingest.sentry.io/5554285",
   //   autoSessionTracking: true,
@@ -47,7 +47,7 @@ if (process.env.NODE_ENV !== "development") {
     console.warn = () => {}
   }
 } else {
-  console.log(process.env)
+  console.log(import.meta.env)
 }
 
 export const toggleDebug = () => {

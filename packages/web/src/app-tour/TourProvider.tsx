@@ -3,7 +3,8 @@ import React, {
   useCallback,
   ComponentProps,
   useState,
-  memo
+  memo,
+  ReactNode
 } from "react"
 import { TourContext, TourKey } from "./TourContext"
 
@@ -11,7 +12,7 @@ type Context = NonNullable<
   ComponentProps<typeof TourContext["Provider"]>["value"]
 >
 
-export const TourProvider: React.FC = memo(({ children }) => {
+export const TourProvider: React.FC<{children: ReactNode}> = memo(({ children }) => {
   const [tours, setTours] = useState<Context["tours"]>({})
 
   const registerOrUpdateStep = useCallback(

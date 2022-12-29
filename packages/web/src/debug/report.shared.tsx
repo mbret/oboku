@@ -3,13 +3,13 @@ import { isDebugEnabled } from "./isDebugEnabled.shared"
 
 export const Report = {
   log: (...data: any[]) => {
-    if (process.env.NODE_ENV === "development" || isDebugEnabled()) {
+    if (import.meta.env.PROD || isDebugEnabled()) {
       // eslint-disable-next-line no-console
       console.log(`[oboku:log]`, ...data)
     }
   },
   error: (err: any) => {
-    if (process.env.NODE_ENV !== "development" || isDebugEnabled()) {
+    if (import.meta.env.PROD || isDebugEnabled()) {
       Sentry.captureException(err)
     }
     console.error(err)
@@ -21,7 +21,7 @@ export const Report = {
     Sentry.captureMessage(message, captureContext)
   },
   warn: (message: string) => {
-    if (process.env.NODE_ENV === "development" || isDebugEnabled()) {
+    if (import.meta.env.DEV || isDebugEnabled()) {
       // eslint-disable-next-line no-console
       console.warn(`[oboku:warning]`, message)
     }
@@ -34,7 +34,7 @@ export const Report = {
       typeof performanceEntry === "number"
         ? performanceEntry
         : performanceEntry.duration
-    if (process.env.NODE_ENV === "development" || isDebugEnabled()) {
+    if (import.meta.env.DEV || isDebugEnabled()) {
       if (performanceEntry.duration <= targetDuration) {
         // eslint-disable-next-line no-console
         console.log(

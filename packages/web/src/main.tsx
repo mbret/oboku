@@ -1,6 +1,6 @@
 import "./debug"
 import React from "react"
-import ReactDOM from "react-dom"
+import { createRoot } from "react-dom/client"
 import "fontsource-roboto/300.css"
 import "fontsource-roboto/400.css"
 import "fontsource-roboto/500.css"
@@ -20,14 +20,18 @@ window.crypto.createHash = createHash
 
 ReactGA.initialize("UA-43281094-4")
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Sentry.ErrorBoundary>
-      <App />
-    </Sentry.ErrorBoundary>
-  </React.StrictMode>,
-  document.getElementById("root")
-)
+const rootElm = document.getElementById("root")
+
+if (rootElm) {
+  const root = createRoot(rootElm)
+  root.render(
+    <React.StrictMode>
+      <Sentry.ErrorBoundary>
+        <App />
+      </Sentry.ErrorBoundary>
+    </React.StrictMode>
+  )
+}
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

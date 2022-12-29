@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, memo, useRef, useCallback } from "react"
+import React, { useContext, useEffect, memo, useRef, useCallback, ReactNode } from "react"
 import { useMeasure } from "react-use"
 import { Step as StepType, TourContext, TourKey } from "./TourContext"
 
@@ -12,6 +12,7 @@ export const Step: React.FC<{
   testID?: string
   withButtons?: boolean
   getSpotlightMeasures?: (element: HTMLElement) => DOMRect
+  children?: ReactNode
 }> = memo(
   ({
     withButtons = true,

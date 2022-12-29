@@ -1,50 +1,21 @@
-import React, {
+import {
   createContext,
   FC,
-  useCallback,
+  ReactNode,
   useContext,
-  useEffect,
   useMemo,
-  useState
 } from "react"
-import { useMountedState } from "react-use"
 import { PromiseReturnType } from "../types"
 import { createDatabase } from "./databases"
+import { useCreateDatabase } from "./useCreateDatabase"
 
 const DatabaseContext = createContext<{
   db: PromiseReturnType<typeof createDatabase> | undefined
   reCreate: () => ReturnType<typeof createDatabase>
 }>({ db: undefined, reCreate: () => ({} as any) })
 
-export const RxDbProvider: FC = ({ children }) => {
-  const [db, setDb] = useState<
-    PromiseReturnType<typeof createDatabase> | undefined
-  >(undefined)
-  const isMounted = useMountedState()
-
-  const reCreate = useCallback(async () => {
-    setDb(undefined)
-    // at this point we expect useDatabase to be rendered
-    // again with undefined database. So that nothing should interact with
-    // the db while it's being recreated
-    await db?.remove()
-    const newDb = await createDatabase()
-
-    if (isMounted()) {
-      setDb(newDb)
-    }
-
-    return newDb
-  }, [db, isMounted])
-
-  useEffect(() => {
-    ;(async () => {
-      const newDb = await createDatabase()
-      if (isMounted()) {
-        setDb(newDb)
-      }
-    })()
-  }, [setDb, isMounted])
+export const RxDbProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  const { db, reCreate } = useCreateDatabase()
 
   const contextValue = useMemo(
     () => ({
@@ -53,6 +24,8 @@ export const RxDbProvider: FC = ({ children }) => {
     }),
     [db, reCreate]
   )
+
+  console.log({ db })
 
   return (
     <DatabaseContext.Provider value={contextValue}>

@@ -6,7 +6,7 @@
  * - support both blob and base64 for older browsers
  * - parallel download of different quality of same assets and display of lower res while higher res get available
  */
-import { FC, memo, useEffect, useMemo, useState } from "react"
+import { FC, memo, ReactNode, useEffect, useMemo, useState } from "react"
 import {
   atom,
   selectorFamily,
@@ -295,7 +295,7 @@ const useLazyDownloadAsset = () => {
   })
 }
 
-export const CachedResourcesProvider: FC = memo(({ children }) => {
+export const CachedResourcesProvider: FC<{children: ReactNode}> = memo(({ children }) => {
   const [assets, setAssets] = useRecoilState(assetsState)
   const lazyDownloadAsset = useLazyDownloadAsset()
 

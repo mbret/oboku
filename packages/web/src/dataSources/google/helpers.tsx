@@ -1,6 +1,7 @@
 import { waitFor } from "../../common/utils"
 import React, {
   FC,
+  ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -36,7 +37,7 @@ const SCOPE = `https://www.googleapis.com/auth/drive`
  */
 export const listFiles = (googleAuth, searchTerm) => {}
 
-export const GoogleApiProvider: FC = ({ children }) => {
+export const GoogleApiProvider: FC<{children: ReactNode}> = ({ children }) => {
   const [googleApi, setGoogleApi] = useState<typeof gapi | undefined>(undefined)
   const isSigning = useRef(false)
   const [contextValue, setContextValue] = useState(defaultContextValue)
@@ -60,6 +61,7 @@ export const GoogleApiProvider: FC = ({ children }) => {
           await window.gapi.client.init({
             clientId:
               "325550353363-vklpik5kklrfohg1vdrkvjp1n8dopnrd.apps.googleusercontent.com",
+            // plugin_name: "login", // allow old api to work until migration
             scope: SCOPE,
             discoveryDocs: [
               "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
@@ -85,33 +87,34 @@ export const GoogleApiProvider: FC = ({ children }) => {
     }
   }, [googleApi])
 
-  useEffect(() => {
-    /**
-     * Will signin and return the gapi if success, otherwise undefined
-     */
-    const signIn = async (): Promise<typeof gapi | undefined> => {
-      if (isSigning.current) {
-        await waitFor(10)
-        return await signIn()
-      }
-      isSigning.current = true
-      try {
-        // await googleApi?.auth2.getAuthInstance().signIn({ prompt: 'consent' })
-        await googleApi?.auth2.getAuthInstance().signIn({})
-        return googleApi
-      } catch (e) {
-        throw e
-      } finally {
-        isSigning.current = false
-      }
+  /**
+   * Will signin and return the gapi if success, otherwise undefined
+   */
+  const signIn = useCallback(async (): Promise<typeof gapi | undefined> => {
+    if (isSigning.current) {
+      await waitFor(10)
+      return await signIn()
     }
+    isSigning.current = true
+    try {
+      // await googleApi?.auth2.getAuthInstance().signIn({ prompt: 'consent' })
+      await googleApi?.auth2.getAuthInstance().signIn()
 
+      return googleApi
+    } catch (e) {
+      throw e
+    } finally {
+      isSigning.current = false
+    }
+  }, [googleApi])
+
+  useEffect(() => {
     setContextValue([
       isSigned ? googleApi : undefined,
       isReady ? (isSigned ? "signedIn" : "signedOut") : "loading",
       signIn
     ])
-  }, [googleApi, isSigned, isReady])
+  }, [signIn, isSigned, isReady, setContextValue, googleApi])
 
   return (
     <GoogleAPIContext.Provider value={contextValue}>

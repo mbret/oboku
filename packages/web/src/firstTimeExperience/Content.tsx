@@ -1,8 +1,8 @@
-import React, { FC } from "react"
+import React, { FC, ReactNode } from "react"
 import { useTheme } from "@mui/material"
 import { useCSS } from "../common/utils"
 
-export const Content: FC<{ style?: React.CSSProperties }> = ({
+export const Content: FC<{ style?: React.CSSProperties, children: ReactNode }> = ({
   children,
   style
 }) => {

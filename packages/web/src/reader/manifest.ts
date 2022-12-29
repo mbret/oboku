@@ -4,7 +4,7 @@ import { getBookFile } from "../download/getBookFile.shared"
 import { Report } from "../debug/report.shared"
 import { getArchiveForRarFile } from "./streamer/getArchiveForFile.shared"
 import "../archive"
-import { getManifestFromArchive } from "@prose-reader/streamer"
+import { generateManifestFromArchive } from "@prose-reader/streamer"
 import { directives } from "@oboku/shared"
 import { STREAMER_URL_PREFIX } from "../constants.shared"
 
@@ -15,7 +15,7 @@ const useGetRarManifest = () =>
     if (file && normalizedName?.endsWith(`.cbr`)) {
       const archive = await getArchiveForRarFile(file)
 
-      return getManifestFromArchive(archive, {
+      return generateManifestFromArchive(archive, {
         baseUrl: `/${STREAMER_URL_PREFIX}/rar`
       })
     }
@@ -50,7 +50,7 @@ export const useManifest = (bookId: string | undefined) => {
             const rarResponse = await getRarManifest(bookId)
             if (rarResponse) {
               setIsRarFile(true)
-              const data = await rarResponse.json()
+              const data = rarResponse
               const newManifest = getNormalizedManifest(data)
 
               Report.log(`manifest`, data)

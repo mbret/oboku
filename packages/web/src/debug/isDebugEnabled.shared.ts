@@ -4,5 +4,5 @@ let isEnabled =
     : localStorage.getItem("oboku_debug_enabled") === "true"
 
 export const isDebugEnabled = () => {
-  return isEnabled || process.env.NODE_ENV === `development`
+  return isEnabled || import.meta.env.DEV
 }

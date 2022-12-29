@@ -1,4 +1,4 @@
-import React, { useEffect, memo } from "react"
+import React, { useEffect, memo, ReactNode } from "react"
 import { useRecoilState } from "recoil"
 import { appTourState } from "./states"
 import { TourContent } from "./TourContent"
@@ -9,6 +9,7 @@ type Props = {
   show?: boolean
   unskippable?: boolean
   onClose: () => void
+  children: ReactNode
 }
 
 export const Tour: React.FC<Props> = memo(

@@ -1,6 +1,6 @@
 import {
-  getManifestFromArchive,
-  getResourceFromArchive
+  generateManifestFromArchive,
+  generateResourceFromArchive
 } from "@prose-reader/streamer"
 import { STREAMER_URL_PREFIX } from "../../constants.shared"
 import {
@@ -25,9 +25,11 @@ export const readerFetchListener = (event: FetchEvent) => {
            * Hit to manifest
            */
           if (url.pathname.endsWith(`/manifest`)) {
-            return await getManifestFromArchive(archive, {
-              baseUrl: `${url.origin}/${STREAMER_URL_PREFIX}/${epubFileName}`
+            const manifest = await generateManifestFromArchive(archive, {
+              baseUrl: `${url.origin}/${STREAMER_URL_PREFIX}/${epubFileName}/`
             })
+
+            return new Response(JSON.stringify(manifest), { status: 200 })
           }
 
           /**
@@ -35,9 +37,15 @@ export const readerFetchListener = (event: FetchEvent) => {
            */
           const resourcePath = getResourcePath(event)
 
-          const response = await getResourceFromArchive(archive, resourcePath)
+          const resource = await generateResourceFromArchive(
+            archive,
+            resourcePath
+          )
 
-          return response
+          return new Response(resource.body, {
+            ...resource.params,
+            status: 200
+          })
         } catch (e) {
           if (e instanceof FileNotSupportedError) {
             return new Response(e.message, { status: 415 })

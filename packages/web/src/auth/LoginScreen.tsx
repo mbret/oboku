@@ -13,8 +13,8 @@ import { useTranslation } from "react-i18next"
 
 export const LoginScreen = () => {
   const navigate = useNavigate()
-  const [email, setEmail] = useState(process.env.REACT_APP_EMAIL || "")
-  const [password, setPassword] = useState(process.env.REACT_APP_PASSWORD || "")
+  const [email, setEmail] = useState(import.meta.env.VITE_EMAIL || "")
+  const [password, setPassword] = useState(import.meta.env.VITE_PASSWORD || "")
   const [signIn, { error }] = useSignIn()
   const theme = useTheme()
   const isValid = useIsValid(email, password)

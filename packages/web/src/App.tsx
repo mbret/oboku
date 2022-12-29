@@ -105,7 +105,7 @@ export function App() {
   )
 }
 
-const RecoilSyncedWithDatabase: FC = ({ children }) => {
+const RecoilSyncedWithDatabase: FC = () => {
   useLoadInitialState()
   useObservers()
 

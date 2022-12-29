@@ -40,6 +40,8 @@ import {
 } from "./schemas/book"
 import { tag, TagCollection } from "./schemas/tags"
 import { link, LinkCollection } from "./schemas/link"
+import pouchDbAdapterIdb from "pouchdb-adapter-idb"
+import pouchDbAdapterHttp from "pouchdb-adapter-http"
 
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBLeaderElectionPlugin)
@@ -48,16 +50,16 @@ addRxPlugin(RxDBUpdatePlugin)
 addRxPlugin(RxDBReplicationCouchDBPlugin)
 addRxPlugin(RxDBMigrationPlugin)
 
-if (process.env.NODE_ENV === "development") {
+if (import.meta.env.DEV) {
   // NOTICE: Schema validation can be CPU expensive and increases your build size.
-  // You should always use a scehma validation plugin in developement mode.
+  // You should always use a schema validation plugin in development mode.
   // For most use cases, you should not use a validation plugin in production.
   addRxPlugin(RxDBValidatePlugin)
   addRxPlugin(RxDBDevModePlugin)
 }
 
-addPouchPlugin(require("pouchdb-adapter-idb"))
-addPouchPlugin(require("pouchdb-adapter-http"))
+addPouchPlugin(pouchDbAdapterIdb)
+addPouchPlugin(pouchDbAdapterHttp)
 
 export enum LibraryViewMode {
   GRID = "grid",
@@ -135,9 +137,6 @@ export const createDatabase = async () => {
   await initializeCollectionsData(db)
 
   applyHooks(db)
-
-  // @ts-ignore
-  window.db = db
 
   return db
 }

@@ -1,4 +1,4 @@
-import React, { FC, memo } from "react"
+import React, { FC, memo, ReactNode } from "react"
 import { Step, Tour } from "../app-tour"
 import TagSvg from "../assets/undraw_schedule_pnbk.svg"
 import Step2Cover from "../assets/undraw_Artificial_intelligence_re_enpp.svg"
@@ -187,7 +187,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
   )
 })
 
-export const AppTourFirstTourTagsStep2: FC<{}> = ({ children }) => {
+export const AppTourFirstTourTagsStep2: FC<{children: ReactNode}> = ({ children }) => {
   const theme = useTheme()
 
   return (
