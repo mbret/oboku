@@ -11,6 +11,10 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/dist"]
+    },
+    "landing:build": {
+      "dependsOn": ["^build"],
+      "outputs": ["{projectRoot}/dist"]
     }
   }
 }
