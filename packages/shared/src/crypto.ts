@@ -1,4 +1,4 @@
-import * as sha256 from "crypto-js/sha256"
+import * as sha256 from "crypto-js/sha256.js"
 
 /**
  * The contentPassword is for user content protection. It is made to work

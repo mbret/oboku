@@ -1,0 +1,22 @@
+{
+  "name": "@oboku/plugin-imhentai-back",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/oboku-plugin-imhentai-back.umd.cjs",
+  "module": "./dist/oboku-plugin-imhentai-back.js",
+  "exports": {
+    ".": {
+      "import": "./dist/oboku-plugin-imhentai-back.js",
+      "require": "./dist/oboku-plugin-imhentai-back.umd.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsc && vite build",
+    "start": "vite build --watch --mode development"
+  },
+  "dependencies": {
+    "@oboku/plugin-back": "^0.10.0"
+  }
+}

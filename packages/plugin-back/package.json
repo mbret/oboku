@@ -1,0 +1,35 @@
+{
+  "name": "@oboku/plugin-back",
+  "version": "0.10.0",
+  "license": "MIT",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/oboku-plugin-back.umd.cjs",
+  "module": "./dist/oboku-plugin-back.js",
+  "exports": {
+    ".": {
+      "import": "./dist/oboku-plugin-back.js",
+      "require": "./dist/oboku-plugin-back.umd.cjs"
+    }
+  },
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "start": "vite build --watch --mode development",
+    "build": "tsc && vite build",
+    "lint": "eslint '**/*.{js,ts,tsx}'",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@oboku/shared": "*"
+  },
+  "peerDependencies": {
+    "@types/request": "^2.48.8",
+    "cheerio": "^1.0.0-rc.10",
+    "nano": "^10.0.0",
+    "node-fetch": "^3.2.0",
+    "request": "^2.88.2"
+  },
+  "gitHead": "1051bb41ec11df5fc90ea5eb411bc734897966c7"
+}
