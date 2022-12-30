@@ -13,6 +13,7 @@
   ],
   "scripts": {
     "start": "lerna run start",
+    "start:landing": "lerna run landing:start",
     "build": "lerna run build",
     "test": "lerna run test",
     "format": "prettier -w ."
