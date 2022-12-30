@@ -6,7 +6,7 @@ import { API_URI } from "./constants"
 
 const instance = axios.create()
 
-export const AxiosProvider: FC<{children: ReactNode}> = ({ children }) => {
+export const AxiosProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { token } = useRecoilValue(authState) || {}
 
   useEffect(() => {
@@ -22,7 +22,9 @@ export const useAxiosClient = () =>
       downloadBook: (
         bookId: string,
         credentials: { [key: string]: any },
-        options?: AxiosRequestConfig
+        options?: Omit<AxiosRequestConfig, "headers"> & {
+          headers?: Record<string, string>
+        }
       ) =>
         instance.get<any, AxiosResponse<Blob>>(
           `${API_URI}/download/${bookId}`,

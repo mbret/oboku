@@ -25,8 +25,6 @@ export const RxDbProvider: FC<{ children: ReactNode }> = ({ children }) => {
     [db, reCreate]
   )
 
-  console.log({ db })
-
   return (
     <DatabaseContext.Provider value={contextValue}>
       {children}

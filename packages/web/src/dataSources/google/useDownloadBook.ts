@@ -43,7 +43,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
                 Authorization: `Bearer ${gapi.auth.getToken().access_token}`
               },
               responseType: "blob",
-              onDownloadProgress: (event: ProgressEvent) => {
+              onDownloadProgress: (event) => {
                 const totalSize = parseInt(info.result.size || "1") || 1
                 options?.onDownloadProgress(event.loaded / totalSize)
               }

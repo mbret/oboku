@@ -14,17 +14,8 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
 
       const mediaResponse = await axios.get<Blob>(downloadLink, {
         responseType: "blob",
-        onDownloadProgress: (event: ProgressEvent) => {
-          const currentTarget = {
-            responseHeaders: {
-              "Content-Length": "1"
-            },
-            ...event?.currentTarget
-          }
-          const total = parseFloat(
-            currentTarget.responseHeaders["Content-Length"]
-          )
-          options?.onDownloadProgress(event.loaded / total)
+        onDownloadProgress: (event) => {
+          options?.onDownloadProgress(event.loaded / (event.total ?? 1))
         }
       })
 

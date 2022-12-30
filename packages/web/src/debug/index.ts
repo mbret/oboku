@@ -3,9 +3,13 @@
 // import firebase from "firebase/compat/app"
 // import { getAnalytics } from "firebase/analytics";
 // import { FIREBASE_BASE_CONFIG } from '../constants'
+import ReactGA from "react-ga"
 // import { version } from '../../package.json'
 import localforage from "localforage"
 import { isDebugEnabled } from "./isDebugEnabled.shared"
+import "./reportWebVitals"
+
+ReactGA.initialize("UA-43281094-4")
 
 // @ts-ignore
 window.localforage = localforage
