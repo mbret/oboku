@@ -15,6 +15,7 @@
     "start": "lerna run start",
     "start:landing": "lerna run landing:start",
     "build": "lerna run build",
+    "build:landing": "lerna run landing:build",
     "test": "lerna run test",
     "format": "prettier -w ."
   },
