@@ -1,0 +1,7 @@
+{
+  "headers": {
+    "Content-Type": "application/json",
+    "Accept": "application/json"
+  },
+  "body": "{\"email\": \"foo@bara.com\",\"password\": \"foobar\",\"code\": \"betacode\"}"
+}

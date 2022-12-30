@@ -1,0 +1,21 @@
+name: deploy-prod
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [main]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  deploy-aws:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      STAGE: prod
+      AWS_API_URI: https://16vyq7634k.execute-api.us-east-1.amazonaws.com/prod
+      GOOGLE_BOOK_API_URL: https://www.googleapis.com/books/v1
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      COUCH_DB_URL: ${{ secrets.COUCH_DB_URL_PROD }}
+      CONTACT_TO_ADDRESS: ${{ secrets.CONTACT_TO_ADDRESS }}
