@@ -30,5 +30,5 @@ const externals: string[] = (serverlessConfiguration as any).custom.bundle.exter
   }))
 
   // install new deps
-  console.log(await exec(`cd layers/nodejs && npm install`))
+  // console.log(await exec(`cd layers/nodejs && npm install`))
 })()

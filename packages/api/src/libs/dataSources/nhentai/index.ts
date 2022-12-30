@@ -63,8 +63,8 @@ export const plugin: DataSourcePlugin = {
     /**
      * Then we parse the cover page url and retrieve the original raw file link
      */
-    const coverPageResponse = await fetch(coverPageUrl)
-    const coverPage$ = load(await coverPageResponse.text())
+    const coverPageResponse = await axios(coverPageUrl)
+    const coverPage$ = load(await coverPageResponse.data)
 
     const coverUrl = coverPage$(`#image-container img`).attr()?.src
 
