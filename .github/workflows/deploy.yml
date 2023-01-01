@@ -1,4 +1,4 @@
-name: Deploy
+name: deploy
 
 on:
   workflow_call:
@@ -37,10 +37,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - uses: actions/checkout@v2
-      - name: Install nodejs dependencies
-        run: |
-          npm install -g serverless 
-          npm install
       - name: Prepare build environment
         run: |
           touch .env
