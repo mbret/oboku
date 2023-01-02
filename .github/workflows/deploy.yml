@@ -43,7 +43,7 @@ jobs:
           aws-region: us-east-1
       - name: Prepare build environment
         run: |
-          touch .env
+          touch packages/api/.env
           echo "CONTACT_TO_ADDRESS=${{secrets.CONTACT_TO_ADDRESS}}" >> .env
           echo "COUCH_DB_URL=${{secrets.COUCH_DB_URL}}" >> .env
           echo "AWS_API_URI=${{inputs.AWS_API_URI}}" >> .env
