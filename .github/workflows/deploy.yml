@@ -33,6 +33,7 @@ jobs:
           node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
       - run: npm ci
+      - run: npm run build:api
       # - run: npm run install-sharp-lambda
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
