@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
-      - run: npm ci --verbose
+      - run: npm ci
       - run: npm run build:api --verbose
       # - run: npm run install-sharp-lambda
       - name: Configure AWS Credentials
@@ -44,10 +44,10 @@ jobs:
       - name: Prepare build environment
         run: |
           touch packages/api/.env
-          echo "CONTACT_TO_ADDRESS=${{secrets.CONTACT_TO_ADDRESS}}" >> .env
-          echo "COUCH_DB_URL=${{secrets.COUCH_DB_URL}}" >> .env
-          echo "AWS_API_URI=${{inputs.AWS_API_URI}}" >> .env
-          echo "GOOGLE_BOOK_API_URL=${{inputs.GOOGLE_BOOK_API_URL}}" >> .env
-          echo "OFFLINE=false" >> .env
+          echo "CONTACT_TO_ADDRESS=${{secrets.CONTACT_TO_ADDRESS}}" >> packages/api/.env
+          echo "COUCH_DB_URL=${{secrets.COUCH_DB_URL}}" >> packages/api/.env
+          echo "AWS_API_URI=${{inputs.AWS_API_URI}}" >> packages/api/.env
+          echo "GOOGLE_BOOK_API_URL=${{inputs.GOOGLE_BOOK_API_URL}}" >> packages/api/.env
+          echo "OFFLINE=false" >> packages/api/.env
       - name: Deploy
         run: npx lerna exec --scope @oboku/api -- sls deploy --stage ${{ inputs.STAGE }}
