@@ -13,7 +13,6 @@
   ],
   "scripts": {
     "start:web": "lerna run start --scope=@oboku/web",
-    "postinstall": "npx ts-node scripts/installSharp.ts --project scripts/tsconfig.json --platform darwin",
     "start:landing": "lerna run landing:start",
     "start:api": "lerna run api:start",
     "build": "lerna run build",
@@ -21,7 +20,8 @@
     "build:api": "lerna run build --scope=@oboku/api",
     "build:landing": "lerna run landing:build",
     "test": "lerna run test",
-    "format": "prettier -w ."
+    "format": "prettier -w .",
+    "postinstall": "npx ts-node scripts/installSharp.ts --project scripts/tsconfig.json --platform darwin"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "^5.0.2",
