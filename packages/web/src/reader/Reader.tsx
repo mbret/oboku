@@ -20,13 +20,10 @@ import { useCSS } from "../common/utils"
 import { Reader as ObokuReader } from "@prose-reader/react"
 import { useManifest } from "./manifest"
 import { useRarStreamer } from "./streamer/useRarStreamer.shared"
-import { ComponentProps } from "react"
 import { useUpdateBookState } from "./bookHelpers"
-import { Pagination, ReactReaderLoadOptions, ReactReaderOptions } from "./type"
-
-type ReaderInstance = Parameters<
-  NonNullable<ComponentProps<typeof ObokuReader>["onReader"]>
->[0]
+import { ReaderInstance, ReactReaderProps } from "./type"
+import { createReader } from "@prose-reader/core"
+import { ObservedValueOf } from "rxjs"
 
 export const Reader: FC<{
   bookId: string
@@ -47,12 +44,12 @@ export const Reader: FC<{
   >(undefined)
   const styles = useStyles()
   const [loadOptions, setLoadOptions] = useState<
-    ReactReaderLoadOptions | undefined
+    ReactReaderProps["loadOptions"] | undefined
   >()
   const { manifest, isRarFile, error: manifestError } = useManifest(bookId)
   const { fetchResource } = useRarStreamer(isRarFile ? bookId : undefined)
   const [readerOptions, setReaderOptions] = useState<
-    ReactReaderOptions | undefined
+    ReactReaderProps["options"] | undefined
   >()
   const isBookError = !!manifestError
 
@@ -75,7 +72,7 @@ export const Reader: FC<{
   }, [setIsBookReady])
 
   const onPaginationChange = useCallback(
-    (pagination: Pagination) => {
+    (pagination: ObservedValueOf<ReaderInstance["pagination$"]>) => {
       setPaginationState(pagination)
     },
     [setPaginationState]
@@ -193,6 +190,7 @@ export const Reader: FC<{
             onReady={onBookReady}
             onReader={onReader}
             onPaginationChange={onPaginationChange}
+            createReader={createReader}
           />
         )}
         {!isBookReady && <BookLoading />}

@@ -1,14 +1,17 @@
 import { atom, selector, useRecoilCallback } from "recoil"
 import { useEffect } from "react"
 import { Manifest } from "@prose-reader/core"
-import { Pagination } from "./type"
+import { ReaderInstance } from "./type"
+import { ObservedValueOf } from "rxjs"
 
 export const isBookReadyState = atom({
   key: "isBookReadyState",
   default: false
 })
 
-export const paginationState = atom<Pagination | undefined>({
+export const paginationState = atom<
+  ObservedValueOf<ReaderInstance["pagination$"]> | undefined
+>({
   key: `paginationState`,
   default: undefined
 })
