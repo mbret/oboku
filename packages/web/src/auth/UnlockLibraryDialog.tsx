@@ -8,7 +8,7 @@ import {
   TextField
 } from "@mui/material"
 import { crypto } from "@oboku/shared"
-import React, { FC, useEffect, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { libraryState } from "../library/states"
 import { settingsState } from "../settings/states"
@@ -60,11 +60,11 @@ export const UnlockLibraryDialog: FC<{}> = () => {
               content visible. do not forget to lock it back when needed
             </DialogContentText>
             <TextField
-              autoFocus
-              id="name"
+              autoComplete="off"
               label="Content password"
               type="password"
               fullWidth
+              margin="dense"
               value={text}
               onChange={(e) => setText(e.target.value)}
             />
