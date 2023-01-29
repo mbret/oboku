@@ -1,6 +1,6 @@
 import { defineConfig } from "vite"
 import dts from "vite-plugin-dts"
-import { resolve } from "path";
+import { resolve } from "path"
 
 export default defineConfig(({ mode }) => ({
   build: {
@@ -13,12 +13,15 @@ export default defineConfig(({ mode }) => ({
     },
     emptyOutDir: mode !== "development",
     sourcemap: true,
+    /**
+     * We are letting cryptojs being bundled here because it bugs when
+     * letting consumer package include it
+     */
     rollupOptions: {
-      external: [`yup`, `crypto-js/sha256`],
+      external: [`yup`],
       output: {
         globals: {
-          yup: `yup`,
-          "crypto-js/sha256": "crypto-js/sha256"
+          yup: `yup`
         }
       }
     }

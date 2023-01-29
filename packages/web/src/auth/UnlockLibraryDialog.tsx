@@ -33,6 +33,7 @@ export const UnlockLibraryDialog: FC<{}> = () => {
 
   const onConfirm = async () => {
     const hashedPassword = await crypto.hashContentPassword(text)
+
     if (contentPassword === hashedPassword) {
       setLibraryState((prev) => ({ ...prev, isLibraryUnlocked: true }))
       onClose()
