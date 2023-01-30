@@ -32,6 +32,7 @@ import { LibraryBooksScreen } from "../library/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../library/LibraryCollectionScreen"
 import { LibraryTagsScreen } from "../library/LibraryTagsScreen"
 import { useEffect, useRef } from "react"
+import { UnlockLibraryDialog } from "../auth/UnlockLibraryDialog"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -117,6 +118,7 @@ export const AppNavigator = () => {
       <CollectionActionsDrawer />
       <BackToReadingDialog />
       <TrackHistoryCanGoBack />
+      <UnlockLibraryDialog />
     </BrowserRouter>
   )
 }

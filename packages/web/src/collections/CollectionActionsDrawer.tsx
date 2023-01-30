@@ -87,7 +87,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
     useState(false)
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
 
-  const handleClose = useModalNavigationControl(
+  const { closeModalWithNavigation } = useModalNavigationControl(
     {
       onExit: () => {
         setCollectionActionDrawerState({ openedWith: undefined })
@@ -101,7 +101,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
   const opened = !!collectionId
 
   const onRemoveCollection = (id: string) => {
-    handleClose()
+    closeModalWithNavigation()
     setCollectionActionDrawerChanges([id, `delete`])
     id && removeCollection({ _id: id })
   }
@@ -113,7 +113,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
       <Drawer
         anchor="bottom"
         open={opened && !subActionOpened}
-        onClose={() => handleClose()}
+        onClose={() => close()}
       >
         <List>
           <ListItem

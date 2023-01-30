@@ -54,7 +54,7 @@ export const BookActionsDrawer = () => {
   const opened = !!bookId
   const { t } = useTranslation()
 
-  const handleClose = useModalNavigationControl(
+  const { closeModalWithNavigation: handleClose } = useModalNavigationControl(
     {
       onExit: () => {
         setBookActionDrawerState({ openedWith: undefined })

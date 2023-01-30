@@ -3,7 +3,6 @@ import { AppNavigator } from "./navigation/AppNavigator"
 import { ThemeProvider, Theme, StyledEngineProvider } from "@mui/material"
 import { theme } from "./theme"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
-import { UnlockLibraryDialog } from "./auth/UnlockLibraryDialog"
 import { TourProvider } from "./app-tour/TourProvider"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
 import { GoogleApiProvider } from "./dataSources/google/helpers"
@@ -80,7 +79,6 @@ export function App() {
                       <TourProvider>
                         <AppNavigator />
                         <FirstTimeExperienceTours />
-                        <UnlockLibraryDialog />
                         <ManageBookCollectionsDialog />
                         <ManageBookTagsDialog />
                         <ManageTagBooksDialog />

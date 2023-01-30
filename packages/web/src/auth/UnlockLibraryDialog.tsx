@@ -15,6 +15,7 @@ import { settingsState } from "../settings/states"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
+import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 
 export const unlockLibraryDialogState = atom({
   key: "unlockLibraryDialog",
@@ -38,17 +39,21 @@ export const UnlockLibraryDialog: FC<{}> = () => {
   const [isOpened, setIsOpened] = useRecoilState(unlockLibraryDialogState)
   const setLibraryState = useSetRecoilState(libraryState)
   const contentPassword = settings?.contentPassword
-
-  const onClose = () => {
-    setIsOpened(false)
-  }
+  const { closeModalWithNavigation } = useModalNavigationControl(
+    {
+      onExit: () => {
+        setIsOpened(false)
+      }
+    },
+    isOpened
+  )
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
     const hashedPassword = crypto.hashContentPassword(data.unlockPassword)
 
     if (contentPassword === hashedPassword) {
       setLibraryState((prev) => ({ ...prev, isLibraryUnlocked: true }))
-      onClose()
+      closeModalWithNavigation()
     } else {
       setError(
         "unlockPassword",
@@ -71,7 +76,7 @@ export const UnlockLibraryDialog: FC<{}> = () => {
   }, [setFocus, isOpened])
 
   return (
-    <Dialog onClose={onClose} open={isOpened}>
+    <Dialog onClose={() => closeModalWithNavigation()} open={isOpened}>
       <DialogTitle>Unlock library protected contents</DialogTitle>
       <DialogContent>
         {!!contentPassword && (
@@ -112,16 +117,14 @@ export const UnlockLibraryDialog: FC<{}> = () => {
       <DialogActions>
         {!!contentPassword && (
           <>
-            <Button onClick={onClose}>Cancel</Button>
+            <Button onClick={closeModalWithNavigation}>Cancel</Button>
             <Button type="submit" form={FORM_ID}>
               Unlock
             </Button>
           </>
         )}
         {!contentPassword && (
-          <Button onClick={onClose} color="primary" type="submit">
-            Ok
-          </Button>
+          <Button onClick={closeModalWithNavigation}>Ok</Button>
         )}
       </DialogActions>
     </Dialog>
