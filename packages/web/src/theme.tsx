@@ -2,7 +2,7 @@
  * @see https://material-ui.com/customization/default-theme/
  * @see https://material-ui.com/customization/palette/
  */
-import { createTheme, adaptV4Theme } from "@mui/material/styles"
+import { createTheme, adaptV4Theme, alpha } from "@mui/material/styles"
 
 declare module "@mui/material/styles" {
   interface Theme {
@@ -75,13 +75,6 @@ const mui4Theme = adaptV4Theme({
     //   }
     // }
   },
-  props: {
-    // Name of the component ⚛️
-    MuiButtonBase: {
-      // The properties to apply
-      disableRipple: true // No more ripple, on the whole application 💣!
-    }
-  },
   zIndex: {},
   custom: {
     maxWidthCenteredContent: 320,
@@ -110,5 +103,26 @@ export const theme = createTheme({
     // main: "rgb(225, 100, 50, 1)"
     // dark,
     // }
+  },
+  components: {
+    /**
+     * @see https://github.com/mui/material-ui/blob/master/packages/mui-material/src/Button/Button.js
+     */
+    MuiButton: {
+      defaultProps: {
+        focusRipple: false,
+        variant: "outlined"
+      },
+      styleOverrides: {
+        root: ({ theme, ownerState }) => ({
+          "&:focus": {
+            boxShadow: `0 0 0 0.2rem ${alpha(
+              theme.palette[ownerState.color ?? "primary"].main,
+              0.5
+            )}`
+          }
+        })
+      }
+    }
   }
 })
