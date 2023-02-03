@@ -40,55 +40,57 @@ export const TopBarNavigation: FC<{
     return (
       <AppBar position={position} elevation={0} color={color}>
         <Toolbar>
-          {showBack && (
-            <IconButton
-              edge="start"
-              style={styles.menuButton}
-              onClick={goBack}
-              size="large"
-            >
-              <ArrowBackIosRounded />
-            </IconButton>
-          )}
-          <div style={{ flexGrow: 1 }}>
-            {!hasSearch && (
-              <Typography variant="h6" style={styles.title}>
-                {title}
-              </Typography>
-            )}
-            {hasSearch && (
-              <div
-                className={classes.search}
-                onClick={() => {
-                  navigate(ROUTES.SEARCH)
-                }}
+          <>
+            {showBack && (
+              <IconButton
+                edge="start"
+                style={styles.menuButton}
+                onClick={goBack}
+                size="large"
               >
-                <div style={styles.searchIcon}>
-                  <Search />
-                </div>
-                <InputBase
-                  placeholder="Search…"
-                  readOnly
-                  classes={{
-                    root: classes.inputRoot,
-                    input: classes.inputInput
-                  }}
-                  inputProps={{ "aria-label": "search" }}
-                />
-              </div>
+                <ArrowBackIosRounded />
+              </IconButton>
             )}
-          </div>
-          {rightComponent}
-          {!rightComponent && !!onMoreClick && (
-            <IconButton
-              edge="end"
-              style={styles.menuButtonEnd}
-              onClick={onMoreClick}
-              size="large"
-            >
-              <MoreVertRounded />
-            </IconButton>
-          )}
+            <div style={{ flexGrow: 1 }}>
+              {!hasSearch && (
+                <Typography variant="h6" style={styles.title}>
+                  {title}
+                </Typography>
+              )}
+              {hasSearch && (
+                <div
+                  className={classes.search}
+                  onClick={() => {
+                    navigate(ROUTES.SEARCH)
+                  }}
+                >
+                  <div style={styles.searchIcon}>
+                    <Search />
+                  </div>
+                  <InputBase
+                    placeholder="Search…"
+                    readOnly
+                    classes={{
+                      root: classes.inputRoot,
+                      input: classes.inputInput
+                    }}
+                    inputProps={{ "aria-label": "search" }}
+                  />
+                </div>
+              )}
+            </div>
+            {rightComponent}
+            {!rightComponent && !!onMoreClick && (
+              <IconButton
+                edge="end"
+                style={styles.menuButtonEnd}
+                onClick={onMoreClick}
+                size="large"
+              >
+                <MoreVertRounded />
+              </IconButton>
+            )}
+          </>
         </Toolbar>
       </AppBar>
     )

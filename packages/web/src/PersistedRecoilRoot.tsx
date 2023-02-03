@@ -145,8 +145,10 @@ export const PersistedRecoilRoot: FC<{
       <PersistedStatesContext.Provider value={states}>
         {!!initialState ? (
           <RecoilRoot initializeState={initializeState}>
-            <RecoilPersistor />
-            {children}
+            <>
+              <RecoilPersistor />
+              {children}
+            </>
           </RecoilRoot>
         ) : null}
       </PersistedStatesContext.Provider>

@@ -27,7 +27,7 @@
   "peerDependencies": {
     "@types/request": "^2.48.8",
     "cheerio": "^1.0.0-rc.10",
-    "nano": "^10.0.0",
+    "nano": "^10.1.2",
     "node-fetch": "^3.2.0",
     "request": "^2.88.2"
   },

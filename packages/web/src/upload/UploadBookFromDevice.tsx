@@ -57,7 +57,16 @@ export const UploadBookFromDevice: FC<{
             display: "flex"
           }}
         >
-          <input {...getInputProps()} />
+          <input
+            {...getInputProps()}
+            crossOrigin={
+              getInputProps().crossOrigin as
+                | ""
+                | "anonymous"
+                | "use-credentials"
+                | undefined
+            }
+          />
           {acceptedFiles.length > 0 ? (
             <List>
               {acceptedFiles.map((file, i) => (
