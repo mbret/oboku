@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useRecoilState, useRecoilValue } from "recoil"
 import { ROUTES } from "../constants"
@@ -8,6 +8,7 @@ import { bookBeingReadState, hasOpenedReaderAlreadyState } from "./states"
 const BASE_READER_ROUTE = ROUTES.READER.replace(`/:id`, ``)
 
 export const BackToReadingDialog = () => {
+  const isOpen = useRef(false)
   const [bookBeingRead, setBookBeingReadState] =
     useRecoilState(bookBeingReadState)
   const hasOpenedReaderAlready = useRecoilValue(hasOpenedReaderAlreadyState)
@@ -17,11 +18,15 @@ export const BackToReadingDialog = () => {
 
   useEffect(() => {
     if (
+      isOpen.current ||
       hasOpenedReaderAlready ||
       !bookBeingRead ||
       location.pathname.startsWith(BASE_READER_ROUTE)
-    )
+    ) {
       return
+    }
+
+    isOpen.current = true
 
     dialog({
       title: `Take me back to my book`,
@@ -29,10 +34,12 @@ export const BackToReadingDialog = () => {
       cancellable: true,
       onConfirm: () => {
         navigate(ROUTES.READER.replace(":id", bookBeingRead))
+        isOpen.current = false
       },
       onCancel: () => {},
       onClose: () => {
         setBookBeingReadState(undefined)
+        isOpen.current = false
       }
     })
   }, [
