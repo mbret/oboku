@@ -6,34 +6,62 @@ import {
 import { createArchiveFromArrayBufferList } from "@prose-reader/streamer"
 import { loadAsync } from "jszip"
 import { RarArchive } from "../../archive/types"
+import { Report } from "../../debug/report.shared"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { PromiseReturnType } from "../../types"
 
 const jsZipCompatibleMimeTypes = [`application/epub+zip`, `application/x-cbz`]
 
+const loadDataWithJsZip = async (data: Blob | File) => {
+  try {
+    return await loadAsync(data)
+  } catch (e) {
+    Report.error(
+      "loadDataWithJsZip: An error occurred while loading file with jszip"
+    )
+
+    throw e
+  }
+}
 export const getArchiveForFile = async (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>
 ): Promise<Archive | undefined> => {
-  const normalizedName = file.name.toLowerCase()
+  try {
+    const normalizedName = file.name.toLowerCase()
 
-  if (
-    normalizedName.endsWith(`.epub`) ||
-    normalizedName.endsWith(`.cbz`) ||
-    jsZipCompatibleMimeTypes.includes(file.data.type)
-  ) {
-    const jszip = await loadAsync(file.data)
+    if (
+      normalizedName.endsWith(`.epub`) ||
+      normalizedName.endsWith(`.cbz`) ||
+      jsZipCompatibleMimeTypes.includes(file.data.type)
+    ) {
+      const jszip = await loadDataWithJsZip(file.data)
 
-    return createArchiveFromJszip(jszip, {
-      orderByAlpha: true,
-      name: file.name
-    })
+      try {
+        return createArchiveFromJszip(jszip, {
+          orderByAlpha: true,
+          name: file.name
+        })
+      } catch (e) {
+        Report.error(
+          "createArchiveFromJszip: An error occurred while creating archive from jszip"
+        )
+
+        throw e
+      }
+    }
+
+    if (normalizedName.endsWith(`.txt`)) {
+      return createArchiveFromText(file.data)
+    }
+
+    return undefined
+  } catch (e) {
+    Report.error(
+      "getArchiveForFile: An error occurred while getting archive for file"
+    )
+
+    throw e
   }
-
-  if (normalizedName.endsWith(`.txt`)) {
-    return createArchiveFromText(file.data)
-  }
-
-  return undefined
 }
 
 /**

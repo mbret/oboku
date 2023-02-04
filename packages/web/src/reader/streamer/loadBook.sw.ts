@@ -16,7 +16,7 @@ const cleanup = () => {
   cleanupInterval = setInterval(() => {
     if (!loading && archive) {
       Report.log(
-        `serviceWorker`,
+        `serviceWorker.loadBook.cleanup`,
         `cleaning up unused epub archive reference (after 5mn)`
       )
       archive = undefined
@@ -26,7 +26,7 @@ const cleanup = () => {
 }
 
 export const loadBook = Report.measurePerformance(
-  `serviceWorker`,
+  `serviceWorker.loadBook`,
   Infinity,
   async (bookId: string) => {
     cleanup()

@@ -12,13 +12,14 @@ import {
   ArrowBackIosRounded,
   FullscreenExitRounded,
   FullscreenRounded,
-  ListRounded
+  ListRounded,
+  MoreVertRounded
 } from "@mui/icons-material"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import screenfull from "screenfull"
 import { Report } from "../debug/report.shared"
 import { useCSS } from "../common/utils"
-import { useToggleContentsDialog } from "./ContentsDialog"
+import { useMoreDialog } from "./MoreDialog"
 
 export const TopBar = () => {
   const isMenuShow = useRecoilValue(isMenuShownState)
@@ -30,7 +31,7 @@ export const TopBar = () => {
   )
   const { title, filename } = useRecoilValue(manifestState) || {}
   const theme = useTheme()
-  const toggleContentsDialog = useToggleContentsDialog()
+  const { toggleMoreDialog } = useMoreDialog()
 
   const onToggleFullScreenClick = useCallback(() => {
     if (screenfull.isFullscreen) {
@@ -82,10 +83,10 @@ export const TopBar = () => {
           <IconButton
             color="inherit"
             disabled={!isBookReady}
-            onClick={toggleContentsDialog}
+            onClick={toggleMoreDialog}
             size="large"
           >
-            <ListRounded />
+            <MoreVertRounded />
           </IconButton>
           {screenfull.isEnabled && (
             <IconButton

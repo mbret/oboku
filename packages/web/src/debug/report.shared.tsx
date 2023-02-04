@@ -39,7 +39,7 @@ export const Report = {
         // eslint-disable-next-line no-console
         console.log(
           `[oboku:metric] `,
-          `${performanceEntry.name} took ${duration}ms`
+          `${performanceEntry.name} took ${duration}ms (${duration / 1000})s`
         )
       } else {
         // eslint-disable-next-line no-console

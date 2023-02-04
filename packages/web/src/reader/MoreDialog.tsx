@@ -4,13 +4,15 @@ import {
   DialogContent,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Tab,
   Tabs,
   useTheme
 } from "@mui/material"
-import { FiberManualRecordRounded } from "@mui/icons-material"
+import { TabContext, TabList, TabPanel } from "@mui/lab"
+import { FiberManualRecordRounded, ReplayOutlined } from "@mui/icons-material"
 import React from "react"
 import { FC } from "react"
 import { atom, useRecoilCallback, useRecoilValue } from "recoil"
@@ -24,18 +26,20 @@ const isContentsDialogOpenedState = atom<boolean>({
   default: false
 })
 
-export const useToggleContentsDialog = () =>
-  useRecoilCallback(
+export const useMoreDialog = () => ({
+  toggleMoreDialog: useRecoilCallback(
     ({ set }) =>
       () => {
         set(isContentsDialogOpenedState, (val) => !val)
       },
     []
   )
+})
 
-export const ContentsDialog: FC<{}> = () => {
+export const MoreDialog: FC<{}> = () => {
   const isContentsDialogOpened = useRecoilValue(isContentsDialogOpenedState)
-  const toggleContentsDialog = useToggleContentsDialog()
+  const { toggleMoreDialog } = useMoreDialog()
+  const [value, setValue] = React.useState("toc")
   const { title, nav } = useRecoilValue(manifestState) || {}
   const chapterInfo = useRecoilValue(chapterInfoState)
   const currentPage = useRecoilValue(currentPageState) || 0
@@ -48,6 +52,10 @@ export const ContentsDialog: FC<{}> = () => {
 
   while (currentSubChapter?.subChapter) {
     currentSubChapter = currentSubChapter?.subChapter
+  }
+
+  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+    setValue(newValue)
   }
 
   const buildTocForItem = (
@@ -71,7 +79,7 @@ export const ContentsDialog: FC<{}> = () => {
           }}
           color="primary"
           onClick={() => {
-            toggleContentsDialog()
+            toggleMoreDialog()
             reader?.goToUrl(tocItem.href)
           }}
           style={{
@@ -95,27 +103,47 @@ export const ContentsDialog: FC<{}> = () => {
   )
 
   return (
-    <Dialog
-      onClose={toggleContentsDialog}
-      open={isContentsDialogOpened}
-      fullScreen
-    >
-      <DialogTopBar title={title} onClose={toggleContentsDialog} />
-      <Tabs style={styles.tabsContainer} value="toc" indicatorColor="primary">
-        <Tab
-          label="Chapters"
-          value="toc"
-          disableFocusRipple
-          disableRipple
-          disableTouchRipple
-        />
-      </Tabs>
-      <DialogContent style={styles.container}>
-        <List component="nav" style={styles.root}>
-          {toc.map((tocItem, index) => buildTocForItem(tocItem, index, 0))}
-        </List>
-      </DialogContent>
-    </Dialog>
+    <TabContext value={value}>
+      <Dialog
+        onClose={toggleMoreDialog}
+        open={isContentsDialogOpened}
+        fullScreen
+      >
+        <DialogTopBar title={title} onClose={toggleMoreDialog} />
+        <TabList
+          style={styles.tabsContainer}
+          onChange={handleChange}
+          indicatorColor="primary"
+        >
+          <Tab label="Chapters" value="toc" />
+          <Tab label="Settings" value="settings" />
+        </TabList>
+        <DialogContent style={styles.container}>
+          <TabPanel value="toc" sx={{ padding: 0 }}>
+            <List component="nav" style={styles.root}>
+              {toc.map((tocItem, index) => buildTocForItem(tocItem, index, 0))}
+            </List>
+          </TabPanel>
+          <TabPanel value="settings" sx={{ padding: 0 }}>
+            <List>
+              <ListItem disablePadding>
+                <ListItemButton onClick={() => window.location.reload()}>
+                  <ListItemIcon>
+                    <ReplayOutlined />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary="Reload book"
+                    secondary={
+                      "You may try to reload the book if you encounter weird behavior or crash"
+                    }
+                  />
+                </ListItemButton>
+              </ListItem>
+            </List>
+          </TabPanel>
+        </DialogContent>
+      </Dialog>
+    </TabContext>
   )
 }
 

@@ -7,7 +7,7 @@ import { useWakeLock } from "../common/useWakeLock"
 import { useFullScreenSwitch } from "./fullScreen"
 import { Reader } from "./Reader"
 import { Reader as ReaderInstance } from "@prose-reader/core"
-import { ContentsDialog } from "./ContentsDialog"
+import { MoreDialog } from "./MoreDialog"
 import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
 
 // @todo add ISBN label in book details
@@ -34,7 +34,7 @@ export const ReaderScreen: FC<{}> = () => {
     <ReaderContext.Provider value={reader}>
       {bookId && <Reader bookId={bookId} onReader={onReader} />}
       <AppTourReader />
-      <ContentsDialog />
+      <MoreDialog />
     </ReaderContext.Provider>
   )
 }
