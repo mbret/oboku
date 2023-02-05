@@ -1,21 +1,26 @@
 import nano from "nano"
 
 interface iUser extends nano.MaybeDocument {
-  email: string,
-  password: string,
-  contentPassword: string | null,
+  email: string
+  password: string
+  contentPassword: string | null
   roles: string[]
-  type: 'user'
+  type: "user"
   name: string
 }
 
 export class User implements iUser {
   _rev: string | undefined
   roles: string[] = []
-  type = 'user' as const
+  type = "user" as const
   public name
 
-  constructor(public _id: string, public email: string, public password: string, public contentPassword: string) {
+  constructor(
+    public _id: string,
+    public email: string,
+    public password: string,
+    public contentPassword: string
+  ) {
     this.name = email
   }
 

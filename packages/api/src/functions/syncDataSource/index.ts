@@ -1,4 +1,4 @@
-import { handlerPath } from '@libs/handler-resolver';
+import { handlerPath } from "@libs/handler-resolver"
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
@@ -6,12 +6,12 @@ export default {
   events: [
     {
       http: {
-        method: 'post',
-        path: 'sync-datasource',
+        method: "post",
+        path: "sync-datasource",
         // handle preflight cors
         cors: {
           origin: `*`,
-          "headers": [
+          headers: [
             "Content-Type",
             "X-Amz-Date",
             "Authorization",
@@ -19,9 +19,9 @@ export default {
             "X-Amz-Security-Token",
             "X-Amz-User-Agent",
             "oboku-credentials"
-          ],
-        },
-      },
-    },
-  ],
-};
+          ]
+        }
+      }
+    }
+  ]
+}

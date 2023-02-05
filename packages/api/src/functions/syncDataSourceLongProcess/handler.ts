@@ -1,22 +1,32 @@
-import { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
-import { middyfy } from '@libs/lambda';
-import { AWS_API_URI } from '../../constants';
-import { configure as configureGoogleDataSource } from '@libs/dataSources/google'
-import { S3 } from 'aws-sdk'
-import { withToken } from '@libs/auth';
-import schema from './schema';
-import { createHttpError } from '@libs/httpErrors';
-import { dataSourceFacade } from '@libs/dataSources';
-import { getNanoDbForUser } from '@libs/dbHelpers';
+import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import { middyfy } from "@libs/lambda"
+import { AWS_API_URI } from "../../constants"
+import { configure as configureGoogleDataSource } from "@libs/dataSources/google"
+import { S3 } from "aws-sdk"
+import { withToken } from "@libs/auth"
+import schema from "./schema"
+import { createHttpError } from "@libs/httpErrors"
+import { dataSourceFacade } from "@libs/dataSources"
+import { getNanoDbForUser } from "@libs/dbHelpers"
 import axios from "axios"
-import { getParameterValue } from '@libs/ssm';
+import { getParameterValue } from "@libs/ssm"
 
 const s3 = new S3()
 
-const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+  event
+) => {
   configureGoogleDataSource({
-    client_id: await getParameterValue({ Name: `GOOGLE_CLIENT_ID`, WithDecryption: true }) ?? ``,
-    client_secret: await getParameterValue({ Name: `GOOGLE_CLIENT_SECRET`, WithDecryption: true }) ?? ``,
+    client_id:
+      (await getParameterValue({
+        Name: `GOOGLE_CLIENT_ID`,
+        WithDecryption: true
+      })) ?? ``,
+    client_secret:
+      (await getParameterValue({
+        Name: `GOOGLE_CLIENT_SECRET`,
+        WithDecryption: true
+      })) ?? ``
   })
 
   const authorization = event.body.authorization ?? ``
@@ -42,19 +52,20 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) 
       },
       headers: {
         "content-type": "application/json",
-        "accept": "application/json",
-        'oboku-credentials': JSON.stringify(credentials),
-        'authorization': authorization
+        accept: "application/json",
+        "oboku-credentials": JSON.stringify(credentials),
+        authorization: authorization
       }
     })
 
   const isBookCoverExist = async ({ coverId }: { coverId: string }) => {
     try {
       await s3
-        .headObject({ Bucket: 'oboku-covers', Key: `cover-${coverId}` }).promise()
+        .headObject({ Bucket: "oboku-covers", Key: `cover-${coverId}` })
+        .promise()
       return true
     } catch (e) {
-      if ((e as any).code === 'NotFound') return false
+      if ((e as any).code === "NotFound") return false
       throw e
     }
   }
@@ -70,8 +81,8 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) 
 
   return {
     statusCode: 200,
-    body: JSON.stringify({}),
+    body: JSON.stringify({})
   }
-};
+}
 
-export const main = middyfy(lambda);
+export const main = middyfy(lambda)

@@ -1,17 +1,17 @@
-import fetch, { AbortError } from 'node-fetch'
-import { createHttpError } from '@libs/httpErrors';
-import { middyfy } from '@libs/lambda';
-import { APIGatewayProxyEvent } from 'aws-lambda';
+import fetch, { AbortError } from "node-fetch"
+import { createHttpError } from "@libs/httpErrors"
+import { middyfy } from "@libs/lambda"
+import { APIGatewayProxyEvent } from "aws-lambda"
 import AbortController from "abort-controller"
 
 const lambda = async (event: APIGatewayProxyEvent) => {
-  const params = event.queryStringParameters;
+  const params = event.queryStringParameters
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { Host, host, Origin, origin, ...headers } = event.headers;
-  const bodyStr = event.body as string ?? ``
+  const { Host, host, Origin, origin, ...headers } = event.headers
+  const bodyStr = (event.body as string) ?? ``
 
-  console.log(event);
-  console.log(`Got request with params:`, params);
+  console.log(event)
+  console.log(`Got request with params:`, params)
 
   if (!params || !params.url) {
     console.error("Unable get url from 'url' query parameter")
@@ -20,21 +20,21 @@ const lambda = async (event: APIGatewayProxyEvent) => {
 
   const requestParams = Object.entries(params)
     .reduce((acc: string[], param) => {
-      if (param[0] !== 'url') {
-        acc.push((param).join('='))
+      if (param[0] !== "url") {
+        acc.push(param.join("="))
       }
-      return acc;
+      return acc
     }, [])
-    .join('&');
+    .join("&")
 
-  const url = `${params.url}${requestParams}`;
-  const hasBody = /(POST|PUT)/i.test(event.httpMethod);
+  const url = `${params.url}${requestParams}`
+  const hasBody = /(POST|PUT)/i.test(event.httpMethod)
 
   const controller = new AbortController()
 
   // we use a timeout because some resources might just not be available at all or behind forbidden IP
   const timeout = setTimeout(() => {
-    controller.abort();
+    controller.abort()
   }, 20000)
 
   try {
@@ -42,9 +42,9 @@ const lambda = async (event: APIGatewayProxyEvent) => {
       method: event.httpMethod,
       signal: controller.signal,
       body: hasBody ? bodyStr : undefined,
-      headers: headers as any,
-    });
-    console.log(`Got response from ${url} ---> {statusCode: ${res.status}}`);
+      headers: headers as any
+    })
+    console.log(`Got response from ${url} ---> {statusCode: ${res.status}}`)
 
     const bodyBuffer = await res.buffer()
     // text did not work before
@@ -68,24 +68,23 @@ const lambda = async (event: APIGatewayProxyEvent) => {
       statusCode: res.status,
       headers: {
         // ...passthroughHeaders,
-        'content-type': res.headers.get('content-type') || ``,
+        "content-type": res.headers.get("content-type") || ``,
         // 'content-length': res.headers.get('content-length') || ``,
-        'Content-Length': bodyBuffer.byteLength,
-        'Access-Control-Allow-Origin': '*', // Required for CORS support to work
-        'Access-Control-Allow-Credentials': true, // Required for cookies, authorization headers with HTTPS
+        "Content-Length": bodyBuffer.byteLength,
+        "Access-Control-Allow-Origin": "*", // Required for CORS support to work
+        "Access-Control-Allow-Credentials": true // Required for cookies, authorization headers with HTTPS
       },
-      body: bodyBuffer.toString('base64'),
+      body: bodyBuffer.toString("base64"),
       isBase64Encoded: true
-    };
+    }
   } catch (e) {
     if (e instanceof AbortError) {
-      console.error('request was aborted');
+      console.error("request was aborted")
     }
     throw e
   } finally {
     clearTimeout(timeout)
   }
-};
+}
 
-export const main = middyfy(lambda);
-
+export const main = middyfy(lambda)

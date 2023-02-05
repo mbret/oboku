@@ -1,14 +1,16 @@
-import { ValidatedEventAPIGatewayProxyEvent } from '@libs/api-gateway';
-import { middyfy } from '@libs/lambda';
-import schema from './schema';
-import { validators } from '@oboku/shared'
-import createError from 'http-errors'
-import { auth } from '@libs/dbHelpers';
-import createHttpError from 'http-errors';
-import { generateToken } from '@libs/auth';
+import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import { middyfy } from "@libs/lambda"
+import schema from "./schema"
+import { validators } from "@oboku/shared"
+import createError from "http-errors"
+import { auth } from "@libs/dbHelpers"
+import createHttpError from "http-errors"
+import { generateToken } from "@libs/auth"
 
-const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
-  if (!await validators.signinSchema.isValid(event.body)) {
+const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+  event
+) => {
+  if (!(await validators.signinSchema.isValid(event.body))) {
     throw createError(400)
   }
 
@@ -18,7 +20,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) 
 
   if (!authResponse) throw createHttpError(400)
 
-  const userId = Buffer.from(authResponse.name).toString('hex')
+  const userId = Buffer.from(authResponse.name).toString("hex")
   const token = await generateToken(authResponse.name, userId)
 
   return {
@@ -29,6 +31,6 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) 
       dbName: `userdb-${userId}`
     })
   }
-};
+}
 
-export const main = middyfy(lambda);
+export const main = middyfy(lambda)

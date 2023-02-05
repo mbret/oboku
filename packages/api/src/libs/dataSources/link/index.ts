@@ -1,14 +1,15 @@
-import { DataSourcePlugin } from '@oboku/plugin-back'
-import request from 'request'
+import { DataSourcePlugin } from "@oboku/plugin-back"
+import request from "request"
 
 export type UriLinkData = { uri?: string }
 
 const UNIQUE_RESOURCE_ID = `oboku-link`
 
-const extractIdFromResourceId = (resourceId: string) => resourceId.replace(`${UNIQUE_RESOURCE_ID}-`, ``)
+const extractIdFromResourceId = (resourceId: string) =>
+  resourceId.replace(`${UNIQUE_RESOURCE_ID}-`, ``)
 const extractNameFromUri = (resourceId: string) => {
   const downloadLink = extractIdFromResourceId(resourceId)
-  return downloadLink.substring(downloadLink.lastIndexOf('/') + 1) || 'unknown'
+  return downloadLink.substring(downloadLink.lastIndexOf("/") + 1) || "unknown"
 }
 
 export const dataSource: DataSourcePlugin = {
@@ -28,5 +29,5 @@ export const dataSource: DataSourcePlugin = {
       stream: request({ uri: downloadLink })
     }
   },
-  sync: async () => ({ items: [], name: '' })
+  sync: async () => ({ items: [], name: "" })
 }

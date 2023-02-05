@@ -1,34 +1,34 @@
 // import { COUCH_DB_URL } from "../constants";
-import createNano from "nano";
-import { generateAdminToken, generateToken } from "./auth";
+import createNano from "nano"
+import { generateAdminToken, generateToken } from "./auth"
 import {
   SafeMangoQuery,
   InsertAbleBookDocType,
   ReadingStateState,
   DocType,
-  ModelOf,
-} from "@oboku/shared";
-import { User } from "./couchDbEntities";
-import { waitForRandomTime } from "./utils";
-import { COUCH_DB_URL } from "../constants";
+  ModelOf
+} from "@oboku/shared"
+import { User } from "./couchDbEntities"
+import { waitForRandomTime } from "./utils"
+import { COUCH_DB_URL } from "../constants"
 
-console.log(COUCH_DB_URL);
+console.log(COUCH_DB_URL)
 
 export const createUser = async (
   db: createNano.ServerScope,
   username: string,
   password: string
 ) => {
-  const obokuDb = db.use("_users");
+  const obokuDb = db.use("_users")
   const newUser = new User(
     `org.couchdb.user:${username}`,
     username,
     password,
     ""
-  );
+  )
 
-  await obokuDb.insert(newUser, newUser._id);
-};
+  await obokuDb.insert(newUser, newUser._id)
+}
 
 export async function atomicUpdate<
   M extends DocType["rx_model"],
@@ -40,12 +40,12 @@ export async function atomicUpdate<
   cb: (oldData: createNano.DocumentGetResponse & K) => Partial<K>
 ) {
   return retryFn(async () => {
-    const doc = (await db.get(id)) as createNano.DocumentGetResponse & K;
-    const { rx_model, ...rest } = cb(doc);
-    if (rxModel !== doc.rx_model) throw new Error("Invalid document type");
+    const doc = (await db.get(id)) as createNano.DocumentGetResponse & K
+    const { rx_model, ...rest } = cb(doc)
+    if (rxModel !== doc.rx_model) throw new Error("Invalid document type")
 
-    return await db.insert({ ...rest, rx_model, _rev: doc._rev, _id: doc._id });
-  });
+    return await db.insert({ ...rest, rx_model, _rev: doc._rev, _id: doc._id })
+  })
 }
 
 export const insert = async <
@@ -56,14 +56,14 @@ export const insert = async <
   rxModel: M,
   data: Omit<D, "rx_model" | "_id" | "_rev">
 ) => {
-  const finalData = { ...data, rx_model: rxModel };
+  const finalData = { ...data, rx_model: rxModel }
 
-  const doc = await db.insert(finalData as any);
+  const doc = await db.insert(finalData as any)
 
-  if (!doc.ok) throw new Error("Unable to create document");
+  if (!doc.ok) throw new Error("Unable to create document")
 
-  return doc;
-};
+  return doc
+}
 
 export const findOne = async <
   M extends DocType["rx_model"],
@@ -73,46 +73,46 @@ export const findOne = async <
   rxModel: M,
   query: SafeMangoQuery<D>
 ) => {
-  const { fields, ...restQuery } = query;
-  const fieldsWithRequiredFields = fields;
+  const { fields, ...restQuery } = query
+  const fieldsWithRequiredFields = fields
   if (Array.isArray(fieldsWithRequiredFields)) {
-    fieldsWithRequiredFields.push(`rx_model`);
+    fieldsWithRequiredFields.push(`rx_model`)
   }
   const response = await retryFn(() =>
     db.find({
       ...restQuery,
       fields: fields as string[],
       selector: { rx_model: rxModel, ...(query?.selector as any) },
-      limit: 1,
+      limit: 1
     })
-  );
+  )
 
-  if (response.docs.length === 0) return null;
+  if (response.docs.length === 0) return null
 
   const doc = response
-    .docs[0] as createNano.MangoResponse<unknown>["docs"][number] & D;
+    .docs[0] as createNano.MangoResponse<unknown>["docs"][number] & D
 
-  if (rxModel !== doc.rx_model) throw new Error(`Invalid document type`);
+  if (rxModel !== doc.rx_model) throw new Error(`Invalid document type`)
 
-  return doc;
-};
+  return doc
+}
 
 export const find = async <M extends DocType["rx_model"], D extends DocType>(
   db: createNano.DocumentScope<unknown>,
   rxModel: M,
   query: SafeMangoQuery<D>
 ) => {
-  const { fields, ...restQuery } = query;
+  const { fields, ...restQuery } = query
   const response = await retryFn(() =>
     db.find({
       ...restQuery,
       fields: fields as string[],
-      selector: { rx_model: rxModel, ...(query?.selector as any) },
+      selector: { rx_model: rxModel, ...(query?.selector as any) }
     })
-  );
+  )
 
-  return response.docs;
-};
+  return response.docs
+}
 
 export const createBook = async (
   db: createNano.DocumentScope<unknown>,
@@ -141,31 +141,31 @@ export const createBook = async (
     modifiedAt: null,
     isAttachedToDataSource: false,
     rxdbMeta: { lwt: new Date().getTime() },
-    ...data,
-  };
+    ...data
+  }
 
-  return insert(db, "book", { ...insertData, ...data });
-};
+  return insert(db, "book", { ...insertData, ...data })
+}
 
 export const addTagsToBook = async (
   db: createNano.DocumentScope<unknown>,
   bookId: string,
   tagIds: string[]
 ) => {
-  if (tagIds.length === 0) return;
+  if (tagIds.length === 0) return
   return Promise.all([
     atomicUpdate(db, "book", bookId, (old) => ({
       ...old,
-      tags: [...old.tags.filter((tag) => !tagIds.includes(tag)), ...tagIds],
+      tags: [...old.tags.filter((tag) => !tagIds.includes(tag)), ...tagIds]
     })),
     ...tagIds.map((tagId) =>
       atomicUpdate(db, "tag", tagId, (old) => ({
         ...old,
-        books: [...old.books.filter((id) => id !== bookId), bookId],
+        books: [...old.books.filter((id) => id !== bookId), bookId]
       }))
-    ),
-  ]);
-};
+    )
+  ])
+}
 
 /**
  * Attach or create and attach given tags to the book.
@@ -185,9 +185,9 @@ export const getOrCreateTagFromName = (
 ) => {
   return retryFn(async () => {
     // Get all tag ids and create one if it does not exist
-    const existingTag = await findOne(db, "tag", { selector: { name } });
+    const existingTag = await findOne(db, "tag", { selector: { name } })
     if (existingTag) {
-      return existingTag._id;
+      return existingTag._id
     }
     const insertedTag = await insert(db, "tag", {
       isProtected: false,
@@ -196,13 +196,13 @@ export const getOrCreateTagFromName = (
       createdAt: new Date().toISOString(),
       modifiedAt: null,
       rxdbMeta: {
-        lwt: new Date().getTime(),
-      },
-    });
+        lwt: new Date().getTime()
+      }
+    })
 
-    return insertedTag.id;
-  });
-};
+    return insertedTag.id
+  })
+}
 
 /**
  *
@@ -215,13 +215,13 @@ export const createTagFromName = (
   silent: boolean
 ) => {
   return retryFn(async () => {
-    const existingTag = await findOne(db, "tag", { selector: { name } });
+    const existingTag = await findOne(db, "tag", { selector: { name } })
 
     if (existingTag) {
       if (silent) {
-        return { id: existingTag._id, created: false };
+        return { id: existingTag._id, created: false }
       } else {
-        throw new Error(`Tag already exists`);
+        throw new Error(`Tag already exists`)
       }
     }
 
@@ -232,13 +232,13 @@ export const createTagFromName = (
       createdAt: new Date().toISOString(),
       modifiedAt: null,
       rxdbMeta: {
-        lwt: new Date().getTime(),
-      },
-    });
+        lwt: new Date().getTime()
+      }
+    })
 
-    return { id: insertedTag.id, created: true };
-  });
-};
+    return { id: insertedTag.id, created: true }
+  })
+}
 
 export const addLinkToBook = async (
   db: createNano.DocumentScope<unknown>,
@@ -249,22 +249,22 @@ export const addLinkToBook = async (
     atomicUpdate(db, "book", bookId, (old) => {
       return {
         ...old,
-        links: [...old.links.filter((id) => id !== linkId), linkId],
-      };
+        links: [...old.links.filter((id) => id !== linkId), linkId]
+      }
     }),
     atomicUpdate(db, "link", linkId, (old) => ({
       ...old,
-      book: bookId,
-    })),
-  ]);
-};
+      book: bookId
+    }))
+  ])
+}
 
 export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {
-  let currentRetry = retry;
+  let currentRetry = retry
 
   const retryable = async (): Promise<T> => {
     try {
-      return await fn();
+      return await fn()
     } catch (e) {
       if (
         ((e as any)?.message === "error happened in your connection" ||
@@ -272,27 +272,27 @@ export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {
           (e as any)?.statusCode === 409) &&
         currentRetry > 0
       ) {
-        await waitForRandomTime(1, 200);
-        currentRetry--;
-        return await retryable();
+        await waitForRandomTime(1, 200)
+        currentRetry--
+        return await retryable()
       }
-      throw e;
+      throw e
     }
-  };
+  }
 
-  return await retryable();
-};
+  return await retryable()
+}
 
 export const getNanoDbForUser = async (userEmail: string) => {
   // const couchDbSecret = crypto.createHmac('sha1', COUCH_DB_PROXY_SECRET)
-  const hexEncodedUserId = Buffer.from(userEmail).toString("hex");
+  const hexEncodedUserId = Buffer.from(userEmail).toString("hex")
 
   const db = await getNano({
-    jwtToken: await generateToken(userEmail, hexEncodedUserId),
-  });
+    jwtToken: await generateToken(userEmail, hexEncodedUserId)
+  })
 
-  return db.use(`userdb-${hexEncodedUserId}`);
-};
+  return db.use(`userdb-${hexEncodedUserId}`)
+}
 
 export const getNano = async ({ jwtToken }: { jwtToken?: string } = {}) => {
   return createNano({
@@ -303,32 +303,32 @@ export const getNano = async ({ jwtToken }: { jwtToken?: string } = {}) => {
         "content-type": "application/json",
         accept: "application/json",
         ...(jwtToken && {
-          Authorization: `Bearer ${jwtToken}`,
-        }),
-      },
-    } as any,
-  });
-};
+          Authorization: `Bearer ${jwtToken}`
+        })
+      }
+    } as any
+  })
+}
 
 /**
  * WARNING: be very careful when using nano as admin since you will have full power.
  * As you know with great power comes great responsibilities
  */
 export const getAdminNano = async (options: { sub?: string } = {}) => {
-  return getNano({ jwtToken: await generateAdminToken(options) });
-};
+  return getNano({ jwtToken: await generateAdminToken(options) })
+}
 
 export const auth = async (username: string, userpass: string) => {
-  const db = await getNano();
+  const db = await getNano()
 
   try {
-    const response = await db.auth(username, userpass);
+    const response = await db.auth(username, userpass)
     if (!response.ok || !response.name) {
-      return null;
+      return null
     }
-    return response;
+    return response
   } catch (e) {
-    if ((e as any)?.statusCode === 401) return null;
-    throw e;
+    if ((e as any)?.statusCode === 401) return null
+    throw e
   }
-};
+}

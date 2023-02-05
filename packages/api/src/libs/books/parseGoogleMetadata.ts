@@ -16,7 +16,11 @@ export const parseGoogleMetadata = (data: GoogleBooksApiResult) => {
     // In case the book is part of series, there is a high chance the volume number will not be present in title
     // the title end up being a generic title for all volumes.
     // In this case we append the volume number to the title
-    if (item.volumeInfo.seriesInfo?.bookDisplayNumber && (!item.volumeInfo.title.includes(`Vol `) && !item.volumeInfo.title.includes(`Vol. `))) {
+    if (
+      item.volumeInfo.seriesInfo?.bookDisplayNumber &&
+      !item.volumeInfo.title.includes(`Vol `) &&
+      !item.volumeInfo.title.includes(`Vol. `)
+    ) {
       normalizedMetadata.title = `${normalizedMetadata.title} Vol ${item.volumeInfo.seriesInfo?.bookDisplayNumber}`
     }
   }

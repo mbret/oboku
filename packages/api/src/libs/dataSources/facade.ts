@@ -1,7 +1,7 @@
 import { LinkDocType, ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { createHelpers } from "./helpers"
 import { sync } from "./sync"
-import createNano from 'nano'
+import createNano from "nano"
 import { plugins } from "./plugins"
 import { atomicUpdate } from "@libs/dbHelpers"
 
@@ -26,28 +26,45 @@ export const dataSourceFacade = {
 
     throw new Error(`No dataSource found for action`)
   },
-  sync: async ({ dataSourceId, userEmail, credentials, refreshBookMetadata, db, isBookCoverExist }: {
-    dataSourceId: string,
-    userEmail: string,
-    credentials?: any,
-    refreshBookMetadata: ({ bookId }: { bookId: string }) => Promise<any>,
-    isBookCoverExist: ({ coverId }: { coverId: string }) => Promise<boolean>,
+  sync: async ({
+    dataSourceId,
+    userEmail,
+    credentials,
+    refreshBookMetadata,
+    db,
+    isBookCoverExist
+  }: {
+    dataSourceId: string
+    userEmail: string
+    credentials?: any
+    refreshBookMetadata: ({ bookId }: { bookId: string }) => Promise<any>
+    isBookCoverExist: ({ coverId }: { coverId: string }) => Promise<boolean>
     db: createNano.DocumentScope<unknown>
   }) => {
-    console.log(`dataSourceFacade started sync for ${dataSourceId} with user ${userEmail}`)
+    console.log(
+      `dataSourceFacade started sync for ${dataSourceId} with user ${userEmail}`
+    )
 
-    const userId = Buffer.from(userEmail).toString('hex')
-    const helpers = createHelpers(dataSourceId, refreshBookMetadata, db, isBookCoverExist, userId)
+    const userId = Buffer.from(userEmail).toString("hex")
+    const helpers = createHelpers(
+      dataSourceId,
+      refreshBookMetadata,
+      db,
+      isBookCoverExist,
+      userId
+    )
 
     try {
-      const dataSource = await helpers.findOne('datasource', { selector: { _id: dataSourceId } })
+      const dataSource = await helpers.findOne("datasource", {
+        selector: { _id: dataSourceId }
+      })
 
-      if (!dataSource) throw new Error('Data source not found')
+      if (!dataSource) throw new Error("Data source not found")
 
-      if (dataSource.syncStatus !== 'fetching') {
-        await atomicUpdate(db, 'datasource', dataSource._id, old => ({
+      if (dataSource.syncStatus !== "fetching") {
+        await atomicUpdate(db, "datasource", dataSource._id, (old) => ({
           ...old,
-          syncStatus: 'fetching' as const,
+          syncStatus: "fetching" as const
         }))
       }
 
@@ -70,11 +87,11 @@ export const dataSourceFacade = {
 
       console.log(`Update datasource with sync success flag`)
 
-      await atomicUpdate(db, 'datasource', dataSourceId, old => ({
+      await atomicUpdate(db, "datasource", dataSourceId, (old) => ({
         ...old,
         lastSyncedAt,
         lastSyncErrorCode: null,
-        syncStatus: null,
+        syncStatus: null
       }))
 
       console.log(`dataSourcesSync for ${dataSourceId} completed successfully`)
@@ -84,10 +101,10 @@ export const dataSourceFacade = {
         lastSyncErrorCode = e.code
       }
 
-      await atomicUpdate(db, 'datasource', dataSourceId, old => ({
+      await atomicUpdate(db, "datasource", dataSourceId, (old) => ({
         ...old,
         lastSyncErrorCode,
-        syncStatus: null,
+        syncStatus: null
       }))
 
       throw e

@@ -1,9 +1,9 @@
 export default {
   type: "object",
   properties: {
-    dataSourceId: { type: 'string' },
+    dataSourceId: { type: "string" },
     credentials: { type: `string` },
-    authorization: { type: `string` },
+    authorization: { type: `string` }
   },
   required: []
-} as const;
+} as const

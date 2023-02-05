@@ -10,8 +10,9 @@ type ValidatedAPIGatewayProxyEvent<S extends JSONSchema> = Omit<
   "body"
 > & { body: FromSchema<S> }
 
-export type ValidatedEventAPIGatewayProxyEvent<S extends JSONSchema = Record<string, unknown>> =
-  Handler<ValidatedAPIGatewayProxyEvent<S>, APIGatewayProxyResult>
+export type ValidatedEventAPIGatewayProxyEvent<
+  S extends JSONSchema = Record<string, unknown>
+> = Handler<ValidatedAPIGatewayProxyEvent<S>, APIGatewayProxyResult>
 
 export const getEventBody = (event: APIGatewayProxyEvent) => {
   if (!event.body) {

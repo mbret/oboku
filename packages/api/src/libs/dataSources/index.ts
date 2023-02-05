@@ -1,5 +1,3 @@
-import { dataSourceFacade } from './facade'
+import { dataSourceFacade } from "./facade"
 
-export {
-  dataSourceFacade
-}
+export { dataSourceFacade }

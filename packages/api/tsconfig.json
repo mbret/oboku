@@ -14,7 +14,12 @@
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "serverless.ts", "scripts/**/*.ts", "serverlessHelpers.ts"],
+  "include": [
+    "src/**/*.ts",
+    "serverless.ts",
+    "scripts/**/*.ts",
+    "serverlessHelpers.ts"
+  ],
   "exclude": [
     "node_modules/**/*",
     ".serverless/**/*",

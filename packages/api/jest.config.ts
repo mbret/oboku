@@ -1,10 +1,10 @@
-import type { Config } from "@jest/types";
+import type { Config } from "@jest/types"
 
 const config: Config.InitialOptions = {
   preset: "ts-jest",
   verbose: false,
   testEnvironment: "node",
-  testPathIgnorePatterns: ["/node_modules/", "__api"],
-};
+  testPathIgnorePatterns: ["/node_modules/", "__api"]
+}
 
-export default config;
+export default config

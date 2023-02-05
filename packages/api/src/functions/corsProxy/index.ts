@@ -1,4 +1,4 @@
-import { handlerPath } from '@libs/handler-resolver';
+import { handlerPath } from "@libs/handler-resolver"
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
@@ -6,11 +6,11 @@ export default {
   events: [
     {
       http: {
-        method: 'get',
-        path: 'cors',
+        method: "get",
+        path: "cors",
         // handle preflight cors
-        cors: true,
-      },
-    },
-  ],
-};
+        cors: true
+      }
+    }
+  ]
+}
