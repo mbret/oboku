@@ -19,6 +19,7 @@ export const useModalNavigationControl = (
       if (currentHash && window.location.hash !== currentHash) {
         onExit()
         closeCb.current && closeCb.current()
+        closeCb.current = undefined
         setCurrentHash(undefined)
       }
     }
