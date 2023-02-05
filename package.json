@@ -20,7 +20,8 @@
     "build:api": "lerna run build --scope=@oboku/api",
     "build:landing": "lerna run landing:build",
     "test": "lerna run test",
-    "format": "prettier -w .",
+    "tsc": "lerna run tsc",
+    "format": "prettier -w . && lerna run lint --scope @oboku/api -- --fix",
     "postinstall": "npx ts-node scripts/installSharp.ts --project scripts/tsconfig.json --platform darwin"
   },
   "devDependencies": {
