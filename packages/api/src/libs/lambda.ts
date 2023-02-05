@@ -7,9 +7,32 @@ import cors from "@middy/http-cors"
 import { Lambda } from "aws-sdk"
 import { OFFLINE } from "../constants"
 
-export const middyfy = (handler: any) => {
+export const middyfy = (
+  handler: any,
+  {
+    withCors = true
+  }: {
+    /**
+     * cors middleware only support REST / HTTP format. Some lambda are invoked from
+     * others lambda and therefore does not comply to the right format. These lambda
+     * can skip cors
+     */
+    withCors?: boolean
+  } = {}
+) => {
   return (
     middy(handler)
+      /**
+       * Some lambda are invoked from others lambda and therefore does not comply to the right format. These lambda.
+       * We make sure to have headers so the middy json does not fail
+       */
+      .use({
+        before: (request) => {
+          if (!request.event.headers) {
+            request.event.headers = {}
+          }
+        }
+      })
       .use(httpHeaderNormalizer())
       .use(middyJsonBodyParser())
       .use({
@@ -43,9 +66,15 @@ export const middyfy = (handler: any) => {
       )
       // @todo eventually protect the api and only allow a subset of origins
       .use(
-        cors({
-          headers: `*`
-        })
+        withCors
+          ? cors({
+              headers: `*`
+            })
+          : {
+              before: () => {
+                //
+              }
+            }
       )
   )
 }

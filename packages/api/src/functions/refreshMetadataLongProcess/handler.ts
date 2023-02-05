@@ -111,4 +111,6 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 }
 
-export const main = middyfy(lambda)
+export const main = middyfy(lambda, {
+  withCors: false
+})
