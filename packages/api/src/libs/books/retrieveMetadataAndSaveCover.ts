@@ -2,7 +2,6 @@ import fs from "fs"
 import path from "path"
 import unzipper from "unzipper"
 import { dataSourceFacade } from "../dataSources/facade"
-import parser from "fast-xml-parser"
 import { BookDocType, LinkDocType, OPF } from "@oboku/shared"
 import { detectMimeTypeFromContent } from "../utils"
 import { PromiseReturnType } from "../types"
@@ -18,6 +17,7 @@ import {
   METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS,
   TMP_DIR
 } from "../../constants"
+import { parseXmlAsJson } from "./parseXmlAsJson"
 
 const logger = Logger.namespace("retrieveMetadataAndSaveCover")
 
@@ -171,10 +171,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
                 filepath.lastIndexOf("/")
               )}`
               const xml = (await entry.buffer()).toString("utf8")
-              opfAsJson = parser.parse(xml, {
-                attributeNamePrefix: "",
-                ignoreAttributes: false
-              })
+              opfAsJson = parseXmlAsJson(xml)
               entry.autodrain()
             } else {
               entry.autodrain()
