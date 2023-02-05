@@ -41,7 +41,7 @@ const serverlessConfiguration: AWS = {
   plugins: ["serverless-offline", "serverless-esbuild"],
   provider: {
     name: "aws",
-    runtime: "nodejs14.x",
+    runtime: "nodejs16.x",
     timeout: 30, //  30 seconds
     apiGateway: {
       minimumCompressionSize: 1024,
