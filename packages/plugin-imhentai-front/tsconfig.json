@@ -4,10 +4,7 @@
     "noImplicitAny": true,
     "module": "es6",
     "target": "es6",
-    "lib": [
-      "DOM",
-      "esnext"
-    ],
+    "lib": ["DOM", "esnext"],
     "strict": true,
     "allowJs": false,
     "moduleResolution": "node",

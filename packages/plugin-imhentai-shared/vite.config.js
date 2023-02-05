@@ -3,7 +3,7 @@ import dts from "vite-plugin-dts"
 import { resolve } from "path"
 import { name } from "./package.json"
 
-const libName = name.replace("@", "").replace("\/", "-")
+const libName = name.replace("@", "").replace("/", "-")
 
 export default defineConfig(({ mode }) => ({
   build: {

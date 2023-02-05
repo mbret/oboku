@@ -93,15 +93,9 @@
   "scripts": {
     "predeploy": "npm run build",
     "start": "vite",
-    "build:web": "vite build",
-    "build:sw": "vite build --config ./vite.sw.config.js",
     "build": "tsc && vite build",
-    "build-sw-dev": "webpack build --config ./webpack.serviceWorker.config.js",
-    "build:vite": "vite build",
     "preview": "vite preview",
     "test": "react-scripts test",
-    "start-prod": "npm run build && npm run serve-prod",
-    "serve-prod": "serve -s build -l 3000",
     "tsc": "tsc",
     "webpack": "webpack -v"
   },

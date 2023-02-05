@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => ({
     lib: {
       entry: resolve(__dirname, `src/index.ts`),
       name: libName,
-      fileName: libName,
+      fileName: libName
       // formats: ["cjs"]
     },
     emptyOutDir: mode !== "development",

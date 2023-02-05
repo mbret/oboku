@@ -17,7 +17,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "skipLibCheck": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "Node"
   },
   "include": ["src"],
   "exclude": ["**/dist", "**/*.test.ts"]

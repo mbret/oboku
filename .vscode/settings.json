@@ -6,7 +6,5 @@
     "**/dist": true
   },
   "typescript.tsdk": "node_modules/typescript/lib",
-  "cSpell.words": [
-    "cryptojs"
-  ]
+  "cSpell.words": ["cryptojs"]
 }
