@@ -10,7 +10,10 @@ it(`should retrieve metadata`, async () => {
     createdAt: ``,
     data: ``,
     modifiedAt: ``,
-    resourceId: dataSourceHelpers.generateResourceId(UNIQUE_RESOURCE_IDENTIFIER, `774006`),
+    resourceId: dataSourceHelpers.generateResourceId(
+      UNIQUE_RESOURCE_IDENTIFIER,
+      `774006`
+    ),
     rx_model: `link`,
     type: TYPE,
     rxdbMeta: {

@@ -1,5 +1,14 @@
-import { DataSourcePlugin, dataSourceHelpers, cheerio, fetch } from "@oboku/plugin-back"
-import { UNIQUE_RESOURCE_IDENTIFIER, BASE_URI, TYPE } from "@oboku/plugin-imhentai-shared"
+import {
+  DataSourcePlugin,
+  dataSourceHelpers,
+  cheerio,
+  fetch
+} from "@oboku/plugin-back"
+import {
+  UNIQUE_RESOURCE_IDENTIFIER,
+  BASE_URI,
+  TYPE
+} from "@oboku/plugin-imhentai-shared"
 
 export const plugin: DataSourcePlugin = {
   type: TYPE,
@@ -7,7 +16,10 @@ export const plugin: DataSourcePlugin = {
     throw new Error(`Not implemented!`)
   },
   getMetadata: async (link) => {
-    const galleryId = dataSourceHelpers.extractIdFromResourceId(UNIQUE_RESOURCE_IDENTIFIER, link.resourceId)
+    const galleryId = dataSourceHelpers.extractIdFromResourceId(
+      UNIQUE_RESOURCE_IDENTIFIER,
+      link.resourceId
+    )
     const uri = `${BASE_URI}/gallery/${galleryId}`
 
     const response = await fetch(uri)
@@ -28,30 +40,36 @@ export const plugin: DataSourcePlugin = {
 
       switch (label) {
         case `Languages:`: {
-          $(e).find(`a.tag`).each((_, aElement) => {
-            const textNode = aElement.firstChild
-            if (textNode) {
-              languages.push($(textNode).text().trim())
-            }
-          })
+          $(e)
+            .find(`a.tag`)
+            .each((_, aElement) => {
+              const textNode = aElement.firstChild
+              if (textNode) {
+                languages.push($(textNode).text().trim())
+              }
+            })
           break
         }
         case `Artists:`: {
-          $(e).find(`a.tag`).each((_, aElement) => {
-            const textNode = aElement.firstChild
-            if (textNode) {
-              creators.push($(textNode).text().trim())
-            }
-          })
+          $(e)
+            .find(`a.tag`)
+            .each((_, aElement) => {
+              const textNode = aElement.firstChild
+              if (textNode) {
+                creators.push($(textNode).text().trim())
+              }
+            })
           break
         }
         case `Tags:`: {
-          $(e).find(`a.tag`).each((_, aElement) => {
-            const textNode = aElement.firstChild
-            if (textNode) {
-              subjects.push($(textNode).text().trim())
-            }
-          })
+          $(e)
+            .find(`a.tag`)
+            .each((_, aElement) => {
+              const textNode = aElement.firstChild
+              if (textNode) {
+                subjects.push($(textNode).text().trim())
+              }
+            })
           break
         }
         default:
