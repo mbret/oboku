@@ -16,7 +16,7 @@ import { useWatchAndFixConflicts } from "./useWatchAndFixConflicts"
 import { authState } from "../../auth/authState"
 import { syncCollections } from "../replication/syncCollections"
 
-type callback = Parameters<typeof PouchDB["sync"]>[3]
+type callback = Parameters<(typeof PouchDB)["sync"]>[3]
 type PouchError = NonNullable<Parameters<NonNullable<callback>>[0]>
 
 export const useSettingsStateReducer = () => {

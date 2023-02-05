@@ -195,7 +195,7 @@ let generatedId = 0
  * @todo use recoil or another way to not re-render all children
  * whenever dialog changes
  */
-export const DialogProvider: FC<{children: ReactNode}> = ({ children }) => {
+export const DialogProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [dialogs, setDialogs] = useState<DialogType[]>([])
 
   const remove = useCallback((id: string) => {
