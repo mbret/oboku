@@ -1,5 +1,5 @@
-import React, { FC } from "react";
-import { Box, BoxProps, Typography } from "@mui/material";
+import React, { FC } from "react"
+import { Box, BoxProps, Typography } from "@mui/material"
 
 export const OrDivider: FC<
   { title?: string; style?: React.CSSProperties } & BoxProps
@@ -18,7 +18,7 @@ export const OrDivider: FC<
         height="1px"
         style={{
           borderBottom: "1px solid black",
-          opacity: "30%",
+          opacity: "30%"
         }}
       ></Box>
       <Box marginX={2}>
@@ -28,9 +28,9 @@ export const OrDivider: FC<
         width="100%"
         style={{
           borderBottom: "1px solid black",
-          opacity: "30%",
+          opacity: "30%"
         }}
       ></Box>
     </Box>
-  );
-};
+  )
+}

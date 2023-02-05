@@ -1,7 +1,7 @@
-import { ThemeProvider, StyledEngineProvider } from "@mui/material";
-import { theme } from "./theme";
-import { Home } from "./Home";
-import CssBaseline from "@mui/material/CssBaseline";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material"
+import { theme } from "./theme"
+import { Home } from "./Home"
+import CssBaseline from "@mui/material/CssBaseline"
 
 export function App() {
   return (
@@ -13,5 +13,5 @@ export function App() {
         </ThemeProvider>
       </StyledEngineProvider>
     </>
-  );
+  )
 }

@@ -69,10 +69,7 @@ export const Home = () => {
               {links.documentation}
             </Link>{" "}
             for more information and join us on{" "}
-            <Link
-              href="https://discord.gg/eB6MrMmmPN"
-              target="_blank"
-            >
+            <Link href="https://discord.gg/eB6MrMmmPN" target="_blank">
               discord
             </Link>
           </Typography>
