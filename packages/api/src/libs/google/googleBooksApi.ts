@@ -48,5 +48,5 @@ export const findByISBN = async (isbn: string) => {
     return response.data
   }
 
-  throw new Error(`An error occured during findByISBN`)
+  throw new Error(`An error occurred during findByISBN`)
 }
