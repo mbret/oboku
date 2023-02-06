@@ -1,4 +1,5 @@
 import {
+  Alert,
   alpha,
   Box,
   Button,
@@ -99,6 +100,11 @@ export const Home = () => {
               discord
             </Link>
           </Typography>
+          <Alert severity="info">
+            <b>oboku</b> is a working product but still in{" "}
+            <b>active development</b>! Documentations and resources are under
+            construction and we need your feedback to improve the product.
+          </Alert>
           <div style={{ paddingBottom: theme.spacing(3) }} />
           <BetaRegister />
           <OrDivider />
