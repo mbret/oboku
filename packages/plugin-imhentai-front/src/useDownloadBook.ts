@@ -1,12 +1,18 @@
 import { useCallback } from "react"
 import { ObokuPlugin, dataSourceHelpers } from "@oboku/plugin-front"
-import { BASE_URI, UNIQUE_RESOURCE_IDENTIFIER } from "@oboku/plugin-imhentai-shared"
+import {
+  BASE_URI,
+  UNIQUE_RESOURCE_IDENTIFIER
+} from "@oboku/plugin-imhentai-shared"
 
-type StreamOutput = { baseUri: string, response: Response, progress: number }
+type StreamOutput = { baseUri: string; response: Response; progress: number }
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({ apiUri }) => {
   return useCallback(async ({ resourceId }) => {
-    const galleryId = dataSourceHelpers.extractIdFromResourceId(UNIQUE_RESOURCE_IDENTIFIER, resourceId)
+    const galleryId = dataSourceHelpers.extractIdFromResourceId(
+      UNIQUE_RESOURCE_IDENTIFIER,
+      resourceId
+    )
 
     const uri = `${BASE_URI}/gallery/${galleryId}`
     const response = await fetch(`${apiUri}/cors?url=${uri}`, {
@@ -31,10 +37,15 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({ apiUri }) => {
   }, [])
 }
 
-const resolveFirstThumbnailImg = (doc: Document) => doc.querySelector(`#append_thumbs .gthumb img`)
+const resolveFirstThumbnailImg = (doc: Document) =>
+  doc.querySelector(`#append_thumbs .gthumb img`)
 
 const resolvePagesForGallery = (doc: Document) => {
-  const numberOfPages = parseInt(doc.querySelector(`.galleries_info .pages`)?.textContent?.replace(`Pages: `, ``) || `0`)
+  const numberOfPages = parseInt(
+    doc
+      .querySelector(`.galleries_info .pages`)
+      ?.textContent?.replace(`Pages: `, ``) || `0`
+  )
   const firstThumbImg = resolveFirstThumbnailImg(doc)
 
   if (!firstThumbImg) return []
@@ -42,7 +53,9 @@ const resolvePagesForGallery = (doc: Document) => {
   const firstThumUriTemplate = (firstThumbImg as HTMLImageElement).dataset.src
 
   // we use .lazyload to ignore the second no script img tag
-  return Array.from(Array(numberOfPages)).map((_, index) => firstThumUriTemplate?.replace(`1t.`, `${index}t.`) || ``)
+  return Array.from(Array(numberOfPages)).map(
+    (_, index) => firstThumUriTemplate?.replace(`1t.`, `${index}t.`) || ``
+  )
 }
 
 const resolveDirectPageBaseUri = (doc: Document) => {
@@ -50,18 +63,26 @@ const resolveDirectPageBaseUri = (doc: Document) => {
 
   if (!firstImgElementForFirstThumbnailElement) return
 
-  const firstImgElementForFirstThumbnailLink = (firstImgElementForFirstThumbnailElement as HTMLImageElement).dataset.src || ``
-  const uriWithoutFileName = firstImgElementForFirstThumbnailLink
-    .substring(0, firstImgElementForFirstThumbnailLink.lastIndexOf(`/`))
+  const firstImgElementForFirstThumbnailLink =
+    (firstImgElementForFirstThumbnailElement as HTMLImageElement).dataset.src ||
+    ``
+  const uriWithoutFileName = firstImgElementForFirstThumbnailLink.substring(
+    0,
+    firstImgElementForFirstThumbnailLink.lastIndexOf(`/`)
+  )
 
   return uriWithoutFileName
 }
 
-function getUrlExtension (url: string) {
+function getUrlExtension(url: string) {
   return url.split(/[#?]/)[0]?.split(`.`)?.pop()?.trim()
 }
 
-const getGalleryPages = (apiUri: string, directPagesBaseUri: string, thumbnailPages: string[]) => {
+const getGalleryPages = (
+  apiUri: string,
+  directPagesBaseUri: string,
+  thumbnailPages: string[]
+) => {
   let cancelled = false
 
   return new ReadableStream<StreamOutput>({
@@ -82,9 +103,13 @@ const getGalleryPages = (apiUri: string, directPagesBaseUri: string, thumbnailPa
             throw new Error(`Unable to retrieve page ${imgUri}`)
           }
 
-          controller.enqueue({ baseUri: imgBaseUri, response, progress: index / thumbnailPages.length })
+          controller.enqueue({
+            baseUri: imgBaseUri,
+            response,
+            progress: index / thumbnailPages.length
+          })
 
-          if (index < (thumbnailPages.length - 1)) {
+          if (index < thumbnailPages.length - 1) {
             await downloadPage(index + 1)
           }
         }
@@ -96,7 +121,7 @@ const getGalleryPages = (apiUri: string, directPagesBaseUri: string, thumbnailPa
         controller.error(e)
       }
     },
-    cancel () {
+    cancel() {
       cancelled = true
     }
   })
