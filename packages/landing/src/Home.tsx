@@ -9,23 +9,15 @@ import {
   useTheme
 } from "@mui/material"
 import {
-  AccessAlarm,
-  AttachMoneyOutlined,
   AttachMoneyRounded,
   CloudDownloadRounded,
   DevicesFoldRounded,
   GitHub,
-  LanguageRounded,
   LibraryBooksRounded,
-  LinkRounded,
   LocalLibraryRounded,
   LockOpenRounded,
-  MoneyOutlined,
   OpenInNewOutlined,
-  OpenInNewRounded,
-  PhonelinkRingRounded,
   PhonelinkRounded,
-  SignalCellularOffOutlined,
   SignalCellularOffRounded,
   StickyNote2Rounded,
   TabletMacRounded
@@ -72,7 +64,6 @@ const AppHighlightSection = () => {
     <Box
       display="flex"
       flexDirection="column"
-      // border="1px solid black"
       alignItems="center"
       textAlign="center"
     >
@@ -150,7 +141,8 @@ export const Home = () => {
             textAlign: "center",
             display: "flex",
             alignItems: "center",
-            flexFlow: "column"
+            flexFlow: "column",
+            maxWidth: 600
           }}
         >
           <Typography
@@ -169,7 +161,7 @@ export const Home = () => {
               discord
             </Link>
           </Typography>
-          <Alert severity="info">
+          <Alert severity="info" >
             <b>oboku</b> is a working product but still in{" "}
             <b>active development</b>! Documentations and resources are under
             construction and we need your feedback to improve the product.
