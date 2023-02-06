@@ -25,13 +25,7 @@ import { DiscordMarkBlueIcon } from "./assets/DiscordMarkBlueIcon"
 
 const ButtonsContainer = ({ children }: { children: ReactNode }) => {
   return (
-    <Box
-      display="flex"
-      gap={2}
-      flexDirection="column"
-      maxWidth={300}
-      width="100%"
-    >
+    <Box display="flex" gap={2} flexDirection="column" width="100%">
       <>{children}</>
     </Box>
   )
@@ -106,79 +100,94 @@ export const Home = () => {
             construction and we need your feedback to improve the product.
           </Alert>
           <div style={{ paddingBottom: theme.spacing(3) }} />
-          <BetaRegister />
-          <OrDivider />
-          <ButtonsContainer>
-            <Button
-              variant="outlined"
-              size="large"
-              color="primary"
-              href={links.app}
-              target="_blank"
-              startIcon={<TabletMacRounded />}
-              endIcon={<OpenInNewOutlined />}
-            >
-              Access the app
-            </Button>
-          </ButtonsContainer>
-          <OrDivider title="more" />
-          <ButtonsContainer>
-            <Button
-              variant="outlined"
-              color="primary"
-              href={links.documentation}
-              target="_blank"
-              endIcon={<OpenInNewOutlined />}
-            >
-              documentation
-            </Button>
-            <Button
-              variant="outlined"
-              href={links.discord}
-              target="_blank"
-              startIcon={<DiscordMarkBlueIcon />}
-              endIcon={<OpenInNewOutlined />}
-              sx={({ palette }) => ({
-                borderColor: "#5865f2",
-                color: "#5865f2",
-                "&:hover": {
-                  backgroundColor: alpha(
-                    "#5865f2",
-                    palette.action.hoverOpacity
-                  ),
-                  borderColor: "#5865f2"
-                },
-                "&:active": {
-                  borderColor: "#5865f2"
-                }
-              })}
-            >
-              discord
-            </Button>
-            <Button
-              variant="outlined"
-              href={links.github}
-              target="_blank"
-              startIcon={<GitHub />}
-              endIcon={<OpenInNewOutlined />}
-              sx={({ palette }) => ({
-                borderColor: "black",
-                color: "black",
-                "&:hover": {
-                  backgroundColor: alpha(
-                    "#000000",
-                    palette.action.hoverOpacity
-                  ),
-                  borderColor: "black"
-                },
-                "&:active": {
-                  borderColor: "black"
-                }
-              })}
-            >
-              github
-            </Button>
-          </ButtonsContainer>
+          <Box
+            width="100%"
+            maxWidth={320}
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+          >
+            <Box width="100%" maxWidth={300}>
+              <BetaRegister />
+            </Box>
+            <OrDivider />
+            <Box width="100%" maxWidth={300}>
+              <ButtonsContainer>
+                <Button
+                  variant="contained"
+                  size="large"
+                  color="primary"
+                  href={links.app}
+                  target="_blank"
+                  startIcon={<TabletMacRounded />}
+                  endIcon={<OpenInNewOutlined />}
+                >
+                  Access the app
+                </Button>
+              </ButtonsContainer>
+            </Box>
+
+            <OrDivider title="more" />
+            <Box width="100%" maxWidth={300}>
+              <ButtonsContainer>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  href={links.documentation}
+                  target="_blank"
+                  endIcon={<OpenInNewOutlined />}
+                >
+                  documentation
+                </Button>
+                <Button
+                  variant="outlined"
+                  href={links.discord}
+                  target="_blank"
+                  startIcon={<DiscordMarkBlueIcon />}
+                  endIcon={<OpenInNewOutlined />}
+                  sx={({ palette }) => ({
+                    borderColor: "#5865f2",
+                    color: "#5865f2",
+                    "&:hover": {
+                      backgroundColor: alpha(
+                        "#5865f2",
+                        palette.action.hoverOpacity
+                      ),
+                      borderColor: "#5865f2"
+                    },
+                    "&:active": {
+                      borderColor: "#5865f2"
+                    }
+                  })}
+                >
+                  discord
+                </Button>
+                <Button
+                  variant="outlined"
+                  href={links.github}
+                  target="_blank"
+                  startIcon={<GitHub />}
+                  endIcon={<OpenInNewOutlined />}
+                  sx={({ palette }) => ({
+                    borderColor: "black",
+                    color: "black",
+                    "&:hover": {
+                      backgroundColor: alpha(
+                        "#000000",
+                        palette.action.hoverOpacity
+                      ),
+                      borderColor: "black"
+                    },
+                    "&:active": {
+                      borderColor: "black"
+                    }
+                  })}
+                >
+                  github
+                </Button>
+              </ButtonsContainer>
+            </Box>
+          </Box>
         </div>
       </Box>
       <footer

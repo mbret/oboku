@@ -16,30 +16,29 @@ export const BetaRegister = () => {
   const { mutate: sendEmail, error, status } = useRegister()
 
   return (
-    <form onSubmit={(e) => e.preventDefault()}>
+    <form
+      onSubmit={(e) => e.preventDefault()}
+      style={{ display: "flex", flexDirection: "column" }}
+    >
       <TextField
         label="Your email"
         id="beta-email"
         type="text"
         variant="outlined"
         disabled={status === "loading"}
+        // fullWidth
         style={{
-          minWidth: 300,
           marginBottom: theme.spacing(2)
         }}
         value={email}
         onChange={(e) => setEmail(e.target.value)}
       />
-      <br />
       <Button
         variant="contained"
         disabled={!isValid || status === "loading"}
         size="large"
         color="primary"
         onClick={() => sendEmail({ email })}
-        style={{
-          minWidth: 300
-        }}
       >
         {status === "loading" ? "Sending request..." : "Request access"}
       </Button>
