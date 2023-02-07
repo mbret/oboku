@@ -14,7 +14,7 @@ export const SelectableCollectionList: FC<{
   const classes = useStyle()
 
   const rowRenderer = useCallback(
-    ({ id, selected }: typeof data[number]) => (
+    ({ id, selected }: (typeof data)[number]) => (
       <SelectableCollectionListItem
         id={id}
         onItemClick={() => onItemClick({ id, selected })}
