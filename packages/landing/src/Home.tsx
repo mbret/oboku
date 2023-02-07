@@ -3,7 +3,6 @@ import {
   alpha,
   Box,
   Button,
-  createSvgIcon,
   Link,
   Typography,
   useTheme
@@ -79,7 +78,10 @@ const AppHighlightSection = () => {
       <Box mt={4} display="grid" gridTemplateColumns="1fr 1fr" gap={5}>
         <KeyPointItem content="Reading app" icon={<LocalLibraryRounded />} />
         <KeyPointItem content="Book library" icon={<LibraryBooksRounded />} />
-        <KeyPointItem content="Read any content" icon={<StickyNote2Rounded />} />
+        <KeyPointItem
+          content="Read any content"
+          icon={<StickyNote2Rounded />}
+        />
         <KeyPointItem
           content="synchronize with your clouds providers"
           icon={<CloudDownloadRounded />}
@@ -90,7 +92,10 @@ const AppHighlightSection = () => {
         />
         <KeyPointItem content="E-ink support" icon={<DevicesFoldRounded />} />
         <KeyPointItem content="100% free" icon={<AttachMoneyRounded />} />
-        <KeyPointItem content="100% offline" icon={<SignalCellularOffRounded />} />
+        <KeyPointItem
+          content="100% offline"
+          icon={<SignalCellularOffRounded />}
+        />
         <KeyPointItem content="100% open source" icon={<LockOpenRounded />} />
       </Box>
     </Box>
@@ -161,7 +166,7 @@ export const Home = () => {
               discord
             </Link>
           </Typography>
-          <Alert severity="info" >
+          <Alert severity="info">
             <b>oboku</b> is a working product but still in{" "}
             <b>active development</b>! Documentations and resources are under
             construction and we need your feedback to improve the product.
@@ -210,22 +215,23 @@ export const Home = () => {
                   variant="outlined"
                   href={links.discord}
                   target="_blank"
+                  color="primary"
                   startIcon={<DiscordMarkBlueIcon />}
                   endIcon={<OpenInNewOutlined />}
-                  sx={({ palette }) => ({
-                    borderColor: "#5865f2",
-                    color: "#5865f2",
-                    "&:hover": {
-                      backgroundColor: alpha(
-                        "#5865f2",
-                        palette.action.hoverOpacity
-                      ),
-                      borderColor: "#5865f2"
-                    },
-                    "&:active": {
-                      borderColor: "#5865f2"
-                    }
-                  })}
+                  // sx={({ palette }) => ({
+                  //   borderColor: "#5865f2",
+                  //   color: "#5865f2",
+                  //   "&:hover": {
+                  //     backgroundColor: alpha(
+                  //       "#5865f2",
+                  //       palette.action.hoverOpacity
+                  //     ),
+                  //     borderColor: "#5865f2"
+                  //   },
+                  //   "&:active": {
+                  //     borderColor: "#5865f2"
+                  //   }
+                  // })}
                 >
                   discord
                 </Button>
@@ -233,22 +239,23 @@ export const Home = () => {
                   variant="outlined"
                   href={links.github}
                   target="_blank"
+                  color="primary"
                   startIcon={<GitHub />}
                   endIcon={<OpenInNewOutlined />}
-                  sx={({ palette }) => ({
-                    borderColor: "black",
-                    color: "black",
-                    "&:hover": {
-                      backgroundColor: alpha(
-                        "#000000",
-                        palette.action.hoverOpacity
-                      ),
-                      borderColor: "black"
-                    },
-                    "&:active": {
-                      borderColor: "black"
-                    }
-                  })}
+                  // sx={({ palette }) => ({
+                  //   borderColor: "black",
+                  //   color: "black",
+                  //   "&:hover": {
+                  //     backgroundColor: alpha(
+                  //       "#000000",
+                  //       palette.action.hoverOpacity
+                  //     ),
+                  //     borderColor: "black"
+                  //   },
+                  //   "&:active": {
+                  //     borderColor: "black"
+                  //   }
+                  // })}
                 >
                   github
                 </Button>
