@@ -1,6 +1,6 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { createHttpError } from "@libs/httpErrors"
-import { middyfy } from "@libs/lambda"
+import { withMiddy } from "@libs/lambda"
 import schema from "./schema"
 import nodemailer from "nodemailer"
 import { SSM } from "aws-sdk"
@@ -47,4 +47,4 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 }
 
-export const main = middyfy(lambda)
+export const main = withMiddy(lambda)

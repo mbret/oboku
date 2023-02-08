@@ -7,7 +7,7 @@ import cors from "@middy/http-cors"
 import { Lambda } from "aws-sdk"
 import { OFFLINE } from "../constants"
 
-export const middyfy = (
+export const withMiddy = (
   handler: any,
   {
     withCors = true

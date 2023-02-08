@@ -1,5 +1,5 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { middyfy } from "@libs/lambda"
+import { withMiddy } from "@libs/lambda"
 import { AWS_API_URI } from "../../constants"
 import { configure as configureGoogleDataSource } from "@libs/dataSources/google"
 import { S3 } from "aws-sdk"
@@ -85,6 +85,6 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 }
 
-export const main = middyfy(lambda, {
+export const main = withMiddy(lambda, {
   withCors: false
 })
