@@ -120,7 +120,9 @@ function registerValidSW(swUrl: string, config?: Config) {
       // Manually check if there is a new update available
       // @see https://developers.google.com/web/fundamentals/primers/service-workers/lifecycle#manual_updates
       setInterval(() => {
-        registration.update().catch(() => {})
+        registration.update().catch((error) => {
+          console.error(error.message)
+        })
       }, CHECK_FOR_SW_UPDATE_EVERY)
     })
     .catch((error) => {
@@ -156,28 +158,4 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
         "No internet connection found. App is running in offline mode."
       )
     })
-}
-
-export const checkForUpdate = () => {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.ready
-      .then((registration) => {
-        return registration.update()
-      })
-      .catch((error) => {
-        console.error(error.message)
-      })
-  }
-}
-
-export function unregister() {
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.ready
-      .then((registration) => {
-        registration.unregister()
-      })
-      .catch((error) => {
-        console.error(error.message)
-      })
-  }
 }
