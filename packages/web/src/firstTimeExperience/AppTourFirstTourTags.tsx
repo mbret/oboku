@@ -187,7 +187,9 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
   )
 })
 
-export const AppTourFirstTourTagsStep2: FC<{children: ReactNode}> = ({ children }) => {
+export const AppTourFirstTourTagsStep2: FC<{ children: ReactNode }> = ({
+  children
+}) => {
   const theme = useTheme()
 
   return (

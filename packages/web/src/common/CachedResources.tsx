@@ -295,37 +295,39 @@ const useLazyDownloadAsset = () => {
   })
 }
 
-export const CachedResourcesProvider: FC<{children: ReactNode}> = memo(({ children }) => {
-  const [assets, setAssets] = useRecoilState(assetsState)
-  const lazyDownloadAsset = useLazyDownloadAsset()
+export const CachedResourcesProvider: FC<{ children: ReactNode }> = memo(
+  ({ children }) => {
+    const [assets, setAssets] = useRecoilState(assetsState)
+    const lazyDownloadAsset = useLazyDownloadAsset()
 
-  // console.log(`debug CachedResourcesProvider`, { assets })
+    // console.log(`debug CachedResourcesProvider`, { assets })
 
-  /**
-   * Prepare assets to download
-   */
-  useEffect(() => {
-    const assetsToDownload = assets.filter(
-      (asset) =>
-        (asset.state === "missing" || asset.missingHigherOrder) &&
-        !asset.downloading &&
-        asset.state !== "failed"
-    )
+    /**
+     * Prepare assets to download
+     */
+    useEffect(() => {
+      const assetsToDownload = assets.filter(
+        (asset) =>
+          (asset.state === "missing" || asset.missingHigherOrder) &&
+          !asset.downloading &&
+          asset.state !== "failed"
+      )
 
-    if (assetsToDownload.length === 0) return
+      if (assetsToDownload.length === 0) return
 
-    setAssets((old) =>
-      old.map((old) => {
-        const found = assetsToDownload.find(({ id }) => id === old.id)
+      setAssets((old) =>
+        old.map((old) => {
+          const found = assetsToDownload.find(({ id }) => id === old.id)
 
-        if (!found) return old
+          if (!found) return old
 
-        return { ...old, downloading: true }
-      })
-    )
+          return { ...old, downloading: true }
+        })
+      )
 
-    assetsToDownload.map(lazyDownloadAsset)
-  }, [assets, setAssets, lazyDownloadAsset])
+      assetsToDownload.map(lazyDownloadAsset)
+    }, [assets, setAssets, lazyDownloadAsset])
 
-  return <>{children}</>
-})
+    return <>{children}</>
+  }
+)

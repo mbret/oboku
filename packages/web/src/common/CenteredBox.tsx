@@ -1,11 +1,10 @@
 import { useTheme } from "@mui/material"
 import React, { FC, ReactNode } from "react"
 
-export const CenteredBox: FC<{ style: React.CSSProperties, children: ReactNode }> = ({
-  children,
-  style,
-  ...rest
-}) => {
+export const CenteredBox: FC<{
+  style: React.CSSProperties
+  children: ReactNode
+}> = ({ children, style, ...rest }) => {
   const theme = useTheme()
 
   return (

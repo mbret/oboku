@@ -129,7 +129,7 @@ export const useAtomicUpdateDataSource = () => {
 
 export const useDataSourceHelpers = (
   idOrObj:
-    | typeof plugins[number]["uniqueResourceIdentifier"]
+    | (typeof plugins)[number]["uniqueResourceIdentifier"]
     | { uniqueResourceIdentifier: string }
 ) => {
   const id =
@@ -154,7 +154,7 @@ export const useGetDataSourceCredentials = () => {
     | ReturnType<NonNullable<ObokuPlugin[`useGetCredentials`]>>
     | undefined
   const getPluginCredentials = useRef<
-    (Pick<typeof plugins[number], "type"> & {
+    (Pick<(typeof plugins)[number], "type"> & {
       getCredentials: GetCredentials
     })[]
   >([])
@@ -205,7 +205,9 @@ export const useDownloadBookFromDataSource = () => {
     | ReturnType<NonNullable<ObokuPlugin[`useDownloadBook`]>>
     | undefined
   const getPluginFn = useRef<
-    (Pick<typeof plugins[number], "type"> & { downloadBook: UseDownloadBook })[]
+    (Pick<(typeof plugins)[number], "type"> & {
+      downloadBook: UseDownloadBook
+    })[]
   >([])
   getPluginFn.current = plugins.map((plugin) => ({
     type: plugin.type,
