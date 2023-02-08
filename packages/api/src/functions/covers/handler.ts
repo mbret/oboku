@@ -1,5 +1,5 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { middyfy } from "@libs/lambda"
+import { withMiddy } from "@libs/lambda"
 import { PromiseReturnType } from "@libs/types"
 import { S3 } from "aws-sdk"
 import createError from "http-errors"
@@ -65,4 +65,4 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
   }
 }
 
-export const main = middyfy(lambda)
+export const main = withMiddy(lambda)

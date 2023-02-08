@@ -21,7 +21,9 @@ export const design = {
 export const links = {
   documentation: `https://docs.oboku.me`,
   app: `https://app.oboku.me`,
-  linkedin: `https://www.linkedin.com/in/maxime-bret`
+  linkedin: `https://www.linkedin.com/in/maxime-bret`,
+  github: `https://github.com/mbret/oboku`,
+  discord: `https://discord.gg/eB6MrMmmPN`
 }
 
 export type OPF = {

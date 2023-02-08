@@ -37,7 +37,9 @@ const SCOPE = `https://www.googleapis.com/auth/drive`
  */
 export const listFiles = (googleAuth, searchTerm) => {}
 
-export const GoogleApiProvider: FC<{children: ReactNode}> = ({ children }) => {
+export const GoogleApiProvider: FC<{ children: ReactNode }> = ({
+  children
+}) => {
   const [googleApi, setGoogleApi] = useState<typeof gapi | undefined>(undefined)
   const isSigning = useRef(false)
   const [contextValue, setContextValue] = useState(defaultContextValue)

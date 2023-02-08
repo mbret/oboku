@@ -2,10 +2,10 @@ import React, { FC, ReactNode } from "react"
 import { useTheme } from "@mui/material"
 import { useCSS } from "../common/utils"
 
-export const Content: FC<{ style?: React.CSSProperties, children: ReactNode }> = ({
-  children,
-  style
-}) => {
+export const Content: FC<{
+  style?: React.CSSProperties
+  children: ReactNode
+}> = ({ children, style }) => {
   const styles = useStyles()
 
   return <div style={{ ...styles.slide, ...style }}>{children}</div>

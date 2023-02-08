@@ -6,5 +6,12 @@ export const theme = createTheme({
     primary: {
       main: design.palette.orange
     }
+  },
+  components: {
+    MuiButton: {
+      defaultProps: {
+        disableElevation: true
+      }
+    }
   }
 })

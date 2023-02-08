@@ -118,7 +118,7 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
                   folderName: selectedFolder.name
                 }
                 addDataSource({
-                  type: `DROPBOX`,
+                  type: `dropbox`,
                   data: JSON.stringify(customData)
                 })
               }

@@ -10,7 +10,6 @@ const defaultWindowOptions = {
   left: 100
 }
 
-// let lastDpx = new Dropbox({ clientId: CLIENT_ID })
 let dropboxAuth = new DropboxAuth({ clientId: CLIENT_ID })
 
 export const getLastDpx = () => dropboxAuth
@@ -38,7 +37,7 @@ const isAccessTokenStillSufficient = () => {
 export const authUser = () => {
   return new Promise<
     DropboxAuth | { isError: true; error?: Error; reason: "cancelled" }
-  >((resolve, reject) => {
+  >(async (resolve, reject) => {
     let timedOut = false
     let listenToPopupCloseInterval: ReturnType<typeof setInterval>
     let listenToPopupTimeoutTimeout: ReturnType<typeof setTimeout>
@@ -52,85 +51,87 @@ export const authUser = () => {
     const authType = "code"
     const tokenAccessType = "online"
     const state = Math.random().toString(36).substring(7)
-    const authUrl = dropboxAuth.getAuthenticationUrl(
-      redirectUri,
-      state,
-      authType,
-      tokenAccessType,
-      undefined,
-      "user",
-      usePKCE
-    )
-    const _oauthWindow = window.open(
-      authUrl,
-      "DropboxOAuth",
-      Object.keys(defaultWindowOptions)
-        .map((key) => `${key}=${defaultWindowOptions[key]}`)
-        .join(",")
-    )
-    _oauthWindow?.focus()
+    try {
+      const authUrl = await dropboxAuth.getAuthenticationUrl(
+        redirectUri,
+        state,
+        authType,
+        tokenAccessType,
+        undefined,
+        "user",
+        usePKCE
+      )
+      const _oauthWindow = window.open(
+        authUrl.toString(),
+        "DropboxOAuth",
+        Object.keys(defaultWindowOptions)
+          .map((key) => `${key}=${defaultWindowOptions[key]}`)
+          .join(",")
+      )
+      _oauthWindow?.focus()
 
-    /**
-     * The function in charge of handling the redirect once the popup has completed.
-     */
-    const handleRedirect = async (event: MessageEvent) => {
-      if (timedOut) return
+      /**
+       * The function in charge of handling the redirect once the popup has completed.
+       */
+      const handleRedirect = async (event: MessageEvent) => {
+        if (timedOut) return
 
-      if (
-        event.isTrusted &&
-        event.origin === window.location.origin &&
-        event.data?.source === "oauth-redirect"
-      ) {
-        cleanup()
-        const urlParams = new URLSearchParams(event.data?.params || "")
-        const code = urlParams.get("code")
+        if (
+          event.isTrusted &&
+          event.origin === window.location.origin &&
+          event.data?.source === "oauth-redirect"
+        ) {
+          cleanup()
+          const urlParams = new URLSearchParams(event.data?.params || "")
+          const code = urlParams.get("code")
 
-        try {
-          const response = await dropboxAuth.getAccessTokenFromCode(
-            redirectUri,
-            code || ""
-          )
-          if (timedOut) return
-          const { result } = response as any
+          try {
+            const response = await dropboxAuth.getAccessTokenFromCode(
+              redirectUri,
+              code || ""
+            )
+            if (timedOut) return
+            const { result } = response as any
 
-          console.log(result)
+            dropboxAuth.setAccessToken(result.access_token)
+            dropboxAuth.setRefreshToken(result.refresh_token)
+            dropboxAuth.setAccessTokenExpiresAt(
+              new Date(Date.now() + result.expires_in * 1000)
+            )
 
-          dropboxAuth.setAccessToken(result.access_token)
-          dropboxAuth.setRefreshToken(result.refresh_token)
-          dropboxAuth.setAccessTokenExpiresAt(
-            new Date(Date.now() + result.expires_in * 1000)
-          )
-
-          resolve(dropboxAuth)
-        } catch (e) {
-          reject(e)
+            resolve(dropboxAuth)
+          } catch (e) {
+            reject(e)
+          }
         }
+        console.log(event)
       }
-      console.log(event)
-    }
 
-    const cleanup = () => {
-      clearInterval(listenToPopupCloseInterval)
-      clearTimeout(listenToPopupTimeoutTimeout)
-      window.removeEventListener("message", handleRedirect)
-    }
+      const cleanup = () => {
+        clearInterval(listenToPopupCloseInterval)
+        clearTimeout(listenToPopupTimeoutTimeout)
+        window.removeEventListener("message", handleRedirect)
+      }
 
-    window.addEventListener("message", handleRedirect, false)
+      window.addEventListener("message", handleRedirect, false)
 
-    listenToPopupTimeoutTimeout = setTimeout(() => {
-      timedOut = true
+      listenToPopupTimeoutTimeout = setTimeout(() => {
+        timedOut = true
 
-      cleanup()
-
-      reject(new Error("Request timed out"))
-    }, 1000 * 60)
-
-    listenToPopupCloseInterval = setInterval(function () {
-      if (_oauthWindow?.closed) {
         cleanup()
 
-        resolve({ isError: true, reason: "cancelled" })
-      }
-    }, 1000)
+        reject(new Error("Request timed out"))
+      }, 1000 * 60)
+
+      listenToPopupCloseInterval = setInterval(function () {
+        if (_oauthWindow?.closed) {
+          cleanup()
+
+          resolve({ isError: true, reason: "cancelled" })
+        }
+      }, 1000)
+    } catch (e) {
+      reject(e)
+    }
   })
 }

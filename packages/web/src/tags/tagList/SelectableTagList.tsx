@@ -14,7 +14,7 @@ export const SelectableTagList: FC<{
   const classes = useStyle()
 
   const rowRenderer = useCallback(
-    ({ id, selected }: typeof data[number]) => (
+    ({ id, selected }: (typeof data)[number]) => (
       <SelectableTagListItem
         id={id}
         onItemClick={() => onItemClick({ id, selected })}

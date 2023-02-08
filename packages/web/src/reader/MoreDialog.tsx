@@ -59,7 +59,7 @@ export const MoreDialog: FC<{}> = () => {
   }
 
   const buildTocForItem = (
-    tocItem: typeof toc[number],
+    tocItem: (typeof toc)[number],
     index: number,
     lvl: number
   ) => (

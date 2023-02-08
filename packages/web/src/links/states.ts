@@ -14,7 +14,7 @@ export const linksAsArrayState = selector<LinkDocType[]>({
   get: ({ get }) => {
     const links = get(normalizedLinksState)
 
-    return Object.values(links) as NonNullable<typeof links[number]>[]
+    return Object.values(links) as NonNullable<(typeof links)[number]>[]
   }
 })
 

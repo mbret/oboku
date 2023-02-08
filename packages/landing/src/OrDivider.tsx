@@ -22,7 +22,7 @@ export const OrDivider: FC<
         }}
       ></Box>
       <Box marginX={2}>
-        <Typography>{title}</Typography>
+        <Typography sx={{ textTransform: "uppercase" }}>{title}</Typography>
       </Box>
       <Box
         width="100%"

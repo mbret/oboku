@@ -10,7 +10,7 @@ type Measures = {
   pageY: number
 }
 
-export type TourKey = typeof FirstTimeExperience[number]["id"]
+export type TourKey = (typeof FirstTimeExperience)[number]["id"]
 
 export type ContentCallback = (args: {
   onClose: () => void

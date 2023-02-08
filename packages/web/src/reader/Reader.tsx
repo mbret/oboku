@@ -157,7 +157,7 @@ export const Reader: FC<{
     )
   }
 
-  console.log(manifest, loadOptions)
+  // console.log(manifest, loadOptions)
 
   return (
     <div

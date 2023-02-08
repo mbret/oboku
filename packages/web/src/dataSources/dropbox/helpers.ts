@@ -1,6 +1,7 @@
 import { useCallback } from "react"
 import { authUser } from "./auth"
 import { DropboxAuth } from "dropbox"
+import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 
 export const useGetCredentials = () => {
   return useCallback(async () => {
@@ -19,4 +20,4 @@ export const useGetCredentials = () => {
 }
 
 export const extractIdFromResourceId = (resourceId: string) =>
-  resourceId.replace(`dropbox-`, ``)
+  resourceId.replace(`${UNIQUE_RESOURCE_IDENTIFIER}-`, ``)

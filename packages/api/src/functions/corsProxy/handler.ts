@@ -1,6 +1,6 @@
 import fetch, { AbortError } from "node-fetch"
 import { createHttpError } from "@libs/httpErrors"
-import { middyfy } from "@libs/lambda"
+import { withMiddy } from "@libs/lambda"
 import { APIGatewayProxyEvent } from "aws-lambda"
 import AbortController from "abort-controller"
 
@@ -87,4 +87,4 @@ const lambda = async (event: APIGatewayProxyEvent) => {
   }
 }
 
-export const main = middyfy(lambda)
+export const main = withMiddy(lambda)

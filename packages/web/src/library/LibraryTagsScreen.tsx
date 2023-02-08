@@ -147,6 +147,7 @@ const AddTagDialog: FC<{
         <TextField
           autoFocus
           id="name"
+          margin="dense"
           label="Name"
           type="text"
           fullWidth

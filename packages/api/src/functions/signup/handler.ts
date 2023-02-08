@@ -5,7 +5,7 @@
  * couchdb admin directly or probably by completely pruning db data.
  */
 import { ValidatedEventAPIGatewayProxyEvent } from "../../libs/api-gateway"
-import { middyfy } from "../../libs/lambda"
+import { withMiddy } from "../../libs/lambda"
 import schema from "./schema"
 import { validators, ObokuErrorCode } from "@oboku/shared"
 import { auth, createUser, getAdminNano } from "../../libs/dbHelpers"
@@ -73,4 +73,4 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 }
 
-export const main = middyfy(lambda)
+export const main = withMiddy(lambda)

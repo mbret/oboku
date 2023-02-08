@@ -9,10 +9,9 @@ export const settingsState = atom<SettingsDocType | undefined>({
 const localSettingsStateDefaultValues = {
   useNavigationArrows: false,
   useOptimizedTheme: false,
-  readingFullScreenSwitchMode:
-    import.meta.env.DEV
-      ? ("never" as const)
-      : ("automatic" as const),
+  readingFullScreenSwitchMode: import.meta.env.DEV
+    ? ("never" as const)
+    : ("automatic" as const),
   unBlurWhenProtectedVisible: false,
   hideDirectivesFromCollectionName: true,
   showCollectionWithProtectedContent: "unlocked" as const,

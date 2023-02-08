@@ -42,6 +42,7 @@ export const useModalNavigationControl = (
 
   const close = useCallback(
     (cb?: (() => void) | MouseEvent) => {
+      closeCb.current = undefined
       if (typeof cb === "function") {
         closeCb.current = cb
       }

@@ -1,5 +1,5 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { middyfy } from "@libs/lambda"
+import { withMiddy } from "@libs/lambda"
 import schema from "./schema"
 import { validators } from "@oboku/shared"
 import createError from "http-errors"
@@ -33,4 +33,4 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 }
 
-export const main = middyfy(lambda)
+export const main = withMiddy(lambda)

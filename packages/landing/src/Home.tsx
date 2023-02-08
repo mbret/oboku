@@ -1,31 +1,123 @@
-import { Box, Button, Link, Typography, useTheme } from "@mui/material"
 import {
-  LanguageRounded,
-  LinkRounded,
-  OpenInNewRounded,
+  Alert,
+  alpha,
+  Box,
+  Button,
+  Link,
+  Typography,
+  useTheme
+} from "@mui/material"
+import {
+  AttachMoneyRounded,
+  CloudDownloadRounded,
+  DevicesFoldRounded,
+  GitHub,
+  LibraryBooksRounded,
+  LocalLibraryRounded,
+  LockOpenRounded,
+  OpenInNewOutlined,
+  PhonelinkRounded,
+  SignalCellularOffRounded,
+  StickyNote2Rounded,
   TabletMacRounded
 } from "@mui/icons-material"
 import landingLogoAsset from "./assets/landing-logo.svg"
 import { BetaRegister } from "./BetaRegister"
 import { OrDivider } from "./OrDivider"
 import { links } from "@oboku/shared"
+import { ReactNode } from "react"
+import { DiscordMarkBlueIcon } from "./assets/DiscordMarkBlueIcon"
+
+const ButtonsContainer = ({ children }: { children: ReactNode }) => {
+  return (
+    <Box display="flex" gap={2} flexDirection="column" width="100%">
+      <>{children}</>
+    </Box>
+  )
+}
+
+const KeyPointItem = ({
+  content,
+  icon
+}: {
+  content: string
+  icon: ReactNode
+}) => {
+  return (
+    <Box
+      display="flex"
+      // border="1px solid black"
+      flexDirection="column"
+      alignItems="center"
+      maxWidth={200}
+      gap={2}
+    >
+      <>{icon}</>
+      <Typography variant="body1">{content}</Typography>
+    </Box>
+  )
+}
+
+const AppHighlightSection = () => {
+  return (
+    <Box
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      textAlign="center"
+    >
+      <Typography variant="overline" textAlign="center">
+        In a few key points
+      </Typography>
+      <Typography variant="h2" component="h2">
+        What is oboku?
+      </Typography>
+      <Typography variant="overline" textAlign="center">
+        Let's see what makes oboku special
+      </Typography>
+      <Box mt={4} display="grid" gridTemplateColumns="1fr 1fr" gap={5}>
+        <KeyPointItem content="Reading app" icon={<LocalLibraryRounded />} />
+        <KeyPointItem content="Book library" icon={<LibraryBooksRounded />} />
+        <KeyPointItem
+          content="Read any content"
+          icon={<StickyNote2Rounded />}
+        />
+        <KeyPointItem
+          content="synchronize with your clouds providers"
+          icon={<CloudDownloadRounded />}
+        />
+        <KeyPointItem
+          content="Works on any device with a browser"
+          icon={<PhonelinkRounded />}
+        />
+        <KeyPointItem content="E-ink support" icon={<DevicesFoldRounded />} />
+        <KeyPointItem content="100% free" icon={<AttachMoneyRounded />} />
+        <KeyPointItem
+          content="100% offline"
+          icon={<SignalCellularOffRounded />}
+        />
+        <KeyPointItem content="100% open source" icon={<LockOpenRounded />} />
+      </Box>
+    </Box>
+  )
+}
 
 export const Home = () => {
   const theme = useTheme()
 
   return (
-    <div
+    <Box
       style={{
         display: "flex",
         flex: 1,
         flexFlow: "column",
         alignItems: "center"
       }}
+      paddingX={3}
     >
       <Box
         className="App"
         style={{
-          padding: theme.spacing(3),
           display: "flex",
           flex: 1,
           flexFlow: "column",
@@ -54,7 +146,8 @@ export const Home = () => {
             textAlign: "center",
             display: "flex",
             alignItems: "center",
-            flexFlow: "column"
+            flexFlow: "column",
+            maxWidth: 600
           }}
         >
           <Typography
@@ -69,29 +162,114 @@ export const Home = () => {
               {links.documentation}
             </Link>{" "}
             for more information and join us on{" "}
-            <Link href="https://discord.gg/eB6MrMmmPN" target="_blank">
+            <Link href={links.discord} target="_blank">
               discord
             </Link>
           </Typography>
+          <Alert severity="info">
+            <b>oboku</b> is a working product but still in{" "}
+            <b>active development</b>! Documentations and resources are under
+            construction and we need your feedback to improve the product.
+          </Alert>
           <div style={{ paddingBottom: theme.spacing(3) }} />
-          <BetaRegister />
-          <OrDivider />
-          <Button
-            variant="outlined"
-            size="large"
-            color="primary"
-            href={links.app}
-            target="_blank"
-            startIcon={<TabletMacRounded />}
-            style={{
-              minWidth: 300
-            }}
+          <Box
+            width="100%"
+            maxWidth={320}
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
           >
-            Access the app
-          </Button>
+            <Box width="100%" maxWidth={300}>
+              <BetaRegister />
+            </Box>
+            <OrDivider />
+            <Box width="100%" maxWidth={300}>
+              <ButtonsContainer>
+                <Button
+                  variant="contained"
+                  size="large"
+                  color="primary"
+                  href={links.app}
+                  target="_blank"
+                  startIcon={<TabletMacRounded />}
+                  endIcon={<OpenInNewOutlined />}
+                >
+                  Access the app
+                </Button>
+              </ButtonsContainer>
+            </Box>
+
+            <OrDivider title="more" />
+            <Box width="100%" maxWidth={300}>
+              <ButtonsContainer>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  href={links.documentation}
+                  target="_blank"
+                  endIcon={<OpenInNewOutlined />}
+                >
+                  documentation
+                </Button>
+                <Button
+                  variant="outlined"
+                  href={links.discord}
+                  target="_blank"
+                  color="primary"
+                  startIcon={<DiscordMarkBlueIcon />}
+                  endIcon={<OpenInNewOutlined />}
+                  // sx={({ palette }) => ({
+                  //   borderColor: "#5865f2",
+                  //   color: "#5865f2",
+                  //   "&:hover": {
+                  //     backgroundColor: alpha(
+                  //       "#5865f2",
+                  //       palette.action.hoverOpacity
+                  //     ),
+                  //     borderColor: "#5865f2"
+                  //   },
+                  //   "&:active": {
+                  //     borderColor: "#5865f2"
+                  //   }
+                  // })}
+                >
+                  discord
+                </Button>
+                <Button
+                  variant="outlined"
+                  href={links.github}
+                  target="_blank"
+                  color="primary"
+                  startIcon={<GitHub />}
+                  endIcon={<OpenInNewOutlined />}
+                  // sx={({ palette }) => ({
+                  //   borderColor: "black",
+                  //   color: "black",
+                  //   "&:hover": {
+                  //     backgroundColor: alpha(
+                  //       "#000000",
+                  //       palette.action.hoverOpacity
+                  //     ),
+                  //     borderColor: "black"
+                  //   },
+                  //   "&:active": {
+                  //     borderColor: "black"
+                  //   }
+                  // })}
+                >
+                  github
+                </Button>
+              </ButtonsContainer>
+            </Box>
+          </Box>
         </div>
       </Box>
-      <footer
+      <Box mt={[5, 8]}>
+        <AppHighlightSection />
+      </Box>
+      <Box
+        mt={10}
+        component="footer"
         style={{
           paddingBottom: theme.spacing(5),
           textAlign: "center"
@@ -110,7 +288,7 @@ export const Home = () => {
           </Link>
           .
         </Typography>
-      </footer>
-    </div>
+      </Box>
+    </Box>
   )
 }

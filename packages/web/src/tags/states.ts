@@ -54,7 +54,7 @@ export const tagsAsArrayState = selector<TagsDocType[]>({
     const tags = get(normalizedTagsState)
 
     return Object.keys(tags).map((id) => get(tagState(id))) as NonNullable<
-      typeof tags[number]
+      (typeof tags)[number]
     >[]
   }
 })

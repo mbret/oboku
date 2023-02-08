@@ -1,5 +1,5 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { middyfy } from "@libs/lambda"
+import { withMiddy } from "@libs/lambda"
 import fs from "fs"
 import path from "path"
 import { OFFLINE, TMP_DIR } from "../../constants"
@@ -111,6 +111,6 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 }
 
-export const main = middyfy(lambda, {
+export const main = withMiddy(lambda, {
   withCors: false
 })

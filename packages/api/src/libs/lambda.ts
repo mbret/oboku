@@ -7,7 +7,7 @@ import cors from "@middy/http-cors"
 import { Lambda } from "aws-sdk"
 import { OFFLINE } from "../constants"
 
-export const middyfy = (
+export const withMiddy = (
   handler: any,
   {
     withCors = true
@@ -35,10 +35,29 @@ export const middyfy = (
       })
       .use(httpHeaderNormalizer())
       .use(middyJsonBodyParser())
+      /**
+       * middy onError order changed and cors needs to be before to be executed after.
+       * Only for onError which is why it's duplicated below as well...
+       */
+      .use({
+        onError: withCors
+          ? cors({
+              headers: `*`
+            }).onError
+          : () => {
+              //
+            }
+      })
+      .use(
+        httpErrorHandler({
+          // handle non http error with 500 and generic message
+          fallbackMessage: `An error occurred`
+        })
+      )
       .use({
         onError: async (request) => {
           if (request.error) {
-            console.error(request.error)
+            console.error("error received", request.error)
           }
 
           // we enforce non exposure unless specified
@@ -58,12 +77,6 @@ export const middyfy = (
           }
         }
       })
-      .use(
-        httpErrorHandler({
-          // handle non http error with 500 and generic message
-          fallbackMessage: `An error occurred`
-        })
-      )
       // @todo eventually protect the api and only allow a subset of origins
       .use(
         withCors
