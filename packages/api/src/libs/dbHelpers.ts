@@ -1,4 +1,3 @@
-// import { COUCH_DB_URL } from "../constants";
 import createNano from "nano"
 import { generateAdminToken, generateToken } from "./auth"
 import {
@@ -11,8 +10,6 @@ import {
 import { User } from "./couchDbEntities"
 import { waitForRandomTime } from "./utils"
 import { COUCH_DB_URL } from "../constants"
-
-console.log(COUCH_DB_URL)
 
 export const createUser = async (
   db: createNano.ServerScope,
