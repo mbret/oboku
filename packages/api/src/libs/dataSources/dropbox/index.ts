@@ -17,7 +17,7 @@ const extractIdFromResourceId = (resourceId: string) =>
 const generateResourceId = (id: string) => `dropbox-${id}`
 
 export const dataSource: DataSourcePlugin = {
-  type: `DROPBOX`,
+  type: `dropbox`,
   getMetadata: async (link, credentials) => {
     const dbx = new Dropbox({
       accessToken: credentials.accessToken,
