@@ -35,10 +35,16 @@ export const withMiddy = (
       })
       .use(httpHeaderNormalizer())
       .use(middyJsonBodyParser())
+      .use(
+        httpErrorHandler({
+          // handle non http error with 500 and generic message
+          fallbackMessage: `An error occurred`
+        })
+      )
       .use({
         onError: async (request) => {
           if (request.error) {
-            console.error(request.error)
+            console.error("error received", request.error)
           }
 
           // we enforce non exposure unless specified
@@ -58,12 +64,6 @@ export const withMiddy = (
           }
         }
       })
-      .use(
-        httpErrorHandler({
-          // handle non http error with 500 and generic message
-          fallbackMessage: `An error occurred`
-        })
-      )
       // @todo eventually protect the api and only allow a subset of origins
       .use(
         withCors
