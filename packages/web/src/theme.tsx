@@ -2,7 +2,7 @@
  * @see https://material-ui.com/customization/default-theme/
  * @see https://material-ui.com/customization/palette/
  */
-import { createTheme, adaptV4Theme, alpha } from "@mui/material/styles"
+import { createTheme, alpha } from "@mui/material/styles"
 
 declare module "@mui/material/styles" {
   interface Theme {
@@ -11,7 +11,7 @@ declare module "@mui/material/styles" {
       coverAverageRatio: number
     }
   }
-  interface DeprecatedThemeOptions {
+  interface ThemeOptions {
     custom: {
       maxWidthCenteredContent: number
       coverAverageRatio: number
@@ -19,75 +19,11 @@ declare module "@mui/material/styles" {
   }
 }
 
-const mui4Theme = adaptV4Theme({
+export const theme = createTheme({
   transitions: {
     // So we have `transition: none;` everywhere
     create: () => "none"
   },
-  // @see https://material-ui.com/getting-started/faq/
-  overrides: {
-    // Name of the component ⚛️
-    MuiCssBaseline: {
-      // Name of the rule
-      "@global": {
-        "*, *::before, *::after": {
-          transition: "none !important",
-          animation: "none !important"
-        }
-      }
-    },
-    MuiBottomNavigation: {
-      root: {}
-    },
-    MuiBottomNavigationAction: {
-      root: {
-        // disable the lift up effect when an icon is selected
-        padding: "0 !important"
-      }
-    },
-    MuiListItem: {
-      secondaryAction: {
-        // paddingRight: 70
-      }
-    },
-    MuiDialog: {
-      paperWidthSm: {
-        minWidth: 260
-      }
-    },
-    // MuiBottomNavigationAction: {
-    //   root: {
-    //     paddingTop: '0 !important',
-    //   }
-    // }
-    MuiButtonBase: {
-      root: {
-        // color: '#fff',
-      }
-    }
-    // MuiButton: {
-    //   root: {
-    //     color: "#fff"
-    //   },
-    //   outlined: {
-    //     border: "1px solid rgba(255, 255, 255, 1)"
-    //     // color: '#fff',
-    //   }
-    // }
-  },
-  zIndex: {},
-  custom: {
-    maxWidthCenteredContent: 320,
-
-    // Average ratio (w/h) for books cover. This ratio may be used
-    // to help designing fixed height carousel or card. This average takes
-    // into account the deviation
-    coverAverageRatio: 9 / 14
-  }
-})
-
-export const theme = createTheme({
-  ...mui4Theme,
   palette: {
     mode: `light`,
     primary: {
@@ -123,6 +59,67 @@ export const theme = createTheme({
           }
         })
       }
+    },
+    // Name of the component ⚛️
+    MuiCssBaseline: {
+      // Name of the rule
+      // "@global": {
+      //   "*, *::before, *::after": {
+      //     transition: "none !important",
+      //     animation: "none !important"
+      //   }
+      // }
+    },
+    MuiBottomNavigationAction: {
+      styleOverrides: {
+        root: {
+          // disable the lift up effect when an icon is selected
+          padding: "0 !important"
+        }
+      }
+    },
+    MuiListItem: {
+      styleOverrides: {
+        secondaryAction: {
+          // paddingRight: 70
+        }
+      }
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paperWidthSm: {
+          minWidth: 260
+        }
+      }
+    },
+    // MuiBottomNavigationAction: {
+    //   root: {
+    //     paddingTop: '0 !important',
+    //   }
+    // }
+    MuiButtonBase: {
+      styleOverrides: {
+        root: {
+          // color: '#fff',
+        }
+      }
     }
+    // MuiButton: {
+    //   root: {
+    //     color: "#fff"
+    //   },
+    //   outlined: {
+    //     border: "1px solid rgba(255, 255, 255, 1)"
+    //     // color: '#fff',
+    //   }
+    // }
+  },
+  custom: {
+    maxWidthCenteredContent: 320,
+
+    // Average ratio (w/h) for books cover. This ratio may be used
+    // to help designing fixed height carousel or card. This average takes
+    // into account the deviation
+    coverAverageRatio: 9 / 14
   }
 })
