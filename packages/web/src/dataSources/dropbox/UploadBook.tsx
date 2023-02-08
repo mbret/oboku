@@ -50,7 +50,7 @@ export const UploadBook: FC<{
                     book: null,
                     data: null,
                     resourceId: generateResourceId(doc.id),
-                    type: `DROPBOX`,
+                    type: `dropbox`,
                     createdAt: new Date().toISOString(),
                     modifiedAt: null
                   }

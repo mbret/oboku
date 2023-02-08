@@ -19,7 +19,7 @@ const DropboxIcon = () => (
 
 plugins.push({
   uniqueResourceIdentifier: dropboxConstants.UNIQUE_RESOURCE_IDENTIFIER,
-  type: `DROPBOX`,
+  type: `dropbox`,
   name: "Dropbox",
   Icon: DropboxIcon,
   UploadComponent: UploadBookFromDropbox,
