@@ -35,6 +35,19 @@ export const withMiddy = (
       })
       .use(httpHeaderNormalizer())
       .use(middyJsonBodyParser())
+      /**
+       * middy onError order changed and cors needs to be before to be executed after.
+       * Only for onError which is why it's duplicated below as well...
+       */
+      .use({
+        onError: withCors
+          ? cors({
+              headers: `*`
+            }).onError
+          : () => {
+              //
+            }
+      })
       .use(
         httpErrorHandler({
           // handle non http error with 500 and generic message
