@@ -2,63 +2,62 @@
  * @see https://www.dropbox.com/developers/chooser
  * @see https://www.dropbox.com/lp/developers/reference/oauth-guide
  */
-import React, { FC, useEffect, useState } from "react"
+import { FC, memo, useEffect, useRef } from "react"
 import { Report } from "../../debug/report.shared"
 import { BlockingScreen } from "../../common/BlockingBackdrop"
 import { useAddBook } from "../../books/helpers"
-import { DropboxFile } from "./types"
 import { useDataSourceHelpers } from "../helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import useIsMounted from "./lib/useIsMounted"
 
 export const UploadBook: FC<{
   onClose: () => void
-}> = ({ onClose }) => {
+}> = memo(({ onClose }) => {
   const [addBook] = useAddBook()
-  const [isOpened, setIsOpened] = useState(false)
+  const isMounted = useIsMounted()
+  const isOpened = useRef(false)
   const { generateResourceId } = useDataSourceHelpers(
     UNIQUE_RESOURCE_IDENTIFIER
   )
 
   useEffect(() => {
-    if (isOpened) return
+    if (isOpened.current) return
 
-    // @ts-ignore
-    if (Dropbox) {
-      setIsOpened(true)
-      console.log("CALLED AGAIN")
-      // @ts-ignore
-      Dropbox.choose &&
-        // @ts-ignore
-        Dropbox.choose({
-          multiselect: true,
-          linkType: "direct",
-          cancel: function () {
-            onClose()
-            setIsOpened(false)
-          },
-          success: async (files: DropboxFile[]) => {
-            onClose()
-            setIsOpened(false)
+    if (window.Dropbox) {
+      isOpened.current = true
 
-            await Promise.all(
-              files.map((doc) => {
-                return addBook({
-                  book: {
-                    title: doc.name
-                  },
-                  link: {
-                    book: null,
-                    data: null,
-                    resourceId: generateResourceId(doc.id),
-                    type: `dropbox`,
-                    createdAt: new Date().toISOString(),
-                    modifiedAt: null
-                  }
-                }).catch(Report.error)
-              })
+      window.Dropbox.choose({
+        multiselect: true,
+        linkType: "direct",
+        cancel: function () {
+          if (!isMounted()) return
+
+          onClose()
+        },
+        success: (files) => {
+          if (!isMounted()) return
+
+          Promise.all(
+            files.map((doc) =>
+              addBook({
+                book: {
+                  title: doc.name
+                },
+                link: {
+                  book: null,
+                  data: null,
+                  resourceId: generateResourceId(doc.id),
+                  type: `dropbox`,
+                  createdAt: new Date().toISOString(),
+                  modifiedAt: null
+                }
+              }).catch(Report.error)
             )
-          }
-        })
+          ).then(() => {
+            onClose()
+          })
+        }
+      })
     }
   }, [onClose, generateResourceId, addBook, isOpened])
 
@@ -67,4 +66,4 @@ export const UploadBook: FC<{
       <BlockingScreen />
     </>
   )
-}
+})
