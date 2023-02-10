@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
       // fix sax on browser
       define: {
         global: "globalThis"
-      },
-      inject: [path.resolve(__dirname, "./stream-shim.js")]
+      }
+      // inject: [path.resolve(__dirname, "./stream-shim.js")]
     }
   },
   /**

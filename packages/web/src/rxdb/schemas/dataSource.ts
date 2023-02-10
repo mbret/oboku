@@ -37,7 +37,7 @@ export const dataSourceSchema: RxJsonSchema<
   Omit<DataSourceDocType, "rx_model" | "_rev" | `rxdbMeta`>
 > = {
   title: "dataSourceSchema",
-  version: 4,
+  version: 0,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -56,28 +56,7 @@ export const dataSourceSchema: RxJsonSchema<
   required: []
 }
 
-export const migrationStrategies: MigrationStrategies = {
-  1: (
-    oldDoc: Omit<DataSourceDocType, `createdAt` | `modifiedAt`>
-  ): DataSourceDocType | null => {
-    return {
-      createdAt: new Date().toISOString(),
-      modifiedAt: null,
-      ...oldDoc
-    }
-  },
-  2: (
-    oldDoc: Omit<DataSourceDocType, `syncStatus`>
-  ): DataSourceDocType | null => {
-    return {
-      syncStatus: null,
-      ...oldDoc
-    }
-  },
-  // v10 -> v12
-  3: (doc) => doc,
-  4: (doc) => doc
-}
+export const migrationStrategies: MigrationStrategies = {}
 
 export const dataSourceCollectionMethods: DataSourceCollectionMethods = {
   post: async function (this: DataSourceCollection, json) {

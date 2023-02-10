@@ -35,7 +35,7 @@ export type TagCollection = RxCollection<
 
 const schema: RxJsonSchema<Omit<TagsDocType, `_rev` | `rxdbMeta`>> = {
   title: "tag",
-  version: 4,
+  version: 0,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -66,19 +66,7 @@ const collectionMethods: CollectionMethods = {
   }
 }
 
-const migrationStrategies: MigrationStrategies = {
-  1: (
-    oldDoc: Omit<TagsDocType, `createdAt` | `modifiedAt`>
-  ): TagsDocType | null => ({
-    createdAt: new Date().toISOString(),
-    modifiedAt: null,
-    ...oldDoc
-  }),
-  2: (oldDoc: TagsDocType): TagsDocType | null => oldDoc,
-  // v10 -> v12
-  3: (doc: TagsDocType) => doc,
-  4: (doc: TagsDocType) => doc
-}
+const migrationStrategies: MigrationStrategies = {}
 
 export const tag = {
   schema: schema,
