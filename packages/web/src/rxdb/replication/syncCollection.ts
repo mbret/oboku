@@ -26,7 +26,7 @@ export const syncCollection = (
     undefined
   )
   const cancel$ = new Subject<boolean>()
-  const internalError$ = new Subject<any>()
+  const internalError$ = new Subject<unknown>()
 
   const error$ = merge(
     internalError$,

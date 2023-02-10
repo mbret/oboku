@@ -6,24 +6,19 @@ import { DownloadState, normalizedBookDownloadsState } from "./states"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 import { DOWNLOAD_PREFIX } from "../constants.shared"
-import {
-  useDownloadBookFromDataSource,
-  useGetDataSourceCredentials
-} from "../dataSources/helpers"
 import { BookFile } from "./types"
 import { BookDocType } from "@oboku/shared"
-import { useGetLazySignedGapi } from "../dataSources/google/helpers"
 import { linkState } from "../links/states"
 import { useDialogManager } from "../dialog"
 import { bytesToMb } from "../common/utils"
 import { createCbzFromReadableStream } from "./createCbzFromReadableStream"
+import { useDownloadBookFromDataSource } from "../plugins/useDownloadBookFromDataSource"
+import { isPluginError } from "@oboku/plugin-front"
 
 export const useDownloadBook = () => {
-  const getDataSourceCredentials = useGetDataSourceCredentials()
   const downloadBook = useDownloadBookFromDataSource()
   const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
   const database = useDatabase()
-  const [getLazySignedGapi] = useGetLazySignedGapi()
   const dialog = useDialogManager()
 
   const setDownloadData = useCallback(
@@ -67,16 +62,6 @@ export const useDownloadBook = () => {
             throw new Error("invalid link")
           }
 
-          /**
-           * Because in order for an eventual oauth popup to show up we need to trigger it
-           * as soon as possible. we pre-fetch credentials this way before doing the rest of async stuff.
-           *
-           * @example
-           * Safari will not show the popup if you don't trigger it right after user click.
-           * Chrome seems to be okay with anything.
-           */
-          await getDataSourceCredentials(firstLink.type)
-
           // for some reason if the file exist we do not download it again
           if (
             await localforage.getItem<BookFile>(`${DOWNLOAD_PREFIX}-${bookId}`)
@@ -114,16 +99,6 @@ export const useDownloadBook = () => {
             const downloadResponse = await downloadBook(firstLink, {
               onDownloadProgress
             })
-
-            if (
-              "isError" in downloadResponse &&
-              downloadResponse.reason === "cancelled"
-            ) {
-              setDownloadData(bookId, {
-                downloadState: DownloadState.None
-              })
-              return
-            }
 
             if (
               "isError" in downloadResponse &&
@@ -184,10 +159,13 @@ export const useDownloadBook = () => {
           setDownloadData(bookId, {
             downloadState: DownloadState.None
           })
+
+          if (isPluginError(e) && e.code === "cancelled") return
+
           Report.error(e)
         }
       },
-    [setDownloadData, database, downloadBook, getLazySignedGapi]
+    [setDownloadData, database, downloadBook]
   )
 }
 

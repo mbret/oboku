@@ -97,7 +97,7 @@ export const BookActionsDrawer = () => {
                 type: "confirm",
                 title: "both",
                 onClick: () => {
-                  removeBook({ id: book._id, withRemoteDeletion: true })
+                  removeBook({ id: book._id, deleteFromDataSource: true })
                 }
               },
               {

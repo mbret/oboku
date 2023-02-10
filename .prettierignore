@@ -3,4 +3,6 @@
 /dist
 /coverage
 /packages/web/build
+/packages/web/dist
 /packages/web/public/*.js
+/packages/api/.esbuild

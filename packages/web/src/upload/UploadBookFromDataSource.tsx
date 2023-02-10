@@ -4,6 +4,7 @@ import { useDataSourcePlugin } from "../dataSources/helpers"
 import { ObokuPlugin } from "@oboku/plugin-front"
 import { TagsSelector } from "../tags/TagsSelector"
 import { ButtonDialog } from "../common/ButtonDialog"
+import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
 
 type UploadComponentProps = ComponentProps<
   NonNullable<ObokuPlugin[`UploadComponent`]>
@@ -15,6 +16,7 @@ export const UploadBookFromDataSource: FC<{
 }> = ({ openWith, onClose: onFinalClose }) => {
   const [addBook] = useAddBook()
   const dataSource = useDataSourcePlugin(openWith)
+  const createRequestPopup = useCreateRequestPopupDialog()
 
   const onClose: UploadComponentProps[`onClose`] = useCallback(
     (bookToAdd) => {
@@ -49,6 +51,7 @@ export const UploadBookFromDataSource: FC<{
           TagsSelector={TagsSelector}
           ButtonDialog={ButtonDialog}
           onClose={onClose}
+          requestPopup={createRequestPopup({ name: dataSource.name })}
         />
       )}
     </>

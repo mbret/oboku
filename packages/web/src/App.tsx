@@ -5,7 +5,7 @@ import { theme } from "./theme"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { TourProvider } from "./app-tour/TourProvider"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
-import { GoogleApiProvider } from "./dataSources/google/helpers"
+import { plugins } from "./plugins/configure"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { UpdateAvailableDialog } from "./UpdateAvailableDialog"
 import { RxDbProvider } from "./rxdb"
@@ -73,7 +73,13 @@ export function App() {
                 migration={localStateMigration}
                 onReady={() => setLoading(false)}
               >
-                <GoogleApiProvider>
+                {plugins.reduce(
+                  (Comp, { Provider }) => {
+                    if (Provider) {
+                      return <Provider>{Comp}</Provider>
+                    }
+                    return Comp
+                  },
                   <AxiosProvider>
                     <DialogProvider>
                       <TourProvider>
@@ -89,7 +95,7 @@ export function App() {
                       <Effects />
                     </DialogProvider>
                   </AxiosProvider>
-                </GoogleApiProvider>
+                )}
               </PersistedRecoilRoot>
             </RxDbProvider>
           </Suspense>

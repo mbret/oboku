@@ -9,10 +9,6 @@ import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../debug/report.shared"
 import { useCallback, useMemo } from "react"
-import {
-  useGetDataSourceCredentials,
-  useRemoveBookFromDataSource
-} from "../dataSources/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { PromiseReturnType } from "../types"
 import { useRecoilValue } from "recoil"
@@ -24,6 +20,9 @@ import { useNetworkState } from "react-use"
 import { useDialogManager } from "../dialog"
 import { useSync } from "../rxdb/useSync"
 import { catchError, EMPTY, from, map, switchMap } from "rxjs"
+import { isPluginError } from "@oboku/plugin-front"
+import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
+import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -38,14 +37,14 @@ export const useRemoveBook = () => {
   return useCallback(
     async ({
       id,
-      withRemoteDeletion
+      deleteFromDataSource
     }: {
       id: string
-      withRemoteDeletion?: boolean
+      deleteFromDataSource?: boolean
     }) => {
       let unlock = () => {}
       try {
-        if (withRemoteDeletion) {
+        if (deleteFromDataSource) {
           if (!network.online) {
             return dialog({ preset: "OFFLINE" })
           }
@@ -53,6 +52,10 @@ export const useRemoveBook = () => {
           try {
             await removeBookFromDataSource(id)
           } catch (e) {
+            if (isPluginError(e) && e.code === "cancelled") {
+              return
+            }
+
             Report.error(e)
 
             return dialog({ preset: "UNKNOWN_ERROR" })
@@ -130,10 +133,10 @@ export const useRefreshBookMetadata = () => {
   const client = useAxiosClient()
   const database = useDatabase()
   const [updateBook] = useAtomicUpdateBook()
-  const getDataSourceCredentials = useGetDataSourceCredentials()
   const dialog = useDialogManager()
   const network = useNetworkState()
   const sync = useSync()
+  const refreshPluginMetadata = usePluginRefreshMetadata()
 
   return async (bookId: string) => {
     try {
@@ -152,10 +155,7 @@ export const useRefreshBookMetadata = () => {
         return
       }
 
-      const credentials = await getDataSourceCredentials(firstLink.type)
-
-      if ("isError" in credentials && credentials.reason === "cancelled") return
-      if ("isError" in credentials) throw credentials.error || new Error("")
+      const { data: pluginMetadata } = await refreshPluginMetadata(firstLink)
 
       if (!database) return
 
@@ -167,9 +167,7 @@ export const useRefreshBookMetadata = () => {
       )
         .pipe(
           switchMap(() => sync([database.link, database.book])),
-          switchMap(() =>
-            from(client.refreshMetadata(bookId, credentials.data))
-          ),
+          switchMap(() => from(client.refreshMetadata(bookId, pluginMetadata))),
           catchError((e) =>
             from(
               updateBook(bookId, (old) => ({
@@ -191,6 +189,8 @@ export const useRefreshBookMetadata = () => {
         )
         .subscribe()
     } catch (e) {
+      if (isPluginError(e) && e.code === "cancelled") return
+
       Report.error(e)
     }
   }

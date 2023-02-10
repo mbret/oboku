@@ -6,7 +6,7 @@ import {
   ListItemText
 } from "@mui/material"
 import { FC } from "react"
-import { plugins } from "./configure"
+import { plugins } from "../plugins/configure"
 
 export const DataSourcesAddDrawer: FC<{
   open: boolean

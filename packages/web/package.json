@@ -18,26 +18,13 @@
     "@prose-reader/streamer": "1.21.0",
     "@react-rxjs/core": "^0.10.3",
     "@react-rxjs/utils": "^0.9.5",
-    "@sentry/react": "^7.36.0",
-    "@sentry/tracing": "^7.36.0",
-    "@types/dropbox-chooser": "^1.0.3",
-    "@types/gapi": "0.0.43",
-    "@types/gapi.auth2": "0.0.56",
-    "@types/gapi.client.drive": "^3.0.13",
-    "@types/google.picker": "0.0.39",
-    "@types/hammerjs": "^2.0.41",
-    "@types/jest": "^29.4.0",
-    "@types/lodash.throttle": "^4.1.7",
-    "@types/node": "^18.13.0",
-    "@types/pouchdb": "^6.4.0",
-    "@types/ramda": "^0.28.22",
-    "@types/react-virtualized-auto-sizer": "^1.0.1",
-    "@types/react-window": "^1.8.5",
-    "@types/uuid": "^9.0.0",
+    "@sentry/react": "^7.37.1",
+    "@sentry/tracing": "^7.37.1",
     "axios": "^1.2.2",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
     "crypto-js": "^4.1.1",
+    "date-fns": "^2.29.3",
     "dropbox": "^10.34.0",
     "events": "^3.3.0",
     "firebase": "^9.17.1",
@@ -48,9 +35,9 @@
     "jszip": "^3.10.0",
     "localforage": "^1.10.0",
     "lodash.throttle": "^4.1.1",
-    "pouchdb": "^8.0.0",
-    "pouchdb-adapter-idb": "^8.0.0",
-    "pouchdb-adapter-memory": "^8.0.0",
+    "pouchdb": "^8.0.1",
+    "pouchdb-adapter-idb": "^8.0.1",
+    "pouchdb-adapter-memory": "^8.0.1",
     "ramda": "^0.28.0",
     "rc-slider": "^10.1.1",
     "react": "^18.2.0",
@@ -89,7 +76,21 @@
   "devDependencies": {
     "@testing-library/dom": "^8.20.0",
     "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/user-event": "^14.4.3"
+    "@testing-library/user-event": "^14.4.3",
+    "@types/dropbox-chooser": "^1.0.3",
+    "@types/gapi": "0.0.44",
+    "@types/gapi.client.drive": "^3.0.13",
+    "@types/google.accounts": "^0.0.6",
+    "@types/google.picker": "0.0.39",
+    "@types/hammerjs": "^2.0.41",
+    "@types/jest": "^29.4.0",
+    "@types/lodash.throttle": "^4.1.7",
+    "@types/node": "^18.13.0",
+    "@types/pouchdb": "^6.4.0",
+    "@types/ramda": "^0.28.22",
+    "@types/react-virtualized-auto-sizer": "^1.0.1",
+    "@types/react-window": "^1.8.5",
+    "@types/uuid": "^9.0.0"
   },
   "scripts": {
     "predeploy": "npm run build",
@@ -98,13 +99,9 @@
     "preview": "vite preview",
     "test": "react-scripts test",
     "tsc": "tsc",
-    "webpack": "webpack -v"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "webpack": "webpack -v",
+    "format": "eslint --fix '**/*.{js,ts,tsx}'",
+    "lint": "eslint '**/*.{js,ts,tsx}'"
   },
   "browserslist": {
     "production": [

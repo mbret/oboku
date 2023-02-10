@@ -3,7 +3,7 @@ import {
   LinkDocType,
   dataSourceHelpers
 } from "@oboku/shared"
-import { ComponentProps, FC, FunctionComponent } from "react"
+import { ComponentProps, FC, FunctionComponent, ReactNode } from "react"
 import { Button } from "@mui/material"
 import * as yup from "yup"
 
@@ -26,7 +26,10 @@ type StreamValue = {
   progress: number
 }
 
-export type UseDownloadHook = (options: { apiUri: string }) => (
+export type UseDownloadHook = (options: {
+  apiUri: string
+  requestPopup: () => Promise<boolean>
+}) => (
   link: LinkDocType,
   options: {
     onDownloadProgress: (progress: number) => void
@@ -43,7 +46,21 @@ export type UseDownloadHook = (options: { apiUri: string }) => (
     }
 >
 
-export type UseRemoveBook = () => (link: LinkDocType) => Promise<
+export type UseRefreshMetadataHook = (options: {
+  requestPopup: () => Promise<boolean>
+}) => (link: LinkDocType) => Promise<{
+  data?: object
+}>
+
+export type UseSynchronizeHook = (options: {
+  requestPopup: () => Promise<boolean>
+}) => () => Promise<{
+  data?: object
+}>
+
+export type UseRemoveBook = (options: {
+  requestPopup: () => Promise<boolean>
+}) => (link: LinkDocType) => Promise<
   | {
       data: Record<string, unknown>
     }
@@ -51,17 +68,6 @@ export type UseRemoveBook = () => (link: LinkDocType) => Promise<
       isError: true
       error?: Error
       reason: `unknown`
-    }
->
-
-export type UseGetCredentials = () => () => Promise<
-  | {
-      isError: true
-      error?: Error
-      reason: `unknown` | `cancelled` | `popupBlocked`
-    }
-  | {
-      data: { [key: string]: string }
     }
 >
 
@@ -78,6 +84,7 @@ export type ObokuPlugin = {
   Icon?: FunctionComponent<Record<string, never>>
   UploadComponent?: FunctionComponent<{
     onClose: (bookToAdd?: { resourceId: string; tags?: string[] }) => void
+    requestPopup: () => Promise<boolean>
     TagsSelector: FC<{
       onChange: (tags: string[]) => void
     }>
@@ -90,15 +97,19 @@ export type ObokuPlugin = {
   }>
   AddDataSource?: FunctionComponent<{
     onClose: () => void
+    requestPopup: () => Promise<boolean>
   }>
   SelectItemComponent?: FunctionComponent<{
     open: boolean
+    requestPopup: () => Promise<boolean>
     onClose: (
       error?: SelectionError | undefined,
       item?: Item | undefined
     ) => void
   }>
-  useGetCredentials?: UseGetCredentials
+  Provider?: FunctionComponent<{ children: ReactNode }>
+  useRefreshMetadata?: UseRefreshMetadataHook
+  useSynchronize?: UseSynchronizeHook
   useDownloadBook?: UseDownloadHook
   useRemoveBook?: UseRemoveBook | undefined
   useSyncSourceInfo?: UseSyncSourceInfo
@@ -123,3 +134,5 @@ export const extractSyncSourceData = <Data extends Record<any, any>>({
     return undefined
   }
 }
+
+export * from "./errors"
