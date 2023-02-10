@@ -10,6 +10,7 @@ import { GoogleDriveDataSource as AddDataSource } from "./GoogleDriveDataSource"
 import { SelectItem as SelectItemComponent } from "./SelectItem"
 import { useGetCredentials } from "./useGetCredentials"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { Provider } from "./Provider"
 
 const GoogleDriveIcon = () => (
   <SvgIcon>
@@ -29,5 +30,6 @@ export const plugin: ObokuPlugin = {
   AddDataSource,
   useGetCredentials,
   SelectItemComponent,
-  useSyncSourceInfo
+  useSyncSourceInfo,
+  Provider
 }

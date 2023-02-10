@@ -1,4 +1,4 @@
-import { useDataSourceHelpers } from "../helpers"
+import { useDataSourceHelpers } from "../../dataSources/helpers"
 import axios from "axios"
 import { useCallback } from "react"
 import { ObokuPlugin } from "@oboku/plugin-front"

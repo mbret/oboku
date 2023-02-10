@@ -6,7 +6,7 @@ import { FC, memo, useEffect, useRef } from "react"
 import { Report } from "../../debug/report.shared"
 import { BlockingScreen } from "../../common/BlockingBackdrop"
 import { useAddBook } from "../../books/helpers"
-import { useDataSourceHelpers } from "../helpers"
+import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import useIsMounted from "./lib/useIsMounted"
 

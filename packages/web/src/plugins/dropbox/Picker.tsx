@@ -5,7 +5,7 @@
 import { FC, useEffect } from "react"
 import { useAddBook } from "../../books/helpers"
 import { DropboxFile } from "./types"
-import { useDataSourceHelpers } from "../helpers"
+import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 
 export const Picker: FC<{

@@ -3,7 +3,7 @@ import {
   LinkDocType,
   dataSourceHelpers
 } from "@oboku/shared"
-import { ComponentProps, FC, FunctionComponent } from "react"
+import { ComponentProps, FC, FunctionComponent, ReactNode } from "react"
 import { Button } from "@mui/material"
 import * as yup from "yup"
 
@@ -98,6 +98,7 @@ export type ObokuPlugin = {
       item?: Item | undefined
     ) => void
   }>
+  Provider?: FunctionComponent<{ children: ReactNode }>
   useGetCredentials?: UseGetCredentials
   useDownloadBook?: UseDownloadHook
   useRemoveBook?: UseRemoveBook | undefined

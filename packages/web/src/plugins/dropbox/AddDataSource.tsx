@@ -12,40 +12,43 @@ import {
   Typography
 } from "@mui/material"
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
-import { FC, useState } from "react"
+import { ComponentProps, FC, useState } from "react"
 import { useRecoilValue } from "recoil"
+import { DropboxDataSourceData } from "@oboku/shared"
 import { tagIdsState, tagsAsArrayState } from "../../tags/states"
-import { useCreateDataSource } from "../helpers"
-import { GoogleDriveDataSourceData } from "@oboku/shared"
-import { useDrivePicker } from "./lib/useDrivePicker"
+import { useCreateDataSource } from "../../dataSources/helpers"
+import { Picker } from "./Picker"
+import { DropboxFile } from "./types"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
-import { useIsMountedState$ } from "../../common/rxjs/useIsMountedState$"
-import { catchError, EMPTY, takeUntil, tap } from "rxjs"
 
-export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({
-  onClose
-}) => {
+export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedTags, setSelectedTags] = useState<{
     [key: string]: true | undefined
   }>({})
   const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
   const addDataSource = useCreateDataSource()
-  const [selectedFolder, setSelectedFolder] = useState<
-    { name: string; id: string } | undefined
-  >(undefined)
-  const [folderChain, setFolderChain] = useState<
-    { name: string; id: string }[]
-  >([{ name: "", id: "root" }])
+  const [selectedFolder, setSelectedFolder] = useState<DropboxFile | undefined>(
+    undefined
+  )
+  const [folderChain, setFolderChain] = useState<DropboxFile[]>([
+    { name: "", id: "root", isDir: true }
+  ])
   const currentFolder = folderChain[folderChain.length - 1]
   const tags = useRecoilValue(tagsAsArrayState)
   const tagIds = useRecoilValue(tagIdsState)
-  const { pick } = useDrivePicker()
-  const { unMount$ } = useIsMountedState$()
+  const [showPicker, setShowPicker] = useState(false)
+
+  const onPick: ComponentProps<typeof Picker>["onClose"] = (files) => {
+    setShowPicker(false)
+    if (files && files.length > 0) {
+      setSelectedFolder(files[0])
+    }
+  }
 
   return (
     <>
       <Dialog onClose={onClose} open fullScreen>
-        <DialogTitle>Google Drive datasource</DialogTitle>
+        <DialogTitle>Dropbox datasource</DialogTitle>
         <DialogContent
           style={{ padding: 0, display: "flex", flexFlow: "column" }}
         >
@@ -93,23 +96,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({
             <Button
               color="primary"
               variant="contained"
-              onClick={() => {
-                pick({ select: "folder" })
-                  .pipe(
-                    tap((data) => {
-                      if (data.action === google.picker.Action.PICKED) {
-                        setSelectedFolder(data.docs[0])
-                      }
-                    }),
-                    takeUntil(unMount$),
-                    catchError((error) => {
-                      console.error(error)
-
-                      return EMPTY
-                    })
-                  )
-                  .subscribe()
-              }}
+              onClick={() => setShowPicker(true)}
             >
               Choose a folder
             </Button>
@@ -125,13 +112,13 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({
             onClick={() => {
               onClose()
               if (selectedFolder) {
-                const customData: GoogleDriveDataSourceData = {
+                const customData: DropboxDataSourceData = {
                   applyTags: Object.keys(selectedTags),
                   folderId: selectedFolder.id,
                   folderName: selectedFolder.name
                 }
                 addDataSource({
-                  type: `DRIVE`,
+                  type: `dropbox`,
                   data: JSON.stringify(customData)
                 })
               }
@@ -140,22 +127,25 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({
             Confirm
           </Button>
         </DialogActions>
-        <TagsSelectionDialog
-          open={isTagSelectionOpen}
-          onClose={() => setIsTagSelectionOpen(false)}
-          title="Choose tags to apply automatically"
-          data={tagIds}
-          hasBackNavigation
-          selected={(id) => !!selectedTags[id]}
-          onItemClick={({ id }) => {
-            if (selectedTags[id]) {
-              setSelectedTags(({ [id]: removed, ...rest }) => rest)
-            } else {
-              setSelectedTags((value) => ({ ...value, [id]: true }))
-            }
-          }}
-        />
       </Dialog>
+      <TagsSelectionDialog
+        data={tagIds}
+        open={isTagSelectionOpen}
+        hasBackNavigation
+        onClose={() => setIsTagSelectionOpen(false)}
+        title="Choose tags to apply automatically"
+        selected={(id) => !!selectedTags[id]}
+        onItemClick={({ id }) => {
+          if (selectedTags[id]) {
+            setSelectedTags(({ [id]: removed, ...rest }) => rest)
+          } else {
+            setSelectedTags((value) => ({ ...value, [id]: true }))
+          }
+        }}
+      />
+      {showPicker && (
+        <Picker onClose={onPick} select="folder" multiselect={false} />
+      )}
     </>
   )
 }

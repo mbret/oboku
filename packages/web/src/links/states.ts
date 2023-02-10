@@ -1,6 +1,6 @@
 import { atom, selector, selectorFamily } from "recoil"
 import { LinkDocType } from "@oboku/shared"
-import { plugins } from "../dataSources/configure"
+import { plugins } from "../plugins/configure"
 
 export const normalizedLinksState = atom<
   Record<string, LinkDocType | undefined>

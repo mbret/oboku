@@ -1,5 +1,5 @@
 import { BlockingScreen } from "../../common/BlockingBackdrop"
-import { useDataSourceHelpers } from "../helpers"
+import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { ObokuPlugin } from "@oboku/plugin-front"
 import { useDrivePicker } from "./lib/useDrivePicker"
