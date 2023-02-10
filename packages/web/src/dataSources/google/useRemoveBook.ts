@@ -1,16 +1,22 @@
 import { useCallback } from "react"
-import { ObokuPlugin } from "@oboku/plugin-front"
-import { extractIdFromResourceId, useGetLazySignedGapi } from "./helpers"
+import { ObokuPlugin, ObokuPluginError } from "@oboku/plugin-front"
+import { extractIdFromResourceId } from "./lib/helpers"
+import { useAccessToken } from "./lib/useAccessToken"
+import { useGoogle } from "./lib/useGsiClient"
+import { isPopupClosedError } from "./lib/errors"
 
 export const useRemoveBook: ObokuPlugin[`useRemoveBook`] = () => {
-  const [getLazySignedGapi] = useGetLazySignedGapi()
+  const { requestToken } = useAccessToken()
+  const { lazyGapi } = useGoogle()
 
   return useCallback(
     async (link) => {
       try {
-        const { gapi } = (await getLazySignedGapi()) || {}
+        await requestToken({
+          scope: [`https://www.googleapis.com/auth/drive`]
+        })
 
-        if (!gapi) throw new Error("Unable to authenticate")
+        const gapi = await lazyGapi
 
         const fileId = extractIdFromResourceId(link.resourceId)
 
@@ -20,9 +26,13 @@ export const useRemoveBook: ObokuPlugin[`useRemoveBook`] = () => {
 
         return { data: {} }
       } catch (e) {
+        if (isPopupClosedError(e)) {
+          throw new ObokuPluginError({ code: "cancelled" })
+        }
+
         throw e
       }
     },
-    [getLazySignedGapi]
+    [requestToken, lazyGapi]
   )
 }

@@ -12,7 +12,6 @@ import {
 } from "../dataSources/helpers"
 import { BookFile } from "./types"
 import { BookDocType } from "@oboku/shared"
-import { useGetLazySignedGapi } from "../dataSources/google/helpers"
 import { linkState } from "../links/states"
 import { useDialogManager } from "../dialog"
 import { bytesToMb } from "../common/utils"
@@ -23,7 +22,6 @@ export const useDownloadBook = () => {
   const downloadBook = useDownloadBookFromDataSource()
   const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
   const database = useDatabase()
-  const [getLazySignedGapi] = useGetLazySignedGapi()
   const dialog = useDialogManager()
 
   const setDownloadData = useCallback(
@@ -187,7 +185,7 @@ export const useDownloadBook = () => {
           Report.error(e)
         }
       },
-    [setDownloadData, database, downloadBook, getLazySignedGapi]
+    [setDownloadData, database, downloadBook]
   )
 }
 

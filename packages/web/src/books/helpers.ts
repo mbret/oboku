@@ -24,6 +24,7 @@ import { useNetworkState } from "react-use"
 import { useDialogManager } from "../dialog"
 import { useSync } from "../rxdb/useSync"
 import { catchError, EMPTY, from, map, switchMap } from "rxjs"
+import { isPluginError } from "@oboku/plugin-front"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -38,14 +39,14 @@ export const useRemoveBook = () => {
   return useCallback(
     async ({
       id,
-      withRemoteDeletion
+      deleteFromDataSource
     }: {
       id: string
-      withRemoteDeletion?: boolean
+      deleteFromDataSource?: boolean
     }) => {
       let unlock = () => {}
       try {
-        if (withRemoteDeletion) {
+        if (deleteFromDataSource) {
           if (!network.online) {
             return dialog({ preset: "OFFLINE" })
           }
@@ -53,6 +54,10 @@ export const useRemoveBook = () => {
           try {
             await removeBookFromDataSource(id)
           } catch (e) {
+            if (isPluginError(e) && e.code === "cancelled") {
+              return
+            }
+
             Report.error(e)
 
             return dialog({ preset: "UNKNOWN_ERROR" })

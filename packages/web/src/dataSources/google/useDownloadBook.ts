@@ -1,59 +1,61 @@
 import axios from "axios"
 import { useCallback } from "react"
-import { PromiseReturnType } from "../../types"
 import { ObokuPlugin } from "@oboku/plugin-front"
-import { extractIdFromResourceId, useGetLazySignedGapi } from "./helpers"
-import { isDriveResponseError } from "./types"
+import { extractIdFromResourceId } from "./lib/helpers"
+import { isDriveResponseError } from "./lib/types"
+import { useAccessToken } from "./lib/useAccessToken"
+import { useGoogle } from "./lib/useGsiClient"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
-  const [getLazySignedGapi] = useGetLazySignedGapi()
+  const { requestToken } = useAccessToken()
+  const { lazyGapi } = useGoogle()
 
   return useCallback(
     async (link, options) => {
       try {
-        const { gapi } = (await getLazySignedGapi()) || {}
+        await requestToken({
+          scope: ["https://www.googleapis.com/auth/drive.readonly"]
+        })
 
-        if (gapi) {
-          const fileId = extractIdFromResourceId(link.resourceId)
+        const api = await lazyGapi
 
-          let info: PromiseReturnType<typeof gapi.client.drive.files.get>
+        const fileId = extractIdFromResourceId(link.resourceId)
 
-          try {
-            info = await gapi.client.drive.files.get({
-              fileId,
-              fields: "name,size"
-            })
-          } catch (e) {
-            if (isDriveResponseError(e)) {
-              if (e.status === 404) {
-                return {
-                  isError: true,
-                  reason: `notFound`,
-                  error: e
-                }
+        let info: gapi.client.Response<gapi.client.drive.File>
+
+        try {
+          info = await api.client.drive.files.get({
+            fileId,
+            fields: "name,size"
+          })
+        } catch (e) {
+          if (isDriveResponseError(e)) {
+            if (e.status === 404) {
+              return {
+                isError: true,
+                reason: `notFound`,
+                error: e
               }
             }
-            throw e
           }
-
-          const mediaResponse = await axios.get<Blob>(
-            `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-            {
-              headers: {
-                Authorization: `Bearer ${gapi.auth.getToken().access_token}`
-              },
-              responseType: "blob",
-              onDownloadProgress: (event) => {
-                const totalSize = parseInt(info.result.size || "1") || 1
-                options?.onDownloadProgress(event.loaded / totalSize)
-              }
-            }
-          )
-
-          return { data: mediaResponse.data, name: info.result.name || "" }
+          throw e
         }
 
-        throw new Error("Unknown error")
+        const mediaResponse = await axios.get<Blob>(
+          `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+          {
+            headers: {
+              Authorization: `Bearer ${gapi.auth.getToken().access_token}`
+            },
+            responseType: "blob",
+            onDownloadProgress: (event) => {
+              const totalSize = parseInt(info.result.size || "1") || 1
+              options?.onDownloadProgress(event.loaded / totalSize)
+            }
+          }
+        )
+
+        return { data: mediaResponse.data, name: info.result.name || "" }
       } catch (e) {
         if ((e as any)?.error === "popup_blocked_by_browser") {
           return { isError: true, reason: "popupBlocked" } as {
@@ -64,6 +66,6 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
         throw e
       }
     },
-    [getLazySignedGapi]
+    [lazyGapi, requestToken]
   )
 }

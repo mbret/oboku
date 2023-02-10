@@ -17,8 +17,10 @@ import { useRecoilValue } from "recoil"
 import { tagIdsState, tagsAsArrayState } from "../../tags/states"
 import { useCreateDataSource } from "../helpers"
 import { GoogleDriveDataSourceData } from "@oboku/shared"
-import { DrivePicker } from "./DrivePicker"
+import { useDrivePicker } from "./lib/useDrivePicker"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
+import { useIsMountedState$ } from "../../common/rxjs/useIsMountedState$"
+import { catchError, EMPTY, takeUntil, tap } from "rxjs"
 
 export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({
   onClose
@@ -37,20 +39,12 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({
   const currentFolder = folderChain[folderChain.length - 1]
   const tags = useRecoilValue(tagsAsArrayState)
   const tagIds = useRecoilValue(tagIdsState)
-  const [showDrive, setShowDrive] = useState(false)
-
-  const onPick = (data: any) => {
-    if (data.action !== "loaded") {
-      setShowDrive(false)
-    }
-    if (data.action === "picked") {
-      setSelectedFolder(data.docs[0])
-    }
-  }
+  const { pick } = useDrivePicker()
+  const { unMount$ } = useIsMountedState$()
 
   return (
     <>
-      <Dialog onClose={onClose} open={!showDrive} fullScreen>
+      <Dialog onClose={onClose} open fullScreen>
         <DialogTitle>Google Drive datasource</DialogTitle>
         <DialogContent
           style={{ padding: 0, display: "flex", flexFlow: "column" }}
@@ -99,7 +93,23 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({
             <Button
               color="primary"
               variant="contained"
-              onClick={() => setShowDrive(true)}
+              onClick={() => {
+                pick({ select: "folder" })
+                  .pipe(
+                    tap((data) => {
+                      if (data.action === google.picker.Action.PICKED) {
+                        setSelectedFolder(data.docs[0])
+                      }
+                    }),
+                    takeUntil(unMount$),
+                    catchError((error) => {
+                      console.error(error)
+
+                      return EMPTY
+                    })
+                  )
+                  .subscribe()
+              }}
             >
               Choose a folder
             </Button>
@@ -146,7 +156,6 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({
           }}
         />
       </Dialog>
-      <DrivePicker show={showDrive} onClose={onPick} select="folder" />
     </>
   )
 }

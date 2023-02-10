@@ -17,3 +17,7 @@ export const isDriveResponseError = (
 ): error is DriveResponseError => {
   return `body` in error && `result` in error
 }
+
+export type AccessToken = Parameters<
+  Parameters<(typeof google.accounts.oauth2)["initTokenClient"]>[0]["callback"]
+>[0]

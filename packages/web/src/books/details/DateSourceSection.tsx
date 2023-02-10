@@ -75,11 +75,11 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
       {dataSourcePlugin?.SelectItemComponent && (
         <dataSourcePlugin.SelectItemComponent
           open={isSelectItemOpened}
-          onClose={async (error, item) => {
+          onClose={(error, item) => {
+            setIsSelectItemOpened(false)
             if (error) {
               Report.error(error)
             } else {
-              setIsSelectItemOpened(false)
               if (item) {
                 execute({
                   type: `UPSERT_BOOK_LINK`,

@@ -61,7 +61,7 @@ export type UseGetCredentials = () => () => Promise<
       reason: `unknown` | `cancelled` | `popupBlocked`
     }
   | {
-      data: { [key: string]: string }
+      data: object
     }
 >
 
@@ -123,3 +123,5 @@ export const extractSyncSourceData = <Data extends Record<any, any>>({
     return undefined
   }
 }
+
+export * from "./errors"
