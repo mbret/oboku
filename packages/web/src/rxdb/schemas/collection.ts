@@ -37,7 +37,7 @@ export const collectionSchema: RxJsonSchema<
   Omit<CollectionDocType, `_rev` | `rxdbMeta`>
 > = {
   title: "obokucollection",
-  version: 3,
+  version: 0,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -53,27 +53,7 @@ export const collectionSchema: RxJsonSchema<
   required: ["name"]
 }
 
-export const collectionMigrationStrategies = {
-  1: (
-    oldDoc: Omit<CollectionDocType, `createdAt` | `modifiedAt`>
-  ): CollectionDocType | null => {
-    return {
-      createdAt: new Date().toISOString(),
-      modifiedAt: null,
-      ...oldDoc
-    }
-  },
-  2: (
-    oldDoc: Omit<CollectionDocType, `dataSourceId`>
-  ): CollectionDocType | null => {
-    return {
-      dataSourceId: null,
-      ...oldDoc
-    }
-  },
-  // v10 -> v12
-  3: (doc: CollectionDocType) => doc
-}
+export const collectionMigrationStrategies = {}
 
 export const collectionCollectionMethods: CollectionCollectionMethods = {
   post: async function (this: CollectionCollection, json) {

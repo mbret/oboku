@@ -24,7 +24,7 @@ import {
 } from "./schemas/dataSource"
 import { BookDocType, LinkDocType, TagsDocType } from "@oboku/shared"
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder"
-import { RxDBValidatePlugin } from "rxdb/plugins/validate"
+import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
 import { RxDBUpdatePlugin } from "rxdb/plugins/update"
 import { RxDBReplicationCouchDBPlugin } from "rxdb/plugins/replication-couchdb"
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
@@ -51,10 +51,6 @@ addRxPlugin(RxDBReplicationCouchDBPlugin)
 addRxPlugin(RxDBMigrationPlugin)
 
 if (import.meta.env.DEV) {
-  // NOTICE: Schema validation can be CPU expensive and increases your build size.
-  // You should always use a schema validation plugin in development mode.
-  // For most use cases, you should not use a validation plugin in production.
-  addRxPlugin(RxDBValidatePlugin)
   addRxPlugin(RxDBDevModePlugin)
 }
 
@@ -101,7 +97,7 @@ export type MyDatabaseCollections = {
 }
 
 const settingsSchema: RxJsonSchema<SettingsDocType> = {
-  version: 1,
+  version: 0,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -117,19 +113,25 @@ const settingsCollectionMethods: SettingsCollectionMethods = {
   }
 }
 
-export const settingsMigrationStrategies = {
-  // v10 -> v12
-  1: (doc: SettingsDocType) => doc
-}
+export const settingsMigrationStrategies = {}
 
 export type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 
 export const createDatabase = async () => {
+  const subStorage = getRxStoragePouch("idb", {
+    skip_setup: true
+  })
+
   const db = await createRxDatabase<MyDatabaseCollections>({
-    name: "oboku",
-    storage: getRxStoragePouch("idb", {
-      skip_setup: true
-    }),
+    name: "oboku-14",
+    // NOTICE: Schema validation can be CPU expensive and increases your build size.
+    // You should always use a schema validation plugin in development mode.
+    // For most use cases, you should not use a validation plugin in production.
+    storage: import.meta.env.DEV
+      ? wrappedValidateAjvStorage({
+          storage: subStorage
+        })
+      : subStorage,
     multiInstance: false
   })
 

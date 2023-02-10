@@ -54,36 +54,12 @@ export const bookCollectionMethods: BookCollectionMethods = {
   }
 }
 
-export const bookSchemaMigrationStrategies = {
-  1: (oldDoc: Omit<BookDocType, `modifiedAt`>): BookDocType | null => ({
-    modifiedAt: null,
-    ...oldDoc
-  }),
-  2: (oldDoc: BookDocType): BookDocType | null => oldDoc,
-  3: (
-    oldDoc: Omit<
-      BookDocType,
-      `lastMetadataUpdateError` | `metadataUpdateStatus`
-    >
-  ): BookDocType | null => ({
-    lastMetadataUpdateError: null,
-    metadataUpdateStatus: null,
-    ...oldDoc
-  }),
-  4: (
-    oldDoc: Omit<BookDocType, `isAttachedToDataSource`>
-  ): BookDocType | null => ({
-    isAttachedToDataSource: false,
-    ...oldDoc
-  }),
-  // v10 -> v12
-  5: (doc: BookDocType) => doc
-}
+export const bookSchemaMigrationStrategies = {}
 
 export const bookSchema: RxJsonSchema<Omit<BookDocType, `_rev` | `rxdbMeta`>> =
   {
     title: "books",
-    version: 5,
+    version: 0,
     type: "object",
     primaryKey: `_id`,
     properties: {

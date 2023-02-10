@@ -34,7 +34,7 @@ type LinkCollectionMethods = {
 
 const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev` | `rxdbMeta`>> = {
   title: "link",
-  version: 2,
+  version: 0,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -51,19 +51,7 @@ const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev` | `rxdbMeta`>> = {
   required: ["data", "resourceId", "type"]
 }
 
-const linkSchemaMigrationStrategies = {
-  1: (
-    oldDoc: Omit<LinkDocType, `createdAt` | `modifiedAt`>
-  ): LinkDocType | null => {
-    return {
-      createdAt: new Date().toISOString(),
-      modifiedAt: null,
-      ...oldDoc
-    }
-  },
-  // v10 -> v12
-  2: (doc: LinkDocType) => doc
-}
+const linkSchemaMigrationStrategies = {}
 
 const linkDocMethods: LinkDocMethods = {
   safeUpdate: async function (this: LinkDocument, updateObj) {
