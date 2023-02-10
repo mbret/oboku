@@ -75,7 +75,7 @@ export const dataSourceFacade = {
       // latest changes have been synced
       const lastSyncedAt = new Date().getTime()
       const ctx = { dataSourceId, userEmail, credentials, dataSourceType: type }
-      const plugin = plugins.find(({ type }) => type === type)
+      const plugin = plugins.find((plugin) => plugin.type === type)
 
       const synchronizeAbleDataSource = await plugin?.sync(ctx, helpers)
 

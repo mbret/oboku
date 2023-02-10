@@ -71,7 +71,6 @@ export const dataSource: DataSourcePlugin = {
   sync: async ({ credentials }, helpers) => {
     const throttle = createThrottler(50)
 
-    console.log("CREDENTIALS", {credentials})
     const dbx = new Dropbox({
       accessToken: credentials.accessToken,
       fetch: nodeFetch
