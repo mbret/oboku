@@ -5,7 +5,7 @@ export class ObokuPluginError extends Error {
   obokuError = true
 
   constructor({ code }: { code: Code }) {
-    super("Plugin error")
+    super(`Plugin error with code: ${code}`)
 
     this.code = code
 

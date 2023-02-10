@@ -6,8 +6,10 @@ import { isDriveResponseError } from "./lib/types"
 import { useAccessToken } from "./lib/useAccessToken"
 import { useGoogle } from "./lib/useGsiClient"
 
-export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
-  const { requestToken } = useAccessToken()
+export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
+  requestPopup
+}) => {
+  const { requestToken } = useAccessToken({ requestPopup })
   const { lazyGapi } = useGoogle()
 
   return useCallback(

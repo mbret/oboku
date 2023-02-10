@@ -5,8 +5,10 @@ import { useAccessToken } from "./lib/useAccessToken"
 import { useGoogle } from "./lib/useGsiClient"
 import { isPopupClosedError } from "./lib/errors"
 
-export const useRemoveBook: ObokuPlugin[`useRemoveBook`] = () => {
-  const { requestToken } = useAccessToken()
+export const useRemoveBook: ObokuPlugin[`useRemoveBook`] = ({
+  requestPopup
+}) => {
+  const { requestToken } = useAccessToken({ requestPopup })
   const { lazyGapi } = useGoogle()
 
   return useCallback(

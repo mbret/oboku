@@ -6,6 +6,8 @@ export type ContextValue = {
   lazyGsi: Promise<typeof google>
   lazyGapi: Promise<typeof gapi>
   accessToken?: { token: AccessToken; createdAt: Date }
+  consentPopupShown?: boolean
+  setConsentPopupShown: React.Dispatch<React.SetStateAction<boolean>>
   setAccessToken: ReturnType<
     typeof useState<{ token: AccessToken; createdAt: Date } | undefined>
   >[1]
@@ -15,7 +17,8 @@ export const GoogleAPIContext = React.createContext<ContextValue>({
   gsi: undefined,
   lazyGsi: new Promise(() => {}),
   lazyGapi: new Promise(() => {}),
-  setAccessToken: () => {}
+  setAccessToken: () => {},
+  setConsentPopupShown: () => {}
 })
 
 export const extractIdFromResourceId = (resourceId: string) =>

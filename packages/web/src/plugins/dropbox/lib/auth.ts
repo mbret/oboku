@@ -1,13 +1,10 @@
+import { ObokuPluginError } from "@oboku/plugin-front"
 import { DropboxAuth } from "dropbox"
-import { CLIENT_ID } from "./constants"
+import { CLIENT_ID } from "../constants"
 
 const defaultWindowOptions = {
   toolbar: "no",
-  menubar: "no",
-  width: 320,
-  height: 600,
-  top: 100,
-  left: 100
+  menubar: "no"
 }
 
 let dropboxAuth = new DropboxAuth({ clientId: CLIENT_ID })
@@ -34,10 +31,12 @@ const isAccessTokenStillSufficient = () => {
 /**
  * Token is valid for about 4 hours
  */
-export const authUser = () => {
-  return new Promise<
-    DropboxAuth | { isError: true; error?: Error; reason: "cancelled" }
-  >(async (resolve, reject) => {
+export const authUser = ({
+  requestPopup
+}: {
+  requestPopup: () => Promise<boolean>
+}) => {
+  return new Promise<DropboxAuth>(async (resolve, reject) => {
     let timedOut = false
     let listenToPopupCloseInterval: ReturnType<typeof setInterval>
     let listenToPopupTimeoutTimeout: ReturnType<typeof setTimeout>
@@ -61,6 +60,11 @@ export const authUser = () => {
         "user",
         usePKCE
       )
+
+      const confirmed = await requestPopup()
+
+      if (!confirmed) throw new ObokuPluginError({ code: "cancelled" })
+
       const _oauthWindow = window.open(
         authUrl.toString(),
         "DropboxOAuth",
@@ -104,7 +108,6 @@ export const authUser = () => {
             reject(e)
           }
         }
-        console.log(event)
       }
 
       const cleanup = () => {
@@ -127,7 +130,7 @@ export const authUser = () => {
         if (_oauthWindow?.closed) {
           cleanup()
 
-          resolve({ isError: true, reason: "cancelled" })
+          reject(new ObokuPluginError({ code: "cancelled" }))
         }
       }, 1000)
     } catch (e) {

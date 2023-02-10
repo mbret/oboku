@@ -22,9 +22,10 @@ import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
 import { useIsMountedState$ } from "../../common/rxjs/useIsMountedState$"
 import { catchError, EMPTY, takeUntil, tap } from "rxjs"
 
-export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({
-  onClose
-}) => {
+export const GoogleDriveDataSource: FC<{
+  onClose: () => void
+  requestPopup: () => Promise<boolean>
+}> = ({ onClose, requestPopup }) => {
   const [selectedTags, setSelectedTags] = useState<{
     [key: string]: true | undefined
   }>({})
@@ -39,7 +40,7 @@ export const GoogleDriveDataSource: FC<{ onClose: () => void }> = ({
   const currentFolder = folderChain[folderChain.length - 1]
   const tags = useRecoilValue(tagsAsArrayState)
   const tagIds = useRecoilValue(tagIdsState)
-  const { pick } = useDrivePicker()
+  const { pick } = useDrivePicker({ requestPopup })
   const { unMount$ } = useIsMountedState$()
 
   return (

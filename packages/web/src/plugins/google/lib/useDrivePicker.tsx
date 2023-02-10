@@ -4,9 +4,13 @@ import { useGoogle } from "./useGsiClient"
 import { useAccessToken } from "./useAccessToken"
 import { finalize, from, switchMap } from "rxjs"
 
-export const useDrivePicker = () => {
+export const useDrivePicker = ({
+  requestPopup
+}: {
+  requestPopup: () => Promise<boolean>
+}) => {
   const { lazyGsi } = useGoogle()
-  const { requestToken } = useAccessToken()
+  const { requestToken } = useAccessToken({ requestPopup })
 
   const pick = useCallback(
     ({ select }: { select: "file" | "folder" }) => {

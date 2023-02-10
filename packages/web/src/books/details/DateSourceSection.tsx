@@ -16,6 +16,7 @@ import { Report } from "../../debug/report.shared"
 import { useDialogManager } from "../../dialog"
 import { useRefreshBookMetadata } from "../helpers"
 import { bookLinksState } from "../states"
+import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
 
 export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
   const link = useRecoilValue(bookLinksState(bookId))[0]
@@ -24,6 +25,7 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
   const dialog = useDialogManager()
   const { execute } = useAction()
   const refreshBookMetadata = useRefreshBookMetadata()
+  const createRequestPopupDialog = useCreateRequestPopupDialog()
 
   return (
     <>
@@ -75,6 +77,9 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
       {dataSourcePlugin?.SelectItemComponent && (
         <dataSourcePlugin.SelectItemComponent
           open={isSelectItemOpened}
+          requestPopup={createRequestPopupDialog({
+            name: dataSourcePlugin.name
+          })}
           onClose={(error, item) => {
             setIsSelectItemOpened(false)
             if (error) {

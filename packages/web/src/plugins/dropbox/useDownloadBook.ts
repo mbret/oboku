@@ -1,7 +1,7 @@
 import { Dropbox, DropboxResponse, files } from "dropbox"
 import { useCallback } from "react"
 import { ObokuPlugin } from "@oboku/plugin-front"
-import { authUser } from "./auth"
+import { authUser } from "./lib/auth"
 import { extractIdFromResourceId } from "./helpers"
 
 // this property is somehow missing. must be a bug in dropbox
@@ -12,11 +12,11 @@ type ResponseWithFileBlob = DropboxResponse<files.FileMetadata> & {
   }
 }
 
-export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
+export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
+  requestPopup
+}) => {
   return useCallback(async (link) => {
-    const auth = await authUser()
-
-    if ("isError" in auth) return auth
+    const auth = await authUser({ requestPopup })
 
     let dropbox = new Dropbox({ auth })
 

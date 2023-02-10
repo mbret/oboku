@@ -8,9 +8,10 @@ import { useDownloadBook } from "./useDownloadBook"
 import { useRemoveBook } from "./useRemoveBook"
 import { GoogleDriveDataSource as AddDataSource } from "./GoogleDriveDataSource"
 import { SelectItem as SelectItemComponent } from "./SelectItem"
-import { useGetCredentials } from "./useGetCredentials"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { Provider } from "./Provider"
+import { useRefreshMetadata } from "./useRefreshMetadata"
+import { useSynchronize } from "./useSynchronize"
 
 const GoogleDriveIcon = () => (
   <SvgIcon>
@@ -28,8 +29,9 @@ export const plugin: ObokuPlugin = {
   useDownloadBook,
   useRemoveBook,
   AddDataSource,
-  useGetCredentials,
   SelectItemComponent,
   useSyncSourceInfo,
+  useRefreshMetadata,
+  useSynchronize,
   Provider
 }

@@ -1,4 +1,3 @@
-import { BlockingScreen } from "../../common/BlockingBackdrop"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { ObokuPlugin } from "@oboku/plugin-front"
@@ -9,12 +8,13 @@ import { useEffect } from "react"
 
 export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
   onClose,
-  open
+  open,
+  requestPopup
 }) => {
   const { generateResourceId } = useDataSourceHelpers(
     UNIQUE_RESOURCE_IDENTIFIER
   )
-  const { pick } = useDrivePicker()
+  const { pick } = useDrivePicker({ requestPopup })
   const { unMount$ } = useIsMountedState$()
 
   useEffect(() => {
@@ -57,9 +57,5 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
 
   if (!open) return null
 
-  return (
-    <>
-      <BlockingScreen />
-    </>
-  )
+  return null
 }

@@ -1,22 +1,22 @@
-import { FC } from "react"
 import { Report } from "../../debug/report.shared"
 import { useDrivePicker } from "./lib/useDrivePicker"
-import { BlockingScreen } from "../../common/BlockingBackdrop"
 import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { catchError, EMPTY, from, of, switchMap, takeUntil } from "rxjs"
 import { useIsMountedState$ } from "../../common/rxjs/useIsMountedState$"
 import { useMount } from "react-use"
+import { ObokuPlugin } from "@oboku/plugin-front"
 
-export const UploadBook: FC<{
-  onClose: () => void
-}> = ({ onClose }) => {
+export const UploadBook: ObokuPlugin["UploadComponent"] = ({
+  onClose,
+  requestPopup
+}) => {
   const [addBook] = useAddBook()
   const { generateResourceId } = useDataSourceHelpers(
     UNIQUE_RESOURCE_IDENTIFIER
   )
-  const { pick } = useDrivePicker()
+  const { pick } = useDrivePicker({ requestPopup })
   const { unMount$ } = useIsMountedState$()
 
   useMount(() => {
@@ -60,9 +60,5 @@ export const UploadBook: FC<{
       .subscribe()
   })
 
-  return (
-    <>
-      <BlockingScreen />
-    </>
-  )
+  return null
 }
