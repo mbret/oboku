@@ -23,7 +23,6 @@ export const useStorageUse = (deps: DependencyList | undefined) => {
         estimate.quota && setStorageQuota(estimate.quota)
         estimateIndexedDBUsage && setIndexedDBUsage(estimateIndexedDBUsage)
       })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps)
 
   const quotaUsed = (indexedDBUsage || 0) / (storageQuota || 1)

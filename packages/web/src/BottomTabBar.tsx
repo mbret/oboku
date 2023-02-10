@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react"
+import React, { useRef, useCallback, ReactNode } from "react"
 import {
   BottomNavigationAction,
   BottomNavigation,
@@ -23,7 +23,7 @@ import { UploadBookFromDevice } from "./upload/UploadBookFromDevice"
 import { useRecoilState } from "recoil"
 import { isUploadBookFromDeviceOpenedFromState } from "./upload/state"
 
-export const BottomTabBar = ({ children }) => {
+export const BottomTabBar = ({ children }: { children: ReactNode }) => {
   const location = useLocation()
   const navigate = useNavigate()
   const classes = useStyles()

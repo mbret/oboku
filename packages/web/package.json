@@ -99,13 +99,9 @@
     "preview": "vite preview",
     "test": "react-scripts test",
     "tsc": "tsc",
-    "webpack": "webpack -v"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "webpack": "webpack -v",
+    "format": "eslint --fix '**/*.{js,ts,tsx}'",
+    "lint": "eslint '**/*.{js,ts,tsx}'"
   },
   "browserslist": {
     "production": [

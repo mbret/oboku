@@ -29,5 +29,5 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
     }
 
     return { data: response.result.fileBlob, name: response.result.name }
-  }, [])
+  }, [requestPopup])
 }

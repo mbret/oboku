@@ -21,6 +21,5 @@ export const useActionEffect = <
     return () => {
       subscription.unsubscribe()
     }
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
   }, [...Array.from(deps || []), execute])
 }

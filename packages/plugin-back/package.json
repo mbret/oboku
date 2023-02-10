@@ -18,7 +18,6 @@
   "scripts": {
     "start": "vite build --watch --mode development",
     "build": "tsc && vite build",
-    "lint": "eslint '**/*.{js,ts,tsx}'",
     "test": "jest"
   },
   "dependencies": {

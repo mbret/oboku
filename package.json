@@ -21,7 +21,8 @@
     "build:landing": "lerna run landing:build",
     "test": "lerna run test",
     "tsc": "lerna run tsc",
-    "format": "prettier -w . && lerna run lint --scope @oboku/api -- --fix",
+    "format": "prettier -w . && lerna run format",
+    "lint": "lerna run lint",
     "postinstall": "npx ts-node scripts/installSharp.ts --project scripts/tsconfig.json --platform darwin"
   },
   "devDependencies": {
@@ -33,6 +34,10 @@
     "@vitejs/plugin-react": "^3.1.0",
     "concurrently": "^7.6.0",
     "esbuild": "^0.16.17",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
     "lerna": "^6.4.1",
     "prettier": "^2.8.4",
     "rollup-plugin-analyzer": "^4.0.0",
