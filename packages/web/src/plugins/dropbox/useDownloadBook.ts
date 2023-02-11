@@ -15,19 +15,22 @@ type ResponseWithFileBlob = DropboxResponse<files.FileMetadata> & {
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   requestPopup
 }) => {
-  return useCallback(async (link) => {
-    const auth = await authUser({ requestPopup })
+  return useCallback(
+    async (link) => {
+      const auth = await authUser({ requestPopup })
 
-    let dropbox = new Dropbox({ auth })
+      let dropbox = new Dropbox({ auth })
 
-    const response: ResponseWithFileBlob = await dropbox.filesDownload({
-      path: extractIdFromResourceId(link.resourceId)
-    })
+      const response: ResponseWithFileBlob = await dropbox.filesDownload({
+        path: extractIdFromResourceId(link.resourceId)
+      })
 
-    if (!response.result.fileBlob) {
-      throw new Error("missing file blob")
-    }
+      if (!response.result.fileBlob) {
+        throw new Error("missing file blob")
+      }
 
-    return { data: response.result.fileBlob, name: response.result.name }
-  }, [requestPopup])
+      return { data: response.result.fileBlob, name: response.result.name }
+    },
+    [requestPopup]
+  )
 }

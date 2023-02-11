@@ -37,7 +37,7 @@ export const usePluginRefreshMetadata = () => {
     )
     if (found) {
       if (!found.refreshMetadata) {
-        throw new Error("this datasource cannot download")
+        throw new Error("this datasource cannot fetch metadata")
       }
 
       return await found.refreshMetadata(link)

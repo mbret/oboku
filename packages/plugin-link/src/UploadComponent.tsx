@@ -1,6 +1,4 @@
-import { FC, useState } from "react"
-import { useAddBook } from "../../books/helpers"
-import { useDataSourceHelpers } from "../../dataSources/helpers"
+import { useState } from "react"
 import {
   Button,
   Dialog,
@@ -12,48 +10,44 @@ import {
   Typography
 } from "@mui/material"
 import * as yup from "yup"
+import { generateResourceId, ObokuPlugin } from "@oboku/plugin-front"
+import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 
 const schema = yup.object().shape({
   bookUrl: yup.string().url().required()
 })
 
-export const UploadComponent: FC<{
-  onClose: () => void
-}> = ({ onClose }) => {
-  const [addBook] = useAddBook()
-  const { generateResourceId } = useDataSourceHelpers(`oboku-link`)
-  const [bookUrl, setBookUrl] = useState(import.meta.env.VITE_HTTP_LINK || "")
+export const UploadComponent: ObokuPlugin["UploadComponent"] = ({
+  onClose,
+  title
+}) => {
+  const [bookUrl, setBookUrl] = useState("")
   const isValid = schema.isValidSync({ bookUrl })
   const filename = bookUrl.substring(bookUrl.lastIndexOf("/") + 1) || "unknown"
 
   const handleConfirm = () => {
     setBookUrl("")
-    addBook({
+    onClose({
       book: {
         title: filename
       },
       link: {
-        book: null,
-        data: null,
-        resourceId: generateResourceId(bookUrl),
-        type: `URI`,
-        createdAt: new Date().toISOString(),
-        modifiedAt: null
+        resourceId: generateResourceId(UNIQUE_RESOURCE_IDENTIFIER, bookUrl),
+        type: TYPE
       }
     })
-    onClose()
   }
 
   return (
     <Dialog open fullScreen>
-      <DialogTitle>Add a new book</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <DialogContentText>
           <Typography gutterBottom>
             oboku <b>does not</b> store any file on its own. Adding a book means
             creating a new book reference with one or several links. A link is
             the location where your file is stored. At the moment oboku only
-            support <b>direct download</b> and <b>google drive public link</b>
+            support <b>direct download</b> and <b>google drive public link</b>.
           </Typography>
           <b>Here are some examples: </b>
           <Typography noWrap>https://my_nas_url.com/file/45646578</Typography>
@@ -68,11 +62,12 @@ export const UploadComponent: FC<{
           type="text"
           fullWidth
           value={bookUrl}
+          margin="normal"
           onChange={(e) => setBookUrl(e.target.value)}
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={() => onClose()} color="primary">
           Cancel
         </Button>
         <Button onClick={handleConfirm} color="primary" disabled={!isValid}>

@@ -25,6 +25,7 @@
     "@mui/lab": "^5.0.0-alpha.119",
     "@mui/material": "*",
     "react": "*",
+    "rxdb": "^13",
     "react-dom": "*",
     "@emotion/styled": "*",
     "@oboku/shared": "*",

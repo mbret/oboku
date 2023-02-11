@@ -26,5 +26,5 @@ export const plugin: ObokuPlugin = {
   useRemoveBook: undefined,
   useRefreshMetadata,
   useSynchronize,
-  synchronizable: true
+  canSynchronize: true
 }

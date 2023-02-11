@@ -25,7 +25,7 @@ export const plugin: ObokuPlugin = {
   name: "Google Drive",
   Icon: GoogleDriveIcon,
   UploadComponent: UploadBook,
-  synchronizable: true,
+  canSynchronize: true,
   useDownloadBook,
   useRemoveBook,
   AddDataSource,

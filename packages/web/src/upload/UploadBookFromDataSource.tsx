@@ -23,16 +23,15 @@ export const UploadBookFromDataSource: FC<{
       if (dataSource && bookToAdd) {
         addBook({
           book: {
-            title: `Unknown`,
-            tags: bookToAdd.tags
+            ...bookToAdd.book,
+            tags: []
           },
           link: {
             book: null,
             data: null,
-            resourceId: bookToAdd.resourceId,
-            type: dataSource.type,
             createdAt: new Date().toISOString(),
-            modifiedAt: null
+            modifiedAt: null,
+            ...bookToAdd.link
           }
         })
       }

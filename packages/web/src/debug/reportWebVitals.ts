@@ -1,13 +1,14 @@
-import ReactGA from "react-ga"
+import { logEvent } from "firebase/analytics"
 import { CLSReportCallback, onCLS, onFID, onLCP } from "web-vitals"
+import { analytics } from "../tracking"
 import { Report } from "./report.shared"
 
 const onReport: CLSReportCallback = (props) => {
   Report.log(props)
 
-  const { name, delta, value, id } = props
-  // @see https://github.com/GoogleChrome/web-vitals#send-the-results-to-google-analytics
-  ReactGA.event({
+  const { name, delta, id } = props
+
+  logEvent(analytics, name, {
     category: `Web Vitals`,
     action: name,
     // The `id` value will be unique to the current page load. When sending

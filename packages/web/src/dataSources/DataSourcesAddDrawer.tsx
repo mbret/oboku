@@ -12,7 +12,7 @@ export const DataSourcesAddDrawer: FC<{
   open: boolean
   onClose: (key?: string) => void
 }> = ({ open, onClose }) => {
-  const dataSourcesPlugins = plugins.filter((plugin) => plugin.synchronizable)
+  const dataSourcesPlugins = plugins.filter((plugin) => plugin.canSynchronize)
 
   return (
     <>
