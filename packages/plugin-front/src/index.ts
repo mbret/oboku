@@ -6,6 +6,7 @@ import {
 import { ComponentProps, FC, FunctionComponent, ReactNode } from "react"
 import { Button } from "@mui/material"
 import * as yup from "yup"
+import { PostBook, PostLink } from "./types"
 
 export { ImgIcon } from "./ImgIcon"
 
@@ -78,12 +79,12 @@ export type UseSyncSourceInfo = (dataSource: DataSourceDocType) => {
 export type ObokuPlugin = {
   uniqueResourceIdentifier: string
   name: string
-  synchronizable?: boolean
+  canSynchronize?: boolean
   type: string
   sensitive?: boolean
   Icon?: FunctionComponent<Record<string, never>>
   UploadComponent?: FunctionComponent<{
-    onClose: (bookToAdd?: { resourceId: string; tags?: string[] }) => void
+    onClose: (bookToAdd?: { book: PostBook, link: PostLink }) => void
     requestPopup: () => Promise<boolean>
     TagsSelector: FC<{
       onChange: (tags: string[]) => void
@@ -93,7 +94,7 @@ export type ObokuPlugin = {
         type: `confirm` | `cancel`
       }
     >
-    title: string
+    title: string,
   }>
   AddDataSource?: FunctionComponent<{
     onClose: () => void

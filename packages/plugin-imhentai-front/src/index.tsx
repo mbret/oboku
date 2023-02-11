@@ -9,7 +9,7 @@ export const plugin: ObokuPlugin = {
   uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   name: UNIQUE_RESOURCE_IDENTIFIER,
   sensitive: true,
-  synchronizable: false,
+  canSynchronize: false,
   UploadComponent,
   useDownloadBook,
   Icon: () => <ImgIcon src={logo} />

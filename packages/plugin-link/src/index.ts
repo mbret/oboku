@@ -1,18 +1,17 @@
 import { HttpRounded } from "@mui/icons-material"
 import { ObokuPlugin } from "@oboku/plugin-front"
+import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { UploadComponent } from "./UploadComponent"
 import { useDownloadBook } from "./useDownloadBook"
 
 const plugin: ObokuPlugin = {
-  type: `URI`,
+  type: TYPE,
   name: "Link",
-  synchronizable: false,
-  uniqueResourceIdentifier: `oboku-link`,
+  canSynchronize: false,
+  uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   Icon: HttpRounded,
-  AddDataSource: () => null,
-  UploadComponent: UploadComponent,
+  UploadComponent,
   useDownloadBook,
-  useRemoveBook: undefined
 }
 
 export default plugin

@@ -1,14 +1,15 @@
-import { useDataSourceHelpers } from "../../dataSources/helpers"
 import axios from "axios"
 import { useCallback } from "react"
-import { ObokuPlugin } from "@oboku/plugin-front"
+import { extractIdFromResourceId, ObokuPlugin } from "@oboku/plugin-front"
+import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
-  const { extractIdFromResourceId } = useDataSourceHelpers(`oboku-link`)
-
   return useCallback(
     async (link, options) => {
-      const downloadLink = extractIdFromResourceId(link.resourceId)
+      const downloadLink = extractIdFromResourceId(
+        UNIQUE_RESOURCE_IDENTIFIER,
+        link.resourceId
+      )
       const filename =
         downloadLink.substring(downloadLink.lastIndexOf("/") + 1) || "unknown"
 

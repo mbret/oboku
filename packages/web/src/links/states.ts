@@ -32,7 +32,7 @@ export const linkState = selectorFamily({
 
       return {
         ...link,
-        isSynchronizable: !!linkPlugin?.synchronizable,
+        isSynchronizable: !!linkPlugin?.canSynchronize,
         isRemovableFromDataSource: !!linkPlugin?.useRemoveBook
       }
     }
