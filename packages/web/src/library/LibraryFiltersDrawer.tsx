@@ -16,12 +16,13 @@ import {
   RadioButtonUncheckedOutlined
 } from "@mui/icons-material"
 import { getDisplayableReadingState, useToggleTag } from "./helpers"
-import { useRecoilState, useRecoilValue } from "recoil"
-import { tagIdsState } from "../tags/states"
+import { useRecoilState } from "recoil"
+import { useTagIds } from "../tags/states"
 import { libraryState } from "./states"
 import { ReadingStateState } from "@oboku/shared"
 import { DownloadState } from "../download/states"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
+import { useDatabase } from "../rxdb"
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean
@@ -30,7 +31,8 @@ export const LibraryFiltersDrawer: FC<{
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] =
     useState(false)
-  const tags = useRecoilValue(tagIdsState)
+  const { db$ } = useDatabase()
+  const tags = useTagIds(db$)
   const [library, setLibraryState] = useRecoilState(libraryState)
   const selectedTags = library.tags
   const toggleTag = useToggleTag()

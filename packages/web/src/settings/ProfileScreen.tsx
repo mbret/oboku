@@ -313,7 +313,7 @@ const DeleteMyDataDialog: FC<{
   const [isCollectionChecked, setIsCollectionChecked] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const { unMount$ } = useIsMountedState$()
-  const db = useDatabase()
+  const { db } = useDatabase()
 
   const onSubmit = useCallback(async () => {
     setIsDeleting(true)

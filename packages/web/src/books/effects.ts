@@ -14,7 +14,7 @@ import { useDatabase } from "../rxdb"
 import { useRefreshBookMetadata } from "./helpers"
 
 const useUpsertBookLinkActionEffect = () => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
   const refreshBookMetadata = useRefreshBookMetadata()
   const removeDanglingLinks = useRemoveDanglingLinks()
 

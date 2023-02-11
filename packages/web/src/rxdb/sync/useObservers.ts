@@ -46,7 +46,7 @@ export const useSettingsStateReducer = () => {
 
 export const useObservers = () => {
   const settingsReducer = useSettingsStateReducer()
-  const database = useDatabase()
+  const { db: database } = useDatabase()
   const { token, dbName } = useRecoilValue(authState) || {}
   const isAuthenticated = useIsAuthenticated()
   const signOut = useSignOut()

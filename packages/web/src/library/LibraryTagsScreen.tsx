@@ -12,16 +12,18 @@ import {
 import { useCreateTag } from "../tags/helpers"
 import { TagActionsDrawer } from "../tags/TagActionsDrawer"
 import { LockActionDialog } from "../auth/LockActionDialog"
-import { tagIdsState } from "../tags/states"
-import { useRecoilValue, useSetRecoilState } from "recoil"
+import { useSetRecoilState } from "recoil"
 import { isTagsTourOpenedState } from "../firstTimeExperience/firstTimeExperienceStates"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { useHasDoneFirstTimeExperience } from "../firstTimeExperience/helpers"
 import { FirstTimeExperienceId } from "../firstTimeExperience/constants"
 import { TagList } from "../tags/tagList/TagList"
 import { AppTourFirstTourTagsStep2 } from "../firstTimeExperience/AppTourFirstTourTags"
+import { useDatabase } from "../rxdb"
+import { useTagIds } from "../tags/states"
 
 export const LibraryTagsScreen = () => {
+  const { db$ } = useDatabase()
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(
     undefined
   )
@@ -30,7 +32,7 @@ export const LibraryTagsScreen = () => {
   const setIsTagsTourOpenedState = useSetRecoilState(isTagsTourOpenedState)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] =
     useState<string | undefined>(undefined)
-  const tags = useRecoilValue(tagIdsState)
+  const tags = useTagIds(db$)
   const [addTag] = useCreateTag()
   const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(
     FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS

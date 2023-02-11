@@ -16,7 +16,7 @@ const bookCoverState = selectorFamily({
     (id: string) =>
     ({ get }) => {
       const enrichedBook = get(enrichedBookState(id))
-      const bluredTags = get(bluredTagIdsState)
+      const blurredTags = get(bluredTagIdsState)
 
       if (!enrichedBook) return undefined
 
@@ -26,7 +26,7 @@ const bookCoverState = selectorFamily({
         _id,
         lastMetadataUpdatedAt,
         isBlurred: enrichedBook.tags.some((bookTagId) =>
-          bluredTags.includes(bookTagId)
+          blurredTags.includes(bookTagId)
         )
       }
     }

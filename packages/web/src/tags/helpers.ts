@@ -20,7 +20,7 @@ export const useRemoveTag = () =>
   )
 
 export const useUpdateTag = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
 
   return useCallback(
     ({

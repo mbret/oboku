@@ -113,7 +113,7 @@ export const useAddTagToBook = () => {
 }
 
 export const useAtomicUpdateBook = () => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
 
   const updater = useCallback(
     async (id: string, mutationFunction: AtomicUpdateFunction<BookDocType>) => {
@@ -131,7 +131,7 @@ export const useAtomicUpdateBook = () => {
 
 export const useRefreshBookMetadata = () => {
   const client = useAxiosClient()
-  const database = useDatabase()
+  const { db: database } = useDatabase()
   const [updateBook] = useAtomicUpdateBook()
   const dialog = useDialogManager()
   const network = useNetworkState()
@@ -213,7 +213,7 @@ export const useRemoveCollectionFromBook = () =>
   )
 
 export const useAddBook = () => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
   const refreshMetadata = useRefreshBookMetadata()
 
   type Return = {

@@ -5,7 +5,7 @@ import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 
 export const useDuplicatedResourceIdLinks = () => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
 
   const { data: links = [] } = useSubscribe$(
     useMemo(() => database?.link.find().$, [database])

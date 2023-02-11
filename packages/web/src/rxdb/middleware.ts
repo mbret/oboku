@@ -1,6 +1,6 @@
 import { useDatabase } from "./RxDbProvider"
 
-type Database = NonNullable<ReturnType<typeof useDatabase>>
+type Database = NonNullable<ReturnType<typeof useDatabase>["db"]>
 
 const EXEC_PARALLEL = true
 

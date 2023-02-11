@@ -30,7 +30,7 @@ module.exports = {
     "no-undef": `off`, // use ts
     "no-redeclare": `off`, // use ts
     "@typescript-eslint/no-explicit-any": ["warn"],
-    "react/display-name": ["warn"],
+    "react/display-name": ["off"],
     "react/prop-types": ["off"],
     "react/no-unescaped-entities": ["off"],
     "react/no-unknown-property": ["off"] // use ts

@@ -6,15 +6,16 @@ import MenuItem from "@mui/material/MenuItem"
 import FormControl from "@mui/material/FormControl"
 import Select from "@mui/material/Select"
 import makeStyles from "@mui/styles/makeStyles"
-import { useRecoilValue } from "recoil"
-import { tagIdsState, tagState } from "./states"
+import { useTag, useTagIds } from "./states"
 import { TagChip } from "./TagChip"
+import { useDatabase } from "../rxdb"
 
 export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
   onChange: onUpChange
 }) => {
   const classes = useStyles()
-  const tags = useRecoilValue(tagIdsState)
+  const { db$ } = useDatabase()
+  const tags = useTagIds(db$)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
   const onChange: NonNullable<SelectProps[`onChange`]> = (event) => {
@@ -58,7 +59,8 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
 }
 
 const TagName: FC<{ id: string }> = ({ id }) => {
-  const { name } = useRecoilValue(tagState(id)) || {}
+  const { db$ } = useDatabase()
+  const { name } = useTag(db$, id) || {}
 
   return <>{name}</>
 }

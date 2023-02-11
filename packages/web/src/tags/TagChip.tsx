@@ -1,13 +1,14 @@
 import { ComponentProps } from "react"
 import Chip from "@mui/material/Chip"
-import { useRecoilValue } from "recoil"
-import { tagState } from "./states"
+import { useTag } from "./states"
+import { useDatabase } from "../rxdb"
 
 export const TagChip = ({
   id,
   ...rest
 }: { id: string } & ComponentProps<typeof Chip>) => {
-  const { name } = useRecoilValue(tagState(id)) || {}
+  const { db$ } = useDatabase()
+  const { name } = useTag(db$, id) || {}
 
   return <Chip label={name} {...rest} />
 }

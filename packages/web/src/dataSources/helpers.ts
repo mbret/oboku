@@ -17,7 +17,7 @@ import { isPluginError } from "@oboku/plugin-front"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
-  const database = useDatabase()
+  const { db: database } = useDatabase()
   const { atomicUpdateDataSource } = useAtomicUpdateDataSource()
   const synchronizeDataSource = usePluginSynchronize()
   const network = useNetworkState()
@@ -105,7 +105,7 @@ export const useRemoveDataSource = () =>
   )
 
 export const useAtomicUpdateDataSource = () => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
 
   const atomicUpdateDataSource = useCallback(
     (id: string, mutationFunction: AtomicUpdateFunction<DataSourceDocType>) =>

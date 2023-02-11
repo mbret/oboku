@@ -4,7 +4,7 @@ import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
 import { useDatabase } from "../rxdb"
 
 export const useBooksDanglingLinks = () => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
   const { data: books = [] } = useSubscribe$(
     useMemo(() => database?.book.find().$, [database])
   )
