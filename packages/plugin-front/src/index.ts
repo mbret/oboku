@@ -84,7 +84,7 @@ export type ObokuPlugin = {
   sensitive?: boolean
   Icon?: FunctionComponent<Record<string, never>>
   UploadComponent?: FunctionComponent<{
-    onClose: (bookToAdd?: { book: PostBook, link: PostLink }) => void
+    onClose: (bookToAdd?: { book: PostBook; link: PostLink }) => void
     requestPopup: () => Promise<boolean>
     TagsSelector: FC<{
       onChange: (tags: string[]) => void
@@ -94,7 +94,7 @@ export type ObokuPlugin = {
         type: `confirm` | `cancel`
       }
     >
-    title: string,
+    title: string
   }>
   AddDataSource?: FunctionComponent<{
     onClose: () => void

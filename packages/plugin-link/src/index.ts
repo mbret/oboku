@@ -11,7 +11,7 @@ const plugin: ObokuPlugin = {
   uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   Icon: HttpRounded,
   UploadComponent,
-  useDownloadBook,
+  useDownloadBook
 }
 
 export default plugin
