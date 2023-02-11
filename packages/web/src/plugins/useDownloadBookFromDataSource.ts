@@ -48,5 +48,5 @@ export const useDownloadBookFromDataSource = () => {
     throw new Error("no datasource found for this link")
   }
 
-  return useCallback(downloadBook, [getPluginFn, dialog])
+  return useCallback(downloadBook, [getPluginFn])
 }
