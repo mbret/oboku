@@ -19,7 +19,7 @@ import {
 import { Alert } from "@mui/material"
 
 export const ProblemsScreen = memo(() => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
   const fixCollections = useFixCollections()
   const fixBookReferences = useFixBookReferences()
   // const fixLinksDuplicate = useFixLinks()

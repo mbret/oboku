@@ -39,7 +39,7 @@ const [useToggleDataSourceProtectedAction] = bind(
 )
 
 export const useDataSourceEffects = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
 
   useToggleDataSourceProtectedAction(db)
 }

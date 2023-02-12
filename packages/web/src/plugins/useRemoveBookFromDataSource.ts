@@ -4,7 +4,7 @@ import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 
 export const useRemoveBookFromDataSource = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const createRequestPopupDialog = useCreateRequestPopupDialog()
 
   // It's important to use array for plugins and be careful of the order since

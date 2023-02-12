@@ -13,13 +13,13 @@ import {
 } from "@mui/material"
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
 import { ComponentProps, FC, useState } from "react"
-import { useRecoilValue } from "recoil"
 import { DropboxDataSourceData } from "@oboku/shared"
-import { tagIdsState, tagsAsArrayState } from "../../tags/states"
+import { useTagIds, useTags } from "../../tags/states"
 import { useCreateDataSource } from "../../dataSources/helpers"
 import { Picker } from "./Picker"
 import { DropboxFile } from "./types"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
+import { useDatabase } from "../../rxdb"
 
 export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedTags, setSelectedTags] = useState<{
@@ -34,8 +34,9 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
     { name: "", id: "root", isDir: true }
   ])
   const currentFolder = folderChain[folderChain.length - 1]
-  const tags = useRecoilValue(tagsAsArrayState)
-  const tagIds = useRecoilValue(tagIdsState)
+  const { db$ } = useDatabase()
+  const tags = useTags(db$)
+  const tagIds = useTagIds(db$)
   const [showPicker, setShowPicker] = useState(false)
 
   const onPick: ComponentProps<typeof Picker>["onClose"] = (files) => {

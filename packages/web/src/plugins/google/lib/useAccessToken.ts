@@ -5,6 +5,15 @@ import { useGoogle } from "./useGsiClient"
 import { addSeconds, differenceInMinutes } from "date-fns"
 import { ObokuPluginError } from "@oboku/plugin-front"
 
+const isPopupClosedError = (error: unknown) => {
+  return (
+    error &&
+    typeof error === "object" &&
+    "type" in error &&
+    error.type === "popup_closed"
+  )
+}
+
 export const useAccessToken = ({
   requestPopup
 }: {
@@ -92,10 +101,14 @@ export const useAccessToken = ({
       } catch (e) {
         setConsentPopupShown(false)
 
+        if (isPopupClosedError(e)) {
+          throw new ObokuPluginError({ code: "cancelled" })
+        }
+
         throw e
       }
     },
-    [lazyGsi, setAccessToken]
+    [lazyGsi, setAccessToken, requestPopup, setConsentPopupShown]
   )
 
   return { requestToken }

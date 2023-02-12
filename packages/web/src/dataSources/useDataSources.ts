@@ -22,7 +22,7 @@ const [useData] = bind(
 )
 
 export const useDataSources = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const { isLibraryUnlocked } = useRecoilValue(libraryState)
 
   return useData(db, isLibraryUnlocked)

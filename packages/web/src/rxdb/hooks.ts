@@ -17,7 +17,7 @@ export function useRxQuery<D extends DocTypes, R extends D | null | D[]>(
   type Result = PromiseReturnType<
     NonNullable<ReturnType<NonNullable<typeof queryCb>>>["exec"]
   >
-  const db = useDatabase()
+  const { db } = useDatabase()
   const [res, setRes] = useState<Result | undefined>()
   const query = db && queryCb(db)
   const queryAsString = query?.toString()
@@ -83,7 +83,7 @@ export function useRxMutation<V, D>(
   ) => Promise<D> | undefined
 ): [(variables: V) => Promise<D>, any]
 export function useRxMutation(query) {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const dbRef = useRef(db)
   const [error] = useState()
   dbRef.current = db

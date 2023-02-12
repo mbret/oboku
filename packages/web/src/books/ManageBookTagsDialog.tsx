@@ -1,7 +1,8 @@
 import { useCallback } from "react"
 import { FC } from "react"
 import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from "recoil"
-import { tagIdsState } from "../tags/states"
+import { useDatabase } from "../rxdb"
+import { useTagIds } from "../tags/states"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useAddTagToBook, useRemoveTagFromBook } from "./helpers"
 import { bookState } from "./states"
@@ -32,7 +33,8 @@ export const ManageBookTagsDialog: FC<{}> = () => {
     openManageBookTagsDialogState
   )
   const open = !!bookId
-  const tags = useRecoilValue(tagIdsState)
+  const { db$ } = useDatabase()
+  const tags = useTagIds(db$)
   const book = useRecoilValue(bookState(bookId || "-1"))
   const addTagToBook = useAddTagToBook()
   const removeFromBook = useRemoveTagFromBook()

@@ -4,17 +4,18 @@ import { useCSS } from "../../common/utils"
 import {
   BlurOnRounded,
   LocalOfferRounded,
-  LockRounded
+  LockRounded,
 } from "@mui/icons-material"
-import { useRecoilValue } from "recoil"
-import { normalizedTagsState } from "../states"
 import { TagsDocType } from "@oboku/shared"
+import { useTag, useTags } from "../states"
+import { useDatabase } from "../../rxdb"
 
 export const TagListItemList: FC<{
   id: string
   onItemClick?: (tag: TagsDocType) => void
 }> = memo(({ id, onItemClick }) => {
-  const tag = useRecoilValue(normalizedTagsState)[id]
+  const { db$ } = useDatabase()
+  const tag = useTag(db$, id)
   const styles = useStyle()
 
   return (

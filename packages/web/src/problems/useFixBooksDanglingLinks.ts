@@ -5,7 +5,7 @@ import { useDatabase } from "../rxdb"
 import { BookDocument } from "../rxdb/schemas/book"
 
 export const useFixBooksDanglingLinks = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
 
   const removeDanglingLinksFromBook = useCallback(
     async (doc: BookDocument) => {

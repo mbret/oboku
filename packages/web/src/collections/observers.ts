@@ -8,7 +8,7 @@ import { Report } from "../debug/report.shared"
 import { DeepMutable } from "rxdb/dist/types/types"
 
 export const useCollectionsInitialState = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const [, setCollections] = useRecoilState(normalizedCollectionsState)
   const [isReady, setIsReady] = useState(false)
 
@@ -41,7 +41,7 @@ export const useCollectionsInitialState = () => {
 }
 
 export const useCollectionsObservers = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const [, setCollections] = useRecoilState(normalizedCollectionsState)
 
   useEffect(() => {

@@ -1,29 +1,50 @@
 import { atom, selector, selectorFamily } from "recoil"
 import { TagsDocType } from "@oboku/shared"
-// import { bookIdsState } from "../books/states"
+import { bind } from "@react-rxjs/core"
+import { map, Observable, switchMap } from "rxjs"
+import { Database } from "../rxdb"
+
+export const [useTag, tag$] = bind(
+  (db$: Observable<Database>, id: string) =>
+    db$.pipe(
+      switchMap((db) => {
+        return db.tag.findOne(id).$
+      })
+    ),
+  null
+)
+
+export const [useTags, tags$] = bind(
+  (database$: Observable<Database>) =>
+    database$.pipe(switchMap((database) => database.tag.find({}).$)),
+  []
+)
+
+export const [useTagIds] = bind(
+  (database$: Observable<Database>) =>
+    tags$(database$).pipe(map((tags) => tags.map(({ _id }) => _id))),
+  []
+)
+
+export const [, blurredTags$] = bind(
+  (database$: Observable<Database>) =>
+    tags$(database$).pipe(
+      map((tags) => tags.filter(({ isBlurEnabled }) => isBlurEnabled))
+    ),
+  []
+)
+
+export const [useBlurredTagIds] = bind(
+  (database$: Observable<Database>) =>
+    blurredTags$(database$).pipe(map((tags) => tags.map(({ _id }) => _id))),
+  []
+)
 
 export const normalizedTagsState = atom<
   Record<string, TagsDocType | undefined>
 >({
   key: "tagsState",
   default: {}
-})
-
-export const tagState = selectorFamily({
-  key: "tagState",
-  get:
-    (id: string) =>
-    ({ get }) => {
-      const tag = get(normalizedTagsState)[id]
-      // const bookIds = get(bookIdsState)
-
-      if (!tag) return undefined
-
-      return {
-        ...tag
-        // books: tag.books.filter(id => bookIds.includes(id))
-      }
-    }
 })
 
 export const protectedTagIdsState = selector({
@@ -45,23 +66,5 @@ export const bluredTagIdsState = selector<string[]>({
     return Object.values(tags)
       .filter((tag) => tag?.isBlurEnabled)
       .map((tag) => tag?._id as string)
-  }
-})
-
-export const tagsAsArrayState = selector<TagsDocType[]>({
-  key: "tagsAsArrayState",
-  get: ({ get }) => {
-    const tags = get(normalizedTagsState)
-
-    return Object.keys(tags).map((id) => get(tagState(id))) as NonNullable<
-      (typeof tags)[number]
-    >[]
-  }
-})
-
-export const tagIdsState = selector({
-  key: "tagIdsState",
-  get: ({ get }) => {
-    return Object.keys(get(normalizedTagsState))
   }
 })

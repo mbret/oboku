@@ -8,7 +8,7 @@ import { Report } from "../debug/report.shared"
 import { DeepMutable } from "rxdb/dist/types/types"
 
 export const useTagsInitialState = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const [, setTags] = useRecoilState(normalizedTagsState)
   const [isReady, setIsReady] = useState(false)
 
@@ -39,7 +39,7 @@ export const useTagsInitialState = () => {
 }
 
 export const useTagsObservers = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const [, setTags] = useRecoilState(normalizedTagsState)
 
   useEffect(() => {

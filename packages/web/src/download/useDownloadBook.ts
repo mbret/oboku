@@ -18,7 +18,7 @@ import { isPluginError } from "@oboku/plugin-front"
 export const useDownloadBook = () => {
   const downloadBook = useDownloadBookFromDataSource()
   const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
-  const database = useDatabase()
+  const { db: database } = useDatabase()
   const dialog = useDialogManager()
 
   const setDownloadData = useCallback(

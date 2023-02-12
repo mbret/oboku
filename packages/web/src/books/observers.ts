@@ -8,7 +8,7 @@ import { useDatabase } from "../rxdb"
 import { normalizedBooksState } from "./states"
 
 export const useBooksInitialState = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const [, setBooks] = useRecoilState(normalizedBooksState)
   const [isReady, setIsReady] = useState(false)
 
@@ -40,7 +40,7 @@ export const useBooksInitialState = () => {
 }
 
 export const useBooksObservers = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const [, setBooks] = useRecoilState(normalizedBooksState)
 
   useEffect(() => {

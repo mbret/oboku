@@ -13,7 +13,7 @@ import { Report } from "./debug/report.shared"
  * data offline. It is only used for startup.
  */
 export const useLoadInitialState = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const settingsReducer = useSettingsStateReducer()
   const isBookStateReady = useBooksInitialState()
   const isTagStateReady = useTagsInitialState()

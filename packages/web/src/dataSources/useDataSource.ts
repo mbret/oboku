@@ -13,7 +13,7 @@ const [useData] = bind(
 )
 
 export const useDataSource = (id: string) => {
-  const db = useDatabase()
+  const { db } = useDatabase()
 
   return useData(db, id)
 }

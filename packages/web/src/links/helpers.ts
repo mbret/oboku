@@ -8,7 +8,7 @@ import { Report } from "../debug/report.shared"
 type EditLinkPayload = Partial<LinkDocType> & Required<Pick<LinkDocType, "_id">>
 
 export const useEditLink = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const refreshBookMetadata = useRefreshBookMetadata()
   const [editLink] = useRxMutation((db, { _id, ...rest }: EditLinkPayload) =>
     db.link.safeUpdate({ $set: rest }, (collection) =>
@@ -29,7 +29,7 @@ export const useEditLink = () => {
 }
 
 export const useRemoveDanglingLinks = () => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
 
   const removeDanglingLinks = useCallback(
     async (bookId: string) => {

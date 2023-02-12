@@ -14,59 +14,49 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
 
   return useCallback(
     async (link, options) => {
+      await requestToken({
+        scope: ["https://www.googleapis.com/auth/drive.readonly"]
+      })
+
+      const api = await lazyGapi
+
+      const fileId = extractIdFromResourceId(link.resourceId)
+
+      let info: gapi.client.Response<gapi.client.drive.File>
+
       try {
-        await requestToken({
-          scope: ["https://www.googleapis.com/auth/drive.readonly"]
+        info = await api.client.drive.files.get({
+          fileId,
+          fields: "name,size"
         })
-
-        const api = await lazyGapi
-
-        const fileId = extractIdFromResourceId(link.resourceId)
-
-        let info: gapi.client.Response<gapi.client.drive.File>
-
-        try {
-          info = await api.client.drive.files.get({
-            fileId,
-            fields: "name,size"
-          })
-        } catch (e) {
-          if (isDriveResponseError(e)) {
-            if (e.status === 404) {
-              return {
-                isError: true,
-                reason: `notFound`,
-                error: e
-              }
-            }
-          }
-          throw e
-        }
-
-        const mediaResponse = await axios.get<Blob>(
-          `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-          {
-            headers: {
-              Authorization: `Bearer ${gapi.auth.getToken().access_token}`
-            },
-            responseType: "blob",
-            onDownloadProgress: (event) => {
-              const totalSize = parseInt(info.result.size || "1") || 1
-              options?.onDownloadProgress(event.loaded / totalSize)
-            }
-          }
-        )
-
-        return { data: mediaResponse.data, name: info.result.name || "" }
       } catch (e) {
-        if ((e as any)?.error === "popup_blocked_by_browser") {
-          return { isError: true, reason: "popupBlocked" } as {
-            isError: true
-            reason: "popupBlocked"
+        if (isDriveResponseError(e)) {
+          if (e.status === 404) {
+            return {
+              isError: true,
+              reason: `notFound`,
+              error: e
+            }
           }
         }
         throw e
       }
+
+      const mediaResponse = await axios.get<Blob>(
+        `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+        {
+          headers: {
+            Authorization: `Bearer ${gapi.auth.getToken().access_token}`
+          },
+          responseType: "blob",
+          onDownloadProgress: (event) => {
+            const totalSize = parseInt(info.result.size || "1") || 1
+            options?.onDownloadProgress(event.loaded / totalSize)
+          }
+        }
+      )
+
+      return { data: mediaResponse.data, name: info.result.name || "" }
     },
     [lazyGapi, requestToken]
   )

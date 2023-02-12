@@ -8,7 +8,7 @@ import {
 } from "rxdb"
 import { MongoUpdateSyntax } from "../../types"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
-import { SafeUpdateMongoUpdateSyntax } from "../types"
+import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
 import { generateId } from "./utils"
 
 type DocMethods = {
@@ -19,6 +19,9 @@ type CollectionMethods = {
   insertSafe: (
     json: Omit<TagsDocType, `_id` | "rx_model" | "_rev" | `rxdbMeta`>
   ) => Promise<TagsDocument>
+  safeFind: (
+    updateObj: SafeMangoQuery<TagsDocType>
+  ) => RxQuery<TagsDocType, RxDocument<TagsDocType, DocMethods>[]>
   updateSafe: (
     json: SafeUpdateMongoUpdateSyntax<TagsDocType>,
     cb: (collection: TagCollection) => RxQuery
@@ -60,6 +63,9 @@ const docMethods: DocMethods = {
 const collectionMethods: CollectionMethods = {
   insertSafe: async function (this: TagCollection, json) {
     return this.insert({ _id: generateId(), ...json } as TagsDocType)
+  },
+  safeFind: function (this: TagCollection, json) {
+    return this.find(json)
   },
   updateSafe: async function (this: TagCollection, json, cb) {
     return cb(this).update(json)

@@ -13,14 +13,14 @@ import {
 } from "@mui/material"
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
 import { FC, useState } from "react"
-import { useRecoilValue } from "recoil"
-import { tagIdsState, tagsAsArrayState } from "../../tags/states"
+import { useTagIds, useTags } from "../../tags/states"
 import { useCreateDataSource } from "../../dataSources/helpers"
 import { GoogleDriveDataSourceData } from "@oboku/shared"
 import { useDrivePicker } from "./lib/useDrivePicker"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
 import { useIsMountedState$ } from "../../common/rxjs/useIsMountedState$"
 import { catchError, EMPTY, takeUntil, tap } from "rxjs"
+import { useDatabase } from "../../rxdb"
 
 export const GoogleDriveDataSource: FC<{
   onClose: () => void
@@ -38,8 +38,9 @@ export const GoogleDriveDataSource: FC<{
     { name: string; id: string }[]
   >([{ name: "", id: "root" }])
   const currentFolder = folderChain[folderChain.length - 1]
-  const tags = useRecoilValue(tagsAsArrayState)
-  const tagIds = useRecoilValue(tagIdsState)
+  const { db$ } = useDatabase()
+  const tags = useTags(db$)
+  const tagIds = useTagIds(db$)
   const { pick } = useDrivePicker({ requestPopup })
   const { unMount$ } = useIsMountedState$()
 

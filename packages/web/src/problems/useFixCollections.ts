@@ -6,7 +6,7 @@ import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 
 export const useFixCollections = () => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
 
   return useCallback(
     async (data: [string, { name: string; number: number }][]) => {

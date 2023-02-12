@@ -8,7 +8,7 @@ import { Report } from "../debug/report.shared"
 import { DeepMutable } from "rxdb/dist/types/types"
 
 export const useLinksInitialState = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const [, setLinks] = useRecoilState(normalizedLinksState)
   const [isReady, setIsReady] = useState(false)
 
@@ -38,7 +38,7 @@ export const useLinksInitialState = () => {
 }
 
 export const useLinksObservers = () => {
-  const db = useDatabase()
+  const { db } = useDatabase()
   const [, setLinks] = useRecoilState(normalizedLinksState)
 
   useEffect(() => {

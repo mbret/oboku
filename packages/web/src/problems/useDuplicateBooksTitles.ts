@@ -8,7 +8,7 @@ import { useDatabase } from "../rxdb"
 import { BookDocument } from "../rxdb/schemas/book"
 
 export const useDuplicatedBookTitles = () => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
 
   const { data: books = [] } = useSubscribe$(
     useMemo(() => database?.book.find().$, [database])
@@ -28,7 +28,7 @@ export const useDuplicatedBookTitles = () => {
 }
 
 export const useFixDuplicatedBookTitles = () => {
-  const database = useDatabase()
+  const { db: database } = useDatabase()
 
   return useCallback(
     async (data: [string, BookDocument[]][]) => {
