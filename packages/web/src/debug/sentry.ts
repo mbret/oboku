@@ -1,7 +1,7 @@
 import { version } from "../../package.json"
 import "./reportWebVitals"
 import { SENTRY_DSN } from "../constants.shared"
-import { init, showReportDialog } from "@sentry/react"
+import { init } from "@sentry/react"
 import { CaptureConsole } from "@sentry/integrations"
 
 init({
@@ -17,9 +17,9 @@ init({
   release: version,
   beforeSend(event) {
     // Check if it is an exception, and if so, show the report dialog
-    if (event.exception) {
-      showReportDialog({ eventId: event.event_id })
-    }
+    // if (event.exception) {
+    //   showReportDialog({ eventId: event.event_id })
+    // }
 
     return event
   },
