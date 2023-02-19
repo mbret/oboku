@@ -45,7 +45,7 @@ export const MoreDialog: FC<{}> = () => {
   const currentPage = useRecoilValue(currentPageState) || 0
   const toc = nav?.toc || []
   const styles = useStyles()
-  const reader = useReader()
+  const { reader } = useReader()
   const theme = useTheme()
 
   let currentSubChapter = chapterInfo

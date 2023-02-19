@@ -2,7 +2,8 @@ import { atom, selector, useRecoilCallback } from "recoil"
 import { useEffect } from "react"
 import { Manifest } from "@prose-reader/core"
 import { ReaderInstance } from "./type"
-import { ObservedValueOf } from "rxjs"
+import { Observable, ObservedValueOf, switchMap } from "rxjs"
+import { bind } from "@react-rxjs/core"
 
 export const isBookReadyState = atom({
   key: "isBookReadyState",
@@ -63,14 +64,11 @@ export const chapterInfoState = selector({
   }
 })
 
-export const totalBookProgressState = selector({
-  key: `totalBookProgressState`,
-  get: ({ get }) => {
-    const { percentageEstimateOfBook } = get(paginationState) || {}
-
-    return percentageEstimateOfBook
-  }
-})
+export const [usePagination] = bind(
+  (reader$: Observable<ReaderInstance>) =>
+    reader$.pipe(switchMap((reader) => reader.pagination$)),
+  undefined
+)
 
 export const hasRightSpineItemState = selector({
   key: `hasRightSpineItemState`,
