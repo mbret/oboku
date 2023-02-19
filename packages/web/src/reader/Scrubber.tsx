@@ -13,7 +13,7 @@ export const Scrubber: FC<{}> = () => {
     useRecoilValue(manifestState) || {}
   const [value, setValue] = useState(currentPage || 0)
   const theme = useTheme()
-  const reader = useReader()
+  const { reader } = useReader()
   const max = totalPages <= 1 ? 2 : totalPages - 1
   const step = 1
   const disabled = totalPages === 1

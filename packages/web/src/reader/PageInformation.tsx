@@ -2,21 +2,23 @@ import React, { FC } from "react"
 import { Typography, useTheme } from "@mui/material"
 import {
   chapterInfoState,
-  totalBookProgressState,
   currentPageState,
   manifestState,
-  totalPageState
+  totalPageState,
+  usePagination
 } from "./states"
 import { useRecoilValue } from "recoil"
+import { useReader } from "./ReaderProvider"
 
 export const PageInformation: FC<{
   style: React.CSSProperties
 }> = ({ style }) => {
   const theme = useTheme()
+  const { reader$ } = useReader()
   const currentPage = useRecoilValue(currentPageState) || 0
   const { renditionLayout } = useRecoilValue(manifestState) || {}
-  const totalBookProgress = useRecoilValue(totalBookProgressState)
-  const roundedProgress = Math.floor((totalBookProgress || 0) * 100)
+  const { percentageEstimateOfBook } = usePagination(reader$) ?? {}
+  const roundedProgress = Math.floor((percentageEstimateOfBook || 0) * 100)
   const displayableProgress = roundedProgress > 0 ? roundedProgress : 1
   const chapterInfo = useRecoilValue(chapterInfoState)
   const currentPageToDisplay = currentPage + 1
@@ -97,7 +99,7 @@ export const PageInformation: FC<{
                   page {currentPageToDisplay} of {totalPagesToDisplay}
                 </Typography>
               )}
-              {totalBookProgress !== undefined && (
+              {percentageEstimateOfBook !== undefined && (
                 <Typography
                   style={{ fontWeight: theme.typography.fontWeightMedium }}
                   variant="body2"

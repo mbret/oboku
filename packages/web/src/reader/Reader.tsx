@@ -24,12 +24,13 @@ import { useUpdateBookState } from "./bookHelpers"
 import { ReaderInstance, ReactReaderProps } from "./type"
 import { createReader } from "@prose-reader/core"
 import { ObservedValueOf } from "rxjs"
+import { FloatingBottom } from "./FloatingBottom"
 
 export const Reader: FC<{
   bookId: string
   onReader: (reader: ReaderInstance) => void
 }> = ({ bookId, onReader }) => {
-  const reader = useReader()
+  const { reader } = useReader()
   const [isBookReady, setIsBookReady] = useRecoilState(isBookReadyState)
   const setPaginationState = useSetRecoilState(paginationState)
   const setManifestState = useSetRecoilState(manifestState)
@@ -52,6 +53,9 @@ export const Reader: FC<{
     ReactReaderProps["options"] | undefined
   >()
   const isBookError = !!manifestError
+  // We don't want to display overlay for comics / manga
+  const showFloatingMenu =
+    reader?.context.getManifest()?.renditionLayout !== "pre-paginated"
 
   useBookResize(reader, containerWidth, containerHeight)
   useGestureHandler(reader, readerContainerHammer)
@@ -195,6 +199,7 @@ export const Reader: FC<{
         )}
         {!isBookReady && <BookLoading />}
       </div>
+      {showFloatingMenu && <FloatingBottom />}
       <TopBar />
       <BottomBar />
     </div>
