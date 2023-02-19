@@ -6,7 +6,7 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@mui/icons-material": "^5.11.x",
-    "@mui/lab": "^5.0.0-alpha.120",
+    "@mui/lab": "^5.0.0-alpha.119",
     "@mui/material": "5.11.9",
     "@mui/styles": "^5.11.9",
     "@oboku/plugin-front": "0.10.0",
