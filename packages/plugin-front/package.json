@@ -22,7 +22,7 @@
   "peerDependencies": {
     "@emotion/react": "*",
     "@mui/icons-material": "*",
-    "@mui/lab": "^5.0.0-alpha.119",
+    "@mui/lab": "^5.0.0-alpha.120",
     "@mui/material": "*",
     "react": "*",
     "rxdb": "^13",
