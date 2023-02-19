@@ -1,7 +1,6 @@
 import { useRecoilValue } from "recoil"
 import {
   paginationState,
-  totalBookProgressState,
   usePagination
 } from "./states"
 import { useAtomicUpdateBook } from "../books/helpers"
