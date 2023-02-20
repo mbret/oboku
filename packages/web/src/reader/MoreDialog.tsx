@@ -4,15 +4,13 @@ import {
   DialogContent,
   List,
   ListItem,
-  ListItemButton,
   ListItemIcon,
   ListItemText,
   Tab,
-  Tabs,
   useTheme
 } from "@mui/material"
 import { TabContext, TabList, TabPanel } from "@mui/lab"
-import { FiberManualRecordRounded, ReplayOutlined } from "@mui/icons-material"
+import { FiberManualRecordRounded } from "@mui/icons-material"
 import React from "react"
 import { FC } from "react"
 import { atom, useRecoilCallback, useRecoilValue } from "recoil"
@@ -20,6 +18,7 @@ import { useCSS } from "../common/utils"
 import { DialogTopBar } from "../navigation/DialogTopBar"
 import { useReader } from "./ReaderProvider"
 import { manifestState, chapterInfoState, currentPageState } from "./states"
+import { SettingsList } from "./settings/SettingsList"
 
 const isContentsDialogOpenedState = atom<boolean>({
   key: "isContentsDialogOpenedState",
@@ -125,21 +124,7 @@ export const MoreDialog: FC<{}> = () => {
             </List>
           </TabPanel>
           <TabPanel value="settings" sx={{ padding: 0 }}>
-            <List>
-              <ListItem disablePadding>
-                <ListItemButton onClick={() => window.location.reload()}>
-                  <ListItemIcon>
-                    <ReplayOutlined />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary="Reload book"
-                    secondary={
-                      "You may try to reload the book if you encounter weird behavior or crash"
-                    }
-                  />
-                </ListItemButton>
-              </ListItem>
-            </List>
+            <SettingsList />
           </TabPanel>
         </DialogContent>
       </Dialog>

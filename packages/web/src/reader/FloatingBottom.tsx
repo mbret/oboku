@@ -2,7 +2,13 @@ import { Box } from "@mui/material"
 import { PercentageIndicator } from "./common/PercentageIndicator"
 import { TimeIndicator } from "./common/TimeIndicator"
 
-export const FloatingBottom = () => {
+export const FloatingBottom = ({
+  enableTime,
+  enableProgress
+}: {
+  enableTime: boolean
+  enableProgress: boolean
+}) => {
   return (
     <Box
       position="absolute"
@@ -17,8 +23,8 @@ export const FloatingBottom = () => {
         opacity: 0.8
       }}
     >
-      <TimeIndicator lineHeight={1} />
-      <PercentageIndicator lineHeight={1} />
+      {enableTime && <TimeIndicator lineHeight={1} />}
+      {enableProgress && <PercentageIndicator lineHeight={1} />}
     </Box>
   )
 }

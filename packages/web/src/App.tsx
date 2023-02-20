@@ -32,6 +32,7 @@ import { ManageTagBooksDialog } from "./tags/ManageTagBooksDialog"
 import { useRef } from "react"
 import { Effects } from "./Effects"
 import { bookBeingReadState } from "./reading/states"
+import { readerSettingsState } from "./reader/settings/states"
 
 declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -44,7 +45,8 @@ const localStatesToPersist = [
   firstTimeExperienceState,
   localSettingsState,
   authState,
-  bookBeingReadState
+  bookBeingReadState,
+  readerSettingsState
 ]
 
 const localStateMigration = (state: { [key: string]: { value: any } }) => {

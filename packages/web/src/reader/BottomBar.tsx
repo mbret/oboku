@@ -106,7 +106,7 @@ export const BottomBar = () => {
           </div>
         </>
       )}
-      <FloatingBottom />
+      <FloatingBottom enableProgress enableTime />
     </AppBar>
   )
 }
