@@ -25,6 +25,7 @@ import { ReaderInstance, ReactReaderProps } from "./type"
 import { createReader } from "@prose-reader/core"
 import { ObservedValueOf } from "rxjs"
 import { FloatingBottom } from "./FloatingBottom"
+import { readerSettingsState } from "./settings/states"
 
 export const Reader: FC<{
   bookId: string
@@ -32,6 +33,7 @@ export const Reader: FC<{
 }> = ({ bookId, onReader }) => {
   const { reader } = useReader()
   const [isBookReady, setIsBookReady] = useRecoilState(isBookReadyState)
+  const readerSettings = useRecoilValue(readerSettingsState)
   const setPaginationState = useSetRecoilState(paginationState)
   const setManifestState = useSetRecoilState(manifestState)
   const book = useRecoilValue(bookState(bookId || "-1"))
@@ -199,7 +201,12 @@ export const Reader: FC<{
         )}
         {!isBookReady && <BookLoading />}
       </div>
-      {showFloatingMenu && <FloatingBottom />}
+      {showFloatingMenu && (
+        <FloatingBottom
+          enableProgress={readerSettings.floatingProgress === "bottom"}
+          enableTime={readerSettings.floatingTime === "bottom"}
+        />
+      )}
       <TopBar />
       <BottomBar />
     </div>

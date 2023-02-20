@@ -1,8 +1,5 @@
 import { useRecoilValue } from "recoil"
-import {
-  paginationState,
-  usePagination
-} from "./states"
+import { paginationState, usePagination } from "./states"
 import { useAtomicUpdateBook } from "../books/helpers"
 import { ReadingStateState } from "@oboku/shared"
 import { useDebounce } from "react-use"
