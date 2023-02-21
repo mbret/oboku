@@ -8,7 +8,7 @@ import { useMeasure } from "react-use"
 import { Box, Button, Link, Typography, useTheme } from "@mui/material"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { bookState } from "../books/states"
-import { paginationState, isBookReadyState, manifestState } from "./states"
+import { isBookReadyState, manifestState } from "./states"
 import { TopBar } from "./TopBar"
 import { BottomBar } from "./BottomBar"
 import { useBookResize } from "./layout"
@@ -18,14 +18,16 @@ import { BookLoading } from "./BookLoading"
 import Hammer from "hammerjs"
 import { useCSS } from "../common/utils"
 import { Reader as ObokuReader } from "@prose-reader/react"
+import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
 import { useManifest } from "./manifest"
 import { useRarStreamer } from "./streamer/useRarStreamer.shared"
 import { useUpdateBookState } from "./bookHelpers"
 import { ReaderInstance, ReactReaderProps } from "./type"
 import { createReader } from "@prose-reader/core"
-import { ObservedValueOf } from "rxjs"
 import { FloatingBottom } from "./FloatingBottom"
 import { readerSettingsState } from "./settings/states"
+
+const createReaderWithEnhancer = hammerGestureEnhancer(createReader)
 
 export const Reader: FC<{
   bookId: string
@@ -34,7 +36,6 @@ export const Reader: FC<{
   const { reader } = useReader()
   const [isBookReady, setIsBookReady] = useRecoilState(isBookReadyState)
   const readerSettings = useRecoilValue(readerSettingsState)
-  const setPaginationState = useSetRecoilState(paginationState)
   const setManifestState = useSetRecoilState(manifestState)
   const book = useRecoilValue(bookState(bookId || "-1"))
   const navigate = useNavigate()
@@ -76,13 +77,6 @@ export const Reader: FC<{
   const onBookReady = useCallback(() => {
     setIsBookReady(true)
   }, [setIsBookReady])
-
-  const onPaginationChange = useCallback(
-    (pagination: ObservedValueOf<ReaderInstance["pagination$"]>) => {
-      setPaginationState(pagination)
-    },
-    [setPaginationState]
-  )
 
   useEffect(() => {
     if (manifest && book && !loadOptions) {
@@ -195,8 +189,7 @@ export const Reader: FC<{
             loadOptions={loadOptions}
             onReady={onBookReady}
             onReader={onReader}
-            onPaginationChange={onPaginationChange}
-            createReader={createReader}
+            createReader={createReaderWithEnhancer}
           />
         )}
         {!isBookReady && <BookLoading />}

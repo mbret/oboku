@@ -1,11 +1,10 @@
 import React, { FC } from "react"
 import { Typography, useTheme } from "@mui/material"
 import {
-  chapterInfoState,
-  currentPageState,
   manifestState,
-  totalPageState,
-  usePagination
+  useCurrentPage,
+  usePagination,
+  useTotalPage
 } from "./states"
 import { useRecoilValue } from "recoil"
 import { useReader } from "./ReaderProvider"
@@ -15,14 +14,13 @@ export const PageInformation: FC<{
 }> = ({ style }) => {
   const theme = useTheme()
   const { reader$ } = useReader()
-  const currentPage = useRecoilValue(currentPageState) || 0
+  const currentPage = useCurrentPage() || 0
   const { renditionLayout } = useRecoilValue(manifestState) || {}
-  const { percentageEstimateOfBook } = usePagination(reader$) ?? {}
+  const { percentageEstimateOfBook, beginChapterInfo: chapterInfo } = usePagination(reader$) ?? {}
   const roundedProgress = Math.floor((percentageEstimateOfBook || 0) * 100)
   const displayableProgress = roundedProgress > 0 ? roundedProgress : 1
-  const chapterInfo = useRecoilValue(chapterInfoState)
   const currentPageToDisplay = currentPage + 1
-  const totalPagesToDisplay = useRecoilValue(totalPageState) || 1
+  const totalPagesToDisplay = useTotalPage() || 1
 
   const buildTitleChain = (
     subChapterInfo: NonNullable<typeof chapterInfo>

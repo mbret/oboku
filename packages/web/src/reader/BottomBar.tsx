@@ -4,11 +4,9 @@ import { PageInformation } from "./PageInformation"
 import {
   isMenuShownState,
   isBookReadyState,
-  hasRightSpineItemState,
-  hasLeftSpineItemState
+  usePagination
 } from "./states"
 import { Scrubber } from "./Scrubber"
-import { useTime } from "../common/useTime"
 import { DoubleArrowRounded } from "@mui/icons-material"
 import { useReader } from "./ReaderProvider"
 import { FloatingBottom } from "./FloatingBottom"
@@ -17,11 +15,9 @@ export const BottomBar = () => {
   const isMenuShow = useRecoilValue(isMenuShownState)
   const isBookReady = useRecoilValue(isBookReadyState)
   const isLoading = !isBookReady
-  const hasRightSpineItem = useRecoilValue(hasRightSpineItemState)
-  const hasLeftSpineItem = useRecoilValue(hasLeftSpineItemState)
   const theme = useTheme()
-  const time = useTime()
-  const { reader } = useReader()
+  const { reader, reader$ } = useReader()
+  const pagination = usePagination(reader$)
   // const showScrubber = (totalPages || 1) > 1
   const showScrubber = true
 
@@ -74,7 +70,7 @@ export const BottomBar = () => {
             <IconButton
               color="inherit"
               style={{ transform: `rotateY(180deg)` }}
-              disabled={!hasLeftSpineItem}
+              disabled={!pagination?.canGoLeft}
               onClick={(_) => {
                 reader?.goToLeftSpineItem()
               }}
@@ -95,7 +91,7 @@ export const BottomBar = () => {
             </div>
             <IconButton
               color="inherit"
-              disabled={!hasRightSpineItem}
+              disabled={!pagination?.canGoRight}
               onClick={(_) => {
                 reader?.goToRightSpineItem()
               }}
