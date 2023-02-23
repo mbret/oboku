@@ -1,20 +1,13 @@
-import { atom, selector, useRecoilCallback } from "recoil"
+import { atom, useRecoilCallback } from "recoil"
 import { useEffect } from "react"
 import { Manifest } from "@prose-reader/core"
-import { ReaderInstance } from "./type"
-import { Observable, ObservedValueOf, switchMap } from "rxjs"
+import { Observable, switchMap } from "rxjs"
 import { bind } from "@react-rxjs/core"
+import { ReaderInstance, useReader } from "./ReaderProvider"
 
 export const isBookReadyState = atom({
   key: "isBookReadyState",
   default: false
-})
-
-export const paginationState = atom<
-  ObservedValueOf<ReaderInstance["pagination$"]> | undefined
->({
-  key: `paginationState`,
-  default: undefined
 })
 
 export const manifestState = atom<Manifest | undefined>({
@@ -29,80 +22,35 @@ export const isMenuShownState = atom({
 
 // =======> Please do not forget to add atom to the reset part !
 
-export const totalPageState = selector({
-  key: `totalPageState`,
-  get: ({ get }) => {
-    const { renditionLayout } = get(manifestState) || {}
-    const { numberOfTotalPages, beginNumberOfPagesInChapter } =
-      get(paginationState) || {}
-
-    if (renditionLayout === "reflowable") return beginNumberOfPagesInChapter
-
-    return numberOfTotalPages
-  }
-})
-
-export const currentPageState = selector({
-  key: `currentPageState`,
-  get: ({ get }) => {
-    const { renditionLayout } = get(manifestState) || {}
-    const { beginPageIndexInChapter, beginSpineItemIndex } =
-      get(paginationState) || {}
-
-    if (renditionLayout === "reflowable") return beginPageIndexInChapter
-
-    return beginSpineItemIndex
-  }
-})
-
-export const chapterInfoState = selector({
-  key: `chapterInfoState`,
-  get: ({ get }) => {
-    const { beginChapterInfo } = get(paginationState) || {}
-
-    return beginChapterInfo
-  }
-})
-
 export const [usePagination] = bind(
   (reader$: Observable<ReaderInstance>) =>
     reader$.pipe(switchMap((reader) => reader.pagination$)),
   undefined
 )
 
-export const hasRightSpineItemState = selector({
-  key: `hasRightSpineItemState`,
-  get: ({ get }) => {
-    const { numberOfTotalPages = 1, beginSpineItemIndex = 0 } =
-      get(paginationState) || {}
-    const { readingDirection } = get(manifestState) || {}
+export const useCurrentPage = () => {
+  const { reader$, reader } = useReader()
+  const { beginPageIndexInChapter, beginSpineItemIndex } =
+    usePagination(reader$) ?? {}
+  const { renditionLayout } = reader?.context.getManifest() ?? {}
 
-    if (readingDirection === "ltr")
-      return beginSpineItemIndex < numberOfTotalPages - 1
+  if (renditionLayout === "reflowable") return beginPageIndexInChapter
 
-    return beginSpineItemIndex > 0
-  }
-})
+  return beginSpineItemIndex
+}
 
-export const hasLeftSpineItemState = selector({
-  key: `hasLeftSpineItemState`,
-  get: ({ get }) => {
-    const { numberOfTotalPages = 1, beginSpineItemIndex = 0 } =
-      get(paginationState) || {}
-    const { readingDirection } = get(manifestState) || {}
+export const useTotalPage = () => {
+  const { reader$, reader } = useReader()
+  const { renditionLayout } = reader?.context.getManifest() ?? {}
+  const { numberOfTotalPages, beginNumberOfPagesInChapter } =
+    usePagination(reader$) ?? {}
 
-    if (readingDirection === "ltr") return beginSpineItemIndex > 0
+  if (renditionLayout === "reflowable") return beginNumberOfPagesInChapter
 
-    return beginSpineItemIndex < numberOfTotalPages - 1
-  }
-})
+  return numberOfTotalPages
+}
 
-const statesToReset = [
-  isBookReadyState,
-  paginationState,
-  isMenuShownState,
-  manifestState
-]
+const statesToReset = [isBookReadyState, isMenuShownState, manifestState]
 
 export const useResetStateOnUnMount = () => {
   const resetStates = useRecoilCallback(

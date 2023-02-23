@@ -2,13 +2,11 @@ import { useSetRecoilState } from "recoil"
 import * as states from "./states"
 import { useEffect } from "react"
 import { useWindowSize } from "react-use"
-import { Reader } from "@prose-reader/core"
 import { HORIZONTAL_TAPPING_RATIO } from "./constants"
+import { useReader } from "./ReaderProvider"
 
-export const useGestureHandler = (
-  reader: Reader | undefined,
-  hammer: HammerManager | undefined
-) => {
+export const useGestureHandler = (hammer: HammerManager | undefined) => {
+  const { reader } = useReader()
   const { width } = useWindowSize()
   const setIsMenuShown = useSetRecoilState(states.isMenuShownState)
 
@@ -56,6 +54,10 @@ export const useGestureHandler = (
 
     hammer?.on("tap", onTap)
     hammer?.on("panmove panstart panend", onPanMove)
+
+    if (hammer) {
+      reader?.hammerGesture.setManagerInstance(hammer)
+    }
 
     return () => {
       hammer?.off("tap", onTap)

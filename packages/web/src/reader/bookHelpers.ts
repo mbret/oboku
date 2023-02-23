@@ -1,5 +1,4 @@
-import { useRecoilValue } from "recoil"
-import { paginationState, usePagination } from "./states"
+import { usePagination } from "./states"
 import { useAtomicUpdateBook } from "../books/helpers"
 import { ReadingStateState } from "@oboku/shared"
 import { useDebounce } from "react-use"
@@ -7,8 +6,8 @@ import { useReader } from "./ReaderProvider"
 
 export const useUpdateBookState = (bookId: string) => {
   const [updateBook] = useAtomicUpdateBook()
-  const { beginCfi } = useRecoilValue(paginationState) || {}
   const { reader$ } = useReader()
+  const { beginCfi } = usePagination(reader$) ?? {}
   const totalBookProgress = usePagination(reader$)?.percentageEstimateOfBook
 
   const updater = async () => {
