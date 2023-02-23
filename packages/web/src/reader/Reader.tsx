@@ -13,21 +13,23 @@ import { TopBar } from "./TopBar"
 import { BottomBar } from "./BottomBar"
 import { useBookResize } from "./layout"
 import { useGestureHandler } from "./gestures"
-import { useReader } from "./ReaderProvider"
+import {
+  createAppReader,
+  ReactReaderProps,
+  ReaderInstance,
+  useReader
+} from "./ReaderProvider"
 import { BookLoading } from "./BookLoading"
 import Hammer from "hammerjs"
 import { useCSS } from "../common/utils"
 import { Reader as ObokuReader } from "@prose-reader/react"
-import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
 import { useManifest } from "./manifest"
 import { useRarStreamer } from "./streamer/useRarStreamer.shared"
 import { useUpdateBookState } from "./bookHelpers"
-import { ReaderInstance, ReactReaderProps } from "./type"
-import { createReader } from "@prose-reader/core"
 import { FloatingBottom } from "./FloatingBottom"
 import { readerSettingsState } from "./settings/states"
-
-const createReaderWithEnhancer = hammerGestureEnhancer(createReader)
+import { FONT_SCALE_MAX, FONT_SCALE_MIN } from "./constants"
+import { usePersistReaderSettings } from "./settings/usePersistReaderSettings"
 
 export const Reader: FC<{
   bookId: string
@@ -61,8 +63,9 @@ export const Reader: FC<{
     reader?.context.getManifest()?.renditionLayout !== "pre-paginated"
 
   useBookResize(reader, containerWidth, containerHeight)
-  useGestureHandler(reader, readerContainerHammer)
+  useGestureHandler(readerContainerHammer)
   useUpdateBookState(bookId)
+  usePersistReaderSettings()
 
   useEffect(() => {
     return () => {
@@ -79,11 +82,17 @@ export const Reader: FC<{
   }, [setIsBookReady])
 
   useEffect(() => {
-    if (manifest && book && !loadOptions) {
+    if (manifest && book && !readerOptions) {
       setReaderOptions({
         forceSinglePageMode: true,
         numberOfAdjacentSpineItemToPreLoad:
-          manifest.renditionLayout === "pre-paginated" ? 1 : 0
+          manifest.renditionLayout === "pre-paginated" ? 1 : 0,
+        hammerGesture: {
+          enableFontScalePinch: true,
+          fontScaleMax: FONT_SCALE_MAX,
+          fontScaleMin: FONT_SCALE_MIN
+        },
+        fontScale: readerSettings.fontScale ?? 1
       })
 
       if (isRarFile && fetchResource) {
@@ -98,7 +107,7 @@ export const Reader: FC<{
         })
       }
     }
-  }, [book, manifest, loadOptions, isRarFile, fetchResource])
+  }, [book, manifest, readerOptions, isRarFile, fetchResource, readerSettings])
 
   if (isBookError) {
     if (manifestError?.code === "fileNotSupported") {
@@ -189,7 +198,7 @@ export const Reader: FC<{
             loadOptions={loadOptions}
             onReady={onBookReady}
             onReader={onReader}
-            createReader={createReaderWithEnhancer}
+            createReader={createAppReader}
           />
         )}
         {!isBookReady && <BookLoading />}

@@ -1,10 +1,9 @@
-import { atom, selector, useRecoilCallback } from "recoil"
+import { atom, useRecoilCallback } from "recoil"
 import { useEffect } from "react"
 import { Manifest } from "@prose-reader/core"
-import { ReaderInstance } from "./type"
 import { Observable, switchMap } from "rxjs"
 import { bind } from "@react-rxjs/core"
-import { useReader } from "./ReaderProvider"
+import { ReaderInstance, useReader } from "./ReaderProvider"
 
 export const isBookReadyState = atom({
   key: "isBookReadyState",
