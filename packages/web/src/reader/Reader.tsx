@@ -184,10 +184,13 @@ export const Reader: FC<{
           position: "relative"
         }}
         ref={(ref) => {
-          if (ref) {
-            setReaderContainerHammer((hammer) =>
-              hammer ? hammer : new Hammer(ref)
-            )
+          if (ref && !readerContainerHammer) {
+            const hammerInstance = new Hammer(ref)
+
+            // @see https://hammerjs.github.io/recognizer-pinch/
+            hammerInstance.get("pinch").set({ enable: true })
+
+            setReaderContainerHammer(hammerInstance)
           }
         }}
       >
