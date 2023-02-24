@@ -44,9 +44,14 @@ export function register(config?: Config) {
       return
     }
 
-    window.addEventListener("load", () => {
+    const onWindowLoad = () => {
       const swUrl =
-        import.meta.env.MODE === "production"
+        import.meta.env.MODE === "production" ||
+        /**
+         * firefox does not support module type for dev service worker.
+         * Please build and copy dist service worker in public when developing with firefox
+         */
+        navigator.userAgent.includes("Firefox/")
           ? "/service-worker.js"
           : "/dev-sw.js?dev-sw"
 
@@ -66,7 +71,13 @@ export function register(config?: Config) {
         // Is not localhost. Just register service worker
         registerValidSW(swUrl, config)
       }
-    })
+    }
+
+    if (document.readyState === "complete") {
+      onWindowLoad()
+    } else {
+      window.addEventListener("load", onWindowLoad)
+    }
   }
 }
 
