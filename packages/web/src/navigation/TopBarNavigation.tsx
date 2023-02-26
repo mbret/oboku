@@ -22,6 +22,7 @@ export const TopBarNavigation: FC<{
   color?: ComponentProps<typeof AppBar>["color"]
   rightComponent?: React.ReactNode
   hasSearch?: boolean
+  goBackDefaultTo?: string
   onMoreClick?: () => void
 }> = memo(
   ({
@@ -31,7 +32,8 @@ export const TopBarNavigation: FC<{
     color = "primary",
     rightComponent,
     hasSearch = false,
-    onMoreClick
+    onMoreClick,
+    goBackDefaultTo
   }) => {
     const { styles, classes } = useStyles({ color })
     const { goBack } = useSafeGoBack()
@@ -45,7 +47,7 @@ export const TopBarNavigation: FC<{
               <IconButton
                 edge="start"
                 style={styles.menuButton}
-                onClick={goBack}
+                onClick={() => goBack(goBackDefaultTo)}
                 size="large"
               >
                 <ArrowBackIosRounded />

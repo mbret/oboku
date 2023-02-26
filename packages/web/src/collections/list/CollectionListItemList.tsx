@@ -1,5 +1,13 @@
 import { FC, memo } from "react"
-import { IconButton, ListItem, ListItemText, useTheme } from "@mui/material"
+import {
+  Box,
+  IconButton,
+  ListItem as MuiListItem,
+  ListItemButton as MuiListItemButton,
+  ListItemText,
+  styled,
+  useTheme
+} from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { MoreVert } from "@mui/icons-material"
 import { useRecoilValue } from "recoil"
@@ -8,9 +16,20 @@ import { CollectionDocType } from "@oboku/shared"
 import { Cover } from "../../books/Cover"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer"
 
+const ListItem = styled(MuiListItem)(() => ({
+  height: `100%`,
+  flexFlow: "column",
+  position: "relative"
+}))
+
+const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
+  padding: theme.spacing(2)
+}))
+
 export const CollectionListItemList: FC<{
   id: string
   onItemClick?: (tag: CollectionDocType) => void
+  viewMode?: "container" | "text"
 }> = memo(({ id, onItemClick }) => {
   const theme = useTheme()
   const item = useRecoilValue(collectionState(id))
@@ -19,72 +38,89 @@ export const CollectionListItemList: FC<{
 
   return (
     <ListItem
-      button
-      style={styles.container}
       onClick={() => item && onItemClick && onItemClick(item)}
+      disablePadding
     >
-      <div style={{ ...styles.itemCard }}>
-        <div style={styles.itemBottomRadius} />
-        <div
-          style={{
-            width: "100%",
-            zIndex: 1,
-            display: "flex",
-            justifyContent: "center"
-          }}
-        >
-          {item?.books?.slice(0, 3).map((bookItem, i) => {
-            const length = item?.books?.length || 0
-            const coverHeight = 200 * (length < 3 ? 0.6 : 0.5)
-
-            if (!bookItem) return null
-
-            return (
-              <Cover
-                key={bookItem}
-                bookId={bookItem}
-                withShadow
-                style={{
-                  height: coverHeight,
-                  width: coverHeight * theme.custom.coverAverageRatio,
-                  ...(length > 2 &&
-                    i === 1 && {
-                      marginTop: -10
-                    }),
-                  marginRight: 5,
-                  marginLeft: 5
-                }}
-              />
-            )
-          })}
-        </div>
-      </div>
-      <div
+      <ListItemButton
+        disableGutters
         style={{
           display: "flex",
-          flexFlow: "row",
-          width: "100%",
-          alignItems: "center"
-        }}
-        onClick={(e) => {
-          e.stopPropagation()
-          openActionDrawer()
+          flexDirection: "column",
+          alignSelf: "stretch",
+          padding: 10
         }}
       >
-        <ListItemText
-          primary={item?.displayableName}
-          secondary={`${item?.books?.length || 0} book(s)`}
-        />
-        <IconButton
-          disableFocusRipple
-          disableRipple
-          disableTouchRipple
-          edge="end"
-          size="large"
+        <Box
+          style={{ ...styles.itemCard }}
+          width="100%"
+          display="flex"
+          flexDirection="column"
+          p={2}
+          pt={3}
+          justifyContent="center"
         >
-          <MoreVert />
-        </IconButton>
-      </div>
+          <div style={styles.itemBottomRadius} />
+          <Box
+            style={{
+              width: "100%",
+              zIndex: 1,
+              display: "flex",
+              justifyContent: "center"
+            }}
+          >
+            {item?.books?.slice(0, 3).map((bookItem, i) => {
+              const length = item?.books?.length || 0
+              const coverHeight = 200 * (length < 3 ? 0.6 : 0.5)
+
+              if (!bookItem) return null
+
+              return (
+                <Cover
+                  key={bookItem}
+                  bookId={bookItem}
+                  withShadow
+                  style={{
+                    height: coverHeight,
+                    width: coverHeight * theme.custom.coverAverageRatio,
+                    ...(length > 2 &&
+                      i === 1 && {
+                        marginTop: -10
+                      }),
+                    marginRight: 5,
+                    marginLeft: 5
+                  }}
+                />
+              )
+            })}
+          </Box>
+        </Box>
+        <div
+          style={{
+            display: "flex",
+            flexFlow: "row",
+            width: "100%",
+            alignItems: "center"
+          }}
+          onClick={(e) => {
+            e.stopPropagation()
+            openActionDrawer()
+          }}
+        >
+          <ListItemText
+            primary={item?.displayableName}
+            secondary={`${item?.books?.length || 0} book(s)`}
+          />
+          <IconButton
+            disableFocusRipple
+            disableRipple
+            disableTouchRipple
+            edge="end"
+            size="large"
+          >
+            <MoreVert />
+          </IconButton>
+        </div>
+      </ListItemButton>
     </ListItem>
   )
 })
@@ -100,7 +136,6 @@ const useStyle = () => {
         paddingLeft: theme.spacing(2),
         flexFlow: "column",
         position: "relative"
-        // border: `1px solid black`
       },
       itemCard: {
         backgroundColor: theme.palette.grey[200],
@@ -119,7 +154,9 @@ const useStyle = () => {
         borderTopLeftRadius: "50%",
         borderTopRightRadius: "50%",
         alignSelf: "flex-end",
-        position: "absolute"
+        position: "absolute",
+        bottom: 0,
+        left: 0
       }
     }),
     [theme]

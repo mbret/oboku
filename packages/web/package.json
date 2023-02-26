@@ -1,6 +1,6 @@
 {
   "name": "@oboku/web",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.6",
@@ -14,10 +14,10 @@
     "@oboku/plugin-link": "0.10.0",
     "@oboku/shared": "0.8.0",
     "@prose-reader/core": "1.33.0",
+    "@prose-reader/enhancer-hammer-gesture": "1.33.0",
     "@prose-reader/react": "1.33.0",
     "@prose-reader/shared": "1.33.0",
     "@prose-reader/streamer": "1.33.0",
-    "@prose-reader/enhancer-hammer-gesture": "1.33.0",
     "@react-rxjs/core": "^0.10.3",
     "@react-rxjs/utils": "^0.9.5",
     "@sentry/integrations": "^7.38.0",
