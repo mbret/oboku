@@ -1,5 +1,5 @@
 import React, { useCallback, FC, useMemo, memo } from "react"
-import { useTheme } from "@mui/material"
+import { Box, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { BookListGridItem } from "./BookListGridItem"
 import { LibrarySorting } from "../../library/states"
@@ -20,6 +20,7 @@ export const BookList: FC<{
   density?: "dense" | "large"
   onItemClick?: (id: string) => void
   withDrawerActions?: boolean
+  static?: boolean
 }> = memo((props) => {
   const {
     viewMode = "grid",
@@ -85,6 +86,16 @@ export const BookList: FC<{
     () => ({ ...classes.container, ...style }),
     [style, classes]
   )
+
+  if (props.static) {
+    return (
+      <Box style={containerStyle} flexDirection="column">
+        {data.map((item) => (
+          <Box key={item} height={itemHeight}>{rowRenderer(item)}</Box>
+        ))}
+      </Box>
+    )
+  }
 
   return (
     <div style={containerStyle}>

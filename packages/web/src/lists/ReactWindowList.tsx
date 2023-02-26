@@ -167,9 +167,6 @@ const List = memo(
         }
       }
 
-      // @ts-ignore
-      // window.list = listRef
-
       const onExpandLessClick = () => {
         const offsetWithoutHeader = getCurrentOffsetWithoutHeader()
         if (layout === "vertical") {

@@ -31,8 +31,10 @@ import { ProblemsScreen } from "../problems/ProblemsScreen"
 import { LibraryBooksScreen } from "../library/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../library/LibraryCollectionScreen"
 import { LibraryTagsScreen } from "../library/LibraryTagsScreen"
-import { useEffect, useRef } from "react"
+import { memo, useEffect, useRef, useState } from "react"
 import { UnlockLibraryDialog } from "../auth/UnlockLibraryDialog"
+import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
+import { useMount } from "react-use"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -69,7 +71,13 @@ export const AppNavigator = () => {
                 path={ROUTES.COLLECTION_DETAILS}
                 element={<CollectionDetailsScreen />}
               />
-              <Route path={ROUTES.SEARCH} element={<SearchScreen />} />
+              <Route path={ROUTES.SEARCH}>
+                <Route index element={<SearchScreen />} />
+                <Route
+                  path=":search/:type"
+                  element={<SearchScreenExpanded />}
+                />
+              </Route>
               <Route
                 path={`${ROUTES.PROFILE}/manage-storage`}
                 element={<ManageStorageScreen />}
@@ -123,12 +131,22 @@ export const AppNavigator = () => {
   )
 }
 
-const TrackHistoryCanGoBack = () => {
-  const { pathname } = useLocation()
+let i = 0
+
+const TrackHistoryCanGoBack = memo(() => {
+  const { pathname, state } = useLocation()
   const isFirstChange = useRef(true)
 
   useEffect(() => {
-    if (!isFirstChange.current) {
+    return () => {
+      // concurrent bug ?
+      // we have to reset the ref for next mount, no idea why
+      isFirstChange.current = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isFirstChange.current && !(state || {})?.__obokuFallbackBack) {
       window.history.replaceState(
         {
           ...window.history.state,
@@ -138,7 +156,7 @@ const TrackHistoryCanGoBack = () => {
       )
     }
     isFirstChange.current = false
-  }, [pathname])
+  }, [pathname, state])
 
   return null
-}
+})

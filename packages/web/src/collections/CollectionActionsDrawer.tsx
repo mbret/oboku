@@ -113,7 +113,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
       <Drawer
         anchor="bottom"
         open={opened && !subActionOpened}
-        onClose={() => close()}
+        onClose={() => closeModalWithNavigation()}
       >
         <List>
           <ListItem

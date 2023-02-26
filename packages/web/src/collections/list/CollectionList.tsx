@@ -1,5 +1,12 @@
-import React, { useCallback, FC, useMemo, memo, ComponentProps } from "react"
-import { useTheme } from "@mui/material"
+import React, {
+  useCallback,
+  FC,
+  useMemo,
+  memo,
+  ComponentProps,
+  Fragment
+} from "react"
+import { List, useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { ReactWindowList } from "../../lists/ReactWindowList"
 import { CollectionListItemList } from "./CollectionListItemList"
@@ -11,27 +18,44 @@ export const CollectionList: FC<
     headerHeight?: number
     style?: React.CSSProperties
     data: string[]
-    onItemClick?: (tag: CollectionDocType) => void
+    onItemClick?: (item: CollectionDocType) => void
+    viewMode?: "list" | "grid"
+    itemMode?: ComponentProps<typeof CollectionListItemList>["viewMode"]
+    static?: boolean
   } & Omit<
     ComponentProps<typeof ReactWindowList>,
     `rowRenderer` | `itemsPerRow` | `data`
   >
-> = memo((props) => {
+> = memo(({ itemMode, ...props }) => {
   const { renderHeader, headerHeight, style, data, onItemClick, ...rest } =
     props
   const classes = useStyle()
 
   const rowRenderer = useCallback(
     (item: string) => (
-      <CollectionListItemList id={item} onItemClick={onItemClick} />
+      <CollectionListItemList
+        id={item}
+        onItemClick={onItemClick}
+        viewMode={itemMode}
+      />
     ),
-    [onItemClick]
+    [onItemClick, itemMode]
   )
 
   const containerStyle = useMemo(
     () => ({ ...classes.container, ...style }),
     [style, classes]
   )
+
+  if (props.static) {
+    return (
+      <List disablePadding>
+        {data.map((item) => (
+          <Fragment key={item}>{rowRenderer(item)}</Fragment>
+        ))}
+      </List>
+    )
+  }
 
   return (
     <div style={containerStyle}>
