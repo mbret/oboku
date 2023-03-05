@@ -74,7 +74,7 @@ const SeeMore = ({
 export const SearchScreen = () => {
   const { styles, classes } = useStyles()
   const { db$ } = useDatabase()
-  let [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const value = useSearchValue()
   const collections = useCollections(db$, search$)
   const books = useBooks(db$, search$)
@@ -110,9 +110,14 @@ export const SearchScreen = () => {
               inputProps={{ "aria-label": "search" }}
               onChange={(e) => {
                 setSearch(e.target.value)
-                setSearchParams({
-                  value: e.target.value
-                })
+                setSearchParams(
+                  {
+                    value: e.target.value
+                  },
+                  {
+                    replace: true
+                  }
+                )
               }}
             />
           </form>
