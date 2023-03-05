@@ -21,6 +21,8 @@ import { TagList } from "../tags/tagList/TagList"
 import { AppTourFirstTourTagsStep2 } from "../firstTimeExperience/AppTourFirstTourTags"
 import { useDatabase } from "../rxdb"
 import { useTagIds } from "../tags/states"
+import { Controller, SubmitHandler, useForm } from "react-hook-form"
+import { errorToHelperText } from "../common/forms/errorToHelperText"
 
 export const LibraryTagsScreen = () => {
   const { db$ } = useDatabase()
@@ -131,43 +133,73 @@ export const LibraryTagsScreen = () => {
   )
 }
 
+type Inputs = {
+  name: string
+}
+
+const FORM_ID = "new-tag-dialog"
+
 const AddTagDialog: FC<{
   open: boolean
   onConfirm: (name: string) => void
   onClose: () => void
 }> = ({ onClose, onConfirm, open }) => {
-  const [name, setName] = useState("")
+  const { control, handleSubmit, setFocus, reset, setError } = useForm<Inputs>({
+    defaultValues: {
+      name: ""
+    }
+  })
+
   const onInnerClose = () => {
-    setName("")
     onClose()
   }
+
+  const onSubmit: SubmitHandler<Inputs> = async (data) => {
+    onInnerClose()
+    onConfirm(data.name)
+  }
+
+  useEffect(() => {
+    reset()
+  }, [open, reset])
+
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => {
+        setFocus("name")
+      })
+    }
+  }, [setFocus, open])
 
   return (
     <Dialog onClose={onInnerClose} open={open}>
       <DialogTitle>Create a new tag</DialogTitle>
       <DialogContent>
-        <TextField
-          autoFocus
-          id="name"
-          margin="dense"
-          label="Name"
-          type="text"
-          fullWidth
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <form id={FORM_ID} onSubmit={handleSubmit(onSubmit)}>
+          <Controller
+            name="name"
+            control={control}
+            rules={{ required: true }}
+            render={({ field: { ref, ...rest }, fieldState }) => {
+              return (
+                <TextField
+                  {...rest}
+                  label="Name"
+                  type="text"
+                  fullWidth
+                  margin="normal"
+                  inputRef={ref}
+                  error={fieldState.invalid}
+                  helperText={errorToHelperText(fieldState.error)}
+                />
+              )
+            }}
+          />
+        </form>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onInnerClose} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={() => {
-            onInnerClose()
-            onConfirm(name)
-          }}
-          color="primary"
-        >
+        <Button onClick={onInnerClose}>Cancel</Button>
+        <Button type="submit" form={FORM_ID}>
           Add
         </Button>
       </DialogActions>
