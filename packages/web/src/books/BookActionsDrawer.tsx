@@ -10,7 +10,8 @@ import {
   CollectionsRounded,
   NoSimRounded,
   LocalOfferRounded,
-  HideSourceRounded
+  ThumbUpOutlined,
+  ThumbDownOutlined
 } from "@mui/icons-material"
 import { useNavigate } from "react-router-dom"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
@@ -37,7 +38,7 @@ import { useModalNavigationControl } from "../navigation/useModalNavigationContr
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "./ManageBookTagsDialog"
-import { markAsNotInterested } from "./actions"
+import { markAsInterested } from "./actions"
 
 export const bookActionDrawerState = atom<{
   openedWith: undefined | string
@@ -203,14 +204,28 @@ export const BookActionsDrawer = () => {
               <ListItemButton
                 onClick={() => {
                   handleClose(() => {
-                    bookId && markAsNotInterested(bookId)
+                    bookId &&
+                      markAsInterested({
+                        id: bookId,
+                        isNotInterested: !book.isNotInterested
+                      })
                   })
                 }}
               >
                 <ListItemIcon>
-                  <HideSourceRounded />
+                  {book.isNotInterested ? (
+                    <ThumbUpOutlined />
+                  ) : (
+                    <ThumbDownOutlined />
+                  )}
                 </ListItemIcon>
-                <ListItemText primary="Not interested in this book" />
+                <ListItemText
+                  primary={
+                    book.isNotInterested
+                      ? "Interested in this book"
+                      : "Not interested in this book"
+                  }
+                />
               </ListItemButton>
             )}
             {!actions && (

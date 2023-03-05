@@ -1,7 +1,9 @@
 import { createSignal } from "@react-rxjs/utils"
 
-export const [markAsNotInterested$, markAsNotInterested] =
-  createSignal<string>()
+export const [markAsInterested$, markAsInterested] = createSignal<{
+  id: string
+  isNotInterested: boolean
+}>()
 
 export const [upsertBookLink$, upsertBookLink] = createSignal<{
   bookId: string

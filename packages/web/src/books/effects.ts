@@ -3,17 +3,13 @@ import {
   EMPTY,
   from,
   switchMap,
-  map,
   ignoreElements,
   zip,
   catchError,
   tap,
   mergeMap,
-  filter,
   withLatestFrom,
-  of,
-  Observable,
-  take
+  of
 } from "rxjs"
 import { effect } from "../common/rxjs/effect"
 import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
@@ -21,7 +17,7 @@ import { Report } from "../debug/report.shared"
 import { useRemoveDanglingLinks } from "../links/helpers"
 import { useDatabase } from "../rxdb"
 import {
-  markAsNotInterested$,
+  markAsInterested$,
   upsertBookLink$,
   upsertBookLinkEnd,
   upsertBookLinkEnd$
@@ -123,12 +119,12 @@ const useUpsertBookLinkActionEffect = () => {
 
   useEffect(
     () =>
-      effect(markAsNotInterested$, (action$) =>
+      effect(markAsInterested$, (action$) =>
         action$.pipe(
           mergeMap((action) =>
             of(action).pipe(
               withLatestFrom(of(database).pipe(isNotNullOrUndefined())),
-              mergeMap(([id, db]) =>
+              mergeMap(([{ id, isNotInterested }, db]) =>
                 from(
                   db.book.safeFindOne({ selector: { _id: id } }).exec()
                 ).pipe(
@@ -137,7 +133,7 @@ const useUpsertBookLinkActionEffect = () => {
                     from(
                       book.atomicUpdate((data) => ({
                         ...data,
-                        isNotInterested: true
+                        isNotInterested
                       }))
                     )
                   )
