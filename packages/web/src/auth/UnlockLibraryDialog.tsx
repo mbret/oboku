@@ -29,12 +29,11 @@ type Inputs = {
 const FORM_ID = "settings-unlock-library"
 
 export const UnlockLibraryDialog: FC<{}> = () => {
-  const { control, handleSubmit, setFocus, reset, setError, formState } =
-    useForm<Inputs>({
-      defaultValues: {
-        unlockPassword: ""
-      }
-    })
+  const { control, handleSubmit, setFocus, reset, setError } = useForm<Inputs>({
+    defaultValues: {
+      unlockPassword: ""
+    }
+  })
   const settings = useRecoilValue(settingsState)
   const [isOpened, setIsOpened] = useRecoilState(unlockLibraryDialogState)
   const setLibraryState = useSetRecoilState(libraryState)
@@ -91,7 +90,6 @@ export const UnlockLibraryDialog: FC<{}> = () => {
               control={control}
               rules={{ required: true }}
               render={({ field: { ref, ...rest }, fieldState }) => {
-                console.log({ fieldState })
                 return (
                   <TextField
                     {...rest}
