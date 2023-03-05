@@ -7,6 +7,9 @@ import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 import { normalizedBooksState } from "./states"
 
+/**
+ * @deprecated
+ */
 export const useBooksInitialState = () => {
   const { db } = useDatabase()
   const [, setBooks] = useRecoilState(normalizedBooksState)

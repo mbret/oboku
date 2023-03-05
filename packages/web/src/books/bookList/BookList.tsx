@@ -91,7 +91,9 @@ export const BookList: FC<{
     return (
       <Box style={containerStyle} flexDirection="column">
         {data.map((item) => (
-          <Box key={item} height={itemHeight}>{rowRenderer(item)}</Box>
+          <Box key={item} height={itemHeight}>
+            {rowRenderer(item)}
+          </Box>
         ))}
       </Box>
     )

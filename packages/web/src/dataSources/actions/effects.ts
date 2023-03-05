@@ -1,7 +1,6 @@
 import { bind } from "@react-rxjs/core"
 import { catchError, switchMap, of, from } from "rxjs"
-import { ofType } from "../../actions"
-import { actionSubject$ } from "../../actions/actionSubject$"
+import { toggleDatasourceProtected$ } from "."
 import { isNotNullOrUndefined } from "../../common/rxjs/isNotNullOrUndefined"
 import { Report } from "../../debug/report.shared"
 import { Database, useDatabase } from "../../rxdb"
@@ -11,12 +10,9 @@ const [useToggleDataSourceProtectedAction] = bind(
     of(maybeDb).pipe(
       isNotNullOrUndefined(),
       switchMap((db) =>
-        actionSubject$.pipe(
-          ofType(`TOGGLE_DATASOURCE_PROTECTED`),
-          switchMap((data) =>
-            from(
-              db.datasource.findOne({ selector: { _id: data.data.id } }).exec()
-            ).pipe(
+        toggleDatasourceProtected$.pipe(
+          switchMap((id) =>
+            from(db.datasource.findOne({ selector: { _id: id } }).exec()).pipe(
               isNotNullOrUndefined(),
               switchMap((doc) =>
                 from(

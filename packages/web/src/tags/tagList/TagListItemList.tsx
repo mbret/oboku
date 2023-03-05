@@ -4,7 +4,7 @@ import { useCSS } from "../../common/utils"
 import {
   BlurOnRounded,
   LocalOfferRounded,
-  LockRounded,
+  LockRounded
 } from "@mui/icons-material"
 import { TagsDocType } from "@oboku/shared"
 import { useTag, useTags } from "../states"

@@ -90,6 +90,7 @@ export const bookSchema: RxJsonSchema<Omit<BookDocType, `_rev` | `rxdbMeta`>> =
       title: { type: ["string", "null"] },
       modifiedAt: { type: ["string", "null"] },
       isAttachedToDataSource: { type: ["boolean"] },
+      isNotInterested: { type: ["boolean"] },
       ...getReplicationProperties(`book`)
     },
     required: []

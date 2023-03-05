@@ -58,7 +58,7 @@ export enum ReadingStateState {
   Reading = "READING"
 }
 
-export type InsertAbleBookDocType = Required<Omit<BookDocType, "_id" | "_rev">>
+export type InsertAbleBookDocType = Omit<BookDocType, "_id" | "_rev">
 
 export type BookDocType = CommonBase & {
   createdAt: number
@@ -82,6 +82,7 @@ export type BookDocType = CommonBase & {
   rx_model: "book"
   modifiedAt: string | null
   isAttachedToDataSource: boolean
+  isNotInterested?: boolean
 }
 
 export type TagsDocType = CommonBase & {

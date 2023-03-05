@@ -8,7 +8,8 @@ import {
   ListItemText,
   ListItemIcon,
   DialogActions,
-  Button
+  Button,
+  ListItemButton
 } from "@mui/material"
 import {
   ArrowForwardIosRounded,
@@ -100,6 +101,23 @@ export const LibraryFiltersDrawer: FC<{
                 )}
               </ListItemIcon>
             </ListItem>
+            <ListItemButton
+              onClick={() =>
+                setLibraryState((old) => ({
+                  ...old,
+                  isNotInterested:
+                    old.isNotInterested === "only" ? "hide" : "only"
+                }))
+              }
+            >
+              <ListItemText primary="Only show not interested books" />
+              <ListItemIcon>
+                {library.isNotInterested !== "only" && (
+                  <RadioButtonUncheckedOutlined />
+                )}
+                {library.isNotInterested === "only" && <CheckCircleRounded />}
+              </ListItemIcon>
+            </ListItemButton>
           </List>
         </div>
       </Drawer>

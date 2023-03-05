@@ -14,6 +14,9 @@ import {
   normalizedCollectionsState
 } from "../collections/states"
 
+/**
+ * @deprecated
+ */
 export type Book = NonNullable<
   UnwrapRecoilValue<typeof normalizedBooksState>[number]
 >
@@ -21,6 +24,9 @@ export type Book = NonNullable<
 const isBookProtected = (protectedTags: string[], book: BookDocType) =>
   intersection(protectedTags, book?.tags || []).length > 0
 
+/**
+ * @deprecated
+ */
 export const normalizedBooksState = atom<
   Record<string, BookDocType | undefined>
 >({
@@ -28,6 +34,9 @@ export const normalizedBooksState = atom<
   default: {}
 })
 
+/**
+ * @deprecated
+ */
 export const bookState = selectorFamily({
   key: "bookState",
   get:
@@ -47,6 +56,9 @@ export const bookState = selectorFamily({
     }
 })
 
+/**
+ * @deprecated
+ */
 export const enrichedBookState = selectorFamily({
   key: "enrichedBookState",
   get:
@@ -74,6 +86,9 @@ export const enrichedBookState = selectorFamily({
     }
 })
 
+/**
+ * @deprecated
+ */
 export const downloadedBookWithUnsafeProtectedIdsState = selector({
   key: "downloadedBookWithUnsafeProtectedIdsState",
   get: ({ get }) => {
@@ -87,6 +102,9 @@ export const downloadedBookWithUnsafeProtectedIdsState = selector({
   }
 })
 
+/**
+ * @deprecated
+ */
 export const booksAsArrayState = selector({
   key: "booksAsArray",
   get: ({ get }) => {
@@ -104,6 +122,9 @@ export const booksAsArrayState = selector({
   }
 })
 
+/**
+ * @deprecated
+ */
 export const bookIdsState = selector({
   key: "bookIdsState",
   get: ({ get }) => {
@@ -113,6 +134,9 @@ export const bookIdsState = selector({
   }
 })
 
+/**
+ * @deprecated
+ */
 export const visibleBookIdsState = selector({
   key: "visibleBookIdsState",
   get: ({ get }) => {
@@ -130,6 +154,9 @@ export const visibleBookIdsState = selector({
   }
 })
 
+/**
+ * @deprecated
+ */
 export const bookTagsState = selectorFamily({
   key: "bookTagsState",
   get:
@@ -142,6 +169,9 @@ export const bookTagsState = selectorFamily({
     }
 })
 
+/**
+ * @deprecated
+ */
 export const bookLinksState = selectorFamily({
   key: "bookLinksState",
   get:
@@ -153,6 +183,9 @@ export const bookLinksState = selectorFamily({
     }
 })
 
+/**
+ * @deprecated
+ */
 export const bookCollectionsState = selectorFamily({
   key: "bookCollectionsState",
   get:

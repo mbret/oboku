@@ -1,11 +1,7 @@
 import { AppBar, Box, IconButton, Typography, useTheme } from "@mui/material"
 import { useRecoilValue } from "recoil"
 import { PageInformation } from "./PageInformation"
-import {
-  isMenuShownState,
-  isBookReadyState,
-  usePagination
-} from "./states"
+import { isMenuShownState, isBookReadyState, usePagination } from "./states"
 import { Scrubber } from "./Scrubber"
 import { DoubleArrowRounded } from "@mui/icons-material"
 import { useReader } from "./ReaderProvider"

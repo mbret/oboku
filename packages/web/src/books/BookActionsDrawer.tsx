@@ -9,14 +9,22 @@ import {
   CheckRounded,
   CollectionsRounded,
   NoSimRounded,
-  LocalOfferRounded
+  LocalOfferRounded,
+  ThumbUpOutlined,
+  ThumbDownOutlined
 } from "@mui/icons-material"
 import { useNavigate } from "react-router-dom"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { ROUTES } from "../constants"
 import { useAtomicUpdateBook, useRefreshBookMetadata } from "./helpers"
 import { useRemoveBook } from "./helpers"
-import { Drawer, Divider, ListItemIcon, Typography } from "@mui/material"
+import {
+  Drawer,
+  Divider,
+  ListItemIcon,
+  Typography,
+  ListItemButton
+} from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
 import { useManageBookCollectionsDialog } from "./ManageBookCollectionsDialog"
 import { atom, useRecoilState, useRecoilValue } from "recoil"
@@ -30,6 +38,7 @@ import { useModalNavigationControl } from "../navigation/useModalNavigationContr
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "./ManageBookTagsDialog"
+import { markAsInterested } from "./actions"
 
 export const bookActionDrawerState = atom<{
   openedWith: undefined | string
@@ -138,8 +147,7 @@ export const BookActionsDrawer = () => {
           </div>
           <List>
             {(actions?.includes("goToDetails") || !actions) && (
-              <ListItem
-                button
+              <ListItemButton
                 onClick={() => {
                   handleClose(() => {
                     navigate(ROUTES.BOOK_DETAILS.replace(":id", book._id))
@@ -147,13 +155,12 @@ export const BookActionsDrawer = () => {
                 }}
               >
                 <ListItemText primary="Go to details" />
-              </ListItem>
+              </ListItemButton>
             )}
             {!actions &&
               book.readingStateCurrentState !==
                 ReadingStateState.NotStarted && (
-                <ListItem
-                  button
+                <ListItemButton
                   onClick={() => {
                     handleClose()
                     updateBook(book._id, (old) => ({
@@ -170,12 +177,11 @@ export const BookActionsDrawer = () => {
                     <RemoveRounded />
                   </ListItemIcon>
                   <ListItemText primary="Mark as unread" />
-                </ListItem>
+                </ListItemButton>
               )}
             {!actions &&
               book.readingStateCurrentState !== ReadingStateState.Finished && (
-                <ListItem
-                  button
+                <ListItemButton
                   onClick={() => {
                     handleClose()
                     updateBook(book._id, (old) => ({
@@ -192,11 +198,38 @@ export const BookActionsDrawer = () => {
                     <CheckRounded />
                   </ListItemIcon>
                   <ListItemText primary="Mark as finished" />
-                </ListItem>
+                </ListItemButton>
               )}
             {!actions && (
-              <ListItem
-                button
+              <ListItemButton
+                onClick={() => {
+                  handleClose(() => {
+                    bookId &&
+                      markAsInterested({
+                        id: bookId,
+                        isNotInterested: !book.isNotInterested
+                      })
+                  })
+                }}
+              >
+                <ListItemIcon>
+                  {book.isNotInterested ? (
+                    <ThumbUpOutlined />
+                  ) : (
+                    <ThumbDownOutlined />
+                  )}
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    book.isNotInterested
+                      ? "Interested in this book"
+                      : "Not interested in this book"
+                  }
+                />
+              </ListItemButton>
+            )}
+            {!actions && (
+              <ListItemButton
                 onClick={() => {
                   handleClose(() => {
                     bookId && openManageBookCollectionsDialog(bookId)
@@ -207,11 +240,10 @@ export const BookActionsDrawer = () => {
                   <CollectionsRounded />
                 </ListItemIcon>
                 <ListItemText primary="Manage collections" />
-              </ListItem>
+              </ListItemButton>
             )}
             {!actions && (
-              <ListItem
-                button
+              <ListItemButton
                 onClick={() => {
                   handleClose(() => {
                     bookId && openManageBookTagsDialog(bookId)
@@ -222,20 +254,10 @@ export const BookActionsDrawer = () => {
                   <LocalOfferRounded />
                 </ListItemIcon>
                 <ListItemText primary={t("book.actionDrawer.manageTags")} />
-              </ListItem>
+              </ListItemButton>
             )}
-            {/* {!actions && (
-              <ListItem button
-                onClick={() => {
-                  handleClose()
-                }}
-              >
-                <ListItemText primary="Manage tags" />
-              </ListItem>
-            )} */}
             {!actions && book.canRefreshMetadata && (
-              <ListItem
-                button
+              <ListItemButton
                 onClick={() => {
                   handleClose()
                   refreshBookMetadata(book._id)
@@ -245,13 +267,12 @@ export const BookActionsDrawer = () => {
                   <SyncRounded />
                 </ListItemIcon>
                 <ListItemText primary="Refresh metadata" />
-              </ListItem>
+              </ListItemButton>
             )}
             {(actions?.includes("removeDownload") || !actions) &&
               book.downloadState === "downloaded" &&
               !book.isLocal && (
-                <ListItem
-                  button
+                <ListItemButton
                   onClick={() => {
                     handleClose()
                     bookId && removeDownloadFile(bookId)
@@ -261,7 +282,7 @@ export const BookActionsDrawer = () => {
                     <NoSimRounded />
                   </ListItemIcon>
                   <ListItemText primary="Remove the book download" />
-                </ListItem>
+                </ListItemButton>
               )}
             {/* {(actions?.includes('removeDownload') || !actions) && (book.downloadState === 'downloaded' && book.isLocal) && (
               <ListItem button
