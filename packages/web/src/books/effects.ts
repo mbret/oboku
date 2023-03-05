@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import {
   EMPTY,
   from,
@@ -5,12 +6,26 @@ import {
   map,
   ignoreElements,
   zip,
-  catchError
+  catchError,
+  tap,
+  mergeMap,
+  filter,
+  withLatestFrom,
+  of,
+  Observable,
+  take
 } from "rxjs"
-import { ofType, useActionEffect } from "../actions"
+import { effect } from "../common/rxjs/effect"
+import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
 import { Report } from "../debug/report.shared"
 import { useRemoveDanglingLinks } from "../links/helpers"
 import { useDatabase } from "../rxdb"
+import {
+  markAsNotInterested$,
+  upsertBookLink$,
+  upsertBookLinkEnd,
+  upsertBookLinkEnd$
+} from "./actions"
 import { useRefreshBookMetadata } from "./helpers"
 
 const useUpsertBookLinkActionEffect = () => {
@@ -18,24 +33,23 @@ const useUpsertBookLinkActionEffect = () => {
   const refreshBookMetadata = useRefreshBookMetadata()
   const removeDanglingLinks = useRemoveDanglingLinks()
 
-  useActionEffect(
-    (action$) =>
-      action$.pipe(
-        ofType(`UPSERT_BOOK_LINK`),
-        switchMap((action) => {
+  useEffect(() => {
+    const subscription = upsertBookLink$
+      .pipe(
+        switchMap((data) => {
           return from(
             Promise.all([
               database?.link
                 .safeFindOne({
                   selector: {
-                    resourceId: action.data.linkResourceId,
-                    type: action.data.linkType,
-                    book: action.data.bookId
+                    resourceId: data.linkResourceId,
+                    type: data.linkType,
+                    book: data.bookId
                   }
                 })
                 .exec(),
               database?.book
-                .safeFindOne({ selector: { _id: action.data.bookId } })
+                .safeFindOne({ selector: { _id: data.bookId } })
                 .exec()
             ])
           ).pipe(
@@ -59,13 +73,13 @@ const useUpsertBookLinkActionEffect = () => {
                   )
                 }
               } else {
-                Report.log(`Create new link for book ${action.data.bookId}`)
+                Report.log(`Create new link for book ${data.bookId}`)
                 return from(
                   database?.link.safeInsert({
                     data: null,
-                    resourceId: action.data.linkResourceId,
-                    type: action.data.linkType,
-                    book: action.data.bookId,
+                    resourceId: data.linkResourceId,
+                    type: data.linkType,
+                    book: data.bookId,
                     createdAt: new Date().toISOString(),
                     modifiedAt: null
                   }) || EMPTY
@@ -74,21 +88,23 @@ const useUpsertBookLinkActionEffect = () => {
 
               return EMPTY
             }),
-            map(() => ({
-              type: `UPSERT_BOOK_LINK_END` as const,
-              data: action.data.bookId
-            }))
+            tap(() => {
+              upsertBookLinkEnd(data.bookId)
+            })
           )
         })
-      ),
-    [database]
-  )
+      )
+      .subscribe()
 
-  useActionEffect(
-    (action$) =>
-      action$.pipe(
-        ofType(`UPSERT_BOOK_LINK_END`),
-        switchMap(({ data }) =>
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [database])
+
+  useEffect(() => {
+    const subscription = upsertBookLinkEnd$
+      .pipe(
+        switchMap((data) =>
           zip(removeDanglingLinks(data), refreshBookMetadata(data))
         ),
         catchError((err) => {
@@ -97,8 +113,41 @@ const useUpsertBookLinkActionEffect = () => {
           return EMPTY
         }),
         ignoreElements()
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [refreshBookMetadata, removeDanglingLinks])
+
+  useEffect(
+    () =>
+      effect(markAsNotInterested$, (action$) =>
+        action$.pipe(
+          mergeMap((action) =>
+            of(action).pipe(
+              withLatestFrom(of(database).pipe(isNotNullOrUndefined())),
+              mergeMap(([id, db]) =>
+                from(
+                  db.book.safeFindOne({ selector: { _id: id } }).exec()
+                ).pipe(
+                  isNotNullOrUndefined(),
+                  switchMap((book) =>
+                    from(
+                      book.atomicUpdate((data) => ({
+                        ...data,
+                        isNotInterested: true
+                      }))
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
       ),
-    [refreshBookMetadata, removeDanglingLinks]
+    [database]
   )
 }
 

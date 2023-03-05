@@ -10,6 +10,7 @@ export type LibraryDocType = {
   tags: string[]
   readingStates: ReadingStateState[]
   downloadState?: DownloadState | undefined
+  isNotInterested?: "only" | "hide"
 }
 
 export type LibrarySorting = "date" | "activity" | "alpha"

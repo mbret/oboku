@@ -15,7 +15,7 @@ import {
 } from "@mui/icons-material"
 import { useSynchronizeDataSource, useRemoveDataSource } from "./helpers"
 import { useDataSource } from "./useDataSource"
-import { useAction } from "../actions"
+import { toggleDatasourceProtected } from "./actions"
 
 export const DataSourcesActionsDrawer: FC<{
   openWith: string
@@ -24,7 +24,6 @@ export const DataSourcesActionsDrawer: FC<{
   const syncDataSource = useSynchronizeDataSource()
   // const renewAuthorization = useRenewDataSourceCredentials()
   const [remove] = useRemoveDataSource()
-  const { execute } = useAction()
   const dataSource = useDataSource(openWith)
 
   return (
@@ -51,15 +50,7 @@ export const DataSourcesActionsDrawer: FC<{
             <ListItemText primary="Renew authorization" />
           </ListItem> */}
         </List>
-        <ListItem
-          button
-          onClick={() =>
-            execute({
-              type: `TOGGLE_DATASOURCE_PROTECTED`,
-              data: { id: openWith }
-            })
-          }
-        >
+        <ListItem button onClick={() => toggleDatasourceProtected(openWith)}>
           <ListItemIcon>
             {!dataSource?.isProtected && <RadioButtonUncheckedOutlined />}
             {dataSource?.isProtected && <CheckCircleRounded />}

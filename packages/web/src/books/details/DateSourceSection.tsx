@@ -9,7 +9,6 @@ import {
 import { MoreVertRounded } from "@mui/icons-material"
 import { FC, useState } from "react"
 import { useRecoilValue } from "recoil"
-import { useAction } from "../../actions"
 import { useDataSourcePlugin } from "../../dataSources/helpers"
 import { DebugInfo } from "../../debug/DebugInfo"
 import { Report } from "../../debug/report.shared"
@@ -17,13 +16,13 @@ import { useDialogManager } from "../../dialog"
 import { useRefreshBookMetadata } from "../helpers"
 import { bookLinksState } from "../states"
 import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
+import { upsertBookLink } from "../actions"
 
 export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
   const link = useRecoilValue(bookLinksState(bookId))[0]
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
   const [isSelectItemOpened, setIsSelectItemOpened] = useState(false)
   const dialog = useDialogManager()
-  const { execute } = useAction()
   const refreshBookMetadata = useRefreshBookMetadata()
   const createRequestPopupDialog = useCreateRequestPopupDialog()
 
@@ -86,13 +85,10 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
               Report.error(error)
             } else {
               if (item) {
-                execute({
-                  type: `UPSERT_BOOK_LINK`,
-                  data: {
-                    bookId,
-                    linkResourceId: item.resourceId,
-                    linkType: dataSourcePlugin.type
-                  }
+                upsertBookLink({
+                  bookId,
+                  linkResourceId: item.resourceId,
+                  linkType: dataSourcePlugin.type
                 })
               }
             }

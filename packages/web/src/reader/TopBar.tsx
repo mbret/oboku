@@ -61,7 +61,12 @@ export const TopBar = () => {
   return (
     <AppBar position="fixed" elevation={0} style={classes.appBar}>
       <Toolbar style={{ flex: 1 }}>
-        <IconButton edge="start" color="inherit" onClick={() => goBack()} size="large">
+        <IconButton
+          edge="start"
+          color="inherit"
+          onClick={() => goBack()}
+          size="large"
+        >
           <ArrowBackIosRounded />
         </IconButton>
         <Typography
