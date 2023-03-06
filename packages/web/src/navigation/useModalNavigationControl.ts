@@ -1,5 +1,5 @@
 import { MouseEvent, useCallback, useEffect, useRef, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { v4 as uuidv4 } from "uuid"
 
 export const useModalNavigationControl = (
@@ -13,30 +13,42 @@ export const useModalNavigationControl = (
   const navigate = useNavigate()
   const [currentHash, setCurrentHash] = useState<string | undefined>(undefined)
   const closeCb = useRef<() => void>()
+  const { state } = useLocation()
+  const modalHash: string | undefined = state && state.__oboku_modal
+  const [synced, setSynced] = useState(false)
+  const onExitRef = useRef(onExit)
+  onExitRef.current = onExit
 
   useEffect(() => {
-    const onHashChange = () => {
-      if (currentHash && window.location.hash !== currentHash) {
-        onExit()
-        closeCb.current && closeCb.current()
-        closeCb.current = undefined
-        setCurrentHash(undefined)
-      }
+    if (currentHash && synced && currentHash !== modalHash) {
+      setCurrentHash(undefined)
+      setSynced(false)
+      onExitRef.current()
+      closeCb.current && closeCb.current()
+      closeCb.current = undefined
     }
-
-    window.addEventListener("hashchange", onHashChange, false)
-
-    return () => {
-      window.removeEventListener("hashchange", onHashChange, false)
-    }
-  }, [onExit, currentHash, setCurrentHash])
+  }, [currentHash, setCurrentHash, modalHash, synced])
 
   useEffect(() => {
-    const hash = `#modal-${uuidv4()}`
+    if (currentHash && currentHash === modalHash) {
+      setSynced(true)
+    }
+  }, [currentHash, modalHash])
 
+  useEffect(() => {
     if (id) {
-      navigate(hash)
+      const hash = `#modal-${uuidv4()}`
       setCurrentHash(hash)
+      navigate(
+        {
+          hash: window.location.hash,
+          search: window.location.search,
+          pathname: window.location.pathname
+        },
+        { state: { __oboku_modal: hash } }
+      )
+    } else {
+      setCurrentHash(undefined)
     }
   }, [id, navigate])
 
