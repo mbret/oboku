@@ -11,7 +11,8 @@ import {
   Button,
   Divider,
   DialogContent,
-  TextField
+  TextField,
+  ListItemButton
 } from "@mui/material"
 import {
   CheckCircleRounded,
@@ -20,11 +21,12 @@ import {
   LibraryAddRounded,
   RadioButtonUncheckedOutlined
 } from "@mui/icons-material"
-import { useRemoveTag, useUpdateTag } from "./helpers"
-import { useRecoilValue, useSetRecoilState } from "recoil"
-import { normalizedTagsState, useTag } from "./states"
+import { useUpdateTag } from "./helpers"
+import { useSetRecoilState } from "recoil"
+import { useTag } from "./states"
 import { isManageTagBooksDialogOpenedWithState } from "./ManageTagBooksDialog"
 import { useDatabase } from "../rxdb"
+import { removeTag } from "./actions"
 
 export const TagActionsDrawer: FC<{
   openWith: string | undefined
@@ -38,7 +40,6 @@ export const TagActionsDrawer: FC<{
   const editTag = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
     useState<string | undefined>(undefined)
-  const [removeTag] = useRemoveTag()
 
   return (
     <>
@@ -105,8 +106,7 @@ export const TagActionsDrawer: FC<{
         </List>
         <Divider />
         <List>
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => {
               onClose()
               openWith && removeTag({ id: openWith })
@@ -116,7 +116,7 @@ export const TagActionsDrawer: FC<{
               <DeleteForeverRounded />
             </ListItemIcon>
             <ListItemText primary="Remove" />
-          </ListItem>
+          </ListItemButton>
         </List>
       </Drawer>
       <EditTagDialog

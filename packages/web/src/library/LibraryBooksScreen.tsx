@@ -22,7 +22,11 @@ import { UploadBookFromDataSource } from "../upload/UploadBookFromDataSource"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { LibraryViewMode } from "../rxdb"
-import { isUploadBookDrawerOpenedState, libraryState } from "./states"
+import {
+  isUploadBookDrawerOpenedState,
+  updateLibraryState,
+  useLibraryState
+} from "./states"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { UploadBookDrawer } from "./UploadBookDrawer"
 import { SortByDialog } from "../books/bookList/SortByDialog"
@@ -48,8 +52,7 @@ export const LibraryBooksScreen = () => {
     isUploadBookFromDataSourceDialogOpened,
     setIsUploadBookFromDataSourceDialogOpened
   ] = useState<string | undefined>(undefined)
-  const setLibraryState = useSetRecoilState(libraryState)
-  const library = useRecoilValue(libraryState)
+  const library = useLibraryState()
   let numberOfFiltersApplied = 0
   if ((library?.tags.length || 0) > 0) numberOfFiltersApplied++
   if ((library?.readingStates.length || 0) > 0) numberOfFiltersApplied++
@@ -146,10 +149,9 @@ export const LibraryBooksScreen = () => {
             )}
             <IconButton
               onClick={() => {
-                setLibraryState((prev) => ({
-                  ...prev,
+                updateLibraryState({
                   isLibraryUnlocked: false
-                }))
+                })
               }}
               color="primary"
               size="large"
@@ -160,13 +162,12 @@ export const LibraryBooksScreen = () => {
         )}
         <IconButton
           onClick={() => {
-            setLibraryState((prev) => ({
-              ...prev,
+            updateLibraryState({
               viewMode:
                 library?.viewMode === LibraryViewMode.GRID
                   ? LibraryViewMode.LIST
                   : LibraryViewMode.GRID
-            }))
+            })
           }}
           size="large"
           color="primary"
@@ -246,7 +247,7 @@ export const LibraryBooksScreen = () => {
           onClose={() => setIsSortingDialogOpened(false)}
           open={isSortingDialogOpened}
           onChange={(newSort) => {
-            setLibraryState((prev) => ({ ...prev, sorting: newSort }))
+            updateLibraryState({ sorting: newSort })
           }}
         />
         <LibraryFiltersDrawer

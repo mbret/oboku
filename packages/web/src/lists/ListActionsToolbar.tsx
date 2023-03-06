@@ -6,8 +6,7 @@ import {
   LockOpenRounded,
   SortRounded
 } from "@mui/icons-material"
-import { useRecoilValue } from "recoil"
-import { libraryState } from "../library/states"
+import { useLibraryState } from "../library/states"
 import { SortByDialog } from "../books/bookList/SortByDialog"
 
 type Sorting = ComponentProps<typeof SortByDialog>["value"]
@@ -19,7 +18,7 @@ export const ListActionsToolbar: FC<{
   onSortingChange: (sorting: Sorting) => void
 }> = ({ viewMode, onViewModeChange, onSortingChange, sorting }) => {
   const theme = useTheme()
-  const library = useRecoilValue(libraryState)
+  const library = useLibraryState()
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, FC } from "react"
+import { useState, FC } from "react"
 import Dialog from "@mui/material/Dialog"
 import {
   DialogTitle,
@@ -17,13 +17,12 @@ import {
   RadioButtonUncheckedOutlined
 } from "@mui/icons-material"
 import { getDisplayableReadingState, useToggleTag } from "./helpers"
-import { useRecoilState } from "recoil"
 import { useTagIds } from "../tags/states"
-import { libraryState } from "./states"
 import { ReadingStateState } from "@oboku/shared"
 import { DownloadState } from "../download/states"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useDatabase } from "../rxdb"
+import { updateLibraryState, useLibraryState } from "./states"
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean
@@ -34,7 +33,7 @@ export const LibraryFiltersDrawer: FC<{
     useState(false)
   const { db$ } = useDatabase()
   const tags = useTagIds(db$)
-  const [library, setLibraryState] = useRecoilState(libraryState)
+  const library = useLibraryState()
   const selectedTags = library.tags
   const toggleTag = useToggleTag()
 
@@ -82,13 +81,12 @@ export const LibraryFiltersDrawer: FC<{
             <ListItem
               button
               onClick={() =>
-                setLibraryState((old) => ({
-                  ...old,
+                updateLibraryState({
                   downloadState:
-                    old.downloadState === DownloadState.Downloaded
+                    library.downloadState === DownloadState.Downloaded
                       ? undefined
                       : DownloadState.Downloaded
-                }))
+                })
               }
             >
               <ListItemText primary="Only show downloaded" />
@@ -103,11 +101,10 @@ export const LibraryFiltersDrawer: FC<{
             </ListItem>
             <ListItemButton
               onClick={() =>
-                setLibraryState((old) => ({
-                  ...old,
+                updateLibraryState({
                   isNotInterested:
-                    old.isNotInterested === "only" ? "hide" : "only"
-                }))
+                    library.isNotInterested === "only" ? "hide" : "only"
+                })
               }
             >
               <ListItemText primary="Only show not interested books" />
@@ -143,7 +140,7 @@ const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
   open,
   onClose
 }) => {
-  const [library, setLibrary] = useRecoilState(libraryState)
+  const library = useLibraryState()
 
   const readingStates = [
     ReadingStateState.NotStarted,
@@ -160,17 +157,15 @@ const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
           key={readingState}
           onClick={() => {
             if (library.readingStates.includes(readingState)) {
-              setLibrary((old) => ({
-                ...old,
-                readingStates: old.readingStates.filter(
+              updateLibraryState({
+                readingStates: library.readingStates.filter(
                   (s) => s !== readingState
                 )
-              }))
+              })
             } else {
-              setLibrary((old) => ({
-                ...old,
-                readingStates: [...old.readingStates, readingState]
-              }))
+              updateLibraryState({
+                readingStates: [...library.readingStates, readingState]
+              })
             }
           }}
         >

@@ -35,11 +35,11 @@ import { useResetFirstTimeExperience } from "../firstTimeExperience/helpers"
 import { LoadLibraryFromJsonDialog } from "../debug/LoadLibraryFromJsonDialog"
 import { LockActionBehindUserPasswordDialog } from "../auth/LockActionBehindUserPasswordDialog"
 import { useSignOut } from "../auth/helpers"
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
+import { useRecoilState, useRecoilValue } from "recoil"
 import { authState } from "../auth/authState"
 import { settingsState } from "./states"
 import { useUpdateContentPassword } from "./helpers"
-import { libraryState } from "../library/states"
+import { updateLibraryState, useLibraryState } from "../library/states"
 import packageJson from "../../package.json"
 import { ROUTES } from "../constants"
 import { useDialogManager } from "../dialog"
@@ -69,10 +69,9 @@ export const ProfileScreen = () => {
   )
   const auth = useRecoilValue(authState)
   const settings = useRecoilValue(settingsState)
-  const library = useRecoilValue(libraryState)
+  const library = useLibraryState()
   const signOut = useSignOut()
   const resetFirstTimeExperience = useResetFirstTimeExperience()
-  const setLibraryState = useSetRecoilState(libraryState)
   const theme = useTheme()
   const dialog = useDialogManager()
 
@@ -116,10 +115,9 @@ export const ProfileScreen = () => {
           button
           onClick={() => {
             if (library?.isLibraryUnlocked) {
-              setLibraryState((prev) => ({
-                ...prev,
+              updateLibraryState({
                 isLibraryUnlocked: false
-              }))
+              })
             } else {
               isUnlockLibraryDialogOpened(true)
             }

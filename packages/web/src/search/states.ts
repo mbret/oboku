@@ -1,6 +1,7 @@
 import { sortByTitleComparator } from "@oboku/shared"
 import { bind } from "@react-rxjs/core"
 import { combineLatest, map, Observable, of, switchMap } from "rxjs"
+import { visibleBooks$ } from "../books/states"
 import { Database } from "../rxdb"
 
 export const REGEXP_SPECIAL_CHAR =
@@ -37,9 +38,7 @@ export const [useCollections] = bind(
 export const [useBooks] = bind(
   (database$: Observable<Database>, search: string | Observable<string>) =>
     combineLatest([
-      database$.pipe(
-        switchMap((database) => database.collections.book.find().$)
-      ),
+      visibleBooks$(database$),
       typeof search === "string" ? of(search) : search
     ]).pipe(
       map(([data, search]) => {
@@ -53,6 +52,7 @@ export const [useBooks] = bind(
             )
 
             const indexOfFirstMatch = title?.search(searchRegex) || 0
+
             return indexOfFirstMatch >= 0
           })
           .sort((a, b) => sortByTitleComparator(a.title || "", b.title || ""))

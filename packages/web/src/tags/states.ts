@@ -1,8 +1,9 @@
 import { atom, selector, selectorFamily } from "recoil"
 import { TagsDocType } from "@oboku/shared"
 import { bind } from "@react-rxjs/core"
-import { map, Observable, switchMap } from "rxjs"
+import { filter, map, Observable, switchMap } from "rxjs"
 import { Database } from "../rxdb"
+import { ta } from "date-fns/locale"
 
 export const [useTag, tag$] = bind(
   (db$: Observable<Database>, id: string) =>
@@ -17,6 +18,14 @@ export const [useTag, tag$] = bind(
 export const [useTags, tags$] = bind(
   (database$: Observable<Database>) =>
     database$.pipe(switchMap((database) => database.tag.find({}).$)),
+  []
+)
+
+export const [useProtectedTags, protectedTags$] = bind(
+  (database$: Observable<Database>) =>
+    tags$(database$).pipe(
+      map((tag) => tag.filter(({ isProtected }) => isProtected))
+    ),
   []
 )
 

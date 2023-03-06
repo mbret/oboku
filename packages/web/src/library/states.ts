@@ -1,5 +1,8 @@
 import { ReadingStateState } from "@oboku/shared"
+import { bind } from "@react-rxjs/core"
+import { createSignal } from "@react-rxjs/utils"
 import { atom } from "recoil"
+import { combineLatest, map, of, pairwise, scan, startWith } from "rxjs"
 import { DownloadState } from "../download/states"
 import { LibraryViewMode } from "../rxdb"
 
@@ -15,6 +18,9 @@ export type LibraryDocType = {
 
 export type LibrarySorting = "date" | "activity" | "alpha"
 
+/**
+ * @deprecated
+ */
 export const libraryState = atom<LibraryDocType>({
   key: "libraryState",
   default: {
@@ -26,6 +32,31 @@ export const libraryState = atom<LibraryDocType>({
     downloadState: undefined
   }
 })
+
+const defaultValue: LibraryDocType = {
+  isLibraryUnlocked: false,
+  viewMode: LibraryViewMode.GRID,
+  sorting: "date",
+  tags: [],
+  readingStates: [],
+  downloadState: undefined
+}
+
+export const [updateLibraryState$, updateLibraryState] =
+  createSignal<Partial<LibraryDocType>>()
+
+export const [useLibraryState, libraryState$] = bind(
+  updateLibraryState$.pipe(
+    scan(
+      (acc, current) => ({
+        ...acc,
+        ...current
+      }),
+      defaultValue
+    )
+  ),
+  defaultValue
+)
 
 export const isUploadBookDrawerOpenedState = atom({
   key: "isUploadBookDrawerOpenedState",

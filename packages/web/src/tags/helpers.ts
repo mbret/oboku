@@ -14,11 +14,6 @@ export const useCreateTag = () =>
     })
   )
 
-export const useRemoveTag = () =>
-  useRxMutation((db, { id }: { id: string }) =>
-    db.tag.findOne({ selector: { _id: id } }).remove()
-  )
-
 export const useUpdateTag = () => {
   const { db } = useDatabase()
 
