@@ -16,7 +16,7 @@ import {
 import makeStyles from "@mui/styles/makeStyles"
 import { bind } from "@react-rxjs/core"
 import { createSignal } from "@react-rxjs/utils"
-import React, { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useRef, useState } from "react"
 import {
   generatePath,
   Link,

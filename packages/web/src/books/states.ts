@@ -2,7 +2,11 @@ import { intersection } from "ramda"
 import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil"
 import { BookDocType } from "@oboku/shared"
 import { libraryState } from "../library/states"
-import { normalizedTagsState, protectedTagIdsState } from "../tags/states"
+import {
+  normalizedTagsState,
+  protectedTagIdsState,
+  protectedTags$
+} from "../tags/states"
 import { linkState } from "../links/states"
 import {
   bookDownloadsState,
@@ -13,6 +17,9 @@ import {
   collectionState,
   normalizedCollectionsState
 } from "../collections/states"
+import { bind } from "@react-rxjs/core"
+import { map, Observable, switchMap, withLatestFrom } from "rxjs"
+import { Database } from "../rxdb"
 
 /**
  * @deprecated
@@ -196,3 +203,31 @@ export const bookCollectionsState = selectorFamily({
       return book?.collections?.map((id) => get(collectionState(id)))
     }
 })
+
+export const [useBooks, books$] = bind(
+  (database$: Observable<Database>) =>
+    database$.pipe(switchMap((database) => database.book.find({}).$)),
+  []
+)
+
+export const [useVisibleBooks, visibleBooks$] = bind(
+  (database$: Observable<Database>) =>
+    books$(database$).pipe(
+      withLatestFrom(protectedTags$(database$)),
+      map(([books, protectedTags]) =>
+        books.filter(({ tags }) => {
+          if (
+            intersection(
+              protectedTags.map(({ _id }) => _id),
+              tags
+            ).length
+          ) {
+            return false
+          }
+
+          return true
+        })
+      )
+    ),
+  []
+)
