@@ -13,7 +13,11 @@ import { useObservers } from "./rxdb/sync/useObservers"
 import { useLoadInitialState } from "./useLoadInitialState"
 import { AxiosProvider } from "./axiosClient"
 import { PersistedRecoilRoot } from "./PersistedRecoilRoot"
-import { libraryState } from "./library/states"
+import {
+  libraryState,
+  updateLibraryState,
+  useLibraryState
+} from "./library/states"
 import { normalizedBookDownloadsState } from "./download/states"
 import { AppLoading } from "./AppLoading"
 import { FirstTimeExperienceTours } from "./firstTimeExperience/FirstTimeExperienceTours"
@@ -33,6 +37,7 @@ import { useRef } from "react"
 import { Effects } from "./Effects"
 import { bookBeingReadState } from "./reading/states"
 import { readerSettingsState } from "./reader/settings/states"
+import { useSetRecoilState } from "recoil"
 
 declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -59,6 +64,9 @@ export function App() {
     ServiceWorker | undefined
   >(undefined)
 
+  // global share library state
+  useLibraryState()
+
   return (
     <ErrorBoundary
       onError={(e) => {
@@ -73,7 +81,13 @@ export function App() {
               <PersistedRecoilRoot
                 states={localStatesToPersist}
                 migration={localStateMigration}
-                onReady={() => setLoading(false)}
+                onReady={(state) => {
+                  setLoading(false)
+
+                  if (state.libraryState) {
+                    updateLibraryState(state.libraryState.value)
+                  }
+                }}
               >
                 {plugins.reduce(
                   (Comp, { Provider }) => {
@@ -98,6 +112,7 @@ export function App() {
                     </DialogProvider>
                   </AxiosProvider>
                 )}
+                {!loading && <LibraryStateDeprecatedSync />}
               </PersistedRecoilRoot>
             </RxDbProvider>
           </Suspense>
@@ -138,6 +153,17 @@ const ServiceWorkerRegistration: FC<{
       })
     }
   }, [onUpdateAvailable])
+
+  return null
+}
+
+const LibraryStateDeprecatedSync = () => {
+  const library = useLibraryState()
+  const setLibraryState = useSetRecoilState(libraryState)
+
+  useEffect(() => {
+    setLibraryState(library)
+  }, [library, setLibraryState])
 
   return null
 }

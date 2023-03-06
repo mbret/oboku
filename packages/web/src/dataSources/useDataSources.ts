@@ -2,8 +2,7 @@ import { Database, useDatabase } from "../rxdb"
 import { bind } from "@react-rxjs/core"
 import { of, switchMap } from "rxjs"
 import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
-import { useRecoilValue } from "recoil"
-import { libraryState } from "../library/states"
+import { useLibraryState } from "../library/states"
 
 const [useData] = bind(
   (maybeDb: Database | undefined, showProtected: boolean) =>
@@ -23,7 +22,7 @@ const [useData] = bind(
 
 export const useDataSources = () => {
   const { db } = useDatabase()
-  const { isLibraryUnlocked } = useRecoilValue(libraryState)
+  const { isLibraryUnlocked } = useLibraryState()
 
   return useData(db, isLibraryUnlocked)
 }

@@ -1,7 +1,7 @@
 import { intersection } from "ramda"
 import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil"
 import { BookDocType } from "@oboku/shared"
-import { libraryState } from "../library/states"
+import { libraryState, libraryState$ } from "../library/states"
 import {
   normalizedTagsState,
   protectedTagIdsState,
@@ -18,7 +18,7 @@ import {
   normalizedCollectionsState
 } from "../collections/states"
 import { bind } from "@react-rxjs/core"
-import { map, Observable, switchMap, withLatestFrom } from "rxjs"
+import { map, Observable, switchMap, tap, withLatestFrom } from "rxjs"
 import { Database } from "../rxdb"
 
 /**
@@ -214,9 +214,11 @@ export const [useVisibleBooks, visibleBooks$] = bind(
   (database$: Observable<Database>) =>
     books$(database$).pipe(
       withLatestFrom(protectedTags$(database$)),
-      map(([books, protectedTags]) =>
+      withLatestFrom(libraryState$),
+      map(([[books, protectedTags], libraryState]) =>
         books.filter(({ tags }) => {
           if (
+            !libraryState.isLibraryUnlocked &&
             intersection(
               protectedTags.map(({ _id }) => _id),
               tags

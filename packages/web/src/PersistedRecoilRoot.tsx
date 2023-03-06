@@ -98,7 +98,7 @@ export const PersistedRecoilRoot: FC<{
   migration?: (state: { [key: string]: { value: any } }) => {
     [key: string]: { value: any }
   }
-  onReady: () => void
+  onReady: (state: any) => void
   children: ReactNode
 }> = memo(
   ({ children, states = [], onReady, migration = (state) => state }) => {
@@ -119,8 +119,9 @@ export const PersistedRecoilRoot: FC<{
             ? (JSON.parse(restored) as { [key: string]: { value: any } })
             : {}
           if (isMounted()) {
-            setInitialState(migration(loadedState))
-            onReady()
+            const restoredState = migration(loadedState)
+            setInitialState(restoredState)
+            onReady(restoredState)
           }
         }
       })()

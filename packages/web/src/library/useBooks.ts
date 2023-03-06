@@ -3,11 +3,11 @@ import { useRecoilValue } from "recoil"
 import { useBooksSortedBy } from "../books/helpers"
 import { booksAsArrayState } from "../books/states"
 import { DownloadState } from "../download/states"
-import { libraryState } from "./states"
+import { useLibraryState } from "./states"
 
 export const useBooks = () => {
   const results = useRef<string[]>([])
-  const library = useRecoilValue(libraryState)
+  const library = useLibraryState()
   const filteredTags = library.tags
   const unsortedBooks = useRecoilValue(booksAsArrayState)
 
