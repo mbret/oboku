@@ -21,6 +21,8 @@ on:
         required: true
       CONTACT_TO_ADDRESS:
         required: true
+      FIREBASE_CONFIG:
+        required: true
 
 jobs:
   deploy:
