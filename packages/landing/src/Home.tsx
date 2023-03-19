@@ -22,7 +22,6 @@ import {
   TabletMacRounded
 } from "@mui/icons-material"
 import landingLogoAsset from "./assets/landing-logo.svg"
-import { BetaRegister } from "./BetaRegister"
 import { OrDivider } from "./OrDivider"
 import { links } from "@oboku/shared"
 import { ReactNode } from "react"
@@ -179,10 +178,6 @@ export const Home = () => {
             flexDirection="column"
             alignItems="center"
           >
-            <Box width="100%" maxWidth={300}>
-              <BetaRegister />
-            </Box>
-            <OrDivider />
             <Box width="100%" maxWidth={300}>
               <ButtonsContainer>
                 <Button
