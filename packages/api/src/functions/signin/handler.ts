@@ -14,7 +14,9 @@ import { generateToken } from "@libs/auth"
 import { ObokuErrorCode } from "@oboku/shared"
 import { createHttpError } from "@libs/httpErrors"
 
-const firebaseConfig = JSON.parse(process.env.FIREBASE_CONFIG ?? "{}")
+const firebaseConfig = JSON.parse(
+  Buffer.from(process.env.FIREBASE_CONFIG ?? "", "base64").toString() ?? "{}"
+)
 
 /**
  * This is an admin without privileges

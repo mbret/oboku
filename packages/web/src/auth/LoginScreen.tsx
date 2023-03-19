@@ -46,8 +46,7 @@ export const LoginScreen = () => {
       </Button>
       <Box mt={2}>
         <Alert severity="info" variant="outlined">
-          If you would like to connect with a different provider, please let us
-          know on{" "}
+          Want more choices? Please let us know on{" "}
           <Link href={links.discord} underline="hover">
             discord
           </Link>
