@@ -71,11 +71,11 @@ export const Cover: FC<Props> = memo(
     })
 
     const originalSrc = book
-      ? `${API_URI}/covers/${auth?.userId}-${book._id}?${urlParams.toString()}`
+      ? `${API_URI}/covers/${auth?.nameHex}-${book._id}?${urlParams.toString()}`
       : undefined
     urlParams.append("format", "image/jpeg")
     const originalJpgSrc = book
-      ? `${API_URI}/covers/${auth?.userId}-${book._id}?${urlParams.toString()}`
+      ? `${API_URI}/covers/${auth?.nameHex}-${book._id}?${urlParams.toString()}`
       : undefined
 
     const coverSrc = originalSrc && !hasError ? originalSrc : placeholder

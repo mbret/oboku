@@ -4,7 +4,7 @@ export const authState = atom<
   | {
       token: string
       email: string
-      userId: string
+      nameHex: string
       dbName: string
     }
   | undefined
