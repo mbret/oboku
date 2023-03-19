@@ -33,7 +33,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const { dataSourceId } = event.body
   const credentials = JSON.parse(event.body.credentials ?? JSON.stringify({}))
 
-  const { email } = await withToken({
+  const { name } = await withToken({
     headers: {
       authorization
     }
@@ -71,11 +71,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 
   await dataSourceFacade.sync({
+    userName: name,
     dataSourceId,
-    db: await getNanoDbForUser(email),
+    db: await getNanoDbForUser(name),
     refreshBookMetadata,
     isBookCoverExist,
-    userEmail: email,
     credentials
   })
 

@@ -28,7 +28,7 @@ export const sync = async (
   helpers: ReturnType<typeof createHelpers>
 ) => {
   console.log(
-    `dataSourcesSync run for user ${ctx.userEmail} with dataSource ${ctx.dataSourceId}`
+    `dataSourcesSync run for user ${ctx.userName} with dataSource ${ctx.dataSourceId}`
   )
 
   await syncTags({

@@ -24,8 +24,6 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     throw createHttpError(400)
   }
 
-  console.log(await getGmailAppPassword())
-
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {

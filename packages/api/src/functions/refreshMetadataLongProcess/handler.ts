@@ -40,7 +40,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const authorization = event.body.authorization ?? ``
   const credentials = JSON.parse(event.body.credentials ?? JSON.stringify({}))
 
-  const { userId, email } = await withToken({
+  const { name: userName } = await withToken({
     headers: {
       authorization
     }
@@ -52,7 +52,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     throw new Error(`Unable to parse event.body -> ${event.body}`)
   }
 
-  const db = await getNanoDbForUser(email)
+  const db = await getNanoDbForUser(userName)
 
   const book = await findOne(db, "book", { selector: { _id: bookId } })
   if (!book) throw new Error(`Unable to find book ${bookId}`)
@@ -73,8 +73,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   let data: PromiseReturnType<typeof retrieveMetadataAndSaveCover>
   try {
     data = await retrieveMetadataAndSaveCover({
-      userId,
-      userEmail: email,
+      userName,
       credentials,
       book,
       link

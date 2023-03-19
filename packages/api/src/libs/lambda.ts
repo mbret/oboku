@@ -6,11 +6,14 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import cors from "@middy/http-cors"
 import { Lambda } from "aws-sdk"
 import { OFFLINE } from "../constants"
+import { transpileSchema } from "@middy/validator/transpile"
+import validator from "@middy/validator"
 
 export const withMiddy = (
   handler: any,
   {
-    withCors = true
+    withCors = true,
+    schema = {}
   }: {
     /**
      * cors middleware only support REST / HTTP format. Some lambda are invoked from
@@ -18,6 +21,7 @@ export const withMiddy = (
      * can skip cors
      */
     withCors?: boolean
+    schema?: Parameters<typeof transpileSchema>[0]
   } = {}
 ) => {
   return (
@@ -35,6 +39,11 @@ export const withMiddy = (
       })
       .use(httpHeaderNormalizer())
       .use(middyJsonBodyParser())
+      .use(
+        validator({
+          eventSchema: transpileSchema(schema)
+        })
+      )
       /**
        * middy onError order changed and cors needs to be before to be executed after.
        * Only for onError which is why it's duplicated below as well...
@@ -59,7 +68,6 @@ export const withMiddy = (
           if (request.error) {
             console.error("error received", request.error)
           }
-
           // we enforce non exposure unless specified
           if (request.error && (request.error as any)?.expose === undefined) {
             // eslint-disable-next-line @typescript-eslint/no-extra-semi

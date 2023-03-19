@@ -4,6 +4,9 @@ import schema from "./schema"
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
   role: "lambdaDefault",
+  environment: {
+    FIREBASE_CONFIG: "${env:FIREBASE_CONFIG}"
+  },
   events: [
     {
       http: {

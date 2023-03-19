@@ -1,31 +1,32 @@
 import type { AWS } from "@serverless/typescript"
 import signin from "@functions/signin"
 import covers from "@functions/covers"
-import signup from "@functions/signup"
 import requestAccess from "@functions/requestAccess"
 import refreshMetadata from "@functions/refreshMetadata"
 import refreshMetadataLongProcess from "@functions/refreshMetadataLongProcess"
 import syncDataSource from "@functions/syncDataSource"
 import syncDataSourceLongProcess from "@functions/syncDataSourceLongProcess"
 import corsProxy from "@functions/corsProxy"
-import { getCommon } from "./serverlessHelpers"
+import longRunningTest from "@functions/longRunningTest"
 
 // npm install --arch=x64 --platform=darwin sharp -w @oboku/api
 
 const functions: AWS[`functions`] = {
   covers,
   signin,
-  signup,
   requestAccess,
   refreshMetadata,
   refreshMetadataLongProcess,
   syncDataSource,
   syncDataSourceLongProcess,
-  cors: corsProxy
+  cors: corsProxy,
+  longRunningTest
 }
 
 Object.keys(functions).forEach((key) => {
   const fn = functions[key as keyof typeof functions]
+
+  if (!fn) return
 
   // dynamically add common layer to all functions
   fn[`layers`] = [
@@ -36,9 +37,18 @@ Object.keys(functions).forEach((key) => {
 })
 
 const serverlessConfiguration: AWS = {
-  ...getCommon(),
-  // plugins: ['serverless-offline', 'serverless-bundle'],
-  plugins: ["serverless-offline", "serverless-esbuild"],
+  service: "oboku-api",
+  frameworkVersion: "3",
+  useDotenv: true,
+  plugins: [
+    "serverless-offline",
+    "serverless-esbuild",
+    /**
+     * @see https://www.serverless.com/framework/docs/providers/aws/events/sqs
+     * SQS
+     */
+    "serverless-lift"
+  ],
   provider: {
     name: "aws",
     runtime: "nodejs16.x",
@@ -90,6 +100,14 @@ const serverlessConfiguration: AWS = {
   functions,
   resources: {
     Resources: {
+      /**
+       * library synchronization queue.
+       * Enfore we don't have several sync in parallel and prevent
+       * too many usages
+       */
+      SyncQueue: {
+        Type: "AWS::SQS::Queue"
+      },
       // @see https://www.serverless.com/framework/docs/providers/aws/guide/iam#custom-iam-roles
       lambdaDefault: {
         Type: `AWS::IAM::Role`,

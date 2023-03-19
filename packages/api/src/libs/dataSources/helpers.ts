@@ -25,7 +25,7 @@ export const createHelpers = (
   refreshBookMetadata: ({ bookId }: { bookId: string }) => Promise<any>,
   db: createNano.DocumentScope<unknown>,
   getBookCover: ({ coverId }: { coverId: string }) => Promise<boolean>,
-  userId: string
+  nameHex: string
 ) => {
   const helpers = {
     refreshBookMetadata: (opts: { bookId: string }) =>
@@ -46,7 +46,7 @@ export const createHelpers = (
       return data
     },
     isBookCoverExist: async (bookId: string) =>
-      getBookCover({ coverId: `${userId}-${bookId}` }),
+      getBookCover({ coverId: `${nameHex}-${bookId}` }),
     createBook: (data?: Partial<InsertAbleBookDocType>) => createBook(db, data),
     findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
       model: M,

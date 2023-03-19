@@ -3,7 +3,6 @@ import nano from "nano"
 interface iUser extends nano.MaybeDocument {
   email: string
   password: string
-  contentPassword: string | null
   roles: string[]
   type: "user"
   name: string
@@ -18,8 +17,7 @@ export class User implements iUser {
   constructor(
     public _id: string,
     public email: string,
-    public password: string,
-    public contentPassword: string
+    public password: string
   ) {
     this.name = email
   }

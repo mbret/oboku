@@ -10,6 +10,7 @@ import {
 import { User } from "./couchDbEntities"
 import { waitForRandomTime } from "./utils"
 import { COUCH_DB_URL } from "../constants"
+import { generatePassword } from "./authentication/generatePassword"
 
 export const createUser = async (
   db: createNano.ServerScope,
@@ -17,14 +18,42 @@ export const createUser = async (
   password: string
 ) => {
   const obokuDb = db.use("_users")
-  const newUser = new User(
-    `org.couchdb.user:${username}`,
-    username,
-    password,
-    ""
-  )
+  const newUser = new User(`org.couchdb.user:${username}`, username, password)
 
-  await obokuDb.insert(newUser, newUser._id)
+  return await obokuDb.insert(newUser, newUser._id)
+}
+
+export const getOrCreateUserFromEmail = async (
+  db: createNano.ServerScope,
+  email: string
+) => {
+  const usersDb = db.use<User>("_users")
+
+  const {
+    docs: [user]
+  } = await usersDb.find({
+    selector: {
+      email
+    }
+  })
+
+  if (user) return user
+
+  const generatedPassword = generatePassword()
+
+  const { ok } = await createUser(db, email, generatedPassword)
+
+  if (!ok) throw new Error("Error when creating user")
+
+  const {
+    docs: [createdUser]
+  } = await usersDb.find({
+    selector: {
+      email
+    }
+  })
+
+  return createdUser
 }
 
 export async function atomicUpdate<
@@ -280,12 +309,11 @@ export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {
   return await retryable()
 }
 
-export const getNanoDbForUser = async (userEmail: string) => {
-  // const couchDbSecret = crypto.createHmac('sha1', COUCH_DB_PROXY_SECRET)
-  const hexEncodedUserId = Buffer.from(userEmail).toString("hex")
+export const getNanoDbForUser = async (name: string) => {
+  const hexEncodedUserId = Buffer.from(name).toString("hex")
 
   const db = await getNano({
-    jwtToken: await generateToken(userEmail, hexEncodedUserId)
+    jwtToken: await generateToken(name)
   })
 
   return db.use(`userdb-${hexEncodedUserId}`)

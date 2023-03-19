@@ -34,9 +34,9 @@ describe(`Given has series info`, () => {
         ...getDefaultData(),
         items: [
           {
-            ...getDefaultData().items![0],
+            ...(getDefaultData().items ?? [])[0]!,
             volumeInfo: {
-              ...getDefaultData().items![0].volumeInfo,
+              ...getDefaultData().items![0]!.volumeInfo,
               title: "My title Vol. 1",
               seriesInfo: {
                 bookDisplayNumber: "1"
@@ -56,9 +56,9 @@ describe(`Given has series info`, () => {
         ...getDefaultData(),
         items: [
           {
-            ...getDefaultData().items![0],
+            ...getDefaultData().items![0]!,
             volumeInfo: {
-              ...getDefaultData().items![0].volumeInfo,
+              ...getDefaultData().items![0]!.volumeInfo,
               title: "My title",
               seriesInfo: {
                 bookDisplayNumber: "1"
@@ -79,9 +79,9 @@ describe(`Given no series info`, () => {
       ...getDefaultData(),
       items: [
         {
-          ...getDefaultData().items![0],
+          ...getDefaultData().items![0]!,
           volumeInfo: {
-            ...getDefaultData().items![0].volumeInfo,
+            ...getDefaultData().items![0]!.volumeInfo,
             title: "My title",
             seriesInfo: undefined
           }
