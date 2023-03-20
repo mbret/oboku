@@ -2,5 +2,6 @@
   "button.title.exploreMyLibrary": "Explore my library",
   "button.title.login": "Login",
   "book.actionDrawer.manageTags": "Manage tags",
-  "library.button.book.add.title": "Add a new book"
+  "library.button.book.add.title": "Add a new book",
+  "authScreen.sign.google": "Sign in with google"
 }

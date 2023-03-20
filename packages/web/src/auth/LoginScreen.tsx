@@ -1,38 +1,20 @@
-import React, { useEffect, useState } from "react"
-import { useTheme, Button, TextField, Link } from "@mui/material"
+import { useTheme, Button, Box, Link, Typography } from "@mui/material"
 import { Alert } from "@mui/material"
-import { OrDivider } from "../common/OrDivider"
-import { useNavigate } from "react-router-dom"
-import { ROUTES } from "../constants"
 import { Header } from "./Header"
-import { validators } from "@oboku/shared"
-import { useSignIn } from "./helpers"
-import { ServerError } from "../errors"
 import { CenteredBox } from "../common/CenteredBox"
 import { useTranslation } from "react-i18next"
+import { Google } from "@mui/icons-material"
+import { useSignIn } from "./useSignIn"
+import { useMutation } from "../common/useMutation"
+import { ErrorMessage, isCancelError } from "../errors"
+import { OrDivider } from "../common/OrDivider"
+import { links } from "@oboku/shared"
 
 export const LoginScreen = () => {
-  const navigate = useNavigate()
-  const [email, setEmail] = useState(import.meta.env.VITE_EMAIL || "")
-  const [password, setPassword] = useState(import.meta.env.VITE_PASSWORD || "")
-  const [signIn, { error }] = useSignIn()
+  const { signIn } = useSignIn()
+  const { mutate, isLoading, error } = useMutation(signIn)
   const theme = useTheme()
-  const isValid = useIsValid(email, password)
   const { t } = useTranslation()
-  let hasInvalidInput = false
-  let hasUnknownError = false
-
-  if (error) {
-    hasUnknownError = true
-  }
-  if (error instanceof ServerError && error.response.status === 400) {
-    hasInvalidInput = true
-    hasUnknownError = false
-  }
-
-  const onSubmit = async () => {
-    signIn(email, password)
-  }
 
   return (
     <CenteredBox
@@ -46,90 +28,38 @@ export const LoginScreen = () => {
       }}
     >
       <Header />
-      <form noValidate autoComplete="off" onSubmit={(e) => e.preventDefault()}>
-        <TextField
-          label="Email"
-          type="email"
-          variant="outlined"
-          autoComplete="email"
-          style={{
-            width: "100%",
-            marginBottom: theme.spacing(2)
-          }}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <TextField
-          label="Password"
-          type="password"
-          autoComplete="current-password"
-          variant="outlined"
-          style={{
-            width: "100%",
-            marginBottom: theme.spacing(2)
-          }}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        {hasInvalidInput && <Alert severity="info">Wrong credentials</Alert>}
-        {hasUnknownError && (
-          <Alert severity="info">
-            Something went wrong. Could you try again?
+      {error && !isCancelError(error) ? (
+        <Box mb={2}>
+          <Alert severity="warning">
+            <ErrorMessage error={error} />
           </Alert>
-        )}
-        <Button
-          style={{
-            marginTop: theme.spacing(2),
-            width: "100%"
-          }}
-          color="primary"
-          variant="outlined"
-          disabled={!isValid}
-          size="large"
-          type="submit"
-          onClick={onSubmit}
-        >
-          {t(`button.title.login`)}
-        </Button>
-        <div style={{ textAlign: "center", margin: theme.spacing(2) }}>
-          <Link
-            color="textPrimary"
-            href="#"
-            onClick={() => alert("Not implemented yet")}
-            underline="hover"
-          >
-            I forgot my password
-          </Link>
-        </div>
-      </form>
-      <OrDivider
-        style={{
-          marginTop: theme.spacing(2)
-        }}
-      />
+        </Box>
+      ) : null}
       <Button
-        style={{
-          width: "100%"
-        }}
-        variant="outlined"
-        color="primary"
+        onClick={() => mutate()}
         size="large"
-        onClick={() => {
-          navigate(ROUTES.REGISTER, { replace: true })
-        }}
+        fullWidth
+        startIcon={<Google />}
+        disabled={isLoading}
       >
-        Register
+        {t("authScreen.sign.google")}
       </Button>
+      <Box mt={2}>
+        <Alert severity="info" variant="outlined">
+          Want more choices? Please let us know on{" "}
+          <Link href={links.discord} underline="hover">
+            discord
+          </Link>
+        </Alert>
+      </Box>
+      <OrDivider title="MORE" />
+      <Typography textAlign="center">
+        Visit{" "}
+        <Link href={links.site} underline="hover">
+          oboku
+        </Link>{" "}
+        for more information or help
+      </Typography>
     </CenteredBox>
   )
-}
-
-const useIsValid = (email: string, password: string) => {
-  const [isValid, setIsValid] = useState(false)
-
-  useEffect(() => {
-    setIsValid(validators.signinSchema.isValidSync({ email, password }))
-  }, [email, password])
-
-  return isValid
 }

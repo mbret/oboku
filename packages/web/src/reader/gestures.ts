@@ -3,10 +3,9 @@ import * as states from "./states"
 import { useEffect } from "react"
 import { useWindowSize } from "react-use"
 import { HORIZONTAL_TAPPING_RATIO } from "./constants"
-import { useReader } from "./ReaderProvider"
 
 export const useGestureHandler = (hammer: HammerManager | undefined) => {
-  const { reader } = useReader()
+  const reader = states.useReader()
   const { width } = useWindowSize()
   const setIsMenuShown = useSetRecoilState(states.isMenuShownState)
 

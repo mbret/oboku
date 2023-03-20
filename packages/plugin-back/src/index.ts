@@ -110,7 +110,7 @@ export type DataSourcePlugin = {
   }>
   sync: (
     options: {
-      userEmail: string
+      userName: string
       dataSourceId: string
       credentials?: any
       dataSourceType: string

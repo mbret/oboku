@@ -19,3 +19,4 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       COUCH_DB_URL: ${{ secrets.COUCH_DB_URL_PROD }}
       CONTACT_TO_ADDRESS: ${{ secrets.CONTACT_TO_ADDRESS }}
+      FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}

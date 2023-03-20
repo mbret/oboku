@@ -16,7 +16,6 @@ import { LibraryTopTabNavigator } from "../library/LibraryTopTabNavigator"
 import { ROUTES } from "../constants"
 import { BookDetailsScreen } from "../books/details/BookDetailsScreen"
 import { CollectionDetailsScreen } from "../collections/CollectionDetailsScreen"
-import { RegisterScreen } from "../auth/RegisterScreen"
 import { BookActionsDrawer } from "../books/BookActionsDrawer"
 import { SyncSourcesScreen } from "../dataSources/SyncSourcesScreen"
 import { SearchScreen } from "../search/SearchScreen"
@@ -106,7 +105,6 @@ export const AppNavigator = () => {
           ) : (
             <>
               <Route path={ROUTES.LOGIN} element={<LoginScreen />} />
-              <Route path={ROUTES.REGISTER} element={<RegisterScreen />} />
               <Route
                 path="*"
                 element={

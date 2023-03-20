@@ -22,8 +22,7 @@ import { parseXmlAsJson } from "./parseXmlAsJson"
 const logger = Logger.namespace("retrieveMetadataAndSaveCover")
 
 type Context = {
-  userEmail: string
-  userId: string
+  userName: string
   credentials?: any
   book: BookDocType
   link: LinkDocType
@@ -31,7 +30,7 @@ type Context = {
 
 export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
   console.log(
-    `syncMetadata run for user ${ctx.userEmail} with book ${ctx.book._id}`
+    `syncMetadata run for user ${ctx.userName} with book ${ctx.book._id}`
   )
   let bookNameForDebug = ""
 
@@ -106,6 +105,9 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
           }
           if (Array.isArray(response.items) && response.items.length > 0) {
             const item = response.items[0]
+
+            if (!item) throw new Error("No item found on google book response")
+
             await saveCoverFromExternalLinkToBucket(
               ctx,
               ctx.book,

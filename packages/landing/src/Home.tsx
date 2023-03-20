@@ -22,7 +22,6 @@ import {
   TabletMacRounded
 } from "@mui/icons-material"
 import landingLogoAsset from "./assets/landing-logo.svg"
-import { BetaRegister } from "./BetaRegister"
 import { OrDivider } from "./OrDivider"
 import { links } from "@oboku/shared"
 import { ReactNode } from "react"
@@ -180,10 +179,6 @@ export const Home = () => {
             alignItems="center"
           >
             <Box width="100%" maxWidth={300}>
-              <BetaRegister />
-            </Box>
-            <OrDivider />
-            <Box width="100%" maxWidth={300}>
               <ButtonsContainer>
                 <Button
                   variant="contained"
@@ -218,20 +213,6 @@ export const Home = () => {
                   color="primary"
                   startIcon={<DiscordMarkBlueIcon />}
                   endIcon={<OpenInNewOutlined />}
-                  // sx={({ palette }) => ({
-                  //   borderColor: "#5865f2",
-                  //   color: "#5865f2",
-                  //   "&:hover": {
-                  //     backgroundColor: alpha(
-                  //       "#5865f2",
-                  //       palette.action.hoverOpacity
-                  //     ),
-                  //     borderColor: "#5865f2"
-                  //   },
-                  //   "&:active": {
-                  //     borderColor: "#5865f2"
-                  //   }
-                  // })}
                 >
                   discord
                 </Button>
@@ -242,20 +223,6 @@ export const Home = () => {
                   color="primary"
                   startIcon={<GitHub />}
                   endIcon={<OpenInNewOutlined />}
-                  // sx={({ palette }) => ({
-                  //   borderColor: "black",
-                  //   color: "black",
-                  //   "&:hover": {
-                  //     backgroundColor: alpha(
-                  //       "#000000",
-                  //       palette.action.hoverOpacity
-                  //     ),
-                  //     borderColor: "black"
-                  //   },
-                  //   "&:active": {
-                  //     borderColor: "black"
-                  //   }
-                  // })}
                 >
                   github
                 </Button>

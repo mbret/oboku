@@ -37,7 +37,7 @@ export const parseOpfMetadata = (opf: OPF): NormalizedMetadata => {
       ? ([metadata["dc:subject"]] as string[])
       : null,
     creator: Array.isArray(creator)
-      ? creator[0]["#text"]
+      ? (creator[0] ?? {})["#text"]
       : typeof creator === "object"
       ? creator["#text"]
       : creator

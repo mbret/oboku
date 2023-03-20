@@ -1,8 +1,7 @@
 export default {
   type: "object",
   properties: {
-    email: { type: "string" },
-    password: { type: "string" }
+    token: { type: "string" }
   },
-  required: ["email", `password`]
+  required: ["token"]
 } as const

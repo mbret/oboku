@@ -8,17 +8,18 @@ import { useMeasure } from "react-use"
 import { Box, Button, Link, Typography, useTheme } from "@mui/material"
 import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { bookState } from "../books/states"
-import { isBookReadyState, manifestState } from "./states"
+import {
+  createAppReader,
+  isBookReadyState,
+  manifestState,
+  ReactReaderProps,
+  ReaderInstance,
+  useReader
+} from "./states"
 import { TopBar } from "./TopBar"
 import { BottomBar } from "./BottomBar"
 import { useBookResize } from "./layout"
 import { useGestureHandler } from "./gestures"
-import {
-  createAppReader,
-  ReactReaderProps,
-  ReaderInstance,
-  useReader
-} from "./ReaderProvider"
 import { BookLoading } from "./BookLoading"
 import Hammer from "hammerjs"
 import { useCSS } from "../common/utils"
@@ -30,12 +31,13 @@ import { FloatingBottom } from "./FloatingBottom"
 import { readerSettingsState } from "./settings/states"
 import { FONT_SCALE_MAX, FONT_SCALE_MIN } from "./constants"
 import { usePersistReaderSettings } from "./settings/usePersistReaderSettings"
+import { Notification } from "./Notification"
 
 export const Reader: FC<{
   bookId: string
   onReader: (reader: ReaderInstance) => void
 }> = ({ bookId, onReader }) => {
-  const { reader } = useReader()
+  const reader = useReader()
   const [isBookReady, setIsBookReady] = useRecoilState(isBookReadyState)
   const readerSettings = useRecoilValue(readerSettingsState)
   const setManifestState = useSetRecoilState(manifestState)
@@ -166,8 +168,6 @@ export const Reader: FC<{
     )
   }
 
-  // console.log(manifest, loadOptions)
-
   return (
     <div
       style={{
@@ -206,6 +206,7 @@ export const Reader: FC<{
         )}
         {!isBookReady && <BookLoading />}
       </div>
+      <Notification />
       {showFloatingMenu && (
         <FloatingBottom
           enableProgress={readerSettings.floatingProgress === "bottom"}

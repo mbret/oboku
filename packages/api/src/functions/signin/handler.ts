@@ -1,34 +1,65 @@
+/**
+ * @important
+ * If a user has already been created and then deleted, re-creating it later from
+ * http calls will not re-create the user db automatically. It can be done through
+ * couchdb admin directly or probably by completely pruning db data.
+ */
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { withMiddy } from "@libs/lambda"
 import schema from "./schema"
-import { validators } from "@oboku/shared"
-import createError from "http-errors"
-import { auth } from "@libs/dbHelpers"
-import createHttpError from "http-errors"
+import { initializeApp } from "firebase-admin/app"
+import { getAuth } from "firebase-admin/auth"
+import { getAdminNano, getOrCreateUserFromEmail } from "@libs/dbHelpers"
 import { generateToken } from "@libs/auth"
+import { ObokuErrorCode } from "@oboku/shared"
+import { createHttpError } from "@libs/httpErrors"
+
+const firebaseConfig = JSON.parse(
+  Buffer.from(process.env.FIREBASE_CONFIG ?? "", "base64").toString() ?? "{}"
+)
+
+/**
+ * This is an admin without privileges
+ */
+const app = initializeApp(firebaseConfig)
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
-  if (!(await validators.signinSchema.isValid(event.body))) {
-    throw createError(400)
+  const { token } = event.body
+
+  const { email, email_verified } = await getAuth(app).verifyIdToken(token)
+
+  if (!email) {
+    throw createHttpError(400, {
+      code: ObokuErrorCode.ERROR_SIGNIN_NO_EMAIL
+    })
   }
 
-  const { email, password } = event.body
+  if (!email_verified) {
+    throw createHttpError(400, {
+      code: ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED
+    })
+  }
 
-  const authResponse = await auth(email, password)
+  const adminNano = await getAdminNano()
 
-  if (!authResponse) throw createHttpError(400)
+  const user = await getOrCreateUserFromEmail(adminNano, email)
 
-  const userId = Buffer.from(authResponse.name).toString("hex")
-  const token = await generateToken(authResponse.name, userId)
+  if (!user) {
+    throw new Error("Unable to retrieve user")
+  }
+
+  const nameHex = Buffer.from(user.name).toString("hex")
+  const userJwtToken = await generateToken(user.name)
 
   return {
     statusCode: 200,
     body: JSON.stringify({
-      token,
-      userId,
-      dbName: `userdb-${userId}`
+      token: userJwtToken,
+      nameHex,
+      dbName: `userdb-${nameHex}`,
+      email: user.email
     })
   }
 }

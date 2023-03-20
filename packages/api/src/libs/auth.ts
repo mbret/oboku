@@ -25,29 +25,17 @@ const isAuthorized = async (authorization?: string) => {
   }
 }
 
-// export const createAuthenticator = ({ privateKey }: { privateKey: string }) => ({
-//   withToken: _withToken(privateKey)
-// })
-
-// const authenticator = createAuthenticator({ privateKey: JWT_PRIVATE_KEY })
-
 export type Token = {
-  userId: string
-  email: string
+  name: string
   sub: string
   "_couchdb.roles"?: string[]
 }
 
-export const createRefreshToken = (name: string) => {
-  return generateToken(name, "1d")
-}
-
-export const generateToken = async (email: string, userId: string) => {
+export const generateToken = async (name: string) => {
   const tokenData: Token = {
-    email,
-    userId,
-    sub: email,
-    "_couchdb.roles": [email]
+    name,
+    sub: name,
+    "_couchdb.roles": [name]
   }
 
   return jwt.sign(
@@ -63,8 +51,7 @@ export const generateToken = async (email: string, userId: string) => {
 // https://docs.couchdb.org/en/3.2.0/config/couch-peruser.html#couch_peruser
 export const generateAdminToken = async (options: { sub?: string } = {}) => {
   const data: Token = {
-    email: "",
-    userId: "",
+    name: "admin",
     sub: "admin",
     "_couchdb.roles": ["_admin"],
     ...options
@@ -89,13 +76,3 @@ export const withToken = async (
 
   return await isAuthorized(authorization)
 }
-
-// const createRefreshToken = (name: string, authSession: string) => {
-//   return generateToken(name, '1d')
-// }
-
-// const generateToken = async (email: string, userId: string, expiresIn: string = '1d') => {
-//   const tokenData: Token = { email, userId }
-
-//   return jwt.sign(tokenData, JWT_PRIVATE_KEY, { algorithm: 'RS256' })
-// }

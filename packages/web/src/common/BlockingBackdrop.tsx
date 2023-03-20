@@ -3,6 +3,7 @@ import { Backdrop, CircularProgress, useTheme } from "@mui/material"
 import { useRecoilCallback, useRecoilValue } from "recoil"
 import { atom, selector } from "recoil"
 import { useCSS } from "../common/utils"
+import { createSignal } from "@react-rxjs/utils"
 
 type Key = string
 
@@ -15,6 +16,9 @@ export const isLockedState = selector({
   key: "isLockedState",
   get: ({ get }) => !!get(lockState).length
 })
+
+export const [lock$, lock] = createSignal<string>()
+export const [unlock$, unlock] = createSignal<string>()
 
 export const useLock = () => {
   const unlock = useRecoilCallback(
@@ -47,6 +51,7 @@ export const BlockingBackdrop: FC<{}> = () => {
   const open = useRecoilValue(isLockedState)
   const [active, setActive] = useState(false)
   const theme = useTheme()
+  const [lock, unlock] = useLock()
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>
@@ -70,6 +75,16 @@ export const BlockingBackdrop: FC<{}> = () => {
       clearTimeout(timeout)
     }
   }, [open])
+
+  useEffect(() => {
+    const lockSub = lock$.subscribe((v) => lock(v))
+    const unlockSub = unlock$.subscribe((v) => unlock(v))
+
+    return () => {
+      lockSub.unsubscribe()
+      unlockSub.unsubscribe()
+    }
+  }, [lock, unlock])
 
   return (
     <Backdrop

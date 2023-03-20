@@ -8,7 +8,7 @@ import { asError } from "@libs/utils"
 const logger = Logger.namespace("saveCoverFromArchiveToBucket")
 
 type Context = {
-  userId: string
+  userName: string
 }
 
 export const saveCoverFromArchiveToBucket = async (
@@ -25,7 +25,7 @@ export const saveCoverFromArchiveToBucket = async (
 
   const coverAbsolutePath =
     folderBasePath === `` ? coverPath : `${folderBasePath}/${coverPath}`
-  const objectKey = `cover-${ctx.userId}-${book._id}`
+  const objectKey = `cover-${ctx.userName}-${book._id}`
 
   logger.log(`prepare to save cover ${objectKey}`)
 

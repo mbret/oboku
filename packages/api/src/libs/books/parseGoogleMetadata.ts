@@ -6,6 +6,9 @@ export const parseGoogleMetadata = (data: GoogleBooksApiResult) => {
 
   if (Array.isArray(data.items) && data.items.length > 0) {
     const item = data.items[0]
+
+    if (!item) return normalizedMetadata
+
     normalizedMetadata.creator = item.volumeInfo.authors[0]
     normalizedMetadata.title = item.volumeInfo.title
     normalizedMetadata.date = new Date(item.volumeInfo.publishedDate)

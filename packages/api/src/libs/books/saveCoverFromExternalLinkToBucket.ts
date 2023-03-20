@@ -6,7 +6,7 @@ import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 const logger = Logger.namespace("saveCoverFromExternalLinkToBucket")
 
 type Context = {
-  userId: string
+  userName: string
 }
 
 export const saveCoverFromExternalLinkToBucket = async (
@@ -14,7 +14,7 @@ export const saveCoverFromExternalLinkToBucket = async (
   book: Pick<BookDocType, `_id`>,
   coverUrl: string
 ) => {
-  const objectKey = `cover-${ctx.userId}-${book._id}`
+  const objectKey = `cover-${ctx.userName}-${book._id}`
 
   logger.log(`prepare to save cover ${objectKey}`)
 

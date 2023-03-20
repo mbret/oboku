@@ -28,30 +28,30 @@ export const dataSourceFacade = {
   },
   sync: async ({
     dataSourceId,
-    userEmail,
+    userName,
     credentials,
     refreshBookMetadata,
     db,
     isBookCoverExist
   }: {
     dataSourceId: string
-    userEmail: string
+    userName: string
     credentials?: any
     refreshBookMetadata: ({ bookId }: { bookId: string }) => Promise<any>
     isBookCoverExist: ({ coverId }: { coverId: string }) => Promise<boolean>
     db: createNano.DocumentScope<unknown>
   }) => {
     console.log(
-      `dataSourceFacade started sync for ${dataSourceId} with user ${userEmail}`
+      `dataSourceFacade started sync for ${dataSourceId} with user ${userName}`
     )
 
-    const userId = Buffer.from(userEmail).toString("hex")
+    const nameHex = Buffer.from(userName).toString("hex")
     const helpers = createHelpers(
       dataSourceId,
       refreshBookMetadata,
       db,
       isBookCoverExist,
-      userId
+      nameHex
     )
 
     try {
@@ -74,7 +74,7 @@ export const dataSourceFacade = {
       // during the process (which can take time), user will not be misled to believe its
       // latest changes have been synced
       const lastSyncedAt = new Date().getTime()
-      const ctx = { dataSourceId, userEmail, credentials, dataSourceType: type }
+      const ctx = { dataSourceId, userName, credentials, dataSourceType: type }
       const plugin = plugins.find((plugin) => plugin.type === type)
 
       const synchronizeAbleDataSource = await plugin?.sync(ctx, helpers)

@@ -14,6 +14,7 @@ export const OrDivider: FC<{ title?: string; style?: React.CSSProperties }> = ({
         alignItems: "center",
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(2),
+        opacity: 0.5,
         ...style
       }}
     >
