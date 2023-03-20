@@ -7,7 +7,6 @@ import {
   useTotalPage
 } from "./states"
 import { useRecoilValue } from "recoil"
-import { useReader } from "./Reader"
 
 export const PageInformation: FC<{
   style: React.CSSProperties
