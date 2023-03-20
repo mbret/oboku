@@ -2,13 +2,11 @@ import { usePagination } from "./states"
 import { useAtomicUpdateBook } from "../books/helpers"
 import { ReadingStateState } from "@oboku/shared"
 import { useDebounce } from "react-use"
-import { useReader } from "./ReaderProvider"
 
 export const useUpdateBookState = (bookId: string) => {
   const [updateBook] = useAtomicUpdateBook()
-  const { reader$ } = useReader()
-  const { beginCfi } = usePagination(reader$) ?? {}
-  const totalBookProgress = usePagination(reader$)?.percentageEstimateOfBook
+  const { beginCfi } = usePagination() ?? {}
+  const totalBookProgress = usePagination()?.percentageEstimateOfBook
 
   const updater = async () => {
     updateBook(bookId, (old) => ({

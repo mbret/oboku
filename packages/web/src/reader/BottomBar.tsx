@@ -1,10 +1,14 @@
 import { AppBar, Box, IconButton, Typography, useTheme } from "@mui/material"
 import { useRecoilValue } from "recoil"
 import { PageInformation } from "./PageInformation"
-import { isMenuShownState, isBookReadyState, usePagination } from "./states"
+import {
+  isMenuShownState,
+  isBookReadyState,
+  usePagination,
+  useReader
+} from "./states"
 import { Scrubber } from "./Scrubber"
 import { DoubleArrowRounded } from "@mui/icons-material"
-import { useReader } from "./ReaderProvider"
 import { FloatingBottom } from "./FloatingBottom"
 
 export const BottomBar = () => {
@@ -12,8 +16,8 @@ export const BottomBar = () => {
   const isBookReady = useRecoilValue(isBookReadyState)
   const isLoading = !isBookReady
   const theme = useTheme()
-  const { reader, reader$ } = useReader()
-  const pagination = usePagination(reader$)
+  const reader = useReader()
+  const pagination = usePagination()
   // const showScrubber = (totalPages || 1) > 1
   const showScrubber = true
 

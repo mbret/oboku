@@ -16,8 +16,12 @@ import { FC } from "react"
 import { atom, useRecoilCallback, useRecoilValue } from "recoil"
 import { useCSS } from "../common/utils"
 import { DialogTopBar } from "../navigation/DialogTopBar"
-import { useReader } from "./ReaderProvider"
-import { manifestState, usePagination, useCurrentPage } from "./states"
+import {
+  manifestState,
+  usePagination,
+  useCurrentPage,
+  useReader
+} from "./states"
 import { SettingsList } from "./settings/SettingsList"
 
 const isContentsDialogOpenedState = atom<boolean>({
@@ -39,8 +43,8 @@ export const MoreDialog: FC<{}> = () => {
   const isContentsDialogOpened = useRecoilValue(isContentsDialogOpenedState)
   const { toggleMoreDialog } = useMoreDialog()
   const [value, setValue] = React.useState("toc")
-  const { reader, reader$ } = useReader()
-  const pagination = usePagination(reader$)
+  const reader = useReader()
+  const pagination = usePagination()
   const { title, nav } = useRecoilValue(manifestState) || {}
   const chapterInfo = pagination?.beginChapterInfo
   const currentPage = useCurrentPage() || 0

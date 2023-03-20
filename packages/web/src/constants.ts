@@ -32,3 +32,6 @@ export const ROUTES = {
   SEARCH: "/search",
   PROBLEMS: "/problems"
 } as const
+
+export const READER_NOTIFICATION_TIME_TO_SCREEN = 2000
+export const READER_NOTIFICATION_THROTTLE_TIME = 300

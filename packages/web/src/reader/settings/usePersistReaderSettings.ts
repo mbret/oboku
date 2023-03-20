@@ -1,11 +1,11 @@
 import { useEffect } from "react"
 import { useSetRecoilState } from "recoil"
 import { tap } from "rxjs"
-import { useReader } from "../ReaderProvider"
+import { useReader } from "../states"
 import { readerSettingsState } from "./states"
 
 export const usePersistReaderSettings = () => {
-  const { reader } = useReader()
+  const reader = useReader()
   const setSettings = useSetRecoilState(readerSettingsState)
 
   useEffect(() => {

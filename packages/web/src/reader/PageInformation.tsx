@@ -7,17 +7,16 @@ import {
   useTotalPage
 } from "./states"
 import { useRecoilValue } from "recoil"
-import { useReader } from "./ReaderProvider"
+import { useReader } from "./Reader"
 
 export const PageInformation: FC<{
   style: React.CSSProperties
 }> = ({ style }) => {
   const theme = useTheme()
-  const { reader$ } = useReader()
   const currentPage = useCurrentPage() || 0
   const { renditionLayout } = useRecoilValue(manifestState) || {}
   const { percentageEstimateOfBook, beginChapterInfo: chapterInfo } =
-    usePagination(reader$) ?? {}
+    usePagination() ?? {}
   const roundedProgress = Math.floor((percentageEstimateOfBook || 0) * 100)
   const displayableProgress = roundedProgress > 0 ? roundedProgress : 1
   const currentPageToDisplay = currentPage + 1

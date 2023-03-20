@@ -1,9 +1,27 @@
 import { atom, useRecoilCallback } from "recoil"
 import { useEffect } from "react"
-import { Manifest } from "@prose-reader/core"
-import { Observable, switchMap } from "rxjs"
+import { createReader, Manifest } from "@prose-reader/core"
+import { switchMap } from "rxjs"
 import { bind } from "@react-rxjs/core"
-import { ReaderInstance, useReader } from "./ReaderProvider"
+import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
+import { Props as GenericReactReaderProps } from "@prose-reader/react"
+import { createSignal } from "@react-rxjs/utils"
+import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
+
+export const createAppReader = hammerGestureEnhancer(createReader)
+
+export type ReaderInstance = ReturnType<typeof createAppReader>
+
+export type ReactReaderProps = GenericReactReaderProps<
+  Parameters<typeof createAppReader>[0],
+  ReaderInstance
+>
+
+export const [updateReader$, updateReader] = createSignal<ReaderInstance>()
+
+export const [useReader, _reader$] = bind(updateReader$, undefined)
+
+export const reader$ = _reader$.pipe(isNotNullOrUndefined())
 
 export const isBookReadyState = atom({
   key: "isBookReadyState",
@@ -23,15 +41,13 @@ export const isMenuShownState = atom({
 // =======> Please do not forget to add atom to the reset part !
 
 export const [usePagination] = bind(
-  (reader$: Observable<ReaderInstance>) =>
-    reader$.pipe(switchMap((reader) => reader.pagination$)),
+  reader$.pipe(switchMap((reader) => reader.pagination$)),
   undefined
 )
 
 export const useCurrentPage = () => {
-  const { reader$, reader } = useReader()
-  const { beginPageIndexInChapter, beginSpineItemIndex } =
-    usePagination(reader$) ?? {}
+  const reader = useReader()
+  const { beginPageIndexInChapter, beginSpineItemIndex } = usePagination() ?? {}
   const { renditionLayout } = reader?.context.getManifest() ?? {}
 
   if (renditionLayout === "reflowable") return beginPageIndexInChapter
@@ -40,10 +56,10 @@ export const useCurrentPage = () => {
 }
 
 export const useTotalPage = () => {
-  const { reader$, reader } = useReader()
+  const reader = useReader()
   const { renditionLayout } = reader?.context.getManifest() ?? {}
   const { numberOfTotalPages, beginNumberOfPagesInChapter } =
-    usePagination(reader$) ?? {}
+    usePagination() ?? {}
 
   if (renditionLayout === "reflowable") return beginNumberOfPagesInChapter
 
