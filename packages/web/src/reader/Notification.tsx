@@ -32,7 +32,7 @@ export const Notification = memo(() => {
     <Snackbar
       anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       open={!!notification}
-      message={`Font scale changed to ${notification?.value}`}
+      message={`Font scale changed to ${notification?.value.toFixed(2)}`}
     />
   )
 })
