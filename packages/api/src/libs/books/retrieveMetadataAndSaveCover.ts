@@ -23,6 +23,7 @@ const logger = Logger.namespace("retrieveMetadataAndSaveCover")
 
 type Context = {
   userName: string
+  userNameHex: string
   credentials?: any
   book: BookDocType
   link: LinkDocType
