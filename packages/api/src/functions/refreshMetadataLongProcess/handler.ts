@@ -45,7 +45,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       authorization
     }
   })
-
+  const userNameHex = Buffer.from(userName).toString("hex")
   const bookId: string | undefined = event.body.bookId
 
   if (!bookId) {
@@ -71,9 +71,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   if (!link) throw new Error(`Unable to find link ${firstLinkId}`)
 
   let data: PromiseReturnType<typeof retrieveMetadataAndSaveCover>
+
   try {
     data = await retrieveMetadataAndSaveCover({
       userName,
+      userNameHex,
       credentials,
       book,
       link
