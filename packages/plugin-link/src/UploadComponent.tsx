@@ -9,12 +9,12 @@ import {
   TextField,
   Typography
 } from "@mui/material"
-import * as yup from "yup"
 import { generateResourceId, ObokuPlugin } from "@oboku/plugin-front"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import { z } from "zod"
 
-const schema = yup.object().shape({
-  bookUrl: yup.string().url().required()
+const schema = z.object({
+  bookUrl: z.string().url()
 })
 
 export const UploadComponent: ObokuPlugin["UploadComponent"] = ({
@@ -22,7 +22,7 @@ export const UploadComponent: ObokuPlugin["UploadComponent"] = ({
   title
 }) => {
   const [bookUrl, setBookUrl] = useState("")
-  const isValid = schema.isValidSync({ bookUrl })
+  const { success: isValid } = schema.safeParse({ bookUrl })
   const filename = bookUrl.substring(bookUrl.lastIndexOf("/") + 1) || "unknown"
 
   const handleConfirm = () => {

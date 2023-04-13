@@ -28,8 +28,7 @@
     "rxdb": "^13",
     "react-dom": "*",
     "@emotion/styled": "*",
-    "@oboku/shared": "*",
-    "yup": "*"
+    "@oboku/shared": "*"
   },
   "devDependencies": {
     "@oboku/shared": "*"

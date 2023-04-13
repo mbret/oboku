@@ -72,8 +72,7 @@
     "workbox-routing": "^6.5.4",
     "workbox-strategies": "^6.5.4",
     "workbox-streams": "^6.5.4",
-    "xmldoc": "^1.2.0",
-    "yup": "0.32.11"
+    "xmldoc": "^1.2.0"
   },
   "devDependencies": {
     "@testing-library/dom": "9.2.0",

@@ -1,4 +1,4 @@
-import { generateResourceId, ObokuPlugin, yup } from "@oboku/plugin-front"
+import { generateResourceId, ObokuPlugin } from "@oboku/plugin-front"
 import { useState } from "react"
 import {
   Dialog,
@@ -10,9 +10,10 @@ import {
   Typography
 } from "@mui/material"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "@oboku/plugin-imhentai-shared"
+import { z } from "zod"
 
-const schema = yup.object().shape({
-  galleryId: yup.number().required()
+const schema = z.object({
+  galleryId: z.string()
 })
 
 export const UploadComponent: ObokuPlugin[`UploadComponent`] = ({
@@ -23,7 +24,7 @@ export const UploadComponent: ObokuPlugin[`UploadComponent`] = ({
 }) => {
   const [galleryId, setGalleryId] = useState(``)
   const [tags, setTags] = useState<string[]>([])
-  const isValid = schema.isValidSync({ galleryId })
+  const { success: isValid } = schema.safeParse({ galleryId })
 
   const handleConfirm = () => {
     onClose({
