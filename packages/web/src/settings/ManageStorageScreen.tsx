@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
   ListItem,
@@ -9,9 +9,11 @@ import {
   Typography,
   Box,
   useTheme,
-  Button
+  Button,
+  Divider,
+  ListItemButton
 } from "@mui/material"
-import { StorageRounded } from "@mui/icons-material"
+import { DeleteRounded, StorageRounded } from "@mui/icons-material"
 import { useStorageUse } from "./useStorageUse"
 import { LibraryViewMode } from "../rxdb"
 import { BookList } from "../books/bookList/BookList"
@@ -21,31 +23,53 @@ import {
   visibleBookIdsState
 } from "../books/states"
 import { bookActionDrawerState } from "../books/BookActionsDrawer"
-import { useCSS } from "../common/utils"
 import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { difference } from "ramda"
 import Alert from "@mui/material/Alert"
 import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
+import { useMutation } from "reactjrx"
+import { useDeleteAllDownloadedFiles } from "../download/deleteAllDownloadedFiles"
 
 export const ManageStorageScreen = () => {
   const bookIds = useRecoilValue(downloadedBookWithUnsafeProtectedIdsState)
   const visibleBookIds = useRecoilValue(visibleBookIdsState)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])
   const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
-  const styles = useStyles()
   const removeDownloadFile = useRemoveDownloadFile()
+  const deleteAllDownloadedFiles = useDeleteAllDownloadedFiles()
   const { bookIds: downloadedBookIds, refetch } = useDownloadedFilesInfo()
   const extraDownloadFilesIds = difference(downloadedBookIds, bookIds)
   const theme = useTheme()
-  const bookIdsToDisplay = bookIds.filter((id) => visibleBookIds.includes(id))
+  const bookIdsToDisplay = useMemo(
+    () => bookIds.filter((id) => visibleBookIds.includes(id)),
+    [bookIds, visibleBookIds]
+  )
+  const { mutate: onDeleteAllDownloadsClick } = useMutation(async () => {
+    const isConfirmed = confirm(
+      "Are you sure you want to delete all downloads at once?"
+    )
+
+    if (isConfirmed) {
+      await deleteAllDownloadedFiles(bookIds)
+    }
+  })
 
   const removeExtraBooks = useCallback(() => {
     Promise.all(extraDownloadFilesIds.map((id) => removeDownloadFile(id)))
       .then(refetch)
       .catch(Report.error)
   }, [refetch, extraDownloadFilesIds, removeDownloadFile])
+
+  const onItemClick = useCallback(
+    (id: string) =>
+      setBookActionDrawerState({
+        openedWith: id,
+        actions: ["removeDownload"]
+      }),
+    [setBookActionDrawerState]
+  )
 
   useEffect(() => {
     refetch()
@@ -54,7 +78,7 @@ export const ManageStorageScreen = () => {
   return (
     <>
       <TopBarNavigation title={"Manage storage"} />
-      <List style={styles.listHeader}>
+      <List>
         <ListItem>
           <ListItemIcon>
             <StorageRounded />
@@ -81,6 +105,17 @@ export const ManageStorageScreen = () => {
             }
           />
         </ListItem>
+        {bookIdsToDisplay.length > 0 && (
+          <ListItemButton onClick={onDeleteAllDownloadsClick}>
+            <ListItemIcon>
+              <DeleteRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="Delete all downloads"
+              secondary="It will not delete books only available on this device"
+            />
+          </ListItemButton>
+        )}
       </List>
       {extraDownloadFilesIds.length > 0 && (
         <Alert severity="warning" style={{ marginBottom: theme.spacing(0) }}>
@@ -97,43 +132,18 @@ export const ManageStorageScreen = () => {
           </Button>
         </Alert>
       )}
-      <div style={styles.separator} />
-      {bookIdsToDisplay?.length > 0 && (
-        <BookList
-          viewMode={LibraryViewMode.LIST}
-          data={bookIdsToDisplay}
-          density="dense"
-          withDrawerActions={false}
-          style={{
-            height: "100%",
-            overflow: "hidden"
-          }}
-          onItemClick={(id) =>
-            setBookActionDrawerState({
-              openedWith: id,
-              actions: ["removeDownload"]
-            })
-          }
-        />
-      )}
+      <Divider />
+      <BookList
+        viewMode={LibraryViewMode.LIST}
+        data={bookIdsToDisplay}
+        density="dense"
+        withBookActions={false}
+        style={{
+          height: "100%",
+          overflow: "hidden"
+        }}
+        onItemClick={onItemClick}
+      />
     </>
-  )
-}
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      listHeader: {
-        paddingBottom: 0
-      },
-      separator: {
-        width: `100%`,
-        borderBottom: `1px solid ${theme.palette.grey[200]}`,
-        boxSizing: "border-box"
-      }
-    }),
-    [theme]
   )
 }

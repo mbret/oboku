@@ -1,4 +1,4 @@
-import React, { useCallback, FC, useMemo, memo } from "react"
+import React, { useCallback, FC, useMemo, memo, useEffect } from "react"
 import { Box, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { BookListGridItem } from "./BookListGridItem"
@@ -19,7 +19,7 @@ export const BookList: FC<{
   data: string[]
   density?: "dense" | "large"
   onItemClick?: (id: string) => void
-  withDrawerActions?: boolean
+  withBookActions?: boolean
   static?: boolean
 }> = memo((props) => {
   const {
@@ -32,7 +32,7 @@ export const BookList: FC<{
     data,
     itemWidth,
     onItemClick,
-    withDrawerActions
+    withBookActions
   } = props
   const windowSize = useWindowSize()
   const classes = useStyle({ isHorizontal })
@@ -74,12 +74,12 @@ export const BookList: FC<{
             bookId={item}
             itemHeight={(itemHeight || 0) - listItemMargin}
             onItemClick={onItemClick}
-            withDrawerActions={withDrawerActions}
+            withDrawerActions={withBookActions}
           />
         </div>
       )
     },
-    [viewMode, itemHeight, listItemMargin, onItemClick, withDrawerActions]
+    [viewMode, itemHeight, listItemMargin, onItemClick, withBookActions]
   )
 
   const containerStyle = useMemo(

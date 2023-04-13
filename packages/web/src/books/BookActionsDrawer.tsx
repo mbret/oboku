@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { memo, useCallback } from "react"
 import List from "@mui/material/List"
 import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
@@ -45,7 +45,7 @@ export const bookActionDrawerState = atom<{
   actions?: ("removeDownload" | "goToDetails")[]
 }>({ key: "bookActionDrawerState", default: { openedWith: undefined } })
 
-export const BookActionsDrawer = () => {
+export const BookActionsDrawer = memo(() => {
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const [{ openedWith: bookId, actions }, setBookActionDrawerState] =
@@ -318,7 +318,7 @@ export const BookActionsDrawer = () => {
       )}
     </Drawer>
   )
-}
+})
 
 const useStyles = makeStyles((theme) => ({
   topContainer: {

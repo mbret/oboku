@@ -225,37 +225,6 @@ const List = memo(
         [renderHeader, headerHeight]
       )
 
-      const renderRow = useCallback(
-        ({ columnIndex, rowIndex, style, data }) => {
-          const itemIndex = rowIndex * columnCount + columnIndex
-
-          return (
-            <div
-              key={rowIndex}
-              style={{
-                ...style,
-                ...(headerHeight && {
-                  top: `${
-                    parseFloat(style.top?.toString() || "0") + headerHeight
-                  }px`
-                })
-              }}
-            >
-              <div
-                style={{
-                  height: "100%",
-                  width: "100%",
-                  maxHeight: computedItemHeight
-                }}
-              >
-                {data[itemIndex] && rowRenderer(data[itemIndex], rowIndex)}
-              </div>
-            </div>
-          )
-        },
-        [columnCount, rowRenderer, computedItemHeight, headerHeight]
-      )
-
       return (
         <>
           <FixedSizeGrid
@@ -276,7 +245,34 @@ const List = memo(
             itemData={data}
             {...rest}
           >
-            {renderRow}
+            {({ columnIndex, rowIndex, style, data }) => {
+              const itemIndex = rowIndex * columnCount + columnIndex
+              const item = data[itemIndex]
+
+              return (
+                <div
+                  key={rowIndex}
+                  style={{
+                    ...style,
+                    ...(headerHeight && {
+                      top: `${
+                        parseFloat(style.top?.toString() || "0") + headerHeight
+                      }px`
+                    })
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      width: "100%",
+                      maxHeight: computedItemHeight
+                    }}
+                  >
+                    {item && rowRenderer(item, rowIndex)}
+                  </div>
+                </div>
+              )
+            }}
           </FixedSizeGrid>
           {displayScrollerButtons && (
             <>

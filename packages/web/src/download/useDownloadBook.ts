@@ -14,6 +14,7 @@ import { bytesToMb } from "../common/utils"
 import { createCbzFromReadableStream } from "./createCbzFromReadableStream"
 import { useDownloadBookFromDataSource } from "../plugins/useDownloadBookFromDataSource"
 import { isPluginError } from "@oboku/plugin-front"
+import { plugin } from "../plugins/local"
 
 export const useDownloadBook = () => {
   const downloadBook = useDownloadBookFromDataSource()
@@ -73,7 +74,7 @@ export const useDownloadBook = () => {
             return
           }
 
-          if (firstLink.type === `FILE`) {
+          if (firstLink.type === plugin.type) {
             if (localFile) {
               await localforage.setItem<BookFile>(
                 `${DOWNLOAD_PREFIX}-${bookId}`,

@@ -20,6 +20,7 @@ import {
 import { bind } from "@react-rxjs/core"
 import { map, Observable, switchMap, tap, withLatestFrom } from "rxjs"
 import { Database } from "../rxdb"
+import { plugin } from "../plugins/local"
 
 /**
  * @deprecated
@@ -80,7 +81,7 @@ export const enrichedBookState = selectorFamily({
 
       const firstLink = get(linkState(linkId))
 
-      const isLocal = firstLink?.type === `FILE`
+      const isLocal = firstLink?.type === plugin.type
 
       return {
         ...book,

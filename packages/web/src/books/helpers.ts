@@ -23,6 +23,7 @@ import { catchError, EMPTY, from, map, switchMap } from "rxjs"
 import { isPluginError } from "@oboku/plugin-front"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
+import { plugin } from "../plugins/local"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -150,7 +151,7 @@ export const useRefreshBookMetadata = () => {
         .findOne({ selector: { _id: book?.links[0] } })
         .exec()
 
-      if (!firstLink || firstLink?.type === `FILE`) {
+      if (!firstLink || firstLink?.type === plugin.type) {
         Report.warn(`Trying to refresh metadata of file item ${bookId}`)
         return
       }
@@ -280,7 +281,7 @@ export const useAddBookFromFile = () => {
             book: null,
             data: null,
             resourceId: "file",
-            type: `FILE`,
+            type: plugin.type,
             createdAt: new Date().toISOString(),
             modifiedAt: null
           },
