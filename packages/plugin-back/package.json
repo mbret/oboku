@@ -18,7 +18,8 @@
   "scripts": {
     "start": "vite build --watch --mode development",
     "build": "tsc && vite build",
-    "test": "jest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@oboku/shared": "*"

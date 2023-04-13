@@ -36,7 +36,7 @@ export const ReactWindowList: FC<{
     <>
       <AutoSizer>
         {({ width, height }) => (
-          <List width={width} height={height} {...rest} />
+          <List width={width ?? 0} height={height ?? 0} {...rest} />
         )}
       </AutoSizer>
     </>
