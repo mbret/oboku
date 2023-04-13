@@ -30,16 +30,17 @@ import Alert from "@mui/material/Alert"
 import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
 import { useMutation } from "reactjrx"
-import { useDeleteAllDownloadedFiles } from "../download/deleteAllDownloadedFiles"
+import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
 
 export const ManageStorageScreen = () => {
   const bookIds = useRecoilValue(downloadedBookWithUnsafeProtectedIdsState)
   const visibleBookIds = useRecoilValue(visibleBookIdsState)
-  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])
   const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
+  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])
   const removeDownloadFile = useRemoveDownloadFile()
-  const deleteAllDownloadedFiles = useDeleteAllDownloadedFiles()
-  const { bookIds: downloadedBookIds, refetch } = useDownloadedFilesInfo()
+  const deleteAllDownloadedFiles = useRemoveAllDownloadedFiles()
+  const { data: downloadedBookIds = [], refetch: refetchDownloadedFilesInfo } =
+    useDownloadedFilesInfo()
   const extraDownloadFilesIds = difference(downloadedBookIds, bookIds)
   const theme = useTheme()
   const bookIdsToDisplay = useMemo(
@@ -53,14 +54,16 @@ export const ManageStorageScreen = () => {
 
     if (isConfirmed) {
       await deleteAllDownloadedFiles(bookIds)
+
+      refetchDownloadedFilesInfo()
     }
   })
 
   const removeExtraBooks = useCallback(() => {
     Promise.all(extraDownloadFilesIds.map((id) => removeDownloadFile(id)))
-      .then(refetch)
+      .then(refetchDownloadedFilesInfo)
       .catch(Report.error)
-  }, [refetch, extraDownloadFilesIds, removeDownloadFile])
+  }, [refetchDownloadedFilesInfo, extraDownloadFilesIds, removeDownloadFile])
 
   const onItemClick = useCallback(
     (id: string) =>
@@ -72,8 +75,8 @@ export const ManageStorageScreen = () => {
   )
 
   useEffect(() => {
-    refetch()
-  }, [bookIds, refetch])
+    refetchDownloadedFilesInfo()
+  }, [bookIds, refetchDownloadedFilesInfo])
 
   return (
     <>

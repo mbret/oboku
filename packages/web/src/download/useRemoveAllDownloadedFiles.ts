@@ -3,7 +3,7 @@ import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "./useRemoveDownloadFile"
 import { plugin } from "../plugins/local"
 
-export const useDeleteAllDownloadedFiles = () => {
+export const useRemoveAllDownloadedFiles = () => {
   const { db } = useDatabase()
   const removeDownloadFile = useRemoveDownloadFile()
 

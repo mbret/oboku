@@ -40,6 +40,9 @@ import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "./ManageBookTagsDialog"
 import { markAsInterested } from "./actions"
 
+/**
+ * @deprecated
+ */
 export const bookActionDrawerState = atom<{
   openedWith: undefined | string
   actions?: ("removeDownload" | "goToDetails")[]
