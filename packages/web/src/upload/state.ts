@@ -1,8 +1,8 @@
-import { atom } from "recoil"
+import { signal } from "reactjrx"
 
-export const isUploadBookFromDeviceOpenedFromState = atom<
-  false | "local" | "outside"
->({
-  key: "isUploadBookFromDeviceOpenedState",
+export const [
+  useIsUploadBookFromDeviceOpened,
+  setIsUploadBookFromDeviceOpened
+] = signal<false | "local" | "outside">({
   default: false
 })

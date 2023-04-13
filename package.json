@@ -60,9 +60,9 @@
     "webpack-cli": "^5.0.1",
     "webpack-node-externals": "^3.0.0"
   },
-  "packageManager": "yarn@3.3.1",
   "dependencies": {
     "arg": "^5.0.2",
+    "reactjrx": "^1.7.0",
     "sharp": "^0.32.0",
     "zod": "^3.21.4"
   }

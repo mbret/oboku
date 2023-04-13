@@ -20,15 +20,17 @@ import { ROUTES } from "./constants"
 import { useNetworkState } from "react-use"
 import { useCSS } from "./common/utils"
 import { UploadBookFromDevice } from "./upload/UploadBookFromDevice"
-import { useRecoilState } from "recoil"
-import { isUploadBookFromDeviceOpenedFromState } from "./upload/state"
+import {
+  useIsUploadBookFromDeviceOpened,
+  setIsUploadBookFromDeviceOpened
+} from "./upload/state"
 
 export const BottomTabBar = ({ children }: { children: ReactNode }) => {
   const location = useLocation()
   const navigate = useNavigate()
   const classes = useStyles()
-  const [isUploadBookFromDeviceOpened, setIsUploadBookFromDeviceOpened] =
-    useRecoilState(isUploadBookFromDeviceOpenedFromState)
+  const isUploadBookFromDeviceOpened =
+    useIsUploadBookFromDeviceOpened()
   const dragStatus = useRef<undefined | "entered">(undefined)
   const normalizedPath = location.pathname.startsWith(ROUTES.LIBRARY_ROOT)
     ? ROUTES.LIBRARY_BOOKS
@@ -39,7 +41,7 @@ export const BottomTabBar = ({ children }: { children: ReactNode }) => {
       dragStatus.current = "entered"
       setIsUploadBookFromDeviceOpened("outside")
     }
-  }, [setIsUploadBookFromDeviceOpened])
+  }, [])
 
   return (
     <div style={classes.container} onDragOver={onDragOver}>
