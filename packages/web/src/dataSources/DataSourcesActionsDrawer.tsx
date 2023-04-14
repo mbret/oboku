@@ -6,7 +6,7 @@ import {
   ListItemText,
   Divider
 } from "@mui/material"
-import React, { FC } from "react"
+import { FC, memo } from "react"
 import {
   SyncRounded,
   DeleteForeverRounded,
@@ -15,16 +15,17 @@ import {
 } from "@mui/icons-material"
 import { useSynchronizeDataSource, useRemoveDataSource } from "./helpers"
 import { useDataSource } from "./useDataSource"
-import { toggleDatasourceProtected } from "./actions"
+import { toggleDatasourceProtected } from "./triggers"
+import { useLibraryState } from "../library/states"
 
 export const DataSourcesActionsDrawer: FC<{
   openWith: string
   onClose: () => void
-}> = ({ openWith, onClose }) => {
+}> = memo(({ openWith, onClose }) => {
   const syncDataSource = useSynchronizeDataSource()
-  // const renewAuthorization = useRenewDataSourceCredentials()
   const [remove] = useRemoveDataSource()
   const dataSource = useDataSource(openWith)
+  const library = useLibraryState()
 
   return (
     <>
@@ -42,15 +43,20 @@ export const DataSourcesActionsDrawer: FC<{
             </ListItemIcon>
             <ListItemText primary="Synchronize" />
           </ListItem>
-          {/* <ListItem button onClick={() => {
-            renewAuthorization(openWith)
-            onClose()
-          }}>
-            <ListItemIcon><VpnKeyRounded /></ListItemIcon>
-            <ListItemText primary="Renew authorization" />
-          </ListItem> */}
         </List>
-        <ListItem button onClick={() => toggleDatasourceProtected(openWith)}>
+        <ListItem
+          button
+          onClick={() => {
+            toggleDatasourceProtected(openWith)
+
+            const datasourceWillBeHidden =
+              !dataSource?.isProtected && !library.isLibraryUnlocked
+
+            if (datasourceWillBeHidden) {
+              onClose()
+            }
+          }}
+        >
           <ListItemIcon>
             {!dataSource?.isProtected && <RadioButtonUncheckedOutlined />}
             {dataSource?.isProtected && <CheckCircleRounded />}
@@ -78,4 +84,4 @@ export const DataSourcesActionsDrawer: FC<{
       </Drawer>
     </>
   )
-}
+})
