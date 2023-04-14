@@ -1,10 +1,11 @@
-import { atom } from "recoil"
+import { signal } from "reactjrx"
 
-export const appTourState = atom<{
+export const [useAppTourState, setAppTourState] = signal<{
   currentOpenedTour: string | undefined
 }>({
   key: "appTourState",
   default: {
     currentOpenedTour: undefined
-  }
+  },
+  scoped: false
 })
