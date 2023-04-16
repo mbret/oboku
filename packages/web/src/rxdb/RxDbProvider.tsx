@@ -1,9 +1,6 @@
-import { bind } from "@react-rxjs/core"
 import { createContext, FC, ReactNode, useContext, useMemo } from "react"
-import { of } from "rxjs"
-import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
 import { PromiseReturnType } from "../types"
-import { createDatabase, Database } from "./databases"
+import { createDatabase } from "./databases"
 import { useCreateDatabase } from "./useCreateDatabase"
 
 const DatabaseContext = createContext<{
@@ -32,11 +29,12 @@ export const RxDbProvider: FC<{ children: ReactNode }> = ({ children }) => {
 export const useDatabase = () => {
   const { db } = useContext(DatabaseContext)
 
-  const db$ = useMemo(() => of(db).pipe(isNotNullOrUndefined()), [db])
-
-  return { db, db$ }
+  return { db }
 }
 
+/**
+ * @deprecated
+ */
 export const useReCreateDb = () => {
   const { reCreate } = useContext(DatabaseContext)
 

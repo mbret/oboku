@@ -15,6 +15,7 @@ import { lastAliveSyncState } from "./state"
 import { useWatchAndFixConflicts } from "./useWatchAndFixConflicts"
 import { authState } from "../../auth/authState"
 import { syncCollections } from "../replication/syncCollections"
+import { useNetworkState } from "react-use"
 
 type callback = Parameters<(typeof PouchDB)["sync"]>[3]
 type PouchError = NonNullable<Parameters<NonNullable<callback>>[0]>
@@ -52,6 +53,7 @@ export const useObservers = () => {
   const signOut = useSignOut()
   const [{ syncRefresh }, setSyncState] = useRecoilState(syncState)
   const setLastAliveSyncState = useSetRecoilState(lastAliveSyncState)
+  const { online } = useNetworkState()
 
   useBooksObservers()
   useTagsObservers()
@@ -80,7 +82,7 @@ export const useObservers = () => {
       }
     })
 
-    if (isAuthenticated && database) {
+    if (isAuthenticated && database && online) {
       const syncState = syncCollections(
         [
           database.book,
@@ -131,7 +133,8 @@ export const useObservers = () => {
     syncRefresh,
     setSyncState,
     setLastAliveSyncState,
-    dbName
+    dbName,
+    online
   ])
 
   useEffect(() => {

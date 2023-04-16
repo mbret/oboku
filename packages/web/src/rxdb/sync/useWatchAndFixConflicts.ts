@@ -7,8 +7,8 @@ import { authState } from "../../auth/authState"
 import { useNetworkState } from "react-use"
 import { defer, EMPTY, from, throwError } from "rxjs"
 import { catchError, switchMap } from "rxjs/operators"
-import { retryBackoff } from "../../common/rxjsOperators"
 import { isPouchError } from "../utils"
+import { retryBackoff } from "reactjrx"
 
 const getDb = (dbName: string, token: string) =>
   new PouchDB(`${API_COUCH_URI}/${dbName}`, {
@@ -22,8 +22,10 @@ const getDb = (dbName: string, token: string) =>
   })
 
 const useWatchForLiveConflicts = (db: PouchDB.Database<{}> | undefined) => {
+  const network = useNetworkState()
+
   useEffect(() => {
-    if (!db) return
+    if (!db || !network.online) return
 
     // @todo retry automatically in case of failure
 
@@ -60,7 +62,7 @@ const useWatchForLiveConflicts = (db: PouchDB.Database<{}> | undefined) => {
     return () => {
       listener.cancel()
     }
-  }, [db])
+  }, [db, network])
 }
 
 /**
@@ -91,7 +93,8 @@ const useTryToResolveOldRemainingConflicts = (
     ).pipe(
       retryBackoff({
         initialInterval: 100,
-        shouldRetry: (err) => !isPouchError(err) || (err.status || 500) >= 500
+        shouldRetry: (_, err) =>
+          !isPouchError(err) || (err.status || 500) >= 500
       })
     )
 
@@ -100,14 +103,16 @@ const useTryToResolveOldRemainingConflicts = (
     ).pipe(
       retryBackoff({
         initialInterval: 100,
-        shouldRetry: (err) => !isPouchError(err) || (err.status || 500) >= 500
+        shouldRetry: (_, err) =>
+          !isPouchError(err) || (err.status || 500) >= 500
       })
     )
 
     const view$ = defer(() => from(db.get("_design/conflict_docs"))).pipe(
       retryBackoff({
         initialInterval: 100,
-        shouldRetry: (err) => !isPouchError(err) || (err.status || 500) >= 500
+        shouldRetry: (_, err) =>
+          !isPouchError(err) || (err.status || 500) >= 500
       })
     )
 
