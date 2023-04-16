@@ -29,8 +29,7 @@ export const BottomTabBar = ({ children }: { children: ReactNode }) => {
   const location = useLocation()
   const navigate = useNavigate()
   const classes = useStyles()
-  const isUploadBookFromDeviceOpened =
-    useIsUploadBookFromDeviceOpened()
+  const isUploadBookFromDeviceOpened = useIsUploadBookFromDeviceOpened()
   const dragStatus = useRef<undefined | "entered">(undefined)
   const normalizedPath = location.pathname.startsWith(ROUTES.LIBRARY_ROOT)
     ? ROUTES.LIBRARY_BOOKS

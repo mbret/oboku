@@ -21,9 +21,6 @@ export const useDataSources = () => {
           }).$
         })
       ),
-    {
-      defaultValue: []
-    },
     [isLibraryUnlocked]
   )
 }

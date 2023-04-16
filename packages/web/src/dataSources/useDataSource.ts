@@ -1,4 +1,4 @@
-import { switchMap, tap } from "rxjs"
+import { switchMap } from "rxjs"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { useObserve } from "reactjrx"
 
@@ -10,8 +10,5 @@ export const useDataSource = (id: string) =>
           return db.datasource.findOne({ selector: { _id: id } }).$
         })
       ),
-    {
-      defaultValue: null
-    },
     [id]
   )
