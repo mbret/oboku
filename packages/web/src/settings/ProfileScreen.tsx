@@ -44,11 +44,11 @@ import packageJson from "../../package.json"
 import { ROUTES } from "../constants"
 import { useDialogManager } from "../dialog"
 import { toggleDebug } from "../debug"
-import { useIsMountedState$ } from "../common/rxjs/useIsMountedState$"
 import { useDatabase } from "../rxdb"
 import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
 import { Report } from "../debug/report.shared"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
+import { useUnmountObservable } from "reactjrx"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -310,7 +310,7 @@ const DeleteMyDataDialog: FC<{
   const [isBookChecked, setIsBookChecked] = useState(false)
   const [isCollectionChecked, setIsCollectionChecked] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const { unMount$ } = useIsMountedState$()
+  const unMount$ = useUnmountObservable()
   const { db } = useDatabase()
 
   const onSubmit = useCallback(async () => {
@@ -350,7 +350,7 @@ const DeleteMyDataDialog: FC<{
           tap(() => {
             onClose()
           }),
-          takeUntil(unMount$)
+          takeUntil(unMount$.current)
         )
         .subscribe()
     }

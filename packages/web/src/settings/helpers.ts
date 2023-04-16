@@ -1,19 +1,15 @@
 import { crypto } from "@oboku/shared"
-import { SettingsDocType, useRxMutation } from "../rxdb"
-
-export const useUpdateSettings = () =>
-  useRxMutation((db, variables: Partial<SettingsDocType>) =>
-    db.settings.safeUpdate({ $set: variables }, (collection) =>
-      collection.findOne()
-    )
-  )
+import { useDatabase } from "../rxdb"
 
 export const useUpdateContentPassword = () => {
-  const [updateSettings] = useUpdateSettings()
+  const { db } = useDatabase()
 
   return async (password: string) => {
     const hashed = await crypto.hashContentPassword(password)
 
-    await updateSettings({ contentPassword: hashed })
+    await db?.settings.safeUpdate(
+      { $set: { contentPassword: hashed } },
+      (collection) => collection.findOne()
+    )
   }
 }

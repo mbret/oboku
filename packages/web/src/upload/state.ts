@@ -4,5 +4,6 @@ export const [
   useIsUploadBookFromDeviceOpened,
   setIsUploadBookFromDeviceOpened
 ] = signal<false | "local" | "outside">({
-  default: false
+  default: false,
+  scoped: true
 })

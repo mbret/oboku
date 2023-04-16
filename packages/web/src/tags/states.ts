@@ -1,53 +1,50 @@
-import { atom, selector, selectorFamily } from "recoil"
+import { atom, selector } from "recoil"
 import { TagsDocType } from "@oboku/shared"
-import { bind } from "@react-rxjs/core"
-import { filter, map, Observable, switchMap } from "rxjs"
-import { Database } from "../rxdb"
-import { ta } from "date-fns/locale"
+import { map, switchMap } from "rxjs"
+import { bind, useObserve } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 
-export const [useTag, tag$] = bind(
-  (db$: Observable<Database>, id: string) =>
-    db$.pipe(
-      switchMap((db) => {
-        return db.tag.findOne(id).$
-      })
-    ),
-  null
-)
+export const useTag = (id: string) =>
+  useObserve(
+    () =>
+      latestDatabase$.pipe(
+        switchMap((db) => {
+          return db.tag.findOne(id).$
+        })
+      ),
+    [id]
+  )
 
-export const [useTags, tags$] = bind(
-  (database$: Observable<Database>) =>
-    database$.pipe(switchMap((database) => database.tag.find({}).$)),
-  []
-)
+export const [useTags, tags$] = bind({
+  stream: latestDatabase$.pipe(
+    switchMap((database) => database.tag.find({}).$)
+  ),
+  default: []
+})
 
-export const [useProtectedTags, protectedTags$] = bind(
-  (database$: Observable<Database>) =>
-    tags$(database$).pipe(
-      map((tag) => tag.filter(({ isProtected }) => isProtected))
-    ),
-  []
-)
+export const [useProtectedTags, protectedTags$] = bind({
+  stream: tags$.pipe(
+    map((tag) => tag.filter(({ isProtected }) => isProtected))
+  ),
+  default: []
+})
 
-export const [useTagIds] = bind(
-  (database$: Observable<Database>) =>
-    tags$(database$).pipe(map((tags) => tags.map(({ _id }) => _id))),
-  []
-)
+export const [useTagIds] = bind({
+  stream: tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
+  default: []
+})
 
-export const [, blurredTags$] = bind(
-  (database$: Observable<Database>) =>
-    tags$(database$).pipe(
-      map((tags) => tags.filter(({ isBlurEnabled }) => isBlurEnabled))
-    ),
-  []
-)
+export const [, blurredTags$] = bind({
+  stream: tags$.pipe(
+    map((tags) => tags.filter(({ isBlurEnabled }) => isBlurEnabled))
+  ),
+  default: []
+})
 
-export const [useBlurredTagIds] = bind(
-  (database$: Observable<Database>) =>
-    blurredTags$(database$).pipe(map((tags) => tags.map(({ _id }) => _id))),
-  []
-)
+export const [useBlurredTagIds] = bind({
+  stream: blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
+  default: []
+})
 
 export const normalizedTagsState = atom<
   Record<string, TagsDocType | undefined>

@@ -38,7 +38,7 @@ export const [useCollections] = bind(
 export const [useBooks] = bind(
   (database$: Observable<Database>, search: string | Observable<string>) =>
     combineLatest([
-      visibleBooks$(database$),
+      visibleBooks$,
       typeof search === "string" ? of(search) : search
     ]).pipe(
       map(([data, search]) => {

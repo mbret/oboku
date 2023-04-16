@@ -109,7 +109,7 @@ export const ManageStorageScreen = () => {
           />
         </ListItem>
         {bookIdsToDisplay.length > 0 && (
-          <ListItemButton onClick={onDeleteAllDownloadsClick}>
+          <ListItemButton onClick={() => onDeleteAllDownloadsClick()}>
             <ListItemIcon>
               <DeleteRounded />
             </ListItemIcon>

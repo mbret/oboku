@@ -5,15 +5,13 @@ import { BlurOnRounded, LockRounded } from "@mui/icons-material"
 import { useTag } from "../states"
 import { TagsDocType } from "@oboku/shared"
 import { Checkbox } from "../../common/Checkbox"
-import { useDatabase } from "../../rxdb"
 
 export const SelectableTagListItem: FC<{
   id: string
   onItemClick?: (tag: TagsDocType) => void
   selected: boolean
 }> = memo(({ id, onItemClick, selected }) => {
-  const { db$ } = useDatabase()
-  const tag = useTag(db$, id)
+  const tag = useTag(id)
   const styles = useStyle()
 
   return (

@@ -15,7 +15,6 @@ import {
 } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
 import { bind } from "@react-rxjs/core"
-import { createSignal } from "@react-rxjs/utils"
 import React, { useCallback, useRef, useState } from "react"
 import {
   generatePath,
@@ -32,8 +31,10 @@ import { SEARCH_MAX_PREVIEW_ITEMS } from "../constants.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useDatabase } from "../rxdb"
 import { useBooks, useCollections } from "./states"
+import { trigger } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 
-export const [searchChange$, setSearch] = createSignal<string>()
+export const [searchChange$, setSearch] = trigger<string>()
 
 export const [useSearchValue, search$] = bind(searchChange$, "")
 
@@ -73,11 +74,10 @@ const SeeMore = ({
 
 export const SearchScreen = () => {
   const { styles, classes } = useStyles()
-  const { db$ } = useDatabase()
   const [searchParams, setSearchParams] = useSearchParams()
   const value = useSearchValue()
-  const collections = useCollections(db$, search$)
-  const books = useBooks(db$, search$)
+  const collections = useCollections(latestDatabase$, search$)
+  const books = useBooks(latestDatabase$, search$)
   const inputRef = useRef<HTMLElement>()
   const navigate = useNavigate()
   const [bookExpanded, setBookExpanded] = useState(true)

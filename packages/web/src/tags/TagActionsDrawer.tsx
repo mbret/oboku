@@ -25,8 +25,7 @@ import { useUpdateTag } from "./helpers"
 import { useSetRecoilState } from "recoil"
 import { useTag } from "./states"
 import { isManageTagBooksDialogOpenedWithState } from "./ManageTagBooksDialog"
-import { useDatabase } from "../rxdb"
-import { removeTag } from "./actions"
+import { removeTag } from "./triggers"
 
 export const TagActionsDrawer: FC<{
   openWith: string | undefined
@@ -35,8 +34,7 @@ export const TagActionsDrawer: FC<{
   const setIsManageTagBooksDialogOpenedWithState = useSetRecoilState(
     isManageTagBooksDialogOpenedWithState
   )
-  const { db$ } = useDatabase()
-  const tag = useTag(db$, openWith || "-1")
+  const tag = useTag(openWith || "-1")
   const editTag = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
     useState<string | undefined>(undefined)
@@ -137,8 +135,7 @@ const EditTagDialog: FC<{
   onClose: () => void
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState("")
-  const { db$ } = useDatabase()
-  const { name: tagName } = useTag(db$, id || "-1") || {}
+  const { name: tagName } = useTag(id || "-1") || {}
   const editTag = useUpdateTag()
 
   const onInnerClose = () => {

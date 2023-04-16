@@ -8,14 +8,12 @@ import Select from "@mui/material/Select"
 import makeStyles from "@mui/styles/makeStyles"
 import { useTag, useTagIds } from "./states"
 import { TagChip } from "./TagChip"
-import { useDatabase } from "../rxdb"
 
 export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
   onChange: onUpChange
 }) => {
   const classes = useStyles()
-  const { db$ } = useDatabase()
-  const tags = useTagIds(db$)
+  const tags = useTagIds()
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
   const onChange: NonNullable<SelectProps[`onChange`]> = (event) => {
@@ -59,8 +57,7 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
 }
 
 const TagName: FC<{ id: string }> = ({ id }) => {
-  const { db$ } = useDatabase()
-  const { name } = useTag(db$, id) || {}
+  const { name } = useTag(id) || {}
 
   return <>{name}</>
 }

@@ -17,11 +17,10 @@ export const ManageTagBooksDialog: FC<{}> = () => {
     isManageTagBooksDialogOpenedWith,
     setIsManageTagBooksDialogOpenedWith
   ] = useRecoilState(isManageTagBooksDialogOpenedWithState)
-  const { db$ } = useDatabase()
-  const tag = useTag(db$, isManageTagBooksDialogOpenedWith || "-1")
+  const tag = useTag(isManageTagBooksDialogOpenedWith || "-1")
   const books = useRecoilValue(booksAsArrayState)
-  const addTagToBook = useAddTagToBook()
-  const removeFromBook = useRemoveTagFromBook()
+  const { mutate: addTagToBook } = useAddTagToBook()
+  const { mutate: removeFromBook } = useRemoveTagFromBook()
   const tagBooks = useMemo(() => tag?.books?.map((item) => item) || [], [tag])
   const tagId = isManageTagBooksDialogOpenedWith
 
@@ -41,7 +40,7 @@ export const ManageTagBooksDialog: FC<{}> = () => {
   const onItemClick = useCallback(
     ({ id: bookId, selected }: { id: string; selected: boolean }) => {
       if (selected) {
-        tagId && removeFromBook({ bookId, tagId })
+        tagId && removeFromBook({ _id: bookId, tagId })
       } else {
         tagId && addTagToBook({ _id: bookId, tagId })
       }
