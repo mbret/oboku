@@ -18,9 +18,8 @@ import { useCreateDataSource } from "../../dataSources/helpers"
 import { GoogleDriveDataSourceData } from "@oboku/shared"
 import { useDrivePicker } from "./lib/useDrivePicker"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
-import { useIsMountedState$ } from "../../common/rxjs/useIsMountedState$"
 import { catchError, EMPTY, takeUntil, tap } from "rxjs"
-import { useDatabase } from "../../rxdb"
+import { useUnmountObservable } from "reactjrx"
 
 export const GoogleDriveDataSource: FC<{
   onClose: () => void
@@ -38,11 +37,10 @@ export const GoogleDriveDataSource: FC<{
     { name: string; id: string }[]
   >([{ name: "", id: "root" }])
   const currentFolder = folderChain[folderChain.length - 1]
-  const { db$ } = useDatabase()
-  const tags = useTags(db$)
-  const tagIds = useTagIds(db$)
+  const { data: tags } = useTags()
+  const { data: tagIds = [] } = useTagIds()
   const { pick } = useDrivePicker({ requestPopup })
-  const { unMount$ } = useIsMountedState$()
+  const unMount$ = useUnmountObservable()
 
   return (
     <>
@@ -59,7 +57,7 @@ export const GoogleDriveDataSource: FC<{
               <ListItemText
                 primary="Apply tags"
                 secondary={Object.keys(selectedTags)
-                  .map((id) => tags.find((tag) => tag?._id === id)?.name)
+                  .map((id) => tags?.find((tag) => tag?._id === id)?.name)
                   .join(" ")}
               />
             </ListItem>
@@ -103,7 +101,7 @@ export const GoogleDriveDataSource: FC<{
                         setSelectedFolder(data.docs[0])
                       }
                     }),
-                    takeUntil(unMount$),
+                    takeUntil(unMount$.current),
                     catchError((error) => {
                       console.error(error)
 

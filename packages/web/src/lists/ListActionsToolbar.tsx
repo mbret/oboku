@@ -50,7 +50,7 @@ export const ListActionsToolbar: FC<{
               : "Date added"}
           </Button>
         </div>
-        {library?.isLibraryUnlocked && (
+        {library.isLibraryUnlocked && (
           <div
             style={{
               display: "flex",

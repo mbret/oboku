@@ -1,15 +1,12 @@
 import { Box, List, ListItem, ListItemIcon, ListItemText } from "@mui/material"
 import { difference, groupBy } from "ramda"
 import { Fragment, memo, useMemo } from "react"
-import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
 import { Report } from "../debug/report.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { useDatabase } from "../rxdb"
 import { BuildRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
 import { useFixBookReferences } from "./useFixBookReferences"
 import { useDuplicatedResourceIdLinks } from "./useDuplicateLinks"
-// import { useFixLinks } from "./useFixLinks"
 import { useFixBooksDanglingLinks } from "./useFixBooksDanglingLinks"
 import { useBooksDanglingLinks } from "./useBooksDanglingLinks"
 import {
@@ -17,38 +14,42 @@ import {
   useFixDuplicatedBookTitles
 } from "./useDuplicateBooksTitles"
 import { Alert } from "@mui/material"
+import { useObserve } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { switchMap } from "rxjs"
 
 export const ProblemsScreen = memo(() => {
-  const { db: database } = useDatabase()
   const fixCollections = useFixCollections()
   const fixBookReferences = useFixBookReferences()
-  // const fixLinksDuplicate = useFixLinks()
   const fixBooksDanglingLinks = useFixBooksDanglingLinks()
   const duplicatedLinks = useDuplicatedResourceIdLinks()
   const duplicatedBookTitles = useDuplicatedBookTitles()
   const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
-  const { data: collections = [], isLoading: isCollectionsLoading } =
-    useSubscribe$(useMemo(() => database?.obokucollection.find().$, [database]))
-  const { data: books = [], isLoading: isBookLoading } = useSubscribe$(
-    useMemo(() => database?.book.find().$, [database])
+  const collections = useObserve(
+    () => latestDatabase$.pipe(switchMap((db) => db.obokucollection.find().$)),
+    []
+  )
+  const books = useObserve(
+    () => latestDatabase$.pipe(switchMap((db) => db.book.find().$)),
+    []
   )
   const collectionIds = useMemo(
-    () => collections.map((doc) => doc._id),
+    () => collections?.map((doc) => doc._id),
     [collections]
   )
-  const bookIds = useMemo(() => books.map((doc) => doc._id), [books])
-  const booksWithInvalidCollections = books.filter(
-    (doc) => difference(doc.collections, collectionIds).length > 0
+  const bookIds = useMemo(() => books?.map((doc) => doc._id), [books])
+  const booksWithInvalidCollections = books?.filter(
+    (doc) => difference(doc.collections, collectionIds ?? []).length > 0
   )
-  const collectionsWithNonExistingBooks = collections.filter(
-    (doc) => difference(doc.books, bookIds).length > 0
+  const collectionsWithNonExistingBooks = collections?.filter(
+    (doc) => difference(doc.books, bookIds ?? []).length > 0
   )
   const booksWithDanglingLinks = useBooksDanglingLinks()
 
   const duplicatedCollections = useMemo(() => {
     const collectionsByResourceId = groupBy(
       (collection) => collection.resourceId ?? `none`,
-      collections
+      collections ?? []
     )
     const duplicatedCollections = Object.keys(collectionsByResourceId)
       .filter((resourceId) => collectionsByResourceId[resourceId]!.length > 1)
@@ -69,6 +70,7 @@ export const ProblemsScreen = memo(() => {
   }, [collections])
 
   Report.log({
+    books,
     duplicatedBookTitles,
     booksWithDanglingLinks,
     duplicatedLinks
@@ -142,7 +144,7 @@ export const ProblemsScreen = memo(() => {
               />
             </ListItem>
           )}
-          {!isCollectionsLoading && booksWithInvalidCollections.length > 0 && (
+          {!!collections && !!booksWithInvalidCollections?.length && (
             <ListItem
               alignItems="flex-start"
               button
@@ -158,7 +160,7 @@ export const ProblemsScreen = memo(() => {
               />
             </ListItem>
           )}
-          {!isBookLoading && collectionsWithNonExistingBooks.length > 0 && (
+          {!!books && !!collectionsWithNonExistingBooks?.length && (
             <ListItem
               alignItems="flex-start"
               button
@@ -200,7 +202,7 @@ export const ProblemsScreen = memo(() => {
               />
             </ListItem>
           )} */}
-          {booksWithDanglingLinks.length > 0 && (
+          {!!booksWithDanglingLinks?.length && (
             <ListItem
               alignItems="flex-start"
               button

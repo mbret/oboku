@@ -1,19 +1,21 @@
 import { difference } from "ramda"
 import { useMemo } from "react"
-import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
-import { useDatabase } from "../rxdb"
+import { useObserve } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { switchMap } from "rxjs"
 
 export const useBooksDanglingLinks = () => {
-  const { db: database } = useDatabase()
-  const { data: books = [] } = useSubscribe$(
-    useMemo(() => database?.book.find().$, [database])
+  const books = useObserve(
+    () => latestDatabase$.pipe(switchMap((db) => db?.book.find().$)),
+    []
   )
-  const { data: links = [] } = useSubscribe$(
-    useMemo(() => database?.link.find().$, [database])
+  const links = useObserve(
+    () => latestDatabase$.pipe(switchMap((db) => db?.link.find().$)),
+    []
   )
 
   return useMemo(() => {
-    return books.filter(
+    return books?.filter(
       (doc) =>
         difference(doc.links, links?.map((doc) => doc._id) ?? []).length > 0
     )

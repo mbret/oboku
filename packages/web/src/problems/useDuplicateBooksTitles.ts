@@ -2,22 +2,26 @@ import { BookDocType, ReadingStateState } from "@oboku/shared"
 import { groupBy, mergeWith } from "ramda"
 import { useCallback, useMemo } from "react"
 import { DeepMutable } from "rxdb/dist/types/types"
-import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 import { BookDocument } from "../rxdb/schemas/book"
+import { useObserve } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { switchMap } from "rxjs"
 
 export const useDuplicatedBookTitles = () => {
-  const { db: database } = useDatabase()
-
-  const { data: books = [] } = useSubscribe$(
-    useMemo(() => database?.book.find().$, [database])
+  const books = useObserve(
+    () => latestDatabase$.pipe(switchMap((db) => db?.book.find().$)),
+    []
   )
 
   return useMemo(() => {
-    const booksWithValidTitle = books.filter((doc) => !!doc.title)
+    const booksWithValidTitle = books?.filter((doc) => !!doc.title)
 
-    const docsByTitle = groupBy((doc) => doc.title ?? `-1`, booksWithValidTitle)
+    const docsByTitle = groupBy(
+      (doc) => doc.title ?? `-1`,
+      booksWithValidTitle ?? []
+    )
 
     const duplicatedDocs = Object.keys(docsByTitle)
       .filter((title) => docsByTitle[title]!.length > 1)

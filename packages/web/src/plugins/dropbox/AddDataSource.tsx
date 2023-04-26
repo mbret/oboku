@@ -19,7 +19,6 @@ import { useCreateDataSource } from "../../dataSources/helpers"
 import { Picker } from "./Picker"
 import { DropboxFile } from "./types"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
-import { useDatabase } from "../../rxdb"
 
 export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [selectedTags, setSelectedTags] = useState<{
@@ -34,9 +33,8 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
     { name: "", id: "root", isDir: true }
   ])
   const currentFolder = folderChain[folderChain.length - 1]
-  const { db$ } = useDatabase()
-  const tags = useTags(db$)
-  const tagIds = useTagIds(db$)
+  const { data: tags = [] } = useTags()
+  const { data: tagIds = [] } = useTagIds()
   const [showPicker, setShowPicker] = useState(false)
 
   const onPick: ComponentProps<typeof Picker>["onClose"] = (files) => {
