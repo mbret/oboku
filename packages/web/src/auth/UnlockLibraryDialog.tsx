@@ -50,7 +50,7 @@ export const UnlockLibraryDialog: FC<{}> = () => {
     const hashedPassword = crypto.hashContentPassword(data.unlockPassword)
 
     if (contentPassword === hashedPassword) {
-      updateLibraryState({ isLibraryUnlocked: true })
+      updateLibraryState((state) => ({ ...state, isLibraryUnlocked: true }))
       closeModalWithNavigation()
     } else {
       setError(
