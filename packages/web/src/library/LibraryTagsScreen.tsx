@@ -25,7 +25,6 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 
 export const LibraryTagsScreen = () => {
-  const { db$ } = useDatabase()
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(
     undefined
   )
@@ -34,8 +33,8 @@ export const LibraryTagsScreen = () => {
   const setIsTagsTourOpenedState = useSetRecoilState(isTagsTourOpenedState)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] =
     useState<string | undefined>(undefined)
-  const tags = useTagIds(db$)
-  const [addTag] = useCreateTag()
+  const { data: tags = [] } = useTagIds()
+  const { mutate: addTag } = useCreateTag()
   const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(
     FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS
   )

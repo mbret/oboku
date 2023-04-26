@@ -2,14 +2,22 @@ import { useRef } from "react"
 import { useRecoilValue } from "recoil"
 import { useBooksSortedBy } from "../books/helpers"
 import { booksAsArrayState } from "../books/states"
-import { DownloadState } from "../download/states"
+import {
+  DownloadState,
+  useNormalizedBookDownloadsState
+} from "../download/states"
 import { useLibraryState } from "./states"
 
 export const useBooks = () => {
   const results = useRef<string[]>([])
   const library = useLibraryState()
   const filteredTags = library.tags
-  const unsortedBooks = useRecoilValue(booksAsArrayState)
+  const unsortedBooks = useRecoilValue(
+    booksAsArrayState({
+      libraryState: useLibraryState(),
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+    })
+  )
 
   const filteredBooks = unsortedBooks.filter((book) => {
     if (
@@ -20,14 +28,14 @@ export const useBooks = () => {
     }
 
     if (
-      filteredTags.length > 0 &&
+      !!filteredTags?.length &&
       !book?.tags?.some((b) => filteredTags.includes(b))
     ) {
       return false
     }
 
     if (
-      library.readingStates.length > 0 &&
+      !!library.readingStates.length &&
       !library.readingStates.includes(book.readingStateCurrentState)
     ) {
       return false

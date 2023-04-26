@@ -17,6 +17,7 @@ import { collectionIdsState } from "../collections/states"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { CollectionList } from "../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
+import { useLibraryState } from "./states"
 
 type Scroll = Parameters<
   NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
@@ -42,7 +43,7 @@ export const LibraryCollectionScreen = () => {
     libraryCollectionScreenPreviousScroll,
     setLibraryCollectionScreenPreviousScroll
   ] = useRecoilState(libraryCollectionScreenPreviousScrollState)
-  const collections = useRecoilValue(collectionIdsState)
+  const collections = useRecoilValue(collectionIdsState(useLibraryState()))
 
   const onScroll = useDebouncedCallback((value: Scroll) => {
     setLibraryCollectionScreenPreviousScroll(value)
@@ -104,7 +105,7 @@ const AddCollectionDialog: FC<{
   onClose: () => void
 }> = ({ onClose, open }) => {
   const [name, setName] = useState("")
-  const [addCollection] = useCreateCollection()
+  const { mutate: addCollection } = useCreateCollection()
 
   const onInnerClose = () => {
     setName("")

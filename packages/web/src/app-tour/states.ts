@@ -6,6 +6,5 @@ export const [useAppTourState, setAppTourState] = signal<{
   key: "appTourState",
   default: {
     currentOpenedTour: undefined
-  },
-  scoped: false
+  }
 })

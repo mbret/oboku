@@ -27,7 +27,7 @@ import {
   updateLibraryState,
   useLibraryState
 } from "./states"
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
+import { useRecoilState, useRecoilValue } from "recoil"
 import { UploadBookDrawer } from "./UploadBookDrawer"
 import { SortByDialog } from "../books/bookList/SortByDialog"
 import { localSettingsState } from "../settings/states"
@@ -51,9 +51,9 @@ export const LibraryBooksScreen = () => {
   ] = useState<string | undefined>(undefined)
   const library = useLibraryState()
   let numberOfFiltersApplied = 0
-  if ((library?.tags.length || 0) > 0) numberOfFiltersApplied++
-  if ((library?.readingStates.length || 0) > 0) numberOfFiltersApplied++
-  if (library?.downloadState !== undefined) numberOfFiltersApplied++
+  if ((library.tags.length || 0) > 0) numberOfFiltersApplied++
+  if ((library.readingStates.length || 0) > 0) numberOfFiltersApplied++
+  if (library.downloadState !== undefined) numberOfFiltersApplied++
   const books = useBooks()
   const { t } = useTranslation()
 
@@ -139,16 +139,17 @@ export const LibraryBooksScreen = () => {
               : "Date added"}
           </Button>
         </div>
-        {library?.isLibraryUnlocked && (
+        {library.isLibraryUnlocked && (
           <div className={classes.extraInfo}>
             {localSettings.unBlurWhenProtectedVisible && (
               <BlurOffRounded fontSize="small" />
             )}
             <IconButton
               onClick={() => {
-                updateLibraryState({
+                updateLibraryState((state) => ({
+                  ...state,
                   isLibraryUnlocked: false
-                })
+                }))
               }}
               color="primary"
               size="large"
@@ -159,17 +160,18 @@ export const LibraryBooksScreen = () => {
         )}
         <IconButton
           onClick={() => {
-            updateLibraryState({
+            updateLibraryState((state) => ({
+              ...state,
               viewMode:
-                library?.viewMode === LibraryViewMode.GRID
+                library.viewMode === LibraryViewMode.GRID
                   ? LibraryViewMode.LIST
                   : LibraryViewMode.GRID
-            })
+            }))
           }}
           size="large"
           color="primary"
         >
-          {library?.viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
+          {library.viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
         </IconButton>
       </Toolbar>
       <div
@@ -225,7 +227,7 @@ export const LibraryBooksScreen = () => {
         )}
         {books.length > 0 && (
           <BookList
-            viewMode={library?.viewMode}
+            viewMode={library.viewMode}
             sorting={library.sorting}
             headerHeight={listHeaderHeight}
             data={books}
@@ -244,7 +246,7 @@ export const LibraryBooksScreen = () => {
           onClose={() => setIsSortingDialogOpened(false)}
           open={isSortingDialogOpened}
           onChange={(newSort) => {
-            updateLibraryState({ sorting: newSort })
+            updateLibraryState((s) => ({ ...s, sorting: newSort }))
           }}
         />
         <LibraryFiltersDrawer

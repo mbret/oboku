@@ -31,8 +31,7 @@ export const LibraryFiltersDrawer: FC<{
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] =
     useState(false)
-  const { db$ } = useDatabase()
-  const tags = useTagIds(db$)
+  const { data: tags = [] } = useTagIds()
   const library = useLibraryState()
   const selectedTags = library.tags
   const toggleTag = useToggleTag()
@@ -81,12 +80,13 @@ export const LibraryFiltersDrawer: FC<{
             <ListItem
               button
               onClick={() =>
-                updateLibraryState({
+                updateLibraryState((state) => ({
+                  ...state,
                   downloadState:
                     library.downloadState === DownloadState.Downloaded
                       ? undefined
                       : DownloadState.Downloaded
-                })
+                }))
               }
             >
               <ListItemText primary="Only show downloaded" />
@@ -101,10 +101,11 @@ export const LibraryFiltersDrawer: FC<{
             </ListItem>
             <ListItemButton
               onClick={() =>
-                updateLibraryState({
+                updateLibraryState((state) => ({
+                  ...state,
                   isNotInterested:
                     library.isNotInterested === "only" ? "hide" : "only"
-                })
+                }))
               }
             >
               <ListItemText primary="Only show not interested books" />
@@ -157,15 +158,17 @@ const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
           key={readingState}
           onClick={() => {
             if (library.readingStates.includes(readingState)) {
-              updateLibraryState({
+              updateLibraryState((state) => ({
+                ...state,
                 readingStates: library.readingStates.filter(
                   (s) => s !== readingState
                 )
-              })
+              }))
             } else {
-              updateLibraryState({
+              updateLibraryState((state) => ({
+                ...state,
                 readingStates: [...library.readingStates, readingState]
-              })
+              }))
             }
           }}
         >

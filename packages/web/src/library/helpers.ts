@@ -1,7 +1,7 @@
 import { ReadingStateState } from "@oboku/shared"
 import { useCallback } from "react"
 import { useRecoilCallback, useSetRecoilState } from "recoil"
-import { libraryState, syncState } from "./states"
+import { getLibraryState, updateLibraryState, syncState } from "./states"
 
 export const useSyncLibrary = () => {
   const setSyncState = useSetRecoilState(syncState)
@@ -14,19 +14,18 @@ export const useSyncLibrary = () => {
 
 export const useToggleTag = () =>
   useRecoilCallback(
-    ({ set, snapshot }) =>
-      async (tagId: string) => {
-        const library = await snapshot.getPromise(libraryState)
-        const tagExist = library.tags.find((id) => tagId === id)
-        if (tagExist) {
-          set(libraryState, (old) => ({
-            ...old,
-            tags: old.tags.filter((id) => id !== tagId)
-          }))
-        } else {
-          set(libraryState, (old) => ({ ...old, tags: [...old.tags, tagId] }))
-        }
-      },
+    () => async (tagId: string) => {
+      const library = getLibraryState()
+      const tagExist = library.tags.find((id) => tagId === id)
+      if (tagExist) {
+        updateLibraryState((old) => ({
+          ...old,
+          tags: old.tags.filter((id) => id !== tagId)
+        }))
+      } else {
+        updateLibraryState((old) => ({ ...old, tags: [...old.tags, tagId] }))
+      }
+    },
     []
   )
 
