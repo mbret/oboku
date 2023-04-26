@@ -10,7 +10,7 @@ import { shareReplay } from "rxjs"
  */
 let dbPromise: ReturnType<typeof createDatabase> | undefined = undefined
 
-export const [, setDatabase, database$] = signal<Database | undefined>({
+export const [, setDatabase, , database$] = signal<Database | undefined>({
   key: "databaseState"
 })
 

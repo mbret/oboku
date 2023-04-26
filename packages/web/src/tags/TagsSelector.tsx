@@ -13,7 +13,7 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
   onChange: onUpChange
 }) => {
   const classes = useStyles()
-  const tags = useTagIds()
+  const { data: tags = [] } = useTagIds()
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
   const onChange: NonNullable<SelectProps[`onChange`]> = (event) => {

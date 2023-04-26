@@ -31,10 +31,16 @@ import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
 import { useMutation } from "reactjrx"
 import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
+import { useLibraryState } from "../library/states"
+import { useNormalizedBookDownloadsState } from "../download/states"
 
 export const ManageStorageScreen = () => {
-  const bookIds = useRecoilValue(downloadedBookWithUnsafeProtectedIdsState)
-  const visibleBookIds = useRecoilValue(visibleBookIdsState)
+  const bookIds = useRecoilValue(
+    downloadedBookWithUnsafeProtectedIdsState({
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+    })
+  )
+  const visibleBookIds = useRecoilValue(visibleBookIdsState(useLibraryState()))
   const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])
   const removeDownloadFile = useRemoveDownloadFile()

@@ -114,10 +114,11 @@ export const ProfileScreen = () => {
         <ListItem
           button
           onClick={() => {
-            if (library?.isLibraryUnlocked) {
-              updateLibraryState({
+            if (library.isLibraryUnlocked) {
+              updateLibraryState((state) => ({
+                ...state,
                 isLibraryUnlocked: false
-              })
+              }))
             } else {
               isUnlockLibraryDialogOpened(true)
             }
@@ -125,16 +126,16 @@ export const ProfileScreen = () => {
         >
           <ListItemText
             primary={
-              library?.isLibraryUnlocked
+              library.isLibraryUnlocked
                 ? "Protected contents are visible"
                 : "Protected contents are hidden"
             }
             secondary={
-              library?.isLibraryUnlocked ? "Click to lock" : "Click to unlock"
+              library.isLibraryUnlocked ? "Click to lock" : "Click to unlock"
             }
           />
-          {library?.isLibraryUnlocked && <LockOpenRounded color="action" />}
-          {!library?.isLibraryUnlocked && <LockRounded color="action" />}
+          {library.isLibraryUnlocked && <LockOpenRounded color="action" />}
+          {!library.isLibraryUnlocked && <LockRounded color="action" />}
         </ListItem>
         <ListItem
           button

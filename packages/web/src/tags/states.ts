@@ -1,7 +1,7 @@
 import { atom, selector } from "recoil"
 import { TagsDocType } from "@oboku/shared"
 import { map, switchMap } from "rxjs"
-import { bind, useObserve } from "reactjrx"
+import {  useObserve, useQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 
 export const useTag = (id: string) =>
@@ -15,36 +15,30 @@ export const useTag = (id: string) =>
     [id]
   )
 
-export const [useTags, tags$] = bind({
-  stream: latestDatabase$.pipe(
-    switchMap((database) => database.tag.find({}).$)
-  ),
-  default: []
-})
+const tags$ = latestDatabase$.pipe(
+  switchMap((database) => database.tag.find({}).$)
+)
 
-export const [useProtectedTags, protectedTags$] = bind({
-  stream: tags$.pipe(
-    map((tag) => tag.filter(({ isProtected }) => isProtected))
-  ),
-  default: []
-})
+export const useTags = () =>
+  useQuery(() =>
+    latestDatabase$.pipe(switchMap((database) => database.tag.find({}).$))
+  )
 
-export const [useTagIds] = bind({
-  stream: tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-  default: []
-})
+export const protectedTags$ = tags$.pipe(
+  map((tag) => tag.filter(({ isProtected }) => isProtected))
+)
 
-export const [, blurredTags$] = bind({
-  stream: tags$.pipe(
-    map((tags) => tags.filter(({ isBlurEnabled }) => isBlurEnabled))
-  ),
-  default: []
-})
+export const useProtectedTags = () => useQuery(protectedTags$)
 
-export const [useBlurredTagIds] = bind({
-  stream: blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-  default: []
-})
+export const useTagIds = () =>
+  useQuery(() => tags$.pipe(map((tags) => tags.map(({ _id }) => _id))))
+
+export const blurredTags$ = tags$.pipe(
+  map((tags) => tags.filter(({ isBlurEnabled }) => isBlurEnabled))
+)
+
+export const useBlurredTagIds = () =>
+  useQuery(() => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))))
 
 export const normalizedTagsState = atom<
   Record<string, TagsDocType | undefined>
