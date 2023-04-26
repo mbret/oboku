@@ -3,7 +3,7 @@ import { Backdrop, CircularProgress, useTheme } from "@mui/material"
 import { useRecoilCallback, useRecoilValue } from "recoil"
 import { atom, selector } from "recoil"
 import { useCSS } from "../common/utils"
-import { createSignal } from "@react-rxjs/utils"
+import { trigger } from "reactjrx"
 
 type Key = string
 
@@ -17,8 +17,8 @@ export const isLockedState = selector({
   get: ({ get }) => !!get(lockState).length
 })
 
-export const [lock$, lock] = createSignal<string>()
-export const [unlock$, unlock] = createSignal<string>()
+export const [lock$, lock] = trigger<string>()
+export const [unlock$, unlock] = trigger<string>()
 
 export const useLock = () => {
   const unlock = useRecoilCallback(
