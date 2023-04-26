@@ -1,4 +1,4 @@
-import { ComponentProps, useState } from "react"
+import { ComponentProps, memo, useState } from "react"
 import {
   CheckCircleRounded,
   RadioButtonUncheckedOutlined
@@ -15,6 +15,8 @@ import {
 } from "@mui/material"
 import { useRecoilState, UnwrapRecoilValue } from "recoil"
 import { localSettingsState } from "./states"
+import { useQuery, useUnmountObservable } from "reactjrx"
+import { finalize, interval, of, takeUntil, tap } from "rxjs"
 
 type LocalSettings = UnwrapRecoilValue<typeof localSettingsState>
 
@@ -34,7 +36,7 @@ const showCollectionWithProtectedContentLabels: Record<
   hasNormalContent: "If the collection has non protected content as well"
 }
 
-export const SettingsScreen = () => {
+export const SettingsScreen = memo(() => {
   const [localSettings, setLocalSettings] = useRecoilState(localSettingsState)
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isShowCollectionDrawerOpened, setIsShowCollectionDrawerOpened] =
@@ -265,7 +267,7 @@ export const SettingsScreen = () => {
       />
     </>
   )
-}
+})
 
 const MultipleChoiceDrawer = <Choice extends { value: string; label: string }>({
   choices,

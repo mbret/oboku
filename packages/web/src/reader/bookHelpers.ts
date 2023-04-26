@@ -5,8 +5,9 @@ import { useDebounce } from "react-use"
 
 export const useUpdateBookState = (bookId: string) => {
   const [updateBook] = useAtomicUpdateBook()
-  const { beginCfi } = usePagination() ?? {}
-  const totalBookProgress = usePagination()?.percentageEstimateOfBook
+  const {
+    data: { beginCfi, percentageEstimateOfBook: totalBookProgress } = {}
+  } = usePagination()
 
   const updater = async () => {
     updateBook(bookId, (old) => ({

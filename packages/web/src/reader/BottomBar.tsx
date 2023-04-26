@@ -17,7 +17,7 @@ export const BottomBar = () => {
   const isLoading = !isBookReady
   const theme = useTheme()
   const reader = useReader()
-  const pagination = usePagination()
+  const { data: pagination } = usePagination()
   // const showScrubber = (totalPages || 1) > 1
   const showScrubber = true
 

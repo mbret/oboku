@@ -2,7 +2,7 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
-import { useState, useEffect, useCallback, FC } from "react"
+import { useState, useEffect, useCallback, FC, memo } from "react"
 import { useNavigate } from "react-router-dom"
 import { useMeasure } from "react-use"
 import { Box, Button, Link, Typography, useTheme } from "@mui/material"
@@ -14,6 +14,7 @@ import {
   manifestState,
   ReactReaderProps,
   ReaderInstance,
+  setReader,
   useReader
 } from "./states"
 import { TopBar } from "./TopBar"
@@ -35,8 +36,7 @@ import { Notification } from "./Notification"
 
 export const Reader: FC<{
   bookId: string
-  onReader: (reader: ReaderInstance) => void
-}> = ({ bookId, onReader }) => {
+}> = memo(({ bookId }) => {
   const reader = useReader()
   const [isBookReady, setIsBookReady] = useRecoilState(isBookReadyState)
   const readerSettings = useRecoilValue(readerSettingsState)
@@ -200,7 +200,7 @@ export const Reader: FC<{
             manifest={manifest}
             loadOptions={loadOptions}
             onReady={onBookReady}
-            onReader={onReader}
+            onReader={setReader}
             createReader={createAppReader}
           />
         )}
@@ -217,7 +217,7 @@ export const Reader: FC<{
       <BottomBar />
     </div>
   )
-}
+})
 
 const useStyles = () => {
   const theme = useTheme()

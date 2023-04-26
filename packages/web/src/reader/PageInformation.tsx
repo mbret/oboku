@@ -14,8 +14,9 @@ export const PageInformation: FC<{
   const theme = useTheme()
   const currentPage = useCurrentPage() || 0
   const { renditionLayout } = useRecoilValue(manifestState) || {}
-  const { percentageEstimateOfBook, beginChapterInfo: chapterInfo } =
-    usePagination() ?? {}
+  const {
+    data: { percentageEstimateOfBook, beginChapterInfo: chapterInfo } = {}
+  } = usePagination()
   const roundedProgress = Math.floor((percentageEstimateOfBook || 0) * 100)
   const displayableProgress = roundedProgress > 0 ? roundedProgress : 1
   const currentPageToDisplay = currentPage + 1

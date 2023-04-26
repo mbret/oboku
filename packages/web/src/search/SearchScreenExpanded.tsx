@@ -3,8 +3,7 @@ import { useParams } from "react-router-dom"
 import { BookList } from "../books/bookList/BookList"
 import { CollectionList } from "../collections/list/CollectionList"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { useBooks, useCollections } from "./states"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { useBooksForSearch, useCollectionsForSearch } from "./states"
 
 const getTitle = (type?: string) => {
   switch (type) {
@@ -17,8 +16,8 @@ const getTitle = (type?: string) => {
 
 export const SearchScreenExpanded = () => {
   const { type, search } = useParams()
-  const collections = useCollections(latestDatabase$, search ?? "")
-  const books = useBooks(latestDatabase$, search ?? "")
+  const { data: collections = [] } = useCollectionsForSearch(search ?? "")
+  const { data: books = [] } = useBooksForSearch(search ?? "")
 
   return (
     <>

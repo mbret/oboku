@@ -3,10 +3,11 @@ import { Box, List, ListItem, ListItemText, ListSubheader } from "@mui/material"
 import { useRecoilValue } from "recoil"
 import { bookIdsState } from "../books/states"
 import { collectionsAsArrayState } from "../collections/states"
+import { useLibraryState } from "../library/states"
 
 export const StatisticsScreen = () => {
   const bookIds = useRecoilValue(bookIdsState)
-  const collectionsAsArray = useRecoilValue(collectionsAsArrayState)
+  const collectionsAsArray = useRecoilValue(collectionsAsArrayState(useLibraryState()))
 
   return (
     <>

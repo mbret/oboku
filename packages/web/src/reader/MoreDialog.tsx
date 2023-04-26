@@ -44,7 +44,7 @@ export const MoreDialog: FC<{}> = () => {
   const { toggleMoreDialog } = useMoreDialog()
   const [value, setValue] = React.useState("toc")
   const reader = useReader()
-  const pagination = usePagination()
+  const { data: pagination } = usePagination()
   const { title, nav } = useRecoilValue(manifestState) || {}
   const chapterInfo = pagination?.beginChapterInfo
   const currentPage = useCurrentPage() || 0

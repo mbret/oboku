@@ -1,21 +1,24 @@
 import { sortByTitleComparator } from "@oboku/shared"
-import { bind } from "@react-rxjs/core"
-import { combineLatest, map, Observable, of, switchMap } from "rxjs"
+import { combineLatest, map, switchMap } from "rxjs"
 import { visibleBooks$ } from "../books/states"
-import { Database } from "../rxdb"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { signal, useQuery } from "reactjrx"
+
+export const [useSearchValue, setSearch, search$] = signal({
+  default: ""
+})
 
 export const REGEXP_SPECIAL_CHAR =
   /[\!\#\$\%\^\&\*\)\(\+\=\.\<\>\{\}\[\]\:\;\'\"\|\~\`\_\-]/g
 
-export const [useCollections] = bind(
-  (database$: Observable<Database>, search: string | Observable<string>) =>
+export const useCollectionsForSearch = (search: string) =>
+  useQuery(["search", "collections", search], () =>
     combineLatest([
-      database$.pipe(
+      latestDatabase$.pipe(
         switchMap((database) => database.collections.obokucollection.find().$)
-      ),
-      typeof search === "string" ? of(search) : search
+      )
     ]).pipe(
-      map(([data, search]) => {
+      map(([data]) => {
         if (!search) return []
 
         return data
@@ -31,17 +34,13 @@ export const [useCollections] = bind(
           .sort((a, b) => sortByTitleComparator(a.name || "", b.name || ""))
       }),
       map((items) => items.map(({ _id }) => _id))
-    ),
-  []
-)
+    )
+  )
 
-export const [useBooks] = bind(
-  (database$: Observable<Database>, search: string | Observable<string>) =>
-    combineLatest([
-      visibleBooks$,
-      typeof search === "string" ? of(search) : search
-    ]).pipe(
-      map(([data, search]) => {
+export const useBooksForSearch = (search: string) =>
+  useQuery(["search", "books", search], () =>
+    combineLatest([visibleBooks$]).pipe(
+      map(([data]) => {
         if (!search) return []
 
         return data
@@ -58,6 +57,5 @@ export const [useBooks] = bind(
           .sort((a, b) => sortByTitleComparator(a.title || "", b.title || ""))
       }),
       map((items) => items.map(({ _id }) => _id))
-    ),
-  []
-)
+    )
+  )
