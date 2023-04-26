@@ -2,7 +2,11 @@ import { useEffect } from "react"
 import localforage from "localforage"
 import { DOWNLOAD_PREFIX } from "../constants.shared"
 import { useRecoilCallback } from "recoil"
-import { normalizedBookDownloadsState, DownloadState } from "./states"
+import {
+  DownloadState,
+  getNormalizedBookDownloadsState,
+  setNormalizedBookDownloadsState
+} from "./states"
 
 const getKeys = async () =>
   (await localforage.keys())
@@ -13,7 +17,7 @@ export const useSynchronizeStateWithStorageEffect = () => {
   const restoreStateForFinishedDownloadIfNeeded = useRecoilCallback(
     ({ snapshot, set }) =>
       async () => {
-        const state = await snapshot.getPromise(normalizedBookDownloadsState)
+        const state = getNormalizedBookDownloadsState()
         const keys = await getKeys()
 
         await Promise.all(
@@ -26,7 +30,7 @@ export const useSynchronizeStateWithStorageEffect = () => {
                 `${DOWNLOAD_PREFIX}-${bookId}`
               )
               if (item) {
-                set(normalizedBookDownloadsState, (old) => ({
+                setNormalizedBookDownloadsState((old) => ({
                   ...old,
                   [bookId]: {
                     downloadProgress: 100,
@@ -45,7 +49,7 @@ export const useSynchronizeStateWithStorageEffect = () => {
   const removeBooksThatAreNotPresentPhysicallyAnymore = useRecoilCallback(
     ({ snapshot, set }) =>
       async () => {
-        const state = await snapshot.getPromise(normalizedBookDownloadsState)
+        const state = getNormalizedBookDownloadsState()
         const keys = await getKeys()
         const bookInProgressOrDownloadedButNotPresentAnymore = Object.keys(
           state
@@ -56,7 +60,7 @@ export const useSynchronizeStateWithStorageEffect = () => {
         )
 
         if (bookInProgressOrDownloadedButNotPresentAnymore.length > 0) {
-          set(normalizedBookDownloadsState, (old) =>
+          setNormalizedBookDownloadsState((old) =>
             Object.keys(old)
               .filter(
                 (id) =>

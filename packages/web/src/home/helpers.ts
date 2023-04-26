@@ -4,9 +4,16 @@ import { useRecoilValue } from "recoil"
 import { booksAsArrayState } from "../books/states"
 import { ReadingStateState } from "@oboku/shared"
 import { useBooksSortedBy } from "../books/helpers"
+import { useLibraryState } from "../library/states"
+import { useNormalizedBookDownloadsState } from "../download/states"
 
 export const useContinueReadingBooks = () => {
-  const booksAsArray = useRecoilValue(booksAsArrayState)
+  const booksAsArray = useRecoilValue(
+    booksAsArrayState({
+      libraryState: useLibraryState(),
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+    })
+  )
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
 
   return useMemo(
@@ -21,7 +28,12 @@ export const useContinueReadingBooks = () => {
 }
 
 export const useRecentlyAddedBooks = () => {
-  const books = useRecoilValue(booksAsArrayState)
+  const books = useRecoilValue(
+    booksAsArrayState({
+      libraryState: useLibraryState(),
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+    })
+  )
 
   return useMemo(() => {
     const booksSortedByDate = R.sort(R.descend(R.prop("createdAt")), books)

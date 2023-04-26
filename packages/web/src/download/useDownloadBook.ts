@@ -2,7 +2,11 @@ import localforage from "localforage"
 import { useCallback } from "react"
 import throttle from "lodash.throttle"
 import { UnwrapRecoilValue, useRecoilCallback, useSetRecoilState } from "recoil"
-import { DownloadState, normalizedBookDownloadsState } from "./states"
+import {
+  DownloadState,
+  setNormalizedBookDownloadsState,
+  useNormalizedBookDownloadsState
+} from "./states"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 import { DOWNLOAD_PREFIX } from "../constants.shared"
@@ -18,16 +22,15 @@ import { plugin } from "../plugins/local"
 
 export const useDownloadBook = () => {
   const downloadBook = useDownloadBookFromDataSource()
-  const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
   const { db: database } = useDatabase()
   const dialog = useDialogManager()
 
   const setDownloadData = useCallback(
     (
       bookId: string,
-      data: UnwrapRecoilValue<typeof normalizedBookDownloadsState>[number]
+      data: ReturnType<typeof useNormalizedBookDownloadsState>[number]
     ) => {
-      setBookDownloadsState((prev) => ({
+      setNormalizedBookDownloadsState((prev) => ({
         ...prev,
         [bookId]: {
           ...prev[bookId],
@@ -35,7 +38,7 @@ export const useDownloadBook = () => {
         }
       }))
     },
-    [setBookDownloadsState]
+    []
   )
 
   return useRecoilCallback(
