@@ -1,7 +1,6 @@
 import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
 import { DataSourceDocType, ObokuErrorCode } from "@oboku/shared"
-import { useRxMutation } from "../rxdb/hooks"
 import { Report } from "../debug/report.shared"
 import { useRecoilCallback } from "recoil"
 import { plugins } from "../plugins/configure"
@@ -11,9 +10,10 @@ import { useNetworkState } from "react-use"
 import { useSync } from "../rxdb/useSync"
 import { AtomicUpdateFunction } from "rxdb"
 import { catchError, EMPTY, from, switchMap, map, of } from "rxjs"
-import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
+import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { isPluginError } from "@oboku/plugin-front"
+import { useMutation } from "reactjrx"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
@@ -74,10 +74,8 @@ export const useCreateDataSource = () => {
     DataSourceDocType,
     "_id" | "rx_model" | "_rev" | `rxdbMeta`
   >
+  const { db } = useDatabase()
   const synchronize = useSynchronizeDataSource()
-  const [createDataSource] = useRxMutation((db, variables: Payload) =>
-    db?.datasource.post({ ...variables })
-  )
   const network = useNetworkState()
 
   return async (
@@ -86,23 +84,27 @@ export const useCreateDataSource = () => {
       "lastSyncedAt" | "createdAt" | "modifiedAt" | "syncStatus"
     >
   ) => {
-    const dataSource = await createDataSource({
+    const dataSource = await db?.datasource.post({
       ...data,
       lastSyncedAt: null,
       createdAt: new Date().toISOString(),
       modifiedAt: null,
       syncStatus: null
     })
-    if (network.online) {
+
+    if (dataSource && network.online) {
       await synchronize(dataSource._id)
     }
   }
 }
 
-export const useRemoveDataSource = () =>
-  useRxMutation((db, { id }: { id: string }) =>
-    db.datasource.findOne({ selector: { _id: id } }).remove()
+export const useRemoveDataSource = () => {
+  const { db } = useDatabase()
+
+  return useMutation(async ({ id }: { id: string }) =>
+    db?.datasource.findOne({ selector: { _id: id } }).remove()
   )
+}
 
 export const useAtomicUpdateDataSource = () => {
   const { db: database } = useDatabase()

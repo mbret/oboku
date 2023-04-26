@@ -1,5 +1,5 @@
 import { switchMap } from "rxjs"
-import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
+import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
 import { useLibraryState } from "../library/states"
 import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"

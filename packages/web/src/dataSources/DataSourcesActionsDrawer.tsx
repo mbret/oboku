@@ -23,7 +23,7 @@ export const DataSourcesActionsDrawer: FC<{
   onClose: () => void
 }> = memo(({ openWith, onClose }) => {
   const syncDataSource = useSynchronizeDataSource()
-  const [remove] = useRemoveDataSource()
+  const { mutate: remove } = useRemoveDataSource()
   const dataSource = useDataSource(openWith)
   const library = useLibraryState()
 
