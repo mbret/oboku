@@ -4,6 +4,7 @@ import { collectionIdsState } from "../collections/states"
 import { useAddCollectionToBook, useRemoveCollectionFromBook } from "./helpers"
 import { bookState } from "./states"
 import { CollectionsSelectionDialog } from "../collections/CollectionsSelectionDialog"
+import { useLibraryState } from "../library/states"
 
 const openManageBookCollectionsDialogState = atom<string | undefined>({
   key: "openManageBookCollectionsDialogState",
@@ -34,10 +35,10 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
     openManageBookCollectionsDialogState
   )
   const open = !!id
-  const collections = useRecoilValue(collectionIdsState)
+  const collections = useRecoilValue(collectionIdsState(useLibraryState()))
   const book = useRecoilValue(bookState(id || "-1"))
-  const [addToBook] = useAddCollectionToBook()
-  const [removeFromBook] = useRemoveCollectionFromBook()
+  const { mutate: addToBook } = useAddCollectionToBook()
+  const { mutate: removeFromBook } = useRemoveCollectionFromBook()
   const bookCollection = book?.collections
 
   const isSelected = (id: string) =>

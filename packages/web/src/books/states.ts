@@ -1,7 +1,7 @@
 import { intersection } from "ramda"
 import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil"
 import { BookDocType } from "@oboku/shared"
-import { libraryState, libraryState$ } from "../library/states"
+import { getLibraryState, libraryState$ } from "../library/states"
 import {
   normalizedTagsState,
   protectedTagIdsState,
@@ -11,16 +11,15 @@ import { linkState } from "../links/states"
 import {
   bookDownloadsState,
   DownloadState,
-  normalizedBookDownloadsState
+  useNormalizedBookDownloadsState
 } from "../download/states"
 import {
   collectionState,
   normalizedCollectionsState
 } from "../collections/states"
-import { bind } from "@react-rxjs/core"
-import { map, Observable, switchMap, tap, withLatestFrom } from "rxjs"
-import { Database } from "../rxdb"
+import { map, switchMap, withLatestFrom } from "rxjs"
 import { plugin } from "../plugins/local"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 
 /**
  * @deprecated
@@ -70,10 +69,23 @@ export const bookState = selectorFamily({
 export const enrichedBookState = selectorFamily({
   key: "enrichedBookState",
   get:
-    (bookId: string) =>
+    ({
+      bookId,
+      normalizedBookDownloadsState
+    }: {
+      bookId: string
+      normalizedBookDownloadsState: ReturnType<
+        typeof useNormalizedBookDownloadsState
+      >
+    }) =>
     ({ get }) => {
       const book = get(bookState(bookId))
-      const downloadState = get(bookDownloadsState(bookId))
+      const downloadState = get(
+        bookDownloadsState({
+          bookId,
+          normalizedBookDownloadsState
+        })
+      )
       const protectedTags = get(protectedTagIdsState)
       const linkId = book?.links[0]
 
@@ -97,37 +109,56 @@ export const enrichedBookState = selectorFamily({
 /**
  * @deprecated
  */
-export const downloadedBookWithUnsafeProtectedIdsState = selector({
+export const downloadedBookWithUnsafeProtectedIdsState = selectorFamily({
   key: "downloadedBookWithUnsafeProtectedIdsState",
-  get: ({ get }) => {
-    const book = get(bookIdsState)
-    // const book = get(visibleBookIdsState)
-    const downloadState = get(normalizedBookDownloadsState)
+  get:
+    ({
+      normalizedBookDownloadsState
+    }: {
+      normalizedBookDownloadsState: ReturnType<
+        typeof useNormalizedBookDownloadsState
+      >
+    }) =>
+    ({ get }) => {
+      const book = get(bookIdsState)
+      const downloadState = normalizedBookDownloadsState
 
-    return book.filter(
-      (id) => downloadState[id]?.downloadState === DownloadState.Downloaded
-    )
-  }
+      return book.filter(
+        (id) => downloadState[id]?.downloadState === DownloadState.Downloaded
+      )
+    }
 })
 
 /**
  * @deprecated
  */
-export const booksAsArrayState = selector({
+export const booksAsArrayState = selectorFamily({
   key: "booksAsArray",
-  get: ({ get }) => {
-    const books = get(normalizedBooksState)
-    const bookIds = get(visibleBookIdsState)
+  get:
+    ({
+      libraryState,
+      normalizedBookDownloadsState
+    }: {
+      libraryState: ReturnType<typeof getLibraryState>
+      normalizedBookDownloadsState: ReturnType<
+        typeof useNormalizedBookDownloadsState
+      >
+    }) =>
+    ({ get }) => {
+      const books = get(normalizedBooksState)
+      const bookIds = get(visibleBookIdsState(libraryState))
 
-    return bookIds.map((id) => {
-      const downloadState = get(bookDownloadsState(id))
+      return bookIds.map((id) => {
+        const downloadState = get(
+          bookDownloadsState({ bookId: id, normalizedBookDownloadsState })
+        )
 
-      return {
-        ...(books[id] as Book),
-        downloadState
-      }
-    })
-  }
+        return {
+          ...(books[id] as Book),
+          downloadState
+        }
+      })
+    }
 })
 
 /**
@@ -145,21 +176,22 @@ export const bookIdsState = selector({
 /**
  * @deprecated
  */
-export const visibleBookIdsState = selector({
+export const visibleBookIdsState = selectorFamily({
   key: "visibleBookIdsState",
-  get: ({ get }) => {
-    const books = get(normalizedBooksState)
-    const { isLibraryUnlocked } = get(libraryState)
-    const protectedTags = get(protectedTagIdsState)
+  get:
+    ({ isLibraryUnlocked }: ReturnType<typeof getLibraryState>) =>
+    ({ get }) => {
+      const books = get(normalizedBooksState)
+      const protectedTags = get(protectedTagIdsState)
 
-    if (isLibraryUnlocked) return Object.keys(books)
+      if (isLibraryUnlocked) return Object.keys(books)
 
-    return Object.values(books)
-      .filter(
-        (book) => intersection(protectedTags, book?.tags || []).length === 0
-      )
-      .map((book) => book?._id || "-1")
-  }
+      return Object.values(books)
+        .filter(
+          (book) => intersection(protectedTags, book?.tags || []).length === 0
+        )
+        .map((book) => book?._id || "-1")
+    }
 })
 
 /**
@@ -197,40 +229,42 @@ export const bookLinksState = selectorFamily({
 export const bookCollectionsState = selectorFamily({
   key: "bookCollectionsState",
   get:
-    (bookId: string) =>
+    ({
+      bookId,
+      libraryState
+    }: {
+      bookId: string
+      libraryState: ReturnType<typeof getLibraryState>
+    }) =>
     ({ get }) => {
       const book = get(bookState(bookId))
 
-      return book?.collections?.map((id) => get(collectionState(id)))
+      return book?.collections?.map((id) =>
+        get(collectionState({ id, libraryState }))
+      )
     }
 })
 
-export const [useBooks, books$] = bind(
-  (database$: Observable<Database>) =>
-    database$.pipe(switchMap((database) => database.book.find({}).$)),
-  []
+export const books$ = latestDatabase$.pipe(
+  switchMap((database) => database?.book.find({}).$)
 )
 
-export const [useVisibleBooks, visibleBooks$] = bind(
-  (database$: Observable<Database>) =>
-    books$(database$).pipe(
-      withLatestFrom(protectedTags$(database$)),
-      withLatestFrom(libraryState$),
-      map(([[books, protectedTags], libraryState]) =>
-        books.filter(({ tags }) => {
-          if (
-            !libraryState.isLibraryUnlocked &&
-            intersection(
-              protectedTags.map(({ _id }) => _id),
-              tags
-            ).length
-          ) {
-            return false
-          }
+export const visibleBooks$ = books$.pipe(
+  withLatestFrom(protectedTags$),
+  withLatestFrom(libraryState$),
+  map(([[books = [], protectedTags], libraryState]) =>
+    books.filter(({ tags }) => {
+      if (
+        !libraryState.isLibraryUnlocked &&
+        intersection(
+          protectedTags.map(({ _id }) => _id),
+          tags
+        ).length
+      ) {
+        return false
+      }
 
-          return true
-        })
-      )
-    ),
-  []
+      return true
+    })
+  )
 )

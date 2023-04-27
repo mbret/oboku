@@ -58,8 +58,8 @@ export const protectedTagIdsState = selector({
   }
 })
 
-export const bluredTagIdsState = selector<string[]>({
-  key: "bluredTagIdsState",
+export const blurredTagIdsState = selector<string[]>({
+  key: "blurredTagIdsState",
   get: ({ get }) => {
     const tags = get(normalizedTagsState)
 

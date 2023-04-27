@@ -9,16 +9,28 @@ import { collectionState } from "./states"
 import { useMemo } from "react"
 import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
+import { useLibraryState } from "../library/states"
+import { useNormalizedBookDownloadsState } from "../download/states"
 
 export const ManageCollectionBooksDialog: FC<{
   onClose: () => void
   open: boolean
   collectionId: string
 }> = ({ onClose, open, collectionId }) => {
-  const collection = useRecoilValue(collectionState(collectionId || "-1"))
-  const books = useRecoilValue(booksAsArrayState)
-  const [addToBook] = useAddCollectionToBook()
-  const [removeFromBook] = useRemoveCollectionFromBook()
+  const collection = useRecoilValue(
+    collectionState({
+      id: collectionId || "-1",
+      libraryState: useLibraryState()
+    })
+  )
+  const books = useRecoilValue(
+    booksAsArrayState({
+      libraryState: useLibraryState(),
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+    })
+  )
+  const { mutate: addToBook } = useAddCollectionToBook()
+  const { mutate: removeFromBook } = useRemoveCollectionFromBook()
   const collectionBooks = useMemo(
     () => collection?.books?.map((item) => item) || [],
     [collection]

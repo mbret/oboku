@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import {
   EMPTY,
   from,
@@ -22,7 +21,7 @@ import {
   upsertBookLinkEnd$
 } from "./triggers"
 import { useRefreshBookMetadata } from "./helpers"
-import { useObserve, useSubscribeEffect } from "reactjrx"
+import { useSubscribeEffect } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 
 const useUpsertBookLinkActionEffect = () => {
@@ -30,9 +29,9 @@ const useUpsertBookLinkActionEffect = () => {
   const refreshBookMetadata = useRefreshBookMetadata()
   const removeDanglingLinks = useRemoveDanglingLinks()
 
-  useEffect(() => {
-    const subscription = upsertBookLink$
-      .pipe(
+  useSubscribeEffect(
+    () =>
+      upsertBookLink$.pipe(
         switchMap((data) => {
           return from(
             Promise.all([
@@ -90,17 +89,13 @@ const useUpsertBookLinkActionEffect = () => {
             })
           )
         })
-      )
-      .subscribe()
+      ),
+    [database]
+  )
 
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [database])
-
-  useEffect(() => {
-    const subscription = upsertBookLinkEnd$
-      .pipe(
+  useSubscribeEffect(
+    () =>
+      upsertBookLinkEnd$.pipe(
         switchMap((data) =>
           zip(removeDanglingLinks(data), refreshBookMetadata(data))
         ),
@@ -110,13 +105,9 @@ const useUpsertBookLinkActionEffect = () => {
           return EMPTY
         }),
         ignoreElements()
-      )
-      .subscribe()
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [refreshBookMetadata, removeDanglingLinks])
+      ),
+    [refreshBookMetadata, removeDanglingLinks]
+  )
 
   useSubscribeEffect(
     () =>

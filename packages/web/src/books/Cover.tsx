@@ -5,18 +5,32 @@ import { useTheme } from "@mui/material"
 import { selectorFamily, useRecoilValue } from "recoil"
 import { enrichedBookState } from "./states"
 import { authState } from "../auth/authState"
-import { bluredTagIdsState } from "../tags/states"
+import { blurredTagIdsState } from "../tags/states"
 import { useCSS } from "../common/utils"
 import { API_URI } from "../constants"
 import { localSettingsState } from "../settings/states"
+import { useNormalizedBookDownloadsState } from "../download/states"
 
 const bookCoverState = selectorFamily({
   key: "bookCoverState",
   get:
-    (id: string) =>
+    ({
+      bookId,
+      normalizedBookDownloadsState
+    }: {
+      bookId: string
+      normalizedBookDownloadsState: ReturnType<
+        typeof useNormalizedBookDownloadsState
+      >
+    }) =>
     ({ get }) => {
-      const enrichedBook = get(enrichedBookState(id))
-      const blurredTags = get(bluredTagIdsState)
+      const enrichedBook = get(
+        enrichedBookState({
+          bookId,
+          normalizedBookDownloadsState
+        })
+      )
+      const blurredTags = get(blurredTagIdsState)
 
       if (!enrichedBook) return undefined
 
@@ -53,7 +67,12 @@ export const Cover: FC<Props> = memo(
   }) => {
     const auth = useRecoilValue(authState)
     const isMounted = useMountedState()
-    const book = useRecoilValue(bookCoverState(bookId))
+    const book = useRecoilValue(
+      bookCoverState({
+        bookId,
+        normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      })
+    )
     const [hasError, setHasError] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const classes = useStyle({ withShadow, fullWidth, rounded, isLoading })

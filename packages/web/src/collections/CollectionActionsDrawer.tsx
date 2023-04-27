@@ -25,6 +25,7 @@ import { ManageCollectionBooksDialog } from "./ManageCollectionBooksDialog"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { useCallback } from "react"
 import { useRef } from "react"
+import { useLibraryState } from "../library/states"
 
 const collectionActionDrawerState = atom<{
   openedWith: undefined | string
@@ -82,7 +83,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
     isEditCollectionDialogOpenedWithId,
     setIsEditCollectionDialogOpenedWithId
   ] = useState<string | undefined>(undefined)
-  const [removeCollection] = useRemoveCollection()
+  const { mutate: removeCollection } = useRemoveCollection()
   const [isManageBookDialogOpened, setIsManageBookDialogOpened] =
     useState(false)
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
@@ -183,8 +184,10 @@ const EditCollectionDialog: FC<{
   onClose: () => void
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState("")
-  const collection = useRecoilValue(collectionState(id || "-1"))
-  const [editCollection] = useUpdateCollection()
+  const collection = useRecoilValue(
+    collectionState({ id: id || "-1", libraryState: useLibraryState() })
+  )
+  const { mutate: editCollection } = useUpdateCollection()
 
   const onInnerClose = () => {
     setName("")
