@@ -11,8 +11,7 @@ import {
   withLatestFrom,
   of
 } from "rxjs"
-import { effect } from "../common/rxjs/effect"
-import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
+import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
 import { Report } from "../debug/report.shared"
 import { useRemoveDanglingLinks } from "../links/helpers"
 import { useDatabase } from "../rxdb"
@@ -21,8 +20,10 @@ import {
   upsertBookLink$,
   upsertBookLinkEnd,
   upsertBookLinkEnd$
-} from "./actions"
+} from "./triggers"
 import { useRefreshBookMetadata } from "./helpers"
+import { useObserve, useSubscribeEffect } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 
 const useUpsertBookLinkActionEffect = () => {
   const { db: database } = useDatabase()
@@ -117,25 +118,21 @@ const useUpsertBookLinkActionEffect = () => {
     }
   }, [refreshBookMetadata, removeDanglingLinks])
 
-  useEffect(
+  useSubscribeEffect(
     () =>
-      effect(markAsInterested$, (action$) =>
-        action$.pipe(
-          mergeMap((action) =>
-            of(action).pipe(
-              withLatestFrom(of(database).pipe(isNotNullOrUndefined())),
-              mergeMap(([{ id, isNotInterested }, db]) =>
-                from(
-                  db.book.safeFindOne({ selector: { _id: id } }).exec()
-                ).pipe(
-                  isNotNullOrUndefined(),
-                  switchMap((book) =>
-                    from(
-                      book.atomicUpdate((data) => ({
-                        ...data,
-                        isNotInterested
-                      }))
-                    )
+      markAsInterested$.pipe(
+        mergeMap((action) =>
+          of(action).pipe(
+            withLatestFrom(latestDatabase$),
+            mergeMap(([{ id, isNotInterested }, db]) =>
+              from(db.book.safeFindOne({ selector: { _id: id } }).exec()).pipe(
+                isNotNullOrUndefined(),
+                switchMap((book) =>
+                  from(
+                    book.atomicUpdate((data) => ({
+                      ...data,
+                      isNotInterested
+                    }))
                   )
                 )
               )
@@ -143,7 +140,7 @@ const useUpsertBookLinkActionEffect = () => {
           )
         )
       ),
-    [database]
+    []
   )
 }
 

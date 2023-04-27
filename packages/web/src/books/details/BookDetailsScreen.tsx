@@ -39,6 +39,8 @@ import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
 import { DataSourceSection } from "./DateSourceSection"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
+import { useLibraryState } from "../../library/states"
+import { useNormalizedBookDownloadsState } from "../../download/states"
 
 type ScreenParams = {
   id: string
@@ -53,9 +55,16 @@ export const BookDetailsScreen = () => {
     undefined | string
   >(undefined)
   const { id = `-1` } = useParams<ScreenParams>()
-  const book = useRecoilValue(enrichedBookState(id))
+  const book = useRecoilValue(
+    enrichedBookState({
+      bookId: id,
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+    })
+  )
   const tags = useRecoilValue(bookTagsState(id))
-  const collections = useRecoilValue(bookCollectionsState(id))
+  const collections = useRecoilValue(
+    bookCollectionsState({ bookId: id, libraryState: useLibraryState() })
+  )
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const removeDownloadFile = useRemoveDownloadFile()

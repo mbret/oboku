@@ -4,7 +4,6 @@ import {
   ReadingStateState,
   sortByTitleComparator
 } from "@oboku/shared"
-import { useRxMutation } from "../rxdb/hooks"
 import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../debug/report.shared"
@@ -24,12 +23,11 @@ import { isPluginError } from "@oboku/plugin-front"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { plugin } from "../plugins/local"
+import { useMutation } from "reactjrx"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
-  const [removeBook] = useRxMutation((db, { id }: { id: string }) =>
-    db.book.findOne({ selector: { _id: id } }).remove()
-  )
+  const { db } = useDatabase()
   const dialog = useDialogManager()
   const [lock] = useLock()
   const removeBookFromDataSource = useRemoveBookFromDataSource()
@@ -65,51 +63,33 @@ export const useRemoveBook = () => {
           }
         }
 
-        await Promise.all([removeDownload(id), removeBook({ id })])
+        await Promise.all([
+          removeDownload(id),
+          db?.book.findOne({ selector: { _id: id } }).remove()
+        ])
       } catch (e) {
         Report.error(e)
       }
     },
-    [
-      lock,
-      removeBook,
-      removeDownload,
-      removeBookFromDataSource,
-      network,
-      dialog
-    ]
+    [lock, removeDownload, removeBookFromDataSource, network, dialog, db]
   )
 }
 
 export const useRemoveTagFromBook = () => {
-  const [removeTag] = useRxMutation(
-    (db, { _id, tagId }: { _id: string; tagId: string }) =>
-      db.book
-        .findOne({ selector: { _id } })
-        .update({ $pullAll: { tags: [tagId] } })
-  )
+  const { db } = useDatabase()
 
-  return useCallback(
-    (variables: { bookId: string; tagId: string }) => {
-      removeTag({ _id: variables.bookId, tagId: variables.tagId }).catch(
-        Report.error
-      )
-    },
-    [removeTag]
+  return useMutation(async ({ _id, tagId }: { _id: string; tagId: string }) =>
+    db?.book
+      .findOne({ selector: { _id } })
+      .update({ $pullAll: { tags: [tagId] } })
   )
 }
 
 export const useAddTagToBook = () => {
-  const [addTag] = useRxMutation(
-    (db, { _id, tagId }: { _id: string; tagId: string }) =>
-      db.book.findOne({ selector: { _id } }).update({ $push: { tags: tagId } })
-  )
+  const { db } = useDatabase()
 
-  return useCallback(
-    (variables: Parameters<typeof addTag>[0]) => {
-      addTag(variables).catch(Report.error)
-    },
-    [addTag]
+  return useMutation(async ({ _id, tagId }: { _id: string; tagId: string }) =>
+    db?.book.findOne({ selector: { _id } }).update({ $push: { tags: tagId } })
   )
 }
 
@@ -197,21 +177,27 @@ export const useRefreshBookMetadata = () => {
   }
 }
 
-export const useAddCollectionToBook = () =>
-  useRxMutation(
-    (db, { _id, collectionId }: { _id: string; collectionId: string }) =>
-      db.book
+export const useAddCollectionToBook = () => {
+  const { db } = useDatabase()
+
+  return useMutation(
+    async ({ _id, collectionId }: { _id: string; collectionId: string }) =>
+      db?.book
         .findOne({ selector: { _id } })
         .update({ $push: { collections: collectionId } })
   )
+}
 
-export const useRemoveCollectionFromBook = () =>
-  useRxMutation(
-    (db, { _id, collectionId }: { _id: string; collectionId: string }) =>
-      db.book
+export const useRemoveCollectionFromBook = () => {
+  const { db } = useDatabase()
+
+  return useMutation(
+    async ({ _id, collectionId }: { _id: string; collectionId: string }) =>
+      db?.book
         .findOne({ selector: { _id } })
         .update({ $pullAll: { collections: [collectionId] } })
   )
+}
 
 export const useAddBook = () => {
   const { db: database } = useDatabase()

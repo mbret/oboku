@@ -7,12 +7,18 @@ import { enrichedBookState } from "../states"
 import { useDefaultItemClickHandler } from "./helpers"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useCSS } from "../../common/utils"
+import { useNormalizedBookDownloadsState } from "../../download/states"
 
 export const BookListGridItem: FC<{
   bookId: string
   onItemClick?: (id: string) => void
 }> = memo(({ bookId, onItemClick }) => {
-  const item = useRecoilValue(enrichedBookState(bookId))
+  const item = useRecoilValue(
+    enrichedBookState({
+      bookId,
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+    })
+  )
   const onDefaultItemClick = useDefaultItemClickHandler()
   const classes = useStyles()
   const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)

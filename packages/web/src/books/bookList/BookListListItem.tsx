@@ -14,6 +14,7 @@ import {
 import { bookActionDrawerState } from "../BookActionsDrawer"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
+import { useNormalizedBookDownloadsState } from "../../download/states"
 
 export const BookListListItem: FC<{
   bookId: string
@@ -30,7 +31,12 @@ export const BookListListItem: FC<{
     itemHeight,
     withDrawerActions = true
   }) => {
-    const book = useRecoilValue(enrichedBookState(bookId))
+    const book = useRecoilValue(
+      enrichedBookState({
+        bookId,
+        normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      })
+    )
     const onDefaultItemClick = useDefaultItemClickHandler()
     const theme = useTheme()
     const computedHeight = itemHeight || (size === "small" ? 50 : 100)

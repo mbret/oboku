@@ -5,6 +5,7 @@ import { enrichedBookState } from "../states"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { Checkbox } from "../../common/Checkbox"
+import { useNormalizedBookDownloadsState } from "../../download/states"
 
 export const SelectableBookListItem: FC<{
   bookId: string
@@ -25,7 +26,12 @@ export const SelectableBookListItem: FC<{
   paddingTop = 0,
   paddingBottom = 0
 }) => {
-  const book = useRecoilValue(enrichedBookState(bookId))
+  const book = useRecoilValue(
+    enrichedBookState({
+      bookId,
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+    })
+  )
   const theme = useTheme()
   const computedHeight = itemHeight - paddingTop - paddingBottom
   const coverWidth = computedHeight * theme.custom.coverAverageRatio

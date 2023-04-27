@@ -38,7 +38,8 @@ import { useModalNavigationControl } from "../navigation/useModalNavigationContr
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "./ManageBookTagsDialog"
-import { markAsInterested } from "./actions"
+import { markAsInterested } from "./triggers"
+import { useNormalizedBookDownloadsState } from "../download/states"
 
 /**
  * @deprecated
@@ -54,7 +55,12 @@ export const BookActionsDrawer = memo(() => {
   const [{ openedWith: bookId, actions }, setBookActionDrawerState] =
     useRecoilState(bookActionDrawerState)
   const navigate = useNavigate()
-  const book = useRecoilValue(enrichedBookState(bookId || "-1"))
+  const book = useRecoilValue(
+    enrichedBookState({
+      bookId: bookId || "-1",
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+    })
+  )
   const bookLink = useRecoilValue(linkState(book?.links[0] || "-1"))
   const removeDownloadFile = useRemoveDownloadFile()
   const removeBook = useRemoveBook()

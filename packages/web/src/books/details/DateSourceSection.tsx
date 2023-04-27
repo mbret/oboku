@@ -16,7 +16,7 @@ import { useDialogManager } from "../../dialog"
 import { useRefreshBookMetadata } from "../helpers"
 import { bookLinksState } from "../states"
 import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
-import { upsertBookLink } from "../actions"
+import { upsertBookLink } from "../triggers"
 
 export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
   const link = useRecoilValue(bookLinksState(bookId))[0]

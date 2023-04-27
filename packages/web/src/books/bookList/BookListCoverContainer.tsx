@@ -12,7 +12,10 @@ import { useRecoilValue, UnwrapRecoilValue } from "recoil"
 import { enrichedBookState } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import { ReadingProgress } from "./ReadingProgress"
-import { DownloadState } from "../../download/states"
+import {
+  DownloadState,
+  useNormalizedBookDownloadsState
+} from "../../download/states"
 import { useCSS } from "../../common/utils"
 
 type Book = UnwrapRecoilValue<ReturnType<typeof enrichedBookState>>
@@ -37,7 +40,12 @@ export const BookListCoverContainer: FC<{
     size = "small",
     withProtectedStatus = true
   }) => {
-    const item = useRecoilValue(enrichedBookState(bookId))
+    const item = useRecoilValue(
+      enrichedBookState({
+        bookId,
+        normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      })
+    )
     const classes = useStyles({ item })
 
     return (
