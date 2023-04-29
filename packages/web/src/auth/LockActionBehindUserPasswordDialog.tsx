@@ -7,10 +7,9 @@ import {
   DialogTitle,
   TextField
 } from "@mui/material"
-import React, { FC, useEffect, useState } from "react"
-import { useRecoilValue } from "recoil"
-import { authState } from "./authState"
+import { FC, useEffect, useState } from "react"
 import { useAuthorize } from "./helpers"
+import { useAuthState } from "./authState"
 
 const FORM_ID = "LockActionBehindUserPasswordDialog"
 
@@ -20,7 +19,7 @@ export const LockActionBehindUserPasswordDialog: FC<{
   const [open, setOpen] = useState(false)
   const [success, setSuccess] = useState(false)
   const [text, setText] = useState("")
-  const auth = useRecoilValue(authState)
+  const auth = useAuthState()
   const authorize = useAuthorize()
 
   const onClose = () => {

@@ -20,6 +20,7 @@ import {
 import { map, switchMap, withLatestFrom } from "rxjs"
 import { plugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { useLocalSettingsState } from "../settings/states"
 
 /**
  * @deprecated
@@ -231,16 +232,18 @@ export const bookCollectionsState = selectorFamily({
   get:
     ({
       bookId,
-      libraryState
+      libraryState,
+      localSettingsState
     }: {
       bookId: string
-      libraryState: ReturnType<typeof getLibraryState>
+      libraryState: ReturnType<typeof getLibraryState>,
+      localSettingsState: ReturnType<typeof useLocalSettingsState>
     }) =>
     ({ get }) => {
       const book = get(bookState(bookId))
 
       return book?.collections?.map((id) =>
-        get(collectionState({ id, libraryState }))
+        get(collectionState({ id, libraryState, localSettingsState }))
       )
     }
 })

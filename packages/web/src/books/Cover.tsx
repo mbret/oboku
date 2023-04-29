@@ -4,11 +4,11 @@ import placeholder from "../assets/cover-placeholder.png"
 import { useTheme } from "@mui/material"
 import { selectorFamily, useRecoilValue } from "recoil"
 import { enrichedBookState } from "./states"
-import { authState } from "../auth/authState"
+import { useAuthState } from "../auth/authState"
 import { blurredTagIdsState } from "../tags/states"
 import { useCSS } from "../common/utils"
 import { API_URI } from "../constants"
-import { localSettingsState } from "../settings/states"
+import { useLocalSettingsState } from "../settings/states"
 import { useNormalizedBookDownloadsState } from "../download/states"
 
 const bookCoverState = selectorFamily({
@@ -65,7 +65,7 @@ export const Cover: FC<Props> = memo(
     blurIfNeeded = true,
     ...rest
   }) => {
-    const auth = useRecoilValue(authState)
+    const auth = useAuthState()
     const isMounted = useMountedState()
     const book = useRecoilValue(
       bookCoverState({
@@ -77,7 +77,7 @@ export const Cover: FC<Props> = memo(
     const [isLoading, setIsLoading] = useState(true)
     const classes = useStyle({ withShadow, fullWidth, rounded, isLoading })
     const assetHash = book?.lastMetadataUpdatedAt?.toString()
-    const localSettings = useRecoilValue(localSettingsState)
+    const localSettings = useLocalSettingsState()
     const shouldBlurCover =
       book?.isBlurred &&
       blurIfNeeded &&

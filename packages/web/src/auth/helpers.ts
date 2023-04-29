@@ -1,26 +1,23 @@
 import { useCallback, useState } from "react"
-import { useRecoilValue, useSetRecoilState } from "recoil"
 import { API_URI } from "../constants"
 import { useLock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
-import { authState } from "./authState"
-import { useResetStore } from "../PersistedRecoilRoot"
 import { Report } from "../debug/report.shared"
 import { createServerError } from "../errors"
+import { setAuthState, useAuthState } from "./authState"
+import { SIGNAL_RESET, usePersistSignalsContext } from "reactjrx"
 
-export const useIsAuthenticated = () => !!useRecoilValue(authState)?.token
+export const useIsAuthenticated = () => !!useAuthState()?.token
 
 export const useSignOut = () => {
-  const setAuthState = useSetRecoilState(authState)
-
-  return useCallback(async () => {
-    setAuthState(undefined)
-  }, [setAuthState])
+  return useCallback(() => {
+    setAuthState(SIGNAL_RESET)
+  }, [])
 }
 
 export const useAuthorize = () => {
   const [lock, unlock] = useLock()
-  const auth = useRecoilValue(authState)
+  const auth = useAuthState()
 
   return async ({
     variables: { password },
@@ -53,9 +50,8 @@ export const useAuthorize = () => {
 export const useSignUp = () => {
   const [lock, unlock] = useLock()
   const reCreateDb = useReCreateDb()
-  const resetLocalState = useResetStore()
+  const { resetSignals: resetLocalState } = usePersistSignalsContext()
   const [error, setError] = useState<Error | undefined>(undefined)
-  const setAuthState = useSetRecoilState(authState)
 
   const cb = useCallback(
     async (email: string, password: string, code) => {
@@ -81,7 +77,7 @@ export const useSignUp = () => {
         unlock("authorize")
       }
     },
-    [lock, unlock, reCreateDb, resetLocalState, setAuthState]
+    [lock, unlock, reCreateDb, resetLocalState]
   )
 
   const data = { error }

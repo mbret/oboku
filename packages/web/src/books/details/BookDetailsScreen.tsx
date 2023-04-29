@@ -41,6 +41,7 @@ import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { useLibraryState } from "../../library/states"
 import { useNormalizedBookDownloadsState } from "../../download/states"
+import { useLocalSettingsState } from "../../settings/states"
 
 type ScreenParams = {
   id: string
@@ -63,7 +64,11 @@ export const BookDetailsScreen = () => {
   )
   const tags = useRecoilValue(bookTagsState(id))
   const collections = useRecoilValue(
-    bookCollectionsState({ bookId: id, libraryState: useLibraryState() })
+    bookCollectionsState({
+      bookId: id,
+      libraryState: useLibraryState(),
+      localSettingsState: useLocalSettingsState()
+    })
   )
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
