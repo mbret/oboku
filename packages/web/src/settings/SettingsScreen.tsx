@@ -13,12 +13,9 @@ import {
   ListItemText,
   ListSubheader
 } from "@mui/material"
-import { useRecoilState, UnwrapRecoilValue } from "recoil"
-import { localSettingsState } from "./states"
-import { useQuery, useUnmountObservable } from "reactjrx"
-import { finalize, interval, of, takeUntil, tap } from "rxjs"
+import { setLocalSettingsState, useLocalSettingsState } from "./states"
 
-type LocalSettings = UnwrapRecoilValue<typeof localSettingsState>
+type LocalSettings = ReturnType<typeof useLocalSettingsState>
 
 const fullScreenModes: Record<
   LocalSettings["readingFullScreenSwitchMode"],
@@ -37,7 +34,7 @@ const showCollectionWithProtectedContentLabels: Record<
 }
 
 export const SettingsScreen = memo(() => {
-  const [localSettings, setLocalSettings] = useRecoilState(localSettingsState)
+  const localSettings = useLocalSettingsState()
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isShowCollectionDrawerOpened, setIsShowCollectionDrawerOpened] =
     useState(false)
@@ -54,7 +51,7 @@ export const SettingsScreen = memo(() => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings((old) => ({
+              setLocalSettingsState((old) => ({
                 ...old,
                 hideDirectivesFromCollectionName:
                   !old.hideDirectivesFromCollectionName
@@ -81,7 +78,7 @@ export const SettingsScreen = memo(() => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings((old) => ({
+              setLocalSettingsState((old) => ({
                 ...old,
                 showSensitiveDataSources: !old.showSensitiveDataSources
               }))
@@ -117,7 +114,7 @@ export const SettingsScreen = memo(() => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings((old) => ({
+              setLocalSettingsState((old) => ({
                 ...old,
                 unBlurWhenProtectedVisible: !old.unBlurWhenProtectedVisible
               }))
@@ -158,7 +155,7 @@ export const SettingsScreen = memo(() => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings((old) => ({
+              setLocalSettingsState((old) => ({
                 ...old,
                 useOptimizedTheme: !old.useOptimizedTheme
               }))
@@ -179,7 +176,7 @@ export const SettingsScreen = memo(() => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings((old) => ({
+              setLocalSettingsState((old) => ({
                 ...old,
                 useNavigationArrows: !old.useNavigationArrows
               }))
@@ -214,7 +211,7 @@ export const SettingsScreen = memo(() => {
               button
               key={text}
               onClick={() => {
-                setLocalSettings((old) => ({
+                setLocalSettingsState((old) => ({
                   ...old,
                   readingFullScreenSwitchMode: text
                 }))
@@ -230,7 +227,7 @@ export const SettingsScreen = memo(() => {
         open={isDrawerOpened}
         onClose={() => setIsDrawerOpened(false)}
         onChoiceSelect={(value) => {
-          setLocalSettings((old) => ({
+          setLocalSettingsState((old) => ({
             ...old,
             readingFullScreenSwitchMode: value
           }))
@@ -248,7 +245,7 @@ export const SettingsScreen = memo(() => {
         open={isShowCollectionDrawerOpened}
         onClose={() => setIsShowCollectionDrawerOpened(false)}
         onChoiceSelect={(value) => {
-          setLocalSettings((old) => ({
+          setLocalSettingsState((old) => ({
             ...old,
             showCollectionWithProtectedContent: value
           }))

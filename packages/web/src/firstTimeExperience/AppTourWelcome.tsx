@@ -3,8 +3,7 @@ import { Step, Tour } from "../app-tour"
 import FteCoverAsset from "../assets/fte-cover.svg"
 import { Typography, useTheme } from "@mui/material"
 import { Logo } from "../common/Logo"
-import { useRecoilValue } from "recoil"
-import { authState } from "../auth/authState"
+import { useAuthState } from "../auth/authState"
 import { useCSS } from "../common/utils"
 import { FirstTimeExperienceId } from "./constants"
 import {
@@ -19,7 +18,7 @@ export const AppTourWelcome: React.FC = memo(() => {
   const validateFirstTimeExperience = useValidateFirstTimeExperience(
     FirstTimeExperienceId.APP_TOUR_WELCOME
   )
-  const { token } = useRecoilValue(authState) || {}
+  const { token } = useAuthState() || {}
   const show = !hasDoneFirstTimeExperience && !!token
   const styles = useStyles()
   const theme = useTheme()

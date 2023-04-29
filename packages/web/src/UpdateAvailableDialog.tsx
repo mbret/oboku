@@ -7,13 +7,7 @@ import {
   DialogTitle
 } from "@mui/material"
 import { FC } from "react"
-import { atom } from "recoil"
 import { useLock } from "./common/BlockingBackdrop"
-
-export const updateAvailableState = atom({
-  key: "updateAvailableState",
-  default: false
-})
 
 export const UpdateAvailableDialog: FC<{
   serviceWorker?: ServiceWorker

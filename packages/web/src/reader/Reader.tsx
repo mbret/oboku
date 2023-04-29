@@ -29,17 +29,17 @@ import { useManifest } from "./manifest"
 import { useRarStreamer } from "./streamer/useRarStreamer.shared"
 import { useUpdateBookState } from "./bookHelpers"
 import { FloatingBottom } from "./FloatingBottom"
-import { readerSettingsState } from "./settings/states"
 import { FONT_SCALE_MAX, FONT_SCALE_MIN } from "./constants"
-import { usePersistReaderSettings } from "./settings/usePersistReaderSettings"
+import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSettings"
 import { Notification } from "./Notification"
+import { useReaderSettingsState } from "./settings/states"
 
 export const Reader: FC<{
   bookId: string
 }> = memo(({ bookId }) => {
   const reader = useReader()
   const [isBookReady, setIsBookReady] = useRecoilState(isBookReadyState)
-  const readerSettings = useRecoilValue(readerSettingsState)
+  const readerSettings = useReaderSettingsState()
   const setManifestState = useSetRecoilState(manifestState)
   const book = useRecoilValue(bookState(bookId || "-1"))
   const navigate = useNavigate()
@@ -67,7 +67,7 @@ export const Reader: FC<{
   useBookResize(reader, containerWidth, containerHeight)
   useGestureHandler(readerContainerHammer)
   useUpdateBookState(bookId)
-  usePersistReaderSettings()
+  usePersistReaderInstanceSettings()
 
   useEffect(() => {
     return () => {

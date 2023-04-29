@@ -2,8 +2,7 @@ import { useEffect, useMemo } from "react"
 import { API_COUCH_URI } from "../../constants"
 import { Report } from "../../debug/report.shared"
 import PouchDB from "pouchdb"
-import { useRecoilValue } from "recoil"
-import { authState } from "../../auth/authState"
+import { useAuthState } from "../../auth/authState"
 import { useNetworkState } from "react-use"
 import { defer, EMPTY, from, throwError } from "rxjs"
 import { catchError, switchMap } from "rxjs/operators"
@@ -163,7 +162,7 @@ const useTryToResolveOldRemainingConflicts = (
 }
 
 export const useWatchAndFixConflicts = () => {
-  const { token, dbName } = useRecoilValue(authState) || {}
+  const { token, dbName } = useAuthState() || {}
   const db = useMemo(() => {
     if (!token || !dbName) return undefined
     return getDb(dbName, token)

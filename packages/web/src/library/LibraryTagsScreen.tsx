@@ -12,14 +12,10 @@ import {
 import { useCreateTag } from "../tags/helpers"
 import { TagActionsDrawer } from "../tags/TagActionsDrawer"
 import { LockActionDialog } from "../auth/LockActionDialog"
-import { useSetRecoilState } from "recoil"
-import { isTagsTourOpenedState } from "../firstTimeExperience/firstTimeExperienceStates"
+import { setIsTagsTourPossibleState } from "../firstTimeExperience/firstTimeExperienceStates"
 import { useCSS, useMeasureElement } from "../common/utils"
-import { useHasDoneFirstTimeExperience } from "../firstTimeExperience/helpers"
-import { FirstTimeExperienceId } from "../firstTimeExperience/constants"
 import { TagList } from "../tags/tagList/TagList"
 import { AppTourFirstTourTagsStep2 } from "../firstTimeExperience/AppTourFirstTourTags"
-import { useDatabase } from "../rxdb"
 import { useTagIds } from "../tags/states"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
@@ -30,19 +26,19 @@ export const LibraryTagsScreen = () => {
   )
   const classes = useStyles()
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
-  const setIsTagsTourOpenedState = useSetRecoilState(isTagsTourOpenedState)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] =
     useState<string | undefined>(undefined)
   const { data: tags = [] } = useTagIds()
   const { mutate: addTag } = useCreateTag()
-  const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(
-    FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS
-  )
   const theme = useTheme()
 
   useEffect(() => {
-    !hasDoneFirstTimeExperience && setIsTagsTourOpenedState(true)
-  }, [setIsTagsTourOpenedState, hasDoneFirstTimeExperience])
+    setIsTagsTourPossibleState(true)
+
+    return () => {
+      setIsTagsTourPossibleState(false)
+    }
+  }, [])
 
   const addItemButton = useMemo(
     () => (

@@ -16,6 +16,7 @@ import { CollectionDocType } from "@oboku/shared"
 import { Cover } from "../../books/Cover"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer"
 import { useLibraryState } from "../../library/states"
+import { useLocalSettingsState } from "../../settings/states"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,
@@ -34,7 +35,11 @@ export const CollectionListItemList: FC<{
 }> = memo(({ id, onItemClick }) => {
   const theme = useTheme()
   const item = useRecoilValue(
-    collectionState({ id, libraryState: useLibraryState() })
+    collectionState({
+      id,
+      libraryState: useLibraryState(),
+      localSettingsState: useLocalSettingsState()
+    })
   )
   const { open: openActionDrawer } = useCollectionActionsDrawer(id)
   const styles = useStyle()

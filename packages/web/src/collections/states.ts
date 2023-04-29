@@ -1,8 +1,8 @@
 import { atom, selectorFamily, UnwrapRecoilValue } from "recoil"
 import { CollectionDocType, directives } from "@oboku/shared"
 import { visibleBookIdsState } from "../books/states"
-import { localSettingsState } from "../settings/states"
 import { getLibraryState } from "../library/states"
+import { useLocalSettingsState } from "../settings/states"
 
 export type Collection = CollectionDocType
 
@@ -19,9 +19,15 @@ export const normalizedCollectionsState = atom<
 export const collectionsAsArrayState = selectorFamily({
   key: "collectionsAsArrayState",
   get:
-    (libraryState: ReturnType<typeof getLibraryState>) =>
+    ({
+      libraryState,
+      localSettingsState
+    }: {
+      libraryState: ReturnType<typeof getLibraryState>
+      localSettingsState: ReturnType<typeof useLocalSettingsState>
+    }) =>
     ({ get }) => {
-      const localSettings = get(localSettingsState)
+      const localSettings = localSettingsState
       const collections = get(normalizedCollectionsState)
       const bookIds = get(visibleBookIdsState(libraryState))
       const ids = Object.keys(collections)
@@ -45,7 +51,9 @@ export const collectionsAsArrayState = selectorFamily({
             return hasSomeVisibleBook || collection?.books.length === 0
           }
         })
-        .map((id) => get(collectionState({ id, libraryState }))) as Collection[]
+        .map((id) =>
+          get(collectionState({ id, libraryState, localSettingsState }))
+        ) as Collection[]
     }
 })
 
@@ -55,9 +63,17 @@ export const collectionsAsArrayState = selectorFamily({
 export const collectionIdsState = selectorFamily({
   key: "collectionIdsState",
   get:
-    (libraryState: ReturnType<typeof getLibraryState>) =>
+    ({
+      libraryState,
+      localSettingsState
+    }: {
+      libraryState: ReturnType<typeof getLibraryState>
+      localSettingsState: ReturnType<typeof useLocalSettingsState>
+    }) =>
     ({ get }) => {
-      return get(collectionsAsArrayState(libraryState)).map(({ _id }) => _id)
+      return get(
+        collectionsAsArrayState({ libraryState, localSettingsState })
+      ).map(({ _id }) => _id)
     }
 })
 
@@ -69,15 +85,17 @@ export const collectionState = selectorFamily({
   get:
     ({
       id,
-      libraryState
+      libraryState,
+      localSettingsState
     }: {
       id: string
       libraryState: ReturnType<typeof getLibraryState>
+      localSettingsState: ReturnType<typeof useLocalSettingsState>
     }) =>
     ({ get }) => {
       const collection = get(normalizedCollectionsState)[id]
       const bookIds = get(visibleBookIdsState(libraryState))
-      const localSettings = get(localSettingsState)
+      const localSettings = localSettingsState
 
       if (!collection) return undefined
 

@@ -27,10 +27,10 @@ import {
   updateLibraryState,
   useLibraryState
 } from "./states"
-import { useRecoilState, useRecoilValue } from "recoil"
+import { useRecoilState } from "recoil"
 import { UploadBookDrawer } from "./UploadBookDrawer"
 import { SortByDialog } from "../books/bookList/SortByDialog"
-import { localSettingsState } from "../settings/states"
+import { useLocalSettingsState } from "../settings/states"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useBooks } from "./useBooks"
@@ -44,7 +44,7 @@ export const LibraryBooksScreen = () => {
   const [isUploadBookDrawerOpened, setIsUploadBookDrawerOpened] =
     useRecoilState(isUploadBookDrawerOpenedState)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
-  const localSettings = useRecoilValue(localSettingsState)
+  const localSettings = useLocalSettingsState()
   const [
     isUploadBookFromDataSourceDialogOpened,
     setIsUploadBookFromDataSourceDialogOpened

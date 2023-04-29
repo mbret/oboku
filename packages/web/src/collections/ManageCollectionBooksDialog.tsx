@@ -11,6 +11,7 @@ import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
 import { useLibraryState } from "../library/states"
 import { useNormalizedBookDownloadsState } from "../download/states"
+import { useLocalSettingsState } from "../settings/states"
 
 export const ManageCollectionBooksDialog: FC<{
   onClose: () => void
@@ -20,7 +21,8 @@ export const ManageCollectionBooksDialog: FC<{
   const collection = useRecoilValue(
     collectionState({
       id: collectionId || "-1",
-      libraryState: useLibraryState()
+      libraryState: useLibraryState(),
+      localSettingsState: useLocalSettingsState()
     })
   )
   const books = useRecoilValue(

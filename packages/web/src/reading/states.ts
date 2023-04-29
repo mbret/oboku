@@ -1,11 +1,18 @@
-import { atom } from "recoil"
+import { signal, withPersistance } from "reactjrx"
 
-export const bookBeingReadState = atom<string | undefined>({
-  key: `bookBeingReadState`,
-  default: undefined
-})
+export const [
+  bookBeingReadStatePersist,
+  useBookBeingReadState,
+  setBookBeingReadState
+] = withPersistance(
+  signal<string | undefined>({
+    key: `bookBeingReadState`,
+    default: undefined
+  })
+)
 
-export const hasOpenedReaderAlreadyState = atom({
-  key: `hasOpenedReaderAlreadyState`,
-  default: false
-})
+export const [useHasOpenedReaderAlreadyState, setHasOpenedReaderAlreadyState] =
+  signal({
+    key: `hasOpenedReaderAlreadyState`,
+    default: false
+  })

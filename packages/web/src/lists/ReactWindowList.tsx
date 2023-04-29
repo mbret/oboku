@@ -6,7 +6,6 @@ import {
 } from "react-window"
 import AutoSizer from "react-virtualized-auto-sizer"
 import { useRecoilValue } from "recoil"
-import { localSettingsState } from "../settings/states"
 import {
   ArrowBackIosRounded,
   ArrowForwardIosRounded,
@@ -16,6 +15,7 @@ import {
 import { decimalAdjust, useCSS } from "../common/utils"
 import { useTheme } from "@mui/material"
 import { useCallback } from "react"
+import { useLocalSettingsState } from "../settings/states"
 
 export const ReactWindowList: FC<{
   rowRenderer: (item: any, rowIndex: number) => React.ReactNode
@@ -97,7 +97,7 @@ const List = memo(
       const computedItemHeight =
         itemHeight || Math.floor(computedItemWidth / preferredRatio)
       const columnCount = layout === "horizontal" ? data.length : itemsPerRow
-      const { useNavigationArrows } = useRecoilValue(localSettingsState)
+      const { useNavigationArrows } = useLocalSettingsState()
       const classes = useClasses()
       const displayScrollerButtons = useNavigationArrows
       const isHorizontal = layout === "horizontal"

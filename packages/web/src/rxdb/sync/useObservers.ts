@@ -13,7 +13,7 @@ import { useLinksObservers } from "../../links/observers"
 import { useCollectionsObservers } from "../../collections/observers"
 import { lastAliveSyncState } from "./state"
 import { useWatchAndFixConflicts } from "./useWatchAndFixConflicts"
-import { authState } from "../../auth/authState"
+import { useAuthState } from "../../auth/authState"
 import { syncCollections } from "../replication/syncCollections"
 import { useNetworkState } from "react-use"
 
@@ -48,7 +48,7 @@ export const useSettingsStateReducer = () => {
 export const useObservers = () => {
   const settingsReducer = useSettingsStateReducer()
   const { db: database } = useDatabase()
-  const { token, dbName } = useRecoilValue(authState) || {}
+  const { token, dbName } = useAuthState() || {}
   const isAuthenticated = useIsAuthenticated()
   const signOut = useSignOut()
   const [{ syncRefresh }, setSyncState] = useRecoilState(syncState)

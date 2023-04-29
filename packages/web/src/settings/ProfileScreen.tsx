@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import {
   BarChartRounded,
   GavelRounded,
@@ -31,12 +31,10 @@ import {
 import { useNavigate } from "react-router-dom"
 import { useStorageUse } from "./useStorageUse"
 import { unlockLibraryDialogState } from "../auth/UnlockLibraryDialog"
-import { useResetFirstTimeExperience } from "../firstTimeExperience/helpers"
 import { LoadLibraryFromJsonDialog } from "../debug/LoadLibraryFromJsonDialog"
 import { LockActionBehindUserPasswordDialog } from "../auth/LockActionBehindUserPasswordDialog"
 import { useSignOut } from "../auth/helpers"
 import { useRecoilState, useRecoilValue } from "recoil"
-import { authState } from "../auth/authState"
 import { settingsState } from "./states"
 import { useUpdateContentPassword } from "./helpers"
 import { updateLibraryState, useLibraryState } from "../library/states"
@@ -48,7 +46,9 @@ import { useDatabase } from "../rxdb"
 import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
 import { Report } from "../debug/report.shared"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
-import { useUnmountObservable } from "reactjrx"
+import { SIGNAL_RESET, useUnmountObservable } from "reactjrx"
+import { setFirstTimeExperienceState } from "../firstTimeExperience/firstTimeExperienceStates"
+import { useAuthState } from "../auth/authState"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -67,11 +67,10 @@ export const ProfileScreen = () => {
   const [, isUnlockLibraryDialogOpened] = useRecoilState(
     unlockLibraryDialogState
   )
-  const auth = useRecoilValue(authState)
+  const auth = useAuthState()
   const settings = useRecoilValue(settingsState)
   const library = useLibraryState()
   const signOut = useSignOut()
-  const resetFirstTimeExperience = useResetFirstTimeExperience()
   const theme = useTheme()
   const dialog = useDialogManager()
 
@@ -223,7 +222,10 @@ export const ProfileScreen = () => {
             }
           />
         </ListItem>
-        <ListItem button onClick={resetFirstTimeExperience}>
+        <ListItem
+          button
+          onClick={() => setFirstTimeExperienceState(SIGNAL_RESET)}
+        >
           <ListItemText
             primary="Restart the welcome tour"
             secondary="This will display all the first time tours overlay again. Useful for a quick reminder on how to use the app"

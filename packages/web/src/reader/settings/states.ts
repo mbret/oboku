@@ -1,6 +1,6 @@
-import { atom } from "recoil"
+import { signal, withPersistance } from "reactjrx"
 
-export const readerSettingsState = atom<{
+export const [readerSettingsStatePersist, useReaderSettingsState, setReaderSettingsState] = withPersistance(signal<{
   floatingTime?: "bottom"
   floatingProgress?: "bottom"
   fontScale?: number
@@ -10,4 +10,4 @@ export const readerSettingsState = atom<{
     floatingProgress: "bottom",
     floatingTime: "bottom"
   }
-})
+}))

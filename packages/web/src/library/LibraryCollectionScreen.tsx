@@ -18,6 +18,7 @@ import { useCSS, useMeasureElement } from "../common/utils"
 import { CollectionList } from "../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
 import { useLibraryState } from "./states"
+import { useLocalSettingsState } from "../settings/states"
 
 type Scroll = Parameters<
   NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
@@ -43,7 +44,12 @@ export const LibraryCollectionScreen = () => {
     libraryCollectionScreenPreviousScroll,
     setLibraryCollectionScreenPreviousScroll
   ] = useRecoilState(libraryCollectionScreenPreviousScrollState)
-  const collections = useRecoilValue(collectionIdsState(useLibraryState()))
+  const collections = useRecoilValue(
+    collectionIdsState({
+      libraryState: useLibraryState(),
+      localSettingsState: useLocalSettingsState()
+    })
+  )
 
   const onScroll = useDebouncedCallback((value: Scroll) => {
     setLibraryCollectionScreenPreviousScroll(value)

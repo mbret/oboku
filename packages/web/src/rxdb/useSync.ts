@@ -1,8 +1,7 @@
 import { useCallback } from "react"
-import { useRecoilValue } from "recoil"
 import PouchDB from "pouchdb"
 import { first } from "rxjs/operators"
-import { authState } from "../auth/authState"
+import { useAuthState } from "../auth/authState"
 import { useAxiosClient } from "../axiosClient"
 import { API_COUCH_URI } from "../constants"
 import { RxCollection } from "rxdb"
@@ -11,7 +10,7 @@ import { merge, filter, map } from "rxjs"
 
 export const useSync = () => {
   const client = useAxiosClient()
-  const { dbName } = useRecoilValue(authState) || {}
+  const { dbName } = useAuthState() || {}
 
   return useCallback(
     (collections: RxCollection[]) => {

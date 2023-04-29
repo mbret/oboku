@@ -12,50 +12,34 @@ import { RxDbProvider } from "./rxdb"
 import { useObservers } from "./rxdb/sync/useObservers"
 import { useLoadInitialState } from "./useLoadInitialState"
 import { AxiosProvider } from "./axiosClient"
-import { PersistedRecoilRoot } from "./PersistedRecoilRoot"
-import {
-  libraryState,
-  updateLibraryState,
-  useLibraryState
-} from "./library/states"
-import { normalizedBookDownloadsState } from "./download/states"
+import { normalizedBookDownloadsStatePersist } from "./download/states"
 import { AppLoading } from "./AppLoading"
 import { FirstTimeExperienceTours } from "./firstTimeExperience/FirstTimeExperienceTours"
-import { firstTimeExperienceState } from "./firstTimeExperience/firstTimeExperienceStates"
-import {
-  localSettingsState,
-  localSettingsStateMigration
-} from "./settings/states"
+import { firstTimeExperienceStatePersist } from "./firstTimeExperience/firstTimeExperienceStates"
+import { localSettingsStatePersist } from "./settings/states"
 import { DialogProvider } from "./dialog"
 import { BlurContainer } from "./books/BlurContainer"
-import { authState } from "./auth/authState"
+import { authStatePersist } from "./auth/authState"
 import "./i18n"
 import { ErrorBoundary } from "@sentry/react"
 import { ManageBookTagsDialog } from "./books/ManageBookTagsDialog"
 import { ManageTagBooksDialog } from "./tags/ManageTagBooksDialog"
 import { useRef } from "react"
 import { Effects } from "./Effects"
-import { bookBeingReadState } from "./reading/states"
-import { readerSettingsState } from "./reader/settings/states"
-import { useSetRecoilState } from "recoil"
+import { bookBeingReadStatePersist } from "./reading/states"
+import { readerSettingsStatePersist } from "./reader/settings/states"
+import {
+  PersistSignals,
+  createLocalforageAdapter,
+  createSharedStoreAdapter
+} from "reactjrx"
+import { libraryStatePersist } from "./library/states"
+import localforage from "localforage"
+import { RecoilRoot } from "recoil"
 
 declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface DefaultTheme extends Theme {}
-}
-
-const localStatesToPersist = [
-  libraryState,
-  normalizedBookDownloadsState,
-  firstTimeExperienceState,
-  localSettingsState,
-  authState,
-  bookBeingReadState,
-  readerSettingsState
-]
-
-const localStateMigration = (state: { [key: string]: { value: any } }) => {
-  return localSettingsStateMigration(state)
 }
 
 export function App() {
@@ -63,9 +47,6 @@ export function App() {
   const [newServiceWorker, setNewServiceWorker] = useState<
     ServiceWorker | undefined
   >(undefined)
-
-  // global share library state
-  useLibraryState()
 
   return (
     <ErrorBoundary
@@ -78,42 +59,52 @@ export function App() {
           <Suspense fallback={<AppLoading />}>
             {loading && <AppLoading />}
             <RxDbProvider>
-              <PersistedRecoilRoot
-                states={localStatesToPersist}
-                migration={localStateMigration}
-                onReady={(state) => {
-                  setLoading(false)
-
-                  if (state.libraryState) {
-                    updateLibraryState(state.libraryState.value)
-                  }
-                }}
-              >
-                {plugins.reduce(
-                  (Comp, { Provider }) => {
-                    if (Provider) {
-                      return <Provider>{Comp}</Provider>
-                    }
-                    return Comp
-                  },
-                  <AxiosProvider>
-                    <DialogProvider>
-                      <TourProvider>
-                        <AppNavigator />
-                        <FirstTimeExperienceTours />
-                        <ManageBookCollectionsDialog />
-                        <ManageBookTagsDialog />
-                        <ManageTagBooksDialog />
-                      </TourProvider>
-                      <UpdateAvailableDialog serviceWorker={newServiceWorker} />
-                      <RecoilSyncedWithDatabase />
-                      <BlockingBackdrop />
-                      <Effects />
-                    </DialogProvider>
-                  </AxiosProvider>
-                )}
-                {!loading && <LibraryStateDeprecatedSync />}
-              </PersistedRecoilRoot>
+              <RecoilRoot>
+                <PersistSignals
+                  signals={[
+                    libraryStatePersist,
+                    normalizedBookDownloadsStatePersist,
+                    firstTimeExperienceStatePersist,
+                    localSettingsStatePersist,
+                    authStatePersist,
+                    bookBeingReadStatePersist,
+                    readerSettingsStatePersist
+                  ]}
+                  adapter={createSharedStoreAdapter({
+                    adapter: createLocalforageAdapter(localforage),
+                    key: "local-user2"
+                  })}
+                  onReady={() => {
+                    setLoading(false)
+                  }}
+                >
+                  {plugins.reduce(
+                    (Comp, { Provider }) => {
+                      if (Provider) {
+                        return <Provider>{Comp}</Provider>
+                      }
+                      return Comp
+                    },
+                    <AxiosProvider>
+                      <DialogProvider>
+                        <TourProvider>
+                          <AppNavigator />
+                          <FirstTimeExperienceTours />
+                          <ManageBookCollectionsDialog />
+                          <ManageBookTagsDialog />
+                          <ManageTagBooksDialog />
+                        </TourProvider>
+                        <UpdateAvailableDialog
+                          serviceWorker={newServiceWorker}
+                        />
+                        <RecoilSyncedWithDatabase />
+                        <BlockingBackdrop />
+                        <Effects />
+                      </DialogProvider>
+                    </AxiosProvider>
+                  )}
+                </PersistSignals>
+              </RecoilRoot>
             </RxDbProvider>
           </Suspense>
         </ThemeProvider>
@@ -153,17 +144,6 @@ const ServiceWorkerRegistration: FC<{
       })
     }
   }, [onUpdateAvailable])
-
-  return null
-}
-
-const LibraryStateDeprecatedSync = () => {
-  const library = useLibraryState()
-  const setLibraryState = useSetRecoilState(libraryState)
-
-  useEffect(() => {
-    setLibraryState(library)
-  }, [library, setLibraryState])
 
   return null
 }

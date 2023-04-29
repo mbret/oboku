@@ -4,10 +4,16 @@ import { useRecoilValue } from "recoil"
 import { bookIdsState } from "../books/states"
 import { collectionsAsArrayState } from "../collections/states"
 import { useLibraryState } from "../library/states"
+import { useLocalSettingsState } from "./states"
 
 export const StatisticsScreen = () => {
   const bookIds = useRecoilValue(bookIdsState)
-  const collectionsAsArray = useRecoilValue(collectionsAsArrayState(useLibraryState()))
+  const collectionsAsArray = useRecoilValue(
+    collectionsAsArrayState({
+      libraryState: useLibraryState(),
+      localSettingsState: useLocalSettingsState()
+    })
+  )
 
   return (
     <>

@@ -9,6 +9,7 @@ import { collectionState } from "./states"
 import { useCollectionActionsDrawer } from "./CollectionActionsDrawer"
 import { BookListWithControls } from "../books/bookList/BookListWithControls"
 import { useLibraryState } from "../library/states"
+import { useLocalSettingsState } from "../settings/states"
 
 type ScreenParams = {
   id: string
@@ -19,7 +20,11 @@ export const CollectionDetailsScreen = () => {
   const navigate = useNavigate()
   const { id = `-1` } = useParams<ScreenParams>()
   const collection = useRecoilValue(
-    collectionState({ id: id || "-1", libraryState: useLibraryState() })
+    collectionState({
+      id: id || "-1",
+      libraryState: useLibraryState(),
+      localSettingsState: useLocalSettingsState()
+    })
   )
   const data =
     useMemo(

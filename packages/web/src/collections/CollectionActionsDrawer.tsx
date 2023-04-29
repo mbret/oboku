@@ -26,6 +26,7 @@ import { useModalNavigationControl } from "../navigation/useModalNavigationContr
 import { useCallback } from "react"
 import { useRef } from "react"
 import { useLibraryState } from "../library/states"
+import { useLocalSettingsState } from "../settings/states"
 
 const collectionActionDrawerState = atom<{
   openedWith: undefined | string
@@ -185,7 +186,11 @@ const EditCollectionDialog: FC<{
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState("")
   const collection = useRecoilValue(
-    collectionState({ id: id || "-1", libraryState: useLibraryState() })
+    collectionState({
+      id: id || "-1",
+      libraryState: useLibraryState(),
+      localSettingsState: useLocalSettingsState()
+    })
   )
   const { mutate: editCollection } = useUpdateCollection()
 

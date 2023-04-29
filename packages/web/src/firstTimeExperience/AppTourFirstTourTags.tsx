@@ -3,8 +3,7 @@ import { Step, Tour } from "../app-tour"
 import TagSvg from "../assets/undraw_schedule_pnbk.svg"
 import Step2Cover from "../assets/undraw_Artificial_intelligence_re_enpp.svg"
 import { Link, Typography, useTheme } from "@mui/material"
-import { useRecoilValue } from "recoil"
-import { isTagsTourOpenedState } from "./firstTimeExperienceStates"
+import { useIsTagsTourPossibleState } from "./firstTimeExperienceStates"
 import { HeroCover } from "./HeroCover"
 import { Slide } from "./Slide"
 import { Content } from "./Content"
@@ -15,7 +14,7 @@ import {
 } from "./helpers"
 
 export const AppTourFirstTourTags: React.FC = memo(() => {
-  const isTagsTourOpened = useRecoilValue(isTagsTourOpenedState)
+  const isTagsTourOpened = useIsTagsTourPossibleState()
   const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(
     FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS
   )
