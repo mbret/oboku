@@ -2,17 +2,16 @@ import React, { memo } from "react"
 import { Step, Tour } from "../app-tour"
 import FteUploadAsset from "../assets/fte-upload.svg"
 import { Link, Typography, useTheme } from "@mui/material"
-import { useRecoilValue } from "recoil"
-import { isUploadBookDrawerOpenedState } from "../library/states"
 import { useCSS } from "../common/utils"
 import { FirstTimeExperienceId } from "./constants"
 import {
   useHasDoneFirstTimeExperience,
   useValidateFirstTimeExperience
 } from "./helpers"
+import { useIsUploadBookDrawerOpenedState } from "../library/states"
 
 export const AppTourFirstAddingBook: React.FC = memo(() => {
-  const isUploadBookDrawerOpened = useRecoilValue(isUploadBookDrawerOpenedState)
+  const isUploadBookDrawerOpened = useIsUploadBookDrawerOpenedState()
   const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(
     FirstTimeExperienceId.APP_TOUR_FIRST_ADDING_BOOK
   )

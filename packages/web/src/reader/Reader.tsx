@@ -6,15 +6,15 @@ import { useState, useEffect, useCallback, FC, memo } from "react"
 import { useNavigate } from "react-router-dom"
 import { useMeasure } from "react-use"
 import { Box, Button, Link, Typography, useTheme } from "@mui/material"
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
+import { useRecoilValue } from "recoil"
 import { bookState } from "../books/states"
 import {
   createAppReader,
-  isBookReadyState,
-  manifestState,
   ReactReaderProps,
-  ReaderInstance,
+  setIsBookReady,
+  setManifestState,
   setReader,
+  useIsBookReadyState,
   useReader
 } from "./states"
 import { TopBar } from "./TopBar"
@@ -38,9 +38,8 @@ export const Reader: FC<{
   bookId: string
 }> = memo(({ bookId }) => {
   const reader = useReader()
-  const [isBookReady, setIsBookReady] = useRecoilState(isBookReadyState)
+  const isBookReady = useIsBookReadyState()
   const readerSettings = useReaderSettingsState()
-  const setManifestState = useSetRecoilState(manifestState)
   const book = useRecoilValue(bookState(bookId || "-1"))
   const navigate = useNavigate()
   const [
@@ -73,15 +72,15 @@ export const Reader: FC<{
     return () => {
       setIsBookReady(false)
     }
-  }, [setIsBookReady])
+  }, [])
 
   useEffect(() => {
     setManifestState(manifest)
-  }, [manifest, setManifestState])
+  }, [manifest])
 
   const onBookReady = useCallback(() => {
     setIsBookReady(true)
-  }, [setIsBookReady])
+  }, [])
 
   useEffect(() => {
     if (manifest && book && !readerOptions) {

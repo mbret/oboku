@@ -2,8 +2,11 @@ import { signal } from "reactjrx"
 
 export const [
   useIsUploadBookFromDeviceOpened,
-  setIsUploadBookFromDeviceOpened
+  setIsUploadBookFromDeviceOpened,
+  ,
+  ,
+  ,
+  isUploadBookFromDeviceOpenedState
 ] = signal<false | "local" | "outside">({
-  default: false,
-  scoped: true
+  default: false
 })

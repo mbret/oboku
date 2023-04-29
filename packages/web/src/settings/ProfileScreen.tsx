@@ -30,11 +30,10 @@ import {
 } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { useStorageUse } from "./useStorageUse"
-import { unlockLibraryDialogState } from "../auth/UnlockLibraryDialog"
 import { LoadLibraryFromJsonDialog } from "../debug/LoadLibraryFromJsonDialog"
 import { LockActionBehindUserPasswordDialog } from "../auth/LockActionBehindUserPasswordDialog"
 import { useSignOut } from "../auth/helpers"
-import { useRecoilState, useRecoilValue } from "recoil"
+import { useRecoilValue } from "recoil"
 import { settingsState } from "./states"
 import { useUpdateContentPassword } from "./helpers"
 import { updateLibraryState, useLibraryState } from "../library/states"
@@ -49,6 +48,7 @@ import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { SIGNAL_RESET, useUnmountObservable } from "reactjrx"
 import { setFirstTimeExperienceState } from "../firstTimeExperience/firstTimeExperienceStates"
 import { useAuthState } from "../auth/authState"
+import { setUnlockLibraryDialogState } from "../auth/UnlockLibraryDialog"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -64,9 +64,6 @@ export const ProfileScreen = () => {
   const [isLoadLibraryDebugOpened, setIsLoadLibraryDebugOpened] =
     useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([])
-  const [, isUnlockLibraryDialogOpened] = useRecoilState(
-    unlockLibraryDialogState
-  )
   const auth = useAuthState()
   const settings = useRecoilValue(settingsState)
   const library = useLibraryState()
@@ -119,7 +116,7 @@ export const ProfileScreen = () => {
                 isLibraryUnlocked: false
               }))
             } else {
-              isUnlockLibraryDialogOpened(true)
+              setUnlockLibraryDialogState(true)
             }
           }}
         >

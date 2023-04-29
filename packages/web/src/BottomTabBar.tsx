@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, ReactNode } from "react"
+import { useRef, useCallback, ReactNode } from "react"
 import {
   BottomNavigationAction,
   BottomNavigation,
@@ -22,8 +22,10 @@ import { useCSS } from "./common/utils"
 import { UploadBookFromDevice } from "./upload/UploadBookFromDevice"
 import {
   useIsUploadBookFromDeviceOpened,
-  setIsUploadBookFromDeviceOpened
+  setIsUploadBookFromDeviceOpened,
+  isUploadBookFromDeviceOpenedState
 } from "./upload/state"
+import { useScopeSignals } from "reactjrx"
 
 export const BottomTabBar = ({ children }: { children: ReactNode }) => {
   const location = useLocation()
@@ -41,6 +43,8 @@ export const BottomTabBar = ({ children }: { children: ReactNode }) => {
       setIsUploadBookFromDeviceOpened("outside")
     }
   }, [])
+
+  useScopeSignals([isUploadBookFromDeviceOpenedState])
 
   return (
     <div style={classes.container} onDragOver={onDragOver}>

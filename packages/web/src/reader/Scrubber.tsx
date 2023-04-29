@@ -1,10 +1,9 @@
 import { FC, useEffect, useState } from "react"
 import RcSlider from "rc-slider"
 import "rc-slider/assets/index.css"
-import { useRecoilValue } from "recoil"
 import {
-  manifestState,
   useCurrentPage,
+  useManifestState,
   useReader,
   useTotalPage
 } from "./states"
@@ -13,8 +12,7 @@ import { useTheme } from "@mui/material"
 export const Scrubber: FC<{}> = () => {
   const currentPage = useCurrentPage()
   const totalPages = useTotalPage() || 1
-  const { readingDirection, renditionLayout } =
-    useRecoilValue(manifestState) || {}
+  const { readingDirection, renditionLayout } = useManifestState() || {}
   const [value, setValue] = useState(currentPage || 0)
   const theme = useTheme()
   const reader = useReader()

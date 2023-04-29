@@ -17,7 +17,7 @@ import { atom, useRecoilCallback, useRecoilValue } from "recoil"
 import { useCSS } from "../common/utils"
 import { DialogTopBar } from "../navigation/DialogTopBar"
 import {
-  manifestState,
+  useManifestState,
   usePagination,
   useCurrentPage,
   useReader
@@ -45,7 +45,7 @@ export const MoreDialog: FC<{}> = () => {
   const [value, setValue] = React.useState("toc")
   const reader = useReader()
   const { data: pagination } = usePagination()
-  const { title, nav } = useRecoilValue(manifestState) || {}
+  const { title, nav } = useManifestState() || {}
   const chapterInfo = pagination?.beginChapterInfo
   const currentPage = useCurrentPage() || 0
   const toc = nav?.toc || []

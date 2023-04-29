@@ -10,9 +10,9 @@ export const useHasDoneFirstTimeExperience = (id: FirstTimeExperienceId) => {
 
   const latestVersion =
     FirstTimeExperience.find((entry) => entry.id === id)?.version || 0
-  const currentdoneVersion = firstTimeExperience[id] || 0
+  const currentDoneVersion = firstTimeExperience[id] || 0
 
-  return currentdoneVersion >= latestVersion
+  return currentDoneVersion >= latestVersion
 }
 
 export const useValidateFirstTimeExperience = (id: FirstTimeExperienceId) => {

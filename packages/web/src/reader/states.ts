@@ -1,5 +1,3 @@
-import { atom, useRecoilCallback } from "recoil"
-import { useEffect } from "react"
 import { createReader, Manifest } from "@prose-reader/core"
 import { EMPTY, switchMap } from "rxjs"
 import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
@@ -15,24 +13,27 @@ export type ReactReaderProps = GenericReactReaderProps<
   ReaderInstance
 >
 
-export const [useReader, setReader, , reader$] = signal<
+export const [useReader, setReader, , reader$, , readerState] = signal<
   ReaderInstance | undefined
 >({
-  scoped: true,
   key: "readerState"
 })
 
-export const isBookReadyState = atom({
-  key: "isBookReadyState",
-  default: false
-})
+export const [useIsBookReadyState, setIsBookReady, , , , isBookReadyState] =
+  signal({
+    key: "isBookReadyState",
+    default: false
+  })
 
-export const manifestState = atom<Manifest | undefined>({
+// @todo use query useManifest(bookId)
+export const [useManifestState, setManifestState, , , , manifestState] = signal<
+  Manifest | undefined
+>({
   key: `manifestState`,
   default: undefined
 })
 
-export const isMenuShownState = atom({
+export const [useIsMenuShownState, setIsMenuShown, , , , isMenuShown] = signal({
   key: "isMenuShownState",
   default: false
 })
@@ -65,20 +66,4 @@ export const useTotalPage = () => {
   if (renditionLayout === "reflowable") return beginNumberOfPagesInChapter
 
   return numberOfTotalPages
-}
-
-const statesToReset = [isBookReadyState, isMenuShownState, manifestState]
-
-export const useResetStateOnUnMount = () => {
-  const resetStates = useRecoilCallback(
-    ({ reset }) =>
-      () => {
-        statesToReset.forEach((state) => reset(state))
-      },
-    []
-  )
-
-  useEffect(() => {
-    return () => resetStates()
-  }, [resetStates])
 }

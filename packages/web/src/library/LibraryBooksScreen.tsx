@@ -23,11 +23,11 @@ import EmptyLibraryAsset from "../assets/empty-library.svg"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { LibraryViewMode } from "../rxdb"
 import {
-  isUploadBookDrawerOpenedState,
+  setIsUploadBookDrawerOpenedState,
   updateLibraryState,
+  useIsUploadBookDrawerOpenedState,
   useLibraryState
 } from "./states"
-import { useRecoilState } from "recoil"
 import { UploadBookDrawer } from "./UploadBookDrawer"
 import { SortByDialog } from "../books/bookList/SortByDialog"
 import { useLocalSettingsState } from "../settings/states"
@@ -41,8 +41,7 @@ export const LibraryBooksScreen = () => {
   const classes = useClasses()
   const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
-  const [isUploadBookDrawerOpened, setIsUploadBookDrawerOpened] =
-    useRecoilState(isUploadBookDrawerOpenedState)
+  const isUploadBookDrawerOpened = useIsUploadBookDrawerOpenedState()
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const localSettings = useLocalSettingsState()
   const [
@@ -62,12 +61,12 @@ export const LibraryBooksScreen = () => {
       <Button
         fullWidth
         variant="outlined"
-        onClick={() => setIsUploadBookDrawerOpened(true)}
+        onClick={() => setIsUploadBookDrawerOpenedState(true)}
       >
         {t(`library.button.book.add.title`)}
       </Button>
     ),
-    [setIsUploadBookDrawerOpened, t]
+    [t]
   )
 
   const listHeader = useMemo(
@@ -91,8 +90,8 @@ export const LibraryBooksScreen = () => {
     useMeasureElement(listHeader)
 
   useEffect(
-    () => () => setIsUploadBookDrawerOpened(false),
-    [setIsUploadBookDrawerOpened]
+    () => () => setIsUploadBookDrawerOpenedState(false),
+    []
   )
 
   return (
@@ -256,7 +255,7 @@ export const LibraryBooksScreen = () => {
         <UploadBookDrawer
           open={isUploadBookDrawerOpened}
           onClose={(type) => {
-            setIsUploadBookDrawerOpened(false)
+            setIsUploadBookDrawerOpenedState(false)
             switch (type) {
               case "device":
                 setIsUploadBookFromDeviceOpened("local")

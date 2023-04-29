@@ -1,19 +1,18 @@
 import React, { FC } from "react"
 import { Typography, useTheme } from "@mui/material"
 import {
-  manifestState,
   useCurrentPage,
+  useManifestState,
   usePagination,
   useTotalPage
 } from "./states"
-import { useRecoilValue } from "recoil"
 
 export const PageInformation: FC<{
   style: React.CSSProperties
 }> = ({ style }) => {
   const theme = useTheme()
   const currentPage = useCurrentPage() || 0
-  const { renditionLayout } = useRecoilValue(manifestState) || {}
+  const { renditionLayout } = useManifestState() ?? {}
   const {
     data: { percentageEstimateOfBook, beginChapterInfo: chapterInfo } = {}
   } = usePagination()

@@ -4,8 +4,7 @@ import { useIsAuthenticated, useSignOut } from "../../auth/helpers"
 import { API_COUCH_URI } from "../../constants"
 import { SettingsDocType, useDatabase } from ".."
 import PouchDB from "pouchdb"
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
-import { syncState } from "../../library/states"
+import { useSetRecoilState } from "recoil"
 import { settingsState } from "../../settings/states"
 import { useBooksObservers } from "../../books/observers"
 import { useTagsObservers } from "../../tags/observers"
@@ -16,6 +15,7 @@ import { useWatchAndFixConflicts } from "./useWatchAndFixConflicts"
 import { useAuthState } from "../../auth/authState"
 import { syncCollections } from "../replication/syncCollections"
 import { useNetworkState } from "react-use"
+import { useSyncState } from "../../library/states"
 
 type callback = Parameters<(typeof PouchDB)["sync"]>[3]
 type PouchError = NonNullable<Parameters<NonNullable<callback>>[0]>
@@ -51,7 +51,7 @@ export const useObservers = () => {
   const { token, dbName } = useAuthState() || {}
   const isAuthenticated = useIsAuthenticated()
   const signOut = useSignOut()
-  const [{ syncRefresh }, setSyncState] = useRecoilState(syncState)
+  const { syncRefresh } = useSyncState()
   const setLastAliveSyncState = useSetRecoilState(lastAliveSyncState)
   const { online } = useNetworkState()
 
@@ -131,7 +131,6 @@ export const useObservers = () => {
     isAuthenticated,
     token,
     syncRefresh,
-    setSyncState,
     setLastAliveSyncState,
     dbName,
     online

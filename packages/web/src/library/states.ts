@@ -38,12 +38,15 @@ export const [
   })
 )
 
-export const isUploadBookDrawerOpenedState = atom({
+export const [
+  useIsUploadBookDrawerOpenedState,
+  setIsUploadBookDrawerOpenedState
+] = signal({
   key: "isUploadBookDrawerOpenedState",
   default: false
 })
 
-export const syncState = atom({
+export const [useSyncState, setSyncState] = signal({
   key: "syncState",
   default: {
     isSyncing: false,
