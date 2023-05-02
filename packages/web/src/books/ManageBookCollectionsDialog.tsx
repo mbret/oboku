@@ -6,6 +6,7 @@ import { bookState } from "./states"
 import { CollectionsSelectionDialog } from "../collections/CollectionsSelectionDialog"
 import { useLibraryState } from "../library/states"
 import { useLocalSettingsState } from "../settings/states"
+import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
 
 const openManageBookCollectionsDialogState = atom<string | undefined>({
   key: "openManageBookCollectionsDialogState",
@@ -39,10 +40,13 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
   const collections = useRecoilValue(
     collectionIdsState({
       libraryState: useLibraryState(),
-      localSettingsState: useLocalSettingsState()
+      localSettingsState: useLocalSettingsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
-  const book = useRecoilValue(bookState(id || "-1"))
+  const book = useRecoilValue(
+    bookState({ bookId: id || "-1", tags: useTagsByIds().data })
+  )
   const { mutate: addToBook } = useAddCollectionToBook()
   const { mutate: removeFromBook } = useRemoveCollectionFromBook()
   const bookCollection = book?.collections

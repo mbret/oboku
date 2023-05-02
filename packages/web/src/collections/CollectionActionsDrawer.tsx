@@ -27,6 +27,7 @@ import { useCallback } from "react"
 import { useRef } from "react"
 import { useLibraryState } from "../library/states"
 import { useLocalSettingsState } from "../settings/states"
+import { useProtectedTagIds } from "../tags/helpers"
 
 const collectionActionDrawerState = atom<{
   openedWith: undefined | string
@@ -189,7 +190,8 @@ const EditCollectionDialog: FC<{
     collectionState({
       id: id || "-1",
       libraryState: useLibraryState(),
-      localSettingsState: useLocalSettingsState()
+      localSettingsState: useLocalSettingsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
   const { mutate: editCollection } = useUpdateCollection()

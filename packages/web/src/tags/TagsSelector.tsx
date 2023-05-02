@@ -6,7 +6,7 @@ import MenuItem from "@mui/material/MenuItem"
 import FormControl from "@mui/material/FormControl"
 import Select from "@mui/material/Select"
 import makeStyles from "@mui/styles/makeStyles"
-import { useTag, useTagIds } from "./states"
+import { useTag, useTagIds } from "./helpers"
 import { TagChip } from "./TagChip"
 
 export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
@@ -57,9 +57,9 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
 }
 
 const TagName: FC<{ id: string }> = ({ id }) => {
-  const { name } = useTag(id) || {}
+  const { data } = useTag(id)
 
-  return <>{name}</>
+  return <>{data?.name}</>
 }
 
 const useStyles = makeStyles((theme) => ({

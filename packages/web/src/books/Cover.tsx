@@ -5,7 +5,11 @@ import { useTheme } from "@mui/material"
 import { selectorFamily, useRecoilValue } from "recoil"
 import { enrichedBookState } from "./states"
 import { useAuthState } from "../auth/authState"
-import { blurredTagIdsState } from "../tags/states"
+import {
+  useBlurredTagIds,
+  useProtectedTagIds,
+  useTagsByIds
+} from "../tags/helpers"
 import { useCSS } from "../common/utils"
 import { API_URI } from "../constants"
 import { useLocalSettingsState } from "../settings/states"
@@ -16,21 +20,28 @@ const bookCoverState = selectorFamily({
   get:
     ({
       bookId,
-      normalizedBookDownloadsState
+      normalizedBookDownloadsState,
+      blurredTags,
+      protectedTags,
+      tags
     }: {
       bookId: string
       normalizedBookDownloadsState: ReturnType<
         typeof useNormalizedBookDownloadsState
       >
+      blurredTags: string[]
+      protectedTags: string[]
+      tags: ReturnType<typeof useTagsByIds>["data"]
     }) =>
     ({ get }) => {
       const enrichedBook = get(
         enrichedBookState({
           bookId,
-          normalizedBookDownloadsState
+          normalizedBookDownloadsState,
+          protectedTagIds: protectedTags,
+          tags
         })
       )
-      const blurredTags = get(blurredTagIdsState)
 
       if (!enrichedBook) return undefined
 
@@ -70,7 +81,10 @@ export const Cover: FC<Props> = memo(
     const book = useRecoilValue(
       bookCoverState({
         bookId,
-        normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+        normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+        blurredTags: useBlurredTagIds().data ?? [],
+        protectedTags: useProtectedTagIds().data ?? [],
+        tags: useTagsByIds().data
       })
     )
     const [hasError, setHasError] = useState(false)

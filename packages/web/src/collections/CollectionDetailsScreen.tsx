@@ -10,6 +10,7 @@ import { useCollectionActionsDrawer } from "./CollectionActionsDrawer"
 import { BookListWithControls } from "../books/bookList/BookListWithControls"
 import { useLibraryState } from "../library/states"
 import { useLocalSettingsState } from "../settings/states"
+import { useProtectedTagIds } from "../tags/helpers"
 
 type ScreenParams = {
   id: string
@@ -23,7 +24,8 @@ export const CollectionDetailsScreen = () => {
     collectionState({
       id: id || "-1",
       libraryState: useLibraryState(),
-      localSettingsState: useLocalSettingsState()
+      localSettingsState: useLocalSettingsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
   const data =

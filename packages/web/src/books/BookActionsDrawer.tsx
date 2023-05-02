@@ -40,6 +40,7 @@ import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "./ManageBookTagsDialog"
 import { markAsInterested } from "./triggers"
 import { useNormalizedBookDownloadsState } from "../download/states"
+import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
 
 /**
  * @deprecated
@@ -58,7 +59,9 @@ export const BookActionsDrawer = memo(() => {
   const book = useRecoilValue(
     enrichedBookState({
       bookId: bookId || "-1",
-      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+      protectedTagIds: useProtectedTagIds().data,
+      tags: useTagsByIds().data
     })
   )
   const bookLink = useRecoilValue(linkState(book?.links[0] || "-1"))

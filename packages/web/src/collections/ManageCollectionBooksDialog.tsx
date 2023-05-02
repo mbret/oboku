@@ -12,6 +12,7 @@ import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
 import { useLibraryState } from "../library/states"
 import { useNormalizedBookDownloadsState } from "../download/states"
 import { useLocalSettingsState } from "../settings/states"
+import { useProtectedTagIds } from "../tags/helpers"
 
 export const ManageCollectionBooksDialog: FC<{
   onClose: () => void
@@ -22,13 +23,15 @@ export const ManageCollectionBooksDialog: FC<{
     collectionState({
       id: collectionId || "-1",
       libraryState: useLibraryState(),
-      localSettingsState: useLocalSettingsState()
+      localSettingsState: useLocalSettingsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
   const books = useRecoilValue(
     booksAsArrayState({
       libraryState: useLibraryState(),
-      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
   const { mutate: addToBook } = useAddCollectionToBook()

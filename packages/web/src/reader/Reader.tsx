@@ -33,6 +33,7 @@ import { FONT_SCALE_MAX, FONT_SCALE_MIN } from "./constants"
 import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSettings"
 import { Notification } from "./Notification"
 import { useReaderSettingsState } from "./settings/states"
+import { useTagsByIds } from "../tags/helpers"
 
 export const Reader: FC<{
   bookId: string
@@ -40,7 +41,9 @@ export const Reader: FC<{
   const reader = useReader()
   const isBookReady = useIsBookReadyState()
   const readerSettings = useReaderSettingsState()
-  const book = useRecoilValue(bookState(bookId || "-1"))
+  const book = useRecoilValue(
+    bookState({ tags: useTagsByIds().data, bookId: bookId || "-1" })
+  )
   const navigate = useNavigate()
   const [
     containerMeasureRef,

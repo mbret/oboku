@@ -16,7 +16,7 @@ import { setIsTagsTourPossibleState } from "../firstTimeExperience/firstTimeExpe
 import { useCSS, useMeasureElement } from "../common/utils"
 import { TagList } from "../tags/tagList/TagList"
 import { AppTourFirstTourTagsStep2 } from "../firstTimeExperience/AppTourFirstTourTags"
-import { useTagIds } from "../tags/states"
+import { useTagIds } from "../tags/helpers"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 

@@ -7,6 +7,7 @@ import {
   useNormalizedBookDownloadsState
 } from "../download/states"
 import { useLibraryState } from "./states"
+import { useProtectedTagIds } from "../tags/helpers"
 
 export const useBooks = () => {
   const results = useRef<string[]>([])
@@ -15,7 +16,8 @@ export const useBooks = () => {
   const unsortedBooks = useRecoilValue(
     booksAsArrayState({
       libraryState: useLibraryState(),
-      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
 

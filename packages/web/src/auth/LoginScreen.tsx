@@ -12,7 +12,7 @@ import { useMutation } from "reactjrx"
 
 export const LoginScreen = () => {
   const { signIn } = useSignIn()
-  const { mutate, isLoading, error } = useMutation(signIn)
+  const { mutate, isLoading, error } = useMutation(signIn, "switch")
   const theme = useTheme()
   const { t } = useTranslation()
 

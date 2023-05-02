@@ -42,6 +42,7 @@ import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { useLibraryState } from "../../library/states"
 import { useNormalizedBookDownloadsState } from "../../download/states"
 import { useLocalSettingsState } from "../../settings/states"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 
 type ScreenParams = {
   id: string
@@ -59,15 +60,21 @@ export const BookDetailsScreen = () => {
   const book = useRecoilValue(
     enrichedBookState({
       bookId: id,
-      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+      protectedTagIds: useProtectedTagIds().data,
+      tags: useTagsByIds().data
     })
   )
-  const tags = useRecoilValue(bookTagsState(id))
+  const tags = useRecoilValue(
+    bookTagsState({ bookId: id, tags: useTagsByIds().data })
+  )
   const collections = useRecoilValue(
     bookCollectionsState({
       bookId: id,
       libraryState: useLibraryState(),
-      localSettingsState: useLocalSettingsState()
+      localSettingsState: useLocalSettingsState(),
+      protectedTagIds: useProtectedTagIds().data,
+      tags: useTagsByIds().data
     })
   )
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()

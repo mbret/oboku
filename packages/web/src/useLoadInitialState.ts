@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { useBooksInitialState } from "./books/observers"
 import { useDatabase } from "./rxdb"
-import { useTagsInitialState } from "./tags/observers"
 import { useLinksInitialState } from "./links/observers"
 import { useCollectionsInitialState } from "./collections/observers"
 import { useSettingsStateReducer } from "./rxdb/sync/useObservers"
@@ -16,7 +15,6 @@ export const useLoadInitialState = () => {
   const { db } = useDatabase()
   const settingsReducer = useSettingsStateReducer()
   const isBookStateReady = useBooksInitialState()
-  const isTagStateReady = useTagsInitialState()
   const isLinkStateReady = useLinksInitialState()
   const isCollectionStateReady = useCollectionsInitialState()
   const [ready, setIsReady] = useState(false)
@@ -37,11 +35,5 @@ export const useLoadInitialState = () => {
     }
   }, [db, settingsReducer])
 
-  return (
-    ready &&
-    isBookStateReady &&
-    isTagStateReady &&
-    isLinkStateReady &&
-    isCollectionStateReady
-  )
+  return ready && isBookStateReady && isLinkStateReady && isCollectionStateReady
 }

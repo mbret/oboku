@@ -6,6 +6,7 @@ import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { Checkbox } from "../../common/Checkbox"
 import { useNormalizedBookDownloadsState } from "../../download/states"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 
 export const SelectableBookListItem: FC<{
   bookId: string
@@ -29,7 +30,9 @@ export const SelectableBookListItem: FC<{
   const book = useRecoilValue(
     enrichedBookState({
       bookId,
-      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+      protectedTagIds: useProtectedTagIds().data,
+      tags: useTagsByIds().data
     })
   )
   const theme = useTheme()

@@ -3,6 +3,7 @@ import { CollectionDocType, directives } from "@oboku/shared"
 import { visibleBookIdsState } from "../books/states"
 import { getLibraryState } from "../library/states"
 import { useLocalSettingsState } from "../settings/states"
+import { useProtectedTagIds } from "../tags/helpers"
 
 export type Collection = CollectionDocType
 
@@ -21,15 +22,19 @@ export const collectionsAsArrayState = selectorFamily({
   get:
     ({
       libraryState,
-      localSettingsState
+      localSettingsState,
+      protectedTagIds = []
     }: {
       libraryState: ReturnType<typeof getLibraryState>
       localSettingsState: ReturnType<typeof useLocalSettingsState>
+      protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
     }) =>
     ({ get }) => {
       const localSettings = localSettingsState
       const collections = get(normalizedCollectionsState)
-      const bookIds = get(visibleBookIdsState(libraryState))
+      const bookIds = get(
+        visibleBookIdsState({ libraryState, protectedTagIds })
+      )
       const ids = Object.keys(collections)
 
       type Collection = NonNullable<
@@ -52,7 +57,14 @@ export const collectionsAsArrayState = selectorFamily({
           }
         })
         .map((id) =>
-          get(collectionState({ id, libraryState, localSettingsState }))
+          get(
+            collectionState({
+              id,
+              libraryState,
+              localSettingsState,
+              protectedTagIds
+            })
+          )
         ) as Collection[]
     }
 })
@@ -65,14 +77,20 @@ export const collectionIdsState = selectorFamily({
   get:
     ({
       libraryState,
-      localSettingsState
+      localSettingsState,
+      protectedTagIds = []
     }: {
       libraryState: ReturnType<typeof getLibraryState>
       localSettingsState: ReturnType<typeof useLocalSettingsState>
+      protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
     }) =>
     ({ get }) => {
       return get(
-        collectionsAsArrayState({ libraryState, localSettingsState })
+        collectionsAsArrayState({
+          libraryState,
+          localSettingsState,
+          protectedTagIds
+        })
       ).map(({ _id }) => _id)
     }
 })
@@ -86,15 +104,19 @@ export const collectionState = selectorFamily({
     ({
       id,
       libraryState,
-      localSettingsState
+      localSettingsState,
+      protectedTagIds = []
     }: {
       id: string
       libraryState: ReturnType<typeof getLibraryState>
       localSettingsState: ReturnType<typeof useLocalSettingsState>
+      protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
     }) =>
     ({ get }) => {
       const collection = get(normalizedCollectionsState)[id]
-      const bookIds = get(visibleBookIdsState(libraryState))
+      const bookIds = get(
+        visibleBookIdsState({ libraryState, protectedTagIds })
+      )
       const localSettings = localSettingsState
 
       if (!collection) return undefined

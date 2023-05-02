@@ -17,6 +17,7 @@ import {
   useNormalizedBookDownloadsState
 } from "../../download/states"
 import { useCSS } from "../../common/utils"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 
 type Book = UnwrapRecoilValue<ReturnType<typeof enrichedBookState>>
 
@@ -43,7 +44,9 @@ export const BookListCoverContainer: FC<{
     const item = useRecoilValue(
       enrichedBookState({
         bookId,
-        normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+        normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+        protectedTagIds: useProtectedTagIds().data,
+        tags: useTagsByIds().data
       })
     )
     const classes = useStyles({ item })

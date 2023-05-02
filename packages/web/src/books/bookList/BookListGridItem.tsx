@@ -1,4 +1,4 @@
-import React, { FC, memo } from "react"
+import { FC, memo } from "react"
 import { Typography, useTheme } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
 import { useRecoilState, useRecoilValue } from "recoil"
@@ -8,6 +8,7 @@ import { useDefaultItemClickHandler } from "./helpers"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useCSS } from "../../common/utils"
 import { useNormalizedBookDownloadsState } from "../../download/states"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 
 export const BookListGridItem: FC<{
   bookId: string
@@ -16,7 +17,9 @@ export const BookListGridItem: FC<{
   const item = useRecoilValue(
     enrichedBookState({
       bookId,
-      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+      protectedTagIds: useProtectedTagIds().data,
+      tags: useTagsByIds().data
     })
   )
   const onDefaultItemClick = useDefaultItemClickHandler()

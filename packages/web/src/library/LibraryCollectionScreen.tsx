@@ -19,6 +19,7 @@ import { CollectionList } from "../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
 import { useLibraryState } from "./states"
 import { useLocalSettingsState } from "../settings/states"
+import { useProtectedTagIds } from "../tags/helpers"
 
 type Scroll = Parameters<
   NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
@@ -47,7 +48,8 @@ export const LibraryCollectionScreen = () => {
   const collections = useRecoilValue(
     collectionIdsState({
       libraryState: useLibraryState(),
-      localSettingsState: useLocalSettingsState()
+      localSettingsState: useLocalSettingsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
 

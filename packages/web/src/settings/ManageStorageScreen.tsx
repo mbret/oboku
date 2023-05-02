@@ -33,6 +33,7 @@ import { useMutation } from "reactjrx"
 import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
 import { useLibraryState } from "../library/states"
 import { useNormalizedBookDownloadsState } from "../download/states"
+import { useProtectedTagIds } from "../tags/helpers"
 
 export const ManageStorageScreen = () => {
   const bookIds = useRecoilValue(
@@ -40,7 +41,12 @@ export const ManageStorageScreen = () => {
       normalizedBookDownloadsState: useNormalizedBookDownloadsState()
     })
   )
-  const visibleBookIds = useRecoilValue(visibleBookIdsState(useLibraryState()))
+  const visibleBookIds = useRecoilValue(
+    visibleBookIdsState({
+      libraryState: useLibraryState(),
+      protectedTagIds: useProtectedTagIds().data
+    })
+  )
   const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])
   const removeDownloadFile = useRemoveDownloadFile()

@@ -1,7 +1,8 @@
 import { from, mergeMap, withLatestFrom } from "rxjs"
-import { removeTag$ } from "./triggers"
-import { useSubscribeEffect } from "reactjrx"
+import { trigger, useSubscribeEffect } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+
+export const [removeTag$, removeTag] = trigger<{ id: string }>()
 
 export const useTagEffects = () => {
   useSubscribeEffect(

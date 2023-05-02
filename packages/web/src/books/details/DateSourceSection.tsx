@@ -17,9 +17,12 @@ import { useRefreshBookMetadata } from "../helpers"
 import { bookLinksState } from "../states"
 import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
 import { upsertBookLink } from "../triggers"
+import { useTagsByIds } from "../../tags/helpers"
 
 export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
-  const link = useRecoilValue(bookLinksState(bookId))[0]
+  const link = useRecoilValue(
+    bookLinksState({ bookId, tags: useTagsByIds().data })
+  )[0]
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
   const [isSelectItemOpened, setIsSelectItemOpened] = useState(false)
   const dialog = useDialogManager()

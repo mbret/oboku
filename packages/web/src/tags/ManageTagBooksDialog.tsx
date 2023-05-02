@@ -4,7 +4,7 @@ import { atom, useRecoilState, useRecoilValue } from "recoil"
 import { booksAsArrayState } from "../books/states"
 import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
-import { useTag } from "./states"
+import { useProtectedTagIds, useTag } from "./helpers"
 import { useLibraryState } from "../library/states"
 import { useNormalizedBookDownloadsState } from "../download/states"
 
@@ -18,11 +18,14 @@ export const ManageTagBooksDialog: FC<{}> = () => {
     isManageTagBooksDialogOpenedWith,
     setIsManageTagBooksDialogOpenedWith
   ] = useRecoilState(isManageTagBooksDialogOpenedWithState)
-  const tag = useTag(isManageTagBooksDialogOpenedWith || "-1")
-  const books = useRecoilValue(booksAsArrayState({
-    libraryState: useLibraryState(),
-    normalizedBookDownloadsState: useNormalizedBookDownloadsState()
-  }))
+  const { data: tag } = useTag(isManageTagBooksDialogOpenedWith || "-1")
+  const books = useRecoilValue(
+    booksAsArrayState({
+      libraryState: useLibraryState(),
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+      protectedTagIds: useProtectedTagIds().data
+    })
+  )
   const { mutate: addTagToBook } = useAddTagToBook()
   const { mutate: removeFromBook } = useRemoveTagFromBook()
   const tagBooks = useMemo(() => tag?.books?.map((item) => item) || [], [tag])

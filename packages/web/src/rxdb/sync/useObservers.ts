@@ -7,10 +7,8 @@ import PouchDB from "pouchdb"
 import { useSetRecoilState } from "recoil"
 import { settingsState } from "../../settings/states"
 import { useBooksObservers } from "../../books/observers"
-import { useTagsObservers } from "../../tags/observers"
 import { useLinksObservers } from "../../links/observers"
 import { useCollectionsObservers } from "../../collections/observers"
-import { lastAliveSyncState } from "./state"
 import { useWatchAndFixConflicts } from "./useWatchAndFixConflicts"
 import { useAuthState } from "../../auth/authState"
 import { syncCollections } from "../replication/syncCollections"
@@ -52,11 +50,9 @@ export const useObservers = () => {
   const isAuthenticated = useIsAuthenticated()
   const signOut = useSignOut()
   const { syncRefresh } = useSyncState()
-  const setLastAliveSyncState = useSetRecoilState(lastAliveSyncState)
   const { online } = useNetworkState()
 
   useBooksObservers()
-  useTagsObservers()
   useLinksObservers()
   useCollectionsObservers()
   useWatchAndFixConflicts()
@@ -101,9 +97,6 @@ export const useObservers = () => {
         // }),
         syncState.alive$.subscribe((alive) => {
           console.log(`SYNC alive`, alive)
-          if (alive) {
-            setLastAliveSyncState(Date.now())
-          }
         }),
         // syncState.change$.subscribe((data) =>
         //   console.warn(`SYNC change`, data)
@@ -125,16 +118,7 @@ export const useObservers = () => {
         subscriptions.forEach((subscription) => subscription.unsubscribe())
       }
     }
-  }, [
-    database,
-    signOut,
-    isAuthenticated,
-    token,
-    syncRefresh,
-    setLastAliveSyncState,
-    dbName,
-    online
-  ])
+  }, [database, signOut, isAuthenticated, token, syncRefresh, dbName, online])
 
   useEffect(() => {
     const settingsObs$ = database?.settings.$.subscribe(settingsReducer)

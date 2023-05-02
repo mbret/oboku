@@ -17,6 +17,7 @@ import { Cover } from "../../books/Cover"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer"
 import { useLibraryState } from "../../library/states"
 import { useLocalSettingsState } from "../../settings/states"
+import { useProtectedTagIds } from "../../tags/helpers"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,
@@ -38,7 +39,8 @@ export const CollectionListItemList: FC<{
     collectionState({
       id,
       libraryState: useLibraryState(),
-      localSettingsState: useLocalSettingsState()
+      localSettingsState: useLocalSettingsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
   const { open: openActionDrawer } = useCollectionActionsDrawer(id)

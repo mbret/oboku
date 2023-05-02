@@ -6,12 +6,14 @@ import { ReadingStateState } from "@oboku/shared"
 import { useBooksSortedBy } from "../books/helpers"
 import { useLibraryState } from "../library/states"
 import { useNormalizedBookDownloadsState } from "../download/states"
+import { useProtectedTagIds } from "../tags/helpers"
 
 export const useContinueReadingBooks = () => {
   const booksAsArray = useRecoilValue(
     booksAsArrayState({
       libraryState: useLibraryState(),
-      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
@@ -31,7 +33,8 @@ export const useRecentlyAddedBooks = () => {
   const books = useRecoilValue(
     booksAsArrayState({
       libraryState: useLibraryState(),
-      normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+      normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
 

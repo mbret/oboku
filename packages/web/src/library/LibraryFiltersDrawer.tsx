@@ -17,7 +17,7 @@ import {
   RadioButtonUncheckedOutlined
 } from "@mui/icons-material"
 import { getDisplayableReadingState, useToggleTag } from "./helpers"
-import { useTagIds } from "../tags/states"
+import { useTagIds } from "../tags/helpers"
 import { ReadingStateState } from "@oboku/shared"
 import { DownloadState } from "../download/states"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"

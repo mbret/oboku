@@ -7,13 +7,13 @@ import {
   LockRounded
 } from "@mui/icons-material"
 import { TagsDocType } from "@oboku/shared"
-import { useTag } from "../states"
+import { useTag } from "../helpers"
 
 export const TagListItemList: FC<{
   id: string
   onItemClick?: (tag: TagsDocType) => void
 }> = memo(({ id, onItemClick }) => {
-  const tag = useTag(id)
+  const { data: tag } = useTag(id)
   const styles = useStyle()
 
   return (

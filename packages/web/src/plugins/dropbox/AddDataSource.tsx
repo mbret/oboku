@@ -14,7 +14,7 @@ import {
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
 import { ComponentProps, FC, useState } from "react"
 import { DropboxDataSourceData } from "@oboku/shared"
-import { useTagIds, useTags } from "../../tags/states"
+import { useTagIds, useTags } from "../../tags/helpers"
 import { useCreateDataSource } from "../../dataSources/helpers"
 import { Picker } from "./Picker"
 import { DropboxFile } from "./types"

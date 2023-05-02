@@ -5,13 +5,15 @@ import { bookIdsState } from "../books/states"
 import { collectionsAsArrayState } from "../collections/states"
 import { useLibraryState } from "../library/states"
 import { useLocalSettingsState } from "./states"
+import { useProtectedTagIds } from "../tags/helpers"
 
 export const StatisticsScreen = () => {
   const bookIds = useRecoilValue(bookIdsState)
   const collectionsAsArray = useRecoilValue(
     collectionsAsArrayState({
       libraryState: useLibraryState(),
-      localSettingsState: useLocalSettingsState()
+      localSettingsState: useLocalSettingsState(),
+      protectedTagIds: useProtectedTagIds().data
     })
   )
 

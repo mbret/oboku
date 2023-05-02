@@ -23,9 +23,9 @@ import {
 } from "@mui/icons-material"
 import { useUpdateTag } from "./helpers"
 import { useSetRecoilState } from "recoil"
-import { useTag } from "./states"
+import { useTag } from "./helpers"
 import { isManageTagBooksDialogOpenedWithState } from "./ManageTagBooksDialog"
-import { removeTag } from "./triggers"
+import { removeTag } from "./effects"
 
 export const TagActionsDrawer: FC<{
   openWith: string | undefined
@@ -34,7 +34,7 @@ export const TagActionsDrawer: FC<{
   const setIsManageTagBooksDialogOpenedWithState = useSetRecoilState(
     isManageTagBooksDialogOpenedWithState
   )
-  const tag = useTag(openWith || "-1")
+  const { data: tag } = useTag(openWith || "-1")
   const editTag = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
     useState<string | undefined>(undefined)
@@ -135,7 +135,8 @@ const EditTagDialog: FC<{
   onClose: () => void
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState("")
-  const { name: tagName } = useTag(id || "-1") || {}
+  const { data: tag } = useTag(id || "-1")
+  const { name: tagName } = tag ?? {}
   const editTag = useUpdateTag()
 
   const onInnerClose = () => {

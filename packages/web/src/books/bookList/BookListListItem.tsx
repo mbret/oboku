@@ -15,6 +15,7 @@ import { bookActionDrawerState } from "../BookActionsDrawer"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useNormalizedBookDownloadsState } from "../../download/states"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 
 export const BookListListItem: FC<{
   bookId: string
@@ -34,7 +35,9 @@ export const BookListListItem: FC<{
     const book = useRecoilValue(
       enrichedBookState({
         bookId,
-        normalizedBookDownloadsState: useNormalizedBookDownloadsState()
+        normalizedBookDownloadsState: useNormalizedBookDownloadsState(),
+        protectedTagIds: useProtectedTagIds().data,
+        tags: useTagsByIds().data
       })
     )
     const onDefaultItemClick = useDefaultItemClickHandler()
