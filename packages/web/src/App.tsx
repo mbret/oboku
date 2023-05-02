@@ -10,7 +10,7 @@ import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { UpdateAvailableDialog } from "./UpdateAvailableDialog"
 import { RxDbProvider } from "./rxdb"
 import { useObservers } from "./rxdb/sync/useObservers"
-import { useLoadInitialState } from "./useLoadInitialState"
+import { PreloadQueries } from "./PreloadQueries"
 import { AxiosProvider } from "./axiosClient"
 import { normalizedBookDownloadsStatePersist } from "./download/states"
 import { AppLoading } from "./AppLoading"
@@ -33,7 +33,7 @@ import {
   createLocalforageAdapter,
   createSharedStoreAdapter
 } from "reactjrx"
-import { libraryStatePersist } from "./library/states"
+import { libraryStatePersist, setSyncState } from "./library/states"
 import localforage from "localforage"
 import { RecoilRoot } from "recoil"
 
@@ -43,10 +43,14 @@ declare module "@mui/styles/defaultTheme" {
 }
 
 export function App() {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState({
+    hydrate: true,
+    preloadQueries: true
+  })
   const [newServiceWorker, setNewServiceWorker] = useState<
     ServiceWorker | undefined
   >(undefined)
+  const isAppReady = loading.hydrate && loading.preloadQueries
 
   return (
     <ErrorBoundary
@@ -57,7 +61,7 @@ export function App() {
       <StyledEngineProvider injectFirst>
         <ThemeProvider theme={theme}>
           <Suspense fallback={<AppLoading />}>
-            {loading && <AppLoading />}
+            {isAppReady && <AppLoading />}
             <RxDbProvider>
               <RecoilRoot>
                 <PersistSignals
@@ -75,7 +79,7 @@ export function App() {
                     key: "local-user2"
                   })}
                   onReady={() => {
-                    setLoading(false)
+                    setLoading((state) => ({ ...state, hydrate: false }))
                   }}
                 >
                   {plugins.reduce(
@@ -104,6 +108,11 @@ export function App() {
                     </AxiosProvider>
                   )}
                 </PersistSignals>
+                <PreloadQueries
+                  onReady={() => {
+                    setLoading((state) => ({ ...state, preloadQueries: false }))
+                  }}
+                />
               </RecoilRoot>
             </RxDbProvider>
           </Suspense>
@@ -118,7 +127,6 @@ export function App() {
 }
 
 const RecoilSyncedWithDatabase: FC = () => {
-  useLoadInitialState()
   useObservers()
 
   return null

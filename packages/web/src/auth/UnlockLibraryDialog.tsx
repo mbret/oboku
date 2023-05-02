@@ -9,14 +9,13 @@ import {
 } from "@mui/material"
 import { crypto } from "@oboku/shared"
 import { FC, useEffect } from "react"
-import { useRecoilValue } from "recoil"
-import { settingsState } from "../settings/states"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { updateLibraryState } from "../library/states"
 import { signal } from "reactjrx"
+import { useAccountSettings } from "../settings/helpers"
 
 export const [useUnlockLibraryDialogState, setUnlockLibraryDialogState] =
   signal({
@@ -36,9 +35,9 @@ export const UnlockLibraryDialog: FC<{}> = () => {
       unlockPassword: ""
     }
   })
-  const settings = useRecoilValue(settingsState)
+  const { data: accountSettings } = useAccountSettings()
   const isOpened = useUnlockLibraryDialogState()
-  const contentPassword = settings?.contentPassword
+  const contentPassword = accountSettings?.contentPassword
   const { closeModalWithNavigation } = useModalNavigationControl(
     {
       onExit: () => {

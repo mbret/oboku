@@ -1,11 +1,4 @@
-import { atom } from "recoil"
-import { SettingsDocType } from "../rxdb"
 import { signal, withPersistance } from "reactjrx"
-
-export const settingsState = atom<SettingsDocType | undefined>({
-  key: "settingsState",
-  default: undefined
-})
 
 const localSettingsStateDefaultValues = {
   useNavigationArrows: false,
@@ -19,7 +12,11 @@ const localSettingsStateDefaultValues = {
   showSensitiveDataSources: false
 }
 
-export const [localSettingsStatePersist, useLocalSettingsState, setLocalSettingsState] = withPersistance(
+export const [
+  localSettingsStatePersist,
+  useLocalSettingsState,
+  setLocalSettingsState
+] = withPersistance(
   signal<{
     useNavigationArrows: boolean
     useOptimizedTheme: boolean

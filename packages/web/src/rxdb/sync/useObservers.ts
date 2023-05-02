@@ -1,11 +1,8 @@
-import { useCallback, useEffect } from "react"
-import { RxChangeEvent, RxDocument } from "rxdb"
+import { useEffect } from "react"
 import { useIsAuthenticated, useSignOut } from "../../auth/helpers"
 import { API_COUCH_URI } from "../../constants"
-import { SettingsDocType, useDatabase } from ".."
+import { useDatabase } from ".."
 import PouchDB from "pouchdb"
-import { useSetRecoilState } from "recoil"
-import { settingsState } from "../../settings/states"
 import { useBooksObservers } from "../../books/observers"
 import { useLinksObservers } from "../../links/observers"
 import { useCollectionsObservers } from "../../collections/observers"
@@ -18,33 +15,7 @@ import { useSyncState } from "../../library/states"
 type callback = Parameters<(typeof PouchDB)["sync"]>[3]
 type PouchError = NonNullable<Parameters<NonNullable<callback>>[0]>
 
-export const useSettingsStateReducer = () => {
-  const setState = useSetRecoilState(settingsState)
-
-  return useCallback(
-    (
-      eventOrAction:
-        | RxChangeEvent<SettingsDocType>
-        | { operation: "INIT"; documentData: RxDocument<SettingsDocType> }
-    ) => {
-      switch (eventOrAction.operation) {
-        case "INIT": {
-          return setState((old) => ({
-            ...old,
-            ...eventOrAction.documentData.toJSON()
-          }))
-        }
-        case "UPDATE": {
-          return setState((old) => ({ ...old, ...eventOrAction.documentData }))
-        }
-      }
-    },
-    [setState]
-  )
-}
-
 export const useObservers = () => {
-  const settingsReducer = useSettingsStateReducer()
   const { db: database } = useDatabase()
   const { token, dbName } = useAuthState() || {}
   const isAuthenticated = useIsAuthenticated()
@@ -119,12 +90,4 @@ export const useObservers = () => {
       }
     }
   }, [database, signOut, isAuthenticated, token, syncRefresh, dbName, online])
-
-  useEffect(() => {
-    const settingsObs$ = database?.settings.$.subscribe(settingsReducer)
-
-    return () => {
-      settingsObs$?.unsubscribe()
-    }
-  }, [database, settingsReducer])
 }

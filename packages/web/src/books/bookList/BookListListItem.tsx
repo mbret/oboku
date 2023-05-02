@@ -11,11 +11,12 @@ import {
   MenuBookRounded,
   MoreVert
 } from "@mui/icons-material"
-import { bookActionDrawerState } from "../BookActionsDrawer"
+import { bookActionDrawerSignal } from "../BookActionsDrawer"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useNormalizedBookDownloadsState } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
+import { useSignal } from "reactjrx"
 
 export const BookListListItem: FC<{
   bookId: string
@@ -45,7 +46,6 @@ export const BookListListItem: FC<{
     const computedHeight = itemHeight || (size === "small" ? 50 : 100)
     const coverWidth = computedHeight * theme.custom.coverAverageRatio
     const classes = useStyles({ coverWidth })
-    const setBookActionDrawerState = useSetRecoilState(bookActionDrawerState)
 
     return (
       <div
@@ -181,7 +181,8 @@ export const BookListListItem: FC<{
             }}
             onClick={(e) => {
               e.stopPropagation()
-              book?._id && setBookActionDrawerState({ openedWith: book._id })
+              book?._id &&
+                bookActionDrawerSignal.setState({ openedWith: book._id })
             }}
           >
             <MoreVert />

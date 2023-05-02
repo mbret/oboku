@@ -11,9 +11,8 @@ import {
 } from "@mui/material"
 import { TabContext, TabList, TabPanel } from "@mui/lab"
 import { FiberManualRecordRounded } from "@mui/icons-material"
-import React from "react"
+import React, { useCallback } from "react"
 import { FC } from "react"
-import { atom, useRecoilCallback, useRecoilValue } from "recoil"
 import { useCSS } from "../common/utils"
 import { DialogTopBar } from "../navigation/DialogTopBar"
 import {
@@ -23,24 +22,21 @@ import {
   useReader
 } from "./states"
 import { SettingsList } from "./settings/SettingsList"
+import { signal, useSignal } from "reactjrx"
 
-const isContentsDialogOpenedState = atom<boolean>({
+const [, , , , , isContentsDialogOpenedState] = signal<boolean>({
   key: "isContentsDialogOpenedState",
   default: false
 })
 
 export const useMoreDialog = () => ({
-  toggleMoreDialog: useRecoilCallback(
-    ({ set }) =>
-      () => {
-        set(isContentsDialogOpenedState, (val) => !val)
-      },
-    []
-  )
+  toggleMoreDialog: useCallback(() => {
+    isContentsDialogOpenedState.setState((val) => !val)
+  }, [])
 })
 
 export const MoreDialog: FC<{}> = () => {
-  const isContentsDialogOpened = useRecoilValue(isContentsDialogOpenedState)
+  const [isContentsDialogOpened] = useSignal(isContentsDialogOpenedState)
   const { toggleMoreDialog } = useMoreDialog()
   const [value, setValue] = React.useState("toc")
   const reader = useReader()

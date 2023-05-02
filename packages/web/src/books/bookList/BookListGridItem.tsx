@@ -2,13 +2,14 @@ import { FC, memo } from "react"
 import { Typography, useTheme } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
 import { useRecoilState, useRecoilValue } from "recoil"
-import { bookActionDrawerState } from "../BookActionsDrawer"
+import { bookActionDrawerSignal } from "../BookActionsDrawer"
 import { enrichedBookState } from "../states"
 import { useDefaultItemClickHandler } from "./helpers"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useCSS } from "../../common/utils"
 import { useNormalizedBookDownloadsState } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
+import { useSignal } from "reactjrx"
 
 export const BookListGridItem: FC<{
   bookId: string
@@ -24,7 +25,7 @@ export const BookListGridItem: FC<{
   )
   const onDefaultItemClick = useDefaultItemClickHandler()
   const classes = useStyles()
-  const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
+  const [, setBookActionDrawerState] = useSignal(bookActionDrawerSignal)
 
   return (
     <div

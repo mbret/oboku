@@ -27,7 +27,7 @@ import {
 } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
 import { useManageBookCollectionsDialog } from "./ManageBookCollectionsDialog"
-import { atom, useRecoilState, useRecoilValue } from "recoil"
+import { useRecoilValue } from "recoil"
 import { enrichedBookState } from "./states"
 import { Cover } from "./Cover"
 import { ReadingStateState } from "@oboku/shared"
@@ -41,11 +41,9 @@ import { useManageBookTagsDialog } from "./ManageBookTagsDialog"
 import { markAsInterested } from "./triggers"
 import { useNormalizedBookDownloadsState } from "../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
+import { signal, useSignal } from "reactjrx"
 
-/**
- * @deprecated
- */
-export const bookActionDrawerState = atom<{
+export const [, , , , , bookActionDrawerSignal] = signal<{
   openedWith: undefined | string
   actions?: ("removeDownload" | "goToDetails")[]
 }>({ key: "bookActionDrawerState", default: { openedWith: undefined } })
@@ -53,8 +51,9 @@ export const bookActionDrawerState = atom<{
 export const BookActionsDrawer = memo(() => {
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
-  const [{ openedWith: bookId, actions }, setBookActionDrawerState] =
-    useRecoilState(bookActionDrawerState)
+  const [{ openedWith: bookId, actions }, setBookActionDrawerState] = useSignal(
+    bookActionDrawerSignal
+  )
   const navigate = useNavigate()
   const book = useRecoilValue(
     enrichedBookState({

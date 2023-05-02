@@ -33,9 +33,7 @@ import { useStorageUse } from "./useStorageUse"
 import { LoadLibraryFromJsonDialog } from "../debug/LoadLibraryFromJsonDialog"
 import { LockActionBehindUserPasswordDialog } from "../auth/LockActionBehindUserPasswordDialog"
 import { useSignOut } from "../auth/helpers"
-import { useRecoilValue } from "recoil"
-import { settingsState } from "./states"
-import { useUpdateContentPassword } from "./helpers"
+import { useAccountSettings, useUpdateContentPassword } from "./helpers"
 import { updateLibraryState, useLibraryState } from "../library/states"
 import packageJson from "../../package.json"
 import { ROUTES } from "../constants"
@@ -65,7 +63,7 @@ export const ProfileScreen = () => {
     useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([])
   const auth = useAuthState()
-  const settings = useRecoilValue(settingsState)
+  const { data: accountSettings } = useAccountSettings()
   const library = useLibraryState()
   const signOut = useSignOut()
   const theme = useTheme()
@@ -89,7 +87,7 @@ export const ProfileScreen = () => {
         <ListItem
           button
           onClick={() => {
-            if (settings?.contentPassword) {
+            if (accountSettings?.contentPassword) {
               setLockedAction(
                 (_) => () => setIsEditContentPasswordDialogOpened(true)
               )
@@ -101,7 +99,7 @@ export const ProfileScreen = () => {
           <ListItemText
             primary="Protected contents password"
             secondary={
-              settings?.contentPassword
+              accountSettings?.contentPassword
                 ? "Change my password"
                 : "Initialize my password"
             }
@@ -427,9 +425,9 @@ const EditContentPasswordDialog: FC<{
   onClose: () => void
 }> = ({ onClose, open }) => {
   const updatePassword = useUpdateContentPassword()
-  const settings = useRecoilValue(settingsState)
+  const { data: accountSettings } = useAccountSettings()
   const [text, setText] = useState("")
-  const contentPassword = settings?.contentPassword || ""
+  const contentPassword = accountSettings?.contentPassword || ""
 
   const onInnerClose = () => {
     onClose()

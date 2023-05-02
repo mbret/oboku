@@ -22,14 +22,14 @@ import {
   downloadedBookWithUnsafeProtectedIdsState,
   visibleBookIdsState
 } from "../books/states"
-import { bookActionDrawerState } from "../books/BookActionsDrawer"
+import { bookActionDrawerSignal } from "../books/BookActionsDrawer"
 import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { difference } from "ramda"
 import Alert from "@mui/material/Alert"
 import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
-import { useMutation } from "reactjrx"
+import { useMutation, useSignal } from "reactjrx"
 import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
 import { useLibraryState } from "../library/states"
 import { useNormalizedBookDownloadsState } from "../download/states"
@@ -47,7 +47,7 @@ export const ManageStorageScreen = () => {
       protectedTagIds: useProtectedTagIds().data
     })
   )
-  const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
+  const [, setBookActionDrawerState] = useSignal(bookActionDrawerSignal)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])
   const removeDownloadFile = useRemoveDownloadFile()
   const deleteAllDownloadedFiles = useRemoveAllDownloadedFiles()

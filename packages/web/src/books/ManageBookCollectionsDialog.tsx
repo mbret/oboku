@@ -1,5 +1,5 @@
 import { FC, useCallback } from "react"
-import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from "recoil"
+import { useRecoilValue } from "recoil"
 import { collectionIdsState } from "../collections/states"
 import { useAddCollectionToBook, useRemoveCollectionFromBook } from "./helpers"
 import { bookState } from "./states"
@@ -7,33 +7,31 @@ import { CollectionsSelectionDialog } from "../collections/CollectionsSelectionD
 import { useLibraryState } from "../library/states"
 import { useLocalSettingsState } from "../settings/states"
 import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
+import { SIGNAL_RESET, signal, useSignal } from "reactjrx"
 
-const openManageBookCollectionsDialogState = atom<string | undefined>({
+const [, , , , , openManageBookCollectionsDialogState] = signal<
+  string | undefined
+>({
   key: "openManageBookCollectionsDialogState",
   default: undefined
 })
 
 export const useManageBookCollectionsDialog = () => {
-  const openManageBookCollectionsDialog = useRecoilCallback(
-    ({ set }) =>
-      (bookId: string) => {
-        set(openManageBookCollectionsDialogState, bookId)
-      },
+  const openManageBookCollectionsDialog = useCallback(
+    (bookId: string) => openManageBookCollectionsDialogState.setState(bookId),
     []
   )
 
-  const closeManageBookCollectionsDialog = useRecoilCallback(
-    ({ set }) =>
-      () => {
-        set(openManageBookCollectionsDialogState, undefined)
-      }
+  const closeManageBookCollectionsDialog = useCallback(
+    () => openManageBookCollectionsDialogState.setState(SIGNAL_RESET),
+    []
   )
 
   return { openManageBookCollectionsDialog, closeManageBookCollectionsDialog }
 }
 
 export const ManageBookCollectionsDialog: FC<{}> = () => {
-  const [id, setOpenManageBookCollectionsDialog] = useRecoilState(
+  const [id, setOpenManageBookCollectionsDialog] = useSignal(
     openManageBookCollectionsDialogState
   )
   const open = !!id

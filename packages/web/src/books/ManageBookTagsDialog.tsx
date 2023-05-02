@@ -1,34 +1,31 @@
 import { useCallback } from "react"
 import { FC } from "react"
-import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from "recoil"
+import { useRecoilValue } from "recoil"
 import { useTagIds, useTagsByIds } from "../tags/helpers"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useAddTagToBook, useRemoveTagFromBook } from "./helpers"
 import { bookState } from "./states"
+import { SIGNAL_RESET, signal, useSignal } from "reactjrx"
 
-const openManageBookTagsDialogState = atom<string | undefined>({
+const [, , , , , openManageBookTagsDialogState] = signal<string | undefined>({
   key: "openManageBookTagsDialogState",
   default: undefined
 })
 
 export const useManageBookTagsDialog = () => {
-  const openManageBookTagsDialog = useRecoilCallback(
-    ({ set }) =>
-      (bookId: string) => {
-        set(openManageBookTagsDialogState, bookId)
-      },
-    []
-  )
+  const openManageBookTagsDialog = useCallback((bookId: string) => {
+    openManageBookTagsDialogState.setState(bookId)
+  }, [])
 
-  const closeManageBookTagsDialog = useRecoilCallback(({ set }) => () => {
-    set(openManageBookTagsDialogState, undefined)
-  })
+  const closeManageBookTagsDialog = useCallback(() => {
+    openManageBookTagsDialogState.setState(SIGNAL_RESET)
+  }, [])
 
   return { openManageBookTagsDialog, closeManageBookTagsDialog }
 }
 
 export const ManageBookTagsDialog: FC<{}> = () => {
-  const [bookId, setOpenManageBookTagsDialogState] = useRecoilState(
+  const [bookId, setOpenManageBookTagsDialogState] = useSignal(
     openManageBookTagsDialogState
   )
   const open = !!bookId
