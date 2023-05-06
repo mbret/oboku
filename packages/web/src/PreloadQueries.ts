@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react"
+import { memo, useEffect } from "react"
 import { useBooksInitialState } from "./books/observers"
 import { useLinksInitialState } from "./links/observers"
 import { useCollectionsInitialState } from "./collections/observers"
 import {
-  useAccountSettings,
   usePrefetchAccountSettings
 } from "./settings/helpers"
 import { useLiveRef } from "reactjrx"
@@ -22,7 +21,7 @@ import { useLiveRef } from "reactjrx"
  * Do not keep expensive queries hot / live if not necessary as it would just keep
  * RAM usage high.
  */
-export const PreloadQueries = ({ onReady }: { onReady: () => void }) => {
+export const PreloadQueries = memo(({ onReady }: { onReady: () => void }) => {
   const isBookStateReady = useBooksInitialState()
   const isLinkStateReady = useLinksInitialState()
   const isCollectionStateReady = useCollectionsInitialState()
@@ -42,4 +41,4 @@ export const PreloadQueries = ({ onReady }: { onReady: () => void }) => {
   }, [isReady, onReadyRef])
 
   return null
-}
+})

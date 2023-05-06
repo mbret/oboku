@@ -30,6 +30,7 @@ import { bookBeingReadStatePersist } from "./reading/states"
 import { readerSettingsStatePersist } from "./reader/settings/states"
 import {
   PersistSignals,
+  ReactjrxQueryProvider,
   createLocalforageAdapter,
   createSharedStoreAdapter
 } from "reactjrx"
@@ -50,7 +51,7 @@ export function App() {
   const [newServiceWorker, setNewServiceWorker] = useState<
     ServiceWorker | undefined
   >(undefined)
-  const isAppReady = loading.hydrate && loading.preloadQueries
+  const isAppReady = !loading.hydrate && !loading.preloadQueries
 
   return (
     <ErrorBoundary
@@ -60,62 +61,67 @@ export function App() {
     >
       <StyledEngineProvider injectFirst>
         <ThemeProvider theme={theme}>
-          <Suspense fallback={<AppLoading />}>
-            {isAppReady && <AppLoading />}
-            <RxDbProvider>
-              <RecoilRoot>
-                <PersistSignals
-                  signals={[
-                    libraryStatePersist,
-                    normalizedBookDownloadsStatePersist,
-                    firstTimeExperienceStatePersist,
-                    localSettingsStatePersist,
-                    authStatePersist,
-                    bookBeingReadStatePersist,
-                    readerSettingsStatePersist
-                  ]}
-                  adapter={createSharedStoreAdapter({
-                    adapter: createLocalforageAdapter(localforage),
-                    key: "local-user2"
-                  })}
-                  onReady={() => {
-                    setLoading((state) => ({ ...state, hydrate: false }))
-                  }}
-                >
-                  {plugins.reduce(
-                    (Comp, { Provider }) => {
-                      if (Provider) {
-                        return <Provider>{Comp}</Provider>
-                      }
-                      return Comp
-                    },
-                    <AxiosProvider>
-                      <DialogProvider>
-                        <TourProvider>
-                          <AppNavigator />
-                          <FirstTimeExperienceTours />
-                          <ManageBookCollectionsDialog />
-                          <ManageBookTagsDialog />
-                          <ManageTagBooksDialog />
-                        </TourProvider>
-                        <UpdateAvailableDialog
-                          serviceWorker={newServiceWorker}
-                        />
-                        <RecoilSyncedWithDatabase />
-                        <BlockingBackdrop />
-                        <Effects />
-                      </DialogProvider>
-                    </AxiosProvider>
-                  )}
-                </PersistSignals>
-                <PreloadQueries
-                  onReady={() => {
-                    setLoading((state) => ({ ...state, preloadQueries: false }))
-                  }}
-                />
-              </RecoilRoot>
-            </RxDbProvider>
-          </Suspense>
+          <ReactjrxQueryProvider>
+            <Suspense fallback={<AppLoading />}>
+              {!isAppReady && <AppLoading />}
+              <RxDbProvider>
+                <RecoilRoot>
+                  <PersistSignals
+                    signals={[
+                      libraryStatePersist,
+                      normalizedBookDownloadsStatePersist,
+                      firstTimeExperienceStatePersist,
+                      localSettingsStatePersist,
+                      authStatePersist,
+                      bookBeingReadStatePersist,
+                      readerSettingsStatePersist
+                    ]}
+                    adapter={createSharedStoreAdapter({
+                      adapter: createLocalforageAdapter(localforage),
+                      key: "local-user2"
+                    })}
+                    onReady={() => {
+                      setLoading((state) => ({ ...state, hydrate: false }))
+                    }}
+                  >
+                    {plugins.reduce(
+                      (Comp, { Provider }) => {
+                        if (Provider) {
+                          return <Provider>{Comp}</Provider>
+                        }
+                        return Comp
+                      },
+                      <AxiosProvider>
+                        <DialogProvider>
+                          <TourProvider>
+                            <AppNavigator />
+                            <FirstTimeExperienceTours />
+                            <ManageBookCollectionsDialog />
+                            <ManageBookTagsDialog />
+                            <ManageTagBooksDialog />
+                          </TourProvider>
+                          <UpdateAvailableDialog
+                            serviceWorker={newServiceWorker}
+                          />
+                          <RecoilSyncedWithDatabase />
+                          <BlockingBackdrop />
+                          <Effects />
+                        </DialogProvider>
+                      </AxiosProvider>
+                    )}
+                  </PersistSignals>
+                  <PreloadQueries
+                    onReady={() => {
+                      setLoading((state) => ({
+                        ...state,
+                        preloadQueries: false
+                      }))
+                    }}
+                  />
+                </RecoilRoot>
+              </RxDbProvider>
+            </Suspense>
+          </ReactjrxQueryProvider>
         </ThemeProvider>
       </StyledEngineProvider>
       <ServiceWorkerRegistration

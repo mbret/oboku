@@ -22,7 +22,7 @@ export const useAccountSettings = (options: {
   enabled?: boolean
   onSuccess?: () => void
 }) => {
-  return useQuery(
+  const data = useQuery(
     ["rxdb", "settings"],
     () => latestDatabase$.pipe(switchMap((db) => db.settings.findOne().$)),
     {
@@ -34,6 +34,8 @@ export const useAccountSettings = (options: {
       ...options
     }
   )
+
+  return data
 }
 
 export const usePrefetchAccountSettings = () => {
