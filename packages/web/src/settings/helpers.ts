@@ -21,7 +21,7 @@ export const useUpdateContentPassword = () => {
 export const useAccountSettings = (options: {
   enabled?: boolean
   onSuccess?: () => void
-}) => {
+} = {}) => {
   const data = useQuery(
     ["rxdb", "settings"],
     () => latestDatabase$.pipe(switchMap((db) => db.settings.findOne().$)),
