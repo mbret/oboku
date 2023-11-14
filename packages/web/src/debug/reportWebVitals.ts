@@ -1,9 +1,9 @@
 import { logEvent } from "firebase/analytics"
-import { CLSReportCallback, onCLS, onFID, onLCP } from "web-vitals"
+import { Metric, onCLS, onFID, onLCP } from "web-vitals"
 import { analytics } from "../tracking"
 import { Report } from "./report.shared"
 
-const onReport: CLSReportCallback = (props) => {
+const onReport = (props: Metric) => {
   Report.log(props)
 
   const { name, delta, id } = props
