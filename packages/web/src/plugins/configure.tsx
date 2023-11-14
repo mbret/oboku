@@ -1,6 +1,6 @@
 import { plugin as dropbox } from "./dropbox"
 import { plugin as google } from "./google"
-import linkPlugin from "@oboku/plugin-link"
+import linkPlugin from "../plugin-link"
 import { ObokuPlugin } from "@oboku/plugin-front"
 import { plugin as imhentai } from "@oboku/plugin-imhentai-front"
 

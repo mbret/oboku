@@ -11,7 +11,6 @@
     "@mui/styles": "^5.11.11",
     "@oboku/plugin-front": "0.10.0",
     "@oboku/plugin-imhentai-front": "0.1.0",
-    "@oboku/plugin-link": "0.10.0",
     "@oboku/shared": "0.8.0",
     "@prose-reader/core": "1.38.0",
     "@prose-reader/enhancer-hammer-gesture": "1.38.0",
