@@ -5,22 +5,22 @@ import {
   fetch
 } from "@oboku/plugin-back"
 import {
-  UNIQUE_RESOURCE_IDENTIFIER,
-  BASE_URI,
-  TYPE
-} from "@oboku/plugin-imhentai-shared"
+  PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER,
+  PLUGIN_IMHENTAI_BASE_URI,
+  PLUGIN_IMHENTAI_TYPE
+} from "@oboku/shared"
 
 export const plugin: DataSourcePlugin = {
-  type: TYPE,
+  type: PLUGIN_IMHENTAI_TYPE,
   download: async () => {
     throw new Error(`Not implemented!`)
   },
   getMetadata: async (link) => {
     const galleryId = dataSourceHelpers.extractIdFromResourceId(
-      UNIQUE_RESOURCE_IDENTIFIER,
+      PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER,
       link.resourceId
     )
-    const uri = `${BASE_URI}/gallery/${galleryId}`
+    const uri = `${PLUGIN_IMHENTAI_BASE_URI}/gallery/${galleryId}`
 
     const response = await fetch(uri)
 
@@ -78,7 +78,9 @@ export const plugin: DataSourcePlugin = {
     /**
      * This gives a link to usually first page
      */
-    const coverPageUrl = `${BASE_URI}${$(`.left_cover a`).attr()?.href}`
+    const coverPageUrl = `${PLUGIN_IMHENTAI_BASE_URI}${
+      $(`.left_cover a`).attr()?.href
+    }`
 
     /**
      * Then we parse the cover page url and retrieve the original raw file link
