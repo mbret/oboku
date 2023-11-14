@@ -13,7 +13,7 @@ import { AtomicUpdateFunction } from "rxdb"
 import { catchError, EMPTY, from, switchMap, map, of } from "rxjs"
 import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
-import { isPluginError } from "@oboku/plugin-front"
+import { isPluginError } from "../plugins/plugin-front"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()

@@ -1,4 +1,3 @@
-import { generateResourceId, ObokuPlugin, yup } from "@oboku/plugin-front"
 import { useState } from "react"
 import {
   Dialog,
@@ -13,6 +12,8 @@ import {
   PLUGIN_IMHENTAI_TYPE,
   PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER
 } from "@oboku/shared"
+import { ObokuPlugin, yup } from "../plugin-front"
+import { generateResourceId } from "@oboku/shared"
 
 const schema = yup.object().shape({
   galleryId: yup.number().required()

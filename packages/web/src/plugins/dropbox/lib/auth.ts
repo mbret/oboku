@@ -1,6 +1,6 @@
-import { ObokuPluginError } from "@oboku/plugin-front"
 import { DropboxAuth } from "dropbox"
 import { CLIENT_ID } from "../constants"
+import { ObokuPluginError } from "../../plugin-front"
 
 const defaultWindowOptions = {
   toolbar: "no",

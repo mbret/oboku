@@ -1,10 +1,10 @@
 import { ComponentProps, FC, useCallback } from "react"
 import { useAddBook } from "../books/helpers"
 import { useDataSourcePlugin } from "../dataSources/helpers"
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { TagsSelector } from "../tags/TagsSelector"
 import { ButtonDialog } from "../common/ButtonDialog"
 import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
+import { ObokuPlugin } from "../plugins/plugin-front"
 
 type UploadComponentProps = ComponentProps<
   NonNullable<ObokuPlugin[`UploadComponent`]>

@@ -1,9 +1,9 @@
 import { useCallback } from "react"
-import { ObokuPlugin, dataSourceHelpers } from "@oboku/plugin-front"
 import {
   PLUGIN_IMHENTAI_BASE_URI,
   PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER
 } from "@oboku/shared"
+import { ObokuPlugin, dataSourceHelpers } from "../plugin-front";
 
 type StreamOutput = { baseUri: string; response: Response; progress: number }
 

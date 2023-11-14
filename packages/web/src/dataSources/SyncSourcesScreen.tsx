@@ -20,8 +20,8 @@ import { DataSourceDocType } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "../plugins/configure"
 import { AddDataSource } from "./AddDataSource"
 import { ObokuErrorCode } from "@oboku/shared"
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { useDataSources } from "./useDataSources"
+import { ObokuPlugin } from "../plugins/plugin-front"
 
 export const SyncSourcesScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)

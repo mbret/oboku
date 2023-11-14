@@ -1,7 +1,7 @@
 import axios from "axios"
 import { useCallback } from "react"
-import { extractIdFromResourceId, ObokuPlugin } from "@oboku/plugin-front"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import { ObokuPlugin, extractIdFromResourceId } from "../plugin-front"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
   return useCallback(

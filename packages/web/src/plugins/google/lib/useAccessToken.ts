@@ -3,7 +3,7 @@ import { CLIENT_ID } from "./constants"
 import { AccessToken } from "./types"
 import { useGoogle } from "./useGsiClient"
 import { addSeconds, differenceInMinutes } from "date-fns"
-import { ObokuPluginError } from "@oboku/plugin-front"
+import { ObokuPluginError } from "../../plugin-front"
 
 const isPopupClosedError = (error: unknown) => {
   return (

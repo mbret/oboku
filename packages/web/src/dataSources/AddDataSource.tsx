@@ -1,6 +1,6 @@
 import { FC } from "react"
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
+import { ObokuPlugin } from "../plugins/plugin-front"
 
 export const AddDataSource: FC<{
   openWith: ObokuPlugin | undefined

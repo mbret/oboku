@@ -6,7 +6,7 @@ import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { catchError, EMPTY, from, of, switchMap, takeUntil } from "rxjs"
 import { useIsMountedState$ } from "../../common/rxjs/useIsMountedState$"
 import { useMount } from "react-use"
-import { ObokuPlugin } from "@oboku/plugin-front"
+import { ObokuPlugin } from "../plugin-front"
 
 export const UploadBook: ObokuPlugin["UploadComponent"] = ({
   onClose,

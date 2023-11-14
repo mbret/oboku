@@ -1,6 +1,6 @@
 import { useCallback } from "react"
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { authUser } from "./lib/auth"
+import { ObokuPlugin } from "../plugin-front"
 
 export const useSynchronize: ObokuPlugin[`useSynchronize`] = ({
   requestPopup

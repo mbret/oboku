@@ -1,10 +1,10 @@
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { BlockingScreen } from "../../common/BlockingBackdrop"
 import { createDeferrablePromise } from "./lib/createDeferrablePromise"
 import { ContextValue, GoogleAPIContext } from "./lib/helpers"
 import { AccessToken } from "./lib/types"
 import { useLoadApi } from "./lib/useLoadApi"
+import { ObokuPlugin } from "../plugin-front"
 
 export const Provider: ObokuPlugin["Provider"] = memo(({ children }) => {
   const { api, gsi } = useLoadApi()

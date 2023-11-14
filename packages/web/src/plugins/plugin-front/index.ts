@@ -116,11 +116,6 @@ export type ObokuPlugin = {
   useSyncSourceInfo?: UseSyncSourceInfo
 }
 
-export const generateResourceId = (
-  uniqueResourceIdentifier: string,
-  resourceId: string
-) => `${uniqueResourceIdentifier}-${resourceId}`
-
 export const extractIdFromResourceId = (
   uniqueResourceIdentifier: string,
   resourceId: string

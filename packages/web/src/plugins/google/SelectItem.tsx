@@ -1,10 +1,10 @@
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { useDrivePicker } from "./lib/useDrivePicker"
 import { useIsMountedState$ } from "../../common/rxjs/useIsMountedState$"
 import { catchError, EMPTY, takeUntil, tap } from "rxjs"
 import { useEffect } from "react"
+import { ObokuPlugin } from "../plugin-front"
 
 export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
   onClose,

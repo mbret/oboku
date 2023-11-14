@@ -1,10 +1,10 @@
 import axios from "axios"
 import { useCallback } from "react"
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { extractIdFromResourceId } from "./lib/helpers"
 import { isDriveResponseError } from "./lib/types"
 import { useAccessToken } from "./lib/useAccessToken"
 import { useGoogle } from "./lib/useGsiClient"
+import { ObokuPlugin } from "../plugin-front"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   requestPopup

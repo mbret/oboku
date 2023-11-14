@@ -20,9 +20,9 @@ import { useNetworkState } from "react-use"
 import { useDialogManager } from "../dialog"
 import { useSync } from "../rxdb/useSync"
 import { catchError, EMPTY, from, map, switchMap } from "rxjs"
-import { isPluginError } from "@oboku/plugin-front"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
+import { isPluginError } from "../plugins/plugin-front"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()

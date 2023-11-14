@@ -1,4 +1,3 @@
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { ReactComponent as GoogleDriveAsset } from "../../assets/google-drive.svg"
 import { SvgIcon } from "@mui/material"
@@ -12,6 +11,7 @@ import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { Provider } from "./Provider"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
+import { ObokuPlugin } from "../plugin-front"
 
 const GoogleDriveIcon = () => (
   <SvgIcon>

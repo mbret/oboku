@@ -1,4 +1,3 @@
-import { ImgIcon, ObokuPlugin } from "@oboku/plugin-front"
 import {
   PLUGIN_IMHENTAI_TYPE,
   PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER
@@ -6,6 +5,7 @@ import {
 import { UploadComponent } from "./UploadComponent"
 import { useDownloadBook } from "./useDownloadBook"
 import logo from "./logo.png"
+import { ImgIcon, ObokuPlugin } from "../plugin-front"
 
 export const plugin: ObokuPlugin = {
   type: PLUGIN_IMHENTAI_TYPE,

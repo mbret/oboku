@@ -13,7 +13,7 @@ import { useDialogManager } from "../dialog"
 import { bytesToMb } from "../common/utils"
 import { createCbzFromReadableStream } from "./createCbzFromReadableStream"
 import { useDownloadBookFromDataSource } from "../plugins/useDownloadBookFromDataSource"
-import { isPluginError } from "@oboku/plugin-front"
+import { isPluginError } from "../plugins/plugin-front"
 
 export const useDownloadBook = () => {
   const downloadBook = useDownloadBookFromDataSource()

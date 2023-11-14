@@ -1,8 +1,8 @@
 import { HttpRounded } from "@mui/icons-material"
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { UploadComponent } from "./UploadComponent"
 import { useDownloadBook } from "./useDownloadBook"
+import { ObokuPlugin } from "../plugin-front"
 
 const plugin: ObokuPlugin = {
   type: TYPE,

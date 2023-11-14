@@ -1,9 +1,9 @@
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { useCallback, useRef } from "react"
 import { API_URI } from "../constants"
 import { useDialogManager } from "../dialog"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
+import { ObokuPlugin } from "./plugin-front"
 
 export const useDownloadBookFromDataSource = () => {
   const dialog = useDialogManager()

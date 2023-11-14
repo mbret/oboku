@@ -10,8 +10,9 @@ import {
   Typography
 } from "@mui/material"
 import * as yup from "yup"
-import { generateResourceId, ObokuPlugin } from "@oboku/plugin-front"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import { ObokuPlugin } from "../plugin-front"
+import { generateResourceId } from "@oboku/shared"
 
 const schema = yup.object().shape({
   bookUrl: yup.string().url().required()

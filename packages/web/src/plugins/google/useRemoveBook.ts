@@ -1,8 +1,8 @@
 import { useCallback } from "react"
-import { ObokuPlugin, ObokuPluginError } from "@oboku/plugin-front"
 import { extractIdFromResourceId } from "./lib/helpers"
 import { useAccessToken } from "./lib/useAccessToken"
 import { useGoogle } from "./lib/useGsiClient"
+import { ObokuPlugin } from "../plugin-front"
 
 export const useRemoveBook: ObokuPlugin[`useRemoveBook`] = ({
   requestPopup

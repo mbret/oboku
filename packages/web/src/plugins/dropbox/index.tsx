@@ -1,4 +1,3 @@
-import { ObokuPlugin } from "@oboku/plugin-front"
 import { UploadBook } from "./UploadBook"
 import { SvgIcon } from "@mui/material"
 
@@ -8,6 +7,7 @@ import { ReactComponent as DropboxIconAsset } from "../../assets/dropbox.svg"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
+import { ObokuPlugin } from "../plugin-front"
 
 const DropboxIcon = () => (
   <SvgIcon>
