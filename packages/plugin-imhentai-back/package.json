@@ -17,7 +17,6 @@
     "start": "vite build --watch --mode development"
   },
   "dependencies": {
-    "@oboku/plugin-back": "^0.10.0",
-    "@oboku/plugin-imhentai-shared": "0.1.0"
+    "@oboku/plugin-back": "^0.10.0"
   }
 }

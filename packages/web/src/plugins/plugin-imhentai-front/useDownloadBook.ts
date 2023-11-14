@@ -1,20 +1,20 @@
 import { useCallback } from "react"
 import { ObokuPlugin, dataSourceHelpers } from "@oboku/plugin-front"
 import {
-  BASE_URI,
-  UNIQUE_RESOURCE_IDENTIFIER
-} from "@oboku/plugin-imhentai-shared"
+  PLUGIN_IMHENTAI_BASE_URI,
+  PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER
+} from "@oboku/shared"
 
 type StreamOutput = { baseUri: string; response: Response; progress: number }
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({ apiUri }) => {
   return useCallback(async ({ resourceId }) => {
     const galleryId = dataSourceHelpers.extractIdFromResourceId(
-      UNIQUE_RESOURCE_IDENTIFIER,
+      PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER,
       resourceId
     )
 
-    const uri = `${BASE_URI}/gallery/${galleryId}`
+    const uri = `${PLUGIN_IMHENTAI_BASE_URI}/gallery/${galleryId}`
     const response = await fetch(`${apiUri}/cors?url=${uri}`, {
       referrerPolicy: `no-referrer`
     })

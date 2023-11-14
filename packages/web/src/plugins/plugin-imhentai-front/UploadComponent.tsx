@@ -9,7 +9,10 @@ import {
   TextField,
   Typography
 } from "@mui/material"
-import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "@oboku/plugin-imhentai-shared"
+import {
+  PLUGIN_IMHENTAI_TYPE,
+  PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER
+} from "@oboku/shared"
 
 const schema = yup.object().shape({
   galleryId: yup.number().required()
@@ -28,8 +31,11 @@ export const UploadComponent: ObokuPlugin[`UploadComponent`] = ({
   const handleConfirm = () => {
     onClose({
       link: {
-        resourceId: generateResourceId(UNIQUE_RESOURCE_IDENTIFIER, galleryId),
-        type: TYPE
+        resourceId: generateResourceId(
+          PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER,
+          galleryId
+        ),
+        type: PLUGIN_IMHENTAI_TYPE
       },
       book: {
         // tags

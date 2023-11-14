@@ -1,5 +1,9 @@
-import { dataSourceHelpers, LinkDocType } from "@oboku/shared"
-import { UNIQUE_RESOURCE_IDENTIFIER, TYPE } from "@oboku/plugin-imhentai-shared"
+import {
+  dataSourceHelpers,
+  LinkDocType,
+  PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER,
+  PLUGIN_IMHENTAI_TYPE
+} from "@oboku/shared"
 import { plugin } from "./index"
 
 it(`should retrieve metadata`, async () => {
@@ -11,11 +15,11 @@ it(`should retrieve metadata`, async () => {
     data: ``,
     modifiedAt: ``,
     resourceId: dataSourceHelpers.generateResourceId(
-      UNIQUE_RESOURCE_IDENTIFIER,
+      PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER,
       `774006`
     ),
     rx_model: `link`,
-    type: TYPE,
+    type: PLUGIN_IMHENTAI_TYPE,
     rxdbMeta: {
       lwt: new Date().getTime()
     }
