@@ -3,6 +3,7 @@ import { withMiddy } from "@libs/lambda"
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import createError from "http-errors"
 import sharp from "sharp"
+import { Readable } from "stream"
 
 const s3 = new S3Client({
   region: `us-east-1`
@@ -22,7 +23,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
       throw new Error("No body")
     }
 
-    cover = response.Body as any
+    cover = await response.Body.transformToByteArray()
   } catch (e) {
     if ((e as any)?.code === "NoSuchKey") {
       throw createError(404)
