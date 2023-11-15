@@ -3,19 +3,17 @@ import { createHttpError } from "@libs/httpErrors"
 import { withMiddy } from "@libs/lambda"
 import schema from "./schema"
 import nodemailer from "nodemailer"
-import { SSM } from "aws-sdk"
 import { CONTACT_TO_ADDRESS } from "../../constants"
+import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm"
 
-const ssm = new SSM({ region: "us-east-1" })
+const ssm = new SSMClient({ region: "us-east-1" })
 
 const getGmailAppPassword = () =>
-  ssm
-    .getParameter({
-      Name: `gmail-app-password`,
-      WithDecryption: true
-    })
-    .promise()
-    .then((value) => value.Parameter?.Value)
+  {
+    return ssm.send(new GetParameterCommand({ Name: `gmail-app-password`,
+    WithDecryption: true}))
+      .then((value) => value.Parameter?.Value)
+  }
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event

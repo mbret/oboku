@@ -19,7 +19,6 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
         }
       })
     })
-    .promise()
 
   return {
     statusCode: 202,

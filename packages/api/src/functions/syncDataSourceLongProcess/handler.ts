@@ -2,7 +2,7 @@ import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { withMiddy } from "@libs/lambda"
 import { AWS_API_URI } from "../../constants"
 import { configure as configureGoogleDataSource } from "@libs/dataSources/google"
-import { S3 } from "aws-sdk"
+import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { withToken } from "@libs/auth"
 import schema from "./schema"
 import { createHttpError } from "@libs/httpErrors"
@@ -11,7 +11,7 @@ import { getNanoDbForUser } from "@libs/dbHelpers"
 import axios from "axios"
 import { getParameterValue } from "@libs/ssm"
 
-const s3 = new S3()
+const s3 = new S3Client()
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -60,9 +60,9 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   const isBookCoverExist = async ({ coverId }: { coverId: string }) => {
     try {
-      await s3
-        .headObject({ Bucket: "oboku-covers", Key: `cover-${coverId}` })
-        .promise()
+      await s3.send(new HeadObjectCommand({
+        Bucket: "oboku-covers", Key: `cover-${coverId}` 
+      }))
       return true
     } catch (e) {
       if ((e as any).code === "NotFound") return false

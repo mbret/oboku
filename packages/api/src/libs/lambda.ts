@@ -4,10 +4,10 @@ import middyJsonBodyParser from "@middy/http-json-body-parser"
 import httpErrorHandler from "@middy/http-error-handler"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import cors from "@middy/http-cors"
-import { Lambda } from "aws-sdk"
 import { OFFLINE } from "../constants"
 import { transpileSchema } from "@middy/validator/transpile"
 import validator from "@middy/validator"
+import { Lambda } from "@aws-sdk/client-lambda"
 
 export const withMiddy = (
   handler: any,
@@ -103,7 +103,6 @@ export const withMiddy = (
 export const getAwsLambda = () =>
   new Lambda({
     region: "us-east-1",
-    httpOptions: {},
     ...(OFFLINE && {
       endpoint: `http://localhost:3002`
     })

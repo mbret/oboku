@@ -225,8 +225,6 @@ const serverlessConfiguration: AWS = {
          */
         "sharp",
         // most likely not required
-        `aws-sdk`,
-        // most likely not required
         `aws-lambda`
       ],
       packagerOptions: {

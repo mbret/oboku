@@ -1,11 +1,10 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { withMiddy } from "@libs/lambda"
-import { PromiseReturnType } from "@libs/types"
-import { S3 } from "aws-sdk"
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import createError from "http-errors"
 import sharp from "sharp"
 
-const s3 = new S3({
+const s3 = new S3Client({
   region: `us-east-1`
 })
 
@@ -14,16 +13,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
   const objectKey = `cover-${coverId}`
   const format = event.queryStringParameters?.format || "image/webp"
 
-  let response: PromiseReturnType<
-    ReturnType<(typeof s3)["getObject"]>["promise"]
-  >
-
   let cover: Buffer | undefined
 
   try {
-    response = await s3
-      .getObject({ Bucket: "oboku-covers", Key: objectKey })
-      .promise()
+    const response = await s3.send(new GetObjectCommand({Bucket: "oboku-covers", Key: objectKey}))
 
     if (response.Body instanceof Buffer) {
       cover = response.Body

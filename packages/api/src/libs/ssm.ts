@@ -1,6 +1,6 @@
-import { SSM } from "aws-sdk"
+import { GetParameterCommand, GetParameterCommandInput, SSMClient } from "@aws-sdk/client-ssm"
 
-const ssm = new SSM({ region: "us-east-1" })
+const ssm = new SSMClient({ region: "us-east-1" })
 
 type ParameterName =
   | `jwt-private-key`
@@ -9,11 +9,9 @@ type ParameterName =
   | `GOOGLE_CLIENT_ID`
 
 export const getParameterValue = (
-  options: Omit<SSM.GetParameterRequest, `Name`> & {
+  options: Omit<GetParameterCommandInput, `Name`> & {
     Name: ParameterName
   }
 ) =>
-  ssm
-    .getParameter(options)
-    .promise()
+  ssm.send(new GetParameterCommand(options))
     .then((value) => value.Parameter?.Value)
