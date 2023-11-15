@@ -3,7 +3,6 @@ import { withMiddy } from "@libs/lambda"
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import createError from "http-errors"
 import sharp from "sharp"
-import { Readable } from "stream"
 
 const s3 = new S3Client({
   region: `us-east-1`
