@@ -18,7 +18,6 @@ export default defineConfig(({ mode }) => ({
       define: {
         global: "globalThis"
       }
-      // inject: [path.resolve(__dirname, "./stream-shim.js")]
     }
   },
   /**
