@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
+          node-version: "18.x"
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
@@ -48,7 +48,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v3
         with:
-          node-version: "16.x"
+          node-version: "18.x"
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
