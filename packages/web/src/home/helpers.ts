@@ -1,5 +1,4 @@
 import { useMemo } from "react"
-import * as R from "ramda"
 import { useRecoilValue } from "recoil"
 import { booksAsArrayState } from "../books/states"
 import { ReadingStateState } from "@oboku/shared"
@@ -24,7 +23,10 @@ export const useRecentlyAddedBooks = () => {
   const books = useRecoilValue(booksAsArrayState)
 
   return useMemo(() => {
-    const booksSortedByDate = R.sort(R.descend(R.prop("createdAt")), books)
+    // descend
+    const booksSortedByDate = [...books].sort((a, b) =>
+      a.createdAt < b.createdAt ? 1 : -1
+    )
 
     return booksSortedByDate.slice(0, 15).map((book) => book._id)
   }, [books])

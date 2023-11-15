@@ -1,5 +1,6 @@
 import { BookDocType, ReadingStateState } from "@oboku/shared"
-import { groupBy, mergeWith } from "ramda"
+import { groupBy } from "lodash"
+import { mergeWith } from "lodash"
 import { useCallback, useMemo } from "react"
 import { DeepMutable } from "rxdb/dist/types/types"
 import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
@@ -17,10 +18,10 @@ export const useDuplicatedBookTitles = () => {
   return useMemo(() => {
     const booksWithValidTitle = books.filter((doc) => !!doc.title)
 
-    const docsByTitle = groupBy((doc) => doc.title ?? `-1`, booksWithValidTitle)
+    const docsByTitle = groupBy(booksWithValidTitle, "title")
 
     const duplicatedDocs = Object.keys(docsByTitle)
-      .filter((title) => docsByTitle[title]!.length > 1)
+      .filter((title) => (docsByTitle[title]?.length ?? 0) > 1)
       .map((title) => [title, docsByTitle[title]])
 
     return duplicatedDocs as [string, BookDocument[]][]
@@ -64,8 +65,12 @@ export const useFixDuplicatedBookTitles = () => {
 
               // reduce will keep the correct order, which is important for the merge
               const mergedDoc = docsAsJson?.reduce((previous, current) => {
+                if (!previous) return current
+
+                const mutatedPrevious = { ...previous }
+
                 // we use || to be as less destructive as possible
-                return mergeWith((a, b) => b || a, previous, current)
+                return mergeWith((a, b) => b || a, mutatedPrevious, current)
               }, docsAsJson[0])
 
               if (!mergedDoc) return

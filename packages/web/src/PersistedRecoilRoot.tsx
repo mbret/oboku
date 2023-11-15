@@ -133,7 +133,7 @@ export const PersistedRecoilRoot: FC<{
           Object.keys(initialState || {}).forEach((key) => {
             const stateToRestore = states.find((state) => state.key === key)
             if (stateToRestore) {
-              set(stateToRestore, initialState[key]!.value)
+              set(stateToRestore, initialState[key]?.value)
             }
           })
         }

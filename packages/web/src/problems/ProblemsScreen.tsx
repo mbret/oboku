@@ -1,5 +1,6 @@
 import { Box, List, ListItem, ListItemIcon, ListItemText } from "@mui/material"
-import { difference, groupBy } from "ramda"
+import { groupBy } from "lodash"
+import { difference } from "lodash"
 import { Fragment, memo, useMemo } from "react"
 import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
 import { Report } from "../debug/report.shared"
@@ -46,17 +47,16 @@ export const ProblemsScreen = memo(() => {
   const booksWithDanglingLinks = useBooksDanglingLinks()
 
   const duplicatedCollections = useMemo(() => {
-    const collectionsByResourceId = groupBy(
-      (collection) => collection.resourceId ?? `none`,
-      collections
-    )
+    const collectionsByResourceId = groupBy(collections, "resourceId")
     const duplicatedCollections = Object.keys(collectionsByResourceId)
-      .filter((resourceId) => collectionsByResourceId[resourceId]!.length > 1)
+      .filter(
+        (resourceId) => (collectionsByResourceId[resourceId]?.length ?? 0) > 1
+      )
       .map((resourceId) => [
         resourceId,
         {
-          name: collectionsByResourceId[resourceId]![0]?.name,
-          number: collectionsByResourceId[resourceId]!.length
+          name: (collectionsByResourceId[resourceId] ?? [])[0]?.name,
+          number: collectionsByResourceId[resourceId]?.length ?? 0
         }
       ])
 

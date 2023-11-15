@@ -13,7 +13,6 @@ import { useDownloadBook } from "../download/useDownloadBook"
 import { PromiseReturnType } from "../types"
 import { useRecoilValue } from "recoil"
 import { normalizedBooksState, Book } from "./states"
-import * as R from "ramda"
 import { AtomicUpdateFunction } from "rxdb"
 import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
@@ -325,17 +324,19 @@ const sortBooksBy = (
 ) => {
   switch (sorting) {
     case "date": {
-      return R.sort(R.descend(R.prop("createdAt")), books)
+      // descend
+      return [...books].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
     }
     case "activity": {
-      return R.sort((a, b) => {
+      return [...books].sort((a, b) => {
         if (!a.readingStateCurrentBookmarkProgressUpdatedAt) return 1
         if (!b.readingStateCurrentBookmarkProgressUpdatedAt) return -1
+
         return (
           new Date(b.readingStateCurrentBookmarkProgressUpdatedAt).getTime() -
           new Date(a.readingStateCurrentBookmarkProgressUpdatedAt).getTime()
         )
-      }, books)
+      })
     }
     case "alpha": {
       return books.sort((a, b) =>

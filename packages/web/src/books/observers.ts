@@ -68,7 +68,7 @@ export const useBooksObservers = () => {
             return {
               ...state,
               [changeEvent.documentData._id]: {
-                ...state[changeEvent.documentData._id]!,
+                ...state[changeEvent.documentData._id],
                 ...nonReadOnlyDocumentData
               }
             }

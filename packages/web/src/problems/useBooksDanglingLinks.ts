@@ -1,4 +1,4 @@
-import { difference } from "ramda"
+import { difference } from "lodash"
 import { useMemo } from "react"
 import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
 import { useDatabase } from "../rxdb"

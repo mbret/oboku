@@ -1,4 +1,4 @@
-import { mergeWith } from "ramda"
+import { mergeWith } from "lodash"
 import { useCallback } from "react"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
@@ -32,12 +32,14 @@ export const useFixLinks = () => {
                 .map((data) => data.book)
                 .filter((id) => !!id) as string[]
 
-              const mergedDoc = dataAsJson.reduce(
-                (previous, current) =>
-                  // we use || to be as less destructive as possible
-                  mergeWith((a, b) => b || a, previous, current),
-                dataAsJson[0]
-              )
+              const mergedDoc = dataAsJson.reduce((previous, current) => {
+                if (!previous) return current
+
+                const mutatedPrevious = { ...previous }
+
+                // we use || to be as less destructive as possible
+                return mergeWith((a, b) => b || a, mutatedPrevious, current)
+              }, dataAsJson[0])
 
               if (!mergedDoc) return
 

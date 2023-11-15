@@ -1,4 +1,4 @@
-import { difference } from "ramda"
+import { difference } from "lodash"
 import { useCallback } from "react"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"

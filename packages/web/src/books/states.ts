@@ -1,4 +1,4 @@
-import { intersection } from "ramda"
+import { intersection } from "lodash"
 import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil"
 import { BookDocType } from "@oboku/shared"
 import { libraryState, libraryState$ } from "../library/states"

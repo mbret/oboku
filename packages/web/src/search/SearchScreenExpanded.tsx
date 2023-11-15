@@ -1,4 +1,3 @@
-import { Box } from "@mui/material"
 import { truncate } from "lodash"
 import { useParams } from "react-router-dom"
 import { BookList } from "../books/bookList/BookList"
