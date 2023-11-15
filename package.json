@@ -41,7 +41,6 @@
     "lerna": "^6.5.1",
     "prettier": "^2.8.4",
     "rollup-plugin-analyzer": "^4.0.0",
-    "rollup-plugin-node-externals": "^5.1.2",
     "rollup-plugin-polyfill-node": "^0.12.0",
     "serverless": "^3.28.1",
     "serverless-bundle": "^6.0.0",
