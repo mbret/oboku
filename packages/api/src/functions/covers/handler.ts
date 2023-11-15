@@ -13,7 +13,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
   const objectKey = `cover-${coverId}`
   const format = event.queryStringParameters?.format || "image/webp"
 
-  let cover: Buffer | undefined
+  let cover: Parameters<typeof sharp>[0]
 
   try {
     const response = await s3.send(new GetObjectCommand({Bucket: "oboku-covers", Key: objectKey, ResponseContentType: ""}))
@@ -22,7 +22,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
       throw new Error("No body")
     }
 
-    cover = (await response.Body.transformToByteArray()) as Buffer
+    cover = (await response.Body.transformToByteArray()) 
   } catch (e) {
     if ((e as any)?.code === "NoSuchKey") {
       throw createError(404)
