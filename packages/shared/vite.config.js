@@ -1,6 +1,7 @@
 import { defineConfig } from "vite"
 import dts from "vite-plugin-dts"
 import { resolve } from "path"
+import { externals } from "rollup-plugin-node-externals"
 
 export default defineConfig(({ mode }) => ({
   build: {
@@ -12,19 +13,22 @@ export default defineConfig(({ mode }) => ({
       fileName: `oboku-shared`
     },
     emptyOutDir: mode !== "development",
-    sourcemap: true,
-    /**
-     * We are letting cryptojs being bundled here because it bugs when
-     * letting consumer package include it
-     */
-    rollupOptions: {
-      external: [`yup`],
-      output: {
-        globals: {
-          yup: `yup`
-        }
-      }
-    }
+    sourcemap: true
   },
-  plugins: [dts()]
+  plugins: [
+    {
+      enforce: "pre",
+      ...externals({
+        peerDeps: true,
+        deps: true,
+        devDeps: true,
+        /**
+         * We are letting cryptojs being bundled here because it bugs when
+         * letting consumer package include it
+         */
+        exclude: "cryptojs"
+      })
+    },
+    dts()
+  ]
 }))
