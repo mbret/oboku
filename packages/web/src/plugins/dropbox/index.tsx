@@ -3,7 +3,7 @@ import { SvgIcon } from "@mui/material"
 
 import { AddDataSource } from "./AddDataSource"
 import { useDownloadBook } from "./useDownloadBook"
-import { ReactComponent as DropboxIconAsset } from "../../assets/dropbox.svg"
+import DropboxIconAsset from "../../assets/dropbox.svg?react"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"

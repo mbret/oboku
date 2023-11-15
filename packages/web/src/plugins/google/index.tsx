@@ -1,5 +1,5 @@
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
-import { ReactComponent as GoogleDriveAsset } from "../../assets/google-drive.svg"
+import GoogleDriveAsset from "../../assets/google-drive.svg?react"
 import { SvgIcon } from "@mui/material"
 import { UploadBook } from "./UploadBook"
 
