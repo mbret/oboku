@@ -61,8 +61,5 @@ export default defineConfig(({ mode }) => ({
       "process.env.NODE_DEBUG": false,
       preventAssignment: true
     })
-    // analyze({
-    //   summaryOnly: true
-    // })
   ]
 }))
