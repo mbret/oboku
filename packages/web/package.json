@@ -72,9 +72,6 @@
     "yup": "0.32.11"
   },
   "devDependencies": {
-    "@testing-library/dom": "^8.20.0",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/user-event": "^14.4.3",
     "@types/dropbox-chooser": "^1.0.3",
     "@types/gapi": "0.0.44",
     "@types/gapi.client.drive": "^3.0.15",
@@ -94,7 +91,7 @@
     "start": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "react-scripts test",
+    "test": "vitest run",
     "tsc": "tsc",
     "webpack": "webpack -v",
     "format": "eslint --fix '**/*.{js,ts,tsx}'",
