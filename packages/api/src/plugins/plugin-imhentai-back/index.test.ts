@@ -5,6 +5,7 @@ import {
   PLUGIN_IMHENTAI_TYPE
 } from "@oboku/shared"
 import { plugin } from "./index"
+import { expect, it } from "vitest"
 
 it(`should retrieve metadata`, async () => {
   const link: LinkDocType = {

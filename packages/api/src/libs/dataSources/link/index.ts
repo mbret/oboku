@@ -1,5 +1,5 @@
-import { DataSourcePlugin } from "@oboku/plugin-back"
 import request from "request"
+import { DataSourcePlugin } from "src/plugins/plugin-back"
 
 export type UriLinkData = { uri?: string }
 

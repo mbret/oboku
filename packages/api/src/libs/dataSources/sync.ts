@@ -1,8 +1,8 @@
 import { BookDocType, GoogleDriveDataSourceData } from "@oboku/shared"
-import { DataSourcePlugin, SynchronizeAbleDataSource } from "@oboku/plugin-back"
 import { createHelpers } from "./helpers"
 import { difference, uniq } from "ramda"
 import { Logger } from "@libs/logger"
+import { DataSourcePlugin, SynchronizeAbleDataSource } from "src/plugins/plugin-back"
 
 const logger = Logger.namespace("sync")
 

@@ -49,7 +49,7 @@ const serverlessConfiguration: AWS = {
   ],
   provider: {
     name: "aws",
-    runtime: "nodejs16.x",
+    runtime: "nodejs18.x",
     timeout: 30, //  30 seconds
     apiGateway: {
       minimumCompressionSize: 1024,

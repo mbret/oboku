@@ -1,14 +1,10 @@
 import {
-  DataSourcePlugin,
-  dataSourceHelpers,
-  cheerio,
-  fetch
-} from "@oboku/plugin-back"
-import {
   PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER,
   PLUGIN_IMHENTAI_BASE_URI,
-  PLUGIN_IMHENTAI_TYPE
+  PLUGIN_IMHENTAI_TYPE,
+  dataSourceHelpers
 } from "@oboku/shared"
+import { DataSourcePlugin, cheerio } from "../plugin-back"
 
 export const plugin: DataSourcePlugin = {
   type: PLUGIN_IMHENTAI_TYPE,

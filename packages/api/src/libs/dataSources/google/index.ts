@@ -12,7 +12,7 @@ import {
 import { configure } from "./configure"
 import { createThrottler } from "../helpers"
 import path from "path"
-import { DataSourcePlugin, SynchronizeAbleDataSource } from "@oboku/plugin-back"
+import { DataSourcePlugin, SynchronizeAbleDataSource } from "src/plugins/plugin-back"
 
 export { configure }
 

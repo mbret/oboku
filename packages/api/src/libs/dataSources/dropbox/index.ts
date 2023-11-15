@@ -10,7 +10,7 @@ import {
 } from "@oboku/shared"
 import { PromiseReturnType } from "../../types"
 import { createThrottler } from "../helpers"
-import { DataSourcePlugin, SynchronizeAbleDataSource } from "@oboku/plugin-back"
+import { DataSourcePlugin, SynchronizeAbleDataSource } from "src/plugins/plugin-back"
 
 const extractIdFromResourceId = (resourceId: string) =>
   resourceId.replace(`dropbox-`, ``)

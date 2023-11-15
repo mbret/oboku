@@ -2,7 +2,7 @@ import { dataSourceHelpers } from "@oboku/shared"
 import { load } from "cheerio"
 import { BASE_URI } from "./constants"
 import axios from "axios"
-import { DataSourcePlugin } from "@oboku/plugin-back"
+import { DataSourcePlugin } from "src/plugins/plugin-back"
 
 export const plugin: DataSourcePlugin = {
   type: `NHENTAI`,
