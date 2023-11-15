@@ -1,12 +1,12 @@
 import { Button, TextField, useTheme } from "@mui/material"
 import { useEffect, useState } from "react"
-import * as yup from "yup"
 import Alert from "@mui/material/Alert"
 import { API_URI } from "./constants"
 import { useRegister } from "./register/useRegister"
+import { object, string } from "yup"
 
-const schema = yup.object().shape({
-  email: yup.string().email().required()
+const schema = object().shape({
+  email: string().email().required()
 })
 
 export const BetaRegister = () => {

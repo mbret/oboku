@@ -9,13 +9,13 @@ import {
   TextField,
   Typography
 } from "@mui/material"
-import * as yup from "yup"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { ObokuPlugin } from "../plugin-front"
 import { generateResourceId } from "@oboku/shared"
+import { object, string } from "yup"
 
-const schema = yup.object().shape({
-  bookUrl: yup.string().url().required()
+const schema = object().shape({
+  bookUrl: string().url().required()
 })
 
 export const UploadComponent: ObokuPlugin["UploadComponent"] = ({

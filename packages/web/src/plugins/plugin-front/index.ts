@@ -5,12 +5,11 @@ import {
 } from "@oboku/shared"
 import { ComponentProps, FC, FunctionComponent, ReactNode } from "react"
 import { Button } from "@mui/material"
-import * as yup from "yup"
 import { PostBook, PostLink } from "./types"
 
 export { ImgIcon } from "./ImgIcon"
 
-export { yup, dataSourceHelpers }
+export { dataSourceHelpers }
 
 type Item = {
   resourceId: string

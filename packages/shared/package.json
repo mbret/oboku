@@ -21,6 +21,6 @@
   },
   "peerDependencies": {
     "crypto-js": "4.x",
-    "yup": "0.32.x"
+    "yup": "^1.3.2"
   }
 }

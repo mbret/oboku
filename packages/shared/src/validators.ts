@@ -1,12 +1,12 @@
-import * as yup from "yup"
+import { object, string } from "yup"
 
-export const signinSchema = yup.object().shape({
-  email: yup.string().email().required(),
-  password: yup.string().required()
+export const signinSchema = object().shape({
+  email: string().email().required(),
+  password: string().required()
 })
 
-export const signupSchema = yup.object().shape({
-  email: yup.string().email().required(),
-  password: yup.string().required(),
-  code: yup.string().required()
+export const signupSchema = object().shape({
+  email: string().email().required(),
+  password: string().required(),
+  code: string().required()
 })

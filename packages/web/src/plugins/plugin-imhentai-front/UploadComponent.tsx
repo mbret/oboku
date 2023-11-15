@@ -12,11 +12,12 @@ import {
   PLUGIN_IMHENTAI_TYPE,
   PLUGIN_IMHENTAI_UNIQUE_RESOURCE_IDENTIFIER
 } from "@oboku/shared"
-import { ObokuPlugin, yup } from "../plugin-front"
+import { ObokuPlugin } from "../plugin-front"
 import { generateResourceId } from "@oboku/shared"
+import { number, object } from "yup"
 
-const schema = yup.object().shape({
-  galleryId: yup.number().required()
+const schema = object().shape({
+  galleryId: number().required()
 })
 
 export const UploadComponent: ObokuPlugin[`UploadComponent`] = ({
