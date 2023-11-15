@@ -48,7 +48,7 @@
     "@types/aws-lambda": "^8.10.111",
     "@types/http-errors": "^2.0.1",
     "@types/jsonwebtoken": "^9.0.1",
-    "@types/node": "^18.14.0",
+    "@types/node": "^18.18.9",
     "@types/nodemailer": "^6.4.4",
     "@types/request": "^2.48.8",
     "@types/sharp": "0.31.1",
