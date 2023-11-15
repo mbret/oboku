@@ -22,7 +22,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
       throw new Error("No body")
     }
 
-    cover = (await response.Body.transformToByteArray()) 
+    cover = response.Body as any
   } catch (e) {
     if ((e as any)?.code === "NoSuchKey") {
       throw createError(404)
