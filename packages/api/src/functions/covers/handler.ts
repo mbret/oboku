@@ -16,13 +16,15 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
   let cover: Buffer | undefined
 
   try {
-    const response = await s3.send(new GetObjectCommand({Bucket: "oboku-covers", Key: objectKey}))
+    const response = await s3.send(new GetObjectCommand({Bucket: "oboku-covers", Key: objectKey, ResponseContentType: ""}))
+    const byteArrayBody = await response.Body?.transformToByteArray()
 
-    if (response.Body instanceof Buffer) {
-      cover = response.Body
-    } else {
-      throw new Error("body is not a buffer")
+    byteArrayBody?.buffer
+    if (!response.Body) {
+      throw new Error("No body")
     }
+
+    cover = (await response.Body.transformToByteArray()) as Buffer
   } catch (e) {
     if ((e as any)?.code === "NoSuchKey") {
       throw createError(404)
