@@ -16,6 +16,7 @@ import { createCbzFromReadableStream } from "./createCbzFromReadableStream"
 import { useDownloadBookFromDataSource } from "../plugins/useDownloadBookFromDataSource"
 import { plugin } from "../plugins/local"
 import { isPluginError } from "../plugins/plugin-front"
+import { BookQueryResult } from "../books/states"
 
 export const useDownloadBook = () => {
   const downloadBook = useDownloadBookFromDataSource()
@@ -42,7 +43,7 @@ export const useDownloadBook = () => {
 
   return useCallback(
     async (
-      { _id: bookId, links }: Pick<BookDocType, `_id` | `links`>,
+      { _id: bookId, links }: Pick<BookQueryResult, `_id` | `links`>,
       localFile?: File
     ) => {
       const throttleSetProgress = throttle((progress: number) => {

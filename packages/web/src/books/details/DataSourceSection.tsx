@@ -26,6 +26,7 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
   const refreshBookMetadata = useRefreshBookMetadata()
   const createRequestPopupDialog = useCreateRequestPopupDialog()
 
+  console.log({link})
   return (
     <>
       <List subheader={<ListSubheader>Data source</ListSubheader>}>

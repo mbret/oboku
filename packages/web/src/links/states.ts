@@ -58,7 +58,7 @@ export const getLinkState = (
 ) => {
   const link = Object.values(linksState).find((link) => link?._id === linkId)
 
-  return mapLinkTtoState({ link })
+  return mapLinkTtoState({ link: link?.toJSON() })
 }
 
 export const getLinkStateAsync = async ({
@@ -88,6 +88,6 @@ export const useLinkState = (linkId: string) => {
   const link = Object.values(links).find((link) => link?._id === linkId)
 
   return mapLinkTtoState({
-    link
+    link: link?.toJSON()
   })
 }
