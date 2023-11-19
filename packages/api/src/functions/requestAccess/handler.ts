@@ -8,12 +8,16 @@ import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm"
 
 const ssm = new SSMClient({ region: "us-east-1" })
 
-const getGmailAppPassword = () =>
-  {
-    return ssm.send(new GetParameterCommand({ Name: `gmail-app-password`,
-    WithDecryption: true}))
-      .then((value) => value.Parameter?.Value)
-  }
+const getGmailAppPassword = () => {
+  return ssm
+    .send(
+      new GetParameterCommand({
+        Name: `gmail-app-password`,
+        WithDecryption: true
+      })
+    )
+    .then((value) => value.Parameter?.Value)
+}
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event

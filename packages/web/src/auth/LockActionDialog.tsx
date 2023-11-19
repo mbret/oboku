@@ -8,16 +8,15 @@ import {
   TextField
 } from "@mui/material"
 import { crypto } from "@oboku/shared"
-import React, { FC, useEffect, useState } from "react"
-import { useRecoilValue } from "recoil"
-import { settingsState } from "../settings/states"
+import { FC, useEffect, useState } from "react"
+import { useAccountSettings } from "../settings/helpers"
 
 export const LockActionDialog: FC<{
   action?: () => void
 }> = ({ action }) => {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState("")
-  const settings = useRecoilValue(settingsState)
+  const { data: accountSettings } = useAccountSettings()
 
   const onClose = () => {
     setOpen(false)
@@ -25,7 +24,7 @@ export const LockActionDialog: FC<{
 
   const onConfirm = async () => {
     const hashedPassword = await crypto.hashContentPassword(text)
-    if (settings?.contentPassword === hashedPassword) {
+    if (accountSettings?.contentPassword === hashedPassword) {
       onClose()
       action && action()
     }

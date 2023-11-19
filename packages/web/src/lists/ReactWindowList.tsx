@@ -5,8 +5,6 @@ import {
   VariableSizeList
 } from "react-window"
 import AutoSizer from "react-virtualized-auto-sizer"
-import { useRecoilValue } from "recoil"
-import { localSettingsState } from "../settings/states"
 import {
   ArrowBackIosRounded,
   ArrowForwardIosRounded,
@@ -15,7 +13,7 @@ import {
 } from "@mui/icons-material"
 import { decimalAdjust, useCSS } from "../common/utils"
 import { useTheme } from "@mui/material"
-import { useCallback } from "react"
+import { useLocalSettingsState } from "../settings/states"
 
 export const ReactWindowList: FC<{
   rowRenderer: (item: any, rowIndex: number) => React.ReactNode
@@ -36,7 +34,7 @@ export const ReactWindowList: FC<{
     <>
       <AutoSizer>
         {({ width, height }) => (
-          <List width={width} height={height} {...rest} />
+          <List width={width ?? 0} height={height ?? 0} {...rest} />
         )}
       </AutoSizer>
     </>
@@ -97,7 +95,7 @@ const List = memo(
       const computedItemHeight =
         itemHeight || Math.floor(computedItemWidth / preferredRatio)
       const columnCount = layout === "horizontal" ? data.length : itemsPerRow
-      const { useNavigationArrows } = useRecoilValue(localSettingsState)
+      const { useNavigationArrows } = useLocalSettingsState()
       const classes = useClasses()
       const displayScrollerButtons = useNavigationArrows
       const isHorizontal = layout === "horizontal"
@@ -225,37 +223,6 @@ const List = memo(
         [renderHeader, headerHeight]
       )
 
-      const renderRow = useCallback(
-        ({ columnIndex, rowIndex, style, data }) => {
-          const itemIndex = rowIndex * columnCount + columnIndex
-
-          return (
-            <div
-              key={rowIndex}
-              style={{
-                ...style,
-                ...(headerHeight && {
-                  top: `${
-                    parseFloat(style.top?.toString() || "0") + headerHeight
-                  }px`
-                })
-              }}
-            >
-              <div
-                style={{
-                  height: "100%",
-                  width: "100%",
-                  maxHeight: computedItemHeight
-                }}
-              >
-                {data[itemIndex] && rowRenderer(data[itemIndex], rowIndex)}
-              </div>
-            </div>
-          )
-        },
-        [columnCount, rowRenderer, computedItemHeight, headerHeight]
-      )
-
       return (
         <>
           <FixedSizeGrid
@@ -276,7 +243,34 @@ const List = memo(
             itemData={data}
             {...rest}
           >
-            {renderRow}
+            {({ columnIndex, rowIndex, style, data }) => {
+              const itemIndex = rowIndex * columnCount + columnIndex
+              const item = data[itemIndex]
+
+              return (
+                <div
+                  key={rowIndex}
+                  style={{
+                    ...style,
+                    ...(headerHeight && {
+                      top: `${
+                        parseFloat(style.top?.toString() || "0") + headerHeight
+                      }px`
+                    })
+                  }}
+                >
+                  <div
+                    style={{
+                      height: "100%",
+                      width: "100%",
+                      maxHeight: computedItemHeight
+                    }}
+                  >
+                    {item && rowRenderer(item, rowIndex)}
+                  </div>
+                </div>
+              )
+            }}
           </FixedSizeGrid>
           {displayScrollerButtons && (
             <>

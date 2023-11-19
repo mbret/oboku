@@ -12,17 +12,20 @@ import {
 import { ROUTES } from "../constants"
 import { useNavigate } from "react-router-dom"
 import { useCreateCollection } from "../collections/helpers"
-import { atom, useRecoilState, useRecoilValue } from "recoil"
-import { collectionIdsState } from "../collections/states"
+import { useCollectionIdsState } from "../collections/states"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { CollectionList } from "../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
+import { useLocalSettingsState } from "../settings/states"
+import { useProtectedTagIds } from "../tags/helpers"
+import { signal, useSignalValue } from "reactjrx"
+import { libraryStateSignal } from "./states"
 
 type Scroll = Parameters<
   NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
 >[0]
 
-const libraryCollectionScreenPreviousScrollState = atom<Scroll>({
+const libraryCollectionScreenPreviousScrollState = signal<Scroll>({
   key: `libraryCollectionScreenPreviousScrollState`,
   default: {
     horizontalScrollDirection: `backward`,
@@ -38,14 +41,18 @@ export const LibraryCollectionScreen = () => {
   const navigate = useNavigate()
   const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] =
     useState(false)
-  const [
-    libraryCollectionScreenPreviousScroll,
-    setLibraryCollectionScreenPreviousScroll
-  ] = useRecoilState(libraryCollectionScreenPreviousScrollState)
-  const collections = useRecoilValue(collectionIdsState)
+  const libraryCollectionScreenPreviousScroll = useSignalValue(
+    libraryCollectionScreenPreviousScrollState
+  )
+  const libraryState = useSignalValue(libraryStateSignal)
+  const collections = useCollectionIdsState({
+    libraryState,
+    localSettingsState: useLocalSettingsState(),
+    protectedTagIds: useProtectedTagIds().data
+  })
 
   const onScroll = useDebouncedCallback((value: Scroll) => {
-    setLibraryCollectionScreenPreviousScroll(value)
+    libraryCollectionScreenPreviousScrollState.setValue(value)
   }, 300)
 
   const listHeader = useMemo(
@@ -104,7 +111,7 @@ const AddCollectionDialog: FC<{
   onClose: () => void
 }> = ({ onClose, open }) => {
   const [name, setName] = useState("")
-  const [addCollection] = useCreateCollection()
+  const { mutate: addCollection } = useCreateCollection()
 
   const onInnerClose = () => {
     setName("")

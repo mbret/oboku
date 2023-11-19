@@ -1,11 +1,21 @@
 import { useMemo } from "react"
-import { useRecoilValue } from "recoil"
-import { booksAsArrayState } from "../books/states"
+import { useBooksAsArrayState } from "../books/states"
 import { ReadingStateState } from "@oboku/shared"
 import { useBooksSortedBy } from "../books/helpers"
+import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { useProtectedTagIds } from "../tags/helpers"
+import { useSignalValue } from "reactjrx"
+import { libraryStateSignal } from "../library/states"
 
 export const useContinueReadingBooks = () => {
-  const booksAsArray = useRecoilValue(booksAsArrayState)
+  const libraryState = useSignalValue(libraryStateSignal)
+  const booksAsArray = useBooksAsArrayState({
+    libraryState,
+    normalizedBookDownloadsState: useSignalValue(
+      normalizedBookDownloadsStateSignal
+    ),
+    protectedTagIds: useProtectedTagIds().data
+  })
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
 
   return useMemo(
@@ -20,7 +30,14 @@ export const useContinueReadingBooks = () => {
 }
 
 export const useRecentlyAddedBooks = () => {
-  const books = useRecoilValue(booksAsArrayState)
+  const libraryState = useSignalValue(libraryStateSignal)
+  const books = useBooksAsArrayState({
+    libraryState,
+    normalizedBookDownloadsState: useSignalValue(
+      normalizedBookDownloadsStateSignal
+    ),
+    protectedTagIds: useProtectedTagIds().data
+  })
 
   return useMemo(() => {
     // descend

@@ -4,8 +4,8 @@ import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { catchError, EMPTY, from, of, switchMap, takeUntil } from "rxjs"
-import { useIsMountedState$ } from "../../common/rxjs/useIsMountedState$"
 import { useMount } from "react-use"
+import { useUnmountObservable } from "reactjrx"
 import { ObokuPlugin } from "../plugin-front"
 
 export const UploadBook: ObokuPlugin["UploadComponent"] = ({
@@ -17,7 +17,7 @@ export const UploadBook: ObokuPlugin["UploadComponent"] = ({
     UNIQUE_RESOURCE_IDENTIFIER
   )
   const { pick } = useDrivePicker({ requestPopup })
-  const { unMount$ } = useIsMountedState$()
+  const unMount$ = useUnmountObservable()
 
   useMount(() => {
     pick({ select: "file" })
@@ -55,7 +55,7 @@ export const UploadBook: ObokuPlugin["UploadComponent"] = ({
 
           return EMPTY
         }),
-        takeUntil(unMount$)
+        takeUntil(unMount$.current)
       )
       .subscribe()
   })

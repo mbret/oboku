@@ -23,40 +23,37 @@ import EmptyLibraryAsset from "../assets/empty-library.svg"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { LibraryViewMode } from "../rxdb"
 import {
-  isUploadBookDrawerOpenedState,
-  updateLibraryState,
-  useLibraryState
+  libraryStateSignal,
+  isUploadBookDrawerOpenedStateSignal
 } from "./states"
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
 import { UploadBookDrawer } from "./UploadBookDrawer"
 import { SortByDialog } from "../books/bookList/SortByDialog"
-import { isUploadBookFromDeviceOpenedFromState } from "../upload/state"
-import { localSettingsState } from "../settings/states"
+import { useLocalSettingsState } from "../settings/states"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useBooks } from "./useBooks"
+import { isUploadBookFromDeviceOpenedStateSignal } from "../upload/state"
+import { useSignalValue } from "reactjrx"
 
 export const LibraryBooksScreen = () => {
   const styles = useStyles()
   const classes = useClasses()
   const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
-  const [isUploadBookDrawerOpened, setIsUploadBookDrawerOpened] =
-    useRecoilState(isUploadBookDrawerOpenedState)
-  const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
-  const setIsUploadBookFromDeviceOpened = useSetRecoilState(
-    isUploadBookFromDeviceOpenedFromState
+  const isUploadBookDrawerOpened = useSignalValue(
+    isUploadBookDrawerOpenedStateSignal
   )
-  const localSettings = useRecoilValue(localSettingsState)
+  const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
+  const localSettings = useLocalSettingsState()
   const [
     isUploadBookFromDataSourceDialogOpened,
     setIsUploadBookFromDataSourceDialogOpened
   ] = useState<string | undefined>(undefined)
-  const library = useLibraryState()
+  const library = useSignalValue(libraryStateSignal)
   let numberOfFiltersApplied = 0
-  if ((library?.tags.length || 0) > 0) numberOfFiltersApplied++
-  if ((library?.readingStates.length || 0) > 0) numberOfFiltersApplied++
-  if (library?.downloadState !== undefined) numberOfFiltersApplied++
+  if ((library.tags.length || 0) > 0) numberOfFiltersApplied++
+  if ((library.readingStates.length || 0) > 0) numberOfFiltersApplied++
+  if (library.downloadState !== undefined) numberOfFiltersApplied++
   const books = useBooks()
   const { t } = useTranslation()
 
@@ -65,12 +62,12 @@ export const LibraryBooksScreen = () => {
       <Button
         fullWidth
         variant="outlined"
-        onClick={() => setIsUploadBookDrawerOpened(true)}
+        onClick={() => isUploadBookDrawerOpenedStateSignal.setValue(true)}
       >
         {t(`library.button.book.add.title`)}
       </Button>
     ),
-    [setIsUploadBookDrawerOpened, t]
+    [t]
   )
 
   const listHeader = useMemo(
@@ -93,10 +90,7 @@ export const LibraryBooksScreen = () => {
   const [listHeaderDimTracker, { height: listHeaderHeight }] =
     useMeasureElement(listHeader)
 
-  useEffect(
-    () => () => setIsUploadBookDrawerOpened(false),
-    [setIsUploadBookDrawerOpened]
-  )
+  useEffect(() => () => isUploadBookDrawerOpenedStateSignal.setValue(false), [])
 
   return (
     <div style={styles.container}>
@@ -138,20 +132,21 @@ export const LibraryBooksScreen = () => {
             {library.sorting === "activity"
               ? "Recent activity"
               : library.sorting === "alpha"
-              ? "A > Z"
-              : "Date added"}
+                ? "A > Z"
+                : "Date added"}
           </Button>
         </div>
-        {library?.isLibraryUnlocked && (
+        {library.isLibraryUnlocked && (
           <div className={classes.extraInfo}>
             {localSettings.unBlurWhenProtectedVisible && (
               <BlurOffRounded fontSize="small" />
             )}
             <IconButton
               onClick={() => {
-                updateLibraryState({
+                libraryStateSignal.setValue((state) => ({
+                  ...state,
                   isLibraryUnlocked: false
-                })
+                }))
               }}
               color="primary"
               size="large"
@@ -162,17 +157,18 @@ export const LibraryBooksScreen = () => {
         )}
         <IconButton
           onClick={() => {
-            updateLibraryState({
+            libraryStateSignal.setValue((state) => ({
+              ...state,
               viewMode:
-                library?.viewMode === LibraryViewMode.GRID
+                library.viewMode === LibraryViewMode.GRID
                   ? LibraryViewMode.LIST
                   : LibraryViewMode.GRID
-            })
+            }))
           }}
           size="large"
           color="primary"
         >
-          {library?.viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
+          {library.viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
         </IconButton>
       </Toolbar>
       <div
@@ -228,7 +224,7 @@ export const LibraryBooksScreen = () => {
         )}
         {books.length > 0 && (
           <BookList
-            viewMode={library?.viewMode}
+            viewMode={library.viewMode}
             sorting={library.sorting}
             headerHeight={listHeaderHeight}
             data={books}
@@ -247,7 +243,7 @@ export const LibraryBooksScreen = () => {
           onClose={() => setIsSortingDialogOpened(false)}
           open={isSortingDialogOpened}
           onChange={(newSort) => {
-            updateLibraryState({ sorting: newSort })
+            libraryStateSignal.setValue((s) => ({ ...s, sorting: newSort }))
           }}
         />
         <LibraryFiltersDrawer
@@ -257,10 +253,10 @@ export const LibraryBooksScreen = () => {
         <UploadBookDrawer
           open={isUploadBookDrawerOpened}
           onClose={(type) => {
-            setIsUploadBookDrawerOpened(false)
+            isUploadBookDrawerOpenedStateSignal.setValue(false)
             switch (type) {
               case "device":
-                setIsUploadBookFromDeviceOpened("local")
+                isUploadBookFromDeviceOpenedStateSignal.setValue("local")
                 break
               default:
                 setIsUploadBookFromDataSourceDialogOpened(type)

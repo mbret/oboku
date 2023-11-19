@@ -22,18 +22,17 @@ import { SearchScreen } from "../search/SearchScreen"
 import { AuthCallbackScreen } from "../auth/AuthCallbackScreen"
 import { SettingsScreen } from "../settings/SettingsScreen"
 import { StatisticsScreen } from "../settings/StatisticsScreen"
-import { useRecoilValue } from "recoil"
-import { authState } from "../auth/authState"
 import { BackToReadingDialog } from "../reading/BackToReadingDialog"
 import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer"
 import { ProblemsScreen } from "../problems/ProblemsScreen"
 import { LibraryBooksScreen } from "../library/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../library/LibraryCollectionScreen"
 import { LibraryTagsScreen } from "../library/LibraryTagsScreen"
-import { memo, useEffect, useRef, useState } from "react"
+import { memo, useEffect, useRef } from "react"
 import { UnlockLibraryDialog } from "../auth/UnlockLibraryDialog"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
-import { useMount } from "react-use"
+import { useSignalValue } from "reactjrx"
+import { authStateSignal } from "../auth/authState"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -42,7 +41,7 @@ const BottomTabBarRouteWrapper = () => (
 )
 
 export const AppNavigator = () => {
-  const auth = useRecoilValue(authState)
+  const auth = useSignalValue(authStateSignal)
   const isAuthenticated = !!auth?.token
 
   return (

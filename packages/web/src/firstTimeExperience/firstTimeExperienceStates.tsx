@@ -1,7 +1,7 @@
-import { atom } from "recoil"
 import { FirstTimeExperienceId } from "./constants"
+import { signal } from "reactjrx"
 
-export const firstTimeExperienceState = atom<{
+export const firstTimeExperienceStateSignal = signal<{
   [key in FirstTimeExperienceId]?: number
 }>({
   key: "firstTimeExperienceState",
@@ -13,7 +13,8 @@ export const firstTimeExperienceState = atom<{
   }
 })
 
-export const isTagsTourOpenedState = atom({
-  key: "isTagsTourOpenedState",
+export const firstTimeExperienceStatePersist = firstTimeExperienceStateSignal
+export const isTagsTourPossibleStateSignal = signal({
+  key: "isTagsTourPossibleState",
   default: false
 })

@@ -5,14 +5,14 @@ import { CenteredBox } from "../common/CenteredBox"
 import { useTranslation } from "react-i18next"
 import { Google } from "@mui/icons-material"
 import { useSignIn } from "./useSignIn"
-import { useMutation } from "../common/useMutation"
 import { ErrorMessage, isCancelError } from "../errors"
 import { OrDivider } from "../common/OrDivider"
 import { links } from "@oboku/shared"
+import { useAsyncQuery } from "reactjrx"
 
 export const LoginScreen = () => {
   const { signIn } = useSignIn()
-  const { mutate, isLoading, error } = useMutation(signIn)
+  const { mutate, isLoading, error } = useAsyncQuery(signIn, "switch")
   const theme = useTheme()
   const { t } = useTranslation()
 

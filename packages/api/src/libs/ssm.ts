@@ -1,4 +1,8 @@
-import { GetParameterCommand, GetParameterCommandInput, SSMClient } from "@aws-sdk/client-ssm"
+import {
+  GetParameterCommand,
+  GetParameterCommandInput,
+  SSMClient
+} from "@aws-sdk/client-ssm"
 
 const ssm = new SSMClient({ region: "us-east-1" })
 
@@ -13,5 +17,6 @@ export const getParameterValue = (
     Name: ParameterName
   }
 ) =>
-  ssm.send(new GetParameterCommand(options))
+  ssm
+    .send(new GetParameterCommand(options))
     .then((value) => value.Parameter?.Value)

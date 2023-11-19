@@ -8,6 +8,7 @@ import { generateManifestFromArchive } from "@prose-reader/streamer"
 import { directives } from "@oboku/shared"
 import { STREAMER_URL_PREFIX } from "../constants.shared"
 
+// @todo useQuery
 const useGetRarManifest = () =>
   useCallback(async (bookId: string) => {
     const file = await getBookFile(bookId)
@@ -23,6 +24,7 @@ const useGetRarManifest = () =>
     return undefined
   }, [])
 
+// @todo useQuery
 export const useManifest = (bookId: string | undefined) => {
   const [manifest, setManifest] = useState<Manifest | undefined>(undefined)
   const [isRarFile, setIsRarFile] = useState(false)
@@ -86,7 +88,7 @@ const getNormalizedManifest = (data: Manifest): Manifest => {
     readingDirection: direction
       ? direction
       : data.filename.endsWith(`.cbz`)
-      ? "rtl"
-      : data.readingDirection
+        ? "rtl"
+        : data.readingDirection
   }
 }

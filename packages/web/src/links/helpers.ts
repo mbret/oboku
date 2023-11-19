@@ -1,4 +1,3 @@
-import { useRxMutation } from "../rxdb/hooks"
 import { LinkDocType } from "@oboku/shared"
 import { useRefreshBookMetadata } from "../books/helpers"
 import { useDatabase } from "../rxdb"
@@ -10,14 +9,14 @@ type EditLinkPayload = Partial<LinkDocType> & Required<Pick<LinkDocType, "_id">>
 export const useEditLink = () => {
   const { db } = useDatabase()
   const refreshBookMetadata = useRefreshBookMetadata()
-  const [editLink] = useRxMutation((db, { _id, ...rest }: EditLinkPayload) =>
-    db.link.safeUpdate({ $set: rest }, (collection) =>
-      collection.findOne({ selector: { _id } })
-    )
-  )
 
   return async (data: EditLinkPayload) => {
-    await editLink(data)
+    const { _id, ...linkDataToUpate } = data
+
+    await db?.link.safeUpdate({ $set: linkDataToUpate }, (collection) =>
+      collection.findOne({ selector: { _id: data._id } })
+    )
+
     const completeLink = await db?.link
       .findOne({ selector: { _id: data._id } })
       .exec()

@@ -9,15 +9,15 @@ import {
 } from "@mui/material"
 import { crypto } from "@oboku/shared"
 import { FC, useEffect } from "react"
-import { atom, useRecoilState, useRecoilValue } from "recoil"
-import { settingsState } from "../settings/states"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
-import { updateLibraryState } from "../library/states"
+import { libraryStateSignal } from "../library/states"
+import { signal, useSignalValue } from "reactjrx"
+import { useAccountSettings } from "../settings/helpers"
 
-export const unlockLibraryDialogState = atom({
+export const unlockLibraryDialogSignal = signal({
   key: "unlockLibraryDialog",
   default: false
 })
@@ -34,13 +34,13 @@ export const UnlockLibraryDialog: FC<{}> = () => {
       unlockPassword: ""
     }
   })
-  const settings = useRecoilValue(settingsState)
-  const [isOpened, setIsOpened] = useRecoilState(unlockLibraryDialogState)
-  const contentPassword = settings?.contentPassword
+  const { data: accountSettings } = useAccountSettings()
+  const isOpened = useSignalValue(unlockLibraryDialogSignal)
+  const contentPassword = accountSettings?.contentPassword
   const { closeModalWithNavigation } = useModalNavigationControl(
     {
       onExit: () => {
-        setIsOpened(false)
+        unlockLibraryDialogSignal.setValue(false)
       }
     },
     isOpened
@@ -50,7 +50,10 @@ export const UnlockLibraryDialog: FC<{}> = () => {
     const hashedPassword = crypto.hashContentPassword(data.unlockPassword)
 
     if (contentPassword === hashedPassword) {
-      updateLibraryState({ isLibraryUnlocked: true })
+      libraryStateSignal.setValue((state) => ({
+        ...state,
+        isLibraryUnlocked: true
+      }))
       closeModalWithNavigation()
     } else {
       setError(

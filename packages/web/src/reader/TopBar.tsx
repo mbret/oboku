@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
-import { useRecoilValue } from "recoil"
-import { isMenuShownState, manifestState, isBookReadyState } from "./states"
+import {
+  isBookReadyStateSignal,
+  isMenuShownStateSignal,
+  manifestStateSignal
+} from "./states"
 import {
   AppBar,
   IconButton,
@@ -19,16 +22,17 @@ import screenfull from "screenfull"
 import { Report } from "../debug/report.shared"
 import { useCSS } from "../common/utils"
 import { useMoreDialog } from "./MoreDialog"
+import { useSignalValue } from "reactjrx"
 
 export const TopBar = () => {
-  const isMenuShow = useRecoilValue(isMenuShownState)
-  const isBookReady = useRecoilValue(isBookReadyState)
+  const isMenuShow = useSignalValue(isMenuShownStateSignal)
+  const isBookReady = useSignalValue(isBookReadyStateSignal)
   const classes = useStyles({ isMenuShow })
   const { goBack } = useSafeGoBack()
   const [isFullScreen, setIsFullScreen] = useState(
     screenfull.isEnabled && screenfull.isFullscreen
   )
-  const { title, filename } = useRecoilValue(manifestState) || {}
+  const { title, filename } = useSignalValue(manifestStateSignal) || {}
   const theme = useTheme()
   const { toggleMoreDialog } = useMoreDialog()
 

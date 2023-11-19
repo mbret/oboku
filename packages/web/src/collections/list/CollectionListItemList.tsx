@@ -10,11 +10,14 @@ import {
 } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { MoreVert } from "@mui/icons-material"
-import { useRecoilValue } from "recoil"
-import { collectionState } from "../states"
+import { useCollectionState } from "../states"
 import { CollectionDocType } from "@oboku/shared"
 import { Cover } from "../../books/Cover"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer"
+import { useLocalSettingsState } from "../../settings/states"
+import { useProtectedTagIds } from "../../tags/helpers"
+import { useSignalValue } from "reactjrx"
+import { libraryStateSignal } from "../../library/states"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,
@@ -32,7 +35,13 @@ export const CollectionListItemList: FC<{
   viewMode?: "container" | "text"
 }> = memo(({ id, onItemClick }) => {
   const theme = useTheme()
-  const item = useRecoilValue(collectionState(id))
+  const libraryState = useSignalValue(libraryStateSignal)
+  const item = useCollectionState({
+    id,
+    libraryState,
+    localSettingsState: useLocalSettingsState(),
+    protectedTagIds: useProtectedTagIds().data
+  })
   const { open: openActionDrawer } = useCollectionActionsDrawer(id)
   const styles = useStyle()
 

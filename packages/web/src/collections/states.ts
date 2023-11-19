@@ -1,72 +1,147 @@
-import { atom, selector, selectorFamily, UnwrapRecoilValue } from "recoil"
 import { CollectionDocType, directives } from "@oboku/shared"
-import { visibleBookIdsState } from "../books/states"
-import { localSettingsState } from "../settings/states"
+import { useVisibleBookIdsState } from "../books/states"
+import { useLocalSettingsState } from "../settings/states"
+import { useProtectedTagIds } from "../tags/helpers"
+import { libraryStateSignal } from "../library/states"
+import { useQuery } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { map, switchMap } from "rxjs"
+import { keyBy } from "lodash"
+import { Database } from "../rxdb"
 
 export type Collection = CollectionDocType
 
-export const normalizedCollectionsState = atom<
-  Record<string, Collection | undefined>
->({
-  key: "collectionsState",
-  default: {}
-})
+export const getCollectionsByIds = async (database: Database) => {
+  const result = await database.collections.obokucollection.find({}).exec()
 
-export const collectionsAsArrayState = selector({
-  key: "collectionsAsArrayState",
-  get: ({ get }) => {
-    const localSettings = get(localSettingsState)
-    const collections = get(normalizedCollectionsState)
-    const bookIds = get(visibleBookIdsState)
-    const ids = Object.keys(collections)
+  return keyBy(result, "_id")
+}
 
-    type Collection = NonNullable<
-      UnwrapRecoilValue<ReturnType<typeof collectionState>>
-    >
+export const useCollections = () => {
+  return useQuery({
+    queryKey: ["db", "get", "collections"],
+    queryFn: () =>
+      latestDatabase$.pipe(
+        switchMap((db) => db.collections.obokucollection.find({}).$),
+        map((entries) => keyBy(entries, "_id"))
+      )
+  })
+}
 
-    return ids
-      .filter((id) => {
-        const collection = collections[id]
-        if (localSettings.showCollectionWithProtectedContent === "unlocked") {
-          const hasSomeNonVisibleBook = collection?.books.some(
-            (bookId) => !bookIds.includes(bookId)
-          )
-          return !hasSomeNonVisibleBook
-        } else {
-          const hasSomeVisibleBook = collection?.books.some((bookId) =>
-            bookIds.includes(bookId)
-          )
-          return hasSomeVisibleBook || collection?.books.length === 0
-        }
-      })
-      .map((id) => get(collectionState(id))) as Collection[]
-  }
-})
+/**
+ * @deprecated
+ */
+export const useCollectionsAsArrayState = ({
+  libraryState,
+  localSettingsState,
+  protectedTagIds = []
+}: {
+  libraryState: ReturnType<typeof libraryStateSignal.getValue>
+  localSettingsState: ReturnType<typeof useLocalSettingsState>
+  protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
+}) => {
+  const localSettings = localSettingsState
+  const { data: collections = {} } = useCollections()
+  const bookIds = useVisibleBookIdsState({ libraryState, protectedTagIds })
+  const ids = Object.keys(collections)
 
-export const collectionIdsState = selector({
-  key: "collectionIdsState",
-  get: ({ get }) => {
-    return get(collectionsAsArrayState).map(({ _id }) => _id)
-  }
-})
+  type Collection = NonNullable<ReturnType<typeof useCollectionState>>
 
-export const collectionState = selectorFamily({
-  key: "collectionState",
-  get:
-    (id: string) =>
-    ({ get }) => {
-      const collection = get(normalizedCollectionsState)[id]
-      const bookIds = get(visibleBookIdsState)
-      const localSettings = get(localSettingsState)
-
-      if (!collection) return undefined
-
-      return {
-        ...collection,
-        books: collection.books.filter((id) => bookIds.includes(id)),
-        displayableName: localSettings.hideDirectivesFromCollectionName
-          ? directives.removeDirectiveFromString(collection.name)
-          : collection.name
+  return ids
+    .filter((id) => {
+      const collection = collections[id]
+      if (localSettings.showCollectionWithProtectedContent === "unlocked") {
+        const hasSomeNonVisibleBook = collection?.books.some(
+          (bookId) => !bookIds.includes(bookId)
+        )
+        return !hasSomeNonVisibleBook
+      } else {
+        const hasSomeVisibleBook = collection?.books.some((bookId) =>
+          bookIds.includes(bookId)
+        )
+        return hasSomeVisibleBook || collection?.books.length === 0
       }
-    }
-})
+    })
+    .map((id) => {
+      const value = getCollectionState({
+        id,
+        normalizedCollections: collections,
+        localSettingsState,
+        bookIds
+      })
+
+      return value
+    }) as Collection[]
+}
+
+/**
+ * @deprecated
+ */
+export const useCollectionIdsState = ({
+  libraryState,
+  localSettingsState,
+  protectedTagIds = []
+}: {
+  libraryState: ReturnType<typeof libraryStateSignal.getValue>
+  localSettingsState: ReturnType<typeof useLocalSettingsState>
+  protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
+}) => {
+  return useCollectionsAsArrayState({
+    libraryState,
+    localSettingsState,
+    protectedTagIds
+  }).map(({ _id }) => _id)
+}
+
+export const getCollectionState = ({
+  id,
+  localSettingsState,
+  normalizedCollections = {},
+  bookIds
+}: {
+  id: string
+  localSettingsState: ReturnType<typeof useLocalSettingsState>
+  normalizedCollections: ReturnType<typeof useCollections>["data"]
+  bookIds: ReturnType<typeof useVisibleBookIdsState>
+}) => {
+  const collection = normalizedCollections[id]
+  const localSettings = localSettingsState
+
+  if (!collection) return undefined
+
+  return {
+    ...collection.toJSON(),
+    books: collection.books.filter((id) => bookIds.includes(id)),
+    displayableName: localSettings.hideDirectivesFromCollectionName
+      ? directives.removeDirectiveFromString(collection.name)
+      : collection.name
+  }
+}
+
+/**
+ * @deprecated
+ */
+export const useCollectionState = ({
+  id,
+  libraryState,
+  localSettingsState,
+  protectedTagIds = []
+}: {
+  id: string
+  libraryState: ReturnType<typeof libraryStateSignal.getValue>
+  localSettingsState: ReturnType<typeof useLocalSettingsState>
+  protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
+}) => {
+  const { data: normalizedCollections } = useCollections()
+  const bookIds = useVisibleBookIdsState({
+    libraryState,
+    protectedTagIds
+  })
+
+  return getCollectionState({
+    id,
+    localSettingsState,
+    normalizedCollections,
+    bookIds
+  })
+}

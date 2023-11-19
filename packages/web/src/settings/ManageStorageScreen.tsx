@@ -1,4 +1,4 @@
-import React, { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
   ListItem,
@@ -9,52 +9,88 @@ import {
   Typography,
   Box,
   useTheme,
-  Button
+  Button,
+  Divider,
+  ListItemButton
 } from "@mui/material"
-import { StorageRounded } from "@mui/icons-material"
+import { DeleteRounded, StorageRounded } from "@mui/icons-material"
 import { useStorageUse } from "./useStorageUse"
 import { LibraryViewMode } from "../rxdb"
 import { BookList } from "../books/bookList/BookList"
-import { useRecoilState, useRecoilValue } from "recoil"
 import {
-  downloadedBookWithUnsafeProtectedIdsState,
-  visibleBookIdsState
+  useDownloadedBookWithUnsafeProtectedIdsState,
+  useVisibleBookIdsState
 } from "../books/states"
-import { bookActionDrawerState } from "../books/BookActionsDrawer"
-import { useCSS } from "../common/utils"
+import { bookActionDrawerSignal } from "../books/BookActionsDrawer"
 import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { difference } from "lodash"
 import Alert from "@mui/material/Alert"
 import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
+import { useAsyncQuery, useSignalValue } from "reactjrx"
+import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
+import { useProtectedTagIds } from "../tags/helpers"
+import { libraryStateSignal } from "../library/states"
+import { normalizedBookDownloadsStateSignal } from "../download/states"
 
 export const ManageStorageScreen = () => {
-  const bookIds = useRecoilValue(downloadedBookWithUnsafeProtectedIdsState)
-  const visibleBookIds = useRecoilValue(visibleBookIdsState)
+  const bookIds = useDownloadedBookWithUnsafeProtectedIdsState({
+    normalizedBookDownloadsState: useSignalValue(
+      normalizedBookDownloadsStateSignal
+    )
+  })
+  const libraryState = useSignalValue(libraryStateSignal)
+  const visibleBookIds = useVisibleBookIdsState({
+    libraryState,
+    protectedTagIds: useProtectedTagIds().data
+  })
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])
-  const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
-  const styles = useStyles()
   const removeDownloadFile = useRemoveDownloadFile()
-  const { bookIds: downloadedBookIds, refetch } = useDownloadedFilesInfo()
+  const deleteAllDownloadedFiles = useRemoveAllDownloadedFiles()
+  const { data: downloadedBookIds = [], refetch: refetchDownloadedFilesInfo } =
+    useDownloadedFilesInfo()
   const extraDownloadFilesIds = difference(downloadedBookIds, bookIds)
   const theme = useTheme()
-  const bookIdsToDisplay = bookIds.filter((id) => visibleBookIds.includes(id))
+  const bookIdsToDisplay = useMemo(
+    () => bookIds.filter((id) => visibleBookIds.includes(id)),
+    [bookIds, visibleBookIds]
+  )
+  const { mutate: onDeleteAllDownloadsClick } = useAsyncQuery(async () => {
+    const isConfirmed = confirm(
+      "Are you sure you want to delete all downloads at once?"
+    )
+
+    if (isConfirmed) {
+      await deleteAllDownloadedFiles(bookIds)
+
+      refetchDownloadedFilesInfo()
+    }
+  })
 
   const removeExtraBooks = useCallback(() => {
     Promise.all(extraDownloadFilesIds.map((id) => removeDownloadFile(id)))
-      .then(refetch)
+      .then(refetchDownloadedFilesInfo)
       .catch(Report.error)
-  }, [refetch, extraDownloadFilesIds, removeDownloadFile])
+  }, [refetchDownloadedFilesInfo, extraDownloadFilesIds, removeDownloadFile])
+
+  const onItemClick = useCallback(
+    (id: string) =>
+      bookActionDrawerSignal.setValue({
+        openedWith: id,
+        actions: ["removeDownload"]
+      }),
+    []
+  )
 
   useEffect(() => {
-    refetch()
-  }, [bookIds, refetch])
+    refetchDownloadedFilesInfo()
+  }, [bookIds, refetchDownloadedFilesInfo])
 
   return (
     <>
       <TopBarNavigation title={"Manage storage"} />
-      <List style={styles.listHeader}>
+      <List>
         <ListItem>
           <ListItemIcon>
             <StorageRounded />
@@ -81,6 +117,17 @@ export const ManageStorageScreen = () => {
             }
           />
         </ListItem>
+        {bookIdsToDisplay.length > 0 && (
+          <ListItemButton onClick={() => onDeleteAllDownloadsClick()}>
+            <ListItemIcon>
+              <DeleteRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="Delete all downloads"
+              secondary="It will not delete books only available on this device"
+            />
+          </ListItemButton>
+        )}
       </List>
       {extraDownloadFilesIds.length > 0 && (
         <Alert severity="warning" style={{ marginBottom: theme.spacing(0) }}>
@@ -97,43 +144,18 @@ export const ManageStorageScreen = () => {
           </Button>
         </Alert>
       )}
-      <div style={styles.separator} />
-      {bookIdsToDisplay?.length > 0 && (
-        <BookList
-          viewMode={LibraryViewMode.LIST}
-          data={bookIdsToDisplay}
-          density="dense"
-          withDrawerActions={false}
-          style={{
-            height: "100%",
-            overflow: "hidden"
-          }}
-          onItemClick={(id) =>
-            setBookActionDrawerState({
-              openedWith: id,
-              actions: ["removeDownload"]
-            })
-          }
-        />
-      )}
+      <Divider />
+      <BookList
+        viewMode={LibraryViewMode.LIST}
+        data={bookIdsToDisplay}
+        density="dense"
+        withBookActions={false}
+        style={{
+          height: "100%",
+          overflow: "hidden"
+        }}
+        onItemClick={onItemClick}
+      />
     </>
-  )
-}
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      listHeader: {
-        paddingBottom: 0
-      },
-      separator: {
-        width: `100%`,
-        borderBottom: `1px solid ${theme.palette.grey[200]}`,
-        boxSizing: "border-box"
-      }
-    }),
-    [theme]
   )
 }

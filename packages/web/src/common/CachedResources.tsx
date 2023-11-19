@@ -6,16 +6,17 @@
  * - support both blob and base64 for older browsers
  * - parallel download of different quality of same assets and display of lower res while higher res get available
  */
-import { FC, memo, ReactNode, useEffect, useMemo, useState } from "react"
 import {
-  atom,
-  selectorFamily,
-  useRecoilCallback,
-  useRecoilState,
-  useRecoilValue,
-  useSetRecoilState
-} from "recoil"
+  FC,
+  memo,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react"
 import localforage from "localforage"
+import { signal, useSignalValue } from "reactjrx"
 
 const MAX_RETRY_TIME = 2
 const RETRY_RETRIEVING_ASSET_AFTER = 60000 * 2 // 2 minute
@@ -34,18 +35,14 @@ type Asset = {
   missingHigherOrder: boolean
 }
 
-const assetsState = atom<Asset[]>({
+const assetsState = signal<Asset[]>({
   key: "assetsState",
   default: []
 })
 
-const assetState = selectorFamily({
-  key: "assetState",
-  get:
-    (id: string) =>
-    ({ get }) =>
-      get(assetsState).find((asset) => asset.id === id)
-})
+const useAssetState = (id: string) => {
+  return useSignalValue(assetsState).find((asset) => asset.id === id)
+}
 
 const fileToBase64 = (file: Blob) =>
   new Promise((resolve, reject) => {
@@ -85,101 +82,17 @@ const retryFetch = async (resource: string, retryNumber = 0): Promise<Blob> => {
   }
 }
 
-const useStorageAssetFromStorage = (id: string) => {
-  const {
-    cacheBuster,
-    id: existingId,
-    state
-  } = useRecoilValue(assetState(id)) || {}
-  const [data, setData] = useState<Blob | undefined>()
-  const setAssetsState = useSetRecoilState(assetsState)
-
-  /**
-   * When download/storage fails for some reason we will wait a littbe bit
-   * and reset the state so that we restart the whole process
-   */
-  // useEffect(() => {
-  //   let timer: ReturnType<typeof setTimeout>
-
-  //   if (state === 'failed') {
-  //     timer = setTimeout(() => {
-  //       setAssetsState(old => {
-  //         const item = old.find((old => old.id === existingId))
-
-  //         if (!item || item.state !== 'failed') return old
-
-  //         return old.map(item => item.id === existingId ? { ...item, state: undefined, } : item)
-  //       })
-  //     }, RETRY_RETRIEVING_ASSET_AFTER)
-  //   }
-
-  //   return () => {
-  //     clearTimeout(timer)
-  //   }
-  // }, [state, setAssetsState, existingId])
-
-  // useEffect(() => {
-  //   let cancelled = false
-
-  //   if (!existingId || state === 'missing' || state === 'failed') return
-
-  //     ; (async () => {
-  //       let data = await localforage.getItem<({ blob: FileType, order: number }) | null>(existingId)
-
-  //       if (data && !cancelled) {
-  //         let blobData: Blob | undefined
-  //         if (typeof data.blob === 'string') {
-  //           const response = await fetch(data.blob)
-  //           blobData = await response.blob()
-  //         } else {
-  //           blobData = data.blob
-  //         }
-
-  //         if (!cancelled) {
-  //           setData(blobData)
-  //           if (state !== 'downloaded') {
-  //             setAssetsState(old => old.map(item => item.id === existingId
-  //               ? {
-  //                 ...item,
-  //                 state: 'downloaded',
-  //                 missingHigherOrder: (data?.order || 0) < (item.resources.length - 1),
-  //               }
-  //               : item
-  //             ))
-  //           }
-  //         }
-  //       }
-
-  //       if (!data && !cancelled) {
-  //         // console.log(`debug useStorageAssetFromStorage. item missing`)
-  //         setAssetsState(old => old.map(item => item.id === existingId && item.state !== 'failed' ? { ...item, state: 'missing' } : item))
-  //       }
-  //     })()
-
-  //   return () => {
-  //     cancelled = true
-  //   }
-  // }, [cacheBuster, existingId, state, setAssetsState])
-
-  useEffect(() => {
-    setData(undefined)
-  }, [id])
-
-  return data
-}
-
 export const useLazyCachedAsset = () => {
   const [id, setId] = useState<string | undefined>(undefined)
   const [resources, setResources] = useState<string[] | undefined>(undefined)
-  const { id: existingAssetId } = useRecoilValue(assetState(id || "-1")) || {}
-  const setAssetsState = useSetRecoilState(assetsState)
+  const { id: existingAssetId } = useAssetState(id || "-1") || {}
   // const data = useStorageAssetFromStorage(id || '-1')
   const data = undefined
 
   useEffect(() => {
     if (!id || !resources) return
     // console.log(`debug useLazyCachedAsset`, { resources, existingAssetId })
-    setAssetsState((old) => {
+    assetsState.setValue((old) => {
       if (!old.find((old) => old.id === id)) {
         return [
           ...old,
@@ -196,7 +109,7 @@ export const useLazyCachedAsset = () => {
       }
       return old.map((item) => (item.id === id ? { ...item, resources } : item))
     })
-  }, [setAssetsState, id, resources])
+  }, [id, resources])
 
   return useMemo(
     () => ({
@@ -222,7 +135,7 @@ export const useLazyCachedAsset = () => {
 }
 
 const useLazyDownloadAsset = () => {
-  return useRecoilCallback(({ snapshot, set }) => async (asset: Asset) => {
+  return useCallback(async (asset: Asset) => {
     // console.log(`debug CachedResourcesProvider fetch resources`, asset)
     let startFromIndexOrder = 0
     try {
@@ -263,7 +176,7 @@ const useLazyDownloadAsset = () => {
                 throw e
               }
             }
-            set(assetsState, (old) =>
+            assetsState.setValue((old) =>
               old.map((item) =>
                 item.id === asset.id
                   ? {
@@ -279,7 +192,7 @@ const useLazyDownloadAsset = () => {
         })
       )
     } catch (e) {
-      set(assetsState, (old) =>
+      assetsState.setValue((old) =>
         old.map((item) =>
           item.id === asset.id
             ? {
@@ -292,12 +205,12 @@ const useLazyDownloadAsset = () => {
       )
       console.error(e)
     }
-  })
+  }, [])
 }
 
 export const CachedResourcesProvider: FC<{ children: ReactNode }> = memo(
   ({ children }) => {
-    const [assets, setAssets] = useRecoilState(assetsState)
+    const assets = useSignalValue(assetsState)
     const lazyDownloadAsset = useLazyDownloadAsset()
 
     // console.log(`debug CachedResourcesProvider`, { assets })
@@ -315,7 +228,7 @@ export const CachedResourcesProvider: FC<{ children: ReactNode }> = memo(
 
       if (assetsToDownload.length === 0) return
 
-      setAssets((old) =>
+      assetsState.setValue((old) =>
         old.map((old) => {
           const found = assetsToDownload.find(({ id }) => id === old.id)
 
@@ -326,7 +239,7 @@ export const CachedResourcesProvider: FC<{ children: ReactNode }> = memo(
       )
 
       assetsToDownload.map(lazyDownloadAsset)
-    }, [assets, setAssets, lazyDownloadAsset])
+    }, [assets, lazyDownloadAsset])
 
     return <>{children}</>
   }

@@ -1,6 +1,6 @@
-import { atom } from "recoil"
+import { signal } from "reactjrx"
 
-export const authState = atom<
+export const authStateSignal = signal<
   | {
       token: string
       email: string
@@ -12,3 +12,5 @@ export const authState = atom<
   key: "authState",
   default: undefined
 })
+
+export const authStatePersist = authStateSignal

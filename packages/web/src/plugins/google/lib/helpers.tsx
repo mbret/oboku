@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { Dispatch, SetStateAction, useState } from "react"
 import { AccessToken } from "./types"
 
 export type ContextValue = {
@@ -7,7 +7,7 @@ export type ContextValue = {
   lazyGapi: Promise<typeof gapi>
   accessToken?: { token: AccessToken; createdAt: Date }
   consentPopupShown?: boolean
-  setConsentPopupShown: React.Dispatch<React.SetStateAction<boolean>>
+  setConsentPopupShown: Dispatch<SetStateAction<boolean>>
   setAccessToken: ReturnType<
     typeof useState<{ token: AccessToken; createdAt: Date } | undefined>
   >[1]

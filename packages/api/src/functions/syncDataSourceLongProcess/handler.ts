@@ -60,10 +60,13 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   const isBookCoverExist = async ({ coverId }: { coverId: string }) => {
     try {
-      await s3.send(new HeadObjectCommand({
-        Bucket: "oboku-covers", Key: `cover-${coverId}` 
-      }))
-      
+      await s3.send(
+        new HeadObjectCommand({
+          Bucket: "oboku-covers",
+          Key: `cover-${coverId}`
+        })
+      )
+
       return true
     } catch (e) {
       if ((e as any).code === "NotFound") return false

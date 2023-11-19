@@ -8,14 +8,18 @@ import {
   NoEncryptionRounded
 } from "@mui/icons-material"
 import { Cover } from "../Cover"
-import { useRecoilValue, UnwrapRecoilValue } from "recoil"
-import { enrichedBookState } from "../states"
+import { useEnrichedBookState } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import { ReadingProgress } from "./ReadingProgress"
-import { DownloadState } from "../../download/states"
+import {
+  DownloadState,
+  normalizedBookDownloadsStateSignal
+} from "../../download/states"
 import { useCSS } from "../../common/utils"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
+import { useSignalValue } from "reactjrx"
 
-type Book = UnwrapRecoilValue<ReturnType<typeof enrichedBookState>>
+type Book = ReturnType<typeof useEnrichedBookState>
 
 export const BookListCoverContainer: FC<{
   bookId: string
@@ -37,7 +41,14 @@ export const BookListCoverContainer: FC<{
     size = "small",
     withProtectedStatus = true
   }) => {
-    const item = useRecoilValue(enrichedBookState(bookId))
+    const item = useEnrichedBookState({
+      bookId,
+      normalizedBookDownloadsState: useSignalValue(
+        normalizedBookDownloadsStateSignal
+      ),
+      protectedTagIds: useProtectedTagIds().data,
+      tags: useTagsByIds().data
+    })
     const classes = useStyles({ item })
 
     return (

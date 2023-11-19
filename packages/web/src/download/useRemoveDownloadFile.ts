@@ -1,16 +1,14 @@
 import localforage from "localforage"
-import { useSetRecoilState } from "recoil"
 import { DOWNLOAD_PREFIX } from "../constants.shared"
 import { Report } from "../debug/report.shared"
-import { DownloadState, normalizedBookDownloadsState } from "./states"
+import { DownloadState, normalizedBookDownloadsStateSignal } from "./states"
 
 export const useRemoveDownloadFile = () => {
-  const setBookDownloadsState = useSetRecoilState(normalizedBookDownloadsState)
-
   return async (bookId: string) => {
     try {
       await localforage.removeItem(`${DOWNLOAD_PREFIX}-${bookId}`)
-      setBookDownloadsState((prev) => ({
+
+      normalizedBookDownloadsStateSignal.setValue((prev) => ({
         ...prev,
         [bookId]: {
           ...prev[bookId],

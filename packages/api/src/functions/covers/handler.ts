@@ -16,7 +16,13 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
   let cover: Parameters<typeof sharp>[0]
 
   try {
-    const response = await s3.send(new GetObjectCommand({Bucket: "oboku-covers", Key: objectKey, ResponseContentType: ""}))
+    const response = await s3.send(
+      new GetObjectCommand({
+        Bucket: "oboku-covers",
+        Key: objectKey,
+        ResponseContentType: ""
+      })
+    )
 
     if (!response.Body) {
       throw new Error("No body")

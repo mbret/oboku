@@ -1,9 +1,7 @@
 import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
 import { DataSourceDocType, ObokuErrorCode } from "@oboku/shared"
-import { useRxMutation } from "../rxdb/hooks"
 import { Report } from "../debug/report.shared"
-import { useRecoilCallback } from "recoil"
 import { plugins } from "../plugins/configure"
 import { useCallback, useMemo } from "react"
 import { useDialogManager } from "../dialog"
@@ -11,8 +9,9 @@ import { useNetworkState } from "react-use"
 import { useSync } from "../rxdb/useSync"
 import { AtomicUpdateFunction } from "rxdb"
 import { catchError, EMPTY, from, switchMap, map, of } from "rxjs"
-import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
+import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
+import { useAsyncQuery } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 
 export const useSynchronizeDataSource = () => {
@@ -24,49 +23,60 @@ export const useSynchronizeDataSource = () => {
   const dialog = useDialogManager()
   const sync = useSync()
 
-  return useRecoilCallback(({ snapshot }) => async (_id: string) => {
-    if (!network.online) {
-      return dialog({ preset: "OFFLINE" })
-    }
+  return useCallback(
+    async (_id: string) => {
+      if (!network.online) {
+        return dialog({ preset: "OFFLINE" })
+      }
 
-    if (!database) return
+      if (!database) return
 
-    from(database.datasource.findOne({ selector: { _id } }).exec())
-      .pipe(
-        isNotNullOrUndefined(),
-        switchMap((dataSource) => synchronizeDataSource(dataSource)),
-        switchMap((data) => {
-          return atomicUpdateDataSource(_id, (old) => {
-            old.syncStatus = `fetching`
+      from(database.datasource.findOne({ selector: { _id } }).exec())
+        .pipe(
+          isNotNullOrUndefined(),
+          switchMap((dataSource) => synchronizeDataSource(dataSource)),
+          switchMap((data) => {
+            return atomicUpdateDataSource(_id, (old) => {
+              old.syncStatus = `fetching`
 
-            return old
-          }).pipe(
-            switchMap(() => sync([database.datasource])),
-            switchMap(() => from(client.syncDataSource(_id, data.data))),
-            catchError((e) =>
-              atomicUpdateDataSource(_id, (old) => ({
-                ...old,
-                syncStatus: null,
-                lastSyncErrorCode:
-                  ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE
-              })).pipe(
-                map((_) => {
-                  throw e
-                })
+              return old
+            }).pipe(
+              switchMap(() => sync([database.datasource])),
+              switchMap(() => from(client.syncDataSource(_id, data.data))),
+              catchError((e) =>
+                atomicUpdateDataSource(_id, (old) => ({
+                  ...old,
+                  syncStatus: null,
+                  lastSyncErrorCode:
+                    ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE
+                })).pipe(
+                  map((_) => {
+                    throw e
+                  })
+                )
               )
             )
-          )
-        }),
-        catchError((e) => {
-          if (isPluginError(e) && e.code === "cancelled") return EMPTY
+          }),
+          catchError((e) => {
+            if (isPluginError(e) && e.code === "cancelled") return EMPTY
 
-          Report.error(e)
+            Report.error(e)
 
-          return EMPTY
-        })
-      )
-      .subscribe()
-  })
+            return EMPTY
+          })
+        )
+        .subscribe()
+    },
+    [
+      atomicUpdateDataSource,
+      client,
+      database,
+      dialog,
+      network,
+      sync,
+      synchronizeDataSource
+    ]
+  )
 }
 
 export const useCreateDataSource = () => {
@@ -74,10 +84,8 @@ export const useCreateDataSource = () => {
     DataSourceDocType,
     "_id" | "rx_model" | "_rev" | `rxdbMeta`
   >
+  const { db } = useDatabase()
   const synchronize = useSynchronizeDataSource()
-  const [createDataSource] = useRxMutation((db, variables: Payload) =>
-    db?.datasource.post({ ...variables })
-  )
   const network = useNetworkState()
 
   return async (
@@ -86,23 +94,28 @@ export const useCreateDataSource = () => {
       "lastSyncedAt" | "createdAt" | "modifiedAt" | "syncStatus"
     >
   ) => {
-    const dataSource = await createDataSource({
+    const dataSource = await db?.datasource.post({
       ...data,
       lastSyncedAt: null,
       createdAt: new Date().toISOString(),
       modifiedAt: null,
       syncStatus: null
     })
-    if (network.online) {
+
+    if (dataSource && network.online) {
       await synchronize(dataSource._id)
     }
   }
 }
 
-export const useRemoveDataSource = () =>
-  useRxMutation((db, { id }: { id: string }) =>
-    db.datasource.findOne({ selector: { _id: id } }).remove()
+export const useRemoveDataSource = () => {
+  const { db } = useDatabase()
+
+  return useAsyncQuery(
+    async ({ id }: { id: string }) =>
+      db?.datasource.findOne({ selector: { _id: id } }).remove()
   )
+}
 
 export const useAtomicUpdateDataSource = () => {
   const { db: database } = useDatabase()

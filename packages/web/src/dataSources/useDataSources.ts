@@ -1,28 +1,26 @@
-import { Database, useDatabase } from "../rxdb"
-import { bind } from "@react-rxjs/core"
-import { of, switchMap } from "rxjs"
-import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
-import { useLibraryState } from "../library/states"
-
-const [useData] = bind(
-  (maybeDb: Database | undefined, showProtected: boolean) =>
-    of(maybeDb).pipe(
-      isNotNullOrUndefined(),
-      switchMap((db) => {
-        if (showProtected) {
-          return db.datasource.find().$
-        }
-
-        return db.datasource.find({ selector: { isProtected: { $ne: true } } })
-          .$
-      })
-    ),
-  []
-)
+import { switchMap } from "rxjs"
+import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
+import { useObserve, useSignalValue } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { libraryStateSignal } from "../library/states"
 
 export const useDataSources = () => {
-  const { db } = useDatabase()
-  const { isLibraryUnlocked } = useLibraryState()
+  const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
 
-  return useData(db, isLibraryUnlocked)
+  return useObserve(
+    () =>
+      latestDatabase$.pipe(
+        isNotNullOrUndefined(),
+        switchMap((db) => {
+          if (isLibraryUnlocked) {
+            return db.datasource.find().$
+          }
+
+          return db.datasource.find({
+            selector: { isProtected: { $ne: true } }
+          }).$
+        })
+      ),
+    [isLibraryUnlocked]
+  )
 }

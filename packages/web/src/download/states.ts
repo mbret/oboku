@@ -1,4 +1,4 @@
-import { atom, selector, selectorFamily } from "recoil"
+import { signal } from "reactjrx"
 
 export enum DownloadState {
   None = "none",
@@ -6,7 +6,7 @@ export enum DownloadState {
   Downloading = "downloading"
 }
 
-export const normalizedBookDownloadsState = atom<
+export const normalizedBookDownloadsStateSignal = signal<
   Record<
     string,
     | {
@@ -21,24 +21,22 @@ export const normalizedBookDownloadsState = atom<
   default: {}
 })
 
-export const bookDownloadsState = selectorFamily({
-  key: "bookDownloadsState",
-  get:
-    (bookId: string) =>
-    ({ get }) =>
-      get(normalizedBookDownloadsState)[bookId] || {
-        downloadState: DownloadState.None,
-        downloadProgress: 0
-      }
-})
+export const normalizedBookDownloadsStatePersist =
+  normalizedBookDownloadsStateSignal
 
-export const bookDownloadsSizeState = selector({
-  key: "bookDownloadsSizeState",
-  get: ({ get }) => {
-    const books = Object.values(get(normalizedBookDownloadsState))
-
-    return books
-      .filter((book) => book?.downloadState === DownloadState.Downloaded)
-      .reduce((size, item) => size + (item?.size || 0), 0)
+/**
+ * @deprecated
+ */
+export const getBookDownloadsState = ({
+  bookId,
+  normalizedBookDownloadsState
+}: {
+  bookId: string
+  normalizedBookDownloadsState: ReturnType<
+    typeof normalizedBookDownloadsStateSignal.getValue
+  >
+}) =>
+  normalizedBookDownloadsState[bookId] || {
+    downloadState: DownloadState.None,
+    downloadProgress: 0
   }
-})

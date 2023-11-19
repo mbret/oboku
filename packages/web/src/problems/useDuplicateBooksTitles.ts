@@ -1,27 +1,27 @@
 import { BookDocType, ReadingStateState } from "@oboku/shared"
-import { groupBy } from "lodash"
-import { mergeWith } from "lodash"
+import { groupBy, mergeWith } from "lodash"
 import { useCallback, useMemo } from "react"
 import { DeepMutable } from "rxdb/dist/types/types"
-import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 import { BookDocument } from "../rxdb/schemas/book"
+import { useObserve } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { switchMap } from "rxjs"
 
 export const useDuplicatedBookTitles = () => {
-  const { db: database } = useDatabase()
-
-  const { data: books = [] } = useSubscribe$(
-    useMemo(() => database?.book.find().$, [database])
+  const books = useObserve(
+    () => latestDatabase$.pipe(switchMap((db) => db?.book.find().$)),
+    []
   )
 
   return useMemo(() => {
-    const booksWithValidTitle = books.filter((doc) => !!doc.title)
+    const booksWithValidTitle = books?.filter((doc) => !!doc.title)
 
     const docsByTitle = groupBy(booksWithValidTitle, "title")
 
     const duplicatedDocs = Object.keys(docsByTitle)
-      .filter((title) => (docsByTitle[title]?.length ?? 0) > 1)
+      .filter((title) => docsByTitle[title]!.length > 1)
       .map((title) => [title, docsByTitle[title]])
 
     return duplicatedDocs as [string, BookDocument[]][]
@@ -65,12 +65,8 @@ export const useFixDuplicatedBookTitles = () => {
 
               // reduce will keep the correct order, which is important for the merge
               const mergedDoc = docsAsJson?.reduce((previous, current) => {
-                if (!previous) return current
-
-                const mutatedPrevious = { ...previous }
-
                 // we use || to be as less destructive as possible
-                return mergeWith((a, b) => b || a, mutatedPrevious, current)
+                return mergeWith((a, b) => b || a, previous, current)
               }, docsAsJson[0])
 
               if (!mergedDoc) return

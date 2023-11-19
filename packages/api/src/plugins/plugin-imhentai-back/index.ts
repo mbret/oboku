@@ -74,9 +74,8 @@ export const plugin: DataSourcePlugin = {
     /**
      * This gives a link to usually first page
      */
-    const coverPageUrl = `${PLUGIN_IMHENTAI_BASE_URI}${
-      $(`.left_cover a`).attr()?.href
-    }`
+    const coverPageUrl = `${PLUGIN_IMHENTAI_BASE_URI}${$(`.left_cover a`).attr()
+      ?.href}`
 
     /**
      * Then we parse the cover page url and retrieve the original raw file link

@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { memo, useCallback } from "react"
 import List from "@mui/material/List"
 import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
@@ -27,32 +27,42 @@ import {
 } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
 import { useManageBookCollectionsDialog } from "./ManageBookCollectionsDialog"
-import { atom, useRecoilState, useRecoilValue } from "recoil"
-import { enrichedBookState } from "./states"
+import { useEnrichedBookState } from "./states"
 import { Cover } from "./Cover"
 import { ReadingStateState } from "@oboku/shared"
 import { Report } from "../debug/report.shared"
 import { useDialogManager } from "../dialog"
-import { linkState } from "../links/states"
+import { useLinkState } from "../links/states"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "./ManageBookTagsDialog"
-import { markAsInterested } from "./actions"
+import { markAsInterested } from "./triggers"
+import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
+import { signal, useSignalValue } from "reactjrx"
 
-export const bookActionDrawerState = atom<{
+export const bookActionDrawerSignal = signal<{
   openedWith: undefined | string
   actions?: ("removeDownload" | "goToDetails")[]
 }>({ key: "bookActionDrawerState", default: { openedWith: undefined } })
 
-export const BookActionsDrawer = () => {
+export const BookActionsDrawer = memo(() => {
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
-  const [{ openedWith: bookId, actions }, setBookActionDrawerState] =
-    useRecoilState(bookActionDrawerState)
+  const { openedWith: bookId, actions } = useSignalValue(bookActionDrawerSignal)
   const navigate = useNavigate()
-  const book = useRecoilValue(enrichedBookState(bookId || "-1"))
-  const bookLink = useRecoilValue(linkState(book?.links[0] || "-1"))
+  const normalizedBookDownloadsState = useSignalValue(
+    normalizedBookDownloadsStateSignal
+  )
+
+  const book = useEnrichedBookState({
+    bookId: bookId || "-1",
+    normalizedBookDownloadsState,
+    protectedTagIds: useProtectedTagIds().data,
+    tags: useTagsByIds().data
+  })
+  const bookLink = useLinkState(book?.links[0] || "-1")
   const removeDownloadFile = useRemoveDownloadFile()
   const removeBook = useRemoveBook()
   const refreshBookMetadata = useRefreshBookMetadata()
@@ -66,7 +76,7 @@ export const BookActionsDrawer = () => {
   const { closeModalWithNavigation: handleClose } = useModalNavigationControl(
     {
       onExit: () => {
-        setBookActionDrawerState({ openedWith: undefined })
+        bookActionDrawerSignal.setValue({ openedWith: undefined })
       }
     },
     bookId
@@ -318,7 +328,7 @@ export const BookActionsDrawer = () => {
       )}
     </Drawer>
   )
-}
+})
 
 const useStyles = makeStyles((theme) => ({
   topContainer: {

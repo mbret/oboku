@@ -1,48 +1,43 @@
 import { useCallback } from "react"
 import { FC } from "react"
-import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from "recoil"
-import { useDatabase } from "../rxdb"
-import { useTagIds } from "../tags/states"
+import { useTagIds, useTagsByIds } from "../tags/helpers"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useAddTagToBook, useRemoveTagFromBook } from "./helpers"
-import { bookState } from "./states"
+import { useBookState } from "./states"
+import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
-const openManageBookTagsDialogState = atom<string | undefined>({
+const openManageBookTagsDialogStateSignal = signal<string | undefined>({
   key: "openManageBookTagsDialogState",
   default: undefined
 })
 
 export const useManageBookTagsDialog = () => {
-  const openManageBookTagsDialog = useRecoilCallback(
-    ({ set }) =>
-      (bookId: string) => {
-        set(openManageBookTagsDialogState, bookId)
-      },
-    []
-  )
+  const openManageBookTagsDialog = useCallback((bookId: string) => {
+    openManageBookTagsDialogStateSignal.setValue(bookId)
+  }, [])
 
-  const closeManageBookTagsDialog = useRecoilCallback(({ set }) => () => {
-    set(openManageBookTagsDialogState, undefined)
-  })
+  const closeManageBookTagsDialog = useCallback(() => {
+    openManageBookTagsDialogStateSignal.setValue(SIGNAL_RESET)
+  }, [])
 
   return { openManageBookTagsDialog, closeManageBookTagsDialog }
 }
 
 export const ManageBookTagsDialog: FC<{}> = () => {
-  const [bookId, setOpenManageBookTagsDialogState] = useRecoilState(
-    openManageBookTagsDialogState
-  )
+  const bookId = useSignalValue(openManageBookTagsDialogStateSignal)
   const open = !!bookId
-  const { db$ } = useDatabase()
-  const tags = useTagIds(db$)
-  const book = useRecoilValue(bookState(bookId || "-1"))
-  const addTagToBook = useAddTagToBook()
-  const removeFromBook = useRemoveTagFromBook()
+  const { data: tags = [] } = useTagIds()
+  const book = useBookState({
+    bookId: bookId || "-1",
+    tags: useTagsByIds().data
+  })
+  const { mutate: addTagToBook } = useAddTagToBook()
+  const { mutate: removeFromBook } = useRemoveTagFromBook()
   const bookTags = book?.tags
 
   const onClose = useCallback(() => {
-    setOpenManageBookTagsDialogState(undefined)
-  }, [setOpenManageBookTagsDialogState])
+    openManageBookTagsDialogStateSignal.setValue(undefined)
+  }, [])
 
   const selected = useCallback(
     (item: string) => !!bookTags?.find((id) => id === item),
@@ -52,7 +47,7 @@ export const ManageBookTagsDialog: FC<{}> = () => {
   const onItemClick = useCallback(
     ({ id: tagId, selected }: { id: string; selected: boolean }) => {
       if (selected) {
-        bookId && removeFromBook({ bookId, tagId })
+        bookId && removeFromBook({ _id: bookId, tagId })
       } else {
         bookId && addTagToBook({ _id: bookId, tagId })
       }

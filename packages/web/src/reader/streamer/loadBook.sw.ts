@@ -13,16 +13,19 @@ let cleanupInterval: NodeJS.Timeout | number
 
 const cleanup = () => {
   clearInterval(cleanupInterval as NodeJS.Timeout)
-  cleanupInterval = setInterval(() => {
-    if (!loading && archive) {
-      Report.log(
-        `serviceWorker.loadBook.cleanup`,
-        `cleaning up unused epub archive reference (after 5mn)`
-      )
-      archive = undefined
-      lastUrl = undefined
-    }
-  }, 5 * 60 * 1000)
+  cleanupInterval = setInterval(
+    () => {
+      if (!loading && archive) {
+        Report.log(
+          `serviceWorker.loadBook.cleanup`,
+          `cleaning up unused epub archive reference (after 5mn)`
+        )
+        archive = undefined
+        lastUrl = undefined
+      }
+    },
+    5 * 60 * 1000
+  )
 }
 
 export const loadBook = Report.measurePerformance(

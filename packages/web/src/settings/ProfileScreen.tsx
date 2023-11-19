@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import {
   BarChartRounded,
   GavelRounded,
@@ -30,25 +30,23 @@ import {
 } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { useStorageUse } from "./useStorageUse"
-import { unlockLibraryDialogState } from "../auth/UnlockLibraryDialog"
-import { useResetFirstTimeExperience } from "../firstTimeExperience/helpers"
 import { LoadLibraryFromJsonDialog } from "../debug/LoadLibraryFromJsonDialog"
 import { LockActionBehindUserPasswordDialog } from "../auth/LockActionBehindUserPasswordDialog"
 import { useSignOut } from "../auth/helpers"
-import { useRecoilState, useRecoilValue } from "recoil"
-import { authState } from "../auth/authState"
-import { settingsState } from "./states"
-import { useUpdateContentPassword } from "./helpers"
-import { updateLibraryState, useLibraryState } from "../library/states"
+import { useAccountSettings, useUpdateContentPassword } from "./helpers"
+import { libraryStateSignal } from "../library/states"
 import packageJson from "../../package.json"
 import { ROUTES } from "../constants"
 import { useDialogManager } from "../dialog"
 import { toggleDebug } from "../debug"
-import { useIsMountedState$ } from "../common/rxjs/useIsMountedState$"
 import { useDatabase } from "../rxdb"
 import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
 import { Report } from "../debug/report.shared"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
+import { SIGNAL_RESET, useSignalValue, useUnmountObservable } from "reactjrx"
+import { firstTimeExperienceStateSignal } from "../firstTimeExperience/firstTimeExperienceStates"
+import { unlockLibraryDialogSignal } from "../auth/UnlockLibraryDialog"
+import { authStateSignal } from "../auth/authState"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -64,14 +62,10 @@ export const ProfileScreen = () => {
   const [isLoadLibraryDebugOpened, setIsLoadLibraryDebugOpened] =
     useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([])
-  const [, isUnlockLibraryDialogOpened] = useRecoilState(
-    unlockLibraryDialogState
-  )
-  const auth = useRecoilValue(authState)
-  const settings = useRecoilValue(settingsState)
-  const library = useLibraryState()
+  const auth = useSignalValue(authStateSignal)
+  const { data: accountSettings } = useAccountSettings()
+  const library = useSignalValue(libraryStateSignal)
   const signOut = useSignOut()
-  const resetFirstTimeExperience = useResetFirstTimeExperience()
   const theme = useTheme()
   const dialog = useDialogManager()
 
@@ -93,7 +87,7 @@ export const ProfileScreen = () => {
         <ListItem
           button
           onClick={() => {
-            if (settings?.contentPassword) {
+            if (accountSettings?.contentPassword) {
               setLockedAction(
                 (_) => () => setIsEditContentPasswordDialogOpened(true)
               )
@@ -105,7 +99,7 @@ export const ProfileScreen = () => {
           <ListItemText
             primary="Protected contents password"
             secondary={
-              settings?.contentPassword
+              accountSettings?.contentPassword
                 ? "Change my password"
                 : "Initialize my password"
             }
@@ -114,27 +108,28 @@ export const ProfileScreen = () => {
         <ListItem
           button
           onClick={() => {
-            if (library?.isLibraryUnlocked) {
-              updateLibraryState({
+            if (library.isLibraryUnlocked) {
+              libraryStateSignal.setValue((state) => ({
+                ...state,
                 isLibraryUnlocked: false
-              })
+              }))
             } else {
-              isUnlockLibraryDialogOpened(true)
+              unlockLibraryDialogSignal.setValue(true)
             }
           }}
         >
           <ListItemText
             primary={
-              library?.isLibraryUnlocked
+              library.isLibraryUnlocked
                 ? "Protected contents are visible"
                 : "Protected contents are hidden"
             }
             secondary={
-              library?.isLibraryUnlocked ? "Click to lock" : "Click to unlock"
+              library.isLibraryUnlocked ? "Click to lock" : "Click to unlock"
             }
           />
-          {library?.isLibraryUnlocked && <LockOpenRounded color="action" />}
-          {!library?.isLibraryUnlocked && <LockRounded color="action" />}
+          {library.isLibraryUnlocked && <LockOpenRounded color="action" />}
+          {!library.isLibraryUnlocked && <LockRounded color="action" />}
         </ListItem>
         <ListItem
           button
@@ -222,7 +217,10 @@ export const ProfileScreen = () => {
             }
           />
         </ListItem>
-        <ListItem button onClick={resetFirstTimeExperience}>
+        <ListItem
+          button
+          onClick={() => firstTimeExperienceStateSignal.setValue(SIGNAL_RESET)}
+        >
           <ListItemText
             primary="Restart the welcome tour"
             secondary="This will display all the first time tours overlay again. Useful for a quick reminder on how to use the app"
@@ -310,7 +308,7 @@ const DeleteMyDataDialog: FC<{
   const [isBookChecked, setIsBookChecked] = useState(false)
   const [isCollectionChecked, setIsCollectionChecked] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const { unMount$ } = useIsMountedState$()
+  const unMount$ = useUnmountObservable()
   const { db } = useDatabase()
 
   const onSubmit = useCallback(async () => {
@@ -350,7 +348,7 @@ const DeleteMyDataDialog: FC<{
           tap(() => {
             onClose()
           }),
-          takeUntil(unMount$)
+          takeUntil(unMount$.current)
         )
         .subscribe()
     }
@@ -427,9 +425,9 @@ const EditContentPasswordDialog: FC<{
   onClose: () => void
 }> = ({ onClose, open }) => {
   const updatePassword = useUpdateContentPassword()
-  const settings = useRecoilValue(settingsState)
+  const { data: accountSettings } = useAccountSettings()
   const [text, setText] = useState("")
-  const contentPassword = settings?.contentPassword || ""
+  const contentPassword = accountSettings?.contentPassword || ""
 
   const onInnerClose = () => {
     onClose()

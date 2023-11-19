@@ -11,7 +11,7 @@ import {
   takeUntil,
   tap
 } from "rxjs"
-import { isNotNullOrUndefined } from "../../common/rxjs/isNotNullOrUndefined"
+import { isNotNullOrUndefined } from "../../common/isNotNullOrUndefined"
 
 type CouchDbReplication = ReturnType<RxCollection[`syncCouchDB`]>
 const FIELD = `rx_model`

@@ -20,9 +20,6 @@ export const useMeasureElement = (element: React.ReactNode) => {
   return [elementToRender, dim] as [typeof elementToRender, typeof dim]
 }
 
-export const waitFor = (ms: number) =>
-  new Promise((resolve) => setTimeout(resolve, ms))
-
 export const bytesToMb = (value: number) => (value / 1e6).toFixed(2)
 
 export const isMobileDetected = () => {
@@ -47,6 +44,9 @@ export const isMobileDetected = () => {
   }
 }
 
+/**
+ * @deprecated
+ */
 export const useCSS = <T extends React.CSSProperties, K>(
   css: () => { [key in keyof K]: T },
   deps?: React.DependencyList

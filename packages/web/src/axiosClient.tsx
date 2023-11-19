@@ -1,13 +1,13 @@
 import { FC, ReactNode, useEffect, useMemo } from "react"
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios"
-import { useRecoilValue } from "recoil"
-import { authState } from "./auth/authState"
+import { authStateSignal } from "./auth/authState"
 import { API_URI } from "./constants"
+import { useSignalValue } from "reactjrx"
 
 const instance = axios.create()
 
 export const AxiosProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const { token } = useRecoilValue(authState) || {}
+  const { token } = useSignalValue(authStateSignal) || {}
 
   useEffect(() => {
     instance.defaults.headers.common["Authorization"] = `Bearer ${token}`

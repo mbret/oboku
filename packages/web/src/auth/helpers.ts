@@ -1,26 +1,27 @@
 import { useCallback, useState } from "react"
-import { useRecoilValue, useSetRecoilState } from "recoil"
 import { API_URI } from "../constants"
 import { useLock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
-import { authState } from "./authState"
-import { useResetStore } from "../PersistedRecoilRoot"
 import { Report } from "../debug/report.shared"
 import { createServerError } from "../errors"
+import { authStateSignal } from "./authState"
+import {
+  SIGNAL_RESET,
+  useSignalValue
+} from "reactjrx"
+import { resetSignalEntriesToPersist } from "../storage"
 
-export const useIsAuthenticated = () => !!useRecoilValue(authState)?.token
+export const useIsAuthenticated = () => !!useSignalValue(authStateSignal)?.token
 
 export const useSignOut = () => {
-  const setAuthState = useSetRecoilState(authState)
-
-  return useCallback(async () => {
-    setAuthState(undefined)
-  }, [setAuthState])
+  return useCallback(() => {
+    authStateSignal.setValue(SIGNAL_RESET)
+  }, [])
 }
 
 export const useAuthorize = () => {
   const [lock, unlock] = useLock()
-  const auth = useRecoilValue(authState)
+  const auth = useSignalValue(authStateSignal)
 
   return async ({
     variables: { password },
@@ -53,9 +54,7 @@ export const useAuthorize = () => {
 export const useSignUp = () => {
   const [lock, unlock] = useLock()
   const reCreateDb = useReCreateDb()
-  const resetLocalState = useResetStore()
   const [error, setError] = useState<Error | undefined>(undefined)
-  const setAuthState = useSetRecoilState(authState)
 
   const cb = useCallback(
     async (email: string, password: string, code) => {
@@ -72,16 +71,16 @@ export const useSignUp = () => {
           throw await createServerError(response)
         }
         const { token, nameHex, dbName } = await response.json()
-        await resetLocalState()
+        await resetSignalEntriesToPersist()
         await reCreateDb()
-        setAuthState({ dbName, email, token, nameHex })
+        authStateSignal.setValue({ dbName, email, token, nameHex })
         unlock("authorize")
       } catch (e) {
         setError(e as any)
         unlock("authorize")
       }
     },
-    [lock, unlock, reCreateDb, resetLocalState, setAuthState]
+    [lock, unlock, reCreateDb]
   )
 
   const data = { error }

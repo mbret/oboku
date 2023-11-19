@@ -14,8 +14,6 @@ import {
   useTheme
 } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
-import { bind } from "@react-rxjs/core"
-import { createSignal } from "@react-rxjs/utils"
 import React, { useCallback, useRef, useState } from "react"
 import {
   generatePath,
@@ -30,12 +28,12 @@ import { useCSS } from "../common/utils"
 import { ROUTES } from "../constants"
 import { SEARCH_MAX_PREVIEW_ITEMS } from "../constants.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { useDatabase } from "../rxdb"
-import { useBooks, useCollections } from "./states"
-
-export const [searchChange$, setSearch] = createSignal<string>()
-
-export const [useSearchValue, search$] = bind(searchChange$, "")
+import {
+  searchStateSignal,
+  useBooksForSearch,
+  useCollectionsForSearch
+} from "./states"
+import { useSignalValue } from "reactjrx"
 
 const Accordion = styled(MuiAccordion)({
   ":before": {
@@ -73,11 +71,10 @@ const SeeMore = ({
 
 export const SearchScreen = () => {
   const { styles, classes } = useStyles()
-  const { db$ } = useDatabase()
   const [searchParams, setSearchParams] = useSearchParams()
-  const value = useSearchValue()
-  const collections = useCollections(db$, search$)
-  const books = useBooks(db$, search$)
+  const value = useSignalValue(searchStateSignal)
+  const { data: collections = [] } = useCollectionsForSearch(value)
+  const { data: books = [] } = useBooksForSearch(value)
   const inputRef = useRef<HTMLElement>()
   const navigate = useNavigate()
   const [bookExpanded, setBookExpanded] = useState(true)
@@ -89,7 +86,7 @@ export const SearchScreen = () => {
   }, [])
 
   useMount(() => {
-    setSearch(searchParams.get("value") || "")
+    searchStateSignal.setValue(searchParams.get("value") || "")
   })
 
   return (
@@ -109,7 +106,7 @@ export const SearchScreen = () => {
               }}
               inputProps={{ "aria-label": "search" }}
               onChange={(e) => {
-                setSearch(e.target.value)
+                searchStateSignal.setValue(e.target.value)
                 setSearchParams(
                   {
                     value: e.target.value

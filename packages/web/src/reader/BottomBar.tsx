@@ -1,23 +1,23 @@
 import { AppBar, Box, IconButton, Typography, useTheme } from "@mui/material"
-import { useRecoilValue } from "recoil"
 import { PageInformation } from "./PageInformation"
 import {
-  isMenuShownState,
-  isBookReadyState,
   usePagination,
-  useReader
+  readerStateSignal,
+  isBookReadyStateSignal,
+  isMenuShownStateSignal
 } from "./states"
 import { Scrubber } from "./Scrubber"
 import { DoubleArrowRounded } from "@mui/icons-material"
 import { FloatingBottom } from "./FloatingBottom"
+import { useSignalValue } from "reactjrx"
 
 export const BottomBar = () => {
-  const isMenuShow = useRecoilValue(isMenuShownState)
-  const isBookReady = useRecoilValue(isBookReadyState)
+  const isMenuShow = useSignalValue(isMenuShownStateSignal)
+  const isBookReady = useSignalValue(isBookReadyStateSignal)
   const isLoading = !isBookReady
   const theme = useTheme()
-  const reader = useReader()
-  const pagination = usePagination()
+  const reader = useSignalValue(readerStateSignal)
+  const { data: pagination } = usePagination()
   // const showScrubber = (totalPages || 1) > 1
   const showScrubber = true
 

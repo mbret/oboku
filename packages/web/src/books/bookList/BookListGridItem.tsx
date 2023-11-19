@@ -1,21 +1,29 @@
-import React, { FC, memo } from "react"
+import { FC, memo } from "react"
 import { Typography, useTheme } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
-import { useRecoilState, useRecoilValue } from "recoil"
-import { bookActionDrawerState } from "../BookActionsDrawer"
-import { enrichedBookState } from "../states"
+import { bookActionDrawerSignal } from "../BookActionsDrawer"
+import { useEnrichedBookState } from "../states"
 import { useDefaultItemClickHandler } from "./helpers"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useCSS } from "../../common/utils"
+import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
+import { useSignalValue } from "reactjrx"
 
 export const BookListGridItem: FC<{
   bookId: string
   onItemClick?: (id: string) => void
 }> = memo(({ bookId, onItemClick }) => {
-  const item = useRecoilValue(enrichedBookState(bookId))
+  const item = useEnrichedBookState({
+    bookId,
+    normalizedBookDownloadsState: useSignalValue(
+      normalizedBookDownloadsStateSignal
+    ),
+    protectedTagIds: useProtectedTagIds().data,
+    tags: useTagsByIds().data
+  })
   const onDefaultItemClick = useDefaultItemClickHandler()
   const classes = useStyles()
-  const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
 
   return (
     <div
@@ -35,7 +43,7 @@ export const BookListGridItem: FC<{
         style={classes.itemBottomContainer}
         onClick={(e) => {
           e.stopPropagation()
-          item?._id && setBookActionDrawerState({ openedWith: item._id })
+          item?._id && bookActionDrawerSignal.setValue({ openedWith: item._id })
         }}
       >
         <div style={{ width: "100%", overflow: "hidden" }}>

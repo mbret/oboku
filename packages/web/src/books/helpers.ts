@@ -4,15 +4,13 @@ import {
   ReadingStateState,
   sortByTitleComparator
 } from "@oboku/shared"
-import { useRxMutation } from "../rxdb/hooks"
 import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../debug/report.shared"
 import { useCallback, useMemo } from "react"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { PromiseReturnType } from "../types"
-import { useRecoilValue } from "recoil"
-import { normalizedBooksState, Book } from "./states"
+import { BookQueryResult, useBooks } from "./states"
 import { AtomicUpdateFunction } from "rxdb"
 import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
@@ -21,13 +19,13 @@ import { useSync } from "../rxdb/useSync"
 import { catchError, EMPTY, from, map, switchMap } from "rxjs"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
+import { plugin } from "../plugins/local"
+import { useAsyncQuery } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
-  const [removeBook] = useRxMutation((db, { id }: { id: string }) =>
-    db.book.findOne({ selector: { _id: id } }).remove()
-  )
+  const { db } = useDatabase()
   const dialog = useDialogManager()
   const [lock] = useLock()
   const removeBookFromDataSource = useRemoveBookFromDataSource()
@@ -63,51 +61,35 @@ export const useRemoveBook = () => {
           }
         }
 
-        await Promise.all([removeDownload(id), removeBook({ id })])
+        await Promise.all([
+          removeDownload(id),
+          db?.book.findOne({ selector: { _id: id } }).remove()
+        ])
       } catch (e) {
         Report.error(e)
       }
     },
-    [
-      lock,
-      removeBook,
-      removeDownload,
-      removeBookFromDataSource,
-      network,
-      dialog
-    ]
+    [lock, removeDownload, removeBookFromDataSource, network, dialog, db]
   )
 }
 
 export const useRemoveTagFromBook = () => {
-  const [removeTag] = useRxMutation(
-    (db, { _id, tagId }: { _id: string; tagId: string }) =>
-      db.book
+  const { db } = useDatabase()
+
+  return useAsyncQuery(
+    async ({ _id, tagId }: { _id: string; tagId: string }) =>
+      db?.book
         .findOne({ selector: { _id } })
         .update({ $pullAll: { tags: [tagId] } })
-  )
-
-  return useCallback(
-    (variables: { bookId: string; tagId: string }) => {
-      removeTag({ _id: variables.bookId, tagId: variables.tagId }).catch(
-        Report.error
-      )
-    },
-    [removeTag]
   )
 }
 
 export const useAddTagToBook = () => {
-  const [addTag] = useRxMutation(
-    (db, { _id, tagId }: { _id: string; tagId: string }) =>
-      db.book.findOne({ selector: { _id } }).update({ $push: { tags: tagId } })
-  )
+  const { db } = useDatabase()
 
-  return useCallback(
-    (variables: Parameters<typeof addTag>[0]) => {
-      addTag(variables).catch(Report.error)
-    },
-    [addTag]
+  return useAsyncQuery(
+    async ({ _id, tagId }: { _id: string; tagId: string }) =>
+      db?.book.findOne({ selector: { _id } }).update({ $push: { tags: tagId } })
   )
 }
 
@@ -149,7 +131,7 @@ export const useRefreshBookMetadata = () => {
         .findOne({ selector: { _id: book?.links[0] } })
         .exec()
 
-      if (!firstLink || firstLink?.type === `FILE`) {
+      if (!firstLink || firstLink?.type === plugin.type) {
         Report.warn(`Trying to refresh metadata of file item ${bookId}`)
         return
       }
@@ -195,21 +177,27 @@ export const useRefreshBookMetadata = () => {
   }
 }
 
-export const useAddCollectionToBook = () =>
-  useRxMutation(
-    (db, { _id, collectionId }: { _id: string; collectionId: string }) =>
-      db.book
+export const useAddCollectionToBook = () => {
+  const { db } = useDatabase()
+
+  return useAsyncQuery(
+    async ({ _id, collectionId }: { _id: string; collectionId: string }) =>
+      db?.book
         .findOne({ selector: { _id } })
         .update({ $push: { collections: collectionId } })
   )
+}
 
-export const useRemoveCollectionFromBook = () =>
-  useRxMutation(
-    (db, { _id, collectionId }: { _id: string; collectionId: string }) =>
-      db.book
+export const useRemoveCollectionFromBook = () => {
+  const { db } = useDatabase()
+
+  return useAsyncQuery(
+    async ({ _id, collectionId }: { _id: string; collectionId: string }) =>
+      db?.book
         .findOne({ selector: { _id } })
         .update({ $pullAll: { collections: [collectionId] } })
   )
+}
 
 export const useAddBook = () => {
   const { db: database } = useDatabase()
@@ -279,7 +267,7 @@ export const useAddBookFromFile = () => {
             book: null,
             data: null,
             resourceId: "file",
-            type: `FILE`,
+            type: plugin.type,
             createdAt: new Date().toISOString(),
             modifiedAt: null
           },
@@ -300,26 +288,26 @@ export const useBookIdsSortedBy = (
   ids: string[],
   sorting: "date" | "activity" | "alpha" | undefined
 ) => {
-  const normalizedBooks = useRecoilValue(normalizedBooksState)
+  const { data: normalizedBooks = {} } = useBooks()
 
   return useMemo(() => {
     const books = ids
       .map((id) => normalizedBooks[id])
-      .filter((maybeBook) => !!maybeBook) as Book[]
+      .filter((maybeBook) => !!maybeBook) as BookQueryResult[]
 
     return sortBooksBy(books, sorting).map(({ _id }) => _id)
   }, [normalizedBooks, ids, sorting])
 }
 
 export const useBooksSortedBy = (
-  books: Book[],
+  books: BookQueryResult[],
   sorting: "date" | "activity" | "alpha" | undefined
 ) => {
   return useMemo(() => sortBooksBy(books, sorting), [books, sorting])
 }
 
 const sortBooksBy = (
-  books: Book[],
+  books: BookQueryResult[],
   sorting: "date" | "activity" | "alpha" | undefined
 ) => {
   switch (sorting) {

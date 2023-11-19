@@ -1,63 +1,66 @@
 import { sortByTitleComparator } from "@oboku/shared"
-import { bind } from "@react-rxjs/core"
-import { combineLatest, map, Observable, of, switchMap } from "rxjs"
+import { combineLatest, map, switchMap } from "rxjs"
 import { visibleBooks$ } from "../books/states"
-import { Database } from "../rxdb"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { signal, useQuery } from "reactjrx"
+
+export const searchStateSignal = signal({
+  key: "searchState",
+  default: ""
+})
 
 export const REGEXP_SPECIAL_CHAR =
   /[\!\#\$\%\^\&\*\)\(\+\=\.\<\>\{\}\[\]\:\;\'\"\|\~\`\_\-]/g
 
-export const [useCollections] = bind(
-  (database$: Observable<Database>, search: string | Observable<string>) =>
-    combineLatest([
-      database$.pipe(
-        switchMap((database) => database.collections.obokucollection.find().$)
-      ),
-      typeof search === "string" ? of(search) : search
-    ]).pipe(
-      map(([data, search]) => {
-        if (!search) return []
+export const useCollectionsForSearch = (search: string) =>
+  useQuery({
+    queryKey: ["search", "collections", search],
+    queryFn: () =>
+      combineLatest([
+        latestDatabase$.pipe(
+          switchMap((database) => database.collections.obokucollection.find().$)
+        )
+      ]).pipe(
+        map(([data]) => {
+          if (!search) return []
 
-        return data
-          .filter(({ name }) => {
-            const searchRegex = new RegExp(
-              search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
-              "i"
-            )
+          return data
+            .filter(({ name }) => {
+              const searchRegex = new RegExp(
+                search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
+                "i"
+              )
 
-            const indexOfFirstMatch = name?.search(searchRegex) || 0
-            return indexOfFirstMatch >= 0
-          })
-          .sort((a, b) => sortByTitleComparator(a.name || "", b.name || ""))
-      }),
-      map((items) => items.map(({ _id }) => _id))
-    ),
-  []
-)
+              const indexOfFirstMatch = name?.search(searchRegex) || 0
+              return indexOfFirstMatch >= 0
+            })
+            .sort((a, b) => sortByTitleComparator(a.name || "", b.name || ""))
+        }),
+        map((items) => items.map(({ _id }) => _id))
+      )
+  })
 
-export const [useBooks] = bind(
-  (database$: Observable<Database>, search: string | Observable<string>) =>
-    combineLatest([
-      visibleBooks$(database$),
-      typeof search === "string" ? of(search) : search
-    ]).pipe(
-      map(([data, search]) => {
-        if (!search) return []
+export const useBooksForSearch = (search: string) =>
+  useQuery({
+    queryKey: ["search", "books", search],
+    queryFn: () =>
+      combineLatest([visibleBooks$]).pipe(
+        map(([data]) => {
+          if (!search) return []
 
-        return data
-          .filter(({ title }) => {
-            const searchRegex = new RegExp(
-              search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
-              "i"
-            )
+          return data
+            .filter(({ title }) => {
+              const searchRegex = new RegExp(
+                search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
+                "i"
+              )
 
-            const indexOfFirstMatch = title?.search(searchRegex) || 0
+              const indexOfFirstMatch = title?.search(searchRegex) || 0
 
-            return indexOfFirstMatch >= 0
-          })
-          .sort((a, b) => sortByTitleComparator(a.title || "", b.title || ""))
-      }),
-      map((items) => items.map(({ _id }) => _id))
-    ),
-  []
-)
+              return indexOfFirstMatch >= 0
+            })
+            .sort((a, b) => sortByTitleComparator(a.title || "", b.title || ""))
+        }),
+        map((items) => items.map(({ _id }) => _id))
+      )
+  })

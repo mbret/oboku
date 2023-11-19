@@ -1,46 +1,38 @@
-import React, { FC, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { Backdrop, CircularProgress, useTheme } from "@mui/material"
-import { useRecoilCallback, useRecoilValue } from "recoil"
-import { atom, selector } from "recoil"
 import { useCSS } from "../common/utils"
-import { createSignal } from "@react-rxjs/utils"
+import { signal, trigger, useSignalValue } from "reactjrx"
 
 type Key = string
 
-const lockState = atom<Key[]>({
+const lockState = signal<Key[]>({
   key: "lock",
   default: []
 })
 
-export const isLockedState = selector({
-  key: "isLockedState",
-  get: ({ get }) => !!get(lockState).length
-})
+export const useIsLockedState = () => {
+  return !!useSignalValue(lockState).length
+}
 
-export const [lock$, lock] = createSignal<string>()
-export const [unlock$, unlock] = createSignal<string>()
+export const [lock$, lock] = trigger<string>()
+export const [unlock$, unlock] = trigger<string>()
 
 export const useLock = () => {
-  const unlock = useRecoilCallback(
-    ({ set }) =>
-      (key: Key) => {
-        set(lockState, (old) => {
-          const index = old.findIndex((k) => k === key)
+  const unlock = useCallback((key: Key) => {
+    lockState.setValue((old) => {
+      const index = old.findIndex((k) => k === key)
 
-          return [...old.slice(0, index), ...old.slice(index + 1)]
-        })
-      },
-    []
-  )
+      return [...old.slice(0, index), ...old.slice(index + 1)]
+    })
+  }, [])
 
-  const lock = useRecoilCallback(
-    ({ set }) =>
-      (key: Key = Date.now().toString()) => {
-        set(lockState, (old) => [...old, key])
+  const lock = useCallback(
+    (key: Key = Date.now().toString()) => {
+      lockState.setValue((old) => [...old, key])
 
-        return () => unlock(key)
-      },
-    []
+      return () => unlock(key)
+    },
+    [unlock]
   )
 
   return [lock, unlock] as [typeof lock, typeof unlock]
@@ -48,7 +40,7 @@ export const useLock = () => {
 
 export const BlockingBackdrop: FC<{}> = () => {
   const classes = useStyles()
-  const open = useRecoilValue(isLockedState)
+  const open = useIsLockedState()
   const [active, setActive] = useState(false)
   const theme = useTheme()
   const [lock, unlock] = useLock()

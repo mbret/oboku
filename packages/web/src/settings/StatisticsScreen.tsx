@@ -1,12 +1,20 @@
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Box, List, ListItem, ListItemText, ListSubheader } from "@mui/material"
-import { useRecoilValue } from "recoil"
-import { bookIdsState } from "../books/states"
-import { collectionsAsArrayState } from "../collections/states"
+import { useBookIdsState } from "../books/states"
+import { useCollectionsAsArrayState } from "../collections/states"
+import { libraryStateSignal } from "../library/states"
+import { useLocalSettingsState } from "./states"
+import { useProtectedTagIds } from "../tags/helpers"
+import { useSignalValue } from "reactjrx"
 
 export const StatisticsScreen = () => {
-  const bookIds = useRecoilValue(bookIdsState)
-  const collectionsAsArray = useRecoilValue(collectionsAsArrayState)
+  const bookIds = useBookIdsState()
+  const libraryState = useSignalValue(libraryStateSignal)
+  const collectionsAsArray = useCollectionsAsArrayState({
+    libraryState,
+    localSettingsState: useLocalSettingsState(),
+    protectedTagIds: useProtectedTagIds().data
+  })
 
   return (
     <>
