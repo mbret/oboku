@@ -3,6 +3,7 @@ import {
   BehaviorSubject,
   catchError,
   EMPTY,
+  filter,
   from,
   merge,
   Observable,
@@ -11,7 +12,7 @@ import {
   takeUntil,
   tap
 } from "rxjs"
-import { isNotNullOrUndefined } from "../../common/isNotNullOrUndefined"
+import { isDefined } from "reactjrx"
 
 type CouchDbReplication = ReturnType<RxCollection[`syncCouchDB`]>
 const FIELD = `rx_model`
@@ -31,7 +32,7 @@ export const syncCollection = (
   const error$ = merge(
     internalError$,
     couchDbReplication$.pipe(
-      isNotNullOrUndefined(),
+      filter(isDefined),
       switchMap((state) => state?.error$)
       // tap((value) => {
       //   console.log(`sync error$ ${collection.name}`, { value })
@@ -40,7 +41,7 @@ export const syncCollection = (
   )
 
   const alive$ = couchDbReplication$.pipe(
-    isNotNullOrUndefined(),
+    filter(isDefined),
     switchMap((state) => state?.alive$)
     // tap((value) => {
     //   console.log(`sync alive$ ${collection.name}`, { value })
@@ -48,7 +49,7 @@ export const syncCollection = (
   )
 
   const active$ = couchDbReplication$.pipe(
-    isNotNullOrUndefined(),
+    filter(isDefined),
     switchMap((state) => state?.active$)
     // tap((value) => {
     //   console.log(`sync active$ ${collection.name}`, { value })
@@ -56,7 +57,7 @@ export const syncCollection = (
   )
 
   const change$: Observable<any> = couchDbReplication$.pipe(
-    isNotNullOrUndefined(),
+    filter(isDefined),
     switchMap((state) => state.change$)
     // tap((value) => {
     //   console.log(`sync change$ ${collection.name}`, { value })
@@ -65,7 +66,7 @@ export const syncCollection = (
 
   const complete$: Observable<boolean | { pull: {}; push: {} }> =
     couchDbReplication$.pipe(
-      isNotNullOrUndefined(),
+      filter(isDefined),
       switchMap((state) => state.complete$)
       // tap((value) => {
       //   console.log(`sync complete$ ${collection.name}`, { value })

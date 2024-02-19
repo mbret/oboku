@@ -1,7 +1,7 @@
 import { TagsDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
-import { useAsyncQuery } from "reactjrx"
+import { useMutation } from "reactjrx"
 import { map, switchMap } from "rxjs"
 import { useQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
@@ -10,8 +10,8 @@ import { Database } from "../rxdb"
 export const useCreateTag = () => {
   const { db } = useDatabase()
 
-  return useAsyncQuery(
-    async ({ name }: { name: string }) =>
+  return useMutation({
+    mutationFn: async ({ name }: { name: string }) =>
       db?.tag.insertSafe({
         name,
         books: [],
@@ -19,7 +19,7 @@ export const useCreateTag = () => {
         createdAt: new Date().toISOString(),
         modifiedAt: null
       })
-  )
+  })
 }
 
 export const useUpdateTag = () => {
@@ -101,15 +101,18 @@ export const useTag = (id: string) =>
       )
   })
 
-export const useTags = () => useQuery({ queryFn: tags$ })
+export const useTags = () => useQuery({ queryFn: tags$, queryKey: ["tags"] })
 
-export const useTagsByIds = () => useQuery({ queryFn: tagsByIds$ })
+export const useTagsByIds = () =>
+  useQuery({ queryFn: tagsByIds$, queryKey: ["tagsById"] })
 
-export const useProtectedTags = () => useQuery({ queryFn: protectedTags$ })
+export const useProtectedTags = () =>
+  useQuery({ queryFn: protectedTags$, queryKey: ["protectedTags"] })
 
 export const useTagIds = () =>
   useQuery({
-    queryFn: () => tags$.pipe(map((tags) => tags.map(({ _id }) => _id)))
+    queryFn: () => tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
+    queryKey: ['tagsIds']
   })
 
 export const blurredTags$ = tags$.pipe(
@@ -118,11 +121,13 @@ export const blurredTags$ = tags$.pipe(
 
 export const useBlurredTagIds = () =>
   useQuery({
-    queryFn: () => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id)))
+    queryFn: () => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
+    queryKey: ['blurredTagIds']
   })
 
 export const useProtectedTagIds = () =>
   useQuery({
     queryFn: () =>
-      protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id)))
+      protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
+      queryKey: ['protectedTagIds']
   })

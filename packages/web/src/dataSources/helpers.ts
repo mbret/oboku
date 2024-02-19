@@ -8,10 +8,9 @@ import { useDialogManager } from "../dialog"
 import { useNetworkState } from "react-use"
 import { useSync } from "../rxdb/useSync"
 import { AtomicUpdateFunction } from "rxdb"
-import { catchError, EMPTY, from, switchMap, map, of } from "rxjs"
-import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
+import { catchError, EMPTY, from, switchMap, map, of, filter } from "rxjs"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
-import { useAsyncQuery } from "reactjrx"
+import { isDefined, useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 
 export const useSynchronizeDataSource = () => {
@@ -33,7 +32,7 @@ export const useSynchronizeDataSource = () => {
 
       from(database.datasource.findOne({ selector: { _id } }).exec())
         .pipe(
-          isNotNullOrUndefined(),
+          filter(isDefined),
           switchMap((dataSource) => synchronizeDataSource(dataSource)),
           switchMap((data) => {
             return atomicUpdateDataSource(_id, (old) => {
@@ -111,10 +110,10 @@ export const useCreateDataSource = () => {
 export const useRemoveDataSource = () => {
   const { db } = useDatabase()
 
-  return useAsyncQuery(
-    async ({ id }: { id: string }) =>
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) =>
       db?.datasource.findOne({ selector: { _id: id } }).remove()
-  )
+  })
 }
 
 export const useAtomicUpdateDataSource = () => {
@@ -123,11 +122,11 @@ export const useAtomicUpdateDataSource = () => {
   const atomicUpdateDataSource = useCallback(
     (id: string, mutationFunction: AtomicUpdateFunction<DataSourceDocType>) =>
       of(database).pipe(
-        isNotNullOrUndefined(),
+        filter(isDefined),
         switchMap((db) =>
           from(db.datasource.findOne({ selector: { _id: id } }).exec())
         ),
-        isNotNullOrUndefined(),
+        filter(isDefined),
         switchMap((item) => from(item.atomicUpdate(mutationFunction)))
       ),
     [database]

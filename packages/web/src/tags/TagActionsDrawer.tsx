@@ -103,7 +103,7 @@ export const TagActionsDrawer: FC<{
           <ListItemButton
             onClick={() => {
               onClose()
-              openWith && removeTag({ id: openWith })
+              openWith && removeTag.next({ id: openWith })
             }}
           >
             <ListItemIcon>

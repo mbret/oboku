@@ -32,7 +32,7 @@ export const useAccountSettings = (
      * We always want instant feedback for these settings for the user.
      * Since the query is a live stream the data are always fresh anyway.
      */
-    cacheTime: Infinity,
+    gcTime: Infinity,
     ...options
   })
 

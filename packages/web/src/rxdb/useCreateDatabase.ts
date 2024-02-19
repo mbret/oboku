@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
 import { Database, createDatabase } from "./databases"
-import { signal } from "reactjrx"
-import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
-import { shareReplay } from "rxjs"
+import { isDefined, signal } from "reactjrx"
+import { filter, shareReplay } from "rxjs"
 
 /**
  * Make sure to use lazy one time db creation
@@ -15,7 +14,7 @@ export const databaseSignal = signal<Database | undefined>({
 })
 
 export const latestDatabase$ = databaseSignal.subject.pipe(
-  isNotNullOrUndefined(),
+  filter(isDefined),
   shareReplay(1)
 )
 

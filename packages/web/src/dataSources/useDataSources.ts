@@ -1,6 +1,5 @@
-import { switchMap } from "rxjs"
-import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
-import { useObserve, useSignalValue } from "reactjrx"
+import { filter, switchMap } from "rxjs"
+import { isDefined, useObserve, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { libraryStateSignal } from "../library/states"
 
@@ -10,7 +9,7 @@ export const useDataSources = () => {
   return useObserve(
     () =>
       latestDatabase$.pipe(
-        isNotNullOrUndefined(),
+        filter(isDefined),
         switchMap((db) => {
           if (isLibraryUnlocked) {
             return db.datasource.find().$

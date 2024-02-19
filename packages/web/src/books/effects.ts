@@ -8,9 +8,9 @@ import {
   tap,
   mergeMap,
   withLatestFrom,
-  of
+  of,
+  filter
 } from "rxjs"
-import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
 import { Report } from "../debug/report.shared"
 import { useRemoveDanglingLinks } from "../links/helpers"
 import { useDatabase } from "../rxdb"
@@ -21,7 +21,7 @@ import {
   upsertBookLinkEnd$
 } from "./triggers"
 import { useRefreshBookMetadata } from "./helpers"
-import { useSubscribeEffect } from "reactjrx"
+import { isDefined, useSubscribeEffect } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 
 const useUpsertBookLinkActionEffect = () => {
@@ -117,7 +117,7 @@ const useUpsertBookLinkActionEffect = () => {
             withLatestFrom(latestDatabase$),
             mergeMap(([{ id, isNotInterested }, db]) =>
               from(db.book.safeFindOne({ selector: { _id: id } }).exec()).pipe(
-                isNotNullOrUndefined(),
+                filter(isDefined),
                 switchMap((book) =>
                   from(
                     book.atomicUpdate((data) => ({

@@ -28,7 +28,7 @@ import { difference } from "lodash"
 import Alert from "@mui/material/Alert"
 import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
-import { useAsyncQuery, useSignalValue } from "reactjrx"
+import { useMutation, useSignalValue } from "reactjrx"
 import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
 import { useProtectedTagIds } from "../tags/helpers"
 import { libraryStateSignal } from "../library/states"
@@ -56,21 +56,23 @@ export const ManageStorageScreen = () => {
     () => bookIds.filter((id) => visibleBookIds.includes(id)),
     [bookIds, visibleBookIds]
   )
-  const { mutate: onDeleteAllDownloadsClick } = useAsyncQuery(async () => {
-    const isConfirmed = confirm(
-      "Are you sure you want to delete all downloads at once?"
-    )
+  const { mutate: onDeleteAllDownloadsClick } = useMutation({
+    mutationFn: async () => {
+      const isConfirmed = confirm(
+        "Are you sure you want to delete all downloads at once?"
+      )
 
-    if (isConfirmed) {
-      await deleteAllDownloadedFiles(bookIds)
+      if (isConfirmed) {
+        await deleteAllDownloadedFiles(bookIds)
 
-      refetchDownloadedFilesInfo()
+        refetchDownloadedFilesInfo()
+      }
     }
   })
 
   const removeExtraBooks = useCallback(() => {
     Promise.all(extraDownloadFilesIds.map((id) => removeDownloadFile(id)))
-      .then(refetchDownloadedFilesInfo)
+      .then(() => refetchDownloadedFilesInfo())
       .catch(Report.error)
   }, [refetchDownloadedFilesInfo, extraDownloadFilesIds, removeDownloadFile])
 

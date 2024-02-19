@@ -1,7 +1,8 @@
 import { FC, useCallback, useEffect, useState } from "react"
 import { Backdrop, CircularProgress, useTheme } from "@mui/material"
 import { useCSS } from "../common/utils"
-import { signal, trigger, useSignalValue } from "reactjrx"
+import { signal, useSignalValue } from "reactjrx"
+import { ObservedValueOf, Subject } from "rxjs"
 
 type Key = string
 
@@ -14,8 +15,19 @@ export const useIsLockedState = () => {
   return !!useSignalValue(lockState).length
 }
 
-export const [lock$, lock] = trigger<string>()
-export const [unlock$, unlock] = trigger<string>()
+const lockSubject = new Subject<string>()
+
+export const lock$ = lockSubject.asObservable()
+
+export const lock = (options: ObservedValueOf<typeof lockSubject>) =>
+  lockSubject.next(options)
+
+const unlockSubject = new Subject<string>()
+
+export const unlock$ = unlockSubject.asObservable()
+
+export const unlock = (options: ObservedValueOf<typeof unlockSubject>) =>
+  unlockSubject.next(options)
 
 export const useLock = () => {
   const unlock = useCallback((key: Key) => {

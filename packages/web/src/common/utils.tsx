@@ -51,7 +51,7 @@ export const useCSS = <T extends React.CSSProperties, K>(
   css: () => { [key in keyof K]: T },
   deps?: React.DependencyList
 ) => {
-  return useMemo(css, deps)
+  return useMemo(css, deps ?? [])
 }
 
 /**

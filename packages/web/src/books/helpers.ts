@@ -20,7 +20,7 @@ import { catchError, EMPTY, from, map, switchMap } from "rxjs"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { plugin } from "../plugins/local"
-import { useAsyncQuery } from "reactjrx"
+import { useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 
 export const useRemoveBook = () => {
@@ -76,21 +76,21 @@ export const useRemoveBook = () => {
 export const useRemoveTagFromBook = () => {
   const { db } = useDatabase()
 
-  return useAsyncQuery(
-    async ({ _id, tagId }: { _id: string; tagId: string }) =>
+  return useMutation({
+    mutationFn: async ({ _id, tagId }: { _id: string; tagId: string }) =>
       db?.book
         .findOne({ selector: { _id } })
         .update({ $pullAll: { tags: [tagId] } })
-  )
+  })
 }
 
 export const useAddTagToBook = () => {
   const { db } = useDatabase()
 
-  return useAsyncQuery(
-    async ({ _id, tagId }: { _id: string; tagId: string }) =>
+  return useMutation({
+    mutationFn: async ({ _id, tagId }: { _id: string; tagId: string }) =>
       db?.book.findOne({ selector: { _id } }).update({ $push: { tags: tagId } })
-  )
+  })
 }
 
 export const useAtomicUpdateBook = () => {
@@ -180,23 +180,35 @@ export const useRefreshBookMetadata = () => {
 export const useAddCollectionToBook = () => {
   const { db } = useDatabase()
 
-  return useAsyncQuery(
-    async ({ _id, collectionId }: { _id: string; collectionId: string }) =>
+  return useMutation({
+    mutationFn: async ({
+      _id,
+      collectionId
+    }: {
+      _id: string
+      collectionId: string
+    }) =>
       db?.book
         .findOne({ selector: { _id } })
         .update({ $push: { collections: collectionId } })
-  )
+  })
 }
 
 export const useRemoveCollectionFromBook = () => {
   const { db } = useDatabase()
 
-  return useAsyncQuery(
-    async ({ _id, collectionId }: { _id: string; collectionId: string }) =>
+  return useMutation({
+    mutationFn: async ({
+      _id,
+      collectionId
+    }: {
+      _id: string
+      collectionId: string
+    }) =>
       db?.book
         .findOne({ selector: { _id } })
         .update({ $pullAll: { collections: [collectionId] } })
-  )
+  })
 }
 
 export const useAddBook = () => {

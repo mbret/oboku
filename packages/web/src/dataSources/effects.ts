@@ -4,12 +4,12 @@ import {
   from,
   mergeMap,
   EMPTY,
-  withLatestFrom
+  withLatestFrom,
+  filter,
 } from "rxjs"
-import { useSubscribeEffect } from "reactjrx"
+import { isDefined, useSubscribeEffect } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { toggleDatasourceProtected$ } from "./triggers"
-import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
 import { Report } from "../debug/report.shared"
 
 const useToggleDataSourceProtectedAction = () => {
@@ -19,7 +19,7 @@ const useToggleDataSourceProtectedAction = () => {
         withLatestFrom(latestDatabase$),
         mergeMap(([id, db]) =>
           from(db.datasource.findOne({ selector: { _id: id } }).exec()).pipe(
-            isNotNullOrUndefined(),
+            filter(isDefined),
             switchMap((doc) =>
               from(
                 doc?.atomicPatch({

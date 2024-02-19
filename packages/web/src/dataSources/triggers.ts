@@ -1,4 +1,10 @@
-import { trigger } from "reactjrx"
+import { ObservedValueOf, Subject } from "rxjs"
 
-export const [toggleDatasourceProtected$, toggleDatasourceProtected] =
-  trigger<string>()
+const toggleDatasourceProtectedSubject = new Subject<string>()
+
+export const toggleDatasourceProtected = (
+  options: ObservedValueOf<typeof toggleDatasourceProtectedSubject>
+) => toggleDatasourceProtectedSubject.next(options)
+
+export const toggleDatasourceProtected$ =
+  toggleDatasourceProtectedSubject.asObservable()

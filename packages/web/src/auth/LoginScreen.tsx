@@ -8,11 +8,14 @@ import { useSignIn } from "./useSignIn"
 import { ErrorMessage, isCancelError } from "../errors"
 import { OrDivider } from "../common/OrDivider"
 import { links } from "@oboku/shared"
-import { useAsyncQuery } from "reactjrx"
+import { useMutation } from "reactjrx"
 
 export const LoginScreen = () => {
   const { signIn } = useSignIn()
-  const { mutate, isLoading, error } = useAsyncQuery(signIn, "switch")
+  const { mutate, isPending, error } = useMutation({
+    mutationFn: signIn,
+    mapOperator: "switch"
+  })
   const theme = useTheme()
   const { t } = useTranslation()
 
@@ -40,7 +43,7 @@ export const LoginScreen = () => {
         size="large"
         fullWidth
         startIcon={<Google />}
-        disabled={isLoading}
+        disabled={isPending}
       >
         {t("authScreen.sign.google")}
       </Button>

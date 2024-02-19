@@ -1,19 +1,19 @@
 import { Snackbar } from "@mui/material"
 import { memo } from "react"
-import { delay, merge, of, switchMap, throttleTime } from "rxjs"
+import { delay, filter, merge, of, switchMap, throttleTime } from "rxjs"
 import {
   READER_NOTIFICATION_THROTTLE_TIME,
   READER_NOTIFICATION_TIME_TO_SCREEN
 } from "../constants"
 import { readerStateSignal } from "./states"
-import { isNotNullOrUndefined } from "../common/isNotNullOrUndefined"
-import { useQuery } from "reactjrx"
+import { isDefined, useQuery } from "reactjrx"
 
 const useNotification = () =>
   useQuery({
+    queryKey: ['notification'],
     queryFn: () =>
       readerStateSignal.subject.pipe(
-        isNotNullOrUndefined(),
+        filter(isDefined),
         switchMap((reader) => reader.hammerGesture.changes$),
         throttleTime(READER_NOTIFICATION_THROTTLE_TIME, undefined, {
           leading: false,
