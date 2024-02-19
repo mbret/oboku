@@ -25,7 +25,7 @@ export const ManageTagBooksDialog: FC<{}> = () => {
     normalizedBookDownloadsStateSignal
   )
 
-  const books = useBooksAsArrayState({
+  const {data: books} = useBooksAsArrayState({
     libraryState,
     normalizedBookDownloadsState,
     protectedTagIds: useProtectedTagIds().data

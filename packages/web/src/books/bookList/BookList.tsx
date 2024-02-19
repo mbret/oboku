@@ -1,11 +1,10 @@
-import React, { useCallback, FC, useMemo, memo, useEffect } from "react"
+import React, { useCallback, FC, memo } from "react"
 import { Box, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { BookListGridItem } from "./BookListGridItem"
 import { LibrarySorting } from "../../library/states"
 import { LibraryViewMode } from "../../rxdb"
 import { BookListListItem } from "./BookListListItem"
-import { useCSS } from "../../common/utils"
 import { ReactWindowList } from "../../lists/ReactWindowList"
 
 export const BookList: FC<{
@@ -35,7 +34,6 @@ export const BookList: FC<{
     withBookActions
   } = props
   const windowSize = useWindowSize()
-  const classes = useStyle({ isHorizontal })
   const theme = useTheme()
   const dynamicNumberOfItems = Math.round(windowSize.width / 200)
   const itemsPerRow =
@@ -82,14 +80,14 @@ export const BookList: FC<{
     [viewMode, itemHeight, listItemMargin, onItemClick, withBookActions]
   )
 
-  const containerStyle = useMemo(
-    () => ({ ...classes.container, ...style }),
-    [style, classes]
-  )
-
   if (props.static) {
     return (
-      <Box style={containerStyle} flexDirection="column">
+      <Box
+        style={style}
+        px={isHorizontal ? 0 : 1}
+        display="flex"
+        flexDirection="column"
+      >
         {data.map((item) => (
           <Box key={item} height={itemHeight}>
             {rowRenderer(item)}
@@ -100,7 +98,7 @@ export const BookList: FC<{
   }
 
   return (
-    <div style={containerStyle}>
+    <Box style={style} px={isHorizontal ? 0 : 1} display="flex">
       <ReactWindowList
         data={data}
         rowRenderer={rowRenderer}
@@ -113,21 +111,6 @@ export const BookList: FC<{
         // only used when list layout
         itemHeight={itemHeight}
       />
-    </div>
+    </Box>
   )
 })
-
-const useStyle = ({ isHorizontal }: { isHorizontal: boolean }) => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        paddingLeft: isHorizontal ? 0 : theme.spacing(1),
-        paddingRight: isHorizontal ? 0 : theme.spacing(1),
-        display: "flex"
-      }
-    }),
-    [theme, isHorizontal]
-  )
-}

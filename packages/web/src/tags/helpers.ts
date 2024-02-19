@@ -2,7 +2,7 @@ import { TagsDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
 import { useMutation } from "reactjrx"
-import { map, switchMap } from "rxjs"
+import { delay, first, ignoreElements, map, switchMap, tap } from "rxjs"
 import { useQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { Database } from "../rxdb"
@@ -98,21 +98,28 @@ export const useTag = (id: string) =>
         switchMap((db) => {
           return db.tag.findOne(id).$
         })
-      )
+      ),
+    staleTime: Infinity
   })
 
-export const useTags = () => useQuery({ queryFn: tags$, queryKey: ["tags"] })
+export const useTags = () =>
+  useQuery({ queryFn: tags$, queryKey: ["tags"], staleTime: Infinity })
 
 export const useTagsByIds = () =>
-  useQuery({ queryFn: tagsByIds$, queryKey: ["tagsById"] })
+  useQuery({ queryFn: tagsByIds$, queryKey: ["tagsById"], staleTime: Infinity })
 
 export const useProtectedTags = () =>
-  useQuery({ queryFn: protectedTags$, queryKey: ["protectedTags"] })
+  useQuery({
+    queryFn: protectedTags$,
+    queryKey: ["protectedTags"],
+    staleTime: Infinity
+  })
 
 export const useTagIds = () =>
   useQuery({
     queryFn: () => tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    queryKey: ['tagsIds']
+    queryKey: ["tagsIds"],
+    staleTime: Infinity
   })
 
 export const blurredTags$ = tags$.pipe(
@@ -122,12 +129,17 @@ export const blurredTags$ = tags$.pipe(
 export const useBlurredTagIds = () =>
   useQuery({
     queryFn: () => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    queryKey: ['blurredTagIds']
+    queryKey: ["blurredTagIds"],
+    staleTime: Infinity,
   })
 
 export const useProtectedTagIds = () =>
   useQuery({
     queryFn: () =>
-      protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-      queryKey: ['protectedTagIds']
+      {
+        console.log("useProtectedTagIds.fetch")
+        return protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id)))
+      },
+    queryKey: ["protectedTagIds"],
+    staleTime: Infinity,
   })

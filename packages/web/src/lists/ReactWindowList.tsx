@@ -1,4 +1,13 @@
-import { ComponentProps, FC, forwardRef, memo, useMemo, useRef } from "react"
+import {
+  ComponentProps,
+  FC,
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef
+} from "react"
 import {
   FixedSizeGrid,
   GridOnScrollProps,
@@ -223,6 +232,35 @@ const List = memo(
         [renderHeader, headerHeight]
       )
 
+      const renderItem = useCallback(({ columnIndex, rowIndex, style, data }) => {
+        const itemIndex = rowIndex * columnCount + columnIndex
+        const item = data[itemIndex]
+
+        return (
+          <div
+            key={rowIndex}
+            style={{
+              ...style,
+              ...(headerHeight && {
+                top: `${
+                  parseFloat(style.top?.toString() || "0") + headerHeight
+                }px`
+              })
+            }}
+          >
+            <div
+              style={{
+                height: "100%",
+                width: "100%",
+                maxHeight: computedItemHeight
+              }}
+            >
+              {item && rowRenderer(item, rowIndex)}
+            </div>
+          </div>
+        )
+      }, [columnCount, headerHeight, computedItemHeight, rowRenderer])
+
       return (
         <>
           <FixedSizeGrid
@@ -243,34 +281,7 @@ const List = memo(
             itemData={data}
             {...rest}
           >
-            {({ columnIndex, rowIndex, style, data }) => {
-              const itemIndex = rowIndex * columnCount + columnIndex
-              const item = data[itemIndex]
-
-              return (
-                <div
-                  key={rowIndex}
-                  style={{
-                    ...style,
-                    ...(headerHeight && {
-                      top: `${
-                        parseFloat(style.top?.toString() || "0") + headerHeight
-                      }px`
-                    })
-                  }}
-                >
-                  <div
-                    style={{
-                      height: "100%",
-                      width: "100%",
-                      maxHeight: computedItemHeight
-                    }}
-                  >
-                    {item && rowRenderer(item, rowIndex)}
-                  </div>
-                </div>
-              )
-            }}
+            {renderItem}
           </FixedSizeGrid>
           {displayScrollerButtons && (
             <>

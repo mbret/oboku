@@ -10,7 +10,7 @@ import {
   MenuBookRounded,
   MoreVert
 } from "@mui/icons-material"
-import { bookActionDrawerSignal } from "../BookActionsDrawer"
+import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { normalizedBookDownloadsStateSignal } from "../../download/states"

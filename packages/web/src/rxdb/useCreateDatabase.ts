@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
 import { Database, createDatabase } from "./databases"
 import { isDefined, signal } from "reactjrx"
-import { filter, shareReplay } from "rxjs"
+import { filter, first, shareReplay } from "rxjs"
 
 /**
  * Make sure to use lazy one time db creation

@@ -37,12 +37,14 @@ export const useCollectionsForSearch = (search: string) =>
             .sort((a, b) => sortByTitleComparator(a.name || "", b.name || ""))
         }),
         map((items) => items.map(({ _id }) => _id))
-      )
+      ),
+      staleTime: Infinity
   })
 
 export const useBooksForSearch = (search: string) =>
   useQuery({
     queryKey: ["search", "books", search],
+    staleTime: Infinity,
     queryFn: () =>
       combineLatest([visibleBooks$]).pipe(
         map(([data]) => {

@@ -21,7 +21,7 @@ import {
   useDownloadedBookWithUnsafeProtectedIdsState,
   useVisibleBookIdsState
 } from "../books/states"
-import { bookActionDrawerSignal } from "../books/BookActionsDrawer"
+import { bookActionDrawerSignal } from "../books/drawer/BookActionsDrawer"
 import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { difference } from "lodash"

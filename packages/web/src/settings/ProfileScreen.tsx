@@ -30,7 +30,6 @@ import {
 } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { useStorageUse } from "./useStorageUse"
-import { LoadLibraryFromJsonDialog } from "../debug/LoadLibraryFromJsonDialog"
 import { LockActionBehindUserPasswordDialog } from "../auth/LockActionBehindUserPasswordDialog"
 import { useSignOut } from "../auth/helpers"
 import { useAccountSettings, useUpdateContentPassword } from "./helpers"
@@ -244,9 +243,6 @@ export const ProfileScreen = () => {
             <ListSubheader disableSticky>Developer options</ListSubheader>
           }
         >
-          <ListItem button onClick={() => setIsLoadLibraryDebugOpened(true)}>
-            <ListItemText primary="Load library from JSON file" />
-          </ListItem>
           <ListItem button onClick={toggleDebug}>
             <ListItemText
               primary={
@@ -261,10 +257,6 @@ export const ProfileScreen = () => {
             <ListItemText primary="Delete my data" />
           </ListItem> */}
         </List>
-        <LoadLibraryFromJsonDialog
-          open={isLoadLibraryDebugOpened}
-          onClose={() => setIsLoadLibraryDebugOpened(false)}
-        />
       </>
       <List
         subheader={

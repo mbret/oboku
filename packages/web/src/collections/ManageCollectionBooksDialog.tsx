@@ -26,7 +26,7 @@ export const ManageCollectionBooksDialog: FC<{
     localSettingsState: useLocalSettingsState(),
     protectedTagIds: useProtectedTagIds().data
   })
-  const books = useBooksAsArrayState({
+  const {data: books} = useBooksAsArrayState({
     libraryState,
     normalizedBookDownloadsState: useSignalValue(
       normalizedBookDownloadsStateSignal

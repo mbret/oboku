@@ -20,11 +20,13 @@ export const getCollectionsByIds = async (database: Database) => {
 export const useCollections = () => {
   return useQuery({
     queryKey: ["db", "get", "collections"],
-    queryFn: () =>
-      latestDatabase$.pipe(
+    queryFn: () => {
+      return latestDatabase$.pipe(
         switchMap((db) => db.collections.obokucollection.find({}).$),
         map((entries) => keyBy(entries, "_id"))
       )
+    },
+    staleTime: Infinity
   })
 }
 

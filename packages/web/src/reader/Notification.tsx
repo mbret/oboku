@@ -10,7 +10,7 @@ import { isDefined, useQuery } from "reactjrx"
 
 const useNotification = () =>
   useQuery({
-    queryKey: ['notification'],
+    queryKey: ["notification"],
     queryFn: () =>
       readerStateSignal.subject.pipe(
         filter(isDefined),
@@ -25,7 +25,8 @@ const useNotification = () =>
             of(undefined).pipe(delay(READER_NOTIFICATION_TIME_TO_SCREEN))
           )
         )
-      )
+      ),
+    staleTime: Infinity
   })
 
 export const Notification = memo(() => {

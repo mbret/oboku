@@ -31,6 +31,7 @@ export const useAccountSettings = (
      * Since the query is a live stream the data are always fresh anyway.
      */
     gcTime: Infinity,
+    staleTime: Infinity,
     ...options
   })
 

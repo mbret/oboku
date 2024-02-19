@@ -39,7 +39,12 @@ const pagination$ = readerStateSignal.subject.pipe(
   switchMap((reader) => reader?.pagination$ ?? EMPTY)
 )
 
-export const usePagination = () => useQuery({ queryFn: pagination$, queryKey: ['pagination'] })
+export const usePagination = () =>
+  useQuery({
+    queryFn: pagination$,
+    queryKey: ["pagination"],
+    staleTime: Infinity
+  })
 
 export const useCurrentPage = () => {
   const reader = useSignalValue(readerStateSignal)
