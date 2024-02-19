@@ -3,7 +3,6 @@ import { useDatabase } from "../rxdb"
 import { useQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { switchMap } from "rxjs"
-import { useState } from "react"
 
 export const useUpdateContentPassword = () => {
   const { db } = useDatabase()
@@ -21,7 +20,6 @@ export const useUpdateContentPassword = () => {
 export const useAccountSettings = (
   options: {
     enabled?: boolean
-    onSuccess?: () => void
   } = {}
 ) => {
   const data = useQuery({
@@ -37,17 +35,4 @@ export const useAccountSettings = (
   })
 
   return data
-}
-
-export const usePrefetchAccountSettings = () => {
-  const [prefetched, setPrefetched] = useState(false)
-
-  useAccountSettings({
-    enabled: !prefetched,
-    onSuccess: () => {
-      setPrefetched(true)
-    }
-  })
-
-  return prefetched
 }

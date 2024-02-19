@@ -1,6 +1,26 @@
-import { memo, useEffect } from "react"
-import { usePrefetchAccountSettings } from "./settings/helpers"
+import { memo, useEffect, useState } from "react"
+import {
+  useAccountSettings,
+} from "./settings/helpers"
 import { useLiveRef } from "reactjrx"
+
+const usePrefetchAccountSettings = () => {
+  const [prefetched, setPrefetched] = useState(false)
+
+  const { data, status } = useAccountSettings({
+    enabled: !prefetched
+  })
+
+  const hasData = status === "success"
+
+  useEffect(() => {
+    if (hasData) {
+      setPrefetched(true)
+    }
+  }, [hasData])
+
+  return data !== undefined
+}
 
 /**
  * For user convenience and sense of performance we will preload some queries

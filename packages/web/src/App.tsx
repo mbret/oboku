@@ -41,13 +41,13 @@ const queryClient = new QueryClient()
 
 export function App() {
   const [loading, setLoading] = useState({
-    hydrate: true,
+    isHydrating: true,
     preloadQueries: true
   })
   const [newServiceWorker, setNewServiceWorker] = useState<
     ServiceWorker | undefined
   >(undefined)
-  const isAppReady = !loading.hydrate && !loading.preloadQueries
+  const isAppReady = !loading.isHydrating && !loading.preloadQueries
 
   const { isHydrated } = usePersistSignals({
     adapter: createSharedStoreAdapter({
@@ -55,7 +55,7 @@ export function App() {
       key: "local-user"
     }),
     onReady: () => {
-      setLoading((state) => ({ ...state, hydrate: false }))
+      setLoading((state) => ({ ...state, isHydrating: false }))
     },
     entries: signalEntriesToPersist
   })
