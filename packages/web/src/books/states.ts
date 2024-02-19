@@ -20,6 +20,7 @@ import { useLocalSettingsState } from "../settings/states"
 import { useQuery } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
+import { useMemo } from "react"
 
 export const getBooksByIds = async (database: Database) => {
   const result = await database.collections.book.find({}).exec()
@@ -30,17 +31,20 @@ export const getBooksByIds = async (database: Database) => {
 export const useBooks = () => {
   return useQuery({
     queryKey: ["db", "get", "many", "books"],
-    queryFn: () =>
-      latestDatabase$.pipe(
+    queryFn: () => {
+      return latestDatabase$.pipe(
         switchMap((db) => db.collections.book.find({}).$),
         map((entries) => keyBy(entries, "_id"))
       )
+    },
+    staleTime: Infinity
   })
 }
 
-export const useBook = ({ id }: { id: string }) => {
+export const useBook = ({ id }: { id?: string }) => {
   return useQuery({
     queryKey: ["db", "get", "single", "books"],
+    enabled: !!id,
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap(
@@ -52,7 +56,8 @@ export const useBook = ({ id }: { id: string }) => {
             }).$
         ),
         map((value) => value?.toJSON())
-      )
+      ),
+    staleTime: Infinity
   })
 }
 
@@ -204,7 +209,7 @@ export const useBooksAsArrayState = ({
   >
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
 }) => {
-  const { data: books = {} } = useBooks()
+  const { data: books = {}, isPending } = useBooks()
   const visibleBookIds = useVisibleBookIdsState({
     libraryState,
     protectedTagIds
@@ -214,24 +219,27 @@ export const useBooksAsArrayState = ({
     downloadState: ReturnType<typeof getBookDownloadsState>
   })[] = []
 
-  return visibleBookIds.reduce((acc, id) => {
-    const downloadState = getBookDownloadsState({
-      bookId: id,
-      normalizedBookDownloadsState
-    })
+  return {
+    data: visibleBookIds.reduce((acc, id) => {
+      const downloadState = getBookDownloadsState({
+        bookId: id,
+        normalizedBookDownloadsState
+      })
 
-    const book = books[id]
+      const book = books[id]
 
-    if (!book) return acc
+      if (!book) return acc
 
-    return [
-      ...acc,
-      {
-        ...book.toJSON(),
-        downloadState
-      }
-    ]
-  }, bookResult)
+      return [
+        ...acc,
+        {
+          ...book.toJSON(),
+          downloadState
+        }
+      ]
+    }, bookResult),
+    isPending
+  }
 }
 
 export const useBookIdsState = () => {
@@ -252,13 +260,17 @@ export const useVisibleBookIdsState = ({
 }) => {
   const { data: books = {} } = useBooks()
 
-  if (isLibraryUnlocked) return Object.keys(books)
-
-  return Object.values(books)
-    .filter(
-      (book) => intersection(protectedTagIds, book?.tags || []).length === 0
-    )
-    .map((book) => book?._id || "-1")
+  return useMemo(() => {
+    if (isLibraryUnlocked) {
+      return Object.keys(books)
+    } else {
+      return Object.values(books)
+        .filter(
+          (book) => intersection(protectedTagIds, book?.tags || []).length === 0
+        )
+        .map((book) => book?._id || "-1")
+    }
+  }, [books, protectedTagIds, isLibraryUnlocked])
 }
 
 /**

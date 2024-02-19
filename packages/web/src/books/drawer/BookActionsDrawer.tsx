@@ -76,8 +76,6 @@ export const BookActionsDrawer = memo(() => {
 
   const { mutate: onRemovePress, status, data } = useRemoveHandler()
 
-  console.log({ status, data })
-
   return (
     <Drawer
       anchor="bottom"

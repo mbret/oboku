@@ -45,7 +45,7 @@ export const useRemoveBook = () => {
           if (!network.online) {
             return dialog({ preset: "OFFLINE" })
           }
-          unlock = lock()
+          // unlock = lock()
           try {
             await removeBookFromDataSource(id)
           } catch (e) {
@@ -69,7 +69,7 @@ export const useRemoveBook = () => {
         Report.error(e)
       }
     },
-    [lock, removeDownload, removeBookFromDataSource, network, dialog, db]
+    [removeDownload, removeBookFromDataSource, network, dialog, db]
   )
 }
 
