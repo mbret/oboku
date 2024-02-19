@@ -5,7 +5,7 @@ import {
   mergeMap,
   EMPTY,
   withLatestFrom,
-  filter,
+  filter
 } from "rxjs"
 import { isDefined, useSubscribeEffect } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"

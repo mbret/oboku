@@ -38,7 +38,7 @@ export const useCollectionsForSearch = (search: string) =>
         }),
         map((items) => items.map(({ _id }) => _id))
       ),
-      staleTime: Infinity
+    staleTime: Infinity
   })
 
 export const useBooksForSearch = (search: string) =>

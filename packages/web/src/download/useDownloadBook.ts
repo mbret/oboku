@@ -7,9 +7,7 @@ import { useDatabase } from "../rxdb"
 import { DOWNLOAD_PREFIX } from "../constants.shared"
 import { BookFile } from "./types"
 import { BookDocType } from "@oboku/shared"
-import {
-  getLinkStateAsync,
-} from "../links/states"
+import { getLinkStateAsync } from "../links/states"
 import { useDialogManager } from "../dialog"
 import { bytesToMb } from "../common/utils"
 import { createCbzFromReadableStream } from "./createCbzFromReadableStream"

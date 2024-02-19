@@ -33,12 +33,11 @@ export const useUpdateTag = () => {
       db?.tag
         .findOne({ selector: { _id } })
         .exec()
-        .then(
-          (doc) =>
-            doc?.atomicUpdate((doc) => ({
-              ...doc,
-              ...rest
-            }))
+        .then((doc) =>
+          doc?.atomicUpdate((doc) => ({
+            ...doc,
+            ...rest
+          }))
         ),
     [db]
   )
@@ -130,16 +129,15 @@ export const useBlurredTagIds = () =>
   useQuery({
     queryFn: () => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
     queryKey: ["blurredTagIds"],
-    staleTime: Infinity,
+    staleTime: Infinity
   })
 
 export const useProtectedTagIds = () =>
   useQuery({
-    queryFn: () =>
-      {
-        console.log("useProtectedTagIds.fetch")
-        return protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id)))
-      },
+    queryFn: () => {
+      console.log("useProtectedTagIds.fetch")
+      return protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id)))
+    },
     queryKey: ["protectedTagIds"],
-    staleTime: Infinity,
+    staleTime: Infinity
   })

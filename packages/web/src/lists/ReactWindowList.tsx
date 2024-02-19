@@ -232,34 +232,37 @@ const List = memo(
         [renderHeader, headerHeight]
       )
 
-      const renderItem = useCallback(({ columnIndex, rowIndex, style, data }) => {
-        const itemIndex = rowIndex * columnCount + columnIndex
-        const item = data[itemIndex]
+      const renderItem = useCallback(
+        ({ columnIndex, rowIndex, style, data }) => {
+          const itemIndex = rowIndex * columnCount + columnIndex
+          const item = data[itemIndex]
 
-        return (
-          <div
-            key={rowIndex}
-            style={{
-              ...style,
-              ...(headerHeight && {
-                top: `${
-                  parseFloat(style.top?.toString() || "0") + headerHeight
-                }px`
-              })
-            }}
-          >
+          return (
             <div
+              key={rowIndex}
               style={{
-                height: "100%",
-                width: "100%",
-                maxHeight: computedItemHeight
+                ...style,
+                ...(headerHeight && {
+                  top: `${
+                    parseFloat(style.top?.toString() || "0") + headerHeight
+                  }px`
+                })
               }}
             >
-              {item && rowRenderer(item, rowIndex)}
+              <div
+                style={{
+                  height: "100%",
+                  width: "100%",
+                  maxHeight: computedItemHeight
+                }}
+              >
+                {item && rowRenderer(item, rowIndex)}
+              </div>
             </div>
-          </div>
-        )
-      }, [columnCount, headerHeight, computedItemHeight, rowRenderer])
+          )
+        },
+        [columnCount, headerHeight, computedItemHeight, rowRenderer]
+      )
 
       return (
         <>

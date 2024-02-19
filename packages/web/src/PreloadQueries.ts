@@ -1,7 +1,5 @@
 import { memo, useEffect, useState } from "react"
-import {
-  useAccountSettings,
-} from "./settings/helpers"
+import { useAccountSettings } from "./settings/helpers"
 import { useLiveRef } from "reactjrx"
 
 const usePrefetchAccountSettings = () => {

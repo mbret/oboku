@@ -13,7 +13,7 @@ export const useBooks = () => {
   const results = useRef<string[]>([])
   const library = useSignalValue(libraryStateSignal)
   const filteredTags = library.tags
-  const {data: unsortedBooks} = useBooksAsArrayState({
+  const { data: unsortedBooks } = useBooksAsArrayState({
     libraryState: library,
     normalizedBookDownloadsState: useSignalValue(
       normalizedBookDownloadsStateSignal
