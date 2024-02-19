@@ -1,12 +1,11 @@
 import { useEffect } from "react"
-import { useRecoilValue } from "recoil"
-import { localSettingsState } from "../settings/states"
 import screenfull from "screenfull"
 import { IS_MOBILE_DEVICE } from "../constants"
 import { Report } from "../debug/report.shared"
+import { useLocalSettingsState } from "../settings/states"
 
 export const useFullScreenSwitch = () => {
-  const localSettings = useRecoilValue(localSettingsState)
+  const localSettings = useLocalSettingsState()
 
   useEffect(() => {
     if (

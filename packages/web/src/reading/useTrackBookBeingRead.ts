@@ -1,22 +1,20 @@
 import { useEffect } from "react"
-import { useSetRecoilState } from "recoil"
-import { bookBeingReadState, hasOpenedReaderAlreadyState } from "./states"
+import {
+  hasOpenedReaderAlreadyStateSignal,
+  bookBeingReadStateSignal
+} from "./states"
+import { SIGNAL_RESET } from "reactjrx"
 
 export const useTrackBookBeingRead = (bookId: string | undefined) => {
-  const setBookBeingReadState = useSetRecoilState(bookBeingReadState)
-  const setHasOpenedReaderAlreadyState = useSetRecoilState(
-    hasOpenedReaderAlreadyState
-  )
-
   useEffect(() => {
-    setBookBeingReadState(bookId)
-    setHasOpenedReaderAlreadyState(true)
-  }, [bookId, setBookBeingReadState, setHasOpenedReaderAlreadyState])
+    bookBeingReadStateSignal.setValue(bookId)
+    hasOpenedReaderAlreadyStateSignal.setValue(true)
+  }, [bookId])
 
   useEffect(
     () => () => {
-      setBookBeingReadState(undefined)
+      bookBeingReadStateSignal.setValue(SIGNAL_RESET)
     },
-    [setBookBeingReadState]
+    []
   )
 }

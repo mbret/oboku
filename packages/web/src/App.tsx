@@ -10,62 +10,55 @@ import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { UpdateAvailableDialog } from "./UpdateAvailableDialog"
 import { RxDbProvider } from "./rxdb"
 import { useObservers } from "./rxdb/sync/useObservers"
-import { useLoadInitialState } from "./useLoadInitialState"
+import { PreloadQueries } from "./PreloadQueries"
 import { AxiosProvider } from "./axiosClient"
-import { PersistedRecoilRoot } from "./PersistedRecoilRoot"
-import {
-  libraryState,
-  updateLibraryState,
-  useLibraryState
-} from "./library/states"
-import { normalizedBookDownloadsState } from "./download/states"
 import { AppLoading } from "./AppLoading"
 import { FirstTimeExperienceTours } from "./firstTimeExperience/FirstTimeExperienceTours"
-import { firstTimeExperienceState } from "./firstTimeExperience/firstTimeExperienceStates"
-import {
-  localSettingsState,
-  localSettingsStateMigration
-} from "./settings/states"
 import { DialogProvider } from "./dialog"
 import { BlurContainer } from "./books/BlurContainer"
-import { authState } from "./auth/authState"
 import "./i18n"
 import { ErrorBoundary } from "@sentry/react"
 import { ManageBookTagsDialog } from "./books/ManageBookTagsDialog"
 import { ManageTagBooksDialog } from "./tags/ManageTagBooksDialog"
 import { useRef } from "react"
 import { Effects } from "./Effects"
-import { bookBeingReadState } from "./reading/states"
-import { readerSettingsState } from "./reader/settings/states"
-import { useSetRecoilState } from "recoil"
+import {
+  usePersistSignals,
+  QueryClientProvider,
+  createLocalforageAdapter,
+  createSharedStoreAdapter,
+  QueryClient
+} from "reactjrx"
+import localforage from "localforage"
+import { signalEntriesToPersist } from "./storage"
 
 declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface DefaultTheme extends Theme {}
 }
 
-const localStatesToPersist = [
-  libraryState,
-  normalizedBookDownloadsState,
-  firstTimeExperienceState,
-  localSettingsState,
-  authState,
-  bookBeingReadState,
-  readerSettingsState
-]
-
-const localStateMigration = (state: { [key: string]: { value: any } }) => {
-  return localSettingsStateMigration(state)
-}
+const queryClient = new QueryClient()
 
 export function App() {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState({
+    isHydrating: true,
+    preloadQueries: true
+  })
   const [newServiceWorker, setNewServiceWorker] = useState<
     ServiceWorker | undefined
   >(undefined)
+  const isAppReady = !loading.isHydrating && !loading.preloadQueries
 
-  // global share library state
-  useLibraryState()
+  const { isHydrated } = usePersistSignals({
+    adapter: createSharedStoreAdapter({
+      adapter: createLocalforageAdapter(localforage),
+      key: "local-user"
+    }),
+    onReady: () => {
+      setLoading((state) => ({ ...state, isHydrating: false }))
+    },
+    entries: signalEntriesToPersist
+  })
 
   return (
     <ErrorBoundary
@@ -75,47 +68,50 @@ export function App() {
     >
       <StyledEngineProvider injectFirst>
         <ThemeProvider theme={theme}>
-          <Suspense fallback={<AppLoading />}>
-            {loading && <AppLoading />}
-            <RxDbProvider>
-              <PersistedRecoilRoot
-                states={localStatesToPersist}
-                migration={localStateMigration}
-                onReady={(state) => {
-                  setLoading(false)
-
-                  if (state.libraryState) {
-                    updateLibraryState(state.libraryState.value)
-                  }
-                }}
-              >
-                {plugins.reduce(
-                  (Comp, { Provider }) => {
-                    if (Provider) {
-                      return <Provider>{Comp}</Provider>
-                    }
-                    return Comp
-                  },
-                  <AxiosProvider>
-                    <DialogProvider>
-                      <TourProvider>
-                        <AppNavigator />
-                        <FirstTimeExperienceTours />
-                        <ManageBookCollectionsDialog />
-                        <ManageBookTagsDialog />
-                        <ManageTagBooksDialog />
-                      </TourProvider>
-                      <UpdateAvailableDialog serviceWorker={newServiceWorker} />
-                      <RecoilSyncedWithDatabase />
-                      <BlockingBackdrop />
-                      <Effects />
-                    </DialogProvider>
-                  </AxiosProvider>
+          <QueryClientProvider client={queryClient}>
+            <Suspense fallback={<AppLoading />}>
+              {!isAppReady && <AppLoading />}
+              <RxDbProvider>
+                {isHydrated && (
+                  <>
+                    {plugins.reduce(
+                      (Comp, { Provider }) => {
+                        if (Provider) {
+                          return <Provider>{Comp}</Provider>
+                        }
+                        return Comp
+                      },
+                      <AxiosProvider>
+                        <DialogProvider>
+                          <TourProvider>
+                            <AppNavigator />
+                            <FirstTimeExperienceTours />
+                            <ManageBookCollectionsDialog />
+                            <ManageBookTagsDialog />
+                            <ManageTagBooksDialog />
+                          </TourProvider>
+                          <UpdateAvailableDialog
+                            serviceWorker={newServiceWorker}
+                          />
+                          <RecoilSyncedWithDatabase />
+                          <BlockingBackdrop />
+                          <Effects />
+                        </DialogProvider>
+                      </AxiosProvider>
+                    )}
+                  </>
                 )}
-                {!loading && <LibraryStateDeprecatedSync />}
-              </PersistedRecoilRoot>
-            </RxDbProvider>
-          </Suspense>
+                <PreloadQueries
+                  onReady={() => {
+                    setLoading((state) => ({
+                      ...state,
+                      preloadQueries: false
+                    }))
+                  }}
+                />
+              </RxDbProvider>
+            </Suspense>
+          </QueryClientProvider>
         </ThemeProvider>
       </StyledEngineProvider>
       <ServiceWorkerRegistration
@@ -127,7 +123,6 @@ export function App() {
 }
 
 const RecoilSyncedWithDatabase: FC = () => {
-  useLoadInitialState()
   useObservers()
 
   return null
@@ -153,17 +148,6 @@ const ServiceWorkerRegistration: FC<{
       })
     }
   }, [onUpdateAvailable])
-
-  return null
-}
-
-const LibraryStateDeprecatedSync = () => {
-  const library = useLibraryState()
-  const setLibraryState = useSetRecoilState(libraryState)
-
-  useEffect(() => {
-    setLibraryState(library)
-  }, [library, setLibraryState])
 
   return null
 }

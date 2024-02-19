@@ -1,5 +1,5 @@
 import { ObokuErrorCode } from "@oboku/shared"
-import { AxiosError, AxiosResponse, isAxiosError } from "axios"
+import { AxiosError, isAxiosError } from "axios"
 
 export const createServerError = async (response: Response) => {
   try {
@@ -20,11 +20,15 @@ export const isCancelError = (error: unknown) => error instanceof CancelError
 
 export const isApiError = (
   error: unknown
-): error is AxiosError<{ errors: { code?: string }[] }> =>
-  isAxiosError(error) &&
-  !!error.response &&
-  "errors" in error.response?.data &&
-  Array.isArray(error.response?.data.errors)
+): error is AxiosError<{ errors: { code?: string }[] }> => {
+  return (
+    isAxiosError(error) &&
+    !!error.response &&
+    typeof error.response?.data === "object" &&
+    "errors" in error.response?.data &&
+    Array.isArray(error.response?.data.errors)
+  )
+}
 
 export const ErrorMessage = ({ error }: { error: unknown }) => {
   return (
@@ -34,10 +38,10 @@ export const ErrorMessage = ({ error }: { error: unknown }) => {
         ObokuErrorCode.ERROR_SIGNIN_NO_EMAIL
         ? "Please make your email address accessible with this provider"
         : isApiError(error) &&
-          error.response?.data.errors[0]?.code ===
-            ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED
-        ? "Please verify your email with this provider before continuing"
-        : undefined) ?? "Something went wrong. Could you try again?"}
+            error.response?.data.errors[0]?.code ===
+              ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED
+          ? "Please verify your email with this provider before continuing"
+          : undefined) ?? "Something went wrong. Could you try again?"}
     </>
   )
 }

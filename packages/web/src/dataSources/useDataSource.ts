@@ -1,19 +1,14 @@
-import { Database, useDatabase } from "../rxdb"
-import { bind } from "@react-rxjs/core"
-import { of, switchMap } from "rxjs"
-import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
+import { switchMap } from "rxjs"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { useObserve } from "reactjrx"
 
-const [useData] = bind(
-  (maybeDb: Database | undefined, id: string) =>
-    of(maybeDb).pipe(
-      isNotNullOrUndefined(),
-      switchMap((db) => db.datasource.findOne({ selector: { _id: id } }).$)
-    ),
-  null
-)
-
-export const useDataSource = (id: string) => {
-  const { db } = useDatabase()
-
-  return useData(db, id)
-}
+export const useDataSource = (id: string) =>
+  useObserve(
+    () =>
+      latestDatabase$.pipe(
+        switchMap((db) => {
+          return db.datasource.findOne({ selector: { _id: id } }).$
+        })
+      ),
+    [id]
+  )

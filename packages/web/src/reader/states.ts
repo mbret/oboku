@@ -1,12 +1,8 @@
-import { atom, useRecoilCallback } from "recoil"
-import { useEffect } from "react"
 import { createReader, Manifest } from "@prose-reader/core"
-import { switchMap } from "rxjs"
-import { bind } from "@react-rxjs/core"
+import { EMPTY, switchMap } from "rxjs"
 import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
 import { Props as GenericReactReaderProps } from "@prose-reader/react"
-import { createSignal } from "@react-rxjs/utils"
-import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
+import { signal, useQuery, useSignalValue } from "reactjrx"
 
 export const createAppReader = hammerGestureEnhancer(createReader)
 
@@ -17,37 +13,43 @@ export type ReactReaderProps = GenericReactReaderProps<
   ReaderInstance
 >
 
-export const [updateReader$, updateReader] = createSignal<ReaderInstance>()
+export const readerStateSignal = signal<ReaderInstance | undefined>({
+  key: "readerState"
+})
 
-export const [useReader, _reader$] = bind(updateReader$, undefined)
-
-export const reader$ = _reader$.pipe(isNotNullOrUndefined())
-
-export const isBookReadyState = atom({
+export const isBookReadyStateSignal = signal({
   key: "isBookReadyState",
   default: false
 })
 
-export const manifestState = atom<Manifest | undefined>({
+// @todo use query useManifest(bookId)
+export const manifestStateSignal = signal<Manifest | undefined>({
   key: `manifestState`,
   default: undefined
 })
 
-export const isMenuShownState = atom({
+export const isMenuShownStateSignal = signal({
   key: "isMenuShownState",
   default: false
 })
 
 // =======> Please do not forget to add atom to the reset part !
 
-export const [usePagination] = bind(
-  reader$.pipe(switchMap((reader) => reader.pagination$)),
-  undefined
+const pagination$ = readerStateSignal.subject.pipe(
+  switchMap((reader) => reader?.pagination$ ?? EMPTY)
 )
 
+export const usePagination = () =>
+  useQuery({
+    queryFn: pagination$,
+    queryKey: ["pagination"],
+    staleTime: Infinity
+  })
+
 export const useCurrentPage = () => {
-  const reader = useReader()
-  const { beginPageIndexInChapter, beginSpineItemIndex } = usePagination() ?? {}
+  const reader = useSignalValue(readerStateSignal)
+  const { data: { beginPageIndexInChapter, beginSpineItemIndex } = {} } =
+    usePagination()
   const { renditionLayout } = reader?.context.getManifest() ?? {}
 
   if (renditionLayout === "reflowable") return beginPageIndexInChapter
@@ -56,28 +58,12 @@ export const useCurrentPage = () => {
 }
 
 export const useTotalPage = () => {
-  const reader = useReader()
+  const reader = useSignalValue(readerStateSignal)
   const { renditionLayout } = reader?.context.getManifest() ?? {}
-  const { numberOfTotalPages, beginNumberOfPagesInChapter } =
-    usePagination() ?? {}
+  const { data: { numberOfTotalPages, beginNumberOfPagesInChapter } = {} } =
+    usePagination()
 
   if (renditionLayout === "reflowable") return beginNumberOfPagesInChapter
 
   return numberOfTotalPages
-}
-
-const statesToReset = [isBookReadyState, isMenuShownState, manifestState]
-
-export const useResetStateOnUnMount = () => {
-  const resetStates = useRecoilCallback(
-    ({ reset }) =>
-      () => {
-        statesToReset.forEach((state) => reset(state))
-      },
-    []
-  )
-
-  useEffect(() => {
-    return () => resetStates()
-  }, [resetStates])
 }

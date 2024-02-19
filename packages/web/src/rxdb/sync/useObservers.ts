@@ -1,62 +1,26 @@
-import { useCallback, useEffect } from "react"
-import { RxChangeEvent, RxDocument } from "rxdb"
+import { useEffect } from "react"
 import { useIsAuthenticated, useSignOut } from "../../auth/helpers"
 import { API_COUCH_URI } from "../../constants"
-import { SettingsDocType, useDatabase } from ".."
+import { useDatabase } from ".."
 import PouchDB from "pouchdb"
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
-import { syncState } from "../../library/states"
-import { settingsState } from "../../settings/states"
-import { useBooksObservers } from "../../books/observers"
-import { useTagsObservers } from "../../tags/observers"
-import { useLinksObservers } from "../../links/observers"
-import { useCollectionsObservers } from "../../collections/observers"
-import { lastAliveSyncState } from "./state"
 import { useWatchAndFixConflicts } from "./useWatchAndFixConflicts"
-import { authState } from "../../auth/authState"
+import { authStateSignal } from "../../auth/authState"
 import { syncCollections } from "../replication/syncCollections"
+import { useNetworkState } from "react-use"
+import { syncStateSignal } from "../../library/states"
+import { useSignalValue } from "reactjrx"
 
 type callback = Parameters<(typeof PouchDB)["sync"]>[3]
 type PouchError = NonNullable<Parameters<NonNullable<callback>>[0]>
 
-export const useSettingsStateReducer = () => {
-  const setState = useSetRecoilState(settingsState)
-
-  return useCallback(
-    (
-      eventOrAction:
-        | RxChangeEvent<SettingsDocType>
-        | { operation: "INIT"; documentData: RxDocument<SettingsDocType> }
-    ) => {
-      switch (eventOrAction.operation) {
-        case "INIT": {
-          return setState((old) => ({
-            ...old,
-            ...eventOrAction.documentData.toJSON()
-          }))
-        }
-        case "UPDATE": {
-          return setState((old) => ({ ...old, ...eventOrAction.documentData }))
-        }
-      }
-    },
-    [setState]
-  )
-}
-
 export const useObservers = () => {
-  const settingsReducer = useSettingsStateReducer()
   const { db: database } = useDatabase()
-  const { token, dbName } = useRecoilValue(authState) || {}
+  const { token, dbName } = useSignalValue(authStateSignal) || {}
   const isAuthenticated = useIsAuthenticated()
   const signOut = useSignOut()
-  const [{ syncRefresh }, setSyncState] = useRecoilState(syncState)
-  const setLastAliveSyncState = useSetRecoilState(lastAliveSyncState)
+  const { syncRefresh } = useSignalValue(syncStateSignal)
+  const { online } = useNetworkState()
 
-  useBooksObservers()
-  useTagsObservers()
-  useLinksObservers()
-  useCollectionsObservers()
   useWatchAndFixConflicts()
 
   useEffect(() => {
@@ -80,7 +44,7 @@ export const useObservers = () => {
       }
     })
 
-    if (isAuthenticated && database) {
+    if (isAuthenticated && database && online) {
       const syncState = syncCollections(
         [
           database.book,
@@ -99,9 +63,6 @@ export const useObservers = () => {
         // }),
         syncState.alive$.subscribe((alive) => {
           console.log(`SYNC alive`, alive)
-          if (alive) {
-            setLastAliveSyncState(Date.now())
-          }
         }),
         // syncState.change$.subscribe((data) =>
         //   console.warn(`SYNC change`, data)
@@ -123,22 +84,5 @@ export const useObservers = () => {
         subscriptions.forEach((subscription) => subscription.unsubscribe())
       }
     }
-  }, [
-    database,
-    signOut,
-    isAuthenticated,
-    token,
-    syncRefresh,
-    setSyncState,
-    setLastAliveSyncState,
-    dbName
-  ])
-
-  useEffect(() => {
-    const settingsObs$ = database?.settings.$.subscribe(settingsReducer)
-
-    return () => {
-      settingsObs$?.unsubscribe()
-    }
-  }, [database, settingsReducer])
+  }, [database, signOut, isAuthenticated, token, syncRefresh, dbName, online])
 }

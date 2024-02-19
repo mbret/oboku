@@ -7,12 +7,10 @@ import {
   ListItemIcon,
   ListItemText
 } from "@mui/material"
-import { useRecoilState } from "recoil"
-import { readerSettingsState } from "./states"
+import { setReaderSettingsState, useReaderSettingsState } from "./states"
 
 export const SettingsList = () => {
-  const [readerSettings, setReaderSettings] =
-    useRecoilState(readerSettingsState)
+  const readerSettings = useReaderSettingsState()
 
   return (
     <List>
@@ -41,7 +39,7 @@ export const SettingsList = () => {
       >
         <ListItemButton
           onClick={() => {
-            setReaderSettings((state) => ({
+            setReaderSettingsState((state) => ({
               ...state,
               floatingTime:
                 state.floatingTime === "bottom" ? undefined : "bottom"
@@ -68,7 +66,7 @@ export const SettingsList = () => {
       >
         <ListItemButton
           onClick={() => {
-            setReaderSettings((state) => ({
+            setReaderSettingsState((state) => ({
               ...state,
               floatingProgress:
                 state.floatingProgress === "bottom" ? undefined : "bottom"

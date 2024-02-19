@@ -1,21 +1,22 @@
 import React, { FC } from "react"
 import { Typography, useTheme } from "@mui/material"
 import {
-  manifestState,
+  manifestStateSignal,
   useCurrentPage,
   usePagination,
   useTotalPage
 } from "./states"
-import { useRecoilValue } from "recoil"
+import { useSignalValue } from "reactjrx"
 
 export const PageInformation: FC<{
   style: React.CSSProperties
 }> = ({ style }) => {
   const theme = useTheme()
   const currentPage = useCurrentPage() || 0
-  const { renditionLayout } = useRecoilValue(manifestState) || {}
-  const { percentageEstimateOfBook, beginChapterInfo: chapterInfo } =
-    usePagination() ?? {}
+  const { renditionLayout } = useSignalValue(manifestStateSignal) ?? {}
+  const {
+    data: { percentageEstimateOfBook, beginChapterInfo: chapterInfo } = {}
+  } = usePagination()
   const roundedProgress = Math.floor((percentageEstimateOfBook || 0) * 100)
   const displayableProgress = roundedProgress > 0 ? roundedProgress : 1
   const currentPageToDisplay = currentPage + 1

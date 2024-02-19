@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { memo } from "react"
 import List from "@mui/material/List"
 import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
@@ -14,10 +14,9 @@ import {
   ThumbDownOutlined
 } from "@mui/icons-material"
 import { useNavigate } from "react-router-dom"
-import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
-import { ROUTES } from "../constants"
-import { useAtomicUpdateBook, useRefreshBookMetadata } from "./helpers"
-import { useRemoveBook } from "./helpers"
+import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
+import { ROUTES } from "../../constants"
+import { useAtomicUpdateBook, useRefreshBookMetadata } from "../helpers"
 import {
   Drawer,
   Divider,
@@ -26,102 +25,56 @@ import {
   ListItemButton
 } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
-import { useManageBookCollectionsDialog } from "./ManageBookCollectionsDialog"
-import { atom, useRecoilState, useRecoilValue } from "recoil"
-import { enrichedBookState } from "./states"
-import { Cover } from "./Cover"
+import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
+import { useEnrichedBookState } from "../states"
+import { Cover } from "../Cover"
 import { ReadingStateState } from "@oboku/shared"
-import { Report } from "../debug/report.shared"
-import { useDialogManager } from "../dialog"
-import { linkState } from "../links/states"
-import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
-import { useDataSourcePlugin } from "../dataSources/helpers"
+import { Report } from "../../debug/report.shared"
+import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
 import { useTranslation } from "react-i18next"
-import { useManageBookTagsDialog } from "./ManageBookTagsDialog"
-import { markAsInterested } from "./actions"
+import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
+import { markAsInterested } from "../triggers"
+import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
+import { signal, useSignalValue } from "reactjrx"
+import { useRemoveHandler } from "./useRemoveHandler"
 
-export const bookActionDrawerState = atom<{
+export const bookActionDrawerSignal = signal<{
   openedWith: undefined | string
   actions?: ("removeDownload" | "goToDetails")[]
 }>({ key: "bookActionDrawerState", default: { openedWith: undefined } })
 
-export const BookActionsDrawer = () => {
+export const BookActionsDrawer = memo(() => {
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
-  const [{ openedWith: bookId, actions }, setBookActionDrawerState] =
-    useRecoilState(bookActionDrawerState)
+  const { openedWith: bookId, actions } = useSignalValue(bookActionDrawerSignal)
   const navigate = useNavigate()
-  const book = useRecoilValue(enrichedBookState(bookId || "-1"))
-  const bookLink = useRecoilValue(linkState(book?.links[0] || "-1"))
+  const normalizedBookDownloadsState = useSignalValue(
+    normalizedBookDownloadsStateSignal
+  )
+  const book = useEnrichedBookState({
+    bookId: bookId || "-1",
+    normalizedBookDownloadsState,
+    protectedTagIds: useProtectedTagIds().data,
+    tags: useTagsByIds().data
+  })
   const removeDownloadFile = useRemoveDownloadFile()
-  const removeBook = useRemoveBook()
   const refreshBookMetadata = useRefreshBookMetadata()
   const [updateBook] = useAtomicUpdateBook()
   const classes = useStyles()
-  const plugin = useDataSourcePlugin(bookLink?.type)
-  const dialog = useDialogManager()
   const opened = !!bookId
   const { t } = useTranslation()
 
   const { closeModalWithNavigation: handleClose } = useModalNavigationControl(
     {
       onExit: () => {
-        setBookActionDrawerState({ openedWith: undefined })
+        bookActionDrawerSignal.setValue({ openedWith: undefined })
       }
     },
     bookId
   )
 
-  const onRemovePress = useCallback(() => {
-    handleClose(() => {
-      if (book?._id) {
-        if (!book?.isAttachedToDataSource || !bookLink) {
-          dialog({
-            preset: "CONFIRM",
-            title: "Delete a book",
-            content: `You are about to delete a book, are you sure ?`,
-            onConfirm: () => {
-              removeBook({ id: book._id })
-            }
-          })
-        } else if (
-          book?.isAttachedToDataSource &&
-          !bookLink.isRemovableFromDataSource
-        ) {
-          dialog({
-            preset: "CONFIRM",
-            title: "Delete a book",
-            content: `This book has been synchronized with one of your ${plugin?.name} data source. Oboku does not support deletion from ${plugin?.name} directly so consider deleting it there manually if you don't want the book to be synced again`,
-            onConfirm: () => {
-              removeBook({ id: book._id })
-            }
-          })
-        } else {
-          dialog({
-            preset: "CONFIRM",
-            title: "Delete a book",
-            content: `This book has been synchronized with one of your ${plugin?.name} data source. You can delete it from both oboku and ${plugin?.name} which will prevent the book to be synced again`,
-            actions: [
-              {
-                type: "confirm",
-                title: "both",
-                onClick: () => {
-                  removeBook({ id: book._id, deleteFromDataSource: true })
-                }
-              },
-              {
-                type: "confirm",
-                title: "only oboku",
-                onClick: () => {
-                  removeBook({ id: book._id })
-                }
-              }
-            ]
-          })
-        }
-      }
-    })
-  }, [handleClose, book, dialog, removeBook, bookLink, plugin])
+  const { mutate: onRemovePress, status, data } = useRemoveHandler()
 
   return (
     <Drawer
@@ -305,7 +258,12 @@ export const BookActionsDrawer = () => {
             <>
               <Divider />
               <List>
-                <ListItem button onClick={onRemovePress}>
+                <ListItem
+                  button
+                  onClick={() =>
+                    handleClose(() => bookId && onRemovePress({ bookId }))
+                  }
+                >
                   <ListItemIcon>
                     <DeleteForeverRounded />
                   </ListItemIcon>
@@ -318,7 +276,7 @@ export const BookActionsDrawer = () => {
       )}
     </Drawer>
   )
-}
+})
 
 const useStyles = makeStyles((theme) => ({
   topContainer: {

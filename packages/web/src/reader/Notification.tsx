@@ -1,32 +1,36 @@
 import { Snackbar } from "@mui/material"
-import { bind } from "@react-rxjs/core"
 import { memo } from "react"
-import { delay, merge, of, switchMap, throttleTime } from "rxjs"
+import { delay, filter, merge, of, switchMap, throttleTime } from "rxjs"
 import {
   READER_NOTIFICATION_THROTTLE_TIME,
   READER_NOTIFICATION_TIME_TO_SCREEN
 } from "../constants"
-import { reader$ } from "./states"
+import { readerStateSignal } from "./states"
+import { isDefined, useQuery } from "reactjrx"
 
-const [useNotification] = bind(
-  reader$.pipe(
-    switchMap((reader) => reader.hammerGesture.changes$),
-    throttleTime(READER_NOTIFICATION_THROTTLE_TIME, undefined, {
-      leading: false,
-      trailing: true
-    }),
-    switchMap((notification) =>
-      merge(
-        of(notification),
-        of(undefined).pipe(delay(READER_NOTIFICATION_TIME_TO_SCREEN))
-      )
-    )
-  ),
-  undefined
-)
+const useNotification = () =>
+  useQuery({
+    queryKey: ["notification"],
+    queryFn: () =>
+      readerStateSignal.subject.pipe(
+        filter(isDefined),
+        switchMap((reader) => reader.hammerGesture.changes$),
+        throttleTime(READER_NOTIFICATION_THROTTLE_TIME, undefined, {
+          leading: false,
+          trailing: true
+        }),
+        switchMap((notification) =>
+          merge(
+            of(notification),
+            of(undefined).pipe(delay(READER_NOTIFICATION_TIME_TO_SCREEN))
+          )
+        )
+      ),
+    staleTime: Infinity
+  })
 
 export const Notification = memo(() => {
-  const notification = useNotification()
+  const { data: notification } = useNotification()
 
   return (
     <Snackbar

@@ -26,19 +26,23 @@ import { Cover } from "../Cover"
 import { useDownloadBook } from "../../download/useDownloadBook"
 import { ROUTES } from "../../constants"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
-import { useRecoilValue } from "recoil"
 import {
-  bookTagsState,
-  bookCollectionsState,
-  enrichedBookState
+  useBookTagsState,
+  useBookCollectionsState,
+  useEnrichedBookState
 } from "../states"
-import { normalizedLinksState } from "../../links/states"
+import { useLink } from "../../links/states"
 import { useEditLink } from "../../links/helpers"
 import { useCSS } from "../../common/utils"
 import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
-import { DataSourceSection } from "./DateSourceSection"
+import { DataSourceSection } from "./DataSourceSection"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
+import { libraryStateSignal } from "../../library/states"
+import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { useLocalSettingsState } from "../../settings/states"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
+import { useSignalValue } from "reactjrx"
 
 type ScreenParams = {
   id: string
@@ -53,9 +57,24 @@ export const BookDetailsScreen = () => {
     undefined | string
   >(undefined)
   const { id = `-1` } = useParams<ScreenParams>()
-  const book = useRecoilValue(enrichedBookState(id))
-  const tags = useRecoilValue(bookTagsState(id))
-  const collections = useRecoilValue(bookCollectionsState(id))
+  const libraryState = useSignalValue(libraryStateSignal)
+  const book = useEnrichedBookState({
+    bookId: id,
+    normalizedBookDownloadsState: useSignalValue(
+      normalizedBookDownloadsStateSignal
+    ),
+    protectedTagIds: useProtectedTagIds().data,
+    tags: useTagsByIds().data
+  })
+  const tags = useBookTagsState({ bookId: id, tags: useTagsByIds().data })
+
+  const collections = useBookCollectionsState({
+    bookId: id,
+    libraryState,
+    localSettingsState: useLocalSettingsState(),
+    protectedTagIds: useProtectedTagIds().data,
+    tags: useTagsByIds().data
+  })
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const removeDownloadFile = useRemoveDownloadFile()
@@ -261,7 +280,7 @@ const EditLinkDialog: FC<{
   onClose: () => void
 }> = ({ onClose, openWith }) => {
   const [location, setLocation] = useState("")
-  const link = useRecoilValue(normalizedLinksState)[openWith || "-1"]
+  const { data: link } = useLink({ id: openWith || "-1" })
   const editLink = useEditLink()
 
   const onInnerClose = () => {

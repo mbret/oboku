@@ -1,6 +1,6 @@
-import { atom } from "recoil"
+import { signal, useSignalValue } from "reactjrx"
 
-export const readerSettingsState = atom<{
+export const readerSettingsStateSignal = signal<{
   floatingTime?: "bottom"
   floatingProgress?: "bottom"
   fontScale?: number
@@ -11,3 +11,8 @@ export const readerSettingsState = atom<{
     floatingTime: "bottom"
   }
 })
+
+export const setReaderSettingsState = readerSettingsStateSignal.setValue
+
+export const useReaderSettingsState = () =>
+  useSignalValue(readerSettingsStateSignal)

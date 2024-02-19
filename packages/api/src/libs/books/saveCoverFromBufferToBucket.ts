@@ -18,9 +18,11 @@ export const saveCoverFromBufferToBucket = async (
     .webp()
     .toBuffer()
 
-    await s3.send(new PutObjectCommand({
+  await s3.send(
+    new PutObjectCommand({
       Bucket: "oboku-covers",
       Body: resized,
       Key: objectKey
-    }))
+    })
+  )
 }

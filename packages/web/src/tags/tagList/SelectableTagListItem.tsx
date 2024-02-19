@@ -2,18 +2,16 @@ import { FC, memo } from "react"
 import { ListItem, ListItemText, useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { BlurOnRounded, LockRounded } from "@mui/icons-material"
-import { useTag } from "../states"
+import { useTag } from "../helpers"
 import { TagsDocType } from "@oboku/shared"
 import { Checkbox } from "../../common/Checkbox"
-import { useDatabase } from "../../rxdb"
 
 export const SelectableTagListItem: FC<{
   id: string
   onItemClick?: (tag: TagsDocType) => void
   selected: boolean
 }> = memo(({ id, onItemClick, selected }) => {
-  const { db$ } = useDatabase()
-  const tag = useTag(db$, id)
+  const { data: tag } = useTag(id)
   const styles = useStyle()
 
   return (

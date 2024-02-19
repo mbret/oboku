@@ -8,18 +8,18 @@ import {
 } from "@mui/material"
 import { MoreVertRounded } from "@mui/icons-material"
 import { FC, useState } from "react"
-import { useRecoilValue } from "recoil"
 import { useDataSourcePlugin } from "../../dataSources/helpers"
 import { DebugInfo } from "../../debug/DebugInfo"
 import { Report } from "../../debug/report.shared"
 import { useDialogManager } from "../../dialog"
 import { useRefreshBookMetadata } from "../helpers"
-import { bookLinksState } from "../states"
+import { useBookLinksState } from "../states"
 import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
-import { upsertBookLink } from "../actions"
+import { upsertBookLink } from "../triggers"
+import { useTagsByIds } from "../../tags/helpers"
 
 export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
-  const link = useRecoilValue(bookLinksState(bookId))[0]
+  const link = useBookLinksState({ bookId, tags: useTagsByIds().data })[0]
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
   const [isSelectItemOpened, setIsSelectItemOpened] = useState(false)
   const dialog = useDialogManager()

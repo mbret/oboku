@@ -1,10 +1,12 @@
 import { Typography, useTheme } from "@mui/material"
 import React, { FC } from "react"
-import { useRecoilValue } from "recoil"
-import { enrichedBookState } from "../states"
+import { useEnrichedBookState } from "../states"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { Checkbox } from "../../common/Checkbox"
+import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
+import { useSignalValue } from "reactjrx"
 
 export const SelectableBookListItem: FC<{
   bookId: string
@@ -25,7 +27,14 @@ export const SelectableBookListItem: FC<{
   paddingTop = 0,
   paddingBottom = 0
 }) => {
-  const book = useRecoilValue(enrichedBookState(bookId))
+  const book = useEnrichedBookState({
+    bookId,
+    normalizedBookDownloadsState: useSignalValue(
+      normalizedBookDownloadsStateSignal
+    ),
+    protectedTagIds: useProtectedTagIds().data,
+    tags: useTagsByIds().data
+  })
   const theme = useTheme()
   const computedHeight = itemHeight - paddingTop - paddingBottom
   const coverWidth = computedHeight * theme.custom.coverAverageRatio

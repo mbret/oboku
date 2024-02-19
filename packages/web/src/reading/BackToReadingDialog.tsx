@@ -1,17 +1,21 @@
 import { useEffect, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import { useRecoilState, useRecoilValue } from "recoil"
 import { ROUTES } from "../constants"
 import { useDialogManager } from "../dialog"
-import { bookBeingReadState, hasOpenedReaderAlreadyState } from "./states"
+import {
+  hasOpenedReaderAlreadyStateSignal,
+  bookBeingReadStateSignal
+} from "./states"
+import { SIGNAL_RESET, useSignalValue } from "reactjrx"
 
 const BASE_READER_ROUTE = ROUTES.READER.replace(`/:id`, ``)
 
 export const BackToReadingDialog = () => {
   const isOpen = useRef(false)
-  const [bookBeingRead, setBookBeingReadState] =
-    useRecoilState(bookBeingReadState)
-  const hasOpenedReaderAlready = useRecoilValue(hasOpenedReaderAlreadyState)
+  const bookBeingRead = useSignalValue(bookBeingReadStateSignal)
+  const hasOpenedReaderAlready = useSignalValue(
+    hasOpenedReaderAlreadyStateSignal
+  )
   const dialog = useDialogManager()
   const navigate = useNavigate()
   const location = useLocation()
@@ -38,18 +42,11 @@ export const BackToReadingDialog = () => {
       },
       onCancel: () => {},
       onClose: () => {
-        setBookBeingReadState(undefined)
+        bookBeingReadStateSignal.setValue(SIGNAL_RESET)
         isOpen.current = false
       }
     })
-  }, [
-    dialog,
-    setBookBeingReadState,
-    bookBeingRead,
-    location,
-    navigate,
-    hasOpenedReaderAlready
-  ])
+  }, [dialog, bookBeingRead, location, navigate, hasOpenedReaderAlready])
 
   return null
 }

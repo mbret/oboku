@@ -6,8 +6,9 @@ import {
   LockOpenRounded,
   SortRounded
 } from "@mui/icons-material"
-import { useLibraryState } from "../library/states"
 import { SortByDialog } from "../books/bookList/SortByDialog"
+import { useSignalValue } from "reactjrx"
+import { libraryStateSignal } from "../library/states"
 
 type Sorting = ComponentProps<typeof SortByDialog>["value"]
 
@@ -18,7 +19,7 @@ export const ListActionsToolbar: FC<{
   onSortingChange: (sorting: Sorting) => void
 }> = ({ viewMode, onViewModeChange, onSortingChange, sorting }) => {
   const theme = useTheme()
-  const library = useLibraryState()
+  const library = useSignalValue(libraryStateSignal)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
 
   return (
@@ -46,11 +47,11 @@ export const ListActionsToolbar: FC<{
             {sorting === "activity"
               ? "Recent activity"
               : sorting === "alpha"
-              ? "A > Z"
-              : "Date added"}
+                ? "A > Z"
+                : "Date added"}
           </Button>
         </div>
-        {library?.isLibraryUnlocked && (
+        {library.isLibraryUnlocked && (
           <div
             style={{
               display: "flex",

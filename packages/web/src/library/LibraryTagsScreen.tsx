@@ -12,38 +12,33 @@ import {
 import { useCreateTag } from "../tags/helpers"
 import { TagActionsDrawer } from "../tags/TagActionsDrawer"
 import { LockActionDialog } from "../auth/LockActionDialog"
-import { useSetRecoilState } from "recoil"
-import { isTagsTourOpenedState } from "../firstTimeExperience/firstTimeExperienceStates"
 import { useCSS, useMeasureElement } from "../common/utils"
-import { useHasDoneFirstTimeExperience } from "../firstTimeExperience/helpers"
-import { FirstTimeExperienceId } from "../firstTimeExperience/constants"
 import { TagList } from "../tags/tagList/TagList"
 import { AppTourFirstTourTagsStep2 } from "../firstTimeExperience/AppTourFirstTourTags"
-import { useDatabase } from "../rxdb"
-import { useTagIds } from "../tags/states"
+import { useTagIds } from "../tags/helpers"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
+import { isTagsTourPossibleStateSignal } from "../firstTimeExperience/firstTimeExperienceStates"
 
 export const LibraryTagsScreen = () => {
-  const { db$ } = useDatabase()
   const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(
     undefined
   )
   const classes = useStyles()
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
-  const setIsTagsTourOpenedState = useSetRecoilState(isTagsTourOpenedState)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] =
     useState<string | undefined>(undefined)
-  const tags = useTagIds(db$)
-  const [addTag] = useCreateTag()
-  const hasDoneFirstTimeExperience = useHasDoneFirstTimeExperience(
-    FirstTimeExperienceId.APP_TOUR_FIRST_TOUR_TAGS
-  )
+  const { data: tags = [] } = useTagIds()
+  const { mutate: addTag } = useCreateTag()
   const theme = useTheme()
 
   useEffect(() => {
-    !hasDoneFirstTimeExperience && setIsTagsTourOpenedState(true)
-  }, [setIsTagsTourOpenedState, hasDoneFirstTimeExperience])
+    isTagsTourPossibleStateSignal.setValue(true)
+
+    return () => {
+      isTagsTourPossibleStateSignal.setValue(false)
+    }
+  }, [])
 
   const addItemButton = useMemo(
     () => (

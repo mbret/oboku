@@ -2,35 +2,46 @@ import React, { FC, memo, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
 import placeholder from "../assets/cover-placeholder.png"
 import { useTheme } from "@mui/material"
-import { selectorFamily, useRecoilValue } from "recoil"
-import { enrichedBookState } from "./states"
-import { authState } from "../auth/authState"
-import { bluredTagIdsState } from "../tags/states"
+import { useEnrichedBookState } from "./states"
+import {
+  useBlurredTagIds,
+  useProtectedTagIds,
+  useTagsByIds
+} from "../tags/helpers"
 import { useCSS } from "../common/utils"
 import { API_URI } from "../constants"
-import { localSettingsState } from "../settings/states"
+import { useLocalSettingsState } from "../settings/states"
+import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { useSignalValue } from "reactjrx"
+import { authStateSignal } from "../auth/authState"
 
-const bookCoverState = selectorFamily({
-  key: "bookCoverState",
-  get:
-    (id: string) =>
-    ({ get }) => {
-      const enrichedBook = get(enrichedBookState(id))
-      const blurredTags = get(bluredTagIdsState)
+const useBookCoverState = ({ bookId }: { bookId: string }) => {
+  const tags = useTagsByIds().data
+  const normalizedBookDownloadsState = useSignalValue(
+    normalizedBookDownloadsStateSignal
+  )
+  const blurredTags = useBlurredTagIds().data ?? []
+  const protectedTags = useProtectedTagIds().data ?? []
 
-      if (!enrichedBook) return undefined
+  const enrichedBook = useEnrichedBookState({
+    bookId,
+    normalizedBookDownloadsState,
+    protectedTagIds: protectedTags,
+    tags
+  })
 
-      const { _id, lastMetadataUpdatedAt } = enrichedBook
+  if (!enrichedBook) return undefined
 
-      return {
-        _id,
-        lastMetadataUpdatedAt,
-        isBlurred: enrichedBook.tags.some((bookTagId) =>
-          blurredTags.includes(bookTagId)
-        )
-      }
-    }
-})
+  const { _id, lastMetadataUpdatedAt } = enrichedBook
+
+  return {
+    _id,
+    lastMetadataUpdatedAt,
+    isBlurred: enrichedBook.tags.some((bookTagId) =>
+      blurredTags.includes(bookTagId)
+    )
+  }
+}
 
 type Props = {
   bookId: string
@@ -51,14 +62,16 @@ export const Cover: FC<Props> = memo(
     blurIfNeeded = true,
     ...rest
   }) => {
-    const auth = useRecoilValue(authState)
+    const auth = useSignalValue(authStateSignal)
     const isMounted = useMountedState()
-    const book = useRecoilValue(bookCoverState(bookId))
+    const book = useBookCoverState({
+      bookId
+    })
     const [hasError, setHasError] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const classes = useStyle({ withShadow, fullWidth, rounded, isLoading })
     const assetHash = book?.lastMetadataUpdatedAt?.toString()
-    const localSettings = useRecoilValue(localSettingsState)
+    const localSettings = useLocalSettingsState()
     const shouldBlurCover =
       book?.isBlurred &&
       blurIfNeeded &&

@@ -1,23 +1,18 @@
-import { useEffect } from "react"
-import { from, mergeMap, withLatestFrom, of } from "rxjs"
-import { effect } from "../common/rxjs/effect"
-import { isNotNullOrUndefined } from "../common/rxjs/isNotNullOrUndefined"
-import { useDatabase } from "../rxdb"
-import { removeTag$ } from "./actions"
+import { Subject, from, mergeMap, withLatestFrom } from "rxjs"
+import { useSubscribeEffect } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+
+export const removeTag = new Subject<{ id: string }>()
 
 export const useTagEffects = () => {
-  const { db: database } = useDatabase()
-
-  useEffect(
+  useSubscribeEffect(
     () =>
-      effect(removeTag$, (action$) =>
-        action$.pipe(
-          withLatestFrom(of(database).pipe(isNotNullOrUndefined())),
-          mergeMap(([{ id }, db]) =>
-            from(db?.tag.findOne({ selector: { _id: id } }).remove())
-          )
+    removeTag.pipe(
+        withLatestFrom(latestDatabase$),
+        mergeMap(([{ id }, db]) =>
+          from(db?.tag.findOne({ selector: { _id: id } }).remove())
         )
       ),
-    [database]
+    []
   )
 }

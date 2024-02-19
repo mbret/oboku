@@ -1,26 +1,57 @@
 import { useMemo } from "react"
-import { useRecoilValue } from "recoil"
-import { booksAsArrayState } from "../books/states"
+import { useBooksAsArrayState } from "../books/states"
 import { ReadingStateState } from "@oboku/shared"
 import { useBooksSortedBy } from "../books/helpers"
+import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { useProtectedTagIds } from "../tags/helpers"
+import { useSignalValue } from "reactjrx"
+import { libraryStateSignal } from "../library/states"
 
+/**
+ * @todo cleanup
+ */
 export const useContinueReadingBooks = () => {
-  const booksAsArray = useRecoilValue(booksAsArrayState)
+  const libraryState = useSignalValue(libraryStateSignal)
+  const { data: protectedTagIds, isPending } = useProtectedTagIds()
+  const normalizedBookDownloadsState = useSignalValue(
+    normalizedBookDownloadsStateSignal
+  )
+
+  const { data: booksAsArray, isPending: isBooksPending } =
+    useBooksAsArrayState({
+      libraryState,
+      normalizedBookDownloadsState,
+      protectedTagIds
+    })
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
 
-  return useMemo(
-    () =>
-      booksSortedByDate
-        .filter(
-          (book) => book.readingStateCurrentState === ReadingStateState.Reading
-        )
-        .map((item) => item._id),
-    [booksSortedByDate]
-  )
+  return {
+    data: useMemo(
+      () =>
+        booksSortedByDate
+          .filter(
+            (book) =>
+              book.readingStateCurrentState === ReadingStateState.Reading
+          )
+          .map((item) => item._id),
+      [booksSortedByDate]
+    ),
+    isPending: isPending || isBooksPending
+  }
 }
 
+/**
+ * @todo cleanup
+ */
 export const useRecentlyAddedBooks = () => {
-  const books = useRecoilValue(booksAsArrayState)
+  const libraryState = useSignalValue(libraryStateSignal)
+  const { data: books } = useBooksAsArrayState({
+    libraryState,
+    normalizedBookDownloadsState: useSignalValue(
+      normalizedBookDownloadsStateSignal
+    ),
+    protectedTagIds: useProtectedTagIds().data
+  })
 
   return useMemo(() => {
     // descend

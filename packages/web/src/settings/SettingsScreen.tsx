@@ -1,4 +1,4 @@
-import { ComponentProps, useState } from "react"
+import { ComponentProps, memo, useState } from "react"
 import {
   CheckCircleRounded,
   RadioButtonUncheckedOutlined
@@ -13,10 +13,9 @@ import {
   ListItemText,
   ListSubheader
 } from "@mui/material"
-import { useRecoilState, UnwrapRecoilValue } from "recoil"
-import { localSettingsState } from "./states"
+import { localSettingsStateSignal, useLocalSettingsState } from "./states"
 
-type LocalSettings = UnwrapRecoilValue<typeof localSettingsState>
+type LocalSettings = ReturnType<typeof useLocalSettingsState>
 
 const fullScreenModes: Record<
   LocalSettings["readingFullScreenSwitchMode"],
@@ -34,8 +33,8 @@ const showCollectionWithProtectedContentLabels: Record<
   hasNormalContent: "If the collection has non protected content as well"
 }
 
-export const SettingsScreen = () => {
-  const [localSettings, setLocalSettings] = useRecoilState(localSettingsState)
+export const SettingsScreen = memo(() => {
+  const localSettings = useLocalSettingsState()
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isShowCollectionDrawerOpened, setIsShowCollectionDrawerOpened] =
     useState(false)
@@ -52,7 +51,7 @@ export const SettingsScreen = () => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings((old) => ({
+              localSettingsStateSignal.setValue((old) => ({
                 ...old,
                 hideDirectivesFromCollectionName:
                   !old.hideDirectivesFromCollectionName
@@ -79,7 +78,7 @@ export const SettingsScreen = () => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings((old) => ({
+              localSettingsStateSignal.setValue((old) => ({
                 ...old,
                 showSensitiveDataSources: !old.showSensitiveDataSources
               }))
@@ -115,7 +114,7 @@ export const SettingsScreen = () => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings((old) => ({
+              localSettingsStateSignal.setValue((old) => ({
                 ...old,
                 unBlurWhenProtectedVisible: !old.unBlurWhenProtectedVisible
               }))
@@ -156,7 +155,7 @@ export const SettingsScreen = () => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings((old) => ({
+              localSettingsStateSignal.setValue((old) => ({
                 ...old,
                 useOptimizedTheme: !old.useOptimizedTheme
               }))
@@ -177,7 +176,7 @@ export const SettingsScreen = () => {
           <ListItem
             button
             onClick={() => {
-              setLocalSettings((old) => ({
+              localSettingsStateSignal.setValue((old) => ({
                 ...old,
                 useNavigationArrows: !old.useNavigationArrows
               }))
@@ -212,7 +211,7 @@ export const SettingsScreen = () => {
               button
               key={text}
               onClick={() => {
-                setLocalSettings((old) => ({
+                localSettingsStateSignal.setValue((old) => ({
                   ...old,
                   readingFullScreenSwitchMode: text
                 }))
@@ -228,7 +227,7 @@ export const SettingsScreen = () => {
         open={isDrawerOpened}
         onClose={() => setIsDrawerOpened(false)}
         onChoiceSelect={(value) => {
-          setLocalSettings((old) => ({
+          localSettingsStateSignal.setValue((old) => ({
             ...old,
             readingFullScreenSwitchMode: value
           }))
@@ -246,7 +245,7 @@ export const SettingsScreen = () => {
         open={isShowCollectionDrawerOpened}
         onClose={() => setIsShowCollectionDrawerOpened(false)}
         onChoiceSelect={(value) => {
-          setLocalSettings((old) => ({
+          localSettingsStateSignal.setValue((old) => ({
             ...old,
             showCollectionWithProtectedContent: value
           }))
@@ -265,7 +264,7 @@ export const SettingsScreen = () => {
       />
     </>
   )
-}
+})
 
 const MultipleChoiceDrawer = <Choice extends { value: string; label: string }>({
   choices,

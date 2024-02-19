@@ -10,7 +10,10 @@ export enum ObokuErrorCode {
 }
 
 export class ObokuSharedError extends Error {
-  constructor(public code: ObokuErrorCode, public previousError?: Error) {
+  constructor(
+    public code: ObokuErrorCode,
+    public previousError?: Error
+  ) {
     super(previousError?.message || "")
   }
 }

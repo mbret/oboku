@@ -11,41 +11,39 @@ import {
 } from "@mui/material"
 import { TabContext, TabList, TabPanel } from "@mui/lab"
 import { FiberManualRecordRounded } from "@mui/icons-material"
-import React from "react"
+import React, { useCallback } from "react"
 import { FC } from "react"
-import { atom, useRecoilCallback, useRecoilValue } from "recoil"
 import { useCSS } from "../common/utils"
 import { DialogTopBar } from "../navigation/DialogTopBar"
 import {
-  manifestState,
   usePagination,
   useCurrentPage,
-  useReader
+  readerStateSignal,
+  manifestStateSignal
 } from "./states"
 import { SettingsList } from "./settings/SettingsList"
+import { signal, useSignalValue } from "reactjrx"
 
-const isContentsDialogOpenedState = atom<boolean>({
+const isContentsDialogOpenedStateSignal = signal<boolean>({
   key: "isContentsDialogOpenedState",
   default: false
 })
 
 export const useMoreDialog = () => ({
-  toggleMoreDialog: useRecoilCallback(
-    ({ set }) =>
-      () => {
-        set(isContentsDialogOpenedState, (val) => !val)
-      },
-    []
-  )
+  toggleMoreDialog: useCallback(() => {
+    isContentsDialogOpenedStateSignal.setValue((val) => !val)
+  }, [])
 })
 
 export const MoreDialog: FC<{}> = () => {
-  const isContentsDialogOpened = useRecoilValue(isContentsDialogOpenedState)
+  const isContentsDialogOpened = useSignalValue(
+    isContentsDialogOpenedStateSignal
+  )
   const { toggleMoreDialog } = useMoreDialog()
   const [value, setValue] = React.useState("toc")
-  const reader = useReader()
-  const pagination = usePagination()
-  const { title, nav } = useRecoilValue(manifestState) || {}
+  const reader = useSignalValue(readerStateSignal)
+  const { data: pagination } = usePagination()
+  const { title, nav } = useSignalValue(manifestStateSignal) || {}
   const chapterInfo = pagination?.beginChapterInfo
   const currentPage = useCurrentPage() || 0
   const toc = nav?.toc || []

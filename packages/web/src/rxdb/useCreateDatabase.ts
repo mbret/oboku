@@ -1,11 +1,22 @@
 import { useCallback, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
-import { createDatabase } from "./databases"
+import { Database, createDatabase } from "./databases"
+import { isDefined, signal } from "reactjrx"
+import { filter, first, shareReplay } from "rxjs"
 
 /**
  * Make sure to use lazy one time db creation
  */
 let dbPromise: ReturnType<typeof createDatabase> | undefined = undefined
+
+export const databaseSignal = signal<Database | undefined>({
+  key: "databaseState"
+})
+
+export const latestDatabase$ = databaseSignal.subject.pipe(
+  filter(isDefined),
+  shareReplay(1)
+)
 
 export const useCreateDatabase = () => {
   const [db, setDb] = useState<Awaited<typeof dbPromise>>()
@@ -13,6 +24,7 @@ export const useCreateDatabase = () => {
 
   const reCreate = useCallback(async () => {
     setDb(undefined)
+    databaseSignal.setValue(undefined)
     // at this point we expect useDatabase to be rendered
     // again with undefined database. So that nothing should interact with
     // the db while it's being recreated
@@ -21,6 +33,7 @@ export const useCreateDatabase = () => {
 
     if (isMounted()) {
       setDb(newDb)
+      databaseSignal.setValue(newDb)
     }
 
     return newDb
@@ -35,6 +48,7 @@ export const useCreateDatabase = () => {
       const db = await dbPromise
 
       setDb(db)
+      databaseSignal.setValue(db)
     })()
   }, [setDb, isMounted])
 

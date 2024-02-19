@@ -1,25 +1,25 @@
 import { groupBy } from "lodash"
 import { useMemo } from "react"
-import { useSubscribe$ } from "../common/rxjs/useSubscribe$"
 import { Report } from "../debug/report.shared"
-import { useDatabase } from "../rxdb"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { switchMap } from "rxjs"
+import { useObserve } from "reactjrx"
 
 export const useDuplicatedResourceIdLinks = () => {
-  const { db: database } = useDatabase()
-
-  const { data: links = [] } = useSubscribe$(
-    useMemo(() => database?.link.find().$, [database])
+  const links = useObserve(
+    () => latestDatabase$.pipe(switchMap((db) => db?.link.find().$)),
+    []
   )
 
   return useMemo(() => {
     const dataByResourceId = groupBy(links, "resourceId")
     const duplicatedDocuments = Object.keys(dataByResourceId)
-      .filter((resourceId) => (dataByResourceId[resourceId]?.length ?? 0) > 1)
+      .filter((resourceId) => dataByResourceId[resourceId]!.length > 1)
       .map((resourceId) => [
         resourceId,
         {
-          name: (dataByResourceId[resourceId] ?? [])[0]?.resourceId,
-          number: dataByResourceId[resourceId]?.length ?? 0
+          name: dataByResourceId[resourceId]![0]?.resourceId,
+          number: dataByResourceId[resourceId]!.length
         }
       ])
 

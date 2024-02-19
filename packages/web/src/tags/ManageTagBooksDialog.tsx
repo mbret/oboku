@@ -1,32 +1,42 @@
 import { FC, useMemo } from "react"
 import { useRemoveTagFromBook, useAddTagToBook } from "../books/helpers"
-import { atom, useRecoilState, useRecoilValue } from "recoil"
-import { booksAsArrayState } from "../books/states"
+import { useBooksAsArrayState } from "../books/states"
 import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
-import { useDatabase } from "../rxdb"
-import { useTag } from "./states"
+import { useProtectedTagIds, useTag } from "./helpers"
+import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { signal, useSignalValue } from "reactjrx"
+import { libraryStateSignal } from "../library/states"
 
-export const isManageTagBooksDialogOpenedWithState = atom<string | undefined>({
-  key: "isManageTagBooksDialogOpenedWith",
-  default: undefined
-})
+export const isManageTagBooksDialogOpenedWithState = signal<string | undefined>(
+  {
+    key: "isManageTagBooksDialogOpenedWith",
+    default: undefined
+  }
+)
 
 export const ManageTagBooksDialog: FC<{}> = () => {
-  const [
-    isManageTagBooksDialogOpenedWith,
-    setIsManageTagBooksDialogOpenedWith
-  ] = useRecoilState(isManageTagBooksDialogOpenedWithState)
-  const { db$ } = useDatabase()
-  const tag = useTag(db$, isManageTagBooksDialogOpenedWith || "-1")
-  const books = useRecoilValue(booksAsArrayState)
-  const addTagToBook = useAddTagToBook()
-  const removeFromBook = useRemoveTagFromBook()
+  const isManageTagBooksDialogOpenedWith = useSignalValue(
+    isManageTagBooksDialogOpenedWithState
+  )
+  const { data: tag } = useTag(isManageTagBooksDialogOpenedWith || "-1")
+  const libraryState = useSignalValue(libraryStateSignal)
+  const normalizedBookDownloadsState = useSignalValue(
+    normalizedBookDownloadsStateSignal
+  )
+
+  const {data: books} = useBooksAsArrayState({
+    libraryState,
+    normalizedBookDownloadsState,
+    protectedTagIds: useProtectedTagIds().data
+  })
+  const { mutate: addTagToBook } = useAddTagToBook()
+  const { mutate: removeFromBook } = useRemoveTagFromBook()
   const tagBooks = useMemo(() => tag?.books?.map((item) => item) || [], [tag])
   const tagId = isManageTagBooksDialogOpenedWith
 
   const onClose = () => {
-    setIsManageTagBooksDialogOpenedWith(undefined)
+    isManageTagBooksDialogOpenedWithState.setValue(undefined)
   }
 
   const data = useMemo(
@@ -41,7 +51,7 @@ export const ManageTagBooksDialog: FC<{}> = () => {
   const onItemClick = useCallback(
     ({ id: bookId, selected }: { id: string; selected: boolean }) => {
       if (selected) {
-        tagId && removeFromBook({ bookId, tagId })
+        tagId && removeFromBook({ _id: bookId, tagId })
       } else {
         tagId && addTagToBook({ _id: bookId, tagId })
       }
