@@ -9,3 +9,4 @@ node_modules
 !.secrets/.gitkeep
 yarn-error.log
 .DS_STORE
+.nx
