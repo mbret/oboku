@@ -5,10 +5,7 @@ import { useReCreateDb } from "../rxdb"
 import { Report } from "../debug/report.shared"
 import { createServerError } from "../errors"
 import { authStateSignal } from "./authState"
-import {
-  SIGNAL_RESET,
-  useSignalValue
-} from "reactjrx"
+import { SIGNAL_RESET, useSignalValue } from "reactjrx"
 import { resetSignalEntriesToPersist } from "../storage"
 
 export const useIsAuthenticated = () => !!useSignalValue(authStateSignal)?.token

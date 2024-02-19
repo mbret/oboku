@@ -1,7 +1,7 @@
 import { Chip, Typography, useTheme } from "@mui/material"
 import { FC, memo } from "react"
 import { useDefaultItemClickHandler } from "./helpers"
-import {  useEnrichedBookState } from "../states"
+import { useEnrichedBookState } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import {
   DoneRounded,
