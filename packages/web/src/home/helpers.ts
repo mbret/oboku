@@ -7,31 +7,45 @@ import { useProtectedTagIds } from "../tags/helpers"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "../library/states"
 
+/**
+ * @todo cleanup
+ */
 export const useContinueReadingBooks = () => {
   const libraryState = useSignalValue(libraryStateSignal)
-  const booksAsArray = useBooksAsArrayState({
-    libraryState,
-    normalizedBookDownloadsState: useSignalValue(
-      normalizedBookDownloadsStateSignal
-    ),
-    protectedTagIds: useProtectedTagIds().data
-  })
+  const { data: protectedTagIds, isPending } = useProtectedTagIds()
+  const normalizedBookDownloadsState = useSignalValue(
+    normalizedBookDownloadsStateSignal
+  )
+
+  const { data: booksAsArray, isPending: isBooksPending } =
+    useBooksAsArrayState({
+      libraryState,
+      normalizedBookDownloadsState,
+      protectedTagIds
+    })
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
 
-  return useMemo(
-    () =>
-      booksSortedByDate
-        .filter(
-          (book) => book.readingStateCurrentState === ReadingStateState.Reading
-        )
-        .map((item) => item._id),
-    [booksSortedByDate]
-  )
+  return {
+    data: useMemo(
+      () =>
+        booksSortedByDate
+          .filter(
+            (book) =>
+              book.readingStateCurrentState === ReadingStateState.Reading
+          )
+          .map((item) => item._id),
+      [booksSortedByDate]
+    ),
+    isPending: isPending || isBooksPending
+  }
 }
 
+/**
+ * @todo cleanup
+ */
 export const useRecentlyAddedBooks = () => {
   const libraryState = useSignalValue(libraryStateSignal)
-  const books = useBooksAsArrayState({
+  const { data: books } = useBooksAsArrayState({
     libraryState,
     normalizedBookDownloadsState: useSignalValue(
       normalizedBookDownloadsStateSignal

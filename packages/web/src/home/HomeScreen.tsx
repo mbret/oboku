@@ -1,19 +1,19 @@
-import { useMemo } from "react"
+import { memo, useMemo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { Typography, useTheme, Button } from "@mui/material"
+import { Typography, useTheme, Button, Box } from "@mui/material"
 import { BookList } from "../books/bookList/BookList"
 import { ROUTES } from "../constants"
 import { useNavigate } from "react-router-dom"
 import ContinueReadingAsset from "../assets/continue-reading.svg"
-import { useCSS } from "../common/utils"
 import { useTranslation } from "react-i18next"
 import { useContinueReadingBooks, useRecentlyAddedBooks } from "./helpers"
+import { ContinueReadingSection } from "./ContinueReadingSection"
+import { RecentlyAddedSection } from "./RecentlyAddedSection"
 
-export const HomeScreen = () => {
-  const classes = useStyles()
+export const HomeScreen = memo(() => {
   const theme = useTheme()
   const navigate = useNavigate()
-  const continueReadingBooks = useContinueReadingBooks()
+  const { data: continueReadingBooks, isPending } = useContinueReadingBooks()
   const recentlyAddedBooks = useRecentlyAddedBooks()
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
   const itemWidth = 150
@@ -27,10 +27,10 @@ export const HomeScreen = () => {
   )
 
   return (
-    <div style={classes.container}>
+    <Box display="flex" flex={1} overflow="hidden" flexDirection="column">
       <TopBarNavigation title={"Home"} showBack={false} hasSearch />
-      <div style={classes.innerContainer}>
-        {continueReadingBooks.length === 0 && (
+      <Box height="100%" overflow="scroll">
+        {continueReadingBooks.length === 0 && !isPending && (
           <div
             style={{
               width: "100%",
@@ -69,59 +69,9 @@ export const HomeScreen = () => {
             </Button>
           </div>
         )}
-        {continueReadingBooks.length > 0 && (
-          <>
-            <div style={classes.title}>
-              <Typography variant="h6">Continue reading</Typography>
-            </div>
-            <BookList
-              isHorizontal
-              itemWidth={itemWidth}
-              data={continueReadingBooks}
-              style={listStyle}
-              viewMode="grid"
-            />
-          </>
-        )}
-        {recentlyAddedBooks.length > 0 && (
-          <>
-            <div style={classes.title}>
-              <Typography variant="h6">Recently added</Typography>
-            </div>
-            <BookList
-              isHorizontal
-              itemWidth={itemWidth}
-              data={recentlyAddedBooks}
-              style={listStyle}
-              viewMode="grid"
-            />
-          </>
-        )}
-      </div>
-    </div>
+        <ContinueReadingSection />
+        <RecentlyAddedSection />
+      </Box>
+    </Box>
   )
-}
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        display: "flex",
-        flex: 1,
-        overflow: "hidden",
-        flexFlow: "column"
-      },
-      innerContainer: {
-        height: "100%",
-        overflow: "scroll"
-      },
-      title: {
-        padding: theme.spacing(1),
-        paddingTop: theme.spacing(2)
-      }
-    }),
-    [theme]
-  )
-}
+})
