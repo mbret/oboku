@@ -4,7 +4,7 @@ import {
   ReadingStateState,
   sortByTitleComparator
 } from "@oboku/shared"
-import { useDatabase } from "../rxdb"
+import { Database, useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../debug/report.shared"
 import { useCallback, useMemo } from "react"
@@ -16,7 +16,7 @@ import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
 import { useDialogManager } from "../dialog"
 import { useSync } from "../rxdb/useSync"
-import { catchError, EMPTY, from, map, switchMap } from "rxjs"
+import { catchError, EMPTY, from, map, mergeMap, switchMap } from "rxjs"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { plugin } from "../plugins/local"
@@ -347,3 +347,20 @@ const sortBooksBy = (
       return books
   }
 }
+
+export const getBookById = ({
+  database,
+  id
+}: {
+  database: Database
+  id: string
+}) =>
+  from(
+    database.collections.book
+      .findOne({
+        selector: {
+          _id: id
+        }
+      })
+      .exec()
+  )

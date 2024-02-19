@@ -1,8 +1,9 @@
 import { LinkDocType } from "@oboku/shared"
 import { useRefreshBookMetadata } from "../books/helpers"
-import { useDatabase } from "../rxdb"
+import { Database, useDatabase } from "../rxdb"
 import { useCallback } from "react"
 import { Report } from "../debug/report.shared"
+import { from } from "rxjs"
 
 type EditLinkPayload = Partial<LinkDocType> & Required<Pick<LinkDocType, "_id">>
 
@@ -62,3 +63,14 @@ export const useRemoveDanglingLinks = () => {
 
   return removeDanglingLinks
 }
+
+export const getLinkById = (database: Database, id: string) =>
+  from(
+    database.collections.link
+      .findOne({
+        selector: {
+          _id: id
+        }
+      })
+      .exec()
+  )

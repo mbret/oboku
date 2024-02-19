@@ -12,6 +12,7 @@ import { catchError, EMPTY, from, switchMap, map, of, filter } from "rxjs"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { isDefined, useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
+import { getDataSourcePlugin } from "./getDataSourcePlugin"
 
 export const useSynchronizeDataSource = () => {
   const client = useAxiosClient()
@@ -154,4 +155,4 @@ export const useDataSourceHelpers = (
 }
 
 export const useDataSourcePlugin = (type?: string) =>
-  useMemo(() => plugins.find((plugin) => plugin.type === type), [type])
+  useMemo(() => getDataSourcePlugin(type), [type])

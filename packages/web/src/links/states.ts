@@ -5,6 +5,7 @@ import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { map, switchMap } from "rxjs"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
+import { isRemovableFromDataSource } from "./isRemovableFromDataSource"
 
 export const getLinksByIds = async (database: Database) => {
   const result = await database.collections.link.find({}).exec()
@@ -15,11 +16,13 @@ export const getLinksByIds = async (database: Database) => {
 export const useLinks = () => {
   return useQuery({
     queryKey: ["db", "get", "many", "link"],
-    queryFn: () =>
-      latestDatabase$.pipe(
+    queryFn: () => {
+      return latestDatabase$.pipe(
         switchMap((db) => db.collections.link.find({}).$),
         map((entries) => keyBy(entries, "_id"))
       )
+    },
+    staleTime: Infinity
   })
 }
 
@@ -36,7 +39,8 @@ export const useLink = ({ id }: { id: string }) => {
               }
             }).$
         )
-      )
+      ),
+    staleTime: Infinity
   })
 }
 
@@ -48,7 +52,7 @@ const mapLinkTtoState = ({ link }: { link?: LinkDocType | null }) => {
   return {
     ...link,
     isSynchronizable: !!linkPlugin?.canSynchronize,
-    isRemovableFromDataSource: !!linkPlugin?.useRemoveBook
+    isRemovableFromDataSource: isRemovableFromDataSource({ link })
   }
 }
 
