@@ -8,8 +8,8 @@ const hostname =
     ? window?.location?.hostname
     : sw?.location?.hostname
 
-export const API_URI = `https://5ap6qwkd0e.execute-api.us-east-1.amazonaws.com/dev`
-export const API_COUCH_URI = `https://lecouch2.xuatz.com/`
+export const API_URI = `https://16vyq7634k.execute-api.us-east-1.amazonaws.com/prod`
+export const API_COUCH_URI = `https://lecouch.xuatz.com/`
 
 export const IS_MOBILE_DEVICE = isMobileDetected()
 
