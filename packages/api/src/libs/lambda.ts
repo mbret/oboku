@@ -13,6 +13,7 @@ export const withMiddy = (
   handler: any,
   {
     withCors = true,
+    withJsonBodyParser = true,
     schema = {}
   }: {
     /**
@@ -21,9 +22,14 @@ export const withMiddy = (
      * can skip cors
      */
     withCors?: boolean
+    withJsonBodyParser?: boolean
     schema?: Parameters<typeof transpileSchema>[0]
   } = {}
 ) => {
+  const noop = {
+    before: () => {}
+  }
+
   return (
     middy(handler)
       /**
@@ -38,7 +44,7 @@ export const withMiddy = (
         }
       })
       .use(httpHeaderNormalizer())
-      .use(middyJsonBodyParser())
+      .use(withJsonBodyParser ? middyJsonBodyParser({}) : noop)
       .use(
         validator({
           eventSchema: transpileSchema(schema)
@@ -91,11 +97,7 @@ export const withMiddy = (
           ? cors({
               headers: `*`
             })
-          : {
-              before: () => {
-                //
-              }
-            }
+          : noop
       )
   )
 }

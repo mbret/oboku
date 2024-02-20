@@ -64,4 +64,6 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
   }
 }
 
-export const main = withMiddy(lambda)
+export const main = withMiddy(lambda, {
+  withJsonBodyParser: false
+})
