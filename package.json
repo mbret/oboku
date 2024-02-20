@@ -67,7 +67,7 @@
     "@react-rxjs/core": "^0.10.7",
     "@react-rxjs/utils": "^0.9.7",
     "arg": "^5.0.2",
-    "reactjrx": "^1.48.0",
+    "reactjrx": "^1.71.0",
     "sharp": "^0.32.6"
   }
 }

@@ -2,7 +2,7 @@ import { crypto } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
 import { useQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
-import { switchMap } from "rxjs"
+import { map, switchMap } from "rxjs"
 
 export const useUpdateContentPassword = () => {
   const { db } = useDatabase()
@@ -25,7 +25,11 @@ export const useAccountSettings = (
   const data = useQuery({
     queryKey: ["rxdb", "settings"],
     queryFn: () =>
-      latestDatabase$.pipe(switchMap((db) => db.settings.findOne().$)),
+      latestDatabase$.pipe(
+        switchMap((db) =>
+          db.settings.findOne().$.pipe(map((entry) => entry?.toJSON()))
+        )
+      ),
     /**
      * We always want instant feedback for these settings for the user.
      * Since the query is a live stream the data are always fresh anyway.

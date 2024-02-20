@@ -93,7 +93,7 @@ export function App() {
                           <UpdateAvailableDialog
                             serviceWorker={newServiceWorker}
                           />
-                          <RecoilSyncedWithDatabase />
+                          <ReplicateRemoteDb />
                           <BlockingBackdrop />
                           <Effects />
                         </DialogProvider>
@@ -122,7 +122,7 @@ export function App() {
   )
 }
 
-const RecoilSyncedWithDatabase: FC = () => {
+const ReplicateRemoteDb: FC = () => {
   useObservers()
 
   return null
