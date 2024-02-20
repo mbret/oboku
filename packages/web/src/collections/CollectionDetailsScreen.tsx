@@ -4,10 +4,13 @@ import { Typography, useTheme } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import CollectionBgSvg from "../assets/series-bg.svg"
-import { useRecoilValue } from "recoil"
-import { collectionState } from "./states"
+import { useCollectionState } from "./states"
 import { useCollectionActionsDrawer } from "./CollectionActionsDrawer"
 import { BookListWithControls } from "../books/bookList/BookListWithControls"
+import { useLocalSettingsState } from "../settings/states"
+import { useProtectedTagIds } from "../tags/helpers"
+import { useSignalValue } from "reactjrx"
+import { libraryStateSignal } from "../library/states"
 
 type ScreenParams = {
   id: string
@@ -17,7 +20,13 @@ export const CollectionDetailsScreen = () => {
   const theme = useTheme()
   const navigate = useNavigate()
   const { id = `-1` } = useParams<ScreenParams>()
-  const collection = useRecoilValue(collectionState(id || "-1"))
+  const libraryState = useSignalValue(libraryStateSignal)
+  const collection = useCollectionState({
+    id: id || "-1",
+    libraryState,
+    localSettingsState: useLocalSettingsState(),
+    protectedTagIds: useProtectedTagIds().data
+  })
   const data =
     useMemo(
       () => collection?.books?.map((book) => book || "-1"),

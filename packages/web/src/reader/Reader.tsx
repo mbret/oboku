@@ -2,19 +2,17 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
-import { useState, useEffect, useCallback, FC } from "react"
+import { useState, useEffect, useCallback, FC, memo } from "react"
 import { useNavigate } from "react-router-dom"
 import { useMeasure } from "react-use"
 import { Box, Button, Link, Typography, useTheme } from "@mui/material"
-import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
-import { bookState } from "../books/states"
+import { useBookState } from "../books/states"
 import {
   createAppReader,
-  isBookReadyState,
-  manifestState,
   ReactReaderProps,
-  ReaderInstance,
-  useReader
+  readerStateSignal,
+  isBookReadyStateSignal,
+  manifestStateSignal
 } from "./states"
 import { TopBar } from "./TopBar"
 import { BottomBar } from "./BottomBar"
@@ -28,20 +26,23 @@ import { useManifest } from "./manifest"
 import { useRarStreamer } from "./streamer/useRarStreamer.shared"
 import { useUpdateBookState } from "./bookHelpers"
 import { FloatingBottom } from "./FloatingBottom"
-import { readerSettingsState } from "./settings/states"
 import { FONT_SCALE_MAX, FONT_SCALE_MIN } from "./constants"
-import { usePersistReaderSettings } from "./settings/usePersistReaderSettings"
+import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSettings"
 import { Notification } from "./Notification"
+import { useReaderSettingsState } from "./settings/states"
+import { useTagsByIds } from "../tags/helpers"
+import { useSignalValue } from "reactjrx"
 
 export const Reader: FC<{
   bookId: string
-  onReader: (reader: ReaderInstance) => void
-}> = ({ bookId, onReader }) => {
-  const reader = useReader()
-  const [isBookReady, setIsBookReady] = useRecoilState(isBookReadyState)
-  const readerSettings = useRecoilValue(readerSettingsState)
-  const setManifestState = useSetRecoilState(manifestState)
-  const book = useRecoilValue(bookState(bookId || "-1"))
+}> = memo(({ bookId }) => {
+  const reader = useSignalValue(readerStateSignal)
+  const isBookReady = useSignalValue(isBookReadyStateSignal)
+  const readerSettings = useReaderSettingsState()
+  const book = useBookState({
+    tags: useTagsByIds().data,
+    bookId: bookId || "-1"
+  })
   const navigate = useNavigate()
   const [
     containerMeasureRef,
@@ -67,21 +68,21 @@ export const Reader: FC<{
   useBookResize(reader, containerWidth, containerHeight)
   useGestureHandler(readerContainerHammer)
   useUpdateBookState(bookId)
-  usePersistReaderSettings()
+  usePersistReaderInstanceSettings()
 
   useEffect(() => {
     return () => {
-      setIsBookReady(false)
+      isBookReadyStateSignal.setValue(false)
     }
-  }, [setIsBookReady])
+  }, [])
 
   useEffect(() => {
-    setManifestState(manifest)
-  }, [manifest, setManifestState])
+    manifestStateSignal.setValue(manifest)
+  }, [manifest])
 
   const onBookReady = useCallback(() => {
-    setIsBookReady(true)
-  }, [setIsBookReady])
+    isBookReadyStateSignal.setValue(true)
+  }, [])
 
   useEffect(() => {
     if (manifest && book && !readerOptions) {
@@ -200,7 +201,7 @@ export const Reader: FC<{
             manifest={manifest}
             loadOptions={loadOptions}
             onReady={onBookReady}
-            onReader={onReader}
+            onReader={readerStateSignal.setValue}
             createReader={createAppReader}
           />
         )}
@@ -217,7 +218,7 @@ export const Reader: FC<{
       <BottomBar />
     </div>
   )
-}
+})
 
 const useStyles = () => {
   const theme = useTheme()

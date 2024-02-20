@@ -17,12 +17,12 @@ import {
   RadioButtonUncheckedOutlined
 } from "@mui/icons-material"
 import { getDisplayableReadingState, useToggleTag } from "./helpers"
-import { useTagIds } from "../tags/states"
+import { useTagIds } from "../tags/helpers"
 import { ReadingStateState } from "@oboku/shared"
 import { DownloadState } from "../download/states"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
-import { useDatabase } from "../rxdb"
-import { updateLibraryState, useLibraryState } from "./states"
+import { useSignalValue } from "reactjrx"
+import { libraryStateSignal } from "./states"
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean
@@ -31,9 +31,8 @@ export const LibraryFiltersDrawer: FC<{
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] =
     useState(false)
-  const { db$ } = useDatabase()
-  const tags = useTagIds(db$)
-  const library = useLibraryState()
+  const { data: tags = [] } = useTagIds()
+  const library = useSignalValue(libraryStateSignal)
   const selectedTags = library.tags
   const toggleTag = useToggleTag()
 
@@ -81,12 +80,13 @@ export const LibraryFiltersDrawer: FC<{
             <ListItem
               button
               onClick={() =>
-                updateLibraryState({
+                libraryStateSignal.setValue((state) => ({
+                  ...state,
                   downloadState:
                     library.downloadState === DownloadState.Downloaded
                       ? undefined
                       : DownloadState.Downloaded
-                })
+                }))
               }
             >
               <ListItemText primary="Only show downloaded" />
@@ -101,10 +101,11 @@ export const LibraryFiltersDrawer: FC<{
             </ListItem>
             <ListItemButton
               onClick={() =>
-                updateLibraryState({
+                libraryStateSignal.setValue((state) => ({
+                  ...state,
                   isNotInterested:
                     library.isNotInterested === "only" ? "hide" : "only"
-                })
+                }))
               }
             >
               <ListItemText primary="Only show not interested books" />
@@ -140,8 +141,7 @@ const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
   open,
   onClose
 }) => {
-  const library = useLibraryState()
-
+  const library = useSignalValue(libraryStateSignal)
   const readingStates = [
     ReadingStateState.NotStarted,
     ReadingStateState.Reading,
@@ -157,15 +157,17 @@ const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
           key={readingState}
           onClick={() => {
             if (library.readingStates.includes(readingState)) {
-              updateLibraryState({
+              libraryStateSignal.setValue((state) => ({
+                ...state,
                 readingStates: library.readingStates.filter(
                   (s) => s !== readingState
                 )
-              })
+              }))
             } else {
-              updateLibraryState({
+              libraryStateSignal.setValue((state) => ({
+                ...state,
                 readingStates: [...library.readingStates, readingState]
-              })
+              }))
             }
           }}
         >

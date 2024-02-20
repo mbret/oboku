@@ -7,18 +7,17 @@ import schema from "./schema"
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
-  await getAwsLambda()
-    .invoke({
-      InvocationType: "Event",
-      FunctionName: `oboku-api-${STAGE}-refreshMetadataLongProcess`,
-      Payload: JSON.stringify({
-        body: {
-          bookId: event.body.bookId,
-          credentials: getNormalizedHeader(event, `oboku-credentials`),
-          authorization: getNormalizedHeader(event, `authorization`)
-        }
-      })
+  await getAwsLambda().invoke({
+    InvocationType: "Event",
+    FunctionName: `oboku-api-${STAGE}-refreshMetadataLongProcess`,
+    Payload: JSON.stringify({
+      body: {
+        bookId: event.body.bookId,
+        credentials: getNormalizedHeader(event, `oboku-credentials`),
+        authorization: getNormalizedHeader(event, `authorization`)
+      }
     })
+  })
 
   return {
     statusCode: 202,

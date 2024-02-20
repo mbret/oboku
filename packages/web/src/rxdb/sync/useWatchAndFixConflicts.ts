@@ -2,13 +2,12 @@ import { useEffect, useMemo } from "react"
 import { API_COUCH_URI } from "../../constants"
 import { Report } from "../../debug/report.shared"
 import PouchDB from "pouchdb"
-import { useRecoilValue } from "recoil"
-import { authState } from "../../auth/authState"
+import { authStateSignal } from "../../auth/authState"
 import { useNetworkState } from "react-use"
 import { defer, EMPTY, from, throwError } from "rxjs"
-import { catchError, switchMap } from "rxjs/operators"
-import { retryBackoff } from "../../common/rxjsOperators"
+import { catchError, switchMap, tap } from "rxjs/operators"
 import { isPouchError } from "../utils"
+import { retryBackoff, useSignalValue } from "reactjrx"
 
 const getDb = (dbName: string, token: string) =>
   new PouchDB(`${API_COUCH_URI}/${dbName}`, {
@@ -22,8 +21,10 @@ const getDb = (dbName: string, token: string) =>
   })
 
 const useWatchForLiveConflicts = (db: PouchDB.Database<{}> | undefined) => {
+  const network = useNetworkState()
+
   useEffect(() => {
-    if (!db) return
+    if (!db || !network.online) return
 
     // @todo retry automatically in case of failure
 
@@ -60,7 +61,7 @@ const useWatchForLiveConflicts = (db: PouchDB.Database<{}> | undefined) => {
     return () => {
       listener.cancel()
     }
-  }, [db])
+  }, [db, network])
 }
 
 /**
@@ -91,23 +92,26 @@ const useTryToResolveOldRemainingConflicts = (
     ).pipe(
       retryBackoff({
         initialInterval: 100,
-        shouldRetry: (err) => !isPouchError(err) || (err.status || 500) >= 500
+        retry: (_, err) =>
+          !isPouchError(err as any) || ((err as any).status || 500) >= 500
       })
     )
 
     const conflicts$ = defer(() =>
       from(db.query(`conflict_docs/all`, { include_docs: true }))
     ).pipe(
-      retryBackoff({
+      retryBackoff<PouchDB.Query.Response<{}>, unknown>({
         initialInterval: 100,
-        shouldRetry: (err) => !isPouchError(err) || (err.status || 500) >= 500
+        retry: (_, err) =>
+          !isPouchError(err as any) || ((err as any).status || 500) >= 500
       })
     )
 
     const view$ = defer(() => from(db.get("_design/conflict_docs"))).pipe(
-      retryBackoff({
+      retryBackoff<PouchDB.Core.IdMeta & PouchDB.Core.GetMeta, unknown>({
         initialInterval: 100,
-        shouldRetry: (err) => !isPouchError(err) || (err.status || 500) >= 500
+        retry: (_, err) =>
+          !isPouchError(err as any) || ((err as any).status || 500) >= 500
       })
     )
 
@@ -118,7 +122,7 @@ const useTryToResolveOldRemainingConflicts = (
             return createView$
           }
 
-          return throwError(err)
+          throw err
         }),
         switchMap(() => conflicts$),
         switchMap((response) => {
@@ -158,7 +162,7 @@ const useTryToResolveOldRemainingConflicts = (
 }
 
 export const useWatchAndFixConflicts = () => {
-  const { token, dbName } = useRecoilValue(authState) || {}
+  const { token, dbName } = useSignalValue(authStateSignal) || {}
   const db = useMemo(() => {
     if (!token || !dbName) return undefined
     return getDb(dbName, token)

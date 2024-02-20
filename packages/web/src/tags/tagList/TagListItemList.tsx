@@ -7,15 +7,13 @@ import {
   LockRounded
 } from "@mui/icons-material"
 import { TagsDocType } from "@oboku/shared"
-import { useTag, useTags } from "../states"
-import { useDatabase } from "../../rxdb"
+import { useTag } from "../helpers"
 
 export const TagListItemList: FC<{
   id: string
   onItemClick?: (tag: TagsDocType) => void
 }> = memo(({ id, onItemClick }) => {
-  const { db$ } = useDatabase()
-  const tag = useTag(db$, id)
+  const { data: tag } = useTag(id)
   const styles = useStyle()
 
   return (

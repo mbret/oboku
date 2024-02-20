@@ -5,14 +5,17 @@ import { CenteredBox } from "../common/CenteredBox"
 import { useTranslation } from "react-i18next"
 import { Google } from "@mui/icons-material"
 import { useSignIn } from "./useSignIn"
-import { useMutation } from "../common/useMutation"
 import { ErrorMessage, isCancelError } from "../errors"
 import { OrDivider } from "../common/OrDivider"
 import { links } from "@oboku/shared"
+import { useMutation } from "reactjrx"
 
 export const LoginScreen = () => {
   const { signIn } = useSignIn()
-  const { mutate, isLoading, error } = useMutation(signIn)
+  const { mutate, isPending, error } = useMutation({
+    mutationFn: signIn,
+    mapOperator: "switch"
+  })
   const theme = useTheme()
   const { t } = useTranslation()
 
@@ -40,7 +43,7 @@ export const LoginScreen = () => {
         size="large"
         fullWidth
         startIcon={<Google />}
-        disabled={isLoading}
+        disabled={isPending}
       >
         {t("authScreen.sign.google")}
       </Button>

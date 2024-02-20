@@ -1,13 +1,12 @@
-import { useSetRecoilState } from "recoil"
-import * as states from "./states"
+import { isMenuShownStateSignal, readerStateSignal } from "./states"
 import { useEffect } from "react"
 import { useWindowSize } from "react-use"
 import { HORIZONTAL_TAPPING_RATIO } from "./constants"
+import { useSignalValue } from "reactjrx"
 
 export const useGestureHandler = (hammer: HammerManager | undefined) => {
-  const reader = states.useReader()
+  const reader = useSignalValue(readerStateSignal)
   const { width } = useWindowSize()
-  const setIsMenuShown = useSetRecoilState(states.isMenuShownState)
 
   useEffect(() => {
     const onTap = ({ srcEvent }: HammerInput) => {
@@ -26,13 +25,13 @@ export const useGestureHandler = (hammer: HammerManager | undefined) => {
         const { x = 0 } = normalizedEvent
 
         if (!reader) {
-          setIsMenuShown((val) => !val)
+          isMenuShownStateSignal.setValue((val) => !val)
         } else if (x < width * HORIZONTAL_TAPPING_RATIO) {
           reader?.turnLeft()
         } else if (x > width * (1 - HORIZONTAL_TAPPING_RATIO)) {
           reader?.turnRight()
         } else {
-          setIsMenuShown((val) => !val)
+          isMenuShownStateSignal.setValue((val) => !val)
         }
       }
     }
@@ -62,5 +61,5 @@ export const useGestureHandler = (hammer: HammerManager | undefined) => {
       hammer?.off("tap", onTap)
       hammer?.off("panmove panstart panend", onPanMove)
     }
-  }, [hammer, reader, setIsMenuShown, width])
+  }, [hammer, reader, width])
 }

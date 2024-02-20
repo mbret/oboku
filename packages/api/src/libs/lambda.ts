@@ -70,8 +70,8 @@ export const withMiddy = (
           }
           // we enforce non exposure unless specified
           if (request.error && (request.error as any)?.expose === undefined) {
-            // eslint-disable-next-line @typescript-eslint/no-extra-semi
-            (request.error as any).expose = false
+            // eslint-disable-next-line no-extra-semi
+            ;(request.error as any).expose = false
           }
 
           // we force JSON response for any error that is a simple string

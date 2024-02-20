@@ -1,24 +1,44 @@
 import { useNavigate } from "react-router-dom"
-import { useRecoilCallback } from "recoil"
 import { ROUTES } from "../../constants"
 import { useDownloadBook } from "../../download/useDownloadBook"
-import { enrichedBookState } from "../states"
+import { getBooksByIds, getEnrichedBookState } from "../states"
+import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { getProtectedTags, getTagsByIds } from "../../tags/helpers"
+import { useDatabase } from "../../rxdb"
+import { getLinksByIds } from "../../links/states"
+import { useCallback } from "react"
+import { getCollectionsByIds } from "../../collections/states"
 
 export const useDefaultItemClickHandler = () => {
   const downloadFile = useDownloadBook()
   const navigate = useNavigate()
+  const { db } = useDatabase()
 
-  return useRecoilCallback(
-    ({ snapshot }) =>
-      async (id: string) => {
-        const item = await snapshot.getPromise(enrichedBookState(id))
+  return useCallback(
+    async (id: string) => {
+      if (!db) return
 
-        if (item?.downloadState === "none") {
-          item?._id && downloadFile(item)
-        } else if (item?.downloadState === "downloaded") {
-          navigate(ROUTES.READER.replace(":id", item?._id))
-        }
-      },
-    []
+      const normalizedCollections = await getCollectionsByIds(db)
+      const normalizedLinks = await getLinksByIds(db)
+      const normalizedBooks = await getBooksByIds(db)
+
+      const item = getEnrichedBookState({
+        bookId: id,
+        normalizedBookDownloadsState:
+          normalizedBookDownloadsStateSignal.getValue(),
+        protectedTagIds: db ? await getProtectedTags(db) : [],
+        tags: db ? await getTagsByIds(db) : {},
+        normalizedLinks,
+        normalizedCollections,
+        normalizedBooks
+      })
+
+      if (item?.downloadState === "none") {
+        item?._id && downloadFile(item)
+      } else if (item?.downloadState === "downloaded") {
+        navigate(ROUTES.READER.replace(":id", item?._id))
+      }
+    },
+    [db, downloadFile, navigate]
   )
 }

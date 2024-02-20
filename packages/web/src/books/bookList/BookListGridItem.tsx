@@ -1,26 +1,47 @@
-import React, { FC, memo } from "react"
-import { Typography, useTheme } from "@mui/material"
+import { FC, memo, useEffect } from "react"
+import { Box, Typography, styled, useTheme } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
-import { useRecoilState, useRecoilValue } from "recoil"
-import { bookActionDrawerState } from "../BookActionsDrawer"
-import { enrichedBookState } from "../states"
+import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
+import { useEnrichedBookState } from "../states"
 import { useDefaultItemClickHandler } from "./helpers"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useCSS } from "../../common/utils"
+import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
+import { useSignalValue } from "reactjrx"
+
+const ContainerBox = styled("div")`
+  cursor: pointer;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: ${({ theme }) => theme.spacing(1)};
+  -webkit-tap-highlight-color: transparent;
+`
 
 export const BookListGridItem: FC<{
   bookId: string
   onItemClick?: (id: string) => void
 }> = memo(({ bookId, onItemClick }) => {
-  const item = useRecoilValue(enrichedBookState(bookId))
+  const normalizedBookDownloadsState = useSignalValue(
+    normalizedBookDownloadsStateSignal
+  )
+  const { data: protectedTagIds } = useProtectedTagIds()
+  const tags = useTagsByIds().data
+
+  const item = useEnrichedBookState({
+    bookId,
+    normalizedBookDownloadsState,
+    protectedTagIds,
+    tags
+  })
   const onDefaultItemClick = useDefaultItemClickHandler()
   const classes = useStyles()
-  const [, setBookActionDrawerState] = useRecoilState(bookActionDrawerState)
 
   return (
-    <div
+    <ContainerBox
       key={item?._id}
-      style={classes.itemContainer}
       onClick={() => {
         if (onItemClick) return onItemClick(bookId)
         return onDefaultItemClick(bookId)
@@ -31,11 +52,11 @@ export const BookListGridItem: FC<{
         style={classes.coverContainer}
         size="large"
       />
-      <div
+      <Box
         style={classes.itemBottomContainer}
         onClick={(e) => {
           e.stopPropagation()
-          item?._id && setBookActionDrawerState({ openedWith: item._id })
+          item?._id && bookActionDrawerSignal.setValue({ openedWith: item._id })
         }}
       >
         <div style={{ width: "100%", overflow: "hidden" }}>
@@ -51,8 +72,8 @@ export const BookListGridItem: FC<{
             transform: "translate(50%, 0%)"
           }}
         />
-      </div>
-    </div>
+      </Box>
+    </ContainerBox>
   )
 })
 
@@ -61,19 +82,6 @@ const useStyles = () => {
 
   return useCSS(
     () => ({
-      itemContainer: {
-        cursor: "pointer",
-        height: "100%",
-        position: "relative",
-        display: "flex",
-        flexFlow: "column",
-        // paddingLeft: theme.spacing(1),
-        // paddingRight: theme.spacing(1),
-        padding: theme.spacing(1)
-        // paddingRight: theme.spacing(1),
-        // paddingBottom: theme.spacing(1),
-        // paddingTop: theme.spacing(2),
-      },
       coverContainer: {
         position: "relative",
         display: "flex",

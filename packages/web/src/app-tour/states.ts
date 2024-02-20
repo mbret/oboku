@@ -1,6 +1,6 @@
-import { atom } from "recoil"
+import { signal } from "reactjrx"
 
-export const appTourState = atom<{
+export const appTourSignal = signal<{
   currentOpenedTour: string | undefined
 }>({
   key: "appTourState",

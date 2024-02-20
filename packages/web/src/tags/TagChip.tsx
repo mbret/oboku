@@ -1,14 +1,12 @@
 import { ComponentProps } from "react"
 import Chip from "@mui/material/Chip"
-import { useTag } from "./states"
-import { useDatabase } from "../rxdb"
+import { useTag } from "./helpers"
 
 export const TagChip = ({
   id,
   ...rest
 }: { id: string } & ComponentProps<typeof Chip>) => {
-  const { db$ } = useDatabase()
-  const { name } = useTag(db$, id) || {}
+  const { data: tag } = useTag(id)
 
-  return <Chip label={name} {...rest} />
+  return <Chip label={tag?.name} {...rest} />
 }

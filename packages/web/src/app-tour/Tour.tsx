@@ -1,8 +1,8 @@
 import React, { useEffect, memo, ReactNode } from "react"
-import { useRecoilState } from "recoil"
-import { appTourState } from "./states"
+import { appTourSignal } from "./states"
 import { TourContent } from "./TourContent"
 import { TourKey } from "./TourContext"
+import { useSignalValue } from "reactjrx"
 
 type Props = {
   id: TourKey
@@ -14,12 +14,11 @@ type Props = {
 
 export const Tour: React.FC<Props> = memo(
   ({ children, id, show = false, unskippable, onClose }) => {
-    const [{ currentOpenedTour }, setAooTourState] =
-      useRecoilState(appTourState)
+    const { currentOpenedTour } = useSignalValue(appTourSignal)
 
     useEffect(() => {
       if (!show) {
-        setAooTourState((old) => {
+        appTourSignal.setValue((old) => {
           if (old.currentOpenedTour === id) {
             return { currentOpenedTour: undefined }
           }
@@ -27,7 +26,7 @@ export const Tour: React.FC<Props> = memo(
         })
       }
       if (show) {
-        setAooTourState((old) => {
+        appTourSignal.setValue((old) => {
           if (
             old.currentOpenedTour === undefined ||
             old.currentOpenedTour !== id
@@ -37,7 +36,7 @@ export const Tour: React.FC<Props> = memo(
           return old
         })
       }
-    }, [show, currentOpenedTour, id, setAooTourState])
+    }, [show, currentOpenedTour, id])
 
     return (
       <>

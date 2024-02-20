@@ -1,12 +1,19 @@
-import { ComponentProps, FC, forwardRef, memo, useMemo, useRef } from "react"
+import {
+  ComponentProps,
+  FC,
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef
+} from "react"
 import {
   FixedSizeGrid,
   GridOnScrollProps,
   VariableSizeList
 } from "react-window"
 import AutoSizer from "react-virtualized-auto-sizer"
-import { useRecoilValue } from "recoil"
-import { localSettingsState } from "../settings/states"
 import {
   ArrowBackIosRounded,
   ArrowForwardIosRounded,
@@ -15,7 +22,7 @@ import {
 } from "@mui/icons-material"
 import { decimalAdjust, useCSS } from "../common/utils"
 import { useTheme } from "@mui/material"
-import { useCallback } from "react"
+import { useLocalSettingsState } from "../settings/states"
 
 export const ReactWindowList: FC<{
   rowRenderer: (item: any, rowIndex: number) => React.ReactNode
@@ -36,7 +43,7 @@ export const ReactWindowList: FC<{
     <>
       <AutoSizer>
         {({ width, height }) => (
-          <List width={width} height={height} {...rest} />
+          <List width={width ?? 0} height={height ?? 0} {...rest} />
         )}
       </AutoSizer>
     </>
@@ -97,7 +104,7 @@ const List = memo(
       const computedItemHeight =
         itemHeight || Math.floor(computedItemWidth / preferredRatio)
       const columnCount = layout === "horizontal" ? data.length : itemsPerRow
-      const { useNavigationArrows } = useRecoilValue(localSettingsState)
+      const { useNavigationArrows } = useLocalSettingsState()
       const classes = useClasses()
       const displayScrollerButtons = useNavigationArrows
       const isHorizontal = layout === "horizontal"
@@ -225,9 +232,10 @@ const List = memo(
         [renderHeader, headerHeight]
       )
 
-      const renderRow = useCallback(
+      const renderItem = useCallback(
         ({ columnIndex, rowIndex, style, data }) => {
           const itemIndex = rowIndex * columnCount + columnIndex
+          const item = data[itemIndex]
 
           return (
             <div
@@ -248,12 +256,12 @@ const List = memo(
                   maxHeight: computedItemHeight
                 }}
               >
-                {data[itemIndex] && rowRenderer(data[itemIndex], rowIndex)}
+                {item && rowRenderer(item, rowIndex)}
               </div>
             </div>
           )
         },
-        [columnCount, rowRenderer, computedItemHeight, headerHeight]
+        [columnCount, headerHeight, computedItemHeight, rowRenderer]
       )
 
       return (
@@ -276,7 +284,7 @@ const List = memo(
             itemData={data}
             {...rest}
           >
-            {renderRow}
+            {renderItem}
           </FixedSizeGrid>
           {displayScrollerButtons && (
             <>

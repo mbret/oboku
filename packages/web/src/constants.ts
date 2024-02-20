@@ -11,7 +11,6 @@ const hostname =
 export const API_URI = import.meta.env.VITE_API_URL || `https://${hostname}:4000`
 export const API_COUCH_URI = import.meta.env.VITE_API_COUCH_URI || `https://${hostname}:4003`
 
-
 export const IS_MOBILE_DEVICE = isMobileDetected()
 
 export const ROUTES = {

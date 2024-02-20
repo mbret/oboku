@@ -1,19 +1,43 @@
 import { crypto } from "@oboku/shared"
-import { SettingsDocType, useRxMutation } from "../rxdb"
-
-export const useUpdateSettings = () =>
-  useRxMutation((db, variables: Partial<SettingsDocType>) =>
-    db.settings.safeUpdate({ $set: variables }, (collection) =>
-      collection.findOne()
-    )
-  )
+import { useDatabase } from "../rxdb"
+import { useQuery } from "reactjrx"
+import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { map, switchMap } from "rxjs"
 
 export const useUpdateContentPassword = () => {
-  const [updateSettings] = useUpdateSettings()
+  const { db } = useDatabase()
 
   return async (password: string) => {
     const hashed = await crypto.hashContentPassword(password)
 
-    await updateSettings({ contentPassword: hashed })
+    await db?.settings.safeUpdate(
+      { $set: { contentPassword: hashed } },
+      (collection) => collection.findOne()
+    )
   }
+}
+
+export const useAccountSettings = (
+  options: {
+    enabled?: boolean
+  } = {}
+) => {
+  const data = useQuery({
+    queryKey: ["rxdb", "settings"],
+    queryFn: () =>
+      latestDatabase$.pipe(
+        switchMap((db) =>
+          db.settings.findOne().$.pipe(map((entry) => entry?.toJSON()))
+        )
+      ),
+    /**
+     * We always want instant feedback for these settings for the user.
+     * Since the query is a live stream the data are always fresh anyway.
+     */
+    gcTime: Infinity,
+    staleTime: Infinity,
+    ...options
+  })
+
+  return data
 }

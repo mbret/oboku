@@ -1,15 +1,25 @@
 import { useRef } from "react"
-import { useRecoilValue } from "recoil"
 import { useBooksSortedBy } from "../books/helpers"
-import { booksAsArrayState } from "../books/states"
-import { DownloadState } from "../download/states"
-import { useLibraryState } from "./states"
+import { useBooksAsArrayState } from "../books/states"
+import {
+  DownloadState,
+  normalizedBookDownloadsStateSignal
+} from "../download/states"
+import { useProtectedTagIds } from "../tags/helpers"
+import { useSignalValue } from "reactjrx"
+import { libraryStateSignal } from "./states"
 
 export const useBooks = () => {
   const results = useRef<string[]>([])
-  const library = useLibraryState()
+  const library = useSignalValue(libraryStateSignal)
   const filteredTags = library.tags
-  const unsortedBooks = useRecoilValue(booksAsArrayState)
+  const { data: unsortedBooks } = useBooksAsArrayState({
+    libraryState: library,
+    normalizedBookDownloadsState: useSignalValue(
+      normalizedBookDownloadsStateSignal
+    ),
+    protectedTagIds: useProtectedTagIds().data
+  })
 
   const filteredBooks = unsortedBooks.filter((book) => {
     if (
@@ -20,14 +30,14 @@ export const useBooks = () => {
     }
 
     if (
-      filteredTags.length > 0 &&
+      !!filteredTags?.length &&
       !book?.tags?.some((b) => filteredTags.includes(b))
     ) {
       return false
     }
 
     if (
-      library.readingStates.length > 0 &&
+      !!library.readingStates.length &&
       !library.readingStates.includes(book.readingStateCurrentState)
     ) {
       return false

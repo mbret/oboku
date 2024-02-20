@@ -1,10 +1,4 @@
-import { atom } from "recoil"
-import { SettingsDocType } from "../rxdb"
-
-export const settingsState = atom<SettingsDocType | undefined>({
-  key: "settingsState",
-  default: undefined
-})
+import { signal, useSignalValue } from "reactjrx"
 
 const localSettingsStateDefaultValues = {
   useNavigationArrows: false,
@@ -18,7 +12,7 @@ const localSettingsStateDefaultValues = {
   showSensitiveDataSources: false
 }
 
-export const localSettingsState = atom<{
+export const localSettingsStateSignal = signal<{
   useNavigationArrows: boolean
   useOptimizedTheme: boolean
   readingFullScreenSwitchMode: "automatic" | "always" | "never"
@@ -31,15 +25,7 @@ export const localSettingsState = atom<{
   default: localSettingsStateDefaultValues
 })
 
-export const localSettingsStateMigration = (state: {
-  [key: string]: { value: any }
-}) => ({
-  ...state,
-  [localSettingsState.key]: {
-    value: {
-      ...localSettingsStateDefaultValues,
-      // IMPORTANT, the state can be undefined if app is bootstrap the first time, need to type it here
-      ...state[localSettingsState.key]?.value
-    }
-  }
-})
+export const localSettingsStatePersist = localSettingsStateSignal
+
+export const useLocalSettingsState = () =>
+  useSignalValue(localSettingsStateSignal)

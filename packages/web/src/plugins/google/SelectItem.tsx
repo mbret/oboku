@@ -1,9 +1,9 @@
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { useDrivePicker } from "./lib/useDrivePicker"
-import { useIsMountedState$ } from "../../common/rxjs/useIsMountedState$"
 import { catchError, EMPTY, takeUntil, tap } from "rxjs"
 import { useEffect } from "react"
+import { useUnmountObservable } from "reactjrx"
 import { ObokuPlugin } from "../plugin-front"
 
 export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
@@ -15,7 +15,7 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
     UNIQUE_RESOURCE_IDENTIFIER
   )
   const { pick } = useDrivePicker({ requestPopup })
-  const { unMount$ } = useIsMountedState$()
+  const unMount$ = useUnmountObservable()
 
   useEffect(() => {
     if (!open) return
@@ -46,14 +46,14 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
 
           return EMPTY
         }),
-        takeUntil(unMount$)
+        takeUntil(unMount$.current)
       )
       .subscribe()
 
     return () => {
       stream$.unsubscribe()
     }
-  }, [open, pick])
+  }, [open, pick, unMount$])
 
   if (!open) return null
 

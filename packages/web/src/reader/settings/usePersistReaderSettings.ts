@@ -1,25 +1,23 @@
-import { useEffect } from "react"
-import { useSetRecoilState } from "recoil"
-import { tap } from "rxjs"
-import { useReader } from "../states"
-import { readerSettingsState } from "./states"
+import { tap, EMPTY } from "rxjs"
+import { readerStateSignal } from "../states"
+import { setReaderSettingsState } from "./states"
+import { useSignalValue, useSubscribe } from "reactjrx"
 
-export const usePersistReaderSettings = () => {
-  const reader = useReader()
-  const setSettings = useSetRecoilState(readerSettingsState)
+export const usePersistReaderInstanceSettings = () => {
+  const reader = useSignalValue(readerStateSignal)
 
-  useEffect(() => {
-    const sub = reader?.settings$
-      .pipe(
-        tap((settings) => {
-          setSettings((state) => ({
-            ...state,
-            fontScale: settings.fontScale
-          }))
-        })
-      )
-      .subscribe()
-
-    return () => sub?.unsubscribe()
-  }, [reader, setSettings])
+  useSubscribe(
+    () =>
+      !reader
+        ? EMPTY
+        : reader?.settings$.pipe(
+            tap((settings) => {
+              setReaderSettingsState((state) => ({
+                ...state,
+                fontScale: settings.fontScale
+              }))
+            })
+          ),
+    [reader]
+  )
 }

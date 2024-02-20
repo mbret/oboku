@@ -19,32 +19,32 @@ import {
   LibraryAddRounded
 } from "@mui/icons-material"
 import { useRemoveCollection, useUpdateCollection } from "./helpers"
-import { atom, useRecoilState, useRecoilValue, useSetRecoilState } from "recoil"
-import { collectionState } from "./states"
+import { useCollectionState } from "./states"
 import { ManageCollectionBooksDialog } from "./ManageCollectionBooksDialog"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { useCallback } from "react"
 import { useRef } from "react"
+import { libraryStateSignal } from "../library/states"
+import { useLocalSettingsState } from "../settings/states"
+import { useProtectedTagIds } from "../tags/helpers"
+import { signal, useSignalValue } from "reactjrx"
 
-const collectionActionDrawerState = atom<{
+const collectionActionDrawerState = signal<{
   openedWith: undefined | string
 }>({ key: "collectionActionDrawerState", default: { openedWith: undefined } })
 
-const collectionActionDrawerChangesState = atom<undefined | [string, `delete`]>(
-  {
-    key: `collectionActionDrawerChangesState`,
-    default: undefined
-  }
-)
+const collectionActionDrawerChangesState = signal<
+  undefined | [string, `delete`]
+>({
+  key: `collectionActionDrawerChangesState`,
+  default: undefined
+})
 
 export const useCollectionActionsDrawer = (
   id: string,
   onChanges?: (change: `delete`) => void
 ) => {
-  const [, setCollectionActionDrawer] = useRecoilState(
-    collectionActionDrawerState
-  )
-  const collectionActionDrawerChanges = useRecoilValue(
+  const collectionActionDrawerChanges = useSignalValue(
     collectionActionDrawerChangesState
   )
   // we use this to only ever emit once every changes
@@ -52,8 +52,8 @@ export const useCollectionActionsDrawer = (
   const latestChangesEmittedRef = useRef(collectionActionDrawerChanges)
 
   const open = useCallback(() => {
-    setCollectionActionDrawer({ openedWith: id })
-  }, [setCollectionActionDrawer, id])
+    collectionActionDrawerState.setValue({ openedWith: id })
+  }, [id])
 
   useEffect(() => {
     if (collectionActionDrawerChanges) {
@@ -73,16 +73,14 @@ export const useCollectionActionsDrawer = (
 }
 
 export const CollectionActionsDrawer: FC<{}> = () => {
-  const [{ openedWith: collectionId }, setCollectionActionDrawerState] =
-    useRecoilState(collectionActionDrawerState)
-  const setCollectionActionDrawerChanges = useSetRecoilState(
-    collectionActionDrawerChangesState
+  const { openedWith: collectionId } = useSignalValue(
+    collectionActionDrawerState
   )
   const [
     isEditCollectionDialogOpenedWithId,
     setIsEditCollectionDialogOpenedWithId
   ] = useState<string | undefined>(undefined)
-  const [removeCollection] = useRemoveCollection()
+  const { mutate: removeCollection } = useRemoveCollection()
   const [isManageBookDialogOpened, setIsManageBookDialogOpened] =
     useState(false)
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
@@ -90,7 +88,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
   const { closeModalWithNavigation } = useModalNavigationControl(
     {
       onExit: () => {
-        setCollectionActionDrawerState({ openedWith: undefined })
+        collectionActionDrawerState.setValue({ openedWith: undefined })
         setIsEditCollectionDialogOpenedWithId(undefined)
         setIsManageBookDialogOpened(false)
       }
@@ -102,7 +100,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
 
   const onRemoveCollection = (id: string) => {
     closeModalWithNavigation()
-    setCollectionActionDrawerChanges([id, `delete`])
+    collectionActionDrawerChangesState.setValue([id, `delete`])
     id && removeCollection({ _id: id })
   }
 
@@ -183,8 +181,14 @@ const EditCollectionDialog: FC<{
   onClose: () => void
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState("")
-  const collection = useRecoilValue(collectionState(id || "-1"))
-  const [editCollection] = useUpdateCollection()
+  const libraryState = useSignalValue(libraryStateSignal)
+  const collection = useCollectionState({
+    id: id || "-1",
+    libraryState,
+    localSettingsState: useLocalSettingsState(),
+    protectedTagIds: useProtectedTagIds().data
+  })
+  const { mutate: editCollection } = useUpdateCollection()
 
   const onInnerClose = () => {
     setName("")
