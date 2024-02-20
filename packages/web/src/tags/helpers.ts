@@ -35,7 +35,7 @@ export const useUpdateTag = () => {
         .exec()
         .then(
           (doc) =>
-            doc?.incrementalModify((doc) => ({
+            doc?.atomicUpdate((doc) => ({
               ...doc,
               ...rest
             }))

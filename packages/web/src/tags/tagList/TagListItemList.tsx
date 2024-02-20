@@ -11,7 +11,7 @@ import { useTag } from "../helpers"
 
 export const TagListItemList: FC<{
   id: string
-  onItemClick?: (tag: TagsDocType) => void
+  onItemClick?: (tag: { _id: string }) => void
 }> = memo(({ id, onItemClick }) => {
   const { data: tag } = useTag(id)
   const styles = useStyle()
