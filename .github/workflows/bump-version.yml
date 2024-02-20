@@ -20,6 +20,8 @@ jobs:
       - name: "Automated Version Bump"
         id: version-bump
         uses: "phips28/gh-action-bump-version@master"
+        env:
+          PACKAGEJSON_DIR:  'packages/web'
         with:
           tag-prefix: "v"
         env:
