@@ -10,7 +10,7 @@ export const TagList: FC<{
   headerHeight?: number
   style?: React.CSSProperties
   data: string[]
-  onItemClick?: (tag: TagsDocType) => void
+  onItemClick?: (tag: { _id: string; isProtected: boolean }) => void
 }> = memo((props) => {
   const { renderHeader, headerHeight, style, data, onItemClick } = props
   const classes = useStyle()

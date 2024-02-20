@@ -6,12 +6,11 @@ import {
   LocalOfferRounded,
   LockRounded
 } from "@mui/icons-material"
-import { TagsDocType } from "@oboku/shared"
 import { useTag } from "../helpers"
 
 export const TagListItemList: FC<{
   id: string
-  onItemClick?: (tag: TagsDocType) => void
+  onItemClick?: (tag: { _id: string; isProtected: boolean }) => void
 }> = memo(({ id, onItemClick }) => {
   const { data: tag } = useTag(id)
   const styles = useStyle()
