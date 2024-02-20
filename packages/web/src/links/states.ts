@@ -38,7 +38,8 @@ export const useLink = ({ id }: { id: string }) => {
                 _id: id
               }
             }).$
-        )
+        ),
+        map((entry) => entry?.toJSON())
       ),
     staleTime: Infinity
   })
