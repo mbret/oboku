@@ -33,11 +33,12 @@ export const useUpdateTag = () => {
       db?.tag
         .findOne({ selector: { _id } })
         .exec()
-        .then((doc) =>
-          doc?.atomicUpdate((doc) => ({
-            ...doc,
-            ...rest
-          }))
+        .then(
+          (doc) =>
+            doc?.incrementalModify((doc) => ({
+              ...doc,
+              ...rest
+            }))
         ),
     [db]
   )
@@ -95,21 +96,31 @@ export const useTag = (id: string) =>
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap((db) => {
-          return db.tag.findOne(id).$
+          return db.tag.findOne(id).$.pipe(
+            map((result) => {
+              return result?.toJSON()
+            })
+          )
         })
       ),
     staleTime: Infinity
   })
 
 export const useTags = () =>
-  useQuery({ queryFn: tags$, queryKey: ["tags"], staleTime: Infinity })
+  useQuery({
+    queryFn: () => tags$.pipe(map((tags) => tags.map((tag) => tag.toJSON()))),
+    queryKey: ["tags"],
+    staleTime: Infinity
+  })
 
 export const useTagsByIds = () =>
   useQuery({ queryFn: tagsByIds$, queryKey: ["tagsById"], staleTime: Infinity })
 
 export const useProtectedTags = () =>
   useQuery({
-    queryFn: protectedTags$,
+    queryFn: protectedTags$.pipe(
+      map((tags) => tags.map((tag) => tag.toJSON()))
+    ),
     queryKey: ["protectedTags"],
     staleTime: Infinity
   })
@@ -122,7 +133,9 @@ export const useTagIds = () =>
   })
 
 export const blurredTags$ = tags$.pipe(
-  map((tags) => tags.filter(({ isBlurEnabled }) => isBlurEnabled))
+  map((tags) =>
+    tags.filter(({ isBlurEnabled }) => isBlurEnabled).map((tag) => tag.toJSON())
+  )
 )
 
 export const useBlurredTagIds = () =>
@@ -134,10 +147,8 @@ export const useBlurredTagIds = () =>
 
 export const useProtectedTagIds = () =>
   useQuery({
-    queryFn: () => {
-      console.log("useProtectedTagIds.fetch")
-      return protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id)))
-    },
+    queryFn: () =>
+      protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
     queryKey: ["protectedTagIds"],
     staleTime: Infinity
   })
