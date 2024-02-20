@@ -31,7 +31,7 @@ export const SyncSourcesScreen = () => {
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<
     string | undefined
   >(undefined)
-  const syncSources = useDataSources()
+  const { data: syncSources } = useDataSources()
   const theme = useTheme()
 
   return (

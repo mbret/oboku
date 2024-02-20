@@ -8,7 +8,7 @@ import { Checkbox } from "../../common/Checkbox"
 
 export const SelectableTagListItem: FC<{
   id: string
-  onItemClick?: (tag: TagsDocType) => void
+  onItemClick?: () => void
   selected: boolean
 }> = memo(({ id, onItemClick, selected }) => {
   const { data: tag } = useTag(id)
@@ -18,7 +18,7 @@ export const SelectableTagListItem: FC<{
     <ListItem
       button
       style={styles.container}
-      onClick={() => tag && onItemClick && onItemClick(tag)}
+      onClick={() => onItemClick && onItemClick()}
     >
       <ListItemText primary={tag?.name} />
       <div style={styles.infoIcon}>

@@ -44,7 +44,6 @@
     "prettier": "3.2.5",
     "rollup-plugin-analyzer": "^4.0.0",
     "rollup-plugin-node-externals": "^7.0.1",
-    "rollup-plugin-polyfill-node": "^0.13.0",
     "serverless": "^3.28.1",
     "serverless-bundle": "^6.0.0",
     "serverless-esbuild": "^1.39.0",

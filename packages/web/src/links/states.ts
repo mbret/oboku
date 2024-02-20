@@ -28,7 +28,7 @@ export const useLinks = () => {
 
 export const useLink = ({ id }: { id: string }) => {
   return useQuery({
-    queryKey: ["db", "get", "single", "link"],
+    queryKey: ["db", "get", "single", "link", id],
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap(

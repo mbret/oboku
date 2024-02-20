@@ -43,7 +43,7 @@ export const useBooks = () => {
 
 export const useBook = ({ id }: { id?: string }) => {
   return useQuery({
-    queryKey: ["db", "get", "single", "books"],
+    queryKey: ["book", id],
     enabled: !!id,
     queryFn: () =>
       latestDatabase$.pipe(

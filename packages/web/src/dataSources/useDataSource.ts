@@ -1,14 +1,16 @@
-import { switchMap } from "rxjs"
+import { map, switchMap } from "rxjs"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
-import { useObserve } from "reactjrx"
+import { useQuery } from "reactjrx"
 
 export const useDataSource = (id: string) =>
-  useObserve(
-    () =>
+  useQuery({
+    queryKey: ["dataSource", id],
+    staleTime: Infinity,
+    queryFn: () =>
       latestDatabase$.pipe(
         switchMap((db) => {
           return db.datasource.findOne({ selector: { _id: id } }).$
-        })
-      ),
-    [id]
-  )
+        }),
+        map((entry) => entry?.toJSON())
+      )
+  })
