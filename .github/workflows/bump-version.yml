@@ -20,12 +20,11 @@ jobs:
       - name: "Automated Version Bump"
         id: version-bump
         uses: "phips28/gh-action-bump-version@master"
-        env:
-          PACKAGEJSON_DIR:  'packages/web'
         with:
           tag-prefix: "v"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGEJSON_DIR:  'packages/web'
       - name: "cat package.json"
         run: cat ./package.json
       - name: "Output Step"
