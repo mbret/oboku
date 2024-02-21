@@ -17,11 +17,9 @@ jobs:
           ref: ${{ github.ref }}
       - name: "cat package.json"
         run: cat ./package.json
-      - name: "install"
-        run: npm ci
       - name: "Automated Version Bump"
         id: version-bump
-        uses: "phips28/gh-action-bump-version@v11.0.0"
+        uses: "phips28/gh-action-bump-version@v10.1.1"
         with:
           tag-prefix: "v"
         env:
