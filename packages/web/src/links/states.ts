@@ -15,7 +15,7 @@ export const getLinksByIds = async (database: Database) => {
 
 export const useLinks = () => {
   return useForeverQuery({
-    queryKey: ["db", "get", "many", "link"],
+    queryKey: ["rxdb", "get", "many", "link"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.link.find({}).$),
@@ -27,7 +27,7 @@ export const useLinks = () => {
 
 export const useLink = ({ id }: { id: string }) => {
   return useForeverQuery({
-    queryKey: ["db", "get", "single", "link", id],
+    queryKey: ["rxdb", "get", "single", "link", id],
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap(

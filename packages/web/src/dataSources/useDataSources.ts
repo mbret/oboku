@@ -7,7 +7,7 @@ export const useDataSources = () => {
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
 
   return useForeverQuery({
-    queryKey: ["dataSources", { isLibraryUnlocked }],
+    queryKey: ["rxdb", "dataSources", { isLibraryUnlocked }],
     queryFn: () =>
       latestDatabase$.pipe(
         filter(isDefined),

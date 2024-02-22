@@ -107,7 +107,7 @@ export const useTag = (id: string) =>
 export const useTags = () =>
   useForeverQuery({
     queryFn: () => tags$.pipe(map((tags) => tags.map((tag) => tag.toJSON()))),
-    queryKey: ["tags"]
+    queryKey: ["rxdb", "tags"]
   })
 
 export const useTagsByIds = () =>

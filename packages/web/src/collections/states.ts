@@ -19,7 +19,7 @@ export const getCollectionsByIds = async (database: Database) => {
 
 export const useCollections = () => {
   return useForeverQuery({
-    queryKey: ["db", "get", "collections"],
+    queryKey: ["rxdb", "get", "collections"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.obokucollection.find({}).$),

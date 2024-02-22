@@ -12,7 +12,7 @@ import {
   DownloadState
 } from "../download/states"
 import { getCollectionState, useCollections } from "../collections/states"
-import { map, switchMap, withLatestFrom } from "rxjs"
+import { map, switchMap, tap, withLatestFrom } from "rxjs"
 import { plugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { useLocalSettingsState } from "../settings/states"
@@ -29,7 +29,7 @@ export const getBooksByIds = async (database: Database) => {
 
 export const useBooks = () => {
   return useForeverQuery({
-    queryKey: ["db", "get", "many", "books"],
+    queryKey: ["rxdb", "get", "many", "books"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.book.find({}).$),
@@ -41,20 +41,29 @@ export const useBooks = () => {
 
 export const useBook = ({ id }: { id?: string }) => {
   return useForeverQuery({
-    queryKey: ["book", id],
+    queryKey: ["rxdb", "book", id],
     enabled: !!id,
-    queryFn: () =>
-      latestDatabase$.pipe(
+    queryFn: () => {
+      console.log("useBook.fetch", id)
+      return latestDatabase$.pipe(
         switchMap(
           (db) =>
-            db.collections.book.findOne({
+            db.book.findOne({
               selector: {
                 _id: id
               }
             }).$
         ),
-        map((value) => value?.toJSON())
+        map((value) => {
+          console.log(
+            "useBook.result",
+            value?.readingStateCurrentBookmarkLocation
+          )
+
+          return value?.toJSON() ?? null
+        })
       )
+    }
   })
 }
 
@@ -91,7 +100,7 @@ export const useBookState = ({
   bookId,
   tags = {}
 }: {
-  bookId: string
+  bookId?: string
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
   const { data: book } = useBook({ id: bookId })

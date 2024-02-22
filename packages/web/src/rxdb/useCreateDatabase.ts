@@ -18,6 +18,8 @@ export const latestDatabase$ = databaseSignal.subject.pipe(
   shareReplay(1)
 )
 
+export const getLatestDatabase = () => latestDatabase$.pipe(first())
+
 export const useCreateDatabase = () => {
   const [db, setDb] = useState<Awaited<typeof dbPromise>>()
   const isMounted = useMountedState()

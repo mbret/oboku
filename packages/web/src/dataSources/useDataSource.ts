@@ -4,7 +4,7 @@ import { useForeverQuery } from "reactjrx"
 
 export const useDataSource = (id: string) =>
 useForeverQuery({
-    queryKey: ["dataSource", id],
+    queryKey: ["rxdb", "dataSource", id],
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap((db) => {
