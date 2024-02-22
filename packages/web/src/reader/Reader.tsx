@@ -14,8 +14,8 @@ import {
   isBookReadyStateSignal,
   manifestStateSignal
 } from "./states"
-import { TopBar } from "./TopBar"
-import { BottomBar } from "./BottomBar"
+import { TopBar } from "./navigation/TopBar"
+import { BottomBar } from "./navigation/BottomBar"
 import { useBookResize } from "./layout"
 import { useGestureHandler } from "./gestures"
 import { BookLoading } from "./BookLoading"
