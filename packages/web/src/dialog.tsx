@@ -24,6 +24,7 @@ type DialogType = {
   id: string
   preset?: Preset
   cancellable?: boolean
+  canEscape?: boolean
   cancelTitle?: string
   confirmTitle?: string
   actions?: { title: string; type: "confirm"; onClick: () => void }[]
@@ -98,7 +99,8 @@ const enrichDialogWithPreset = (
       return {
         ...dialog,
         title: "Not implemented",
-        content: "Sorry this feature is not yet implemented"
+        content: "Sorry this feature is not yet implemented",
+        canEscape: true
       }
     case "OFFLINE":
       return {
@@ -160,7 +162,14 @@ const InnerDialog = () => {
   ]
 
   return (
-    <Dialog open={!!currentDialog} onClose={handleClose}>
+    <Dialog
+      open={!!currentDialog}
+      disableEscapeKeyDown={false}
+      {...(currentDialog?.canEscape !== false && {
+        onClose: handleClose,
+        disableEscapeKeyDown: true
+      })}
+    >
       <DialogTitle>{currentDialog?.title}</DialogTitle>
       <DialogContent>
         <DialogContentText>{currentDialog?.content}</DialogContentText>

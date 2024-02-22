@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback, FC, memo } from "react"
 import { useNavigate } from "react-router-dom"
 import { useMeasure } from "react-use"
 import { Box, Button, Link, Typography, useTheme } from "@mui/material"
-import { useBookState } from "../books/states"
+import { useBook } from "../books/states"
 import {
   createAppReader,
   ReactReaderProps,
@@ -14,8 +14,8 @@ import {
   isBookReadyStateSignal,
   manifestStateSignal
 } from "./states"
-import { TopBar } from "./TopBar"
-import { BottomBar } from "./BottomBar"
+import { TopBar } from "./navigation/TopBar"
+import { BottomBar } from "./navigation/BottomBar"
 import { useBookResize } from "./layout"
 import { useGestureHandler } from "./gestures"
 import { BookLoading } from "./BookLoading"
@@ -30,7 +30,6 @@ import { FONT_SCALE_MAX, FONT_SCALE_MIN } from "./constants"
 import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSettings"
 import { Notification } from "./Notification"
 import { useReaderSettingsState } from "./settings/states"
-import { useTagsByIds } from "../tags/helpers"
 import { useSignalValue } from "reactjrx"
 
 export const Reader: FC<{
@@ -39,9 +38,8 @@ export const Reader: FC<{
   const reader = useSignalValue(readerStateSignal)
   const isBookReady = useSignalValue(isBookReadyStateSignal)
   const readerSettings = useReaderSettingsState()
-  const book = useBookState({
-    tags: useTagsByIds().data,
-    bookId: bookId || "-1"
+  const { data: book } = useBook({
+    id: bookId,
   })
   const navigate = useNavigate()
   const [
@@ -214,7 +212,7 @@ export const Reader: FC<{
           enableTime={readerSettings.floatingTime === "bottom"}
         />
       )}
-      <TopBar />
+      <TopBar bookId={bookId} />
       <BottomBar />
     </div>
   )

@@ -1,5 +1,4 @@
 import { intersection } from "lodash"
-import { BookDocType } from "@oboku/shared"
 import { libraryStateSignal } from "../library/states"
 import {
   protectedTags$,
@@ -13,11 +12,11 @@ import {
   DownloadState
 } from "../download/states"
 import { getCollectionState, useCollections } from "../collections/states"
-import { map, switchMap, withLatestFrom } from "rxjs"
+import { map, switchMap, tap, withLatestFrom } from "rxjs"
 import { plugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { useLocalSettingsState } from "../settings/states"
-import { useQuery } from "reactjrx"
+import { useForeverQuery } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
 import { useMemo } from "react"
@@ -29,35 +28,42 @@ export const getBooksByIds = async (database: Database) => {
 }
 
 export const useBooks = () => {
-  return useQuery({
-    queryKey: ["db", "get", "many", "books"],
+  return useForeverQuery({
+    queryKey: ["rxdb", "get", "many", "books"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.book.find({}).$),
         map((entries) => keyBy(entries, "_id"))
       )
-    },
-    staleTime: Infinity
+    }
   })
 }
 
 export const useBook = ({ id }: { id?: string }) => {
-  return useQuery({
-    queryKey: ["book", id],
+  return useForeverQuery({
+    queryKey: ["rxdb", "book", id],
     enabled: !!id,
-    queryFn: () =>
-      latestDatabase$.pipe(
+    queryFn: () => {
+      console.log("useBook.fetch", id)
+      return latestDatabase$.pipe(
         switchMap(
           (db) =>
-            db.collections.book.findOne({
+            db.book.findOne({
               selector: {
                 _id: id
               }
             }).$
         ),
-        map((value) => value?.toJSON())
-      ),
-    staleTime: Infinity
+        map((value) => {
+          console.log(
+            "useBook.result",
+            value?.readingStateCurrentBookmarkLocation
+          )
+
+          return value?.toJSON() ?? null
+        })
+      )
+    }
   })
 }
 
@@ -94,7 +100,7 @@ export const useBookState = ({
   bookId,
   tags = {}
 }: {
-  bookId: string
+  bookId?: string
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
   const { data: book } = useBook({ id: bookId })

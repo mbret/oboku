@@ -1,14 +1,14 @@
 import { AppBar, Box, IconButton, Typography, useTheme } from "@mui/material"
-import { PageInformation } from "./PageInformation"
+import { PageInformation } from "../PageInformation"
 import {
   usePagination,
   readerStateSignal,
   isBookReadyStateSignal,
   isMenuShownStateSignal
-} from "./states"
-import { Scrubber } from "./Scrubber"
+} from "../states"
+import { Scrubber } from "../Scrubber"
 import { DoubleArrowRounded } from "@mui/icons-material"
-import { FloatingBottom } from "./FloatingBottom"
+import { FloatingBottom } from "../FloatingBottom"
 import { useSignalValue } from "reactjrx"
 
 export const BottomBar = () => {

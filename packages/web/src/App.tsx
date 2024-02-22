@@ -31,13 +31,12 @@ import {
 } from "reactjrx"
 import localforage from "localforage"
 import { signalEntriesToPersist } from "./storage"
+import { queryClient } from "./queries/client"
 
 declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface DefaultTheme extends Theme {}
 }
-
-const queryClient = new QueryClient()
 
 export function App() {
   const [loading, setLoading] = useState({

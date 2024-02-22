@@ -3,7 +3,7 @@ import { FC } from "react"
 import { useTagIds, useTagsByIds } from "../tags/helpers"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useAddTagToBook, useRemoveTagFromBook } from "./helpers"
-import { useBookState } from "./states"
+import { useBook, useBookState } from "./states"
 import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
 const openManageBookTagsDialogStateSignal = signal<string | undefined>({
@@ -27,9 +27,8 @@ export const ManageBookTagsDialog: FC<{}> = () => {
   const bookId = useSignalValue(openManageBookTagsDialogStateSignal)
   const open = !!bookId
   const { data: tags = [] } = useTagIds()
-  const book = useBookState({
-    bookId: bookId || "-1",
-    tags: useTagsByIds().data
+  const { data: book } = useBook({
+    id: bookId
   })
   const { mutate: addTagToBook } = useAddTagToBook()
   const { mutate: removeFromBook } = useRemoveTagFromBook()

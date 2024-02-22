@@ -3,7 +3,7 @@ import {
   isBookReadyStateSignal,
   isMenuShownStateSignal,
   manifestStateSignal
-} from "./states"
+} from "../states"
 import {
   AppBar,
   IconButton,
@@ -17,14 +17,15 @@ import {
   FullscreenRounded,
   MoreVertRounded
 } from "@mui/icons-material"
-import { useSafeGoBack } from "../navigation/useSafeGoBack"
+import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import screenfull from "screenfull"
-import { Report } from "../debug/report.shared"
-import { useCSS } from "../common/utils"
-import { useMoreDialog } from "./MoreDialog"
+import { Report } from "../../debug/report.shared"
+import { useCSS } from "../../common/utils"
+import { useMoreDialog } from "../MoreDialog"
 import { useSignalValue } from "reactjrx"
+import { useShowRemoveBookOnExitDialog } from "./useShowRemoveBookOnExitDialog"
 
-export const TopBar = () => {
+export const TopBar = ({ bookId }: { bookId: string }) => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const isBookReady = useSignalValue(isBookReadyStateSignal)
   const classes = useStyles({ isMenuShow })
@@ -45,6 +46,13 @@ export const TopBar = () => {
         .catch(Report.error)
     }
   }, [])
+
+  const { mutate } = useShowRemoveBookOnExitDialog({
+    bookId,
+    onSettled: () => {
+      goBack()
+    }
+  })
 
   useEffect(() => {
     const cb = () => {
@@ -68,7 +76,9 @@ export const TopBar = () => {
         <IconButton
           edge="start"
           color="inherit"
-          onClick={() => goBack()}
+          onClick={() => {
+            mutate()
+          }}
           size="large"
         >
           <ArrowBackIosRounded />

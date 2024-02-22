@@ -1,8 +1,8 @@
 import { createReader, Manifest } from "@prose-reader/core"
-import { EMPTY, switchMap } from "rxjs"
+import { EMPTY, filter, map, of, switchMap, tap } from "rxjs"
 import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
 import { Props as GenericReactReaderProps } from "@prose-reader/react"
-import { signal, useQuery, useSignalValue } from "reactjrx"
+import { isDefined, signal, useForeverQuery, useSignalValue } from "reactjrx"
 
 export const createAppReader = hammerGestureEnhancer(createReader)
 
@@ -35,15 +35,15 @@ export const isMenuShownStateSignal = signal({
 
 // =======> Please do not forget to add atom to the reset part !
 
-const pagination$ = readerStateSignal.subject.pipe(
-  switchMap((reader) => reader?.pagination$ ?? EMPTY)
-)
-
 export const usePagination = () =>
-  useQuery({
-    queryFn: pagination$,
+  useForeverQuery({
     queryKey: ["pagination"],
-    staleTime: Infinity
+    queryFn: () => {
+      return readerStateSignal.subject.pipe(
+        filter(isDefined),
+        switchMap((reader) => reader.pagination$)
+      )
+    }
   })
 
 export const useCurrentPage = () => {

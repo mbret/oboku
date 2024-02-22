@@ -2,8 +2,8 @@ import { TagsDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
 import { useMutation } from "reactjrx"
-import { delay, first, ignoreElements, map, switchMap, tap } from "rxjs"
-import { useQuery } from "reactjrx"
+import { map, switchMap } from "rxjs"
+import { useForeverQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { Database } from "../rxdb"
 
@@ -33,12 +33,11 @@ export const useUpdateTag = () => {
       db?.tag
         .findOne({ selector: { _id } })
         .exec()
-        .then(
-          (doc) =>
-            doc?.atomicUpdate((doc) => ({
-              ...doc,
-              ...rest
-            }))
+        .then((doc) =>
+          doc?.atomicUpdate((doc) => ({
+            ...doc,
+            ...rest
+          }))
         ),
     [db]
   )
@@ -91,7 +90,7 @@ export const getTagsByIds = async (db: Database) => {
 }
 
 export const useTag = (id: string) =>
-  useQuery({
+  useForeverQuery({
     queryKey: ["rxdb", "tag", id],
     queryFn: () =>
       latestDatabase$.pipe(
@@ -102,34 +101,30 @@ export const useTag = (id: string) =>
             })
           )
         })
-      ),
-    staleTime: Infinity
+      )
   })
 
 export const useTags = () =>
-  useQuery({
+  useForeverQuery({
     queryFn: () => tags$.pipe(map((tags) => tags.map((tag) => tag.toJSON()))),
-    queryKey: ["tags"],
-    staleTime: Infinity
+    queryKey: ["rxdb", "tags"]
   })
 
 export const useTagsByIds = () =>
-  useQuery({ queryFn: tagsByIds$, queryKey: ["tagsById"], staleTime: Infinity })
+  useForeverQuery({ queryFn: tagsByIds$, queryKey: ["tagsById"] })
 
 export const useProtectedTags = () =>
-  useQuery({
+  useForeverQuery({
     queryFn: protectedTags$.pipe(
       map((tags) => tags.map((tag) => tag.toJSON()))
     ),
-    queryKey: ["protectedTags"],
-    staleTime: Infinity
+    queryKey: ["protectedTags"]
   })
 
 export const useTagIds = () =>
-  useQuery({
+  useForeverQuery({
     queryFn: () => tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    queryKey: ["tagsIds"],
-    staleTime: Infinity
+    queryKey: ["tagsIds"]
   })
 
 export const blurredTags$ = tags$.pipe(
@@ -139,16 +134,14 @@ export const blurredTags$ = tags$.pipe(
 )
 
 export const useBlurredTagIds = () =>
-  useQuery({
+  useForeverQuery({
     queryFn: () => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    queryKey: ["blurredTagIds"],
-    staleTime: Infinity
+    queryKey: ["blurredTagIds"]
   })
 
 export const useProtectedTagIds = () =>
-  useQuery({
+  useForeverQuery({
     queryFn: () =>
       protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    queryKey: ["protectedTagIds"],
-    staleTime: Infinity
+    queryKey: ["protectedTagIds"]
   })

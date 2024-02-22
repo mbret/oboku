@@ -38,7 +38,7 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
     protectedTagIds: useProtectedTagIds().data
   })
 
-  const book = useBookState({ bookId: id || "-1", tags: useTagsByIds().data })
+  const book = useBookState({ bookId: id, tags: useTagsByIds().data })
   const { mutate: addToBook } = useAddCollectionToBook()
   const { mutate: removeFromBook } = useRemoveCollectionFromBook()
   const bookCollection = book?.collections
