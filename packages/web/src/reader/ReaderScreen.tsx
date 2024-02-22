@@ -28,7 +28,7 @@ export const ReaderScreen: FC<{}> = () => {
       isMenuShownStateSignal,
       readerStateSignal
     ].forEach((signal) => signal.setValue(SIGNAL_RESET))
-  })
+  }, [])
 
   return (
     <>
