@@ -1,5 +1,5 @@
 import { sortByTitleComparator } from "@oboku/shared"
-import { combineLatest, map, switchMap } from "rxjs"
+import { combineLatest, first, map, switchMap } from "rxjs"
 import { visibleBooks$ } from "../books/states"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { signal, useQuery } from "reactjrx"
@@ -15,10 +15,12 @@ export const REGEXP_SPECIAL_CHAR =
 export const useCollectionsForSearch = (search: string) =>
   useQuery({
     queryKey: ["search", "collections", search],
+    staleTime: 1000,
     queryFn: () =>
       combineLatest([
         latestDatabase$.pipe(
-          switchMap((database) => database.collections.obokucollection.find().$)
+          switchMap((database) => database.collections.obokucollection.find().$),
+          first()
         )
       ]).pipe(
         map(([data]) => {
@@ -37,14 +39,13 @@ export const useCollectionsForSearch = (search: string) =>
             .sort((a, b) => sortByTitleComparator(a.name || "", b.name || ""))
         }),
         map((items) => items.map(({ _id }) => _id))
-      ),
-    staleTime: Infinity
+      )
   })
 
 export const useBooksForSearch = (search: string) =>
   useQuery({
     queryKey: ["search", "books", search],
-    staleTime: Infinity,
+    staleTime: 1000,
     queryFn: () =>
       combineLatest([visibleBooks$]).pipe(
         map(([data]) => {

@@ -6,10 +6,10 @@ import {
   READER_NOTIFICATION_TIME_TO_SCREEN
 } from "../constants"
 import { readerStateSignal } from "./states"
-import { isDefined, useQuery } from "reactjrx"
+import { isDefined, useForeverQuery } from "reactjrx"
 
 const useNotification = () =>
-  useQuery({
+useForeverQuery({
     queryKey: ["notification"],
     queryFn: () =>
       readerStateSignal.subject.pipe(
@@ -26,7 +26,6 @@ const useNotification = () =>
           )
         )
       ),
-    staleTime: Infinity
   })
 
 export const Notification = memo(() => {

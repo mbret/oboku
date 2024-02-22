@@ -1,6 +1,6 @@
 import { crypto } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
-import { useQuery } from "reactjrx"
+import { useForeverQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { map, switchMap } from "rxjs"
 
@@ -22,7 +22,7 @@ export const useAccountSettings = (
     enabled?: boolean
   } = {}
 ) => {
-  const data = useQuery({
+  const data = useForeverQuery({
     queryKey: ["rxdb", "settings"],
     queryFn: () =>
       latestDatabase$.pipe(

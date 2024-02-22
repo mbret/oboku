@@ -2,7 +2,7 @@ import { createReader, Manifest } from "@prose-reader/core"
 import { EMPTY, switchMap } from "rxjs"
 import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
 import { Props as GenericReactReaderProps } from "@prose-reader/react"
-import { signal, useQuery, useSignalValue } from "reactjrx"
+import { signal, useForeverQuery, useSignalValue } from "reactjrx"
 
 export const createAppReader = hammerGestureEnhancer(createReader)
 
@@ -40,10 +40,9 @@ const pagination$ = readerStateSignal.subject.pipe(
 )
 
 export const usePagination = () =>
-  useQuery({
+useForeverQuery({
     queryFn: pagination$,
     queryKey: ["pagination"],
-    staleTime: Infinity
   })
 
 export const useCurrentPage = () => {

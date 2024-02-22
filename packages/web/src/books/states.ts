@@ -1,5 +1,4 @@
 import { intersection } from "lodash"
-import { BookDocType } from "@oboku/shared"
 import { libraryStateSignal } from "../library/states"
 import {
   protectedTags$,
@@ -17,7 +16,7 @@ import { map, switchMap, withLatestFrom } from "rxjs"
 import { plugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { useLocalSettingsState } from "../settings/states"
-import { useQuery } from "reactjrx"
+import { useForeverQuery } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
 import { useMemo } from "react"
@@ -29,20 +28,19 @@ export const getBooksByIds = async (database: Database) => {
 }
 
 export const useBooks = () => {
-  return useQuery({
+  return useForeverQuery({
     queryKey: ["db", "get", "many", "books"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.book.find({}).$),
         map((entries) => keyBy(entries, "_id"))
       )
-    },
-    staleTime: Infinity
+    }
   })
 }
 
 export const useBook = ({ id }: { id?: string }) => {
-  return useQuery({
+  return useForeverQuery({
     queryKey: ["book", id],
     enabled: !!id,
     queryFn: () =>
@@ -56,8 +54,7 @@ export const useBook = ({ id }: { id?: string }) => {
             }).$
         ),
         map((value) => value?.toJSON())
-      ),
-    staleTime: Infinity
+      )
   })
 }
 

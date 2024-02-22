@@ -3,7 +3,7 @@ import { useVisibleBookIdsState } from "../books/states"
 import { useLocalSettingsState } from "../settings/states"
 import { useProtectedTagIds } from "../tags/helpers"
 import { libraryStateSignal } from "../library/states"
-import { useQuery } from "reactjrx"
+import { useForeverQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { map, switchMap } from "rxjs"
 import { keyBy } from "lodash"
@@ -18,15 +18,14 @@ export const getCollectionsByIds = async (database: Database) => {
 }
 
 export const useCollections = () => {
-  return useQuery({
+  return useForeverQuery({
     queryKey: ["db", "get", "collections"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.obokucollection.find({}).$),
         map((entries) => keyBy(entries, "_id"))
       )
-    },
-    staleTime: Infinity
+    }
   })
 }
 

@@ -1,12 +1,12 @@
 import { filter, switchMap } from "rxjs"
-import { isDefined, useQuery, useSignalValue } from "reactjrx"
+import { isDefined, useForeverQuery, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { libraryStateSignal } from "../library/states"
 
 export const useDataSources = () => {
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
 
-  return useQuery({
+  return useForeverQuery({
     queryKey: ["dataSources", { isLibraryUnlocked }],
     queryFn: () =>
       latestDatabase$.pipe(
