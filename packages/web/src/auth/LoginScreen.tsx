@@ -1,7 +1,5 @@
-import { useTheme, Button, Box, Link, Typography } from "@mui/material"
+import { useTheme, Button, Box, Link, Typography, Stack } from "@mui/material"
 import { Alert } from "@mui/material"
-import { Header } from "./Header"
-import { CenteredBox } from "../common/CenteredBox"
 import { useTranslation } from "react-i18next"
 import { Google } from "@mui/icons-material"
 import { useSignIn } from "./useSignIn"
@@ -9,6 +7,7 @@ import { ErrorMessage, isCancelError } from "../errors"
 import { OrDivider } from "../common/OrDivider"
 import { links } from "@oboku/shared"
 import { useMutation } from "reactjrx"
+import { Logo } from "../common/Logo"
 
 export const LoginScreen = () => {
   const { signIn } = useSignIn()
@@ -20,49 +19,57 @@ export const LoginScreen = () => {
   const { t } = useTranslation()
 
   return (
-    <CenteredBox
-      style={{
-        flexShrink: 0,
-        paddingTop: theme.spacing(4),
-        paddingBottom: theme.spacing(4),
-        overflow: "scroll",
-        display: "flex",
-        flexDirection: "column"
-      }}
+    <Stack
+      flex={1}
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+      gap={3}
+      px={2}
     >
-      <Header />
-      {error && !isCancelError(error) ? (
-        <Box mb={2}>
-          <Alert severity="warning">
-            <ErrorMessage error={error} />
+      <Box
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          flexFlow: "row",
+          paddingBottom: theme.spacing(4)
+        }}
+      >
+        <Logo />
+      </Box>
+      <Stack maxWidth={400}>
+        {error && !isCancelError(error) ? (
+          <Box mb={2}>
+            <Alert severity="warning">
+              <ErrorMessage error={error} />
+            </Alert>
+          </Box>
+        ) : null}
+        <Button
+          onClick={() => mutate()}
+          size="large"
+          startIcon={<Google />}
+          disabled={isPending}
+        >
+          {t("authScreen.sign.google")}
+        </Button>
+        <Box mt={2}>
+          <Alert severity="info" variant="outlined">
+            Want more choices? Please let us know on{" "}
+            <Link href={links.discord} underline="hover">
+              discord
+            </Link>
           </Alert>
         </Box>
-      ) : null}
-      <Button
-        onClick={() => mutate()}
-        size="large"
-        fullWidth
-        startIcon={<Google />}
-        disabled={isPending}
-      >
-        {t("authScreen.sign.google")}
-      </Button>
-      <Box mt={2}>
-        <Alert severity="info" variant="outlined">
-          Want more choices? Please let us know on{" "}
-          <Link href={links.discord} underline="hover">
-            discord
-          </Link>
-        </Alert>
-      </Box>
-      <OrDivider title="MORE" />
-      <Typography textAlign="center">
-        Visit{" "}
-        <Link href={links.site} underline="hover">
-          oboku
-        </Link>{" "}
-        for more information or help
-      </Typography>
-    </CenteredBox>
+        <OrDivider title="more" />
+        <Typography textAlign="center">
+          Visit{" "}
+          <Link href={links.site} underline="hover">
+            oboku
+          </Link>{" "}
+          for more information or help
+        </Typography>
+      </Stack>
+    </Stack>
   )
 }

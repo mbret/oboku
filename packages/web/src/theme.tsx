@@ -22,7 +22,7 @@ declare module "@mui/material/styles" {
 export const theme = createTheme({
   transitions: {
     // So we have `transition: none;` everywhere
-    create: () => "none"
+    // create: () => "none"
   },
   palette: {
     mode: `light`,
