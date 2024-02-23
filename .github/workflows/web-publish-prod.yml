@@ -1,4 +1,4 @@
-name: "Web bump version"
+name: "Web Publish Prod"
 
 on:
   push:
@@ -31,3 +31,9 @@ jobs:
         env:
           NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
         run: echo "new tag $NEW_TAG"
+
+  deploy-vercel:
+    uses: ./.github/workflows/_deploy-vercel.yml
+    secrets:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

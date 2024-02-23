@@ -1,13 +1,12 @@
-name: Web deploy vercel production
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+name: deploy-vercel
 
 on:
-  push:
-    # Pattern matched against refs/tags
-    tags:
-      - "*" # Push events to every tag not containing /
+  workflow_call:
+    secrets:
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_PROJECT_ID:
+        required: true
 
 jobs:
   Deploy-Production:
