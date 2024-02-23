@@ -6,7 +6,7 @@ on:
       - "master"
 
 jobs:
-  web-bump-version:
+  bump-version:
     name: "Bump Version on master"
     runs-on: ubuntu-latest
 
@@ -33,7 +33,9 @@ jobs:
         run: echo "new tag $NEW_TAG"
 
   deploy-vercel:
+    need: [bump-version]
     uses: ./.github/workflows/_deploy-vercel.yml
     secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
