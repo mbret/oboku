@@ -1,4 +1,4 @@
-name: deploy-prod
+name: Api Deploy prod
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -9,7 +9,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   deploy-aws:
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/_deploy.yml
     with:
       STAGE: prod
       AWS_API_URI: https://16vyq7634k.execute-api.us-east-1.amazonaws.com/prod

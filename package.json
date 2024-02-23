@@ -50,6 +50,7 @@
     "serverless-offline": "^13.2.1",
     "serverless-webpack": "^5.7.0",
     "typescript": "^5.2.2",
+    "vercel": "^33.5.2",
     "vite": "^5.0.0",
     "vite-plugin-dts": "^3.6.3",
     "vite-plugin-pwa": "^0.19.0",
