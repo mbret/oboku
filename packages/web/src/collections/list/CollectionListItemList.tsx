@@ -14,7 +14,7 @@ import { useCollectionState } from "../states"
 import { CollectionDocType } from "@oboku/shared"
 import { Cover } from "../../books/Cover"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer"
-import { useLocalSettingsState } from "../../settings/states"
+import { useLocalSettings } from "../../settings/states"
 import { useProtectedTagIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "../../library/states"
@@ -39,7 +39,7 @@ export const CollectionListItemList: FC<{
   const item = useCollectionState({
     id,
     libraryState,
-    localSettingsState: useLocalSettingsState(),
+    localSettingsState: useLocalSettings(),
     protectedTagIds: useProtectedTagIds().data
   })
   const { open: openActionDrawer } = useCollectionActionsDrawer(id)

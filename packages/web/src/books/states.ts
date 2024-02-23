@@ -15,7 +15,7 @@ import { getCollectionState, useCollections } from "../collections/states"
 import { map, switchMap, tap, withLatestFrom } from "rxjs"
 import { plugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 import { useForeverQuery } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
@@ -322,7 +322,7 @@ export const useBookCollectionsState = ({
 }: {
   bookId: string
   libraryState: ReturnType<typeof libraryStateSignal.getValue>
-  localSettingsState: ReturnType<typeof useLocalSettingsState>
+  localSettingsState: ReturnType<typeof useLocalSettings>
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {

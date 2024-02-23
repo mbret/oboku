@@ -11,7 +11,7 @@ const localSettingsStateDefaultValues = {
   showSensitiveDataSources: false
 }
 
-export const localSettingsStateSignal = signal<{
+export const localSettingsSignal = signal<{
   useOptimizedTheme: boolean
   readingFullScreenSwitchMode: "automatic" | "always" | "never"
   unBlurWhenProtectedVisible: boolean
@@ -23,7 +23,7 @@ export const localSettingsStateSignal = signal<{
   default: localSettingsStateDefaultValues
 })
 
-export const localSettingsStatePersist = localSettingsStateSignal
+export const localSettingsStatePersist = localSettingsSignal
 
-export const useLocalSettingsState = () =>
-  useSignalValue(localSettingsStateSignal)
+export const useLocalSettings = () =>
+  useSignalValue(localSettingsSignal)

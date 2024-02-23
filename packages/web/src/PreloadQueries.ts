@@ -1,11 +1,11 @@
 import { memo, useEffect, useState } from "react"
-import { useAccountSettings } from "./settings/helpers"
+import { useSettings } from "./settings/helpers"
 import { useLiveRef } from "reactjrx"
 
 const usePrefetchAccountSettings = () => {
   const [prefetched, setPrefetched] = useState(false)
 
-  const { data, status } = useAccountSettings({
+  const { data, status } = useSettings({
     enabled: !prefetched
   })
 

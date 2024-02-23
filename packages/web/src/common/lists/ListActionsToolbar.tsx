@@ -6,9 +6,9 @@ import {
   LockOpenRounded,
   SortRounded
 } from "@mui/icons-material"
-import { SortByDialog } from "../books/bookList/SortByDialog"
+import { SortByDialog } from "../../books/bookList/SortByDialog"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../library/states"
+import { libraryStateSignal } from "../../library/states"
 
 type Sorting = ComponentProps<typeof SortByDialog>["value"]
 

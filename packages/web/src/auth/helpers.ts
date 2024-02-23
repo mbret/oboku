@@ -2,7 +2,6 @@ import { useCallback, useState } from "react"
 import { API_URI } from "../constants"
 import { useLock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
-import { Report } from "../debug/report.shared"
 import { createServerError } from "../errors"
 import { authStateSignal } from "./authState"
 import { SIGNAL_RESET, useSignalValue } from "reactjrx"
@@ -14,38 +13,6 @@ export const useSignOut = () => {
   return useCallback(() => {
     authStateSignal.setValue(SIGNAL_RESET)
   }, [])
-}
-
-export const useAuthorize = () => {
-  const [lock, unlock] = useLock()
-  const auth = useSignalValue(authStateSignal)
-
-  return async ({
-    variables: { password },
-    onSuccess
-  }: {
-    variables: { password: string }
-    onSuccess: () => void
-  }) => {
-    try {
-      lock("authorize")
-      const response = await fetch(`${API_URI}/signin`, {
-        method: "POST",
-        body: JSON.stringify({ email: auth?.email, password }),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-      if (!response.ok) {
-        throw await createServerError(response)
-      }
-      unlock("authorize")
-      onSuccess()
-    } catch (e) {
-      Report.error(e)
-      unlock("authorize")
-    }
-  }
 }
 
 export const useSignUp = () => {

@@ -9,7 +9,7 @@ import { useMemo } from "react"
 import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
 import { normalizedBookDownloadsStateSignal } from "../download/states"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 import { useProtectedTagIds } from "../tags/helpers"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "../library/states"
@@ -23,7 +23,7 @@ export const ManageCollectionBooksDialog: FC<{
   const collection = useCollectionState({
     id: collectionId || "-1",
     libraryState,
-    localSettingsState: useLocalSettingsState(),
+    localSettingsState: useLocalSettings(),
     protectedTagIds: useProtectedTagIds().data
   })
   const { data: books } = useBooksAsArrayState({

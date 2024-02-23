@@ -13,7 +13,7 @@ import {
   VariableSizeList
 } from "react-window"
 import AutoSizer from "react-virtualized-auto-sizer"
-import { useCSS } from "../common/utils"
+import { useCSS } from "../utils"
 import { useTheme } from "@mui/material"
 
 export const ReactWindowList: FC<{

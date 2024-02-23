@@ -1,5 +1,5 @@
 import React, { ComponentProps, FC, useState } from "react"
-import { ListActionsToolbar } from "../../lists/ListActionsToolbar"
+import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { useBookIdsSortedBy } from "../helpers"
 import { BookList } from "./BookList"
 

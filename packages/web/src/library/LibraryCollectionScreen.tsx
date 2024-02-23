@@ -16,7 +16,7 @@ import { useCollectionIdsState } from "../collections/states"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { CollectionList } from "../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 import { useProtectedTagIds } from "../tags/helpers"
 import { signal, useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "./states"
@@ -47,7 +47,7 @@ export const LibraryCollectionScreen = () => {
   const libraryState = useSignalValue(libraryStateSignal)
   const collections = useCollectionIdsState({
     libraryState,
-    localSettingsState: useLocalSettingsState(),
+    localSettingsState: useLocalSettings(),
     protectedTagIds: useProtectedTagIds().data
   })
 

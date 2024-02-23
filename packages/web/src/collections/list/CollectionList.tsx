@@ -8,7 +8,7 @@ import React, {
 } from "react"
 import { List, useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
-import { ReactWindowList } from "../../lists/ReactWindowList"
+import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { CollectionListItemList } from "./CollectionListItemList"
 import { CollectionDocType } from "@oboku/shared"
 

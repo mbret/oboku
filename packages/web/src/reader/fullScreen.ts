@@ -2,10 +2,10 @@ import { useEffect } from "react"
 import screenfull from "screenfull"
 import { IS_MOBILE_DEVICE } from "../constants"
 import { Report } from "../debug/report.shared"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 
 export const useFullScreenSwitch = () => {
-  const localSettings = useLocalSettingsState()
+  const localSettings = useLocalSettings()
 
   useEffect(() => {
     if (

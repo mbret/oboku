@@ -28,7 +28,7 @@ import {
 } from "./states"
 import { UploadBookDrawer } from "./UploadBookDrawer"
 import { SortByDialog } from "../books/bookList/SortByDialog"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useBooks } from "./useBooks"
@@ -44,7 +44,7 @@ export const LibraryBooksScreen = () => {
     isUploadBookDrawerOpenedStateSignal
   )
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
-  const localSettings = useLocalSettingsState()
+  const localSettings = useLocalSettings()
   const [
     isUploadBookFromDataSourceDialogOpened,
     setIsUploadBookFromDataSourceDialogOpened

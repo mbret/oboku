@@ -1,6 +1,6 @@
 import { CollectionDocType, directives } from "@oboku/shared"
 import { useVisibleBookIdsState } from "../books/states"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 import { useProtectedTagIds } from "../tags/helpers"
 import { libraryStateSignal } from "../library/states"
 import { useForeverQuery } from "reactjrx"
@@ -38,7 +38,7 @@ export const useCollectionsAsArrayState = ({
   protectedTagIds = []
 }: {
   libraryState: ReturnType<typeof libraryStateSignal.getValue>
-  localSettingsState: ReturnType<typeof useLocalSettingsState>
+  localSettingsState: ReturnType<typeof useLocalSettings>
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
 }) => {
   const localSettings = localSettingsState
@@ -84,7 +84,7 @@ export const useCollectionIdsState = ({
   protectedTagIds = []
 }: {
   libraryState: ReturnType<typeof libraryStateSignal.getValue>
-  localSettingsState: ReturnType<typeof useLocalSettingsState>
+  localSettingsState: ReturnType<typeof useLocalSettings>
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
 }) => {
   return useCollectionsAsArrayState({
@@ -101,7 +101,7 @@ export const getCollectionState = ({
   bookIds
 }: {
   id: string
-  localSettingsState: ReturnType<typeof useLocalSettingsState>
+  localSettingsState: ReturnType<typeof useLocalSettings>
   normalizedCollections: ReturnType<typeof useCollections>["data"]
   bookIds: ReturnType<typeof useVisibleBookIdsState>
 }) => {
@@ -130,7 +130,7 @@ export const useCollectionState = ({
 }: {
   id: string
   libraryState: ReturnType<typeof libraryStateSignal.getValue>
-  localSettingsState: ReturnType<typeof useLocalSettingsState>
+  localSettingsState: ReturnType<typeof useLocalSettings>
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
 }) => {
   const { data: normalizedCollections } = useCollections()

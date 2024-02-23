@@ -5,7 +5,7 @@ import { BookListGridItem } from "./BookListGridItem"
 import { LibrarySorting } from "../../library/states"
 import { LibraryViewMode } from "../../rxdb"
 import { BookListListItem } from "./BookListListItem"
-import { ReactWindowList } from "../../lists/ReactWindowList"
+import { ReactWindowList } from "../../common/lists/ReactWindowList"
 
 export const BookList: FC<{
   viewMode?: "grid" | "list"

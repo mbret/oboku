@@ -26,13 +26,18 @@ import {
   TextField,
   Typography,
   useTheme,
-  FormControlLabel
+  FormControlLabel,
+  ListItemButton
 } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { useStorageUse } from "./useStorageUse"
-import { LockActionBehindUserPasswordDialog } from "../auth/LockActionBehindUserPasswordDialog"
+import { authorizeAction } from "../auth/AuthorizeActionDialog"
 import { useSignOut } from "../auth/helpers"
-import { useAccountSettings, useUpdateContentPassword } from "./helpers"
+import {
+  useSettings,
+  useUpdateContentPassword,
+  useUpdateSettings
+} from "./helpers"
 import { libraryStateSignal } from "../library/states"
 import packageJson from "../../package.json"
 import { ROUTES } from "../constants"
@@ -49,24 +54,20 @@ import { authStateSignal } from "../auth/authState"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
-  const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(
-    undefined
-  )
   const [
     isEditContentPasswordDialogOpened,
     setIsEditContentPasswordDialogOpened
   ] = useState(false)
   const [isDeleteMyDataDialogOpened, setIsDeleteMyDataDialogOpened] =
     useState(false)
-  const [isLoadLibraryDebugOpened, setIsLoadLibraryDebugOpened] =
-    useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([])
   const auth = useSignalValue(authStateSignal)
-  const { data: accountSettings } = useAccountSettings()
+  const { data: accountSettings } = useSettings()
   const library = useSignalValue(libraryStateSignal)
   const signOut = useSignOut()
   const theme = useTheme()
   const dialog = useDialogManager()
+  const { mutate: updateSettings } = useUpdateSettings()
 
   return (
     <div
@@ -87,23 +88,22 @@ export const ProfileScreen = () => {
           button
           onClick={() => {
             if (accountSettings?.contentPassword) {
-              setLockedAction(
-                (_) => () => setIsEditContentPasswordDialogOpened(true)
-              )
+              authorizeAction(() => setIsEditContentPasswordDialogOpened(true))
             } else {
               setIsEditContentPasswordDialogOpened(true)
             }
           }}
         >
           <ListItemText
-            primary="Protected contents password"
-            secondary={
+            primary={
               accountSettings?.contentPassword
-                ? "Change my password"
-                : "Initialize my password"
+                ? "Change app password"
+                : "Initialize app password"
             }
+            secondary="When set, it will be used to authorize sensitive actions"
           />
         </ListItem>
+
         <ListItem
           button
           onClick={() => {
@@ -269,6 +269,19 @@ export const ProfileScreen = () => {
         }
         style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
       >
+        {!!accountSettings?.contentPassword && (
+          <ListItemButton
+            onClick={() => {
+              authorizeAction(() => {
+                updateSettings({
+                  contentPassword: null
+                })
+              })
+            }}
+          >
+            <ListItemText primary="Remove app password" />
+          </ListItemButton>
+        )}
         <ListItem button onClick={() => navigate(ROUTES.PROBLEMS)}>
           <ListItemText
             primary="Repair my account / anomalies"
@@ -279,7 +292,6 @@ export const ProfileScreen = () => {
           <ListItemText primary="Delete my account" />
         </ListItem>
       </List>
-      <LockActionBehindUserPasswordDialog action={lockedAction} />
       <EditContentPasswordDialog
         open={isEditContentPasswordDialogOpened}
         onClose={() => setIsEditContentPasswordDialogOpened(false)}
@@ -417,7 +429,7 @@ const EditContentPasswordDialog: FC<{
   onClose: () => void
 }> = ({ onClose, open }) => {
   const updatePassword = useUpdateContentPassword()
-  const { data: accountSettings } = useAccountSettings()
+  const { data: accountSettings } = useSettings()
   const [text, setText] = useState("")
   const contentPassword = accountSettings?.contentPassword || ""
 

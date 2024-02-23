@@ -3,7 +3,7 @@ import { useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { SelectableBookListItem } from "./SelectableBookListItem"
 import { useCSS } from "../../common/utils"
-import { ReactWindowList } from "../../lists/ReactWindowList"
+import { ReactWindowList } from "../../common/lists/ReactWindowList"
 
 export const SelectableBookList: FC<{
   style?: React.CSSProperties

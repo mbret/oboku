@@ -3,6 +3,7 @@
  * @see https://material-ui.com/customization/palette/
  */
 import { createTheme, alpha } from "@mui/material/styles"
+import { deepmerge } from "@mui/utils"
 
 declare module "@mui/material/styles" {
   interface Theme {
@@ -20,10 +21,6 @@ declare module "@mui/material/styles" {
 }
 
 export const theme = createTheme({
-  transitions: {
-    // So we have `transition: none;` everywhere
-    // create: () => "none"
-  },
   palette: {
     mode: `light`,
     primary: {
@@ -31,14 +28,6 @@ export const theme = createTheme({
       main: "#e16432", // #e16432
       dark: `#9D4623`
     }
-    // text: {
-    //   primary: 'rgb(255, 255, 255)',
-    // },
-    // secondary: {
-    // light,
-    // main: "rgb(225, 100, 50, 1)"
-    // dark,
-    // }
   },
   components: {
     /**
@@ -61,15 +50,6 @@ export const theme = createTheme({
       }
     },
     // Name of the component ⚛️
-    MuiCssBaseline: {
-      // Name of the rule
-      // "@global": {
-      //   "*, *::before, *::after": {
-      //     transition: "none !important",
-      //     animation: "none !important"
-      //   }
-      // }
-    },
     MuiBottomNavigationAction: {
       styleOverrides: {
         root: {
@@ -91,28 +71,7 @@ export const theme = createTheme({
           minWidth: 260
         }
       }
-    },
-    // MuiBottomNavigationAction: {
-    //   root: {
-    //     paddingTop: '0 !important',
-    //   }
-    // }
-    MuiButtonBase: {
-      styleOverrides: {
-        root: {
-          // color: '#fff',
-        }
-      }
     }
-    // MuiButton: {
-    //   root: {
-    //     color: "#fff"
-    //   },
-    //   outlined: {
-    //     border: "1px solid rgba(255, 255, 255, 1)"
-    //     // color: '#fff',
-    //   }
-    // }
   },
   custom: {
     maxWidthCenteredContent: 320,
@@ -123,3 +82,32 @@ export const theme = createTheme({
     coverAverageRatio: 9 / 14
   }
 })
+
+export const eInkTheme = createTheme(
+  deepmerge(theme, {
+    transitions: {
+      // So we have `transition: none;` everywhere
+      create: () => "none"
+    },
+    palette: {
+      text: {
+        primary: "#000000",
+        secondary: "#000000"
+      },
+      primary: {
+        main: "#fff",
+        contrastText: "#000000"
+      }
+    },
+    components: {
+      MuiAppBar: {
+        styleOverrides: {
+          root: {
+            borderBottom: "1px solid black"
+          }
+        }
+      }
+    },
+    custom: theme.custom
+  } satisfies Parameters<typeof createTheme>[0])
+)

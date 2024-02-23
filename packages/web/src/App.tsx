@@ -1,13 +1,7 @@
 import { FC, Suspense, useEffect, useState } from "react"
 import { AppNavigator } from "./navigation/AppNavigator"
-import {
-  ThemeProvider,
-  Theme,
-  StyledEngineProvider,
-  Fade,
-  Box
-} from "@mui/material"
-import { theme } from "./theme"
+import { Theme, StyledEngineProvider, Fade, Box } from "@mui/material"
+import { theme } from "./theme/theme"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { TourProvider } from "./app-tour/TourProvider"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
@@ -36,6 +30,8 @@ import {
 import localforage from "localforage"
 import { signalEntriesToPersist } from "./storage"
 import { queryClient } from "./queries/client"
+import { ThemeProvider } from "./theme/ThemeProvider"
+import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 
 declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -70,7 +66,7 @@ export function App() {
       }}
     >
       <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider>
           <QueryClientProvider client={queryClient}>
             <Suspense fallback={<SplashScreen show />}>
               {/* <SplashScreen show={!isAppReady} /> */}
@@ -93,6 +89,7 @@ export function App() {
                               <ManageBookCollectionsDialog />
                               <ManageBookTagsDialog />
                               <ManageTagBooksDialog />
+                              <AuthorizeActionDialog />
                             </TourProvider>
                             <UpdateAvailableDialog
                               serviceWorker={newServiceWorker}

@@ -1,23 +1,66 @@
 import { crypto } from "@oboku/shared"
-import { useDatabase } from "../rxdb"
-import { useForeverQuery } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
-import { map, switchMap } from "rxjs"
+import { Database, SettingsDocType } from "../rxdb"
+import { useForeverQuery, useMutation } from "reactjrx"
+import { getLatestDatabase, latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { from, map, mergeMap, of, switchMap } from "rxjs"
+
+export const getSettings = (database: Database) => {
+  return database.settings
+    .findOne({
+      selector: {
+        _id: "settings"
+      }
+    })
+    .exec()
+}
+
+export const getSettingsOrThrow = async (database: Database) => {
+  const settings = await getSettings(database)
+
+  if (!settings) throw new Error("Settings not found")
+
+  return settings
+}
 
 export const useUpdateContentPassword = () => {
-  const { db } = useDatabase()
+  const { mutate: updateSettings } = useUpdateSettings()
 
-  return async (password: string) => {
-    const hashed = await crypto.hashContentPassword(password)
+  return (password: string) => {
+    const hashed = crypto.hashContentPassword(password)
 
-    await db?.settings.safeUpdate(
-      { $set: { contentPassword: hashed } },
-      (collection) => collection.findOne()
-    )
+    updateSettings({
+      contentPassword: hashed
+    })
   }
 }
 
-export const useAccountSettings = (
+export const useValidateAppPassword = (options: {
+  onSuccess: () => void
+  onError: () => void
+}) => {
+  return useMutation({
+    ...options,
+    mapOperator: "switch",
+    mutationFn: (input: string) => {
+      if (!input) throw new Error("Invalid password")
+
+      return getLatestDatabase().pipe(
+        mergeMap((database) => from(getSettingsOrThrow(database))),
+        mergeMap((settings) => {
+          const hashedInput = crypto.hashContentPassword(input)
+
+          if (hashedInput !== settings.contentPassword) {
+            throw new Error("Invalid password")
+          }
+
+          return of(null)
+        })
+      )
+    }
+  })
+}
+
+export const useSettings = (
   options: {
     enabled?: boolean
   } = {}
@@ -35,9 +78,24 @@ export const useAccountSettings = (
      * Since the query is a live stream the data are always fresh anyway.
      */
     gcTime: Infinity,
-    staleTime: Infinity,
     ...options
   })
 
   return data
+}
+
+export const useUpdateSettings = () => {
+  return useMutation({
+    mutationFn: (data: Partial<SettingsDocType>) =>
+      getLatestDatabase().pipe(
+        mergeMap((database) => getSettingsOrThrow(database)),
+        mergeMap((settings) =>
+          from(
+            settings?.update({
+              $set: data
+            })
+          )
+        )
+      )
+  })
 }

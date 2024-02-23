@@ -13,9 +13,9 @@ import {
   ListItemText,
   ListSubheader
 } from "@mui/material"
-import { localSettingsStateSignal, useLocalSettingsState } from "./states"
+import { localSettingsSignal, useLocalSettings } from "./states"
 
-type LocalSettings = ReturnType<typeof useLocalSettingsState>
+type LocalSettings = ReturnType<typeof useLocalSettings>
 
 const fullScreenModes: Record<
   LocalSettings["readingFullScreenSwitchMode"],
@@ -34,7 +34,7 @@ const showCollectionWithProtectedContentLabels: Record<
 }
 
 export const SettingsScreen = memo(() => {
-  const localSettings = useLocalSettingsState()
+  const localSettings = useLocalSettings()
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isShowCollectionDrawerOpened, setIsShowCollectionDrawerOpened] =
     useState(false)
@@ -51,7 +51,7 @@ export const SettingsScreen = memo(() => {
           <ListItem
             button
             onClick={() => {
-              localSettingsStateSignal.setValue((old) => ({
+              localSettingsSignal.setValue((old) => ({
                 ...old,
                 hideDirectivesFromCollectionName:
                   !old.hideDirectivesFromCollectionName
@@ -78,7 +78,7 @@ export const SettingsScreen = memo(() => {
           <ListItem
             button
             onClick={() => {
-              localSettingsStateSignal.setValue((old) => ({
+              localSettingsSignal.setValue((old) => ({
                 ...old,
                 showSensitiveDataSources: !old.showSensitiveDataSources
               }))
@@ -114,7 +114,7 @@ export const SettingsScreen = memo(() => {
           <ListItem
             button
             onClick={() => {
-              localSettingsStateSignal.setValue((old) => ({
+              localSettingsSignal.setValue((old) => ({
                 ...old,
                 unBlurWhenProtectedVisible: !old.unBlurWhenProtectedVisible
               }))
@@ -155,7 +155,7 @@ export const SettingsScreen = memo(() => {
           <ListItem
             button
             onClick={() => {
-              localSettingsStateSignal.setValue((old) => ({
+              localSettingsSignal.setValue((old) => ({
                 ...old,
                 useOptimizedTheme: !old.useOptimizedTheme
               }))
@@ -190,7 +190,7 @@ export const SettingsScreen = memo(() => {
               button
               key={text}
               onClick={() => {
-                localSettingsStateSignal.setValue((old) => ({
+                localSettingsSignal.setValue((old) => ({
                   ...old,
                   readingFullScreenSwitchMode: text
                 }))
@@ -206,7 +206,7 @@ export const SettingsScreen = memo(() => {
         open={isDrawerOpened}
         onClose={() => setIsDrawerOpened(false)}
         onChoiceSelect={(value) => {
-          localSettingsStateSignal.setValue((old) => ({
+          localSettingsSignal.setValue((old) => ({
             ...old,
             readingFullScreenSwitchMode: value
           }))
@@ -224,7 +224,7 @@ export const SettingsScreen = memo(() => {
         open={isShowCollectionDrawerOpened}
         onClose={() => setIsShowCollectionDrawerOpened(false)}
         onChoiceSelect={(value) => {
-          localSettingsStateSignal.setValue((old) => ({
+          localSettingsSignal.setValue((old) => ({
             ...old,
             showCollectionWithProtectedContent: value
           }))
