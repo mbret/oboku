@@ -20,6 +20,16 @@ export default defineConfig(({ mode }) => ({
       }
     }
   },
+  server: {
+    proxy: {
+      // with options: http://localhost:5173/api/bar-> http://jsonplaceholder.typicode.com/bar
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, "")
+      }
+    }
+  },
   /**
    * require('events') uses package events which is a web polyfill
    */
