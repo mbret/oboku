@@ -25,7 +25,7 @@ import { useModalNavigationControl } from "../navigation/useModalNavigationContr
 import { useCallback } from "react"
 import { useRef } from "react"
 import { libraryStateSignal } from "../library/states"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 import { useProtectedTagIds } from "../tags/helpers"
 import { signal, useSignalValue } from "reactjrx"
 
@@ -185,7 +185,7 @@ const EditCollectionDialog: FC<{
   const collection = useCollectionState({
     id: id || "-1",
     libraryState,
-    localSettingsState: useLocalSettingsState(),
+    localSettingsState: useLocalSettings(),
     protectedTagIds: useProtectedTagIds().data
   })
   const { mutate: editCollection } = useUpdateCollection()

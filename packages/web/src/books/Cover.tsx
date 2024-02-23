@@ -10,7 +10,7 @@ import {
 } from "../tags/helpers"
 import { useCSS } from "../common/utils"
 import { API_URI } from "../constants"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 import { normalizedBookDownloadsStateSignal } from "../download/states"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
@@ -71,7 +71,7 @@ export const Cover: FC<Props> = memo(
     const [isLoading, setIsLoading] = useState(true)
     const classes = useStyle({ withShadow, fullWidth, rounded, isLoading })
     const assetHash = book?.lastMetadataUpdatedAt?.toString()
-    const localSettings = useLocalSettingsState()
+    const localSettings = useLocalSettings()
     const shouldBlurCover =
       book?.isBlurred &&
       blurIfNeeded &&

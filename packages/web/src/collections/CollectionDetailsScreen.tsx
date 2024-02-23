@@ -7,7 +7,7 @@ import CollectionBgSvg from "../assets/series-bg.svg"
 import { useCollectionState } from "./states"
 import { useCollectionActionsDrawer } from "./CollectionActionsDrawer"
 import { BookListWithControls } from "../books/bookList/BookListWithControls"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 import { useProtectedTagIds } from "../tags/helpers"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "../library/states"
@@ -24,7 +24,7 @@ export const CollectionDetailsScreen = () => {
   const collection = useCollectionState({
     id: id || "-1",
     libraryState,
-    localSettingsState: useLocalSettingsState(),
+    localSettingsState: useLocalSettings(),
     protectedTagIds: useProtectedTagIds().data
   })
   const data =

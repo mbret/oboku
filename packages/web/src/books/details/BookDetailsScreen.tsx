@@ -40,7 +40,7 @@ import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { libraryStateSignal } from "../../library/states"
 import { normalizedBookDownloadsStateSignal } from "../../download/states"
-import { useLocalSettingsState } from "../../settings/states"
+import { useLocalSettings } from "../../settings/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
 
@@ -71,7 +71,7 @@ export const BookDetailsScreen = () => {
   const collections = useBookCollectionsState({
     bookId: id,
     libraryState,
-    localSettingsState: useLocalSettingsState(),
+    localSettingsState: useLocalSettings(),
     protectedTagIds: useProtectedTagIds().data,
     tags: useTagsByIds().data
   })

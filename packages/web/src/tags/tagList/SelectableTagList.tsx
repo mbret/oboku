@@ -1,7 +1,7 @@
 import React, { useCallback, FC, useMemo, memo } from "react"
 import { useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
-import { ReactWindowList } from "../../lists/ReactWindowList"
+import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { SelectableTagListItem } from "./SelectableTagListItem"
 
 export const SelectableTagList: FC<{

@@ -4,7 +4,6 @@ import {
   forwardRef,
   memo,
   useCallback,
-  useEffect,
   useMemo,
   useRef
 } from "react"
@@ -14,15 +13,8 @@ import {
   VariableSizeList
 } from "react-window"
 import AutoSizer from "react-virtualized-auto-sizer"
-import {
-  ArrowBackIosRounded,
-  ArrowForwardIosRounded,
-  ExpandLessRounded,
-  ExpandMoreRounded
-} from "@mui/icons-material"
-import { decimalAdjust, useCSS } from "../common/utils"
+import { useCSS } from "../utils"
 import { useTheme } from "@mui/material"
-import { useLocalSettingsState } from "../settings/states"
 
 export const ReactWindowList: FC<{
   rowRenderer: (item: any, rowIndex: number) => React.ReactNode
@@ -104,102 +96,8 @@ const List = memo(
       const computedItemHeight =
         itemHeight || Math.floor(computedItemWidth / preferredRatio)
       const columnCount = layout === "horizontal" ? data.length : itemsPerRow
-      const { useNavigationArrows } = useLocalSettingsState()
-      const classes = useClasses()
-      const displayScrollerButtons = useNavigationArrows
-      const isHorizontal = layout === "horizontal"
       // 18/4=4.5 so we need to take ceil 5
       const rowCount = Math.ceil(data.length / columnCount)
-      const listHeightWithoutHeader = computedItemHeight * rowCount
-      const listWidth = computedItemWidth * columnCount
-      const maxLeftOffset = listWidth - width
-      const maxTopOffset =
-        (headerHeight || 0) + listHeightWithoutHeader - height
-
-      // index will be -1 in case of header
-      // because negative offset will fallback to 0 it works to handle header
-      const scrollToRowIndex = (rowIndex: number) => {
-        const scrollTop =
-          (headerHeight || 0) + (rowIndex || 0) * computedItemHeight
-        return listRef?.current?.scrollTo({
-          scrollTop: scrollTop >= maxTopOffset ? maxTopOffset : scrollTop,
-          scrollLeft: 0
-        })
-      }
-
-      const scrollToColumnIndex = (columnIndex: number) => {
-        const leftOffsetToScroll = (columnIndex || 0) * computedItemWidth
-        return listRef?.current?.scrollTo({
-          scrollTop: 0,
-          scrollLeft:
-            leftOffsetToScroll >= maxLeftOffset
-              ? maxLeftOffset
-              : leftOffsetToScroll
-        })
-      }
-
-      const getCurrentOffsetWithoutHeader = () => {
-        if (layout === "vertical") {
-          return (scrollRef.current?.scrollTop || 0) - (headerHeight || 0)
-        } else {
-          return scrollRef.current?.scrollLeft || 0
-        }
-      }
-
-      const onExpandMoreClick = () => {
-        const offsetWithoutHeader = getCurrentOffsetWithoutHeader()
-        // for some reason the offset will often be x.9987454 instead of x
-        // we round up x.9y y>=5 to next row index
-        // we try to get the smartest closest row index
-        if (layout === "vertical") {
-          const currentRowIndex = Math.floor(
-            decimalAdjust(
-              "round",
-              rowCount * (offsetWithoutHeader / listHeightWithoutHeader),
-              -1
-            )
-          )
-
-          return scrollToRowIndex(currentRowIndex + 1)
-        } else {
-          const currentIndex = Math.floor(
-            decimalAdjust(
-              "round",
-              columnCount * (offsetWithoutHeader / listWidth),
-              -1
-            )
-          )
-
-          return scrollToColumnIndex(currentIndex + 1)
-        }
-      }
-
-      const onExpandLessClick = () => {
-        const offsetWithoutHeader = getCurrentOffsetWithoutHeader()
-        if (layout === "vertical") {
-          const currentRowIndex = Math.ceil(
-            decimalAdjust(
-              "round",
-              rowCount * (offsetWithoutHeader / listHeightWithoutHeader),
-              -1
-            )
-          )
-
-          return scrollToRowIndex(currentRowIndex - 1)
-        } else {
-          const currentIndex = decimalAdjust(
-            "round",
-            columnCount * (offsetWithoutHeader / listWidth),
-            -1
-          )
-          const currentRoundedIndex = Math.floor(currentIndex)
-          // we are in the middle of one item, let's just roll back to the begin of it
-          if (!Number.isInteger(currentIndex)) {
-            return scrollToColumnIndex(currentRoundedIndex)
-          }
-          return scrollToColumnIndex(currentRoundedIndex - 1)
-        }
-      }
 
       const innerElementType = useMemo(
         () =>
@@ -286,56 +184,6 @@ const List = memo(
           >
             {renderItem}
           </FixedSizeGrid>
-          {displayScrollerButtons && (
-            <>
-              {!isHorizontal && (
-                <div
-                  style={{
-                    ...classes.verticalScrollButton,
-                    ...classes.verticalScrollButtonLess
-                  }}
-                  onClick={onExpandLessClick}
-                >
-                  <ExpandLessRounded style={{ color: "white" }} />
-                </div>
-              )}
-              {!isHorizontal && (
-                <div
-                  style={{
-                    ...classes.verticalScrollButton,
-                    ...classes.verticalScrollButtonMore
-                  }}
-                  onClick={onExpandMoreClick}
-                >
-                  <ExpandMoreRounded style={{ color: "white" }} />
-                </div>
-              )}
-              {isHorizontal && (
-                <div
-                  style={{
-                    ...classes.horizontalButton,
-                    position: "absolute",
-                    left: 5
-                  }}
-                  onClick={onExpandLessClick}
-                >
-                  <ArrowBackIosRounded style={{ color: "white" }} />
-                </div>
-              )}
-              {isHorizontal && (
-                <div
-                  style={{
-                    ...classes.horizontalButton,
-                    position: "absolute",
-                    right: 5
-                  }}
-                  onClick={onExpandMoreClick}
-                >
-                  <ArrowForwardIosRounded style={{ color: "white" }} />
-                </div>
-              )}
-            </>
-          )}
         </>
       )
     }

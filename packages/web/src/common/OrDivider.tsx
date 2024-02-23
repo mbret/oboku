@@ -20,7 +20,7 @@ export const OrDivider: FC<{ title?: string; style?: React.CSSProperties }> = ({
     >
       <div
         style={{
-          borderBottom: "1px solid black",
+          borderBottom: `1px solid ${theme.palette.grey[600]}`,
           height: 1,
           width: "100%"
         }}
@@ -31,11 +31,13 @@ export const OrDivider: FC<{ title?: string; style?: React.CSSProperties }> = ({
           marginRight: theme.spacing(2)
         }}
       >
-        <Typography>{title}</Typography>
+        <Typography textTransform="uppercase" variant="body2">
+          {title}
+        </Typography>
       </div>
       <div
         style={{
-          borderBottom: "1px solid black",
+          borderBottom: `1px solid ${theme.palette.grey[600]}`,
           width: "100%"
         }}
       ></div>

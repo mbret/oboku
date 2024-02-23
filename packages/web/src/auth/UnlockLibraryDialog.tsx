@@ -15,7 +15,7 @@ import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFi
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { libraryStateSignal } from "../library/states"
 import { signal, useSignalValue } from "reactjrx"
-import { useAccountSettings } from "../settings/helpers"
+import { useSettings } from "../settings/helpers"
 
 export const unlockLibraryDialogSignal = signal({
   key: "unlockLibraryDialog",
@@ -34,7 +34,7 @@ export const UnlockLibraryDialog: FC<{}> = () => {
       unlockPassword: ""
     }
   })
-  const { data: accountSettings } = useAccountSettings()
+  const { data: accountSettings } = useSettings()
   const isOpened = useSignalValue(unlockLibraryDialogSignal)
   const contentPassword = accountSettings?.contentPassword
   const { closeModalWithNavigation } = useModalNavigationControl(

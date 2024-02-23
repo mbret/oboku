@@ -8,13 +8,13 @@ import {
 } from "@mui/material"
 import { SdStorageRounded } from "@mui/icons-material"
 import { plugins as dataSourcePlugins } from "../dataSources"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 
 export const UploadBookDrawer: FC<{
   open: boolean
   onClose: (type?: "device" | string | undefined) => void
 }> = ({ open, onClose }) => {
-  const { showSensitiveDataSources } = useLocalSettingsState()
+  const { showSensitiveDataSources } = useLocalSettings()
 
   return (
     <>

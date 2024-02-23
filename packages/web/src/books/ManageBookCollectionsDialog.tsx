@@ -4,7 +4,7 @@ import { useAddCollectionToBook, useRemoveCollectionFromBook } from "./helpers"
 import { useBookState } from "./states"
 import { CollectionsSelectionDialog } from "../collections/CollectionsSelectionDialog"
 import { libraryStateSignal } from "../library/states"
-import { useLocalSettingsState } from "../settings/states"
+import { useLocalSettings } from "../settings/states"
 import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
 import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
@@ -34,7 +34,7 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
   const open = !!id
   const collections = useCollectionIdsState({
     libraryState,
-    localSettingsState: useLocalSettingsState(),
+    localSettingsState: useLocalSettings(),
     protectedTagIds: useProtectedTagIds().data
   })
 

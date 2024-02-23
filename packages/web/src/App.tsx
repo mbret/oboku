@@ -1,7 +1,7 @@
 import { FC, Suspense, useEffect, useState } from "react"
 import { AppNavigator } from "./navigation/AppNavigator"
-import { ThemeProvider, Theme, StyledEngineProvider } from "@mui/material"
-import { theme } from "./theme"
+import { Theme, StyledEngineProvider, Fade, Box } from "@mui/material"
+import { theme } from "./theme/theme"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { TourProvider } from "./app-tour/TourProvider"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
@@ -11,7 +11,7 @@ import { UpdateAvailableDialog } from "./UpdateAvailableDialog"
 import { RxDbProvider } from "./rxdb"
 import { useObservers } from "./rxdb/sync/useObservers"
 import { PreloadQueries } from "./PreloadQueries"
-import { AppLoading } from "./AppLoading"
+import { SplashScreen } from "./SplashScreen"
 import { FirstTimeExperienceTours } from "./firstTimeExperience/FirstTimeExperienceTours"
 import { DialogProvider } from "./dialog"
 import { BlurContainer } from "./books/BlurContainer"
@@ -25,12 +25,13 @@ import {
   usePersistSignals,
   QueryClientProvider,
   createLocalforageAdapter,
-  createSharedStoreAdapter,
-  QueryClient
+  createSharedStoreAdapter
 } from "reactjrx"
 import localforage from "localforage"
 import { signalEntriesToPersist } from "./storage"
 import { queryClient } from "./queries/client"
+import { ThemeProvider } from "./theme/ThemeProvider"
+import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 
 declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -65,10 +66,10 @@ export function App() {
       }}
     >
       <StyledEngineProvider injectFirst>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider>
           <QueryClientProvider client={queryClient}>
-            <Suspense fallback={<AppLoading />}>
-              {!isAppReady && <AppLoading />}
+            <Suspense fallback={<SplashScreen show />}>
+              {/* <SplashScreen show={!isAppReady} /> */}
               <RxDbProvider>
                 {isHydrated && (
                   <>
@@ -79,24 +80,30 @@ export function App() {
                         }
                         return Comp
                       },
-                        <DialogProvider>
-                          <TourProvider>
-                            <AppNavigator />
-                            <FirstTimeExperienceTours />
-                            <ManageBookCollectionsDialog />
-                            <ManageBookTagsDialog />
-                            <ManageTagBooksDialog />
-                          </TourProvider>
-                          <UpdateAvailableDialog
-                            serviceWorker={newServiceWorker}
-                          />
-                          <ReplicateRemoteDb />
-                          <BlockingBackdrop />
-                          <Effects />
-                        </DialogProvider>
+                      <Fade in={isAppReady}>
+                        <Box height="100%">
+                          <DialogProvider>
+                            <TourProvider>
+                              <AppNavigator />
+                              <FirstTimeExperienceTours />
+                              <ManageBookCollectionsDialog />
+                              <ManageBookTagsDialog />
+                              <ManageTagBooksDialog />
+                              <AuthorizeActionDialog />
+                            </TourProvider>
+                            <UpdateAvailableDialog
+                              serviceWorker={newServiceWorker}
+                            />
+                            <ReplicateRemoteDb />
+                            <BlockingBackdrop />
+                            <Effects />
+                          </DialogProvider>
+                        </Box>
+                      </Fade>
                     )}
                   </>
                 )}
+
                 <PreloadQueries
                   onReady={() => {
                     setLoading((state) => ({

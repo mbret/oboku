@@ -11,7 +11,6 @@ import {
 } from "@mui/material"
 import { useCreateTag } from "../tags/helpers"
 import { TagActionsDrawer } from "../tags/TagActionsDrawer"
-import { LockActionDialog } from "../auth/LockActionDialog"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { TagList } from "../tags/tagList/TagList"
 import { AppTourFirstTourTagsStep2 } from "../firstTimeExperience/AppTourFirstTourTags"
@@ -19,11 +18,9 @@ import { useTagIds } from "../tags/helpers"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { isTagsTourPossibleStateSignal } from "../firstTimeExperience/firstTimeExperienceStates"
+import { authorizeAction } from "../auth/AuthorizeActionDialog"
 
 export const LibraryTagsScreen = () => {
-  const [lockedAction, setLockedAction] = useState<(() => void) | undefined>(
-    undefined
-  )
   const classes = useStyles()
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] =
@@ -104,7 +101,7 @@ export const LibraryTagsScreen = () => {
         onItemClick={(tag) => {
           const action = () => setIsTagActionsDrawerOpenedWith(tag?._id)
           if (tag?.isProtected) {
-            setLockedAction((_) => action)
+            authorizeAction(action)
           } else {
             action()
           }
@@ -119,7 +116,6 @@ export const LibraryTagsScreen = () => {
         onClose={() => setIsAddTagDialogOpened(false)}
         open={isAddTagDialogOpened}
       />
-      <LockActionDialog action={lockedAction} />
       <TagActionsDrawer
         openWith={isTagActionsDrawerOpenedWith}
         onClose={() => setIsTagActionsDrawerOpenedWith(undefined)}
@@ -139,7 +135,7 @@ const AddTagDialog: FC<{
   onConfirm: (name: string) => void
   onClose: () => void
 }> = ({ onClose, onConfirm, open }) => {
-  const { control, handleSubmit, setFocus, reset, setError } = useForm<Inputs>({
+  const { control, handleSubmit, setFocus, reset } = useForm<Inputs>({
     defaultValues: {
       name: ""
     }
