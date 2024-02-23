@@ -173,27 +173,6 @@ export const SettingsScreen = memo(() => {
               )}
             </ListItemSecondaryAction>
           </ListItem>
-          <ListItem
-            button
-            onClick={() => {
-              localSettingsStateSignal.setValue((old) => ({
-                ...old,
-                useNavigationArrows: !old.useNavigationArrows
-              }))
-            }}
-          >
-            <ListItemText
-              primary="Display list navigation arrows"
-              secondary="Scrolling by clicking on a button can be more confortable with e-ink screens"
-            />
-            <ListItemSecondaryAction>
-              {localSettings.useNavigationArrows ? (
-                <CheckCircleRounded />
-              ) : (
-                <RadioButtonUncheckedOutlined />
-              )}
-            </ListItemSecondaryAction>
-          </ListItem>
         </List>
       </Box>
       <Drawer

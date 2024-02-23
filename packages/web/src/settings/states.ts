@@ -1,7 +1,6 @@
 import { signal, useSignalValue } from "reactjrx"
 
 const localSettingsStateDefaultValues = {
-  useNavigationArrows: false,
   useOptimizedTheme: false,
   readingFullScreenSwitchMode: import.meta.env.DEV
     ? ("never" as const)
@@ -13,7 +12,6 @@ const localSettingsStateDefaultValues = {
 }
 
 export const localSettingsStateSignal = signal<{
-  useNavigationArrows: boolean
   useOptimizedTheme: boolean
   readingFullScreenSwitchMode: "automatic" | "always" | "never"
   unBlurWhenProtectedVisible: boolean
