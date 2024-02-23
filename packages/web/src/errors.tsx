@@ -1,5 +1,11 @@
 import { ObokuErrorCode } from "@oboku/shared"
-import { AxiosError, isAxiosError } from "axios"
+import { HttpClientError } from "./http/httpClient"
+
+type HttpApiError = {
+  response: {
+    data: { errors: { code?: string }[] }
+  }
+}
 
 export const createServerError = async (response: Response) => {
   try {
@@ -18,13 +24,12 @@ export class CancelError extends Error {}
 
 export const isCancelError = (error: unknown) => error instanceof CancelError
 
-export const isApiError = (
-  error: unknown
-): error is AxiosError<{ errors: { code?: string }[] }> => {
+export const isApiError = (error: unknown): error is HttpApiError => {
   return (
-    isAxiosError(error) &&
+    error instanceof HttpClientError &&
     !!error.response &&
     typeof error.response?.data === "object" &&
+    error.response.data !== null &&
     "errors" in error.response?.data &&
     Array.isArray(error.response?.data.errors)
   )

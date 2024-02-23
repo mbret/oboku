@@ -11,7 +11,6 @@ import { UpdateAvailableDialog } from "./UpdateAvailableDialog"
 import { RxDbProvider } from "./rxdb"
 import { useObservers } from "./rxdb/sync/useObservers"
 import { PreloadQueries } from "./PreloadQueries"
-import { AxiosProvider } from "./axiosClient"
 import { AppLoading } from "./AppLoading"
 import { FirstTimeExperienceTours } from "./firstTimeExperience/FirstTimeExperienceTours"
 import { DialogProvider } from "./dialog"
@@ -80,7 +79,6 @@ export function App() {
                         }
                         return Comp
                       },
-                      <AxiosProvider>
                         <DialogProvider>
                           <TourProvider>
                             <AppNavigator />
@@ -96,7 +94,6 @@ export function App() {
                           <BlockingBackdrop />
                           <Effects />
                         </DialogProvider>
-                      </AxiosProvider>
                     )}
                   </>
                 )}
