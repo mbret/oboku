@@ -12,11 +12,13 @@ export class HttpClientError extends Error {
   }
 }
 
+type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
+
 class HttpClient {
   fetch = async ({
     url,
     ...params
-  }: Parameters<typeof fetch>[1] & {
+  }: FetchParams & {
     url: string
   }) => {
     const authState = authStateSignal.getValue()
@@ -42,11 +44,27 @@ class HttpClient {
     return { data }
   }
 
-  refreshMetadata = (bookId: string, credentials?: { [key: string]: any }) =>
-    this.fetch({
-      url: `${API_URI}/refresh-metadata`,
-      body: JSON.stringify({ bookId }),
+  post = async (
+    options: Omit<FetchParams, "body" | "method"> & {
+      url: string
+      body: Record<string, unknown>
+    }
+  ) => {
+    return this.fetch({
+      ...options,
       method: "post",
+      body: JSON.stringify(options.body),
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers
+      }
+    })
+  }
+
+  refreshMetadata = (bookId: string, credentials?: { [key: string]: any }) =>
+    this.post({
+      url: `${API_URI}/refresh-metadata`,
+      body: { bookId },
       headers: {
         "oboku-credentials": JSON.stringify(credentials)
       }
@@ -56,10 +74,9 @@ class HttpClient {
     dataSourceId: string,
     credentials?: { [key: string]: any }
   ) =>
-    this.fetch({
+    this.post({
       url: `${API_URI}/sync-datasource`,
-      method: "post",
-      body: JSON.stringify({ dataSourceId }),
+      body: { dataSourceId },
       headers: {
         "oboku-credentials": JSON.stringify(credentials)
       }

@@ -28,14 +28,10 @@ export const useSignIn = () => {
       switchMap((authResponse) => authResponse.user.getIdToken()),
       switchMap((token) =>
         from(
-          httpClient.fetch({
+          httpClient.post({
             url: `${API_URI}/signin`,
-            method: "post",
-            body: JSON.stringify({
+            body: {
               token
-            }),
-            headers: {
-              "Content-Type": "application/json"
             }
           })
         )
