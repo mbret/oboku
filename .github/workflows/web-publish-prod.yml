@@ -33,7 +33,7 @@ jobs:
         run: echo "new tag $NEW_TAG"
 
   deploy-vercel:
-    need: [bump-version]
+    needs: [bump-version]
     uses: ./.github/workflows/_deploy-vercel.yml
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
