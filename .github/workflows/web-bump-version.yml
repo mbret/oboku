@@ -1,4 +1,4 @@
-name: "Bump Version"
+name: "Web bump version"
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - "master"
 
 jobs:
-  bump-version:
+  web-bump-version:
     name: "Bump Version on master"
     runs-on: ubuntu-latest
 
@@ -21,10 +21,10 @@ jobs:
         id: version-bump
         uses: "phips28/gh-action-bump-version@v10.1.1"
         with:
-          tag-prefix: "v"
+          tag-prefix: "web-"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGEJSON_DIR:  'packages/web'
+          PACKAGEJSON_DIR: "packages/web"
       - name: "cat package.json"
         run: cat ./package.json
       - name: "Output Step"
