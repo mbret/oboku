@@ -1,4 +1,3 @@
-import { useAxiosClient } from "../axiosClient"
 import { useDatabase } from "../rxdb"
 import { DataSourceDocType, ObokuErrorCode } from "@oboku/shared"
 import { Report } from "../debug/report.shared"
@@ -13,9 +12,9 @@ import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { isDefined, useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 import { getDataSourcePlugin } from "./getDataSourcePlugin"
+import { httpClient } from "../http/httpClient"
 
 export const useSynchronizeDataSource = () => {
-  const client = useAxiosClient()
   const { db: database } = useDatabase()
   const { atomicUpdateDataSource } = useAtomicUpdateDataSource()
   const synchronizeDataSource = usePluginSynchronize()
@@ -42,7 +41,7 @@ export const useSynchronizeDataSource = () => {
               return old
             }).pipe(
               switchMap(() => sync([database.datasource])),
-              switchMap(() => from(client.syncDataSource(_id, data.data))),
+              switchMap(() => from(httpClient.syncDataSource(_id, data.data))),
               catchError((e) =>
                 atomicUpdateDataSource(_id, (old) => ({
                   ...old,
@@ -69,7 +68,6 @@ export const useSynchronizeDataSource = () => {
     },
     [
       atomicUpdateDataSource,
-      client,
       database,
       dialog,
       network,

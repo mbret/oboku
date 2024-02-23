@@ -1,4 +1,3 @@
-import { useAxiosClient } from "../axiosClient"
 import {
   BookDocType,
   ReadingStateState,
@@ -22,6 +21,7 @@ import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { plugin } from "../plugins/local"
 import { useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
+import { httpClient } from "../http/httpClient"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -111,7 +111,6 @@ export const useAtomicUpdateBook = () => {
 }
 
 export const useRefreshBookMetadata = () => {
-  const client = useAxiosClient()
   const { db: database } = useDatabase()
   const [updateBook] = useAtomicUpdateBook()
   const dialog = useDialogManager()
@@ -148,7 +147,9 @@ export const useRefreshBookMetadata = () => {
       )
         .pipe(
           switchMap(() => sync([database.link, database.book])),
-          switchMap(() => from(client.refreshMetadata(bookId, pluginMetadata))),
+          switchMap(() =>
+            from(httpClient.refreshMetadata(bookId, pluginMetadata))
+          ),
           catchError((e) =>
             from(
               updateBook(bookId, (old) => ({

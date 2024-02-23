@@ -1,4 +1,3 @@
-import axios from "axios"
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 import { useCallback } from "react"
 import { catchError, finalize, from, of, switchMap, tap } from "rxjs"
@@ -8,6 +7,7 @@ import { CancelError } from "../errors"
 import { useReCreateDb } from "../rxdb"
 import { authStateSignal } from "./authState"
 import { resetSignalEntriesToPersist } from "../storage"
+import { httpClient } from "../http/httpClient"
 
 const provider = new GoogleAuthProvider()
 
@@ -28,17 +28,16 @@ export const useSignIn = () => {
       switchMap((authResponse) => authResponse.user.getIdToken()),
       switchMap((token) =>
         from(
-          axios.post(
-            `${API_URI}/signin`,
-            {
+          httpClient.fetch({
+            url: `${API_URI}/signin`,
+            method: "post",
+            body: JSON.stringify({
               token
-            },
-            {
-              headers: {
-                "Content-Type": "application/json"
-              }
+            }),
+            headers: {
+              "Content-Type": "application/json"
             }
-          )
+          })
         )
       ),
       switchMap(({ data: { dbName, email, token, nameHex } }) =>

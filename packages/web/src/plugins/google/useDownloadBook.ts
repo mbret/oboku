@@ -1,10 +1,10 @@
-import axios from "axios"
 import { useCallback } from "react"
 import { extractIdFromResourceId } from "./lib/helpers"
 import { isDriveResponseError } from "./lib/types"
 import { useAccessToken } from "./lib/useAccessToken"
 import { useGoogle } from "./lib/useGsiClient"
 import { ObokuPlugin } from "../plugin-front"
+import { httpClient } from "../../http/httpClient"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   requestPopup
@@ -42,19 +42,17 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
         throw e
       }
 
-      const mediaResponse = await axios.get<Blob>(
-        `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-        {
-          headers: {
-            Authorization: `Bearer ${gapi.auth.getToken().access_token}`
-          },
-          responseType: "blob",
-          onDownloadProgress: (event) => {
-            const totalSize = parseInt(info.result.size || "1") || 1
-            options?.onDownloadProgress(event.loaded / totalSize)
-          }
+      const mediaResponse = await httpClient.download<Blob>({
+        url: `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+        headers: {
+          Authorization: `Bearer ${gapi.auth.getToken().access_token}`
+        },
+        responseType: "blob",
+        onDownloadProgress: (event) => {
+          const totalSize = parseInt(info.result.size || "1") || 1
+          options?.onDownloadProgress(event.loaded / totalSize)
         }
-      )
+      })
 
       return { data: mediaResponse.data, name: info.result.name || "" }
     },
