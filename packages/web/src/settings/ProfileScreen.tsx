@@ -100,7 +100,11 @@ export const ProfileScreen = () => {
                 ? "Change app password"
                 : "Initialize app password"
             }
-            secondary="When set, it will be used to authorize sensitive actions"
+            secondary={
+              accountSettings?.contentPassword
+                ? "Used to authorize sensitive actions"
+                : "When set, it will be used to authorize sensitive actions"
+            }
           />
         </ListItem>
 

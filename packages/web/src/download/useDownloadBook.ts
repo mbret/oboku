@@ -1,7 +1,7 @@
 import localforage from "localforage"
 import { useCallback } from "react"
 import throttle from "lodash.throttle"
-import { DownloadState, normalizedBookDownloadsStateSignal } from "./states"
+import { DownloadState, booksDownloadStateSignal } from "./states"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 import { DOWNLOAD_PREFIX } from "../constants.shared"
@@ -25,10 +25,10 @@ export const useDownloadBook = () => {
     (
       bookId: string,
       data: ReturnType<
-        typeof normalizedBookDownloadsStateSignal.getValue
+        typeof booksDownloadStateSignal.getValue
       >[number]
     ) => {
-      normalizedBookDownloadsStateSignal.setValue((prev) => ({
+      booksDownloadStateSignal.setValue((prev) => ({
         ...prev,
         [bookId]: {
           ...prev[bookId],

@@ -2,26 +2,22 @@ import { useMemo } from "react"
 import { useBooksAsArrayState } from "../books/states"
 import { ReadingStateState } from "@oboku/shared"
 import { useBooksSortedBy } from "../books/helpers"
-import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { booksDownloadStateSignal } from "../download/states"
 import { useProtectedTagIds } from "../tags/helpers"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../library/states"
 
 /**
  * @todo cleanup
  */
 export const useContinueReadingBooks = () => {
-  const libraryState = useSignalValue(libraryStateSignal)
-  const { data: protectedTagIds, isPending } = useProtectedTagIds()
+  const { data: isPending } = useProtectedTagIds()
   const normalizedBookDownloadsState = useSignalValue(
-    normalizedBookDownloadsStateSignal
+    booksDownloadStateSignal
   )
 
   const { data: booksAsArray, isPending: isBooksPending } =
     useBooksAsArrayState({
-      libraryState,
       normalizedBookDownloadsState,
-      protectedTagIds
     })
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
 
@@ -44,13 +40,10 @@ export const useContinueReadingBooks = () => {
  * @todo cleanup
  */
 export const useRecentlyAddedBooks = () => {
-  const libraryState = useSignalValue(libraryStateSignal)
   const { data: books } = useBooksAsArrayState({
-    libraryState,
     normalizedBookDownloadsState: useSignalValue(
-      normalizedBookDownloadsStateSignal
+      booksDownloadStateSignal
     ),
-    protectedTagIds: useProtectedTagIds().data
   })
 
   return useMemo(() => {

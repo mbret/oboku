@@ -8,30 +8,23 @@ import { useCollectionState } from "./states"
 import { useMemo } from "react"
 import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
-import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { booksDownloadStateSignal } from "../download/states"
 import { useLocalSettings } from "../settings/states"
-import { useProtectedTagIds } from "../tags/helpers"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../library/states"
 
 export const ManageCollectionBooksDialog: FC<{
   onClose: () => void
   open: boolean
   collectionId: string
 }> = ({ onClose, open, collectionId }) => {
-  const libraryState = useSignalValue(libraryStateSignal)
   const collection = useCollectionState({
     id: collectionId || "-1",
-    libraryState,
     localSettingsState: useLocalSettings(),
-    protectedTagIds: useProtectedTagIds().data
   })
   const { data: books } = useBooksAsArrayState({
-    libraryState,
     normalizedBookDownloadsState: useSignalValue(
-      normalizedBookDownloadsStateSignal
+      booksDownloadStateSignal
     ),
-    protectedTagIds: useProtectedTagIds().data
   })
   const { mutate: addToBook } = useAddCollectionToBook()
   const { mutate: removeFromBook } = useRemoveCollectionFromBook()

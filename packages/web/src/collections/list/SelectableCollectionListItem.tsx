@@ -1,7 +1,7 @@
 import { FC, memo } from "react"
 import { ListItem, ListItemText, useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
-import { useCollections } from "../states"
+import { useCollectionsDictionaryWithoutPrivacy } from "../states"
 import { Checkbox } from "../../common/Checkbox"
 
 export const SelectableCollectionListItem: FC<{
@@ -9,7 +9,7 @@ export const SelectableCollectionListItem: FC<{
   onItemClick?: (tag: string) => void
   selected: boolean
 }> = memo(({ id, onItemClick, selected }) => {
-  const { data: collections = {} } = useCollections()
+  const { data: collections = {} } = useCollectionsDictionaryWithoutPrivacy()
   const data = collections[id]
   const styles = useStyle()
 

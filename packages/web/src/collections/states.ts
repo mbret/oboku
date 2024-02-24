@@ -1,13 +1,11 @@
 import { CollectionDocType, directives } from "@oboku/shared"
-import { useVisibleBookIdsState } from "../books/states"
 import { useLocalSettings } from "../settings/states"
-import { useProtectedTagIds } from "../tags/helpers"
-import { libraryStateSignal } from "../library/states"
 import { useForeverQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { map, switchMap } from "rxjs"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
+import { useVisibleBookIds } from "../books/states"
 
 export type Collection = CollectionDocType
 
@@ -17,83 +15,117 @@ export const getCollectionsByIds = async (database: Database) => {
   return keyBy(result, "_id")
 }
 
-export const useCollections = () => {
+export const useCollectionsWithoutPrivacy = () => {
   return useForeverQuery({
     queryKey: ["rxdb", "get", "collections"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.obokucollection.find({}).$),
-        map((entries) => keyBy(entries, "_id"))
+        map((items) => items.map((item) => item.toJSON()))
       )
     }
   })
 }
 
-/**
- * @deprecated
- */
-export const useCollectionsAsArrayState = ({
-  libraryState,
-  localSettingsState,
-  protectedTagIds = []
-}: {
-  libraryState: ReturnType<typeof libraryStateSignal.getValue>
-  localSettingsState: ReturnType<typeof useLocalSettings>
-  protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
-}) => {
-  const localSettings = localSettingsState
-  const { data: collections = {} } = useCollections()
-  const bookIds = useVisibleBookIdsState({ libraryState, protectedTagIds })
-  const ids = Object.keys(collections)
+export const useCollectionsDictionaryWithoutPrivacy = () => {
+  const result = useCollectionsWithoutPrivacy()
 
-  type Collection = NonNullable<ReturnType<typeof useCollectionState>>
+  return {
+    ...result,
+    data: result.data ? keyBy(result.data, "_id") : undefined
+  }
+}
 
-  return ids
-    .filter((id) => {
-      const collection = collections[id]
-      if (localSettings.showCollectionWithProtectedContent === "unlocked") {
-        const hasSomeNonVisibleBook = collection?.books.some(
-          (bookId) => !bookIds.includes(bookId)
+export const useCollection = ({ id }: { id?: string }) => {
+  const localSettings = useLocalSettings()
+
+  return useForeverQuery({
+    queryKey: ["rxdb", "collection", id],
+    enabled: !!id,
+    queryFn: () => {
+      return latestDatabase$.pipe(
+        switchMap(
+          (db) =>
+            db.obokucollection.findOne({
+              selector: {
+                _id: id
+              }
+            }).$
+        ),
+        map((value) => {
+          if (!value) return null
+
+          return {
+            ...value?.toJSON(),
+            displayableName: localSettings.hideDirectivesFromCollectionName
+              ? directives.removeDirectiveFromString(value.name)
+              : value.name
+          }
+        })
+      )
+    }
+  })
+}
+
+export const useCollectionsWithPrivacy = () => {
+  const { data: collections } = useCollectionsWithoutPrivacy()
+  const visibleBookIds = useVisibleBookIds()
+  const { showCollectionWithProtectedContent } = useLocalSettings()
+
+  return {
+    data: collections?.filter((collection) => {
+      if (showCollectionWithProtectedContent === "unlocked") {
+        const hasSomeNonVisibleBook = collection.books.some(
+          (bookId) => !visibleBookIds.includes(bookId)
         )
+
         return !hasSomeNonVisibleBook
       } else {
         const hasSomeVisibleBook = collection?.books.some((bookId) =>
-          bookIds.includes(bookId)
+          visibleBookIds.includes(bookId)
         )
         return hasSomeVisibleBook || collection?.books.length === 0
       }
     })
-    .map((id) => {
-      const value = getCollectionState({
-        id,
-        normalizedCollections: collections,
-        localSettingsState,
-        bookIds
-      })
-
-      return value
-    }) as Collection[]
+  }
 }
 
 /**
  * @deprecated
  */
-export const useCollectionIdsState = ({
-  libraryState,
-  localSettingsState,
-  protectedTagIds = []
-}: {
-  libraryState: ReturnType<typeof libraryStateSignal.getValue>
-  localSettingsState: ReturnType<typeof useLocalSettings>
-  protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
-}) => {
-  return useCollectionsAsArrayState({
-    libraryState,
-    localSettingsState,
-    protectedTagIds
-  }).map(({ _id }) => _id)
+export const useCollectionsAsArrayState = () => {
+  const { data: collectionsDic = {} } = useCollectionsDictionaryWithoutPrivacy()
+  const visibleBookIds = useVisibleBookIds()
+  const localSettingsState = useLocalSettings()
+
+  type Collection = NonNullable<ReturnType<typeof useCollectionState>>
+
+  const { data: visibleCollections = [] } = useCollectionsWithPrivacy()
+
+  return visibleCollections.map((collection) => {
+    const value = getCollectionState({
+      id: collection._id,
+      normalizedCollections: collectionsDic,
+      localSettingsState,
+      bookIds: visibleBookIds
+    })
+
+    return value
+  }) as Collection[]
 }
 
+export const useVisibleCollectionIds = () => {
+  const { data: collections, ...rest } = useCollectionsWithPrivacy()
+
+  return {
+    ...rest,
+    data: collections ? collections.map(({ _id }) => _id) : undefined
+  }
+}
+
+/**
+ * @deprecated
+ */
 export const getCollectionState = ({
   id,
   localSettingsState,
@@ -102,8 +134,8 @@ export const getCollectionState = ({
 }: {
   id: string
   localSettingsState: ReturnType<typeof useLocalSettings>
-  normalizedCollections: ReturnType<typeof useCollections>["data"]
-  bookIds: ReturnType<typeof useVisibleBookIdsState>
+  normalizedCollections: ReturnType<typeof useCollectionsDictionaryWithoutPrivacy>["data"]
+  bookIds: ReturnType<typeof useVisibleBookIds>
 }) => {
   const collection = normalizedCollections[id]
   const localSettings = localSettingsState
@@ -111,7 +143,7 @@ export const getCollectionState = ({
   if (!collection) return undefined
 
   return {
-    ...collection.toJSON(),
+    ...collection,
     books: collection.books.filter((id) => bookIds.includes(id)),
     displayableName: localSettings.hideDirectivesFromCollectionName
       ? directives.removeDirectiveFromString(collection.name)
@@ -124,20 +156,13 @@ export const getCollectionState = ({
  */
 export const useCollectionState = ({
   id,
-  libraryState,
-  localSettingsState,
-  protectedTagIds = []
+  localSettingsState
 }: {
   id: string
-  libraryState: ReturnType<typeof libraryStateSignal.getValue>
   localSettingsState: ReturnType<typeof useLocalSettings>
-  protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
 }) => {
-  const { data: normalizedCollections } = useCollections()
-  const bookIds = useVisibleBookIdsState({
-    libraryState,
-    protectedTagIds
-  })
+  const { data: normalizedCollections } = useCollectionsDictionaryWithoutPrivacy()
+  const bookIds = useVisibleBookIds()
 
   return getCollectionState({
     id,

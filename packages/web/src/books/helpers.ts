@@ -9,7 +9,7 @@ import { Report } from "../debug/report.shared"
 import { useCallback, useMemo } from "react"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { PromiseReturnType } from "../types"
-import { BookQueryResult, useBooks } from "./states"
+import { BookQueryResult, useBooksDic } from "./states"
 import { AtomicUpdateFunction } from "rxdb"
 import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
@@ -301,7 +301,7 @@ export const useBookIdsSortedBy = (
   ids: string[],
   sorting: "date" | "activity" | "alpha" | undefined
 ) => {
-  const { data: normalizedBooks = {} } = useBooks()
+  const { data: normalizedBooks = {} } = useBooksDic()
 
   return useMemo(() => {
     const books = ids

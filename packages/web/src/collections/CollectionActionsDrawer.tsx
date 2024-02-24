@@ -26,7 +26,6 @@ import { useCallback } from "react"
 import { useRef } from "react"
 import { libraryStateSignal } from "../library/states"
 import { useLocalSettings } from "../settings/states"
-import { useProtectedTagIds } from "../tags/helpers"
 import { signal, useSignalValue } from "reactjrx"
 
 const collectionActionDrawerState = signal<{
@@ -184,9 +183,7 @@ const EditCollectionDialog: FC<{
   const libraryState = useSignalValue(libraryStateSignal)
   const collection = useCollectionState({
     id: id || "-1",
-    libraryState,
     localSettingsState: useLocalSettings(),
-    protectedTagIds: useProtectedTagIds().data
   })
   const { mutate: editCollection } = useUpdateCollection()
 

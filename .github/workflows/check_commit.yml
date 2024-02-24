@@ -29,8 +29,8 @@ jobs:
 
       - name: Install & Build prod js files
         run: |
-          yarn
-          yarn build:server
+          npm
+          npm run build:server
 
       # Runs a set of commands using the runners shell
       - name: Commit and push to branch
@@ -72,7 +72,7 @@ jobs:
           touch .secrets/jwt-private-key.key
           echo "$JWT_PRIVATE_KEY" > .secrets/jwt-private-key.key
 
-          yarn compile
+          npm run compile
           sam build
           sam deploy --no-confirm-changeset --parameter-overrides\
            ParameterKey=Environment,ParameterValue=PROD \

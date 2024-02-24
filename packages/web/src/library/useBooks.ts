@@ -1,11 +1,7 @@
 import { useRef } from "react"
 import { useBooksSortedBy } from "../books/helpers"
 import { useBooksAsArrayState } from "../books/states"
-import {
-  DownloadState,
-  normalizedBookDownloadsStateSignal
-} from "../download/states"
-import { useProtectedTagIds } from "../tags/helpers"
+import { DownloadState, booksDownloadStateSignal } from "../download/states"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "./states"
 
@@ -14,11 +10,7 @@ export const useBooks = () => {
   const library = useSignalValue(libraryStateSignal)
   const filteredTags = library.tags
   const { data: unsortedBooks } = useBooksAsArrayState({
-    libraryState: library,
-    normalizedBookDownloadsState: useSignalValue(
-      normalizedBookDownloadsStateSignal
-    ),
-    protectedTagIds: useProtectedTagIds().data
+    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal)
   })
 
   const filteredBooks = unsortedBooks.filter((book) => {

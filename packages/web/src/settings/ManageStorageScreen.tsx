@@ -19,7 +19,7 @@ import { LibraryViewMode } from "../rxdb"
 import { BookList } from "../books/bookList/BookList"
 import {
   useDownloadedBookWithUnsafeProtectedIdsState,
-  useVisibleBookIdsState
+  useVisibleBookIds
 } from "../books/states"
 import { bookActionDrawerSignal } from "../books/drawer/BookActionsDrawer"
 import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
@@ -30,21 +30,16 @@ import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
 import { useMutation, useSignalValue } from "reactjrx"
 import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
-import { useProtectedTagIds } from "../tags/helpers"
 import { libraryStateSignal } from "../library/states"
-import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { booksDownloadStateSignal } from "../download/states"
 
 export const ManageStorageScreen = () => {
   const bookIds = useDownloadedBookWithUnsafeProtectedIdsState({
     normalizedBookDownloadsState: useSignalValue(
-      normalizedBookDownloadsStateSignal
+      booksDownloadStateSignal
     )
   })
-  const libraryState = useSignalValue(libraryStateSignal)
-  const visibleBookIds = useVisibleBookIdsState({
-    libraryState,
-    protectedTagIds: useProtectedTagIds().data
-  })
+  const visibleBookIds = useVisibleBookIds()
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])
   const removeDownloadFile = useRemoveDownloadFile()
   const deleteAllDownloadedFiles = useRemoveAllDownloadedFiles()

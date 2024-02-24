@@ -1,19 +1,21 @@
-import { Chip, Typography, useTheme } from "@mui/material"
+import { Box, Chip, Typography, useTheme } from "@mui/material"
 import { FC, memo } from "react"
 import { useDefaultItemClickHandler } from "./helpers"
-import { useEnrichedBookState } from "../states"
+import { useEnrichedBookState, useIsBookProtected } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import {
   DoneRounded,
   ErrorRounded,
   LoopRounded,
   MenuBookRounded,
-  MoreVert
+  MoreVert,
+  NoEncryptionRounded,
+  ThumbDownOutlined
 } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
-import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
 
@@ -34,9 +36,7 @@ export const BookListListItem: FC<{
   }) => {
     const book = useEnrichedBookState({
       bookId,
-      normalizedBookDownloadsState: useSignalValue(
-        normalizedBookDownloadsStateSignal
-      ),
+      normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal),
       protectedTagIds: useProtectedTagIds().data,
       tags: useTagsByIds().data
     })
@@ -45,6 +45,7 @@ export const BookListListItem: FC<{
     const computedHeight = itemHeight || (size === "small" ? 50 : 100)
     const coverWidth = computedHeight * theme.custom.coverAverageRatio
     const classes = useStyles({ coverWidth })
+    const { data: isBookProtected = true } = useIsBookProtected(book)
 
     return (
       <div
@@ -56,7 +57,6 @@ export const BookListListItem: FC<{
           display: "flex",
           overflow: "hidden",
           height: computedHeight,
-          // height: '100%',
           cursor: "pointer",
           flexGrow: 1
         }}
@@ -64,10 +64,8 @@ export const BookListListItem: FC<{
         <BookListCoverContainer
           bookId={bookId}
           style={classes.coverContainer}
+          withBadges={false}
           withReadingProgressStatus={false}
-          withDownloadStatus={false}
-          withMetadaStatus={false}
-          withProtectedStatus={false}
         />
         <div
           style={{
@@ -92,12 +90,7 @@ export const BookListListItem: FC<{
           <Typography noWrap color="textSecondary" variant="body2">
             {book?.creator || "Unknown"}
           </Typography>
-          {/* <div style={{ display: 'flex', flex: 1, alignItems: 'flex-end', justifyContent: 'space-between' }}>
-          {book?.isProtected && (
-            <NoEncryptionRounded color="secondary" />
-          )}
-        </div> */}
-          <div
+          <Box
             style={{
               display: "flex",
               justifyContent: "space-between",
@@ -105,18 +98,19 @@ export const BookListListItem: FC<{
               alignItems: "flex-end"
             }}
           >
-            <div>
+            <Box display="flex" flexDirection="row" gap={1}>
+              {isBookProtected && <NoEncryptionRounded />}
+              {book?.isNotInterested && <ThumbDownOutlined />}
               {book?.readingStateCurrentState ===
                 ReadingStateState.Finished && (
                 <div style={{ display: "flex", flexDirection: "row" }}>
-                  <DoneRounded color="secondary" style={{}} />
+                  <DoneRounded style={{}} />
                 </div>
               )}
               {book?.readingStateCurrentState === ReadingStateState.Reading && (
                 <div style={{ display: "flex", flexDirection: "row" }}>
-                  <MenuBookRounded style={{ opacity: "50%" }} />
+                  <MenuBookRounded />
                   <Typography
-                    color="textSecondary"
                     style={{
                       marginLeft: theme.spacing(0.5)
                     }}
@@ -129,7 +123,7 @@ export const BookListListItem: FC<{
                   </Typography>
                 </div>
               )}
-            </div>
+            </Box>
             <div style={{ display: "flex", flexDirection: "row" }}>
               {/* {(book?.downloadState === DownloadState.Downloading) && (
               <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -169,7 +163,7 @@ export const BookListListItem: FC<{
                   </div>
                 )}
             </div>
-          </div>
+          </Box>
         </div>
         {withDrawerActions && (
           <div

@@ -12,14 +12,11 @@ import {
 import { ROUTES } from "../constants"
 import { useNavigate } from "react-router-dom"
 import { useCreateCollection } from "../collections/helpers"
-import { useCollectionIdsState } from "../collections/states"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { CollectionList } from "../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
-import { useLocalSettings } from "../settings/states"
-import { useProtectedTagIds } from "../tags/helpers"
 import { signal, useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "./states"
+import { useLibraryCollections } from "./useLibraryCollections"
 
 type Scroll = Parameters<
   NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
@@ -44,12 +41,7 @@ export const LibraryCollectionScreen = () => {
   const libraryCollectionScreenPreviousScroll = useSignalValue(
     libraryCollectionScreenPreviousScrollState
   )
-  const libraryState = useSignalValue(libraryStateSignal)
-  const collections = useCollectionIdsState({
-    libraryState,
-    localSettingsState: useLocalSettings(),
-    protectedTagIds: useProtectedTagIds().data
-  })
+  const { data: collections = [] } = useLibraryCollections()
 
   const onScroll = useDebouncedCallback((value: Scroll) => {
     libraryCollectionScreenPreviousScrollState.setValue(value)

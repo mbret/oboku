@@ -11,14 +11,14 @@ import {
 import { useCSS } from "../common/utils"
 import { API_URI } from "../constants"
 import { useLocalSettings } from "../settings/states"
-import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { booksDownloadStateSignal } from "../download/states"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
 
 const useBookCoverState = ({ bookId }: { bookId: string }) => {
   const tags = useTagsByIds().data
   const normalizedBookDownloadsState = useSignalValue(
-    normalizedBookDownloadsStateSignal
+    booksDownloadStateSignal
   )
   const blurredTags = useBlurredTagIds().data ?? []
   const protectedTags = useProtectedTagIds().data ?? []
