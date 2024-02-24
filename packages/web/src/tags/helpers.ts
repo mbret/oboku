@@ -139,9 +139,10 @@ export const useBlurredTagIds = () =>
     queryKey: ["blurredTagIds"]
   })
 
-export const useProtectedTagIds = () =>
+export const useProtectedTagIds = (options: { enabled?: boolean }) =>
   useForeverQuery({
     queryFn: () =>
       protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    queryKey: ["protectedTagIds"]
+    queryKey: ["protectedTagIds"],
+    ...options
   })

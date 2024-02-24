@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { ROUTES } from "../../constants"
 import { useDownloadBook } from "../../download/useDownloadBook"
 import { getBooksByIds, getEnrichedBookState } from "../states"
-import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { booksDownloadStateSignal } from "../../download/states"
 import { getProtectedTags, getTagsByIds } from "../../tags/helpers"
 import { useDatabase } from "../../rxdb"
 import { getLinksByIds } from "../../links/states"
@@ -25,7 +25,7 @@ export const useDefaultItemClickHandler = () => {
       const item = getEnrichedBookState({
         bookId: id,
         normalizedBookDownloadsState:
-          normalizedBookDownloadsStateSignal.getValue(),
+          booksDownloadStateSignal.getValue(),
         protectedTagIds: db ? await getProtectedTags(db) : [],
         tags: db ? await getTagsByIds(db) : {},
         normalizedLinks,

@@ -4,7 +4,7 @@ import { useBooksAsArrayState } from "../books/states"
 import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
 import { useProtectedTagIds, useTag } from "./helpers"
-import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { booksDownloadStateSignal } from "../download/states"
 import { signal, useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "../library/states"
 
@@ -22,7 +22,7 @@ export const ManageTagBooksDialog: FC<{}> = () => {
   const { data: tag } = useTag(isManageTagBooksDialogOpenedWith || "-1")
   const libraryState = useSignalValue(libraryStateSignal)
   const normalizedBookDownloadsState = useSignalValue(
-    normalizedBookDownloadsStateSignal
+    booksDownloadStateSignal
   )
 
   const { data: books } = useBooksAsArrayState({

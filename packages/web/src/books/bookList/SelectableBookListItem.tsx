@@ -4,7 +4,7 @@ import { useEnrichedBookState } from "../states"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { Checkbox } from "../../common/Checkbox"
-import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
 
@@ -30,7 +30,7 @@ export const SelectableBookListItem: FC<{
   const book = useEnrichedBookState({
     bookId,
     normalizedBookDownloadsState: useSignalValue(
-      normalizedBookDownloadsStateSignal
+      booksDownloadStateSignal
     ),
     protectedTagIds: useProtectedTagIds().data,
     tags: useTagsByIds().data

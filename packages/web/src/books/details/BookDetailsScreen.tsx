@@ -39,7 +39,7 @@ import { DataSourceSection } from "./DataSourceSection"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { libraryStateSignal } from "../../library/states"
-import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { booksDownloadStateSignal } from "../../download/states"
 import { useLocalSettings } from "../../settings/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
@@ -61,7 +61,7 @@ export const BookDetailsScreen = () => {
   const book = useEnrichedBookState({
     bookId: id,
     normalizedBookDownloadsState: useSignalValue(
-      normalizedBookDownloadsStateSignal
+      booksDownloadStateSignal
     ),
     protectedTagIds: useProtectedTagIds().data,
     tags: useTagsByIds().data

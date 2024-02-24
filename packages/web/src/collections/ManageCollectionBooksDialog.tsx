@@ -8,7 +8,7 @@ import { useCollectionState } from "./states"
 import { useMemo } from "react"
 import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
-import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { booksDownloadStateSignal } from "../download/states"
 import { useLocalSettings } from "../settings/states"
 import { useProtectedTagIds } from "../tags/helpers"
 import { useSignalValue } from "reactjrx"
@@ -29,7 +29,7 @@ export const ManageCollectionBooksDialog: FC<{
   const { data: books } = useBooksAsArrayState({
     libraryState,
     normalizedBookDownloadsState: useSignalValue(
-      normalizedBookDownloadsStateSignal
+      booksDownloadStateSignal
     ),
     protectedTagIds: useProtectedTagIds().data
   })

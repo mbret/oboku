@@ -6,7 +6,7 @@ import { useEnrichedBookState } from "../states"
 import { useDefaultItemClickHandler } from "./helpers"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useCSS } from "../../common/utils"
-import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
 
@@ -25,7 +25,7 @@ export const BookListGridItem: FC<{
   onItemClick?: (id: string) => void
 }> = memo(({ bookId, onItemClick }) => {
   const normalizedBookDownloadsState = useSignalValue(
-    normalizedBookDownloadsStateSignal
+    booksDownloadStateSignal
   )
   const { data: protectedTagIds } = useProtectedTagIds()
   const tags = useTagsByIds().data

@@ -34,7 +34,7 @@ import { useModalNavigationControl } from "../../navigation/useModalNavigationCo
 import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
 import { markAsInterested } from "../triggers"
-import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { signal, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "./useRemoveHandler"
@@ -50,7 +50,7 @@ export const BookActionsDrawer = memo(() => {
   const { openedWith: bookId, actions } = useSignalValue(bookActionDrawerSignal)
   const navigate = useNavigate()
   const normalizedBookDownloadsState = useSignalValue(
-    normalizedBookDownloadsStateSignal
+    booksDownloadStateSignal
   )
   const book = useEnrichedBookState({
     bookId: bookId || "-1",

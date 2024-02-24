@@ -1,5 +1,5 @@
 import React, { FC, memo } from "react"
-import { Chip, useTheme } from "@mui/material"
+import { Box, Chip, useTheme } from "@mui/material"
 import {
   CheckCircleRounded,
   CloudDownloadRounded,
@@ -8,18 +8,14 @@ import {
   NoEncryptionRounded
 } from "@mui/icons-material"
 import { Cover } from "../Cover"
-import { useEnrichedBookState } from "../states"
+import { useBook, useIsBookProtected } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import { ReadingProgress } from "./ReadingProgress"
-import {
-  DownloadState,
-  normalizedBookDownloadsStateSignal
-} from "../../download/states"
+import { DownloadState, booksDownloadStateSignal } from "../../download/states"
 import { useCSS } from "../../common/utils"
-import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
 
-type Book = ReturnType<typeof useEnrichedBookState>
+type Book = ReturnType<typeof useBook>["data"]
 
 export const BookListCoverContainer: FC<{
   bookId: string
@@ -41,26 +37,34 @@ export const BookListCoverContainer: FC<{
     size = "small",
     withProtectedStatus = true
   }) => {
-    const item = useEnrichedBookState({
-      bookId,
-      normalizedBookDownloadsState: useSignalValue(
-        normalizedBookDownloadsStateSignal
-      ),
-      protectedTagIds: useProtectedTagIds().data,
-      tags: useTagsByIds().data
-    })
+    const { data: item } = useBook({ id: bookId })
+    const bookDownloadState = useSignalValue(booksDownloadStateSignal)[bookId]
+    const { data: isBookProtected = true } = useIsBookProtected(item)
     const classes = useStyles({ item })
 
     return (
-      <div
+      <Box
         style={{ ...classes.coverContainer, ...style }}
         className={className}
       >
+        {}
         {item && <Cover bookId={item?._id} />}
-        {item?.downloadState !== DownloadState.Downloaded && (
-          <div style={classes.downloadOverlay} />
+        {bookDownloadState?.downloadState !== DownloadState.Downloaded && (
+          <Box
+            bgcolor="white"
+            top={0}
+            position="absolute"
+            width="100%"
+            style={{
+              opacity: 0.5,
+              height:
+                bookDownloadState?.downloadState === DownloadState.Downloading
+                  ? `${100 - (bookDownloadState?.downloadProgress || 0)}%`
+                  : `100%`
+            }}
+          />
         )}
-        {withProtectedStatus && item?.isProtected && (
+        {withProtectedStatus && isBookProtected && (
           <div style={classes.protectedIconContainer}>
             <NoEncryptionRounded
               style={classes.protectedIcon}
@@ -97,16 +101,17 @@ export const BookListCoverContainer: FC<{
                 />
               </div>
             )}
-          {item?.downloadState === "none" && (
+          {bookDownloadState?.downloadState === "none" && (
             <div style={classes.pauseButton}>
               <CloudDownloadRounded color="action" fontSize={size} />
             </div>
           )}
-          {withDownloadStatus && item?.downloadState === "downloading" && (
-            <div style={classes.pauseButton}>
-              <Chip color="primary" size="small" label="downloading..." />
-            </div>
-          )}
+          {withDownloadStatus &&
+            bookDownloadState?.downloadState === "downloading" && (
+              <div style={classes.pauseButton}>
+                <Chip color="primary" size="small" label="downloading..." />
+              </div>
+            )}
         </div>
         {withReadingProgressStatus && (
           <>
@@ -120,7 +125,7 @@ export const BookListCoverContainer: FC<{
             )}
           </>
         )}
-      </div>
+      </Box>
     )
   }
 )
@@ -173,17 +178,6 @@ const useStyles = ({ item }: { item: Book }) => {
         position: "absolute",
         left: "50%",
         top: "50%"
-      },
-      downloadOverlay: {
-        backgroundColor: "white",
-        opacity: 0.5,
-        height:
-          item?.downloadState === DownloadState.Downloading
-            ? `${100 - (item?.downloadProgress || 0)}%`
-            : `100%`,
-        width: "100%",
-        position: "absolute",
-        top: 0
       }
     }),
     [theme, item]

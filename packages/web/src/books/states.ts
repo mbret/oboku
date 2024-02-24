@@ -8,7 +8,7 @@ import {
 import { getLinkState, useLinks } from "../links/states"
 import {
   getBookDownloadsState,
-  normalizedBookDownloadsStateSignal,
+  booksDownloadStateSignal,
   DownloadState
 } from "../download/states"
 import { getCollectionState, useCollections } from "../collections/states"
@@ -20,6 +20,8 @@ import { useForeverQuery } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
 import { useMemo } from "react"
+import { BookDocType } from "@oboku/shared"
+import { DeepReadonlyObject } from "rxdb"
 
 export const getBooksByIds = async (database: Database) => {
   const result = await database.collections.book.find({}).exec()
@@ -55,11 +57,6 @@ export const useBook = ({ id }: { id?: string }) => {
             }).$
         ),
         map((value) => {
-          console.log(
-            "useBook.result",
-            value?.readingStateCurrentBookmarkLocation
-          )
-
           return value?.toJSON() ?? null
         })
       )
@@ -69,8 +66,10 @@ export const useBook = ({ id }: { id?: string }) => {
 
 export type BookQueryResult = NonNullable<ReturnType<typeof useBook>["data"]>
 
-const isBookProtected = (protectedTags: string[], book: BookQueryResult) =>
-  intersection(protectedTags, book?.tags || []).length > 0
+const isBookProtected = (
+  protectedTags: string[],
+  book: Pick<DeepReadonlyObject<BookDocType>, "tags">
+) => intersection(protectedTags, book?.tags || []).length > 0
 
 /**
  * @deprecated
@@ -127,7 +126,7 @@ export const getEnrichedBookState = ({
 }: {
   bookId: string
   normalizedBookDownloadsState: ReturnType<
-    typeof normalizedBookDownloadsStateSignal.getValue
+    typeof booksDownloadStateSignal.getValue
   >
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
@@ -163,10 +162,29 @@ export const getEnrichedBookState = ({
   }
 }
 
+export const useIsBookProtected = (
+  book?: Parameters<typeof isBookProtected>[1] | null
+) => {
+  const { data: protectedTagIds, ...rest } = useProtectedTagIds({
+    enabled: !!book
+  })
+
+  return {
+    ...rest,
+    data:
+      protectedTagIds && book
+        ? isBookProtected(protectedTagIds, book)
+        : undefined
+  }
+}
+
+/**
+ * @deprecated
+ */
 export const useEnrichedBookState = (param: {
   bookId: string
   normalizedBookDownloadsState: ReturnType<
-    typeof normalizedBookDownloadsStateSignal.getValue
+    typeof booksDownloadStateSignal.getValue
   >
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
@@ -190,7 +208,7 @@ export const useDownloadedBookWithUnsafeProtectedIdsState = ({
   normalizedBookDownloadsState
 }: {
   normalizedBookDownloadsState: ReturnType<
-    typeof normalizedBookDownloadsStateSignal.getValue
+    typeof booksDownloadStateSignal.getValue
   >
 }) => {
   const book = useBookIdsState()
@@ -211,7 +229,7 @@ export const useBooksAsArrayState = ({
 }: {
   libraryState: ReturnType<typeof libraryStateSignal.getValue>
   normalizedBookDownloadsState: ReturnType<
-    typeof normalizedBookDownloadsStateSignal.getValue
+    typeof booksDownloadStateSignal.getValue
   >
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
 }) => {

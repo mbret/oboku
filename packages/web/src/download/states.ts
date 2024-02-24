@@ -6,7 +6,7 @@ export enum DownloadState {
   Downloading = "downloading"
 }
 
-export const normalizedBookDownloadsStateSignal = signal<
+export const booksDownloadStateSignal = signal<
   Record<
     string,
     | {
@@ -22,7 +22,7 @@ export const normalizedBookDownloadsStateSignal = signal<
 })
 
 export const normalizedBookDownloadsStatePersist =
-  normalizedBookDownloadsStateSignal
+  booksDownloadStateSignal
 
 /**
  * @deprecated
@@ -33,7 +33,7 @@ export const getBookDownloadsState = ({
 }: {
   bookId: string
   normalizedBookDownloadsState: ReturnType<
-    typeof normalizedBookDownloadsStateSignal.getValue
+    typeof booksDownloadStateSignal.getValue
   >
 }) =>
   normalizedBookDownloadsState[bookId] || {

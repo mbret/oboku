@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react"
 import localforage from "localforage"
 import { DOWNLOAD_PREFIX } from "../constants.shared"
-import { DownloadState, normalizedBookDownloadsStateSignal } from "./states"
+import { DownloadState, booksDownloadStateSignal } from "./states"
 
 const getKeys = async () =>
   (await localforage.keys())
@@ -10,7 +10,7 @@ const getKeys = async () =>
 
 export const useSynchronizeStateWithStorageEffect = () => {
   const restoreStateForFinishedDownloadIfNeeded = useCallback(async () => {
-    const state = normalizedBookDownloadsStateSignal.getValue()
+    const state = booksDownloadStateSignal.getValue()
     const keys = await getKeys()
 
     await Promise.all(
@@ -21,7 +21,7 @@ export const useSynchronizeStateWithStorageEffect = () => {
             `${DOWNLOAD_PREFIX}-${bookId}`
           )
           if (item) {
-            normalizedBookDownloadsStateSignal.setValue((old) => ({
+            booksDownloadStateSignal.setValue((old) => ({
               ...old,
               [bookId]: {
                 downloadProgress: 100,
@@ -37,7 +37,7 @@ export const useSynchronizeStateWithStorageEffect = () => {
 
   const removeBooksThatAreNotPresentPhysicallyAnymore =
     useCallback(async () => {
-      const state = normalizedBookDownloadsStateSignal.getValue()
+      const state = booksDownloadStateSignal.getValue()
       const keys = await getKeys()
       const bookInProgressOrDownloadedButNotPresentAnymore = Object.keys(
         state
@@ -47,7 +47,7 @@ export const useSynchronizeStateWithStorageEffect = () => {
       )
 
       if (bookInProgressOrDownloadedButNotPresentAnymore.length > 0) {
-        normalizedBookDownloadsStateSignal.setValue((old) =>
+        booksDownloadStateSignal.setValue((old) =>
           Object.keys(old)
             .filter(
               (id) =>

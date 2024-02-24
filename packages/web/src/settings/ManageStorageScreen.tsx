@@ -32,12 +32,12 @@ import { useMutation, useSignalValue } from "reactjrx"
 import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
 import { useProtectedTagIds } from "../tags/helpers"
 import { libraryStateSignal } from "../library/states"
-import { normalizedBookDownloadsStateSignal } from "../download/states"
+import { booksDownloadStateSignal } from "../download/states"
 
 export const ManageStorageScreen = () => {
   const bookIds = useDownloadedBookWithUnsafeProtectedIdsState({
     normalizedBookDownloadsState: useSignalValue(
-      normalizedBookDownloadsStateSignal
+      booksDownloadStateSignal
     )
   })
   const libraryState = useSignalValue(libraryStateSignal)

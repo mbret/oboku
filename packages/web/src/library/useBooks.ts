@@ -3,7 +3,7 @@ import { useBooksSortedBy } from "../books/helpers"
 import { useBooksAsArrayState } from "../books/states"
 import {
   DownloadState,
-  normalizedBookDownloadsStateSignal
+  booksDownloadStateSignal
 } from "../download/states"
 import { useProtectedTagIds } from "../tags/helpers"
 import { useSignalValue } from "reactjrx"
@@ -16,7 +16,7 @@ export const useBooks = () => {
   const { data: unsortedBooks } = useBooksAsArrayState({
     libraryState: library,
     normalizedBookDownloadsState: useSignalValue(
-      normalizedBookDownloadsStateSignal
+      booksDownloadStateSignal
     ),
     protectedTagIds: useProtectedTagIds().data
   })

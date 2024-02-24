@@ -13,7 +13,7 @@ import {
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
-import { normalizedBookDownloadsStateSignal } from "../../download/states"
+import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
 
@@ -35,7 +35,7 @@ export const BookListListItem: FC<{
     const book = useEnrichedBookState({
       bookId,
       normalizedBookDownloadsState: useSignalValue(
-        normalizedBookDownloadsStateSignal
+        booksDownloadStateSignal
       ),
       protectedTagIds: useProtectedTagIds().data,
       tags: useTagsByIds().data
