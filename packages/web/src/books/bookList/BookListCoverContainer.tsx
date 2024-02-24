@@ -5,7 +5,8 @@ import {
   CloudDownloadRounded,
   ErrorRounded,
   LoopRounded,
-  NoEncryptionRounded
+  NoEncryptionRounded,
+  ThumbDownOutlined
 } from "@mui/icons-material"
 import { Cover } from "../Cover"
 import { useBook, useIsBookProtected } from "../states"
@@ -51,7 +52,6 @@ export const BookListCoverContainer: FC<{
         style={{ ...classes.coverContainer, ...style }}
         className={className}
       >
-        {}
         {item && <Cover bookId={item?._id} />}
         {bookDownloadState?.downloadState !== DownloadState.Downloaded && (
           <Box
@@ -82,7 +82,19 @@ export const BookListCoverContainer: FC<{
               <CheckCircleRounded style={classes.finishIcon} fontSize={size} />
             </div>
           )}
-        <div style={classes.bodyContainer}>
+        <Box style={classes.bodyContainer}>
+          {item?.isNotInterested && (
+            <ThumbDownOutlined
+              style={{
+                position: "absolute",
+                right: 0,
+                top: 0,
+                transform: "translate(-20%, 20%)"
+              }}
+              color="action"
+              fontSize={size}
+            />
+          )}
           {withMetadaStatus && item?.metadataUpdateStatus === "fetching" && (
             <div style={classes.itemCoverCenterInfo}>
               <Chip
@@ -106,9 +118,16 @@ export const BookListCoverContainer: FC<{
               </div>
             )}
           {bookDownloadState?.downloadState === DownloadState.None && (
-            <div style={classes.pauseButton}>
+            <Box
+              position="absolute"
+              left="50%"
+              top="50%"
+              style={{
+                transform: "translate(-50%, -50%)"
+              }}
+            >
               <CloudDownloadRounded color="action" fontSize={size} />
-            </div>
+            </Box>
           )}
           {withDownloadStatus &&
             bookDownloadState?.downloadState === DownloadState.Downloading && (
@@ -116,7 +135,7 @@ export const BookListCoverContainer: FC<{
                 <Chip color="primary" size="small" label="downloading..." />
               </div>
             )}
-        </div>
+        </Box>
         {withReadingProgressStatus && (
           <>
             {item?.readingStateCurrentState === ReadingStateState.Reading && (
