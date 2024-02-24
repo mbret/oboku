@@ -1,16 +1,12 @@
-import { useMemo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Box, Typography, useTheme } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import CollectionBgSvg from "../assets/series-bg.svg"
-import { useCollectionState } from "./states"
+import { useCollection } from "./states"
 import { useCollectionActionsDrawer } from "./CollectionActionsDrawer"
 import { BookListWithControls } from "../books/bookList/BookListWithControls"
-import { useLocalSettings } from "../settings/states"
-import { useProtectedTagIds } from "../tags/helpers"
-import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../library/states"
+import { useVisibleBookIds } from "../books/states"
 
 type ScreenParams = {
   id: string
@@ -20,18 +16,19 @@ export const CollectionDetailsScreen = () => {
   const theme = useTheme()
   const navigate = useNavigate()
   const { id = `-1` } = useParams<ScreenParams>()
-  const libraryState = useSignalValue(libraryStateSignal)
-  const collection = useCollectionState({
-    id: id || "-1",
-    libraryState,
-    localSettingsState: useLocalSettings(),
-    protectedTagIds: useProtectedTagIds().data
+  const { data: collection } = useCollection({
+    id
   })
-  const data =
-    useMemo(
-      () => collection?.books?.map((book) => book || "-1"),
-      [collection?.books]
-    ) || []
+  const visibleBooks = useVisibleBookIds({
+    queryObj: {
+      selector: {
+        _id: {
+          $in: collection?.books ?? []
+        }
+      }
+    }
+  })
+
   const { open: openActionDrawer } = useCollectionActionsDrawer(
     id,
     (changes) => {
@@ -96,7 +93,7 @@ export const CollectionDetailsScreen = () => {
             </div>
           </Box>
           <BookListWithControls
-            data={data}
+            data={visibleBooks}
             defaultSort="alpha"
             renderEmptyList={
               <div

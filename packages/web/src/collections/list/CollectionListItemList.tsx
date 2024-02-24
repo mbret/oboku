@@ -15,9 +15,6 @@ import { CollectionDocType } from "@oboku/shared"
 import { Cover } from "../../books/Cover"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer"
 import { useLocalSettings } from "../../settings/states"
-import { useProtectedTagIds } from "../../tags/helpers"
-import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../../library/states"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,
@@ -35,12 +32,9 @@ export const CollectionListItemList: FC<{
   viewMode?: "container" | "text"
 }> = memo(({ id, onItemClick }) => {
   const theme = useTheme()
-  const libraryState = useSignalValue(libraryStateSignal)
   const item = useCollectionState({
     id,
-    libraryState,
     localSettingsState: useLocalSettings(),
-    protectedTagIds: useProtectedTagIds().data
   })
   const { open: openActionDrawer } = useCollectionActionsDrawer(id)
   const styles = useStyle()

@@ -29,8 +29,8 @@ const showCollectionWithProtectedContentLabels: Record<
   LocalSettings["showCollectionWithProtectedContent"],
   string
 > = {
-  unlocked: "Only when protected content are unlocked",
-  hasNormalContent: "If the collection has non protected content as well"
+  unlocked: "If protected contents are unlocked only (privacy)",
+  hasNormalContent: "If collection has non protected content as well"
 }
 
 export const SettingsScreen = memo(() => {
@@ -103,7 +103,7 @@ export const SettingsScreen = memo(() => {
             }}
           >
             <ListItemText
-              primary="Show collections with protected content"
+              primary="Show collections containing protected content"
               secondary={
                 showCollectionWithProtectedContentLabels[
                   localSettings.showCollectionWithProtectedContent
