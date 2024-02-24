@@ -1,24 +1,19 @@
 import React, { FC, memo } from "react"
 import { Box, Chip, useTheme } from "@mui/material"
 import {
-  CheckCircleRounded,
+  CheckOutlined,
   CloudDownloadRounded,
   ErrorRounded,
   LoopRounded,
-  NoEncryptionRounded,
+  NoEncryptionOutlined,
   ThumbDownOutlined
 } from "@mui/icons-material"
 import { Cover } from "../Cover"
 import { useBook, useIsBookProtected } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import { ReadingProgress } from "./ReadingProgress"
-import {
-  DownloadState,
-  booksDownloadStateSignal,
-  useBookDownloadState
-} from "../../download/states"
+import { DownloadState, useBookDownloadState } from "../../download/states"
 import { useCSS } from "../../common/utils"
-import { useSignalValue } from "reactjrx"
 import { CoverIconBadge } from "./CoverIconBadge"
 
 type Book = ReturnType<typeof useBook>["data"]
@@ -29,25 +24,22 @@ export const BookListCoverContainer: FC<{
   style?: React.CSSProperties
   withReadingProgressStatus?: boolean
   withDownloadStatus?: boolean
-  withMetadaStatus?: boolean
-  withProtectedStatus?: boolean
+  withBadges: boolean
   size?: "small" | "large" | "medium"
 }> = memo(
   ({
     bookId,
     className,
-    withMetadaStatus = true,
     style,
     withDownloadStatus = true,
     withReadingProgressStatus = true,
-    size = "small",
-    withProtectedStatus = true
+    withBadges,
+    size = "small"
   }) => {
     const { data: item } = useBook({ id: bookId })
     const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected = true } = useIsBookProtected(item)
     const classes = useStyles({ item })
-    const theme = useTheme()
 
     return (
       <Box
@@ -70,67 +62,67 @@ export const BookListCoverContainer: FC<{
             }}
           />
         )}
-        {withProtectedStatus && isBookProtected && (
-          <div style={classes.protectedIconContainer}>
-            <NoEncryptionRounded
-              style={classes.protectedIcon}
-              fontSize="small"
-            />
-          </div>
-        )}
-        {withReadingProgressStatus &&
-          item?.readingStateCurrentState === ReadingStateState.Finished && (
-            <div style={classes.finishIconContainer}>
-              <CheckCircleRounded style={classes.finishIcon} fontSize={size} />
-            </div>
-          )}
-        <Box style={classes.bodyContainer}>
-          {item?.isNotInterested && (
-            <CoverIconBadge
-              position="absolute"
-              left={0}
-              top={0}
-              style={{
-                transform: "translate(10%, 10%)"
-              }}
+        <Box style={classes.bodyContainer} gap={1}>
+          {withBadges && (
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              flexDirection="row"
+              width="100%"
             >
-              <ThumbDownOutlined color="action" fontSize={size} />
-            </CoverIconBadge>
+              <Box gap={1} flexDirection="row" display="flex">
+                {isBookProtected && (
+                  <CoverIconBadge>
+                    <NoEncryptionOutlined fontSize={size} />
+                  </CoverIconBadge>
+                )}
+                {item?.isNotInterested && (
+                  <CoverIconBadge>
+                    <ThumbDownOutlined fontSize={size} />
+                  </CoverIconBadge>
+                )}
+              </Box>
+              {withReadingProgressStatus &&
+                item?.readingStateCurrentState ===
+                  ReadingStateState.Finished && (
+                  <CoverIconBadge alignSelf="flex-end" justifySelf="flex-end">
+                    <CheckOutlined fontSize={size} />
+                  </CoverIconBadge>
+                )}
+            </Box>
           )}
-          {withMetadaStatus && item?.metadataUpdateStatus === "fetching" && (
-            <div style={classes.itemCoverCenterInfo}>
+          {withBadges && item?.metadataUpdateStatus === "fetching" && (
+            <Chip
+              color="primary"
+              size="small"
+              icon={<LoopRounded color="primary" className="icon-spin" />}
+              label="metadata..."
+            />
+          )}
+          {withBadges &&
+            item?.metadataUpdateStatus !== "fetching" &&
+            !!item?.lastMetadataUpdateError && (
               <Chip
                 color="primary"
                 size="small"
-                icon={<LoopRounded color="primary" className="icon-spin" />}
-                label="metadata..."
+                icon={<ErrorRounded color="primary" />}
+                label="metadata"
               />
-            </div>
-          )}
-          {withMetadaStatus &&
-            item?.metadataUpdateStatus !== "fetching" &&
-            !!item?.lastMetadataUpdateError && (
-              <div style={classes.itemCoverCenterInfo}>
-                <Chip
-                  color="primary"
-                  size="small"
-                  icon={<ErrorRounded color="primary" />}
-                  label="metadata"
-                />
-              </div>
             )}
-          {bookDownloadState?.downloadState === DownloadState.None && (
-            <CoverIconBadge
-              position="absolute"
-              left="50%"
-              top="50%"
-              style={{
-                transform: "translate(-50%, -50%)"
-              }}
-            >
-              <CloudDownloadRounded color="action" fontSize={size} />
-            </CoverIconBadge>
-          )}
+          {withDownloadStatus &&
+            bookDownloadState?.downloadState === DownloadState.None && (
+              <CoverIconBadge
+                position="absolute"
+                left="50%"
+                top="50%"
+                style={{
+                  transform: "translate(-50%, -50%)"
+                }}
+              >
+                <CloudDownloadRounded color="action" fontSize={size} />
+              </CoverIconBadge>
+            )}
           {withDownloadStatus &&
             bookDownloadState?.downloadState === DownloadState.Downloading && (
               <div style={classes.pauseButton}>
@@ -165,30 +157,13 @@ const useStyles = ({ item }: { item: Book }) => {
         display: "flex",
         minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
       },
-      itemCoverCenterInfo: {
-        display: "flex",
-        overflow: "hidden"
-      },
-      itemCoverCenterInfoText: {},
-      finishIconContainer: { position: "absolute", right: 5, top: 5 },
-      finishIcon: { opacity: "70%", color: "black" },
-      protectedIconContainer: {
-        position: "absolute",
-        left: 5,
-        top: 5,
-        backgroundColor: "black",
-        borderRadius: 50,
-        padding: 4,
-        opacity: "70%"
-      },
-      protectedIcon: { opacity: "100%", color: "white" },
       bodyContainer: {
         position: "absolute",
         height: "100%",
         width: "100%",
         top: 0,
         display: "flex",
-        padding: theme.spacing(1),
+        padding: theme.spacing(0.5),
         flexDirection: "column",
         alignItems: "center"
       },

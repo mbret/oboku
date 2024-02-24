@@ -29,9 +29,7 @@ export const SelectableBookListItem: FC<{
 }) => {
   const book = useEnrichedBookState({
     bookId,
-    normalizedBookDownloadsState: useSignalValue(
-      booksDownloadStateSignal
-    ),
+    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal),
     protectedTagIds: useProtectedTagIds().data,
     tags: useTagsByIds().data
   })
@@ -50,10 +48,9 @@ export const SelectableBookListItem: FC<{
       <BookListCoverContainer
         bookId={bookId}
         style={classes.coverContainer}
+        withBadges={false}
         withReadingProgressStatus={false}
         withDownloadStatus={false}
-        withMetadaStatus={false}
-        withProtectedStatus={false}
       />
       <div
         style={{

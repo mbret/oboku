@@ -46,7 +46,6 @@ export const useBook = ({ id }: { id?: string }) => {
     queryKey: ["rxdb", "book", id],
     enabled: !!id,
     queryFn: () => {
-      console.log("useBook.fetch", id)
       return latestDatabase$.pipe(
         switchMap(
           (db) =>

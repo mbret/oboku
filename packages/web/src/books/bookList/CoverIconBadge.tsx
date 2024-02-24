@@ -9,6 +9,7 @@ export const CoverIconBadge = memo(
         padding={0.3}
         borderRadius="50%"
         bgcolor="white"
+        border="1px solid black"
         {...rest}
       >
         {children}

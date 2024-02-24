@@ -51,6 +51,7 @@ export const BookListGridItem: FC<{
         bookId={bookId}
         style={classes.coverContainer}
         size="medium"
+        withBadges
       />
       <Box
         style={classes.itemBottomContainer}
