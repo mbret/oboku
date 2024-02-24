@@ -11,7 +11,11 @@ import { Cover } from "../Cover"
 import { useBook, useIsBookProtected } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import { ReadingProgress } from "./ReadingProgress"
-import { DownloadState, booksDownloadStateSignal } from "../../download/states"
+import {
+  DownloadState,
+  booksDownloadStateSignal,
+  useBookDownloadState
+} from "../../download/states"
 import { useCSS } from "../../common/utils"
 import { useSignalValue } from "reactjrx"
 
@@ -38,7 +42,7 @@ export const BookListCoverContainer: FC<{
     withProtectedStatus = true
   }) => {
     const { data: item } = useBook({ id: bookId })
-    const bookDownloadState = useSignalValue(booksDownloadStateSignal)[bookId]
+    const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected = true } = useIsBookProtected(item)
     const classes = useStyles({ item })
 
@@ -101,13 +105,13 @@ export const BookListCoverContainer: FC<{
                 />
               </div>
             )}
-          {bookDownloadState?.downloadState === "none" && (
+          {bookDownloadState?.downloadState === DownloadState.None && (
             <div style={classes.pauseButton}>
               <CloudDownloadRounded color="action" fontSize={size} />
             </div>
           )}
           {withDownloadStatus &&
-            bookDownloadState?.downloadState === "downloading" && (
+            bookDownloadState?.downloadState === DownloadState.Downloading && (
               <div style={classes.pauseButton}>
                 <Chip color="primary" size="small" label="downloading..." />
               </div>

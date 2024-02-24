@@ -1,4 +1,4 @@
-import { signal } from "reactjrx"
+import { signal, useSignalValue } from "reactjrx"
 
 export enum DownloadState {
   None = "none",
@@ -21,8 +21,7 @@ export const booksDownloadStateSignal = signal<
   default: {}
 })
 
-export const normalizedBookDownloadsStatePersist =
-  booksDownloadStateSignal
+export const normalizedBookDownloadsStatePersist = booksDownloadStateSignal
 
 /**
  * @deprecated
@@ -40,3 +39,15 @@ export const getBookDownloadsState = ({
     downloadState: DownloadState.None,
     downloadProgress: 0
   }
+
+export const useBookDownloadState = (bookId?: string | null) => {
+  const bookDownloadState = useSignalValue(booksDownloadStateSignal)
+
+  if (!bookId) return undefined
+
+  return {
+    downloadState: DownloadState.None,
+    downloadProgress: 0,
+    ...bookDownloadState[bookId]
+  }
+}
