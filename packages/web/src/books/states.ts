@@ -13,7 +13,7 @@ import {
 } from "../download/states"
 import {
   getCollectionState,
-  useCollectionsDictionary
+  useCollectionsDictionaryWithoutPrivacy
 } from "../collections/states"
 import { map, switchMap, tap, withLatestFrom } from "rxjs"
 import { plugin } from "../plugins/local"
@@ -89,7 +89,7 @@ const getBookState = ({
   book,
   tags = {}
 }: {
-  collections: ReturnType<typeof useCollectionsDictionary>["data"]
+  collections: ReturnType<typeof useCollectionsDictionaryWithoutPrivacy>["data"]
   book?: BookQueryResult | null
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
@@ -113,7 +113,7 @@ export const useBookState = ({
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
   const { data: book } = useBook({ id: bookId })
-  const { data: collections } = useCollectionsDictionary()
+  const { data: collections } = useCollectionsDictionaryWithoutPrivacy()
 
   return getBookState({
     book,
@@ -141,7 +141,7 @@ export const getEnrichedBookState = ({
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
   normalizedLinks: ReturnType<typeof useLinks>["data"]
-  normalizedCollections: ReturnType<typeof useCollectionsDictionary>["data"]
+  normalizedCollections: ReturnType<typeof useCollectionsDictionaryWithoutPrivacy>["data"]
   normalizedBooks: ReturnType<typeof useBooksDic>["data"]
 }) => {
   const book = getBookState({
@@ -200,7 +200,7 @@ export const useEnrichedBookState = (param: {
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
   const { data: normalizedLinks } = useLinks()
-  const { data: normalizedCollections } = useCollectionsDictionary()
+  const { data: normalizedCollections } = useCollectionsDictionaryWithoutPrivacy()
   const { data: normalizedBooks } = useBooksDic()
 
   return getEnrichedBookState({
@@ -343,7 +343,7 @@ export const useBookCollectionsState = ({
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
   const book = useBookState({ bookId, tags })
-  const { data: normalizedCollections } = useCollectionsDictionary()
+  const { data: normalizedCollections } = useCollectionsDictionaryWithoutPrivacy()
   const bookIds = useVisibleBookIds()
 
   return book?.collections?.map((id) =>

@@ -1,9 +1,9 @@
-import { useVisibleCollections } from "../collections/states"
+import { useCollectionsWithPrivacy } from "../collections/states"
 import { useBooks } from "../books/states"
 import { useMemo } from "react"
 
 export const useLibraryCollections = () => {
-  const { data: visibleCollections } = useVisibleCollections()
+  const { data: visibleCollections } = useCollectionsWithPrivacy()
   const { data: books } = useBooks()
 
   const collectionIds = useMemo(
