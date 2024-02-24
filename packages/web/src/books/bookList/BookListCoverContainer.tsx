@@ -19,6 +19,7 @@ import {
 } from "../../download/states"
 import { useCSS } from "../../common/utils"
 import { useSignalValue } from "reactjrx"
+import { CoverIconBadge } from "./CoverIconBadge"
 
 type Book = ReturnType<typeof useBook>["data"]
 
@@ -30,7 +31,7 @@ export const BookListCoverContainer: FC<{
   withDownloadStatus?: boolean
   withMetadaStatus?: boolean
   withProtectedStatus?: boolean
-  size?: "small" | "large"
+  size?: "small" | "large" | "medium"
 }> = memo(
   ({
     bookId,
@@ -46,6 +47,7 @@ export const BookListCoverContainer: FC<{
     const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected = true } = useIsBookProtected(item)
     const classes = useStyles({ item })
+    const theme = useTheme()
 
     return (
       <Box
@@ -84,16 +86,16 @@ export const BookListCoverContainer: FC<{
           )}
         <Box style={classes.bodyContainer}>
           {item?.isNotInterested && (
-            <ThumbDownOutlined
+            <CoverIconBadge
+              position="absolute"
+              left={0}
+              top={0}
               style={{
-                position: "absolute",
-                right: 0,
-                top: 0,
-                transform: "translate(-20%, 20%)"
+                transform: "translate(10%, 10%)"
               }}
-              color="action"
-              fontSize={size}
-            />
+            >
+              <ThumbDownOutlined color="action" fontSize={size} />
+            </CoverIconBadge>
           )}
           {withMetadaStatus && item?.metadataUpdateStatus === "fetching" && (
             <div style={classes.itemCoverCenterInfo}>
@@ -118,7 +120,7 @@ export const BookListCoverContainer: FC<{
               </div>
             )}
           {bookDownloadState?.downloadState === DownloadState.None && (
-            <Box
+            <CoverIconBadge
               position="absolute"
               left="50%"
               top="50%"
@@ -127,7 +129,7 @@ export const BookListCoverContainer: FC<{
               }}
             >
               <CloudDownloadRounded color="action" fontSize={size} />
-            </Box>
+            </CoverIconBadge>
           )}
           {withDownloadStatus &&
             bookDownloadState?.downloadState === DownloadState.Downloading && (

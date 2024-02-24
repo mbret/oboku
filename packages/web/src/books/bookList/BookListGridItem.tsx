@@ -50,7 +50,7 @@ export const BookListGridItem: FC<{
       <BookListCoverContainer
         bookId={bookId}
         style={classes.coverContainer}
-        size="large"
+        size="medium"
       />
       <Box
         style={classes.itemBottomContainer}
