@@ -1,4 +1,4 @@
-import { filter, switchMap } from "rxjs"
+import { filter, map, switchMap } from "rxjs"
 import { isDefined, useForeverQuery, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { libraryStateSignal } from "../library/states"
@@ -19,7 +19,8 @@ export const useDataSources = () => {
           return db.datasource.find({
             selector: { isProtected: { $ne: true } }
           }).$
-        })
+        }),
+        map((items) => items.map((item) => item.toJSON()))
       )
   })
 }

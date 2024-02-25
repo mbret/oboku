@@ -11,6 +11,7 @@ import { useCSS } from "../../common/utils"
 import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { CollectionListItemList } from "./CollectionListItemList"
 import { CollectionDocType } from "@oboku/shared"
+import { DeepReadonlyObject } from "rxdb"
 
 export const CollectionList: FC<
   {
@@ -18,7 +19,7 @@ export const CollectionList: FC<
     headerHeight?: number
     style?: React.CSSProperties
     data: string[]
-    onItemClick?: (item: CollectionDocType) => void
+    onItemClick?: (item: DeepReadonlyObject<CollectionDocType>) => void
     viewMode?: "list" | "grid"
     itemMode?: ComponentProps<typeof CollectionListItemList>["viewMode"]
     static?: boolean
