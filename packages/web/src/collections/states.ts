@@ -12,10 +12,13 @@ export type Collection = CollectionDocType
 export const getCollectionsByIds = async (database: Database) => {
   const result = await database.collections.obokucollection.find({}).exec()
 
-  return keyBy(result, "_id")
+  return keyBy(
+    result.map((item) => item.toJSON()),
+    "_id"
+  )
 }
 
-export const useCollectionsWithoutPrivacy = () => {
+export const useCollections = () => {
   return useForeverQuery({
     queryKey: ["rxdb", "get", "collections"],
     queryFn: () => {
@@ -27,8 +30,8 @@ export const useCollectionsWithoutPrivacy = () => {
   })
 }
 
-export const useCollectionsDictionaryWithoutPrivacy = () => {
-  const result = useCollectionsWithoutPrivacy()
+export const useCollectionsDictionary = () => {
+  const result = useCollections()
 
   return {
     ...result,
@@ -68,7 +71,7 @@ export const useCollection = ({ id }: { id?: string }) => {
 }
 
 export const useCollectionsWithPrivacy = () => {
-  const { data: collections } = useCollectionsWithoutPrivacy()
+  const { data: collections } = useCollections()
   const visibleBookIds = useVisibleBookIds()
   const { showCollectionWithProtectedContent } = useLocalSettings()
 
@@ -94,7 +97,7 @@ export const useCollectionsWithPrivacy = () => {
  * @deprecated
  */
 export const useCollectionsAsArrayState = () => {
-  const { data: collectionsDic = {} } = useCollectionsDictionaryWithoutPrivacy()
+  const { data: collectionsDic = {} } = useCollectionsDictionary()
   const visibleBookIds = useVisibleBookIds()
   const localSettingsState = useLocalSettings()
 
@@ -134,7 +137,7 @@ export const getCollectionState = ({
 }: {
   id: string
   localSettingsState: ReturnType<typeof useLocalSettings>
-  normalizedCollections: ReturnType<typeof useCollectionsDictionaryWithoutPrivacy>["data"]
+  normalizedCollections: ReturnType<typeof useCollectionsDictionary>["data"]
   bookIds: ReturnType<typeof useVisibleBookIds>
 }) => {
   const collection = normalizedCollections[id]
@@ -161,7 +164,7 @@ export const useCollectionState = ({
   id: string
   localSettingsState: ReturnType<typeof useLocalSettings>
 }) => {
-  const { data: normalizedCollections } = useCollectionsDictionaryWithoutPrivacy()
+  const { data: normalizedCollections } = useCollectionsDictionary()
   const bookIds = useVisibleBookIds()
 
   return getCollectionState({
