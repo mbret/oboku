@@ -6,7 +6,8 @@ import {
   IconButton,
   Badge,
   Typography,
-  useTheme
+  useTheme,
+  Box
 } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
 import {
@@ -98,7 +99,7 @@ export const LibraryBooksScreen = () => {
       <Toolbar
         style={{
           borderBottom: `1px solid ${theme.palette.grey[200]}`,
-          boxSizing: "border-box"
+          boxSizing: "border-box",
         }}
       >
         <IconButton
@@ -171,7 +172,7 @@ export const LibraryBooksScreen = () => {
           {library.viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
         </IconButton>
       </Toolbar>
-      <div
+      <Box
         style={{
           display: "flex",
           flexDirection: "column",
@@ -263,7 +264,7 @@ export const LibraryBooksScreen = () => {
             }
           }}
         />
-      </div>
+      </Box>
     </div>
   )
 }

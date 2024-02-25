@@ -1,10 +1,11 @@
 import React, { ComponentProps, FC, useState } from "react"
-import { Toolbar, IconButton, useTheme, Button } from "@mui/material"
+import { Toolbar, IconButton, useTheme, Button, Badge } from "@mui/material"
 import {
   AppsRounded,
   ListRounded,
   LockOpenRounded,
-  SortRounded
+  SortRounded,
+  TuneRounded
 } from "@mui/icons-material"
 import { SortByDialog } from "../../books/bookList/SortByDialog"
 import { useSignalValue } from "reactjrx"
@@ -13,11 +14,20 @@ import { libraryStateSignal } from "../../library/states"
 type Sorting = ComponentProps<typeof SortByDialog>["value"]
 
 export const ListActionsToolbar: FC<{
-  viewMode: "grid" | "list"
-  sorting: Sorting
-  onViewModeChange: (viewMode: "list" | "grid") => void
-  onSortingChange: (sorting: Sorting) => void
-}> = ({ viewMode, onViewModeChange, onSortingChange, sorting }) => {
+  viewMode?: "grid" | "list"
+  sorting?: Sorting
+  onViewModeChange?: (viewMode: "list" | "grid") => void
+  onSortingChange?: (sorting: Sorting) => void
+  numberOfFiltersApplied?: number
+  onFilterClick?: () => void
+}> = ({
+  viewMode,
+  onViewModeChange,
+  onSortingChange,
+  sorting,
+  onFilterClick,
+  numberOfFiltersApplied = 0
+}) => {
   const theme = useTheme()
   const library = useSignalValue(libraryStateSignal)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
@@ -30,27 +40,45 @@ export const ListActionsToolbar: FC<{
           boxSizing: "border-box"
         }}
       >
-        <div
-          style={{
-            flexGrow: 1,
-            justifyContent: "flex-start",
-            flexFlow: "row",
-            display: "flex",
-            alignItems: "center"
-          }}
-        >
-          <Button
-            variant="text"
-            onClick={() => setIsSortingDialogOpened(true)}
-            startIcon={<SortRounded />}
+        {!!onFilterClick && (
+          <IconButton
+            edge="start"
+            onClick={() => onFilterClick && onFilterClick()}
+            size="large"
+            color="primary"
           >
-            {sorting === "activity"
-              ? "Recent activity"
-              : sorting === "alpha"
-                ? "A > Z"
-                : "Date added"}
-          </Button>
-        </div>
+            {numberOfFiltersApplied > 0 ? (
+              <Badge badgeContent={numberOfFiltersApplied}>
+                <TuneRounded />
+              </Badge>
+            ) : (
+              <TuneRounded />
+            )}
+          </IconButton>
+        )}
+        {!!sorting && (
+          <div
+            style={{
+              flexGrow: 1,
+              justifyContent: "flex-start",
+              flexFlow: "row",
+              display: "flex",
+              alignItems: "center"
+            }}
+          >
+            <Button
+              variant="text"
+              onClick={() => setIsSortingDialogOpened(true)}
+              startIcon={<SortRounded />}
+            >
+              {sorting === "activity"
+                ? "Recent activity"
+                : sorting === "alpha"
+                  ? "A > Z"
+                  : "Date added"}
+            </Button>
+          </div>
+        )}
         {library.isLibraryUnlocked && (
           <div
             style={{
@@ -64,15 +92,17 @@ export const ListActionsToolbar: FC<{
             <LockOpenRounded fontSize="small" />
           </div>
         )}
-        <IconButton
-          color="primary"
-          onClick={() => {
-            onViewModeChange(viewMode === "grid" ? "list" : "grid")
-          }}
-          size="large"
-        >
-          {viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
-        </IconButton>
+        {!!viewMode && (
+          <IconButton
+            color="primary"
+            onClick={() => {
+              onViewModeChange?.(viewMode === "grid" ? "list" : "grid")
+            }}
+            size="large"
+          >
+            {viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
+          </IconButton>
+        )}
       </Toolbar>
       <SortByDialog
         value={sorting}

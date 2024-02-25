@@ -14,7 +14,7 @@ type Sorting = "alpha" | "date" | "activity"
 export const SortByDialog: FC<{
   onClose: () => void
   open: boolean
-  onChange: (sort: Sorting) => void
+  onChange?: (sort: Sorting) => void
   value?: Sorting
 }> = ({ onClose, open, onChange, value = "date" }) => {
   const [innerSorting, setInnerSorting] = useState<Sorting>(value)
@@ -28,7 +28,7 @@ export const SortByDialog: FC<{
   const onSortChange = (newSorting: Sorting) => {
     onClose()
     setInnerSorting(newSorting)
-    onChange(newSorting)
+    onChange?.(newSorting)
   }
 
   return (

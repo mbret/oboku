@@ -11,6 +11,7 @@ export type LibraryDocType = {
   readingStates: ReadingStateState[]
   downloadState?: DownloadState | undefined
   isNotInterested?: "only" | "hide"
+  showNotInterestedCollections?: boolean
 }
 
 export type LibrarySorting = "date" | "activity" | "alpha"
