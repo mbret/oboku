@@ -9,14 +9,15 @@ import {
   Toolbar,
   useTheme
 } from "@mui/material"
-import { ROUTES } from "../constants"
+import { ROUTES } from "../../constants"
 import { useNavigate } from "react-router-dom"
-import { useCreateCollection } from "../collections/helpers"
-import { useCSS, useMeasureElement } from "../common/utils"
-import { CollectionList } from "../collections/list/CollectionList"
+import { useCreateCollection } from "../../collections/helpers"
+import { useCSS, useMeasureElement } from "../../common/utils"
+import { CollectionList } from "../../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
 import { signal, useSignalValue } from "reactjrx"
-import { useLibraryCollections } from "./useLibraryCollections"
+import { useLibraryCollections } from "../useLibraryCollections"
+import { FilterBar } from "./FilterBar"
 
 type Scroll = Parameters<
   NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
@@ -46,7 +47,6 @@ export const LibraryCollectionScreen = () => {
   const onScroll = useDebouncedCallback((value: Scroll) => {
     libraryCollectionScreenPreviousScrollState.setValue(value)
   }, 300)
-
   const listHeader = useMemo(
     () => (
       <Toolbar>
@@ -80,6 +80,7 @@ export const LibraryCollectionScreen = () => {
   return (
     <div style={classes.container}>
       {listHeaderDimTracker}
+      <FilterBar />
       <CollectionList
         style={classes.list}
         data={collections}
