@@ -10,14 +10,12 @@ import { useSignalValue } from "reactjrx"
  * @todo cleanup
  */
 export const useContinueReadingBooks = () => {
-  const { data: isPending } = useProtectedTagIds()
-  const normalizedBookDownloadsState = useSignalValue(
-    booksDownloadStateSignal
-  )
+  const { isPending } = useProtectedTagIds()
+  const normalizedBookDownloadsState = useSignalValue(booksDownloadStateSignal)
 
   const { data: booksAsArray, isPending: isBooksPending } =
     useBooksAsArrayState({
-      normalizedBookDownloadsState,
+      normalizedBookDownloadsState
     })
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
 
@@ -41,9 +39,7 @@ export const useContinueReadingBooks = () => {
  */
 export const useRecentlyAddedBooks = () => {
   const { data: books } = useBooksAsArrayState({
-    normalizedBookDownloadsState: useSignalValue(
-      booksDownloadStateSignal
-    ),
+    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal)
   })
 
   return useMemo(() => {
