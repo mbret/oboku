@@ -18,15 +18,15 @@ import {
   DeleteForeverRounded,
   LibraryAddRounded
 } from "@mui/icons-material"
-import { useRemoveCollection, useUpdateCollection } from "./helpers"
-import { useCollectionState } from "./states"
+import { useCollection } from "./states"
 import { ManageCollectionBooksDialog } from "./ManageCollectionBooksDialog"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { useCallback } from "react"
 import { useRef } from "react"
 import { libraryStateSignal } from "../library/states"
-import { useLocalSettings } from "../settings/states"
 import { signal, useSignalValue } from "reactjrx"
+import { useRemoveCollection } from "./useRemoveCollection"
+import { useUpdateCollection } from "./useUpdateCollection"
 
 const collectionActionDrawerState = signal<{
   openedWith: undefined | string
@@ -181,9 +181,8 @@ const EditCollectionDialog: FC<{
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState("")
   const libraryState = useSignalValue(libraryStateSignal)
-  const collection = useCollectionState({
-    id: id || "-1",
-    localSettingsState: useLocalSettings(),
+  const { data: collection } = useCollection({
+    id
   })
   const { mutate: editCollection } = useUpdateCollection()
 

@@ -4,27 +4,29 @@ import { useForeverQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { map, switchMap } from "rxjs"
 import { keyBy } from "lodash"
-import { Database } from "../rxdb"
 import { useVisibleBookIds } from "../books/states"
+import { MangoQuery } from "rxdb"
 
 export type Collection = CollectionDocType
 
-export const getCollectionsByIds = async (database: Database) => {
-  const result = await database.collections.obokucollection.find({}).exec()
+export const useCollections = ({
+  queryObj
+}: { queryObj?: MangoQuery<CollectionDocType> } = {}) => {
+  const localSettings = useLocalSettings()
 
-  return keyBy(
-    result.map((item) => item.toJSON()),
-    "_id"
-  )
-}
-
-export const useCollections = () => {
   return useForeverQuery({
-    queryKey: ["rxdb", "get", "collections"],
+    queryKey: ["rxdb", "get", "collections", queryObj],
     queryFn: () => {
       return latestDatabase$.pipe(
-        switchMap((db) => db.collections.obokucollection.find({}).$),
-        map((items) => items.map((item) => item.toJSON()))
+        switchMap((db) => db.collections.obokucollection.find(queryObj).$),
+        map((items) =>
+          items.map((item) => ({
+            ...item?.toJSON(),
+            displayableName: localSettings.hideDirectivesFromCollectionName
+              ? directives.removeDirectiveFromString(item.name)
+              : item.name
+          }))
+        )
       )
     }
   })
@@ -93,30 +95,6 @@ export const useCollectionsWithPrivacy = () => {
   }
 }
 
-/**
- * @deprecated
- */
-export const useCollectionsAsArrayState = () => {
-  const { data: collectionsDic = {} } = useCollectionsDictionary()
-  const visibleBookIds = useVisibleBookIds()
-  const localSettingsState = useLocalSettings()
-
-  type Collection = NonNullable<ReturnType<typeof useCollectionState>>
-
-  const { data: visibleCollections = [] } = useCollectionsWithPrivacy()
-
-  return visibleCollections.map((collection) => {
-    const value = getCollectionState({
-      id: collection._id,
-      normalizedCollections: collectionsDic,
-      localSettingsState,
-      bookIds: visibleBookIds
-    })
-
-    return value
-  }) as Collection[]
-}
-
 export const useVisibleCollectionIds = () => {
   const { data: collections, ...rest } = useCollectionsWithPrivacy()
 
@@ -124,53 +102,4 @@ export const useVisibleCollectionIds = () => {
     ...rest,
     data: collections ? collections.map(({ _id }) => _id) : undefined
   }
-}
-
-/**
- * @deprecated
- */
-export const getCollectionState = ({
-  id,
-  localSettingsState,
-  normalizedCollections = {},
-  bookIds
-}: {
-  id: string
-  localSettingsState: ReturnType<typeof useLocalSettings>
-  normalizedCollections: ReturnType<typeof useCollectionsDictionary>["data"]
-  bookIds: ReturnType<typeof useVisibleBookIds>
-}) => {
-  const collection = normalizedCollections[id]
-  const localSettings = localSettingsState
-
-  if (!collection) return undefined
-
-  return {
-    ...collection,
-    books: collection.books.filter((id) => bookIds.includes(id)),
-    displayableName: localSettings.hideDirectivesFromCollectionName
-      ? directives.removeDirectiveFromString(collection.name)
-      : collection.name
-  }
-}
-
-/**
- * @deprecated
- */
-export const useCollectionState = ({
-  id,
-  localSettingsState
-}: {
-  id: string
-  localSettingsState: ReturnType<typeof useLocalSettings>
-}) => {
-  const { data: normalizedCollections } = useCollectionsDictionary()
-  const bookIds = useVisibleBookIds()
-
-  return getCollectionState({
-    id,
-    localSettingsState,
-    normalizedCollections,
-    bookIds
-  })
 }

@@ -10,11 +10,11 @@ import {
 } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { MoreVert } from "@mui/icons-material"
-import { useCollectionState } from "../states"
 import { CollectionDocType } from "@oboku/shared"
 import { Cover } from "../../books/Cover"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer"
-import { useLocalSettings } from "../../settings/states"
+import { useCollection } from "../states"
+import { DeepReadonlyObject } from "rxdb"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,
@@ -28,13 +28,12 @@ const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
 
 export const CollectionListItemList: FC<{
   id: string
-  onItemClick?: (tag: CollectionDocType) => void
+  onItemClick?: (tag: DeepReadonlyObject<CollectionDocType>) => void
   viewMode?: "container" | "text"
 }> = memo(({ id, onItemClick }) => {
   const theme = useTheme()
-  const item = useCollectionState({
-    id,
-    localSettingsState: useLocalSettings(),
+  const { data: item } = useCollection({
+    id
   })
   const { open: openActionDrawer } = useCollectionActionsDrawer(id)
   const styles = useStyle()

@@ -1,11 +1,11 @@
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Box, List, ListItem, ListItemText, ListSubheader } from "@mui/material"
 import { useBookIdsState } from "../books/states"
-import { useCollectionsAsArrayState } from "../collections/states"
+import { useCollections } from "../collections/states"
 
 export const StatisticsScreen = () => {
   const bookIds = useBookIdsState()
-  const collectionsAsArray = useCollectionsAsArrayState()
+  const { data: collectionsAsArray = [] } = useCollections()
 
   return (
     <>

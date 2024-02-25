@@ -12,7 +12,7 @@ import {
   DownloadState
 } from "../download/states"
 import {
-  getCollectionState,
+  useCollections,
   useCollectionsDictionary
 } from "../collections/states"
 import { map, switchMap, withLatestFrom } from "rxjs"
@@ -144,7 +144,7 @@ export const getEnrichedBookState = ({
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
   normalizedLinks: ReturnType<typeof useLinks>["data"]
-  normalizedCollections: ReturnType<typeof useCollectionsDictionary>["data"]
+  normalizedCollections: Omit<ReturnType<typeof useCollectionsDictionary>["data"], "displayableName">
   normalizedBooks: ReturnType<typeof useBooksDic>["data"]
 }) => {
   const book = getBookState({
@@ -206,7 +206,7 @@ export const useEnrichedBookState = (param: {
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
   const { data: normalizedLinks } = useLinks()
-  const { data: normalizedCollections } = useCollectionsDictionary()
+  const { data: normalizedCollections = {} } = useCollectionsDictionary()
   const { data: normalizedBooks } = useBooksDic()
 
   return getEnrichedBookState({
@@ -352,14 +352,15 @@ export const useBookCollectionsState = ({
   const { data: normalizedCollections } = useCollectionsDictionary()
   const bookIds = useVisibleBookIds()
 
-  return book?.collections?.map((id) =>
-    getCollectionState({
-      id,
-      localSettingsState,
-      normalizedCollections,
-      bookIds
-    })
-  )
+  return useCollections({
+    queryObj: {
+      selector: {
+        _id: {
+          $in: book?.collections ?? []
+        }
+      }
+    }
+  })
 }
 
 // export const useBookCollectionsState = ({

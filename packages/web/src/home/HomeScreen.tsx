@@ -1,12 +1,11 @@
-import { memo, useMemo } from "react"
+import { memo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Typography, useTheme, Button, Box } from "@mui/material"
-import { BookList } from "../books/bookList/BookList"
 import { ROUTES } from "../constants"
 import { useNavigate } from "react-router-dom"
 import ContinueReadingAsset from "../assets/continue-reading.svg"
 import { useTranslation } from "react-i18next"
-import { useContinueReadingBooks, useRecentlyAddedBooks } from "./helpers"
+import { useContinueReadingBooks } from "./helpers"
 import { ContinueReadingSection } from "./ContinueReadingSection"
 import { RecentlyAddedSection } from "./RecentlyAddedSection"
 
@@ -14,17 +13,7 @@ export const HomeScreen = memo(() => {
   const theme = useTheme()
   const navigate = useNavigate()
   const { data: continueReadingBooks, isPending } = useContinueReadingBooks()
-  const recentlyAddedBooks = useRecentlyAddedBooks()
-  const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
-  const itemWidth = 150
   const { t } = useTranslation()
-  const listHeight = Math.floor(itemWidth / adjustedRatioWhichConsiderBottom)
-  const listStyle = useMemo(
-    () => ({
-      height: listHeight
-    }),
-    [listHeight]
-  )
 
   return (
     <Box display="flex" flex={1} overflow="hidden" flexDirection="column">

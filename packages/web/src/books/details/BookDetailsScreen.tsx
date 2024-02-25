@@ -60,15 +60,13 @@ export const BookDetailsScreen = () => {
   const libraryState = useSignalValue(libraryStateSignal)
   const book = useEnrichedBookState({
     bookId: id,
-    normalizedBookDownloadsState: useSignalValue(
-      booksDownloadStateSignal
-    ),
+    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal),
     protectedTagIds: useProtectedTagIds().data,
     tags: useTagsByIds().data
   })
   const tags = useBookTagsState({ bookId: id, tags: useTagsByIds().data })
 
-  const collections = useBookCollectionsState({
+  const { data: collections } = useBookCollectionsState({
     bookId: id,
     libraryState,
     localSettingsState: useLocalSettings(),
