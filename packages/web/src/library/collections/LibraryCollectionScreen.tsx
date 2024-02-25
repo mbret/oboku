@@ -9,14 +9,14 @@ import {
   Toolbar,
   useTheme
 } from "@mui/material"
-import { ROUTES } from "../constants"
+import { ROUTES } from "../../constants"
 import { useNavigate } from "react-router-dom"
-import { useCreateCollection } from "../collections/helpers"
-import { useCSS, useMeasureElement } from "../common/utils"
-import { CollectionList } from "../collections/list/CollectionList"
+import { useCreateCollection } from "../../collections/helpers"
+import { useCSS, useMeasureElement } from "../../common/utils"
+import { CollectionList } from "../../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
 import { signal, useSignalValue } from "reactjrx"
-import { useLibraryCollections } from "./useLibraryCollections"
+import { useLibraryCollections } from "../useLibraryCollections"
 
 type Scroll = Parameters<
   NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
