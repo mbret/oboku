@@ -26,7 +26,7 @@ export const useRemoveBookFromDataSource = () => {
     async (bookId: string) => {
       const book = await db?.book.findOne({ selector: { _id: bookId } }).exec()
       const link = await db?.link
-        .findOne({ selector: { _id: book?.links[0] || null } })
+        .findOne({ selector: { _id: book?.links[0] ?? "-1" } })
         .exec()
 
       if (!link) {

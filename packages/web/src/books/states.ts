@@ -144,7 +144,7 @@ export const getEnrichedBookState = ({
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
   normalizedLinks: ReturnType<typeof useLinks>["data"]
-  normalizedCollections: ReturnType<typeof useCollectionsDictionary>["data"]
+  normalizedCollections: Omit<ReturnType<typeof useCollectionsDictionary>["data"], "displayableName">
   normalizedBooks: ReturnType<typeof useBooksDic>["data"]
 }) => {
   const book = getBookState({
@@ -206,7 +206,7 @@ export const useEnrichedBookState = (param: {
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
   const { data: normalizedLinks } = useLinks()
-  const { data: normalizedCollections } = useCollectionsDictionary()
+  const { data: normalizedCollections = {} } = useCollectionsDictionary()
   const { data: normalizedBooks } = useBooksDic()
 
   return getEnrichedBookState({
