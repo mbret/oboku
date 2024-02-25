@@ -7,7 +7,7 @@ import { getProtectedTags, getTagsByIds } from "../../tags/helpers"
 import { useDatabase } from "../../rxdb"
 import { getLinksByIds } from "../../links/states"
 import { useCallback } from "react"
-import { getCollectionsByIds } from "../../collections/states"
+import { getCollectionsByIds } from "../../collections/databaseHelpers"
 
 export const useDefaultItemClickHandler = () => {
   const downloadFile = useDownloadBook()

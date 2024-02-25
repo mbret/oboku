@@ -4,27 +4,23 @@ import {
   useAddCollectionToBook
 } from "../books/helpers"
 import { useBooksAsArrayState } from "../books/states"
-import { useCollectionState } from "./states"
 import { useMemo } from "react"
 import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
 import { booksDownloadStateSignal } from "../download/states"
-import { useLocalSettings } from "../settings/states"
 import { useSignalValue } from "reactjrx"
+import { useCollection } from "./states"
 
 export const ManageCollectionBooksDialog: FC<{
   onClose: () => void
   open: boolean
   collectionId: string
 }> = ({ onClose, open, collectionId }) => {
-  const collection = useCollectionState({
-    id: collectionId || "-1",
-    localSettingsState: useLocalSettings(),
+  const { data: collection } = useCollection({
+    id: collectionId
   })
   const { data: books } = useBooksAsArrayState({
-    normalizedBookDownloadsState: useSignalValue(
-      booksDownloadStateSignal
-    ),
+    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal)
   })
   const { mutate: addToBook } = useAddCollectionToBook()
   const { mutate: removeFromBook } = useRemoveCollectionFromBook()

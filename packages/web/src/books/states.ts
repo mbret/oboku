@@ -12,7 +12,7 @@ import {
   DownloadState
 } from "../download/states"
 import {
-  getCollectionState,
+  useCollections,
   useCollectionsDictionary
 } from "../collections/states"
 import { map, switchMap, withLatestFrom } from "rxjs"
@@ -352,14 +352,15 @@ export const useBookCollectionsState = ({
   const { data: normalizedCollections } = useCollectionsDictionary()
   const bookIds = useVisibleBookIds()
 
-  return book?.collections?.map((id) =>
-    getCollectionState({
-      id,
-      localSettingsState,
-      normalizedCollections,
-      bookIds
-    })
-  )
+  return useCollections({
+    queryObj: {
+      selector: {
+        _id: {
+          $in: book?.collections ?? []
+        }
+      }
+    }
+  })
 }
 
 // export const useBookCollectionsState = ({

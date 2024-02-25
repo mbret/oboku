@@ -11,13 +11,13 @@ import {
 } from "@mui/material"
 import { ROUTES } from "../../constants"
 import { useNavigate } from "react-router-dom"
-import { useCreateCollection } from "../../collections/helpers"
 import { useCSS, useMeasureElement } from "../../common/utils"
 import { CollectionList } from "../../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
 import { signal, useSignalValue } from "reactjrx"
 import { useLibraryCollections } from "../useLibraryCollections"
 import { FilterBar } from "./FilterBar"
+import { useCreateCollection } from "../../collections/useCreateCollection"
 
 type Scroll = Parameters<
   NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
