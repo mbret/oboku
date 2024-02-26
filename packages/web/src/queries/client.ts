@@ -11,7 +11,13 @@ export const queryClient = new QueryClient({
        * rxdb change with middleware. However since it's harder to maintain we just don't
        * use cache by default.
        */
-      gcTime: 0
+      gcTime: 0,
+      /**
+       * @important
+       * offline PWA.
+       * Don't forget to set it back to default when making online queries
+       */
+      networkMode: "always"
     }
   }
 })
