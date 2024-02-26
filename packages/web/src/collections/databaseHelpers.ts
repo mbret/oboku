@@ -1,11 +1,6 @@
-import { CollectionDocType, directives } from "@oboku/shared"
-import { useLocalSettings } from "../settings/states"
-import { useForeverQuery } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
-import { map, switchMap } from "rxjs"
+import { CollectionDocType } from "@oboku/shared"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
-import { useVisibleBookIds } from "../books/states"
 
 export type Collection = CollectionDocType
 
