@@ -3,11 +3,13 @@ import { getAwsLambda, withMiddy } from "@libs/lambda"
 import { getNormalizedHeader } from "@libs/utils"
 import { STAGE } from "../../constants"
 import schema from "./schema"
+import { InvokeCommand } from "@aws-sdk/client-lambda"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
-  await getAwsLambda().invoke({
+  const lambda = getAwsLambda()
+  const command = new InvokeCommand({
     InvocationType: "Event",
     FunctionName: `oboku-api-${STAGE}-syncDataSourceLongProcess`,
     Payload: JSON.stringify({
@@ -18,6 +20,8 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       }
     })
   })
+
+  await lambda.send(command)
 
   return {
     statusCode: 202,

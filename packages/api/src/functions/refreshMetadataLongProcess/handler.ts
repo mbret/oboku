@@ -113,5 +113,6 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 }
 
 export const main = withMiddy(lambda, {
-  withCors: false
+  withCors: false,
+  withJsonBodyParser: false
 })
