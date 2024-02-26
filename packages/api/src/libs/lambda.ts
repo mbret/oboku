@@ -7,7 +7,7 @@ import cors from "@middy/http-cors"
 import { OFFLINE } from "../constants"
 import { transpileSchema } from "@middy/validator/transpile"
 import validator from "@middy/validator"
-import { Lambda, LambdaClient } from "@aws-sdk/client-lambda"
+import { LambdaClient } from "@aws-sdk/client-lambda"
 
 export const withMiddy = (
   handler: any,
