@@ -7,7 +7,7 @@ import cors from "@middy/http-cors"
 import { OFFLINE } from "../constants"
 import { transpileSchema } from "@middy/validator/transpile"
 import validator from "@middy/validator"
-import { Lambda } from "@aws-sdk/client-lambda"
+import { LambdaClient } from "@aws-sdk/client-lambda"
 
 export const withMiddy = (
   handler: any,
@@ -103,7 +103,7 @@ export const withMiddy = (
 }
 
 export const getAwsLambda = () =>
-  new Lambda({
+  new LambdaClient({
     region: "us-east-1",
     ...(OFFLINE && {
       endpoint: `http://localhost:3002`
