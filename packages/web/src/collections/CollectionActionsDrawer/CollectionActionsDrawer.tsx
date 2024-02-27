@@ -10,7 +10,8 @@ import {
   Dialog,
   TextField,
   DialogActions,
-  Button
+  Button,
+  ListItemButton
 } from "@mui/material"
 import { useEffect, useState, FC } from "react"
 import {
@@ -22,20 +23,13 @@ import { useCollection } from "../states"
 import { ManageCollectionBooksDialog } from "../ManageCollectionBooksDialog"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
 import { libraryStateSignal } from "../../library/states"
-import { signal, useSignalValue } from "reactjrx"
+import { useSignalValue } from "reactjrx"
 import { useRemoveCollection } from "../useRemoveCollection"
 import { useUpdateCollection } from "../useUpdateCollection"
-
-const collectionActionDrawerState = signal<{
-  openedWith: undefined | string
-}>({ key: "collectionActionDrawerState", default: { openedWith: undefined } })
-
-const collectionActionDrawerChangesState = signal<
-  undefined | [string, `delete`]
->({
-  key: `collectionActionDrawerChangesState`,
-  default: undefined
-})
+import {
+  collectionActionDrawerChangesState,
+  collectionActionDrawerState
+} from "./useCollectionActionsDrawer"
 
 export const CollectionActionsDrawer: FC<{}> = () => {
   const { openedWith: collectionId } = useSignalValue(
@@ -100,6 +94,16 @@ export const CollectionActionsDrawer: FC<{}> = () => {
               secondary="This collection will no longer be synchronized with the data source it originated from"
             />
           </ListItem> */}
+          <ListItemButton
+            onClick={() => {
+              setIsManageBookDialogOpened(true)
+            }}
+          >
+            <ListItemIcon>
+              <LibraryAddRounded />
+            </ListItemIcon>
+            <ListItemText primary="Mark all books as not interested" />
+          </ListItemButton>
           <ListItem
             button
             onClick={() => {

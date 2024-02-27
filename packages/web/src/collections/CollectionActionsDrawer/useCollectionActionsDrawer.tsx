@@ -3,11 +3,11 @@ import { useCallback } from "react"
 import { useRef } from "react"
 import { signal, useSignalValue } from "reactjrx"
 
-const collectionActionDrawerState = signal<{
+export const collectionActionDrawerState = signal<{
   openedWith: undefined | string
 }>({ key: "collectionActionDrawerState", default: { openedWith: undefined } })
 
-const collectionActionDrawerChangesState = signal<
+export const collectionActionDrawerChangesState = signal<
   undefined | [string, `delete`]
 >({
   key: `collectionActionDrawerChangesState`,
