@@ -17,7 +17,9 @@ import { useEffect, useState, FC } from "react"
 import {
   Edit,
   DeleteForeverRounded,
-  LibraryAddRounded
+  LibraryAddRounded,
+  ThumbDownOutlined,
+  ThumbUpOutlined
 } from "@mui/icons-material"
 import { useCollection } from "../states"
 import { ManageCollectionBooksDialog } from "../ManageCollectionBooksDialog"
@@ -30,6 +32,8 @@ import {
   collectionActionDrawerChangesState,
   collectionActionDrawerState
 } from "./useCollectionActionsDrawer"
+import { useUpdateBooks } from "../../books/useUpdateBooks"
+import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 
 export const CollectionActionsDrawer: FC<{}> = () => {
   const { openedWith: collectionId } = useSignalValue(
@@ -43,7 +47,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
   const [isManageBookDialogOpened, setIsManageBookDialogOpened] =
     useState(false)
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
-
+  const { mutate: updateCollectionBooks } = useUpdateCollectionBooks()
   const { closeModalWithNavigation } = useModalNavigationControl(
     {
       onExit: () => {
@@ -96,13 +100,39 @@ export const CollectionActionsDrawer: FC<{}> = () => {
           </ListItem> */}
           <ListItemButton
             onClick={() => {
-              setIsManageBookDialogOpened(true)
+              closeModalWithNavigation()
+              updateCollectionBooks({
+                id: collectionId,
+                updateObj: {
+                  $set: {
+                    isNotInterested: true
+                  }
+                }
+              })
             }}
           >
             <ListItemIcon>
-              <LibraryAddRounded />
+              <ThumbDownOutlined />
             </ListItemIcon>
             <ListItemText primary="Mark all books as not interested" />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              closeModalWithNavigation()
+              updateCollectionBooks({
+                id: collectionId,
+                updateObj: {
+                  $set: {
+                    isNotInterested: false
+                  }
+                }
+              })
+            }}
+          >
+            <ListItemIcon>
+              <ThumbUpOutlined />
+            </ListItemIcon>
+            <ListItemText primary="Mark all books as interested" />
           </ListItemButton>
           <ListItem
             button
