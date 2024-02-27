@@ -1,4 +1,4 @@
-import { FC, memo } from "react"
+import { FC, memo, useState } from "react"
 import {
   Drawer,
   List,
@@ -7,11 +7,17 @@ import {
   ListItemButton
 } from "@mui/material"
 import {
+  ArrowForwardIosRounded,
   CheckCircleRounded,
   RadioButtonUncheckedOutlined
 } from "@mui/icons-material"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "../states"
+import {
+  CollectionReadingStateDialog,
+  getDisplayableReadingState
+} from "./CollectionStateDialog"
+import { collectionsListSignal } from "./state"
 
 export const FiltersDrawer: FC<{
   open: boolean
@@ -21,12 +27,33 @@ export const FiltersDrawer: FC<{
     libraryStateSignal,
     ({ showNotInterestedCollections }) => ({ showNotInterestedCollections })
   )
+  const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] =
+    useState(false)
+  const { readingState: collectionReadingState } = useSignalValue(
+    collectionsListSignal,
+    ({ readingState }) => ({
+      readingState
+    })
+  )
 
   return (
     <>
       <Drawer anchor="bottom" open={open} onClose={onClose}>
         <div role="presentation">
           <List>
+            <ListItemButton
+              onClick={() => {
+                setIsReadingStateDialogOpened(true)
+              }}
+            >
+              <ListItemText
+                primary="Reading state"
+                secondary={getDisplayableReadingState(collectionReadingState)}
+              />
+              <ListItemIcon>
+                <ArrowForwardIosRounded />
+              </ListItemIcon>
+            </ListItemButton>
             <ListItemButton
               onClick={() =>
                 libraryStateSignal.setValue((state) => ({
@@ -51,6 +78,10 @@ export const FiltersDrawer: FC<{
           </List>
         </div>
       </Drawer>
+      <CollectionReadingStateDialog
+        open={isReadingStateDialogOpened}
+        onClose={() => setIsReadingStateDialogOpened(false)}
+      />
     </>
   )
 })

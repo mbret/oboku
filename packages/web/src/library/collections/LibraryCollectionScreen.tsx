@@ -15,9 +15,10 @@ import { useCSS, useMeasureElement } from "../../common/utils"
 import { CollectionList } from "../../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
 import { signal, useSignalValue } from "reactjrx"
-import { useLibraryCollections } from "../useLibraryCollections"
+import { useLibraryCollections } from "./useLibraryCollections"
 import { FilterBar } from "./FilterBar"
 import { useCreateCollection } from "../../collections/useCreateCollection"
+import { collectionsListSignal } from "./state"
 
 type Scroll = Parameters<
   NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
@@ -41,6 +42,10 @@ export const LibraryCollectionScreen = () => {
     useState(false)
   const libraryCollectionScreenPreviousScroll = useSignalValue(
     libraryCollectionScreenPreviousScrollState
+  )
+  const { viewMode } = useSignalValue(
+    collectionsListSignal,
+    ({ viewMode }) => ({ viewMode })
   )
   const { data: collections = [] } = useLibraryCollections()
 
@@ -88,6 +93,7 @@ export const LibraryCollectionScreen = () => {
         renderHeader={listRenderHeader}
         onItemClick={onItemClick}
         onScroll={onScroll}
+        viewMode={viewMode}
         initialScrollLeft={libraryCollectionScreenPreviousScroll.scrollLeft}
         initialScrollTop={libraryCollectionScreenPreviousScroll.scrollTop}
       />

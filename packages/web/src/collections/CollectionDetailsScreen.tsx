@@ -4,9 +4,9 @@ import { useNavigate, useParams } from "react-router-dom"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import CollectionBgSvg from "../assets/series-bg.svg"
 import { useCollection } from "./states"
-import { useCollectionActionsDrawer } from "./CollectionActionsDrawer"
 import { BookListWithControls } from "../books/bookList/BookListWithControls"
 import { useVisibleBookIds } from "../books/states"
+import { useCollectionActionsDrawer } from "../library/collections/CollectionActionsDrawer/useCollectionActionsDrawer"
 
 type ScreenParams = {
   id: string
