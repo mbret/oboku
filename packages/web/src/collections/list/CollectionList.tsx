@@ -12,6 +12,7 @@ import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { CollectionListItemList } from "./CollectionListItemList"
 import { CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
+import { useWindowSize } from "react-use"
 
 export const CollectionList: FC<
   {
@@ -28,9 +29,24 @@ export const CollectionList: FC<
     `rowRenderer` | `itemsPerRow` | `data`
   >
 > = memo(({ itemMode, ...props }) => {
-  const { renderHeader, headerHeight, style, data, onItemClick, ...rest } =
-    props
+  const {
+    renderHeader,
+    viewMode,
+    headerHeight,
+    style,
+    data,
+    onItemClick,
+    ...rest
+  } = props
   const classes = useStyle()
+  const windowSize = useWindowSize()
+  const dynamicNumberOfItems = Math.floor(windowSize.width / 350)
+  const itemsPerRow =
+    viewMode === "grid"
+      ? dynamicNumberOfItems > 0
+        ? dynamicNumberOfItems
+        : dynamicNumberOfItems
+      : 1
 
   const rowRenderer = useCallback(
     (item: string) => (
@@ -63,7 +79,7 @@ export const CollectionList: FC<
       <ReactWindowList
         data={data}
         rowRenderer={rowRenderer}
-        itemsPerRow={1}
+        itemsPerRow={itemsPerRow}
         headerHeight={headerHeight}
         renderHeader={renderHeader}
         itemHeight={250}
