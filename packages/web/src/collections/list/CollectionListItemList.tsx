@@ -12,9 +12,9 @@ import { useCSS } from "../../common/utils"
 import { MoreVert } from "@mui/icons-material"
 import { CollectionDocType } from "@oboku/shared"
 import { Cover } from "../../books/Cover"
-import { useCollectionActionsDrawer } from "../CollectionActionsDrawer"
 import { useCollection } from "../states"
 import { DeepReadonlyObject } from "rxdb"
+import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,

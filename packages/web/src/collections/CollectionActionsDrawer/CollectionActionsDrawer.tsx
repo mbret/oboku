@@ -18,15 +18,13 @@ import {
   DeleteForeverRounded,
   LibraryAddRounded
 } from "@mui/icons-material"
-import { useCollection } from "./states"
-import { ManageCollectionBooksDialog } from "./ManageCollectionBooksDialog"
-import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
-import { useCallback } from "react"
-import { useRef } from "react"
-import { libraryStateSignal } from "../library/states"
+import { useCollection } from "../states"
+import { ManageCollectionBooksDialog } from "../ManageCollectionBooksDialog"
+import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
+import { libraryStateSignal } from "../../library/states"
 import { signal, useSignalValue } from "reactjrx"
-import { useRemoveCollection } from "./useRemoveCollection"
-import { useUpdateCollection } from "./useUpdateCollection"
+import { useRemoveCollection } from "../useRemoveCollection"
+import { useUpdateCollection } from "../useUpdateCollection"
 
 const collectionActionDrawerState = signal<{
   openedWith: undefined | string
@@ -38,38 +36,6 @@ const collectionActionDrawerChangesState = signal<
   key: `collectionActionDrawerChangesState`,
   default: undefined
 })
-
-export const useCollectionActionsDrawer = (
-  id: string,
-  onChanges?: (change: `delete`) => void
-) => {
-  const collectionActionDrawerChanges = useSignalValue(
-    collectionActionDrawerChangesState
-  )
-  // we use this to only ever emit once every changes
-  // this also ensure when first subscribing to the hook we do not trigger the previous changes
-  const latestChangesEmittedRef = useRef(collectionActionDrawerChanges)
-
-  const open = useCallback(() => {
-    collectionActionDrawerState.setValue({ openedWith: id })
-  }, [id])
-
-  useEffect(() => {
-    if (collectionActionDrawerChanges) {
-      if (collectionActionDrawerChanges !== latestChangesEmittedRef.current) {
-        const [changeForId, change] = collectionActionDrawerChanges
-        if (changeForId === id) {
-          onChanges && onChanges(change)
-          latestChangesEmittedRef.current = collectionActionDrawerChanges
-        }
-      }
-    }
-  }, [collectionActionDrawerChanges, onChanges, id])
-
-  return {
-    open
-  }
-}
 
 export const CollectionActionsDrawer: FC<{}> = () => {
   const { openedWith: collectionId } = useSignalValue(
