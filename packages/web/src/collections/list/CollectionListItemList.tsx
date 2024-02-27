@@ -14,7 +14,7 @@ import { CollectionDocType } from "@oboku/shared"
 import { Cover } from "../../books/Cover"
 import { useCollection } from "../states"
 import { DeepReadonlyObject } from "rxdb"
-import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
+import { useCollectionActionsDrawer } from "../../library/collections/CollectionActionsDrawer/useCollectionActionsDrawer"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,

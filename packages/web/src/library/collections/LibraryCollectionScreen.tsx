@@ -15,7 +15,7 @@ import { useCSS, useMeasureElement } from "../../common/utils"
 import { CollectionList } from "../../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
 import { signal, useSignalValue } from "reactjrx"
-import { useLibraryCollections } from "../useLibraryCollections"
+import { useLibraryCollections } from "./useLibraryCollections"
 import { FilterBar } from "./FilterBar"
 import { useCreateCollection } from "../../collections/useCreateCollection"
 

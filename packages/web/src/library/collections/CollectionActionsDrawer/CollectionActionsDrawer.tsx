@@ -21,19 +21,19 @@ import {
   ThumbDownOutlined,
   ThumbUpOutlined
 } from "@mui/icons-material"
-import { useCollection } from "../states"
-import { ManageCollectionBooksDialog } from "../ManageCollectionBooksDialog"
-import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
-import { libraryStateSignal } from "../../library/states"
+import { useCollection } from "../../../collections/states"
+import { ManageCollectionBooksDialog } from "../../../collections/ManageCollectionBooksDialog"
+import { useModalNavigationControl } from "../../../navigation/useModalNavigationControl"
+import { libraryStateSignal } from "../../states"
 import { useSignalValue } from "reactjrx"
-import { useRemoveCollection } from "../useRemoveCollection"
-import { useUpdateCollection } from "../useUpdateCollection"
+import { useRemoveCollection } from "../../../collections/useRemoveCollection"
+import { useUpdateCollection } from "../../../collections/useUpdateCollection"
 import {
   collectionActionDrawerChangesState,
   collectionActionDrawerState
 } from "./useCollectionActionsDrawer"
-import { useUpdateBooks } from "../../books/useUpdateBooks"
-import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
+import { useUpdateBooks } from "../../../books/useUpdateBooks"
+import { useUpdateCollectionBooks } from "../../../collections/useUpdateCollectionBooks"
 
 export const CollectionActionsDrawer: FC<{}> = () => {
   const { openedWith: collectionId } = useSignalValue(
