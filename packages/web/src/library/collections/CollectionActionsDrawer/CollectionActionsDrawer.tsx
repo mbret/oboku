@@ -5,15 +5,9 @@ import {
   List,
   ListItemIcon,
   ListItemText,
-  DialogContent,
-  DialogTitle,
-  Dialog,
-  TextField,
-  DialogActions,
-  Button,
   ListItemButton
 } from "@mui/material"
-import { useEffect, useState, FC } from "react"
+import { useState, FC } from "react"
 import {
   Edit,
   DeleteForeverRounded,
@@ -21,19 +15,16 @@ import {
   ThumbDownOutlined,
   ThumbUpOutlined
 } from "@mui/icons-material"
-import { useCollection } from "../../../collections/states"
 import { ManageCollectionBooksDialog } from "../../../collections/ManageCollectionBooksDialog"
 import { useModalNavigationControl } from "../../../navigation/useModalNavigationControl"
-import { libraryStateSignal } from "../../states"
 import { useSignalValue } from "reactjrx"
 import { useRemoveCollection } from "../../../collections/useRemoveCollection"
-import { useUpdateCollection } from "../../../collections/useUpdateCollection"
 import {
   collectionActionDrawerChangesState,
   collectionActionDrawerState
 } from "./useCollectionActionsDrawer"
-import { useUpdateBooks } from "../../../books/useUpdateBooks"
 import { useUpdateCollectionBooks } from "../../../collections/useUpdateCollectionBooks"
+import { EditCollectionDialog } from "./EditCollectionDialog"
 
 export const CollectionActionsDrawer: FC<{}> = () => {
   const { openedWith: collectionId } = useSignalValue(
@@ -88,16 +79,6 @@ export const CollectionActionsDrawer: FC<{}> = () => {
             </ListItemIcon>
             <ListItemText primary="Rename" />
           </ListItem>
-          {/* <ListItem button onClick={() => {
-            // delete this collection
-            // create a new local one without resource id
-          }}>
-            <ListItemIcon><DynamicFeedRounded /></ListItemIcon>
-            <ListItemText
-              primary="Make this collection local"
-              secondary="This collection will no longer be synchronized with the data source it originated from"
-            />
-          </ListItem> */}
           <ListItemButton
             onClick={() => {
               closeModalWithNavigation()
@@ -148,12 +129,12 @@ export const CollectionActionsDrawer: FC<{}> = () => {
         </List>
         <Divider />
         <List>
-          <ListItem button onClick={() => onRemoveCollection(collectionId)}>
+          <ListItemButton onClick={() => onRemoveCollection(collectionId)}>
             <ListItemIcon>
               <DeleteForeverRounded />
             </ListItemIcon>
             <ListItemText primary="Remove" />
-          </ListItem>
+          </ListItemButton>
         </List>
       </Drawer>
       <ManageCollectionBooksDialog
@@ -171,64 +152,5 @@ export const CollectionActionsDrawer: FC<{}> = () => {
         open={!!isEditCollectionDialogOpenedWithId}
       />
     </>
-  )
-}
-
-const EditCollectionDialog: FC<{
-  open: boolean
-  id: string | undefined
-  onClose: () => void
-}> = ({ onClose, open, id }) => {
-  const [name, setName] = useState("")
-  const libraryState = useSignalValue(libraryStateSignal)
-  const { data: collection } = useCollection({
-    id
-  })
-  const { mutate: editCollection } = useUpdateCollection()
-
-  const onInnerClose = () => {
-    setName("")
-    onClose()
-  }
-
-  const onConfirm = (id: string, name: string) => {
-    if (name) {
-      editCollection({ _id: id, name })
-    }
-  }
-
-  useEffect(() => {
-    setName((prev) => collection?.name || prev)
-  }, [collection?.name, id])
-
-  return (
-    <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>Collection: {collection?.name}</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          id="name"
-          label="Name"
-          type="text"
-          fullWidth
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onInnerClose} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={() => {
-            onInnerClose()
-            id && onConfirm(id, name)
-          }}
-          color="primary"
-        >
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
   )
 }
