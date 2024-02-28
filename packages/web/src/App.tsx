@@ -1,7 +1,6 @@
 import { FC, Suspense, useEffect, useState } from "react"
 import { AppNavigator } from "./navigation/AppNavigator"
 import { Theme, StyledEngineProvider, Fade, Box } from "@mui/material"
-import { theme } from "./theme/theme"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { TourProvider } from "./app-tour/TourProvider"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
@@ -24,10 +23,9 @@ import { Effects } from "./Effects"
 import {
   usePersistSignals,
   QueryClientProvider,
-  createLocalforageAdapter,
-  createSharedStoreAdapter
+  createSharedStoreAdapter,
+  createLocalStorageAdapter
 } from "reactjrx"
-import localforage from "localforage"
 import { signalEntriesToPersist } from "./storage"
 import { queryClient } from "./queries/client"
 import { ThemeProvider } from "./theme/ThemeProvider"
@@ -50,7 +48,7 @@ export function App() {
 
   const { isHydrated } = usePersistSignals({
     adapter: createSharedStoreAdapter({
-      adapter: createLocalforageAdapter(localforage),
+      adapter: createLocalStorageAdapter(),
       key: "local-user"
     }),
     onReady: () => {
