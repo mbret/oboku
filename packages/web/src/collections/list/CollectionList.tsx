@@ -40,7 +40,7 @@ export const CollectionList: FC<
   } = props
   const classes = useStyle()
   const windowSize = useWindowSize()
-  const dynamicNumberOfItems = Math.floor(windowSize.width / 350)
+  const dynamicNumberOfItems = Math.max(Math.floor(windowSize.width / 350), 1)
   const itemsPerRow =
     viewMode === "grid"
       ? dynamicNumberOfItems > 0
