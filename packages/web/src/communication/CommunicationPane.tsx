@@ -16,6 +16,8 @@ export const CommunicationPane = () => {
   const { data } = useQuery({
     queryKey: ["api", "communication"],
     staleTime: oneDayInMs,
+    gcTime: oneDayInMs / 2,
+    networkMode: "online",
     queryFn: () =>
       httpClient.fetch<Communication[]>({
         url: `${import.meta.env.VITE_SUPABASE_API_URL}/communication?limit=1`,

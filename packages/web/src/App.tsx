@@ -27,7 +27,7 @@ import {
   createLocalStorageAdapter
 } from "reactjrx"
 import { signalEntriesToPersist } from "./storage"
-import { queryClient } from "./queries/client"
+import { queryClient } from "./queries/queryClient"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 
