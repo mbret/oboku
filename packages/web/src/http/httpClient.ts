@@ -47,13 +47,13 @@ class HttpClient {
     return { data }
   }
 
-  post = async (
+  post = async <T>(
     options: Omit<FetchParams, "body" | "method"> & {
       url: string
       body: Record<string, unknown>
     }
   ) => {
-    return this.fetch({
+    return this.fetch<T>({
       ...options,
       method: "post",
       body: JSON.stringify(options.body),
