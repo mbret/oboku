@@ -15,20 +15,23 @@ export class HttpClientError extends Error {
 type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
 
 class HttpClient {
-  fetch = async ({
+  fetch = async <T>({
     url,
+    withAuth = true,
     ...params
   }: FetchParams & {
     url: string
-  }) => {
+    withAuth?: boolean
+  }): Promise<{ data: T }> => {
     const authState = authStateSignal.getValue()
 
     const response = await fetch(url, {
       ...params,
       headers: {
-        ...(authState?.token && {
-          Authorization: `Bearer ${authState?.token}`
-        }),
+        ...(authState?.token &&
+          withAuth && {
+            Authorization: `Bearer ${authState?.token}`
+          }),
         ...params.headers
       }
     })

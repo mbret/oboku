@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next"
 import { useContinueReadingBooks } from "./helpers"
 import { ContinueReadingSection } from "./ContinueReadingSection"
 import { RecentlyAddedSection } from "./RecentlyAddedSection"
+import { CommunicationPane } from "../communication/CommunicationPane"
 
 export const HomeScreen = memo(() => {
   const theme = useTheme()
@@ -18,6 +19,7 @@ export const HomeScreen = memo(() => {
   return (
     <Box display="flex" flex={1} overflow="hidden" flexDirection="column">
       <TopBarNavigation title={"Home"} showBack={false} hasSearch />
+      <CommunicationPane />
       <Box height="100%" overflow="scroll">
         {continueReadingBooks.length === 0 && !isPending && (
           <div

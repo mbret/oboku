@@ -67,6 +67,7 @@
     "@react-rxjs/core": "^0.10.7",
     "@react-rxjs/utils": "^0.9.7",
     "arg": "^5.0.2",
+    "react-markdown": "^9.0.1",
     "reactjrx": "^1.74.1",
     "sharp": "^0.33.2"
   }
