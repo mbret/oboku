@@ -1,6 +1,6 @@
 import { LinkDocType, ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { createHelpers } from "./helpers"
-import { sync } from "./sync"
+import { synchronizeFromDataSource } from "../sync/sync"
 import createNano from "nano"
 import { plugins } from "./plugins"
 import { atomicUpdate } from "@libs/dbHelpers"
@@ -86,7 +86,7 @@ export const dataSourceFacade = {
       console.log(`Execute sync process with ${plugin?.type} plugin`)
 
       if (synchronizeAbleDataSource) {
-        await sync(synchronizeAbleDataSource, ctx, helpers)
+        await synchronizeFromDataSource(synchronizeAbleDataSource, ctx, helpers)
       }
 
       console.log(`Update datasource with sync success flag`)

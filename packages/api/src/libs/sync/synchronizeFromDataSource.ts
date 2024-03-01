@@ -1,5 +1,5 @@
 import { BookDocType, GoogleDriveDataSourceData } from "@oboku/shared"
-import { createHelpers } from "./helpers"
+import { createHelpers } from "../plugins/helpers"
 import { difference, uniq } from "lodash"
 import { Logger } from "@libs/logger"
 import {
@@ -25,7 +25,7 @@ function isFile(
   return (item as SynchronizeAbleItem).type === "file"
 }
 
-export const sync = async (
+export const synchronizeFromDataSource = async (
   synchronizeAble: SynchronizeAbleDataSource,
   ctx: Context,
   helpers: ReturnType<typeof createHelpers>
