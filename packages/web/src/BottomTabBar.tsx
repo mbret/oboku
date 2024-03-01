@@ -19,16 +19,17 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { ROUTES } from "./constants"
 import { useNetworkState } from "react-use"
 import { useCSS } from "./common/utils"
-import { UploadBookFromDevice } from "./upload/UploadBookFromDevice"
-import { isUploadBookFromDeviceOpenedStateSignal } from "./upload/state"
-import { useSignalValue } from "reactjrx"
+import { SIGNAL_RESET, useSignalValue } from "reactjrx"
+import { UploadBookFromDataSource } from "./upload/UploadBookFromDataSource"
+import { isUploadBookFromDataSourceDialogOpenedSignal } from "./upload/state"
+import { PLUGIN_FILE_TYPE } from "./plugins/local"
 
 export const BottomTabBar = ({ children }: { children: ReactNode }) => {
   const location = useLocation()
   const navigate = useNavigate()
   const classes = useStyles()
-  const isUploadBookFromDeviceOpened = useSignalValue(
-    isUploadBookFromDeviceOpenedStateSignal
+  const isUploadBookFromDataSourceDialogOpened = useSignalValue(
+    isUploadBookFromDataSourceDialogOpenedSignal
   )
   const dragStatus = useRef<undefined | "entered">(undefined)
   const normalizedPath = location.pathname.startsWith(ROUTES.LIBRARY_ROOT)
@@ -38,7 +39,18 @@ export const BottomTabBar = ({ children }: { children: ReactNode }) => {
   const onDragOver = useCallback(() => {
     if (dragStatus.current !== "entered") {
       dragStatus.current = "entered"
-      isUploadBookFromDeviceOpenedStateSignal.setValue("outside")
+      isUploadBookFromDataSourceDialogOpenedSignal.setValue(PLUGIN_FILE_TYPE)
+    }
+  }, [])
+
+  const onDragLeave = useCallback(() => {
+    dragStatus.current = undefined
+
+    if (
+      isUploadBookFromDataSourceDialogOpenedSignal.getValue() ===
+      PLUGIN_FILE_TYPE
+    ) {
+      isUploadBookFromDataSourceDialogOpenedSignal.setValue(SIGNAL_RESET)
     }
   }, [])
 
@@ -97,13 +109,15 @@ export const BottomTabBar = ({ children }: { children: ReactNode }) => {
           value={ROUTES.PROFILE}
         />
       </BottomNavigation>
-      {isUploadBookFromDeviceOpened && (
-        <UploadBookFromDevice
-          openFrom={isUploadBookFromDeviceOpened}
-          onClose={() => {
-            dragStatus.current = undefined
-            isUploadBookFromDeviceOpenedStateSignal.setValue(false)
-          }}
+      {isUploadBookFromDataSourceDialogOpened && (
+        <UploadBookFromDataSource
+          openWith={isUploadBookFromDataSourceDialogOpened}
+          {...(isUploadBookFromDataSourceDialogOpened === PLUGIN_FILE_TYPE && {
+            onDragLeave
+          })}
+          onClose={() =>
+            isUploadBookFromDataSourceDialogOpenedSignal.setValue(SIGNAL_RESET)
+          }
         />
       )}
     </div>

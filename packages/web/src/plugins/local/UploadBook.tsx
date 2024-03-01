@@ -9,23 +9,25 @@ import {
   ListItemText,
   Typography
 } from "@mui/material"
-import { FC, useCallback } from "react"
-import { useAddBookFromFile } from "../books/helpers"
+import { useAddBookFromFile } from "../../books/helpers"
 import { useDropzone } from "react-dropzone"
-import { Report } from "../debug/report.shared"
+import { Report } from "../../debug/report.shared"
 import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
+import { ObokuPlugin } from "../plugin-front"
+import { DragEventHandler, useRef } from "react"
 
-export const UploadBookFromDevice: FC<{
-  openFrom: false | "local" | "outside"
-  onClose: () => void
-}> = ({ onClose, openFrom }) => {
+export const UploadBook: ObokuPlugin["UploadComponent"] & {
+  openFrom?: string
+} = ({ onClose, onDragLeave }) => {
   const addBookFromFile = useAddBookFromFile()
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: READER_ACCEPTED_EXTENSIONS
   })
+  const dialogRef = useRef<HTMLDivElement>(null)
 
   const handleConfirm = async () => {
     onClose()
+
     try {
       await Promise.all(acceptedFiles.map((file) => addBookFromFile(file)))
     } catch (e) {
@@ -33,18 +35,21 @@ export const UploadBookFromDevice: FC<{
     }
   }
 
-  const onDragLeave = useCallback(() => {
-    if (openFrom === "outside") {
-      onClose()
-    }
-  }, [onClose, openFrom])
+  const _onDragLeave: DragEventHandler<HTMLDivElement> = (e) => {
+    onDragLeave && onDragLeave(e)
+  }
 
   return (
     <Dialog
-      onClose={onClose}
-      open={!!openFrom}
+      onClose={() => onClose()}
+      componentsProps={{
+        root: {
+          ref: dialogRef,
+          onDragLeave: _onDragLeave
+        }
+      }}
+      open
       fullScreen
-      onDragLeave={onDragLeave}
     >
       <DialogTitle>Add a book from device</DialogTitle>
       <DialogContent style={{ display: "flex" }}>
@@ -74,7 +79,7 @@ export const UploadBookFromDevice: FC<{
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={() => onClose()} color="primary">
           Cancel
         </Button>
         <Button

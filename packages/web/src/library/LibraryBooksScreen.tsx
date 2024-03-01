@@ -19,7 +19,6 @@ import {
   BlurOffRounded
 } from "@mui/icons-material"
 import { LibraryFiltersDrawer } from "./LibraryFiltersDrawer"
-import { UploadBookFromDataSource } from "../upload/UploadBookFromDataSource"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { LibraryViewMode } from "../rxdb"
@@ -33,8 +32,8 @@ import { useLocalSettings } from "../settings/states"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useBooks } from "./useBooks"
-import { isUploadBookFromDeviceOpenedStateSignal } from "../upload/state"
 import { useSignalValue } from "reactjrx"
+import { isUploadBookFromDataSourceDialogOpenedSignal } from "../upload/state"
 
 export const LibraryBooksScreen = () => {
   const styles = useStyles()
@@ -46,10 +45,6 @@ export const LibraryBooksScreen = () => {
   )
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const localSettings = useLocalSettings()
-  const [
-    isUploadBookFromDataSourceDialogOpened,
-    setIsUploadBookFromDataSourceDialogOpened
-  ] = useState<string | undefined>(undefined)
   const library = useSignalValue(libraryStateSignal)
   let numberOfFiltersApplied = 0
   if ((library.tags.length || 0) > 0) numberOfFiltersApplied++
@@ -99,7 +94,7 @@ export const LibraryBooksScreen = () => {
       <Toolbar
         style={{
           borderBottom: `1px solid ${theme.palette.grey[200]}`,
-          boxSizing: "border-box",
+          boxSizing: "border-box"
         }}
       >
         <IconButton
@@ -233,12 +228,6 @@ export const LibraryBooksScreen = () => {
             renderHeader={bookListRenderHeader}
           />
         )}
-        {isUploadBookFromDataSourceDialogOpened && (
-          <UploadBookFromDataSource
-            openWith={isUploadBookFromDataSourceDialogOpened}
-            onClose={() => setIsUploadBookFromDataSourceDialogOpened(undefined)}
-          />
-        )}
         <SortByDialog
           value={library.sorting}
           onClose={() => setIsSortingDialogOpened(false)}
@@ -255,13 +244,7 @@ export const LibraryBooksScreen = () => {
           open={isUploadBookDrawerOpened}
           onClose={(type) => {
             isUploadBookDrawerOpenedStateSignal.setValue(false)
-            switch (type) {
-              case "device":
-                isUploadBookFromDeviceOpenedStateSignal.setValue("local")
-                break
-              default:
-                setIsUploadBookFromDataSourceDialogOpened(type)
-            }
+            isUploadBookFromDataSourceDialogOpenedSignal.setValue(type)
           }}
         />
       </Box>
