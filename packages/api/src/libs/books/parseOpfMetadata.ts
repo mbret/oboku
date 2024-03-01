@@ -13,7 +13,7 @@ const extractLanguage = (
   return null
 }
 
-export const parseOpfMetadata = (opf: OPF): Metadata => {
+export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
   const metadata = opf.package?.metadata || {}
   const creatrawCreator = metadata["dc:creator"]
 
@@ -23,6 +23,12 @@ export const parseOpfMetadata = (opf: OPF): Metadata => {
     : typeof creatrawCreator === "object"
       ? creatrawCreator["#text"]
       : creatrawCreator
+
+  const subjects = Array.isArray(metadata["dc:subject"])
+    ? (metadata["dc:subject"] as string[])
+    : typeof metadata["dc:subject"] === "string"
+      ? ([metadata["dc:subject"]] as string[])
+      : null
 
   return {
     title:
@@ -40,11 +46,7 @@ export const parseOpfMetadata = (opf: OPF): Metadata => {
     date: metadata["dc:date"]
       ? new Date(metadata["dc:date"]).toISOString()
       : undefined,
-    subject: Array.isArray(metadata["dc:subject"])
-      ? (metadata["dc:subject"] as string[])
-      : typeof metadata["dc:subject"] === "string"
-        ? ([metadata["dc:subject"]] as string[])
-        : null,
-    creators: creator ? [creator] : []
+    subjects: subjects ? subjects : [],
+    authors: creator ? [creator] : []
   }
 }

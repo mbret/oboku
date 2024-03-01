@@ -85,13 +85,16 @@ type Helpers = {
 
 export type DataSourcePlugin = {
   type: string
-  getMetadata: (link: LinkDocType, credentials?: any) => Promise<Metadata>
+  getMetadata: (
+    link: LinkDocType,
+    credentials?: any
+  ) => Promise<Omit<Metadata, "type"> & { shouldDownload: boolean }>
   download?: (
     link: LinkDocType,
     credentials?: any
   ) => Promise<{
     stream: NodeJS.ReadableStream | Request
-    metadata: Metadata
+    metadata: Omit<Metadata, "type">
   }>
   sync?: (
     options: {

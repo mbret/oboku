@@ -94,12 +94,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   await atomicUpdate(db, "book", book._id, (old) => ({
     ...old,
-    title: data.book?.title || old.title,
-    creator: data.book?.creator || old.creator,
-    date: data.book?.date ? new Date(data.book.date).getTime() : old.date,
-    publisher: data.book?.publisher || old.publisher,
-    subject: data.book?.subject || old.subject,
-    lang: (data.book?.lang ?? [])[0] || old.lang,
+    ...data.book,
     lastMetadataUpdatedAt: new Date().getTime(),
     metadataUpdateStatus: null,
     lastMetadataUpdateError: null

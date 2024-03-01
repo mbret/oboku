@@ -3,7 +3,7 @@ import { GoogleBooksApiResult } from "@libs/google/googleBooksApi"
 
 export const parseGoogleMetadata = (
   response: GoogleBooksApiResult
-): Metadata => {
+): Omit<Metadata, "type"> => {
   let coverLink: string | undefined
 
   if (Array.isArray(response.items) && response.items.length > 0) {
@@ -42,7 +42,7 @@ export const parseGoogleMetadata = (
       title,
       publisher: item.volumeInfo.publisher,
       languages: [item.volumeInfo.language],
-      subject: item.volumeInfo.categories
+      subjects: item.volumeInfo.categories
     }
   }
 

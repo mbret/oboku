@@ -9,5 +9,8 @@ export const getGoogleMetadata = async (
     ? await findByISBN(metadata.isbn)
     : await findByTitle(metadata.title ?? "")
 
-  return parseGoogleMetadata(response)
+  return {
+    ...parseGoogleMetadata(response),
+    type: "googleBookApi"
+  }
 }

@@ -45,23 +45,21 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
 
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
-    const metadataPreFetch = await dataSourceFacade.getMetadata(
-      ctx.link,
-      ctx.credentials
-    )
+    const { shouldDownload, ...linkMetadataPrefetch } =
+      await dataSourceFacade.getMetadata(ctx.link, ctx.credentials)
 
     const resourceDirectives = directives.extractDirectivesFromName(
-      metadataPreFetch.title ?? ""
+      linkMetadataPrefetch.title ?? ""
     )
 
-    let metadata: Metadata = {
-      ...metadataPreFetch,
+    let linkMetadata: Metadata = {
+      ...linkMetadataPrefetch,
+      type: "link",
       isbn: resourceDirectives.isbn
     }
 
-    let contentType = metadataPreFetch.contentType
-    const skipExtract =
-      !metadataPreFetch.shouldDownload || !!resourceDirectives.isbn
+    let contentType = linkMetadataPrefetch.contentType
+    const skipExtract = !shouldDownload || !!resourceDirectives.isbn
 
     if (skipExtract) {
       console.log(
@@ -82,16 +80,17 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     console.log(
       `syncMetadata processing ${ctx.book._id}`,
       tmpFilePath,
-      { metadataPreFetch, normalizedMetadata: metadata },
+      {
+        metadataPreFetch: linkMetadataPrefetch,
+        normalizedMetadata: linkMetadata
+      },
       contentType
     )
 
+    const sourcesMetadata = await getBookSourcesMetadata(linkMetadata)
+    const metadataList = [linkMetadata, ...sourcesMetadata]
+
     if (skipExtract) {
-      const sourcesMetadata = await getBookSourcesMetadata(metadata)
-      const metadataList = [metadata, ...sourcesMetadata]
-
-      console.log({ metadataList })
-
       // @todo prioritize which cover we take
       const coverLink = metadataList.find(
         (metadata) => metadata.coverLink
@@ -124,7 +123,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
           package: {
             manifest: {},
             metadata: {
-              "dc:title": metadata.title
+              "dc:title": linkMetadata.title
             }
           }
         }
@@ -170,7 +169,10 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
         Logger.log(`coverRelativePath`, coverRelativePath)
         Logger.log(`opfBasePath`, opfBasePath)
 
-        metadata = parseOpfMetadata(opfAsJson)
+        linkMetadata = {
+          ...linkMetadata,
+          ...parseOpfMetadata(opfAsJson)
+        }
 
         if (coverRelativePath) {
           await saveCoverFromArchiveToBucket(
@@ -195,13 +197,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     )
 
     const bookData = {
-      title: metadata?.title,
-      creator: (metadata?.creators ?? [])[0] ?? "",
-      date: metadata?.date,
-      publisher: metadata?.publisher,
-      subject: metadata?.subject,
-      lang: metadata?.languages ?? [][0],
-      lastMetadataUpdatedAt: new Date().getTime()
+      metadata: metadataList
     }
 
     Object.keys(bookData).forEach(
