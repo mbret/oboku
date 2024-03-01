@@ -10,6 +10,16 @@ import corsProxy from "@functions/corsProxy"
 
 // npm install --arch=x64 --platform=darwin sharp -w @oboku/api
 
+const ENVS_TO_MAP = [
+  "COUCH_DB_URL",
+  "CONTACT_TO_ADDRESS",
+  "AWS_API_URI",
+  "GOOGLE_BOOK_API_URL",
+  "OFFLINE",
+  "COVERS_PLACEHOLDER_BUCKET_KEY",
+  "COVERS_BUCKET_NAME"
+]
+
 const functions: AWS[`functions`] = {
   covers,
   signin,
@@ -63,11 +73,10 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
       STAGE: "${sls:stage}",
-      COUCH_DB_URL: "${env:COUCH_DB_URL}",
-      CONTACT_TO_ADDRESS: "${env:CONTACT_TO_ADDRESS}",
-      AWS_API_URI: "${env:AWS_API_URI}",
-      GOOGLE_BOOK_API_URL: "${env:GOOGLE_BOOK_API_URL}",
-      OFFLINE: "${env:OFFLINE}"
+      ...ENVS_TO_MAP.reduce(
+        (acc, key) => ({ ...acc, [key]: `$\{env:${key}}` }),
+        {}
+      )
     }
   },
   layers: {

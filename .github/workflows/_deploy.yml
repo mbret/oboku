@@ -51,6 +51,8 @@ jobs:
           echo "COUCH_DB_URL=${{secrets.COUCH_DB_URL}}" >> packages/api/.env
           echo "AWS_API_URI=${{inputs.AWS_API_URI}}" >> packages/api/.env
           echo "GOOGLE_BOOK_API_URL=${{inputs.GOOGLE_BOOK_API_URL}}" >> packages/api/.env
+          echo "COVERS_BUCKET_NAME=${{inputs.COVERS_BUCKET_NAME}}" >> packages/api/.env
+          echo "COVERS_PLACEHOLDER_BUCKET_KEY=${{inputs.COVERS_PLACEHOLDER_BUCKET_KEY}}" >> packages/api/.env
           echo "OFFLINE=false" >> packages/api/.env
       - name: Deploy
         run: npx lerna exec --scope @oboku/api -- sls deploy --stage ${{ inputs.STAGE }}

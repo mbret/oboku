@@ -1,8 +1,10 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { withMiddy } from "@libs/lambda"
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3"
-import createError from "http-errors"
+import { S3Client } from "@aws-sdk/client-s3"
 import sharp from "sharp"
+import { getCover } from "./getCover"
+import { getCoverPlaceholder } from "./getCoverPlaceholder"
+import createError from "http-errors"
 
 const s3 = new S3Client({
   region: `us-east-1`
@@ -13,28 +15,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
   const objectKey = `cover-${coverId}`
   const format = event.queryStringParameters?.format || "image/webp"
 
-  let cover: Parameters<typeof sharp>[0]
+  const userCover = await getCover(s3, objectKey)
+  const cover = userCover ? userCover : await getCoverPlaceholder(s3)
 
-  try {
-    const response = await s3.send(
-      new GetObjectCommand({
-        Bucket: "oboku-covers",
-        Key: objectKey,
-        ResponseContentType: ""
-      })
-    )
-
-    if (!response.Body) {
-      throw new Error("No body")
-    }
-
-    cover = await response.Body.transformToByteArray()
-  } catch (e) {
-    if ((e as any)?.code === "NoSuchKey") {
-      throw createError(404)
-    } else {
-      throw e
-    }
+  if (!cover) {
+    throw createError(404)
   }
 
   const resized = sharp(cover).resize({
