@@ -91,11 +91,7 @@ export type DataSourcePlugin = {
     credentials?: any
   ) => Promise<{
     stream: NodeJS.ReadableStream | Request
-    metadata: {
-      size?: string
-      contentType?: string
-      name: string
-    }
+    metadata: Metadata
   }>
   sync?: (
     options: {

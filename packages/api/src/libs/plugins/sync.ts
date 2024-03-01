@@ -9,8 +9,8 @@ import {
 
 const logger = Logger.namespace("sync")
 
-type Helpers = Parameters<DataSourcePlugin["sync"]>[1]
-type Context = Parameters<DataSourcePlugin["sync"]>[0]
+type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
+type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 function isFolder(

@@ -38,7 +38,8 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 
   const authorization = event.body.authorization ?? ``
-  const credentials = JSON.parse(event.body.credentials ?? JSON.stringify({}))
+  const rawCredentials = event.body.credentials ?? JSON.stringify({})
+  const credentials = JSON.parse(rawCredentials)
 
   const { name: userName } = await withToken({
     headers: {
@@ -55,6 +56,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const db = await getNanoDbForUser(userName)
 
   const book = await findOne(db, "book", { selector: { _id: bookId } })
+
   if (!book) throw new Error(`Unable to find book ${bookId}`)
 
   if (book.metadataUpdateStatus !== "fetching") {
@@ -86,6 +88,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       metadataUpdateStatus: null,
       lastMetadataUpdateError: "unknown"
     }))
+
     throw e
   }
 
@@ -93,14 +96,15 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     ...old,
     title: data.book?.title || old.title,
     creator: data.book?.creator || old.creator,
-    date: data.book?.date || old.date,
+    date: data.book?.date ? new Date(data.book.date).getTime() : old.date,
     publisher: data.book?.publisher || old.publisher,
     subject: data.book?.subject || old.subject,
-    lang: data.book?.lang || old.lang,
+    lang: (data.book?.lang ?? [])[0] || old.lang,
     lastMetadataUpdatedAt: new Date().getTime(),
     metadataUpdateStatus: null,
     lastMetadataUpdateError: null
   }))
+
   await atomicUpdate(db, "link", link._id, (old) => ({
     ...old,
     contentLength: data.link.contentLength

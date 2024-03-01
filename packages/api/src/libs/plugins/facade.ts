@@ -20,7 +20,7 @@ export const dataSourceFacade = {
   download: async (link: LinkDocType, credentials?: any) => {
     const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
 
-    if (plugin) {
+    if (plugin && plugin.download) {
       return plugin.download(link, credentials)
     }
 
@@ -76,6 +76,10 @@ export const dataSourceFacade = {
       const lastSyncedAt = new Date().getTime()
       const ctx = { dataSourceId, userName, credentials, dataSourceType: type }
       const plugin = plugins.find((plugin) => plugin.type === type)
+
+      if (!plugin?.sync) {
+        throw new Error("plugin does not support sync")
+      }
 
       const synchronizeAbleDataSource = await plugin?.sync(ctx, helpers)
 

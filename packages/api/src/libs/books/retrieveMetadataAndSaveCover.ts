@@ -6,18 +6,17 @@ import { BookDocType, LinkDocType, OPF } from "@oboku/shared"
 import { detectMimeTypeFromContent } from "../utils"
 import { PromiseReturnType } from "../types"
 import { directives } from "@oboku/shared"
-import { findByISBN } from "../google/googleBooksApi"
 import { Logger } from "@libs/logger"
 import { saveCoverFromArchiveToBucket } from "./saveCoverFromArchiveToBucket"
-import { NormalizedMetadata } from "./types"
 import { parseOpfMetadata } from "./parseOpfMetadata"
-import { parseGoogleMetadata } from "./parseGoogleMetadata"
 import { saveCoverFromExternalLinkToBucket } from "./saveCoverFromExternalLinkToBucket"
 import {
   METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS,
   TMP_DIR
 } from "../../constants"
 import { parseXmlAsJson } from "./parseXmlAsJson"
+import { getBookSourcesMetadata } from "@libs/metadata/getBookSourcesMetadata"
+import { Metadata } from "@libs/metadata/types"
 
 const logger = Logger.namespace("retrieveMetadataAndSaveCover")
 
@@ -52,15 +51,14 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     )
 
     const resourceDirectives = directives.extractDirectivesFromName(
-      metadataPreFetch.name
+      metadataPreFetch.title ?? ""
     )
 
-    let normalizedMetadata: Partial<NormalizedMetadata> = {
-      title: metadataPreFetch.name,
-      creator: (metadataPreFetch.creators || [])[0],
-      language: (metadataPreFetch.languages || [])[0],
-      subject: metadataPreFetch.subjects
+    let metadata: Metadata = {
+      ...metadataPreFetch,
+      isbn: resourceDirectives.isbn
     }
+
     let contentType = metadataPreFetch.contentType
     const skipExtract =
       !metadataPreFetch.shouldDownload || !!resourceDirectives.isbn
@@ -78,56 +76,35 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
         ctx.link
       )
       tmpFilePath = filepath
-      normalizedMetadata.title = metadataPreFetch.name
       contentType = metadata.contentType || contentType
     }
 
     console.log(
       `syncMetadata processing ${ctx.book._id}`,
       tmpFilePath,
-      { metadataPreFetch, normalizedMetadata },
+      { metadataPreFetch, normalizedMetadata: metadata },
       contentType
     )
 
-    // ``, `META-INF`, `FOO/BAR`
+    if (skipExtract) {
+      const sourcesMetadata = await getBookSourcesMetadata(metadata)
+      const metadataList = [metadata, ...sourcesMetadata]
+
+      console.log({ metadataList })
+
+      // @todo prioritize which cover we take
+      const coverLink = metadataList.find(
+        (metadata) => metadata.coverLink
+      )?.coverLink
+
+      if (coverLink) {
+        await saveCoverFromExternalLinkToBucket(ctx, ctx.book, coverLink)
+      }
+    }
+
     let opfBasePath = ""
     let contentLength = 0
     let coverRelativePath: string | undefined
-
-    if (skipExtract) {
-      // isbn takes priority over anything else since the user wants to use it on purpose
-      if (resourceDirectives.isbn) {
-        try {
-          const response = await findByISBN(resourceDirectives.isbn)
-          const googleMetadata = parseGoogleMetadata(response)
-          normalizedMetadata = {
-            ...normalizedMetadata,
-            ...googleMetadata
-          }
-          if (Array.isArray(response.items) && response.items.length > 0) {
-            const item = response.items[0]
-
-            if (!item) throw new Error("No item found on google book response")
-
-            await saveCoverFromExternalLinkToBucket(
-              ctx,
-              ctx.book,
-              item.volumeInfo.imageLinks.thumbnail.replace("zoom=1", "zoom=2")
-            )
-          }
-        } catch (e) {
-          console.error(e)
-        }
-      } else {
-        if (metadataPreFetch.coverUrl) {
-          await saveCoverFromExternalLinkToBucket(
-            ctx,
-            ctx.book,
-            metadataPreFetch.coverUrl
-          )
-        }
-      }
-    }
 
     if (!skipExtract && typeof tmpFilePath === "string") {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
@@ -147,7 +124,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
           package: {
             manifest: {},
             metadata: {
-              "dc:title": normalizedMetadata.title
+              "dc:title": metadata.title
             }
           }
         }
@@ -193,7 +170,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
         Logger.log(`coverRelativePath`, coverRelativePath)
         Logger.log(`opfBasePath`, opfBasePath)
 
-        normalizedMetadata = parseOpfMetadata(opfAsJson)
+        metadata = parseOpfMetadata(opfAsJson)
 
         if (coverRelativePath) {
           await saveCoverFromArchiveToBucket(
@@ -218,12 +195,12 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     )
 
     const bookData = {
-      title: normalizedMetadata?.title,
-      creator: normalizedMetadata?.creator,
-      date: normalizedMetadata?.date?.getTime(),
-      publisher: normalizedMetadata?.publisher,
-      subject: normalizedMetadata?.subject,
-      lang: normalizedMetadata?.language,
+      title: metadata?.title,
+      creator: (metadata?.creators ?? [])[0] ?? "",
+      date: metadata?.date,
+      publisher: metadata?.publisher,
+      subject: metadata?.subject,
+      lang: metadata?.languages ?? [][0],
       lastMetadataUpdatedAt: new Date().getTime()
     }
 

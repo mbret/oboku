@@ -1,5 +1,5 @@
+import { Metadata } from "@libs/metadata/types"
 import { OPF } from "@oboku/shared"
-import { NormalizedMetadata } from "./types"
 
 const extractLanguage = (
   metadata?: undefined | null | string | { ["#text"]?: string }
@@ -13,9 +13,16 @@ const extractLanguage = (
   return null
 }
 
-export const parseOpfMetadata = (opf: OPF): NormalizedMetadata => {
+export const parseOpfMetadata = (opf: OPF): Metadata => {
   const metadata = opf.package?.metadata || {}
-  const creator = metadata["dc:creator"]
+  const creatrawCreator = metadata["dc:creator"]
+
+  const language = extractLanguage(metadata["dc:language"])
+  const creator = Array.isArray(creatrawCreator)
+    ? (creatrawCreator[0] ?? {})["#text"]
+    : typeof creatrawCreator === "object"
+      ? creatrawCreator["#text"]
+      : creatrawCreator
 
   return {
     title:
@@ -29,17 +36,15 @@ export const parseOpfMetadata = (opf: OPF): NormalizedMetadata => {
           ? metadata["dc:publisher"]["#text"]
           : undefined,
     rights: metadata["dc:rights"] as string | undefined,
-    language: extractLanguage(metadata["dc:language"]),
-    date: metadata["dc:date"] ? new Date(metadata["dc:date"]) : undefined,
+    languages: language ? [language] : [],
+    date: metadata["dc:date"]
+      ? new Date(metadata["dc:date"]).toISOString()
+      : undefined,
     subject: Array.isArray(metadata["dc:subject"])
       ? (metadata["dc:subject"] as string[])
       : typeof metadata["dc:subject"] === "string"
         ? ([metadata["dc:subject"]] as string[])
         : null,
-    creator: Array.isArray(creator)
-      ? (creator[0] ?? {})["#text"]
-      : typeof creator === "object"
-        ? creator["#text"]
-        : creator
+    creators: creator ? [creator] : []
   }
 }

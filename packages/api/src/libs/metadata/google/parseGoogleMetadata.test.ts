@@ -14,7 +14,7 @@ const getDefaultData = (): GoogleBooksApiResult => ({
       selfLink: ``,
       volumeInfo: {
         authors: [``],
-        categories: [``],
+        categories: [`Fiction`],
         imageLinks: {
           thumbnail: ``
         },
