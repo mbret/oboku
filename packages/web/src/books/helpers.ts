@@ -7,7 +7,6 @@ import { Database, useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../debug/report.shared"
 import { useCallback, useMemo } from "react"
-import { useDownloadBook } from "../download/useDownloadBook"
 import { PromiseReturnType } from "../types"
 import { BookQueryResult, useBooksDic } from "./states"
 import { AtomicUpdateFunction } from "rxdb"
@@ -18,7 +17,6 @@ import { useSync } from "../rxdb/useSync"
 import { catchError, EMPTY, from, map, mergeMap, switchMap } from "rxjs"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
-import { plugin } from "../plugins/local"
 import { useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 import { httpClient } from "../http/httpClient"
@@ -266,35 +264,6 @@ export const useAddBook = () => {
   }
 
   return [addBook] as [typeof addBook]
-}
-
-export const useAddBookFromFile = () => {
-  const [addBook] = useAddBook()
-  const downloadFile = useDownloadBook()
-
-  return useCallback(
-    async (file: File) => {
-      const { book } =
-        (await addBook({
-          link: {
-            book: null,
-            data: null,
-            resourceId: "file",
-            type: plugin.type,
-            createdAt: new Date().toISOString(),
-            modifiedAt: null
-          },
-          book: {
-            title: file.name,
-            lastMetadataUpdatedAt: Date.now()
-          }
-        })) || {}
-      if (book) {
-        await downloadFile(book, file)
-      }
-    },
-    [addBook, downloadFile]
-  )
 }
 
 export const useBookIdsSortedBy = (

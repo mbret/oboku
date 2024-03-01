@@ -9,17 +9,17 @@ import {
   ListItemText,
   Typography
 } from "@mui/material"
-import { useAddBookFromFile } from "../../books/helpers"
 import { useDropzone } from "react-dropzone"
 import { Report } from "../../debug/report.shared"
 import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
 import { ObokuPlugin } from "../plugin-front"
 import { DragEventHandler, useRef } from "react"
+import { useAddBookFromFile } from "./useAddBookFromFile"
 
 export const UploadBook: ObokuPlugin["UploadComponent"] & {
   openFrom?: string
 } = ({ onClose, onDragLeave }) => {
-  const addBookFromFile = useAddBookFromFile()
+  const { mutate: addBookFromFile } = useAddBookFromFile()
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: READER_ACCEPTED_EXTENSIONS
   })
