@@ -41,7 +41,12 @@ export const UploadBook: FC<{
             files.map((doc) =>
               addBook({
                 book: {
-                  title: doc.name
+                  metadata: [
+                    {
+                      type: "link",
+                      title: doc.name
+                    }
+                  ]
                 },
                 link: {
                   book: null,
@@ -59,7 +64,7 @@ export const UploadBook: FC<{
         }
       })
     }
-  }, [onClose, generateResourceId, addBook, isOpened])
+  }, [onClose, generateResourceId, addBook, isOpened, isMounted])
 
   return (
     <>

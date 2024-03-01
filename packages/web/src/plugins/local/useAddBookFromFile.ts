@@ -22,8 +22,7 @@ export const useAddBookFromFile = () => {
             modifiedAt: null
           },
           book: {
-            title: file.name,
-            lastMetadataUpdatedAt: Date.now()
+            metadata: [{ type: "link", title: file.name }]
           }
         })) || {}
 

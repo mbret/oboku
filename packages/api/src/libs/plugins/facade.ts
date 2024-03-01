@@ -1,6 +1,6 @@
 import { LinkDocType, ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { createHelpers } from "./helpers"
-import { synchronizeFromDataSource } from "../sync/sync"
+import { synchronizeFromDataSource } from "../sync/synchronizeFromDataSource"
 import createNano from "nano"
 import { plugins } from "./plugins"
 import { atomicUpdate } from "@libs/dbHelpers"

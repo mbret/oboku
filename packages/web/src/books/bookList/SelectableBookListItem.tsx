@@ -7,6 +7,7 @@ import { Checkbox } from "../../common/Checkbox"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
+import { getMetadataFromBook } from "../getMetadataFromBook"
 
 export const SelectableBookListItem: FC<{
   bookId: string
@@ -38,6 +39,8 @@ export const SelectableBookListItem: FC<{
   const coverWidth = computedHeight * theme.custom.coverAverageRatio
   const classes = useStyles({ coverWidth, style, paddingTop, paddingBottom })
 
+  const metadata = getMetadataFromBook(book)
+
   return (
     <div
       onClick={() => {
@@ -63,10 +66,10 @@ export const SelectableBookListItem: FC<{
         }}
       >
         <Typography noWrap variant="body1" display="block">
-          {book?.title || "Unknown"}
+          {metadata?.title || "Unknown"}
         </Typography>
         <Typography noWrap color="textSecondary" variant="body2">
-          {book?.creator || "Unknown"}
+          {(metadata?.authors ?? [])[0] || "Unknown"}
         </Typography>
       </div>
       <div style={{ alignSelf: "center" }}>

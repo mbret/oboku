@@ -1,5 +1,5 @@
-import { BookDocType, LinkDocType } from "@oboku/shared"
+import { LinkDocType } from "@oboku/shared"
 
-export type PostBook = Pick<BookDocType, "title">
+export type PostBook = {}
 
 export type PostLink = Pick<LinkDocType, "resourceId" | "type">

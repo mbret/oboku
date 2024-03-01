@@ -228,8 +228,13 @@ const createOrUpdateBook = async ({
           `createOrUpdateBook "${item.name}": new file detected, creating book`
         )
         const insertedBook = await helpers.createBook({
-          title: item.name,
-          isAttachedToDataSource: true
+          isAttachedToDataSource: true,
+          metadata: [
+            {
+              title: item.name,
+              type: "link"
+            }
+          ]
         })
         bookId = insertedBook.id
       }
@@ -255,6 +260,9 @@ const createOrUpdateBook = async ({
       )
       await synchronizeBookWithParentCollections(bookId, parentFolders, helpers)
 
+      /**
+       * Because it's a new book, we start a metadata refresh
+       */
       helpers.refreshBookMetadata({ bookId: bookId }).catch(logger.error)
     } else {
       /**
@@ -265,16 +273,18 @@ const createOrUpdateBook = async ({
       const lastMetadataUpdatedAt = new Date(
         existingBook?.lastMetadataUpdatedAt || 0
       )
+
+      const metadataAreOlderThanModifiedDate =
+        lastMetadataUpdatedAt < new Date(item.modifiedAt || 0)
+
       if (
-        lastMetadataUpdatedAt < new Date(item.modifiedAt || 0) ||
+        metadataAreOlderThanModifiedDate ||
         !(await helpers.isBookCoverExist(existingBook._id))
       ) {
-        // if (lastMetadataUpdatedAt < new Date(item.modifiedAt || 0)) {
-        // console.log(`dataSourcesSync book file ${item.resourceId} has a more recent modifiedTime ${item.modifiedAt} than its lastMetadataUpdatedAt ${lastMetadataUpdatedAt}, triggering metadata refresh`)
-
         helpers
           .refreshBookMetadata({ bookId: existingBook?._id })
           .catch(logger.error)
+
         logger.log(
           `book ${
             existingLink.book
@@ -282,8 +292,6 @@ const createOrUpdateBook = async ({
             item.modifiedAt || 0
           )}`
         )
-      } else {
-        // logger.log(`book ${existingLink.book} has no changes detected, skip metadata refresh`)
       }
 
       await synchronizeBookWithParentCollections(

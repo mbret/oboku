@@ -18,6 +18,7 @@ import { BookListCoverContainer } from "./BookListCoverContainer"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
+import { getMetadataFromBook } from "../getMetadataFromBook"
 
 export const BookListListItem: FC<{
   bookId: string
@@ -46,6 +47,8 @@ export const BookListListItem: FC<{
     const coverWidth = computedHeight * theme.custom.coverAverageRatio
     const classes = useStyles({ coverWidth })
     const { data: isBookProtected = true } = useIsBookProtected(book)
+
+    const metadata = getMetadataFromBook(book)
 
     return (
       <div
@@ -85,10 +88,10 @@ export const BookListListItem: FC<{
               variant: "body2"
             })}
           >
-            {book?.title || "Unknown"}
+            {metadata?.title || "Unknown"}
           </Typography>
           <Typography noWrap color="textSecondary" variant="body2">
-            {book?.creator || "Unknown"}
+            {(metadata?.authors ?? [])[0] || "Unknown"}
           </Typography>
           <Box
             style={{

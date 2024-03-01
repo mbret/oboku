@@ -76,3 +76,4 @@ export { ObokuErrorCode, ObokuSharedError } from "./errors"
 export * from "./plugin-imhentai-shared"
 
 export * from "./plugins/file"
+export * from "./metadata"

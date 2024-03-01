@@ -17,6 +17,7 @@ import {
 import { parseXmlAsJson } from "./parseXmlAsJson"
 import { getBookSourcesMetadata } from "@libs/metadata/getBookSourcesMetadata"
 import { Metadata } from "@libs/metadata/types"
+import { reduceMetadata } from "@libs/metadata/reduceMetadata"
 
 const logger = Logger.namespace("retrieveMetadataAndSaveCover")
 
@@ -37,7 +38,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
   let tmpFilePath: string | number = -1
 
   try {
-    bookNameForDebug = ctx.book.title || ""
+    bookNameForDebug = reduceMetadata(ctx.book.metadata).title || ""
 
     console.log(
       `syncMetadata processing ${ctx.book._id} with resource id ${ctx.link.resourceId}`

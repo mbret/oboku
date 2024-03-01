@@ -11,10 +11,7 @@ import {
   booksDownloadStateSignal,
   DownloadState
 } from "../download/states"
-import {
-  useCollections,
-  useCollectionsDictionary
-} from "../collections/states"
+import { useCollections, useCollectionsDictionary } from "../collections/states"
 import { map, switchMap, withLatestFrom } from "rxjs"
 import { plugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
@@ -144,7 +141,10 @@ export const getEnrichedBookState = ({
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
   normalizedLinks: ReturnType<typeof useLinks>["data"]
-  normalizedCollections: Omit<ReturnType<typeof useCollectionsDictionary>["data"], "displayableName">
+  normalizedCollections: Omit<
+    ReturnType<typeof useCollectionsDictionary>["data"],
+    "displayableName"
+  >
   normalizedBooks: ReturnType<typeof useBooksDic>["data"]
 }) => {
   const book = getBookState({
@@ -173,8 +173,6 @@ export const getEnrichedBookState = ({
     ...(downloadState || {}),
     isLocal,
     isProtected: isBookProtected(protectedTagIds, book),
-    // hasLink: book.links.length > 0
-    canRefreshMetadata: book.links.length > 0 && !isLocal
   }
 }
 

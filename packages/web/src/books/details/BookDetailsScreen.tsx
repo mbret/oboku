@@ -43,6 +43,7 @@ import { booksDownloadStateSignal } from "../../download/states"
 import { useLocalSettings } from "../../settings/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
+import { getMetadataFromBook } from "../getMetadataFromBook"
 
 type ScreenParams = {
   id: string
@@ -77,6 +78,8 @@ export const BookDetailsScreen = () => {
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const removeDownloadFile = useRemoveDownloadFile()
 
+  const metadata = getMetadataFromBook(book)
+
   return (
     <div
       style={{
@@ -91,9 +94,9 @@ export const BookDetailsScreen = () => {
         </div>
       </div>
       <div style={styles.titleContainer}>
-        <Typography variant="body1">{book?.title || "Unknown"}</Typography>
+        <Typography variant="body1">{metadata?.title || "Unknown"}</Typography>
         <Typography gutterBottom variant="caption">
-          By {book?.creator || "Unknown"}
+          By {(metadata?.authors ?? [])[0] || "Unknown"}
         </Typography>
       </div>
       <Box
@@ -159,24 +162,30 @@ export const BookDetailsScreen = () => {
         <Box display="flex" flexDirection="row" alignItems="center">
           <Typography variant="body1">Date:&nbsp;</Typography>
           <Typography variant="body2">
-            {book?.date && new Date(book.date).toLocaleDateString()}
+            {metadata?.date && new Date(metadata.date).toLocaleDateString()}
           </Typography>
         </Box>
         <Box display="flex" flexDirection="row" alignItems="center">
           <Typography variant="body1">Publisher:&nbsp;</Typography>
-          <Typography variant="body2">{book?.publisher}</Typography>
+          <Typography variant="body2">{metadata?.publisher}</Typography>
         </Box>
         <Box display="flex" flexDirection="row" alignItems="center">
           <Typography variant="body1">Creator:&nbsp;</Typography>
-          <Typography variant="body2">{book?.creator}</Typography>
+          <Typography variant="body2">
+            {metadata?.authors?.join(`, `)}
+          </Typography>
         </Box>
         <Box display="flex" flexDirection="row" alignItems="center">
           <Typography variant="body1">Genre:&nbsp;</Typography>
-          <Typography variant="body2">{book?.subject?.join(`, `)}</Typography>
+          <Typography variant="body2">
+            {metadata?.subjects?.join(`, `)}
+          </Typography>
         </Box>
         <Box display="flex" flexDirection="row" alignItems="center">
           <Typography variant="body1">Language:&nbsp;</Typography>
-          <Typography variant="body2">{book?.lang}</Typography>
+          <Typography variant="body2">
+            {metadata?.languages?.join(`, `)}
+          </Typography>
         </Box>
         {isDebugEnabled() && (
           <Box display="flex" flexDirection="row" alignItems="center">

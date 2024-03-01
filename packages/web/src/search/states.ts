@@ -3,6 +3,7 @@ import { combineLatest, first, map, switchMap } from "rxjs"
 import { visibleBooks$ } from "../books/states"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { signal, useQuery } from "reactjrx"
+import { getMetadataFromBook } from "../books/getMetadataFromBook"
 
 export const searchStateSignal = signal({
   key: "searchState",
@@ -19,7 +20,9 @@ export const useCollectionsForSearch = (search: string) =>
     queryFn: () =>
       combineLatest([
         latestDatabase$.pipe(
-          switchMap((database) => database.collections.obokucollection.find().$),
+          switchMap(
+            (database) => database.collections.obokucollection.find().$
+          ),
           first()
         )
       ]).pipe(
@@ -52,7 +55,8 @@ export const useBooksForSearch = (search: string) =>
           if (!search) return []
 
           return data
-            .filter(({ title }) => {
+            .filter((book) => {
+              const { title } = getMetadataFromBook(book)
               const searchRegex = new RegExp(
                 search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
                 "i"
@@ -62,7 +66,12 @@ export const useBooksForSearch = (search: string) =>
 
               return indexOfFirstMatch >= 0
             })
-            .sort((a, b) => sortByTitleComparator(a.title || "", b.title || ""))
+            .sort((a, b) =>
+              sortByTitleComparator(
+                getMetadataFromBook(a).title || "",
+                getMetadataFromBook(b).title || ""
+              )
+            )
         }),
         map((items) => items.map(({ _id }) => _id))
       )

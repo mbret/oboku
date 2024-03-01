@@ -6,7 +6,6 @@ import { ObokuPlugin } from "./plugin-front"
 
 export const usePluginRefreshMetadata = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
-  const dialog = useDialogManager()
 
   // It's important to use array for plugins and be careful of the order since
   // it will trigger all hooks
@@ -35,16 +34,17 @@ export const usePluginRefreshMetadata = () => {
     const found = getPluginFn.current.find(
       (plugin) => plugin.type === link.type
     )
+
     if (found) {
       if (!found.refreshMetadata) {
-        throw new Error("this datasource cannot fetch metadata")
+        return {}
       }
 
       return await found.refreshMetadata(link)
     }
 
-    throw new Error("no datasource found for this link")
+    return {}
   }
 
-  return useCallback(refreshMetadata, [getPluginFn, dialog])
+  return useCallback(refreshMetadata, [getPluginFn])
 }

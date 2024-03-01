@@ -14,12 +14,13 @@ import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
 import { useDialogManager } from "../dialog"
 import { useSync } from "../rxdb/useSync"
-import { catchError, EMPTY, from, map, mergeMap, switchMap } from "rxjs"
+import { catchError, EMPTY, from, map, switchMap } from "rxjs"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 import { httpClient } from "../http/httpClient"
+import { getMetadataFromBook } from "./getMetadataFromBook"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -121,15 +122,18 @@ export const useRefreshBookMetadata = () => {
       if (!network.online) {
         return dialog({ preset: "OFFLINE" })
       }
+
       const book = await database?.book
         .findOne({ selector: { _id: bookId } })
         .exec()
+
       const firstLink = await database?.link
         .findOne({ selector: { _id: book?.links[0] } })
         .exec()
 
-      if (!firstLink || firstLink?.type === plugin.type) {
+      if (!firstLink) {
         Report.warn(`Trying to refresh metadata of file item ${bookId}`)
+
         return
       }
 
@@ -235,20 +239,13 @@ export const useAddBook = () => {
           lastMetadataUpdatedAt: null,
           lastMetadataUpdateError: null,
           metadataUpdateStatus: null,
-          title: null,
           readingStateCurrentBookmarkLocation: null,
           readingStateCurrentBookmarkProgressUpdatedAt: null,
           readingStateCurrentBookmarkProgressPercent: 0,
           readingStateCurrentState: ReadingStateState.NotStarted,
           createdAt: Date.now(),
-          lang: null,
           tags: tags || [],
           links: [linkAdded.primary],
-          date: null,
-          publisher: null,
-          rights: null,
-          subject: null,
-          creator: null,
           collections: [],
           modifiedAt: null,
           isAttachedToDataSource: false,
@@ -310,7 +307,10 @@ const sortBooksBy = (
     }
     case "alpha": {
       return books.sort((a, b) =>
-        sortByTitleComparator(a.title || "", b.title || "")
+        sortByTitleComparator(
+          getMetadataFromBook(a).title || "",
+          getMetadataFromBook(b).title || ""
+        )
       )
     }
     default:

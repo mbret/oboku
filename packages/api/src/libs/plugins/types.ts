@@ -10,7 +10,7 @@ import {
 } from "@oboku/shared"
 import cheerio from "cheerio"
 import fetch from "node-fetch"
-import createNano from "nano"
+import createNano, { DocumentInsertResponse } from "nano"
 import { Metadata } from "@libs/metadata/types"
 
 export { dataSourceHelpers, cheerio, fetch }
@@ -68,7 +68,10 @@ type Helpers = {
   ) => Promise<createNano.DocumentInsertResponse>
   addTagsToBook: (bookId: string, tagIds: string[]) => void
   getOrCreateTagFromName: (name: string) => void
-  addLinkToBook: (bookId: string, linkId: string) => void
+  addLinkToBook: (
+    bookId: string,
+    linkId: string
+  ) => Promise<[DocumentInsertResponse, DocumentInsertResponse]>
   createError: (
     code: "unknown" | "unauthorized" | "rateLimitExceeded",
     previousError?: Error

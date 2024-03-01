@@ -128,14 +128,5 @@ export const extractIdFromResourceId = (
   resourceId: string
 ) => resourceId.replace(`${uniqueResourceIdentifier}-`, ``)
 
-export const extractSyncSourceData = <Data extends Record<any, any>>({
-  data
-}: DataSourceDocType) => {
-  try {
-    return JSON.parse(data) as Data
-  } catch (e) {
-    return undefined
-  }
-}
 
 export * from "./errors"

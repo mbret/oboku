@@ -1,4 +1,8 @@
-import { BookDocType, InsertAbleBookDocType } from "@oboku/shared"
+import {
+  BookDocType,
+  DeprecatedBookDocType,
+  InsertAbleBookDocType
+} from "@oboku/shared"
 import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
 import { MongoUpdateSyntax } from "../../types"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
@@ -56,42 +60,44 @@ export const bookCollectionMethods: BookCollectionMethods = {
 
 export const bookSchemaMigrationStrategies = {}
 
-export const bookSchema: RxJsonSchema<Omit<BookDocType, `_rev` | `rxdbMeta`>> =
-  {
-    title: "books",
-    version: 0,
-    type: "object",
-    primaryKey: `_id`,
-    properties: {
-      _id: { type: `string`, maxLength: 50 },
-      collections: {
-        type: "array",
-        ref: "obokucollection",
-        items: { type: "string" }
-      },
-      createdAt: { type: ["number"] },
-      creator: { type: ["string", "null"] },
-      date: { type: ["number", "null"] },
-      lang: { type: ["string", "null"] },
-      lastMetadataUpdatedAt: { type: ["number", "null"] },
-      lastMetadataUpdateError: { type: ["string", "null"] },
-      metadataUpdateStatus: { type: ["string", "null"] },
-      links: { ref: "link", type: "array", items: { type: "string" } },
-      publisher: { type: ["string", "null"] },
-      readingStateCurrentBookmarkLocation: { type: ["string", "null"] },
-      readingStateCurrentBookmarkProgressPercent: { type: ["number"] },
-      readingStateCurrentBookmarkProgressUpdatedAt: {
-        type: ["string", "null"]
-      },
-      readingStateCurrentState: { type: ["string"] },
-      rights: { type: ["string", "null"] },
-      subject: { type: ["array", "null"], items: { type: "string" } },
-      tags: { type: "array", ref: "tag", items: { type: "string" } },
-      title: { type: ["string", "null"] },
-      modifiedAt: { type: ["string", "null"] },
-      isAttachedToDataSource: { type: ["boolean"] },
-      isNotInterested: { type: ["boolean"] },
-      ...getReplicationProperties(`book`)
+export const bookSchema: RxJsonSchema<
+  Omit<BookDocType & DeprecatedBookDocType, `_rev` | `rxdbMeta`>
+> = {
+  title: "books",
+  version: 0,
+  type: "object",
+  primaryKey: `_id`,
+  properties: {
+    _id: { type: `string`, maxLength: 50 },
+    collections: {
+      type: "array",
+      ref: "obokucollection",
+      items: { type: "string" }
     },
-    required: []
-  }
+    createdAt: { type: ["number"] },
+    creator: { type: ["string", "null"] },
+    date: { type: ["number", "null"] },
+    lang: { type: ["string", "null"] },
+    lastMetadataUpdatedAt: { type: ["number", "null"] },
+    lastMetadataUpdateError: { type: ["string", "null"] },
+    metadataUpdateStatus: { type: ["string", "null"] },
+    links: { ref: "link", type: "array", items: { type: "string" } },
+    publisher: { type: ["string", "null"] },
+    readingStateCurrentBookmarkLocation: { type: ["string", "null"] },
+    readingStateCurrentBookmarkProgressPercent: { type: ["number"] },
+    readingStateCurrentBookmarkProgressUpdatedAt: {
+      type: ["string", "null"]
+    },
+    readingStateCurrentState: { type: ["string"] },
+    rights: { type: ["string", "null"] },
+    subject: { type: ["array", "null"], items: { type: "string" } },
+    tags: { type: "array", ref: "tag", items: { type: "string" } },
+    title: { type: ["string", "null"] },
+    modifiedAt: { type: ["string", "null"] },
+    isAttachedToDataSource: { type: ["boolean"] },
+    isNotInterested: { type: ["boolean"] },
+    metadata: { type: ["array"] },
+    ...getReplicationProperties(`book`)
+  },
+  required: []
+}

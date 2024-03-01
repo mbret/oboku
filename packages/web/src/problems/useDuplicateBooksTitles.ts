@@ -8,6 +8,7 @@ import { BookDocument } from "../rxdb/schemas/book"
 import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { switchMap } from "rxjs"
+import { getMetadataFromBook } from "../books/getMetadataFromBook"
 
 export const useDuplicatedBookTitles = () => {
   const books = useObserve(
@@ -16,7 +17,9 @@ export const useDuplicatedBookTitles = () => {
   )
 
   return useMemo(() => {
-    const booksWithValidTitle = books?.filter((doc) => !!doc.title)
+    const booksWithValidTitle = books?.filter(
+      (doc) => !!getMetadataFromBook(doc).title
+    )
 
     const docsByTitle = groupBy(booksWithValidTitle, "title")
 
