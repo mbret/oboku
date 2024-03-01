@@ -13,7 +13,7 @@ import { createThrottler } from "../helpers"
 import {
   DataSourcePlugin,
   SynchronizeAbleDataSource
-} from "src/plugins/plugin-back"
+} from "@libs/plugins/types"
 
 const extractIdFromResourceId = (resourceId: string) =>
   resourceId.replace(`dropbox-`, ``)

@@ -11,6 +11,7 @@ import {
 import cheerio from "cheerio"
 import fetch from "node-fetch"
 import createNano from "nano"
+import { Metadata } from "@libs/metadata/types"
 
 export { dataSourceHelpers, cheerio, fetch }
 
@@ -84,19 +85,7 @@ type Helpers = {
 
 export type DataSourcePlugin = {
   type: string
-  getMetadata: (
-    link: LinkDocType,
-    credentials?: any
-  ) => Promise<{
-    size?: string
-    contentType?: string
-    name: string
-    languages?: string[]
-    subjects?: string[]
-    creators?: string[]
-    coverUrl?: string
-    shouldDownload: boolean
-  }>
+  getMetadata: (link: LinkDocType, credentials?: any) => Promise<Metadata>
   download: (
     link: LinkDocType,
     credentials?: any

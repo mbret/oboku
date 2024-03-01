@@ -1,7 +1,7 @@
 import fs from "fs"
 import path from "path"
 import unzipper from "unzipper"
-import { dataSourceFacade } from "../dataSources/facade"
+import { dataSourceFacade } from "../plugins/facade"
 import { BookDocType, LinkDocType, OPF } from "@oboku/shared"
 import { detectMimeTypeFromContent } from "../utils"
 import { PromiseReturnType } from "../types"

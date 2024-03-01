@@ -5,7 +5,7 @@ import { Logger } from "@libs/logger"
 import {
   DataSourcePlugin,
   SynchronizeAbleDataSource
-} from "src/plugins/plugin-back"
+} from "@libs/plugins/types"
 
 const logger = Logger.namespace("sync")
 

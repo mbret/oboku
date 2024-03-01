@@ -15,7 +15,7 @@ import path from "path"
 import {
   DataSourcePlugin,
   SynchronizeAbleDataSource
-} from "src/plugins/plugin-back"
+} from "@libs/plugins/types"
 
 export { configure }
 

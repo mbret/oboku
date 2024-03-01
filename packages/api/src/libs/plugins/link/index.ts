@@ -1,5 +1,5 @@
 import request from "request"
-import { DataSourcePlugin } from "src/plugins/plugin-back"
+import { DataSourcePlugin } from "@libs/plugins/types"
 
 export type UriLinkData = { uri?: string }
 
