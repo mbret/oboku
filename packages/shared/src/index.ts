@@ -74,3 +74,5 @@ export * as crypto from "./crypto"
 export { ObokuErrorCode, ObokuSharedError } from "./errors"
 
 export * from "./plugin-imhentai-shared"
+
+export * from "./plugins/file"

@@ -1,7 +1,7 @@
 import { useMutation } from "reactjrx"
 import { useAddBook } from "../../books/helpers"
 import { useDownloadBook } from "../../download/useDownloadBook"
-import { PLUGIN_FILE_TYPE } from "."
+import { PLUGIN_FILE_TYPE, PLUGIN_FILE_DATA } from "@oboku/shared"
 
 export const useAddBookFromFile = () => {
   const [addBook] = useAddBook()
@@ -13,7 +13,9 @@ export const useAddBookFromFile = () => {
         (await addBook({
           link: {
             book: null,
-            data: null,
+            data: {
+              filename: file.name
+            } satisfies PLUGIN_FILE_DATA,
             resourceId: "file",
             type: PLUGIN_FILE_TYPE,
             createdAt: new Date().toISOString(),

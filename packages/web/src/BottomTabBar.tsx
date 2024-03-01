@@ -22,7 +22,7 @@ import { useCSS } from "./common/utils"
 import { SIGNAL_RESET, useSignalValue } from "reactjrx"
 import { UploadBookFromDataSource } from "./upload/UploadBookFromDataSource"
 import { isUploadBookFromDataSourceDialogOpenedSignal } from "./upload/state"
-import { PLUGIN_FILE_TYPE } from "./plugins/local"
+import { PLUGIN_FILE_TYPE } from "@oboku/shared"
 
 export const BottomTabBar = ({ children }: { children: ReactNode }) => {
   const location = useLocation()

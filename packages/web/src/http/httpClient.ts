@@ -69,7 +69,7 @@ class HttpClient {
       url: `${API_URI}/refresh-metadata`,
       body: { bookId },
       headers: {
-        "oboku-credentials": JSON.stringify(credentials)
+        "oboku-credentials": JSON.stringify(credentials ?? {})
       }
     })
 

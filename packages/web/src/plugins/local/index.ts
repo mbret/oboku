@@ -1,8 +1,7 @@
 import { SdStorageRounded } from "@mui/icons-material"
 import { ObokuPlugin } from "../plugin-front"
 import { UploadBook } from "./UploadBook"
-
-export const PLUGIN_FILE_TYPE = "file"
+import { PLUGIN_FILE_TYPE } from "@oboku/shared"
 
 export const plugin: ObokuPlugin = {
   uniqueResourceIdentifier: "file",
