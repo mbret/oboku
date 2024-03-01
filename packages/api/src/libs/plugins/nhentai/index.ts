@@ -83,7 +83,7 @@ export const plugin: DataSourcePlugin = {
     const coverUrl = coverPage$(`#image-container img`).attr()?.src
 
     return {
-      name: title,
+      title,
       languages,
       creators,
       subjects,

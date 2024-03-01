@@ -33,7 +33,7 @@ export const dataSource: DataSourcePlugin = {
     })
 
     return {
-      name: response.result.name,
+      title: response.result.name,
       shouldDownload: true
     }
   },

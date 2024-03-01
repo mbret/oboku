@@ -47,7 +47,7 @@ export const dataSource: DataSourcePlugin = {
     ).data
 
     return {
-      name: metadata.name || "",
+      title: metadata.name || "",
       contentType: metadata.mimeType || undefined,
       shouldDownload: true
     }

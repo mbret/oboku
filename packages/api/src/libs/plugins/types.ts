@@ -86,7 +86,7 @@ type Helpers = {
 export type DataSourcePlugin = {
   type: string
   getMetadata: (link: LinkDocType, credentials?: any) => Promise<Metadata>
-  download: (
+  download?: (
     link: LinkDocType,
     credentials?: any
   ) => Promise<{
@@ -97,7 +97,7 @@ export type DataSourcePlugin = {
       name: string
     }
   }>
-  sync: (
+  sync?: (
     options: {
       userName: string
       dataSourceId: string
