@@ -69,6 +69,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
       return true
     } catch (e) {
+      if ((e as any)?.$metadata?.httpStatusCode === 404) return false
       if ((e as any).code === "NotFound") return false
       throw e
     }
