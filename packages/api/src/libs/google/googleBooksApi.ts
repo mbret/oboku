@@ -1,4 +1,3 @@
-import { getParameterValue } from "@libs/ssm"
 import axios, { isAxiosError } from "axios"
 import { GOOGLE_BOOK_API_URL } from "../../constants"
 import { Item } from "./types"
