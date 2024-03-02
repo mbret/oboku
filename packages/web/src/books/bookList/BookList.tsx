@@ -55,12 +55,17 @@ export const BookList: FC<{
           listItemMargin) *
         densityMultiplier
 
+  const rowBorderColor = theme.palette.grey[300]
+
   const rowRenderer = useCallback(
-    (item: string) => {
+    (item: string, _: number, isLast: boolean) => {
       return viewMode === LibraryViewMode.GRID ? (
         <BookListGridItem bookId={item} />
       ) : (
-        <div
+        <Box
+          {...(!isLast && {
+            borderBottom: `1px solid ${rowBorderColor}`
+          })}
           style={{
             flex: 1,
             alignItems: "center",
@@ -74,10 +79,17 @@ export const BookList: FC<{
             onItemClick={onItemClick}
             withDrawerActions={withBookActions}
           />
-        </div>
+        </Box>
       )
     },
-    [viewMode, itemHeight, listItemMargin, onItemClick, withBookActions]
+    [
+      viewMode,
+      itemHeight,
+      listItemMargin,
+      onItemClick,
+      withBookActions,
+      rowBorderColor
+    ]
   )
 
   if (props.static) {
@@ -88,9 +100,9 @@ export const BookList: FC<{
         display="flex"
         flexDirection="column"
       >
-        {data.map((item) => (
+        {data.map((item, index) => (
           <Box key={item} height={itemHeight}>
-            {rowRenderer(item)}
+            {rowRenderer(item, index, index === data.length - 1)}
           </Box>
         ))}
       </Box>

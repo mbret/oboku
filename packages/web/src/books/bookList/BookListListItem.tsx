@@ -1,4 +1,4 @@
-import { Box, Chip, Typography, useTheme } from "@mui/material"
+import { Box, Chip, Stack, Typography, useTheme } from "@mui/material"
 import { FC, memo } from "react"
 import { useDefaultItemClickHandler } from "./helpers"
 import { useEnrichedBookState, useIsBookProtected } from "../states"
@@ -51,7 +51,7 @@ export const BookListListItem: FC<{
     const metadata = getMetadataFromBook(book)
 
     return (
-      <div
+      <Box
         onClick={() => {
           if (onItemClick) return onItemClick(bookId)
           return onDefaultItemClick(bookId)
@@ -169,9 +169,11 @@ export const BookListListItem: FC<{
           </Box>
         </div>
         {withDrawerActions && (
-          <div
+          <Stack
+            justifyContent="center"
+            width={[30, 50]}
+            flexDirection="row"
             style={{
-              display: "flex",
               alignItems: "center",
               marginLeft: theme.spacing(1)
             }}
@@ -182,9 +184,9 @@ export const BookListListItem: FC<{
             }}
           >
             <MoreVert />
-          </div>
+          </Stack>
         )}
-      </div>
+      </Box>
     )
   }
 )
