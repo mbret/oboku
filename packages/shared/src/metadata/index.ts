@@ -23,5 +23,5 @@ export type Metadata = {
    * priority order:
    * [user, file, ..., link]
    */
-  type: "googleBookApi" | "link" | "file" | "user"
+  type: "googleBookApi" | "link" | "file" | "user" | "deprecated"
 }
