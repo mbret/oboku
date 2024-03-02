@@ -7,7 +7,7 @@ import { withToken } from "@libs/auth"
 import schema from "./schema"
 import { createHttpError } from "@libs/httpErrors"
 import { dataSourceFacade } from "@libs/plugins"
-import { getNanoDbForUser } from "@libs/dbHelpers"
+import { getNanoDbForUser } from "@libs/couch/dbHelpers"
 import axios from "axios"
 import { getParameterValue } from "@libs/ssm"
 

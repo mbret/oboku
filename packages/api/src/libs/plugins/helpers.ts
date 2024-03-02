@@ -8,7 +8,7 @@ import {
   find,
   getOrCreateTagFromName,
   createTagFromName
-} from "@libs/dbHelpers"
+} from "@libs/couch/dbHelpers"
 import createNano from "nano"
 import {
   InsertAbleBookDocType,

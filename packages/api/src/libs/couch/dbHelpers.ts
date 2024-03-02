@@ -1,5 +1,5 @@
 import createNano from "nano"
-import { generateAdminToken, generateToken } from "./auth"
+import { generateAdminToken, generateToken } from "../auth"
 import {
   SafeMangoQuery,
   InsertAbleBookDocType,
@@ -7,10 +7,10 @@ import {
   DocType,
   ModelOf
 } from "@oboku/shared"
-import { User } from "./couchDbEntities"
-import { waitForRandomTime } from "./utils"
-import { COUCH_DB_URL } from "../constants"
-import { generatePassword } from "./authentication/generatePassword"
+import { User } from "../couchDbEntities"
+import { waitForRandomTime } from "../utils"
+import { COUCH_DB_URL } from "../../constants"
+import { generatePassword } from "../authentication/generatePassword"
 
 export const createUser = async (
   db: createNano.ServerScope,

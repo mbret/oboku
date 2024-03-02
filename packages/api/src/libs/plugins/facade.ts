@@ -9,7 +9,7 @@ import { createHelpers } from "./helpers"
 import { synchronizeFromDataSource } from "../sync/synchronizeFromDataSource"
 import createNano from "nano"
 import { plugins } from "./plugins"
-import { atomicUpdate } from "@libs/dbHelpers"
+import { atomicUpdate } from "@libs/couch/dbHelpers"
 
 const urlPlugin = plugins.find(({ type }) => type === `URI`)
 
