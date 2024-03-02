@@ -1,4 +1,4 @@
-import { Context } from "@libs/books/retrieveMetadataAndSaveCover"
+import { RetrieveMetadataAndSaveCoverContext } from "@libs/books/retrieveMetadataAndSaveCover"
 import { dataSourceFacade } from "@libs/plugins"
 import { PromiseReturnType } from "@libs/types"
 import { BookDocType, LinkDocType } from "@oboku/shared"
@@ -7,7 +7,7 @@ import fs from "fs"
 import { TMP_DIR } from "src/constants"
 
 export const downloadToTmpFolder = (
-    ctx: Context,
+    ctx: RetrieveMetadataAndSaveCoverContext,
     book: BookDocType,
     link: LinkDocType
   ) =>

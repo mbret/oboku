@@ -27,6 +27,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       })) ?? ``
   })
 
+  const googleApiKey = await getParameterValue({
+    Name: `GOOGLE_API_KEY`,
+    WithDecryption: true
+  })
+
   if (!OFFLINE) {
     const files = await fs.promises.readdir(TMP_DIR)
 
@@ -80,7 +85,8 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       userNameHex,
       credentials,
       book,
-      link
+      link,
+      googleApiKey
     })
   } catch (e) {
     await atomicUpdate(db, "book", book._id, (old) => ({

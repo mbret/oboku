@@ -13,11 +13,7 @@ export type GoogleBooksApiResult = {
 /**
  * Supports formats like: [9782413023470, 978-1-947804-36-4]
  */
-export const findByISBN = async (isbn: string) => {
-  const apiKey = await getParameterValue({
-    Name: `GOOGLE_API_KEY`,
-    WithDecryption: true
-  })
+export const findByISBN = async (isbn: string, apiKey: string) => {
   const response = await performWithBackoff({
     asyncFunction: () =>
       axios.get<GoogleBooksApiResult>(
@@ -38,12 +34,7 @@ export const findByISBN = async (isbn: string) => {
   throw new Error(`An error occurred during findByISBN`)
 }
 
-export const findByTitle = async (name: string) => {
-  const apiKey = await getParameterValue({
-    Name: `GOOGLE_API_KEY`,
-    WithDecryption: true
-  })
-
+export const findByTitle = async (name: string, apiKey: string) => {
   const response = await performWithBackoff({
     asyncFunction: () =>
       axios.get<GoogleBooksApiResult>(

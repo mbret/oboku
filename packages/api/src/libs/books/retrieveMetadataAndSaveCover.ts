@@ -16,7 +16,7 @@ import { downloadToTmpFolder } from "@libs/download/downloadToTmpFolder"
 
 const logger = Logger.namespace("retrieveMetadataAndSaveCover")
 
-export type Context = {
+export type RetrieveMetadataAndSaveCoverContext = {
   userName: string
   userNameHex: string
   credentials?: any
@@ -24,7 +24,11 @@ export type Context = {
   link: LinkDocType
 }
 
-export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
+export const retrieveMetadataAndSaveCover = async (
+  ctx: RetrieveMetadataAndSaveCoverContext & {
+    googleApiKey?: string
+  }
+) => {
   console.log(
     `syncMetadata run for user ${ctx.userName} with book ${ctx.book._id}`
   )
@@ -46,11 +50,16 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
 
     let contentType = linkMetadata.contentType
 
-    const sourcesMetadata = await getBookSourcesMetadata({
-      ...linkMetadata,
-      // some plugins returns filename and not title
-      title: path.parse(linkMetadata.title ?? "").name
-    })
+    const sourcesMetadata = await getBookSourcesMetadata(
+      {
+        ...linkMetadata,
+        // some plugins returns filename and not title
+        title: path.parse(linkMetadata.title ?? "").name
+      },
+      {
+        googleApiKey: ctx.googleApiKey
+      }
+    )
 
     const metadataList = [linkMetadata, ...sourcesMetadata]
 
