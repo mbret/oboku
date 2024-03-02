@@ -51,6 +51,7 @@ import { SIGNAL_RESET, useSignalValue, useUnmountObservable } from "reactjrx"
 import { firstTimeExperienceStateSignal } from "../firstTimeExperience/firstTimeExperienceStates"
 import { unlockLibraryDialogSignal } from "../auth/UnlockLibraryDialog"
 import { authStateSignal } from "../auth/authState"
+import { useRemoveAllContents } from "./useRemoveAllContents"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -68,6 +69,7 @@ export const ProfileScreen = () => {
   const theme = useTheme()
   const dialog = useDialogManager()
   const { mutate: updateSettings } = useUpdateSettings()
+  const { mutate: removeAllContents } = useRemoveAllContents()
 
   return (
     <div
@@ -292,6 +294,15 @@ export const ProfileScreen = () => {
             secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one this section"
           />
         </ListItem>
+        <ListItemButton
+          onClick={() => {
+            authorizeAction(() => {
+              removeAllContents()
+            })
+          }}
+        >
+          <ListItemText primary="Remove all contents" />
+        </ListItemButton>
         <ListItem button onClick={() => dialog({ preset: "NOT_IMPLEMENTED" })}>
           <ListItemText primary="Delete my account" />
         </ListItem>

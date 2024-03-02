@@ -94,7 +94,7 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
                         {type === "file" && metadata?.contentType
                           ? `${metadata.contentType}, `
                           : ""}
-                        {metadata?.title}, ...
+                        {metadata?.title ? `${metadata.title}, ` : ""}...
                       </Typography>
                     </Stack>
                   )
