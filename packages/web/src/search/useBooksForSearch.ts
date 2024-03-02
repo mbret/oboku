@@ -16,15 +16,18 @@ export const useBooksForSearch = (search: string) =>
 
           return data
             .filter((book) => {
-              const { title } = getMetadataFromBook(book)
-              const searchRegex = new RegExp(
-                search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
-                "i"
-              )
+              return book.metadata?.some(({ title }) => {
+                if (!title) return false
 
-              const indexOfFirstMatch = title?.search(searchRegex) || 0
+                const searchRegex = new RegExp(
+                  search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
+                  "i"
+                )
 
-              return indexOfFirstMatch >= 0
+                const indexOfFirstMatch = title?.search(searchRegex) || 0
+
+                return indexOfFirstMatch >= 0
+              })
             })
             .sort((a, b) =>
               sortByTitleComparator(
