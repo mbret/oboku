@@ -86,7 +86,8 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       credentials,
       book,
       link,
-      googleApiKey
+      googleApiKey,
+      db
     })
   } catch (e) {
     await atomicUpdate(db, "book", book._id, (old) => ({

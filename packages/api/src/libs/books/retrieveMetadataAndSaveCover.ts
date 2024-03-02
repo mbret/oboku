@@ -13,6 +13,8 @@ import { parseXmlAsJson } from "./parseXmlAsJson"
 import { getBookSourcesMetadata } from "@libs/metadata/getBookSourcesMetadata"
 import { reduceMetadata } from "@libs/metadata/reduceMetadata"
 import { downloadToTmpFolder } from "@libs/download/downloadToTmpFolder"
+import { isBookProtected } from "@libs/couch/isBookProtected"
+import nano from "nano"
 
 const logger = Logger.namespace("retrieveMetadataAndSaveCover")
 
@@ -27,6 +29,7 @@ export type RetrieveMetadataAndSaveCoverContext = {
 export const retrieveMetadataAndSaveCover = async (
   ctx: RetrieveMetadataAndSaveCoverContext & {
     googleApiKey?: string
+    db: nano.DocumentScope<unknown>
   }
 ) => {
   console.log(
@@ -43,6 +46,8 @@ export const retrieveMetadataAndSaveCover = async (
       `syncMetadata processing ${ctx.book._id} with resource id ${ctx.link.resourceId}`
     )
 
+    const bookIsProtected = await isBookProtected(ctx.db, ctx.book)
+
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
     const { shouldDownload, metadata: linkMetadata } =
@@ -57,7 +62,8 @@ export const retrieveMetadataAndSaveCover = async (
         title: path.parse(linkMetadata.title ?? "").name
       },
       {
-        googleApiKey: ctx.googleApiKey
+        googleApiKey: ctx.googleApiKey,
+        withGoogle: !bookIsProtected
       }
     )
 

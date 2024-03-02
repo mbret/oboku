@@ -17,16 +17,18 @@ const swallowGoogleError = async <T>(promise: Promise<T>) => {
 
 export const getBookSourcesMetadata = async (
   metadata: Metadata,
-  { googleApiKey }: { googleApiKey?: string }
+  { googleApiKey, withGoogle }: { googleApiKey?: string; withGoogle: boolean }
 ): Promise<Metadata[]> => {
   const list = []
 
-  const google = await swallowGoogleError(
-    getGoogleMetadata(metadata, googleApiKey ?? "")
-  )
+  if (withGoogle) {
+    const google = await swallowGoogleError(
+      getGoogleMetadata(metadata, googleApiKey ?? "")
+    )
 
-  if (google) {
-    list.push(google)
+    if (google) {
+      list.push(google)
+    }
   }
 
   return list
