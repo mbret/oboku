@@ -25,8 +25,10 @@ export const dataSourceFacade = {
     const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
 
     if (plugin) {
-      const { shouldDownload, contentType, ...metadata } =
-        await plugin.getMetadata(link, credentials)
+      const { shouldDownload, ...metadata } = await plugin.getMetadata(
+        link,
+        credentials
+      )
 
       const { isbn } = directives.extractDirectivesFromName(
         metadata.title ?? ""
@@ -34,8 +36,7 @@ export const dataSourceFacade = {
 
       return {
         metadata: { ...metadata, isbn, type: "link" },
-        shouldDownload,
-        contentType
+        shouldDownload
       }
     }
 

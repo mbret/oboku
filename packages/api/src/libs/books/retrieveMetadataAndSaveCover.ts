@@ -41,15 +41,17 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
 
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
-    const {
-      shouldDownload,
-      contentType: metadataPrefetch,
-      metadata: linkMetadata
-    } = await dataSourceFacade.getMetadata(ctx.link, ctx.credentials)
+    const { shouldDownload, metadata: linkMetadata } =
+      await dataSourceFacade.getMetadata(ctx.link, ctx.credentials)
 
-    let contentType = metadataPrefetch
+    let contentType = linkMetadata.contentType
 
-    const sourcesMetadata = await getBookSourcesMetadata(linkMetadata)
+    const sourcesMetadata = await getBookSourcesMetadata({
+      ...linkMetadata,
+      // some plugins returns filename and not title
+      title: path.parse(linkMetadata.title ?? "").name
+    })
+
     const metadataList = [linkMetadata, ...sourcesMetadata]
 
     const { filepath: tmpFilePath, metadata: downloadMetadata } = shouldDownload
@@ -145,7 +147,11 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
         Logger.log(`coverRelativePath`, coverRelativePath)
         Logger.log(`opfBasePath`, opfBasePath)
 
-        metadataList.push({ type: "file", ...parseOpfMetadata(opfAsJson) })
+        metadataList.push({
+          type: "file",
+          ...parseOpfMetadata(opfAsJson),
+          contentType
+        })
 
         if (coverRelativePath) {
           await saveCoverFromArchiveToBucket(

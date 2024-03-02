@@ -80,7 +80,7 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
                       )}
                       {type !== "user" && (
                         <Typography variant="body2" color="warning.main">
-                          Not fetched yet
+                          No data yet
                         </Typography>
                       )}
                     </>
@@ -88,9 +88,15 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
                     <Stack>
                       <Typography variant="body2">
                         {numberOfProperties} properties
+                        {type === "file"
+                          ? " gathered from the file itself"
+                          : ""}
                       </Typography>
                       <Typography variant="caption">
-                        {metadata?.title}
+                        {type === "file" && metadata?.contentType
+                          ? `${metadata.contentType}, `
+                          : ""}
+                        {metadata?.title}, ...
                       </Typography>
                     </Stack>
                   )
