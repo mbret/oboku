@@ -162,7 +162,7 @@ export const BookDetailsScreen = () => {
         <Box display="flex" flexDirection="row" alignItems="center">
           <Typography variant="body1">Date:&nbsp;</Typography>
           <Typography variant="body2">
-            {metadata?.date && new Date(metadata.date).toLocaleDateString()}
+            {metadata?.date && metadata.date.year}
           </Typography>
         </Box>
         <Box display="flex" flexDirection="row" alignItems="center">

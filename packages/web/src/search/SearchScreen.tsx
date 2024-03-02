@@ -28,12 +28,9 @@ import { useCSS } from "../common/utils"
 import { ROUTES } from "../constants"
 import { SEARCH_MAX_PREVIEW_ITEMS } from "../constants.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import {
-  searchStateSignal,
-  useBooksForSearch,
-  useCollectionsForSearch
-} from "./states"
+import { searchStateSignal, useCollectionsForSearch } from "./states"
 import { useSignalValue } from "reactjrx"
+import { useBooksForSearch } from "./useBooksForSearch"
 
 const Accordion = styled(MuiAccordion)({
   ":before": {

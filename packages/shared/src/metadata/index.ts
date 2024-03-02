@@ -6,7 +6,7 @@ export type Metadata = {
   rating?: number
   coverLink?: string
   pageCount?: number
-  date?: string
+  date?: { year?: number; month?: number; day?: number }
   size?: string
   languages?: string[]
   subjects?: string[]
