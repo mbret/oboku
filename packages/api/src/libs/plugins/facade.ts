@@ -1,4 +1,10 @@
-import { LinkDocType, ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
+import {
+  LinkDocType,
+  Metadata,
+  ObokuErrorCode,
+  ObokuSharedError,
+  directives
+} from "@oboku/shared"
 import { createHelpers } from "./helpers"
 import { synchronizeFromDataSource } from "../sync/synchronizeFromDataSource"
 import createNano from "nano"
@@ -8,11 +14,29 @@ import { atomicUpdate } from "@libs/dbHelpers"
 const urlPlugin = plugins.find(({ type }) => type === `URI`)
 
 export const dataSourceFacade = {
-  getMetadata: async (link: LinkDocType, credentials?: any) => {
+  getMetadata: async (
+    link: LinkDocType,
+    credentials?: any
+  ): Promise<{
+    metadata: Metadata
+    shouldDownload: boolean
+    contentType?: string
+  }> => {
     const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
 
     if (plugin) {
-      return plugin.getMetadata(link, credentials)
+      const { shouldDownload, contentType, ...metadata } =
+        await plugin.getMetadata(link, credentials)
+
+      const { isbn } = directives.extractDirectivesFromName(
+        metadata.title ?? ""
+      )
+
+      return {
+        metadata: { ...metadata, isbn, type: "link" },
+        shouldDownload,
+        contentType
+      }
     }
 
     throw new Error(`No dataSource found for action`)

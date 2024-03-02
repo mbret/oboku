@@ -46,8 +46,10 @@ export const dataSource: DataSourcePlugin = {
       )
     ).data
 
+    const parsedFilename = path.parse(metadata.name ?? "")
+
     return {
-      title: metadata.name || "",
+      title: parsedFilename.name || "",
       contentType: metadata.mimeType || undefined,
       shouldDownload: true
     }

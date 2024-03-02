@@ -18,7 +18,7 @@ const getDefaultData = (): GoogleBooksApiResult => ({
         imageLinks: {
           thumbnail: ``
         },
-        language: ``,
+        language: `de`,
         publishedDate: ``,
         publisher: ``,
         title: "My title Vol. 1"

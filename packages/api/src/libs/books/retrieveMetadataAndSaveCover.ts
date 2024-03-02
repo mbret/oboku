@@ -4,24 +4,19 @@ import unzipper from "unzipper"
 import { dataSourceFacade } from "../plugins/facade"
 import { BookDocType, LinkDocType, OPF } from "@oboku/shared"
 import { detectMimeTypeFromContent } from "../utils"
-import { PromiseReturnType } from "../types"
-import { directives } from "@oboku/shared"
 import { Logger } from "@libs/logger"
 import { saveCoverFromArchiveToBucket } from "./saveCoverFromArchiveToBucket"
-import { parseOpfMetadata } from "./parseOpfMetadata"
+import { parseOpfMetadata } from "../metadata/opf/parseOpfMetadata"
 import { saveCoverFromExternalLinkToBucket } from "./saveCoverFromExternalLinkToBucket"
-import {
-  METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS,
-  TMP_DIR
-} from "../../constants"
+import { METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "../../constants"
 import { parseXmlAsJson } from "./parseXmlAsJson"
 import { getBookSourcesMetadata } from "@libs/metadata/getBookSourcesMetadata"
-import { Metadata } from "@libs/metadata/types"
 import { reduceMetadata } from "@libs/metadata/reduceMetadata"
+import { downloadToTmpFolder } from "@libs/download/downloadToTmpFolder"
 
 const logger = Logger.namespace("retrieveMetadataAndSaveCover")
 
-type Context = {
+export type Context = {
   userName: string
   userNameHex: string
   credentials?: any
@@ -35,7 +30,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
   )
   let bookNameForDebug = ""
 
-  let tmpFilePath: string | number = -1
+  let fileToUnlink: string | undefined
 
   try {
     bookNameForDebug = reduceMetadata(ctx.book.metadata).title || ""
@@ -46,52 +41,34 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
 
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
-    const { shouldDownload, ...linkMetadataPrefetch } =
-      await dataSourceFacade.getMetadata(ctx.link, ctx.credentials)
+    const {
+      shouldDownload,
+      contentType: metadataPrefetch,
+      metadata: linkMetadata
+    } = await dataSourceFacade.getMetadata(ctx.link, ctx.credentials)
 
-    const resourceDirectives = directives.extractDirectivesFromName(
-      linkMetadataPrefetch.title ?? ""
-    )
+    let contentType = metadataPrefetch
 
-    let linkMetadata: Metadata = {
-      ...linkMetadataPrefetch,
-      type: "link",
-      isbn: resourceDirectives.isbn
-    }
+    const sourcesMetadata = await getBookSourcesMetadata(linkMetadata)
+    const metadataList = [linkMetadata, ...sourcesMetadata]
 
-    let contentType = linkMetadataPrefetch.contentType
-    const skipExtract = !shouldDownload || !!resourceDirectives.isbn
+    const { filepath: tmpFilePath, metadata: downloadMetadata } = shouldDownload
+      ? await downloadToTmpFolder(ctx, ctx.book, ctx.link)
+      : { filepath: undefined, metadata: {} }
 
-    if (skipExtract) {
-      console.log(
-        `syncMetadata processing ${ctx.book._id} will skip extract for resource ${ctx.book._id} with isbn ${resourceDirectives.isbn}`
-      )
-    }
-
-    if (!skipExtract) {
-      const { filepath, metadata } = await downloadToTmpFolder(
-        ctx,
-        ctx.book,
-        ctx.link
-      )
-      tmpFilePath = filepath
-      contentType = metadata.contentType || contentType
-    }
+    fileToUnlink = tmpFilePath
+    contentType = downloadMetadata.contentType || contentType
 
     console.log(
       `syncMetadata processing ${ctx.book._id}`,
       tmpFilePath,
       {
-        metadataPreFetch: linkMetadataPrefetch,
-        normalizedMetadata: linkMetadata
+        linkMetadata
       },
       contentType
     )
 
-    const sourcesMetadata = await getBookSourcesMetadata(linkMetadata)
-    const metadataList = [linkMetadata, ...sourcesMetadata]
-
-    if (skipExtract) {
+    if (!shouldDownload) {
       // @todo prioritize which cover we take
       const coverLink = metadataList.find(
         (metadata) => metadata.coverLink
@@ -106,7 +83,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     let contentLength = 0
     let coverRelativePath: string | undefined
 
-    if (!skipExtract && typeof tmpFilePath === "string") {
+    if (typeof tmpFilePath === "string" && tmpFilePath) {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
       if (!contentType) {
         contentType =
@@ -123,9 +100,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
         let opfAsJson: OPF = {
           package: {
             manifest: {},
-            metadata: {
-              "dc:title": linkMetadata.title
-            }
+            metadata: {}
           }
         }
 
@@ -170,10 +145,7 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
         Logger.log(`coverRelativePath`, coverRelativePath)
         Logger.log(`opfBasePath`, opfBasePath)
 
-        linkMetadata = {
-          ...linkMetadata,
-          ...parseOpfMetadata(opfAsJson)
-        }
+        metadataList.push({ type: "file", ...parseOpfMetadata(opfAsJson) })
 
         if (coverRelativePath) {
           await saveCoverFromArchiveToBucket(
@@ -201,11 +173,6 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
       metadata: metadataList
     }
 
-    Object.keys(bookData).forEach(
-      (key) =>
-        (bookData as any)[key] === undefined && delete (bookData as any)[key]
-    )
-
     return {
       book: bookData,
       link: {
@@ -219,8 +186,11 @@ export const retrieveMetadataAndSaveCover = async (ctx: Context) => {
     throw e
   } finally {
     try {
-      if (typeof tmpFilePath === "string") {
-        await fs.promises.unlink(tmpFilePath)
+      /**
+       * Make sure to remove temporary file in case of crash
+       */
+      if (typeof fileToUnlink === "string") {
+        await fs.promises.unlink(fileToUnlink)
       }
     } catch (e) {
       console.error(e)
@@ -265,48 +235,3 @@ const findCoverPathFromOpf = (opf: OPF) => {
 
   return href
 }
-
-const downloadToTmpFolder = (
-  ctx: Context,
-  book: BookDocType,
-  link: LinkDocType
-) =>
-  new Promise<{
-    filepath: string
-    metadata: PromiseReturnType<typeof dataSourceFacade.download>["metadata"]
-  }>((resolve, reject) => {
-    dataSourceFacade
-      .download(link, ctx.credentials)
-      .then(({ stream, metadata }) => {
-        let filename = `${book._id}`
-
-        switch (metadata.contentType) {
-          case "application/x-cbz": {
-            filename = `${book._id}.cbz`
-            break
-          }
-          case "application/epub+zip": {
-            filename = `${book._id}.epub`
-            break
-          }
-          default:
-        }
-
-        const filepath = path.join(TMP_DIR, filename)
-        const fileWriteStream = fs.createWriteStream(filepath, { flags: "w" })
-
-        stream
-          .on("error", reject)
-          .pipe(fileWriteStream)
-          .on("finish", () =>
-            resolve({
-              filepath,
-              metadata
-            })
-          )
-          .on("error", reject)
-      })
-      .catch((e) => {
-        reject(e)
-      })
-  })

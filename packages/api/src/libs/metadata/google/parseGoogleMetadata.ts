@@ -33,7 +33,9 @@ export const parseGoogleMetadata = (
       authors: item.volumeInfo.authors,
       coverLink,
       description: item.volumeInfo.description,
-      formatType: item.volumeInfo.categories.includes("Comics & Graphic Novels")
+      formatType: item.volumeInfo.categories?.includes(
+        "Comics & Graphic Novels"
+      )
         ? ["comics", "manga"]
         : ["audio", "book", "comics", "manga"],
       pageCount: item.volumeInfo.pageCount,

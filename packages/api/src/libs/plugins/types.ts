@@ -91,13 +91,15 @@ export type DataSourcePlugin = {
   getMetadata: (
     link: LinkDocType,
     credentials?: any
-  ) => Promise<Omit<Metadata, "type"> & { shouldDownload: boolean }>
+  ) => Promise<
+    Omit<Metadata, "type"> & { shouldDownload: boolean; contentType?: string }
+  >
   download?: (
     link: LinkDocType,
     credentials?: any
   ) => Promise<{
     stream: NodeJS.ReadableStream | Request
-    metadata: Omit<Metadata, "type">
+    metadata: Omit<Metadata, "type"> & { contentType?: string }
   }>
   sync?: (
     options: {

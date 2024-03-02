@@ -13,9 +13,9 @@ export type Item = {
     authors: string[]
     publisher: string
     publishedDate: YEAR
-    language: string
+    language: "de" | "fr"
     pageCount?: number
-    categories: Category[]
+    categories?: Category[]
     averageRating?: number
     readingModes?: ReadingMode[]
     description?: string
