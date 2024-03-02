@@ -44,6 +44,7 @@ import { useLocalSettings } from "../../settings/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
 import { getMetadataFromBook } from "../getMetadataFromBook"
+import { MetadataSection } from "./MetadataSection"
 
 type ScreenParams = {
   id: string
@@ -223,6 +224,9 @@ export const BookDetailsScreen = () => {
         >
           <ListItemText
             primary="Collection"
+            secondaryTypographyProps={{
+              component: "div"
+            }}
             secondary={
               (collections?.length || 0) > 0 ? (
                 <>
@@ -238,6 +242,7 @@ export const BookDetailsScreen = () => {
           <MoreVertRounded />
         </ListItem>
       </List>
+      <MetadataSection bookId={id} />
       <DataSourceSection bookId={id} />
       <LinkActionsDrawer
         openWith={isLinkActionDrawerOpenWith}
