@@ -1,8 +1,8 @@
-import { Logger } from "@libs/logger"
 import { getParameterValue } from "@libs/ssm"
-import axios from "axios"
+import axios, { isAxiosError } from "axios"
 import { GOOGLE_BOOK_API_URL } from "../../constants"
 import { Item } from "./types"
+import { performWithBackoff } from "@libs/utils"
 
 export type GoogleBooksApiResult = {
   kind: `books#volumes` | `unknown`
@@ -18,9 +18,16 @@ export const findByISBN = async (isbn: string) => {
     Name: `GOOGLE_API_KEY`,
     WithDecryption: true
   })
-  const response = await axios.get<GoogleBooksApiResult>(
-    `${GOOGLE_BOOK_API_URL}/volumes?q=isbn:${isbn}&key=${apiKey}`
-  )
+  const response = await performWithBackoff({
+    asyncFunction: () =>
+      axios.get<GoogleBooksApiResult>(
+        `${GOOGLE_BOOK_API_URL}/volumes?q=isbn:${isbn}&key=${apiKey}`
+      ),
+    retry: (error: unknown) => {
+      // we retry on Too many request error
+      return isAxiosError(error) && error.response?.status === 429
+    }
+  })
 
   if (response.status === 200) {
     // Logger.log(`google findByISBN response`, response.data)
@@ -37,9 +44,16 @@ export const findByTitle = async (name: string) => {
     WithDecryption: true
   })
 
-  const response = await axios.get<GoogleBooksApiResult>(
-    `${GOOGLE_BOOK_API_URL}/volumes?q=intitle:${name}&key=${apiKey}`
-  )
+  const response = await performWithBackoff({
+    asyncFunction: () =>
+      axios.get<GoogleBooksApiResult>(
+        `${GOOGLE_BOOK_API_URL}/volumes?q=intitle:${name}&key=${apiKey}`
+      ),
+    retry: (error: unknown) => {
+      // we retry on Too many request error
+      return isAxiosError(error) && error.response?.status === 429
+    }
+  })
 
   if (response.status === 200) {
     // Logger.log(`google findByName response`, response.data)

@@ -1,5 +1,6 @@
 import { Metadata } from "@libs/metadata/types"
 import { OPF } from "@oboku/shared"
+import { extractDateComponents } from "../extractDateComponents"
 
 const extractLanguage = (
   metadata?: undefined | null | string | { ["#text"]?: string }
@@ -11,6 +12,14 @@ const extractLanguage = (
   if (metadata["#text"]) return metadata["#text"]
 
   return null
+}
+
+const normalizeDate = (date: NonNullable<NonNullable<OPF['package']>['metadata']>['dc:date']) => {
+  if (!date) return {year: undefined, month: undefined, day: undefined}
+
+  if (typeof date === "string") return extractDateComponents(date)
+
+  return extractDateComponents(String(date["#text"]))
 }
 
 export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
@@ -43,9 +52,7 @@ export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
           : undefined,
     rights: metadata["dc:rights"] as string | undefined,
     languages: language ? [language] : [],
-    date: metadata["dc:date"]
-      ? new Date(metadata["dc:date"]).toISOString()
-      : undefined,
+    date: normalizeDate(metadata["dc:date"]),
     subjects: subjects ? subjects : [],
     authors: creator ? [creator] : []
   }

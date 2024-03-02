@@ -1,3 +1,4 @@
+import { extractDateComponents } from "../extractDateComponents"
 import { Metadata } from "../types"
 import { GoogleBooksApiResult } from "@libs/google/googleBooksApi"
 
@@ -39,7 +40,7 @@ export const parseGoogleMetadata = (
         ? ["comics", "manga"]
         : ["audio", "book", "comics", "manga"],
       pageCount: item.volumeInfo.pageCount,
-      date: item.volumeInfo.publishedDate,
+      date: extractDateComponents(item.volumeInfo.publishedDate),
       rating: item.volumeInfo.averageRating,
       title,
       publisher: item.volumeInfo.publisher,
