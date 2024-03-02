@@ -29,8 +29,6 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
   const plugin = getPluginFromType(link?.type)
   const types: Metadata["type"][] = ["user", "file", "googleBookApi", "link"]
 
-  console.log(book?.metadata)
-
   return (
     <>
       <List subheader={<ListSubheader>Metadata</ListSubheader>}>
