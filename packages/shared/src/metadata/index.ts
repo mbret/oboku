@@ -8,7 +8,6 @@ export type Metadata = {
   pageCount?: number
   date?: string
   size?: string
-  contentType?: string
   languages?: string[]
   subjects?: string[]
   isbn?: string
@@ -17,6 +16,11 @@ export type Metadata = {
   /**
    * googleBookApi: Metadata scrapped through google book api
    * link: metadata scrapped from the current link
+   * file: metadata scrapped from the file itself.
+   * user: metadata from user. highest priority
+   *
+   * priority order:
+   * [user, file, ..., link]
    */
-  type: "googleBookApi" | "link"
+  type: "googleBookApi" | "link" | "file" | "user"
 }
