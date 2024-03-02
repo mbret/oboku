@@ -12,6 +12,12 @@ on:
       GOOGLE_BOOK_API_URL:
         required: true
         type: string
+      COVERS_BUCKET_NAME:
+        required: true
+        type: string
+      COVERS_PLACEHOLDER_BUCKET_KEY:
+        required: true
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
