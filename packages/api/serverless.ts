@@ -28,7 +28,13 @@ const functions: AWS[`functions`] = {
   refreshMetadataLongProcess,
   syncDataSource,
   syncDataSourceLongProcess,
-  cors: corsProxy
+  cors: corsProxy,
+  publisher: {
+    handler: `${__dirname}/src/functions/publisher.main`,
+    environment: {
+      QUEUE_URL: "${construct:metadata.queueUrl}"
+    }
+  }
 }
 
 Object.keys(functions).forEach((key) => {
@@ -44,7 +50,7 @@ Object.keys(functions).forEach((key) => {
   ]
 })
 
-const serverlessConfiguration: AWS = {
+const serverlessConfiguration: AWS & any = {
   service: "oboku-api",
   frameworkVersion: "3",
   useDotenv: true,
@@ -79,6 +85,17 @@ const serverlessConfiguration: AWS = {
       )
     }
   },
+  // compute: {
+  //   handler: `${__dirname}/handler.main`
+  // },
+  constructs: {
+    metadata: {
+      type: "queue",
+      worker: {
+        handler: `${__dirname}/src/functions/worker.main`
+      }
+    }
+  },
   layers: {
     // sharp: {
     //   name: "${sls:stage}-sharp",
@@ -109,7 +126,7 @@ const serverlessConfiguration: AWS = {
     Resources: {
       /**
        * library synchronization queue.
-       * Enfore we don't have several sync in parallel and prevent
+       * Enforce we don't have several sync in parallel and prevent
        * too many usages
        */
       SyncQueue: {
