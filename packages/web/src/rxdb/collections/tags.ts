@@ -47,7 +47,7 @@ const schema: RxJsonSchema<Omit<TagsDocType, `_rev` | `rxdbMeta`>> = {
   type: "object",
   primaryKey: `_id`,
   properties: {
-    _id: { type: `string`, maxLength: 50 },
+    _id: { type: `string`, maxLength: 100 },
     name: { type: ["string"], final: false },
     isProtected: { type: ["boolean"], final: false },
     isBlurEnabled: { type: ["boolean"] },

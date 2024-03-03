@@ -53,7 +53,7 @@ export const dataSourceSchema: RxJsonSchema<
   type: "object",
   primaryKey: `_id`,
   properties: {
-    _id: { type: `string`, maxLength: 50 },
+    _id: { type: `string`, maxLength: 100 },
     type: { type: "string", final: true },
     lastSyncedAt: { type: ["number", "null"] },
     syncStatus: { type: ["string", "null"] },

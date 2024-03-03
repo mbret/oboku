@@ -31,7 +31,7 @@ export const settingsSchema: RxJsonSchema<SettingsDocType> = {
   type: "object",
   primaryKey: `_id`,
   properties: {
-    _id: { type: "string", final: true, maxLength: 50 },
+    _id: { type: "string", final: true, maxLength: 100 },
     contentPassword: { type: ["string", "null"] },
     ...getReplicationProperties(`settings`)
   }

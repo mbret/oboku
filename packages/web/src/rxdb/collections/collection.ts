@@ -52,7 +52,7 @@ export const collectionSchema: RxJsonSchema<
   type: "object",
   primaryKey: `_id`,
   properties: {
-    _id: { type: `string`, maxLength: 50 },
+    _id: { type: `string`, maxLength: 100 },
     name: { type: "string" },
     books: { type: "array", ref: "book", items: { type: "string" } },
     resourceId: { type: ["string", "null"] },
