@@ -1,10 +1,21 @@
-import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
+import {
+  AtomicUpdateFunction,
+  RxCollection,
+  RxDocument,
+  RxJsonSchema,
+  RxQuery
+} from "rxdb"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
 import { CollectionDocType } from "@oboku/shared"
 import { generateId } from "./utils"
 
-export type CollectionDocMethods = {}
+export type CollectionDocMethods = {
+  incrementalModify: (
+    mutationFunction: AtomicUpdateFunction<CollectionDocType>,
+    context?: string | undefined
+  ) => Promise<RxDocument<CollectionDocType, CollectionDocMethods>>
+}
 
 export type CollectionDocument = RxDocument<
   CollectionDocType,
@@ -29,7 +40,7 @@ type CollectionCollectionMethods = {
 
 export type CollectionCollection = RxCollection<
   CollectionDocType,
-  {},
+  CollectionDocMethods,
   CollectionCollectionMethods
 >
 
@@ -54,6 +65,12 @@ export const collectionSchema: RxJsonSchema<
 }
 
 export const collectionMigrationStrategies = {}
+
+export const collectionDocMethods: CollectionDocMethods = {
+  incrementalModify: function (this: CollectionDocument, mutationFunction) {
+    return this.atomicUpdate(mutationFunction)
+  }
+}
 
 export const collectionCollectionMethods: CollectionCollectionMethods = {
   post: async function (this: CollectionCollection, json) {

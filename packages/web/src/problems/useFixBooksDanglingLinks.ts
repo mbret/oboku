@@ -27,7 +27,7 @@ export const useFixBooksDanglingLinks = () => {
       )
 
       if (toRemove.length > 0) {
-        await doc.atomicUpdate((data) => ({
+        await doc.incrementalModify((data) => ({
           ...data,
           links: data.links.filter((id) => !toRemove.includes(id))
         }))

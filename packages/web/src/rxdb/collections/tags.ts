@@ -1,5 +1,6 @@
 import { TagsDocType } from "@oboku/shared"
 import {
+  AtomicUpdateFunction,
   MigrationStrategies,
   RxCollection,
   RxDocument,
@@ -13,6 +14,10 @@ import { generateId } from "./utils"
 
 type DocMethods = {
   updateSafe: (updateObj: MongoUpdateSyntax<TagsDocType>) => Promise<any>
+  incrementalModify: (
+    mutationFunction: AtomicUpdateFunction<TagsDocType>,
+    context?: string | undefined
+  ) => Promise<RxDocument<TagsDocType, DocMethods>>
 }
 
 type CollectionMethods = {
@@ -57,6 +62,9 @@ const schema: RxJsonSchema<Omit<TagsDocType, `_rev` | `rxdbMeta`>> = {
 const docMethods: DocMethods = {
   updateSafe: function (this: TagsDocument, updateObj) {
     return this.update(updateObj)
+  },
+  incrementalModify: function (this: TagsDocument, mutationFunction) {
+    return this.atomicUpdate(mutationFunction)
   }
 }
 

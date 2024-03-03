@@ -3,14 +3,20 @@ import {
   RxJsonSchema,
   RxQuery,
   RxCollection,
-  MigrationStrategies
+  MigrationStrategies,
+  AtomicUpdateFunction
 } from "rxdb"
 import { DataSourceDocType } from "@oboku/shared"
 import { SafeUpdateMongoUpdateSyntax } from "../types"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
 import { generateId } from "./utils"
 
-export type DataSourceDocMethods = {}
+export type DataSourceDocMethods = {
+  incrementalModify: (
+    mutationFunction: AtomicUpdateFunction<DataSourceDocType>,
+    context?: string | undefined
+  ) => Promise<RxDocument<DataSourceDocType, DataSourceDocMethods>>
+}
 
 export type DataSourceDocument = RxDocument<
   DataSourceDocType,
@@ -29,9 +35,15 @@ type DataSourceCollectionMethods = {
 
 export type DataSourceCollection = RxCollection<
   DataSourceDocType,
-  {},
+  DataSourceDocMethods,
   DataSourceCollectionMethods
 >
+
+export const collectionDocMethods: DataSourceDocMethods = {
+  incrementalModify: function (this: DataSourceDocument, mutationFunction) {
+    return this.atomicUpdate(mutationFunction)
+  }
+}
 
 export const dataSourceSchema: RxJsonSchema<
   Omit<DataSourceDocType, "rx_model" | "_rev" | `rxdbMeta`>

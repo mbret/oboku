@@ -101,7 +101,7 @@ export const useAtomicUpdateBook = () => {
         .findOne({ selector: { _id: id } })
         .exec()
 
-      return await book?.atomicUpdate(mutationFunction)
+      return await book?.incrementalModify(mutationFunction)
     },
     [database]
   )

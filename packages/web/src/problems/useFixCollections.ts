@@ -48,7 +48,7 @@ export const useFixCollections = () => {
               const { _id, _rev, ...safeMergedDoc } = mergedDoc
 
               // we update the first entry with the all merged data
-              await docsWithSameResourceId[0]?.atomicUpdate((oldData) => ({
+              await docsWithSameResourceId[0]?.incrementalModify((oldData) => ({
                 ...oldData,
                 ...safeMergedDoc
               }))

@@ -23,7 +23,7 @@ export const useUpdateBookState = (bookId: string) => {
               .findOne({ selector: { _id: bookId } })
               .exec()
 
-            book?.atomicUpdate((old) => {
+            book?.incrementalModify((old) => {
               return {
                 ...old,
                 // cfi will be undefined at the beginning until pagination stabilize

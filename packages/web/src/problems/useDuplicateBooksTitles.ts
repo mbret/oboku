@@ -77,7 +77,7 @@ export const useFixDuplicatedBookTitles = () => {
               const { _id, _rev, ...safeMergedDoc } = mergedDoc
 
               // we update the first entry with the all merged data
-              await docsWithSameTitle[0]?.atomicUpdate((oldData) => ({
+              await docsWithSameTitle[0]?.incrementalModify((oldData) => ({
                 ...oldData,
                 ...safeMergedDoc
               }))

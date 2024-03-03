@@ -27,7 +27,7 @@ export const useFixBookReferences = () => {
       )
 
       if (toRemove.length > 0) {
-        await doc.atomicUpdate((data) => ({
+        await doc.incrementalModify((data) => ({
           ...data,
           collections: data.collections.filter((id) => !toRemove.includes(id))
         }))

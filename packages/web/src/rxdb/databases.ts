@@ -4,14 +4,16 @@ import {
   CollectionCollection,
   collectionCollectionMethods,
   collectionSchema,
-  collectionMigrationStrategies
+  collectionMigrationStrategies,
+  collectionDocMethods as collectionCollectionDocMethods
 } from "./collections/collection"
 import { applyHooks } from "./middleware"
 import {
   dataSourceSchema,
   dataSourceCollectionMethods,
   DataSourceCollection,
-  migrationStrategies as dataSourceMigrationStrategies
+  migrationStrategies as dataSourceMigrationStrategies,
+  collectionDocMethods as dataSourceCollectionDocMethods
 } from "./collections/dataSource"
 import { BookDocType, LinkDocType, TagsDocType } from "@oboku/shared"
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder"
@@ -124,11 +126,13 @@ const createCollections = async (db: Database) => {
     obokucollection: {
       schema: collectionSchema,
       statics: collectionCollectionMethods,
-      migrationStrategies: collectionMigrationStrategies
+      migrationStrategies: collectionMigrationStrategies,
+      methods: collectionCollectionDocMethods
     },
     datasource: {
       schema: dataSourceSchema,
       statics: dataSourceCollectionMethods,
+      methods: dataSourceCollectionDocMethods,
       migrationStrategies: dataSourceMigrationStrategies
     }
   })

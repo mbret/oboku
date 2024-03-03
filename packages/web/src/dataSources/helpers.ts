@@ -126,7 +126,7 @@ export const useAtomicUpdateDataSource = () => {
           from(db.datasource.findOne({ selector: { _id: id } }).exec())
         ),
         filter(isDefined),
-        switchMap((item) => from(item.atomicUpdate(mutationFunction)))
+        switchMap((item) => from(item.incrementalModify(mutationFunction)))
       ),
     [database]
   )
