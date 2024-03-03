@@ -37,6 +37,7 @@ import pouchDbAdapterIdb from "pouchdb-adapter-idb"
 import pouchDbAdapterHttp from "pouchdb-adapter-http"
 import {
   SettingsCollection,
+  SettingsDocType,
   settingsCollectionMethods,
   settingsMigrationStrategies,
   settingsSchema
@@ -59,11 +60,6 @@ addPouchPlugin(pouchDbAdapterHttp)
 export enum LibraryViewMode {
   GRID = "grid",
   LIST = "list"
-}
-
-export type SettingsDocType = {
-  _id: "settings"
-  contentPassword: string | null
 }
 
 export type DocTypes = TagsDocType | BookDocType | LinkDocType | SettingsDocType

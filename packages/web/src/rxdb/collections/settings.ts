@@ -1,6 +1,5 @@
 import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
 import { SafeUpdateMongoUpdateSyntax } from "../types"
-import { SettingsDocType } from "../databases"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
 
 export type SettingsDocument = RxDocument<SettingsDocType>
@@ -10,6 +9,11 @@ type SettingsCollectionMethods = {
     json: SafeUpdateMongoUpdateSyntax<SettingsDocType>,
     cb: (collection: SettingsCollection) => RxQuery
   ) => Promise<SettingsDocument>
+}
+
+export type SettingsDocType = {
+  _id: "settings"
+  contentPassword: string | null
 }
 
 export type SettingsCollection = RxCollection<
