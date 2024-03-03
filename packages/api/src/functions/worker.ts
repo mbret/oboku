@@ -4,6 +4,9 @@ exports.handler = function (event: any, context: any) {
     const bodyData = JSON.parse(message.body)
 
     const fileName = bodyData.fileName
+
+    console.log({ context })
+    console.log({ fileName })
     // do something with `fileName`
   }
 }
