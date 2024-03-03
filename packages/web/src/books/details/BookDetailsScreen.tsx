@@ -202,12 +202,15 @@ export const BookDetailsScreen = () => {
         <ListItem button onClick={() => openManageBookTagsDialog(id)}>
           <ListItemText
             primary="Tags"
+            secondaryTypographyProps={{
+              component: "div"
+            }}
             secondary={
               (tags?.length || 0) > 0 ? (
                 <>
-                  {tags?.map((tag) => (
-                    <Chip label={tag?.name} key={tag?._id} />
-                  ))}
+                  {tags?.map((tag) => {
+                    return <Chip label={tag.name} key={tag._id} />
+                  })}
                 </>
               ) : (
                 "No tags yet"

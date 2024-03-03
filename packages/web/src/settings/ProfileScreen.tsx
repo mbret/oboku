@@ -162,7 +162,7 @@ export const ProfileScreen = () => {
           <ListItemIcon>
             <SettingsRounded />
           </ListItemIcon>
-          <ListItemText primary="oboku settings" />
+          <ListItemText primary="General" />
         </ListItem>
         <ListItem
           button
@@ -174,7 +174,7 @@ export const ProfileScreen = () => {
             <StorageRounded />
           </ListItemIcon>
           <ListItemText
-            primary="Manage storage"
+            primary="Storage"
             secondary={`${usedInMb} MB (${(quotaUsed * 100).toFixed(
               2
             )}%) used of ${quotaInGb} GB`}

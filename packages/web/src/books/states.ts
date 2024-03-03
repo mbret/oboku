@@ -16,7 +16,7 @@ import { map, switchMap, withLatestFrom } from "rxjs"
 import { plugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { useLocalSettings } from "../settings/states"
-import { useForeverQuery, useSignalValue } from "reactjrx"
+import { isDefined, useForeverQuery, useSignalValue } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
 import { useMemo } from "react"
@@ -172,7 +172,7 @@ export const getEnrichedBookState = ({
     ...book,
     ...(downloadState || {}),
     isLocal,
-    isProtected: isBookProtected(protectedTagIds, book),
+    isProtected: isBookProtected(protectedTagIds, book)
   }
 }
 
@@ -311,7 +311,7 @@ export const useBookTagsState = ({
 }) => {
   const { data: book } = useBook({ id: bookId })
 
-  return book?.tags?.map((id) => tags[id])
+  return book?.tags?.map((id) => tags[id]).filter(isDefined)
 }
 
 /**

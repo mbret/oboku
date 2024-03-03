@@ -6,6 +6,7 @@ import { map, switchMap } from "rxjs"
 import { useForeverQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { Database } from "../rxdb"
+import { DeepReadonlyObject } from "rxdb"
 
 export const useCreateTag = () => {
   const { db } = useDatabase()
@@ -44,7 +45,8 @@ export const useUpdateTag = () => {
 }
 
 const tags$ = latestDatabase$.pipe(
-  switchMap((database) => database.tag.find({}).$)
+  switchMap((database) => database.tag.find({}).$),
+  map((tags) => tags.map((item) => item.toJSON()))
 )
 
 const tagsByIds$ = tags$.pipe(
@@ -55,7 +57,7 @@ const tagsByIds$ = tags$.pipe(
 
         return acc
       },
-      {} as Record<string, TagsDocType>
+      {} as Record<string, DeepReadonlyObject<TagsDocType>>
     )
   )
 )
@@ -106,7 +108,7 @@ export const useTag = (id: string) =>
 
 export const useTags = () =>
   useForeverQuery({
-    queryFn: () => tags$.pipe(map((tags) => tags.map((tag) => tag.toJSON()))),
+    queryFn: () => tags$,
     queryKey: ["rxdb", "tags"]
   })
 
@@ -115,9 +117,7 @@ export const useTagsByIds = () =>
 
 export const useProtectedTags = () =>
   useForeverQuery({
-    queryFn: protectedTags$.pipe(
-      map((tags) => tags.map((tag) => tag.toJSON()))
-    ),
+    queryFn: protectedTags$,
     queryKey: ["protectedTags"]
   })
 
@@ -128,9 +128,7 @@ export const useTagIds = () =>
   })
 
 export const blurredTags$ = tags$.pipe(
-  map((tags) =>
-    tags.filter(({ isBlurEnabled }) => isBlurEnabled).map((tag) => tag.toJSON())
-  )
+  map((tags) => tags.filter(({ isBlurEnabled }) => isBlurEnabled))
 )
 
 export const useBlurredTagIds = () =>
