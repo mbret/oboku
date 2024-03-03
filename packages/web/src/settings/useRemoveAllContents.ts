@@ -1,7 +1,7 @@
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../rxdb/useCreateDatabase"
 import { catchError, from, mergeMap, tap } from "rxjs"
-import { useSyncReplicate } from "../rxdb/replication/useSync"
+import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useLock } from "../common/BlockingBackdrop"
 
 export const useRemoveAllContents = () => {
