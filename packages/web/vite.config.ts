@@ -9,7 +9,8 @@ export default defineConfig(({ mode }) => ({
   build: {
     sourcemap: true,
     minify: mode !== "development",
-    emptyOutDir: true
+    emptyOutDir: true,
+    assetsInlineLimit: 0
   },
   optimizeDeps: {
     esbuildOptions: {

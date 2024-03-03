@@ -7,7 +7,6 @@ import { Database, useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../debug/report.shared"
 import { useCallback, useMemo } from "react"
-import { useDownloadBook } from "../download/useDownloadBook"
 import { PromiseReturnType } from "../types"
 import { BookQueryResult, useBooksDic } from "./states"
 import { AtomicUpdateFunction } from "rxdb"
@@ -15,13 +14,13 @@ import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
 import { useDialogManager } from "../dialog"
 import { useSync } from "../rxdb/useSync"
-import { catchError, EMPTY, from, map, mergeMap, switchMap } from "rxjs"
+import { catchError, EMPTY, from, map, switchMap } from "rxjs"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
-import { plugin } from "../plugins/local"
 import { useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 import { httpClient } from "../http/httpClient"
+import { getMetadataFromBook } from "./getMetadataFromBook"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
@@ -123,15 +122,18 @@ export const useRefreshBookMetadata = () => {
       if (!network.online) {
         return dialog({ preset: "OFFLINE" })
       }
+
       const book = await database?.book
         .findOne({ selector: { _id: bookId } })
         .exec()
+
       const firstLink = await database?.link
         .findOne({ selector: { _id: book?.links[0] } })
         .exec()
 
-      if (!firstLink || firstLink?.type === plugin.type) {
+      if (!firstLink) {
         Report.warn(`Trying to refresh metadata of file item ${bookId}`)
+
         return
       }
 
@@ -237,20 +239,13 @@ export const useAddBook = () => {
           lastMetadataUpdatedAt: null,
           lastMetadataUpdateError: null,
           metadataUpdateStatus: null,
-          title: null,
           readingStateCurrentBookmarkLocation: null,
           readingStateCurrentBookmarkProgressUpdatedAt: null,
           readingStateCurrentBookmarkProgressPercent: 0,
           readingStateCurrentState: ReadingStateState.NotStarted,
           createdAt: Date.now(),
-          lang: null,
           tags: tags || [],
           links: [linkAdded.primary],
-          date: null,
-          publisher: null,
-          rights: null,
-          subject: null,
-          creator: null,
           collections: [],
           modifiedAt: null,
           isAttachedToDataSource: false,
@@ -266,35 +261,6 @@ export const useAddBook = () => {
   }
 
   return [addBook] as [typeof addBook]
-}
-
-export const useAddBookFromFile = () => {
-  const [addBook] = useAddBook()
-  const downloadFile = useDownloadBook()
-
-  return useCallback(
-    async (file: File) => {
-      const { book } =
-        (await addBook({
-          link: {
-            book: null,
-            data: null,
-            resourceId: "file",
-            type: plugin.type,
-            createdAt: new Date().toISOString(),
-            modifiedAt: null
-          },
-          book: {
-            title: file.name,
-            lastMetadataUpdatedAt: Date.now()
-          }
-        })) || {}
-      if (book) {
-        await downloadFile(book, file)
-      }
-    },
-    [addBook, downloadFile]
-  )
 }
 
 export const useBookIdsSortedBy = (
@@ -341,7 +307,10 @@ const sortBooksBy = (
     }
     case "alpha": {
       return books.sort((a, b) =>
-        sortByTitleComparator(a.title || "", b.title || "")
+        sortByTitleComparator(
+          getMetadataFromBook(a).title || "",
+          getMetadataFromBook(b).title || ""
+        )
       )
     }
     default:

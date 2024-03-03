@@ -1,3 +1,5 @@
+import { Metadata } from "./metadata"
+
 type CouchDBMeta = {
   _id: string
   _rev: string
@@ -31,7 +33,7 @@ export type LinkDocType = CommonBase & {
    * Extra data field that can be used by any datasource to store
    * any form of data. Needs to be serialized as a string
    */
-  data: string | null
+  data: string | null | Record<string, unknown>
   book: string | null
   rx_model: "link"
   contentLength?: number | null
@@ -60,29 +62,36 @@ export enum ReadingStateState {
 
 export type InsertAbleBookDocType = Omit<BookDocType, "_id" | "_rev">
 
-export type BookDocType = CommonBase & {
-  createdAt: number
+/**
+ * @deprecated
+ */
+export type DeprecatedBookDocType = {
   creator: string | null
   date: number | null
   lang: string | null
+  publisher: string | null
+  rights: string | null
+  subject: string[] | null
+  title: string | null
+}
+
+export type BookDocType = CommonBase & {
+  createdAt: number
   lastMetadataUpdatedAt: number | null
   metadataUpdateStatus: null | "fetching"
   lastMetadataUpdateError: null | string
-  publisher: string | null
   readingStateCurrentBookmarkLocation: string | null
   readingStateCurrentBookmarkProgressPercent: number
   readingStateCurrentBookmarkProgressUpdatedAt: string | null
   readingStateCurrentState: ReadingStateState
-  rights: string | null
-  subject: string[] | null
   tags: string[]
   links: string[]
   collections: string[]
-  title: string | null
   rx_model: "book"
   modifiedAt: string | null
   isAttachedToDataSource: boolean
   isNotInterested?: boolean
+  metadata?: Metadata[]
 }
 
 export type TagsDocType = CommonBase & {

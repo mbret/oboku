@@ -2,17 +2,16 @@ import { FC } from "react"
 import {
   Drawer,
   List,
-  ListItem,
   ListItemText,
-  ListItemIcon
+  ListItemIcon,
+  ListItemButton
 } from "@mui/material"
-import { SdStorageRounded } from "@mui/icons-material"
 import { plugins as dataSourcePlugins } from "../dataSources"
 import { useLocalSettings } from "../settings/states"
 
 export const UploadBookDrawer: FC<{
   open: boolean
-  onClose: (type?: "device" | string | undefined) => void
+  onClose: (type?: string | undefined) => void
 }> = ({ open, onClose }) => {
   const { showSensitiveDataSources } = useLocalSettings()
 
@@ -26,12 +25,6 @@ export const UploadBookDrawer: FC<{
       >
         <div role="presentation">
           <List>
-            <ListItem button onClick={() => onClose("device")}>
-              <ListItemIcon>
-                <SdStorageRounded />
-              </ListItemIcon>
-              <ListItemText primary="From device" />
-            </ListItem>
             {dataSourcePlugins
               .filter(
                 ({ UploadComponent, sensitive }) =>
@@ -39,8 +32,7 @@ export const UploadBookDrawer: FC<{
                   (showSensitiveDataSources ? true : sensitive !== true)
               )
               .map((dataSource) => (
-                <ListItem
-                  button
+                <ListItemButton
                   onClick={() => onClose(dataSource.type)}
                   key={dataSource.type}
                 >
@@ -48,7 +40,7 @@ export const UploadBookDrawer: FC<{
                     {dataSource.Icon && <dataSource.Icon />}
                   </ListItemIcon>
                   <ListItemText primary={`From ${dataSource.name}`} />
-                </ListItem>
+                </ListItemButton>
               ))}
           </List>
         </div>

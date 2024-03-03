@@ -6,7 +6,8 @@ import {
   ListItemButton as MuiListItemButton,
   ListItemText,
   styled,
-  useTheme
+  useTheme,
+  ListItemProps
 } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { MoreVert } from "@mui/icons-material"
@@ -26,11 +27,13 @@ const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
   padding: theme.spacing(2)
 }))
 
-export const CollectionListItemList: FC<{
-  id: string
-  onItemClick?: (tag: DeepReadonlyObject<CollectionDocType>) => void
-  viewMode?: "container" | "text"
-}> = memo(({ id, onItemClick }) => {
+export const CollectionListItemList: FC<
+  {
+    id: string
+    onItemClick?: (tag: DeepReadonlyObject<CollectionDocType>) => void
+    viewMode?: "container" | "text"
+  } & ListItemProps
+> = memo(({ id, onItemClick, viewMode, ...rest }) => {
   const theme = useTheme()
   const { data: item } = useCollection({
     id
@@ -42,6 +45,7 @@ export const CollectionListItemList: FC<{
     <ListItem
       onClick={() => item && onItemClick && onItemClick(item)}
       disablePadding
+      {...rest}
     >
       <ListItemButton
         disableGutters

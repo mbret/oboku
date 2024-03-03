@@ -4,7 +4,8 @@ import React, {
   useMemo,
   memo,
   ComponentProps,
-  Fragment
+  Fragment,
+  CSSProperties
 } from "react"
 import { List, useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
@@ -40,7 +41,7 @@ export const CollectionList: FC<
   } = props
   const classes = useStyle()
   const windowSize = useWindowSize()
-  const dynamicNumberOfItems = Math.floor(windowSize.width / 350)
+  const dynamicNumberOfItems = Math.max(Math.floor(windowSize.width / 350), 1)
   const itemsPerRow =
     viewMode === "grid"
       ? dynamicNumberOfItems > 0
@@ -48,15 +49,25 @@ export const CollectionList: FC<
         : dynamicNumberOfItems
       : 1
 
+  const itemHeight = 250
+
+  const rowRendererStyle: CSSProperties = useMemo(
+    () => ({
+      height: itemHeight
+    }),
+    [itemHeight]
+  )
+
   const rowRenderer = useCallback(
     (item: string) => (
       <CollectionListItemList
         id={item}
         onItemClick={onItemClick}
         viewMode={itemMode}
+        style={rowRendererStyle}
       />
     ),
-    [onItemClick, itemMode]
+    [onItemClick, itemMode, rowRendererStyle]
   )
 
   const containerStyle = useMemo(
@@ -82,7 +93,7 @@ export const CollectionList: FC<
         itemsPerRow={itemsPerRow}
         headerHeight={headerHeight}
         renderHeader={renderHeader}
-        itemHeight={250}
+        itemHeight={itemHeight}
         {...rest}
       />
     </div>

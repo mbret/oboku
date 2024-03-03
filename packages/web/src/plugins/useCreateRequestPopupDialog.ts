@@ -16,6 +16,6 @@ export const useCreateRequestPopupDialog = () => {
             onCancel: () => resolve(false)
           })
         }),
-    []
+    [dialog]
   )
 }

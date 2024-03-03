@@ -17,7 +17,7 @@ import { useCSS } from "../utils"
 import { useTheme } from "@mui/material"
 
 export const ReactWindowList: FC<{
-  rowRenderer: (item: any, rowIndex: number) => React.ReactNode
+  rowRenderer: (item: any, rowIndex: number, isLast: boolean) => React.ReactNode
   layout?: ComponentProps<typeof VariableSizeList>["layout"]
   data: any[]
   itemsPerRow: number
@@ -48,7 +48,11 @@ const List = memo(
     {
       width: number
       height: number
-      rowRenderer: (item: string, rowIndex: number) => React.ReactNode
+      rowRenderer: (
+        item: string,
+        rowIndex: number,
+        isLast: boolean
+      ) => React.ReactNode
       layout?: ComponentProps<typeof VariableSizeList>["layout"]
       onScroll?: ComponentProps<typeof FixedSizeGrid>["onScroll"]
       initialScrollLeft?: ComponentProps<
@@ -154,7 +158,8 @@ const List = memo(
                   maxHeight: computedItemHeight
                 }}
               >
-                {item && rowRenderer(item, rowIndex)}
+                {item &&
+                  rowRenderer(item, rowIndex, data.length - 1 === rowIndex)}
               </div>
             </div>
           )

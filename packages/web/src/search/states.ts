@@ -1,6 +1,5 @@
 import { sortByTitleComparator } from "@oboku/shared"
 import { combineLatest, first, map, switchMap } from "rxjs"
-import { visibleBooks$ } from "../books/states"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { signal, useQuery } from "reactjrx"
 
@@ -19,7 +18,9 @@ export const useCollectionsForSearch = (search: string) =>
     queryFn: () =>
       combineLatest([
         latestDatabase$.pipe(
-          switchMap((database) => database.collections.obokucollection.find().$),
+          switchMap(
+            (database) => database.collections.obokucollection.find().$
+          ),
           first()
         )
       ]).pipe(
@@ -37,32 +38,6 @@ export const useCollectionsForSearch = (search: string) =>
               return indexOfFirstMatch >= 0
             })
             .sort((a, b) => sortByTitleComparator(a.name || "", b.name || ""))
-        }),
-        map((items) => items.map(({ _id }) => _id))
-      )
-  })
-
-export const useBooksForSearch = (search: string) =>
-  useQuery({
-    queryKey: ["search", "books", search],
-    staleTime: 1000,
-    queryFn: () =>
-      combineLatest([visibleBooks$]).pipe(
-        map(([data]) => {
-          if (!search) return []
-
-          return data
-            .filter(({ title }) => {
-              const searchRegex = new RegExp(
-                search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
-                "i"
-              )
-
-              const indexOfFirstMatch = title?.search(searchRegex) || 0
-
-              return indexOfFirstMatch >= 0
-            })
-            .sort((a, b) => sortByTitleComparator(a.title || "", b.title || ""))
         }),
         map((items) => items.map(({ _id }) => _id))
       )

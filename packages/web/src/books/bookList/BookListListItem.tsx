@@ -1,4 +1,4 @@
-import { Box, Chip, Typography, useTheme } from "@mui/material"
+import { Box, Chip, Stack, Typography, useTheme } from "@mui/material"
 import { FC, memo } from "react"
 import { useDefaultItemClickHandler } from "./helpers"
 import { useEnrichedBookState, useIsBookProtected } from "../states"
@@ -18,6 +18,7 @@ import { BookListCoverContainer } from "./BookListCoverContainer"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
+import { getMetadataFromBook } from "../getMetadataFromBook"
 
 export const BookListListItem: FC<{
   bookId: string
@@ -47,8 +48,10 @@ export const BookListListItem: FC<{
     const classes = useStyles({ coverWidth })
     const { data: isBookProtected = true } = useIsBookProtected(book)
 
+    const metadata = getMetadataFromBook(book)
+
     return (
-      <div
+      <Box
         onClick={() => {
           if (onItemClick) return onItemClick(bookId)
           return onDefaultItemClick(bookId)
@@ -85,10 +88,10 @@ export const BookListListItem: FC<{
               variant: "body2"
             })}
           >
-            {book?.title || "Unknown"}
+            {metadata?.title || "Unknown"}
           </Typography>
           <Typography noWrap color="textSecondary" variant="body2">
-            {book?.creator || "Unknown"}
+            {(metadata?.authors ?? [])[0] || "Unknown"}
           </Typography>
           <Box
             style={{
@@ -166,9 +169,11 @@ export const BookListListItem: FC<{
           </Box>
         </div>
         {withDrawerActions && (
-          <div
+          <Stack
+            justifyContent="center"
+            width={[30, 50]}
+            flexDirection="row"
             style={{
-              display: "flex",
               alignItems: "center",
               marginLeft: theme.spacing(1)
             }}
@@ -179,9 +184,9 @@ export const BookListListItem: FC<{
             }}
           >
             <MoreVert />
-          </div>
+          </Stack>
         )}
-      </div>
+      </Box>
     )
   }
 )

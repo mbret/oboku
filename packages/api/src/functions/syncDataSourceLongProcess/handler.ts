@@ -1,13 +1,13 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { withMiddy } from "@libs/lambda"
 import { AWS_API_URI } from "../../constants"
-import { configure as configureGoogleDataSource } from "@libs/dataSources/google"
+import { configure as configureGoogleDataSource } from "@libs/plugins/google"
 import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { withToken } from "@libs/auth"
 import schema from "./schema"
 import { createHttpError } from "@libs/httpErrors"
-import { dataSourceFacade } from "@libs/dataSources"
-import { getNanoDbForUser } from "@libs/dbHelpers"
+import { dataSourceFacade } from "@libs/plugins"
+import { getNanoDbForUser } from "@libs/couch/dbHelpers"
 import axios from "axios"
 import { getParameterValue } from "@libs/ssm"
 
@@ -69,6 +69,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
       return true
     } catch (e) {
+      if ((e as any)?.$metadata?.httpStatusCode === 404) return false
       if ((e as any).code === "NotFound") return false
       throw e
     }

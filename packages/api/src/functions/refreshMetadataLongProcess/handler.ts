@@ -4,9 +4,9 @@ import fs from "fs"
 import path from "path"
 import { OFFLINE, TMP_DIR } from "../../constants"
 import { withToken } from "@libs/auth"
-import { configure as configureGoogleDataSource } from "@libs/dataSources/google"
+import { configure as configureGoogleDataSource } from "@libs/plugins/google"
 import schema from "./schema"
-import { atomicUpdate, findOne, getNanoDbForUser } from "@libs/dbHelpers"
+import { atomicUpdate, findOne, getNanoDbForUser } from "@libs/couch/dbHelpers"
 import { PromiseReturnType } from "@libs/types"
 import { retrieveMetadataAndSaveCover } from "@libs/books/retrieveMetadataAndSaveCover"
 import { getParameterValue } from "@libs/ssm"
@@ -27,6 +27,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       })) ?? ``
   })
 
+  const googleApiKey = await getParameterValue({
+    Name: `GOOGLE_API_KEY`,
+    WithDecryption: true
+  })
+
   if (!OFFLINE) {
     const files = await fs.promises.readdir(TMP_DIR)
 
@@ -38,7 +43,8 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 
   const authorization = event.body.authorization ?? ``
-  const credentials = JSON.parse(event.body.credentials ?? JSON.stringify({}))
+  const rawCredentials = event.body.credentials ?? JSON.stringify({})
+  const credentials = JSON.parse(rawCredentials)
 
   const { name: userName } = await withToken({
     headers: {
@@ -55,6 +61,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const db = await getNanoDbForUser(userName)
 
   const book = await findOne(db, "book", { selector: { _id: bookId } })
+
   if (!book) throw new Error(`Unable to find book ${bookId}`)
 
   if (book.metadataUpdateStatus !== "fetching") {
@@ -78,7 +85,9 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       userNameHex,
       credentials,
       book,
-      link
+      link,
+      googleApiKey,
+      db
     })
   } catch (e) {
     await atomicUpdate(db, "book", book._id, (old) => ({
@@ -86,21 +95,18 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       metadataUpdateStatus: null,
       lastMetadataUpdateError: "unknown"
     }))
+
     throw e
   }
 
   await atomicUpdate(db, "book", book._id, (old) => ({
     ...old,
-    title: data.book?.title || old.title,
-    creator: data.book?.creator || old.creator,
-    date: data.book?.date || old.date,
-    publisher: data.book?.publisher || old.publisher,
-    subject: data.book?.subject || old.subject,
-    lang: data.book?.lang || old.lang,
+    ...data.book,
     lastMetadataUpdatedAt: new Date().getTime(),
     metadataUpdateStatus: null,
     lastMetadataUpdateError: null
   }))
+
   await atomicUpdate(db, "link", link._id, (old) => ({
     ...old,
     contentLength: data.link.contentLength

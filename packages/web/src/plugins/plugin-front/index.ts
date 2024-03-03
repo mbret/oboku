@@ -3,7 +3,13 @@ import {
   LinkDocType,
   dataSourceHelpers
 } from "@oboku/shared"
-import { ComponentProps, FC, FunctionComponent, ReactNode } from "react"
+import {
+  ComponentProps,
+  DOMAttributes,
+  FC,
+  FunctionComponent,
+  ReactNode
+} from "react"
 import { Button } from "@mui/material"
 import { PostBook, PostLink } from "./types"
 
@@ -82,19 +88,21 @@ export type ObokuPlugin = {
   type: string
   sensitive?: boolean
   Icon?: FunctionComponent<Record<string, never>>
-  UploadComponent?: FunctionComponent<{
-    onClose: (bookToAdd?: { book: PostBook; link: PostLink }) => void
-    requestPopup: () => Promise<boolean>
-    TagsSelector: FC<{
-      onChange: (tags: string[]) => void
-    }>
-    ButtonDialog: FC<
-      Omit<ComponentProps<typeof Button>, `type`> & {
-        type: `confirm` | `cancel`
-      }
-    >
-    title: string
-  }>
+  UploadComponent?: FunctionComponent<
+    {
+      onClose: (bookToAdd?: { book: PostBook; link: PostLink }) => void
+      requestPopup: () => Promise<boolean>
+      TagsSelector: FC<{
+        onChange: (tags: string[]) => void
+      }>
+      ButtonDialog: FC<
+        Omit<ComponentProps<typeof Button>, `type`> & {
+          type: `confirm` | `cancel`
+        }
+      >
+      title: string
+    } & Pick<DOMAttributes<any>, "onDragLeave">
+  >
   AddDataSource?: FunctionComponent<{
     onClose: () => void
     requestPopup: () => Promise<boolean>
@@ -120,14 +128,5 @@ export const extractIdFromResourceId = (
   resourceId: string
 ) => resourceId.replace(`${uniqueResourceIdentifier}-`, ``)
 
-export const extractSyncSourceData = <Data extends Record<any, any>>({
-  data
-}: DataSourceDocType) => {
-  try {
-    return JSON.parse(data) as Data
-  } catch (e) {
-    return undefined
-  }
-}
 
 export * from "./errors"

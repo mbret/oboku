@@ -14,7 +14,7 @@ import {
   useTheme
 } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
-import React, { useCallback, useRef, useState } from "react"
+import React, { useCallback, useMemo, useRef, useState } from "react"
 import {
   generatePath,
   Link,
@@ -28,12 +28,9 @@ import { useCSS } from "../common/utils"
 import { ROUTES } from "../constants"
 import { SEARCH_MAX_PREVIEW_ITEMS } from "../constants.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import {
-  searchStateSignal,
-  useBooksForSearch,
-  useCollectionsForSearch
-} from "./states"
+import { searchStateSignal, useCollectionsForSearch } from "./states"
 import { useSignalValue } from "reactjrx"
+import { useBooksForSearch } from "./useBooksForSearch"
 
 const Accordion = styled(MuiAccordion)({
   ":before": {
@@ -88,6 +85,11 @@ export const SearchScreen = () => {
   useMount(() => {
     searchStateSignal.setValue(searchParams.get("value") || "")
   })
+
+  const visibleCollections = useMemo(
+    () => collections.slice(0, SEARCH_MAX_PREVIEW_ITEMS),
+    [collections]
+  )
 
   return (
     <div style={styles.container}>
@@ -179,7 +181,7 @@ export const SearchScreen = () => {
             {collections.length ? (
               <>
                 <CollectionList
-                  data={collections.slice(0, SEARCH_MAX_PREVIEW_ITEMS)}
+                  data={visibleCollections}
                   viewMode="list"
                   static
                   onItemClick={({ _id }) => {

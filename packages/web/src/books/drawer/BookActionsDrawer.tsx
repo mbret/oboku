@@ -38,6 +38,7 @@ import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { signal, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "./useRemoveHandler"
+import { getMetadataFromBook } from "../getMetadataFromBook"
 
 export const bookActionDrawerSignal = signal<{
   openedWith: undefined | string
@@ -49,9 +50,7 @@ export const BookActionsDrawer = memo(() => {
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const { openedWith: bookId, actions } = useSignalValue(bookActionDrawerSignal)
   const navigate = useNavigate()
-  const normalizedBookDownloadsState = useSignalValue(
-    booksDownloadStateSignal
-  )
+  const normalizedBookDownloadsState = useSignalValue(booksDownloadStateSignal)
   const book = useEnrichedBookState({
     bookId: bookId || "-1",
     normalizedBookDownloadsState,
@@ -76,6 +75,8 @@ export const BookActionsDrawer = memo(() => {
 
   const { mutate: onRemovePress, status, data } = useRemoveHandler()
 
+  const metadata = getMetadataFromBook(book)
+
   return (
     <Drawer
       anchor="bottom"
@@ -91,10 +92,10 @@ export const BookActionsDrawer = memo(() => {
             </div>
             <div className={classes.topDetails}>
               <Typography variant="body1" noWrap>
-                {book.title}
+                {metadata.title}
               </Typography>
               <Typography variant="caption" noWrap>
-                {book.creator}
+                {(metadata.authors ?? [])[0]}
               </Typography>
             </div>
           </div>
@@ -209,19 +210,17 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemText primary={t("book.actionDrawer.manageTags")} />
               </ListItemButton>
             )}
-            {!actions && book.canRefreshMetadata && (
-              <ListItemButton
-                onClick={() => {
-                  handleClose()
-                  refreshBookMetadata(book._id)
-                }}
-              >
-                <ListItemIcon>
-                  <SyncRounded />
-                </ListItemIcon>
-                <ListItemText primary="Refresh metadata" />
-              </ListItemButton>
-            )}
+            <ListItemButton
+              onClick={() => {
+                handleClose()
+                refreshBookMetadata(book._id)
+              }}
+            >
+              <ListItemIcon>
+                <SyncRounded />
+              </ListItemIcon>
+              <ListItemText primary="Refresh metadata" />
+            </ListItemButton>
             {(actions?.includes("removeDownload") || !actions) &&
               book.downloadState === "downloaded" &&
               !book.isLocal && (

@@ -52,7 +52,7 @@
     "@types/request": "^2.48.8",
     "@types/unzipper": "^0.10.5",
     "json-schema-to-ts": "^3.0.0",
-    "serverless-lift": "^1.25.1",
+    "serverless-lift": "^1.28.1",
     "ts-loader": "^9.2.8",
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^4.1.2",

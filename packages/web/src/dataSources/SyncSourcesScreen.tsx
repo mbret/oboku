@@ -10,7 +10,8 @@ import {
   SvgIcon,
   ListItemIcon,
   Typography,
-  useTheme
+  useTheme,
+  Box
 } from "@mui/material"
 import { Alert } from "@mui/material"
 import { DataSourcesAddDrawer } from "./DataSourcesAddDrawer"
@@ -87,12 +88,12 @@ export const SyncSourcesScreen = () => {
                     syncSource?.syncStatus === "fetching" ? (
                       "Syncing..."
                     ) : syncSource?.lastSyncErrorCode ? (
-                      <div style={{ flexDirection: "row", display: "flex" }}>
+                      <Box component="span" style={{ flexDirection: "row", display: "flex" }}>
                         <Error
                           fontSize="small"
                           style={{ marginRight: theme.spacing(1) }}
                         />
-                        <Typography variant="body2">
+                        <Typography variant="body2" component="span">
                           {`Sync did not succeed`}
                           {syncSource?.lastSyncErrorCode ===
                             ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED &&
@@ -104,7 +105,7 @@ export const SyncSourcesScreen = () => {
                             ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE &&
                             `. Our server seems unreachable, make sure you are online to start the synchronization`}
                         </Typography>
-                      </div>
+                      </Box>
                     ) : syncSource?.lastSyncedAt ? (
                       `Last synced at ${new Date(
                         syncSource?.lastSyncedAt

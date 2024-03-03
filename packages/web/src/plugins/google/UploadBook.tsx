@@ -34,7 +34,12 @@ export const UploadBook: ObokuPlugin["UploadComponent"] = ({
               docs.map(async (doc) => {
                 return addBook({
                   book: {
-                    title: doc.name
+                    metadata: [
+                      {
+                        type: "link",
+                        title: doc.name
+                      }
+                    ]
                   },
                   link: {
                     book: null,

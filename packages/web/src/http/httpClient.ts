@@ -15,20 +15,23 @@ export class HttpClientError extends Error {
 type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
 
 class HttpClient {
-  fetch = async ({
+  fetch = async <T>({
     url,
+    withAuth = true,
     ...params
   }: FetchParams & {
     url: string
-  }) => {
+    withAuth?: boolean
+  }): Promise<{ data: T }> => {
     const authState = authStateSignal.getValue()
 
     const response = await fetch(url, {
       ...params,
       headers: {
-        ...(authState?.token && {
-          Authorization: `Bearer ${authState?.token}`
-        }),
+        ...(authState?.token &&
+          withAuth && {
+            Authorization: `Bearer ${authState?.token}`
+          }),
         ...params.headers
       }
     })
@@ -44,13 +47,13 @@ class HttpClient {
     return { data }
   }
 
-  post = async (
+  post = async <T>(
     options: Omit<FetchParams, "body" | "method"> & {
       url: string
       body: Record<string, unknown>
     }
   ) => {
-    return this.fetch({
+    return this.fetch<T>({
       ...options,
       method: "post",
       body: JSON.stringify(options.body),
@@ -66,7 +69,7 @@ class HttpClient {
       url: `${API_URI}/refresh-metadata`,
       body: { bookId },
       headers: {
-        "oboku-credentials": JSON.stringify(credentials)
+        "oboku-credentials": JSON.stringify(credentials ?? {})
       }
     })
 

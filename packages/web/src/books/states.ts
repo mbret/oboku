@@ -11,15 +11,12 @@ import {
   booksDownloadStateSignal,
   DownloadState
 } from "../download/states"
-import {
-  useCollections,
-  useCollectionsDictionary
-} from "../collections/states"
+import { useCollections, useCollectionsDictionary } from "../collections/states"
 import { map, switchMap, withLatestFrom } from "rxjs"
 import { plugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { useLocalSettings } from "../settings/states"
-import { useForeverQuery, useSignalValue } from "reactjrx"
+import { isDefined, useForeverQuery, useSignalValue } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
 import { useMemo } from "react"
@@ -144,7 +141,10 @@ export const getEnrichedBookState = ({
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
   normalizedLinks: ReturnType<typeof useLinks>["data"]
-  normalizedCollections: Omit<ReturnType<typeof useCollectionsDictionary>["data"], "displayableName">
+  normalizedCollections: Omit<
+    ReturnType<typeof useCollectionsDictionary>["data"],
+    "displayableName"
+  >
   normalizedBooks: ReturnType<typeof useBooksDic>["data"]
 }) => {
   const book = getBookState({
@@ -172,9 +172,7 @@ export const getEnrichedBookState = ({
     ...book,
     ...(downloadState || {}),
     isLocal,
-    isProtected: isBookProtected(protectedTagIds, book),
-    // hasLink: book.links.length > 0
-    canRefreshMetadata: book.links.length > 0 && !isLocal
+    isProtected: isBookProtected(protectedTagIds, book)
   }
 }
 
@@ -313,7 +311,7 @@ export const useBookTagsState = ({
 }) => {
   const { data: book } = useBook({ id: bookId })
 
-  return book?.tags?.map((id) => tags[id])
+  return book?.tags?.map((id) => tags[id]).filter(isDefined)
 }
 
 /**

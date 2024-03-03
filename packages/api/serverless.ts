@@ -10,6 +10,16 @@ import corsProxy from "@functions/corsProxy"
 
 // npm install --arch=x64 --platform=darwin sharp -w @oboku/api
 
+const ENVS_TO_MAP = [
+  "COUCH_DB_URL",
+  "CONTACT_TO_ADDRESS",
+  "AWS_API_URI",
+  "GOOGLE_BOOK_API_URL",
+  "OFFLINE",
+  "COVERS_PLACEHOLDER_BUCKET_KEY",
+  "COVERS_BUCKET_NAME"
+]
+
 const functions: AWS[`functions`] = {
   covers,
   signin,
@@ -18,7 +28,13 @@ const functions: AWS[`functions`] = {
   refreshMetadataLongProcess,
   syncDataSource,
   syncDataSourceLongProcess,
-  cors: corsProxy
+  cors: corsProxy,
+  publisher: {
+    handler: `${__dirname}/src/functions/publisher.handler`,
+    environment: {
+      QUEUE_URL: "${construct:metadata.queueUrl}"
+    }
+  }
 }
 
 Object.keys(functions).forEach((key) => {
@@ -34,7 +50,7 @@ Object.keys(functions).forEach((key) => {
   ]
 })
 
-const serverlessConfiguration: AWS = {
+const serverlessConfiguration: AWS & any = {
   service: "oboku-api",
   frameworkVersion: "3",
   useDotenv: true,
@@ -63,11 +79,21 @@ const serverlessConfiguration: AWS = {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
       STAGE: "${sls:stage}",
-      COUCH_DB_URL: "${env:COUCH_DB_URL}",
-      CONTACT_TO_ADDRESS: "${env:CONTACT_TO_ADDRESS}",
-      AWS_API_URI: "${env:AWS_API_URI}",
-      GOOGLE_BOOK_API_URL: "${env:GOOGLE_BOOK_API_URL}",
-      OFFLINE: "${env:OFFLINE}"
+      ...ENVS_TO_MAP.reduce(
+        (acc, key) => ({ ...acc, [key]: `$\{env:${key}}` }),
+        {}
+      )
+    }
+  },
+  // compute: {
+  //   handler: `${__dirname}/handler.main`
+  // },
+  constructs: {
+    metadata: {
+      type: "queue",
+      worker: {
+        handler: `${__dirname}/src/functions/worker.handler`
+      }
     }
   },
   layers: {
@@ -100,7 +126,7 @@ const serverlessConfiguration: AWS = {
     Resources: {
       /**
        * library synchronization queue.
-       * Enfore we don't have several sync in parallel and prevent
+       * Enforce we don't have several sync in parallel and prevent
        * too many usages
        */
       SyncQueue: {

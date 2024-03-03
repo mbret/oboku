@@ -63,6 +63,11 @@ export const useAccessToken = ({
              */
             const tokenClient = gsi.accounts.oauth2.initTokenClient({
               client_id: CLIENT_ID,
+              /**
+               * In case user is using different google account, we
+               * want to make sure he uses the right account.
+               */
+              prompt: "select_account",
               scope: scope.join(" "),
               callback: resolve,
               // prompt: "",

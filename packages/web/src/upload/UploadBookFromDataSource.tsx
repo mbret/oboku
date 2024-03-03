@@ -1,4 +1,4 @@
-import { ComponentProps, FC, useCallback } from "react"
+import { ComponentProps, DOMAttributes, FC, useCallback } from "react"
 import { useAddBook } from "../books/helpers"
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { TagsSelector } from "../tags/TagsSelector"
@@ -10,10 +10,14 @@ type UploadComponentProps = ComponentProps<
   NonNullable<ObokuPlugin[`UploadComponent`]>
 >
 
-export const UploadBookFromDataSource: FC<{
+export const UploadBookFromDataSource = ({
+  openWith,
+  onClose: onFinalClose,
+  ...rest
+}: {
   openWith: string | undefined
   onClose: () => void
-}> = ({ openWith, onClose: onFinalClose }) => {
+} & DOMAttributes<any>) => {
   const [addBook] = useAddBook()
   const dataSource = useDataSourcePlugin(openWith)
   const createRequestPopup = useCreateRequestPopupDialog()
@@ -51,6 +55,7 @@ export const UploadBookFromDataSource: FC<{
           ButtonDialog={ButtonDialog}
           onClose={onClose}
           requestPopup={createRequestPopup({ name: dataSource.name })}
+          {...rest}
         />
       )}
     </>

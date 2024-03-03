@@ -31,6 +31,7 @@ import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSet
 import { Notification } from "./Notification"
 import { useReaderSettingsState } from "./settings/states"
 import { useSignalValue } from "reactjrx"
+import { getMetadataFromBook } from "../books/getMetadataFromBook"
 
 export const Reader: FC<{
   bookId: string
@@ -110,13 +111,15 @@ export const Reader: FC<{
     }
   }, [book, manifest, readerOptions, isRarFile, fetchResource, readerSettings])
 
+  const metadata = getMetadataFromBook(book)
+
   if (isBookError) {
     if (manifestError?.code === "fileNotSupported") {
       return (
         <div style={styles.infoContainer}>
           <Box mb={2}>
             <Typography>
-              Oups! it looks like the book <b>{book?.title}</b> is not supported
+              Oups! it looks like the book <b>{metadata?.title}</b> is not supported
               yet. If you would like to be able to open it please visit the{" "}
               <Link
                 href="https://docs.oboku.me"

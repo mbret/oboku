@@ -1,4 +1,4 @@
-import { FC, memo, useEffect } from "react"
+import { FC, memo } from "react"
 import { Box, Typography, styled, useTheme } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
@@ -9,6 +9,7 @@ import { useCSS } from "../../common/utils"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
+import { getMetadataFromBook } from "../getMetadataFromBook"
 
 const ContainerBox = styled("div")`
   cursor: pointer;
@@ -24,9 +25,7 @@ export const BookListGridItem: FC<{
   bookId: string
   onItemClick?: (id: string) => void
 }> = memo(({ bookId, onItemClick }) => {
-  const normalizedBookDownloadsState = useSignalValue(
-    booksDownloadStateSignal
-  )
+  const normalizedBookDownloadsState = useSignalValue(booksDownloadStateSignal)
   const { data: protectedTagIds } = useProtectedTagIds()
   const tags = useTagsByIds().data
 
@@ -38,6 +37,8 @@ export const BookListGridItem: FC<{
   })
   const onDefaultItemClick = useDefaultItemClickHandler()
   const classes = useStyles()
+
+  const metadata = getMetadataFromBook(item)
 
   return (
     <ContainerBox
@@ -62,10 +63,10 @@ export const BookListGridItem: FC<{
       >
         <div style={{ width: "100%", overflow: "hidden" }}>
           <Typography variant="body2" style={classes.itemTitle}>
-            {item?.title || "Unknown"}
+            {metadata?.title || "Unknown"}
           </Typography>
           <Typography variant="caption" noWrap={true} display="block">
-            {item?.creator || "Unknown"}
+            {(metadata?.authors ?? [])[0] || "Unknown"}
           </Typography>
         </div>
         <MoreVert

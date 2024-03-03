@@ -21,13 +21,14 @@ export const useLinks = () => {
         switchMap((db) => db.collections.link.find({}).$),
         map((entries) => keyBy(entries, "_id"))
       )
-    },
+    }
   })
 }
 
-export const useLink = ({ id }: { id: string }) => {
+export const useLink = ({ id }: { id?: string }) => {
   return useForeverQuery({
     queryKey: ["rxdb", "get", "single", "link", id],
+    enabled: !!id,
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap(
@@ -39,7 +40,7 @@ export const useLink = ({ id }: { id: string }) => {
             }).$
         ),
         map((entry) => entry?.toJSON())
-      ),
+      )
   })
 }
 
