@@ -5,7 +5,7 @@ import { plugins } from "../plugins/configure"
 import { useCallback, useMemo } from "react"
 import { useDialogManager } from "../dialog"
 import { useNetworkState } from "react-use"
-import { useSync } from "../rxdb/useSync"
+import { useSyncReplicate } from "../rxdb/replication/useSync"
 import { AtomicUpdateFunction } from "rxdb"
 import { catchError, EMPTY, from, switchMap, map, of, filter } from "rxjs"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
@@ -20,7 +20,7 @@ export const useSynchronizeDataSource = () => {
   const synchronizeDataSource = usePluginSynchronize()
   const network = useNetworkState()
   const dialog = useDialogManager()
-  const sync = useSync()
+  const { mutateAsync: sync } = useSyncReplicate()
 
   return useCallback(
     async (_id: string) => {
@@ -40,7 +40,7 @@ export const useSynchronizeDataSource = () => {
 
               return old
             }).pipe(
-              switchMap(() => sync([database.datasource])),
+              switchMap(() => from(sync([database.datasource]))),
               switchMap(() => from(httpClient.syncDataSource(_id, data.data))),
               catchError((e) =>
                 atomicUpdateDataSource(_id, (old) => ({
