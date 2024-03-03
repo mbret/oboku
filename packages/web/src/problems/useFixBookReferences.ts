@@ -2,7 +2,7 @@ import { difference } from "lodash"
 import { useCallback } from "react"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
-import { BookDocument } from "../rxdb/schemas/book"
+import { BookDocument } from "../rxdb/collections/book"
 
 export const useFixBookReferences = () => {
   const { db } = useDatabase()

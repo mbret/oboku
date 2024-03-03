@@ -5,14 +5,14 @@ import {
   collectionCollectionMethods,
   collectionSchema,
   collectionMigrationStrategies
-} from "./schemas/collection"
+} from "./collections/collection"
 import { applyHooks } from "./middleware"
 import {
   dataSourceSchema,
   dataSourceCollectionMethods,
   DataSourceCollection,
   migrationStrategies as dataSourceMigrationStrategies
-} from "./schemas/dataSource"
+} from "./collections/dataSource"
 import { BookDocType, LinkDocType, TagsDocType } from "@oboku/shared"
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder"
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
@@ -28,9 +28,9 @@ import {
   bookDocMethods,
   bookSchema,
   bookSchemaMigrationStrategies
-} from "./schemas/book"
-import { tag, TagCollection } from "./schemas/tags"
-import { link, LinkCollection } from "./schemas/link"
+} from "./collections/book"
+import { tag, TagCollection } from "./collections/tags"
+import { link, LinkCollection } from "./collections/link"
 import pouchDbAdapterIdb from "pouchdb-adapter-idb"
 import pouchDbAdapterHttp from "pouchdb-adapter-http"
 import {
@@ -38,7 +38,7 @@ import {
   settingsCollectionMethods,
   settingsMigrationStrategies,
   settingsSchema
-} from "./schemas/settings"
+} from "./collections/settings"
 
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBLeaderElectionPlugin)
