@@ -9,7 +9,8 @@ import { readerStateSignal } from "./states"
 import { isDefined, useForeverQuery } from "reactjrx"
 
 const useNotification = () =>
-useForeverQuery({
+  useForeverQuery({
+    networkMode: "always",
     queryKey: ["notification"],
     queryFn: () =>
       readerStateSignal.subject.pipe(
@@ -25,7 +26,7 @@ useForeverQuery({
             of(undefined).pipe(delay(READER_NOTIFICATION_TIME_TO_SCREEN))
           )
         )
-      ),
+      )
   })
 
 export const Notification = memo(() => {
