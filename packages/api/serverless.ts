@@ -30,7 +30,7 @@ const functions: AWS[`functions`] = {
   syncDataSourceLongProcess,
   cors: corsProxy,
   publisher: {
-    handler: `${__dirname}/src/functions/publisher.main`,
+    handler: `${__dirname}/src/functions/publisher.handler`,
     environment: {
       QUEUE_URL: "${construct:metadata.queueUrl}"
     }
@@ -92,7 +92,7 @@ const serverlessConfiguration: AWS & any = {
     metadata: {
       type: "queue",
       worker: {
-        handler: `${__dirname}/src/functions/worker.main`
+        handler: `${__dirname}/src/functions/worker.handler`
       }
     }
   },
