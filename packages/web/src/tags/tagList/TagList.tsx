@@ -3,7 +3,6 @@ import { useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { TagListItemList } from "./TagListItemList"
-import { TagsDocType } from "@oboku/shared"
 
 export const TagList: FC<{
   renderHeader?: () => React.ReactNode

@@ -30,14 +30,11 @@ import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
 import { useMutation, useSignalValue } from "reactjrx"
 import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
-import { libraryStateSignal } from "../library/states"
 import { booksDownloadStateSignal } from "../download/states"
 
 export const ManageStorageScreen = () => {
   const bookIds = useDownloadedBookWithUnsafeProtectedIdsState({
-    normalizedBookDownloadsState: useSignalValue(
-      booksDownloadStateSignal
-    )
+    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal)
   })
   const visibleBookIds = useVisibleBookIds()
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])

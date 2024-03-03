@@ -81,7 +81,7 @@ export const bookSchema: RxJsonSchema<
   type: "object",
   primaryKey: `_id`,
   properties: {
-    _id: { type: `string`, maxLength: 50 },
+    _id: { type: `string`, maxLength: 100 },
     collections: {
       type: "array",
       ref: "obokucollection",
