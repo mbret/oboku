@@ -1,12 +1,4 @@
-import {
-  addRxPlugin,
-  createRxDatabase,
-  RxCollection,
-  RxDocument,
-  RxJsonSchema,
-  RxQuery
-} from "rxdb"
-import { getReplicationProperties } from "./rxdb-plugins/replication"
+import { addRxPlugin, createRxDatabase } from "rxdb"
 import { PromiseReturnType } from "../types"
 import {
   CollectionCollection,
@@ -15,7 +7,6 @@ import {
   collectionMigrationStrategies
 } from "./schemas/collection"
 import { applyHooks } from "./middleware"
-import { SafeUpdateMongoUpdateSyntax } from "./types"
 import {
   dataSourceSchema,
   dataSourceCollectionMethods,
@@ -42,6 +33,12 @@ import { tag, TagCollection } from "./schemas/tags"
 import { link, LinkCollection } from "./schemas/link"
 import pouchDbAdapterIdb from "pouchdb-adapter-idb"
 import pouchDbAdapterHttp from "pouchdb-adapter-http"
+import {
+  SettingsCollection,
+  settingsCollectionMethods,
+  settingsMigrationStrategies,
+  settingsSchema
+} from "./schemas/settings"
 
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBLeaderElectionPlugin)
@@ -69,21 +66,6 @@ export type SettingsDocType = {
 
 export type DocTypes = TagsDocType | BookDocType | LinkDocType | SettingsDocType
 
-export type SettingsDocument = RxDocument<SettingsDocType>
-
-type SettingsCollectionMethods = {
-  safeUpdate: (
-    json: SafeUpdateMongoUpdateSyntax<SettingsDocType>,
-    cb: (collection: SettingsCollection) => RxQuery
-  ) => Promise<SettingsDocument>
-}
-
-type SettingsCollection = RxCollection<
-  SettingsDocType,
-  {},
-  SettingsCollectionMethods
->
-
 // export type BookDocumentMutation = RxDocumentMutation<BookDocument | null, Partial<BookDocument> & { tagId?: string, collectionId?: string }>
 // export type BookDocumentRemoveMutation = RxDocumentMutation<BookDocument | null, { id: string }>
 
@@ -95,25 +77,6 @@ export type MyDatabaseCollections = {
   obokucollection: CollectionCollection
   datasource: DataSourceCollection
 }
-
-const settingsSchema: RxJsonSchema<SettingsDocType> = {
-  version: 0,
-  type: "object",
-  primaryKey: `_id`,
-  properties: {
-    _id: { type: "string", final: true, maxLength: 50 },
-    contentPassword: { type: ["string", "null"] },
-    ...getReplicationProperties(`settings`)
-  }
-}
-
-const settingsCollectionMethods: SettingsCollectionMethods = {
-  safeUpdate: async function (this: SettingsCollection, json, cb) {
-    return cb(this).update(json)
-  }
-}
-
-export const settingsMigrationStrategies = {}
 
 export type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 
