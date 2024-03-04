@@ -2,6 +2,7 @@ import { handlerPath } from "@libs/handler-resolver"
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
+  role: "lambdaDefault",
   /**
    * Because this lambda check and lock the process
    * we need to avoid concurrent access. This way we ensure
