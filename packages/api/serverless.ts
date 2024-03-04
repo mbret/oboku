@@ -17,7 +17,9 @@ const ENVS_TO_MAP = [
   "GOOGLE_BOOK_API_URL",
   "OFFLINE",
   "COVERS_PLACEHOLDER_BUCKET_KEY",
-  "COVERS_BUCKET_NAME"
+  "COVERS_BUCKET_NAME",
+  "SUPABASE_PROJECT_URL",
+  "SUPABASE_SERVICE_ROLE_KEY"
 ]
 
 const functions: AWS[`functions`] = {
@@ -29,12 +31,6 @@ const functions: AWS[`functions`] = {
   syncDataSource,
   syncDataSourceLongProcess,
   cors: corsProxy,
-  publisher: {
-    handler: `${__dirname}/src/functions/publisher.handler`,
-    environment: {
-      QUEUE_URL: "${construct:metadata.queueUrl}"
-    }
-  }
 }
 
 Object.keys(functions).forEach((key) => {
@@ -83,17 +79,6 @@ const serverlessConfiguration: AWS & any = {
         (acc, key) => ({ ...acc, [key]: `$\{env:${key}}` }),
         {}
       )
-    }
-  },
-  // compute: {
-  //   handler: `${__dirname}/handler.main`
-  // },
-  constructs: {
-    metadata: {
-      type: "queue",
-      worker: {
-        handler: `${__dirname}/src/functions/worker.handler`
-      }
     }
   },
   layers: {

@@ -1,8 +1,9 @@
 import { crypto } from "@oboku/shared"
-import { Database, SettingsDocType } from "../rxdb"
+import { Database } from "../rxdb"
 import { useForeverQuery, useMutation } from "reactjrx"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { from, map, mergeMap, of, switchMap } from "rxjs"
+import { SettingsDocType } from "../rxdb/collections/settings"
 
 export const getSettings = (database: Database) => {
   return database.settings

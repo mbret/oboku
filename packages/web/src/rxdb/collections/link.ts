@@ -1,5 +1,5 @@
 import { LinkDocType, SafeMangoQuery } from "@oboku/shared"
-import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
+import { AtomicUpdateFunction, RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
 import { MongoUpdateSyntax } from "../../types"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
 import { SafeUpdateMongoUpdateSyntax } from "../types"
@@ -14,8 +14,14 @@ export type LinkCollection = RxCollection<
 
 type LinkDocMethods = {
   safeUpdate: (updateObj: MongoUpdateSyntax<LinkDocType>) => Promise<any>
+  incrementalModify: (
+    mutationFunction: AtomicUpdateFunction<LinkDocType>,
+    context?: string | undefined
+  ) => Promise<RxDocument<LinkDocType, LinkDocMethods>>
 }
+
 type LinkDocument = RxDocument<LinkDocType, LinkDocMethods>
+
 type LinkCollectionMethods = {
   safeInsert: (
     json: Omit<LinkDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>
@@ -38,7 +44,7 @@ const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev` | `rxdbMeta`>> = {
   type: "object",
   primaryKey: `_id`,
   properties: {
-    _id: { type: `string`, maxLength: 50 },
+    _id: { type: `string`, maxLength: 100 },
     data: { type: ["string", "object", "null"] },
     resourceId: { type: "string" },
     type: { type: "string" },
@@ -56,6 +62,9 @@ const linkSchemaMigrationStrategies = {}
 const linkDocMethods: LinkDocMethods = {
   safeUpdate: async function (this: LinkDocument, updateObj) {
     return this.update(updateObj)
+  },
+  incrementalModify: function (this: LinkDocument, mutationFunction) {
+    return this.atomicUpdate(mutationFunction)
   }
 }
 

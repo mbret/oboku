@@ -13,6 +13,7 @@ jobs:
     with:
       STAGE: dev
       AWS_API_URI: https://5ap6qwkd0e.execute-api.us-east-1.amazonaws.com/dev
+      SUPABASE_PROJECT_URL: https://dnwnnyfauivafqfqmazx.supabase.co
       GOOGLE_BOOK_API_URL: https://www.googleapis.com/books/v1
       COVERS_BUCKET_NAME: oboku-covers
       COVERS_PLACEHOLDER_BUCKET_KEY: cover-placeholder.png
@@ -22,3 +23,4 @@ jobs:
       COUCH_DB_URL: ${{ secrets.COUCH_DB_URL_DEV }}
       CONTACT_TO_ADDRESS: ${{ secrets.CONTACT_TO_ADDRESS }}
       FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

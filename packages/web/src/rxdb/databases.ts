@@ -1,27 +1,20 @@
-import {
-  addRxPlugin,
-  createRxDatabase,
-  RxCollection,
-  RxDocument,
-  RxJsonSchema,
-  RxQuery
-} from "rxdb"
-import { getReplicationProperties } from "./rxdb-plugins/replication"
+import { addRxPlugin, createRxDatabase } from "rxdb"
 import { PromiseReturnType } from "../types"
 import {
   CollectionCollection,
   collectionCollectionMethods,
   collectionSchema,
-  collectionMigrationStrategies
-} from "./schemas/collection"
+  collectionMigrationStrategies,
+  collectionDocMethods as collectionCollectionDocMethods
+} from "./collections/collection"
 import { applyHooks } from "./middleware"
-import { SafeUpdateMongoUpdateSyntax } from "./types"
 import {
   dataSourceSchema,
   dataSourceCollectionMethods,
   DataSourceCollection,
-  migrationStrategies as dataSourceMigrationStrategies
-} from "./schemas/dataSource"
+  migrationStrategies as dataSourceMigrationStrategies,
+  collectionDocMethods as dataSourceCollectionDocMethods
+} from "./collections/dataSource"
 import { BookDocType, LinkDocType, TagsDocType } from "@oboku/shared"
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder"
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
@@ -37,11 +30,18 @@ import {
   bookDocMethods,
   bookSchema,
   bookSchemaMigrationStrategies
-} from "./schemas/book"
-import { tag, TagCollection } from "./schemas/tags"
-import { link, LinkCollection } from "./schemas/link"
+} from "./collections/book"
+import { tag, TagCollection } from "./collections/tags"
+import { link, LinkCollection } from "./collections/link"
 import pouchDbAdapterIdb from "pouchdb-adapter-idb"
 import pouchDbAdapterHttp from "pouchdb-adapter-http"
+import {
+  SettingsCollection,
+  SettingsDocType,
+  settingsCollectionMethods,
+  settingsMigrationStrategies,
+  settingsSchema
+} from "./collections/settings"
 
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBLeaderElectionPlugin)
@@ -62,27 +62,7 @@ export enum LibraryViewMode {
   LIST = "list"
 }
 
-export type SettingsDocType = {
-  _id: "settings"
-  contentPassword: string | null
-}
-
 export type DocTypes = TagsDocType | BookDocType | LinkDocType | SettingsDocType
-
-export type SettingsDocument = RxDocument<SettingsDocType>
-
-type SettingsCollectionMethods = {
-  safeUpdate: (
-    json: SafeUpdateMongoUpdateSyntax<SettingsDocType>,
-    cb: (collection: SettingsCollection) => RxQuery
-  ) => Promise<SettingsDocument>
-}
-
-type SettingsCollection = RxCollection<
-  SettingsDocType,
-  {},
-  SettingsCollectionMethods
->
 
 // export type BookDocumentMutation = RxDocumentMutation<BookDocument | null, Partial<BookDocument> & { tagId?: string, collectionId?: string }>
 // export type BookDocumentRemoveMutation = RxDocumentMutation<BookDocument | null, { id: string }>
@@ -95,25 +75,6 @@ export type MyDatabaseCollections = {
   obokucollection: CollectionCollection
   datasource: DataSourceCollection
 }
-
-const settingsSchema: RxJsonSchema<SettingsDocType> = {
-  version: 0,
-  type: "object",
-  primaryKey: `_id`,
-  properties: {
-    _id: { type: "string", final: true, maxLength: 50 },
-    contentPassword: { type: ["string", "null"] },
-    ...getReplicationProperties(`settings`)
-  }
-}
-
-const settingsCollectionMethods: SettingsCollectionMethods = {
-  safeUpdate: async function (this: SettingsCollection, json, cb) {
-    return cb(this).update(json)
-  }
-}
-
-export const settingsMigrationStrategies = {}
 
 export type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 
@@ -161,11 +122,13 @@ const createCollections = async (db: Database) => {
     obokucollection: {
       schema: collectionSchema,
       statics: collectionCollectionMethods,
-      migrationStrategies: collectionMigrationStrategies
+      migrationStrategies: collectionMigrationStrategies,
+      methods: collectionCollectionDocMethods
     },
     datasource: {
       schema: dataSourceSchema,
       statics: dataSourceCollectionMethods,
+      methods: dataSourceCollectionDocMethods,
       migrationStrategies: dataSourceMigrationStrategies
     }
   })

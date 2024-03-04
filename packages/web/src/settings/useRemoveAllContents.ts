@@ -1,11 +1,11 @@
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../rxdb/useCreateDatabase"
 import { catchError, from, mergeMap, tap } from "rxjs"
-import { useSync } from "../rxdb/useSync"
+import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useLock } from "../common/BlockingBackdrop"
 
 export const useRemoveAllContents = () => {
-  const sync = useSync()
+  const { mutateAsync: sync } = useSyncReplicate()
   const [lock] = useLock()
 
   return useMutation({
@@ -25,13 +25,15 @@ export const useRemoveAllContents = () => {
             ])
           ).pipe(
             mergeMap(() =>
-              sync([
-                database.book,
-                database.obokucollection,
-                database.link,
-                database.tag,
-                database.datasource
-              ])
+              from(
+                sync([
+                  database.book,
+                  database.obokucollection,
+                  database.link,
+                  database.tag,
+                  database.datasource
+                ])
+              )
             )
           )
         ),

@@ -35,7 +35,7 @@ export const useUpdateTag = () => {
         .findOne({ selector: { _id } })
         .exec()
         .then((doc) =>
-          doc?.atomicUpdate((doc) => ({
+          doc?.incrementalModify((doc) => ({
             ...doc,
             ...rest
           }))

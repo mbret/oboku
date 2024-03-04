@@ -62,7 +62,7 @@ const useUpsertBookLinkActionEffect = () => {
                 )
                 if (book) {
                   return from(
-                    book.atomicUpdate((oldData) => ({
+                    book.incrementalModify((oldData) => ({
                       ...oldData,
                       links: [existingLink._id]
                     }))
@@ -120,7 +120,7 @@ const useUpsertBookLinkActionEffect = () => {
                 filter(isDefined),
                 switchMap((book) =>
                   from(
-                    book.atomicUpdate((data) => ({
+                    book.incrementalModify((data) => ({
                       ...data,
                       isNotInterested
                     }))

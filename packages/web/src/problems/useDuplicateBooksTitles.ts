@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react"
 import { DeepMutable } from "rxdb/dist/types/types"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
-import { BookDocument } from "../rxdb/schemas/book"
+import { BookDocument } from "../rxdb/collections/book"
 import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { switchMap } from "rxjs"
@@ -77,7 +77,7 @@ export const useFixDuplicatedBookTitles = () => {
               const { _id, _rev, ...safeMergedDoc } = mergedDoc
 
               // we update the first entry with the all merged data
-              await docsWithSameTitle[0]?.atomicUpdate((oldData) => ({
+              await docsWithSameTitle[0]?.incrementalModify((oldData) => ({
                 ...oldData,
                 ...safeMergedDoc
               }))

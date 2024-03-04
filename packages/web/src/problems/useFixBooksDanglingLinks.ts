@@ -2,7 +2,7 @@ import { difference } from "lodash"
 import { useCallback } from "react"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
-import { BookDocument } from "../rxdb/schemas/book"
+import { BookDocument } from "../rxdb/collections/book"
 
 export const useFixBooksDanglingLinks = () => {
   const { db } = useDatabase()
@@ -27,7 +27,7 @@ export const useFixBooksDanglingLinks = () => {
       )
 
       if (toRemove.length > 0) {
-        await doc.atomicUpdate((data) => ({
+        await doc.incrementalModify((data) => ({
           ...data,
           links: data.links.filter((id) => !toRemove.includes(id))
         }))

@@ -25,6 +25,7 @@
     "@middy/http-response-serializer": "^5.0.0",
     "@middy/validator": "^5.0.0",
     "@oboku/shared": "^0.8.0",
+    "@supabase/supabase-js": "^2.39.7",
     "abort-controller": "^3.0.0",
     "axios": "^1.3.4",
     "cheerio": "^1.0.0-rc.10",

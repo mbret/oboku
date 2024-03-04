@@ -13,7 +13,7 @@ import { AtomicUpdateFunction } from "rxdb"
 import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
 import { useDialogManager } from "../dialog"
-import { useSync } from "../rxdb/useSync"
+import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { catchError, EMPTY, from, map, switchMap } from "rxjs"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
@@ -101,7 +101,7 @@ export const useAtomicUpdateBook = () => {
         .findOne({ selector: { _id: id } })
         .exec()
 
-      return await book?.atomicUpdate(mutationFunction)
+      return await book?.incrementalModify(mutationFunction)
     },
     [database]
   )
@@ -114,7 +114,7 @@ export const useRefreshBookMetadata = () => {
   const [updateBook] = useAtomicUpdateBook()
   const dialog = useDialogManager()
   const network = useNetworkState()
-  const sync = useSync()
+  const { mutateAsync: sync } = useSyncReplicate()
   const refreshPluginMetadata = usePluginRefreshMetadata()
 
   return async (bookId: string) => {
@@ -148,7 +148,7 @@ export const useRefreshBookMetadata = () => {
         }))
       )
         .pipe(
-          switchMap(() => sync([database.link, database.book])),
+          switchMap(() => from(sync([database.link, database.book]))),
           switchMap(() =>
             from(httpClient.refreshMetadata(bookId, pluginMetadata))
           ),

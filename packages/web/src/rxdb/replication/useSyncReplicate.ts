@@ -1,18 +1,17 @@
-import { useCallback } from "react"
 import PouchDB from "pouchdb"
 import { first } from "rxjs/operators"
-import { authStateSignal } from "../auth/authState"
-import { API_COUCH_URI } from "../constants"
+import { authStateSignal } from "../../auth/authState"
+import { API_COUCH_URI } from "../../constants"
 import { RxCollection } from "rxdb"
-import { syncCollections } from "./replication/syncCollections"
+import { syncCollections } from "./syncCollections"
 import { merge, filter, map } from "rxjs"
-import { useSignalValue } from "reactjrx"
+import { useMutation, useSignalValue } from "reactjrx"
 
-export const useSync = () => {
+export const useSyncReplicate = () => {
   const { dbName } = useSignalValue(authStateSignal) || {}
 
-  return useCallback(
-    (collections: RxCollection[]) => {
+  return useMutation({
+    mutationFn: (collections: RxCollection[]) => {
       const syncOptions = () => ({
         remote: new PouchDB(`${API_COUCH_URI}/${dbName}`, {
           fetch: (url, opts) => {
@@ -48,7 +47,6 @@ export const useSync = () => {
           first()
         )
       )
-    },
-    [dbName]
-  )
+    }
+  })
 }

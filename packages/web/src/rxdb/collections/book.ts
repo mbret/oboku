@@ -3,7 +3,13 @@ import {
   DeprecatedBookDocType,
   InsertAbleBookDocType
 } from "@oboku/shared"
-import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
+import {
+  AtomicUpdateFunction,
+  RxCollection,
+  RxDocument,
+  RxJsonSchema,
+  RxQuery
+} from "rxdb"
 import { MongoUpdateSyntax } from "../../types"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
 import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
@@ -11,6 +17,10 @@ import { generateId } from "./utils"
 
 type BookDocMethods = {
   safeUpdate: (updateObj: MongoUpdateSyntax<BookDocType>) => Promise<any>
+  incrementalModify: (
+    mutationFunction: AtomicUpdateFunction<BookDocType>,
+    context?: string | undefined
+  ) => Promise<RxDocument<BookDocType, BookDocMethods>>
 }
 
 export type BookDocument = RxDocument<BookDocType, BookDocMethods>
@@ -40,6 +50,9 @@ export type BookCollection = RxCollection<
 export const bookDocMethods: BookDocMethods = {
   safeUpdate: function (this: BookDocument, updateObj) {
     return this.update(updateObj)
+  },
+  incrementalModify: function (this: BookDocument, mutationFunction) {
+    return this.atomicUpdate(mutationFunction)
   }
 }
 
@@ -68,7 +81,7 @@ export const bookSchema: RxJsonSchema<
   type: "object",
   primaryKey: `_id`,
   properties: {
-    _id: { type: `string`, maxLength: 50 },
+    _id: { type: `string`, maxLength: 100 },
     collections: {
       type: "array",
       ref: "obokucollection",

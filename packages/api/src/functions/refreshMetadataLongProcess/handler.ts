@@ -10,6 +10,8 @@ import { atomicUpdate, findOne, getNanoDbForUser } from "@libs/couch/dbHelpers"
 import { PromiseReturnType } from "@libs/types"
 import { retrieveMetadataAndSaveCover } from "@libs/books/retrieveMetadataAndSaveCover"
 import { getParameterValue } from "@libs/ssm"
+import { deleteLock } from "@libs/supabase/deleteLock"
+import { supabase } from "@libs/supabase/client"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -58,6 +60,8 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     throw new Error(`Unable to parse event.body -> ${event.body}`)
   }
 
+  const lockId = `metadata_${event.body.bookId}`
+
   const db = await getNanoDbForUser(userName)
 
   const book = await findOne(db, "book", { selector: { _id: bookId } })
@@ -96,21 +100,25 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       lastMetadataUpdateError: "unknown"
     }))
 
+    await deleteLock(supabase, lockId)
+
     throw e
   }
 
-  await atomicUpdate(db, "book", book._id, (old) => ({
-    ...old,
-    ...data.book,
-    lastMetadataUpdatedAt: new Date().getTime(),
-    metadataUpdateStatus: null,
-    lastMetadataUpdateError: null
-  }))
-
-  await atomicUpdate(db, "link", link._id, (old) => ({
-    ...old,
-    contentLength: data.link.contentLength
-  }))
+  await Promise.all([
+    atomicUpdate(db, "book", book._id, (old) => ({
+      ...old,
+      ...data.book,
+      lastMetadataUpdatedAt: new Date().getTime(),
+      metadataUpdateStatus: null,
+      lastMetadataUpdateError: null
+    })),
+    atomicUpdate(db, "link", link._id, (old) => ({
+      ...old,
+      contentLength: data.link.contentLength
+    })),
+    deleteLock(supabase, lockId)
+  ])
 
   return {
     statusCode: 200,
