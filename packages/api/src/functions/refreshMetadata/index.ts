@@ -2,7 +2,14 @@ import { handlerPath } from "@libs/handler-resolver"
 
 export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
-  role: "lambdaDefault",
+  /**
+   * Because this lambda check and lock the process
+   * we need to avoid concurrent access. This way we ensure
+   * the lock is always checked in sync.
+   *
+   * This lambda should stay simple and fast (check/lock)
+   */
+  reservedConcurrency: 1,
   events: [
     {
       http: {
