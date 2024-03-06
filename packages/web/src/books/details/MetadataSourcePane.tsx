@@ -1,8 +1,5 @@
 import {
-  Alert,
-  Box,
   List,
-  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -23,7 +20,7 @@ import { Metadata } from "@oboku/shared"
 import { useLink } from "../../links/states"
 import { getPluginFromType } from "../../plugins/getPluginFromType"
 
-export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
+export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const plugin = getPluginFromType(link?.type)
@@ -31,7 +28,7 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
 
   return (
     <>
-      <List subheader={<ListSubheader>Metadata</ListSubheader>}>
+      <List subheader={<ListSubheader>Metadata sources</ListSubheader>}>
         {types.map((type) => {
           const metadata = book?.metadata?.find((item) => item.type === type)
 
@@ -57,7 +54,7 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
                         ? "Google Book API"
                         : type === "user"
                           ? "User"
-                          : "Source"}
+                          : "Link"}
                     {type === "link" && (
                       <Typography component="span" variant="body2" ml={1}>
                         ({plugin?.name})
@@ -100,7 +97,7 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
                   )
                 }
               />
-              <Stack width={50} alignItems="center">
+              <Stack width={50} alignItems="center" flexShrink={0}>
                 <MoreVertRounded />
               </Stack>
             </ListItemButton>

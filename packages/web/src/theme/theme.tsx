@@ -71,6 +71,19 @@ export const theme = createTheme({
           minWidth: 260
         }
       }
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: 6
+        },
+        sizeSmall: {
+          borderRadius: 6
+        },
+        sizeMedium: {
+          borderRadius: 6
+        }
+      }
     }
   },
   custom: {

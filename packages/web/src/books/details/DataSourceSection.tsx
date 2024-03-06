@@ -4,7 +4,8 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListSubheader
+  ListSubheader,
+  Stack
 } from "@mui/material"
 import { MoreVertRounded } from "@mui/icons-material"
 import { FC, useState } from "react"
@@ -23,12 +24,11 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
   const [isSelectItemOpened, setIsSelectItemOpened] = useState(false)
   const dialog = useDialogManager()
-  const refreshBookMetadata = useRefreshBookMetadata()
   const createRequestPopupDialog = useCreateRequestPopupDialog()
 
   return (
     <>
-      <List subheader={<ListSubheader>Data source</ListSubheader>}>
+      <List subheader={<ListSubheader>Link</ListSubheader>}>
         {!!link && !!dataSourcePlugin && (
           <ListItem
             key={link?._id}
@@ -56,21 +56,10 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
               }}
               secondary={`This book has been created from ${dataSourcePlugin.name}. Click to edit the data source`}
             />
-            <MoreVertRounded />
+            <Stack width={50} alignItems="center" flexShrink={0}>
+              <MoreVertRounded />
+            </Stack>
           </ListItem>
-        )}
-        <DebugInfo info={{ id: link?._id || `` }} mb={2} />
-        {import.meta.env.DEV && (
-          <Button
-            fullWidth
-            variant="outlined"
-            color="primary"
-            onClick={() => {
-              refreshBookMetadata(bookId)
-            }}
-          >
-            debug:refresh_metadata
-          </Button>
         )}
       </List>
       {dataSourcePlugin?.SelectItemComponent && (

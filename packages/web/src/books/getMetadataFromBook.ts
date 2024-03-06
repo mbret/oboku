@@ -1,7 +1,10 @@
 import { BookDocType, DeprecatedBookDocType, Metadata } from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
 
-type Return = DeepReadonlyObject<Omit<Metadata, "type">>
+type Return = DeepReadonlyObject<Omit<Metadata, "type">> & {
+  language?: string
+  displayableDate?: string
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GenericObject = { [key: string]: any }
@@ -11,6 +14,7 @@ function mergeObjects(a: GenericObject, b: GenericObject): GenericObject {
     (acc, [key, value]) => {
       // If the value in `b` is not `undefined`, use it; otherwise, retain the value from `a`.
       acc[key] = value !== undefined ? value : a[key]
+
       return acc
     },
     { ...a }
@@ -36,9 +40,25 @@ export const getMetadataFromBook = (
   )
 
   const reducedMetadata = orderedList.reduce((acc, item) => {
+    const mergedValue = mergeObjects(acc, item) as Return
+
+    const date = Object.values(item.date ?? {}).length ? item.date : acc.date
+    const subjects = item.subjects?.length ? item.subjects : acc.subjects
+
     return {
-      ...mergeObjects(acc, item),
-      authors: [...(acc.authors ?? []), ...(item.authors ?? [])]
+      ...mergedValue,
+      date,
+      subjects,
+      authors: [...(acc.authors ?? []), ...(item.authors ?? [])],
+      language: (mergedValue.languages ?? [])[0],
+      displayableDate:
+        Object.keys(date ?? {}).length === 3
+          ? new Date(`${date?.year} ${date?.month} ${date?.day}`).toDateString()
+          : date?.year !== undefined && date.month !== undefined
+            ? `${date?.year} ${date?.month}`
+            : date?.year !== undefined
+              ? `${date?.year}`
+              : undefined
     } satisfies Return
   }, {} as Return)
 

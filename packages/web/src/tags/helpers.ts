@@ -2,11 +2,11 @@ import { TagsDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
 import { useMutation } from "reactjrx"
-import { map, switchMap } from "rxjs"
+import { map, mergeMap, switchMap } from "rxjs"
 import { useForeverQuery } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { getLatestDatabase, latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { Database } from "../rxdb"
-import { DeepReadonlyObject } from "rxdb"
+import { DeepReadonlyObject, MangoQuery } from "rxdb"
 
 export const useCreateTag = () => {
   const { db } = useDatabase()
@@ -106,10 +106,21 @@ export const useTag = (id: string) =>
       )
   })
 
-export const useTags = () =>
+export const useTags = ({
+  queryObj,
+  ...options
+}: {
+  enabled?: boolean
+  queryObj?: MangoQuery<TagsDocType> | undefined
+}) =>
   useForeverQuery({
-    queryFn: () => tags$,
-    queryKey: ["rxdb", "tags"]
+    queryKey: ["rxdb", "tags", queryObj],
+    queryFn: () =>
+      getLatestDatabase().pipe(
+        mergeMap((database) => database.tag.find(queryObj).$),
+        map((items) => items.map((item) => item.toJSON()))
+      ),
+    ...options
   })
 
 export const useTagsByIds = () =>
