@@ -1,6 +1,14 @@
 import { FC, useState, useEffect } from "react"
 import Button from "@mui/material/Button"
-import { EditRounded } from "@mui/icons-material"
+import {
+  CloudDownloadRounded,
+  DeleteOutlineRounded,
+  DeleteRounded,
+  EditRounded,
+  FolderDelete,
+  FolderDeleteOutlined,
+  MenuBookOutlined
+} from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   List,
@@ -100,9 +108,11 @@ export const BookDetailsScreen = () => {
           By {metadata?.authors?.join(", ") || "Unknown"}
         </Typography>
       </Container>
-      <Box
+      <Stack
         marginBottom={1}
-        flexDirection="column"
+        flexDirection={["column", "row"]}
+        gap={1}
+        flexWrap="wrap"
         style={{
           display: "flex",
           width: "100%",
@@ -112,42 +122,43 @@ export const BookDetailsScreen = () => {
       >
         {book?.downloadState === "none" && (
           <Button
-            fullWidth
             variant="outlined"
             color="primary"
+            startIcon={<CloudDownloadRounded />}
             onClick={() => downloadFile(book)}
           >
             Download
           </Button>
         )}
         {book?.downloadState === "downloading" && (
-          <Button fullWidth variant="outlined" color="primary" disabled>
+          <Button variant="outlined" color="primary" disabled>
             Downloading...
           </Button>
         )}
         {book?.downloadState === "downloaded" && (
           <Button
-            fullWidth
             variant="outlined"
             color="primary"
+            startIcon={<DeleteRounded />}
+            onClick={() => removeDownloadFile(book._id)}
+          >
+            Remove the book download
+          </Button>
+        )}
+        {book?.downloadState === "downloaded" && (
+          <Button
+            variant="contained"
+            color="primary"
+            style={{
+              flex: 1
+            }}
+            startIcon={<MenuBookOutlined />}
             onClick={() => navigate(ROUTES.READER.replace(":id", book._id))}
           >
             Read
           </Button>
         )}
-        {book?.downloadState === "downloaded" && (
-          <Box mt={2}>
-            <Button
-              fullWidth
-              variant="outlined"
-              color="primary"
-              onClick={() => removeDownloadFile(book._id)}
-            >
-              Remove the book download
-            </Button>
-          </Box>
-        )}
-      </Box>
+      </Stack>
       {book?.metadataUpdateStatus === "fetching" && (
         <Alert severity="info">
           We are still retrieving metadata information...

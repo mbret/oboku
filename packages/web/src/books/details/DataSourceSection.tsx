@@ -10,10 +10,8 @@ import {
 import { MoreVertRounded } from "@mui/icons-material"
 import { FC, useState } from "react"
 import { useDataSourcePlugin } from "../../dataSources/helpers"
-import { DebugInfo } from "../../debug/DebugInfo"
 import { Report } from "../../debug/report.shared"
 import { useDialogManager } from "../../dialog"
-import { useRefreshBookMetadata } from "../helpers"
 import { useBookLinksState } from "../states"
 import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
 import { upsertBookLink } from "../triggers"
@@ -28,11 +26,26 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
 
   return (
     <>
-      <List subheader={<ListSubheader>Link</ListSubheader>}>
+      <List
+        disablePadding
+        dense
+        subheader={
+          <ListSubheader
+            sx={{
+              px: [null, 3]
+            }}
+          >
+            Link
+          </ListSubheader>
+        }
+      >
         {!!link && !!dataSourcePlugin && (
           <ListItem
             key={link?._id}
             button
+            sx={{
+              px: [null, 3]
+            }}
             onClick={() => {
               if (!dataSourcePlugin?.SelectItemComponent) {
                 dialog({ preset: "NOT_IMPLEMENTED" })

@@ -5,7 +5,8 @@ import {
   ListItemText,
   ListSubheader,
   Stack,
-  Typography
+  Typography,
+  useTheme
 } from "@mui/material"
 import {
   Google,
@@ -28,7 +29,19 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
 
   return (
     <>
-      <List subheader={<ListSubheader>Metadata sources</ListSubheader>}>
+      <List
+        dense
+        subheader={
+          <ListSubheader
+            sx={{
+              px: [null, 3]
+            }}
+          >
+            Metadata sources
+          </ListSubheader>
+        }
+        disablePadding
+      >
         {types.map((type) => {
           const metadata = book?.metadata?.find((item) => item.type === type)
 
@@ -38,7 +51,12 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
             : 0
 
           return (
-            <ListItemButton key={type}>
+            <ListItemButton
+              key={type}
+              sx={{
+                px: [null, 3]
+              }}
+            >
               <ListItemIcon>
                 {type === "file" && <PlagiarismOutlined />}
                 {type === "link" && <InsertLinkOutlined />}

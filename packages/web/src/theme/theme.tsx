@@ -36,6 +36,7 @@ export const theme = createTheme({
     MuiButton: {
       defaultProps: {
         focusRipple: false,
+        disableElevation: true,
         variant: "outlined"
       },
       styleOverrides: {
@@ -73,6 +74,7 @@ export const theme = createTheme({
       }
     },
     MuiChip: {
+      defaultProps: {},
       styleOverrides: {
         root: {
           borderRadius: 6
