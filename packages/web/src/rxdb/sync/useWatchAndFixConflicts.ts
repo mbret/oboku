@@ -171,30 +171,3 @@ export const useWatchAndFixConflicts = () => {
   useWatchForLiveConflicts(db)
   useTryToResolveOldRemainingConflicts(db)
 }
-
-// setTimeout(() => {
-//   db.bulkDocs([{
-//     "_id": "sa3uvuuq8i:1616921818059",
-//     "_rev": "1-8",
-//     "name": (new Date().getTime()).toString(),
-//     "books": [],
-//     "isProtected": false,
-//     "createdAt": "2021-03-28T08:56:58.058Z",
-//     "modifiedAt": null,
-//     "rx_model": "tag"
-//   },
-//   {
-//     "_id": "sa3uvuuq8i:1616921818059",
-//     "_rev": "1-9",
-//     "name": (new Date().getTime() + 1).toString(),
-//     "books": [],
-//     "isProtected": false,
-//     "createdAt": "2021-03-28T08:56:58.058Z",
-//     "modifiedAt": null,
-//     "rx_model": "tag"
-//   }], { new_edits: false }).then(response => {
-//     console.log('FOOOO', response)
-//   }).catch(err => {
-//     console.log('FOOOO', err)
-//   })
-// }, 5000)
