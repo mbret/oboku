@@ -2,12 +2,9 @@ import { FC, useState, useEffect } from "react"
 import Button from "@mui/material/Button"
 import {
   CloudDownloadRounded,
-  DeleteOutlineRounded,
-  DeleteRounded,
   EditRounded,
-  FolderDelete,
-  FolderDeleteOutlined,
-  MenuBookOutlined
+  MenuBookOutlined,
+  MoreVertOutlined
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
@@ -22,10 +19,9 @@ import {
   Drawer,
   DialogContent,
   TextField,
-  useTheme,
-  Box,
   Container,
-  Stack
+  Stack,
+  IconButton
 } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
 import { Alert } from "@mui/material"
@@ -35,8 +31,6 @@ import { useEnrichedBookState } from "../states"
 import { useLink } from "../../links/states"
 import { useEditLink } from "../../links/helpers"
 import { DataSourceSection } from "./DataSourceSection"
-import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
-import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
@@ -45,18 +39,16 @@ import { MetadataSourcePane } from "./MetadataSourcePane"
 import { CoverPane } from "./CoverPane"
 import { MetadataPane } from "./MetadataPane"
 import { DebugInfo } from "../../debug/DebugInfo"
-import { useRefreshBookMetadata } from "../helpers"
 import { CollectionsPane } from "./CollectionsPane"
+import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 
 type ScreenParams = {
   id: string
 }
 
 export const BookDetailsScreen = () => {
-  const theme = useTheme()
   const navigate = useNavigate()
   const downloadFile = useDownloadBook()
-  const refreshBookMetadata = useRefreshBookMetadata()
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<
     undefined | string
   >(undefined)
@@ -67,8 +59,6 @@ export const BookDetailsScreen = () => {
     protectedTagIds: useProtectedTagIds().data,
     tags: useTagsByIds().data
   })
-  const removeDownloadFile = useRemoveDownloadFile()
-
   const metadata = getMetadataFromBook(book)
 
   return (
@@ -77,47 +67,44 @@ export const BookDetailsScreen = () => {
         flex: 1,
         overflow: "auto"
       }}
+      pb={4}
       gap={2}
     >
       <TopBarNavigation title="Book details" showBack={true} />
       <DebugInfo info={{ id: book?._id || ``, linkId: book?.links[0] ?? "" }} />
-      {isDebugEnabled() && (
-        <Button
-          fullWidth
-          variant="outlined"
-          color="primary"
-          onClick={() => {
-            refreshBookMetadata(book?._id ?? "")
-          }}
-        >
-          debug:refresh_metadata
-        </Button>
-      )}
-      <CoverPane bookId={book?._id} mt={2} />
       <Container
-        style={{
+        sx={{
           display: "flex",
-          alignItems: "center",
-          flexFlow: "column",
-          justifyContent: "center",
-          textAlign: "center"
+          flexDirection: ["column", "row"],
+          gap: [1, 3],
+          mt: 2
         }}
       >
-        <Typography variant="body1">{metadata?.title || "Unknown"}</Typography>
-        <Typography variant="body2" fontStyle="italic">
-          By {metadata?.authors?.join(", ") || "Unknown"}
-        </Typography>
+        <CoverPane bookId={book?._id} />
+        <Stack
+          sx={{
+            alignItems: ["center", "flex-start"],
+            flexFlow: "column",
+            justifyContent: ["center", "flex-start"],
+            pt: [0, 5]
+          }}
+        >
+          <Typography variant="body1">
+            {metadata?.title || "Unknown"}
+          </Typography>
+          <Typography variant="body2" fontStyle="italic">
+            By {metadata?.authors?.join(", ") || "Unknown"}
+          </Typography>
+        </Stack>
       </Container>
-      <Stack
-        marginBottom={1}
-        flexDirection={["column", "row"]}
-        gap={1}
-        flexWrap="wrap"
-        style={{
+      <Container
+        sx={{
+          flexDirection: ["row", "row"],
+          flexWrap: "wrap",
+          gap: 1,
+          mb: 1,
           display: "flex",
-          width: "100%",
-          paddingLeft: theme.spacing(2),
-          paddingRight: theme.spacing(2)
+          width: "100%"
         }}
       >
         {book?.downloadState === "none" && (
@@ -137,20 +124,11 @@ export const BookDetailsScreen = () => {
         )}
         {book?.downloadState === "downloaded" && (
           <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<DeleteRounded />}
-            onClick={() => removeDownloadFile(book._id)}
-          >
-            Remove the book download
-          </Button>
-        )}
-        {book?.downloadState === "downloaded" && (
-          <Button
             variant="contained"
             color="primary"
-            style={{
-              flex: 1
+            sx={{
+              flex: [1, "none"],
+              minWidth: 280
             }}
             startIcon={<MenuBookOutlined />}
             onClick={() => navigate(ROUTES.READER.replace(":id", book._id))}
@@ -158,7 +136,14 @@ export const BookDetailsScreen = () => {
             Read
           </Button>
         )}
-      </Stack>
+        <IconButton
+          onClick={() => {
+            bookActionDrawerSignal.setValue({ openedWith: book?._id })
+          }}
+        >
+          <MoreVertOutlined />
+        </IconButton>
+      </Container>
       {book?.metadataUpdateStatus === "fetching" && (
         <Alert severity="info">
           We are still retrieving metadata information...
@@ -168,10 +153,10 @@ export const BookDetailsScreen = () => {
         <MetadataPane bookId={book?._id} />
         <CollectionsPane bookId={book?._id} />
       </Container>
-      <Stack>
+      <Container disableGutters>
         <MetadataSourcePane bookId={id} />
         <DataSourceSection bookId={id} />
-      </Stack>
+      </Container>
       <LinkActionsDrawer
         openWith={isLinkActionDrawerOpenWith}
         bookId={book?._id}

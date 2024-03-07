@@ -82,7 +82,6 @@ export const BookActionsDrawer = memo(() => {
       anchor="bottom"
       open={opened}
       onClose={() => handleClose()}
-      transitionDuration={0}
     >
       {book && (
         <>

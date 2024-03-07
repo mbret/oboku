@@ -112,7 +112,7 @@ export const useTags = ({
 }: {
   enabled?: boolean
   queryObj?: MangoQuery<TagsDocType> | undefined
-}) =>
+} = {}) =>
   useForeverQuery({
     queryKey: ["rxdb", "tags", queryObj],
     queryFn: () =>
