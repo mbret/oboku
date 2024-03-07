@@ -6,8 +6,9 @@ import { InvokeCommand } from "@aws-sdk/client-lambda"
 import { STAGE } from "src/constants"
 import { Logger } from "@libs/logger"
 import { supabase } from "@libs/supabase/client"
+import { isLockOutdated } from "@libs/supabase/isLockOutdated"
 
-const LOCK_MAX_DURATION_MN = 10
+const LOCK_MAX_DURATION_MN = 5
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -37,18 +38,9 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     const response = await supabase.from("lock").select().eq("lock_id", lockId)
 
     const lock = (response.data ?? [])[0]
-    const created_at = new Date(lock.created_at)
     const now = new Date()
-    const differenceInMilliseconds = now.getTime() - created_at.getTime()
-    const differenceInMinutes = Math.floor(
-      differenceInMilliseconds / (1000 * 60)
-    )
 
-    Logger.log(
-      `${lockId} has already a lock created at ${lock.created_at} and is ${differenceInMinutes}mn old`
-    )
-
-    if (differenceInMinutes > LOCK_MAX_DURATION_MN) {
+    if (isLockOutdated(lock, LOCK_MAX_DURATION_MN)) {
       Logger.log(`${lockId} lock is assumed lost and will be recreated`)
 
       const updatedResponse = await supabase

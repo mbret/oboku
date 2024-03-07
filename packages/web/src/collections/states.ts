@@ -72,8 +72,10 @@ export const useCollection = ({ id }: { id?: string }) => {
   })
 }
 
-export const useCollectionsWithPrivacy = () => {
-  const { data: collections } = useCollections()
+export const useCollectionsWithPrivacy = ({
+  queryObj
+}: { queryObj?: MangoQuery<CollectionDocType> } = {}) => {
+  const { data: collections } = useCollections({ queryObj })
   const visibleBookIds = useVisibleBookIds()
   const { showCollectionWithProtectedContent } = useLocalSettings()
 

@@ -1,14 +1,12 @@
 import {
-  Alert,
-  Box,
   List,
-  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   ListSubheader,
   Stack,
-  Typography
+  Typography,
+  useTheme
 } from "@mui/material"
 import {
   Google,
@@ -23,7 +21,7 @@ import { Metadata } from "@oboku/shared"
 import { useLink } from "../../links/states"
 import { getPluginFromType } from "../../plugins/getPluginFromType"
 
-export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
+export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const plugin = getPluginFromType(link?.type)
@@ -31,7 +29,19 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
 
   return (
     <>
-      <List subheader={<ListSubheader>Metadata</ListSubheader>}>
+      <List
+        dense
+        subheader={
+          <ListSubheader
+            sx={{
+              px: [null, 3]
+            }}
+          >
+            Metadata sources
+          </ListSubheader>
+        }
+        disablePadding
+      >
         {types.map((type) => {
           const metadata = book?.metadata?.find((item) => item.type === type)
 
@@ -41,7 +51,12 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
             : 0
 
           return (
-            <ListItemButton key={type}>
+            <ListItemButton
+              key={type}
+              sx={{
+                px: [null, 3]
+              }}
+            >
               <ListItemIcon>
                 {type === "file" && <PlagiarismOutlined />}
                 {type === "link" && <InsertLinkOutlined />}
@@ -57,7 +72,7 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
                         ? "Google Book API"
                         : type === "user"
                           ? "User"
-                          : "Source"}
+                          : "Link"}
                     {type === "link" && (
                       <Typography component="span" variant="body2" ml={1}>
                         ({plugin?.name})
@@ -100,7 +115,7 @@ export const MetadataSection: FC<{ bookId: string }> = ({ bookId }) => {
                   )
                 }
               />
-              <Stack width={50} alignItems="center">
+              <Stack width={50} alignItems="center" flexShrink={0}>
                 <MoreVertRounded />
               </Stack>
             </ListItemButton>
