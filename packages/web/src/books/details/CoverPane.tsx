@@ -18,7 +18,7 @@ export const CoverPane = ({
     >
       <Box
         sx={{
-          width: ["80%", 200],
+          width: ["60%", 200],
           maxWidth: theme.custom.maxWidthCenteredContent
         }}
       >
