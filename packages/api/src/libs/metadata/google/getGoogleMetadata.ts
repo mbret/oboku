@@ -7,7 +7,7 @@ import { refineTitle } from "../refineTitle"
 export const getGoogleMetadata = async (
   metadata: Metadata,
   apiKey: string
-): Promise<Metadata> => {
+): Promise<Metadata | undefined> => {
   let response = metadata.isbn
     ? await findByISBN(metadata.isbn, apiKey)
     : await findByTitle(metadata.title ?? "", apiKey)
@@ -42,8 +42,12 @@ export const getGoogleMetadata = async (
     }
   }
 
+  const parsedMetadata = parseGoogleMetadata(response)
+
+  if (!Object.keys(parsedMetadata)) return undefined
+
   return {
-    ...parseGoogleMetadata(response),
+    ...parsedMetadata,
     type: "googleBookApi"
   }
 }

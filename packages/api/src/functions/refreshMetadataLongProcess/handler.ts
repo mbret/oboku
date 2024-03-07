@@ -12,6 +12,7 @@ import { retrieveMetadataAndSaveCover } from "@libs/books/retrieveMetadataAndSav
 import { getParameterValue } from "@libs/ssm"
 import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
+import { Logger } from "@libs/logger"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -119,6 +120,8 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     })),
     deleteLock(supabase, lockId)
   ])
+
+  Logger.log(`lambda executed with success for ${book._id}`)
 
   return {
     statusCode: 200,
