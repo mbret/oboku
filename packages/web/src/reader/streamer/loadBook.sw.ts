@@ -1,7 +1,7 @@
 import { Archive } from "@prose-reader/streamer"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { Report } from "../../debug/report.shared"
-import { getArchiveForFile } from "./getArchiveForFile.shared"
+import { getArchiveForZipFile } from "./getArchiveForFile.shared"
 
 export class FileNotFoundError extends Error {}
 export class FileNotSupportedError extends Error {}
@@ -62,7 +62,7 @@ export const loadBook = Report.measurePerformance(
       throw new FileNotFoundError(`FileNotFoundError`)
     }
 
-    const newArchive = await getArchiveForFile(file)
+    const newArchive = await getArchiveForZipFile(file)
 
     if (!newArchive) {
       loading = false

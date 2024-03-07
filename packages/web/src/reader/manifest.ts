@@ -6,7 +6,7 @@ import { getArchiveForRarFile } from "./streamer/getArchiveForFile.shared"
 import "../archive"
 import { generateManifestFromArchive } from "@prose-reader/streamer"
 import { directives } from "@oboku/shared"
-import { STREAMER_URL_PREFIX } from "../constants.shared"
+import { getManifestBaseUrl } from "./streamer/getManifestBaseUrl.shared"
 
 // @todo useQuery
 const useGetRarManifest = () =>
@@ -17,7 +17,7 @@ const useGetRarManifest = () =>
       const archive = await getArchiveForRarFile(file)
 
       return generateManifestFromArchive(archive, {
-        baseUrl: `/${STREAMER_URL_PREFIX}/rar`
+        baseUrl: getManifestBaseUrl(window.location.origin, bookId)
       })
     }
 
@@ -50,6 +50,7 @@ export const useManifest = (bookId: string | undefined) => {
           if (response.status === 415) {
             // try to get manifest if it's a RAR
             const rarResponse = await getRarManifest(bookId)
+
             if (rarResponse) {
               setIsRarFile(true)
               const data = rarResponse

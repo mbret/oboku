@@ -157,9 +157,6 @@ export const getEnrichedBookState = ({
     normalizedBookDownloadsState
   })
 
-  if (book && !book?.links) {
-    debugger
-  }
   const linkId = book?.links[0]
 
   if (!book || !linkId) return undefined

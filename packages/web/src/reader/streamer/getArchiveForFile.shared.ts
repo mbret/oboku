@@ -23,7 +23,8 @@ const loadDataWithJsZip = async (data: Blob | File) => {
     throw e
   }
 }
-export const getArchiveForFile = async (
+
+export const getArchiveForZipFile = async (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>
 ): Promise<Archive | undefined> => {
   try {

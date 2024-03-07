@@ -40,7 +40,7 @@ export const Reader: FC<{
   const isBookReady = useSignalValue(isBookReadyStateSignal)
   const readerSettings = useReaderSettingsState()
   const { data: book } = useBook({
-    id: bookId,
+    id: bookId
   })
   const navigate = useNavigate()
   const [
@@ -84,7 +84,12 @@ export const Reader: FC<{
   }, [])
 
   useEffect(() => {
-    if (manifest && book && !readerOptions) {
+    if (
+      manifest &&
+      book &&
+      !readerOptions &&
+      ((isRarFile && fetchResource) || !isRarFile)
+    ) {
       setReaderOptions({
         forceSinglePageMode: true,
         numberOfAdjacentSpineItemToPreLoad:
@@ -119,8 +124,9 @@ export const Reader: FC<{
         <div style={styles.infoContainer}>
           <Box mb={2}>
             <Typography>
-              Oups! it looks like the book <b>{metadata?.title}</b> is not supported
-              yet. If you would like to be able to open it please visit the{" "}
+              Oups! it looks like the book <b>{metadata?.title}</b> is not
+              supported yet. If you would like to be able to open it please
+              visit the{" "}
               <Link
                 href="https://docs.oboku.me"
                 target="__blank"
