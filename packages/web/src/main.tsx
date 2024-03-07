@@ -10,12 +10,6 @@ import "react-responsive-carousel/lib/styles/carousel.min.css"
 import "./index.css"
 import { App } from "./App"
 import * as Sentry from "@sentry/react"
-import { randomBytes, createHash } from "crypto-browserify"
-
-// @ts-ignore
-window.crypto.randomBytes = randomBytes
-// @ts-ignore
-window.crypto.createHash = createHash
 
 const rootElm = document.getElementById("root")
 

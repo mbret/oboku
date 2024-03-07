@@ -31,11 +31,22 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   const response = await supabase
     .from("lock")
-    .insert({ id: 1, lock_id: lockId })
+    .insert({ lock_id: lockId })
     .select()
 
   if (response.status === 409) {
     const response = await supabase.from("lock").select().eq("lock_id", lockId)
+
+    if (!response.count) {
+      Logger.log(
+        `${lockId} not found after receiving 409. Invalid state, ignoring invocation`
+      )
+
+      return {
+        statusCode: 202,
+        body: JSON.stringify({})
+      }
+    }
 
     const lock = (response.data ?? [])[0]
     const now = new Date()

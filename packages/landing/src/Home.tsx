@@ -4,6 +4,9 @@ import {
   Box,
   Button,
   Link,
+  Paper,
+  Stack,
+  styled,
   Typography,
   useTheme
 } from "@mui/material"
@@ -22,6 +25,8 @@ import {
   TabletMacRounded
 } from "@mui/icons-material"
 import landingLogoAsset from "./assets/landing-logo.svg"
+import image2 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
+import image1 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
 import { OrDivider } from "./OrDivider"
 import { links } from "@oboku/shared"
 import { ReactNode } from "react"
@@ -101,11 +106,16 @@ const AppHighlightSection = () => {
   )
 }
 
+const HighlightImage = styled(`img`)`
+  max-width: 300px;
+`
+
 export const Home = () => {
   const theme = useTheme()
 
   return (
     <Box
+      pt={[12, 16]}
       style={{
         display: "flex",
         flex: 1,
@@ -123,25 +133,22 @@ export const Home = () => {
           alignItems: "center"
         }}
       >
-        <header
-          className="App-header"
-          style={{ paddingBottom: theme.spacing(3) }}
-        >
-          <Typography variant="h1">
-            <b style={{ color: theme.palette.primary.main }}>o</b>
-            <b>boku</b>
+        <Box component="header" mb={2}>
+          <Typography variant="h2" component="h1">
+            {/* <span style={{ color: theme.palette.primary.main }}>o</span>
+            boku */}
+            oboku
           </Typography>
-        </header>
-        <img
+        </Box>
+        {/* <img
           style={{
             width: 200
           }}
           src={landingLogoAsset}
           alt="logo"
-        />
+        /> */}
         <div
           style={{
-            paddingTop: theme.spacing(3),
             textAlign: "center",
             display: "flex",
             alignItems: "center",
@@ -153,23 +160,9 @@ export const Home = () => {
             variant="body1"
             style={{ fontWeight: "normal", paddingBottom: theme.spacing(1) }}
           >
-            Your personal reading cloud library. Read your own book from
-            anywhere.
-            <br />
-            Please visit{" "}
-            <Link href={links.documentation} target="_blank">
-              {links.documentation}
-            </Link>{" "}
-            for more information and join us on{" "}
-            <Link href={links.discord} target="_blank">
-              discord
-            </Link>
+            Your books, your cloud: Access, read and sync your personal library
+            from your cloud, anytime, anywhere.
           </Typography>
-          <Alert severity="info">
-            <b>oboku</b> is a working product but still in{" "}
-            <b>active development</b>! Documentations and resources are under
-            construction and we need your feedback to improve the product.
-          </Alert>
           <div style={{ paddingBottom: theme.spacing(3) }} />
           <Box
             width="100%"
@@ -186,75 +179,44 @@ export const Home = () => {
                   color="primary"
                   href={links.app}
                   target="_blank"
-                  startIcon={<TabletMacRounded />}
-                  endIcon={<OpenInNewOutlined />}
                 >
-                  Access the app
-                </Button>
-              </ButtonsContainer>
-            </Box>
-
-            <OrDivider title="more" />
-            <Box width="100%" maxWidth={300}>
-              <ButtonsContainer>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  href={links.documentation}
-                  target="_blank"
-                  endIcon={<OpenInNewOutlined />}
-                >
-                  documentation
-                </Button>
-                <Button
-                  variant="outlined"
-                  href={links.discord}
-                  target="_blank"
-                  color="primary"
-                  startIcon={<DiscordMarkBlueIcon />}
-                  endIcon={<OpenInNewOutlined />}
-                >
-                  discord
-                </Button>
-                <Button
-                  variant="outlined"
-                  href={links.github}
-                  target="_blank"
-                  color="primary"
-                  startIcon={<GitHub />}
-                  endIcon={<OpenInNewOutlined />}
-                >
-                  github
+                  Get started
                 </Button>
               </ButtonsContainer>
             </Box>
           </Box>
         </div>
       </Box>
+      <Stack mt={[4, 8]} gap={2} flexDirection={["column", "row"]}>
+        <Paper
+          elevation={4}
+          sx={{
+            overflow: "hidden",
+            borderRadius: 2
+          }}
+        >
+          <HighlightImage
+            width="100%"
+            style={{ display: "block" }}
+            src={image1}
+          />
+        </Paper>
+        <Paper
+          elevation={4}
+          sx={{
+            overflow: "hidden",
+            borderRadius: 2
+          }}
+        >
+          <HighlightImage
+            width="100%"
+            style={{ display: "block" }}
+            src={image2}
+          />
+        </Paper>
+      </Stack>
       <Box mt={[5, 8]}>
         <AppHighlightSection />
-      </Box>
-      <Box
-        mt={10}
-        component="footer"
-        style={{
-          paddingBottom: theme.spacing(5),
-          textAlign: "center"
-        }}
-      >
-        <Typography>
-          © Copyright{" "}
-          <Link
-            color="primary"
-            href={links.linkedin}
-            rel="nofollow noopener noreferrer"
-            target="_blank"
-            underline="hover"
-          >
-            Maxime Bret
-          </Link>
-          .
-        </Typography>
       </Box>
     </Box>
   )

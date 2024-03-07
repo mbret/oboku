@@ -162,7 +162,7 @@ export const ProfileScreen = () => {
           <ListItemIcon>
             <SettingsRounded />
           </ListItemIcon>
-          <ListItemText primary="General" />
+          <ListItemText primary="Device settings" />
         </ListItem>
         <ListItem
           button

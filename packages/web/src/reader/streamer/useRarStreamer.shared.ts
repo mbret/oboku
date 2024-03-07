@@ -4,6 +4,8 @@ import { useCallback, useState } from "react"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { PromiseReturnType } from "../../types"
 import { getArchiveForRarFile } from "./getArchiveForFile.shared"
+import { ReactReaderProps } from "../states"
+import { getResourcePathFromUrl } from "./getResourcePathFromUrl.shared"
 
 export const useRarStreamer = (bookId: string | undefined) => {
   const [archive, setArchive] = useState<
@@ -16,6 +18,7 @@ export const useRarStreamer = (bookId: string | undefined) => {
     if (!bookId) {
       setArchive(undefined)
     }
+
     ;(async () => {
       if (bookId) {
         const file = await getBookFile(bookId)
@@ -41,10 +44,17 @@ export const useRarStreamer = (bookId: string | undefined) => {
   )
 
   // @todo make it cancellable
-  const fetchResource = useCallback(
+  const fetchResource: NonNullable<
+    NonNullable<ReactReaderProps["loadOptions"]>["fetchResource"]
+  > = useCallback(
     async (item) => {
       if (archive) {
-        const resource = await generateResourceFromArchive(archive, item.path)
+        const resourcePath = getResourcePathFromUrl(item.href)
+
+        const resource = await generateResourceFromArchive(
+          archive,
+          resourcePath
+        )
 
         return new Response(resource.body, { ...resource.params, status: 200 })
       }

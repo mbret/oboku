@@ -19,8 +19,8 @@ export const HomeScreen = memo(() => {
   return (
     <Box display="flex" flex={1} overflow="hidden" flexDirection="column">
       <TopBarNavigation title={"Home"} showBack={false} hasSearch />
-      <CommunicationPane />
       <Box height="100%" overflow="scroll">
+        <CommunicationPane />
         {continueReadingBooks.length === 0 && !isPending && (
           <div
             style={{

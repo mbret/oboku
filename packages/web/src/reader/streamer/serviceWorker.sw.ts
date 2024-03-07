@@ -9,6 +9,8 @@ import {
   FileNotSupportedError,
   loadBook
 } from "./loadBook.sw"
+import { getResourcePathFromUrl } from "./getResourcePathFromUrl.shared"
+import { getManifestBaseUrl } from "./getManifestBaseUrl.shared"
 
 export const readerFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)
@@ -27,7 +29,7 @@ export const readerFetchListener = (event: FetchEvent) => {
            */
           if (url.pathname.endsWith(`/manifest`)) {
             const manifest = await generateManifestFromArchive(archive, {
-              baseUrl: `${url.origin}/${STREAMER_URL_PREFIX}/${epubFileName}/`
+              baseUrl: getManifestBaseUrl(url.origin, epubFileName)
             })
 
             return new Response(JSON.stringify(manifest), { status: 200 })
@@ -36,7 +38,7 @@ export const readerFetchListener = (event: FetchEvent) => {
           /**
            * Hit to resources
            */
-          const resourcePath = getResourcePath(event)
+          const resourcePath = getResourcePathFromUrl(event.request.url)
 
           const resource = await generateResourceFromArchive(
             archive,
@@ -87,13 +89,4 @@ const extractInfoFromEvent = (event: FetchEvent) => {
     epubUrl,
     epubFileName
   }
-}
-
-const getResourcePath = (event: FetchEvent) => {
-  const url = new URL(event.request.url)
-  const { epubFileName } = extractInfoFromEvent(event)
-
-  return decodeURIComponent(
-    url.pathname.replace(`/${STREAMER_URL_PREFIX}/${epubFileName}/`, ``)
-  )
 }
