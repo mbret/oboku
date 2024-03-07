@@ -40,7 +40,8 @@ import { CoverPane } from "./CoverPane"
 import { MetadataPane } from "./MetadataPane"
 import { DebugInfo } from "../../debug/DebugInfo"
 import { CollectionsPane } from "./CollectionsPane"
-import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
+import { useBookActionDrawer } from "../drawer/BookActionsDrawer"
+import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 
 type ScreenParams = {
   id: string
@@ -49,6 +50,7 @@ type ScreenParams = {
 export const BookDetailsScreen = () => {
   const navigate = useNavigate()
   const downloadFile = useDownloadBook()
+  const { goBack } = useSafeGoBack()
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<
     undefined | string
   >(undefined)
@@ -60,6 +62,11 @@ export const BookDetailsScreen = () => {
     tags: useTagsByIds().data
   })
   const metadata = getMetadataFromBook(book)
+  const openBookActionDrawer = useBookActionDrawer({
+    onDeleteBook: () => {
+      goBack()
+    }
+  })
 
   return (
     <Stack
@@ -111,6 +118,10 @@ export const BookDetailsScreen = () => {
           <Button
             variant="outlined"
             color="primary"
+            sx={{
+              flex: [1, "none"],
+              minWidth: 280
+            }}
             startIcon={<CloudDownloadRounded />}
             onClick={() => downloadFile(book)}
           >
@@ -118,7 +129,15 @@ export const BookDetailsScreen = () => {
           </Button>
         )}
         {book?.downloadState === "downloading" && (
-          <Button variant="outlined" color="primary" disabled>
+          <Button
+            sx={{
+              flex: [1, "none"],
+              minWidth: 280
+            }}
+            variant="outlined"
+            color="primary"
+            disabled
+          >
             Downloading...
           </Button>
         )}
@@ -138,7 +157,10 @@ export const BookDetailsScreen = () => {
         )}
         <IconButton
           onClick={() => {
-            bookActionDrawerSignal.setValue({ openedWith: book?._id })
+            openBookActionDrawer({
+              openedWith: book?._id,
+              actionsBlackList: ["goToDetails"]
+            })
           }}
         >
           <MoreVertOutlined />

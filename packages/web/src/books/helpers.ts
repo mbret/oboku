@@ -39,12 +39,13 @@ export const useRemoveBook = () => {
       deleteFromDataSource?: boolean
     }) => {
       let unlock = () => {}
+
       try {
         if (deleteFromDataSource) {
           if (!network.online) {
             return dialog({ preset: "OFFLINE" })
           }
-          // unlock = lock()
+
           try {
             await removeBookFromDataSource(id)
           } catch (e) {

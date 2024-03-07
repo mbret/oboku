@@ -15,6 +15,8 @@ import { plugin } from "../plugins/local"
 import { isPluginError } from "../plugins/plugin-front"
 import { BookQueryResult } from "../books/states"
 
+class NoLinkFound extends Error {}
+
 export const useDownloadBook = () => {
   const downloadBook = useDownloadBookFromDataSource()
   const { db: database } = useDatabase()
@@ -23,9 +25,7 @@ export const useDownloadBook = () => {
   const setDownloadData = useCallback(
     (
       bookId: string,
-      data: ReturnType<
-        typeof booksDownloadStateSignal.getValue
-      >[number]
+      data: ReturnType<typeof booksDownloadStateSignal.getValue>[number]
     ) => {
       booksDownloadStateSignal.setValue((prev) => ({
         ...prev,
@@ -63,8 +63,13 @@ export const useDownloadBook = () => {
         })
 
         if (!firstLink) {
-          // @todo add dialog to tell book is broken
-          throw new Error("invalid link")
+          dialog({
+            title: "No link!",
+            content:
+              "Your book does not have a valid link to download the file. Please add one before proceeding"
+          })
+
+          throw new NoLinkFound()
         }
 
         // for some reason if the file exist we do not download it again
@@ -112,6 +117,7 @@ export const useDownloadBook = () => {
             setDownloadData(bookId, {
               downloadState: DownloadState.None
             })
+
             // @todo shorten this description and redirect to the documentation
             dialog({
               preset: `UNKNOWN_ERROR`,
@@ -162,6 +168,8 @@ export const useDownloadBook = () => {
         })
 
         if (isPluginError(e) && e.code === "cancelled") return
+
+        if (e instanceof NoLinkFound) return
 
         Report.error(e)
       }

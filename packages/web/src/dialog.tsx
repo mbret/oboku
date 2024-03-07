@@ -12,12 +12,13 @@ import {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState
 } from "react"
+import { signal } from "reactjrx"
 
 type Preset = "NOT_IMPLEMENTED" | "OFFLINE" | "CONFIRM" | "UNKNOWN_ERROR"
+
 type DialogType = {
   title?: string
   content?: string
@@ -33,60 +34,24 @@ type DialogType = {
   onCancel?: () => void
 }
 
+const dialogUpdateSignal = signal<{ id: string; state: "closed" } | undefined>(
+  {}
+)
+
 const DialogContext = createContext<DialogType[]>([])
+
 const ManageDialogContext = createContext({
   remove: (id: string) => {},
-  add: (options: Omit<DialogType, "id">) => "-1" as string
+  add: (options: Omit<DialogType, "id">) => ({
+    id: "-1" as string,
+    promise: Promise.resolve()
+  })
 })
 
 export const useDialogManager = () => {
   const { add } = useContext(ManageDialogContext)
 
   return useCallback(add, [add])
-}
-
-export const ObokuDialog: FC<Omit<DialogType, "id"> & { open: boolean }> = ({
-  open,
-  cancellable,
-  content,
-  onConfirm,
-  preset,
-  title,
-  onClose
-}) => {
-  const dialog = useDialogManager()
-  const { remove } = useContext(ManageDialogContext)
-
-  useEffect(() => {
-    let id: string | undefined
-
-    if (open) {
-      id = dialog({
-        cancellable,
-        content,
-        onConfirm,
-        preset,
-        title,
-        onClose
-      })
-    }
-
-    return () => {
-      id && remove(id)
-    }
-  }, [
-    open,
-    cancellable,
-    content,
-    onConfirm,
-    preset,
-    title,
-    dialog,
-    onClose,
-    remove
-  ])
-
-  return null
 }
 
 const enrichDialogWithPreset = (
@@ -209,13 +174,27 @@ export const DialogProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const remove = useCallback((id: string) => {
     setDialogs((old) => old.filter((dialog) => id !== dialog.id))
+
+    dialogUpdateSignal.setValue({ id, state: "closed" })
   }, [])
 
   const add = useCallback((options: Omit<DialogType, "id">) => {
     generatedId++
+
     setDialogs((old) => [...old, { ...options, id: generatedId.toString() }])
 
-    return generatedId.toString()
+    const id = generatedId.toString()
+
+    const promise = new Promise<void>((resolve) => {
+      const sub = dialogUpdateSignal.subject.subscribe((value) => {
+        if (value?.id === id && value.state === "closed") {
+          sub.unsubscribe()
+          resolve()
+        }
+      })
+    })
+
+    return { id: generatedId.toString(), promise }
   }, [])
 
   const controls = useMemo(

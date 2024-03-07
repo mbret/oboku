@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useCallback } from "react"
 import List from "@mui/material/List"
 import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
@@ -36,19 +36,51 @@ import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
 import { markAsInterested } from "../triggers"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
-import { signal, useSignalValue } from "reactjrx"
+import { signal, useLiveRef, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "./useRemoveHandler"
 import { getMetadataFromBook } from "../getMetadataFromBook"
 
-export const bookActionDrawerSignal = signal<{
+type SignalState = {
   openedWith: undefined | string
   actions?: ("removeDownload" | "goToDetails")[]
-}>({ key: "bookActionDrawerState", default: { openedWith: undefined } })
+  actionsBlackList?: ("removeDownload" | "goToDetails")[]
+  onDeleteBook?: () => void
+}
+
+export const bookActionDrawerSignal = signal<SignalState>({
+  key: "bookActionDrawerState",
+  default: { openedWith: undefined }
+})
+
+export const useBookActionDrawer = ({
+  onDeleteBook
+}: {
+  onDeleteBook?: () => void
+} = {}) => {
+  const onDeleteBookRef = useLiveRef(onDeleteBook)
+
+  return useCallback(
+    (params: Omit<SignalState, "onDeleteBook">) => {
+      bookActionDrawerSignal.setValue({
+        ...params,
+        onDeleteBook: () => {
+          onDeleteBookRef.current?.()
+        }
+      })
+    },
+    [onDeleteBookRef]
+  )
+}
 
 export const BookActionsDrawer = memo(() => {
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { openManageBookTagsDialog } = useManageBookTagsDialog()
-  const { openedWith: bookId, actions } = useSignalValue(bookActionDrawerSignal)
+  const {
+    openedWith: bookId,
+    actions,
+    onDeleteBook,
+    actionsBlackList
+  } = useSignalValue(bookActionDrawerSignal)
   const navigate = useNavigate()
   const normalizedBookDownloadsState = useSignalValue(booksDownloadStateSignal)
   const book = useEnrichedBookState({
@@ -73,16 +105,23 @@ export const BookActionsDrawer = memo(() => {
     bookId
   )
 
-  const { mutate: onRemovePress, status, data } = useRemoveHandler()
+  const { mutate: onRemovePress, ...rest } = useRemoveHandler({
+    onError: () => {
+      handleClose()
+    },
+    onSuccess: ({ isDeleted }) => {
+      if (isDeleted) {
+        handleClose(() => {
+          onDeleteBook?.()
+        })
+      }
+    }
+  })
 
   const metadata = getMetadataFromBook(book)
 
   return (
-    <Drawer
-      anchor="bottom"
-      open={opened}
-      onClose={() => handleClose()}
-    >
+    <Drawer anchor="bottom" open={opened} onClose={() => handleClose()}>
       {book && (
         <>
           <div className={classes.topContainer}>
@@ -99,7 +138,8 @@ export const BookActionsDrawer = memo(() => {
             </div>
           </div>
           <List>
-            {(actions?.includes("goToDetails") || !actions) && (
+            {(actions?.includes("goToDetails") ||
+              (!actions && !actionsBlackList?.includes("goToDetails"))) && (
               <ListItemButton
                 onClick={() => {
                   handleClose(() => {
@@ -225,7 +265,6 @@ export const BookActionsDrawer = memo(() => {
               !book.isLocal && (
                 <ListItemButton
                   onClick={() => {
-                    handleClose()
                     bookId && removeDownloadFile(bookId)
                   }}
                 >
@@ -258,9 +297,7 @@ export const BookActionsDrawer = memo(() => {
               <List>
                 <ListItem
                   button
-                  onClick={() =>
-                    handleClose(() => bookId && onRemovePress({ bookId }))
-                  }
+                  onClick={() => bookId && onRemovePress({ bookId })}
                 >
                   <ListItemIcon>
                     <DeleteForeverRounded />
