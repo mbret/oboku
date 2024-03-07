@@ -166,14 +166,14 @@ export const BookDetailsScreen = () => {
           <MoreVertOutlined />
         </IconButton>
       </Container>
-      {book?.metadataUpdateStatus === "fetching" && (
-        <Alert severity="info">
-          We are still retrieving metadata information...
-        </Alert>
-      )}
       <Container>
-        <MetadataPane bookId={book?._id} />
-        <CollectionsPane bookId={book?._id} />
+        <Stack gap={1}>
+          {book?.metadataUpdateStatus === "fetching" && (
+            <Alert severity="warning">Retrieving metadata information...</Alert>
+          )}
+          <MetadataPane bookId={book?._id} />
+          <CollectionsPane bookId={book?._id} />
+        </Stack>
       </Container>
       <Container disableGutters>
         <MetadataSourcePane bookId={id} />

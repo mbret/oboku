@@ -24,7 +24,6 @@ export const CollectionsPane = ({ bookId }: { bookId?: string }) => {
       onEditClick={() => {
         book?._id && openManageBookCollectionsDialog(book?._id)
       }}
-      mt={2}
     />
   )
 }
