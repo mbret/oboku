@@ -1,3 +1,5 @@
+"use client"
+
 import { Box, Container, Link, Stack, Typography } from "@mui/material"
 import { links } from "@oboku/shared"
 

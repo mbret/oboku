@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import MuiAppBar from "@mui/material/AppBar"
 import Box from "@mui/material/Box"
@@ -22,7 +24,7 @@ import {
   Reddit
 } from "@mui/icons-material"
 import { links } from "@oboku/shared"
-import { DiscordMarkBlueIcon } from "./assets/DiscordMarkBlueIcon"
+import { DiscordMarkBlueIcon } from "./DiscordMarkBlueIcon"
 
 export default function AppBar() {
   const [open, setOpen] = React.useState(false)

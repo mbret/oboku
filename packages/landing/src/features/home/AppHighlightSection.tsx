@@ -16,6 +16,7 @@ import image5 from "./assets/image5.png"
 import image6 from "./assets/image6.png"
 import image7 from "./assets/image7.png"
 import image8 from "./assets/image8.png"
+import Image from "next/image"
 
 const KeyCardPoint = ({
   description,
@@ -24,7 +25,7 @@ const KeyCardPoint = ({
 }: {
   title: string
   description: string
-  imageSrc: string
+  imageSrc: any
 }) => {
   return (
     <Card sx={{ display: "flex" }} variant="outlined">
@@ -36,10 +37,9 @@ const KeyCardPoint = ({
           {description}
         </Typography>
       </CardContent>
-      <CardMedia
-        component="img"
-        sx={{ width: "50%" }}
-        image={imageSrc}
+      <Image
+        style={{ width: "50%", height: "auto" }}
+        src={imageSrc}
         alt="Live from space album cover"
       />
     </Card>

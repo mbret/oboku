@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Box,
   Button,
@@ -14,6 +16,7 @@ import { links } from "@oboku/shared"
 import { ReactNode } from "react"
 import { AppHighlightSection } from "./AppHighlightSection"
 import { LastWords } from "./LastWords"
+import Image from "next/image"
 
 const ButtonsContainer = ({ children }: { children: ReactNode }) => {
   return (
@@ -23,11 +26,12 @@ const ButtonsContainer = ({ children }: { children: ReactNode }) => {
   )
 }
 
-const HighlightImage = styled(`img`)`
+const HighlightImage = styled(Image)`
   max-width: 300px;
+  height: auto;
 `
 
-export const Home = () => {
+export const HomeContent = () => {
   const theme = useTheme()
 
   return (
@@ -112,7 +116,7 @@ export const Home = () => {
           }}
         >
           <HighlightImage
-            width="100%"
+            alt="Showcase image 1"
             style={{ display: "block" }}
             src={image1}
           />
@@ -125,7 +129,7 @@ export const Home = () => {
           }}
         >
           <HighlightImage
-            width="100%"
+            alt="Showcase image 2"
             style={{ display: "block" }}
             src={image2}
           />
