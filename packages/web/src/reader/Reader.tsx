@@ -130,7 +130,6 @@ export const Reader: FC<{
               <Link
                 href="https://docs.oboku.me"
                 target="__blank"
-                underline="hover"
               >
                 documentation
               </Link>{" "}
@@ -159,7 +158,6 @@ export const Reader: FC<{
             <Link
               href="https://docs.oboku.me/support"
               target="__blank"
-              underline="hover"
             >
               contact us
             </Link>

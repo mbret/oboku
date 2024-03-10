@@ -102,7 +102,6 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
                 <Link
                   href="https://docs.oboku.me/wiki/datasources#personalize-your-content-with-directives"
                   target="__blank"
-                  underline="hover"
                 >
                   directive
                 </Link>{" "}
@@ -130,7 +129,6 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
                 <Link
                   href="https://docs.oboku.me/wiki/datasources#personalize-your-content-with-directives"
                   target="__blank"
-                  underline="hover"
                 >
                   directive
                 </Link>{" "}
@@ -174,7 +172,6 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
                 <Link
                   href="https://docs.oboku.me/wiki/tags"
                   target="__blank"
-                  underline="hover"
                 >
                   doc
                 </Link>

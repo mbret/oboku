@@ -97,7 +97,7 @@ const useStyles = () => {
         flex: 1
       },
       tabsContainer: {
-        border: `1px solid ${theme.palette.primary.light}`,
+        borderBottom: `1px solid ${theme.palette.primary.light}`,
         borderTop: "none",
         borderLeft: "none",
         borderRight: "none"

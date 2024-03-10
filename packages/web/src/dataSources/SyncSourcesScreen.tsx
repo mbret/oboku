@@ -49,7 +49,7 @@ export const SyncSourcesScreen = () => {
         <Alert severity="info">
           Automatically synchronize books from an external source (eg: Google
           Drive shared folder).{" "}
-          <Link href="https://docs.oboku.me" target="__blank" underline="hover">
+          <Link href="https://docs.oboku.me" target="__blank">
             Learn more
           </Link>
         </Alert>

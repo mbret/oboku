@@ -24,7 +24,7 @@ export const useDownloadBookFromDataSource = () => {
     downloadBook:
       plugin.useDownloadBook &&
       plugin.useDownloadBook({
-        apiUri: API_URI,
+        apiUri: API_URI ?? "",
         requestPopup: createRequestPopupDialog({ name: plugin.name })
       })
   }))
