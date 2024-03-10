@@ -36,8 +36,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     })
 
     const credentials = JSON.parse(event.body.credentials ?? JSON.stringify({}))
-
-    const authorization = dataSourceId ?? ``
+    const authorization = event.body.authorization ?? ``
 
     const { name } = await withToken({
       headers: {
