@@ -9,13 +9,13 @@ import IconButton from "@mui/material/IconButton"
 import MenuIcon from "@mui/icons-material/Menu"
 import {
   Divider,
-  Drawer,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Link as MuiLink
+  Link as MuiLink,
+  SwipeableDrawer
 } from "@mui/material"
 import {
   AutoStoriesRounded,
@@ -92,6 +92,7 @@ export default function AppBar() {
           variant="outlined"
           elevation={0}
           color="transparent"
+          
           style={{
             border: "none",
             backgroundColor: "white"
@@ -140,9 +141,9 @@ export default function AppBar() {
           </Toolbar>
         </MuiAppBar>
       </Box>
-      <Drawer open={open} onClose={toggleDrawer(false)}>
+      <SwipeableDrawer open={open} onOpen={toggleDrawer(true)} onClose={toggleDrawer(false)}>
         {DrawerList}
-      </Drawer>
+      </SwipeableDrawer>
     </>
   )
 }
