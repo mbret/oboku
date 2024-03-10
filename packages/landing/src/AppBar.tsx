@@ -18,7 +18,8 @@ import {
 import {
   AutoStoriesRounded,
   GitHub,
-  PhoneIphoneRounded
+  PhoneIphoneRounded,
+  Reddit
 } from "@mui/icons-material"
 import { links } from "@oboku/shared"
 import { DiscordMarkBlueIcon } from "./assets/DiscordMarkBlueIcon"
@@ -66,6 +67,14 @@ export default function AppBar() {
               <GitHub />
             </ListItemIcon>
             <ListItemText primary="Github" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton href={links.reddit} target="_blank">
+            <ListItemIcon>
+              <Reddit />
+            </ListItemIcon>
+            <ListItemText primary="Reddit" />
           </ListItemButton>
         </ListItem>
       </List>

@@ -24,7 +24,8 @@ export const links = {
   site: `https://oboku.me`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,
   github: `https://github.com/mbret/oboku`,
-  discord: `https://discord.gg/eB6MrMmmPN`
+  discord: `https://discord.gg/eB6MrMmmPN`,
+  reddit: `https://www.reddit.com/r/oboku/`
 }
 
 export type OPF = {

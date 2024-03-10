@@ -57,6 +57,14 @@ export const Footer = () => {
               >
                 Discord
               </Link>
+              <Link
+                href={links.reddit}
+                target="_blank"
+                variant="body2"
+                underline="hover"
+              >
+                Reddit
+              </Link>
             </Stack>
           </Stack>
         </Stack>

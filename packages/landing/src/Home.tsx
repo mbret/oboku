@@ -1,107 +1,24 @@
 import {
-  Alert,
-  alpha,
   Box,
   Button,
-  Link,
+  Container,
   Paper,
   Stack,
   styled,
   Typography,
   useTheme
 } from "@mui/material"
-import {
-  AttachMoneyRounded,
-  CloudDownloadRounded,
-  DevicesFoldRounded,
-  GitHub,
-  LibraryBooksRounded,
-  LocalLibraryRounded,
-  LockOpenRounded,
-  OpenInNewOutlined,
-  PhonelinkRounded,
-  SignalCellularOffRounded,
-  StickyNote2Rounded,
-  TabletMacRounded
-} from "@mui/icons-material"
-import landingLogoAsset from "./assets/landing-logo.svg"
 import image2 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
 import image1 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
-import { OrDivider } from "./OrDivider"
 import { links } from "@oboku/shared"
 import { ReactNode } from "react"
-import { DiscordMarkBlueIcon } from "./assets/DiscordMarkBlueIcon"
+import { AppHighlightSection } from "./AppHighlightSection"
+import { LastWords } from "./LastWords"
 
 const ButtonsContainer = ({ children }: { children: ReactNode }) => {
   return (
     <Box display="flex" gap={2} flexDirection="column" width="100%">
       <>{children}</>
-    </Box>
-  )
-}
-
-const KeyPointItem = ({
-  content,
-  icon
-}: {
-  content: string
-  icon: ReactNode
-}) => {
-  return (
-    <Box
-      display="flex"
-      // border="1px solid black"
-      flexDirection="column"
-      alignItems="center"
-      maxWidth={200}
-      gap={2}
-    >
-      <>{icon}</>
-      <Typography variant="body1">{content}</Typography>
-    </Box>
-  )
-}
-
-const AppHighlightSection = () => {
-  return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      textAlign="center"
-    >
-      <Typography variant="overline" textAlign="center">
-        In a few key points
-      </Typography>
-      <Typography variant="h2" component="h2">
-        What is oboku?
-      </Typography>
-      <Typography variant="overline" textAlign="center">
-        Let's see what makes oboku special
-      </Typography>
-      <Box mt={4} display="grid" gridTemplateColumns="1fr 1fr" gap={5}>
-        <KeyPointItem content="Reading app" icon={<LocalLibraryRounded />} />
-        <KeyPointItem content="Book library" icon={<LibraryBooksRounded />} />
-        <KeyPointItem
-          content="Read any content"
-          icon={<StickyNote2Rounded />}
-        />
-        <KeyPointItem
-          content="synchronize with your clouds providers"
-          icon={<CloudDownloadRounded />}
-        />
-        <KeyPointItem
-          content="Works on any device with a browser"
-          icon={<PhonelinkRounded />}
-        />
-        <KeyPointItem content="E-ink support" icon={<DevicesFoldRounded />} />
-        <KeyPointItem content="100% free" icon={<AttachMoneyRounded />} />
-        <KeyPointItem
-          content="100% offline"
-          icon={<SignalCellularOffRounded />}
-        />
-        <KeyPointItem content="100% open source" icon={<LockOpenRounded />} />
-      </Box>
     </Box>
   )
 }
@@ -122,9 +39,8 @@ export const Home = () => {
         flexFlow: "column",
         alignItems: "center"
       }}
-      paddingX={3}
     >
-      <Box
+      <Container
         className="App"
         style={{
           display: "flex",
@@ -186,7 +102,7 @@ export const Home = () => {
             </Box>
           </Box>
         </div>
-      </Box>
+      </Container>
       <Stack mt={[4, 8]} gap={2} flexDirection={["column", "row"]}>
         <Paper
           elevation={4}
@@ -215,9 +131,10 @@ export const Home = () => {
           />
         </Paper>
       </Stack>
-      <Box mt={[5, 8]}>
+      <Box my={[8, 8]}>
         <AppHighlightSection />
       </Box>
+      <LastWords />
     </Box>
   )
 }
