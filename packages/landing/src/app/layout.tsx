@@ -12,7 +12,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "oboku | Your digital library",
   description:
-    "Your books, your cloud: Access, read and sync your personal library from your cloud, anytime, anywhere."
+    "Your books, your cloud! Access, read and sync your personal library from your cloud, anytime, anywhere."
 }
 
 export default function RootLayout({

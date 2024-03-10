@@ -80,7 +80,7 @@ export const HomeContent = () => {
             variant="body1"
             style={{ fontWeight: "normal", paddingBottom: theme.spacing(1) }}
           >
-            Your books, your cloud: Access, read and sync your personal library
+            Your books, your cloud! Access, read and sync your personal library
             from your cloud, anytime, anywhere.
           </Typography>
           <div style={{ paddingBottom: theme.spacing(3) }} />
