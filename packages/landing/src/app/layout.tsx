@@ -8,7 +8,7 @@ import { theme } from "../theme"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "oboku",
+  title: "oboku | Your digital library",
   description:
     "Your books, your cloud: Access, read and sync your personal library from your cloud, anytime, anywhere."
 }
