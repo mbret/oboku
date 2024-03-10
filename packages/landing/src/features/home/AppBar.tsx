@@ -15,7 +15,8 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Link as MuiLink
 } from "@mui/material"
 import {
   AutoStoriesRounded,
@@ -25,6 +26,7 @@ import {
 } from "@mui/icons-material"
 import { links } from "@oboku/shared"
 import { DiscordMarkBlueIcon } from "./DiscordMarkBlueIcon"
+import Link from "next/link"
 
 export default function AppBar() {
   const [open, setOpen] = React.useState(false)
@@ -97,9 +99,16 @@ export default function AppBar() {
           }}
         >
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <MuiLink
+              href="/"
+              variant="h6"
+              underline="none"
+              color="inherit"
+              sx={{ flexGrow: 1 }}
+              component={Link}
+            >
               oboku
-            </Typography>
+            </MuiLink>
             <Button
               sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
               color="inherit"
