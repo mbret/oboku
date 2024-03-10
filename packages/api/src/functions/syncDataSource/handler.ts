@@ -27,7 +27,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     })
   })
 
-  const lockId = `sync_${event.body.bookId}`
+  const lockId = `sync_${event.body.dataSourceId}`
 
   const response = await supabase
     .from("lock")
