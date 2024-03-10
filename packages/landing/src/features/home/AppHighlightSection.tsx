@@ -14,8 +14,8 @@ import image3 from "./assets/image3.png"
 import image4 from "./assets/image4.png"
 import image5 from "./assets/image5.png"
 import image6 from "./assets/image6.png"
-import image7 from "./assets/image7.png"
 import image8 from "./assets/image8.png"
+import image9 from "./assets/image9.png"
 import Image from "next/image"
 
 const KeyCardPoint = ({
@@ -101,7 +101,7 @@ export const AppHighlightSection = () => {
           <KeyCardPoint
             title="E-ink support"
             description="E-ink mode available. Increase contrast and remove all animations"
-            imageSrc={image7}
+            imageSrc={image9}
           />
           <KeyCardPoint
             title="Open Source & Self Host"
