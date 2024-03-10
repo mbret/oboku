@@ -86,6 +86,11 @@ export const theme = createTheme({
           borderRadius: 6
         }
       }
+    },
+    MuiLink: {
+      defaultProps: {
+        underline: "hover"
+      }
     }
   },
   custom: {
@@ -110,16 +115,37 @@ export const eInkTheme = createTheme(
         secondary: "#000000"
       },
       primary: {
-        main: "#fff",
+        light: "#2d2d2d",
+        dark: "#000000",
+        main: "#000000",
         contrastText: "#000000"
+      },
+      success: {
+        main: "#000000"
+      },
+      info: {
+        main: "#000000",
+        dark: "#000000",
+        light: "#000000"
       }
     },
     components: {
       MuiAppBar: {
         styleOverrides: {
           root: {
-            borderBottom: "1px solid black"
+            borderBottom: "1px solid black",
+            backgroundColor: "white"
           }
+        }
+      },
+      MuiLink: {
+        defaultProps: {
+          underline: "always"
+        }
+      },
+      MuiButton: {
+        defaultProps: {
+          disableRipple: true
         }
       }
     },

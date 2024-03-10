@@ -1,27 +1,31 @@
+"use client"
+
 import * as React from "react"
 import MuiAppBar from "@mui/material/AppBar"
 import Box from "@mui/material/Box"
 import Toolbar from "@mui/material/Toolbar"
-import Typography from "@mui/material/Typography"
 import Button from "@mui/material/Button"
 import IconButton from "@mui/material/IconButton"
 import MenuIcon from "@mui/icons-material/Menu"
 import {
   Divider,
-  Drawer,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Link as MuiLink,
+  SwipeableDrawer
 } from "@mui/material"
 import {
   AutoStoriesRounded,
   GitHub,
-  PhoneIphoneRounded
+  PhoneIphoneRounded,
+  Reddit
 } from "@mui/icons-material"
 import { links } from "@oboku/shared"
-import { DiscordMarkBlueIcon } from "./assets/DiscordMarkBlueIcon"
+import { DiscordMarkBlueIcon } from "./DiscordMarkBlueIcon"
+import Link from "next/link"
 
 export default function AppBar() {
   const [open, setOpen] = React.useState(false)
@@ -68,6 +72,14 @@ export default function AppBar() {
             <ListItemText primary="Github" />
           </ListItemButton>
         </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton href={links.reddit} target="_blank">
+            <ListItemIcon>
+              <Reddit />
+            </ListItemIcon>
+            <ListItemText primary="Reddit" />
+          </ListItemButton>
+        </ListItem>
       </List>
     </Box>
   )
@@ -80,15 +92,23 @@ export default function AppBar() {
           variant="outlined"
           elevation={0}
           color="transparent"
+          
           style={{
             border: "none",
             backgroundColor: "white"
           }}
         >
           <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <MuiLink
+              href="/"
+              variant="h6"
+              underline="none"
+              color="inherit"
+              sx={{ flexGrow: 1 }}
+              component={Link}
+            >
               oboku
-            </Typography>
+            </MuiLink>
             <Button
               sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
               color="inherit"
@@ -121,9 +141,9 @@ export default function AppBar() {
           </Toolbar>
         </MuiAppBar>
       </Box>
-      <Drawer open={open} onClose={toggleDrawer(false)}>
+      <SwipeableDrawer open={open} onOpen={toggleDrawer(true)} onClose={toggleDrawer(false)}>
         {DrawerList}
-      </Drawer>
+      </SwipeableDrawer>
     </>
   )
 }

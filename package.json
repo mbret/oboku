@@ -13,12 +13,12 @@
   ],
   "scripts": {
     "start:web": "lerna run start --scope=@oboku/web",
-    "start:landing": "lerna run landing:start",
+    "start:landing": "lerna run dev --scope=@oboku/landing",
     "start:api": "lerna run api:start",
     "build": "lerna run build",
     "build:web": "lerna run build --scope=@oboku/web",
     "build:api": "lerna run build --scope=@oboku/api",
-    "build:landing": "lerna run landing:build",
+    "build:landing": "lerna run build --scope=@oboku/landing",
     "test": "lerna run test",
     "tsc": "lerna run tsc",
     "format": "prettier -w . && lerna run format",
@@ -64,11 +64,14 @@
     "@aws-sdk/client-s3": "^3.451.0",
     "@aws-sdk/client-sqs": "^3.525.0",
     "@aws-sdk/client-ssm": "^3.451.0",
+    "@emotion/cache": "^11.11.0",
+    "@mui/material-nextjs": "^5.15.11",
     "@react-rxjs/core": "^0.10.7",
     "@react-rxjs/utils": "^0.9.7",
     "arg": "^5.0.2",
     "react-markdown": "^9.0.1",
     "reactjrx": "^1.74.1",
+    "remark-gfm": "^4.0.0",
     "sharp": "^0.33.2"
   }
 }
