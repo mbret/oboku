@@ -1,8 +1,6 @@
-import { headers } from "next/headers"
 import { Stack, Typography } from "@mui/material"
 
 export default async function NotFound() {
-  const headersList = headers()
 
   return (
     <Stack minHeight="60vh" alignItems="center" justifyContent="center">
