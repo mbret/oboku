@@ -56,12 +56,14 @@ export const dataSourceFacade = {
     userName,
     credentials,
     refreshBookMetadata,
+    authorization,
     db,
     isBookCoverExist
   }: {
     dataSourceId: string
     userName: string
     credentials?: any
+    authorization: string
     refreshBookMetadata: ({ bookId }: { bookId: string }) => Promise<any>
     isBookCoverExist: ({ coverId }: { coverId: string }) => Promise<boolean>
     db: createNano.DocumentScope<unknown>
@@ -99,7 +101,13 @@ export const dataSourceFacade = {
       // during the process (which can take time), user will not be misled to believe its
       // latest changes have been synced
       const lastSyncedAt = new Date().getTime()
-      const ctx = { dataSourceId, userName, credentials, dataSourceType: type }
+      const ctx = {
+        dataSourceId,
+        userName,
+        credentials,
+        dataSourceType: type,
+        authorization
+      }
       const plugin = plugins.find((plugin) => plugin.type === type)
 
       if (!plugin?.sync) {

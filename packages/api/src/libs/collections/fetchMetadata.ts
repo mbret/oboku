@@ -1,6 +1,6 @@
-import { Metadata } from "./types"
-import { getGoogleBookMetadata } from "./google/getGoogleBookMetadata"
 import { Logger } from "@libs/logger"
+import { getGoogleSeriesMetadata } from "@libs/metadata/google/getGoogleSeriesMetadata"
+import { CollectionMetadata } from "@oboku/shared"
 import { isAxiosError } from "axios"
 
 const swallowGoogleError = async <T>(promise: Promise<T>) => {
@@ -15,15 +15,15 @@ const swallowGoogleError = async <T>(promise: Promise<T>) => {
   }
 }
 
-export const getBookSourcesMetadata = async (
-  metadata: Metadata,
+export const fetchMetadata = async (
+  metadata: { title: string },
   { googleApiKey, withGoogle }: { googleApiKey?: string; withGoogle: boolean }
-): Promise<Metadata[]> => {
+): Promise<CollectionMetadata[]> => {
   const list = []
 
   if (withGoogle) {
     const google = await swallowGoogleError(
-      getGoogleBookMetadata(metadata, googleApiKey ?? "")
+      getGoogleSeriesMetadata(metadata, googleApiKey ?? "")
     )
 
     if (google) {

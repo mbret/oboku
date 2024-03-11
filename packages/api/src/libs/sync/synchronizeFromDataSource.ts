@@ -28,7 +28,7 @@ function isFile(
 
 export const synchronizeFromDataSource = async (
   synchronizeAble: SynchronizeAbleDataSource,
-  ctx: Context,
+  ctx: Context & { authorization: string },
   helpers: ReturnType<typeof createHelpers>
 ) => {
   console.log(
@@ -109,7 +109,7 @@ const syncFolder = async ({
   lvl,
   parents
 }: {
-  ctx: Context
+  ctx: Context & { authorization: string }
   helpers: Helpers
   lvl: number
   hasCollectionAsParent: boolean

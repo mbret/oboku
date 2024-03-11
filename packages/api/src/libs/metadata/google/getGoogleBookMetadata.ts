@@ -4,7 +4,7 @@ import { parseGoogleMetadata } from "./parseGoogleMetadata"
 import { Logger } from "@libs/logger"
 import { refineTitle } from "../refineTitle"
 
-export const getGoogleMetadata = async (
+export const getGoogleBookMetadata = async (
   metadata: Metadata,
   apiKey: string
 ): Promise<Metadata | undefined> => {

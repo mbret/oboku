@@ -86,7 +86,8 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       db: await getNanoDbForUser(name),
       refreshBookMetadata,
       isBookCoverExist,
-      credentials
+      credentials,
+      authorization
     })
 
     deleteLock(supabase, lockId)

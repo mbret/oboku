@@ -4,7 +4,9 @@ import {
   SynchronizeAbleDataSource
 } from "@libs/plugins/types"
 import { directives } from "@oboku/shared"
+import axios from "axios"
 import { difference } from "lodash"
+import { AWS_API_URI } from "src/constants"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0]
@@ -17,7 +19,7 @@ export const registerOrUpdateCollection = async ({
   helpers,
   ctx
 }: {
-  ctx: Context
+  ctx: Context & { authorization: string }
   item: SynchronizeAbleItem
   helpers: Helpers
 }) => {
@@ -131,4 +133,18 @@ export const registerOrUpdateCollection = async ({
       }))
     }
   }
+
+  axios({
+    method: `post`,
+    url: `${AWS_API_URI}/refresh-metadata-collection`,
+    data: {
+      collectionId
+    },
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json",
+      "oboku-credentials": JSON.stringify(ctx.credentials),
+      authorization: ctx.authorization
+    }
+  }).catch(logger.error)
 }

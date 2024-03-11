@@ -4,6 +4,8 @@ import covers from "@functions/covers"
 import requestAccess from "@functions/requestAccess"
 import refreshMetadata from "@functions/refreshMetadata"
 import refreshMetadataLongProcess from "@functions/refreshMetadataLongProcess"
+import refreshMetadataCollection from "@functions/refreshMetadataCollection"
+import refreshMetadataCollectionLongProcess from "@functions/refreshMetadataCollectionLongProcess"
 import syncDataSource from "@functions/syncDataSource"
 import syncDataSourceLongProcess from "@functions/syncDataSourceLongProcess"
 import corsProxy from "@functions/corsProxy"
@@ -31,6 +33,8 @@ const functions: AWS[`functions`] = {
   syncDataSource,
   syncDataSourceLongProcess,
   cors: corsProxy,
+  refreshMetadataCollection,
+  refreshMetadataCollectionLongProcess,
 }
 
 Object.keys(functions).forEach((key) => {
