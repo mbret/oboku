@@ -64,7 +64,10 @@ class HttpClient {
     })
   }
 
-  refreshMetadata = (bookId: string, credentials?: { [key: string]: any }) =>
+  refreshBookMetadata = (
+    bookId: string,
+    credentials?: { [key: string]: any }
+  ) =>
     this.post({
       url: `${API_URI}/refresh-metadata`,
       body: { bookId },

@@ -2,32 +2,21 @@ import React, { FC, memo, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
 import placeholder from "../assets/cover-placeholder.png"
 import { useTheme } from "@mui/material"
-import { useEnrichedBookState } from "./states"
+import { useBook } from "./states"
 import {
   useBlurredTagIds,
-  useProtectedTagIds,
-  useTagsByIds
 } from "../tags/helpers"
 import { useCSS } from "../common/utils"
 import { API_URI } from "../constants"
 import { useLocalSettings } from "../settings/states"
-import { booksDownloadStateSignal } from "../download/states"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
 
 const useBookCoverState = ({ bookId }: { bookId: string }) => {
-  const tags = useTagsByIds().data
-  const normalizedBookDownloadsState = useSignalValue(
-    booksDownloadStateSignal
-  )
   const blurredTags = useBlurredTagIds().data ?? []
-  const protectedTags = useProtectedTagIds().data ?? []
 
-  const enrichedBook = useEnrichedBookState({
-    bookId,
-    normalizedBookDownloadsState,
-    protectedTagIds: protectedTags,
-    tags
+  const { data: enrichedBook } = useBook({
+    id: bookId
   })
 
   if (!enrichedBook) return undefined

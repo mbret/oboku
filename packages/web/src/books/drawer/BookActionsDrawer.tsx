@@ -26,7 +26,7 @@ import {
 } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
-import { useEnrichedBookState } from "../states"
+import { useBook, useIsBookLocal } from "../states"
 import { Cover } from "../Cover"
 import { ReadingStateState } from "@oboku/shared"
 import { Report } from "../../debug/report.shared"
@@ -34,8 +34,10 @@ import { useModalNavigationControl } from "../../navigation/useModalNavigationCo
 import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
 import { markAsInterested } from "../triggers"
-import { booksDownloadStateSignal } from "../../download/states"
-import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
+import {
+  booksDownloadStateSignal,
+  useBookDownloadState
+} from "../../download/states"
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "./useRemoveHandler"
 import { getMetadataFromBook } from "../getMetadataFromBook"
@@ -82,13 +84,9 @@ export const BookActionsDrawer = memo(() => {
     actionsBlackList
   } = useSignalValue(bookActionDrawerSignal)
   const navigate = useNavigate()
-  const normalizedBookDownloadsState = useSignalValue(booksDownloadStateSignal)
-  const book = useEnrichedBookState({
-    bookId: bookId || "-1",
-    normalizedBookDownloadsState,
-    protectedTagIds: useProtectedTagIds().data,
-    tags: useTagsByIds().data
-  })
+  const { data: book } = useBook({ id: bookId })
+  const downloadState = useBookDownloadState(bookId || "-1")
+  const { data: isLocal } = useIsBookLocal({ id: bookId })
   const removeDownloadFile = useRemoveDownloadFile()
   const refreshBookMetadata = useRefreshBookMetadata()
   const [updateBook] = useAtomicUpdateBook()
@@ -261,8 +259,8 @@ export const BookActionsDrawer = memo(() => {
               <ListItemText primary="Refresh metadata" />
             </ListItemButton>
             {(actions?.includes("removeDownload") || !actions) &&
-              book.downloadState === "downloaded" &&
-              !book.isLocal && (
+              downloadState?.downloadState === "downloaded" &&
+              !isLocal && (
                 <ListItemButton
                   onClick={() => {
                     bookId && removeDownloadFile(bookId)

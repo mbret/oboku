@@ -106,14 +106,8 @@ export type TagsDocType = CommonBase & {
 
 export type CollectionDocType = CommonBase & {
   books: string[]
-  /**
-   * @important
-   * Represent the id from the synchronize-able source.
-   * This is how we can find a existing collection from
-   * a sync item. The data source does not know oboku id,
-   * only its own id.
-   */
-  resourceId?: string | null
+  linkType?: string
+  linkResourceId?: string
   rx_model: "obokucollection"
   modifiedAt: string | null
   /**
@@ -122,7 +116,7 @@ export type CollectionDocType = CommonBase & {
    */
   syncAt?: string | null
   createdAt: string
-  dataSourceId: undefined | null | string
+  lastMetadataUpdatedAt?: string
   type?: "series" | "shelve"
   metadata?: CollectionMetadata[]
 }

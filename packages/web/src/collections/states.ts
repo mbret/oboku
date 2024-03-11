@@ -11,8 +11,9 @@ import { getMetadataFromCollection } from "./getMetadataFromCollection"
 export type Collection = CollectionDocType
 
 export const useCollections = ({
-  queryObj
-}: { queryObj?: MangoQuery<CollectionDocType> } = {}) => {
+  queryObj,
+  ...options
+}: { queryObj?: MangoQuery<CollectionDocType>; enabled?: boolean } = {}) => {
   const localSettings = useLocalSettings()
 
   return useForeverQuery({
@@ -31,7 +32,8 @@ export const useCollections = ({
           }))
         )
       )
-    }
+    },
+    ...options
   })
 }
 
@@ -78,9 +80,10 @@ export const useCollection = ({ id }: { id?: string }) => {
 }
 
 export const useCollectionsWithPrivacy = ({
-  queryObj
-}: { queryObj?: MangoQuery<CollectionDocType> } = {}) => {
-  const { data: collections } = useCollections({ queryObj })
+  queryObj,
+  ...options
+}: { queryObj?: MangoQuery<CollectionDocType>; enabled?: boolean } = {}) => {
+  const { data: collections } = useCollections({ queryObj, ...options })
   const visibleBookIds = useVisibleBookIds()
   const { showCollectionWithProtectedContent } = useLocalSettings()
 
@@ -102,8 +105,8 @@ export const useCollectionsWithPrivacy = ({
   }
 }
 
-export const useVisibleCollectionIds = () => {
-  const { data: collections, ...rest } = useCollectionsWithPrivacy()
+export const useVisibleCollectionIds = (options: { enabled?: boolean } = {}) => {
+  const { data: collections, ...rest } = useCollectionsWithPrivacy(options)
 
   return {
     ...rest,

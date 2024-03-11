@@ -1,9 +1,8 @@
 import { FC, useCallback } from "react"
 import { useVisibleCollectionIds } from "../collections/states"
 import { useAddCollectionToBook, useRemoveCollectionFromBook } from "./helpers"
-import { useBookState } from "./states"
+import { useBook, useBookState } from "./states"
 import { CollectionsSelectionDialog } from "../collections/CollectionsSelectionDialog"
-import { useLocalSettings } from "../settings/states"
 import { useTagsByIds } from "../tags/helpers"
 import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
@@ -30,9 +29,11 @@ export const useManageBookCollectionsDialog = () => {
 export const ManageBookCollectionsDialog: FC<{}> = () => {
   const id = useSignalValue(openManageBookCollectionsDialogStateSignal)
   const open = !!id
-  const { data: collections = [] } = useVisibleCollectionIds()
+  const { data: collections = [] } = useVisibleCollectionIds({
+    enabled: open
+  })
 
-  const book = useBookState({ bookId: id, tags: useTagsByIds().data })
+  const { data: book } = useBook({ id })
   const { mutate: addToBook } = useAddCollectionToBook()
   const { mutate: removeFromBook } = useRemoveCollectionFromBook()
   const bookCollection = book?.collections

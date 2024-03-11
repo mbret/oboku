@@ -18,11 +18,13 @@ export const extractDirectivesFromName = (
   direction: "rtl" | "ltr" | undefined
   isbn?: string | undefined
   series: boolean | undefined
+  year?: string
 } => {
   let isNotACollection = false
   let tags: string[] = []
   let isIgnored = false
   let direction = undefined
+  let year = undefined
   let isbn = undefined
   let series: boolean | undefined = undefined
 
@@ -34,6 +36,7 @@ export const extractDirectivesFromName = (
     if (directive === "no_collection") {
       isNotACollection = true
     }
+
     if (directive === "ignore") {
       isIgnored = true
     }
@@ -42,16 +45,23 @@ export const extractDirectivesFromName = (
       series = true
     }
 
+    if (directive.startsWith("year~")) {
+      const value = directive.replace(/year\~/, "")
+      year = value
+    }
+
     if (directive.startsWith("direction~")) {
       const value = directive.replace(/direction\~/, "")
       if (value === "ltr" || value === "rtl") {
         direction = value
       }
     }
+
     if (directive.startsWith("isbn~")) {
       const value = directive.replace(/isbn\~/, "")
       isbn = value
     }
+
     if (directive.startsWith("tags~")) {
       const newTags: string[] | undefined = directive
         .replace(/tags\~/, "")
@@ -66,7 +76,8 @@ export const extractDirectivesFromName = (
     tags,
     isIgnored,
     direction,
-    isbn
+    isbn,
+    year
   }
 }
 

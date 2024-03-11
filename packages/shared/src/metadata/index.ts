@@ -28,8 +28,14 @@ export type BookMetadata = {
 
 export type CollectionMetadata = {
   title?: string
+  aliases?: string[]
   authors?: string[]
   description?: string
+  numberOfIssues?: number
+  firstIssue?: {}
+  startYear?: number
+  publisherName?: string
+  rating?: number
   /**
    * googleBookApi: Metadata scrapped through google book api
    * link: metadata scrapped from the current link
@@ -39,5 +45,5 @@ export type CollectionMetadata = {
    * priority order:
    * [user, file, ..., link]
    */
-  type: "googleBookApi" | "link" | "user"
+  type: "googleBookApi" | "link" | "user" | "biblioreads" | "comicvine" | "mangaupdates"
 }

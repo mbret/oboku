@@ -5,7 +5,7 @@ import {
   useProtectedTagIds,
   useTagsByIds
 } from "../tags/helpers"
-import { getLinkState, useLinks } from "../links/states"
+import { getLinkState, useLink, useLinks } from "../links/states"
 import {
   getBookDownloadsState,
   booksDownloadStateSignal,
@@ -13,10 +13,10 @@ import {
 } from "../download/states"
 import { useCollections, useCollectionsDictionary } from "../collections/states"
 import { map, switchMap, withLatestFrom } from "rxjs"
-import { plugin } from "../plugins/local"
+import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { useLocalSettings } from "../settings/states"
-import { isDefined, useForeverQuery, useSignalValue } from "reactjrx"
+import { isDefined, useForeverQuery, useQuery, useSignalValue } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
 import { useMemo } from "react"
@@ -163,7 +163,7 @@ export const getEnrichedBookState = ({
 
   const firstLink = getLinkState(normalizedLinks, linkId)
 
-  const isLocal = firstLink?.type === plugin.type
+  const isLocal = firstLink?.type === localPlugin.type
 
   return {
     ...book,
@@ -171,6 +171,17 @@ export const getEnrichedBookState = ({
     isLocal,
     isProtected: isBookProtected(protectedTagIds, book)
   }
+}
+
+export const useIsBookLocal = ({ id }: { id?: string }) => {
+  const { data: book } = useBook({ id })
+  const { data: link } = useLink({
+    id: book?.links[0]
+  })
+
+  const isLocal = link && link?.type === localPlugin.type
+
+  return { data: isLocal }
 }
 
 export const useIsBookProtected = (
@@ -326,64 +337,6 @@ export const useBookLinksState = ({
 
   return book?.links?.map((id) => getLinkState(links, id)) || []
 }
-
-/**
- * @deprecated
- */
-export const useBookCollectionsState = ({
-  bookId,
-  libraryState,
-  localSettingsState,
-  protectedTagIds = [],
-  tags
-}: {
-  bookId: string
-  libraryState: ReturnType<typeof libraryStateSignal.getValue>
-  localSettingsState: ReturnType<typeof useLocalSettings>
-  protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
-  tags: ReturnType<typeof useTagsByIds>["data"]
-}) => {
-  const book = useBookState({ bookId, tags })
-  const { data: normalizedCollections } = useCollectionsDictionary()
-  const bookIds = useVisibleBookIds()
-
-  return useCollections({
-    queryObj: {
-      selector: {
-        _id: {
-          $in: book?.collections ?? []
-        }
-      }
-    }
-  })
-}
-
-// export const useBookCollectionsState = ({
-//   bookId,
-//   libraryState,
-//   localSettingsState,
-//   protectedTagIds,
-//   tags
-// }: {
-//   bookId: string
-//   libraryState: ReturnType<typeof libraryStateSignal.getValue>
-//   localSettingsState: ReturnType<typeof useLocalSettingsState>
-//   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
-//   tags: ReturnType<typeof useTagsByIds>["data"]
-// }) => {
-//   const book = useRecoilValue(bookState({ bookId, tags }))
-
-//   return book?.collections?.map((id) =>
-//     get(
-//       collectionState({
-//         id,
-//         libraryState,
-//         localSettingsState,
-//         protectedTagIds
-//       })
-//     )
-//   )
-// }
 
 export const books$ = latestDatabase$.pipe(
   switchMap((database) => database?.book.find({}).$)

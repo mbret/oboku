@@ -2,13 +2,10 @@ import { FC, memo } from "react"
 import { Box, Typography, styled, useTheme } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
-import { useEnrichedBookState } from "../states"
+import { useBook } from "../states"
 import { useDefaultItemClickHandler } from "./helpers"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useCSS } from "../../common/utils"
-import { booksDownloadStateSignal } from "../../download/states"
-import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
-import { useSignalValue } from "reactjrx"
 import { getMetadataFromBook } from "../getMetadataFromBook"
 
 const ContainerBox = styled("div")`
@@ -25,15 +22,8 @@ export const BookListGridItem: FC<{
   bookId: string
   onItemClick?: (id: string) => void
 }> = memo(({ bookId, onItemClick }) => {
-  const normalizedBookDownloadsState = useSignalValue(booksDownloadStateSignal)
-  const { data: protectedTagIds } = useProtectedTagIds()
-  const tags = useTagsByIds().data
-
-  const item = useEnrichedBookState({
-    bookId,
-    normalizedBookDownloadsState,
-    protectedTagIds,
-    tags
+  const { data: item } = useBook({
+    id: bookId
   })
   const onDefaultItemClick = useDefaultItemClickHandler()
   const classes = useStyles()

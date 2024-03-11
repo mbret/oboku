@@ -32,10 +32,15 @@ export const getMetadataFromCollection = (
 ): Return => {
   const list = item?.metadata ?? []
 
-  /**
-   * link is the raw format, we don't want it to be on top
-   */
-  const orderedList = [...list].sort((a, b) => (a.type === "link" ? -1 : 1))
+  const orderedList = [...list].sort((a, b) => {
+    // mangaupdates has priority
+    if (a.type === "mangaupdates" && b.type === "biblioreads") return 1
+
+    /**
+     * link is the raw format, we don't want it to be on top
+     */
+    return a.type === "link" ? -1 : 1
+  })
 
   const reducedMetadata = orderedList.reduce((acc, item) => {
     const mergedValue = mergeObjects(acc, item) as Return
