@@ -3,6 +3,7 @@ import { ListItem, ListItemText, useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { useCollectionsDictionary } from "../states"
 import { Checkbox } from "../../common/Checkbox"
+import { getMetadataFromCollection } from "../getMetadataFromCollection"
 
 export const SelectableCollectionListItem: FC<{
   id: string
@@ -19,7 +20,7 @@ export const SelectableCollectionListItem: FC<{
       style={styles.container}
       onClick={() => data && onItemClick && onItemClick(data?._id)}
     >
-      <ListItemText primary={data?.name} />
+      <ListItemText primary={getMetadataFromCollection(data)?.title} />
       <div style={styles.infoIcon}></div>
       <Checkbox selected={selected} />
     </ListItem>

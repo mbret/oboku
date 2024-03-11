@@ -17,7 +17,7 @@ import {
 } from "@mui/icons-material"
 import { FC } from "react"
 import { useBook } from "../states"
-import { Metadata } from "@oboku/shared"
+import { BookMetadata } from "@oboku/shared"
 import { useLink } from "../../links/states"
 import { getPluginFromType } from "../../plugins/getPluginFromType"
 
@@ -25,7 +25,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const plugin = getPluginFromType(link?.type)
-  const types: Metadata["type"][] = ["user", "file", "googleBookApi", "link"]
+  const types: BookMetadata["type"][] = ["user", "file", "googleBookApi", "link"]
 
   return (
     <>

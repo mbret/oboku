@@ -6,6 +6,7 @@ import { map, switchMap } from "rxjs"
 import { keyBy } from "lodash"
 import { useVisibleBookIds } from "../books/states"
 import { MangoQuery } from "rxdb"
+import { getMetadataFromCollection } from "./getMetadataFromCollection"
 
 export type Collection = CollectionDocType
 
@@ -23,8 +24,10 @@ export const useCollections = ({
           items.map((item) => ({
             ...item?.toJSON(),
             displayableName: localSettings.hideDirectivesFromCollectionName
-              ? directives.removeDirectiveFromString(item.name)
-              : item.name
+              ? directives.removeDirectiveFromString(
+                  getMetadataFromCollection(item).title ?? ""
+                )
+              : getMetadataFromCollection(item).title
           }))
         )
       )
@@ -63,8 +66,10 @@ export const useCollection = ({ id }: { id?: string }) => {
           return {
             ...value?.toJSON(),
             displayableName: localSettings.hideDirectivesFromCollectionName
-              ? directives.removeDirectiveFromString(value.name)
-              : value.name
+              ? directives.removeDirectiveFromString(
+                  getMetadataFromCollection(value).title ?? ""
+                )
+              : getMetadataFromCollection(value).title
           }
         })
       )

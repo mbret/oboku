@@ -17,6 +17,7 @@ import { Alert } from "@mui/material"
 import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { switchMap } from "rxjs"
+import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
 
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
@@ -53,7 +54,7 @@ export const ProblemsScreen = memo(() => {
       .map((resourceId) => [
         resourceId,
         {
-          name: collectionsByResourceId[resourceId]![0]?.name,
+          name: getMetadataFromCollection(collectionsByResourceId[resourceId]![0])?.title,
           number: collectionsByResourceId[resourceId]!.length
         }
       ])

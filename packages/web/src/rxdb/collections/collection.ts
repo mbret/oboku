@@ -53,15 +53,16 @@ export const collectionSchema: RxJsonSchema<
   primaryKey: `_id`,
   properties: {
     _id: { type: `string`, maxLength: 100 },
-    name: { type: "string" },
     books: { type: "array", ref: "book", items: { type: "string" } },
     resourceId: { type: ["string", "null"] },
+    type: { type: ["string", "null"] },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
+    syncAt: { type: ["string"] },
     dataSourceId: { type: ["string", "null"] },
+    metadata: { type: ["array"] },
     ...getReplicationProperties(`obokucollection`)
-  },
-  required: ["name"]
+  }
 }
 
 export const collectionMigrationStrategies = {}

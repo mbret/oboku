@@ -1,6 +1,6 @@
 import {
   LinkDocType,
-  Metadata,
+  BookMetadata,
   ObokuErrorCode,
   ObokuSharedError,
   directives
@@ -18,7 +18,7 @@ export const dataSourceFacade = {
     link: LinkDocType,
     credentials?: any
   ): Promise<{
-    metadata: Metadata
+    metadata: BookMetadata
     shouldDownload: boolean
     contentType?: string
   }> => {

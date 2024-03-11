@@ -17,12 +17,14 @@ export const extractDirectivesFromName = (
   isIgnored: boolean
   direction: "rtl" | "ltr" | undefined
   isbn?: string | undefined
+  series: boolean | undefined
 } => {
   let isNotACollection = false
   let tags: string[] = []
   let isIgnored = false
   let direction = undefined
   let isbn = undefined
+  let series: boolean | undefined = undefined
 
   const directives = resourceId
     .match(/(\[oboku\~[^\]]*\])+/gi)
@@ -35,6 +37,11 @@ export const extractDirectivesFromName = (
     if (directive === "ignore") {
       isIgnored = true
     }
+
+    if (directive === "series") {
+      series = true
+    }
+
     if (directive.startsWith("direction~")) {
       const value = directive.replace(/direction\~/, "")
       if (value === "ltr" || value === "rtl") {
@@ -54,6 +61,7 @@ export const extractDirectivesFromName = (
   })
 
   return {
+    series,
     isNotACollection,
     tags,
     isIgnored,
