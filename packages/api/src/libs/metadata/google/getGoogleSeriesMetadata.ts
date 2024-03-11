@@ -9,7 +9,5 @@ export const getGoogleSeriesMetadata = async (
 
   console.log(response)
 
-  return {
-    type: "googleBookApi"
-  }
+  return undefined
 }

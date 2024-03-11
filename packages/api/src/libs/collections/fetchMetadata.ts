@@ -1,4 +1,5 @@
 import { Logger } from "@libs/logger"
+import { getSeriesMetadata } from "@libs/metadata/biblioreads/getSeriesMetadata"
 import { getGoogleSeriesMetadata } from "@libs/metadata/google/getGoogleSeriesMetadata"
 import { CollectionMetadata } from "@oboku/shared"
 import { isAxiosError } from "axios"
@@ -29,6 +30,12 @@ export const fetchMetadata = async (
     if (google) {
       list.push(google)
     }
+  }
+
+  const biblioreads = await getSeriesMetadata(metadata.title)
+
+  if (biblioreads) {
+    list.push(biblioreads)
   }
 
   return list
