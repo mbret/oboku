@@ -2,7 +2,7 @@ import { Logger } from "@libs/logger"
 import { supabase } from "./client"
 import { isLockOutdated } from "./isLockOutdated"
 
-export const lockResource = async (
+export const lock = async (
   lockId: string,
   maxDuration: number
 ): Promise<{ alreadyLocked: boolean }> => {

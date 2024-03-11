@@ -4,7 +4,7 @@ import { getNormalizedHeader } from "@libs/utils"
 import schema from "./schema"
 import { InvokeCommand } from "@aws-sdk/client-lambda"
 import { STAGE } from "src/constants"
-import { lockResource } from "@libs/supabase/lockResource"
+import { lock } from "@libs/supabase/lock"
 
 const LOCK_MAX_DURATION_MN = 5
 
@@ -19,6 +19,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     Payload: JSON.stringify({
       body: {
         collectionId: event.body.collectionId,
+        soft: event.body.soft,
         credentials: getNormalizedHeader(event, `oboku-credentials`),
         authorization: getNormalizedHeader(event, `authorization`)
       }
@@ -27,7 +28,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   const lockId = `metadata-collection_${event.body.collectionId}`
 
-  const { alreadyLocked } = await lockResource(lockId, LOCK_MAX_DURATION_MN)
+  const { alreadyLocked } = await lock(lockId, LOCK_MAX_DURATION_MN)
 
   if (!alreadyLocked) {
     await client.send(command)
