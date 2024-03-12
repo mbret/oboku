@@ -20,14 +20,12 @@ const swallowGoogleError = async <T>(promise: Promise<T>) => {
 
 export const fetchMetadata = async (
   metadata: { title: string; year?: string },
-  { googleApiKey, withGoogle }: { googleApiKey?: string; withGoogle: boolean }
+  { withGoogle }: { googleApiKey?: string; withGoogle: boolean }
 ): Promise<CollectionMetadata[]> => {
   const list = []
 
   if (withGoogle) {
-    const google = await swallowGoogleError(
-      getGoogleSeriesMetadata(metadata, googleApiKey ?? "")
-    )
+    const google = await swallowGoogleError(getGoogleSeriesMetadata())
 
     if (google) {
       list.push(google)

@@ -47,13 +47,31 @@ export const refreshMetadata = async (
     ? new Date(collection?.lastMetadataUpdatedAt)
     : undefined
 
-  const isCollectionOutdatedFromLink =
+  const isCollectionAlreadyUpdatedFromLink =
     linkModifiedAt &&
     collectionMetadataUpdatedAt &&
-    linkModifiedAt.getTime() > collectionMetadataUpdatedAt.getTime()
+    linkModifiedAt.getTime() < collectionMetadataUpdatedAt.getTime()
 
-  if (soft && !isCollectionOutdatedFromLink) {
+  /**
+   * @important
+   * In case of soft refresh, we only update if the link is updated
+   * or if there is no link but the collection has not yet fetched metadata.
+   * This soft mode is mostly used during sync.
+   */
+
+  if (soft && isCollectionAlreadyUpdatedFromLink) {
     Logger.log(`${collection._id} already has metadata, ignoring it!`)
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({})
+    }
+  }
+
+  if (soft && !metadataLink && collection.lastMetadataUpdatedAt) {
+    Logger.log(
+      `${collection._id} does not have link and is already refreshed, ignoring it!`
+    )
 
     return {
       statusCode: 200,
