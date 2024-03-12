@@ -2,6 +2,7 @@ import { CollectionMetadata } from "@oboku/shared"
 import { Logger } from "@libs/logger"
 import { URL } from "url"
 import axios from "axios"
+import { getParameterValue } from "@libs/ssm"
 
 type Result = {
   error: "OK"
@@ -64,7 +65,10 @@ export const getSeriesMetadata = async (metadata: {
 
     url.searchParams.append(
       `api_key`,
-      `dc8a307e05b4f5dbbb45b0388bb7ba2a9ff369e3`
+      (await getParameterValue({
+        Name: `COMiCVINE_API_KEY`,
+        WithDecryption: true
+      })) ?? ``
     )
     url.searchParams.append(`query`, metadata.title)
     url.searchParams.append(`format`, `json`)
