@@ -2,11 +2,14 @@ import { CollectionMetadata } from "@oboku/shared"
 import { getSeries } from "./getSeries"
 import { Logger } from "@libs/logger"
 
-export const getSeriesMetadata = async (
+export const getSeriesMetadata = async (metadata: {
   title: string
-): Promise<CollectionMetadata | undefined> => {
+  year?: string
+}): Promise<CollectionMetadata | undefined> => {
   try {
-    const series = await getSeries(title)
+    const series = await getSeries(metadata.title)
+
+    if (!series) return undefined
 
     return {
       type: "biblioreads",

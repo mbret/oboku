@@ -10,8 +10,6 @@ import { supabase } from "@libs/supabase/client"
 import { Logger } from "@libs/logger"
 import { refreshMetadata } from "@libs/collections/refreshMetadata"
 
-const logger = Logger.namespace("refreshMetadataCollectionLongProcess")
-
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
@@ -33,13 +31,17 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     WithDecryption: true
   })
 
+  const soft = event.body.soft === true
   const authorization = event.body.authorization ?? ``
+  const rawCredentials = event.body.credentials ?? JSON.stringify({})
+  const credentials = JSON.parse(rawCredentials)
 
   const { name: userName } = await withToken({
     headers: {
       authorization
     }
   })
+
   const collectionId: string | undefined = event.body.collectionId
 
   if (!collectionId) {
@@ -56,22 +58,12 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   if (!collection) throw new Error(`Unable to find book ${collectionId}`)
 
-  if (collection.type === "shelve") {
-    logger.log(`Ignoring ${collection._id} because of type ${collection.type}`)
-
-    await deleteLock(supabase, lockId)
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({})
-    }
-  }
-
-  console.log(collection)
-
   try {
     await refreshMetadata(collection, {
-      googleApiKey
+      googleApiKey,
+      db,
+      credentials,
+      soft
     })
   } catch (e) {
     await deleteLock(supabase, lockId)

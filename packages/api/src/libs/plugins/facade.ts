@@ -1,9 +1,7 @@
 import {
   LinkDocType,
-  BookMetadata,
   ObokuErrorCode,
   ObokuSharedError,
-  directives
 } from "@oboku/shared"
 import { createHelpers } from "./helpers"
 import { synchronizeFromDataSource } from "../sync/synchronizeFromDataSource"
@@ -13,31 +11,26 @@ import { atomicUpdate } from "@libs/couch/dbHelpers"
 
 const urlPlugin = plugins.find(({ type }) => type === `URI`)
 
-export const dataSourceFacade = {
-  getMetadata: async (
-    link: LinkDocType,
+export const pluginFacade = {
+  getMetadata: async ({
+    resourceId,
+    linkType,
+    resourceData,
+    credentials
+  }: {
+    resourceId: string
+    linkType: string
     credentials?: any
-  ): Promise<{
-    metadata: BookMetadata
-    shouldDownload: boolean
-    contentType?: string
-  }> => {
-    const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
+    resourceData?: any
+  }) => {
+    const plugin = plugins.find(({ type }) => type === linkType) || urlPlugin
 
     if (plugin) {
-      const { shouldDownload, ...metadata } = await plugin.getMetadata(
-        link,
-        credentials
-      )
-
-      const { isbn } = directives.extractDirectivesFromName(
-        metadata.title ?? ""
-      )
-
-      return {
-        metadata: { ...metadata, isbn, type: "link" },
-        shouldDownload
-      }
+      return await plugin.getMetadata({
+        id: resourceId,
+        credentials,
+        data: resourceData
+      })
     }
 
     throw new Error(`No dataSource found for action`)
@@ -106,7 +99,8 @@ export const dataSourceFacade = {
         userName,
         credentials,
         dataSourceType: type,
-        authorization
+        authorization,
+        db
       }
       const plugin = plugins.find((plugin) => plugin.type === type)
 

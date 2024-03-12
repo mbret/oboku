@@ -1,8 +1,14 @@
 import fs from "fs"
 import path from "path"
 import unzipper from "unzipper"
-import { dataSourceFacade } from "../plugins/facade"
-import { BookDocType, LinkDocType, OPF } from "@oboku/shared"
+import { pluginFacade } from "../plugins/facade"
+import {
+  BookDocType,
+  BookMetadata,
+  LinkDocType,
+  OPF,
+  directives
+} from "@oboku/shared"
 import { detectMimeTypeFromContent } from "../utils"
 import { Logger } from "@libs/logger"
 import { saveCoverFromArchiveToBucket } from "./saveCoverFromArchiveToBucket"
@@ -50,8 +56,24 @@ export const retrieveMetadataAndSaveCover = async (
 
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
-    const { shouldDownload, metadata: linkMetadata } =
-      await dataSourceFacade.getMetadata(ctx.link, ctx.credentials)
+    const { shouldDownload, ...linkResourceMetadata } =
+      await pluginFacade.getMetadata({
+        linkType: ctx.link.type,
+        credentials: ctx.credentials,
+        resourceId: ctx.link.resourceId
+      })
+
+    const { isbn } = directives.extractDirectivesFromName(
+      linkResourceMetadata.name
+    )
+
+    const linkMetadata: BookMetadata = {
+      type: "link",
+      isbn,
+      title: linkResourceMetadata.name,
+      contentType: linkResourceMetadata.contentType,
+      ...linkResourceMetadata.bookMetadata
+    }
 
     let contentType = linkMetadata.contentType
 

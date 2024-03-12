@@ -1,12 +1,12 @@
 import { Request } from "request"
 import {
-  directives,
   LinkDocType,
   dataSourceHelpers,
   InsertAbleBookDocType,
   SafeMangoQuery,
   DocType,
-  ModelOf
+  ModelOf,
+  BookMetadata
 } from "@oboku/shared"
 import cheerio from "cheerio"
 import fetch from "node-fetch"
@@ -72,28 +72,21 @@ type Helpers = {
     bookId: string,
     linkId: string
   ) => Promise<[DocumentInsertResponse, DocumentInsertResponse]>
-  createError: (
-    code: "unknown" | "unauthorized" | "rateLimitExceeded",
-    previousError?: Error
-  ) => void
-  extractDirectivesFromName: typeof directives.extractDirectivesFromName
-  createTagFromName: (
-    name: string,
-    silent: boolean
-  ) => Promise<{
-    id: string
-    created: boolean
-  }>
 }
 
 export type DataSourcePlugin = {
   type: string
-  getMetadata: (
-    link: LinkDocType,
+  getMetadata: (data: {
     credentials?: any
-  ) => Promise<
-    Omit<Metadata, "type"> & { shouldDownload: boolean; contentType?: string }
-  >
+    id: string
+    data?: any
+  }) => Promise<{
+    name: string
+    modifiedAt?: string
+    shouldDownload?: boolean
+    contentType?: string
+    bookMetadata?: Partial<Omit<BookMetadata, "type">>
+  }>
   download?: (
     link: LinkDocType,
     credentials?: any

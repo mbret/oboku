@@ -15,7 +15,7 @@ type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 const logger = Logger.namespace("sync/registerOrUpdateCollection")
 
 export const registerOrUpdateCollection = async ({
-  item: { name, resourceId, modifiedAt },
+  item: { name, resourceId: linkResourceId, modifiedAt },
   helpers,
   ctx
 }: {
@@ -32,7 +32,7 @@ export const registerOrUpdateCollection = async ({
    * If there is one and the name is different we update it
    */
   const collectionFromResourceId = await helpers.findOne("obokucollection", {
-    selector: { resourceId }
+    selector: { linkResourceId }
   })
 
   const linkMetadata = {
@@ -66,6 +66,7 @@ export const registerOrUpdateCollection = async ({
           return {
             ...old,
             syncAt: new Date().toISOString(),
+            linkType: ctx.dataSourceType,
             type: directiveValues.series
               ? ("series" as const)
               : ("shelve" as const),
@@ -85,11 +86,11 @@ export const registerOrUpdateCollection = async ({
      * does not come from the same datasource it should still be treated as different
      */
     const created = await helpers.create("obokucollection", {
-      resourceId,
+      linkResourceId,
+      linkType: ctx.dataSourceType,
       books: [],
       createdAt: new Date().toISOString(),
       modifiedAt: null,
-      dataSourceId: ctx.dataSourceId,
       syncAt: new Date().toISOString(),
       type: directiveValues.series ? ("series" as const) : ("shelve" as const),
       rxdbMeta: {
@@ -138,7 +139,8 @@ export const registerOrUpdateCollection = async ({
     method: `post`,
     url: `${AWS_API_URI}/refresh-metadata-collection`,
     data: {
-      collectionId
+      collectionId,
+      soft: true
     },
     headers: {
       "content-type": "application/json",

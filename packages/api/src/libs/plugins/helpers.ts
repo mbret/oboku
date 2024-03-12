@@ -6,14 +6,12 @@ import {
   findOne,
   addLinkToBook,
   find,
-  getOrCreateTagFromName,
-  createTagFromName
+  getOrCreateTagFromName
 } from "@libs/couch/dbHelpers"
 import createNano from "nano"
 import {
   InsertAbleBookDocType,
   SafeMangoQuery,
-  directives,
   ObokuErrorCode,
   ObokuSharedError,
   DocType,
@@ -71,53 +69,30 @@ export const createHelpers = (
     getOrCreateTagFromName: (name: string) => getOrCreateTagFromName(db, name),
     addLinkToBook: (bookId: string, linkId: string) =>
       addLinkToBook(db, bookId, linkId),
-    createError: (
-      code: "unknown" | "unauthorized" | "rateLimitExceeded" = "unknown",
-      previousError?: Error
-    ) => {
-      switch (code) {
-        case "unauthorized":
-          return new ObokuSharedError(
-            ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED,
-            previousError
-          )
-        case "rateLimitExceeded":
-          return new ObokuSharedError(
-            ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED,
-            previousError
-          )
-        default:
-          return new ObokuSharedError(
-            ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN,
-            previousError
-          )
-      }
-    },
-    extractDirectivesFromName: directives.extractDirectivesFromName,
-    createTagFromName: (name: string, silent: boolean) =>
-      createTagFromName(db, name, silent)
   }
 
   return helpers
 }
 
-export const createThrottler = (ms: number) => {
-  const list: (() => any)[] = []
-
-  setInterval(() => {
-    const toProcess = list.shift()
-    if (toProcess) {
-      toProcess()
-    }
-  }, ms)
-
-  return <F extends (...args: any) => any>(fn: F) =>
-    (...args: Parameters<F>) =>
-      new Promise<ReturnType<F>>((resolve, reject) => {
-        list.push(() =>
-          fn(...(args as any))
-            .then(resolve)
-            .catch(reject)
-        )
-      })
+export const createError = (
+  code: "unknown" | "unauthorized" | "rateLimitExceeded" = "unknown",
+  previousError?: Error
+) => {
+  switch (code) {
+    case "unauthorized":
+      return new ObokuSharedError(
+        ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED,
+        previousError
+      )
+    case "rateLimitExceeded":
+      return new ObokuSharedError(
+        ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED,
+        previousError
+      )
+    default:
+      return new ObokuSharedError(
+        ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN,
+        previousError
+      )
+  }
 }

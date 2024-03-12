@@ -1,4 +1,8 @@
-import { BookDocType, GoogleDriveDataSourceData } from "@oboku/shared"
+import {
+  BookDocType,
+  GoogleDriveDataSourceData,
+  directives
+} from "@oboku/shared"
 import { createHelpers } from "../plugins/helpers"
 import { uniq } from "lodash"
 import { Logger } from "@libs/logger"
@@ -7,11 +11,15 @@ import {
   SynchronizeAbleDataSource
 } from "@libs/plugins/types"
 import { registerOrUpdateCollection } from "./collections/registerOrUpdateCollection"
+import { createTagFromName } from "@libs/couch/dbHelpers"
+import nano from "nano"
 
 const logger = Logger.namespace("sync")
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
-type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0]
+type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0] & {
+  db: nano.DocumentScope<unknown>
+}
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 function isFolder(
@@ -28,7 +36,7 @@ function isFile(
 
 export const synchronizeFromDataSource = async (
   synchronizeAble: SynchronizeAbleDataSource,
-  ctx: Context & { authorization: string },
+  ctx: Context & { authorization: string; db: nano.DocumentScope<unknown> },
   helpers: ReturnType<typeof createHelpers>
 ) => {
   console.log(
@@ -58,7 +66,7 @@ const getItemTags = (
   item: SynchronizeAbleDataSource | SynchronizeAbleItem,
   helpers: Helpers
 ): string[] => {
-  const metadataForFolder = helpers.extractDirectivesFromName(item.name)
+  const metadataForFolder = directives.extractDirectivesFromName(item.name)
 
   const subTagsAsMap = (item.items || []).map((subItem) => {
     return getItemTags(subItem, helpers)
@@ -76,7 +84,8 @@ const getItemTags = (
 const syncTags = async ({
   helpers,
   item,
-  lvl
+  lvl,
+  ctx
 }: {
   ctx: Context
   helpers: Helpers
@@ -93,7 +102,7 @@ const syncTags = async ({
 
   await Promise.all(
     tagNames.map(async (tag) => {
-      const { created, id } = await helpers.createTagFromName(tag, true)
+      const { created, id } = await createTagFromName(ctx.db, tag, true)
       if (created) {
         logger.log(`syncTags ${tag} created with id ${id}`)
       }
@@ -116,7 +125,7 @@ const syncFolder = async ({
   item: SynchronizeAbleDataSource | SynchronizeAbleItem
   parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
 }) => {
-  const metadataForFolder = helpers.extractDirectivesFromName(item.name)
+  const metadataForFolder = directives.extractDirectivesFromName(item.name)
   logger.log(`syncFolder ${item.name}: metadata `, metadataForFolder)
 
   const isCollection =
@@ -187,11 +196,11 @@ const createOrUpdateBook = async ({
     const parentTagNames = parents.reduce(
       (tags: string[], parent) => [
         ...tags,
-        ...helpers.extractDirectivesFromName(parent.name).tags
+        ...directives.extractDirectivesFromName(parent.name).tags
       ],
       []
     )
-    const metadata = helpers.extractDirectivesFromName(item.name)
+    const metadata = directives.extractDirectivesFromName(item.name)
     const parentFolders = parents.filter((parent) =>
       isFolder(parent)
     ) as SynchronizeAbleItem[]
@@ -390,7 +399,7 @@ const synchronizeBookWithParentCollections = async (
       "obokucollection",
       {
         selector: {
-          $or: parentResourceIds.map((resourceId) => ({ resourceId })),
+          $or: parentResourceIds.map((linkResourceId) => ({ linkResourceId })),
           books: {
             $nin: [bookId]
           }
@@ -414,7 +423,7 @@ const synchronizeBookWithParentCollections = async (
 
     const parentCollections = await helpers.find("obokucollection", {
       selector: {
-        $or: parentResourceIds.map((resourceId) => ({ resourceId }))
+        $or: parentResourceIds.map((linkResourceId) => ({ linkResourceId }))
       }
     })
     const parentCollectionIds = parentCollections.map(({ _id }) => _id)

@@ -10,12 +10,13 @@ import {
   READER_SUPPORTED_EXTENSIONS
 } from "@oboku/shared"
 import { configure } from "./configure"
-import { createThrottler } from "../helpers"
 import path from "path"
 import {
   DataSourcePlugin,
   SynchronizeAbleDataSource
 } from "@libs/plugins/types"
+import { createThrottler } from "@libs/utils"
+import { createError } from "../helpers"
 
 export { configure }
 
@@ -29,7 +30,7 @@ const isFolder = (
 
 export const dataSource: DataSourcePlugin = {
   type: `DRIVE`,
-  getMetadata: async (link, credentials) => {
+  getMetadata: async ({ id, credentials }) => {
     const auth = await authorize({ credentials })
     const drive = google.drive({
       version: "v3",
@@ -39,16 +40,17 @@ export const dataSource: DataSourcePlugin = {
     const metadata = (
       await drive.files.get(
         {
-          fileId: extractIdFromResourceId(link.resourceId),
-          fields: "size, name, mimeType"
+          fileId: extractIdFromResourceId(id),
+          fields: "size, name, mimeType, modifiedTime"
         },
         { responseType: "json" }
       )
     ).data
 
     return {
-      title: metadata.name ?? "",
+      name: metadata.name ?? "",
       contentType: metadata.mimeType || undefined,
+      modifiedAt: metadata.modifiedTime || undefined,
       shouldDownload: true
     }
   },
@@ -109,7 +111,7 @@ export const dataSource: DataSourcePlugin = {
       await helpers.getDataSourceData<GoogleDriveDataSourceData>()
 
     if (!folderId) {
-      throw helpers.createError("unknown")
+      throw createError("unknown")
     }
 
     const getContentsFromFolder = throttle(
@@ -130,7 +132,7 @@ export const dataSource: DataSourcePlugin = {
           `,
               includeItemsFromAllDrives: true,
               fields:
-                "nextPageToken, files(id, kind, name, mimeType, modifiedTime, parents, modifiedTime, trashed)",
+                "nextPageToken, files(id, kind, name, mimeType, modifiedTime, parents, trashed)",
               pageToken: pageToken,
               supportsAllDrives: true,
               pageSize: 10
@@ -199,13 +201,13 @@ export const dataSource: DataSourcePlugin = {
       }
     } catch (e) {
       if ((e as any)?.code === 401) {
-        throw helpers.createError("unauthorized", e as Error)
+        throw createError("unauthorized", e as Error)
       }
       const errors = (e as any)?.response?.data?.error?.errors
       if (errors && Array.isArray(errors)) {
         errors.forEach((error: any) => {
           if (error?.reason === "rateLimitExceeded") {
-            throw helpers.createError("rateLimitExceeded", e as Error)
+            throw createError("rateLimitExceeded", e as Error)
           }
         })
       }

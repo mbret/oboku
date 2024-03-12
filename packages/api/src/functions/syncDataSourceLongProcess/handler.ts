@@ -6,12 +6,12 @@ import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { withToken } from "@libs/auth"
 import schema from "./schema"
 import { createHttpError } from "@libs/httpErrors"
-import { dataSourceFacade } from "@libs/plugins"
 import { getNanoDbForUser } from "@libs/couch/dbHelpers"
 import axios from "axios"
 import { getParameterValue } from "@libs/ssm"
 import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
+import { pluginFacade } from "@libs/plugins/facade"
 
 const s3 = new S3Client()
 
@@ -80,7 +80,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       }
     }
 
-    await dataSourceFacade.sync({
+    await pluginFacade.sync({
       userName: name,
       dataSourceId,
       db: await getNanoDbForUser(name),
