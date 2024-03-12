@@ -288,12 +288,13 @@ export const ProfileScreen = () => {
         </ListItem>
         <ListItemButton
           onClick={() => {
-            authorizeAction(() => {
-              removeAllContents()
-            })
+            removeAllContents()
           }}
         >
-          <ListItemText primary="Remove all contents" />
+          <ListItemText
+            primary="Reset account"
+            secondary="Remove all contents from your account"
+          />
         </ListItemButton>
         <ListItem button onClick={() => dialog({ preset: "NOT_IMPLEMENTED" })}>
           <ListItemText primary="Delete my account" />

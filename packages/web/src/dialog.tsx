@@ -131,7 +131,7 @@ const InnerDialog = () => {
       open={!!currentDialog}
       disableEscapeKeyDown={false}
       {...(currentDialog?.canEscape !== false && {
-        onClose: handleClose,
+        onClose: onCancel,
         disableEscapeKeyDown: true
       })}
     >

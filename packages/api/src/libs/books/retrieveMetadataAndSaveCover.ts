@@ -9,7 +9,7 @@ import {
   OPF,
   directives
 } from "@oboku/shared"
-import { detectMimeTypeFromContent } from "../utils"
+import { detectMimeTypeFromContent, mergeSkippingUndefined } from "../utils"
 import { Logger } from "@libs/logger"
 import { saveCoverFromArchiveToBucket } from "./saveCoverFromArchiveToBucket"
 import { parseOpfMetadata } from "../metadata/opf/parseOpfMetadata"
@@ -21,6 +21,7 @@ import { reduceMetadata } from "@libs/metadata/reduceMetadata"
 import { downloadToTmpFolder } from "@libs/download/downloadToTmpFolder"
 import { isBookProtected } from "@libs/couch/isBookProtected"
 import nano from "nano"
+import { atomicUpdate } from "@libs/couch/dbHelpers"
 
 const logger = Logger.namespace("retrieveMetadataAndSaveCover")
 
@@ -38,7 +39,7 @@ export const retrieveMetadataAndSaveCover = async (
     db: nano.DocumentScope<unknown>
   }
 ) => {
-  console.log(
+  logger.log(
     `syncMetadata run for user ${ctx.userName} with book ${ctx.book._id}`
   )
   let bookNameForDebug = ""
@@ -48,7 +49,7 @@ export const retrieveMetadataAndSaveCover = async (
   try {
     bookNameForDebug = reduceMetadata(ctx.book.metadata).title || ""
 
-    console.log(
+    logger.log(
       `syncMetadata processing ${ctx.book._id} with resource id ${ctx.link.resourceId}`
     )
 
@@ -56,32 +57,39 @@ export const retrieveMetadataAndSaveCover = async (
 
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
-    const { shouldDownload, ...linkResourceMetadata } =
-      await pluginFacade.getMetadata({
+    const { shouldDownload = false, ...linkResourceMetadata } =
+      (await pluginFacade.getMetadata({
         linkType: ctx.link.type,
         credentials: ctx.credentials,
         resourceId: ctx.link.resourceId
-      })
+      })) ?? {}
 
     const { isbn } = directives.extractDirectivesFromName(
-      linkResourceMetadata.name
+      linkResourceMetadata.name ?? ""
     )
 
-    const linkMetadata: BookMetadata = {
-      type: "link",
-      isbn,
-      title: linkResourceMetadata.name,
-      contentType: linkResourceMetadata.contentType,
-      ...linkResourceMetadata.bookMetadata
-    }
+    const existingLinkMetadata = ctx.book.metadata?.find(
+      (item) => item.type === "link"
+    )
 
-    let contentType = linkMetadata.contentType
+    const newLinkMetadata: BookMetadata = mergeSkippingUndefined(
+      existingLinkMetadata ?? {},
+      {
+        type: "link",
+        isbn,
+        title: linkResourceMetadata.name,
+        contentType: linkResourceMetadata.contentType,
+        ...linkResourceMetadata.bookMetadata
+      }
+    )
+
+    let contentType = newLinkMetadata.contentType
 
     const sourcesMetadata = await getBookSourcesMetadata(
       {
-        ...linkMetadata,
+        ...newLinkMetadata,
         // some plugins returns filename and not title
-        title: path.parse(linkMetadata.title ?? "").name
+        title: path.parse(newLinkMetadata.title ?? "").name
       },
       {
         googleApiKey: ctx.googleApiKey,
@@ -89,7 +97,7 @@ export const retrieveMetadataAndSaveCover = async (
       }
     )
 
-    const metadataList = [linkMetadata, ...sourcesMetadata]
+    const metadataList = [newLinkMetadata, ...sourcesMetadata]
 
     const { filepath: tmpFilePath, metadata: downloadMetadata } = shouldDownload
       ? await downloadToTmpFolder(ctx, ctx.book, ctx.link)
@@ -102,7 +110,7 @@ export const retrieveMetadataAndSaveCover = async (
       `syncMetadata processing ${ctx.book._id}`,
       tmpFilePath,
       {
-        linkMetadata
+        linkMetadata: newLinkMetadata
       },
       contentType
     )
@@ -212,12 +220,27 @@ export const retrieveMetadataAndSaveCover = async (
       `metadataDaemon Finished processing book ${ctx.book._id} with resource id ${ctx.link.resourceId}`
     )
 
-    const bookData = {
-      metadata: metadataList
-    }
+    atomicUpdate(ctx.db, "book", ctx.book._id, (old) => {
+      const linkMetadata = old.metadata?.find((item) => item.type === "link")
+
+      return {
+        ...old,
+        /**
+         * We should always use previous link metadata. Some
+         * links do not have server state
+         */
+        metadata: metadataList.map((item) =>
+          item.type !== "link"
+            ? item
+            : mergeSkippingUndefined(linkMetadata ?? {}, item)
+        ),
+        lastMetadataUpdatedAt: new Date().getTime(),
+        metadataUpdateStatus: null,
+        lastMetadataUpdateError: null
+      }
+    })
 
     return {
-      book: bookData,
       link: {
         contentLength
       }

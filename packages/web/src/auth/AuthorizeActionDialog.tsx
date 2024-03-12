@@ -19,13 +19,18 @@ type Inputs = {
   password: string
 }
 
-const actionSignal = signal<(() => void) | undefined>({})
+const actionSignal = signal<
+  { action: () => void; onCancel?: () => void } | undefined
+>({})
 
-export const authorizeAction = (action: () => void) =>
-  actionSignal.setValue(() => action)
+export const authorizeAction = (action: () => void, onCancel?: () => void) =>
+  actionSignal.setValue({
+    action,
+    onCancel
+  })
 
 export const AuthorizeActionDialog: FC<{}> = () => {
-  const action = useSignalValue(actionSignal)
+  const { action, onCancel = () => {} } = useSignalValue(actionSignal) ?? {}
   const open = !!action
   const { control, handleSubmit, setFocus, setError, reset } = useForm<Inputs>({
     defaultValues: {
@@ -52,6 +57,11 @@ export const AuthorizeActionDialog: FC<{}> = () => {
     actionSignal.setValue(undefined)
   }
 
+  const _onCancel = () => {
+    onCancel()
+    onClose()
+  }
+
   useEffect(() => {
     reset()
     resetValidatePasswordMutation()
@@ -64,7 +74,12 @@ export const AuthorizeActionDialog: FC<{}> = () => {
   }, [open, resetValidatePasswordMutation, reset, setFocus])
 
   return (
-    <Dialog onClose={onClose} open={open}>
+    <Dialog
+      onClose={() => {
+        _onCancel()
+      }}
+      open={open}
+    >
       <DialogTitle>Authorization required</DialogTitle>
       <DialogContent>
         <DialogContentText>
@@ -101,7 +116,7 @@ export const AuthorizeActionDialog: FC<{}> = () => {
         </form>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
+        <Button onClick={_onCancel} color="primary">
           Cancel
         </Button>
         <Button color="primary" type="submit" form={FORM_ID}>
