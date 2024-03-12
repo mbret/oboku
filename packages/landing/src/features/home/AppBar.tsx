@@ -114,7 +114,7 @@ export default function AppBar() {
               color="inherit"
               variant="contained"
               startIcon={<PhoneIphoneRounded />}
-              href={links.documentation}
+              href={links.app}
               target="_blank"
             >
               app

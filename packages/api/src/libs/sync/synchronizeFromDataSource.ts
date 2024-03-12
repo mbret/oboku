@@ -1,16 +1,25 @@
-import { BookDocType, GoogleDriveDataSourceData } from "@oboku/shared"
+import {
+  BookDocType,
+  GoogleDriveDataSourceData,
+  directives
+} from "@oboku/shared"
 import { createHelpers } from "../plugins/helpers"
-import { difference, uniq } from "lodash"
+import { uniq } from "lodash"
 import { Logger } from "@libs/logger"
 import {
   DataSourcePlugin,
   SynchronizeAbleDataSource
 } from "@libs/plugins/types"
+import { registerOrUpdateCollection } from "./collections/registerOrUpdateCollection"
+import { createTagFromName } from "@libs/couch/dbHelpers"
+import nano from "nano"
 
 const logger = Logger.namespace("sync")
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
-type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0]
+type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0] & {
+  db: nano.DocumentScope<unknown>
+}
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 function isFolder(
@@ -27,7 +36,7 @@ function isFile(
 
 export const synchronizeFromDataSource = async (
   synchronizeAble: SynchronizeAbleDataSource,
-  ctx: Context,
+  ctx: Context & { authorization: string; db: nano.DocumentScope<unknown> },
   helpers: ReturnType<typeof createHelpers>
 ) => {
   console.log(
@@ -42,6 +51,7 @@ export const synchronizeFromDataSource = async (
     lvl: 0,
     parents: []
   })
+
   await syncFolder({
     ctx,
     helpers,
@@ -56,7 +66,7 @@ const getItemTags = (
   item: SynchronizeAbleDataSource | SynchronizeAbleItem,
   helpers: Helpers
 ): string[] => {
-  const metadataForFolder = helpers.extractDirectivesFromName(item.name)
+  const metadataForFolder = directives.extractDirectivesFromName(item.name)
 
   const subTagsAsMap = (item.items || []).map((subItem) => {
     return getItemTags(subItem, helpers)
@@ -74,7 +84,8 @@ const getItemTags = (
 const syncTags = async ({
   helpers,
   item,
-  lvl
+  lvl,
+  ctx
 }: {
   ctx: Context
   helpers: Helpers
@@ -91,7 +102,7 @@ const syncTags = async ({
 
   await Promise.all(
     tagNames.map(async (tag) => {
-      const { created, id } = await helpers.createTagFromName(tag, true)
+      const { created, id } = await createTagFromName(ctx.db, tag, true)
       if (created) {
         logger.log(`syncTags ${tag} created with id ${id}`)
       }
@@ -107,14 +118,14 @@ const syncFolder = async ({
   lvl,
   parents
 }: {
-  ctx: Context
+  ctx: Context & { authorization: string }
   helpers: Helpers
   lvl: number
   hasCollectionAsParent: boolean
   item: SynchronizeAbleDataSource | SynchronizeAbleItem
   parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
 }) => {
-  const metadataForFolder = helpers.extractDirectivesFromName(item.name)
+  const metadataForFolder = directives.extractDirectivesFromName(item.name)
   logger.log(`syncFolder ${item.name}: metadata `, metadataForFolder)
 
   const isCollection =
@@ -185,11 +196,11 @@ const createOrUpdateBook = async ({
     const parentTagNames = parents.reduce(
       (tags: string[], parent) => [
         ...tags,
-        ...helpers.extractDirectivesFromName(parent.name).tags
+        ...directives.extractDirectivesFromName(parent.name).tags
       ],
       []
     )
-    const metadata = helpers.extractDirectivesFromName(item.name)
+    const metadata = directives.extractDirectivesFromName(item.name)
     const parentFolders = parents.filter((parent) =>
       isFolder(parent)
     ) as SynchronizeAbleItem[]
@@ -388,7 +399,7 @@ const synchronizeBookWithParentCollections = async (
       "obokucollection",
       {
         selector: {
-          $or: parentResourceIds.map((resourceId) => ({ resourceId })),
+          $or: parentResourceIds.map((linkResourceId) => ({ linkResourceId })),
           books: {
             $nin: [bookId]
           }
@@ -412,7 +423,7 @@ const synchronizeBookWithParentCollections = async (
 
     const parentCollections = await helpers.find("obokucollection", {
       selector: {
-        $or: parentResourceIds.map((resourceId) => ({ resourceId }))
+        $or: parentResourceIds.map((linkResourceId) => ({ linkResourceId }))
       }
     })
     const parentCollectionIds = parentCollections.map(({ _id }) => _id)
@@ -430,6 +441,7 @@ const synchronizeBookWithParentCollections = async (
         selector: { _id: bookId },
         fields: [`collections`]
       })) || {}
+
     if (bookCollections) {
       const bookHasNotOneOfTheCollectionsYet = parentCollectionIds.some(
         (collectionId) => !bookCollections.includes(collectionId)
@@ -457,79 +469,5 @@ const synchronizeBookWithParentCollections = async (
    */
   if (parentResourceIds.length === 0) {
     // @todo remove collections from the book ?
-  }
-}
-
-const registerOrUpdateCollection = async ({
-  item: { name, resourceId },
-  helpers,
-  ctx
-}: {
-  ctx: Context
-  item: SynchronizeAbleItem
-  helpers: Helpers
-}) => {
-  let collectionId: string | undefined
-  /**
-   * Try to get existing collection by same resource id
-   * If there is one and the name is different we update it
-   */
-  const sameCollectionByResourceId = await helpers.findOne("obokucollection", {
-    selector: { resourceId }
-  })
-  if (sameCollectionByResourceId) {
-    collectionId = sameCollectionByResourceId._id
-    if (sameCollectionByResourceId.name !== name) {
-      logger.log(
-        `registerOrUpdateCollection ${name} has been updated. The item will be updated to reflect datasource`
-      )
-      await helpers.atomicUpdate(
-        "obokucollection",
-        sameCollectionByResourceId._id,
-        (old) => ({ ...old, name })
-      )
-    }
-  } else {
-    logger.log(
-      `registerOrUpdateCollection ${name} does not exist yet and will be created`
-    )
-    /**
-     * Otherwise we just create a new collection with this resource id
-     * Note that there could be another collection with same name. But since it
-     * does not come from the same datasource it should still be treated as different
-     */
-    const created = await helpers.create("obokucollection", {
-      name,
-      resourceId,
-      books: [],
-      createdAt: new Date().toISOString(),
-      modifiedAt: null,
-      dataSourceId: ctx.dataSourceId,
-      rxdbMeta: {
-        lwt: new Date().getTime()
-      }
-    })
-    collectionId = created.id
-  }
-
-  // try to remove book that does not exist anymore if needed
-  const collection = await helpers.findOne("obokucollection", {
-    selector: { _id: collectionId }
-  })
-  if (collection) {
-    const booksInCollection = await helpers.find("book", {
-      selector: { _id: { $in: collection?.books || [] } }
-    })
-    const booksInCollectionAsIds = booksInCollection.map(({ _id }) => _id)
-    const toRemove = difference(collection.books, booksInCollectionAsIds)
-    if (toRemove.length > 0) {
-      logger.log(
-        `registerOrUpdateCollection ${name} contains books that does not exist anymore and they will be removed from it`
-      )
-      await helpers.atomicUpdate("obokucollection", collection?._id, (old) => ({
-        ...old,
-        books: old.books.filter((id) => !toRemove.includes(id))
-      }))
-    }
   }
 }

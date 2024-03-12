@@ -1,5 +1,5 @@
 import { Metadata } from "./types"
-import { getGoogleMetadata } from "./google/getGoogleMetadata"
+import { getGoogleBookMetadata } from "./google/getGoogleBookMetadata"
 import { Logger } from "@libs/logger"
 import { isAxiosError } from "axios"
 
@@ -23,7 +23,7 @@ export const getBookSourcesMetadata = async (
 
   if (withGoogle) {
     const google = await swallowGoogleError(
-      getGoogleMetadata(metadata, googleApiKey ?? "")
+      getGoogleBookMetadata(metadata, googleApiKey ?? "")
     )
 
     if (google) {

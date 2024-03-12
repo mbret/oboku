@@ -4,11 +4,12 @@ import {
   Dialog,
   TextField,
   DialogActions,
-  Button,
+  Button
 } from "@mui/material"
 import { useEffect, useState, FC } from "react"
 import { useCollection } from "../../../collections/states"
 import { useUpdateCollection } from "../../../collections/useUpdateCollection"
+import { getMetadataFromCollection } from "../../../collections/getMetadataFromCollection"
 
 export const EditCollectionDialog: FC<{
   open: boolean
@@ -32,13 +33,15 @@ export const EditCollectionDialog: FC<{
     }
   }
 
+  const title = getMetadataFromCollection(collection)?.title
+
   useEffect(() => {
-    setName((prev) => collection?.name || prev)
-  }, [collection?.name, id])
+    setName((prev) => title || prev)
+  }, [title, id])
 
   return (
     <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>{collection?.name}</DialogTitle>
+      <DialogTitle>{getMetadataFromCollection(collection)?.title}</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus

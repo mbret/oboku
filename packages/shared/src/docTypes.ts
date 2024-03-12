@@ -1,4 +1,4 @@
-import { Metadata } from "./metadata"
+import { BookMetadata, CollectionMetadata } from "./metadata"
 
 type CouchDBMeta = {
   _id: string
@@ -91,7 +91,7 @@ export type BookDocType = CommonBase & {
   modifiedAt: string | null
   isAttachedToDataSource: boolean
   isNotInterested?: boolean
-  metadata?: Metadata[]
+  metadata?: BookMetadata[]
 }
 
 export type TagsDocType = CommonBase & {
@@ -105,19 +105,20 @@ export type TagsDocType = CommonBase & {
 }
 
 export type CollectionDocType = CommonBase & {
-  name: string
   books: string[]
-  /**
-   * Can be used as extra id for datasources in order to have
-   * better accuracy when syncing. For example every drive collection
-   * created will have `resourceId: drive-564asdQWjasd54` so that even
-   * if user rename the folder a little bit we will not create a new collection
-   */
-  resourceId?: string | null
+  linkType?: string
+  linkResourceId?: string
   rx_model: "obokucollection"
   modifiedAt: string | null
+  /**
+   * Is used to avoid updating an item if the sync item
+   * is not changed
+   */
+  syncAt?: string | null
   createdAt: string
-  dataSourceId: undefined | null | string
+  lastMetadataUpdatedAt?: string
+  type?: "series" | "shelve"
+  metadata?: CollectionMetadata[]
 }
 
 export function isTag(
@@ -195,7 +196,7 @@ interface MangoQuery<RxDocType> {
       }
 
   // Maximum number of results returned. Default is 25.
-  // limit?: number;
+  limit?: number
 
   // Skip the first 'n' results, where 'n' is the value specified.
   // skip?: number;

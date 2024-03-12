@@ -1,3 +1,4 @@
+import { getMetadataFromCollection } from "../../collections/getMetadataFromCollection"
 import { useCollectionsWithPrivacy } from "../../collections/states"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
 import { useBook } from "../states"
@@ -19,7 +20,7 @@ export const CollectionsPane = ({ bookId }: { bookId?: string }) => {
   return (
     <MetadataItemList
       label="Member of collections"
-      values={collections?.map((item) => item.name)}
+      values={collections?.map((item) => getMetadataFromCollection(item).title)}
       emptyLabel="None yet"
       onEditClick={() => {
         book?._id && openManageBookCollectionsDialog(book?._id)

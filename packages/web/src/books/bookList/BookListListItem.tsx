@@ -1,7 +1,7 @@
 import { Box, Chip, Stack, Typography, useTheme } from "@mui/material"
 import { FC, memo } from "react"
 import { useDefaultItemClickHandler } from "./helpers"
-import { useEnrichedBookState, useIsBookProtected } from "../states"
+import { useBook, useIsBookProtected } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import {
   DoneRounded,
@@ -15,9 +15,6 @@ import {
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
-import { booksDownloadStateSignal } from "../../download/states"
-import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
-import { useSignalValue } from "reactjrx"
 import { getMetadataFromBook } from "../getMetadataFromBook"
 
 export const BookListListItem: FC<{
@@ -35,11 +32,8 @@ export const BookListListItem: FC<{
     itemHeight,
     withDrawerActions = true
   }) => {
-    const book = useEnrichedBookState({
-      bookId,
-      normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal),
-      protectedTagIds: useProtectedTagIds().data,
-      tags: useTagsByIds().data
+    const { data: book } = useBook({
+      id: bookId
     })
     const onDefaultItemClick = useDefaultItemClickHandler()
     const theme = useTheme()

@@ -54,7 +54,7 @@ export type UseDownloadHook = (options: {
 
 export type UseRefreshMetadataHook = (options: {
   requestPopup: () => Promise<boolean>
-}) => (link: LinkDocType) => Promise<{
+}) => (data: { linkType: string }) => Promise<{
   data?: object
 }>
 
@@ -127,6 +127,5 @@ export const extractIdFromResourceId = (
   uniqueResourceIdentifier: string,
   resourceId: string
 ) => resourceId.replace(`${uniqueResourceIdentifier}-`, ``)
-
 
 export * from "./errors"

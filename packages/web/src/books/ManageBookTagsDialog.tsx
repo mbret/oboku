@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 import { FC } from "react"
-import { useTagIds, useTagsByIds } from "../tags/helpers"
+import { useTagIds } from "../tags/helpers"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useAddTagToBook, useRemoveTagFromBook } from "./helpers"
 import { useBook, useBookState } from "./states"

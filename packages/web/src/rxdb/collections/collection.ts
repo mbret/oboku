@@ -44,8 +44,14 @@ export type CollectionCollection = RxCollection<
   CollectionCollectionMethods
 >
 
+type DeprecatedProps = {
+  name?: string
+  resourceId?: string
+  dataSourceId?: string
+}
+
 export const collectionSchema: RxJsonSchema<
-  Omit<CollectionDocType, `_rev` | `rxdbMeta`>
+  Omit<CollectionDocType & DeprecatedProps, `_rev` | `rxdbMeta`>
 > = {
   title: "obokucollection",
   version: 0,
@@ -53,15 +59,20 @@ export const collectionSchema: RxJsonSchema<
   primaryKey: `_id`,
   properties: {
     _id: { type: `string`, maxLength: 100 },
-    name: { type: "string" },
     books: { type: "array", ref: "book", items: { type: "string" } },
     resourceId: { type: ["string", "null"] },
+    name: { type: ["string", "null"] },
+    type: { type: ["string", "null"] },
+    linkType: { type: "string" },
+    linkResourceId: { type: "string" },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
+    lastMetadataUpdatedAt: { type: ["string"] },
+    syncAt: { type: ["string"] },
     dataSourceId: { type: ["string", "null"] },
+    metadata: { type: ["array"] },
     ...getReplicationProperties(`obokucollection`)
-  },
-  required: ["name"]
+  }
 }
 
 export const collectionMigrationStrategies = {}

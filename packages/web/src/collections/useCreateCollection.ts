@@ -7,11 +7,10 @@ export const useCreateCollection = () => {
   return useMutation({
     mutationFn: async ({ name }: { name: string }) =>
       db?.obokucollection.post({
-        name,
         books: [],
         createdAt: new Date().toISOString(),
         modifiedAt: null,
-        dataSourceId: null
+        metadata: [{ type: "user", title: name }]
       })
   })
 }

@@ -1,10 +1,10 @@
 import { RetrieveMetadataAndSaveCoverContext } from "@libs/books/retrieveMetadataAndSaveCover"
-import { dataSourceFacade } from "@libs/plugins"
 import { PromiseReturnType } from "@libs/types"
 import { BookDocType, LinkDocType } from "@oboku/shared"
 import path from "path"
 import fs from "fs"
 import { TMP_DIR } from "src/constants"
+import { pluginFacade } from "@libs/plugins/facade"
 
 export const downloadToTmpFolder = (
     ctx: RetrieveMetadataAndSaveCoverContext,
@@ -13,9 +13,9 @@ export const downloadToTmpFolder = (
   ) =>
     new Promise<{
       filepath: string
-      metadata: PromiseReturnType<typeof dataSourceFacade.download>["metadata"]
+      metadata: PromiseReturnType<typeof pluginFacade.download>["metadata"]
     }>((resolve, reject) => {
-      dataSourceFacade
+      pluginFacade
         .download(link, ctx.credentials)
         .then(({ stream, metadata }) => {
           let filename = `${book._id}`

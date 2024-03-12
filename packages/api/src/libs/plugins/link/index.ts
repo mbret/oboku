@@ -14,16 +14,16 @@ const extractNameFromUri = (resourceId: string) => {
 
 export const dataSource: DataSourcePlugin = {
   type: `URI`,
-  getMetadata: async (link) => {
-    const filename = extractNameFromUri(link.resourceId)
+  getMetadata: async ({ id }) => {
+    const filename = extractNameFromUri(id)
 
-    return { title: filename, shouldDownload: true }
+    return { name: filename, shouldDownload: true }
   },
   download: async (link) => {
     const downloadLink = extractIdFromResourceId(link.resourceId)
 
     return {
-      metadata: await dataSource.getMetadata(link),
+      metadata: await dataSource.getMetadata({ id: link.resourceId }),
       // @todo request is deprecated, switch to something else
       // @see https://github.com/request/request/issues/3143
       stream: request({ uri: downloadLink })

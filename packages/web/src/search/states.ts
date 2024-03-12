@@ -2,6 +2,7 @@ import { sortByTitleComparator } from "@oboku/shared"
 import { combineLatest, first, map, switchMap } from "rxjs"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { signal, useQuery } from "reactjrx"
+import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
 
 export const searchStateSignal = signal({
   key: "searchState",
@@ -28,7 +29,9 @@ export const useCollectionsForSearch = (search: string) =>
           if (!search) return []
 
           return data
-            .filter(({ name }) => {
+            .filter((item) => {
+              const name = getMetadataFromCollection(item).title ?? ""
+
               const searchRegex = new RegExp(
                 search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
                 "i"
@@ -37,7 +40,12 @@ export const useCollectionsForSearch = (search: string) =>
               const indexOfFirstMatch = name?.search(searchRegex) || 0
               return indexOfFirstMatch >= 0
             })
-            .sort((a, b) => sortByTitleComparator(a.name || "", b.name || ""))
+            .sort((a, b) =>
+              sortByTitleComparator(
+                getMetadataFromCollection(a).title || "",
+                getMetadataFromCollection(b).title || ""
+              )
+            )
         }),
         map((items) => items.map(({ _id }) => _id))
       )

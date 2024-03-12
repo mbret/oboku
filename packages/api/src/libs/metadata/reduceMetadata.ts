@@ -1,8 +1,8 @@
-import { Metadata } from "@oboku/shared"
+import { BookMetadata } from "@oboku/shared"
 
 export const reduceMetadata = (
-  metadata?: Metadata[]
-): Omit<Metadata, "type"> => {
+  metadata?: BookMetadata[]
+): Omit<BookMetadata, "type"> => {
   return (
     metadata?.reduce((acc, item) => {
       return {

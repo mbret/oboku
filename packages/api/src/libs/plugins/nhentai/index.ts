@@ -9,11 +9,8 @@ export const plugin: DataSourcePlugin = {
   download: async () => {
     throw new Error(`Not implemented`)
   },
-  getMetadata: async (link) => {
-    const galleryId = dataSourceHelpers.extractIdFromResourceId(
-      `nhentai`,
-      link.resourceId
-    )
+  getMetadata: async ({ id }) => {
+    const galleryId = dataSourceHelpers.extractIdFromResourceId(`nhentai`, id)
     const uri = `${BASE_URI}/g/${galleryId}`
 
     const response = await axios(uri)
@@ -83,16 +80,18 @@ export const plugin: DataSourcePlugin = {
     const coverUrl = coverPage$(`#image-container img`).attr()?.src
 
     return {
-      title,
-      languages,
-      creators,
-      subjects,
-      coverUrl,
+      name: title,
       /**
        * we have nothing to download.
        * we try to return all metadata from here
        */
-      shouldDownload: false
+      shouldDownload: false,
+      bookMetadata: {
+        languages,
+        creators,
+        subjects,
+        coverUrl
+      }
     }
   },
   sync: async () => {

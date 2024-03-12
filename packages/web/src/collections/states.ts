@@ -6,12 +6,14 @@ import { map, switchMap } from "rxjs"
 import { keyBy } from "lodash"
 import { useVisibleBookIds } from "../books/states"
 import { MangoQuery } from "rxdb"
+import { getMetadataFromCollection } from "./getMetadataFromCollection"
 
 export type Collection = CollectionDocType
 
 export const useCollections = ({
-  queryObj
-}: { queryObj?: MangoQuery<CollectionDocType> } = {}) => {
+  queryObj,
+  ...options
+}: { queryObj?: MangoQuery<CollectionDocType>; enabled?: boolean } = {}) => {
   const localSettings = useLocalSettings()
 
   return useForeverQuery({
@@ -23,12 +25,15 @@ export const useCollections = ({
           items.map((item) => ({
             ...item?.toJSON(),
             displayableName: localSettings.hideDirectivesFromCollectionName
-              ? directives.removeDirectiveFromString(item.name)
-              : item.name
+              ? directives.removeDirectiveFromString(
+                  getMetadataFromCollection(item).title ?? ""
+                )
+              : getMetadataFromCollection(item).title
           }))
         )
       )
-    }
+    },
+    ...options
   })
 }
 
@@ -63,8 +68,10 @@ export const useCollection = ({ id }: { id?: string }) => {
           return {
             ...value?.toJSON(),
             displayableName: localSettings.hideDirectivesFromCollectionName
-              ? directives.removeDirectiveFromString(value.name)
-              : value.name
+              ? directives.removeDirectiveFromString(
+                  getMetadataFromCollection(value).title ?? ""
+                )
+              : getMetadataFromCollection(value).title
           }
         })
       )
@@ -73,9 +80,10 @@ export const useCollection = ({ id }: { id?: string }) => {
 }
 
 export const useCollectionsWithPrivacy = ({
-  queryObj
-}: { queryObj?: MangoQuery<CollectionDocType> } = {}) => {
-  const { data: collections } = useCollections({ queryObj })
+  queryObj,
+  ...options
+}: { queryObj?: MangoQuery<CollectionDocType>; enabled?: boolean } = {}) => {
+  const { data: collections } = useCollections({ queryObj, ...options })
   const visibleBookIds = useVisibleBookIds()
   const { showCollectionWithProtectedContent } = useLocalSettings()
 
@@ -97,8 +105,8 @@ export const useCollectionsWithPrivacy = ({
   }
 }
 
-export const useVisibleCollectionIds = () => {
-  const { data: collections, ...rest } = useCollectionsWithPrivacy()
+export const useVisibleCollectionIds = (options: { enabled?: boolean } = {}) => {
+  const { data: collections, ...rest } = useCollectionsWithPrivacy(options)
 
   return {
     ...rest,

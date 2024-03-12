@@ -138,7 +138,9 @@ export const useRefreshBookMetadata = () => {
         return
       }
 
-      const { data: pluginMetadata } = await refreshPluginMetadata(firstLink)
+      const { data: pluginMetadata } = await refreshPluginMetadata({
+        linkType: firstLink.type
+      })
 
       if (!database) return
 
@@ -151,7 +153,7 @@ export const useRefreshBookMetadata = () => {
         .pipe(
           switchMap(() => from(sync([database.link, database.book]))),
           switchMap(() =>
-            from(httpClient.refreshMetadata(bookId, pluginMetadata))
+            from(httpClient.refreshBookMetadata(bookId, pluginMetadata))
           ),
           catchError((e) =>
             from(

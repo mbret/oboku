@@ -1,7 +1,7 @@
-import { BookDocType, DeprecatedBookDocType, Metadata } from "@oboku/shared"
+import { BookDocType, DeprecatedBookDocType, BookMetadata } from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
 
-type Return = DeepReadonlyObject<Omit<Metadata, "type">> & {
+type Return = DeepReadonlyObject<Omit<BookMetadata, "type">> & {
   language?: string
   displayableDate?: string
 }
@@ -26,7 +26,7 @@ export const getMetadataFromBook = (
 ): Return => {
   const list = book?.metadata ?? []
 
-  const deprecated: Metadata = {
+  const deprecated: BookMetadata = {
     type: "deprecated",
     title: book?.title || undefined,
     authors: book?.creator ? [book.creator] : undefined

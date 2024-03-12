@@ -8,10 +8,20 @@ export const useUpdateCollection = () => {
   return useMutation({
     mutationFn: async ({
       _id,
+      name,
       ...rest
-    }: Partial<CollectionDocType> & { _id: string }) =>
-      db?.obokucollection.safeUpdate({ $set: rest }, (collection) =>
-        collection.findOne({ selector: { _id } })
-      )
+    }: Partial<CollectionDocType> & { _id: string; name?: string }) => {
+      const item = await db?.obokucollection
+        .findOne({ selector: { _id } })
+        .exec()
+
+      item?.atomicUpdate((old) => ({
+        ...old,
+        ...rest,
+        metadata: old.metadata?.map((entry) =>
+          entry.type === "user" ? { ...entry, name } : entry
+        )
+      }))
+    }
   })
 }

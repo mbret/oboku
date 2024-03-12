@@ -9,11 +9,12 @@ import {
   READER_SUPPORTED_EXTENSIONS
 } from "@oboku/shared"
 import { PromiseReturnType } from "../../types"
-import { createThrottler } from "../helpers"
 import {
   DataSourcePlugin,
   SynchronizeAbleDataSource
 } from "@libs/plugins/types"
+import { createThrottler } from "@libs/utils"
+import { createError } from "../helpers"
 
 const extractIdFromResourceId = (resourceId: string) =>
   resourceId.replace(`dropbox-`, ``)
@@ -21,19 +22,19 @@ const generateResourceId = (id: string) => `dropbox-${id}`
 
 export const dataSource: DataSourcePlugin = {
   type: `dropbox`,
-  getMetadata: async (link, credentials) => {
+  getMetadata: async ({ id, credentials }) => {
     const dbx = new Dropbox({
       accessToken: credentials.accessToken,
       fetch: nodeFetch
     })
-    const fileId = extractIdFromResourceId(link.resourceId)
+    const fileId = extractIdFromResourceId(id)
 
     const response = await dbx.filesGetMetadata({
       path: `${fileId}`
     })
 
     return {
-      title: response.result.name,
+      name: response.result.name,
       shouldDownload: true
     }
   },
@@ -83,7 +84,7 @@ export const dataSource: DataSourcePlugin = {
       await helpers.getDataSourceData<DropboxDataSourceData>()
 
     if (!folderId) {
-      throw helpers.createError("unknown")
+      throw createError("unknown")
     }
 
     const getContentsFromFolder = throttle(
