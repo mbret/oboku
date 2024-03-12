@@ -47,3 +47,5 @@ export type CollectionMetadata = {
    */
   type: "googleBookApi" | "link" | "user" | "biblioreads" | "comicvine" | "mangaupdates"
 }
+
+export const COLLECTION_METADATA_LOCK_MN = 5

@@ -1,9 +1,9 @@
 import { LinkDocType } from "@oboku/shared"
-import { useRefreshBookMetadata } from "../books/helpers"
 import { Database, useDatabase } from "../rxdb"
 import { useCallback } from "react"
 import { Report } from "../debug/report.shared"
 import { from } from "rxjs"
+import { useRefreshBookMetadata } from "../books/useRefreshBookMetadata"
 
 type EditLinkPayload = Partial<LinkDocType> & Required<Pick<LinkDocType, "_id">>
 

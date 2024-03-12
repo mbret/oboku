@@ -20,9 +20,9 @@ import {
   upsertBookLinkEnd,
   upsertBookLinkEnd$
 } from "./triggers"
-import { useRefreshBookMetadata } from "./helpers"
 import { isDefined, useSubscribeEffect } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
 
 const useUpsertBookLinkActionEffect = () => {
   const { db: database } = useDatabase()
