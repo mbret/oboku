@@ -76,17 +76,16 @@ type Helpers = {
 
 export type DataSourcePlugin = {
   type: string
-  getMetadata: (data: {
-    credentials?: any
-    id: string
-    data?: any
-  }) => Promise<{
-    name: string
-    modifiedAt?: string
-    shouldDownload?: boolean
-    contentType?: string
-    bookMetadata?: Partial<Omit<BookMetadata, "type">>
-  }>
+  getMetadata: (data: { credentials?: any; id: string; data?: any }) => Promise<
+    | {
+        name?: string
+        modifiedAt?: string
+        shouldDownload?: boolean
+        contentType?: string
+        bookMetadata?: Partial<Omit<BookMetadata, "type">>
+      }
+    | undefined
+  >
   download?: (
     link: LinkDocType,
     credentials?: any

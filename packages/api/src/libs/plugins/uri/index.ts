@@ -23,7 +23,7 @@ export const dataSource: DataSourcePlugin = {
     const downloadLink = extractIdFromResourceId(link.resourceId)
 
     return {
-      metadata: await dataSource.getMetadata({ id: link.resourceId }),
+      metadata: (await dataSource.getMetadata({ id: link.resourceId })) ?? {},
       // @todo request is deprecated, switch to something else
       // @see https://github.com/request/request/issues/3143
       stream: request({ uri: downloadLink })

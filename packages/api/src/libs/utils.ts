@@ -117,3 +117,20 @@ export const createThrottler = (ms: number) => {
         )
       })
 }
+
+export function mergeSkippingUndefined<T extends object>(
+  ...objects: Partial<T>[]
+): T {
+  const result: Partial<T> = {}
+
+  objects.forEach((obj) => {
+    Object.entries(obj).forEach(([key, value]) => {
+      if (value !== undefined) {
+        // eslint-disable-next-line no-extra-semi
+        ;(result as any)[key] = value
+      }
+    })
+  })
+
+  return result as T
+}
