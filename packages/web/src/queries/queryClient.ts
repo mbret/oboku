@@ -2,6 +2,14 @@ import { QueryClient } from "reactjrx"
 
 export const queryClient = new QueryClient({
   defaultOptions: {
+    mutations: {
+      /**
+       * @important
+       * Same as for queries, most of mutations are offline by default.
+       * Don't forget to change it when needed
+       */
+      networkMode: "always"
+    },
     queries: {
       /**
        * @important

@@ -76,6 +76,18 @@ class HttpClient {
       }
     })
 
+  refreshCollectionMetadata = (
+    collectionId: string,
+    credentials?: { [key: string]: any }
+  ) =>
+    this.post({
+      url: `${API_URI}/refresh-metadata-collection`,
+      body: { collectionId },
+      headers: {
+        "oboku-credentials": JSON.stringify(credentials ?? {})
+      }
+    })
+
   syncDataSource = (
     dataSourceId: string,
     credentials?: { [key: string]: any }

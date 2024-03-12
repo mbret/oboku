@@ -16,7 +16,7 @@ import {
 import { useNavigate } from "react-router-dom"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { ROUTES } from "../../constants"
-import { useAtomicUpdateBook, useRefreshBookMetadata } from "../helpers"
+import { useAtomicUpdateBook } from "../helpers"
 import {
   Drawer,
   Divider,
@@ -41,6 +41,7 @@ import {
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "./useRemoveHandler"
 import { getMetadataFromBook } from "../getMetadataFromBook"
+import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 
 type SignalState = {
   openedWith: undefined | string

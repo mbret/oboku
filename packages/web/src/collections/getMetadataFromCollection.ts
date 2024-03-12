@@ -32,6 +32,9 @@ export const getMetadataFromCollection = (
 ): Return => {
   const list = item?.metadata ?? []
 
+  const userMetadata = item?.metadata?.find((item) => item.type === "user")
+  const linkMetadata = item?.metadata?.find((item) => item.type === "link")
+
   const orderedList = [...list].sort((a, b) => {
     // mangaupdates has priority
     if (a.type === "mangaupdates" && b.type === "biblioreads") return 1
@@ -50,5 +53,8 @@ export const getMetadataFromCollection = (
     } satisfies Return
   }, {} as Return)
 
-  return reducedMetadata
+  return {
+    ...reducedMetadata,
+    title: userMetadata?.title ?? linkMetadata?.title ?? reducedMetadata.title
+  }
 }

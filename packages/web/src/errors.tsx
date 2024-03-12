@@ -22,6 +22,8 @@ export const createServerError = async (response: Response) => {
 
 export class CancelError extends Error {}
 
+export class OfflineError extends Error {}
+
 export const isCancelError = (error: unknown) => error instanceof CancelError
 
 export const isApiError = (error: unknown): error is HttpApiError => {
@@ -50,7 +52,6 @@ export const ErrorMessage = ({ error }: { error: unknown }) => {
     </>
   )
 }
-
 export class ServerError extends Error {
   constructor(
     public response: Response,

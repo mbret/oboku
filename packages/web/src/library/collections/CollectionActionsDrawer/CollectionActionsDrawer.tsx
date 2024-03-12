@@ -13,7 +13,8 @@ import {
   DeleteForeverRounded,
   LibraryAddRounded,
   ThumbDownOutlined,
-  ThumbUpOutlined
+  ThumbUpOutlined,
+  SyncRounded
 } from "@mui/icons-material"
 import { ManageCollectionBooksDialog } from "../../../collections/ManageCollectionBooksDialog"
 import { useModalNavigationControl } from "../../../navigation/useModalNavigationControl"
@@ -25,6 +26,10 @@ import {
 } from "./useCollectionActionsDrawer"
 import { useUpdateCollectionBooks } from "../../../collections/useUpdateCollectionBooks"
 import { EditCollectionDialog } from "./EditCollectionDialog"
+import { useRefreshCollectionMetadata } from "../../../collections/useRefreshCollectionMetadata"
+import { useCollection } from "../../../collections/states"
+import { differenceInMinutes } from "date-fns"
+import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
 
 export const CollectionActionsDrawer: FC<{}> = () => {
   const { openedWith: collectionId } = useSignalValue(
@@ -37,6 +42,8 @@ export const CollectionActionsDrawer: FC<{}> = () => {
   const { mutate: removeCollection } = useRemoveCollection()
   const [isManageBookDialogOpened, setIsManageBookDialogOpened] =
     useState(false)
+  const { mutate: refreshCollectionMetadata, ...rest } =
+    useRefreshCollectionMetadata()
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
   const { mutate: updateCollectionBooks } = useUpdateCollectionBooks()
   const { closeModalWithNavigation } = useModalNavigationControl(
@@ -49,7 +56,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
     },
     collectionId
   )
-
+  const { data: collection } = useCollection({ id: collectionId })
   const opened = !!collectionId
 
   const onRemoveCollection = (id: string) => {
@@ -57,6 +64,13 @@ export const CollectionActionsDrawer: FC<{}> = () => {
     collectionActionDrawerChangesState.setValue([id, `delete`])
     id && removeCollection({ _id: id })
   }
+
+  const isRefreshingMetadata = !!(
+    collection?.metadataUpdateStatus === "fetching" &&
+    collection.lastMetadataStartedAt &&
+    differenceInMinutes(new Date(), collection.lastMetadataStartedAt) <
+      COLLECTION_METADATA_LOCK_MN
+  )
 
   if (!collectionId) return null
 
@@ -126,6 +140,25 @@ export const CollectionActionsDrawer: FC<{}> = () => {
             </ListItemIcon>
             <ListItemText primary="Manage books" />
           </ListItem>
+          {collection?.type === "series" && (
+            <ListItemButton
+              onClick={() => {
+                refreshCollectionMetadata(collectionId)
+              }}
+              disabled={isRefreshingMetadata}
+            >
+              <ListItemIcon>
+                <SyncRounded />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  isRefreshingMetadata
+                    ? "Refreshing metadata..."
+                    : "Refresh metadata"
+                }
+              />
+            </ListItemButton>
+          )}
         </List>
         <Divider />
         <List>

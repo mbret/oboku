@@ -117,6 +117,9 @@ export type CollectionDocType = CommonBase & {
   syncAt?: string | null
   createdAt: string
   lastMetadataUpdatedAt?: string
+  lastMetadataStartedAt?: string
+  metadataUpdateStatus?: "fetching" | "idle"
+  lastMetadataUpdateError?: null | string
   type?: "series" | "shelve"
   metadata?: CollectionMetadata[]
 }
