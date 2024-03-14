@@ -12,6 +12,8 @@ import { useValidateAppPassword } from "../settings/helpers"
 import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { signal, useSignalValue } from "reactjrx"
+import { Observable, from, mergeMap } from "rxjs"
+import { CancelError } from "../errors"
 
 const FORM_ID = "LockActionBehindUserPasswordDialog"
 
@@ -29,6 +31,18 @@ export const authorizeAction = (action: () => void, onCancel?: () => void) =>
     onCancel
   })
 
+export function withAuthorization<T>(stream: Observable<T>) {
+  return stream.pipe(
+    mergeMap(() =>
+      from(
+        new Promise<void>((resolve, reject) =>
+          authorizeAction(resolve, () => reject(new CancelError()))
+        )
+      )
+    )
+  )
+}
+
 export const AuthorizeActionDialog: FC<{}> = () => {
   const { action, onCancel = () => {} } = useSignalValue(actionSignal) ?? {}
   const open = !!action
@@ -37,6 +51,7 @@ export const AuthorizeActionDialog: FC<{}> = () => {
       password: ""
     }
   })
+
   const {
     mutate: validatePassword,
     reset: resetValidatePasswordMutation,
