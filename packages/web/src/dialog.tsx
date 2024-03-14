@@ -15,7 +15,8 @@ import {
   useMemo,
   useState
 } from "react"
-import { signal } from "reactjrx"
+import { Subject, lastValueFrom, map, merge, of } from "rxjs"
+import { CancelError } from "./errors"
 
 type Preset = "NOT_IMPLEMENTED" | "OFFLINE" | "CONFIRM" | "UNKNOWN_ERROR"
 
@@ -34,17 +35,13 @@ type DialogType = {
   onCancel?: () => void
 }
 
-const dialogUpdateSignal = signal<{ id: string; state: "closed" } | undefined>(
-  {}
-)
-
 const DialogContext = createContext<DialogType[]>([])
 
 const ManageDialogContext = createContext({
   remove: (id: string) => {},
   add: (options: Omit<DialogType, "id">) => ({
     id: "-1" as string,
-    promise: Promise.resolve()
+    $: of({})
   })
 })
 
@@ -109,13 +106,13 @@ const InnerDialog = () => {
   }, [remove, currentDialog])
 
   const onCancel = useCallback(() => {
-    handleClose()
     currentDialog?.onCancel && currentDialog.onCancel()
+    handleClose()
   }, [handleClose, currentDialog])
 
   const onConfirm = useCallback(() => {
-    handleClose()
     currentDialog?.onConfirm && currentDialog.onConfirm()
+    handleClose()
   }, [handleClose, currentDialog])
 
   const actions = currentDialog?.actions || [
@@ -174,27 +171,44 @@ export const DialogProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const remove = useCallback((id: string) => {
     setDialogs((old) => old.filter((dialog) => id !== dialog.id))
-
-    dialogUpdateSignal.setValue({ id, state: "closed" })
   }, [])
 
   const add = useCallback((options: Omit<DialogType, "id">) => {
     generatedId++
 
-    setDialogs((old) => [...old, { ...options, id: generatedId.toString() }])
+    const cancel = new Subject<void>()
+    const confirm = new Subject<void>()
 
-    const id = generatedId.toString()
+    const newDialog: DialogType = {
+      ...options,
+      id: generatedId.toString(),
+      onCancel: () => {
+        cancel.next()
+        options.onCancel?.()
+      },
+      onConfirm: () => {
+        confirm.next()
+        options.onConfirm?.()
+      },
+      onClose: () => {
+        confirm.complete()
+        cancel.complete()
+        options.onClose?.()
+      }
+    }
 
-    const promise = new Promise<void>((resolve) => {
-      const sub = dialogUpdateSignal.subject.subscribe((value) => {
-        if (value?.id === id && value.state === "closed") {
-          sub.unsubscribe()
-          resolve()
-        }
-      })
-    })
+    setDialogs((old) => [...old, newDialog])
 
-    return { id: generatedId.toString(), promise }
+    const $ = merge(
+      cancel.pipe(
+        map(() => {
+          throw new CancelError()
+        })
+      ),
+      confirm.pipe(map(() => ({})))
+    )
+
+    return { id: newDialog.id, $ }
   }, [])
 
   const controls = useMemo(

@@ -1,4 +1,4 @@
-import { catchError, from, map, of, switchMap, throwError } from "rxjs"
+import { catchError, from, map, of, switchMap } from "rxjs"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useUpdateCollection } from "./useUpdateCollection"

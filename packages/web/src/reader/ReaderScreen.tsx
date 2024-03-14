@@ -2,7 +2,7 @@ import { FC, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { AppTourReader } from "../firstTimeExperience/AppTourReader"
 import { useWakeLock } from "../common/useWakeLock"
-import { useFullScreenSwitch } from "./fullScreen"
+import { useFullscreenAutoSwitch } from "./fullScreen"
 import { Reader } from "./Reader"
 import { MoreDialog } from "./MoreDialog"
 import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
@@ -19,7 +19,7 @@ export const ReaderScreen: FC<{}> = () => {
 
   useTrackBookBeingRead(bookId)
   useWakeLock()
-  useFullScreenSwitch()
+  useFullscreenAutoSwitch()
 
   useEffect(() => () => {
     ;[

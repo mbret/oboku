@@ -4,7 +4,7 @@ import { catchError, combineLatest, from, map, mergeMap, of, tap } from "rxjs"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useLock } from "../common/BlockingBackdrop"
 import { useDialogManager } from "../dialog"
-import { authorizeAction } from "../auth/AuthorizeActionDialog"
+import { withAuthorization } from "../auth/AuthorizeActionDialog"
 import { Report } from "../debug/report.shared"
 import { CancelError } from "../errors"
 
@@ -33,30 +33,16 @@ export const useRemoveAllContents = () => {
             tagCount,
             dataSourceCount
           ]) => {
-            const confirmed$ = from(
-              new Promise<void>((resolve, reject) => {
-                dialog({
-                  title: "Account reset",
-                  content: `This action will remove all of your content. Here is a breakdown of everything that will be removed:\n 
-                ${bookCount} books, ${collectionCount} collections, ${tagCount} tags and ${dataSourceCount} data sources. \n\nThis operation can take a long time and you NEED to be connected to internet`,
-                  canEscape: true,
-                  cancellable: true,
-                  onConfirm: resolve,
-                  onCancel() {
-                    reject(new CancelError())
-                  }
-                })
-              })
-            )
+            const confirmed$ = dialog({
+              title: "Account reset",
+              content: `This action will remove all of your content. Here is a breakdown of everything that will be removed:\n 
+            ${bookCount} books, ${collectionCount} collections, ${tagCount} tags and ${dataSourceCount} data sources. \n\nThis operation can take a long time and you NEED to be connected to internet`,
+              canEscape: true,
+              cancellable: true
+            }).$
 
             return confirmed$.pipe(
-              mergeMap(() =>
-                from(
-                  new Promise<void>((resolve, reject) =>
-                    authorizeAction(resolve, () => reject(new CancelError()))
-                  )
-                )
-              ),
+              withAuthorization,
               map(() => lock()),
               mergeMap((unlock) =>
                 from(
@@ -102,6 +88,7 @@ export const useRemoveAllContents = () => {
             content:
               "Something went wrong during the process. No need to panic since you already wanted to destroy everything anyway. If everything is gone, you should not worry too much, if you still have contents, try to do it again"
           })
+
           throw e
         })
       )

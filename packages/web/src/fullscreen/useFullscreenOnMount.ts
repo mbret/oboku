@@ -1,0 +1,84 @@
+import { useEffect } from "react"
+import screenfull from "screenfull"
+import { Report } from "../debug/report.shared"
+import { useDialogManager } from "../dialog"
+import {
+  EMPTY,
+  catchError,
+  defer,
+  endWith,
+  from,
+  mergeMap,
+  retry,
+  throwError,
+  timer
+} from "rxjs"
+import { useSubscribe } from "reactjrx"
+import { CancelError } from "../errors"
+
+const isPermissionCheckFailedError = (error: unknown): error is TypeError =>
+  error instanceof TypeError &&
+  // chrome
+  (error.message === "Permissions check failed" ||
+    // safari
+    error.message === "Type error" ||
+    // firefox
+    error.message === "Fullscreen request denied")
+
+export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
+  const dialog = useDialogManager()
+
+  useSubscribe(() => {
+    if (enabled && screenfull.isEnabled && !screenfull.isFullscreen) {
+      return defer(() => {
+        return from(screenfull.request(undefined, { navigationUI: "hide" }))
+      }).pipe(
+        retry({
+          count: 1,
+          delay: (error) => {
+            if (isPermissionCheckFailedError(error)) {
+              return timer(5).pipe(
+                mergeMap(() =>
+                  // we avoid double dialog because of strict mode
+                  screenfull.isFullscreen
+                    ? throwError(() => error)
+                    : dialog({
+                        title: "Fullscreen request",
+                        content:
+                          "Your browser does not allow automatic fullscreen without an interaction",
+                        confirmTitle: "Fullscreen",
+                        cancellable: true
+                      }).$.pipe(endWith(true))
+                )
+              )
+            }
+
+            throw error
+          }
+        }),
+        catchError((error) => {
+          if (
+            isPermissionCheckFailedError(error) ||
+            error instanceof CancelError
+          ) {
+            return EMPTY
+          }
+
+          Report.error(error)
+
+          return EMPTY
+        })
+      )
+    }
+
+    return EMPTY
+  }, [enabled, dialog])
+
+  useEffect(() => {
+    return () => {
+      if (screenfull.isEnabled && screenfull.isFullscreen) {
+        screenfull.exit().catch(Report.error)
+      }
+    }
+  }, [])
+}
