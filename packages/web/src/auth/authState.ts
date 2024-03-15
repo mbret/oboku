@@ -12,5 +12,3 @@ export const authStateSignal = signal<
   key: "authState",
   default: undefined
 })
-
-export const authStatePersist = authStateSignal

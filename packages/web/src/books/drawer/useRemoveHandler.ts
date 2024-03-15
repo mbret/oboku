@@ -1,5 +1,5 @@
 import { getBookById, useRemoveBook } from "../helpers"
-import { useDialogManager } from "../../dialog"
+import { useDialogManager } from "../../common/dialog"
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/useCreateDatabase"
 import { catchError, from, map, mergeMap } from "rxjs"

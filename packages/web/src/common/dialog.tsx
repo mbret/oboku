@@ -16,7 +16,7 @@ import {
   useState
 } from "react"
 import { Subject, lastValueFrom, map, merge, of } from "rxjs"
-import { CancelError } from "./errors"
+import { CancelError } from "../errors"
 
 type Preset = "NOT_IMPLEMENTED" | "OFFLINE" | "CONFIRM" | "UNKNOWN_ERROR"
 

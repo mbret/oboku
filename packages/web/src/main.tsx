@@ -1,5 +1,5 @@
 import "./debug"
-import "./tracking"
+import "./debug/tracking"
 import React from "react"
 import { createRoot } from "react-dom/client"
 import "fontsource-roboto/300.css"

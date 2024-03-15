@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useBook } from "../../books/states"
-import { useDialogManager } from "../../dialog"
+import { useDialogManager } from "../../common/dialog"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { ReadingStateState } from "@oboku/shared"
 import { useMutation } from "reactjrx"

@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import screenfull from "screenfull"
-import { Report } from "../debug/report.shared"
+import { Report } from "../../debug/report.shared"
 import { useDialogManager } from "../dialog"
 import {
   EMPTY,
@@ -14,7 +14,7 @@ import {
   timer
 } from "rxjs"
 import { useSubscribe } from "reactjrx"
-import { CancelError } from "../errors"
+import { CancelError } from "../../errors"
 
 const isPermissionCheckFailedError = (error: unknown): error is TypeError =>
   error instanceof TypeError &&

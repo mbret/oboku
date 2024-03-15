@@ -1,6 +1,6 @@
 import { DataSourceDocType } from "@oboku/shared"
 import { useCallback, useRef } from "react"
-import { useDialogManager } from "../dialog"
+import { useDialogManager } from "../common/dialog"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 import { ObokuPlugin } from "./plugin-front"

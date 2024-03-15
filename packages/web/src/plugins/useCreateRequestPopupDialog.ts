@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { useDialogManager } from "../dialog"
+import { useDialogManager } from "../common/dialog"
 
 export const useCreateRequestPopupDialog = () => {
   const dialog = useDialogManager()
