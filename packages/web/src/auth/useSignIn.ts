@@ -6,8 +6,8 @@ import { API_URI } from "../constants"
 import { CancelError } from "../errors"
 import { useReCreateDb } from "../rxdb"
 import { authStateSignal } from "./authState"
-import { resetSignalEntriesToPersist } from "../storage"
 import { httpClient } from "../http/httpClient"
+import { setProfile } from "../profile/currentProfile"
 
 const provider = new GoogleAuthProvider()
 
@@ -45,11 +45,13 @@ export const useSignIn = () => {
         of(authStateSignal.getValue()).pipe(
           switchMap((previousAuth) =>
             previousAuth?.email !== email
-              ? from(Promise.all([resetSignalEntriesToPersist(), reCreateDb()]))
+              ? from(Promise.all([reCreateDb()]))
               : of(previousAuth)
           ),
           tap(() => {
             authStateSignal.setValue({ dbName, email, token, nameHex })
+
+            setProfile(nameHex)
           })
         )
       ),

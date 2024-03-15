@@ -12,7 +12,7 @@ import { useObservers } from "./rxdb/sync/useObservers"
 import { PreloadQueries } from "./PreloadQueries"
 import { SplashScreen } from "./SplashScreen"
 import { FirstTimeExperienceTours } from "./firstTimeExperience/FirstTimeExperienceTours"
-import { DialogProvider } from "./dialog"
+import { DialogProvider } from "./common/dialog"
 import { BlurContainer } from "./books/BlurContainer"
 import "./i18n"
 import { ErrorBoundary } from "@sentry/react"
@@ -23,39 +23,44 @@ import { Effects } from "./Effects"
 import {
   usePersistSignals,
   QueryClientProvider,
-  createSharedStoreAdapter,
-  createLocalStorageAdapter
+  useSignalValue
 } from "reactjrx"
-import { signalEntriesToPersist } from "./storage"
+import { signalEntriesToPersist } from "./profile"
 import { queryClient } from "./queries/queryClient"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
+import { profileStorageSignal } from "./profile/storage"
+import { authSignalStorageAdapter } from "./auth/storage"
+import { authStateSignal } from "./auth/authState"
 
 declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface DefaultTheme extends Theme {}
 }
 
+const authSignalEntries = [{ signal: authStateSignal, version: 0 }]
+
 export function App() {
   const [loading, setLoading] = useState({
-    isHydrating: true,
-    preloadQueries: true
+    isPreloadingQueries: true
   })
   const [newServiceWorker, setNewServiceWorker] = useState<
     ServiceWorker | undefined
   >(undefined)
-  const isAppReady = !loading.isHydrating && !loading.preloadQueries
+  const profileSignalStorageAdapter = useSignalValue(profileStorageSignal)
 
-  const { isHydrated } = usePersistSignals({
-    adapter: createSharedStoreAdapter({
-      adapter: createLocalStorageAdapter(),
-      key: "local-user"
-    }),
-    onReady: () => {
-      setLoading((state) => ({ ...state, isHydrating: false }))
-    },
+  const { isHydrated: isProfileHydrated } = usePersistSignals({
+    adapter: profileSignalStorageAdapter,
     entries: signalEntriesToPersist
   })
+
+  const { isHydrated: isAuthHydrated } = usePersistSignals({
+    adapter: authSignalStorageAdapter,
+    entries: authSignalEntries
+  })
+
+  const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
+  const isAppReady = isAuthHydrated && !loading.isPreloadingQueries
 
   return (
     <ErrorBoundary
@@ -69,7 +74,7 @@ export function App() {
             <Suspense fallback={<SplashScreen show />}>
               {/* <SplashScreen show={!isAppReady} /> */}
               <RxDbProvider>
-                {isHydrated && (
+                {!isHydratingProfile && isAuthHydrated && (
                   <>
                     {plugins.reduce(
                       (Comp, { Provider }) => {
@@ -106,7 +111,7 @@ export function App() {
                   onReady={() => {
                     setLoading((state) => ({
                       ...state,
-                      preloadQueries: false
+                      isPreloadingQueries: false
                     }))
                   }}
                 />

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { ROUTES } from "../constants"
-import { useDialogManager } from "../dialog"
+import { useDialogManager } from "../common/dialog"
 import {
   hasOpenedReaderAlreadyStateSignal,
   bookBeingReadStateSignal

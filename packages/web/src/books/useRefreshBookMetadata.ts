@@ -1,6 +1,6 @@
 import { useNetworkState } from "react-use"
 import { from, switchMap, catchError, map, EMPTY } from "rxjs"
-import { useDialogManager } from "../dialog"
+import { useDialogManager } from "../common/dialog"
 import { httpClient } from "../http/httpClient"
 import { isPluginError } from "../plugins/plugin-front"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"

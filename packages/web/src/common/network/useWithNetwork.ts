@@ -1,7 +1,7 @@
 import { Observable, tap } from "rxjs"
 import { useDialogManager } from "../dialog"
 import { useNetworkState } from "react-use"
-import { OfflineError } from "../errors"
+import { OfflineError } from "../../errors"
 
 export const useWithNetwork = () => {
   const dialog = useDialogManager()
