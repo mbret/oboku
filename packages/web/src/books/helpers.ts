@@ -193,10 +193,10 @@ export const useBookIdsSortedBy = (
 }
 
 export const useBooksSortedBy = (
-  books: BookQueryResult[],
+  books: BookQueryResult[] | undefined,
   sorting: "date" | "activity" | "alpha" | undefined
 ) => {
-  return useMemo(() => sortBooksBy(books, sorting), [books, sorting])
+  return useMemo(() => sortBooksBy(books ?? [], sorting), [books, sorting])
 }
 
 const sortBooksBy = (

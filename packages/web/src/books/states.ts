@@ -22,6 +22,7 @@ import { Database } from "../rxdb"
 import { useMemo } from "react"
 import { BookDocType } from "@oboku/shared"
 import { DeepReadonlyObject, MangoQuery } from "rxdb"
+import { useVisibleBooks } from "./useVisibleBooks"
 
 export const getBooksByIds = async (database: Database) => {
   const result = await database.collections.book.find({}).exec()
@@ -252,7 +253,7 @@ export const useBooksAsArrayState = ({
   >
 }) => {
   const { data: books = {}, isPending } = useBooksDic()
-  const visibleBookIds = useVisibleBookIds()
+  const visibleBookIds = useVisibleBookIds() ?? []
 
   const bookResult: (BookQueryResult & {
     downloadState: ReturnType<typeof getBookDownloadsState>
@@ -290,21 +291,7 @@ export const useBookIdsState = () => {
 export const useVisibleBookIds = ({
   queryObj
 }: { queryObj?: MangoQuery<BookDocType> } = {}) => {
-  const { data: books = [] } = useBooks({ queryObj })
-  const { data: protectedTagIds } = useProtectedTagIds()
-  const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
-
-  return useMemo(() => {
-    if (isLibraryUnlocked) {
-      return books.map((item) => item._id)
-    } else {
-      return books
-        .filter(
-          (book) => intersection(protectedTagIds, book?.tags || []).length === 0
-        )
-        .map((book) => book?._id || "-1")
-    }
-  }, [books, protectedTagIds, isLibraryUnlocked])
+  return useVisibleBooks({ queryObj }).data?.map((book) => book._id)
 }
 
 /**
