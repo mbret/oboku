@@ -8,6 +8,7 @@ import { useReCreateDb } from "../rxdb"
 import { authStateSignal } from "./authState"
 import { httpClient } from "../http/httpClient"
 import { setProfile } from "../profile/currentProfile"
+import { setUser } from "@sentry/react"
 
 const provider = new GoogleAuthProvider()
 
@@ -50,6 +51,8 @@ export const useSignIn = () => {
           ),
           tap(() => {
             authStateSignal.setValue({ dbName, email, token, nameHex })
+
+            setUser({ email, id: nameHex })
 
             setProfile(nameHex)
           })

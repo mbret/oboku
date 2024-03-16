@@ -2,7 +2,11 @@ import { version } from "../../package.json"
 import "./reportWebVitals"
 import { SENTRY_DSN } from "../constants.shared"
 import { init } from "@sentry/react"
-import { CaptureConsole } from "@sentry/integrations"
+import {
+  captureConsoleIntegration,
+  extraErrorDataIntegration,
+  httpClientIntegration
+} from "@sentry/integrations"
 
 init({
   dsn: SENTRY_DSN,
@@ -10,10 +14,13 @@ init({
   enabled: !import.meta.env.DEV,
   autoSessionTracking: true,
   integrations: [
-    new CaptureConsole({
-      levels: ["error"]
-    })
+    captureConsoleIntegration({
+      levels: ["error", "warn"]
+    }),
+    extraErrorDataIntegration(),
+    httpClientIntegration()
   ],
+  sendDefaultPii: true,
   release: version,
   beforeSend(event) {
     // Check if it is an exception, and if so, show the report dialog
