@@ -13,7 +13,7 @@ import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { signal, useSignalValue } from "reactjrx"
 import { Observable, from, mergeMap } from "rxjs"
-import { CancelError } from "../errors"
+import { CancelError } from "../common/errors/errors"
 
 const FORM_ID = "LockActionBehindUserPasswordDialog"
 
@@ -31,6 +31,9 @@ export const authorizeAction = (action: () => void, onCancel?: () => void) =>
     onCancel
   })
 
+/**
+ * add check if user has pass code or not and if not just ignore
+ */
 export function withAuthorization<T>(stream: Observable<T>) {
   return stream.pipe(
     mergeMap(() =>

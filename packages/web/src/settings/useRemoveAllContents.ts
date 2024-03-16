@@ -3,15 +3,14 @@ import { getLatestDatabase } from "../rxdb/useCreateDatabase"
 import { catchError, combineLatest, from, map, mergeMap, of, tap } from "rxjs"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useLock } from "../common/BlockingBackdrop"
-import { useDialogManager } from "../common/dialog"
 import { withAuthorization } from "../auth/AuthorizeActionDialog"
 import { Report } from "../debug/report.shared"
-import { CancelError } from "../errors"
+import { CancelError } from "../common/errors/errors"
+import { createDialog } from "../common/dialogs/createDialog"
 
 export const useRemoveAllContents = () => {
   const { mutateAsync: sync } = useSyncReplicate()
   const [lock] = useLock()
-  const dialog = useDialogManager()
 
   return useMutation({
     mutationFn: () =>
@@ -33,7 +32,7 @@ export const useRemoveAllContents = () => {
             tagCount,
             dataSourceCount
           ]) => {
-            const confirmed$ = dialog({
+            const confirmed$ = createDialog({
               title: "Account reset",
               content: `This action will remove all of your content. Here is a breakdown of everything that will be removed:\n 
             ${bookCount} books, ${collectionCount} collections, ${tagCount} tags and ${dataSourceCount} data sources. \n\nThis operation can take a long time and you NEED to be connected to internet`,
@@ -83,7 +82,7 @@ export const useRemoveAllContents = () => {
 
           Report.error(e)
 
-          dialog({
+          createDialog({
             title: "Something went wrong!",
             content:
               "Something went wrong during the process. No need to panic since you already wanted to destroy everything anyway. If everything is gone, you should not worry too much, if you still have contents, try to do it again"

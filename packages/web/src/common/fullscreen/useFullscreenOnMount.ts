@@ -1,7 +1,6 @@
 import { useEffect } from "react"
 import screenfull from "screenfull"
 import { Report } from "../../debug/report.shared"
-import { useDialogManager } from "../dialog"
 import {
   EMPTY,
   catchError,
@@ -14,7 +13,8 @@ import {
   timer
 } from "rxjs"
 import { useSubscribe } from "reactjrx"
-import { CancelError } from "../../errors"
+import { CancelError } from "../errors/errors"
+import { createDialog } from "../dialogs/createDialog"
 
 const isPermissionCheckFailedError = (error: unknown): error is TypeError =>
   error instanceof TypeError &&
@@ -26,8 +26,6 @@ const isPermissionCheckFailedError = (error: unknown): error is TypeError =>
     error.message === "Fullscreen request denied")
 
 export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
-  const dialog = useDialogManager()
-
   useSubscribe(() => {
     if (enabled && screenfull.isEnabled && !screenfull.isFullscreen) {
       return defer(() => {
@@ -42,13 +40,13 @@ export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
                   // we avoid double dialog because of strict mode
                   screenfull.isFullscreen
                     ? throwError(() => error)
-                    : dialog({
+                    : createDialog({
                         title: "Fullscreen request",
                         content:
                           "Your browser does not allow automatic fullscreen without an interaction",
                         confirmTitle: "Fullscreen",
                         cancellable: true
-                      }).$.pipe(endWith(true))
+                      }).$
                 )
               )
             }
@@ -72,7 +70,7 @@ export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
     }
 
     return EMPTY
-  }, [enabled, dialog])
+  }, [enabled])
 
   useEffect(() => {
     return () => {

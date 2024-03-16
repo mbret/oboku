@@ -1,6 +1,22 @@
-import { QueryClient } from "reactjrx"
+import { MutationCache, QueryCache, QueryClient } from "reactjrx"
+import { Report } from "../debug/report.shared"
+import { CancelError } from "../common/errors/errors"
 
 export const queryClient = new QueryClient({
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      if (error instanceof CancelError) return
+
+      Report.error(error)
+    }
+  }),
+  queryCache: new QueryCache({
+    onError: (error) => {
+      if (error instanceof CancelError) return
+
+      Report.error(error)
+    }
+  }),
   defaultOptions: {
     mutations: {
       /**

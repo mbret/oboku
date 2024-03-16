@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { ROUTES } from "../constants"
-import { useDialogManager } from "../common/dialog"
 import {
   hasOpenedReaderAlreadyStateSignal,
   bookBeingReadStateSignal
 } from "./states"
 import { SIGNAL_RESET, useSignalValue } from "reactjrx"
+import { createDialog } from "../common/dialogs/createDialog"
 
 const BASE_READER_ROUTE = ROUTES.READER.replace(`/:id`, ``)
 
@@ -16,7 +16,6 @@ export const BackToReadingDialog = () => {
   const hasOpenedReaderAlready = useSignalValue(
     hasOpenedReaderAlreadyStateSignal
   )
-  const dialog = useDialogManager()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -32,7 +31,7 @@ export const BackToReadingDialog = () => {
 
     isOpen.current = true
 
-    dialog({
+    createDialog({
       title: `Take me back to my book`,
       content: `It looks like you were reading a book last time you used the app. Do you want to go back to reading?`,
       cancellable: true,
@@ -46,7 +45,7 @@ export const BackToReadingDialog = () => {
         isOpen.current = false
       }
     })
-  }, [dialog, bookBeingRead, location, navigate, hasOpenedReaderAlready])
+  }, [bookBeingRead, location, navigate, hasOpenedReaderAlready])
 
   return null
 }

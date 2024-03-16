@@ -41,7 +41,6 @@ import {
 import { libraryStateSignal } from "../library/states"
 import packageJson from "../../package.json"
 import { ROUTES } from "../constants"
-import { useDialogManager } from "../common/dialog"
 import { toggleDebug } from "../debug"
 import { useDatabase } from "../rxdb"
 import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
@@ -52,6 +51,7 @@ import { firstTimeExperienceStateSignal } from "../firstTimeExperience/firstTime
 import { unlockLibraryDialogSignal } from "../auth/UnlockLibraryDialog"
 import { authStateSignal } from "../auth/authState"
 import { useRemoveAllContents } from "./useRemoveAllContents"
+import { createDialog } from "../common/dialogs/createDialog"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -67,7 +67,6 @@ export const ProfileScreen = () => {
   const library = useSignalValue(libraryStateSignal)
   const signOut = useSignOut()
   const theme = useTheme()
-  const dialog = useDialogManager()
   const { mutate: updateSettings } = useUpdateSettings()
   const { mutate: removeAllContents } = useRemoveAllContents()
 
@@ -225,7 +224,7 @@ export const ProfileScreen = () => {
         </ListItem>
       </List>
       <List subheader={<ListSubheader disableSticky>About</ListSubheader>}>
-        <ListItem button onClick={() => dialog({ preset: "NOT_IMPLEMENTED" })}>
+        <ListItem button onClick={() => createDialog({ preset: "NOT_IMPLEMENTED" })}>
           <ListItemIcon>
             <GavelRounded />
           </ListItemIcon>
@@ -296,7 +295,7 @@ export const ProfileScreen = () => {
             secondary="Remove all contents from your account"
           />
         </ListItemButton>
-        <ListItem button onClick={() => dialog({ preset: "NOT_IMPLEMENTED" })}>
+        <ListItem button onClick={() => createDialog({ preset: "NOT_IMPLEMENTED" })}>
           <ListItemText primary="Delete my account" />
         </ListItem>
       </List>

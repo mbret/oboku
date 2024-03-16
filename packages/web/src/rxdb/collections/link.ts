@@ -47,6 +47,7 @@ const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev` | `rxdbMeta`>> = {
     _id: { type: `string`, maxLength: 100 },
     data: { type: ["string", "object", "null"] },
     resourceId: { type: "string" },
+    dataSourceId: { type: "string" },
     type: { type: "string" },
     book: { type: ["string", "null"] },
     contentLength: { type: ["number", "null"] },

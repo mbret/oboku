@@ -7,20 +7,19 @@ import { useDatabase } from "../rxdb"
 import { DOWNLOAD_PREFIX } from "../constants.shared"
 import { BookFile } from "./types"
 import { getLinkStateAsync } from "../links/states"
-import { useDialogManager } from "../common/dialog"
 import { bytesToMb } from "../common/utils"
 import { createCbzFromReadableStream } from "./createCbzFromReadableStream"
 import { useDownloadBookFromDataSource } from "../plugins/useDownloadBookFromDataSource"
 import { plugin } from "../plugins/local"
 import { isPluginError } from "../plugins/plugin-front"
 import { BookQueryResult } from "../books/states"
+import { createDialog } from "../common/dialogs/createDialog"
 
 class NoLinkFound extends Error {}
 
 export const useDownloadBook = () => {
   const downloadBook = useDownloadBookFromDataSource()
   const { db: database } = useDatabase()
-  const dialog = useDialogManager()
 
   const setDownloadData = useCallback(
     (
@@ -63,7 +62,7 @@ export const useDownloadBook = () => {
         })
 
         if (!firstLink) {
-          dialog({
+          createDialog({
             title: "No link!",
             content:
               "Your book does not have a valid link to download the file. Please add one before proceeding"
@@ -119,7 +118,7 @@ export const useDownloadBook = () => {
             })
 
             // @todo shorten this description and redirect to the documentation
-            dialog({
+            createDialog({
               preset: `UNKNOWN_ERROR`,
               title: `Unable to download`,
               content: `
@@ -174,7 +173,7 @@ export const useDownloadBook = () => {
         Report.error(e)
       }
     },
-    [setDownloadData, downloadBook, dialog, database]
+    [setDownloadData, downloadBook, database]
   )
 }
 

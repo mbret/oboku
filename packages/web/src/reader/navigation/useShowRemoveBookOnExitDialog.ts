@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react"
 import { useBook } from "../../books/states"
-import { useDialogManager } from "../../common/dialog"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { ReadingStateState } from "@oboku/shared"
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/useCreateDatabase"
-import { Observable, mergeMap, noop, of } from "rxjs"
+import { mergeMap, noop, of } from "rxjs"
 import { getBookById } from "../../books/helpers"
+import { createDialog } from "../../common/dialogs/createDialog"
 
 export const useShowRemoveBookOnExitDialog = ({
   onSettled,
@@ -15,7 +15,6 @@ export const useShowRemoveBookOnExitDialog = ({
   onSettled?: () => void
   bookId?: string
 }) => {
-  const dialog = useDialogManager()
   const removeDownloadFile = useRemoveDownloadFile()
   const { data: book } = useBook({ id: bookId })
   const readingState = book?.readingStateCurrentState
@@ -44,24 +43,18 @@ export const useShowRemoveBookOnExitDialog = ({
             return of(null)
           }
 
-          return new Observable((subscriber) => {
-            dialog({
-              title: "Free up some space!",
-              content:
-                "Congratulation on finishing your book! Would you like to remove its download to free up some space? (Don't worry the book will not be removed, only its locally downloaded files)",
-              cancellable: true,
-              confirmTitle: "Remove",
-              cancelTitle: "Keep",
-              canEscape: false,
-              onConfirm: () => {
-                removeDownloadFile(book._id).catch(noop)
-              },
-              onClose: () => {
-                subscriber.next()
-                subscriber.complete()
-              }
-            })
-          })
+          return createDialog({
+            title: "Free up some space!",
+            content:
+              "Congratulation on finishing your book! Would you like to remove its download to free up some space? (Don't worry the book will not be removed, only its locally downloaded files)",
+            cancellable: true,
+            confirmTitle: "Remove",
+            cancelTitle: "Keep",
+            canEscape: false,
+            onConfirm: () => {
+              removeDownloadFile(book._id).catch(noop)
+            },
+          }).$
         })
       ),
     onSettled

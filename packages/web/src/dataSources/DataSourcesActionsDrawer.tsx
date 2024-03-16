@@ -13,18 +13,19 @@ import {
   RadioButtonUncheckedOutlined,
   CheckCircleRounded
 } from "@mui/icons-material"
-import { useSynchronizeDataSource, useRemoveDataSource } from "./helpers"
+import { useSynchronizeDataSource } from "./helpers"
 import { useDataSource } from "./useDataSource"
 import { toggleDatasourceProtected } from "./triggers"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "../library/states"
+import { useRemoveDataSource } from "./useRemoveDataSource"
 
 export const DataSourcesActionsDrawer: FC<{
   openWith: string
   onClose: () => void
 }> = memo(({ openWith, onClose }) => {
   const syncDataSource = useSynchronizeDataSource()
-  const { mutate: remove } = useRemoveDataSource()
+  const { mutate: removeDataSource } = useRemoveDataSource()
   const { data: dataSource } = useDataSource(openWith)
   const library = useSignalValue(libraryStateSignal)
 
@@ -73,7 +74,7 @@ export const DataSourcesActionsDrawer: FC<{
             button
             onClick={() => {
               onClose()
-              remove({ id: openWith })
+              removeDataSource({ id: openWith })
             }}
           >
             <ListItemIcon>
