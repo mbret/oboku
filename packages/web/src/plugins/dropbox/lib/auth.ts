@@ -1,6 +1,7 @@
 import { DropboxAuth } from "dropbox"
 import { CLIENT_ID } from "../constants"
 import { ObokuPluginError } from "../../plugin-front"
+import { ROUTES } from "../../../constants"
 
 const defaultWindowOptions = {
   toolbar: "no",
@@ -45,7 +46,7 @@ export const authUser = ({
     // to handle it without for even long sync. Otherwise we should ask user credentials again
     if (isAccessTokenStillSufficient()) return resolve(dropboxAuth)
 
-    const redirectUri = `${window.location.origin}/auth_callback`
+    const redirectUri = `${window.location.origin}/${ROUTES.AUTH_CALLBACK}`
     const usePKCE = true
     const authType = "code"
     const tokenAccessType = "online"
