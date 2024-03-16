@@ -47,9 +47,12 @@ export const LibraryBooksScreen = () => {
   const localSettings = useLocalSettings()
   const library = useSignalValue(libraryStateSignal)
   let numberOfFiltersApplied = 0
+
   if ((library.tags.length || 0) > 0) numberOfFiltersApplied++
   if ((library.readingStates.length || 0) > 0) numberOfFiltersApplied++
   if (library.downloadState !== undefined) numberOfFiltersApplied++
+  if (library.isNotInterested === "only") numberOfFiltersApplied++
+
   const books = useBooks()
   const { t } = useTranslation()
 
@@ -58,7 +61,9 @@ export const LibraryBooksScreen = () => {
       <Button
         fullWidth
         variant="outlined"
-        onClick={() => isUploadBookDrawerOpenedStateSignal.setValue(true)}
+        onClick={() => {
+          isUploadBookDrawerOpenedStateSignal.setValue(true)
+        }}
       >
         {t(`library.button.book.add.title`)}
       </Button>
