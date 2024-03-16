@@ -30,6 +30,11 @@ export type LinkDocType = CommonBase & {
    */
   resourceId: string
   /**
+   * Direct match to datasource id from database. This is to 
+   * retrieve which link is linked to datasource
+   */
+  dataSourceId?: string
+  /**
    * Extra data field that can be used by any datasource to store
    * any form of data. Needs to be serialized as a string
    */

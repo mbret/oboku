@@ -27,7 +27,7 @@ function isFolder(
 }
 
 export const createOrUpdateBook = async ({
-  ctx: { dataSourceType },
+  ctx: { dataSourceType, dataSourceId },
   helpers,
   parents,
   item
@@ -39,6 +39,7 @@ export const createOrUpdateBook = async ({
 }) => {
   try {
     logger.log(`createOrUpdateBook "${item.name}":`, item.resourceId)
+
     const parentTagNames = parents.reduce(
       (tags: string[], parent) => [
         ...tags,
@@ -50,16 +51,68 @@ export const createOrUpdateBook = async ({
     const parentFolders = parents.filter((parent) =>
       isFolder(parent)
     ) as SynchronizeAbleItem[]
-    const existingLink = await helpers.findOne("link", {
+
+    const linkForResourceId = await helpers.findOne("link", {
       selector: { resourceId: item.resourceId }
     })
 
-    // logger.log(`createOrUpdateBook "${item.name}": existingLink`, existingLink?._id)
+    if (linkForResourceId) {
+      /**
+       * We have a matching link for this item but it's not attached to dataSource.
+       * We update it
+       */
+      if (!linkForResourceId.dataSourceId) {
+        logger.log(
+          `${item.name} has a link not yet attached to any dataSource, updating it with current dataSource ${dataSourceId}`
+        )
+
+        await helpers.atomicUpdate("link", linkForResourceId._id, (old) => ({
+          ...old,
+          dataSourceId,
+          modifiedAt: new Date().toISOString()
+        }))
+      }
+
+      /**
+       * We have a matching link for this item but it's attached to a different
+       * dataSource. We will check if the dataSource actually exist, if not we
+       * will attach it to this one. This help repair broken link.
+       * This scenario can happen when the user delete a dataSource without deleting
+       * the books associated with it.
+       */
+      if (
+        linkForResourceId.dataSourceId &&
+        linkForResourceId.dataSourceId !== dataSourceId
+      ) {
+        const dataSourceFoundForThisLink = await helpers.findOne("datasource", {
+          selector: { _id: linkForResourceId.dataSourceId }
+        })
+
+        /**
+         * If we find a dataSource, we don't need to synchronize this item
+         * as it's managed by another dataSource
+         */
+        if (dataSourceFoundForThisLink) {
+          return
+        }
+
+        logger.log(
+          `${item.name} has a link attached to a non existing dataSource, updating it with current dataSource ${dataSourceId}`
+        )
+
+        await helpers.atomicUpdate("link", linkForResourceId._id, (old) => ({
+          ...old,
+          dataSourceId,
+          modifiedAt: new Date().toISOString()
+        }))
+      }
+    }
 
     let existingBook: BookDocType | null = null
-    if (existingLink?.book) {
+
+    if (linkForResourceId?.book) {
       existingBook = await helpers.findOne("book", {
-        selector: { _id: existingLink.book }
+        selector: { _id: linkForResourceId.book }
       })
 
       if (existingBook) {
@@ -77,7 +130,7 @@ export const createOrUpdateBook = async ({
       }
     }
 
-    if (!existingLink || !existingBook) {
+    if (!linkForResourceId || !existingBook) {
       let bookId = existingBook?._id
 
       if (!bookId) {
@@ -105,6 +158,7 @@ export const createOrUpdateBook = async ({
         data: JSON.stringify({}),
         createdAt: new Date().toISOString(),
         modifiedAt: null,
+        dataSourceId,
         rxdbMeta: {
           lwt: new Date().getTime()
         }
@@ -144,7 +198,7 @@ export const createOrUpdateBook = async ({
 
         logger.log(
           `book ${
-            existingLink.book
+            linkForResourceId.book
           } has changed in metadata, refresh triggered ${lastMetadataUpdatedAt} ${new Date(
             item.modifiedAt || 0
           )}`
@@ -175,6 +229,7 @@ export const createOrUpdateBook = async ({
       `createOrUpdateBook something went wrong for book ${item.name} (${item.resourceId})`
     )
     logger.error(e)
+
     throw e
   }
 }
