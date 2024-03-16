@@ -184,6 +184,7 @@ type MangoOperator =
 type ConditionOperator<T> = {
   $nin?: any[]
   $in?: any[]
+  $ne?: T
 }
 
 interface MangoQuery<RxDocType> {

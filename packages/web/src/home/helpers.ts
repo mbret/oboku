@@ -1,22 +1,21 @@
 import { useMemo } from "react"
-import { useBooksAsArrayState } from "../books/states"
 import { ReadingStateState } from "@oboku/shared"
 import { useBooksSortedBy } from "../books/helpers"
-import { booksDownloadStateSignal } from "../download/states"
 import { useProtectedTagIds } from "../tags/helpers"
-import { useSignalValue } from "reactjrx"
+import { useVisibleBooks } from "../books/useVisibleBooks"
 
-/**
- * @todo cleanup
- */
 export const useContinueReadingBooks = () => {
   const { isPending } = useProtectedTagIds()
-  const normalizedBookDownloadsState = useSignalValue(booksDownloadStateSignal)
 
-  const { data: booksAsArray, isPending: isBooksPending } =
-    useBooksAsArrayState({
-      normalizedBookDownloadsState
-    })
+  const { data: booksAsArray, isLoading: isBooksPending } = useVisibleBooks({
+    queryObj: {
+      selector: {
+        isNotInterested: {
+          $ne: true
+        }
+      }
+    }
+  })
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
 
   return {
@@ -34,20 +33,23 @@ export const useContinueReadingBooks = () => {
   }
 }
 
-/**
- * @todo cleanup
- */
 export const useRecentlyAddedBooks = () => {
-  const { data: books } = useBooksAsArrayState({
-    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal)
+  const { data: booksAsArray } = useVisibleBooks({
+    queryObj: {
+      selector: {
+        isNotInterested: {
+          $ne: true
+        }
+      }
+    }
   })
 
   return useMemo(() => {
     // descend
-    const booksSortedByDate = [...books].sort((a, b) =>
+    const booksSortedByDate = [...(booksAsArray ?? [])].sort((a, b) =>
       a.createdAt < b.createdAt ? 1 : -1
     )
 
     return booksSortedByDate.slice(0, 15).map((book) => book._id)
-  }, [books])
+  }, [booksAsArray])
 }
