@@ -85,8 +85,14 @@ export const ProfileScreen = () => {
         <ListItem button onClick={(_) => signOut()}>
           <ListItemText primary="Sign out" secondary={auth?.email} />
         </ListItem>
-        <ListItem
-          button
+        <ListItemButton
+          sx={
+            accountSettings?.contentPassword
+              ? {}
+              : {
+                  bgcolor: alpha(theme.palette.error.light, 0.2)
+                }
+          }
           onClick={() => {
             if (accountSettings?.contentPassword) {
               authorizeAction(() => setIsEditContentPasswordDialogOpened(true))
@@ -99,7 +105,7 @@ export const ProfileScreen = () => {
             primary={
               accountSettings?.contentPassword
                 ? "Change app password"
-                : "Initialize app password"
+                : "Initialize app password (Recommended)"
             }
             secondary={
               accountSettings?.contentPassword
@@ -107,7 +113,7 @@ export const ProfileScreen = () => {
                 : "When set, it will be used to authorize sensitive actions"
             }
           />
-        </ListItem>
+        </ListItemButton>
 
         <ListItem
           button
@@ -224,7 +230,10 @@ export const ProfileScreen = () => {
         </ListItem>
       </List>
       <List subheader={<ListSubheader disableSticky>About</ListSubheader>}>
-        <ListItem button onClick={() => createDialog({ preset: "NOT_IMPLEMENTED" })}>
+        <ListItem
+          button
+          onClick={() => createDialog({ preset: "NOT_IMPLEMENTED" })}
+        >
           <ListItemIcon>
             <GavelRounded />
           </ListItemIcon>
@@ -295,7 +304,10 @@ export const ProfileScreen = () => {
             secondary="Remove all contents from your account"
           />
         </ListItemButton>
-        <ListItem button onClick={() => createDialog({ preset: "NOT_IMPLEMENTED" })}>
+        <ListItem
+          button
+          onClick={() => createDialog({ preset: "NOT_IMPLEMENTED" })}
+        >
           <ListItemText primary="Delete my account" />
         </ListItem>
       </List>

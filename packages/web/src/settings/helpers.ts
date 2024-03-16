@@ -4,23 +4,18 @@ import { useForeverQuery, useMutation } from "reactjrx"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { from, map, mergeMap, of, switchMap } from "rxjs"
 import { SettingsDocType } from "../rxdb/collections/settings"
+import { getSettingsDocument } from "./dbHelpers"
 
-export const getSettings = (database: Database) => {
-  return database.settings
-    .findOne({
-      selector: {
-        _id: "settings"
+export const getSettingsOrThrow = (database: Database) => {
+  return getSettingsDocument(database).pipe(
+    map((settings) => {
+      if (!settings) {
+        throw new Error("Settings not found")
       }
+
+      return settings
     })
-    .exec()
-}
-
-export const getSettingsOrThrow = async (database: Database) => {
-  const settings = await getSettings(database)
-
-  if (!settings) throw new Error("Settings not found")
-
-  return settings
+  )
 }
 
 export const useUpdateContentPassword = () => {
@@ -46,7 +41,7 @@ export const useValidateAppPassword = (options: {
       if (!input) throw new Error("Invalid password")
 
       return getLatestDatabase().pipe(
-        mergeMap((database) => from(getSettingsOrThrow(database))),
+        mergeMap((database) => getSettingsOrThrow(database)),
         mergeMap((settings) => {
           const hashedInput = crypto.hashContentPassword(input)
 
