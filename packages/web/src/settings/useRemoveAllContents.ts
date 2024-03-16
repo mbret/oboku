@@ -3,7 +3,7 @@ import { getLatestDatabase } from "../rxdb/useCreateDatabase"
 import { catchError, combineLatest, from, map, mergeMap, of, tap } from "rxjs"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useLock } from "../common/BlockingBackdrop"
-import { withAuthorization } from "../auth/AuthorizeActionDialog"
+import { useWithAuthorization } from "../auth/AuthorizeActionDialog"
 import { Report } from "../debug/report.shared"
 import { CancelError } from "../common/errors/errors"
 import { createDialog } from "../common/dialogs/createDialog"
@@ -11,6 +11,7 @@ import { createDialog } from "../common/dialogs/createDialog"
 export const useRemoveAllContents = () => {
   const { mutateAsync: sync } = useSyncReplicate()
   const [lock] = useLock()
+  const withAuthorization = useWithAuthorization()
 
   return useMutation({
     mutationFn: () =>

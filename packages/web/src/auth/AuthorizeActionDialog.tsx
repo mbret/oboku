@@ -12,8 +12,10 @@ import { useValidateAppPassword } from "../settings/helpers"
 import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { signal, useSignalValue } from "reactjrx"
-import { Observable, from, mergeMap } from "rxjs"
+import { Observable, from, map, mergeMap, of } from "rxjs"
 import { CancelError } from "../common/errors/errors"
+import { getLatestDatabase } from "../rxdb/useCreateDatabase"
+import { getSettings } from "../settings/dbHelpers"
 
 const FORM_ID = "LockActionBehindUserPasswordDialog"
 
@@ -31,19 +33,25 @@ export const authorizeAction = (action: () => void, onCancel?: () => void) =>
     onCancel
   })
 
-/**
- * add check if user has pass code or not and if not just ignore
- */
-export function withAuthorization<T>(stream: Observable<T>) {
-  return stream.pipe(
-    mergeMap(() =>
-      from(
-        new Promise<void>((resolve, reject) =>
-          authorizeAction(resolve, () => reject(new CancelError()))
+export function useWithAuthorization() {
+  return function withAuthorization<T>(stream: Observable<T>) {
+    return stream.pipe(
+      mergeMap((data) =>
+        getLatestDatabase().pipe(
+          mergeMap((db) => getSettings(db)),
+          mergeMap((settings) =>
+            settings?.contentPassword
+              ? from(
+                  new Promise<void>((resolve, reject) =>
+                    authorizeAction(resolve, () => reject(new CancelError()))
+                  )
+                ).pipe(map(() => data))
+              : of(data)
+          )
         )
       )
     )
-  )
+  }
 }
 
 export const AuthorizeActionDialog: FC<{}> = () => {
