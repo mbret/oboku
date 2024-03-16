@@ -93,7 +93,7 @@ export const CollectionDetailsScreen = () => {
             </div>
           </Box>
           <BookListWithControls
-            data={visibleBooks}
+            data={visibleBooks ?? []}
             defaultSort="alpha"
             renderEmptyList={
               <div
