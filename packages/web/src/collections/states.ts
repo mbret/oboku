@@ -91,13 +91,13 @@ export const useCollectionsWithPrivacy = ({
     data: collections?.filter((collection) => {
       if (showCollectionWithProtectedContent === "unlocked") {
         const hasSomeNonVisibleBook = collection.books.some(
-          (bookId) => !visibleBookIds.includes(bookId)
+          (bookId) => !visibleBookIds?.includes(bookId)
         )
 
         return !hasSomeNonVisibleBook
       } else {
         const hasSomeVisibleBook = collection?.books.some((bookId) =>
-          visibleBookIds.includes(bookId)
+          visibleBookIds?.includes(bookId)
         )
         return hasSomeVisibleBook || collection?.books.length === 0
       }

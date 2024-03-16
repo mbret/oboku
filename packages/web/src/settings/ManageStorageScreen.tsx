@@ -45,7 +45,7 @@ export const ManageStorageScreen = () => {
   const extraDownloadFilesIds = difference(downloadedBookIds, bookIds)
   const theme = useTheme()
   const bookIdsToDisplay = useMemo(
-    () => bookIds.filter((id) => visibleBookIds.includes(id)),
+    () => bookIds.filter((id) => visibleBookIds?.includes(id)),
     [bookIds, visibleBookIds]
   )
   const { mutate: onDeleteAllDownloadsClick } = useMutation({
