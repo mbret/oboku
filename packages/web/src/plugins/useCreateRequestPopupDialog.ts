@@ -1,14 +1,12 @@
 import { useCallback } from "react"
-import { useDialogManager } from "../common/dialog"
+import { createDialog } from "../common/dialogs/createDialog"
 
 export const useCreateRequestPopupDialog = () => {
-  const dialog = useDialogManager()
-
   return useCallback(
     ({ name }: { name: string }) =>
       () =>
-        new Promise<boolean>((resolve, reject) => {
-          dialog({
+        new Promise<boolean>((resolve) => {
+          createDialog({
             preset: "CONFIRM",
             title: `Plugin ${name} requires some actions`,
             content: `To proceed, the plugin ${name} requires some action from you which involve opening a popup`,
@@ -16,6 +14,6 @@ export const useCreateRequestPopupDialog = () => {
             onCancel: () => resolve(false)
           })
         }),
-    [dialog]
+    []
   )
 }

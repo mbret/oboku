@@ -7,7 +7,7 @@ import { isPluginError } from "../plugins/plugin-front"
 import { useMutation } from "reactjrx"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/useCreateDatabase"
-import { OfflineError } from "../errors"
+import { OfflineError } from "../common/errors/errors"
 import { getCollectionById } from "./databaseHelpers"
 
 export const useRefreshCollectionMetadata = () => {

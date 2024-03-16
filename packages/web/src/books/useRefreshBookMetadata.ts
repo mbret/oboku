@@ -1,6 +1,5 @@
 import { useNetworkState } from "react-use"
 import { from, switchMap, catchError, map, EMPTY } from "rxjs"
-import { useDialogManager } from "../common/dialog"
 import { httpClient } from "../http/httpClient"
 import { isPluginError } from "../plugins/plugin-front"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
@@ -8,11 +7,11 @@ import { useDatabase } from "../rxdb"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useAtomicUpdateBook } from "./helpers"
 import { Report } from "../debug/report.shared"
+import { createDialog } from "../common/dialogs/createDialog"
 
 export const useRefreshBookMetadata = () => {
   const { db: database } = useDatabase()
   const [updateBook] = useAtomicUpdateBook()
-  const dialog = useDialogManager()
   const network = useNetworkState()
   const { mutateAsync: sync } = useSyncReplicate()
   const refreshPluginMetadata = usePluginRefreshMetadata()
@@ -20,7 +19,7 @@ export const useRefreshBookMetadata = () => {
   return async (bookId: string) => {
     try {
       if (!network.online) {
-        return dialog({ preset: "OFFLINE" })
+        return createDialog({ preset: "OFFLINE" })
       }
 
       const book = await database?.book

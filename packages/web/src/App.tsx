@@ -12,7 +12,6 @@ import { useObservers } from "./rxdb/sync/useObservers"
 import { PreloadQueries } from "./PreloadQueries"
 import { SplashScreen } from "./SplashScreen"
 import { FirstTimeExperienceTours } from "./firstTimeExperience/FirstTimeExperienceTours"
-import { DialogProvider } from "./common/dialog"
 import { BlurContainer } from "./books/BlurContainer"
 import "./i18n"
 import { ErrorBoundary } from "@sentry/react"
@@ -32,6 +31,7 @@ import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { profileStorageSignal } from "./profile/storage"
 import { authSignalStorageAdapter } from "./auth/storage"
 import { authStateSignal } from "./auth/authState"
+import { DialogProvider } from "./common/dialogs/DialogProvider"
 
 declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface

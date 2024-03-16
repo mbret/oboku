@@ -11,17 +11,16 @@ import { MoreVertRounded } from "@mui/icons-material"
 import { FC, useState } from "react"
 import { useDataSourcePlugin } from "../../dataSources/helpers"
 import { Report } from "../../debug/report.shared"
-import { useDialogManager } from "../../common/dialog"
 import { useBookLinksState } from "../states"
 import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
 import { upsertBookLink } from "../triggers"
 import { useTagsByIds } from "../../tags/helpers"
+import { createDialog } from "../../common/dialogs/createDialog"
 
 export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
   const link = useBookLinksState({ bookId, tags: useTagsByIds().data })[0]
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
   const [isSelectItemOpened, setIsSelectItemOpened] = useState(false)
-  const dialog = useDialogManager()
   const createRequestPopupDialog = useCreateRequestPopupDialog()
 
   return (
@@ -48,7 +47,7 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
             }}
             onClick={() => {
               if (!dataSourcePlugin?.SelectItemComponent) {
-                dialog({ preset: "NOT_IMPLEMENTED" })
+                createDialog({ preset: "NOT_IMPLEMENTED" })
               } else {
                 setIsSelectItemOpened(true)
               }

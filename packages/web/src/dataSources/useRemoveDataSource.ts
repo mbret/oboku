@@ -1,0 +1,70 @@
+import { useMutation } from "reactjrx"
+import { getLatestDatabase } from "../rxdb/useCreateDatabase"
+import { combineLatest, from, mergeMap, of } from "rxjs"
+import { withDialog } from "../common/dialogs/withDialog"
+import { getLinksForDataSource } from "../links/dbHelpers"
+import { useRemoveBook } from "../books/helpers"
+import { getDataSourceById } from "./dbHelpers"
+import { withUnknownErrorDialog } from "../common/errors/withUnknownErrorDialog"
+
+export const useRemoveDataSource = () => {
+  const { mutateAsync: removeBook } = useRemoveBook()
+
+  return useMutation({
+    mutationFn: ({ id }: { id: string }) =>
+      getLatestDatabase().pipe(
+        withDialog({ preset: "CONFIRM" }),
+        withDialog({
+          title: "Remove books?",
+          content:
+            "Do you want to delete the books together with the data source?",
+          cancellable: true,
+          actions: [
+            {
+              title: "Yes",
+              type: "confirm",
+              onConfirm: () => true
+            },
+            {
+              title: "No",
+              type: "confirm",
+              onConfirm: () => false
+            }
+          ]
+        }),
+        mergeMap(([[db], deleteBooks]) =>
+          from(getDataSourceById(db, id)).pipe(
+            mergeMap((dataSource) => {
+              if (!dataSource) throw new Error("Invalid data source")
+
+              const dataSourceDelete$ = from(dataSource.remove())
+
+              if (deleteBooks) {
+                const links$ = from(getLinksForDataSource(db, dataSource))
+
+                return links$.pipe(
+                  mergeMap((links) => {
+                    const booksDelete$ = links.map((link) =>
+                      !link.book
+                        ? of(null)
+                        : from(
+                            removeBook({
+                              id: link.book,
+                              deleteFromDataSource: false
+                            })
+                          )
+                    )
+
+                    return combineLatest([dataSourceDelete$, ...booksDelete$])
+                  })
+                )
+              }
+
+              return dataSourceDelete$
+            })
+          )
+        ),
+        withUnknownErrorDialog()
+      )
+  })
+}

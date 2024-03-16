@@ -104,16 +104,11 @@ export const BookActionsDrawer = memo(() => {
     bookId
   )
 
-  const { mutate: onRemovePress, ...rest } = useRemoveHandler({
-    onError: () => {
-      handleClose()
-    },
-    onSuccess: ({ isDeleted }) => {
-      if (isDeleted) {
-        handleClose(() => {
-          onDeleteBook?.()
-        })
-      }
+  const { mutate: onRemovePress } = useRemoveHandler({
+    onSuccess: () => {
+      handleClose(() => {
+        onDeleteBook?.()
+      })
     }
   })
 

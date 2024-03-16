@@ -1,5 +1,5 @@
 import { ObokuErrorCode } from "@oboku/shared"
-import { HttpClientError } from "./http/httpClient"
+import { HttpClientError } from "../../http/httpClient"
 
 type HttpApiError = {
   response: {
@@ -20,9 +20,17 @@ export const createServerError = async (response: Response) => {
   }
 }
 
-export class CancelError extends Error {}
+export class CancelError extends Error {
+  constructor() {
+    super("CancelError")
+  }
+}
 
-export class OfflineError extends Error {}
+export class OfflineError extends Error {
+  constructor() {
+    super("OfflineError")
+  }
+}
 
 export const isCancelError = (error: unknown) => error instanceof CancelError
 
@@ -63,3 +71,5 @@ export class ServerError extends Error {
     this.errors = errors
   }
 }
+
+

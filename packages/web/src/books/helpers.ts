@@ -10,65 +10,51 @@ import { useCallback, useMemo } from "react"
 import { PromiseReturnType } from "../types"
 import { BookQueryResult, useBooksDic } from "./states"
 import { AtomicUpdateFunction } from "rxdb"
-import { useLock } from "../common/BlockingBackdrop"
 import { useNetworkState } from "react-use"
-import { useDialogManager } from "../common/dialog"
 import { from } from "rxjs"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 import { getMetadataFromBook } from "./getMetadataFromBook"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
+import { CancelError, OfflineError } from "../common/errors/errors"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
   const { db } = useDatabase()
-  const dialog = useDialogManager()
-  const [lock] = useLock()
   const removeBookFromDataSource = useRemoveBookFromDataSource()
   const network = useNetworkState()
 
-  return useCallback(
-    async ({
+  return useMutation({
+    mutationFn: async ({
       id,
       deleteFromDataSource
     }: {
       id: string
       deleteFromDataSource?: boolean
     }) => {
-      let unlock = () => {}
-
-      try {
-        if (deleteFromDataSource) {
-          if (!network.online) {
-            return dialog({ preset: "OFFLINE" })
-          }
-
-          try {
-            await removeBookFromDataSource(id)
-          } catch (e) {
-            if (isPluginError(e) && e.code === "cancelled") {
-              return
-            }
-
-            Report.error(e)
-
-            return dialog({ preset: "UNKNOWN_ERROR" })
-          } finally {
-            unlock()
-          }
+      if (deleteFromDataSource) {
+        if (!network.online) {
+          throw new OfflineError()
         }
 
-        await Promise.all([
-          removeDownload(id),
-          db?.book.findOne({ selector: { _id: id } }).remove()
-        ])
-      } catch (e) {
-        Report.error(e)
+        try {
+          await removeBookFromDataSource(id)
+        } catch (e) {
+          if (isPluginError(e) && e.code === "cancelled") {
+            throw new CancelError()
+          }
+
+          throw e
+        }
       }
-    },
-    [removeDownload, removeBookFromDataSource, network, dialog, db]
-  )
+
+      await Promise.all([
+        removeDownload(id),
+        db?.book.findOne({ selector: { _id: id } }).remove()
+      ])
+    }
+  })
 }
 
 export const useRemoveTagFromBook = () => {
