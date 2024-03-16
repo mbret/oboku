@@ -35,7 +35,8 @@ export const useBooks = () => {
       return false
     }
 
-    if (library.isNotInterested === "hide" && book.isNotInterested) return false
+    if (library.isNotInterested !== "only" && book.isNotInterested) return false
+
     if (library.isNotInterested === "only" && !book.isNotInterested)
       return false
 
