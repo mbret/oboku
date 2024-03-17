@@ -51,10 +51,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       throw createHttpError(400)
     }
 
-    const refreshBookMetadata = ({ bookId }: { bookId: string }) => {
+    const refreshBookMetadata = async ({ bookId }: { bookId: string }) => {
       logger.info(`send refreshBookMetadata request for ${bookId}`)
 
-      return axios({
+      const response = await axios({
         method: `post`,
         url: `${AWS_API_URI}/refresh-metadata`,
         data: {
@@ -67,6 +67,9 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
           authorization: authorization
         }
       })
+
+      logger.info(`refreshBookMetadata request success for ${bookId}`)
+      logger.info(response)
     }
 
     const isBookCoverExist = async ({ coverId }: { coverId: string }) => {
