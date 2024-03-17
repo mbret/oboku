@@ -39,6 +39,4 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 }
 
-export const main = withMiddy(lambda, {
-  schema
-})
+export const main = withMiddy(lambda)
