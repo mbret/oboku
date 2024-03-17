@@ -5,8 +5,11 @@ import schema from "./schema"
 import { InvokeCommand } from "@aws-sdk/client-lambda"
 import { STAGE } from "src/constants"
 import { lock } from "@libs/supabase/lock"
+import { Logger } from "@libs/logger"
 
 const LOCK_MAX_DURATION_MN = 5
+
+const logger = Logger.child({ module: "handler" })
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -30,7 +33,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const { alreadyLocked } = await lock(lockId, LOCK_MAX_DURATION_MN)
 
   if (!alreadyLocked) {
-    await client.send(command)
+    const response = await client.send(command)
+
+    logger.info(`${event.body.bookId}: command sent with success`)
+    logger.info(response)
   }
 
   return {
