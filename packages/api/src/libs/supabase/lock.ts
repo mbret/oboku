@@ -54,5 +54,9 @@ export const lock = async (
     return { alreadyLocked: false }
   }
 
+  if (response.error) {
+    throw response.error
+  }
+
   return { alreadyLocked: true }
 }

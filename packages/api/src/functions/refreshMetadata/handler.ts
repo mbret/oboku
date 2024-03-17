@@ -28,15 +28,25 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     })
   })
 
-  const lockId = `metadata_${event.body.bookId}`
+  logger.info(`invoke for ${event.body.bookId}`)
 
-  const { alreadyLocked } = await lock(lockId, LOCK_MAX_DURATION_MN)
+  try {
+    const lockId = `metadata_${event.body.bookId}`
 
-  if (!alreadyLocked) {
-    const response = await client.send(command)
+    const { alreadyLocked } = await lock(lockId, LOCK_MAX_DURATION_MN)
 
-    logger.info(`${event.body.bookId}: command sent with success`)
-    logger.info(response)
+    if (!alreadyLocked) {
+      const response = await client.send(command)
+
+      logger.info(`${event.body.bookId}: command sent with success`)
+      logger.info(response)
+    } else {
+      logger.info(`${event.body.bookId} is already locked, ignoring!`)
+    }
+  } catch (error) {
+    logger.error(error)
+
+    throw error
   }
 
   return {
