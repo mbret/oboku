@@ -3,7 +3,7 @@ import { Logger } from "@libs/logger"
 import axios from "axios"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 
-const logger = Logger.namespace("saveCoverFromExternalLinkToBucket")
+const logger = Logger.child({module: "saveCoverFromExternalLinkToBucket"})
 
 type Context = {
   userNameHex: string
@@ -16,7 +16,7 @@ export const saveCoverFromExternalLinkToBucket = async (
 ) => {
   const objectKey = `cover-${ctx.userNameHex}-${book._id}`
 
-  logger.log(`prepare to save cover ${objectKey}`)
+  Logger.info(`prepare to save cover ${objectKey}`)
 
   try {
     // @todo request is deprecated, switch to something else
@@ -28,7 +28,7 @@ export const saveCoverFromExternalLinkToBucket = async (
 
     await saveCoverFromBufferToBucket(entryAsBuffer, objectKey)
 
-    Logger.log(`cover ${objectKey} has been saved/updated`)
+    Logger.info(`cover ${objectKey} has been saved/updated`)
   } catch (e) {
     logger.error(e)
   }

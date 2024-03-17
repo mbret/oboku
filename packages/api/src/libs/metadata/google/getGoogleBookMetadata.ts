@@ -15,7 +15,7 @@ export const getGoogleBookMetadata = async (
   if (!response.items?.length) {
     let titleRefined = refineTitle(metadata.title ?? "", 1)
 
-    Logger.log(
+    Logger.info(
       `getGoogleMetadata was unable to find result for isbn:${metadata.isbn} or title:${metadata.title}. Trying to refine title with 1 deepness ${titleRefined}`
     )
 
@@ -24,7 +24,7 @@ export const getGoogleBookMetadata = async (
     if (!response.items?.length) {
       titleRefined = refineTitle(metadata.title ?? "", 2)
 
-      Logger.log(
+      Logger.info(
         `getGoogleMetadata was unable to find result for ${titleRefined}. Trying to refine title with 2 deepness ${titleRefined}`
       )
 
@@ -34,7 +34,7 @@ export const getGoogleBookMetadata = async (
     if (!response.items?.length) {
       titleRefined = refineTitle(metadata.title ?? "", 3)
 
-      Logger.log(
+      Logger.info(
         `getGoogleMetadata was unable to find result for ${titleRefined}. Trying to refine title with 2 deepness ${titleRefined}`
       )
 

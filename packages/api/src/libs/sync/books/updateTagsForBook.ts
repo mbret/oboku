@@ -1,7 +1,7 @@
 import { Logger } from "@libs/logger"
 import { DataSourcePlugin } from "@libs/plugins/types"
 
-const logger = Logger.namespace("sync")
+const logger = Logger.child({module: "sync"})
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 
@@ -32,7 +32,7 @@ export const updateTagsForBook = async (
     )
     if (someNewTagsDoesNotExistYet) {
       await helpers.addTagsToBook(bookId, tagIds)
-      logger.log(`book ${bookId} has new tags detected and has been updated`)
+      Logger.info(`book ${bookId} has new tags detected and has been updated`)
     }
   } catch (e) {
     logger.error(`updateTagsForBook something went wrong for book ${bookId}`)

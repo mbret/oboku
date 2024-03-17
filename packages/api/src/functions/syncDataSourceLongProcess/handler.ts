@@ -90,9 +90,9 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       authorization
     })
 
-    deleteLock(supabase, lockId)
+    await deleteLock(supabase, lockId)
   } catch (e) {
-    deleteLock(supabase, lockId)
+    await deleteLock(supabase, lockId)
 
     throw e
   }

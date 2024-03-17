@@ -23,7 +23,7 @@ import { isBookProtected } from "@libs/couch/isBookProtected"
 import nano from "nano"
 import { atomicUpdate } from "@libs/couch/dbHelpers"
 
-const logger = Logger.namespace("retrieveMetadataAndSaveCover")
+const logger = Logger.child({module: "retrieveMetadataAndSaveCover"})
 
 export type RetrieveMetadataAndSaveCoverContext = {
   userName: string
@@ -39,7 +39,7 @@ export const retrieveMetadataAndSaveCover = async (
     db: nano.DocumentScope<unknown>
   }
 ) => {
-  logger.log(
+  logger.info(
     `syncMetadata run for user ${ctx.userName} with book ${ctx.book._id}`
   )
   let bookNameForDebug = ""
@@ -49,7 +49,7 @@ export const retrieveMetadataAndSaveCover = async (
   try {
     bookNameForDebug = reduceMetadata(ctx.book.metadata).title || ""
 
-    logger.log(
+    logger.info(
       `syncMetadata processing ${ctx.book._id} with resource id ${ctx.link.resourceId}`
     )
 
@@ -189,8 +189,8 @@ export const retrieveMetadataAndSaveCover = async (
               )
               .sort()[0]
 
-        Logger.log(`coverRelativePath`, coverRelativePath)
-        Logger.log(`opfBasePath`, opfBasePath)
+              logger.info(`coverRelativePath`, coverRelativePath)
+              logger.info(`opfBasePath`, opfBasePath)
 
         metadataList.push({
           type: "file",
@@ -210,7 +210,7 @@ export const retrieveMetadataAndSaveCover = async (
           console.log(`No cover path found for ${tmpFilePath}`)
         }
       } else {
-        logger.log(
+        logger.info(
           `${contentType} cannot be extracted to retrieve information (cover, etc)`
         )
       }

@@ -72,6 +72,9 @@ const serverlessConfiguration: AWS & any = {
       shouldStartNameWithService: true,
       binaryMediaTypes: [`*/*`]
     },
+    logs: {
+      restApi: true
+    },
     // Do this if you want to load env vars into the Serverless environment AND
     // automatically configure all your functions with them.
     // This is usually not recommended to avoid loading secrets by accident (e.g. AWS_SECRET_ACCESS_KEY)
