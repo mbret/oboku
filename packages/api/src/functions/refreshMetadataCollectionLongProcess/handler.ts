@@ -36,11 +36,17 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const rawCredentials = event.body.credentials ?? JSON.stringify({})
   const credentials = JSON.parse(rawCredentials)
 
-  const { name: userName } = await withToken({
-    headers: {
-      authorization
-    }
-  })
+  const { name: userName } = await withToken(
+    {
+      headers: {
+        authorization
+      }
+    },
+    (await getParameterValue({
+      Name: `jwt-private-key`,
+      WithDecryption: true
+    })) ?? ``
+  )
 
   const collectionId: string | undefined = event.body.collectionId
 

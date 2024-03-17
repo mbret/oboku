@@ -1,6 +1,7 @@
 import {
   GetParameterCommand,
   GetParameterCommandInput,
+  GetParametersCommand,
   SSMClient
 } from "@aws-sdk/client-ssm"
 
@@ -21,3 +22,13 @@ export const getParameterValue = (
   ssm
     .send(new GetParameterCommand(options))
     .then((value) => value.Parameter?.Value)
+
+export const getParametersValue = (options: {
+  Names: ParameterName[]
+  WithDecryption: boolean
+}) =>
+  ssm
+    .send(new GetParametersCommand(options))
+    .then(
+      (value) => value.Parameters?.map((parameter) => parameter.Value) ?? []
+    )

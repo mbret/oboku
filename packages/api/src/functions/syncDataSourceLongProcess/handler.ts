@@ -41,11 +41,17 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     const credentials = JSON.parse(event.body.credentials ?? JSON.stringify({}))
     const authorization = event.body.authorization ?? ``
 
-    const { name } = await withToken({
-      headers: {
-        authorization
-      }
-    })
+    const { name } = await withToken(
+      {
+        headers: {
+          authorization
+        }
+      },
+      (await getParameterValue({
+        Name: `jwt-private-key`,
+        WithDecryption: true
+      })) ?? ``
+    )
 
     if (!dataSourceId) {
       throw createHttpError(400)

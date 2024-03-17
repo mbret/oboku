@@ -3,16 +3,17 @@ import { APIGatewayProxyEvent } from "aws-lambda"
 import { createHttpError } from "./httpErrors"
 import { getParameterValue } from "./ssm"
 
-const isAuthorized = async (authorization?: string) => {
+const isAuthorized = async ({
+  privateKey,
+  authorization
+}: {
+  authorization?: string
+  privateKey: string
+}) => {
   try {
     if (!authorization) throw new Error("Looks like authorization is empty")
 
     const token = authorization.replace("Bearer ", "")
-
-    const privateKey = await getParameterValue({
-      Name: `jwt-private-key`,
-      WithDecryption: true
-    })
 
     if (!privateKey) {
       console.error(`Unable to retrieve private key`)
@@ -68,11 +69,12 @@ export const generateAdminToken = async (options: { sub?: string } = {}) => {
 }
 
 export const withToken = async (
-  event: Pick<APIGatewayProxyEvent, `headers`>
+  event: Pick<APIGatewayProxyEvent, `headers`>,
+  privateKey: string
 ) => {
   const authorization =
     (event.headers.Authorization as string | undefined) ||
     (event.headers.authorization as string | undefined)
 
-  return await isAuthorized(authorization)
+  return await isAuthorized({ authorization, privateKey })
 }
