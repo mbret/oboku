@@ -1,3 +1,5 @@
 import pino from "pino"
 
-export const Logger = pino({ level: "silent" })
+export const Logger = pino({
+  timestamp: false
+})

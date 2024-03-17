@@ -2,7 +2,6 @@ import { CollectionMetadata } from "@oboku/shared"
 import { Logger } from "@libs/logger"
 import { URL } from "url"
 import axios from "axios"
-import { getParameterValue } from "@libs/ssm"
 
 type Result = {
   error: "OK"
@@ -56,20 +55,18 @@ type Result = {
   }[]
 }
 
-export const getSeriesMetadata = async (metadata: {
+export const getSeriesMetadata = async ({
+  comicVineApiKey,
+  ...metadata
+}: {
   title: string
   year?: string
+  comicVineApiKey: string
 }): Promise<CollectionMetadata | undefined> => {
   try {
     const url = new URL(`https://comicvine.gamespot.com/api/search`)
 
-    url.searchParams.append(
-      `api_key`,
-      (await getParameterValue({
-        Name: `COMiCVINE_API_KEY`,
-        WithDecryption: true
-      })) ?? ``
-    )
+    url.searchParams.append(`api_key`, comicVineApiKey)
     url.searchParams.append(`query`, metadata.title)
     url.searchParams.append(`format`, `json`)
     url.searchParams.append(`resources`, `volume`)

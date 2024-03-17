@@ -302,11 +302,11 @@ export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {
   return await retryable()
 }
 
-export const getNanoDbForUser = async (name: string) => {
+export const getNanoDbForUser = async (name: string, privateKey: string) => {
   const hexEncodedUserId = Buffer.from(name).toString("hex")
 
   const db = await getNano({
-    jwtToken: await generateToken(name)
+    jwtToken: await generateToken(name, privateKey)
   })
 
   return db.use(`userdb-${hexEncodedUserId}`)
@@ -332,7 +332,10 @@ export const getNano = async ({ jwtToken }: { jwtToken?: string } = {}) => {
  * WARNING: be very careful when using nano as admin since you will have full power.
  * As you know with great power comes great responsibilities
  */
-export const getAdminNano = async (options: { sub?: string } = {}) => {
+export const getAdminNano = async (options: {
+  sub?: string
+  privateKey: string
+}) => {
   return getNano({ jwtToken: await generateAdminToken(options) })
 }
 

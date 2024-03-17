@@ -5,8 +5,11 @@ import schema from "./schema"
 import { InvokeCommand } from "@aws-sdk/client-lambda"
 import { STAGE } from "src/constants"
 import { lock } from "@libs/supabase/lock"
+import { Logger } from "@libs/logger"
 
 const LOCK_MAX_DURATION_MN = 5
+
+const logger = Logger.child({ module: "handler" })
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -25,12 +28,25 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     })
   })
 
-  const lockId = `metadata_${event.body.bookId}`
+  logger.info(`invoke for ${event.body.bookId}`)
 
-  const { alreadyLocked } = await lock(lockId, LOCK_MAX_DURATION_MN)
+  try {
+    const lockId = `metadata_${event.body.bookId}`
 
-  if (!alreadyLocked) {
-    await client.send(command)
+    const { alreadyLocked } = await lock(lockId, LOCK_MAX_DURATION_MN)
+
+    if (!alreadyLocked) {
+      const response = await client.send(command)
+
+      logger.info(`${event.body.bookId}: command sent with success ${response.$metadata.requestId}`)
+      logger.info(response)
+    } else {
+      logger.info(`${event.body.bookId} is already locked, ignoring!`)
+    }
+  } catch (error) {
+    logger.error(error)
+
+    throw error
   }
 
   return {

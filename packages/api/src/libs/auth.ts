@@ -1,18 +1,18 @@
 import jwt from "jsonwebtoken"
 import { APIGatewayProxyEvent } from "aws-lambda"
 import { createHttpError } from "./httpErrors"
-import { getParameterValue } from "./ssm"
 
-const isAuthorized = async (authorization?: string) => {
+const isAuthorized = async ({
+  privateKey,
+  authorization
+}: {
+  authorization?: string
+  privateKey: string
+}) => {
   try {
     if (!authorization) throw new Error("Looks like authorization is empty")
 
     const token = authorization.replace("Bearer ", "")
-
-    const privateKey = await getParameterValue({
-      Name: `jwt-private-key`,
-      WithDecryption: true
-    })
 
     if (!privateKey) {
       console.error(`Unable to retrieve private key`)
@@ -31,25 +31,24 @@ export type Token = {
   "_couchdb.roles"?: string[]
 }
 
-export const generateToken = async (name: string) => {
+export const generateToken = async (name: string, privateKey: string) => {
   const tokenData: Token = {
     name,
     sub: name,
     "_couchdb.roles": [name]
   }
 
-  return jwt.sign(
-    tokenData,
-    (await getParameterValue({
-      Name: `jwt-private-key`,
-      WithDecryption: true
-    })) ?? ``,
-    { algorithm: "RS256" }
-  )
+  return jwt.sign(tokenData, privateKey, { algorithm: "RS256" })
 }
 
 // https://docs.couchdb.org/en/3.2.0/config/couch-peruser.html#couch_peruser
-export const generateAdminToken = async (options: { sub?: string } = {}) => {
+export const generateAdminToken = async ({
+  privateKey,
+  ...options
+}: {
+  sub?: string
+  privateKey: string
+}) => {
   const data: Token = {
     name: "admin",
     sub: "admin",
@@ -57,22 +56,16 @@ export const generateAdminToken = async (options: { sub?: string } = {}) => {
     ...options
   }
 
-  return jwt.sign(
-    data,
-    (await getParameterValue({
-      Name: `jwt-private-key`,
-      WithDecryption: true
-    })) ?? ``,
-    { algorithm: "RS256" }
-  )
+  return jwt.sign(data, privateKey, { algorithm: "RS256" })
 }
 
 export const withToken = async (
-  event: Pick<APIGatewayProxyEvent, `headers`>
+  event: Pick<APIGatewayProxyEvent, `headers`>,
+  privateKey: string
 ) => {
   const authorization =
     (event.headers.Authorization as string | undefined) ||
     (event.headers.authorization as string | undefined)
 
-  return await isAuthorized(authorization)
+  return await isAuthorized({ authorization, privateKey })
 }

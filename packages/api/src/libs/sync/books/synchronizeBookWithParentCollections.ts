@@ -4,7 +4,7 @@ import {
   SynchronizeAbleDataSource
 } from "@libs/plugins/types"
 
-const logger = Logger.child({ module: "sync" })
+const logger = Logger.child({ module: "synchronizeBookWithParentCollections" })
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
@@ -21,7 +21,6 @@ export const synchronizeBookWithParentCollections = async (
   const parentResourceIds = parents?.map((parent) => parent.resourceId) || []
 
   logger.info(
-    `synchronizeBookWithParentCollections`,
     `${bookId} with ${parentResourceIds.length} parentResourceIds ${parentResourceIds}`
   )
 

@@ -8,12 +8,15 @@ import schema from "./schema"
 import { createHttpError } from "@libs/httpErrors"
 import { getNanoDbForUser } from "@libs/couch/dbHelpers"
 import axios from "axios"
-import { getParameterValue } from "@libs/ssm"
+import { getParametersValue } from "@libs/ssm"
 import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
 import { pluginFacade } from "@libs/plugins/facade"
+import { Logger } from "@libs/logger"
 
 const s3 = new S3Client()
+
+const logger = Logger.child({ module: "handler" })
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -22,34 +25,37 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const lockId = `sync_${dataSourceId}`
 
   try {
+    const [client_id = ``, client_secret = ``, jwtPrivateKey = ``] =
+      await getParametersValue({
+        Names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "jwt-private-key"],
+        WithDecryption: true
+      })
+
     configureGoogleDataSource({
-      client_id:
-        (await getParameterValue({
-          Name: `GOOGLE_CLIENT_ID`,
-          WithDecryption: true
-        })) ?? ``,
-      client_secret:
-        (await getParameterValue({
-          Name: `GOOGLE_CLIENT_SECRET`,
-          WithDecryption: true
-        })) ?? ``
+      client_id,
+      client_secret
     })
 
     const credentials = JSON.parse(event.body.credentials ?? JSON.stringify({}))
     const authorization = event.body.authorization ?? ``
 
-    const { name } = await withToken({
-      headers: {
-        authorization
-      }
-    })
+    const { name } = await withToken(
+      {
+        headers: {
+          authorization
+        }
+      },
+      jwtPrivateKey
+    )
 
     if (!dataSourceId) {
       throw createHttpError(400)
     }
 
-    const refreshBookMetadata = ({ bookId }: { bookId: string }) =>
-      axios({
+    const refreshBookMetadata = async ({ bookId }: { bookId: string }) => {
+      logger.info(`send refreshBookMetadata request for ${bookId}`)
+
+      const response = await axios({
         method: `post`,
         url: `${AWS_API_URI}/refresh-metadata`,
         data: {
@@ -62,6 +68,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
           authorization: authorization
         }
       })
+
+      logger.info(`refreshBookMetadata request success for ${bookId}`)
+      logger.info(response)
+    }
 
     const isBookCoverExist = async ({ coverId }: { coverId: string }) => {
       try {
@@ -83,7 +93,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     await pluginFacade.sync({
       userName: name,
       dataSourceId,
-      db: await getNanoDbForUser(name),
+      db: await getNanoDbForUser(name, jwtPrivateKey),
       refreshBookMetadata,
       isBookCoverExist,
       credentials,

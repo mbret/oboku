@@ -6,6 +6,9 @@ import { InvokeCommand } from "@aws-sdk/client-lambda"
 import { STAGE } from "src/constants"
 import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
 import { lock } from "@libs/supabase/lock"
+import { Logger } from "@libs/logger"
+
+const logger = Logger.child({ module: "handler" })
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -25,12 +28,27 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     })
   })
 
-  const lockId = `metadata-collection_${event.body.collectionId}`
+  logger.info(`invoke for ${event.body.collectionId}`)
 
-  const { alreadyLocked } = await lock(lockId, COLLECTION_METADATA_LOCK_MN)
+  try {
+    const lockId = `metadata-collection_${event.body.collectionId}`
 
-  if (!alreadyLocked) {
-    await client.send(command)
+    const { alreadyLocked } = await lock(lockId, COLLECTION_METADATA_LOCK_MN)
+
+    if (!alreadyLocked) {
+      const response = await client.send(command)
+
+      logger.info(
+        `${event.body.collectionId}: command sent with success ${response.$metadata.requestId}`
+      )
+      logger.info(response)
+    } else {
+      logger.info(`${event.body.collectionId} is already locked, ignoring!`)
+    }
+  } catch (error) {
+    logger.error(error)
+
+    throw error
   }
 
   return {
