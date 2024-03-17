@@ -12,8 +12,11 @@ import { getParameterValue } from "@libs/ssm"
 import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
 import { pluginFacade } from "@libs/plugins/facade"
+import { Logger } from "@libs/logger"
 
 const s3 = new S3Client()
+
+const logger = Logger.child({ module: "handler" })
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -48,8 +51,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       throw createHttpError(400)
     }
 
-    const refreshBookMetadata = ({ bookId }: { bookId: string }) =>
-      axios({
+    const refreshBookMetadata = ({ bookId }: { bookId: string }) => {
+      logger.info(`send refreshBookMetadata request for ${bookId}`)
+
+      return axios({
         method: `post`,
         url: `${AWS_API_URI}/refresh-metadata`,
         data: {
@@ -62,6 +67,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
           authorization: authorization
         }
       })
+    }
 
     const isBookCoverExist = async ({ coverId }: { coverId: string }) => {
       try {
