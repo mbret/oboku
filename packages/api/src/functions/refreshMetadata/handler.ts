@@ -38,7 +38,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     if (!alreadyLocked) {
       const response = await client.send(command)
 
-      logger.info(`${event.body.bookId}: command sent with success`)
+      logger.info(`${event.body.bookId}: command sent with success ${response.$metadata.requestId}`)
       logger.info(response)
     } else {
       logger.info(`${event.body.bookId} is already locked, ignoring!`)
