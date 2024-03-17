@@ -174,7 +174,7 @@ export const createOrUpdateBook = async ({
       /**
        * Because it's a new book, we start a metadata refresh
        */
-      helpers.refreshBookMetadata({ bookId: bookId }).catch(logger.error)
+      await helpers.refreshBookMetadata({ bookId: bookId }).catch(logger.error)
     } else {
       /**
        * We already have a link that exist for this datasource with this book.
@@ -192,7 +192,7 @@ export const createOrUpdateBook = async ({
         metadataAreOlderThanModifiedDate ||
         !(await helpers.isBookCoverExist(existingBook._id))
       ) {
-        helpers
+        await helpers
           .refreshBookMetadata({ bookId: existingBook?._id })
           .catch(logger.error)
 
