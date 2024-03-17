@@ -13,6 +13,7 @@ import { getAdminNano, getOrCreateUserFromEmail } from "@libs/couch/dbHelpers"
 import { generateToken } from "@libs/auth"
 import { ObokuErrorCode } from "@oboku/shared"
 import { createHttpError } from "@libs/httpErrors"
+import { getParametersValue } from "@libs/ssm"
 
 const firebaseConfig = JSON.parse(
   Buffer.from(process.env.FIREBASE_CONFIG ?? "", "base64").toString() ?? "{}"
@@ -26,6 +27,11 @@ const app = initializeApp(firebaseConfig)
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
+  const [jwtPrivateKey = ``] = await getParametersValue({
+    Names: ["jwt-private-key"],
+    WithDecryption: true
+  })
+
   const { token } = event.body
 
   const { email, email_verified } = await getAuth(app).verifyIdToken(token)
@@ -42,7 +48,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     })
   }
 
-  const adminNano = await getAdminNano()
+  const adminNano = await getAdminNano({ privateKey: jwtPrivateKey })
 
   const user = await getOrCreateUserFromEmail(adminNano, email)
 
@@ -51,7 +57,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   }
 
   const nameHex = Buffer.from(user.name).toString("hex")
-  const userJwtToken = await generateToken(user.name)
+  const userJwtToken = await generateToken(user.name, jwtPrivateKey)
 
   return {
     statusCode: 200,

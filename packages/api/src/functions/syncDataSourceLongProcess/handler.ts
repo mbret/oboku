@@ -8,7 +8,7 @@ import schema from "./schema"
 import { createHttpError } from "@libs/httpErrors"
 import { getNanoDbForUser } from "@libs/couch/dbHelpers"
 import axios from "axios"
-import { getParameterValue } from "@libs/ssm"
+import { getParametersValue } from "@libs/ssm"
 import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
 import { pluginFacade } from "@libs/plugins/facade"
@@ -25,17 +25,15 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   const lockId = `sync_${dataSourceId}`
 
   try {
+    const [client_id = ``, client_secret = ``, jwtPrivateKey = ``] =
+      await getParametersValue({
+        Names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "jwt-private-key"],
+        WithDecryption: true
+      })
+
     configureGoogleDataSource({
-      client_id:
-        (await getParameterValue({
-          Name: `GOOGLE_CLIENT_ID`,
-          WithDecryption: true
-        })) ?? ``,
-      client_secret:
-        (await getParameterValue({
-          Name: `GOOGLE_CLIENT_SECRET`,
-          WithDecryption: true
-        })) ?? ``
+      client_id,
+      client_secret
     })
 
     const credentials = JSON.parse(event.body.credentials ?? JSON.stringify({}))
@@ -47,10 +45,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
           authorization
         }
       },
-      (await getParameterValue({
-        Name: `jwt-private-key`,
-        WithDecryption: true
-      })) ?? ``
+      jwtPrivateKey
     )
 
     if (!dataSourceId) {
@@ -98,7 +93,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     await pluginFacade.sync({
       userName: name,
       dataSourceId,
-      db: await getNanoDbForUser(name),
+      db: await getNanoDbForUser(name, jwtPrivateKey),
       refreshBookMetadata,
       isBookCoverExist,
       credentials,

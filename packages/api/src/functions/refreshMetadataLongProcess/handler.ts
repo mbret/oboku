@@ -70,7 +70,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       throw new Error(`Unable to parse event.body -> ${event.body}`)
     }
 
-    const db = await getNanoDbForUser(userName)
+    const db = await getNanoDbForUser(userName, jwtPrivateKey)
 
     const book = await findOne(db, "book", { selector: { _id: bookId } })
 

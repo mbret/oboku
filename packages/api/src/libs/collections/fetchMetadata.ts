@@ -20,7 +20,10 @@ const swallowGoogleError = async <T>(promise: Promise<T>) => {
 
 export const fetchMetadata = async (
   metadata: { title: string; year?: string },
-  { withGoogle }: { googleApiKey?: string; withGoogle: boolean }
+  {
+    withGoogle,
+    comicVineApiKey
+  }: { googleApiKey?: string; withGoogle: boolean; comicVineApiKey: string }
 ): Promise<CollectionMetadata[]> => {
   const list = []
 
@@ -38,7 +41,10 @@ export const fetchMetadata = async (
     list.push(biblioreads)
   }
 
-  const comicvine = await getComicVineSeriesMetadata(metadata)
+  const comicvine = await getComicVineSeriesMetadata({
+    ...metadata,
+    comicVineApiKey
+  })
 
   if (comicvine) {
     list.push(comicvine)

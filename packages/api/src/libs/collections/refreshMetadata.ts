@@ -15,12 +15,14 @@ export const refreshMetadata = async (
     googleApiKey,
     db,
     credentials,
-    soft
+    soft,
+    comicVineApiKey
   }: {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
     credentials?: any
     soft?: boolean
+    comicVineApiKey: string
   }
 ) => {
   if (collection.type !== "series") {
@@ -108,7 +110,7 @@ export const refreshMetadata = async (
 
     const updatedMetadataList = await fetchMetadata(
       { title, year: year ? String(year) : undefined },
-      { withGoogle: true, googleApiKey }
+      { withGoogle: true, googleApiKey, comicVineApiKey }
     )
 
     await atomicUpdate(db, "obokucollection", collection._id, (old) => {
