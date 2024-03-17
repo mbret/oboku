@@ -16,7 +16,7 @@ export const lock = async (
     const item = (response.data ?? [])[0]
 
     if (!item) {
-      Logger.log(
+      Logger.info(
         `${lockId} not found after receiving 409. Invalid state, ignoring invocation`
       )
 
@@ -27,7 +27,7 @@ export const lock = async (
     const now = new Date()
 
     if (isLockOutdated(lock, maxDuration)) {
-      Logger.log(`${lockId} lock is assumed lost and will be recreated`)
+      Logger.info(`${lockId} lock is assumed lost and will be recreated`)
 
       const updatedResponse = await supabase
         .from("lock")
@@ -35,19 +35,19 @@ export const lock = async (
         .select()
 
       if (updatedResponse.status === 200) {
-        Logger.log(`${lockId} lock correctly updated, command will be sent`)
+        Logger.info(`${lockId} lock correctly updated, command will be sent`)
 
         return { alreadyLocked: false }
       }
     } else {
-      Logger.log(`${lockId} invocation is ignored`)
+      Logger.info(`${lockId} invocation is ignored`)
 
       return { alreadyLocked: true }
     }
   }
 
   if (response.status === 201) {
-    Logger.log(
+    Logger.info(
       `New lock created for ${lockId} with id ${(response.data ?? [])[0].id}. Command will be sent`
     )
 

@@ -12,7 +12,7 @@ type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
-const logger = Logger.namespace("sync/registerOrUpdateCollection")
+const logger = Logger.child({ module: "sync/registerOrUpdateCollection" })
 
 export const registerOrUpdateCollection = async ({
   item: { name, resourceId: linkResourceId, modifiedAt },
@@ -43,7 +43,7 @@ export const registerOrUpdateCollection = async ({
   if (collectionFromResourceId) {
     collectionId = collectionFromResourceId._id
 
-    Logger.log(
+    Logger.info(
       `Found an existing collection for ${name}. Created at ${collectionFromResourceId.createdAt} and last synced at ${collectionFromResourceId.syncAt}`
     )
 
@@ -52,7 +52,7 @@ export const registerOrUpdateCollection = async ({
       : undefined
 
     if (!lastSyncAt || lastSyncAt.getTime() < itemModifiedAt.getTime()) {
-      Logger.log(
+      Logger.info(
         `${name} modified date ${itemModifiedAt.toISOString()} is older than last synced date or not synced yet`
       )
 
@@ -76,7 +76,7 @@ export const registerOrUpdateCollection = async ({
       )
     }
   } else {
-    logger.log(
+    Logger.info(
       `registerOrUpdateCollection ${name} does not exist yet and will be created`
     )
 
@@ -124,7 +124,7 @@ export const registerOrUpdateCollection = async ({
     const toRemove = difference(collection.books, booksInCollectionAsIds)
 
     if (toRemove.length > 0) {
-      logger.log(
+      Logger.info(
         `[ANOMALY] registerOrUpdateCollection ${name} contains books that does not exist anymore and they will be removed from it`
       )
 

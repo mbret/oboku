@@ -5,7 +5,7 @@ import { Logger } from "@libs/logger"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import { asError } from "@libs/utils"
 
-const logger = Logger.namespace("saveCoverFromArchiveToBucket")
+const logger = Logger.child({ module: "saveCoverFromArchiveToBucket" })
 
 type Context = {
   userNameHex: string
@@ -27,7 +27,7 @@ export const saveCoverFromArchiveToBucket = async (
     folderBasePath === `` ? coverPath : `${folderBasePath}/${coverPath}`
   const objectKey = `cover-${ctx.userNameHex}-${book._id}`
 
-  logger.log(`prepare to save cover ${objectKey}`)
+  Logger.info(`prepare to save cover ${objectKey}`)
 
   const zip = fs
     .createReadStream(epubFilepath)
@@ -40,7 +40,7 @@ export const saveCoverFromArchiveToBucket = async (
 
         await saveCoverFromBufferToBucket(entryAsBuffer, objectKey)
 
-        logger.log(`cover ${objectKey} has been saved/updated`)
+        Logger.info(`cover ${objectKey} has been saved/updated`)
       } else {
         entry.autodrain()
       }

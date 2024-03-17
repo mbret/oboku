@@ -114,7 +114,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     deleteLock(supabase, lockId)
   ])
 
-  Logger.log(`lambda executed with success for ${book._id}`)
+  Logger.info(`lambda executed with success for ${book._id}`)
 
   return {
     statusCode: 200,

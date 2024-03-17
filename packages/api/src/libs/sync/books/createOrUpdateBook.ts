@@ -18,7 +18,7 @@ type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0] & {
 }
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
-const logger = Logger.namespace("sync.books")
+const logger = Logger.child({module: "sync.books"})
 
 function isFolder(
   item: SynchronizeAbleDataSource | SynchronizeAbleItem
@@ -38,7 +38,7 @@ export const createOrUpdateBook = async ({
   helpers: Helpers
 }) => {
   try {
-    logger.log(`createOrUpdateBook "${item.name}":`, item.resourceId)
+    Logger.info(`createOrUpdateBook "${item.name}":`, item.resourceId)
 
     const parentTagNames = parents.reduce(
       (tags: string[], parent) => [
@@ -62,7 +62,7 @@ export const createOrUpdateBook = async ({
        * We update it
        */
       if (!linkForResourceId.dataSourceId) {
-        logger.log(
+        Logger.info(
           `${item.name} has a link not yet attached to any dataSource, updating it with current dataSource ${dataSourceId}`
         )
 
@@ -96,7 +96,7 @@ export const createOrUpdateBook = async ({
           return
         }
 
-        logger.log(
+        Logger.info(
           `${item.name} has a link attached to a non existing dataSource, updating it with current dataSource ${dataSourceId}`
         )
 
@@ -117,7 +117,7 @@ export const createOrUpdateBook = async ({
 
       if (existingBook) {
         if (!existingBook.isAttachedToDataSource) {
-          logger.log(
+          Logger.info(
             `createOrUpdateBook "${item.name}": isAttachedToDataSource is false and therefore will be migrated as true`,
             existingBook._id
           )
@@ -126,7 +126,7 @@ export const createOrUpdateBook = async ({
             isAttachedToDataSource: true
           }))
         }
-        // logger.log(`createOrUpdateBook "${item.name}": existingBook`, existingBook._id)
+        // Logger.info(`createOrUpdateBook "${item.name}": existingBook`, existingBook._id)
       }
     }
 
@@ -134,7 +134,7 @@ export const createOrUpdateBook = async ({
       let bookId = existingBook?._id
 
       if (!bookId) {
-        logger.log(
+        Logger.info(
           `createOrUpdateBook "${item.name}": new file detected, creating book`
         )
         const insertedBook = await helpers.createBook({
@@ -196,7 +196,7 @@ export const createOrUpdateBook = async ({
           .refreshBookMetadata({ bookId: existingBook?._id })
           .catch(logger.error)
 
-        logger.log(
+        Logger.info(
           `book ${
             linkForResourceId.book
           } has changed in metadata, refresh triggered ${lastMetadataUpdatedAt} ${new Date(
@@ -223,7 +223,7 @@ export const createOrUpdateBook = async ({
       await helpers.addTagsToBook(existingBook._id, applyTags || [])
     }
 
-    logger.log(`createOrUpdateBook "${item.name}": DONE!`)
+    Logger.info(`createOrUpdateBook "${item.name}": DONE!`)
   } catch (e) {
     logger.error(
       `createOrUpdateBook something went wrong for book ${item.name} (${item.resourceId})`

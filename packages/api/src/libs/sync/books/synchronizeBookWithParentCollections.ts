@@ -4,7 +4,7 @@ import {
   SynchronizeAbleDataSource
 } from "@libs/plugins/types"
 
-const logger = Logger.namespace("sync")
+const logger = Logger.child({ module: "sync" })
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
@@ -20,7 +20,7 @@ export const synchronizeBookWithParentCollections = async (
 ) => {
   const parentResourceIds = parents?.map((parent) => parent.resourceId) || []
 
-  logger.log(
+  logger.info(
     `synchronizeBookWithParentCollections`,
     `${bookId} with ${parentResourceIds.length} parentResourceIds ${parentResourceIds}`
   )
@@ -49,7 +49,7 @@ export const synchronizeBookWithParentCollections = async (
     )
 
     if (collectionsThatHaveNotThisBookAsReferenceYet.length > 0) {
-      logger.log(
+      logger.info(
         `synchronizeBookWithParentCollections ${collectionsThatHaveNotThisBookAsReferenceYet.length} collections does not have ${bookId} attached to them yet`
       )
       await Promise.all(
@@ -88,7 +88,7 @@ export const synchronizeBookWithParentCollections = async (
         (collectionId) => !bookCollections.includes(collectionId)
       )
       if (bookHasNotOneOfTheCollectionsYet) {
-        logger.log(
+        logger.info(
           `synchronizeBookWithParentCollections ${bookId} has some missing parent collections. It will be updated to include them`
         )
         await helpers.atomicUpdate("book", bookId, (old) => ({

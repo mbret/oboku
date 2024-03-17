@@ -11,7 +11,7 @@ import { createTagFromName } from "@libs/couch/dbHelpers"
 import nano from "nano"
 import { createOrUpdateBook } from "./books/createOrUpdateBook"
 
-const logger = Logger.namespace("sync")
+const logger = Logger.child({ module: "sync" })
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0] & {
@@ -101,7 +101,7 @@ const syncTags = async ({
     tagNames.map(async (tag) => {
       const { created, id } = await createTagFromName(ctx.db, tag, true)
       if (created) {
-        logger.log(`syncTags ${tag} created with id ${id}`)
+        logger.info(`syncTags ${tag} created with id ${id}`)
       }
     })
   )
@@ -123,7 +123,7 @@ const syncFolder = async ({
   parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
 }) => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
-  logger.log(`syncFolder ${item.name}: metadata `, metadataForFolder)
+  logger.info(`syncFolder ${item.name}: metadata `, metadataForFolder)
 
   const isCollection =
     isFolder(item) &&
@@ -132,7 +132,7 @@ const syncFolder = async ({
     !metadataForFolder.isNotACollection
 
   if (metadataForFolder.isIgnored) {
-    logger.log(`syncFolder ${item.name}: ignored!`)
+    logger.info(`syncFolder ${item.name}: ignored!`)
     return
   }
 
@@ -148,7 +148,7 @@ const syncFolder = async ({
     await registerOrUpdateCollection({ ctx, item, helpers })
   }
 
-  logger.log(
+  logger.info(
     `syncFolder ${item.name}: with items ${item.items?.length || 0} items`
   )
 
@@ -174,5 +174,5 @@ const syncFolder = async ({
     })
   )
 
-  logger.log(`syncFolder ${item.name} DONE!`)
+  logger.info(`syncFolder ${item.name} DONE!`)
 }

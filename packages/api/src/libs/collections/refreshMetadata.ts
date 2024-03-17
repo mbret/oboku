@@ -24,7 +24,7 @@ export const refreshMetadata = async (
   }
 ) => {
   if (collection.type !== "series") {
-    Logger.log(`Ignoring ${collection._id} because of type ${collection.type}`)
+    Logger.info(`Ignoring ${collection._id} because of type ${collection.type}`)
 
     return
   }
@@ -74,7 +74,7 @@ export const refreshMetadata = async (
      */
 
     if (soft && isCollectionAlreadyUpdatedFromLink) {
-      Logger.log(`${collection._id} already has metadata, ignoring it!`)
+      Logger.info(`${collection._id} already has metadata, ignoring it!`)
 
       return {
         statusCode: 200,
@@ -83,7 +83,7 @@ export const refreshMetadata = async (
     }
 
     if (soft && !metadataLink && collection.lastMetadataUpdatedAt) {
-      Logger.log(
+      Logger.info(
         `${collection._id} does not have link and is already refreshed, ignoring it!`
       )
 

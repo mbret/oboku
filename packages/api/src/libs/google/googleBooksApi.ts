@@ -25,7 +25,7 @@ export const findByISBN = async (isbn: string, apiKey: string) => {
   })
 
   if (response.status === 200) {
-    // Logger.log(`google findByISBN response`, response.data)
+    // Logger.info(`google findByISBN response`, response.data)
 
     return response.data
   }
@@ -46,7 +46,7 @@ export const findByTitle = async (name: string, apiKey: string) => {
   })
 
   if (response.status === 200) {
-    // Logger.log(`google findByName response`, response.data)
+    // Logger.info(`google findByName response`, response.data)
 
     return response.data
   }
@@ -67,7 +67,7 @@ export const findSeriesByTitle = async (name: string, apiKey: string) => {
   })
 
   if (response.status === 200) {
-    // Logger.log(`google findByName response`, response.data)
+    // Logger.info(`google findByName response`, response.data)
 
     return response.data
   }
