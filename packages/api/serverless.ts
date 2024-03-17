@@ -198,7 +198,7 @@ const serverlessConfiguration: AWS & any = {
                   // this is needed to read from ssm and retrieve secrets
                   {
                     Effect: `Allow`,
-                    Action: [`ssm:GetParameter`],
+                    Action: [`ssm:GetParameter`, `ssm:GetParameters`],
                     Resource: [
                       {
                         "Fn::Join": [
