@@ -10,7 +10,7 @@ export default {
    *
    * This lambda should stay simple and fast (check/lock)
    */
-  // reservedConcurrency: 1,
+  reservedConcurrency: 1,
   events: [
     {
       http: {
