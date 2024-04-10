@@ -1,5 +1,11 @@
 import { LinkDocType, SafeMangoQuery } from "@oboku/shared"
-import { AtomicUpdateFunction, RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
+import {
+  AtomicUpdateFunction,
+  RxCollection,
+  RxDocument,
+  RxJsonSchema,
+  RxQuery
+} from "rxdb"
 import { MongoUpdateSyntax } from "../../types"
 import { getReplicationProperties } from "../rxdb-plugins/replication"
 import { SafeUpdateMongoUpdateSyntax } from "../types"

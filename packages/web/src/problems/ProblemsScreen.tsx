@@ -54,7 +54,9 @@ export const ProblemsScreen = memo(() => {
       .map((resourceId) => [
         resourceId,
         {
-          name: getMetadataFromCollection(collectionsByResourceId[resourceId]![0])?.title,
+          name: getMetadataFromCollection(
+            collectionsByResourceId[resourceId]![0]
+          )?.title,
           number: collectionsByResourceId[resourceId]!.length
         }
       ])

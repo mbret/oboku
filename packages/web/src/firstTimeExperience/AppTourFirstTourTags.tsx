@@ -169,10 +169,7 @@ export const AppTourFirstTourTags: React.FC = memo(() => {
               </Typography>
               <Typography align="left">
                 To learn more about tags and how to use them please visit the{" "}
-                <Link
-                  href="https://docs.oboku.me/wiki/tags"
-                  target="__blank"
-                >
+                <Link href="https://docs.oboku.me/wiki/tags" target="__blank">
                   doc
                 </Link>
               </Typography>

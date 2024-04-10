@@ -127,10 +127,7 @@ export const Reader: FC<{
               Oups! it looks like the book <b>{metadata?.title}</b> is not
               supported yet. If you would like to be able to open it please
               visit the{" "}
-              <Link
-                href="https://docs.oboku.me"
-                target="__blank"
-              >
+              <Link href="https://docs.oboku.me" target="__blank">
                 documentation
               </Link>{" "}
               and try to reach out.
@@ -155,10 +152,7 @@ export const Reader: FC<{
           <Typography align="center">
             Sorry it looks like we are unable to load the book. If the problem
             persist try to restart the app. If it still does not work,{" "}
-            <Link
-              href="https://docs.oboku.me/support"
-              target="__blank"
-            >
+            <Link href="https://docs.oboku.me/support" target="__blank">
               contact us
             </Link>
           </Typography>

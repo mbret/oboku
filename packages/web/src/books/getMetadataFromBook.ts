@@ -1,4 +1,9 @@
-import { BookDocType, DeprecatedBookDocType, BookMetadata } from "@oboku/shared"
+import {
+  BookDocType,
+  DeprecatedBookDocType,
+  BookMetadata,
+  directives
+} from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
 
 type Return = DeepReadonlyObject<Omit<BookMetadata, "type">> & {
@@ -62,5 +67,8 @@ export const getMetadataFromBook = (
     } satisfies Return
   }, {} as Return)
 
-  return reducedMetadata
+  return {
+    ...reducedMetadata,
+    title: directives.removeDirectiveFromString(reducedMetadata.title ?? "")
+  }
 }

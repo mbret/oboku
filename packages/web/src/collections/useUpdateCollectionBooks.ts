@@ -7,13 +7,7 @@ export const useUpdateCollectionBooks = () => {
   const { mutateAsync: updateBooks } = useUpdateBooks()
 
   return useMutation({
-    mutationFn: ({
-      id,
-      updateObj
-    }: {
-      id: string
-      updateObj: any
-    }) =>
+    mutationFn: ({ id, updateObj }: { id: string; updateObj: any }) =>
       getLatestDatabase().pipe(
         mergeMap((database) =>
           from(

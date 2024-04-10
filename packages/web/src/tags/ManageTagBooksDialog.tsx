@@ -19,12 +19,10 @@ export const ManageTagBooksDialog: FC<{}> = () => {
     isManageTagBooksDialogOpenedWithState
   )
   const { data: tag } = useTag(isManageTagBooksDialogOpenedWith || "-1")
-  const normalizedBookDownloadsState = useSignalValue(
-    booksDownloadStateSignal
-  )
+  const normalizedBookDownloadsState = useSignalValue(booksDownloadStateSignal)
 
   const { data: books } = useBooksAsArrayState({
-    normalizedBookDownloadsState,
+    normalizedBookDownloadsState
   })
   const { mutate: addTagToBook } = useAddTagToBook()
   const { mutate: removeFromBook } = useRemoveTagFromBook()

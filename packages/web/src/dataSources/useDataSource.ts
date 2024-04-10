@@ -3,7 +3,7 @@ import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { useForeverQuery } from "reactjrx"
 
 export const useDataSource = (id: string) =>
-useForeverQuery({
+  useForeverQuery({
     queryKey: ["rxdb", "dataSource", id],
     queryFn: () =>
       latestDatabase$.pipe(

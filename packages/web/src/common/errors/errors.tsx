@@ -71,5 +71,3 @@ export class ServerError extends Error {
     this.errors = errors
   }
 }
-
-

@@ -1,51 +1,51 @@
 import { useEffect, useRef } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useLocation } from "react-router-dom"
 import { ROUTES } from "../constants"
 import {
   hasOpenedReaderAlreadyStateSignal,
   bookBeingReadStateSignal
 } from "./states"
-import { SIGNAL_RESET, useSignalValue } from "reactjrx"
-import { createDialog } from "../common/dialogs/createDialog"
+import { useSignalValue } from "reactjrx"
+import { useBook } from "../books/states"
+import { getMetadataFromBook } from "../books/getMetadataFromBook"
+import { useCreateBackToBookDialog } from "./useCreateBackToBookDialog"
 
 const BASE_READER_ROUTE = ROUTES.READER.replace(`/:id`, ``)
 
 export const BackToReadingDialog = () => {
   const isOpen = useRef(false)
   const bookBeingRead = useSignalValue(bookBeingReadStateSignal)
+  const { data: book, isSuccess } = useBook({ id: bookBeingRead })
+  const { title } = getMetadataFromBook(book)
   const hasOpenedReaderAlready = useSignalValue(
     hasOpenedReaderAlreadyStateSignal
   )
-  const navigate = useNavigate()
   const location = useLocation()
+
+  const { mutate } = useCreateBackToBookDialog()
 
   useEffect(() => {
     if (
       isOpen.current ||
       hasOpenedReaderAlready ||
       !bookBeingRead ||
-      location.pathname.startsWith(BASE_READER_ROUTE)
+      location.pathname.startsWith(BASE_READER_ROUTE) ||
+      !isSuccess
     ) {
       return
     }
 
     isOpen.current = true
 
-    createDialog({
-      title: `Take me back to my book`,
-      content: `It looks like you were reading a book last time you used the app. Do you want to go back to reading?`,
-      cancellable: true,
-      onConfirm: () => {
-        navigate(ROUTES.READER.replace(":id", bookBeingRead))
-        isOpen.current = false
-      },
-      onCancel: () => {},
-      onClose: () => {
-        bookBeingReadStateSignal.setValue(SIGNAL_RESET)
-        isOpen.current = false
-      }
-    })
-  }, [bookBeingRead, location, navigate, hasOpenedReaderAlready])
+    mutate({ bookId: bookBeingRead, title })
+  }, [
+    bookBeingRead,
+    location,
+    hasOpenedReaderAlready,
+    title,
+    mutate,
+    isSuccess
+  ])
 
   return null
 }
