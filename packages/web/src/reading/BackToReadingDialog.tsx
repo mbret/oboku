@@ -12,6 +12,7 @@ import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { from, switchMap } from "rxjs"
 import { CancelError } from "../common/errors/errors"
 import { catchCancelError } from "../common/errors/catchCancelError"
+import { ReadingStateState } from "@oboku/shared"
 
 const BASE_READER_ROUTE = ROUTES.READER.replace(`/:id`, ``)
 
@@ -39,7 +40,11 @@ export const BackToReadingDialog = memo(
 
             return book$.pipe(
               switchMap((book) => {
-                if (!book) throw new CancelError()
+                if (
+                  !book ||
+                  book.readingStateCurrentState === ReadingStateState.Finished
+                )
+                  throw new CancelError()
 
                 const { title } = getMetadataFromBook(book.toJSON())
 
