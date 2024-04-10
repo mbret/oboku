@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { memo, useEffect, useRef } from "react"
 import { useLocation } from "react-router-dom"
 import { ROUTES } from "../constants"
 import {
@@ -12,8 +12,7 @@ import { useCreateBackToBookDialog } from "./useCreateBackToBookDialog"
 
 const BASE_READER_ROUTE = ROUTES.READER.replace(`/:id`, ``)
 
-export const BackToReadingDialog = () => {
-  const isOpen = useRef(false)
+export const BackToReadingDialog = memo(() => {
   const bookBeingRead = useSignalValue(bookBeingReadStateSignal)
   const { data: book, isSuccess } = useBook({ id: bookBeingRead })
   const { title } = getMetadataFromBook(book)
@@ -22,11 +21,11 @@ export const BackToReadingDialog = () => {
   )
   const location = useLocation()
 
-  const { mutate } = useCreateBackToBookDialog()
+  const { mutate, submittedAt } = useCreateBackToBookDialog()
 
   useEffect(() => {
     if (
-      isOpen.current ||
+      submittedAt ||
       hasOpenedReaderAlready ||
       !bookBeingRead ||
       location.pathname.startsWith(BASE_READER_ROUTE) ||
@@ -35,8 +34,6 @@ export const BackToReadingDialog = () => {
       return
     }
 
-    isOpen.current = true
-
     mutate({ bookId: bookBeingRead, title })
   }, [
     bookBeingRead,
@@ -44,8 +41,9 @@ export const BackToReadingDialog = () => {
     hasOpenedReaderAlready,
     title,
     mutate,
-    isSuccess
+    isSuccess,
+    submittedAt
   ])
 
   return null
-}
+})
