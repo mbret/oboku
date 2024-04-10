@@ -23,27 +23,20 @@ export const BackToReadingDialog = memo(() => {
 
   const { mutate, submittedAt } = useCreateBackToBookDialog()
 
+  const shouldIgnore =
+    submittedAt ||
+    hasOpenedReaderAlready ||
+    !bookBeingRead ||
+    location.pathname.startsWith(BASE_READER_ROUTE) ||
+    !isSuccess
+
   useEffect(() => {
-    if (
-      submittedAt ||
-      hasOpenedReaderAlready ||
-      !bookBeingRead ||
-      location.pathname.startsWith(BASE_READER_ROUTE) ||
-      !isSuccess
-    ) {
+    if (shouldIgnore) {
       return
     }
 
     mutate({ bookId: bookBeingRead, title })
-  }, [
-    bookBeingRead,
-    location,
-    hasOpenedReaderAlready,
-    title,
-    mutate,
-    isSuccess,
-    submittedAt
-  ])
+  }, [bookBeingRead, title, mutate, shouldIgnore])
 
   return null
 })
