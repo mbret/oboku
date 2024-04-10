@@ -1,4 +1,11 @@
-import { Box, Container, List, ListItem, ListItemText, Stack } from "@mui/material"
+import {
+  Box,
+  Container,
+  List,
+  ListItem,
+  ListItemText,
+  Stack
+} from "@mui/material"
 import { TagsRow } from "./TagsRow"
 import { DescriptionRow } from "./DescriptionRow"
 import { MetadataItemList } from "./MetadataItemList"

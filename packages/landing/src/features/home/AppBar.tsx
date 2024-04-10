@@ -92,7 +92,6 @@ export default function AppBar() {
           variant="outlined"
           elevation={0}
           color="transparent"
-          
           style={{
             border: "none",
             backgroundColor: "white"
@@ -141,7 +140,11 @@ export default function AppBar() {
           </Toolbar>
         </MuiAppBar>
       </Box>
-      <SwipeableDrawer open={open} onOpen={toggleDrawer(true)} onClose={toggleDrawer(false)}>
+      <SwipeableDrawer
+        open={open}
+        onOpen={toggleDrawer(true)}
+        onClose={toggleDrawer(false)}
+      >
         {DrawerList}
       </SwipeableDrawer>
     </>

@@ -30,7 +30,9 @@ export const MetadataItemList = ({
         )}
       </Stack>
       <Stack flexDirection="row" gap={1}>
-        {!values?.length && <Typography variant="caption">{emptyLabel}</Typography>}
+        {!values?.length && (
+          <Typography variant="caption">{emptyLabel}</Typography>
+        )}
         {values?.map((item, index) => (
           <Chip
             label={item ?? "unknown"}

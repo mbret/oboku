@@ -56,18 +56,13 @@ export const LoginScreen = () => {
         <Box mt={2}>
           <Alert severity="info" variant="outlined">
             Want more choices? Please let us know on{" "}
-            <Link href={links.discord} >
-              discord
-            </Link>
+            <Link href={links.discord}>discord</Link>
           </Alert>
         </Box>
         <OrDivider title="more" />
         <Typography textAlign="center">
-          Visit{" "}
-          <Link href={links.site} >
-            oboku
-          </Link>{" "}
-          for more information or help
+          Visit <Link href={links.site}>oboku</Link> for more information or
+          help
         </Typography>
       </Stack>
     </Stack>

@@ -18,7 +18,7 @@ type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0] & {
 }
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
-const logger = Logger.child({module: "sync.books"})
+const logger = Logger.child({ module: "sync.books" })
 
 function isFolder(
   item: SynchronizeAbleDataSource | SynchronizeAbleItem

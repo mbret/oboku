@@ -30,7 +30,7 @@ export default async function handler(
     path: "string"
   })
 
-  console.log({filePath})
+  console.log({ filePath })
 
   if (!filePath) {
     return res.status(400).send("")

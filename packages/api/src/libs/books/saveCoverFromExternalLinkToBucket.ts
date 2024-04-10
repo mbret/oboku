@@ -3,7 +3,7 @@ import { Logger } from "@libs/logger"
 import axios from "axios"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 
-const logger = Logger.child({module: "saveCoverFromExternalLinkToBucket"})
+const logger = Logger.child({ module: "saveCoverFromExternalLinkToBucket" })
 
 type Context = {
   userNameHex: string

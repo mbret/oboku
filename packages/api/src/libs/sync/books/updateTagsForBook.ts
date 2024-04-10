@@ -1,7 +1,7 @@
 import { Logger } from "@libs/logger"
 import { DataSourcePlugin } from "@libs/plugins/types"
 
-const logger = Logger.child({module: "sync"})
+const logger = Logger.child({ module: "sync" })
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 

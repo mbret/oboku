@@ -3,7 +3,12 @@ import { SvgIcon } from "@mui/material"
 export function DiscordMarkBlueIcon(props: any) {
   return (
     <SvgIcon {...props}>
-      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" viewBox="0 0 127.14 96.36">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="currentColor"
+        stroke="currentColor"
+        viewBox="0 0 127.14 96.36"
+      >
         <g id="图层_2" data-name="图层 2">
           <g id="Discord_Logos" data-name="Discord Logos">
             <g
