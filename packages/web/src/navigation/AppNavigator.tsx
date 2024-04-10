@@ -40,7 +40,11 @@ const BottomTabBarRouteWrapper = () => (
   </BottomTabBar>
 )
 
-export const AppNavigator = () => {
+export const AppNavigator = ({
+  isProfileHydrated
+}: {
+  isProfileHydrated: boolean
+}) => {
   const auth = useSignalValue(authStateSignal)
   const isAuthenticated = !!auth?.token
 
@@ -121,7 +125,7 @@ export const AppNavigator = () => {
       </div>
       <BookActionsDrawer />
       <CollectionActionsDrawer />
-      <BackToReadingDialog />
+      <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
       <TrackHistoryCanGoBack />
       <UnlockLibraryDialog />
     </BrowserRouter>

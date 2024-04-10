@@ -1,9 +1,8 @@
-import { SIGNAL_RESET, useMutation } from "reactjrx"
+import { useMutation } from "reactjrx"
 import { createDialog } from "../common/dialogs/createDialog"
 import { useNavigate } from "react-router-dom"
 import { ROUTES } from "../constants"
-import { finalize, map } from "rxjs"
-import { bookBeingReadStateSignal } from "./states"
+import { map } from "rxjs"
 
 export const useCreateBackToBookDialog = () => {
   const navigate = useNavigate()
@@ -17,9 +16,6 @@ export const useCreateBackToBookDialog = () => {
       }).$.pipe(
         map(() => {
           navigate(ROUTES.READER.replace(":id", bookId))
-        }),
-        finalize(() => {
-          bookBeingReadStateSignal.setValue(SIGNAL_RESET)
         })
       )
   })

@@ -87,7 +87,7 @@ export function App() {
                         <Box height="100%">
                           <DialogProvider>
                             <TourProvider>
-                              <AppNavigator />
+                              <AppNavigator isProfileHydrated={isProfileHydrated} />
                               <FirstTimeExperienceTours />
                               <ManageBookCollectionsDialog />
                               <ManageBookTagsDialog />
