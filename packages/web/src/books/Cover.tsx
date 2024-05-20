@@ -3,9 +3,7 @@ import { useMountedState } from "react-use"
 import placeholder from "../assets/cover-placeholder.png"
 import { useTheme } from "@mui/material"
 import { useBook } from "./states"
-import {
-  useBlurredTagIds,
-} from "../tags/helpers"
+import { useBlurredTagIds } from "../tags/helpers"
 import { useCSS } from "../common/utils"
 import { API_URI } from "../constants"
 import { useLocalSettings } from "../settings/states"

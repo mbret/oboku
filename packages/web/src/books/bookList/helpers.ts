@@ -24,8 +24,7 @@ export const useDefaultItemClickHandler = () => {
 
       const item = getEnrichedBookState({
         bookId: id,
-        normalizedBookDownloadsState:
-          booksDownloadStateSignal.getValue(),
+        normalizedBookDownloadsState: booksDownloadStateSignal.getValue(),
         protectedTagIds: db ? await getProtectedTags(db) : [],
         tags: db ? await getTagsByIds(db) : {},
         normalizedLinks,

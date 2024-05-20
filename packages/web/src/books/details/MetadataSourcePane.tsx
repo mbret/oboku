@@ -25,7 +25,12 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const plugin = getPluginFromType(link?.type)
-  const types: BookMetadata["type"][] = ["user", "file", "googleBookApi", "link"]
+  const types: BookMetadata["type"][] = [
+    "user",
+    "file",
+    "googleBookApi",
+    "link"
+  ]
 
   return (
     <>

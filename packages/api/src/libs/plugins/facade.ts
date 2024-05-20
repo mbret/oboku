@@ -1,8 +1,4 @@
-import {
-  LinkDocType,
-  ObokuErrorCode,
-  ObokuSharedError,
-} from "@oboku/shared"
+import { LinkDocType, ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { createHelpers } from "./helpers"
 import { synchronizeFromDataSource } from "../sync/synchronizeFromDataSource"
 import createNano from "nano"

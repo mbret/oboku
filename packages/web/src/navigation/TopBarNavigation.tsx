@@ -40,11 +40,7 @@ export const TopBarNavigation: FC<{
     const navigate = useNavigate()
 
     return (
-      <AppBar
-        position={position}
-        elevation={0}
-        color={color}
-      >
+      <AppBar position={position} elevation={0} color={color}>
         <Toolbar>
           <>
             {showBack && (

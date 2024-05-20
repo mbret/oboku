@@ -68,7 +68,7 @@ export const createHelpers = (
     // addTagsFromNameToBook: (bookId: string, tagNames: string[]) => addTagsFromNameToBook(db, bookId, tagNames),
     getOrCreateTagFromName: (name: string) => getOrCreateTagFromName(db, name),
     addLinkToBook: (bookId: string, linkId: string) =>
-      addLinkToBook(db, bookId, linkId),
+      addLinkToBook(db, bookId, linkId)
   }
 
   return helpers

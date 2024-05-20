@@ -88,7 +88,10 @@ export const SyncSourcesScreen = () => {
                     syncSource?.syncStatus === "fetching" ? (
                       "Syncing..."
                     ) : syncSource?.lastSyncErrorCode ? (
-                      <Box component="span" style={{ flexDirection: "row", display: "flex" }}>
+                      <Box
+                        component="span"
+                        style={{ flexDirection: "row", display: "flex" }}
+                      >
                         <Error
                           fontSize="small"
                           style={{ marginRight: theme.spacing(1) }}

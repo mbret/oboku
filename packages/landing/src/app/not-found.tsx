@@ -1,7 +1,6 @@
 import { Stack, Typography } from "@mui/material"
 
 export default async function NotFound() {
-
   return (
     <Stack minHeight="60vh" alignItems="center" justifyContent="center">
       <Typography

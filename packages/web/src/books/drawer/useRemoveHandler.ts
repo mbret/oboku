@@ -1,7 +1,7 @@
 import { getBookById, useRemoveBook } from "../helpers"
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/useCreateDatabase"
-import { from, map, mergeMap, of, tap } from "rxjs"
+import { catchError, finalize, from, map, mergeMap, of, tap } from "rxjs"
 import { isRemovableFromDataSource } from "../../links/isRemovableFromDataSource"
 import { getDataSourcePlugin } from "../../dataSources/getDataSourcePlugin"
 import { getLinkById } from "../../links/helpers"
@@ -75,7 +75,7 @@ export const useRemoveHandler = (
                       deleteFromDataSource: deleteFromDataSource
                     })
                   ).pipe(
-                    tap(() => {
+                    finalize(() => {
                       unlock()
                     })
                   )

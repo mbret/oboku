@@ -45,7 +45,13 @@ export type CollectionMetadata = {
    * priority order:
    * [user, file, ..., link]
    */
-  type: "googleBookApi" | "link" | "user" | "biblioreads" | "comicvine" | "mangaupdates"
+  type:
+    | "googleBookApi"
+    | "link"
+    | "user"
+    | "biblioreads"
+    | "comicvine"
+    | "mangaupdates"
 }
 
 export const COLLECTION_METADATA_LOCK_MN = 5

@@ -14,8 +14,10 @@ const extractLanguage = (
   return null
 }
 
-const normalizeDate = (date: NonNullable<NonNullable<OPF['package']>['metadata']>['dc:date']) => {
-  if (!date) return {year: undefined, month: undefined, day: undefined}
+const normalizeDate = (
+  date: NonNullable<NonNullable<OPF["package"]>["metadata"]>["dc:date"]
+) => {
+  if (!date) return { year: undefined, month: undefined, day: undefined }
 
   if (typeof date === "string") return extractDateComponents(date)
 

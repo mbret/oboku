@@ -39,7 +39,7 @@ export default function RootLayout({
         <CssBaseline />
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
-            <Stack >
+            <Stack>
               <AppBar />
               {children}
               <Footer />

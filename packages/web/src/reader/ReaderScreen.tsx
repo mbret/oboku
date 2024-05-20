@@ -21,14 +21,17 @@ export const ReaderScreen: FC<{}> = () => {
   useWakeLock()
   useFullscreenAutoSwitch()
 
-  useEffect(() => () => {
-    ;[
-      isBookReadyStateSignal,
-      manifestStateSignal,
-      isMenuShownStateSignal,
-      readerStateSignal
-    ].forEach((signal) => signal.setValue(SIGNAL_RESET))
-  }, [])
+  useEffect(
+    () => () => {
+      ;[
+        isBookReadyStateSignal,
+        manifestStateSignal,
+        isMenuShownStateSignal,
+        readerStateSignal
+      ].forEach((signal) => signal.setValue(SIGNAL_RESET))
+    },
+    []
+  )
 
   return (
     <>

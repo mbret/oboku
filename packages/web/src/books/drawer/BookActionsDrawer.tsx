@@ -259,6 +259,7 @@ export const BookActionsDrawer = memo(() => {
               !isLocal && (
                 <ListItemButton
                   onClick={() => {
+                    handleClose()
                     bookId && removeDownloadFile(bookId)
                   }}
                 >

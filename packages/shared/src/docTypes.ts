@@ -30,7 +30,7 @@ export type LinkDocType = CommonBase & {
    */
   resourceId: string
   /**
-   * Direct match to datasource id from database. This is to 
+   * Direct match to datasource id from database. This is to
    * retrieve which link is linked to datasource
    */
   dataSourceId?: string

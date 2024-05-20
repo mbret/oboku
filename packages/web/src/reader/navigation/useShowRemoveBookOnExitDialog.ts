@@ -53,7 +53,7 @@ export const useShowRemoveBookOnExitDialog = ({
             canEscape: false,
             onConfirm: () => {
               removeDownloadFile(book._id).catch(noop)
-            },
+            }
           }).$
         })
       ),

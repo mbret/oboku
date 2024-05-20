@@ -105,7 +105,9 @@ export const useCollectionsWithPrivacy = ({
   }
 }
 
-export const useVisibleCollectionIds = (options: { enabled?: boolean } = {}) => {
+export const useVisibleCollectionIds = (
+  options: { enabled?: boolean } = {}
+) => {
   const { data: collections, ...rest } = useCollectionsWithPrivacy(options)
 
   return {

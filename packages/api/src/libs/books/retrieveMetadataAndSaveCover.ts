@@ -23,7 +23,7 @@ import { isBookProtected } from "@libs/couch/isBookProtected"
 import nano from "nano"
 import { atomicUpdate } from "@libs/couch/dbHelpers"
 
-const logger = Logger.child({module: "retrieveMetadataAndSaveCover"})
+const logger = Logger.child({ module: "retrieveMetadataAndSaveCover" })
 
 export type RetrieveMetadataAndSaveCoverContext = {
   userName: string
@@ -100,7 +100,16 @@ export const retrieveMetadataAndSaveCover = async (
     const metadataList = [newLinkMetadata, ...sourcesMetadata]
 
     const { filepath: tmpFilePath, metadata: downloadMetadata } = shouldDownload
-      ? await downloadToTmpFolder(ctx, ctx.book, ctx.link)
+      ? await downloadToTmpFolder(ctx, ctx.book, ctx.link).catch((error) => {
+          /**
+           * We have several reason for failing download but the most common one
+           * is no more space left. We have about 500mb of space. In case of failure
+           * we don't fail the entire process, we just keep the file metadata
+           */
+          logger.error(error)
+
+          return { filepath: undefined, metadata: { contentType: undefined } }
+        })
       : { filepath: undefined, metadata: {} }
 
     fileToUnlink = tmpFilePath
@@ -189,8 +198,8 @@ export const retrieveMetadataAndSaveCover = async (
               )
               .sort()[0]
 
-              logger.info(`coverRelativePath`, coverRelativePath)
-              logger.info(`opfBasePath`, opfBasePath)
+        logger.info(`coverRelativePath`, coverRelativePath)
+        logger.info(`opfBasePath`, opfBasePath)
 
         metadataList.push({
           type: "file",
@@ -249,6 +258,7 @@ export const retrieveMetadataAndSaveCover = async (
     console.log(
       `Error while processing book ${ctx.book._id} ${bookNameForDebug}`
     )
+
     throw e
   } finally {
     try {
