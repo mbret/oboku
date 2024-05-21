@@ -60,7 +60,7 @@ if (import.meta.env.PROD) {
 }
 
 // An example runtime caching route for requests that aren't handled by the
-// precache, in this case same-origin .png requests like those from in public/
+// pre-cache, in this case same-origin .png requests like those from in public/
 if (import.meta.env.PROD) {
   registerRoute(
     // Add in any other file extensions or routing criteria as needed.
@@ -84,7 +84,9 @@ if (import.meta.env.PROD) {
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting()
+    self.skipWaiting().then(() => {
+      event.source?.postMessage("SKIP_WAITING_READY")
+    })
   }
 })
 
