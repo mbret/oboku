@@ -53,10 +53,16 @@ export const useBooksDic = () => {
   return { ...rest, data: data ? keyBy(data, "_id") : undefined }
 }
 
-export const useBook = ({ id }: { id?: string }) => {
+export const useBook = ({
+  id,
+  enabled = true
+}: {
+  id?: string
+  enabled?: boolean
+}) => {
   return useForeverQuery({
-    queryKey: ["rxdb", "book", id],
-    enabled: !!id,
+    queryKey: ["rxdb", "book", { id }],
+    enabled: enabled && !!id,
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap(
