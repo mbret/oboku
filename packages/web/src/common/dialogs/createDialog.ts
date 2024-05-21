@@ -1,4 +1,4 @@
-import { Observable, noop, share } from "rxjs"
+import { Observable, share, tap } from "rxjs"
 import { CancelError } from "../errors/errors"
 import { DialogType, dialogSignal } from "./state"
 
@@ -11,15 +11,19 @@ export const createDialog = <Result = undefined>(
   const id = generatedId.toString()
 
   const $ = new Observable<Result>((observer) => {
+    let isClosed = false
+
     const wrappedDialog: DialogType<Result> = {
       ...dialog,
       id,
       onCancel: () => {
+        isClosed = true
         dialog.onCancel?.()
         observer.error(new CancelError())
         observer.complete()
       },
       onConfirm: () => {
+        isClosed = true
         const data = dialog.onConfirm?.()
         observer.next(data)
         observer.complete()
@@ -29,9 +33,9 @@ export const createDialog = <Result = undefined>(
       actions: dialog.actions?.map((action) => ({
         ...action,
         onConfirm: () => {
+          isClosed = true
           const data = action.onConfirm?.()
 
-          console.log("data", data)
           observer.next(data)
           observer.complete()
 
@@ -41,9 +45,17 @@ export const createDialog = <Result = undefined>(
     }
 
     dialogSignal.setValue((old) => [...old, wrappedDialog])
-  }).pipe(share())
 
-  $.subscribe({ error: noop })
+    return () => {
+      /**
+       * Make sure to close the dialog if there are no more subscribers
+       * and if the dialog is cancellable
+       */
+      if (!isClosed && dialog.cancellable !== false) {
+        dialog.onCancel?.()
+      }
+    }
+  }).pipe(share())
 
   return { id, $ }
 }
