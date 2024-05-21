@@ -222,7 +222,8 @@ const useStyles = ({
         display: "flex",
         ...(withButtons && {
           paddingBottom: theme.spacing(2)
-        })
+        }),
+        overflow: "hidden"
       },
       bottomContainer: {
         flex: 0.2
