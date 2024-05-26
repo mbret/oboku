@@ -16,7 +16,7 @@ export const getGoogleBookMetadata = async (
     let titleRefined = refineTitle(metadata.title ?? "", 1)
 
     Logger.info(
-      `getGoogleMetadata was unable to find result for isbn:${metadata.isbn} or title:${metadata.title}. Trying to refine title with 1 deepness ${titleRefined}`
+      `getGoogleMetadata was unable to find result for isbn:${metadata.isbn} or title:${metadata.title}. Trying to refine title with 2 deepness ${titleRefined}`
     )
 
     response = await findByTitle(titleRefined, apiKey)
@@ -25,7 +25,7 @@ export const getGoogleBookMetadata = async (
       titleRefined = refineTitle(metadata.title ?? "", 2)
 
       Logger.info(
-        `getGoogleMetadata was unable to find result for ${titleRefined}. Trying to refine title with 2 deepness ${titleRefined}`
+        `getGoogleMetadata was unable to find result for ${titleRefined}. Trying to refine title with 3 deepness ${titleRefined}`
       )
 
       response = await findByTitle(titleRefined, apiKey)
@@ -35,7 +35,27 @@ export const getGoogleBookMetadata = async (
       titleRefined = refineTitle(metadata.title ?? "", 3)
 
       Logger.info(
-        `getGoogleMetadata was unable to find result for ${titleRefined}. Trying to refine title with 3 deepness ${titleRefined}`
+        `getGoogleMetadata was unable to find result for ${titleRefined}. Trying to refine title with 4 deepness ${titleRefined}`
+      )
+
+      response = await findByTitle(titleRefined, apiKey)
+    }
+
+    if (!response.items?.length) {
+      titleRefined = refineTitle(metadata.title ?? "", 4)
+
+      Logger.info(
+        `getGoogleMetadata was unable to find result for ${titleRefined}. Trying to refine title with 5 deepness ${titleRefined}`
+      )
+
+      response = await findByTitle(titleRefined, apiKey)
+    }
+
+    if (!response.items?.length) {
+      titleRefined = refineTitle(metadata.title ?? "", 5)
+
+      Logger.info(
+        `getGoogleMetadata was unable to find result for ${titleRefined}. Trying to refine title with x deepness ${titleRefined}`
       )
 
       response = await findByTitle(titleRefined, apiKey)
