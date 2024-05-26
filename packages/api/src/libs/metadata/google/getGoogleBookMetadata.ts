@@ -4,6 +4,8 @@ import { parseGoogleMetadata } from "./parseGoogleMetadata"
 import { Logger } from "@libs/logger"
 import { refineTitle } from "../refineTitle"
 
+const logger = Logger.child({ module: "getGoogleBookMetadata" })
+
 export const getGoogleBookMetadata = async (
   metadata: Metadata,
   apiKey: string
@@ -61,6 +63,10 @@ export const getGoogleBookMetadata = async (
       response = await findByTitle(titleRefined, apiKey)
     }
   }
+
+  logger.info(
+    `${response.items?.length ?? 0} found from google book API for title ${metadata.title} & isbn ${metadata.isbn}`
+  )
 
   const parsedMetadata = parseGoogleMetadata(response)
 
