@@ -35,7 +35,7 @@ export const dataSource: DataSourcePlugin = {
 
     return {
       name: response.result.name,
-      shouldDownload: true
+      canDownload: true
     }
   },
   /**

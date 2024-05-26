@@ -32,7 +32,12 @@ export const getMetadataFromCollection = (
 ): Return => {
   const list = item?.metadata ?? []
 
-  const userMetadata = item?.metadata?.find((item) => item.type === "user")
+  const userMetadata =
+    item?.metadata?.find((item) => item.type === "user") ??
+    ({
+      type: "user",
+      title: item?.name
+    } satisfies CollectionMetadata)
   const linkMetadata = item?.metadata?.find((item) => item.type === "link")
 
   const orderedList = [...list].sort((a, b) => {
