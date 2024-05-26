@@ -65,7 +65,7 @@ export const getGoogleBookMetadata = async (
   }
 
   logger.info(
-    `${response.items?.length ?? 0} found from google book API for title ${metadata.title} & isbn ${metadata.isbn}`
+    `${response.items?.length ?? 0} items found from google book API for title "${metadata.title}" & isbn "${metadata.isbn}"`
   )
 
   const parsedMetadata = parseGoogleMetadata(response)
