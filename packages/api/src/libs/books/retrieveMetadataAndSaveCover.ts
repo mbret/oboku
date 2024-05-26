@@ -57,7 +57,7 @@ export const retrieveMetadataAndSaveCover = async (
 
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
-    const { shouldDownload = false, ...linkResourceMetadata } =
+    const { canDownload = false, ...linkResourceMetadata } =
       (await pluginFacade.getMetadata({
         linkType: ctx.link.type,
         credentials: ctx.credentials,
@@ -84,6 +84,14 @@ export const retrieveMetadataAndSaveCover = async (
     )
 
     let contentType = newLinkMetadata.contentType
+    /**
+     * Not all plugins return the valid content type so
+     * we can only make some assumptions based on what we have
+     */
+    const isMaybeExtractAble =
+      contentType === undefined ||
+      (contentType &&
+        METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType))
 
     const sourcesMetadata = await getBookSourcesMetadata(
       {
@@ -99,21 +107,29 @@ export const retrieveMetadataAndSaveCover = async (
 
     const metadataList = [newLinkMetadata, ...sourcesMetadata]
 
-    const { filepath: tmpFilePath, metadata: downloadMetadata } = shouldDownload
-      ? await downloadToTmpFolder(ctx, ctx.book, ctx.link).catch((error) => {
-          /**
-           * We have several reason for failing download but the most common one
-           * is no more space left. We have about 500mb of space. In case of failure
-           * we don't fail the entire process, we just keep the file metadata
-           */
-          logger.error(error)
+    const { filepath: tmpFilePath, metadata: downloadMetadata } =
+      canDownload && isMaybeExtractAble
+        ? await downloadToTmpFolder(ctx, ctx.book, ctx.link).catch((error) => {
+            /**
+             * We have several reason for failing download but the most common one
+             * is no more space left. We have about 500mb of space. In case of failure
+             * we don't fail the entire process, we just keep the file metadata
+             */
+            logger.error(error)
 
-          return { filepath: undefined, metadata: { contentType: undefined } }
-        })
-      : { filepath: undefined, metadata: {} }
+            return { filepath: undefined, metadata: { contentType: undefined } }
+          })
+        : { filepath: undefined, metadata: {} }
 
     fileToUnlink = tmpFilePath
     contentType = downloadMetadata.contentType || contentType
+    /**
+     * At this point we have the real content-type so our assumptions
+     * are corrects.
+     */
+    const isExtractAble = contentType
+      ? METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)
+      : false
 
     console.log(
       `syncMetadata processing ${ctx.book._id}`,
@@ -124,7 +140,7 @@ export const retrieveMetadataAndSaveCover = async (
       contentType
     )
 
-    if (!shouldDownload) {
+    if (!canDownload || !isExtractAble) {
       // @todo prioritize which cover we take
       const coverLink = metadataList.find(
         (metadata) => metadata.coverLink

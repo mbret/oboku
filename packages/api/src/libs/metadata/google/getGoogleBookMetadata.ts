@@ -35,7 +35,7 @@ export const getGoogleBookMetadata = async (
       titleRefined = refineTitle(metadata.title ?? "", 3)
 
       Logger.info(
-        `getGoogleMetadata was unable to find result for ${titleRefined}. Trying to refine title with 2 deepness ${titleRefined}`
+        `getGoogleMetadata was unable to find result for ${titleRefined}. Trying to refine title with 3 deepness ${titleRefined}`
       )
 
       response = await findByTitle(titleRefined, apiKey)

@@ -51,7 +51,7 @@ export const dataSource: DataSourcePlugin = {
       name: metadata.name ?? "",
       contentType: metadata.mimeType || undefined,
       modifiedAt: metadata.modifiedTime || undefined,
-      shouldDownload: true
+      canDownload: true
     }
   },
   download: async (link, credentials) => {

@@ -17,7 +17,7 @@ export const dataSource: DataSourcePlugin = {
   getMetadata: async ({ id }) => {
     const filename = extractNameFromUri(id)
 
-    return { name: filename, shouldDownload: true }
+    return { name: filename, canDownload: true }
   },
   download: async (link) => {
     const downloadLink = extractIdFromResourceId(link.resourceId)

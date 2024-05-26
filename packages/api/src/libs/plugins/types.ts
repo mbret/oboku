@@ -80,7 +80,7 @@ export type DataSourcePlugin = {
     | {
         name?: string
         modifiedAt?: string
-        shouldDownload?: boolean
+        canDownload?: boolean
         contentType?: string
         bookMetadata?: Partial<Omit<BookMetadata, "type">>
       }

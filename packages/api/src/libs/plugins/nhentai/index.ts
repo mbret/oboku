@@ -85,7 +85,7 @@ export const plugin: DataSourcePlugin = {
        * we have nothing to download.
        * we try to return all metadata from here
        */
-      shouldDownload: false,
+      canDownload: false,
       bookMetadata: {
         languages,
         creators,
