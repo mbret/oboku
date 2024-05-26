@@ -46,7 +46,7 @@ export const findByTitle = async (name: string, apiKey: string) => {
     }
   })
 
-  console.log(response.data)
+  console.log(response)
   if (response.status === 200) {
     // Logger.info(`google findByName response`, response.data)
 
