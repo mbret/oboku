@@ -335,22 +335,3 @@ export const books$ = latestDatabase$.pipe(
   switchMap((database) => database?.book.find({}).$)
 )
 
-export const visibleBooks$ = books$.pipe(
-  withLatestFrom(protectedTags$),
-  withLatestFrom(libraryStateSignal.subject),
-  map(([[books = [], protectedTags], libraryState]) =>
-    books.filter(({ tags }) => {
-      if (
-        !libraryState.isLibraryUnlocked &&
-        intersection(
-          protectedTags.map(({ _id }) => _id),
-          tags
-        ).length
-      ) {
-        return false
-      }
-
-      return true
-    })
-  )
-)

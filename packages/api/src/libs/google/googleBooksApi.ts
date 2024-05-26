@@ -34,6 +34,9 @@ export const findByISBN = async (isbn: string, apiKey: string) => {
 }
 
 export const findByTitle = async (name: string, apiKey: string) => {
+  // @tmp
+  console.log(`${GOOGLE_BOOK_API_URL}/volumes?q=intitle:${name}&key=${apiKey}`)
+
   const response = await performWithBackoff({
     asyncFunction: () =>
       axios.get<GoogleBooksApiResult>(
