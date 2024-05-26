@@ -3,7 +3,8 @@ export const READER_ACCEPTED_EXTENSIONS = {
   "application/x-cbz": [".cbz"],
   "application/zip": [".epub"],
   "application/epub+zip": [".epub"],
-  "application/x-cbr": [".cbr"]
+  "application/x-cbr": [".cbr"],
+  "application/x-rar": [".cbr"]
 }
 export const READER_SUPPORTED_MIME_TYPES = Object.keys(
   READER_ACCEPTED_EXTENSIONS
