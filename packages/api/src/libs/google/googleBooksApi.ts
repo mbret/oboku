@@ -34,20 +34,19 @@ export const findByISBN = async (isbn: string, apiKey: string) => {
 }
 
 export const findByTitle = async (name: string, apiKey: string) => {
-  // @tmp
-  console.log(`${GOOGLE_BOOK_API_URL}/volumes?q=intitle:${encodeURIComponent(name)}&key=${apiKey}`)
+  const uri = `${GOOGLE_BOOK_API_URL}/volumes?q=intitle:${encodeURIComponent(name)}&key=${apiKey}`
+
+  console.log(uri)
 
   const response = await performWithBackoff({
-    asyncFunction: () =>
-      axios.get<GoogleBooksApiResult>(
-        `${GOOGLE_BOOK_API_URL}/volumes?q=intitle:${encodeURIComponent(name)}&key=${apiKey}`
-      ),
+    asyncFunction: () => axios.get<GoogleBooksApiResult>(uri),
     retry: (error: unknown) => {
       // we retry on Too many request error
       return isAxiosError(error) && error.response?.status === 429
     }
   })
 
+  console.log(response.data)
   if (response.status === 200) {
     // Logger.info(`google findByName response`, response.data)
 
