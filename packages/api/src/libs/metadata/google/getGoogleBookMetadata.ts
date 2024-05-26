@@ -10,12 +10,13 @@ export const getGoogleBookMetadata = async (
   metadata: Metadata,
   apiKey: string
 ): Promise<Metadata | undefined> => {
+  let titleRefined = metadata.title ?? ""
   let response = metadata.isbn
     ? await findByISBN(metadata.isbn, apiKey)
-    : await findByTitle(metadata.title ?? "", apiKey)
+    : await findByTitle(titleRefined, apiKey)
 
   if (!response.items?.length) {
-    let titleRefined = refineTitle(metadata.title ?? "", 1)
+    titleRefined = refineTitle(metadata.title ?? "", 1)
 
     Logger.info(
       `getGoogleMetadata was unable to find result for isbn:${metadata.isbn} or title:${metadata.title}. Trying to refine title with 2 deepness ${titleRefined}`
@@ -65,7 +66,7 @@ export const getGoogleBookMetadata = async (
   }
 
   logger.info(
-    `${response.items?.length ?? 0} items found from google book API for title "${metadata.title}" & isbn "${metadata.isbn}"`
+    `${response.items?.length ?? 0} items found from google book API for title "${metadata.title}" & isbn "${metadata.isbn}" thanks to refined title "${titleRefined}"`
   )
 
   const parsedMetadata = parseGoogleMetadata(response)
