@@ -9,7 +9,8 @@ import {
 import { Scrubber } from "../Scrubber"
 import { DoubleArrowRounded } from "@mui/icons-material"
 import { FloatingBottom } from "../FloatingBottom"
-import { useSignalValue } from "reactjrx"
+import { useObserve, useSignalValue } from "reactjrx"
+import { NEVER } from "rxjs"
 
 export const BottomBar = () => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
@@ -17,6 +18,7 @@ export const BottomBar = () => {
   const isLoading = !isBookReady
   const theme = useTheme()
   const reader = useSignalValue(readerStateSignal)
+  const navigation = useObserve(reader?.navigation.state$ ?? NEVER)
   const { data: pagination } = usePagination()
   // const showScrubber = (totalPages || 1) > 1
   const showScrubber = true
@@ -70,9 +72,9 @@ export const BottomBar = () => {
             <IconButton
               color="inherit"
               style={{ transform: `rotateY(180deg)` }}
-              disabled={!pagination?.canGoLeft}
+              disabled={!navigation?.canGoLeftSpineItem}
               onClick={(_) => {
-                reader?.goToLeftSpineItem()
+                reader?.navigation.goToLeftSpineItem()
               }}
               size="large"
             >
@@ -91,9 +93,9 @@ export const BottomBar = () => {
             </div>
             <IconButton
               color="inherit"
-              disabled={!pagination?.canGoRight}
+              disabled={!navigation?.canGoRightSpineItem}
               onClick={(_) => {
-                reader?.goToRightSpineItem()
+                reader?.navigation.goToRightSpineItem()
               }}
               size="large"
             >

@@ -102,7 +102,10 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
           </svg>
         </div>
         <div style={styles.container}>
-          <div style={styles.carouselContainer}>
+          <div
+            style={styles.carouselContainer}
+            className="app-tour-carousel-container"
+          >
             {stepContents.length > 0 && (
               <Carousel
                 swipeable={true}
@@ -127,17 +130,21 @@ export const TourContent: React.FC<Props> = ({ id, unskippable, onClose }) => {
                 className={classes.carouselInner}
               >
                 {stepContents.map((stepContent, index) => (
-                  <div key={index} style={styles.stepContainer}>
-                    {typeof stepContent !== "function" && stepContent}
-                    {typeof stepContent === "function" &&
-                      stepContent({
-                        onClose,
-                        spotlightMeasures:
-                          tours[id]?.steps[index + 1]?.measures,
-                        spotlightSize: getSpotlightSize(
-                          tours[id]?.steps[index + 1]
-                        )
-                      })}
+                  <div
+                    key={index}
+                    style={styles.stepContainer}
+                    className="app-tour-step-content-wrapper"
+                  >
+                    {typeof stepContent !== "function"
+                      ? stepContent
+                      : stepContent({
+                          onClose,
+                          spotlightMeasures:
+                            tours[id]?.steps[index + 1]?.measures,
+                          spotlightSize: getSpotlightSize(
+                            tours[id]?.steps[index + 1]
+                          )
+                        })}
                   </div>
                 ))}
               </Carousel>

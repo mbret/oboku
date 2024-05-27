@@ -22,7 +22,6 @@ import { BookLoading } from "./BookLoading"
 import Hammer from "hammerjs"
 import { useCSS } from "../common/utils"
 import { Reader as ObokuReader } from "@prose-reader/react"
-import { useManifest } from "./manifest"
 import { useRarStreamer } from "./streamer/useRarStreamer.shared"
 import { useUpdateBookState } from "./bookHelpers"
 import { FloatingBottom } from "./FloatingBottom"
@@ -32,6 +31,8 @@ import { Notification } from "./Notification"
 import { useReaderSettingsState } from "./settings/states"
 import { useSignalValue } from "reactjrx"
 import { getMetadataFromBook } from "../books/getMetadataFromBook"
+import { useManifest } from "./manifest/useManifest"
+import { FileNotSupportedError } from "./errors.shared"
 
 export const Reader: FC<{
   bookId: string
@@ -54,7 +55,11 @@ export const Reader: FC<{
   const [loadOptions, setLoadOptions] = useState<
     ReactReaderProps["loadOptions"] | undefined
   >()
-  const { manifest, isRarFile, error: manifestError } = useManifest(bookId)
+  const {
+    data: manifest,
+    isRarFile,
+    error: manifestError
+  } = useManifest(bookId)
   const { fetchResource } = useRarStreamer(isRarFile ? bookId : undefined)
   const [readerOptions, setReaderOptions] = useState<
     ReactReaderProps["options"] | undefined
@@ -93,7 +98,7 @@ export const Reader: FC<{
       setReaderOptions({
         forceSinglePageMode: true,
         numberOfAdjacentSpineItemToPreLoad:
-          manifest.renditionLayout === "pre-paginated" ? 1 : 0,
+          manifest.renditionLayout === "pre-paginated" ? 3 : 1,
         hammerGesture: {
           enableFontScalePinch: true,
           fontScaleMax: FONT_SCALE_MAX,
@@ -119,7 +124,7 @@ export const Reader: FC<{
   const metadata = getMetadataFromBook(book)
 
   if (isBookError) {
-    if (manifestError?.code === "fileNotSupported") {
+    if (manifestError instanceof FileNotSupportedError) {
       return (
         <div style={styles.infoContainer}>
           <Box mb={2}>
