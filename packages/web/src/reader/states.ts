@@ -1,5 +1,5 @@
 import { createReader, Manifest } from "@prose-reader/core"
-import { EMPTY, filter, map, of, switchMap, tap } from "rxjs"
+import { filter, switchMap } from "rxjs"
 import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
 import { Props as GenericReactReaderProps } from "@prose-reader/react"
 import { isDefined, signal, useForeverQuery, useSignalValue } from "reactjrx"
@@ -41,18 +41,18 @@ export const usePagination = () =>
     queryFn: () => {
       return readerStateSignal.subject.pipe(
         filter(isDefined),
-        switchMap((reader) => reader.pagination$)
+        switchMap((reader) => reader.pagination.paginationInfo$)
       )
     }
   })
 
 export const useCurrentPage = () => {
   const reader = useSignalValue(readerStateSignal)
-  const { data: { beginPageIndexInChapter, beginSpineItemIndex } = {} } =
+  const { data: { beginPageIndexInSpineItem, beginSpineItemIndex } = {} } =
     usePagination()
   const { renditionLayout } = reader?.context.getManifest() ?? {}
 
-  if (renditionLayout === "reflowable") return beginPageIndexInChapter
+  if (renditionLayout === "reflowable") return beginPageIndexInSpineItem
 
   return beginSpineItemIndex
 }
@@ -60,10 +60,10 @@ export const useCurrentPage = () => {
 export const useTotalPage = () => {
   const reader = useSignalValue(readerStateSignal)
   const { renditionLayout } = reader?.context.getManifest() ?? {}
-  const { data: { numberOfTotalPages, beginNumberOfPagesInChapter } = {} } =
+  const { data: { numberOfTotalPages, beginNumberOfPagesInSpineItem } = {} } =
     usePagination()
 
-  if (renditionLayout === "reflowable") return beginNumberOfPagesInChapter
+  if (renditionLayout === "reflowable") return beginNumberOfPagesInSpineItem
 
   return numberOfTotalPages
 }
