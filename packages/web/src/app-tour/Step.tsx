@@ -8,6 +8,7 @@ import React, {
 } from "react"
 import { useMeasure } from "react-use"
 import { Step as StepType, TourContext, TourKey } from "./TourContext"
+import { Box } from "@mui/material"
 
 export const Step: React.FC<{
   number: number
@@ -97,7 +98,8 @@ export const Step: React.FC<{
     ])
 
     return (
-      <div
+      <Box
+        className="app-tour-step-wrapper"
         // {...{
         //   ...!hasChildren && {
         //     ref: registerRef
@@ -116,7 +118,7 @@ export const Step: React.FC<{
         }
         return child
       })} */}
-      </div>
+      </Box>
     )
   }
 )
