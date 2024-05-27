@@ -5,12 +5,11 @@ import {
 } from "@prose-reader/streamer"
 import { STREAMER_URL_PREFIX } from "../../constants.shared"
 import {
-  FileNotFoundError,
-  FileNotSupportedError,
   loadBook
 } from "./loadBook.sw"
 import { getResourcePathFromUrl } from "./getResourcePathFromUrl.shared"
 import { getManifestBaseUrl } from "./getManifestBaseUrl.shared"
+import { FileNotFoundError, FileNotSupportedError } from "../errors.shared"
 
 export const readerFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)

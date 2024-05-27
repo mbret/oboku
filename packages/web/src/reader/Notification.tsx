@@ -32,6 +32,8 @@ const useNotification = () =>
 export const Notification = memo(() => {
   const { data: notification } = useNotification()
 
+  if (notification?.type !== "fontScaleChange") return null
+
   return (
     <Snackbar
       anchorOrigin={{ vertical: "bottom", horizontal: "center" }}

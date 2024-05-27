@@ -10,7 +10,7 @@ export const usePersistReaderInstanceSettings = () => {
     () =>
       !reader
         ? EMPTY
-        : reader?.settings$.pipe(
+        : reader?.settings.settings$.pipe(
             tap((settings) => {
               setReaderSettingsState((state) => ({
                 ...state,

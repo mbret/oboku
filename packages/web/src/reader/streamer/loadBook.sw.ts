@@ -2,9 +2,7 @@ import { Archive } from "@prose-reader/streamer"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { Report } from "../../debug/report.shared"
 import { getArchiveForZipFile } from "./getArchiveForFile.shared"
-
-export class FileNotFoundError extends Error {}
-export class FileNotSupportedError extends Error {}
+import { FileNotFoundError, FileNotSupportedError } from "../errors.shared"
 
 let loading = false
 let archive: Archive | undefined = undefined

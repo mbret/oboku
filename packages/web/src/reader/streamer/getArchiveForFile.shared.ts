@@ -73,7 +73,7 @@ export const getArchiveForZipFile = async (
 export const getArchiveForRarFile = async (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>
 ) => {
-  return new Promise<Archive>((masterResolve, reject) => {
+  const res = await new Promise<Archive>((masterResolve, reject) => {
     try {
       // @ts-ignore
       loadArchiveFormats(["rar"], async () => {
@@ -109,4 +109,6 @@ export const getArchiveForRarFile = async (
       return reject(e)
     }
   })
+
+  return res
 }
