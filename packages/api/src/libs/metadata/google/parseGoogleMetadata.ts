@@ -12,10 +12,14 @@ export const parseGoogleMetadata = (
 
     if (!item) return {}
 
-    coverLink = item.volumeInfo.imageLinks?.thumbnail?.replace(
-      "zoom=1",
-      "zoom=2"
-    )
+    // lookup highest required resolution
+    const imageLinks = item.volumeInfo.imageLinks ?? {}
+    coverLink =
+      imageLinks["large"] ??
+      imageLinks["medium"] ??
+      imageLinks["thumbnail"] ??
+      imageLinks["small"] ??
+      imageLinks["smallThumbnails"]
 
     let title = item.volumeInfo.title
 

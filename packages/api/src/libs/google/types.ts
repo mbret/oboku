@@ -19,7 +19,13 @@ export type Item = {
     averageRating?: number
     readingModes?: ReadingMode[]
     description?: string
-    imageLinks?: { thumbnail?: string; smallThumbnails?: string }
+    imageLinks?: {
+      thumbnail?: string
+      smallThumbnails?: string
+      small?: string
+      medium?: string
+      large?: string
+    }
     maturityRating?: "NOT_MATURE"
     seriesInfo?: {
       bookDisplayNumber?: string // number as string
