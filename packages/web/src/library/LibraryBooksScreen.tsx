@@ -21,7 +21,6 @@ import {
 import { LibraryFiltersDrawer } from "./LibraryFiltersDrawer"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import { useCSS, useMeasureElement } from "../common/utils"
-import { LibraryViewMode } from "../rxdb"
 import {
   libraryStateSignal,
   isUploadBookDrawerOpenedStateSignal
@@ -161,9 +160,9 @@ export const LibraryBooksScreen = () => {
             libraryStateSignal.setValue((state) => ({
               ...state,
               viewMode:
-                library.viewMode === LibraryViewMode.GRID
-                  ? LibraryViewMode.LIST
-                  : LibraryViewMode.GRID
+                library.viewMode === "grid"
+                  ? "list"
+                  : "grid"
             }))
           }}
           size="large"

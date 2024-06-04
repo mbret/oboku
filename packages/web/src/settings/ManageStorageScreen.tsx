@@ -15,7 +15,6 @@ import {
 } from "@mui/material"
 import { DeleteRounded, StorageRounded } from "@mui/icons-material"
 import { useStorageUse } from "./useStorageUse"
-import { LibraryViewMode } from "../rxdb"
 import { BookList } from "../books/bookList/BookList"
 import {
   useDownloadedBookWithUnsafeProtectedIdsState,
@@ -140,7 +139,7 @@ export const ManageStorageScreen = () => {
       )}
       <Divider />
       <BookList
-        viewMode={LibraryViewMode.LIST}
+        viewMode={"list"}
         data={bookIdsToDisplay}
         density="dense"
         withBookActions={false}

@@ -3,12 +3,12 @@ import { Box, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { BookListGridItem } from "./BookListGridItem"
 import { LibrarySorting } from "../../library/states"
-import { LibraryViewMode } from "../../rxdb"
 import { BookListListItem } from "./BookListListItem"
 import { ReactWindowList } from "../../common/lists/ReactWindowList"
+import { BookListViewMode } from "./types"
 
 export const BookList: FC<{
-  viewMode?: "grid" | "list"
+  viewMode?: BookListViewMode
   renderHeader?: () => React.ReactNode
   headerHeight?: number
   sorting?: LibrarySorting
@@ -48,7 +48,7 @@ export const BookList: FC<{
     (windowSize.width > theme.breakpoints.values["sm"] ? 20 : 10) *
     densityMultiplier
   const itemHeight =
-    viewMode === LibraryViewMode.GRID
+    viewMode === "grid"
       ? undefined
       : ((windowSize.width > theme.breakpoints.values["sm"] ? 200 : 150) *
           theme.custom.coverAverageRatio +
@@ -59,7 +59,7 @@ export const BookList: FC<{
 
   const rowRenderer = useCallback(
     (item: string, _: number, isLast: boolean) => {
-      return viewMode === LibraryViewMode.GRID ? (
+      return viewMode === "grid" ? (
         <BookListGridItem bookId={item} />
       ) : (
         <Box

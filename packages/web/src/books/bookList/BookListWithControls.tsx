@@ -1,17 +1,26 @@
-import React, { ComponentProps, FC, useState } from "react"
+import React, { ComponentProps, FC } from "react"
 import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { useBookIdsSortedBy } from "../helpers"
 import { BookList } from "./BookList"
+import { BookListViewMode } from "./types"
 
 type Sorting = ComponentProps<typeof ListActionsToolbar>["sorting"]
 
 export const BookListWithControls: FC<{
   data: string[]
   renderEmptyList?: React.ReactNode
-  defaultSort?: Sorting
-}> = ({ data, renderEmptyList, defaultSort = "date" }) => {
-  const [innerViewMode, setInnerViewMode] = useState<"list" | "grid">("grid")
-  const [sorting, setSorting] = useState<Sorting>(defaultSort)
+  sorting?: Sorting
+  viewMode?: BookListViewMode
+  onViewModeChange?: (viewMode: BookListViewMode) => void
+  onSortingChange?: (viewMode: Sorting) => void
+}> = ({
+  data,
+  renderEmptyList,
+  sorting = "date",
+  viewMode = "grid",
+  onViewModeChange,
+  onSortingChange
+}) => {
   const sortedData = useBookIdsSortedBy(data, sorting)
 
   return (
@@ -25,10 +34,14 @@ export const BookListWithControls: FC<{
       }}
     >
       <ListActionsToolbar
-        viewMode={innerViewMode}
-        onViewModeChange={setInnerViewMode}
+        viewMode={viewMode}
+        onViewModeChange={(value) => {
+          onViewModeChange && onViewModeChange(value)
+        }}
         sorting={sorting}
-        onSortingChange={setSorting}
+        onSortingChange={(value) => {
+          onSortingChange && onSortingChange(value)
+        }}
       />
       <div
         style={{
@@ -42,7 +55,7 @@ export const BookListWithControls: FC<{
         {sortedData.length > 0 && (
           <BookList
             data={sortedData}
-            viewMode={innerViewMode}
+            viewMode={viewMode}
             style={{ height: "100%", width: "100%" }}
           />
         )}
