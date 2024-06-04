@@ -10,11 +10,12 @@ import {
 import { SortByDialog } from "../../books/bookList/SortByDialog"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "../../library/states"
+import { BookListViewMode } from "../../books/bookList/types"
 
-type Sorting = ComponentProps<typeof SortByDialog>["value"]
+export type Sorting = ComponentProps<typeof SortByDialog>["value"]
 
 export const ListActionsToolbar: FC<{
-  viewMode?: "grid" | "list"
+  viewMode?: BookListViewMode
   sorting?: Sorting
   onViewModeChange?: (viewMode: "list" | "grid") => void
   onSortingChange?: (sorting: Sorting) => void

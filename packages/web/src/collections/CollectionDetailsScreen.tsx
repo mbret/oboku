@@ -7,15 +7,31 @@ import { useCollection } from "./states"
 import { BookListWithControls } from "../books/bookList/BookListWithControls"
 import { useVisibleBookIds } from "../books/states"
 import { useCollectionActionsDrawer } from "../library/collections/CollectionActionsDrawer/useCollectionActionsDrawer"
+import { signal, useSignalValue } from "reactjrx"
+import { BookListViewMode } from "../books/bookList/types"
+import { Sorting } from "../common/lists/ListActionsToolbar"
 
 type ScreenParams = {
   id: string
 }
 
+export const collectionDetailsScreenListControlsStateSignal = signal<{
+  viewMode?: BookListViewMode
+  sorting?: Sorting
+}>({
+  default: {
+    viewMode: "grid",
+    sorting: "alpha"
+  }
+})
+
 export const CollectionDetailsScreen = () => {
   const theme = useTheme()
   const navigate = useNavigate()
   const { id = `-1` } = useParams<ScreenParams>()
+  const { viewMode, sorting } = useSignalValue(
+    collectionDetailsScreenListControlsStateSignal
+  )
   const { data: collection } = useCollection({
     id
   })
@@ -94,7 +110,20 @@ export const CollectionDetailsScreen = () => {
           </Box>
           <BookListWithControls
             data={visibleBooks ?? []}
-            defaultSort="alpha"
+            sorting={sorting}
+            viewMode={viewMode}
+            onViewModeChange={(value) => {
+              collectionDetailsScreenListControlsStateSignal.setValue({
+                ...collectionDetailsScreenListControlsStateSignal.getValue(),
+                viewMode: value
+              })
+            }}
+            onSortingChange={(value) => {
+              collectionDetailsScreenListControlsStateSignal.setValue({
+                ...collectionDetailsScreenListControlsStateSignal.getValue(),
+                sorting: value
+              })
+            }}
             renderEmptyList={
               <div
                 style={{

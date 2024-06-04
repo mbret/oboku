@@ -57,11 +57,6 @@ if (import.meta.env.DEV) {
 addPouchPlugin(pouchDbAdapterIdb)
 addPouchPlugin(pouchDbAdapterHttp)
 
-export enum LibraryViewMode {
-  GRID = "grid",
-  LIST = "list"
-}
-
 export type DocTypes = TagsDocType | BookDocType | LinkDocType | SettingsDocType
 
 // export type BookDocumentMutation = RxDocumentMutation<BookDocument | null, Partial<BookDocument> & { tagId?: string, collectionId?: string }>
