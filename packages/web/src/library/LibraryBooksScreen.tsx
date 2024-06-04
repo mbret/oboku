@@ -16,7 +16,8 @@ import {
   ListRounded,
   SortRounded,
   NoEncryptionRounded,
-  BlurOffRounded
+  BlurOffRounded,
+  FormatListBulletedRounded
 } from "@mui/icons-material"
 import { LibraryFiltersDrawer } from "./LibraryFiltersDrawer"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
@@ -33,6 +34,7 @@ import { useTranslation } from "react-i18next"
 import { useBooks } from "./useBooks"
 import { useSignalValue } from "reactjrx"
 import { isUploadBookFromDataSourceDialogOpenedSignal } from "../upload/state"
+import { ViewModeIconButton } from "../common/lists/ListActionsToolbar"
 
 export const LibraryBooksScreen = () => {
   const styles = useStyles()
@@ -155,21 +157,15 @@ export const LibraryBooksScreen = () => {
             </IconButton>
           </div>
         )}
-        <IconButton
-          onClick={() => {
+        <ViewModeIconButton
+          viewMode={library.viewMode}
+          onViewModeChange={(value) => {
             libraryStateSignal.setValue((state) => ({
               ...state,
-              viewMode:
-                library.viewMode === "grid"
-                  ? "list"
-                  : "grid"
+              viewMode: value
             }))
           }}
-          size="large"
-          color="primary"
-        >
-          {library.viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
-        </IconButton>
+        />
       </Toolbar>
       <Box
         style={{

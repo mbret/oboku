@@ -2,6 +2,7 @@ import { ComponentProps, FC, useState } from "react"
 import { Toolbar, IconButton, useTheme, Button, Badge } from "@mui/material"
 import {
   AppsRounded,
+  FormatListBulletedRounded,
   ListRounded,
   LockOpenRounded,
   SortRounded,
@@ -14,10 +15,43 @@ import { libraryStateSignal } from "../../library/states"
 export type ListActionSorting = ComponentProps<typeof SortByDialog>["value"]
 export type ListActionViewMode = "grid" | "list" | "compact"
 
+export const ViewModeIconButton = ({
+  viewMode,
+  onViewModeChange
+}: {
+  viewMode: ListActionViewMode
+  onViewModeChange?: (viewMode: ListActionViewMode) => void
+}) => {
+  return (
+    <IconButton
+      color="primary"
+      onClick={() => {
+        const newViewMode =
+          viewMode === "compact"
+            ? "grid"
+            : viewMode === "list"
+              ? "compact"
+              : "list"
+
+        onViewModeChange?.(newViewMode)
+      }}
+      size="large"
+    >
+      {viewMode === "grid" ? (
+        <AppsRounded />
+      ) : viewMode === "list" ? (
+        <FormatListBulletedRounded />
+      ) : (
+        <ListRounded />
+      )}
+    </IconButton>
+  )
+}
+
 export const ListActionsToolbar: FC<{
   viewMode?: ListActionViewMode
   sorting?: ListActionSorting
-  onViewModeChange?: (viewMode: "list" | "grid") => void
+  onViewModeChange?: (viewMode: ListActionViewMode) => void
   onSortingChange?: (sorting: ListActionSorting) => void
   numberOfFiltersApplied?: number
   onFilterClick?: () => void
@@ -27,7 +61,7 @@ export const ListActionsToolbar: FC<{
   onSortingChange,
   sorting,
   onFilterClick,
-  numberOfFiltersApplied = 0
+  numberOfFiltersApplied = 0,
 }) => {
   const theme = useTheme()
   const library = useSignalValue(libraryStateSignal)
@@ -94,15 +128,10 @@ export const ListActionsToolbar: FC<{
           </div>
         )}
         {!!viewMode && (
-          <IconButton
-            color="primary"
-            onClick={() => {
-              onViewModeChange?.(viewMode === "grid" ? "list" : "grid")
-            }}
-            size="large"
-          >
-            {viewMode === "grid" ? <AppsRounded /> : <ListRounded />}
-          </IconButton>
+          <ViewModeIconButton
+            viewMode={viewMode}
+            onViewModeChange={onViewModeChange}
+          />
         )}
       </Toolbar>
       <SortByDialog

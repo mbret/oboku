@@ -34,9 +34,9 @@ export const BookListWithControls: FC<
       }}
     >
       <ListActionsToolbar
-        viewMode={viewMode}
+        viewMode={viewMode ?? "grid"}
         onViewModeChange={onViewModeChange}
-        sorting={sorting}
+        sorting={sorting ?? "alpha"}
         onSortingChange={onSortingChange}
       />
       <div

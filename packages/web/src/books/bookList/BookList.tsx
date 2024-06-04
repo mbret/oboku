@@ -1,4 +1,4 @@
-import React, { useCallback, FC, memo } from "react"
+import React, { useCallback, FC, memo, ReactNode } from "react"
 import { Box, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { BookListGridItem } from "./BookListGridItem"
@@ -6,6 +6,34 @@ import { LibrarySorting } from "../../library/states"
 import { BookListListItem } from "./BookListListItem"
 import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
+import { BookListCompactItem } from "./BookListCompactItem"
+import { useListItemHeight } from "./useListItemHeight"
+
+const ItemListContainer = ({
+  children,
+  isLast,
+  borders = false
+}: {
+  children: ReactNode
+  isLast: boolean
+  borders?: boolean
+}) => (
+  <Box
+    style={{
+      flex: 1,
+      alignItems: "center",
+      display: "flex",
+      height: "100%"
+    }}
+    {...(!isLast &&
+      borders && {
+        borderBottom: "1px solid",
+        borderColor: "grey.200"
+      })}
+  >
+    {children}
+  </Box>
+)
 
 export const BookList: FC<{
   viewMode?: ListActionViewMode
@@ -43,17 +71,10 @@ export const BookList: FC<{
         : dynamicNumberOfItems
       : 1
   const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
-  const densityMultiplier = density === "dense" ? 0.8 : 1
-  const listItemMargin =
-    (windowSize.width > theme.breakpoints.values["sm"] ? 20 : 10) *
-    densityMultiplier
-  const itemHeight =
-    viewMode === "grid"
-      ? undefined
-      : ((windowSize.width > theme.breakpoints.values["sm"] ? 200 : 150) *
-          theme.custom.coverAverageRatio +
-          listItemMargin) *
-        densityMultiplier
+  const { itemHeight, itemMargin } = useListItemHeight({
+    density,
+    viewMode
+  })
 
   // const rowBorderColor = theme.palette.grey[100]
 
@@ -61,29 +82,29 @@ export const BookList: FC<{
     (item: string, _: number, isLast: boolean) => {
       return viewMode === "grid" ? (
         <BookListGridItem bookId={item} />
-      ) : (
-        <Box
-          {...(!isLast &&
-            {
-              // borderBottom: `1px solid ${rowBorderColor}`
-            })}
-          style={{
-            flex: 1,
-            alignItems: "center",
-            display: "flex",
-            height: "100%"
-          }}
-        >
+      ) : viewMode === "list" ? (
+        <ItemListContainer isLast={isLast}>
           <BookListListItem
             bookId={item}
-            itemHeight={(itemHeight || 0) - listItemMargin}
+            itemHeight={(itemHeight || 0) - itemMargin}
             onItemClick={onItemClick}
             withDrawerActions={withBookActions}
+            pl={1}
           />
-        </Box>
+        </ItemListContainer>
+      ) : (
+        <ItemListContainer isLast={isLast} borders>
+          <BookListCompactItem
+            bookId={item}
+            itemHeight={(itemHeight || 0) - itemMargin}
+            onItemClick={onItemClick}
+            withDrawerActions={withBookActions}
+            pl={1}
+          />
+        </ItemListContainer>
       )
     },
-    [viewMode, itemHeight, listItemMargin, onItemClick, withBookActions]
+    [viewMode, itemHeight, itemMargin, onItemClick, withBookActions]
   )
 
   if (props.static) {
@@ -104,7 +125,7 @@ export const BookList: FC<{
   }
 
   return (
-    <Box style={style} px={isHorizontal ? 0 : 1} display="flex">
+    <Box style={style} display="flex">
       <ReactWindowList
         data={data}
         rowRenderer={rowRenderer}

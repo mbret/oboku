@@ -14,6 +14,7 @@ import { CollectionListItemList } from "./CollectionListItemList"
 import { CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
 import { useWindowSize } from "react-use"
+import { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 
 export const CollectionList: FC<
   {
@@ -22,7 +23,7 @@ export const CollectionList: FC<
     style?: React.CSSProperties
     data: string[]
     onItemClick?: (item: DeepReadonlyObject<CollectionDocType>) => void
-    viewMode?: "list" | "grid"
+    viewMode?: ListActionViewMode
     itemMode?: ComponentProps<typeof CollectionListItemList>["viewMode"]
     static?: boolean
   } & Omit<
