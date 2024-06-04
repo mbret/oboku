@@ -8,21 +8,21 @@ import { BookListWithControls } from "../books/bookList/BookListWithControls"
 import { useVisibleBookIds } from "../books/states"
 import { useCollectionActionsDrawer } from "../library/collections/CollectionActionsDrawer/useCollectionActionsDrawer"
 import { signal, useSignalValue } from "reactjrx"
-import { BookListViewMode } from "../books/bookList/types"
-import { Sorting } from "../common/lists/ListActionsToolbar"
+import { ListActionSorting, ListActionViewMode } from "../common/lists/ListActionsToolbar"
 
 type ScreenParams = {
   id: string
 }
 
 export const collectionDetailsScreenListControlsStateSignal = signal<{
-  viewMode?: BookListViewMode
-  sorting?: Sorting
+  viewMode?: ListActionViewMode
+  sorting?: ListActionSorting
 }>({
+  key: "collectionDetailsScreenListControlsStateSignal",
   default: {
     viewMode: "grid",
     sorting: "alpha"
-  }
+  },
 })
 
 export const CollectionDetailsScreen = () => {

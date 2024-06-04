@@ -1,1 +1,0 @@
-export type BookListViewMode = "grid" | "list" | "compact"

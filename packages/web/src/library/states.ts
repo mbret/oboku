@@ -1,10 +1,10 @@
 import { ReadingStateState } from "@oboku/shared"
 import { DownloadState } from "../download/states"
-import { LibraryViewMode } from "../rxdb"
 import { signal } from "reactjrx"
+import { ListActionViewMode } from "../common/lists/ListActionsToolbar"
 
 export type LibraryDocType = {
-  viewMode: LibraryViewMode
+  viewMode: ListActionViewMode
   sorting: LibrarySorting
   isLibraryUnlocked: boolean
   tags: string[]
@@ -18,7 +18,7 @@ export type LibrarySorting = "date" | "activity" | "alpha"
 
 const defaultValue: LibraryDocType = {
   isLibraryUnlocked: false,
-  viewMode: LibraryViewMode.GRID,
+  viewMode: "grid",
   sorting: "date",
   tags: [],
   readingStates: [],

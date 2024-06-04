@@ -5,10 +5,10 @@ import { BookListGridItem } from "./BookListGridItem"
 import { LibrarySorting } from "../../library/states"
 import { BookListListItem } from "./BookListListItem"
 import { ReactWindowList } from "../../common/lists/ReactWindowList"
-import { BookListViewMode } from "./types"
+import { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 
 export const BookList: FC<{
-  viewMode?: BookListViewMode
+  viewMode?: ListActionViewMode
   renderHeader?: () => React.ReactNode
   headerHeight?: number
   sorting?: LibrarySorting

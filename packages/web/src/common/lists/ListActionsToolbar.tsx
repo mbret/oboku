@@ -1,4 +1,4 @@
-import React, { ComponentProps, FC, useState } from "react"
+import { ComponentProps, FC, useState } from "react"
 import { Toolbar, IconButton, useTheme, Button, Badge } from "@mui/material"
 import {
   AppsRounded,
@@ -10,15 +10,15 @@ import {
 import { SortByDialog } from "../../books/bookList/SortByDialog"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "../../library/states"
-import { BookListViewMode } from "../../books/bookList/types"
 
-export type Sorting = ComponentProps<typeof SortByDialog>["value"]
+export type ListActionSorting = ComponentProps<typeof SortByDialog>["value"]
+export type ListActionViewMode = "grid" | "list" | "compact"
 
 export const ListActionsToolbar: FC<{
-  viewMode?: BookListViewMode
-  sorting?: Sorting
+  viewMode?: ListActionViewMode
+  sorting?: ListActionSorting
   onViewModeChange?: (viewMode: "list" | "grid") => void
-  onSortingChange?: (sorting: Sorting) => void
+  onSortingChange?: (sorting: ListActionSorting) => void
   numberOfFiltersApplied?: number
   onFilterClick?: () => void
 }> = ({
