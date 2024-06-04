@@ -1,13 +1,11 @@
 import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { FiltersDrawer } from "./FiltersDrawer"
-import { useCallback, useState } from "react"
+import { ComponentProps, useCallback, useState } from "react"
 
-export const FilterBar = () => {
+export const FilterBar = ({
+  ...rest
+}: ComponentProps<typeof ListActionsToolbar>) => {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false)
-  // const viewMode = useSignalValue(
-  //   collectionsListSignal,
-  //   (state) => state.viewMode
-  // )
 
   const onFiltersDrawerClose = useCallback(() => {
     setIsFiltersDrawerOpen(false)
@@ -19,13 +17,7 @@ export const FilterBar = () => {
         onFilterClick={() => {
           setIsFiltersDrawerOpen(true)
         }}
-        // onViewModeChange={(value) => {
-        //   collectionsListSignal.setValue((state) => ({
-        //     ...state,
-        //     viewMode: value
-        //   }))
-        // }}
-        // viewMode={viewMode}
+        {...rest}
       />
       <FiltersDrawer
         onClose={onFiltersDrawerClose}

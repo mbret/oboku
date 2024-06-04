@@ -48,6 +48,10 @@ export const useBookDownloadState = (bookId?: string | null) => {
   return {
     downloadState: DownloadState.None,
     downloadProgress: 0,
+    isDownloaded:
+      bookDownloadState[bookId]?.downloadState === DownloadState.Downloaded,
+    isDownloading:
+      bookDownloadState[bookId]?.downloadState === DownloadState.Downloading,
     ...bookDownloadState[bookId]
   }
 }

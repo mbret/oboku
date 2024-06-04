@@ -1,5 +1,5 @@
 import React, { FC, memo } from "react"
-import { Box, Chip, useTheme } from "@mui/material"
+import { Box, BoxProps, Chip, useTheme } from "@mui/material"
 import {
   CheckOutlined,
   CloudDownloadRounded,
@@ -18,15 +18,17 @@ import { CoverIconBadge } from "./CoverIconBadge"
 
 type Book = ReturnType<typeof useBook>["data"]
 
-export const BookListCoverContainer: FC<{
-  bookId: string
-  className?: string
-  style?: React.CSSProperties
-  withReadingProgressStatus?: boolean
-  withDownloadStatus?: boolean
-  withBadges: boolean
-  size?: "small" | "large" | "medium"
-}> = memo(
+export const BookListCoverContainer: FC<
+  {
+    bookId: string
+    className?: string
+    style?: React.CSSProperties
+    withReadingProgressStatus?: boolean
+    withDownloadStatus?: boolean
+    withBadges: boolean
+    size?: "small" | "large" | "medium"
+  } & BoxProps
+> = memo(
   ({
     bookId,
     className,
@@ -34,7 +36,8 @@ export const BookListCoverContainer: FC<{
     withDownloadStatus = true,
     withReadingProgressStatus = true,
     withBadges,
-    size = "small"
+    size = "small",
+    ...rest
   }) => {
     const { data: item } = useBook({ id: bookId })
     const bookDownloadState = useBookDownloadState(bookId)
@@ -45,6 +48,7 @@ export const BookListCoverContainer: FC<{
       <Box
         style={{ ...classes.coverContainer, ...style }}
         className={className}
+        {...rest}
       >
         {item && <Cover bookId={item?._id} />}
         {bookDownloadState?.downloadState !== DownloadState.Downloaded && (

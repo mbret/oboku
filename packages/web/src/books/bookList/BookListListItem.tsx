@@ -1,10 +1,14 @@
-import { Box, Chip, Stack, Typography, useTheme } from "@mui/material"
+import { Box, BoxProps, Chip, Stack, Typography, useTheme } from "@mui/material"
 import { FC, memo } from "react"
 import { useDefaultItemClickHandler } from "./helpers"
 import { useBook, useIsBookProtected } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import {
+  CloudDoneRounded,
+  CloudDownloadRounded,
   DoneRounded,
+  DownloadDoneRounded,
+  DownloadingRounded,
   ErrorRounded,
   LoopRounded,
   MenuBookRounded,
@@ -16,21 +20,31 @@ import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { getMetadataFromBook } from "../getMetadataFromBook"
+import { useBookDownloadState } from "../../download/states"
 
-export const BookListListItem: FC<{
-  bookId: string
-  onItemClick?: (id: string) => void
-  isSelected?: (id: string) => boolean
-  size?: "small" | "large"
-  itemHeight?: number
-  withDrawerActions?: boolean
-}> = memo(
+export const BookListListItem: FC<
+  {
+    bookId: string
+    onItemClick?: (id: string) => void
+    isSelected?: (id: string) => boolean
+    size?: "small" | "large"
+    itemHeight?: number
+    withDrawerActions?: boolean
+    withCover?: boolean
+    withAuthors?: boolean
+    withDownloadIcons?: boolean
+  } & BoxProps
+> = memo(
   ({
     bookId,
     onItemClick,
     size = "large",
     itemHeight,
-    withDrawerActions = true
+    withDrawerActions = true,
+    withCover = true,
+    withAuthors = true,
+    withDownloadIcons = false,
+    ...rest
   }) => {
     const { data: book } = useBook({
       id: bookId
@@ -40,6 +54,7 @@ export const BookListListItem: FC<{
     const computedHeight = itemHeight || (size === "small" ? 50 : 100)
     const coverWidth = computedHeight * theme.custom.coverAverageRatio
     const classes = useStyles({ coverWidth })
+    const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected = true } = useIsBookProtected(book)
 
     const metadata = getMetadataFromBook(book)
@@ -57,20 +72,23 @@ export const BookListListItem: FC<{
           cursor: "pointer",
           flexGrow: 1
         }}
+        {...rest}
       >
-        <BookListCoverContainer
-          bookId={bookId}
-          style={classes.coverContainer}
-          withBadges={false}
-          withReadingProgressStatus={false}
-        />
+        {withCover && (
+          <BookListCoverContainer
+            bookId={bookId}
+            style={classes.coverContainer}
+            withBadges={false}
+            withReadingProgressStatus={false}
+            mr={1}
+          />
+        )}
         <div
           style={{
             display: "flex",
             flex: 1,
             minHeight: 0,
             flexDirection: "column",
-            marginLeft: theme.spacing(1),
             overflow: "hidden"
           }}
         >
@@ -84,9 +102,11 @@ export const BookListListItem: FC<{
           >
             {metadata?.title || "Unknown"}
           </Typography>
-          <Typography noWrap color="textSecondary" variant="body2">
-            {(metadata?.authors ?? [])[0] || "Unknown"}
-          </Typography>
+          {withAuthors && (
+            <Typography noWrap color="textSecondary" variant="body2">
+              {(metadata?.authors ?? [])[0] || "Unknown"}
+            </Typography>
+          )}
           <Box
             style={{
               display: "flex",
@@ -96,17 +116,28 @@ export const BookListListItem: FC<{
             }}
           >
             <Box display="flex" flexDirection="row" gap={1}>
-              {isBookProtected && <NoEncryptionRounded />}
-              {book?.isNotInterested && <ThumbDownOutlined />}
+              {withDownloadIcons && (
+                <>
+                  {bookDownloadState?.isDownloading ? (
+                    <DownloadingRounded color="action" />
+                  ) : bookDownloadState?.isDownloaded ? (
+                    <CloudDoneRounded color="action" />
+                  ) : (
+                    <CloudDownloadRounded color="action" />
+                  )}
+                </>
+              )}
+              {isBookProtected && <NoEncryptionRounded color="action" />}
+              {book?.isNotInterested && <ThumbDownOutlined color="action" />}
               {book?.readingStateCurrentState ===
                 ReadingStateState.Finished && (
                 <div style={{ display: "flex", flexDirection: "row" }}>
-                  <DoneRounded style={{}} />
+                  <DoneRounded style={{}} color="action" />
                 </div>
               )}
               {book?.readingStateCurrentState === ReadingStateState.Reading && (
                 <div style={{ display: "flex", flexDirection: "row" }}>
-                  <MenuBookRounded />
+                  <MenuBookRounded color="action" />
                   <Typography
                     style={{
                       marginLeft: theme.spacing(0.5)
@@ -165,7 +196,7 @@ export const BookListListItem: FC<{
         {withDrawerActions && (
           <Stack
             justifyContent="center"
-            width={[30, 50]}
+            width={[40, 50]}
             flexDirection="row"
             style={{
               alignItems: "center",
