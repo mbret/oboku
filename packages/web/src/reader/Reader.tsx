@@ -98,7 +98,7 @@ export const Reader: FC<{
       setReaderOptions({
         forceSinglePageMode: true,
         numberOfAdjacentSpineItemToPreLoad:
-          manifest.renditionLayout === "pre-paginated" ? 3 : 1,
+          manifest.renditionLayout === "pre-paginated" ? 1 : 1,
         hammerGesture: {
           enableFontScalePinch: true,
           fontScaleMax: FONT_SCALE_MAX,
