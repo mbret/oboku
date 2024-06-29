@@ -30,6 +30,22 @@ export const theme = createTheme({
     }
   },
   components: {
+    MuiTabs: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          borderBottomWidth: 1,
+          borderBottomStyle: "solid",
+          borderBottomColor: theme.palette.divider
+        })
+      }
+    },
+    MuiTab: {
+      defaultProps: {
+        disableFocusRipple: true,
+        disableTouchRipple: true,
+        disableRipple: true
+      }
+    },
     /**
      * @see https://github.com/mui/material-ui/blob/master/packages/mui-material/src/Button/Button.js
      */

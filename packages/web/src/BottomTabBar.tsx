@@ -32,9 +32,14 @@ export const BottomTabBar = ({ children }: { children: ReactNode }) => {
     isUploadBookFromDataSourceDialogOpenedSignal
   )
   const dragStatus = useRef<undefined | "entered">(undefined)
+
+  // @todo cleanup, use a helper for "contains()"
+  // @todo do as datasource tab navigator
   const normalizedPath = location.pathname.startsWith(ROUTES.LIBRARY_ROOT)
     ? ROUTES.LIBRARY_BOOKS
-    : location.pathname
+    : location.pathname.startsWith(ROUTES.DATASOURCES)
+      ? ROUTES.DATASOURCES
+      : location.pathname
 
   const onDragOver = useCallback(() => {
     if (dragStatus.current !== "entered") {

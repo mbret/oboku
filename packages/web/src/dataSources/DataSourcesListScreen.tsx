@@ -24,7 +24,7 @@ import { ObokuErrorCode } from "@oboku/shared"
 import { useDataSources } from "./useDataSources"
 import { ObokuPlugin } from "../plugins/plugin-front"
 
-export const SyncSourcesScreen = () => {
+export const DataSourcesListScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isAddDataSourceOpenedWith, setIsAddDataSourceOpenedWith] = useState<
     ObokuPlugin | undefined
@@ -45,7 +45,6 @@ export const SyncSourcesScreen = () => {
           flexFlow: "column"
         }}
       >
-        <TopBarNavigation title={"Data Sources"} showBack={false} />
         <Alert severity="info">
           Automatically synchronize books from an external source (eg: Google
           Drive shared folder).{" "}
