@@ -94,7 +94,7 @@ export const Cover: FC<Props> = memo(
             src={placeholder}
             style={classes.img}
             {...(shouldBlurCover && {
-              className: `${classes.img} svgBlur`
+              className: `${classes.img} blurFilter`
             })}
             {...rest}
           />
@@ -107,7 +107,7 @@ export const Cover: FC<Props> = memo(
             src={coverSrc}
             style={classes.img}
             {...(shouldBlurCover && {
-              className: `${classes.img} svgBlur`
+              className: `${classes.img} blurFilter`
             })}
             onLoad={() => {
               setIsLoading(false)
