@@ -5,15 +5,11 @@ import {
   useTheme
 } from "@mui/material"
 import {
-  HomeOutlined,
-  Home,
-  LocalLibrary,
-  LocalLibraryOutlined,
-  Storage,
-  StorageOutlined,
   AccountCircleRounded,
-  AccountCircleOutlined,
-  PortableWifiOffRounded
+  PortableWifiOffRounded,
+  LocalLibraryRounded,
+  CloudSyncRounded,
+  HomeRounded
 } from "@mui/icons-material"
 import { useNavigate, useLocation } from "react-router-dom"
 import { ROUTES } from "./constants"
@@ -72,43 +68,25 @@ export const BottomTabBar = ({ children }: { children: ReactNode }) => {
         showLabels={true}
       >
         <BottomNavigationAction
-          icon={normalizedPath === ROUTES.HOME ? <Home /> : <HomeOutlined />}
+          icon={<HomeRounded />}
           showLabel={false}
           disableRipple
           value={ROUTES.HOME}
         />
         <BottomNavigationAction
-          icon={
-            normalizedPath === ROUTES.LIBRARY_BOOKS ? (
-              <LocalLibrary />
-            ) : (
-              <LocalLibraryOutlined />
-            )
-          }
+          icon={<LocalLibraryRounded />}
           showLabel={false}
           disableRipple
           value={ROUTES.LIBRARY_BOOKS}
         />
         <BottomNavigationAction
-          icon={
-            normalizedPath === ROUTES.DATASOURCES ? (
-              <Storage />
-            ) : (
-              <StorageOutlined />
-            )
-          }
+          icon={<CloudSyncRounded />}
           showLabel={false}
           disableRipple
           value={ROUTES.DATASOURCES}
         />
         <BottomNavigationAction
-          icon={
-            normalizedPath === ROUTES.PROFILE ? (
-              <AccountCircleRounded />
-            ) : (
-              <AccountCircleOutlined />
-            )
-          }
+          icon={<AccountCircleRounded />}
           showLabel={false}
           disableRipple
           value={ROUTES.PROFILE}
