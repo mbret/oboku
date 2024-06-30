@@ -22,10 +22,11 @@ export const DataSourcesReportsScreen = memo(() => {
               a sync.
             </Alert>
           ) : (
-            <Stack p={2} gap={2}>
+            <Stack py={2} px={1} gap={2}>
               {data?.map((entry, index) => (
                 <Stack key={index}>
                   <Stack direction="row" gap={1} justifyItems="center">
+                    <Chip size="small" label="sync" variant="filled" />
                     <Typography
                       variant="body1"
                       component="h2"
@@ -35,10 +36,20 @@ export const DataSourcesReportsScreen = memo(() => {
                     </Typography>
                     <Box>
                       {entry.report.state === "error" && (
-                        <Chip size="small" label="error" color="error" />
+                        <Chip
+                          size="small"
+                          label="error"
+                          color="error"
+                          variant="outlined"
+                        />
                       )}
                       {entry.report.state === "success" && (
-                        <Chip size="small" label="success" color="success" />
+                        <Chip
+                          size="small"
+                          label="success"
+                          color="success"
+                          variant="outlined"
+                        />
                       )}
                     </Box>
                   </Stack>

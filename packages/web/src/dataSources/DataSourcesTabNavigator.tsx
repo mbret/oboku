@@ -22,13 +22,13 @@ export const DataSourcesTabNavigator = () => {
   return (
     <Stack flex={1} overflow="hidden">
       <TopBarNavigation
-        title="Data Sources"
+        title="Sync"
         showBack={false}
         hasSearch={false}
       />
       <Tabs value={currentTab}>
         <Tab
-          label="List"
+          label="Data sources"
           value={ROUTES.DATASOURCES_LIST}
           to={ROUTES.DATASOURCES_LIST}
           component={Link}

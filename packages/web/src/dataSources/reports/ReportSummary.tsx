@@ -1,4 +1,4 @@
-import { Box, Chip, Stack, Typography } from "@mui/material"
+import { Stack, Typography } from "@mui/material"
 import { formatDistance } from "date-fns"
 import { memo } from "react"
 import { getRxModelLabelFromValue } from "./helpers"

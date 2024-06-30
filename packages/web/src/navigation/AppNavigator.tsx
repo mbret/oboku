@@ -103,10 +103,10 @@ export const AppNavigator = ({
                   <Route path="tags" element={<LibraryTagsScreen />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
-                <Route path="datasources" element={<DataSourcesTabNavigator />}>
+                <Route path="sync" element={<DataSourcesTabNavigator />}>
                   <Route
                     index
-                    path="list"
+                    path="datasources"
                     element={<DataSourcesListScreen />}
                   />
                   <Route
