@@ -1,4 +1,4 @@
-import { Tab, Tabs, Box } from "@mui/material"
+import { Tab, Tabs, Box, Stack } from "@mui/material"
 import { Outlet, Link } from "react-router-dom"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../constants"
@@ -20,7 +20,7 @@ export const DataSourcesTabNavigator = () => {
       : routeMatch?.pattern?.path
 
   return (
-    <Box flex={1}>
+    <Stack flex={1} overflow="hidden">
       <TopBarNavigation
         title="Data Sources"
         showBack={false}
@@ -41,6 +41,6 @@ export const DataSourcesTabNavigator = () => {
         />
       </Tabs>
       <Outlet />
-    </Box>
+    </Stack>
   )
 }

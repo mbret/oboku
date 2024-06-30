@@ -34,6 +34,7 @@ import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
 import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
+import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -103,7 +104,16 @@ export const AppNavigator = ({
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
                 <Route path="datasources" element={<DataSourcesTabNavigator />}>
-                  <Route index path="list" element={<DataSourcesListScreen />} />
+                  <Route
+                    index
+                    path="list"
+                    element={<DataSourcesListScreen />}
+                  />
+                  <Route
+                    index
+                    path="reports"
+                    element={<DataSourcesReportsScreen />}
+                  />
                   <Route
                     path="*"
                     element={<Navigate to={ROUTES.DATASOURCES_LIST} replace />}

@@ -1,9 +1,7 @@
 import { sortByTitleComparator } from "@oboku/shared"
 import { signal } from "reactjrx"
 import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
-import {
-  useCollectionsWithPrivacy,
-} from "../collections/states"
+import { useCollectionsWithPrivacy } from "../collections/states"
 import { useMemo } from "react"
 
 export const searchStateSignal = signal({

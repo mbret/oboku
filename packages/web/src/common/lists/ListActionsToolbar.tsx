@@ -61,7 +61,7 @@ export const ListActionsToolbar: FC<{
   onSortingChange,
   sorting,
   onFilterClick,
-  numberOfFiltersApplied = 0,
+  numberOfFiltersApplied = 0
 }) => {
   const theme = useTheme()
   const library = useSignalValue(libraryStateSignal)

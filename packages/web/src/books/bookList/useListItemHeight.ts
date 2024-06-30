@@ -47,7 +47,5 @@ export const useListItemHeight = ({
         ? listItemMargin
         : compactItemMargin
 
-        console.log({itemMargin})
-
   return { itemHeight, itemMargin }
 }
