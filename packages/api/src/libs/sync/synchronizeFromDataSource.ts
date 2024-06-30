@@ -100,8 +100,11 @@ const syncTags = async ({
   await Promise.all(
     tagNames.map(async (tag) => {
       const { created, id } = await createTagFromName(ctx.db, tag, true)
+
       if (created) {
         logger.info(`syncTags ${tag} created with id ${id}`)
+
+        ctx.syncReport.addTag({ _id: id, name: tag })
       }
     })
   )

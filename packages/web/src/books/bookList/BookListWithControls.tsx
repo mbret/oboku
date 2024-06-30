@@ -1,7 +1,5 @@
 import React, { ComponentProps, FC } from "react"
-import {
-  ListActionsToolbar,
-} from "../../common/lists/ListActionsToolbar"
+import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { useBookIdsSortedBy } from "../helpers"
 import { BookList } from "./BookList"
 
@@ -19,7 +17,7 @@ export const BookListWithControls: FC<
   sorting,
   viewMode,
   onViewModeChange,
-  onSortingChange,
+  onSortingChange
 }) => {
   const sortedData = useBookIdsSortedBy(data, sorting)
 

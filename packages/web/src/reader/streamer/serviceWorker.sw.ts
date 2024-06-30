@@ -4,9 +4,7 @@ import {
   generateResourceFromArchive
 } from "@prose-reader/streamer"
 import { STREAMER_URL_PREFIX } from "../../constants.shared"
-import {
-  loadBook
-} from "./loadBook.sw"
+import { loadBook } from "./loadBook.sw"
 import { getResourcePathFromUrl } from "./getResourcePathFromUrl.shared"
 import { getManifestBaseUrl } from "./getManifestBaseUrl.shared"
 import { FileNotFoundError, FileNotSupportedError } from "../errors.shared"

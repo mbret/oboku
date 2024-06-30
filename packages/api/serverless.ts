@@ -9,6 +9,7 @@ import refreshMetadataCollectionLongProcess from "@functions/refreshMetadataColl
 import syncDataSource from "@functions/syncDataSource"
 import syncDataSourceLongProcess from "@functions/syncDataSourceLongProcess"
 import corsProxy from "@functions/corsProxy"
+import syncReports from "@functions/syncReports"
 
 // npm install --arch=x64 --platform=darwin sharp -w @oboku/api
 
@@ -35,6 +36,7 @@ const functions: AWS[`functions`] = {
   cors: corsProxy,
   refreshMetadataCollection,
   refreshMetadataCollectionLongProcess,
+  syncReports
 }
 
 Object.keys(functions).forEach((key) => {

@@ -11,7 +11,7 @@ import { useObservers } from "./rxdb/sync/useObservers"
 import { PreloadQueries } from "./PreloadQueries"
 import { SplashScreen } from "./SplashScreen"
 import { FirstTimeExperienceTours } from "./firstTimeExperience/FirstTimeExperienceTours"
-import { BlurContainer } from "./books/BlurContainer"
+import { BlurFilterReference } from "./books/BlurFilterReference"
 import "./i18n"
 import { ErrorBoundary } from "@sentry/react"
 import { ManageBookTagsDialog } from "./books/ManageBookTagsDialog"
@@ -119,7 +119,7 @@ export function App() {
           </QueryClientProvider>
         </ThemeProvider>
       </StyledEngineProvider>
-      <BlurContainer />
+      <BlurFilterReference />
     </ErrorBoundary>
   )
 }

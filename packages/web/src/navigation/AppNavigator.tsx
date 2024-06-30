@@ -17,7 +17,7 @@ import { ROUTES } from "../constants"
 import { BookDetailsScreen } from "../books/details/BookDetailsScreen"
 import { CollectionDetailsScreen } from "../collections/CollectionDetailsScreen"
 import { BookActionsDrawer } from "../books/drawer/BookActionsDrawer"
-import { SyncSourcesScreen } from "../dataSources/SyncSourcesScreen"
+import { DataSourcesListScreen } from "../dataSources/DataSourcesListScreen"
 import { SearchScreen } from "../search/SearchScreen"
 import { AuthCallbackScreen } from "../auth/AuthCallbackScreen"
 import { SettingsScreen } from "../settings/SettingsScreen"
@@ -33,6 +33,8 @@ import { UnlockLibraryDialog } from "../auth/UnlockLibraryDialog"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
+import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
+import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -101,7 +103,22 @@ export const AppNavigator = ({
                   <Route path="tags" element={<LibraryTagsScreen />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
-                <Route path="datasources" element={<SyncSourcesScreen />} />
+                <Route path="sync" element={<DataSourcesTabNavigator />}>
+                  <Route
+                    index
+                    path="datasources"
+                    element={<DataSourcesListScreen />}
+                  />
+                  <Route
+                    index
+                    path="reports"
+                    element={<DataSourcesReportsScreen />}
+                  />
+                  <Route
+                    path="*"
+                    element={<Navigate to={ROUTES.DATASOURCES_LIST} replace />}
+                  />
+                </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             </>

@@ -1,27 +1,34 @@
+import { find } from "@libs/couch/dbHelpers"
 import { Logger } from "@libs/logger"
 import {
   DataSourcePlugin,
   SynchronizeAbleDataSource
 } from "@libs/plugins/types"
+import { BookDocType } from "@oboku/shared"
+import nano from "nano"
 
 const logger = Logger.child({ module: "synchronizeBookWithParentCollections" })
 
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
+type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0] & {
+  db: nano.DocumentScope<unknown>
+}
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
+type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 
 /**
  * For every parents of the book we will lookup if there are collections that exist without
  * referencing it. If so then we will attach the collection and the book together
  */
 export const synchronizeBookWithParentCollections = async (
-  bookId: string,
+  book: Partial<BookDocType> & { _id: string },
   parents: SynchronizeAbleItem[],
-  helpers: Helpers
+  helpers: Helpers,
+  context: Context
 ) => {
   const parentResourceIds = parents?.map((parent) => parent.resourceId) || []
 
   logger.info(
-    `${bookId} with ${parentResourceIds.length} parentResourceIds ${parentResourceIds}`
+    `${book._id} with ${parentResourceIds.length} parentResourceIds ${parentResourceIds}`
   )
 
   // Retrieve all the new collection to which attach the book and add the book in the list
@@ -35,13 +42,14 @@ export const synchronizeBookWithParentCollections = async (
      * We attach all the parent collections to the book by combining them with existing collection of the book.
      * Make sure to not remove any existing collection from the book and to avoid duplicate
      */
-    const collectionsThatHaveNotThisBookAsReferenceYet = await helpers.find(
+    const collectionsThatHaveNotThisBookAsReferenceYet = await find(
+      context.db,
       "obokucollection",
       {
         selector: {
           $or: parentResourceIds.map((linkResourceId) => ({ linkResourceId })),
           books: {
-            $nin: [bookId]
+            $nin: [book._id]
           }
         }
       }
@@ -49,19 +57,25 @@ export const synchronizeBookWithParentCollections = async (
 
     if (collectionsThatHaveNotThisBookAsReferenceYet.length > 0) {
       logger.info(
-        `synchronizeBookWithParentCollections ${collectionsThatHaveNotThisBookAsReferenceYet.length} collections does not have ${bookId} attached to them yet`
+        `synchronizeBookWithParentCollections ${collectionsThatHaveNotThisBookAsReferenceYet.length} collections does not have ${book._id} attached to them yet`
       )
+
       await Promise.all(
-        collectionsThatHaveNotThisBookAsReferenceYet.map((collection) =>
+        collectionsThatHaveNotThisBookAsReferenceYet.map((collection) => {
           helpers.atomicUpdate("obokucollection", collection._id, (old) => ({
             ...old,
-            books: [...old.books.filter((id) => id !== bookId), bookId]
+            books: [...old.books.filter((id) => id !== book._id), book._id]
           }))
-        )
+
+          context.syncReport.addBooksToCollection({
+            collection,
+            books: [{ _id: book._id }]
+          })
+        })
       )
     }
 
-    const parentCollections = await helpers.find("obokucollection", {
+    const parentCollections = await find(context.db, "obokucollection", {
       selector: {
         $or: parentResourceIds.map((linkResourceId) => ({ linkResourceId }))
       }
@@ -76,27 +90,33 @@ export const synchronizeBookWithParentCollections = async (
      * We attach all the parent collections to the book by combining them with existing collection of the book.
      * Make sure to not remove any existing collection from the book and to avoid duplicate
      */
-    const { collections: bookCollections } =
-      (await helpers.findOne("book", {
-        selector: { _id: bookId },
-        fields: [`collections`]
-      })) || {}
+    const bookWithCollections = await helpers.findOne("book", {
+      selector: { _id: book._id },
+      fields: [`collections`, `_id`]
+    })
 
-    if (bookCollections) {
-      const bookHasNotOneOfTheCollectionsYet = parentCollectionIds.some(
-        (collectionId) => !bookCollections.includes(collectionId)
+    if (!bookWithCollections) return
+
+    const { collections: bookCollections } = bookWithCollections
+
+    const collectionsNotInBookYet = parentCollections.filter(
+      ({ _id }) => !bookCollections.includes(_id)
+    )
+
+    if (collectionsNotInBookYet.length) {
+      logger.info(
+        `synchronizeBookWithParentCollections ${book._id} has some missing parent collections. It will be updated to include them`
       )
-      if (bookHasNotOneOfTheCollectionsYet) {
-        logger.info(
-          `synchronizeBookWithParentCollections ${bookId} has some missing parent collections. It will be updated to include them`
-        )
-        await helpers.atomicUpdate("book", bookId, (old) => ({
-          ...old,
-          collections: [
-            ...new Set([...old.collections, ...parentCollectionIds])
-          ]
-        }))
-      }
+
+      await helpers.atomicUpdate("book", book._id, (old) => ({
+        ...old,
+        collections: [...new Set([...old.collections, ...parentCollectionIds])]
+      }))
+
+      context.syncReport.addCollectionsToBook({
+        book,
+        collections: collectionsNotInBookYet
+      })
     }
   }
 

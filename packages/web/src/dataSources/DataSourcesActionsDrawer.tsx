@@ -4,7 +4,8 @@ import {
   List,
   ListItemIcon,
   ListItemText,
-  Divider
+  Divider,
+  ListItemButton
 } from "@mui/material"
 import { FC, memo } from "react"
 import {
@@ -24,7 +25,7 @@ export const DataSourcesActionsDrawer: FC<{
   openWith: string
   onClose: () => void
 }> = memo(({ openWith, onClose }) => {
-  const syncDataSource = useSynchronizeDataSource()
+  const { mutate: syncDataSource } = useSynchronizeDataSource()
   const { mutate: removeDataSource } = useRemoveDataSource()
   const { data: dataSource } = useDataSource(openWith)
   const library = useSignalValue(libraryStateSignal)
@@ -33,8 +34,7 @@ export const DataSourcesActionsDrawer: FC<{
     <>
       <Drawer anchor="bottom" open={true} onClose={onClose}>
         <List>
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => {
               syncDataSource(openWith)
               onClose()
@@ -44,7 +44,7 @@ export const DataSourcesActionsDrawer: FC<{
               <SyncRounded />
             </ListItemIcon>
             <ListItemText primary="Synchronize" />
-          </ListItem>
+          </ListItemButton>
         </List>
         <ListItem
           button

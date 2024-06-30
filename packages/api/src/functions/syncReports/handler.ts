@@ -1,0 +1,40 @@
+import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import { withToken } from "@libs/auth"
+import { withMiddy } from "@libs/lambda"
+import schema from "./schema"
+import { getParametersValue } from "@libs/ssm"
+import { supabase } from "@libs/supabase/client"
+
+const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
+  event
+) => {
+  const authorization = event.headers.authorization ?? ``
+
+  const [jwtPrivateKey = ``] = await getParametersValue({
+    Names: ["jwt-private-key"],
+    WithDecryption: true
+  })
+
+  const { name } = await withToken(
+    {
+      headers: {
+        authorization
+      }
+    },
+    jwtPrivateKey
+  )
+
+  const reportsResponse = await supabase
+    .from("sync_reports")
+    .select("*")
+    .eq("user_name", name)
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(reportsResponse.data || [])
+  }
+}
+
+export const main = withMiddy(lambda, {
+  withJsonBodyParser: false
+})

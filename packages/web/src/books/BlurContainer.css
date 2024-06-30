@@ -1,5 +1,0 @@
-/* needs to be global */
-.svgBlur {
-  -webkit-filter: url("#sharpBlur");
-  filter: url("#sharpBlur");
-}
