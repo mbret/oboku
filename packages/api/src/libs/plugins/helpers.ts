@@ -1,16 +1,12 @@
 import {
   atomicUpdate,
-  createBook,
-  addTagsToBook,
   insert,
   findOne,
-  addLinkToBook,
   find,
   getOrCreateTagFromName
 } from "@libs/couch/dbHelpers"
 import createNano from "nano"
 import {
-  InsertAbleBookDocType,
   SafeMangoQuery,
   ObokuErrorCode,
   ObokuSharedError,
@@ -45,7 +41,6 @@ export const createHelpers = (
     },
     isBookCoverExist: async (bookId: string) =>
       getBookCover({ coverId: `${nameHex}-${bookId}` }),
-    createBook: (data?: Partial<InsertAbleBookDocType>) => createBook(db, data),
     findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
       model: M,
       query: SafeMangoQuery<D>
@@ -63,12 +58,8 @@ export const createHelpers = (
       model: M,
       data: Omit<D, "rx_model" | "_id" | "_rev">
     ) => insert(db, model, data),
-    addTagsToBook: (bookId: string, tagIds: string[]) =>
-      addTagsToBook(db, bookId, tagIds),
     // addTagsFromNameToBook: (bookId: string, tagNames: string[]) => addTagsFromNameToBook(db, bookId, tagNames),
-    getOrCreateTagFromName: (name: string) => getOrCreateTagFromName(db, name),
-    addLinkToBook: (bookId: string, linkId: string) =>
-      addLinkToBook(db, bookId, linkId)
+    getOrCreateTagFromName: (name: string) => getOrCreateTagFromName(db, name)
   }
 
   return helpers

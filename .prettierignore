@@ -6,3 +6,6 @@
 /packages/web/dist
 /packages/web/public/*.js
 /packages/api/.esbuild
+
+/.nx/cache
+/.nx/workspace-data

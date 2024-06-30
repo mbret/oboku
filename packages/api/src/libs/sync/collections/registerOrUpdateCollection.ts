@@ -74,6 +74,8 @@ export const registerOrUpdateCollection = async ({
           }
         }
       )
+
+      ctx.syncReport.updateCollection(collectionFromResourceId._id)
     }
   } else {
     Logger.info(
@@ -85,7 +87,7 @@ export const registerOrUpdateCollection = async ({
      * Note that there could be another collection with same name. But since it
      * does not come from the same datasource it should still be treated as different
      */
-    const created = await helpers.create("obokucollection", {
+    const collectionToAdd = {
       linkResourceId,
       linkType: ctx.dataSourceType,
       books: [],
@@ -97,9 +99,13 @@ export const registerOrUpdateCollection = async ({
         lwt: new Date().getTime()
       },
       metadata: [linkMetadata]
-    })
+    }
+
+    const created = await helpers.create("obokucollection", collectionToAdd)
 
     collectionId = created.id
+
+    ctx.syncReport.addCollection({ _id: collectionId, ...collectionToAdd })
   }
 
   // try to remove book that does not exist anymore if needed
@@ -128,10 +134,17 @@ export const registerOrUpdateCollection = async ({
         `[ANOMALY] registerOrUpdateCollection ${name} contains books that does not exist anymore and they will be removed from it`
       )
 
-      await helpers.atomicUpdate("obokucollection", collection?._id, (old) => ({
-        ...old,
-        books: old.books.filter((id) => !toRemove.includes(id))
-      }))
+      await helpers.atomicUpdate("obokucollection", collection._id, (old) => {
+        return {
+          ...old,
+          books: old.books.filter((id) => !toRemove.includes(id))
+        }
+      })
+
+      ctx.syncReport.removeBooksFromCollection({
+        collection,
+        books: toRemove.map((_id) => ({ _id }))
+      })
     }
   }
 

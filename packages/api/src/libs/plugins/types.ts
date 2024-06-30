@@ -2,7 +2,6 @@ import { Request } from "request"
 import {
   LinkDocType,
   dataSourceHelpers,
-  InsertAbleBookDocType,
   SafeMangoQuery,
   DocType,
   ModelOf,
@@ -10,8 +9,9 @@ import {
 } from "@oboku/shared"
 import cheerio from "cheerio"
 import fetch from "node-fetch"
-import createNano, { DocumentInsertResponse } from "nano"
+import createNano from "nano"
 import { Metadata } from "@libs/metadata/types"
+import { SyncReport } from "@libs/sync/SyncReport"
 
 export { dataSourceHelpers, cheerio, fetch }
 
@@ -35,9 +35,6 @@ type Helpers = {
   refreshBookMetadata: (opts: { bookId: string }) => Promise<any>
   getDataSourceData: <Data>() => Promise<Partial<Data>>
   isBookCoverExist: (bookId: string) => Promise<boolean>
-  createBook: (
-    data?: Partial<InsertAbleBookDocType>
-  ) => Promise<createNano.DocumentInsertResponse>
   findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
     model: M,
     query: SafeMangoQuery<D>
@@ -66,12 +63,7 @@ type Helpers = {
     model: M,
     data: Omit<D, "rx_model" | "_id" | "_rev">
   ) => Promise<createNano.DocumentInsertResponse>
-  addTagsToBook: (bookId: string, tagIds: string[]) => void
   getOrCreateTagFromName: (name: string) => void
-  addLinkToBook: (
-    bookId: string,
-    linkId: string
-  ) => Promise<[DocumentInsertResponse, DocumentInsertResponse]>
 }
 
 export type DataSourcePlugin = {
@@ -99,6 +91,7 @@ export type DataSourcePlugin = {
       dataSourceId: string
       credentials?: any
       dataSourceType: string
+      syncReport: SyncReport
     },
     helper: Helpers
   ) => Promise<SynchronizeAbleDataSource>

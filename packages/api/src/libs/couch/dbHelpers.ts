@@ -1,11 +1,13 @@
-import createNano from "nano"
+import createNano, { MangoResponse } from "nano"
 import { generateAdminToken, generateToken } from "../auth"
 import {
   SafeMangoQuery,
   InsertAbleBookDocType,
   ReadingStateState,
   DocType,
-  ModelOf
+  ModelOf,
+  DataSourceDocType,
+  isShallowEqual
 } from "@oboku/shared"
 import { User } from "../couchDbEntities"
 import { waitForRandomTime } from "../utils"
@@ -67,10 +69,21 @@ export async function atomicUpdate<
 ) {
   return retryFn(async () => {
     const doc = (await db.get(id)) as createNano.DocumentGetResponse & K
-    const { rx_model, ...rest } = cb(doc)
+    const newDoc = cb(doc)
+    const { rx_model, ...rest } = newDoc
+
     if (rxModel !== doc.rx_model) throw new Error("Invalid document type")
 
-    return await db.insert({ ...rest, rx_model, _rev: doc._rev, _id: doc._id })
+    if (isShallowEqual(doc, newDoc)) return null
+
+    const response = await db.insert({
+      ...rest,
+      rx_model,
+      _rev: doc._rev,
+      _id: doc._id
+    })
+
+    return response
   })
 }
 
@@ -123,7 +136,17 @@ export const findOne = async <
   return doc
 }
 
-export const find = async <M extends DocType["rx_model"], D extends DocType>(
+export const findAllDataSources = async (
+  db: createNano.DocumentScope<unknown>
+) => {
+  return db.find({
+    selector: {
+      rx_model: "datasource"
+    }
+  }) as Promise<MangoResponse<DataSourceDocType>>
+}
+
+export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
   db: createNano.DocumentScope<unknown>,
   rxModel: M,
   query: SafeMangoQuery<D>
@@ -137,7 +160,8 @@ export const find = async <M extends DocType["rx_model"], D extends DocType>(
     })
   )
 
-  return response.docs
+  return response.docs as (createNano.MangoResponse<unknown>["docs"][number] &
+    D)[]
 }
 
 export const createBook = async (
@@ -166,24 +190,41 @@ export const createBook = async (
   return insert(db, "book", { ...insertData, ...data })
 }
 
-export const addTagsToBook = async (
+export const addTagsToBookIfNotExist = async (
   db: createNano.DocumentScope<unknown>,
   bookId: string,
   tagIds: string[]
 ) => {
-  if (tagIds.length === 0) return
-  return Promise.all([
-    atomicUpdate(db, "book", bookId, (old) => ({
-      ...old,
-      tags: [...old.tags.filter((tag) => !tagIds.includes(tag)), ...tagIds]
-    })),
-    ...tagIds.map((tagId) =>
-      atomicUpdate(db, "tag", tagId, (old) => ({
+  if (tagIds.length === 0) return [null, null] as const
+
+  const [bookUpdate, tagUpdate] = await Promise.all([
+    atomicUpdate(db, "book", bookId, (old) => {
+      const tags = old.tags.find((tag) => tagIds.includes(tag))
+        ? old.tags
+        : [...old.tags.filter((tag) => !tagIds.includes(tag)), ...tagIds]
+
+      return {
         ...old,
-        books: [...old.books.filter((id) => id !== bookId), bookId]
-      }))
+        tags
+      }
+    }),
+    Promise.all(
+      tagIds.map((tagId) =>
+        atomicUpdate(db, "tag", tagId, (old) => {
+          const books = old.books.find((id) => id === bookId)
+            ? old.books
+            : [...old.books.filter((id) => id !== bookId), bookId]
+
+          return {
+            ...old,
+            books
+          }
+        })
+      )
     )
   ])
+
+  return [bookUpdate, tagUpdate] as const
 }
 
 /**
@@ -259,16 +300,20 @@ export const createTagFromName = (
   })
 }
 
-export const addLinkToBook = async (
+export const addLinkToBookIfNotExist = async (
   db: createNano.DocumentScope<unknown>,
   bookId: string,
   linkId: string
 ) => {
-  return Promise.all([
+  const [bookUpdate, linkUpdate] = await Promise.all([
     atomicUpdate(db, "book", bookId, (old) => {
+      const links = old.links.find((id) => id === linkId)
+        ? old.links
+        : [...old.links.filter((id) => id !== linkId), linkId]
+
       return {
         ...old,
-        links: [...old.links.filter((id) => id !== linkId), linkId]
+        links
       }
     }),
     atomicUpdate(db, "link", linkId, (old) => ({
@@ -276,6 +321,8 @@ export const addLinkToBook = async (
       book: bookId
     }))
   ])
+
+  return bookUpdate || linkUpdate
 }
 
 export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {

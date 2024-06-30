@@ -11,6 +11,11 @@ import nano from "nano"
 import { Logger } from "@libs/logger"
 import { updateTagsForBook } from "./updateTagsForBook"
 import { synchronizeBookWithParentCollections } from "./synchronizeBookWithParentCollections"
+import {
+  addLinkToBookIfNotExist,
+  addTagsToBookIfNotExist,
+  createBook
+} from "@libs/couch/dbHelpers"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0] & {
@@ -27,7 +32,7 @@ function isFolder(
 }
 
 export const createOrUpdateBook = async ({
-  ctx: { dataSourceType, dataSourceId },
+  ctx,
   helpers,
   parents,
   item
@@ -37,6 +42,7 @@ export const createOrUpdateBook = async ({
   item: SynchronizeAbleItem
   helpers: Helpers
 }) => {
+  const { dataSourceType, dataSourceId, syncReport, db } = ctx
   try {
     Logger.info(`createOrUpdateBook "${item.name}":`, item.resourceId)
 
@@ -71,6 +77,8 @@ export const createOrUpdateBook = async ({
           dataSourceId,
           modifiedAt: new Date().toISOString()
         }))
+
+        syncReport.updateLink(linkForResourceId._id)
       }
 
       /**
@@ -105,6 +113,8 @@ export const createOrUpdateBook = async ({
           dataSourceId,
           modifiedAt: new Date().toISOString()
         }))
+
+        syncReport.updateLink(linkForResourceId._id)
       }
     }
 
@@ -121,10 +131,13 @@ export const createOrUpdateBook = async ({
             `createOrUpdateBook "${item.name}": isAttachedToDataSource is false and therefore will be migrated as true`,
             existingBook._id
           )
+
           await helpers.atomicUpdate("book", existingBook._id, (data) => ({
             ...data,
             isAttachedToDataSource: true
           }))
+
+          syncReport.updateBook(existingBook._id)
         }
         // Logger.info(`createOrUpdateBook "${item.name}": existingBook`, existingBook._id)
       }
@@ -137,7 +150,8 @@ export const createOrUpdateBook = async ({
         Logger.info(
           `createOrUpdateBook "${item.name}": new file detected, creating book`
         )
-        const insertedBook = await helpers.createBook({
+
+        const insertedBook = await createBook(db, {
           isAttachedToDataSource: true,
           metadata: [
             {
@@ -147,6 +161,8 @@ export const createOrUpdateBook = async ({
           ]
         })
         bookId = insertedBook.id
+
+        syncReport.addBook(bookId)
       }
 
       if (!bookId) return
@@ -163,13 +179,32 @@ export const createOrUpdateBook = async ({
           lwt: new Date().getTime()
         }
       })
-      await helpers.addLinkToBook(bookId, insertedLink.id)
-      await updateTagsForBook(
+
+      syncReport.addLink(insertedLink.id)
+
+      const addedLinkResponse = await addLinkToBookIfNotExist(
+        db,
         bookId,
-        [...metadata.tags, ...parentTagNames],
-        helpers
+        insertedLink.id
       )
-      await synchronizeBookWithParentCollections(bookId, parentFolders, helpers)
+
+      if (addedLinkResponse) {
+        syncReport.updateBook(bookId)
+      }
+
+      await updateTagsForBook(
+        { _id: bookId },
+        [...metadata.tags, ...parentTagNames],
+        helpers,
+        { db, syncReport }
+      )
+
+      await synchronizeBookWithParentCollections(
+        { _id: bookId },
+        parentFolders,
+        helpers,
+        ctx
+      )
 
       /**
        * Because it's a new book, we start a metadata refresh
@@ -206,21 +241,44 @@ export const createOrUpdateBook = async ({
       }
 
       await synchronizeBookWithParentCollections(
-        existingBook._id,
+        existingBook,
         parentFolders,
-        helpers
+        helpers,
+        ctx
       )
 
       await updateTagsForBook(
-        existingBook._id,
+        existingBook,
         [...metadata.tags, ...parentTagNames],
-        helpers
+        helpers,
+        { db, syncReport }
       )
 
       // Finally we update the tags to the book if needed
       const { applyTags } =
         await helpers.getDataSourceData<GoogleDriveDataSourceData>()
-      await helpers.addTagsToBook(existingBook._id, applyTags || [])
+
+      const [bookUpdated, tagsUpdated] = await addTagsToBookIfNotExist(
+        db,
+        existingBook._id,
+        applyTags || []
+      )
+
+      if (bookUpdated) {
+        syncReport.addOrUpdateTagsToBook({
+          tags: applyTags?.map((_id) => ({ _id })) ?? [],
+          book: existingBook
+        })
+      }
+
+      tagsUpdated?.forEach((tagUpdated) => {
+        if (tagUpdated) {
+          syncReport.addOrUpdateBookToTag({
+            tag: { _id: tagUpdated.id },
+            book: existingBook
+          })
+        }
+      })
     }
 
     Logger.info(`createOrUpdateBook "${item.name}": DONE!`)

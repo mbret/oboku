@@ -4,6 +4,7 @@ import { synchronizeFromDataSource } from "../sync/synchronizeFromDataSource"
 import createNano from "nano"
 import { plugins } from "./plugins"
 import { atomicUpdate } from "@libs/couch/dbHelpers"
+import { SyncReport } from "@libs/sync/SyncReport"
 
 const urlPlugin = plugins.find(({ type }) => type === `URI`)
 
@@ -61,6 +62,7 @@ export const pluginFacade = {
       `dataSourceFacade started sync for ${dataSourceId} with user ${userName}`
     )
 
+    const syncReport = new SyncReport(dataSourceId, userName)
     const nameHex = Buffer.from(userName).toString("hex")
     const helpers = createHelpers(
       dataSourceId,
@@ -96,7 +98,8 @@ export const pluginFacade = {
         credentials,
         dataSourceType: type,
         authorization,
-        db
+        db,
+        syncReport
       }
       const plugin = plugins.find((plugin) => plugin.type === type)
 
@@ -123,6 +126,8 @@ export const pluginFacade = {
 
       console.log(`dataSourcesSync for ${dataSourceId} completed successfully`)
     } catch (e) {
+      syncReport.fail()
+
       let lastSyncErrorCode = ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN
       if (e instanceof ObokuSharedError) {
         lastSyncErrorCode = e.code
@@ -135,6 +140,10 @@ export const pluginFacade = {
       }))
 
       throw e
+    } finally {
+      syncReport.end()
+
+      await syncReport.send()
     }
   }
 }
