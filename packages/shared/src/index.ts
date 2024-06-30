@@ -79,3 +79,7 @@ export * from "./plugin-imhentai-shared"
 
 export * from "./plugins/file"
 export * from "./metadata"
+
+export * from "./sync/reports"
+
+export * from "./objects"
