@@ -7,7 +7,8 @@ import {
   ListItemText,
   styled,
   useTheme,
-  ListItemProps
+  ListItemProps,
+  Stack
 } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { MoreVert } from "@mui/icons-material"
@@ -100,13 +101,10 @@ export const CollectionListItemList: FC<
             })}
           </Box>
         </Box>
-        <div
-          style={{
-            display: "flex",
-            flexFlow: "row",
-            width: "100%",
-            alignItems: "center"
-          }}
+        <Stack
+          width="100%"
+          direction="row"
+          alignItems="center"
           onClick={(e) => {
             e.stopPropagation()
             openActionDrawer()
@@ -120,12 +118,11 @@ export const CollectionListItemList: FC<
             disableFocusRipple
             disableRipple
             disableTouchRipple
-            edge="end"
             size="large"
           >
             <MoreVert />
           </IconButton>
-        </div>
+        </Stack>
       </ListItemButton>
     </ListItem>
   )

@@ -1,10 +1,12 @@
 import { useState, FC, useMemo, useCallback, ComponentProps } from "react"
 import Dialog from "@mui/material/Dialog"
 import {
+  Box,
   Button,
   DialogActions,
   DialogContent,
   DialogTitle,
+  Stack,
   TextField,
   Toolbar,
   useTheme
@@ -83,11 +85,13 @@ export const LibraryCollectionScreen = () => {
   )
 
   return (
-    <div style={classes.container}>
+    <Stack flex={1} overflow="hidden">
       {listHeaderDimTracker}
       <FilterBar />
       <CollectionList
-        style={classes.list}
+        style={{
+          flex: 1
+        }}
         data={collections}
         headerHeight={listHeaderHeight}
         renderHeader={listRenderHeader}
@@ -101,7 +105,7 @@ export const LibraryCollectionScreen = () => {
         onClose={() => setIsAddCollectionDialogOpened(false)}
         open={isAddCollectionDialogOpened}
       />
-    </div>
+    </Stack>
   )
 }
 
@@ -156,10 +160,6 @@ const useStyles = () => {
 
   return useCSS(
     () => ({
-      container: {
-        flex: 1,
-        overflow: "auto"
-      },
       list: {
         height: "100%"
       }

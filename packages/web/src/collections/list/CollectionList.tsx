@@ -7,8 +7,7 @@ import React, {
   Fragment,
   CSSProperties
 } from "react"
-import { List, useTheme } from "@mui/material"
-import { useCSS } from "../../common/utils"
+import { Box, List } from "@mui/material"
 import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { CollectionListItemList } from "./CollectionListItemList"
 import { CollectionDocType } from "@oboku/shared"
@@ -40,7 +39,6 @@ export const CollectionList: FC<
     onItemClick,
     ...rest
   } = props
-  const classes = useStyle()
   const windowSize = useWindowSize()
   const dynamicNumberOfItems = Math.max(Math.floor(windowSize.width / 350), 1)
   const itemsPerRow =
@@ -71,11 +69,6 @@ export const CollectionList: FC<
     [onItemClick, itemMode, rowRendererStyle]
   )
 
-  const containerStyle = useMemo(
-    () => ({ ...classes.container, ...style }),
-    [style, classes]
-  )
-
   if (props.static) {
     return (
       <List disablePadding>
@@ -87,7 +80,7 @@ export const CollectionList: FC<
   }
 
   return (
-    <div style={containerStyle}>
+    <Box style={{ ...style }}>
       <ReactWindowList
         data={data}
         rowRenderer={rowRenderer}
@@ -97,19 +90,6 @@ export const CollectionList: FC<
         itemHeight={itemHeight}
         {...rest}
       />
-    </div>
+    </Box>
   )
 })
-
-const useStyle = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        display: "flex"
-      }
-    }),
-    [theme]
-  )
-}
