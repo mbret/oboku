@@ -1,5 +1,5 @@
 import { getMetadataFromBook } from "../books/getMetadataFromBook"
-import { REGEXP_SPECIAL_CHAR } from "./states"
+import { REGEXP_SPECIAL_CHAR } from "./useCollectionsForSearch"
 import { sortByTitleComparator } from "@oboku/shared"
 import { useVisibleBooks } from "../books/useVisibleBooks"
 import { useMemo } from "react"

@@ -9,13 +9,7 @@ export const CollectionsPane = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
   const { data: collections } = useCollectionsWithPrivacy({
-    queryObj: {
-      selector: {
-        _id: {
-          $in: book?.collections
-        }
-      }
-    }
+    ids: book?.collections ?? []
   })
 
   return (
