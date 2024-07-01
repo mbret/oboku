@@ -1,28 +1,22 @@
 import { intersection } from "lodash"
-import { libraryStateSignal } from "../library/states"
-import {
-  protectedTags$,
-  useProtectedTagIds,
-  useTagsByIds
-} from "../tags/helpers"
+import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
 import { getLinkState, useLink, useLinks } from "../links/states"
 import {
   getBookDownloadsState,
   booksDownloadStateSignal,
   DownloadState
 } from "../download/states"
-import { useCollections, useCollectionsDictionary } from "../collections/states"
-import { map, switchMap, withLatestFrom } from "rxjs"
+import { useCollectionsDictionary } from "../collections/states"
+import { from, map, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
-import { useLocalSettings } from "../settings/states"
-import { isDefined, useForeverQuery, useQuery, useSignalValue } from "reactjrx"
+import { isDefined, useForeverQuery, useQuery } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
-import { useMemo } from "react"
 import { BookDocType } from "@oboku/shared"
 import { DeepReadonlyObject, MangoQuery } from "rxdb"
 import { useVisibleBooks } from "./useVisibleBooks"
+import { DeepReadonlyArray } from "rxdb/dist/types/types"
 
 export const getBooksByIds = async (database: Database) => {
   const result = await database.collections.book.find({}).exec()
@@ -34,13 +28,50 @@ export const getBooksByIds = async (database: Database) => {
 }
 
 export const useBooks = ({
-  queryObj
-}: { queryObj?: MangoQuery<BookDocType> } = {}) => {
+  queryObj = {},
+  isNotInterested,
+  ids
+}: {
+  queryObj?: MangoQuery<BookDocType>
+  isNotInterested?: "none" | "with" | "only"
+  ids?: DeepReadonlyArray<string>
+} = {}) => {
+  const serializedIds = JSON.stringify(ids)
+
   return useForeverQuery({
-    queryKey: ["rxdb", "get", "many", "books", queryObj],
+    queryKey: [
+      "rxdb",
+      "get",
+      "many",
+      "books",
+      { isNotInterested, serializedIds },
+      queryObj
+    ],
     queryFn: () => {
+      const finalQueryObj = {
+        ...queryObj,
+        selector: {
+          ...queryObj.selector,
+          ...(isNotInterested === "none" && {
+            isNotInterested: {
+              $ne: true
+            }
+          }),
+          ...(isNotInterested === "only" && {
+            isNotInterested: {
+              $eq: true
+            }
+          }),
+          ...(ids && {
+            _id: {
+              $in: ids
+            }
+          })
+        }
+      } satisfies MangoQuery<BookDocType>
+
       return latestDatabase$.pipe(
-        switchMap((db) => db.collections.book.find(queryObj).$),
+        switchMap((db) => db.collections.book.find(finalQueryObj).$),
         map((items) => items.map((item) => item.toJSON()))
       )
     }
@@ -294,10 +325,10 @@ export const useBookIdsState = () => {
   return Object.keys(books)
 }
 
-export const useVisibleBookIds = ({
-  queryObj
-}: { queryObj?: MangoQuery<BookDocType> } = {}) => {
-  return useVisibleBooks({ queryObj }).data?.map((book) => book._id)
+export const useVisibleBookIds = (
+  params: Parameters<typeof useVisibleBooks>[0] = {}
+) => {
+  return useVisibleBooks(params).data?.map((book) => book._id)
 }
 
 /**

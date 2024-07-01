@@ -31,6 +31,7 @@ import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { searchStateSignal, useCollectionsForSearch } from "./states"
 import { useSignalValue } from "reactjrx"
 import { useBooksForSearch } from "./useBooksForSearch"
+import { ListActionsToolbar } from "./list/ListActionsToolbar"
 
 const Accordion = styled(MuiAccordion)({
   ":before": {
@@ -122,6 +123,7 @@ export const SearchScreen = () => {
           </form>
         }
       />
+      <ListActionsToolbar />
       <Box overflow="scroll">
         <Accordion
           disableGutters

@@ -38,14 +38,9 @@ export const CollectionDetailsScreen = () => {
   const { data: collection } = useCollection({
     id
   })
+
   const visibleBooks = useVisibleBookIds({
-    queryObj: {
-      selector: {
-        _id: {
-          $in: collection?.books ?? []
-        }
-      }
-    }
+    ids: collection?.books ?? []
   })
 
   const { open: openActionDrawer } = useCollectionActionsDrawer(
