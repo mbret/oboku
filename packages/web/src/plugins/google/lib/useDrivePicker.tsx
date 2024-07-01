@@ -2,7 +2,7 @@ import { useCallback } from "react"
 import { DEVELOPER_KEY, APP_ID } from "./constants"
 import { useGoogle } from "./useGsiClient"
 import { useAccessToken } from "./useAccessToken"
-import { finalize, from, switchMap } from "rxjs"
+import { defer, finalize, from, switchMap } from "rxjs"
 
 export const useDrivePicker = ({
   requestPopup
@@ -14,13 +14,19 @@ export const useDrivePicker = ({
 
   const pick = useCallback(
     ({ select }: { select: "file" | "folder" }) => {
-      return from(lazyGsi).pipe(
-        switchMap((gsi) =>
-          from(
-            requestToken({
-              scope: [`https://www.googleapis.com/auth/drive.readonly`]
-            })
-          ).pipe(
+      const gsi$ = from(lazyGsi)
+
+      const requestToken$ = defer(() =>
+        from(
+          requestToken({
+            scope: [`https://www.googleapis.com/auth/drive.readonly`]
+          })
+        )
+      )
+
+      return gsi$.pipe(
+        switchMap((gsi) => {
+          return requestToken$.pipe(
             switchMap((accessToken) => {
               let picker: google.picker.Picker
 
@@ -57,7 +63,7 @@ export const useDrivePicker = ({
               )
             })
           )
-        )
+        })
       )
     },
     [lazyGsi, requestToken]
