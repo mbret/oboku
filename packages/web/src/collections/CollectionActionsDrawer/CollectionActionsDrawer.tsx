@@ -16,20 +16,20 @@ import {
   ThumbUpOutlined,
   SyncRounded
 } from "@mui/icons-material"
-import { ManageCollectionBooksDialog } from "../../../collections/ManageCollectionBooksDialog"
-import { useModalNavigationControl } from "../../../navigation/useModalNavigationControl"
 import { useSignalValue } from "reactjrx"
-import { useRemoveCollection } from "../../../collections/useRemoveCollection"
 import {
   collectionActionDrawerChangesState,
   collectionActionDrawerState
 } from "./useCollectionActionsDrawer"
-import { useUpdateCollectionBooks } from "../../../collections/useUpdateCollectionBooks"
 import { EditCollectionDialog } from "./EditCollectionDialog"
-import { useRefreshCollectionMetadata } from "../../../collections/useRefreshCollectionMetadata"
-import { useCollection } from "../../../collections/states"
 import { differenceInMinutes } from "date-fns"
 import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
+import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
+import { ManageCollectionBooksDialog } from "../ManageCollectionBooksDialog"
+import { useCollection } from "../states"
+import { useRefreshCollectionMetadata } from "../useRefreshCollectionMetadata"
+import { useRemoveCollection } from "../useRemoveCollection"
+import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 
 export const CollectionActionsDrawer: FC<{}> = () => {
   const { openedWith: collectionId } = useSignalValue(

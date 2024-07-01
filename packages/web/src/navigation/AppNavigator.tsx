@@ -23,7 +23,6 @@ import { AuthCallbackScreen } from "../auth/AuthCallbackScreen"
 import { SettingsScreen } from "../settings/SettingsScreen"
 import { StatisticsScreen } from "../settings/StatisticsScreen"
 import { BackToReadingDialog } from "../reading/BackToReadingDialog"
-import { CollectionActionsDrawer } from "../library/collections/CollectionActionsDrawer/CollectionActionsDrawer"
 import { ProblemsScreen } from "../problems/ProblemsScreen"
 import { LibraryBooksScreen } from "../library/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../library/collections/LibraryCollectionScreen"
@@ -35,6 +34,7 @@ import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
 import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
 import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
+import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>

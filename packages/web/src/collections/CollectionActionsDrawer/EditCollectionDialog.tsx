@@ -7,9 +7,9 @@ import {
   Button
 } from "@mui/material"
 import { useEffect, useState, FC } from "react"
-import { useCollection } from "../../../collections/states"
-import { useUpdateCollection } from "../../../collections/useUpdateCollection"
-import { getMetadataFromCollection } from "../../../collections/getMetadataFromCollection"
+import { getMetadataFromCollection } from "../getMetadataFromCollection"
+import { useCollection } from "../states"
+import { useUpdateCollection } from "../useUpdateCollection"
 
 export const EditCollectionDialog: FC<{
   open: boolean
