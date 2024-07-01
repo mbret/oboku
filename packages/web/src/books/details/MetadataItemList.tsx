@@ -30,7 +30,7 @@ export const MetadataItemList = ({
           </Button>
         )}
       </Stack>
-      <Stack flexDirection="row" gap={1}>
+      <Stack flexDirection="row" gap={1} flexWrap="wrap">
         {!values?.length && (
           <Typography variant="caption">{emptyLabel}</Typography>
         )}
@@ -39,6 +39,9 @@ export const MetadataItemList = ({
             label={item.label ?? "unknown"}
             size="medium"
             key={index}
+            style={{
+              maxWidth: 320
+            }}
             {...(item.to && {
               clickable: true,
               to: item.to,
