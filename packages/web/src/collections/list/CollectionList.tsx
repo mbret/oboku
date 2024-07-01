@@ -1,12 +1,4 @@
-import React, {
-  useCallback,
-  FC,
-  useMemo,
-  memo,
-  ComponentProps,
-  Fragment,
-  CSSProperties
-} from "react"
+import React, { useCallback, FC, memo, ComponentProps, Fragment } from "react"
 import { Box, List } from "@mui/material"
 import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { CollectionListItemList } from "./CollectionListItemList"
@@ -50,23 +42,15 @@ export const CollectionList: FC<
 
   const itemHeight = 250
 
-  const rowRendererStyle: CSSProperties = useMemo(
-    () => ({
-      height: itemHeight
-    }),
-    [itemHeight]
-  )
-
   const rowRenderer = useCallback(
     (item: string) => (
       <CollectionListItemList
         id={item}
         onItemClick={onItemClick}
         viewMode={itemMode}
-        style={rowRendererStyle}
       />
     ),
-    [onItemClick, itemMode, rowRendererStyle]
+    [onItemClick, itemMode]
   )
 
   if (props.static) {
