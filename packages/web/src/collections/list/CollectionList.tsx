@@ -1,5 +1,5 @@
 import React, { useCallback, FC, memo, ComponentProps, Fragment } from "react"
-import { Box, List } from "@mui/material"
+import { Box, List, Stack } from "@mui/material"
 import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { CollectionListItemList } from "./CollectionListItemList"
 import { CollectionDocType } from "@oboku/shared"
@@ -57,7 +57,9 @@ export const CollectionList: FC<
     return (
       <List disablePadding>
         {data.map((item) => (
-          <Fragment key={item}>{rowRenderer(item)}</Fragment>
+          <Stack height={itemHeight} key={item}>
+            {rowRenderer(item)}
+          </Stack>
         ))}
       </List>
     )
