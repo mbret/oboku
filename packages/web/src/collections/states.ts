@@ -7,20 +7,55 @@ import { keyBy } from "lodash"
 import { useVisibleBookIds } from "../books/states"
 import { MangoQuery } from "rxdb"
 import { getMetadataFromCollection } from "./getMetadataFromCollection"
+import { DeepReadonlyArray } from "rxdb/dist/types/types"
 
 export type Collection = CollectionDocType
 
 export const useCollections = ({
   queryObj,
+  bookIds,
+  ids,
   ...options
-}: { queryObj?: MangoQuery<CollectionDocType>; enabled?: boolean } = {}) => {
+}: {
+  queryObj?: MangoQuery<CollectionDocType>
+  enabled?: boolean
+  bookIds?: DeepReadonlyArray<string>
+  ids?: DeepReadonlyArray<string>
+} = {}) => {
   const localSettings = useLocalSettings()
+  const serializedBookIds = JSON.stringify(bookIds)
+  const serializedIds = JSON.stringify(ids)
 
   return useForeverQuery({
-    queryKey: ["rxdb", "get", "collections", queryObj],
+    queryKey: [
+      "rxdb",
+      "get",
+      "collections",
+      { serializedBookIds, serializedIds },
+      queryObj
+    ],
     queryFn: () => {
       return latestDatabase$.pipe(
-        switchMap((db) => db.collections.obokucollection.find(queryObj).$),
+        switchMap((db) => {
+          const finalQueryObj = {
+            ...queryObj,
+            selector: {
+              ...queryObj?.selector,
+              ...(ids && {
+                _id: {
+                  $in: ids
+                }
+              }),
+              ...(bookIds && {
+                books: {
+                  $in: bookIds
+                }
+              })
+            }
+          } satisfies MangoQuery<CollectionDocType>
+
+          return db.collections.obokucollection.find(finalQueryObj).$
+        }),
         map((items) =>
           items.map((item) => ({
             ...item?.toJSON(),
@@ -81,10 +116,19 @@ export const useCollection = ({ id }: { id?: string }) => {
 
 export const useCollectionsWithPrivacy = ({
   queryObj,
+  isNotInterested,
   ...options
-}: { queryObj?: MangoQuery<CollectionDocType>; enabled?: boolean } = {}) => {
-  const { data: collections } = useCollections({ queryObj, ...options })
-  const visibleBookIds = useVisibleBookIds()
+}: Parameters<typeof useCollections>[0] & {
+  isNotInterested?: "with" | "none" | "only" | undefined
+} = {}) => {
+  const visibleBookIds = useVisibleBookIds({
+    isNotInterested
+  })
+  const { data: collections } = useCollections({
+    queryObj,
+    bookIds: isNotInterested === "only" ? visibleBookIds : undefined,
+    ...options
+  })
   const { showCollectionWithProtectedContent } = useLocalSettings()
 
   return {

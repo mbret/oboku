@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom"
 import { BookList } from "../books/bookList/BookList"
 import { CollectionList } from "../collections/list/CollectionList"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { useCollectionsForSearch } from "./states"
+import { useCollectionsForSearch } from "./useCollectionsForSearch"
 import { useBooksForSearch } from "./useBooksForSearch"
 
 const getTitle = (type?: string) => {
