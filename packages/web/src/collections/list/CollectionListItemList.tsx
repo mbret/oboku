@@ -7,15 +7,15 @@ import {
   ListItemText,
   styled,
   useTheme,
-  ListItemProps
+  ListItemProps,
+  Stack
 } from "@mui/material"
-import { useCSS } from "../../common/utils"
 import { MoreVert } from "@mui/icons-material"
 import { CollectionDocType } from "@oboku/shared"
 import { Cover } from "../../books/Cover"
 import { useCollection } from "../states"
 import { DeepReadonlyObject } from "rxdb"
-import { useCollectionActionsDrawer } from "../../library/collections/CollectionActionsDrawer/useCollectionActionsDrawer"
+import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,
@@ -33,39 +33,54 @@ export const CollectionListItemList: FC<
     onItemClick?: (tag: DeepReadonlyObject<CollectionDocType>) => void
     viewMode?: "container" | "text"
   } & ListItemProps
-> = memo(({ id, onItemClick, viewMode, ...rest }) => {
+> = memo(({ id, onItemClick }) => {
   const theme = useTheme()
   const { data: item } = useCollection({
     id
   })
   const { open: openActionDrawer } = useCollectionActionsDrawer(id)
-  const styles = useStyle()
 
   return (
     <ListItem
       onClick={() => item && onItemClick && onItemClick(item)}
       disablePadding
-      {...rest}
     >
       <ListItemButton
         disableGutters
-        style={{
+        sx={{
           display: "flex",
           flexDirection: "column",
           alignSelf: "stretch",
-          padding: 10
+          py: 2,
+          px: 2,
+          borderRadius: 1
         }}
       >
-        <Box
-          style={{ ...styles.itemCard }}
+        <Stack
+          sx={{
+            bgcolor: "grey.200",
+            height: `100%`,
+            borderRadius: 2,
+            overflow: "hidden",
+            position: "relative",
+            alignItems: "center"
+          }}
           width="100%"
-          display="flex"
-          flexDirection="column"
-          p={2}
-          pt={3}
           justifyContent="center"
         >
-          <div style={styles.itemBottomRadius} />
+          <Box
+            style={{
+              backgroundColor: theme.palette.grey[300],
+              height: "50%",
+              width: "100%",
+              borderTopLeftRadius: "50%",
+              borderTopRightRadius: "50%",
+              alignSelf: "flex-end",
+              position: "absolute",
+              bottom: 0,
+              left: 0
+            }}
+          />
           <Box
             style={{
               width: "100%",
@@ -99,14 +114,11 @@ export const CollectionListItemList: FC<
               )
             })}
           </Box>
-        </Box>
-        <div
-          style={{
-            display: "flex",
-            flexFlow: "row",
-            width: "100%",
-            alignItems: "center"
-          }}
+        </Stack>
+        <Stack
+          width="100%"
+          direction="row"
+          alignItems="center"
           onClick={(e) => {
             e.stopPropagation()
             openActionDrawer()
@@ -115,56 +127,22 @@ export const CollectionListItemList: FC<
           <ListItemText
             primary={item?.displayableName}
             secondary={`${item?.books?.length || 0} book(s)`}
+            primaryTypographyProps={{
+              overflow: "hidden",
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis"
+            }}
           />
           <IconButton
             disableFocusRipple
             disableRipple
             disableTouchRipple
-            edge="end"
             size="large"
           >
             <MoreVert />
           </IconButton>
-        </div>
+        </Stack>
       </ListItemButton>
     </ListItem>
   )
 })
-
-const useStyle = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        height: `100%`,
-        paddingRight: theme.spacing(2),
-        paddingLeft: theme.spacing(2),
-        flexFlow: "column",
-        position: "relative"
-      },
-      itemCard: {
-        backgroundColor: theme.palette.grey[200],
-        width: "100%",
-        height: `100%`,
-        display: "flex",
-        borderRadius: 10,
-        overflow: "hidden",
-        position: "relative",
-        alignItems: "center"
-      },
-      itemBottomRadius: {
-        backgroundColor: theme.palette.grey[300],
-        height: "50%",
-        width: "100%",
-        borderTopLeftRadius: "50%",
-        borderTopRightRadius: "50%",
-        alignSelf: "flex-end",
-        position: "absolute",
-        bottom: 0,
-        left: 0
-      }
-    }),
-    [theme]
-  )
-}

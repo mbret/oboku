@@ -1,14 +1,5 @@
-import React, {
-  useCallback,
-  FC,
-  useMemo,
-  memo,
-  ComponentProps,
-  Fragment,
-  CSSProperties
-} from "react"
-import { List, useTheme } from "@mui/material"
-import { useCSS } from "../../common/utils"
+import React, { useCallback, FC, memo, ComponentProps, Fragment } from "react"
+import { Box, List } from "@mui/material"
 import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { CollectionListItemList } from "./CollectionListItemList"
 import { CollectionDocType } from "@oboku/shared"
@@ -40,7 +31,6 @@ export const CollectionList: FC<
     onItemClick,
     ...rest
   } = props
-  const classes = useStyle()
   const windowSize = useWindowSize()
   const dynamicNumberOfItems = Math.max(Math.floor(windowSize.width / 350), 1)
   const itemsPerRow =
@@ -52,28 +42,15 @@ export const CollectionList: FC<
 
   const itemHeight = 250
 
-  const rowRendererStyle: CSSProperties = useMemo(
-    () => ({
-      height: itemHeight
-    }),
-    [itemHeight]
-  )
-
   const rowRenderer = useCallback(
     (item: string) => (
       <CollectionListItemList
         id={item}
         onItemClick={onItemClick}
         viewMode={itemMode}
-        style={rowRendererStyle}
       />
     ),
-    [onItemClick, itemMode, rowRendererStyle]
-  )
-
-  const containerStyle = useMemo(
-    () => ({ ...classes.container, ...style }),
-    [style, classes]
+    [onItemClick, itemMode]
   )
 
   if (props.static) {
@@ -87,7 +64,7 @@ export const CollectionList: FC<
   }
 
   return (
-    <div style={containerStyle}>
+    <Box style={{ ...style }}>
       <ReactWindowList
         data={data}
         rowRenderer={rowRenderer}
@@ -97,19 +74,6 @@ export const CollectionList: FC<
         itemHeight={itemHeight}
         {...rest}
       />
-    </div>
+    </Box>
   )
 })
-
-const useStyle = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        display: "flex"
-      }
-    }),
-    [theme]
-  )
-}

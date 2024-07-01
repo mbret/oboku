@@ -8,13 +8,7 @@ export const useContinueReadingBooks = () => {
   const { isPending } = useProtectedTagIds()
 
   const { data: booksAsArray, isLoading: isBooksPending } = useVisibleBooks({
-    queryObj: {
-      selector: {
-        isNotInterested: {
-          $ne: true
-        }
-      }
-    }
+    isNotInterested: "none"
   })
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
 
@@ -35,13 +29,7 @@ export const useContinueReadingBooks = () => {
 
 export const useRecentlyAddedBooks = () => {
   const { data: booksAsArray } = useVisibleBooks({
-    queryObj: {
-      selector: {
-        isNotInterested: {
-          $ne: true
-        }
-      }
-    }
+    isNotInterested: "none"
   })
 
   return useMemo(() => {

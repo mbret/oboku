@@ -107,7 +107,7 @@ export const BookDetailsScreen = () => {
       <Container
         sx={{
           flexDirection: ["row", "row"],
-          flexWrap: "wrap",
+          // flexWrap: "wrap",
           gap: 1,
           mb: 1,
           display: "flex",
@@ -120,7 +120,7 @@ export const BookDetailsScreen = () => {
             color="primary"
             sx={{
               flex: [1, "none"],
-              minWidth: 280
+              minWidth: 260
             }}
             startIcon={<CloudDownloadRounded />}
             onClick={() => downloadFile(book)}
@@ -132,7 +132,7 @@ export const BookDetailsScreen = () => {
           <Button
             sx={{
               flex: [1, "none"],
-              minWidth: 280
+              minWidth: 260
             }}
             variant="outlined"
             color="primary"
@@ -147,7 +147,7 @@ export const BookDetailsScreen = () => {
             color="primary"
             sx={{
               flex: [1, "none"],
-              minWidth: 280
+              minWidth: 260
             }}
             startIcon={<MenuBookOutlined />}
             onClick={() => navigate(ROUTES.READER.replace(":id", book._id))}

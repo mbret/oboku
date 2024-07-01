@@ -15,11 +15,11 @@ export const useUpdateCollection = () => {
         .findOne({ selector: { _id } })
         .exec()
 
-      item?.atomicUpdate((old) => ({
+      return item?.atomicUpdate((old) => ({
         ...old,
         ...rest,
         metadata: old.metadata?.map((entry) =>
-          entry.type === "user" ? { ...entry, name } : entry
+          entry.type === "user" ? { ...entry, title: name } : entry
         )
       }))
     }

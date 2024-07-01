@@ -3,9 +3,17 @@ import { REGEXP_SPECIAL_CHAR } from "./states"
 import { sortByTitleComparator } from "@oboku/shared"
 import { useVisibleBooks } from "../books/useVisibleBooks"
 import { useMemo } from "react"
+import { useSignalValue } from "reactjrx"
+import { searchListActionsToolbarSignal } from "./list/states"
 
 export const useBooksForSearch = (search: string) => {
-  const { data: visibleBooks } = useVisibleBooks()
+  const { notInterestedContents } = useSignalValue(
+    searchListActionsToolbarSignal
+  )
+
+  const { data: visibleBooks } = useVisibleBooks({
+    isNotInterested: notInterestedContents
+  })
 
   const filteredBooks = useMemo(
     () =>
@@ -21,7 +29,6 @@ export const useBooksForSearch = (search: string) => {
 
             const indexOfFirstMatch = title?.search(searchRegex) || 0
 
-            console.log({ title, indexOfFirstMatch })
             return indexOfFirstMatch >= 0
           })
         })

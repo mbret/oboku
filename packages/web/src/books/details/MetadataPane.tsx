@@ -23,8 +23,14 @@ export const MetadataPane = ({ bookId }: { bookId?: string }) => {
         <TagsRow bookId={book?._id} />
         <DescriptionRow bookId={book?._id} />
         <Stack flexDirection="row" gap={2} flexWrap="wrap">
-          <MetadataItemList values={metadata.authors} label="Authors" />
-          <MetadataItemList values={[metadata.publisher]} label="Publisher" />
+          <MetadataItemList
+            values={metadata.authors?.map((item) => ({ label: item }))}
+            label="Authors"
+          />
+          <MetadataItemList
+            values={[{ label: metadata.publisher }]}
+            label="Publisher"
+          />
         </Stack>
         <List
           sx={{ width: "100%", bgcolor: "background.paper" }}

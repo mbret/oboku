@@ -1,4 +1,3 @@
-import { BookDocType, SafeMangoQuery } from "@oboku/shared"
 import { useBooks } from "./states"
 import { useProtectedTagIds } from "../tags/helpers"
 import { useSignalValue } from "reactjrx"
@@ -6,10 +5,10 @@ import { libraryStateSignal } from "../library/states"
 import { useMemo } from "react"
 import { intersection } from "lodash"
 
-export const useVisibleBooks = ({
-  queryObj
-}: { queryObj?: SafeMangoQuery<BookDocType> } = {}) => {
-  const { data: books, isLoading: isBooksLoading } = useBooks({ queryObj })
+export const useVisibleBooks = (
+  params: Parameters<typeof useBooks>[0] = {}
+) => {
+  const { data: books, isLoading: isBooksLoading } = useBooks(params)
   const { data: protectedTagIds, isLoading: isTagsLoading } =
     useProtectedTagIds()
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
