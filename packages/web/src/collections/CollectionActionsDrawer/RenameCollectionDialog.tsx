@@ -11,14 +11,13 @@ import { getMetadataFromCollection } from "../getMetadataFromCollection"
 import { useCollection } from "../states"
 import { useUpdateCollection } from "../useUpdateCollection"
 
-export const EditCollectionDialog: FC<{
-  open: boolean
-  id: string | undefined
+export const RenameCollectionDialog: FC<{
+  openWith: string | undefined
   onClose: () => void
-}> = ({ onClose, open, id }) => {
+}> = ({ onClose, openWith }) => {
   const [name, setName] = useState("")
   const { data: collection } = useCollection({
-    id
+    id: openWith
   })
   const { mutate: editCollection } = useUpdateCollection()
 
@@ -37,11 +36,11 @@ export const EditCollectionDialog: FC<{
 
   useEffect(() => {
     setName((prev) => title || prev)
-  }, [title, id])
+  }, [title, openWith])
 
   return (
-    <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>{getMetadataFromCollection(collection)?.title}</DialogTitle>
+    <Dialog onClose={onInnerClose} open={!!openWith}>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
@@ -59,7 +58,7 @@ export const EditCollectionDialog: FC<{
         <Button
           onClick={() => {
             onInnerClose()
-            id && onConfirm(id, name)
+            openWith && onConfirm(openWith, name)
           }}
         >
           Save

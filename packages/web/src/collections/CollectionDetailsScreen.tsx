@@ -6,12 +6,12 @@ import CollectionBgSvg from "../assets/series-bg.svg"
 import { useCollection } from "./states"
 import { BookListWithControls } from "../books/bookList/BookListWithControls"
 import { useVisibleBookIds } from "../books/states"
-import { useCollectionActionsDrawer } from "../library/collections/CollectionActionsDrawer/useCollectionActionsDrawer"
 import { signal, useSignalValue } from "reactjrx"
 import {
   ListActionSorting,
   ListActionViewMode
 } from "../common/lists/ListActionsToolbar"
+import { useCollectionActionsDrawer } from "./CollectionActionsDrawer/useCollectionActionsDrawer"
 
 type ScreenParams = {
   id: string

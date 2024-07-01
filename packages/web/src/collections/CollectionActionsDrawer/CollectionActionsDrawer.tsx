@@ -21,7 +21,7 @@ import {
   collectionActionDrawerChangesState,
   collectionActionDrawerState
 } from "./useCollectionActionsDrawer"
-import { EditCollectionDialog } from "./EditCollectionDialog"
+import { RenameCollectionDialog } from "./RenameCollectionDialog"
 import { differenceInMinutes } from "date-fns"
 import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
@@ -177,12 +177,11 @@ export const CollectionActionsDrawer: FC<{}> = () => {
         }}
         collectionId={collectionId}
       />
-      <EditCollectionDialog
-        id={isEditCollectionDialogOpenedWithId}
+      <RenameCollectionDialog
+        openWith={isEditCollectionDialogOpenedWithId}
         onClose={() => {
           setIsEditCollectionDialogOpenedWithId(undefined)
         }}
-        open={!!isEditCollectionDialogOpenedWithId}
       />
     </>
   )
