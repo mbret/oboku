@@ -1,5 +1,6 @@
 import { EditOutlined } from "@mui/icons-material"
 import { Button, Chip, Stack, StackProps, Typography } from "@mui/material"
+import { Link } from "react-router-dom"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
 
 export const MetadataItemList = ({
@@ -9,7 +10,7 @@ export const MetadataItemList = ({
   emptyLabel = "Unknown",
   ...rest
 }: {
-  values?: DeepReadonlyArray<string | undefined>
+  values?: DeepReadonlyArray<{ label?: string; to?: string }>
   label: string
   emptyLabel?: string
   onEditClick?: () => void
@@ -35,10 +36,14 @@ export const MetadataItemList = ({
         )}
         {values?.map((item, index) => (
           <Chip
-            label={item ?? "unknown"}
+            label={item.label ?? "unknown"}
             size="medium"
             key={index}
-            onClick={() => {}}
+            {...(item.to && {
+              clickable: true,
+              to: item.to,
+              component: Link
+            })}
           />
         ))}
       </Stack>
