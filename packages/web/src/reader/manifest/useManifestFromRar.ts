@@ -1,10 +1,8 @@
-import "../../archive"
-import { getBookFile } from "../../download/getBookFile.shared"
 import { useQuery } from "reactjrx"
-import { getArchiveForRarFile } from "../streamer/getArchiveForFile.shared"
 import { generateManifestFromArchive } from "@prose-reader/streamer"
 import { getManifestBaseUrl } from "../streamer/getManifestBaseUrl.shared"
 import { FileNotSupportedError } from "../errors.shared"
+import { useArchiveForRarFile } from "../streamer/useArchiveForRarFile"
 
 export const useManifestFromRar = ({
   bookId,
@@ -12,16 +10,16 @@ export const useManifestFromRar = ({
 }: {
   bookId?: string
   enabled?: boolean
-}) =>
-  useQuery({
+}) => {
+  const { data: archive, ...archiveRes } = useArchiveForRarFile({
+    bookId,
+    enabled
+  })
+
+  const res = useQuery({
     queryKey: ["reader/rar-streamer/manifest", { bookId }],
     queryFn: async () => {
-      const file = await getBookFile(bookId ?? "")
-      const normalizedName = file?.name.toLowerCase()
-
-      if (file && normalizedName?.endsWith(`.cbr`)) {
-        const archive = await getArchiveForRarFile(file)
-
+      if (archive) {
         const manifest = await generateManifestFromArchive(archive, {
           baseUrl: getManifestBaseUrl(window.location.origin, bookId ?? "")
         })
@@ -31,6 +29,10 @@ export const useManifestFromRar = ({
 
       throw new FileNotSupportedError()
     },
+    gcTime: 0,
     staleTime: Infinity,
-    enabled: enabled !== false && !!bookId
+    enabled: enabled !== false && !!bookId && !!archive
   })
+
+  return { ...res, error: archiveRes.error || res.error }
+}

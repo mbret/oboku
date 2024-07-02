@@ -6,6 +6,7 @@ import { bookBeingReadStatePersist } from "../reading/states"
 import { localSettingsStatePersist } from "../settings/states"
 import { collectionsListSignal } from "../library/collections/state"
 import { collectionDetailsScreenListControlsStateSignal } from "../collections/CollectionDetailsScreen"
+import { searchListActionsToolbarSignal } from "../search/list/states"
 
 export const signalEntriesToPersist = [
   { signal: libraryStateSignal, version: 0 },
@@ -15,5 +16,6 @@ export const signalEntriesToPersist = [
   { signal: localSettingsStatePersist, version: 0 },
   { signal: bookBeingReadStatePersist, version: 0 },
   { signal: readerSettingsStateSignal, version: 0 },
-  { signal: collectionDetailsScreenListControlsStateSignal, version: 0 }
+  { signal: collectionDetailsScreenListControlsStateSignal, version: 0 },
+  { signal: searchListActionsToolbarSignal, version: 0 }
 ]

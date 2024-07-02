@@ -83,7 +83,7 @@ export const MoreDialog: FC<{}> = () => {
           color="primary"
           onClick={() => {
             toggleMoreDialog()
-            reader?.goToUrl(tocItem.href)
+            reader?.viewportNavigator.goToUrl(tocItem.href)
           }}
           style={{
             paddingLeft: theme.spacing(lvl * 2)

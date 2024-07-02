@@ -11,7 +11,7 @@ export const useGestureHandler = (hammer: HammerManager | undefined) => {
   useEffect(() => {
     const onTap = ({ srcEvent }: HammerInput) => {
       const normalizedEvent =
-        reader?.normalizeEventForViewport(srcEvent) || srcEvent
+        reader?.events.normalizeEventForViewport(srcEvent) || srcEvent
 
       if (normalizedEvent?.target) {
         const target = normalizedEvent.target as HTMLElement
@@ -27,9 +27,9 @@ export const useGestureHandler = (hammer: HammerManager | undefined) => {
         if (!reader) {
           isMenuShownStateSignal.setValue((val) => !val)
         } else if (x < width * HORIZONTAL_TAPPING_RATIO) {
-          reader?.turnLeft()
+          reader?.viewportNavigator.turnLeft()
         } else if (x > width * (1 - HORIZONTAL_TAPPING_RATIO)) {
-          reader?.turnRight()
+          reader?.viewportNavigator.turnRight()
         } else {
           isMenuShownStateSignal.setValue((val) => !val)
         }
@@ -38,13 +38,13 @@ export const useGestureHandler = (hammer: HammerManager | undefined) => {
 
     const onPanMove = (ev: HammerInput) => {
       if (reader) {
-        if (ev.isFinal && !reader.isSelecting()) {
+        if (ev.isFinal && !reader.spine.isSelecting()) {
           const velocity = ev.velocityX
           if (velocity < -0.5) {
-            reader.turnRight()
+            reader.viewportNavigator.turnRight()
           }
           if (velocity > 0.5) {
-            reader.turnLeft()
+            reader.viewportNavigator.turnLeft()
           }
         }
       }

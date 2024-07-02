@@ -31,6 +31,12 @@ import { authSignalStorageAdapter } from "./auth/storage"
 import { authStateSignal } from "./auth/authState"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
+import { Archive as LibARchive } from "libarchive.js"
+
+// @todo move to sw
+LibARchive.init({
+  workerUrl: "/libarchive.js.worker-bundle.js"
+})
 
 declare module "@mui/styles/defaultTheme" {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface

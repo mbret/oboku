@@ -22,7 +22,7 @@ import { BookLoading } from "./BookLoading"
 import Hammer from "hammerjs"
 import { useCSS } from "../common/utils"
 import { Reader as ObokuReader } from "@prose-reader/react"
-import { useRarStreamer } from "./streamer/useRarStreamer.shared"
+import { useFetchResource } from "./streamer/useFetchResource"
 import { useUpdateBookState } from "./bookHelpers"
 import { FloatingBottom } from "./FloatingBottom"
 import { FONT_SCALE_MAX, FONT_SCALE_MIN } from "./constants"
@@ -60,14 +60,19 @@ export const Reader: FC<{
     isRarFile,
     error: manifestError
   } = useManifest(bookId)
-  const { fetchResource } = useRarStreamer(isRarFile ? bookId : undefined)
+
+  /**
+   * In case of rar archive, we will use our local resource fetcher
+   */
+  const { fetchResource } = useFetchResource(isRarFile ? bookId : undefined)
+
   const [readerOptions, setReaderOptions] = useState<
     ReactReaderProps["options"] | undefined
   >()
   const isBookError = !!manifestError
   // We don't want to display overlay for comics / manga
   const showFloatingMenu =
-    reader?.context.getManifest()?.renditionLayout !== "pre-paginated"
+    reader?.context.manifest?.renditionLayout !== "pre-paginated"
 
   useBookResize(reader, containerWidth, containerHeight)
   useGestureHandler(readerContainerHammer)
@@ -104,20 +109,15 @@ export const Reader: FC<{
           fontScaleMax: FONT_SCALE_MAX,
           fontScaleMin: FONT_SCALE_MIN
         },
-        fontScale: readerSettings.fontScale ?? 1
+        fontScale: readerSettings.fontScale ?? 1,
+        ...(isRarFile && {
+          fetchResource
+        })
       })
 
-      if (isRarFile && fetchResource) {
-        setLoadOptions({
-          fetchResource,
-          cfi: book.readingStateCurrentBookmarkLocation || undefined
-        })
-      }
-      if (!isRarFile) {
-        setLoadOptions({
-          cfi: book.readingStateCurrentBookmarkLocation || undefined
-        })
-      }
+      setLoadOptions({
+        cfi: book.readingStateCurrentBookmarkLocation || undefined
+      })
     }
   }, [book, manifest, readerOptions, isRarFile, fetchResource, readerSettings])
 

@@ -38,9 +38,9 @@ export const Scrubber: FC<{}> = () => {
 
           // @todo onChange will change directly when moving scrubber, on after change is good however it triggers twice
           if (renditionLayout !== "reflowable") {
-            reader?.goToSpineItem(value)
+            reader?.viewportNavigator.goToSpineItem(value)
           } else {
-            reader?.goToPageOfCurrentChapter(value)
+            reader?.viewportNavigator.goToPageOfCurrentChapter(value)
           }
         }
       }}
