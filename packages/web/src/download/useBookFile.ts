@@ -1,25 +1,30 @@
-import { useEffect, useState } from "react"
 import { getBookFile } from "./getBookFile.shared"
-import { BookFile } from "./types"
+import { useQuery } from "reactjrx"
 
-export const useBookFile = (bookId: string) => {
-  const [file, setFile] = useState<BookFile | null | undefined>(undefined)
+export const useBookFile = ({
+  bookId,
+  enabled
+}: {
+  bookId?: string
+  enabled?: boolean
+}) => {
+  return useQuery({
+    queryKey: ["bookFile", bookId],
+    enabled: enabled !== false && !!bookId,
+    queryFn: async () => {
+      const file = await getBookFile(bookId ?? "-1")
 
-  useEffect(() => {
-    let terminated = false
-
-    ;(async () => {
-      const item = await getBookFile(bookId)
-
-      if (!terminated) {
-        setFile(item)
+      if (!file) {
+        throw new Error("No book file found")
       }
-    })()
 
-    return () => {
-      terminated = true
-    }
-  }, [bookId])
-
-  return file
+      return file
+    },
+    networkMode: "always",
+    gcTime: 0,
+    staleTime: Infinity,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false
+  })
 }

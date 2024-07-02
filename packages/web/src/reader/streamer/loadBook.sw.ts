@@ -18,6 +18,7 @@ const cleanup = () => {
           `serviceWorker.loadBook.cleanup`,
           `cleaning up unused epub archive reference (after 5mn)`
         )
+        archive.close()
         archive = undefined
         lastUrl = undefined
       }

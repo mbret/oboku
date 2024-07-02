@@ -3,12 +3,12 @@ import {
   createArchiveFromJszip,
   createArchiveFromText
 } from "@prose-reader/streamer"
-import { createArchiveFromArrayBufferList } from "@prose-reader/streamer"
 import { loadAsync } from "jszip"
-import { RarArchive } from "../../archive/types"
 import { Report } from "../../debug/report.shared"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { PromiseReturnType } from "../../types"
+import { Archive as LibARchive } from "libarchive.js"
+import { CompressedFile } from "libarchive.js/dist/build/compiled/compressed-file"
 
 const jsZipCompatibleMimeTypes = [`application/epub+zip`, `application/x-cbz`]
 
@@ -73,42 +73,33 @@ export const getArchiveForZipFile = async (
 export const getArchiveForRarFile = async (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>
 ) => {
-  const res = await new Promise<Archive>((masterResolve, reject) => {
-    try {
-      // @ts-ignore
-      loadArchiveFormats(["rar"], async () => {
-        try {
-          // @ts-ignore
-          const rarArchive: RarArchive = await archiveOpenFile(
-            file.data,
-            undefined
-          )
+  const rarArchive = await LibARchive.open(file.data)
 
-          const archive = await createArchiveFromArrayBufferList(
-            rarArchive.entries.map((file) => ({
-              isDir: !file.is_file,
-              name: file.name,
-              size: file.size_uncompressed,
-              data: () =>
-                new Promise<ArrayBuffer>((resolve, reject) => {
-                  file.readData((data, error) => {
-                    if (error) return reject(error)
-                    resolve(data)
-                  })
-                })
-            })),
-            { orderByAlpha: true, name: file.name }
-          )
+  const objArray = await rarArchive.getFilesArray()
 
-          masterResolve(archive)
-        } catch (e) {
-          reject(e)
-        }
-      })
-    } catch (e) {
-      return reject(e)
-    }
-  })
+  const archive: Archive = {
+    close: () => rarArchive.close(),
+    filename: file.name,
+    files: objArray.map((item: { file: CompressedFile; path: string }) => ({
+      dir: false,
+      basename: item.file.name,
+      size: item.file.size,
+      uri: `${item.path}${item.file.name}`,
+      base64: async () => {
+        return ``
+      },
+      blob: async () => {
+        const file = await (item.file.extract() as Promise<File>)
 
-  return res
+        return file
+      },
+      string: async () => {
+        const file = await (item.file.extract() as Promise<File>)
+
+        return file.text()
+      }
+    }))
+  }
+
+  return archive
 }

@@ -65,30 +65,18 @@ export const BottomTabBar = ({ children }: { children: ReactNode }) => {
           navigate(newValue)
         }}
         style={classes.root}
-        showLabels={true}
       >
-        <BottomNavigationAction
-          icon={<HomeRounded />}
-          showLabel={false}
-          disableRipple
-          value={ROUTES.HOME}
-        />
+        <BottomNavigationAction icon={<HomeRounded />} value={ROUTES.HOME} />
         <BottomNavigationAction
           icon={<LocalLibraryRounded />}
-          showLabel={false}
-          disableRipple
           value={ROUTES.LIBRARY_BOOKS}
         />
         <BottomNavigationAction
           icon={<CloudSyncRounded />}
-          showLabel={false}
-          disableRipple
           value={ROUTES.DATASOURCES}
         />
         <BottomNavigationAction
           icon={<AccountCircleRounded />}
-          showLabel={false}
-          disableRipple
           value={ROUTES.PROFILE}
         />
       </BottomNavigation>

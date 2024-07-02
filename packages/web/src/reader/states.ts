@@ -50,7 +50,7 @@ export const useCurrentPage = () => {
   const reader = useSignalValue(readerStateSignal)
   const { data: { beginPageIndexInSpineItem, beginSpineItemIndex } = {} } =
     usePagination()
-  const { renditionLayout } = reader?.context.getManifest() ?? {}
+  const { renditionLayout } = reader?.context.manifest ?? {}
 
   if (renditionLayout === "reflowable") return beginPageIndexInSpineItem
 
@@ -59,7 +59,7 @@ export const useCurrentPage = () => {
 
 export const useTotalPage = () => {
   const reader = useSignalValue(readerStateSignal)
-  const { renditionLayout } = reader?.context.getManifest() ?? {}
+  const { renditionLayout } = reader?.context.manifest ?? {}
   const { data: { numberOfTotalPages, beginNumberOfPagesInSpineItem } = {} } =
     usePagination()
 
