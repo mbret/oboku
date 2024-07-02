@@ -139,6 +139,9 @@ export const eInkTheme = createTheme(
       success: {
         main: "#000000"
       },
+      error: {
+        main: "#000000"
+      },
       info: {
         main: "#000000",
         dark: "#000000",
@@ -151,6 +154,27 @@ export const eInkTheme = createTheme(
           root: {
             borderBottom: "1px solid black",
             backgroundColor: "white"
+          }
+        }
+      },
+      MuiBottomNavigationAction: {
+        defaultProps: {
+          disableRipple: true,
+          disableTouchRipple: true
+        },
+        styleOverrides: {
+          root: {
+            "&.Mui-selected": {
+              "&::after": {
+                content: '""',
+                display: `block`,
+                width: 30,
+                height: `12px`,
+                borderBottom: "2px solid black",
+                position: "absolute",
+                bottom: "18%"
+              }
+            }
           }
         }
       },
