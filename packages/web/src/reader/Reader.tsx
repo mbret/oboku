@@ -85,10 +85,6 @@ export const Reader: FC<{
     }
   }, [])
 
-  useEffect(() => {
-    manifestStateSignal.setValue(manifest)
-  }, [manifest])
-
   const onBookReady = useCallback(() => {
     isBookReadyStateSignal.setValue(true)
   }, [])

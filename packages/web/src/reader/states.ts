@@ -1,4 +1,4 @@
-import { createReader, Manifest } from "@prose-reader/core"
+import { createReader } from "@prose-reader/core"
 import { filter, switchMap } from "rxjs"
 import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
 import { Props as GenericReactReaderProps } from "@prose-reader/react"
@@ -20,12 +20,6 @@ export const readerStateSignal = signal<ReaderInstance | undefined>({
 export const isBookReadyStateSignal = signal({
   key: "isBookReadyState",
   default: false
-})
-
-// @todo use query useManifest(bookId)
-export const manifestStateSignal = signal<Manifest | undefined>({
-  key: `manifestState`,
-  default: undefined
 })
 
 export const isMenuShownStateSignal = signal({

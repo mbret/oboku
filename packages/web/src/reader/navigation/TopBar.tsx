@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import {
   isBookReadyStateSignal,
   isMenuShownStateSignal,
-  manifestStateSignal
+  readerStateSignal
 } from "../states"
 import {
   AppBar,
@@ -22,18 +22,21 @@ import screenfull from "screenfull"
 import { Report } from "../../debug/report.shared"
 import { useCSS } from "../../common/utils"
 import { useMoreDialog } from "../MoreDialog"
-import { useSignalValue } from "reactjrx"
+import { useObserve, useSignalValue } from "reactjrx"
 import { useShowRemoveBookOnExitDialog } from "./useShowRemoveBookOnExitDialog"
+import { NEVER } from "rxjs"
 
 export const TopBar = ({ bookId }: { bookId: string }) => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const isBookReady = useSignalValue(isBookReadyStateSignal)
   const classes = useStyles({ isMenuShow })
+  const reader = useSignalValue(readerStateSignal)
   const { goBack } = useSafeGoBack()
   const [isFullScreen, setIsFullScreen] = useState(
     screenfull.isEnabled && screenfull.isFullscreen
   )
-  const { title, filename } = useSignalValue(manifestStateSignal) || {}
+  const { manifest } = useObserve(reader?.context.state$ ?? NEVER) || {}
+  const { title, filename } = manifest ?? {}
   const theme = useTheme()
   const { toggleMoreDialog } = useMoreDialog()
 

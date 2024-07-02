@@ -1,19 +1,22 @@
 import React, { FC } from "react"
 import { Typography, useTheme } from "@mui/material"
 import {
-  manifestStateSignal,
+  readerStateSignal,
   useCurrentPage,
   usePagination,
   useTotalPage
 } from "./states"
-import { useSignalValue } from "reactjrx"
+import { useObserve, useSignalValue } from "reactjrx"
+import { NEVER } from "rxjs"
 
 export const PageInformation: FC<{
   style: React.CSSProperties
 }> = ({ style }) => {
   const theme = useTheme()
   const currentPage = useCurrentPage() || 0
-  const { renditionLayout } = useSignalValue(manifestStateSignal) ?? {}
+  const reader = useSignalValue(readerStateSignal)
+  const { manifest } = useObserve(reader?.context.state$ ?? NEVER) || {}
+  const { renditionLayout } = manifest ?? {}
   const {
     data: { percentageEstimateOfBook, beginChapterInfo: chapterInfo } = {}
   } = usePagination()

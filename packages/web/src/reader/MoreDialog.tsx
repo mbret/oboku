@@ -19,10 +19,10 @@ import {
   usePagination,
   useCurrentPage,
   readerStateSignal,
-  manifestStateSignal
 } from "./states"
 import { SettingsList } from "./settings/SettingsList"
-import { signal, useSignalValue } from "reactjrx"
+import { signal, useObserve, useSignalValue } from "reactjrx"
+import { NEVER } from "rxjs"
 
 const isContentsDialogOpenedStateSignal = signal<boolean>({
   key: "isContentsDialogOpenedState",
@@ -43,7 +43,8 @@ export const MoreDialog: FC<{}> = () => {
   const [value, setValue] = React.useState("toc")
   const reader = useSignalValue(readerStateSignal)
   const { data: pagination } = usePagination()
-  const { title, nav } = useSignalValue(manifestStateSignal) || {}
+  const { manifest } = useObserve(reader?.context.state$ ?? NEVER) || {}
+  const { title, nav } = manifest ?? {}
   const chapterInfo = pagination?.beginChapterInfo
   const currentPage = useCurrentPage() || 0
   const toc = nav?.toc || []
