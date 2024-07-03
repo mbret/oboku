@@ -134,7 +134,7 @@ export const eInkTheme = createTheme(
         light: "#2d2d2d",
         dark: "#000000",
         main: "#000000",
-        contrastText: "#000000"
+        contrastText: "#ffffff"
       },
       success: {
         main: "#000000"
@@ -150,10 +150,12 @@ export const eInkTheme = createTheme(
     },
     components: {
       MuiAppBar: {
+        defaultProps: {
+          color: "transparent"
+        },
         styleOverrides: {
           root: {
-            borderBottom: "1px solid black",
-            backgroundColor: "white"
+            borderBottom: "1px solid black"
           }
         }
       },

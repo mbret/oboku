@@ -1,11 +1,7 @@
 import { FC, useEffect, useState } from "react"
 import RcSlider from "rc-slider"
 import "rc-slider/assets/index.css"
-import {
-  readerStateSignal,
-  useCurrentPage,
-  useTotalPage
-} from "./states"
+import { readerStateSignal, useCurrentPage, useTotalPage } from "./states"
 import { useTheme } from "@mui/material"
 import { useObserve, useSignalValue } from "reactjrx"
 import { NEVER } from "rxjs"

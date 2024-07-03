@@ -15,11 +15,7 @@ import React, { useCallback } from "react"
 import { FC } from "react"
 import { useCSS } from "../common/utils"
 import { DialogTopBar } from "../navigation/DialogTopBar"
-import {
-  usePagination,
-  useCurrentPage,
-  readerStateSignal,
-} from "./states"
+import { usePagination, useCurrentPage, readerStateSignal } from "./states"
 import { SettingsList } from "./settings/SettingsList"
 import { signal, useObserve, useSignalValue } from "reactjrx"
 import { NEVER } from "rxjs"
