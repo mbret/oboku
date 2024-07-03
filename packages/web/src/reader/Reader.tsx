@@ -12,7 +12,6 @@ import {
   ReactReaderProps,
   readerStateSignal,
   isBookReadyStateSignal,
-  manifestStateSignal
 } from "./states"
 import { TopBar } from "./navigation/TopBar"
 import { BottomBar } from "./navigation/BottomBar"
