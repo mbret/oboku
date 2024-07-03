@@ -21,11 +21,7 @@ export const DataSourcesTabNavigator = () => {
 
   return (
     <Stack flex={1} overflow="hidden">
-      <TopBarNavigation
-        title="Sync"
-        showBack={false}
-        hasSearch={false}
-      />
+      <TopBarNavigation title="Sync" showBack={false} hasSearch={false} />
       <Tabs value={currentTab}>
         <Tab
           label="Data sources"

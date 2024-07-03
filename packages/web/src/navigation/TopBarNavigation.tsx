@@ -29,7 +29,7 @@ export const TopBarNavigation: FC<{
     title,
     showBack = true,
     position = "static",
-    color = "primary",
+    color,
     rightComponent,
     hasSearch = false,
     onMoreClick,
@@ -55,7 +55,7 @@ export const TopBarNavigation: FC<{
             )}
             <div style={{ flexGrow: 1 }}>
               {!hasSearch && (
-                <Typography variant="h6" style={styles.title}>
+                <Typography variant="h6" style={{ flexGrow: 1 }}>
                   {title}
                 </Typography>
               )}
@@ -146,9 +146,6 @@ const useStyles = ({
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
-      },
-      title: {
-        flexGrow: 1
       }
     }),
     [theme, color]
