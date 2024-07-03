@@ -2,22 +2,22 @@ import { FC, useEffect, useState } from "react"
 import RcSlider from "rc-slider"
 import "rc-slider/assets/index.css"
 import {
-  manifestStateSignal,
   readerStateSignal,
   useCurrentPage,
   useTotalPage
 } from "./states"
 import { useTheme } from "@mui/material"
-import { useSignalValue } from "reactjrx"
+import { useObserve, useSignalValue } from "reactjrx"
+import { NEVER } from "rxjs"
 
 export const Scrubber: FC<{}> = () => {
+  const reader = useSignalValue(readerStateSignal)
   const currentPage = useCurrentPage()
   const totalPages = useTotalPage() || 1
-  const { readingDirection, renditionLayout } =
-    useSignalValue(manifestStateSignal) || {}
+  const { manifest } = useObserve(reader?.context.state$ ?? NEVER) || {}
+  const { readingDirection, renditionLayout } = manifest ?? {}
   const [value, setValue] = useState(currentPage || 0)
   const theme = useTheme()
-  const reader = useSignalValue(readerStateSignal)
   const max = totalPages <= 1 ? 2 : totalPages - 1
   const step = 1
   const disabled = totalPages === 1

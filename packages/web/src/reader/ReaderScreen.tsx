@@ -9,7 +9,6 @@ import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
 import {
   isBookReadyStateSignal,
   isMenuShownStateSignal,
-  manifestStateSignal,
   readerStateSignal
 } from "./states"
 import { SIGNAL_RESET } from "reactjrx"
@@ -25,7 +24,6 @@ export const ReaderScreen: FC<{}> = () => {
     () => () => {
       ;[
         isBookReadyStateSignal,
-        manifestStateSignal,
         isMenuShownStateSignal,
         readerStateSignal
       ].forEach((signal) => signal.setValue(SIGNAL_RESET))

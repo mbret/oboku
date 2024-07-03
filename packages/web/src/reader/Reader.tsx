@@ -12,7 +12,6 @@ import {
   ReactReaderProps,
   readerStateSignal,
   isBookReadyStateSignal,
-  manifestStateSignal
 } from "./states"
 import { TopBar } from "./navigation/TopBar"
 import { BottomBar } from "./navigation/BottomBar"
@@ -84,10 +83,6 @@ export const Reader: FC<{
       isBookReadyStateSignal.setValue(false)
     }
   }, [])
-
-  useEffect(() => {
-    manifestStateSignal.setValue(manifest)
-  }, [manifest])
 
   const onBookReady = useCallback(() => {
     isBookReadyStateSignal.setValue(true)
