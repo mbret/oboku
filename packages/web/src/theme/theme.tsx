@@ -151,7 +151,7 @@ export const eInkTheme = createTheme(
     components: {
       MuiAppBar: {
         defaultProps: {
-          color: "transparent"
+          color: "default"
         },
         styleOverrides: {
           root: {
