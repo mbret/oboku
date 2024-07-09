@@ -1,6 +1,7 @@
 import {
   Archive,
   createArchiveFromJszip,
+  createArchiveFromLibArchive,
   createArchiveFromText
 } from "@prose-reader/streamer"
 import { loadAsync } from "jszip"
@@ -8,7 +9,6 @@ import { Report } from "../../debug/report.shared"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { PromiseReturnType } from "../../types"
 import { Archive as LibARchive } from "libarchive.js"
-import { CompressedFile } from "libarchive.js/dist/build/compiled/compressed-file"
 
 const jsZipCompatibleMimeTypes = [`application/epub+zip`, `application/x-cbz`]
 
@@ -73,33 +73,10 @@ export const getArchiveForZipFile = async (
 export const getArchiveForRarFile = async (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>
 ) => {
-  const rarArchive = await LibARchive.open(file.data)
+  const archive = await LibARchive.open(file.data)
 
-  const objArray = await rarArchive.getFilesArray()
-
-  const archive: Archive = {
-    close: () => rarArchive.close(),
-    filename: file.name,
-    files: objArray.map((item: { file: CompressedFile; path: string }) => ({
-      dir: false,
-      basename: item.file.name,
-      size: item.file.size,
-      uri: `${item.path}${item.file.name}`,
-      base64: async () => {
-        return ``
-      },
-      blob: async () => {
-        const file = await (item.file.extract() as Promise<File>)
-
-        return file
-      },
-      string: async () => {
-        const file = await (item.file.extract() as Promise<File>)
-
-        return file.text()
-      }
-    }))
-  }
-
-  return archive
+  return createArchiveFromLibArchive(archive, {
+    orderByAlpha: true,
+    name: file.name
+  })
 }

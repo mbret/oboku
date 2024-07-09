@@ -149,14 +149,20 @@ export const eInkTheme = createTheme(
       }
     },
     components: {
+      ObokuScrubber: {
+        defaultProps: {
+          contrastMode: true
+        }
+      },
       MuiAppBar: {
         defaultProps: {
-          color: "transparent"
+          color: "default",
+          elevation: 0
         },
         styleOverrides: {
-          root: {
+          root: ({}) => ({
             borderBottom: "1px solid black"
-          }
+          })
         }
       },
       MuiBottomNavigationAction: {
