@@ -11,7 +11,7 @@ import {
   createAppReader,
   ReactReaderProps,
   readerStateSignal,
-  isBookReadyStateSignal,
+  isBookReadyStateSignal
 } from "./states"
 import { TopBar } from "./navigation/TopBar"
 import { BottomBar } from "./navigation/BottomBar"

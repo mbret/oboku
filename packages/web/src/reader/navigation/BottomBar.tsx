@@ -6,11 +6,12 @@ import {
   isBookReadyStateSignal,
   isMenuShownStateSignal
 } from "../states"
-import { Scrubber } from "../Scrubber"
+import { Scrubber } from "./Scrubber"
 import { DoubleArrowRounded } from "@mui/icons-material"
 import { FloatingBottom } from "../FloatingBottom"
 import { useObserve, useSignalValue } from "reactjrx"
 import { NEVER } from "rxjs"
+import { useLocalSettings } from "../../settings/states"
 
 export const BottomBar = () => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
@@ -22,24 +23,22 @@ export const BottomBar = () => {
   const { data: pagination } = usePagination()
   // const showScrubber = (totalPages || 1) > 1
   const showScrubber = true
+  const { useOptimizedTheme } = useLocalSettings()
 
+  console.log({ navigation })
   return (
     <AppBar
       component="div"
-      style={{
+      position="fixed"
+      sx={{
         bottom: 0,
         top: "auto",
-        height: 150,
-        // ...layout === 'reflow' && {
-        //   height: 200,
-        // },
-        paddingBottom: 40,
-        visibility: isMenuShow ? "visible" : "hidden",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        alignContent: "center",
-        position: "fixed"
+        height: "150px",
+        paddingBottom: "40px",
+        ...(useOptimizedTheme && {
+          borderTop: "1px solid black"
+        }),
+        visibility: isMenuShow ? "visible" : "hidden"
       }}
     >
       {isLoading ? (
@@ -66,7 +65,6 @@ export const BottomBar = () => {
               display: "flex",
               flexDirection: "row",
               alignItems: "center"
-              // flex: 1
             }}
           >
             <IconButton
