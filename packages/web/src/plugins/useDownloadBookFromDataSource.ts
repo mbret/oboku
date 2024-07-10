@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react"
-import { API_URI } from "../constants"
+import { API_URL } from "../constants"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 import { ObokuPlugin } from "./plugin-front"
@@ -24,7 +24,7 @@ export const useDownloadBookFromDataSource = () => {
     downloadBook:
       plugin.useDownloadBook &&
       plugin.useDownloadBook({
-        apiUri: API_URI ?? "",
+        apiUri: API_URL ?? "",
         requestPopup: createRequestPopupDialog({ name: plugin.name })
       })
   }))
