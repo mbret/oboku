@@ -77,6 +77,16 @@ export const registerCoversCacheCleanup = () => {
                         return clearAllCovers()
                       }
 
+                      const requestsNotForCurrentProfile = cacheKeys.filter(
+                        (request) => {
+                          const { coverId } = getMetadataFromRequest(request)
+
+                          if (!coverId.startsWith(profile)) return true
+
+                          return false
+                        }
+                      )
+
                       const cacheKeysNotInDb = cacheKeys.filter((key) => {
                         const { coverId } = getMetadataFromRequest(key)
 
@@ -89,6 +99,13 @@ export const registerCoversCacheCleanup = () => {
                         return !coverFoundInDb
                       })
 
+                      if (requestsNotForCurrentProfile.length) {
+                        Report.info(
+                          REPORT_NAMESPACE,
+                          `Removing ${requestsNotForCurrentProfile.length} covers not related to current profile in cache`
+                        )
+                      }
+
                       if (cacheKeysNotInDb.length) {
                         Report.info(
                           REPORT_NAMESPACE,
@@ -98,7 +115,10 @@ export const registerCoversCacheCleanup = () => {
 
                       return from(
                         Promise.all(
-                          cacheKeysNotInDb.map((key) => cache.delete(key))
+                          [
+                            ...cacheKeysNotInDb,
+                            ...requestsNotForCurrentProfile
+                          ].map((key) => cache.delete(key))
                         )
                       )
                     })
