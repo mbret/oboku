@@ -1,4 +1,5 @@
-import { DependencyList, useEffect, useMemo, useState } from "react"
+import { DependencyList, useEffect, useState } from "react"
+import { useCoversCacheInformation } from "../covers/useCoversCacheInformation"
 
 interface ChromeStorageEstimate extends StorageEstimate {
   usageDetails?: {
@@ -14,6 +15,8 @@ export const useStorageUse = (deps: DependencyList | undefined) => {
     undefined
   )
 
+  const { data: coversSize } = useCoversCacheInformation()
+
   useEffect(() => {
     // not available in all browsers
     navigator.storage &&
@@ -25,16 +28,16 @@ export const useStorageUse = (deps: DependencyList | undefined) => {
       })
   }, deps)
 
+  const coversWightInMb = ((coversSize?.weight ?? 0) / 1e6).toFixed(2)
   const quotaUsed = (indexedDBUsage || 0) / (storageQuota || 1)
   const usedInMb = ((indexedDBUsage || 1) / 1e6).toFixed(2)
   const quotaInGb = ((storageQuota || 1) / 1e9).toFixed(2)
 
-  return useMemo(
-    () => ({
-      quotaUsed,
-      usedInMb,
-      quotaInGb
-    }),
-    [quotaUsed, usedInMb, quotaInGb]
-  )
+  return {
+    quotaUsed,
+    usedInMb,
+    quotaInGb,
+    coversWightInMb,
+    covers: coversSize?.size
+  }
 }

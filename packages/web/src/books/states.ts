@@ -10,13 +10,14 @@ import { useCollectionsDictionary } from "../collections/states"
 import { from, map, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
-import { isDefined, useForeverQuery, useQuery } from "reactjrx"
+import { isDefined, useForeverQuery, useQuery, useSignalValue } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
 import { BookDocType } from "@oboku/shared"
 import { DeepReadonlyObject, MangoQuery } from "rxdb"
 import { useVisibleBooks } from "./useVisibleBooks"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
+import { useMemo } from "react"
 
 export const getBooksByIds = async (database: Database) => {
   const result = await database.collections.book.find({}).exec()
@@ -264,18 +265,17 @@ export const useEnrichedBookState = (param: {
 /**
  * @deprecated
  */
-export const useDownloadedBookWithUnsafeProtectedIdsState = ({
-  normalizedBookDownloadsState
-}: {
-  normalizedBookDownloadsState: ReturnType<
-    typeof booksDownloadStateSignal.getValue
-  >
-}) => {
-  const book = useBookIdsState()
-  const downloadState = normalizedBookDownloadsState
+export const useDownloadedBookWithUnsafeProtectedIdsState = () => {
+  const downloadState = useSignalValue(booksDownloadStateSignal)
+  const { data: books } = useBooks()
 
-  return book.filter(
-    (id) => downloadState[id]?.downloadState === DownloadState.Downloaded
+  return useMemo(
+    () =>
+      books?.filter(
+        (book) =>
+          downloadState[book._id]?.downloadState === DownloadState.Downloaded
+      ),
+    [downloadState, books]
   )
 }
 
@@ -317,12 +317,6 @@ export const useBooksAsArrayState = ({
     }, bookResult),
     isPending
   }
-}
-
-export const useBookIdsState = () => {
-  const { data: books = {} } = useBooksDic()
-
-  return Object.keys(books)
 }
 
 export const useVisibleBookIds = (

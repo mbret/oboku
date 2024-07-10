@@ -15,6 +15,9 @@ import { registerRoute } from "workbox-routing"
 import { StaleWhileRevalidate } from "workbox-strategies"
 import { STREAMER_URL_PREFIX } from "./constants.shared"
 import { readerFetchListener } from "./reader/streamer/serviceWorker.sw"
+import { messageSubject } from "./workers/messages.sw"
+import { registerCoversCacheCleanup } from "./covers/registerCoversCacheCleanup.sw"
+import { coversFetchListener } from "./covers/coversFetchListener.sw"
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -32,6 +35,7 @@ if (import.meta.env.PROD) {
 // are fulfilled with your index.html shell. Learn more at
 // https://developers.google.com/web/fundamentals/architecture/app-shell
 const fileExtensionRegexp = new RegExp("/[^/?]+\\.[^/]+$")
+
 if (import.meta.env.PROD) {
   registerRoute(
     // Return false to exempt requests from being fulfilled by index.html.
@@ -88,6 +92,16 @@ self.addEventListener("message", (event) => {
       event.source?.postMessage("SKIP_WAITING_READY")
     })
   }
+
+  messageSubject.next(event)
 })
 
-self.addEventListener(`fetch`, readerFetchListener)
+registerCoversCacheCleanup()
+
+self.addEventListener(`fetch`, (event) => {
+  const isHandledByCovers = coversFetchListener(event)
+
+  if (isHandledByCovers) return
+
+  readerFetchListener(event)
+})

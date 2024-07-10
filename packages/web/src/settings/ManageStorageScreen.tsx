@@ -13,7 +13,11 @@ import {
   Divider,
   ListItemButton
 } from "@mui/material"
-import { DeleteRounded, StorageRounded } from "@mui/icons-material"
+import {
+  DeleteRounded,
+  ImageRounded,
+  StorageRounded
+} from "@mui/icons-material"
 import { useStorageUse } from "./useStorageUse"
 import { BookList } from "../books/bookList/BookList"
 import {
@@ -27,16 +31,17 @@ import { difference } from "lodash"
 import Alert from "@mui/material/Alert"
 import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
-import { useMutation, useSignalValue } from "reactjrx"
+import { useMutation } from "reactjrx"
 import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
-import { booksDownloadStateSignal } from "../download/states"
+import { useRemoveCoversInCache } from "../covers/useRemoveCoversInCache"
 
 export const ManageStorageScreen = () => {
-  const bookIds = useDownloadedBookWithUnsafeProtectedIdsState({
-    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal)
-  })
+  const books = useDownloadedBookWithUnsafeProtectedIdsState()
+  const bookIds = useMemo(() => books?.map((book) => book._id) ?? [], [books])
   const visibleBookIds = useVisibleBookIds()
-  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([bookIds])
+  const { quotaUsed, quotaInGb, usedInMb, covers, coversWightInMb } =
+    useStorageUse([books])
+  const { mutate: removeCoversInCache } = useRemoveCoversInCache()
   const removeDownloadFile = useRemoveDownloadFile()
   const deleteAllDownloadedFiles = useRemoveAllDownloadedFiles()
   const { data: downloadedBookIds = [], refetch: refetchDownloadedFilesInfo } =
@@ -78,7 +83,7 @@ export const ManageStorageScreen = () => {
 
   useEffect(() => {
     refetchDownloadedFilesInfo()
-  }, [bookIds, refetchDownloadedFilesInfo])
+  }, [books, refetchDownloadedFilesInfo])
 
   return (
     <>
@@ -110,6 +115,15 @@ export const ManageStorageScreen = () => {
             }
           />
         </ListItem>
+        <ListItemButton onClick={() => removeCoversInCache()}>
+          <ListItemIcon>
+            <ImageRounded />
+          </ListItemIcon>
+          <ListItemText
+            primary="Delete all covers cached"
+            secondary={`${covers} covers are cached for a total of ${coversWightInMb} MB`}
+          />
+        </ListItemButton>
         {bookIdsToDisplay.length > 0 && (
           <ListItemButton onClick={() => onDeleteAllDownloadsClick()}>
             <ListItemIcon>

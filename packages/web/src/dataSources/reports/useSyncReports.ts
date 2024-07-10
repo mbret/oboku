@@ -1,14 +1,14 @@
 import { useQuery } from "reactjrx"
 import { httpClient } from "../../http/httpClient"
 import { SupabaseTableSyncReportsEntries } from "@oboku/shared"
-import { API_URI } from "../../constants"
+import { API_URL } from "../../constants"
 
 export const useSyncReports = () =>
   useQuery({
     queryKey: ["api/datasourceReport"],
     queryFn: async () => {
       const response = await httpClient.fetch<SupabaseTableSyncReportsEntries>({
-        url: `${API_URI}/sync/reports`,
+        url: `${API_URL}/sync/reports`,
         withAuth: true
       })
 

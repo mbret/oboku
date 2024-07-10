@@ -73,12 +73,15 @@ export type MyDatabaseCollections = {
 
 export type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 
-export const createDatabase = async () => {
+export const createDatabase = async (
+  params: Partial<Parameters<typeof createRxDatabase>[0]> = {}
+) => {
   const subStorage = getRxStoragePouch("idb", {
     skip_setup: true
   })
 
   const db = await createRxDatabase<MyDatabaseCollections>({
+    ...params,
     name: "oboku-35",
     // NOTICE: Schema validation can be CPU expensive and increases your build size.
     // You should always use a schema validation plugin in development mode.

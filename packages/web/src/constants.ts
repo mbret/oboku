@@ -8,7 +8,7 @@ const hostname =
     ? window?.location?.hostname
     : sw?.location?.hostname
 
-export const API_URI = import.meta.env.VITE_API_URL || `/api/dev`
+export { API_URL } from "./constants.shared"
 export const API_COUCH_URI =
   import.meta.env.VITE_API_COUCH_URI || `https://${hostname}:4003`
 

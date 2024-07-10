@@ -1,5 +1,5 @@
 import { authStateSignal } from "../auth/authState"
-import { API_URI } from "../constants"
+import { API_URL } from "../constants"
 
 export class HttpClientError extends Error {
   constructor(
@@ -69,7 +69,7 @@ class HttpClient {
     credentials?: { [key: string]: any }
   ) =>
     this.post({
-      url: `${API_URI}/refresh-metadata`,
+      url: `${API_URL}/refresh-metadata`,
       body: { bookId },
       headers: {
         "oboku-credentials": JSON.stringify(credentials ?? {})
@@ -81,7 +81,7 @@ class HttpClient {
     credentials?: { [key: string]: any }
   ) =>
     this.post({
-      url: `${API_URI}/refresh-metadata-collection`,
+      url: `${API_URL}/refresh-metadata-collection`,
       body: { collectionId },
       headers: {
         "oboku-credentials": JSON.stringify(credentials ?? {})
@@ -93,7 +93,7 @@ class HttpClient {
     credentials?: { [key: string]: any }
   ) =>
     this.post({
-      url: `${API_URI}/sync-datasource`,
+      url: `${API_URL}/sync-datasource`,
       body: { dataSourceId },
       headers: {
         "oboku-credentials": JSON.stringify(credentials)
