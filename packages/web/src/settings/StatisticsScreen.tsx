@@ -1,10 +1,10 @@
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Box, List, ListItem, ListItemText, ListSubheader } from "@mui/material"
-import { useBookIdsState } from "../books/states"
+import { useBooks } from "../books/states"
 import { useCollections } from "../collections/states"
 
 export const StatisticsScreen = () => {
-  const bookIds = useBookIdsState()
+  const { data: books } = useBooks()
   const { data: collectionsAsArray = [] } = useCollections()
 
   return (
@@ -14,7 +14,7 @@ export const StatisticsScreen = () => {
         <List>
           <ListSubheader disableSticky>Books</ListSubheader>
           <ListItem>
-            <ListItemText primary="Total of books" secondary={bookIds.length} />
+            <ListItemText primary="Total of books" secondary={books?.length} />
           </ListItem>
           <ListSubheader disableSticky>Collections</ListSubheader>
           <ListItem>

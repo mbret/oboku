@@ -31,10 +31,10 @@ import { authSignalStorageAdapter } from "./auth/storage"
 import { authStateSignal } from "./auth/authState"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
-import { Archive as LibARchive } from "libarchive.js"
+import { Archive as LibArchive } from "libarchive.js"
 
 // @todo move to sw
-LibARchive.init({
+LibArchive.init({
   workerUrl: "/libarchive.js.worker-bundle.js"
 })
 

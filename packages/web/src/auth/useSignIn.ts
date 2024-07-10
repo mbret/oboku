@@ -2,13 +2,14 @@ import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 import { useCallback } from "react"
 import { catchError, finalize, from, of, switchMap, tap } from "rxjs"
 import { lock, unlock } from "../common/BlockingBackdrop"
-import { API_URI } from "../constants"
+import { API_URL } from "../constants"
 import { CancelError } from "../common/errors/errors"
 import { useReCreateDb } from "../rxdb"
 import { authStateSignal } from "./authState"
 import { httpClient } from "../http/httpClient"
 import { setProfile } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
+import { currentProfileSignal } from "../profile/currentProfile"
 
 const provider = new GoogleAuthProvider()
 
@@ -35,7 +36,7 @@ export const useSignIn = () => {
             token: string
             nameHex: string
           }>({
-            url: `${API_URI}/signin`,
+            url: `${API_URL}/signin`,
             body: {
               token
             }
@@ -55,6 +56,7 @@ export const useSignIn = () => {
             setUser({ email, id: nameHex })
 
             setProfile(nameHex)
+            currentProfileSignal.setValue(nameHex)
           })
         )
       ),

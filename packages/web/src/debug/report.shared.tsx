@@ -8,6 +8,12 @@ export const Report = {
       console.log(`[oboku:log]`, ...data)
     }
   },
+  info: (...data: any[]) => {
+    if (import.meta.env.PROD || isDebugEnabled()) {
+      // eslint-disable-next-line no-console
+      console.info(`[oboku:info]`, ...data)
+    }
+  },
   error: (err: any) => {
     if (import.meta.env.PROD || isDebugEnabled()) {
       Sentry.captureException(err)

@@ -5,7 +5,7 @@ import { useTheme } from "@mui/material"
 import { useBook } from "./states"
 import { useBlurredTagIds } from "../tags/helpers"
 import { useCSS } from "../common/utils"
-import { API_URI } from "../constants"
+import { API_URL } from "../constants"
 import { useLocalSettings } from "../settings/states"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
@@ -71,11 +71,11 @@ export const Cover: FC<Props> = memo(
     })
 
     const originalSrc = book
-      ? `${API_URI}/covers/${auth?.nameHex}-${book._id}?${urlParams.toString()}`
+      ? `${API_URL}/covers/${auth?.nameHex}-${book._id}?${urlParams.toString()}`
       : undefined
     urlParams.append("format", "image/jpeg")
     const originalJpgSrc = book
-      ? `${API_URI}/covers/${auth?.nameHex}-${book._id}?${urlParams.toString()}`
+      ? `${API_URL}/covers/${auth?.nameHex}-${book._id}?${urlParams.toString()}`
       : undefined
 
     const coverSrc = originalSrc && !hasError ? originalSrc : placeholder
