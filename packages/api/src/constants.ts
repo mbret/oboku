@@ -13,6 +13,8 @@ export const TMP_DIR = "/tmp"
 export const METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS = [
   "application/x-cbz",
   "application/epub+zip",
-  "application/zip"
+  "application/zip",
+  "application/x-rar"
 ]
+export const COVER_ALLOWED_EXT = [".jpg", ".jpeg", ".png"]
 export const COVER_MAXIMUM_SIZE_FOR_STORAGE = { width: 400, height: 600 }

@@ -1,33 +1,26 @@
 import fs from "fs"
 import unzipper from "unzipper"
-import { BookDocType } from "@oboku/shared"
 import { Logger } from "@libs/logger"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import { asError } from "@libs/utils"
 
 const logger = Logger.child({ module: "saveCoverFromArchiveToBucket" })
 
-type Context = {
-  userNameHex: string
-}
-
-export const saveCoverFromArchiveToBucket = async (
-  ctx: Context,
-  book: BookDocType,
+export const saveCoverFromZipArchiveToBucket = async (
+  coverObjectKey: string,
   epubFilepath: string,
   folderBasePath: string,
   coverPath: string
 ) => {
   if (coverPath === ``) {
-    logger.error(`coverPath is empty string, ignoring process`, book._id)
+    logger.error(`coverPath is empty string, ignoring process`, coverObjectKey)
     return
   }
 
   const coverAbsolutePath =
     folderBasePath === `` ? coverPath : `${folderBasePath}/${coverPath}`
-  const objectKey = `cover-${ctx.userNameHex}-${book._id}`
 
-  Logger.info(`prepare to save cover ${objectKey}`)
+  Logger.info(`prepare to save cover ${coverObjectKey}`)
 
   const zip = fs
     .createReadStream(epubFilepath)
@@ -38,9 +31,9 @@ export const saveCoverFromArchiveToBucket = async (
       if (entry.path === coverAbsolutePath) {
         const entryAsBuffer = (await entry.buffer()) as Buffer
 
-        await saveCoverFromBufferToBucket(entryAsBuffer, objectKey)
+        await saveCoverFromBufferToBucket(entryAsBuffer, coverObjectKey)
 
-        Logger.info(`cover ${objectKey} has been saved/updated`)
+        Logger.info(`cover ${coverObjectKey} has been saved/updated`)
       } else {
         entry.autodrain()
       }
