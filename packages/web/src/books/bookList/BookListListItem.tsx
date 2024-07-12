@@ -19,7 +19,7 @@ import {
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
-import { getMetadataFromBook } from "../getMetadataFromBook"
+import { getMetadataFromBook } from "../metadata"
 import { useBookDownloadState } from "../../download/states"
 
 export const BookListListItem: FC<

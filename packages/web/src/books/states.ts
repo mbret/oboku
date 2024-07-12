@@ -82,7 +82,12 @@ export const useBooks = ({
 export const useBooksDic = () => {
   const { data, ...rest } = useBooks()
 
-  return { ...rest, data: data ? keyBy(data, "_id") : undefined }
+  const transformedData = useMemo(
+    () => (data ? keyBy(data, "_id") : undefined),
+    [data]
+  )
+
+  return { ...rest, data: transformedData }
 }
 
 export const useBook = ({
@@ -242,7 +247,12 @@ export const useIsBookProtected = (
 /**
  * @deprecated
  */
-export const useEnrichedBookState = (param: {
+export const useEnrichedBookState = ({
+  bookId,
+  normalizedBookDownloadsState,
+  protectedTagIds,
+  tags
+}: {
   bookId: string
   normalizedBookDownloadsState: ReturnType<
     typeof booksDownloadStateSignal.getValue
@@ -254,12 +264,27 @@ export const useEnrichedBookState = (param: {
   const { data: normalizedCollections = {} } = useCollectionsDictionary()
   const { data: normalizedBooks } = useBooksDic()
 
-  return getEnrichedBookState({
-    ...param,
-    normalizedLinks,
-    normalizedCollections,
-    normalizedBooks
-  })
+  return useMemo(
+    () =>
+      getEnrichedBookState({
+        bookId,
+        normalizedBookDownloadsState,
+        protectedTagIds,
+        tags,
+        normalizedLinks,
+        normalizedCollections,
+        normalizedBooks
+      }),
+    [
+      normalizedLinks,
+      normalizedCollections,
+      normalizedBooks,
+      bookId,
+      normalizedBookDownloadsState,
+      protectedTagIds,
+      tags
+    ]
+  )
 }
 
 /**

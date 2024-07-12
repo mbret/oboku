@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react"
+import { FC, useState, useEffect, memo } from "react"
 import Button from "@mui/material/Button"
 import {
   CloudDownloadRounded,
@@ -34,7 +34,7 @@ import { DataSourceSection } from "./DataSourceSection"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
-import { getMetadataFromBook } from "../getMetadataFromBook"
+import { getMetadataFromBook, useMedataFromBook } from "../metadata"
 import { MetadataSourcePane } from "./MetadataSourcePane"
 import { CoverPane } from "./CoverPane"
 import { MetadataPane } from "./MetadataPane"
@@ -42,12 +42,14 @@ import { DebugInfo } from "../../debug/DebugInfo"
 import { CollectionsPane } from "./CollectionsPane"
 import { useBookActionDrawer } from "../drawer/BookActionsDrawer"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
+import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
+import { Report } from "../../debug/report.shared"
 
 type ScreenParams = {
   id: string
 }
 
-export const BookDetailsScreen = () => {
+export const BookDetailsScreen = memo(() => {
   const navigate = useNavigate()
   const downloadFile = useDownloadBook()
   const { goBack } = useSafeGoBack()
@@ -61,12 +63,16 @@ export const BookDetailsScreen = () => {
     protectedTagIds: useProtectedTagIds().data,
     tags: useTagsByIds().data
   })
-  const metadata = getMetadataFromBook(book)
+  const metadata = useMedataFromBook(book)
   const openBookActionDrawer = useBookActionDrawer({
     onDeleteBook: () => {
       goBack()
     }
   })
+
+  if (isDebugEnabled()) {
+    Report.info(`BookDetailsScreen`, { book })
+  }
 
   return (
     <Stack
@@ -186,7 +192,7 @@ export const BookDetailsScreen = () => {
       />
     </Stack>
   )
-}
+})
 
 const LinkActionsDrawer: FC<{
   openWith: string | undefined

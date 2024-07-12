@@ -15,7 +15,7 @@ import { from } from "rxjs"
 import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
 import { useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
-import { getMetadataFromBook } from "./getMetadataFromBook"
+import { getMetadataFromBook } from "./metadata"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
 import { CancelError, OfflineError } from "../common/errors/errors"
 

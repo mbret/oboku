@@ -10,7 +10,7 @@ import { TagsRow } from "./TagsRow"
 import { DescriptionRow } from "./DescriptionRow"
 import { MetadataItemList } from "./MetadataItemList"
 import { useBook } from "../states"
-import { getMetadataFromBook } from "../getMetadataFromBook"
+import { getMetadataFromBook } from "../metadata"
 
 export const MetadataPane = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })

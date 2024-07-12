@@ -1,4 +1,4 @@
-import { getMetadataFromBook } from "../books/getMetadataFromBook"
+import { getMetadataFromBook } from "../books/metadata"
 import { REGEXP_SPECIAL_CHAR } from "./useCollectionsForSearch"
 import { sortByTitleComparator } from "@oboku/shared"
 import { useVisibleBooks } from "../books/useVisibleBooks"

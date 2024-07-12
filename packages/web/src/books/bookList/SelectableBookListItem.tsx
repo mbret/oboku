@@ -7,7 +7,7 @@ import { Checkbox } from "../../common/Checkbox"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
-import { getMetadataFromBook } from "../getMetadataFromBook"
+import { getMetadataFromBook } from "../metadata"
 
 export const SelectableBookListItem: FC<{
   bookId: string
