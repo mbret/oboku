@@ -23,9 +23,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
   }
 
   const resized = sharp(cover).resize({
-    width: 320,
-    height: 320,
-    fit: "inside"
+    width: 600,
+    height: 600,
+    fit: "inside",
+    withoutEnlargement: true
   })
 
   const converted =
