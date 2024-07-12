@@ -9,16 +9,12 @@ const logger = Logger.child({ module: "saveCoverFromArchiveToBucket" })
 export const saveCoverFromZipArchiveToBucket = async (
   coverObjectKey: string,
   epubFilepath: string,
-  folderBasePath: string,
   coverPath: string
 ) => {
   if (coverPath === ``) {
     logger.error(`coverPath is empty string, ignoring process`, coverObjectKey)
     return
   }
-
-  const coverAbsolutePath =
-    folderBasePath === `` ? coverPath : `${folderBasePath}/${coverPath}`
 
   Logger.info(`prepare to save cover ${coverObjectKey}`)
 
@@ -28,7 +24,7 @@ export const saveCoverFromZipArchiveToBucket = async (
 
   try {
     for await (const entry of zip) {
-      if (entry.path === coverAbsolutePath) {
+      if (entry.path === coverPath) {
         const entryAsBuffer = (await entry.buffer()) as Buffer
 
         await saveCoverFromBufferToBucket(entryAsBuffer, coverObjectKey)

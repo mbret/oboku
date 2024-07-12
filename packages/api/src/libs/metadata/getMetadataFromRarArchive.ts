@@ -1,7 +1,7 @@
 import { BookMetadata } from "@oboku/shared"
 import { Extractor } from "node-unrar-js"
 
-export const getMetadataFromFile = async (
+export const getMetadataFromRarArchive = async (
   extractor: Extractor<Uint8Array>,
   contentType: string
 ): Promise<BookMetadata> => {

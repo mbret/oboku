@@ -24,6 +24,44 @@ const normalizeDate = (
   return extractDateComponents(String(date["#text"]))
 }
 
+const findCoverPathFromOpf = (opf: OPF) => {
+  const manifest = opf.package?.manifest
+  const meta = opf.package?.metadata?.meta
+  const normalizedMeta = Array.isArray(meta) ? meta : meta ? [meta] : []
+  const coverInMeta = normalizedMeta.find(
+    (item) => item?.name === "cover" && (item?.content?.length || 0) > 0
+  )
+  let href = ""
+
+  const isImage = (
+    item: NonNullable<NonNullable<typeof manifest>["item"]>[number]
+  ) =>
+    item["media-type"] &&
+    (item["media-type"].indexOf("image/") > -1 ||
+      item["media-type"].indexOf("page/jpeg") > -1 ||
+      item["media-type"].indexOf("page/png") > -1)
+
+  if (coverInMeta) {
+    const item = manifest?.item?.find(
+      (item) => item.id === coverInMeta?.content && isImage(item)
+    )
+
+    if (item) {
+      return item?.href
+    }
+  }
+
+  manifest?.item?.find((item) => {
+    const indexOfCover = item?.id?.toLowerCase().indexOf("cover")
+    if (indexOfCover !== undefined && indexOfCover > -1 && isImage(item)) {
+      href = item.href || ""
+    }
+    return ""
+  })
+
+  return href
+}
+
 export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
   const metadata = opf.package?.metadata || {}
   const creatrawCreator = metadata["dc:creator"]
@@ -56,6 +94,7 @@ export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
     languages: language ? [language] : [],
     date: normalizeDate(metadata["dc:date"]),
     subjects: subjects ? subjects : [],
-    authors: creator ? [creator] : []
+    authors: creator ? [creator] : [],
+    coverLink: findCoverPathFromOpf(opf)
   }
 }
