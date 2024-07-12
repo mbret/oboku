@@ -19,6 +19,7 @@ export const extractDirectivesFromName = (
   isbn?: string | undefined
   series: boolean | undefined
   year?: string
+  ignoreMetadata?: string | undefined
 } => {
   let isNotACollection = false
   let tags: string[] = []
@@ -27,6 +28,7 @@ export const extractDirectivesFromName = (
   let year = undefined
   let isbn = undefined
   let series: boolean | undefined = undefined
+  let ignoreMetadata: string | undefined = undefined
 
   const directives = resourceId
     .match(/(\[oboku\~[^\]]*\])+/gi)
@@ -35,6 +37,11 @@ export const extractDirectivesFromName = (
   directives?.forEach((directive) => {
     if (directive === "no_collection") {
       isNotACollection = true
+    }
+
+    if (directive.startsWith("metadata-ignore~")) {
+      const value = directive.replace(/metadata-ignore\~/, "")
+      ignoreMetadata = value
     }
 
     if (directive === "ignore") {
@@ -77,7 +84,8 @@ export const extractDirectivesFromName = (
     isIgnored,
     direction,
     isbn,
-    year
+    year,
+    ignoreMetadata
   }
 }
 
