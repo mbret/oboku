@@ -1,24 +1,17 @@
 import fs from "fs"
 import path from "path"
-import unzipper from "unzipper"
 import { pluginFacade } from "../plugins/facade"
 import {
   BookDocType,
   BookMetadata,
   LinkDocType,
-  OPF,
   directives
 } from "@oboku/shared"
 import { detectMimeTypeFromContent, mergeSkippingUndefined } from "../utils"
 import { Logger } from "@libs/logger"
 import { saveCoverFromZipArchiveToBucket } from "./saveCoverFromZipArchiveToBucket"
-import { parseOpfMetadata } from "../metadata/opf/parseOpfMetadata"
 import { saveCoverFromExternalLinkToBucket } from "./saveCoverFromExternalLinkToBucket"
-import {
-  COVER_ALLOWED_EXT,
-  METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS
-} from "../../constants"
-import { parseXmlAsJson } from "./parseXmlAsJson"
+import { METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "../../constants"
 import { getBookSourcesMetadata } from "@libs/metadata/getBookSourcesMetadata"
 import { reduceMetadata } from "@libs/metadata/reduceMetadata"
 import { downloadToTmpFolder } from "@libs/download/downloadToTmpFolder"
@@ -26,8 +19,9 @@ import { isBookProtected } from "@libs/couch/isBookProtected"
 import nano from "nano"
 import { atomicUpdate } from "@libs/couch/dbHelpers"
 import { saveCoverFromRarArchiveToBucket } from "./saveCoverFromRarArchiveToBucket"
-import { getMetadataFromFile } from "@libs/metadata/getMetadataFromFile"
 import { getRarArchive } from "@libs/archives/getRarArchive"
+import { getMetadataFromRarArchive } from "@libs/metadata/getMetadataFromRarArchive"
+import { getMetadataFromZipArchive } from "@libs/metadata/getMetadataFromZipArchive"
 
 const logger = Logger.child({ module: "retrieveMetadataAndSaveCover" })
 
@@ -70,7 +64,7 @@ export const retrieveMetadataAndSaveCover = async (
         resourceId: ctx.link.resourceId
       })) ?? {}
 
-    const { isbn } = directives.extractDirectivesFromName(
+    const { isbn, ignoreMetadata } = directives.extractDirectivesFromName(
       linkResourceMetadata.name ?? ""
     )
 
@@ -127,6 +121,13 @@ export const retrieveMetadataAndSaveCover = async (
           })
         : { filepath: undefined, metadata: {} }
 
+    let fileContentLength = 0
+
+    if (tmpFilePath) {
+      const stats = fs.statSync(tmpFilePath)
+      fileContentLength = stats.size
+    }
+
     fileToUnlink = tmpFilePath
     contentType = downloadMetadata.contentType || contentType
     /**
@@ -146,7 +147,7 @@ export const retrieveMetadataAndSaveCover = async (
       contentType
     )
 
-    if (!canDownload || !isExtractAble) {
+    if (!canDownload || !isExtractAble || ignoreMetadata === "file") {
       // @todo prioritize which cover we take
       const coverLink = metadataList.find(
         (metadata) => metadata.coverLink
@@ -157,10 +158,6 @@ export const retrieveMetadataAndSaveCover = async (
       }
     }
 
-    let opfBasePath = ""
-    let contentLength = 0
-    let coverRelativePath: string | undefined
-
     if (typeof tmpFilePath === "string" && tmpFilePath) {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
       if (!contentType) {
@@ -170,88 +167,45 @@ export const retrieveMetadataAndSaveCover = async (
 
       const coverObjectKey = `cover-${ctx.userNameHex}-${ctx.book._id}`
 
-      if (contentType === "application/x-rar") {
-        const extractor = await getRarArchive(tmpFilePath)
+      if (ignoreMetadata !== "file") {
+        if (contentType === "application/x-rar") {
+          const extractor = await getRarArchive(tmpFilePath)
 
-        await saveCoverFromRarArchiveToBucket(coverObjectKey, extractor)
+          await saveCoverFromRarArchiveToBucket(coverObjectKey, extractor)
 
-        const fileMetadata = await getMetadataFromFile(extractor, contentType)
-
-        metadataList.push(fileMetadata)
-      } else if (
-        contentType &&
-        METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)
-      ) {
-        const files: string[] = []
-        let isEpub = false
-        let opfAsJson: OPF = {
-          package: {
-            manifest: {},
-            metadata: {}
-          }
-        }
-
-        await fs
-          .createReadStream(tmpFilePath)
-          .pipe(
-            unzipper.Parse({
-              verbose: false
-            })
+          const fileMetadata = await getMetadataFromRarArchive(
+            extractor,
+            contentType
           )
-          .on("entry", async (entry: unzipper.Entry) => {
-            contentLength = contentLength + entry.vars.compressedSize
-            const filepath = entry.path
 
-            if (entry.type === "File") {
-              files.push(entry.path)
-            }
-
-            if (filepath.endsWith(".opf")) {
-              isEpub = true
-              opfBasePath = `${filepath.substring(
-                0,
-                filepath.lastIndexOf("/")
-              )}`
-              const xml = (await entry.buffer()).toString("utf8")
-              opfAsJson = parseXmlAsJson(xml)
-              entry.autodrain()
-            } else {
-              entry.autodrain()
-            }
-          })
-          .promise()
-
-        coverRelativePath = isEpub
-          ? findCoverPathFromOpf(opfAsJson)
-          : files
-              .filter((file) =>
-                COVER_ALLOWED_EXT.includes(path.extname(file).toLowerCase())
-              )
-              .sort()[0]
-
-        logger.info(`coverRelativePath`, coverRelativePath)
-        logger.info(`opfBasePath`, opfBasePath)
-
-        metadataList.push({
-          type: "file",
-          ...parseOpfMetadata(opfAsJson),
-          contentType
-        })
-
-        if (coverRelativePath) {
-          await saveCoverFromZipArchiveToBucket(
-            coverObjectKey,
+          metadataList.push(fileMetadata)
+        } else if (
+          contentType &&
+          METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)
+        ) {
+          const fileMetadata = await getMetadataFromZipArchive(
             tmpFilePath,
-            opfBasePath,
-            coverRelativePath
+            contentType
           )
+
+          logger.info(`coverRelativePath`, fileMetadata.coverLink)
+
+          metadataList.push(fileMetadata)
+
+          if (fileMetadata.coverLink) {
+            await saveCoverFromZipArchiveToBucket(
+              coverObjectKey,
+              tmpFilePath,
+              fileMetadata.coverLink
+            )
+          } else {
+            console.log(`No cover path found for ${tmpFilePath}`)
+          }
         } else {
-          console.log(`No cover path found for ${tmpFilePath}`)
+          logger.info(
+            `${contentType} cannot be extracted to retrieve information (cover, etc)`
+          )
         }
-      } else {
-        logger.info(
-          `${contentType} cannot be extracted to retrieve information (cover, etc)`
-        )
       }
     }
 
@@ -259,7 +213,7 @@ export const retrieveMetadataAndSaveCover = async (
       `metadataDaemon Finished processing book ${ctx.book._id} with resource id ${ctx.link.resourceId}`
     )
 
-    atomicUpdate(ctx.db, "book", ctx.book._id, (old) => {
+    await atomicUpdate(ctx.db, "book", ctx.book._id, (old) => {
       const linkMetadata = old.metadata?.find((item) => item.type === "link")
 
       return {
@@ -281,7 +235,7 @@ export const retrieveMetadataAndSaveCover = async (
 
     return {
       link: {
-        contentLength
+        contentLength: fileContentLength
       }
     }
   } catch (e) {
@@ -302,42 +256,4 @@ export const retrieveMetadataAndSaveCover = async (
       console.error(e)
     }
   }
-}
-
-const findCoverPathFromOpf = (opf: OPF) => {
-  const manifest = opf.package?.manifest
-  const meta = opf.package?.metadata?.meta
-  const normalizedMeta = Array.isArray(meta) ? meta : meta ? [meta] : []
-  const coverInMeta = normalizedMeta.find(
-    (item) => item?.name === "cover" && (item?.content?.length || 0) > 0
-  )
-  let href = ""
-
-  const isImage = (
-    item: NonNullable<NonNullable<typeof manifest>["item"]>[number]
-  ) =>
-    item["media-type"] &&
-    (item["media-type"].indexOf("image/") > -1 ||
-      item["media-type"].indexOf("page/jpeg") > -1 ||
-      item["media-type"].indexOf("page/png") > -1)
-
-  if (coverInMeta) {
-    const item = manifest?.item?.find(
-      (item) => item.id === coverInMeta?.content && isImage(item)
-    )
-
-    if (item) {
-      return item?.href
-    }
-  }
-
-  manifest?.item?.find((item) => {
-    const indexOfCover = item?.id?.toLowerCase().indexOf("cover")
-    if (indexOfCover !== undefined && indexOfCover > -1 && isImage(item)) {
-      href = item.href || ""
-    }
-    return ""
-  })
-
-  return href
 }
