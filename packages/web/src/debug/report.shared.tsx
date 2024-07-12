@@ -1,6 +1,8 @@
 import * as Sentry from "@sentry/react"
 import { isDebugEnabled } from "./isDebugEnabled.shared"
 
+const noop = () => {}
+
 export const Report = {
   log: (...data: any[]) => {
     if (import.meta.env.PROD || isDebugEnabled()) {
@@ -8,12 +10,10 @@ export const Report = {
       console.log(`[oboku:log]`, ...data)
     }
   },
-  info: (...data: any[]) => {
-    if (import.meta.env.PROD || isDebugEnabled()) {
-      // eslint-disable-next-line no-console
-      console.info(`[oboku:info]`, ...data)
-    }
-  },
+  info:
+    import.meta.env.PROD || isDebugEnabled()
+      ? Function.prototype.bind.call(console.info, console, `[oboku:info]`)
+      : noop,
   error: (err: any) => {
     if (import.meta.env.PROD || isDebugEnabled()) {
       Sentry.captureException(err)
@@ -26,10 +26,10 @@ export const Report = {
   ) => {
     Sentry.captureMessage(message, captureContext)
   },
-  warn: (message: string) => {
+  warn: (...data: any[]) => {
     if (import.meta.env.DEV || isDebugEnabled()) {
       // eslint-disable-next-line no-console
-      console.warn(`[oboku:warning]`, message)
+      console.warn(`[oboku:warning]`, ...data)
     }
   },
   metric: (

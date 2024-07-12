@@ -8,6 +8,7 @@ import { useVisibleBookIds } from "../books/states"
 import { MangoQuery } from "rxdb"
 import { getMetadataFromCollection } from "./getMetadataFromCollection"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
+import { useMemo } from "react"
 
 export type Collection = CollectionDocType
 
@@ -75,10 +76,10 @@ export const useCollections = ({
 export const useCollectionsDictionary = () => {
   const result = useCollections()
 
-  return {
+  return useMemo(() => ({
     ...result,
     data: result.data ? keyBy(result.data, "_id") : undefined
-  }
+  }), [result])
 }
 
 export const useCollection = ({ id }: { id?: string }) => {

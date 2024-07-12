@@ -8,7 +8,7 @@ import { BookDocument } from "../rxdb/collections/book"
 import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { switchMap } from "rxjs"
-import { getMetadataFromBook } from "../books/getMetadataFromBook"
+import { getMetadataFromBook } from "../books/metadata"
 
 export const useDuplicatedBookTitles = () => {
   const books = useObserve(

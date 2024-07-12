@@ -1,6 +1,6 @@
 import { Alert, Typography } from "@mui/material"
 import { useBook } from "../states"
-import { getMetadataFromBook } from "../getMetadataFromBook"
+import { getMetadataFromBook } from "../metadata"
 
 export const DescriptionRow = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })

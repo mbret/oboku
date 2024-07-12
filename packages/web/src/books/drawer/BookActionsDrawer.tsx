@@ -40,7 +40,7 @@ import {
 } from "../../download/states"
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "./useRemoveHandler"
-import { getMetadataFromBook } from "../getMetadataFromBook"
+import { getMetadataFromBook } from "../metadata"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 
 type SignalState = {

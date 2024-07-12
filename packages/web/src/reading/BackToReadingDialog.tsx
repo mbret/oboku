@@ -6,7 +6,7 @@ import {
   bookBeingReadStateSignal
 } from "./states"
 import { SIGNAL_RESET, useMutation } from "reactjrx"
-import { getMetadataFromBook } from "../books/getMetadataFromBook"
+import { getMetadataFromBook } from "../books/metadata"
 import { useCreateBackToBookDialog } from "./useCreateBackToBookDialog"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { from, switchMap } from "rxjs"

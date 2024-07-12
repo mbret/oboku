@@ -4,6 +4,7 @@ import {
   BookMetadata,
   directives
 } from "@oboku/shared"
+import { useMemo } from "react"
 import { DeepReadonlyObject } from "rxdb"
 
 type Return = DeepReadonlyObject<Omit<BookMetadata, "type">> & {
@@ -27,10 +28,13 @@ function mergeObjects(a: GenericObject, b: GenericObject): GenericObject {
 }
 
 export const getMetadataFromBook = (
-  book?: DeepReadonlyObject<BookDocType & Partial<DeprecatedBookDocType>> | null
+  book?: DeepReadonlyObject<
+    Pick<BookDocType, "metadata"> &
+      Partial<Pick<DeprecatedBookDocType, "title" | "creator">>
+  > | null
 ): Return => {
-  const list = book?.metadata ?? []
-
+  const medataList = book?.metadata
+  const list = medataList ?? []
   const deprecated: BookMetadata = {
     type: "deprecated",
     title: book?.title || undefined,
@@ -71,4 +75,18 @@ export const getMetadataFromBook = (
     ...reducedMetadata,
     title: directives.removeDirectiveFromString(reducedMetadata.title ?? "")
   }
+}
+
+export const useMedataFromBook = (
+  book?: DeepReadonlyObject<BookDocType & Partial<DeprecatedBookDocType>>
+) => {
+  const { metadata, title, creator } = book ?? {}
+
+  return useMemo(() => {
+    return getMetadataFromBook({
+      creator: creator ?? null,
+      title: title ?? null,
+      metadata
+    })
+  }, [metadata, title, creator])
 }

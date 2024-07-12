@@ -29,7 +29,7 @@ import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSet
 import { Notification } from "./Notification"
 import { useReaderSettingsState } from "./settings/states"
 import { useSignalValue } from "reactjrx"
-import { getMetadataFromBook } from "../books/getMetadataFromBook"
+import { getMetadataFromBook } from "../books/metadata"
 import { useManifest } from "./manifest/useManifest"
 import { FileNotSupportedError } from "./errors.shared"
 

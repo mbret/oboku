@@ -6,7 +6,7 @@ import { useBook } from "../states"
 import { useDefaultItemClickHandler } from "./helpers"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useCSS } from "../../common/utils"
-import { getMetadataFromBook } from "../getMetadataFromBook"
+import { getMetadataFromBook } from "../metadata"
 
 const ContainerBox = styled("div")`
   cursor: pointer;
