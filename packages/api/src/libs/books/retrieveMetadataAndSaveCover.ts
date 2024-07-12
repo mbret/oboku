@@ -11,10 +11,13 @@ import {
 } from "@oboku/shared"
 import { detectMimeTypeFromContent, mergeSkippingUndefined } from "../utils"
 import { Logger } from "@libs/logger"
-import { saveCoverFromArchiveToBucket } from "./saveCoverFromArchiveToBucket"
+import { saveCoverFromZipArchiveToBucket } from "./saveCoverFromZipArchiveToBucket"
 import { parseOpfMetadata } from "../metadata/opf/parseOpfMetadata"
 import { saveCoverFromExternalLinkToBucket } from "./saveCoverFromExternalLinkToBucket"
-import { METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "../../constants"
+import {
+  COVER_ALLOWED_EXT,
+  METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS
+} from "../../constants"
 import { parseXmlAsJson } from "./parseXmlAsJson"
 import { getBookSourcesMetadata } from "@libs/metadata/getBookSourcesMetadata"
 import { reduceMetadata } from "@libs/metadata/reduceMetadata"
@@ -22,6 +25,9 @@ import { downloadToTmpFolder } from "@libs/download/downloadToTmpFolder"
 import { isBookProtected } from "@libs/couch/isBookProtected"
 import nano from "nano"
 import { atomicUpdate } from "@libs/couch/dbHelpers"
+import { saveCoverFromRarArchiveToBucket } from "./saveCoverFromRarArchiveToBucket"
+import { getMetadataFromFile } from "@libs/metadata/getMetadataFromFile"
+import { getRarArchive } from "@libs/archives/getRarArchive"
 
 const logger = Logger.child({ module: "retrieveMetadataAndSaveCover" })
 
@@ -162,12 +168,21 @@ export const retrieveMetadataAndSaveCover = async (
           (await detectMimeTypeFromContent(tmpFilePath)) || contentType
       }
 
-      if (
+      const coverObjectKey = `cover-${ctx.userNameHex}-${ctx.book._id}`
+
+      if (contentType === "application/x-rar") {
+        const extractor = await getRarArchive(tmpFilePath)
+
+        await saveCoverFromRarArchiveToBucket(coverObjectKey, extractor)
+
+        const fileMetadata = await getMetadataFromFile(extractor, contentType)
+
+        metadataList.push(fileMetadata)
+      } else if (
         contentType &&
         METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)
       ) {
         const files: string[] = []
-        const coverAllowedExt = [".jpg", ".jpeg", ".png"]
         let isEpub = false
         let opfAsJson: OPF = {
           package: {
@@ -210,7 +225,7 @@ export const retrieveMetadataAndSaveCover = async (
           ? findCoverPathFromOpf(opfAsJson)
           : files
               .filter((file) =>
-                coverAllowedExt.includes(path.extname(file).toLowerCase())
+                COVER_ALLOWED_EXT.includes(path.extname(file).toLowerCase())
               )
               .sort()[0]
 
@@ -224,9 +239,8 @@ export const retrieveMetadataAndSaveCover = async (
         })
 
         if (coverRelativePath) {
-          await saveCoverFromArchiveToBucket(
-            ctx,
-            ctx.book,
+          await saveCoverFromZipArchiveToBucket(
+            coverObjectKey,
             tmpFilePath,
             opfBasePath,
             coverRelativePath

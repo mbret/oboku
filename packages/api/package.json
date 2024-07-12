@@ -17,6 +17,7 @@
     "node": "18.x"
   },
   "dependencies": {
+    "node-unrar-js": "^2.0.2",
     "@middy/core": "^5.4.2",
     "@middy/http-cors": "^5.4.2",
     "@middy/http-error-handler": "^5.4.2",

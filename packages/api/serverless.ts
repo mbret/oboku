@@ -245,7 +245,8 @@ const serverlessConfiguration: AWS & any = {
          */
         "sharp",
         // most likely not required
-        `aws-lambda`
+        `aws-lambda`,
+        `node-unrar-js`
       ],
       packagerOptions: {
         scripts: [

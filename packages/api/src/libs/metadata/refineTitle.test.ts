@@ -45,7 +45,7 @@ describe("replaceString function", () => {
       ["04 ", "04 "],
       ["04", "04"],
       ["a04", "a04"],
-      ["a 04", "a 4"],
+      ["a 04", "a 4"]
     ] as const
 
     values.forEach(([a, b]) => {
@@ -97,6 +97,10 @@ describe("replaceString function", () => {
     expect(removeMaybeArtistAndPublisher("foo (bar) foo")).toBe("foo (bar) foo")
     expect(removeMaybeArtistAndPublisher("foo [bar] foo")).toBe("foo [bar] foo")
     expect(removeMaybeArtistAndPublisher("foo [bar] (foo)")).toBe("foo [bar]")
-    expect(removeMaybeArtistAndPublisher("Mirka Andolfo's Mercy 6 (2020) (Digital) (Mephisto-Empire)")).toBe("Mirka Andolfo's Mercy 6")
+    expect(
+      removeMaybeArtistAndPublisher(
+        "Mirka Andolfo's Mercy 6 (2020) (Digital) (Mephisto-Empire)"
+      )
+    ).toBe("Mirka Andolfo's Mercy 6")
   })
 })
