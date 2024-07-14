@@ -14,12 +14,10 @@ export const Report = {
     import.meta.env.PROD || isDebugEnabled()
       ? Function.prototype.bind.call(console.info, console, `[oboku:info]`)
       : noop,
-  error: (err: any) => {
-    if (import.meta.env.PROD || isDebugEnabled()) {
-      Sentry.captureException(err)
-    }
-    console.error(err)
-  },
+  error:
+    import.meta.env.PROD || isDebugEnabled()
+      ? Function.prototype.bind.call(console.error, console, `[oboku:error]`)
+      : noop,
   captureMessage: (
     message: string,
     captureContext?: Parameters<typeof Sentry.captureMessage>[1]

@@ -1,8 +1,8 @@
 import { Dropbox, DropboxResponse, files } from "dropbox"
-import { useCallback } from "react"
 import { authUser } from "./lib/auth"
 import { extractIdFromResourceId } from "./helpers"
 import { ObokuPlugin } from "../plugin-front"
+import { from, map, mergeMap } from "rxjs"
 
 // this property is somehow missing. must be a bug in dropbox
 // @see https://github.com/dropbox/dropbox-sdk-js/issues/304
@@ -15,22 +15,28 @@ type ResponseWithFileBlob = DropboxResponse<files.FileMetadata> & {
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   requestPopup
 }) => {
-  return useCallback(
-    async (link) => {
-      const auth = await authUser({ requestPopup })
+  return ({ link }) => {
+    return from(authUser({ requestPopup })).pipe(
+      mergeMap((auth) => {
+        let dropbox = new Dropbox({ auth })
 
-      let dropbox = new Dropbox({ auth })
+        return from(
+          dropbox.filesDownload({
+            path: extractIdFromResourceId(link.resourceId)
+          })
+        ).pipe(
+          map((response: ResponseWithFileBlob) => {
+            if (!response.result.fileBlob) {
+              throw new Error("missing file blob")
+            }
 
-      const response: ResponseWithFileBlob = await dropbox.filesDownload({
-        path: extractIdFromResourceId(link.resourceId)
+            return {
+              data: response.result.fileBlob,
+              name: response.result.name
+            }
+          })
+        )
       })
-
-      if (!response.result.fileBlob) {
-        throw new Error("missing file blob")
-      }
-
-      return { data: response.result.fileBlob, name: response.result.name }
-    },
-    [requestPopup]
-  )
+    )
+  }
 }

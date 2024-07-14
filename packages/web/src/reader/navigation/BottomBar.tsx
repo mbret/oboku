@@ -25,7 +25,6 @@ export const BottomBar = () => {
   const showScrubber = true
   const { useOptimizedTheme } = useLocalSettings()
 
-  console.log({ navigation })
   return (
     <AppBar
       component="div"

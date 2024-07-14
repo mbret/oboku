@@ -1,10 +1,10 @@
-import { useCallback } from "react"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { ObokuPlugin, extractIdFromResourceId } from "../plugin-front"
 import { httpClient } from "../../http/httpClient"
+import { from, map } from "rxjs"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
-  return useCallback(async (link, options) => {
+  return ({ link, onDownloadProgress }) => {
     const downloadLink = extractIdFromResourceId(
       UNIQUE_RESOURCE_IDENTIFIER,
       link.resourceId
@@ -12,14 +12,18 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
     const filename =
       downloadLink.substring(downloadLink.lastIndexOf("/") + 1) || "unknown"
 
-    const mediaResponse = await httpClient.download<Blob>({
-      responseType: "blob",
-      url: downloadLink,
-      onDownloadProgress: (event) => {
-        options?.onDownloadProgress(event.loaded / (event.total ?? 1))
-      }
-    })
-
-    return { data: mediaResponse.data, name: filename }
-  }, [])
+    return from(
+      httpClient.download<Blob>({
+        responseType: "blob",
+        url: downloadLink,
+        onDownloadProgress: (event) => {
+          onDownloadProgress(event.loaded / (event.total ?? 1))
+        }
+      })
+    ).pipe(
+      map((mediaResponse) => {
+        return { data: mediaResponse.data, name: filename }
+      })
+    )
+  }
 }

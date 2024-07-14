@@ -3,25 +3,28 @@ import { useDrivePicker } from "./lib/useDrivePicker"
 import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
-import { catchError, EMPTY, from, of, switchMap, takeUntil } from "rxjs"
+import { catchError, EMPTY, from, of, switchMap, takeUntil, timer } from "rxjs"
 import { useMount } from "react-use"
-import { useUnmountObservable } from "reactjrx"
+import { useMutation, useUnmountObservable } from "reactjrx"
 import { ObokuPlugin } from "../plugin-front"
+import { memo } from "react"
 
-export const UploadBook: ObokuPlugin["UploadComponent"] = ({
-  onClose,
-  requestPopup
-}) => {
-  const [addBook] = useAddBook()
-  const { generateResourceId } = useDataSourceHelpers(
-    UNIQUE_RESOURCE_IDENTIFIER
-  )
-  const { pick } = useDrivePicker({ requestPopup })
-  const unMount$ = useUnmountObservable()
+export const UploadBook: ObokuPlugin["UploadComponent"] = memo(
+  ({ onClose, requestPopup }) => {
+    const [addBook] = useAddBook()
+    const { generateResourceId } = useDataSourceHelpers(
+      UNIQUE_RESOURCE_IDENTIFIER
+    )
+    const { pick } = useDrivePicker({ requestPopup })
+    const unMount$ = useUnmountObservable()
 
-  useMount(() => {
-    pick({ select: "file" })
-      .pipe(
+    const { mutate } = useMutation({
+      mapOperator: "switch",
+      /**
+       * timer prevent double mount from dev mode
+       */
+      mutationFn: timer(1).pipe(
+        switchMap(() => pick({ select: "file" })),
         switchMap((data) => {
           onClose()
 
@@ -55,15 +58,18 @@ export const UploadBook: ObokuPlugin["UploadComponent"] = ({
           )
         }),
         catchError((error) => {
-          console.error(error)
           onClose()
 
-          return EMPTY
+          throw error
         }),
         takeUntil(unMount$.current)
       )
-      .subscribe()
-  })
+    })
 
-  return null
-}
+    useMount(() => {
+      mutate()
+    })
+
+    return null
+  }
+)

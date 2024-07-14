@@ -1,6 +1,17 @@
 import { useMeasure } from "react-use"
 import React, { useMemo } from "react"
 import { UseMeasureResult } from "react-use/lib/useMeasure"
+import {
+  first,
+  from,
+  fromEvent,
+  map,
+  merge,
+  Observable,
+  of,
+  shareReplay,
+  startWith
+} from "rxjs"
 
 export const useMeasureElement = (element: React.ReactNode) => {
   const [ref, dim] = useMeasure() as UseMeasureResult
@@ -52,4 +63,45 @@ export const useCSS = <T extends React.CSSProperties, K>(
   deps?: React.DependencyList
 ) => {
   return useMemo(css, deps ?? [])
+}
+
+const onOnline$ = fromEvent(window, "online")
+const onOffline$ = fromEvent(window, "offline")
+
+export const networkState$ = merge(onOnline$, onOffline$).pipe(
+  startWith(null),
+  map(() => (navigator.onLine ? "online" : "offline")),
+  shareReplay(1)
+)
+
+export const loadScript = ({ id, src }: { id: string; src: string }) => {
+  const existingElement = document.getElementById(id)
+
+  if (existingElement) {
+    existingElement.remove()
+  }
+
+  const script = document.createElement("script")
+  script.id = id
+  script.src = src
+  script.async = true
+  script.defer = true
+
+  const scriptLoad$ = new Observable((observer) => {
+    script.onload = () => {
+      observer.next()
+      observer.complete()
+    }
+  })
+
+  const scriptError$ = new Observable((observer) => {
+    script.onerror = (e: Event | string) => {
+      observer.error(e)
+      observer.complete()
+    }
+  })
+
+  document.body.appendChild(script)
+
+  return merge(scriptLoad$, scriptError$).pipe(first())
 }
