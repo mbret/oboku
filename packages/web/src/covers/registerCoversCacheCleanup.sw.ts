@@ -157,7 +157,7 @@ export const registerCoversCacheCleanup = () => {
     )
   )
 
-  interval(5 * 60 * 1000)
+  interval(5 * 60 * 1000 * 2)
     .pipe(
       tap(() => {
         Report.info(REPORT_NAMESPACE, `cleanup process started`)

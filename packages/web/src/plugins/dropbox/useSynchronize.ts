@@ -9,5 +9,5 @@ export const useSynchronize: ObokuPlugin[`useSynchronize`] = ({
     const auth = await authUser({ requestPopup })
 
     return { data: auth }
-  }, [])
+  }, [requestPopup])
 }

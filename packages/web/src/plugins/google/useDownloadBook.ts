@@ -1,61 +1,73 @@
-import { useCallback } from "react"
-import { extractIdFromResourceId } from "./lib/helpers"
+import { extractIdFromResourceId } from "./lib/resources"
 import { isDriveResponseError } from "./lib/types"
 import { useAccessToken } from "./lib/useAccessToken"
-import { useGoogle } from "./lib/useGsiClient"
 import { ObokuPlugin } from "../plugin-front"
 import { httpClient } from "../../http/httpClient"
+import { catchError, filter, from, mergeMap, of } from "rxjs"
+import { gapiOrThrow$ } from "./lib/gapi"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   requestPopup
 }) => {
   const { requestToken } = useAccessToken({ requestPopup })
-  const { lazyGapi } = useGoogle()
 
-  return useCallback(
-    async (link, options) => {
-      await requestToken({
-        scope: ["https://www.googleapis.com/auth/drive.readonly"]
+  const downloadBook = ({ link, onDownloadProgress }) => {
+    return requestToken({
+      scope: ["https://www.googleapis.com/auth/drive.readonly"]
+    }).pipe(
+      mergeMap(() => {
+        return gapiOrThrow$.pipe(
+          filter((value) => !!value),
+          mergeMap((gapi) => {
+            const fileId = extractIdFromResourceId(link.resourceId)
+
+            return from(
+              gapi.client.drive.files.get({
+                fileId,
+                fields: "name,size"
+              })
+            ).pipe(
+              mergeMap((info) => {
+                return from(
+                  httpClient.download<Blob>({
+                    url: `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+                    headers: {
+                      Authorization: `Bearer ${gapi.auth.getToken().access_token}`
+                    },
+                    responseType: "blob",
+                    onDownloadProgress: (event) => {
+                      const totalSize = parseInt(info.result.size || "1") || 1
+                      onDownloadProgress(event.loaded / totalSize)
+                    }
+                  })
+                ).pipe(
+                  mergeMap((mediaResponse) => {
+                    return of({
+                      data: mediaResponse.data,
+                      name: info.result.name || ""
+                    })
+                  })
+                )
+              }),
+              catchError((e) => {
+                if (isDriveResponseError(e)) {
+                  if (e.status === 404) {
+                    return of({
+                      isError: true,
+                      reason: `notFound`,
+                      error: e
+                    } as const)
+                  }
+                }
+
+                throw e
+              })
+            )
+          })
+        )
       })
+    )
+  }
 
-      const api = await lazyGapi
-
-      const fileId = extractIdFromResourceId(link.resourceId)
-
-      let info: gapi.client.Response<gapi.client.drive.File>
-
-      try {
-        info = await api.client.drive.files.get({
-          fileId,
-          fields: "name,size"
-        })
-      } catch (e) {
-        if (isDriveResponseError(e)) {
-          if (e.status === 404) {
-            return {
-              isError: true,
-              reason: `notFound`,
-              error: e
-            }
-          }
-        }
-        throw e
-      }
-
-      const mediaResponse = await httpClient.download<Blob>({
-        url: `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-        headers: {
-          Authorization: `Bearer ${gapi.auth.getToken().access_token}`
-        },
-        responseType: "blob",
-        onDownloadProgress: (event) => {
-          const totalSize = parseInt(info.result.size || "1") || 1
-          options?.onDownloadProgress(event.loaded / totalSize)
-        }
-      })
-
-      return { data: mediaResponse.data, name: info.result.name || "" }
-    },
-    [lazyGapi, requestToken]
-  )
+  return downloadBook
 }

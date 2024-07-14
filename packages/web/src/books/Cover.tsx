@@ -73,7 +73,9 @@ export const Cover: FC<Props> = memo(
     const originalSrc = book
       ? `${API_URL}/covers/${auth?.nameHex}-${book._id}?${urlParams.toString()}`
       : undefined
+
     urlParams.append("format", "image/jpeg")
+
     const originalJpgSrc = book
       ? `${API_URL}/covers/${auth?.nameHex}-${book._id}?${urlParams.toString()}`
       : undefined

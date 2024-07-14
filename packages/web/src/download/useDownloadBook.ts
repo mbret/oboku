@@ -9,16 +9,17 @@ import { BookFile } from "./types"
 import { getLinkStateAsync } from "../links/states"
 import { bytesToMb } from "../common/utils"
 import { createCbzFromReadableStream } from "./createCbzFromReadableStream"
-import { useDownloadBookFromDataSource } from "../plugins/useDownloadBookFromDataSource"
+import { usePluginDownloadBook } from "../plugins/usePluginDownloadBook"
 import { plugin } from "../plugins/local"
 import { isPluginError } from "../plugins/plugin-front"
 import { BookQueryResult } from "../books/states"
 import { createDialog } from "../common/dialogs/createDialog"
+import { firstValueFrom } from "rxjs"
 
 class NoLinkFound extends Error {}
 
 export const useDownloadBook = () => {
-  const downloadBook = useDownloadBookFromDataSource()
+  const { downloadPluginBook } = usePluginDownloadBook()
   const { db: database } = useDatabase()
 
   const setDownloadData = useCallback(
@@ -105,9 +106,12 @@ export const useDownloadBook = () => {
             // }
           }
 
-          const downloadResponse = await downloadBook(firstLink, {
-            onDownloadProgress
-          })
+          const downloadResponse = await firstValueFrom(
+            downloadPluginBook({
+              link: firstLink,
+              onDownloadProgress
+            })
+          )
 
           if (
             "isError" in downloadResponse &&
@@ -173,7 +177,7 @@ export const useDownloadBook = () => {
         Report.error(e)
       }
     },
-    [setDownloadData, downloadBook, database]
+    [setDownloadData, downloadPluginBook, database]
   )
 }
 

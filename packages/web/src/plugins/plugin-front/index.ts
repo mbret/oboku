@@ -12,6 +12,7 @@ import {
 } from "react"
 import { Button } from "@mui/material"
 import { PostBook, PostLink } from "./types"
+import { Observable } from "rxjs"
 
 export { ImgIcon } from "./ImgIcon"
 
@@ -35,12 +36,10 @@ type StreamValue = {
 export type UseDownloadHook = (options: {
   apiUri: string
   requestPopup: () => Promise<boolean>
-}) => (
-  link: LinkDocType,
-  options: {
-    onDownloadProgress: (progress: number) => void
-  }
-) => Promise<
+}) => (params: {
+  link: LinkDocType
+  onDownloadProgress: (progress: number) => void
+}) => Observable<
   | {
       data: Blob | File | ReadableStream<StreamValue>
       name?: string

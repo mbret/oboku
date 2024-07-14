@@ -1,4 +1,4 @@
-import { useRef, useCallback, ReactNode } from "react"
+import { useRef, useCallback, ReactNode, memo } from "react"
 import {
   BottomNavigationAction,
   BottomNavigation,
@@ -20,7 +20,7 @@ import { UploadBookFromDataSource } from "./upload/UploadBookFromDataSource"
 import { isUploadBookFromDataSourceDialogOpenedSignal } from "./upload/state"
 import { PLUGIN_FILE_TYPE } from "@oboku/shared"
 
-export const BottomTabBar = ({ children }: { children: ReactNode }) => {
+export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
   const location = useLocation()
   const navigate = useNavigate()
   const classes = useStyles()
@@ -54,6 +54,7 @@ export const BottomTabBar = ({ children }: { children: ReactNode }) => {
       isUploadBookFromDataSourceDialogOpenedSignal.setValue(SIGNAL_RESET)
     }
   }, [])
+
 
   return (
     <div style={classes.container} onDragOver={onDragOver}>
@@ -93,7 +94,7 @@ export const BottomTabBar = ({ children }: { children: ReactNode }) => {
       )}
     </div>
   )
-}
+})
 
 const OfflineIcon = () => {
   const classes = useStyles()
