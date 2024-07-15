@@ -6,18 +6,20 @@ import {
   booksDownloadStateSignal,
   DownloadState
 } from "../download/states"
-import { useCollectionsDictionary } from "../collections/states"
+import { useCollections } from "../collections/useCollections"
 import { from, map, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { isDefined, useForeverQuery, useQuery, useSignalValue } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
-import { BookDocType } from "@oboku/shared"
+import { BookDocType, CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject, MangoQuery } from "rxdb"
 import { useVisibleBooks } from "./useVisibleBooks"
-import { DeepReadonlyArray } from "rxdb/dist/types/types"
+import { DeepReadonlyArray, RxDocument } from "rxdb/dist/types/types"
 import { useMemo } from "react"
+import { getBooksQueryObj } from "./dbHelpers"
+import { CollectionDocMethods } from "../rxdb/collections/collection"
 
 export const getBooksByIds = async (database: Database) => {
   const result = await database.collections.book.find({}).exec()
@@ -49,27 +51,7 @@ export const useBooks = ({
       queryObj
     ],
     queryFn: () => {
-      const finalQueryObj = {
-        ...queryObj,
-        selector: {
-          ...queryObj.selector,
-          ...(isNotInterested === "none" && {
-            isNotInterested: {
-              $ne: true
-            }
-          }),
-          ...(isNotInterested === "only" && {
-            isNotInterested: {
-              $eq: true
-            }
-          }),
-          ...(ids && {
-            _id: {
-              $in: ids
-            }
-          })
-        }
-      } satisfies MangoQuery<BookDocType>
+      const finalQueryObj = getBooksQueryObj({ queryObj, isNotInterested, ids })
 
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.book.find(finalQueryObj).$),
@@ -129,11 +111,11 @@ const isBookProtected = (
  * @deprecated
  */
 const getBookState = ({
-  collections = {},
+  collections,
   book,
   tags = {}
 }: {
-  collections: ReturnType<typeof useCollectionsDictionary>["data"]
+  collections: CollectionDocType[] | undefined
   book?: BookQueryResult | null
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
@@ -141,7 +123,9 @@ const getBookState = ({
 
   return {
     ...book,
-    collections: book?.collections.filter((id) => !!collections[id]),
+    collections: book?.collections.filter(
+      (id) => !!collections?.find(({ _id }) => _id === id)
+    ),
     tags: book?.tags.filter((id) => !!tags[id])
   }
 }
@@ -157,7 +141,7 @@ export const useBookState = ({
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
   const { data: book } = useBook({ id: bookId })
-  const { data: collections } = useCollectionsDictionary()
+  const { data: collections } = useCollections()
 
   return getBookState({
     book,
@@ -185,10 +169,7 @@ export const getEnrichedBookState = ({
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
   normalizedLinks: ReturnType<typeof useLinks>["data"]
-  normalizedCollections: Omit<
-    ReturnType<typeof useCollectionsDictionary>["data"],
-    "displayableName"
-  >
+  normalizedCollections: CollectionDocType[] | undefined
   normalizedBooks: ReturnType<typeof useBooksDic>["data"]
 }) => {
   const book = getBookState({
@@ -261,7 +242,7 @@ export const useEnrichedBookState = ({
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
   const { data: normalizedLinks } = useLinks()
-  const { data: normalizedCollections = {} } = useCollectionsDictionary()
+  const { data: normalizedCollections } = useCollections()
   const { data: normalizedBooks } = useBooksDic()
 
   return useMemo(

@@ -26,10 +26,10 @@ import { differenceInMinutes } from "date-fns"
 import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
 import { ManageCollectionBooksDialog } from "../ManageCollectionBooksDialog"
-import { useCollection } from "../states"
 import { useRefreshCollectionMetadata } from "../useRefreshCollectionMetadata"
 import { useRemoveCollection } from "../useRemoveCollection"
 import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
+import { useCollection } from "../useCollection"
 
 export const CollectionActionsDrawer: FC<{}> = () => {
   const { openedWith: collectionId } = useSignalValue(

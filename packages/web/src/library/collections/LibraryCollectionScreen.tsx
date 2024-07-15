@@ -1,26 +1,26 @@
 import { useState, FC, useMemo, useCallback, ComponentProps } from "react"
 import Dialog from "@mui/material/Dialog"
 import {
-  Box,
   Button,
   DialogActions,
   DialogContent,
   DialogTitle,
   Stack,
   TextField,
-  Toolbar,
-  useTheme
+  Toolbar
 } from "@mui/material"
 import { ROUTES } from "../../constants"
 import { useNavigate } from "react-router-dom"
-import { useCSS, useMeasureElement } from "../../common/utils"
+import { useMeasureElement } from "../../common/utils"
 import { CollectionList } from "../../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
 import { signal, useSignalValue } from "reactjrx"
-import { useLibraryCollections } from "./useLibraryCollections"
+import { useShelve } from "./useShelve"
 import { FilterBar } from "./FilterBar"
 import { useCreateCollection } from "../../collections/useCreateCollection"
 import { collectionsListSignal } from "./state"
+import { CollectionDocType } from "@oboku/shared"
+import { DeepReadonlyObject } from "rxdb"
 
 type Scroll = Parameters<
   NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
@@ -38,7 +38,6 @@ const libraryCollectionScreenPreviousScrollState = signal<Scroll>({
 })
 
 export const LibraryCollectionScreen = () => {
-  const classes = useStyles()
   const navigate = useNavigate()
   const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] =
     useState(false)
@@ -49,7 +48,7 @@ export const LibraryCollectionScreen = () => {
     collectionsListSignal,
     ({ viewMode }) => ({ viewMode })
   )
-  const { data: collections = [] } = useLibraryCollections()
+  const { data: collections = [] } = useShelve()
 
   const onScroll = useDebouncedCallback((value: Scroll) => {
     libraryCollectionScreenPreviousScrollState.setValue(value)
@@ -78,7 +77,7 @@ export const LibraryCollectionScreen = () => {
     useMeasureElement(listHeader)
 
   const onItemClick = useCallback(
-    (item) => {
+    (item: DeepReadonlyObject<CollectionDocType>) => {
       navigate(ROUTES.COLLECTION_DETAILS.replace(":id", item._id))
     },
     [navigate]
@@ -152,18 +151,5 @@ const AddCollectionDialog: FC<{
         </Button>
       </DialogActions>
     </Dialog>
-  )
-}
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      list: {
-        height: "100%"
-      }
-    }),
-    [theme]
   )
 }

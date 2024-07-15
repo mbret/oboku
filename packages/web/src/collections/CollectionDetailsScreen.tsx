@@ -3,7 +3,6 @@ import { Box, Typography, useTheme } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import CollectionBgSvg from "../assets/series-bg.svg"
-import { useCollection } from "./states"
 import { BookListWithControls } from "../books/bookList/BookListWithControls"
 import { useVisibleBookIds } from "../books/states"
 import { signal, useSignalValue } from "reactjrx"
@@ -12,6 +11,8 @@ import {
   ListActionViewMode
 } from "../common/lists/ListActionsToolbar"
 import { useCollectionActionsDrawer } from "./CollectionActionsDrawer/useCollectionActionsDrawer"
+import { useCollection } from "./useCollection"
+import { COLLECTION_EMPTY_ID } from "../constants.shared"
 
 type ScreenParams = {
   id: string
@@ -70,7 +71,9 @@ export const CollectionDetailsScreen = () => {
           showBack={true}
           position="absolute"
           color="transparent"
-          onMoreClick={openActionDrawer}
+          {...(id !== COLLECTION_EMPTY_ID && {
+            onMoreClick: openActionDrawer
+          })}
         />
         <div
           style={{

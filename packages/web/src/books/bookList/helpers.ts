@@ -7,7 +7,7 @@ import { getProtectedTags, getTagsByIds } from "../../tags/helpers"
 import { useDatabase } from "../../rxdb"
 import { getLinksByIds } from "../../links/states"
 import { useCallback } from "react"
-import { getCollectionsByIds } from "../../collections/databaseHelpers"
+import { getCollections } from "../../collections/dbHelpers"
 
 export const useDefaultItemClickHandler = () => {
   const downloadFile = useDownloadBook()
@@ -18,7 +18,7 @@ export const useDefaultItemClickHandler = () => {
     async (id: string) => {
       if (!db) return
 
-      const normalizedCollections = await getCollectionsByIds(db)
+      const normalizedCollections = await getCollections(db)
       const normalizedLinks = await getLinksByIds(db)
       const normalizedBooks = await getBooksByIds(db)
 
