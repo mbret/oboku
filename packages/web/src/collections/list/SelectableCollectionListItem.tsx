@@ -1,44 +1,26 @@
 import { FC, memo } from "react"
-import { ListItem, ListItemText, useTheme } from "@mui/material"
-import { useCSS } from "../../common/utils"
-import { useCollectionsDictionary } from "../states"
+import { Box, ListItemButton, ListItemText } from "@mui/material"
 import { Checkbox } from "../../common/Checkbox"
 import { getMetadataFromCollection } from "../getMetadataFromCollection"
+import { useCollection } from "../useCollection"
 
 export const SelectableCollectionListItem: FC<{
   id: string
   onItemClick?: (tag: string) => void
   selected: boolean
 }> = memo(({ id, onItemClick, selected }) => {
-  const { data: collections = {} } = useCollectionsDictionary()
-  const data = collections[id]
-  const styles = useStyle()
+  const { data } = useCollection({ id })
 
   return (
-    <ListItem
-      button
-      style={styles.container}
+    <ListItemButton
+      sx={{
+        height: `100%`
+      }}
       onClick={() => data && onItemClick && onItemClick(data?._id)}
     >
       <ListItemText primary={getMetadataFromCollection(data)?.title} />
-      <div style={styles.infoIcon}></div>
+      <Box mr={1}></Box>
       <Checkbox selected={selected} />
-    </ListItem>
+    </ListItemButton>
   )
 })
-
-const useStyle = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        height: `100%`
-      },
-      infoIcon: {
-        marginRight: theme.spacing(1)
-      }
-    }),
-    [theme]
-  )
-}

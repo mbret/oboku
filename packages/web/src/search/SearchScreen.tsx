@@ -55,7 +55,8 @@ const SeeMore = ({
         style={{ justifyContent: "center" }}
         component={Link}
         to={generatePath(`:search/:type`, {
-          search,
+          // will use /%20/ (space) instead of nothing and crashing
+          search: search === `` ? ` ` : search,
           type
         })}
       >

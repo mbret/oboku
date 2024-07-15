@@ -12,7 +12,7 @@ export const saveCoverFromRarArchiveToBucket = async (
 ) => {
   try {
     const list = extractor.getFileList()
-    const fileHeaders = [...list.fileHeaders] // load the file headers
+    const fileHeaders = [...list.fileHeaders] // need to iterate till the end to release memory
 
     const firstImageFound = fileHeaders.find((fileHeader) => {
       const isAllowedImage = COVER_ALLOWED_EXT.includes(
@@ -26,7 +26,7 @@ export const saveCoverFromRarArchiveToBucket = async (
       Logger.info(`prepare to save cover ${coverObjectKey}`)
 
       const extracted = extractor.extract({ files: [firstImageFound.name] })
-      const files = [...extracted.files] //load the files
+      const files = [...extracted.files] // need to iterate till the end to release memory
       const file = files[0]
       if (file && file.extraction) {
         const coverBuffer = Buffer.from(file.extraction)

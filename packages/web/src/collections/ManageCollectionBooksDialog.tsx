@@ -9,7 +9,7 @@ import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
 import { booksDownloadStateSignal } from "../download/states"
 import { useSignalValue } from "reactjrx"
-import { useCollection } from "./states"
+import { useCollection } from "./useCollection"
 
 export const ManageCollectionBooksDialog: FC<{
   onClose: () => void

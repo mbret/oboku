@@ -1,9 +1,9 @@
 import { sortByTitleComparator } from "@oboku/shared"
 import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
-import { useCollectionsWithPrivacy } from "../collections/states"
 import { useMemo } from "react"
 import { useSignalValue } from "reactjrx"
 import { searchListActionsToolbarSignal } from "./list/states"
+import { useCollections } from "../collections/useCollections"
 
 export const REGEXP_SPECIAL_CHAR =
   /[\!\#\$\%\^\&\*\)\(\+\=\.\<\>\{\}\[\]\:\;\'\"\|\~\`\_\-]/g
@@ -12,7 +12,7 @@ export const useCollectionsForSearch = (search: string) => {
   const { notInterestedContents } = useSignalValue(
     searchListActionsToolbarSignal
   )
-  const { data } = useCollectionsWithPrivacy({
+  const { data } = useCollections({
     isNotInterested: notInterestedContents
   })
 

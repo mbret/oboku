@@ -25,12 +25,13 @@ const fullScreenModes: Record<
   always: "Always",
   never: "Never"
 }
+
 const showCollectionWithProtectedContentLabels: Record<
   LocalSettings["showCollectionWithProtectedContent"],
   string
 > = {
-  unlocked: "If protected contents are unlocked only (privacy)",
-  hasNormalContent: "If collection has non protected content as well"
+  unlocked: "Only when unlocked (safe)",
+  hasNormalContent: "Yes (unsafe)"
 }
 
 export const SettingsScreen = memo(() => {

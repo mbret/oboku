@@ -10,12 +10,13 @@ import {
   ListItemProps,
   Stack
 } from "@mui/material"
-import { MoreVert } from "@mui/icons-material"
+import { LockRounded, MoreVert } from "@mui/icons-material"
 import { CollectionDocType } from "@oboku/shared"
 import { Cover } from "../../books/Cover"
-import { useCollection } from "../states"
 import { DeepReadonlyObject } from "rxdb"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
+import { useCollection } from "../useCollection"
+import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,
@@ -63,7 +64,10 @@ export const CollectionListItemList: FC<
             borderRadius: 2,
             overflow: "hidden",
             position: "relative",
-            alignItems: "center"
+            alignItems: "center",
+            ...(id === COLLECTION_EMPTY_ID && {
+              opacity: 0.5
+            })
           }}
           width="100%"
           justifyContent="center"
@@ -119,10 +123,12 @@ export const CollectionListItemList: FC<
           width="100%"
           direction="row"
           alignItems="center"
-          onClick={(e) => {
-            e.stopPropagation()
-            openActionDrawer()
-          }}
+          {...(id !== COLLECTION_EMPTY_ID && {
+            onClick: (e) => {
+              e.stopPropagation()
+              openActionDrawer()
+            }
+          })}
         >
           <ListItemText
             primary={item?.displayableName}
@@ -133,14 +139,26 @@ export const CollectionListItemList: FC<
               textOverflow: "ellipsis"
             }}
           />
-          <IconButton
-            disableFocusRipple
-            disableRipple
-            disableTouchRipple
-            size="large"
-          >
-            <MoreVert />
-          </IconButton>
+          {id !== COLLECTION_EMPTY_ID && (
+            <IconButton
+              disableFocusRipple
+              disableRipple
+              disableTouchRipple
+              size="large"
+            >
+              <MoreVert />
+            </IconButton>
+          )}
+          {id === COLLECTION_EMPTY_ID && (
+            <IconButton
+              disableFocusRipple
+              disableRipple
+              disableTouchRipple
+              size="large"
+            >
+              <LockRounded />
+            </IconButton>
+          )}
         </Stack>
       </ListItemButton>
     </ListItem>

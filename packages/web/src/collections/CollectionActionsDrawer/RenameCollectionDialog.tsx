@@ -8,8 +8,8 @@ import {
 } from "@mui/material"
 import { useEffect, useState, FC } from "react"
 import { getMetadataFromCollection } from "../getMetadataFromCollection"
-import { useCollection } from "../states"
 import { useUpdateCollection } from "../useUpdateCollection"
+import { useCollection } from "../useCollection"
 
 export const RenameCollectionDialog: FC<{
   openWith: string | undefined

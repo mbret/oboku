@@ -8,7 +8,7 @@ import { useMutation } from "reactjrx"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/useCreateDatabase"
 import { OfflineError } from "../common/errors/errors"
-import { getCollectionById } from "./databaseHelpers"
+import { getCollectionById } from "./dbHelpers"
 
 export const useRefreshCollectionMetadata = () => {
   const { mutateAsync: updateCollection } = useUpdateCollection()

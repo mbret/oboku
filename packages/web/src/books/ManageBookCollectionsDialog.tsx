@@ -1,9 +1,8 @@
-import { FC, useCallback } from "react"
-import { useVisibleCollectionIds } from "../collections/states"
+import { FC, useCallback, useMemo } from "react"
+import { useCollections } from "../collections/useCollections"
 import { useAddCollectionToBook, useRemoveCollectionFromBook } from "./helpers"
-import { useBook, useBookState } from "./states"
+import { useBook } from "./states"
 import { CollectionsSelectionDialog } from "../collections/CollectionsSelectionDialog"
-import { useTagsByIds } from "../tags/helpers"
 import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
 const openManageBookCollectionsDialogStateSignal = signal<string | undefined>({
@@ -29,10 +28,13 @@ export const useManageBookCollectionsDialog = () => {
 export const ManageBookCollectionsDialog: FC<{}> = () => {
   const id = useSignalValue(openManageBookCollectionsDialogStateSignal)
   const open = !!id
-  const { data: collections = [] } = useVisibleCollectionIds({
+  const { data: collections = [] } = useCollections({
     enabled: open
   })
-
+  const collectionIds = useMemo(
+    () => collections.map(({ _id }) => _id),
+    [collections]
+  )
   const { data: book } = useBook({ id })
   const { mutate: addToBook } = useAddCollectionToBook()
   const { mutate: removeFromBook } = useRemoveCollectionFromBook()
@@ -62,7 +64,7 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
       title="Manage collections"
       open={open}
       onClose={onClose}
-      data={collections}
+      data={collectionIds}
       selected={isSelected}
       onItemClick={onItemClick}
     />

@@ -1,5 +1,5 @@
 import { getMetadataFromCollection } from "../../collections/getMetadataFromCollection"
-import { useCollectionsWithPrivacy } from "../../collections/states"
+import { useCollections } from "../../collections/useCollections"
 import { ROUTES } from "../../constants"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
 import { useBook } from "../states"
@@ -8,7 +8,7 @@ import { MetadataItemList } from "./MetadataItemList"
 export const CollectionsPane = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })
   const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
-  const { data: collections } = useCollectionsWithPrivacy({
+  const { data: collections } = useCollections({
     ids: book?.collections ?? []
   })
 
