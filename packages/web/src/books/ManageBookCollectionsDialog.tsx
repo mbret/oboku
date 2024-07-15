@@ -1,9 +1,8 @@
 import { FC, useCallback, useMemo } from "react"
-import { useCollections, useVisibleCollectionIds } from "../collections/useCollections"
+import { useCollections } from "../collections/useCollections"
 import { useAddCollectionToBook, useRemoveCollectionFromBook } from "./helpers"
-import { useBook, useBookState } from "./states"
+import { useBook } from "./states"
 import { CollectionsSelectionDialog } from "../collections/CollectionsSelectionDialog"
-import { useTagsByIds } from "../tags/helpers"
 import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
 const openManageBookCollectionsDialogStateSignal = signal<string | undefined>({
