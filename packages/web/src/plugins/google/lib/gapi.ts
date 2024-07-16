@@ -1,11 +1,6 @@
 import { useEffect } from "react"
 import { signal, useMutation } from "reactjrx"
-import {
-  combineLatest,
-  from,
-  map,
-  mergeMap,
-} from "rxjs"
+import { combineLatest, defer, from, map, mergeMap, tap } from "rxjs"
 import { loadScript } from "../../../common/utils"
 import { retryOnFailure } from "./scripts"
 
@@ -38,30 +33,36 @@ export const useLoadGapi = () => {
         retryOnFailure,
         mergeMap(() =>
           combineLatest([
-            from(
-              new Promise((resolve, reject) => {
-                window.gapi.load("client", {
-                  callback: resolve,
-                  onerror: reject
+            defer(() =>
+              from(
+                new Promise((resolve, reject) => {
+                  window.gapi.load("client", {
+                    callback: resolve,
+                    onerror: reject
+                  })
                 })
-              })
+              )
             ).pipe(retryOnFailure),
-            from(
-              new Promise((resolve, reject) => {
-                window.gapi.load("picker", {
-                  callback: resolve,
-                  onerror: reject
+            defer(() =>
+              from(
+                new Promise((resolve, reject) => {
+                  window.gapi.load("picker", {
+                    callback: resolve,
+                    onerror: reject
+                  })
                 })
-              })
+              )
             ).pipe(retryOnFailure)
           ]).pipe(
             mergeMap(() =>
-              from(
-                window.gapi.client.init({
-                  discoveryDocs: [
-                    "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
-                  ]
-                })
+              defer(() =>
+                from(
+                  window.gapi.client.init({
+                    discoveryDocs: [
+                      "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
+                    ]
+                  })
+                )
               ).pipe(retryOnFailure)
             ),
             map(() => {
