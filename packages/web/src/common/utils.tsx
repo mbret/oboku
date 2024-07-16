@@ -2,13 +2,12 @@ import { useMeasure } from "react-use"
 import React, { useMemo } from "react"
 import { UseMeasureResult } from "react-use/lib/useMeasure"
 import {
+  defer,
   first,
-  from,
   fromEvent,
   map,
   merge,
   Observable,
-  of,
   shareReplay,
   startWith
 } from "rxjs"
@@ -75,33 +74,35 @@ export const networkState$ = merge(onOnline$, onOffline$).pipe(
 )
 
 export const loadScript = ({ id, src }: { id: string; src: string }) => {
-  const existingElement = document.getElementById(id)
+  return defer(() => {
+    const existingElement = document.getElementById(id)
 
-  if (existingElement) {
-    existingElement.remove()
-  }
-
-  const script = document.createElement("script")
-  script.id = id
-  script.src = src
-  script.async = true
-  script.defer = true
-
-  const scriptLoad$ = new Observable((observer) => {
-    script.onload = () => {
-      observer.next()
-      observer.complete()
+    if (existingElement) {
+      existingElement.remove()
     }
+
+    const script = document.createElement("script")
+    script.id = id
+    script.src = src
+    script.async = true
+    script.defer = true
+
+    const scriptLoad$ = new Observable((observer) => {
+      script.onload = () => {
+        observer.next()
+        observer.complete()
+      }
+    })
+
+    const scriptError$ = new Observable((observer) => {
+      script.onerror = (e: Event | string) => {
+        observer.error(e)
+        observer.complete()
+      }
+    })
+
+    document.body.appendChild(script)
+
+    return merge(scriptLoad$, scriptError$).pipe(first())
   })
-
-  const scriptError$ = new Observable((observer) => {
-    script.onerror = (e: Event | string) => {
-      observer.error(e)
-      observer.complete()
-    }
-  })
-
-  document.body.appendChild(script)
-
-  return merge(scriptLoad$, scriptError$).pipe(first())
 }
