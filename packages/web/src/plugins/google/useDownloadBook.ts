@@ -17,7 +17,6 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
     }).pipe(
       mergeMap(() => {
         return gapiOrThrow$.pipe(
-          filter((value) => !!value),
           mergeMap((gapi) => {
             const fileId = extractIdFromResourceId(link.resourceId)
 
