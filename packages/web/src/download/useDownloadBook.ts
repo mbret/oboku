@@ -15,6 +15,7 @@ import { isPluginError } from "../plugins/plugin-front"
 import { BookQueryResult } from "../books/states"
 import { createDialog } from "../common/dialogs/createDialog"
 import { firstValueFrom } from "rxjs"
+import { useMutation } from "reactjrx"
 
 class NoLinkFound extends Error {}
 
@@ -38,11 +39,14 @@ export const useDownloadBook = () => {
     []
   )
 
-  return useCallback(
-    async (
-      { _id: bookId, links }: Pick<BookQueryResult, `_id` | `links`>,
+  return useMutation({
+    mutationFn: async ({
+      _id: bookId,
+      links,
+      localFile
+    }: Pick<BookQueryResult, `_id` | `links`> & {
       localFile?: File
-    ) => {
+    }) => {
       const throttleSetProgress = throttle((progress: number) => {
         setDownloadData(bookId, {
           downloadProgress: progress
@@ -126,11 +130,11 @@ export const useDownloadBook = () => {
               preset: `UNKNOWN_ERROR`,
               title: `Unable to download`,
               content: `
-              oboku could not find the book from the linked data source. 
-              This can happens if you removed the book from the data source or if you replaced it with another file.
-              Make sure the book is on your data source and try to fix the link for this book in the details screen to target the file. 
-              Attention, if you add the book on your data source and synchronize again, oboku will duplicate the book.
-            `
+                oboku could not find the book from the linked data source. 
+                This can happens if you removed the book from the data source or if you replaced it with another file.
+                Make sure the book is on your data source and try to fix the link for this book in the details screen to target the file. 
+                Attention, if you add the book on your data source and synchronize again, oboku will duplicate the book.
+              `
             })
             return
           }
@@ -174,11 +178,10 @@ export const useDownloadBook = () => {
 
         if (e instanceof NoLinkFound) return
 
-        Report.error(e)
+        throw e
       }
-    },
-    [setDownloadData, downloadPluginBook, database]
-  )
+    }
+  })
 }
 
 const generateFilenameFromBlob = (data: Blob, bookId: string) => {
