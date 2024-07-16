@@ -1,8 +1,22 @@
-import { filter, first, mergeMap, Observable, retry, timer } from "rxjs"
+import {
+  catchError,
+  filter,
+  first,
+  mergeMap,
+  Observable,
+  retry,
+  timer
+} from "rxjs"
 import { networkState$ } from "../../../common/utils"
+import { Report } from "../../../debug/report.shared"
 
 export const retryOnFailure = <O>(stream: Observable<O>) =>
   stream.pipe(
+    catchError((e) => {
+      Report.error(e)
+
+      throw e
+    }),
     /**
      * In case of error we retry in 1mn by default.
      * If network is offline, we wait for online and
