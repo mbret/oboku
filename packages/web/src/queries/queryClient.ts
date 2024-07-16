@@ -1,11 +1,16 @@
 import { MutationCache, QueryCache, QueryClient } from "reactjrx"
 import { Report } from "../debug/report.shared"
 import { CancelError } from "../common/errors/errors"
+import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 
 export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onError: (error) => {
       if (error instanceof CancelError) return
+
+      if (isDebugEnabled()) {
+        alert(error)
+      }
 
       Report.error(error)
     }

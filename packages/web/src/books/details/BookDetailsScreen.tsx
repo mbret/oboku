@@ -34,7 +34,7 @@ import { DataSourceSection } from "./DataSourceSection"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
-import { getMetadataFromBook, useMedataFromBook } from "../metadata"
+import { useMedataFromBook } from "../metadata"
 import { MetadataSourcePane } from "./MetadataSourcePane"
 import { CoverPane } from "./CoverPane"
 import { MetadataPane } from "./MetadataPane"
@@ -51,7 +51,7 @@ type ScreenParams = {
 
 export const BookDetailsScreen = memo(() => {
   const navigate = useNavigate()
-  const downloadFile = useDownloadBook()
+  const { mutate: downloadFile } = useDownloadBook()
   const { goBack } = useSafeGoBack()
   const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<
     undefined | string

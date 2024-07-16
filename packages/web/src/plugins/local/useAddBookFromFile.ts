@@ -5,7 +5,7 @@ import { PLUGIN_FILE_TYPE, PLUGIN_FILE_DATA } from "@oboku/shared"
 
 export const useAddBookFromFile = () => {
   const [addBook] = useAddBook()
-  const downloadFile = useDownloadBook()
+  const { mutateAsync: downloadFile } = useDownloadBook()
 
   return useMutation({
     mutationFn: async (file: File) => {
@@ -25,7 +25,7 @@ export const useAddBookFromFile = () => {
         })) || {}
 
       if (book) {
-        await downloadFile(book, file)
+        await downloadFile({ ...book, localFile: file })
       }
     }
   })

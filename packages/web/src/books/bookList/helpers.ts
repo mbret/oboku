@@ -10,7 +10,7 @@ import { useCallback } from "react"
 import { getCollections } from "../../collections/dbHelpers"
 
 export const useDefaultItemClickHandler = () => {
-  const downloadFile = useDownloadBook()
+  const { mutate: downloadFile } = useDownloadBook()
   const navigate = useNavigate()
   const { db } = useDatabase()
 
