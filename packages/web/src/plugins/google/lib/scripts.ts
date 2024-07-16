@@ -26,7 +26,7 @@ export const retryOnFailure = <O>(stream: Observable<O>) =>
           first(),
           mergeMap((state) => {
             if (state === "online")
-              return timer(retryCount > 5 ? 1000 * 60 * 5 : 1000)
+              return timer(retryCount > 5 ? 1000 * 60 * 5 : 1)
 
             return networkState$.pipe(
               first(),
