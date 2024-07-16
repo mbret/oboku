@@ -14,10 +14,14 @@ export const Report = {
     import.meta.env.PROD || isDebugEnabled()
       ? Function.prototype.bind.call(console.info, console, `[oboku:info]`)
       : noop,
-  error:
-    import.meta.env.PROD || isDebugEnabled()
-      ? Function.prototype.bind.call(console.error, console, `[oboku:error]`)
-      : noop,
+  /**
+   * Using console.error as it is will make sure to report it
+   * to sentry
+   */
+  error: (...data: any[]) => {
+    // eslint-disable-next-line no-console
+    console.error(`[oboku:error]`, ...data)
+  },
   captureMessage: (
     message: string,
     captureContext?: Parameters<typeof Sentry.captureMessage>[1]
