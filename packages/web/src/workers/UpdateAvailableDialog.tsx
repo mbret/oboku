@@ -4,7 +4,8 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
+  Link
 } from "@mui/material"
 import { FC, useEffect } from "react"
 import { useLock } from "../common/BlockingBackdrop"
@@ -31,9 +32,11 @@ export const UpdateAvailableDialog: FC<{
       <DialogTitle>Yay! A new version is here</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          A new version of the app is available. To update you can click on
-          "reload" button. (
-          <b>This action is mandatory right now until release</b>)
+          A new version of the app is available. (
+          <b>This action is mandatory right now until release</b>). See the full{" "}
+          <Link href="https://docs.oboku.me/changelog" target="_blank">
+            changelog here.
+          </Link>
         </DialogContentText>
       </DialogContent>
       <DialogActions>
