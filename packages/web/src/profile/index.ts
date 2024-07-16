@@ -7,9 +7,17 @@ import { localSettingsStatePersist } from "../settings/states"
 import { collectionsListSignal } from "../library/collections/state"
 import { collectionDetailsScreenListControlsStateSignal } from "../collections/CollectionDetailsScreen"
 import { searchListActionsToolbarSignal } from "../search/list/states"
+import { SignalPersistenceConfig } from "reactjrx"
 
 export const signalEntriesToPersist = [
-  { signal: libraryStateSignal, version: 0 },
+  {
+    signal: libraryStateSignal,
+    version: 0,
+    hydrate: ({ value }) => ({
+      ...value,
+      isLibraryUnlocked: false
+    })
+  } satisfies SignalPersistenceConfig<typeof libraryStateSignal>,
   { signal: collectionsListSignal, version: 0 },
   { signal: normalizedBookDownloadsStatePersist, version: 0 },
   { signal: firstTimeExperienceStatePersist, version: 0 },
