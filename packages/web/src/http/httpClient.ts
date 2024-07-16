@@ -110,37 +110,43 @@ class HttpClient {
     responseType: XMLHttpRequestResponseType
     onDownloadProgress: (event: ProgressEvent<EventTarget>) => void
   } & Parameters<typeof fetch>[1]) => {
-    return new Promise<{ data: T }>((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
+    return new Promise<{ data: T; status: number; statusText: string }>(
+      (resolve, reject) => {
+        const xhr = new XMLHttpRequest()
 
-      xhr.open("GET", url)
+        xhr.open("GET", url)
 
-      xhr.responseType = responseType
+        xhr.responseType = responseType
 
-      Object.keys(headers).forEach((key) => {
-        xhr.setRequestHeader(key, headers[key])
-      })
+        Object.keys(headers).forEach((key) => {
+          xhr.setRequestHeader(key, headers[key])
+        })
 
-      xhr.send()
+        xhr.send()
 
-      xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          const data = xhr.response
-          resolve({ data })
-        } else {
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const data = xhr.response
+            resolve({ data, status: xhr.status, statusText: xhr.statusText })
+          } else {
+            reject({
+              status: xhr.status,
+              statusText: xhr.statusText
+            })
+          }
+        }
+
+        xhr.onprogress = onDownloadProgress
+
+        xhr.onerror = function () {
+          // handle non-HTTP error (e.g. network down)
           reject({
             status: xhr.status,
             statusText: xhr.statusText
           })
         }
       }
-
-      xhr.onprogress = onDownloadProgress
-
-      xhr.onerror = function () {
-        // handle non-HTTP error (e.g. network down)
-      }
-    })
+    )
   }
 }
 

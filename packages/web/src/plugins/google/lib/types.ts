@@ -15,7 +15,7 @@ export type DriveResponseError = {
 export const isDriveResponseError = (
   error: any
 ): error is DriveResponseError => {
-  return `body` in error && `result` in error
+  return typeof error === "object" && `body` in error && `result` in error
 }
 
 export type AccessToken = Parameters<
