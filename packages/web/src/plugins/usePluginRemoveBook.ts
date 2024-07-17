@@ -3,7 +3,7 @@ import { useDatabase } from "../rxdb"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 
-export const useRemoveBookFromDataSource = () => {
+export const usePluginRemoveBook = () => {
   const { db } = useDatabase()
   const createRequestPopupDialog = useCreateRequestPopupDialog()
 

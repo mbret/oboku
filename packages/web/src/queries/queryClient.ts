@@ -8,8 +8,8 @@ export const queryClient = new QueryClient({
     onError: (error) => {
       if (error instanceof CancelError) return
 
-      if (isDebugEnabled()) {
-        alert(error)
+      if (isDebugEnabled() && !import.meta.env.DEV) {
+        alert(String(error))
       }
 
       Report.error(error)

@@ -12,18 +12,20 @@ import { BookQueryResult, useBooksDic } from "./states"
 import { AtomicUpdateFunction } from "rxdb"
 import { useNetworkState } from "react-use"
 import { from } from "rxjs"
-import { useRemoveBookFromDataSource } from "../plugins/useRemoveBookFromDataSource"
+import { usePluginRemoveBook } from "../plugins/usePluginRemoveBook"
 import { useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 import { getMetadataFromBook } from "./metadata"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
 import { CancelError, OfflineError } from "../common/errors/errors"
+import { useLock } from "../common/BlockingBackdrop"
 
 export const useRemoveBook = () => {
   const removeDownload = useRemoveDownloadFile()
   const { db } = useDatabase()
-  const removeBookFromDataSource = useRemoveBookFromDataSource()
+  const removeBookFromDataSource = usePluginRemoveBook()
   const network = useNetworkState()
+  const [lock] = useLock()
 
   return useMutation({
     mutationFn: async ({
@@ -49,10 +51,14 @@ export const useRemoveBook = () => {
         }
       }
 
+      const unlock = lock()
+
       await Promise.all([
         removeDownload(id),
         db?.book.findOne({ selector: { _id: id } }).remove()
       ])
+
+      unlock()
     }
   })
 }

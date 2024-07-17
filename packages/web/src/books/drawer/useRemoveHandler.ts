@@ -1,7 +1,7 @@
 import { getBookById, useRemoveBook } from "../helpers"
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/useCreateDatabase"
-import { catchError, finalize, from, map, mergeMap, of, tap } from "rxjs"
+import { finalize, from, map, mergeMap, of, tap } from "rxjs"
 import { isRemovableFromDataSource } from "../../links/isRemovableFromDataSource"
 import { getDataSourcePlugin } from "../../dataSources/getDataSourcePlugin"
 import { getLinkById } from "../../links/helpers"
@@ -23,7 +23,6 @@ export const useRemoveHandler = (
   options: { onSuccess?: () => void; onError?: () => void } = {}
 ) => {
   const { mutateAsync: removeBook } = useRemoveBook()
-  const [lock] = useLock()
 
   return useMutation({
     mutationFn: ({ bookId }: { bookId: string }) => {
@@ -67,16 +66,11 @@ export const useRemoveHandler = (
                     }).$
                   }
                 }),
-                map((data) => [data, lock()] as const),
-                mergeMap(([{ deleteFromDataSource }, unlock]) =>
+                mergeMap(({ deleteFromDataSource }) =>
                   from(
                     removeBook({
                       id: book._id,
                       deleteFromDataSource: deleteFromDataSource
-                    })
-                  ).pipe(
-                    finalize(() => {
-                      unlock()
                     })
                   )
                 )
