@@ -105,6 +105,9 @@ const InnerDialog = () => {
               handleClose()
             }}
             color="primary"
+            style={{
+              whiteSpace: "nowrap"
+            }}
             autoFocus
           >
             {action.title}
