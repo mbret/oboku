@@ -1,6 +1,6 @@
 import { intersection } from "lodash"
 import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
-import { getLinkState, useLink, useLinks } from "../links/states"
+import { getLinkState, useLink, useLinksDic } from "../links/states"
 import {
   getBookDownloadsState,
   booksDownloadStateSignal
@@ -175,7 +175,7 @@ export const getEnrichedBookState = ({
   >
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
-  normalizedLinks: ReturnType<typeof useLinks>["data"]
+  normalizedLinks: ReturnType<typeof useLinksDic>["data"]
   normalizedCollections: CollectionDocType[] | undefined
   normalizedBooks: ReturnType<typeof useBooksDic>["data"]
 }) => {
@@ -248,7 +248,7 @@ export const useEnrichedBookState = ({
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
-  const { data: normalizedLinks } = useLinks()
+  const { data: normalizedLinks } = useLinksDic()
   const { data: normalizedCollections } = useCollections()
   const { data: normalizedBooks } = useBooksDic()
 
@@ -330,7 +330,7 @@ export const useBookLinksState = ({
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
   const book = useBookState({ bookId, tags })
-  const { data: links } = useLinks()
+  const { data: links } = useLinksDic()
 
   return book?.links?.map((id) => getLinkState(links, id)) || []
 }
