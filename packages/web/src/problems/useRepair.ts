@@ -1,7 +1,7 @@
 import { BookDocType, CollectionDocType } from "@oboku/shared"
 import { useMutation } from "reactjrx"
 import { first, from, map, mergeMap, of } from "rxjs"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { DeepReadonlyObject } from "rxdb"
 
 export const useRepair = () => {
@@ -125,7 +125,6 @@ export const useRepair = () => {
 
                     return {
                       ...old,
-                      _meta: old._meta ?? {},
                       links: nonDanglingLinks
                     }
                   })

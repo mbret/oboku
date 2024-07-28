@@ -6,8 +6,8 @@ import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { BuildRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
 import {
-  useDuplicatedBookTitles,
-  useFixDuplicatedBookTitles
+  useDuplicatedBookTitles
+  // useFixDuplicatedBookTitles
 } from "./useDuplicateBooksTitles"
 import { Alert } from "@mui/material"
 import { useObserve } from "reactjrx"
@@ -24,9 +24,10 @@ import { BookDanglingLinks } from "./BookDanglingLinks"
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
   const duplicatedBookTitles = useDuplicatedBookTitles()
-  const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
+  // const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
   const { collectionsWithDanglingBooks } = useFixableCollections()
-  const { booksWithDanglingCollections, booksWithDanglingLinks } = useFixableBooks()
+  const { booksWithDanglingCollections, booksWithDanglingLinks } =
+    useFixableBooks()
   const { mutate: repair } = useRepair()
   const collections = useObserve(
     () => latestDatabase$.pipe(switchMap((db) => db.obokucollection.find().$)),
@@ -190,7 +191,7 @@ export const ProblemsScreen = memo(() => {
               }
             />
           ))}
-          {duplicatedBookTitles.length > 0 && (
+          {/* {duplicatedBookTitles.length > 0 && (
             <ListItem
               alignItems="flex-start"
               button
@@ -214,7 +215,7 @@ export const ProblemsScreen = memo(() => {
                 }
               />
             </ListItem>
-          )}
+          )} */}
         </List>
       </Box>
     </>
