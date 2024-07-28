@@ -14,6 +14,7 @@ export const METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS = [
   "application/x-cbz",
   "application/epub+zip",
   "application/zip",
+  "application/x-zip-compressed",
   "application/x-rar"
 ]
 export const COVER_ALLOWED_EXT = [".jpg", ".jpeg", ".png"]
