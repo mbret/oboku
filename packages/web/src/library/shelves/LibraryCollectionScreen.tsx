@@ -15,7 +15,7 @@ import { useMeasureElement } from "../../common/utils"
 import { CollectionList } from "../../collections/list/CollectionList"
 import { useDebouncedCallback } from "use-debounce"
 import { signal, useSignalValue } from "reactjrx"
-import { useShelve } from "./useShelve"
+import { useShelves } from "./useShelves"
 import { FilterBar } from "./FilterBar"
 import { useCreateCollection } from "../../collections/useCreateCollection"
 import { collectionsListSignal } from "./state"
@@ -48,7 +48,7 @@ export const LibraryCollectionScreen = () => {
     collectionsListSignal,
     ({ viewMode }) => ({ viewMode })
   )
-  const { data: collections = [] } = useShelve()
+  const { data: collections = [] } = useShelves()
 
   const onScroll = useDebouncedCallback((value: Scroll) => {
     libraryCollectionScreenPreviousScrollState.setValue(value)
