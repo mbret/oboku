@@ -4,7 +4,6 @@ import { useNavigate, useParams } from "react-router-dom"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import CollectionBgSvg from "../assets/series-bg.svg"
 import { BookListWithControls } from "../books/bookList/BookListWithControls"
-import { useVisibleBookIds } from "../books/states"
 import { signal, useSignalValue } from "reactjrx"
 import {
   ListActionSorting,
@@ -13,6 +12,8 @@ import {
 import { useCollectionActionsDrawer } from "./CollectionActionsDrawer/useCollectionActionsDrawer"
 import { useCollection } from "./useCollection"
 import { COLLECTION_EMPTY_ID } from "../constants.shared"
+import { useMemo } from "react"
+import { useBooks } from "../books/states"
 
 type ScreenParams = {
   id: string
@@ -40,9 +41,14 @@ export const CollectionDetailsScreen = () => {
     id
   })
 
-  const visibleBooks = useVisibleBookIds({
+  const { data: visibleBooks } = useBooks({
     ids: collection?.books ?? []
   })
+
+  const visibleBookIds = useMemo(
+    () => visibleBooks?.map((item) => item._id) ?? [],
+    [visibleBooks]
+  )
 
   const { open: openActionDrawer } = useCollectionActionsDrawer(
     id,
@@ -110,7 +116,7 @@ export const CollectionDetailsScreen = () => {
             </div>
           </Box>
           <BookListWithControls
-            data={visibleBooks ?? []}
+            data={visibleBookIds}
             sorting={sorting}
             viewMode={viewMode}
             onViewModeChange={(value) => {

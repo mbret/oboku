@@ -1,14 +1,10 @@
 import { Box, List, ListItem, ListItemIcon, ListItemText } from "@mui/material"
-import { difference, groupBy } from "lodash"
+import { groupBy } from "lodash"
 import { Fragment, memo, useMemo } from "react"
 import { Report } from "../debug/report.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { BuildRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
-import { useFixBookReferences } from "./useFixBookReferences"
-import { useDuplicatedResourceIdLinks } from "./useDuplicateLinks"
-import { useFixBooksDanglingLinks } from "./useFixBooksDanglingLinks"
-import { useBooksDanglingLinks } from "./useBooksDanglingLinks"
 import {
   useDuplicatedBookTitles,
   useFixDuplicatedBookTitles
@@ -18,37 +14,27 @@ import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { switchMap } from "rxjs"
 import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
+import { useFixableCollections } from "./useFixableCollections"
+import { useRepair } from "./useRepair"
+import { CollectionDanglingBooks } from "./CollectionDanglingBooks"
+import { useFixableBooks } from "./useFixableBooks"
+import { BookDanglingCollections } from "./BookDanglingCollections"
+import { BookDanglingLinks } from "./BookDanglingLinks"
 
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
-  const fixBookReferences = useFixBookReferences()
-  const fixBooksDanglingLinks = useFixBooksDanglingLinks()
-  const duplicatedLinks = useDuplicatedResourceIdLinks()
   const duplicatedBookTitles = useDuplicatedBookTitles()
   const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
+  const { collectionsWithDanglingBooks } = useFixableCollections()
+  const { booksWithDanglingCollections, booksWithDanglingLinks } = useFixableBooks()
+  const { mutate: repair } = useRepair()
   const collections = useObserve(
     () => latestDatabase$.pipe(switchMap((db) => db.obokucollection.find().$)),
     []
   )
-  const books = useObserve(
-    () => latestDatabase$.pipe(switchMap((db) => db.book.find().$)),
-    []
-  )
-  const collectionIds = useMemo(
-    () => collections?.map((doc) => doc._id),
-    [collections]
-  )
-  const bookIds = useMemo(() => books?.map((doc) => doc._id), [books])
-  const booksWithInvalidCollections = books?.filter(
-    (doc) => difference(doc.collections, collectionIds ?? []).length > 0
-  )
-  const collectionsWithNonExistingBooks = collections?.filter(
-    (doc) => difference(doc.books, bookIds ?? []).length > 0
-  )
-  const booksWithDanglingLinks = useBooksDanglingLinks()
 
   const duplicatedCollections = useMemo(() => {
-    const collectionsByResourceId = groupBy(collections, "resourceId")
+    const collectionsByResourceId = groupBy(collections, "linkResourceId")
     const duplicatedCollections = Object.keys(collectionsByResourceId)
       .filter((resourceId) => collectionsByResourceId[resourceId]!.length > 1)
       .map((resourceId) => [
@@ -68,13 +54,6 @@ export const ProblemsScreen = memo(() => {
 
     return duplicatedCollections as [string, { name: string; number: number }][]
   }, [collections])
-
-  Report.log({
-    books,
-    duplicatedBookTitles,
-    booksWithDanglingLinks,
-    duplicatedLinks
-  })
 
   return (
     <>
@@ -144,39 +123,34 @@ export const ProblemsScreen = memo(() => {
               />
             </ListItem>
           )}
-          {!!collections && !!booksWithInvalidCollections?.length && (
-            <ListItem
-              alignItems="flex-start"
-              button
-              onClick={() => fixBookReferences(booksWithInvalidCollections)}
-            >
-              <ListItemIcon>
-                <BuildRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Books with invalid collections"
-                secondary={`
-                We found ${booksWithInvalidCollections.length} books with one or several reference(s) to non existing collection(s).`}
-              />
-            </ListItem>
-          )}
-          {!!books && !!collectionsWithNonExistingBooks?.length && (
-            <ListItem
-              alignItems="flex-start"
-              button
-              // onClick={() => fixBookReferences(collectionsWithNonExistingBooks)}
-            >
-              <ListItemIcon>
-                <BuildRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Collections with non existing books"
-                secondary={`
-                We found ${collectionsWithNonExistingBooks.length} collections with one or several reference(s) to non existing book(s).
-                `}
-              />
-            </ListItem>
-          )}
+          {booksWithDanglingCollections?.map(({ danglingItems, doc }) => (
+            <BookDanglingCollections
+              key={doc._id}
+              danglingBooks={danglingItems}
+              doc={doc}
+              onClick={() =>
+                repair({
+                  danglingItems,
+                  doc,
+                  type: "bookDanglingCollections"
+                })
+              }
+            />
+          ))}
+          {collectionsWithDanglingBooks?.map(({ doc, danglingItems }) => (
+            <CollectionDanglingBooks
+              key={doc._id}
+              danglingBooks={danglingItems}
+              doc={doc}
+              onClick={() =>
+                repair({
+                  danglingItems,
+                  doc,
+                  type: "collectionDanglingBooks"
+                })
+              }
+            />
+          ))}
           {/* {duplicatedLinks.length > 0 && (
             <ListItem
               alignItems="flex-start"
@@ -202,23 +176,20 @@ export const ProblemsScreen = memo(() => {
               />
             </ListItem>
           )} */}
-          {!!booksWithDanglingLinks?.length && (
-            <ListItem
-              alignItems="flex-start"
-              button
-              onClick={() => fixBooksDanglingLinks(booksWithDanglingLinks)}
-            >
-              <ListItemIcon>
-                <BuildRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Books with reference to non existing links"
-                secondary={`
-                We found ${booksWithDanglingLinks.length} books with reference to non existing links.
-                `}
-              />
-            </ListItem>
-          )}
+          {booksWithDanglingLinks?.map(({ doc, danglingItems }) => (
+            <BookDanglingLinks
+              key={doc._id}
+              danglingBooks={danglingItems}
+              doc={doc}
+              onClick={() =>
+                repair({
+                  danglingItems,
+                  doc,
+                  type: "bookDanglingLinks"
+                })
+              }
+            />
+          ))}
           {duplicatedBookTitles.length > 0 && (
             <ListItem
               alignItems="flex-start"

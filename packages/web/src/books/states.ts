@@ -3,23 +3,21 @@ import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
 import { getLinkState, useLink, useLinks } from "../links/states"
 import {
   getBookDownloadsState,
-  booksDownloadStateSignal,
-  DownloadState
+  booksDownloadStateSignal
 } from "../download/states"
 import { useCollections } from "../collections/useCollections"
-import { from, map, switchMap } from "rxjs"
+import { map, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
-import { isDefined, useForeverQuery, useQuery, useSignalValue } from "reactjrx"
+import { useForeverQuery, useSignalValue } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
 import { BookDocType, CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject, MangoQuery } from "rxdb"
-import { useVisibleBooks } from "./useVisibleBooks"
-import { DeepReadonlyArray, RxDocument } from "rxdb/dist/types/types"
+import { DeepReadonlyArray } from "rxdb/dist/types/types"
 import { useMemo } from "react"
-import { getBooksQueryObj } from "./dbHelpers"
-import { CollectionDocMethods } from "../rxdb/collections/collection"
+import { observeBooks } from "./dbHelpers"
+import { libraryStateSignal } from "../library/states"
 
 export const getBooksByIds = async (database: Database) => {
   const result = await database.collections.book.find({}).exec()
@@ -33,13 +31,17 @@ export const getBooksByIds = async (database: Database) => {
 export const useBooks = ({
   queryObj = {},
   isNotInterested,
-  ids
+  ids,
+  includeProtected: _includeProtected
 }: {
   queryObj?: MangoQuery<BookDocType>
   isNotInterested?: "none" | "with" | "only"
   ids?: DeepReadonlyArray<string>
+  includeProtected?: boolean
 } = {}) => {
   const serializedIds = JSON.stringify(ids)
+  const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
+  const includeProtected = _includeProtected || isLibraryUnlocked
 
   return useForeverQuery({
     queryKey: [
@@ -47,17 +49,22 @@ export const useBooks = ({
       "get",
       "many",
       "books",
-      { isNotInterested, serializedIds },
+      { isNotInterested, serializedIds, includeProtected },
       queryObj
     ],
-    queryFn: () => {
-      const finalQueryObj = getBooksQueryObj({ queryObj, isNotInterested, ids })
-
-      return latestDatabase$.pipe(
-        switchMap((db) => db.collections.book.find(finalQueryObj).$),
+    queryFn: () =>
+      latestDatabase$.pipe(
+        switchMap((db) =>
+          observeBooks({
+            db,
+            includeProtected,
+            ids,
+            isNotInterested,
+            queryObj
+          })
+        ),
         map((items) => items.map((item) => item.toJSON()))
       )
-    }
   })
 }
 
@@ -271,23 +278,6 @@ export const useEnrichedBookState = ({
 /**
  * @deprecated
  */
-export const useDownloadedBookWithUnsafeProtectedIdsState = () => {
-  const downloadState = useSignalValue(booksDownloadStateSignal)
-  const { data: books } = useBooks()
-
-  return useMemo(
-    () =>
-      books?.filter(
-        (book) =>
-          downloadState[book._id]?.downloadState === DownloadState.Downloaded
-      ),
-    [downloadState, books]
-  )
-}
-
-/**
- * @deprecated
- */
 export const useBooksAsArrayState = ({
   normalizedBookDownloadsState
 }: {
@@ -296,7 +286,11 @@ export const useBooksAsArrayState = ({
   >
 }) => {
   const { data: books = {}, isPending } = useBooksDic()
-  const visibleBookIds = useVisibleBookIds() ?? []
+  const { data: visibleBooks } = useBooks()
+  const visibleBookIds = useMemo(
+    () => visibleBooks?.map((item) => item._id) ?? [],
+    [visibleBooks]
+  )
 
   const bookResult: (BookQueryResult & {
     downloadState: ReturnType<typeof getBookDownloadsState>
@@ -325,27 +319,6 @@ export const useBooksAsArrayState = ({
   }
 }
 
-export const useVisibleBookIds = (
-  params: Parameters<typeof useVisibleBooks>[0] = {}
-) => {
-  return useVisibleBooks(params).data?.map((book) => book._id)
-}
-
-/**
- * @deprecated
- */
-export const useBookTagsState = ({
-  bookId,
-  tags = {}
-}: {
-  bookId: string
-  tags: ReturnType<typeof useTagsByIds>["data"]
-}) => {
-  const { data: book } = useBook({ id: bookId })
-
-  return book?.tags?.map((id) => tags[id]).filter(isDefined)
-}
-
 /**
  * @deprecated
  */
@@ -365,4 +338,3 @@ export const useBookLinksState = ({
 export const books$ = latestDatabase$.pipe(
   switchMap((database) => database?.book.find({}).$)
 )
-

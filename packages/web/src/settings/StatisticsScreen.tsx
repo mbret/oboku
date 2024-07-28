@@ -1,7 +1,7 @@
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Box, List, ListItem, ListItemText, ListSubheader } from "@mui/material"
-import { useBooks } from "../books/states"
 import { useCollections } from "../collections/useCollections"
+import { useBooks } from "../books/states"
 
 export const StatisticsScreen = () => {
   const { data: books } = useBooks()

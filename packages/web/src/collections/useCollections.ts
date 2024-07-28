@@ -2,7 +2,7 @@ import { CollectionDocType, directives, ReadingStateState } from "@oboku/shared"
 import { useLocalSettings } from "../settings/states"
 import { useForeverQuery, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
-import { map, switchMap } from "rxjs"
+import { map, switchMap, tap } from "rxjs"
 import { MangoQuery } from "rxdb"
 import { getMetadataFromCollection } from "./getMetadataFromCollection"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
@@ -18,6 +18,7 @@ export const useCollections = ({
   ids,
   isNotInterested,
   readingState = "any",
+  includeProtected: _includeProtected,
   ...options
 }: {
   queryObj?: MangoQuery<CollectionDocType>
@@ -31,12 +32,14 @@ export const useCollections = ({
   isNotInterested?: "with" | "none" | "only" | undefined
   readingState?: "ongoing" | "finished" | "any"
   ids?: DeepReadonlyArray<string>
+  includeProtected?: boolean
 } = {}) => {
   const { hideDirectivesFromCollectionName } = useLocalSettings()
   const serializedBookIds = JSON.stringify(bookIds)
   const serializedIds = JSON.stringify(ids)
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
   const { showCollectionWithProtectedContent } = useLocalSettings()
+  const includeProtected = _includeProtected || isLibraryUnlocked
 
   return useForeverQuery({
     queryKey: [
@@ -47,7 +50,7 @@ export const useCollections = ({
         serializedBookIds,
         serializedIds,
         showCollectionWithProtectedContent,
-        isLibraryUnlocked,
+        includeProtected,
         hideDirectivesFromCollectionName,
         isNotInterested
       },
@@ -64,11 +67,10 @@ export const useCollections = ({
            */
           observeBooks({
             db,
-            includeProtected: isLibraryUnlocked
-            // isNotInterested
+            includeProtected
           }).pipe(
             switchMap((books) => {
-              const protectedBookIds = books.map(({ _id }) => _id)
+              const visibleBooks = books.map(({ _id }) => _id)
               const notInterestedBookIds = books
                 .filter(({ isNotInterested }) => !!isNotInterested)
                 .map(({ _id }) => _id)
@@ -99,7 +101,7 @@ export const useCollections = ({
                 map((collections) =>
                   collections.filter((collection) => {
                     if (
-                      isLibraryUnlocked ||
+                      includeProtected ||
                       collection.books.length === 0 ||
                       showCollectionWithProtectedContent === "hasNormalContent"
                     )
@@ -111,7 +113,7 @@ export const useCollections = ({
                      */
                     const extraBooksFromCollection = difference(
                       collection.books,
-                      protectedBookIds
+                      visibleBooks
                     )
 
                     const hasSuspiciousExtraBook =

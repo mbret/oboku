@@ -5,6 +5,7 @@ import {
 } from "@oboku/shared"
 import {
   AtomicUpdateFunction,
+  MigrationStrategies,
   RxCollection,
   RxDocument,
   RxJsonSchema,
@@ -71,7 +72,7 @@ export const bookCollectionMethods: BookCollectionMethods = {
   }
 }
 
-export const bookSchemaMigrationStrategies = {}
+export const bookSchemaMigrationStrategies: MigrationStrategies = {}
 
 export const bookSchema: RxJsonSchema<
   Omit<BookDocType & DeprecatedBookDocType, `_rev` | `rxdbMeta`>

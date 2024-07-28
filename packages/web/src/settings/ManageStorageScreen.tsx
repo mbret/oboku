@@ -20,10 +20,6 @@ import {
 } from "@mui/icons-material"
 import { useStorageUse } from "./useStorageUse"
 import { BookList } from "../books/bookList/BookList"
-import {
-  useDownloadedBookWithUnsafeProtectedIdsState,
-  useVisibleBookIds
-} from "../books/states"
 import { bookActionDrawerSignal } from "../books/drawer/BookActionsDrawer"
 import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
@@ -34,11 +30,17 @@ import { useEffect } from "react"
 import { useMutation } from "reactjrx"
 import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
 import { useRemoveCoversInCache } from "../covers/useRemoveCoversInCache"
+import { useDownloadedBooks } from "../download/useDownloadedBooks"
+import { useBooks } from "../books/states"
 
 export const ManageStorageScreen = () => {
-  const books = useDownloadedBookWithUnsafeProtectedIdsState()
+  const books = useDownloadedBooks()
   const bookIds = useMemo(() => books?.map((book) => book._id) ?? [], [books])
-  const visibleBookIds = useVisibleBookIds()
+  const { data: visibleBooks } = useBooks()
+  const visibleBookIds = useMemo(
+    () => visibleBooks?.map((item) => item._id) ?? [],
+    [visibleBooks]
+  )
   const { quotaUsed, quotaInGb, usedInMb, covers, coversWightInMb } =
     useStorageUse([books])
   const { mutate: removeCoversInCache } = useRemoveCoversInCache()
