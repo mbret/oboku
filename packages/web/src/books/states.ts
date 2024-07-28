@@ -3,7 +3,7 @@ import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
 import { getLinkState, useLink, useLinks } from "../links/states"
 import {
   getBookDownloadsState,
-  booksDownloadStateSignal,
+  booksDownloadStateSignal
 } from "../download/states"
 import { useCollections } from "../collections/useCollections"
 import { map, switchMap } from "rxjs"
@@ -31,14 +31,17 @@ export const getBooksByIds = async (database: Database) => {
 export const useBooks = ({
   queryObj = {},
   isNotInterested,
-  ids
+  ids,
+  includeProtected: _includeProtected
 }: {
   queryObj?: MangoQuery<BookDocType>
   isNotInterested?: "none" | "with" | "only"
   ids?: DeepReadonlyArray<string>
+  includeProtected?: boolean
 } = {}) => {
   const serializedIds = JSON.stringify(ids)
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
+  const includeProtected = _includeProtected || isLibraryUnlocked
 
   return useForeverQuery({
     queryKey: [
@@ -46,7 +49,7 @@ export const useBooks = ({
       "get",
       "many",
       "books",
-      { isNotInterested, serializedIds, isLibraryUnlocked },
+      { isNotInterested, serializedIds, includeProtected },
       queryObj
     ],
     queryFn: () =>
@@ -54,7 +57,7 @@ export const useBooks = ({
         switchMap((db) =>
           observeBooks({
             db,
-            includeProtected: isLibraryUnlocked,
+            includeProtected,
             ids,
             isNotInterested,
             queryObj

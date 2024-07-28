@@ -6,7 +6,6 @@ import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { BuildRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
 import { useFixBookReferences } from "./useFixBookReferences"
-import { useDuplicatedResourceIdLinks } from "./useDuplicateLinks"
 import { useFixBooksDanglingLinks } from "./useFixBooksDanglingLinks"
 import { useBooksDanglingLinks } from "./useBooksDanglingLinks"
 import {
@@ -18,14 +17,18 @@ import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { switchMap } from "rxjs"
 import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
+import { useFixableCollections } from "./useFixableCollections"
+import { useRepair } from "./useRepair"
+import { CollectionDanglingBooks } from "./CollectionDanglingBooks"
 
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
   const fixBookReferences = useFixBookReferences()
   const fixBooksDanglingLinks = useFixBooksDanglingLinks()
-  const duplicatedLinks = useDuplicatedResourceIdLinks()
   const duplicatedBookTitles = useDuplicatedBookTitles()
   const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
+  const { collectionsWithDanglingBooks } = useFixableCollections()
+  const { mutate: repair } = useRepair()
   const collections = useObserve(
     () => latestDatabase$.pipe(switchMap((db) => db.obokucollection.find().$)),
     []
@@ -38,17 +41,14 @@ export const ProblemsScreen = memo(() => {
     () => collections?.map((doc) => doc._id),
     [collections]
   )
-  const bookIds = useMemo(() => books?.map((doc) => doc._id), [books])
   const booksWithInvalidCollections = books?.filter(
     (doc) => difference(doc.collections, collectionIds ?? []).length > 0
   )
-  const collectionsWithNonExistingBooks = collections?.filter(
-    (doc) => difference(doc.books, bookIds ?? []).length > 0
-  )
+
   const booksWithDanglingLinks = useBooksDanglingLinks()
 
   const duplicatedCollections = useMemo(() => {
-    const collectionsByResourceId = groupBy(collections, "resourceId")
+    const collectionsByResourceId = groupBy(collections, "linkResourceId")
     const duplicatedCollections = Object.keys(collectionsByResourceId)
       .filter((resourceId) => collectionsByResourceId[resourceId]!.length > 1)
       .map((resourceId) => [
@@ -68,13 +68,6 @@ export const ProblemsScreen = memo(() => {
 
     return duplicatedCollections as [string, { name: string; number: number }][]
   }, [collections])
-
-  Report.log({
-    books,
-    duplicatedBookTitles,
-    booksWithDanglingLinks,
-    duplicatedLinks
-  })
 
   return (
     <>
@@ -160,23 +153,20 @@ export const ProblemsScreen = memo(() => {
               />
             </ListItem>
           )}
-          {!!books && !!collectionsWithNonExistingBooks?.length && (
-            <ListItem
-              alignItems="flex-start"
-              button
-              // onClick={() => fixBookReferences(collectionsWithNonExistingBooks)}
-            >
-              <ListItemIcon>
-                <BuildRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Collections with non existing books"
-                secondary={`
-                We found ${collectionsWithNonExistingBooks.length} collections with one or several reference(s) to non existing book(s).
-                `}
-              />
-            </ListItem>
-          )}
+          {collectionsWithDanglingBooks?.map(({ doc, danglingBooks }) => (
+            <CollectionDanglingBooks
+              key={doc._id}
+              danglingBooks={danglingBooks}
+              doc={doc}
+              onClick={() =>
+                repair({
+                  danglingBooks,
+                  doc,
+                  type: "collectionDanglingBooks"
+                })
+              }
+            />
+          ))}
           {/* {duplicatedLinks.length > 0 && (
             <ListItem
               alignItems="flex-start"
