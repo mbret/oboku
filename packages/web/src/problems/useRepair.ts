@@ -1,6 +1,6 @@
 import { BookDocType, CollectionDocType } from "@oboku/shared"
 import { useMutation } from "reactjrx"
-import { first, from, mergeMap, of } from "rxjs"
+import { first, from, map, mergeMap, of } from "rxjs"
 import { latestDatabase$ } from "../rxdb/useCreateDatabase"
 import { DeepReadonlyObject } from "rxdb"
 
@@ -15,6 +15,11 @@ export const useRepair = () => {
           }
         | {
             type: "bookDanglingCollections"
+            doc: DeepReadonlyObject<BookDocType>
+            danglingItems: string[]
+          }
+        | {
+            type: "bookDanglingLinks"
             doc: DeepReadonlyObject<BookDocType>
             danglingItems: string[]
           }
@@ -40,19 +45,22 @@ export const useRepair = () => {
               mergeMap((item) => {
                 if (!item) return of(null)
 
-                return item.incrementalModify((old) => {
-                  const nonDanglingBooks = old.books.filter(
-                    (id) => !action.danglingItems.includes(id)
-                  )
+                return from(
+                  item.incrementalModify((old) => {
+                    const nonDanglingBooks = old.books.filter(
+                      (id) => !action.danglingItems.includes(id)
+                    )
 
-                  return {
-                    ...old,
-                    books: nonDanglingBooks
-                  }
-                })
+                    return {
+                      ...old,
+                      books: nonDanglingBooks
+                    }
+                  })
+                )
               })
             )
-          )
+          ),
+          map(() => null)
         )
       }
 
@@ -73,19 +81,59 @@ export const useRepair = () => {
               mergeMap((item) => {
                 if (!item) return of(null)
 
-                return item.incrementalModify((old) => {
-                  const nonDanglingCollections = old.collections.filter(
-                    (id) => !action.danglingItems.includes(id)
-                  )
+                return from(
+                  item.incrementalModify((old) => {
+                    const nonDanglingCollections = old.collections.filter(
+                      (id) => !action.danglingItems.includes(id)
+                    )
 
-                  return {
-                    ...old,
-                    collections: nonDanglingCollections
-                  }
-                })
+                    return {
+                      ...old,
+                      collections: nonDanglingCollections
+                    }
+                  })
+                )
               })
             )
-          )
+          ),
+          map(() => null)
+        )
+      }
+
+      if (action.type === "bookDanglingLinks") {
+        const yes = window.confirm(
+          `
+            This action will remove the invalid link references from the book. It will not remove anything else.
+            `.replace(/  +/g, "")
+        )
+
+        if (!yes) return of(null)
+
+        return db$.pipe(
+          mergeMap((db) =>
+            from(
+              db.book.findOne({ selector: { _id: action.doc._id } }).exec()
+            ).pipe(
+              mergeMap((item) => {
+                if (!item) return of(null)
+
+                return from(
+                  item.incrementalModify((old) => {
+                    const nonDanglingLinks = old.links.filter(
+                      (id) => !action.danglingItems.includes(id)
+                    )
+
+                    return {
+                      ...old,
+                      _meta: old._meta ?? {},
+                      links: nonDanglingLinks
+                    }
+                  })
+                )
+              })
+            )
+          ),
+          map(() => null)
         )
       }
 

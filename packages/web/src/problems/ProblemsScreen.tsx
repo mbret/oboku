@@ -1,13 +1,10 @@
 import { Box, List, ListItem, ListItemIcon, ListItemText } from "@mui/material"
-import { difference, groupBy } from "lodash"
+import { groupBy } from "lodash"
 import { Fragment, memo, useMemo } from "react"
 import { Report } from "../debug/report.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { BuildRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
-import { useFixBookReferences } from "./useFixBookReferences"
-import { useFixBooksDanglingLinks } from "./useFixBooksDanglingLinks"
-import { useBooksDanglingLinks } from "./useBooksDanglingLinks"
 import {
   useDuplicatedBookTitles,
   useFixDuplicatedBookTitles
@@ -22,30 +19,19 @@ import { useRepair } from "./useRepair"
 import { CollectionDanglingBooks } from "./CollectionDanglingBooks"
 import { useFixableBooks } from "./useFixableBooks"
 import { BookDanglingCollections } from "./BookDanglingCollections"
+import { BookDanglingLinks } from "./BookDanglingLinks"
 
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
-  const fixBookReferences = useFixBookReferences()
-  const fixBooksDanglingLinks = useFixBooksDanglingLinks()
   const duplicatedBookTitles = useDuplicatedBookTitles()
   const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
   const { collectionsWithDanglingBooks } = useFixableCollections()
-  const { booksWithDanglingCollections } = useFixableBooks()
+  const { booksWithDanglingCollections, booksWithDanglingLinks } = useFixableBooks()
   const { mutate: repair } = useRepair()
   const collections = useObserve(
     () => latestDatabase$.pipe(switchMap((db) => db.obokucollection.find().$)),
     []
   )
-  const books = useObserve(
-    () => latestDatabase$.pipe(switchMap((db) => db.book.find().$)),
-    []
-  )
-  const collectionIds = useMemo(
-    () => collections?.map((doc) => doc._id),
-    [collections]
-  )
-
-  const booksWithDanglingLinks = useBooksDanglingLinks()
 
   const duplicatedCollections = useMemo(() => {
     const collectionsByResourceId = groupBy(collections, "linkResourceId")
@@ -190,23 +176,20 @@ export const ProblemsScreen = memo(() => {
               />
             </ListItem>
           )} */}
-          {!!booksWithDanglingLinks?.length && (
-            <ListItem
-              alignItems="flex-start"
-              button
-              onClick={() => fixBooksDanglingLinks(booksWithDanglingLinks)}
-            >
-              <ListItemIcon>
-                <BuildRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Books with reference to non existing links"
-                secondary={`
-                We found ${booksWithDanglingLinks.length} books with reference to non existing links.
-                `}
-              />
-            </ListItem>
-          )}
+          {booksWithDanglingLinks?.map(({ doc, danglingItems }) => (
+            <BookDanglingLinks
+              key={doc._id}
+              danglingBooks={danglingItems}
+              doc={doc}
+              onClick={() =>
+                repair({
+                  danglingItems,
+                  doc,
+                  type: "bookDanglingLinks"
+                })
+              }
+            />
+          ))}
           {duplicatedBookTitles.length > 0 && (
             <ListItem
               alignItems="flex-start"
