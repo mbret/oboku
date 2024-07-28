@@ -2,12 +2,12 @@ import { useMemo } from "react"
 import { ReadingStateState } from "@oboku/shared"
 import { useBooksSortedBy } from "../books/helpers"
 import { useProtectedTagIds } from "../tags/helpers"
-import { useVisibleBooks } from "../books/useVisibleBooks"
+import { useBooks } from "../books/states"
 
 export const useContinueReadingBooks = () => {
   const { isPending } = useProtectedTagIds()
 
-  const { data: booksAsArray, isLoading: isBooksPending } = useVisibleBooks({
+  const { data: booksAsArray, isLoading: isBooksPending } = useBooks({
     isNotInterested: "none"
   })
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
@@ -28,7 +28,7 @@ export const useContinueReadingBooks = () => {
 }
 
 export const useRecentlyAddedBooks = () => {
-  const { data: booksAsArray } = useVisibleBooks({
+  const { data: booksAsArray } = useBooks({
     isNotInterested: "none"
   })
 

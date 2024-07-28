@@ -65,7 +65,6 @@ export const useCollections = ({
           observeBooks({
             db,
             includeProtected: isLibraryUnlocked
-            // isNotInterested
           }).pipe(
             switchMap((books) => {
               const protectedBookIds = books.map(({ _id }) => _id)

@@ -69,8 +69,20 @@ const SeeMore = ({
   )
 }
 
+const useClasses = makeStyles((theme) => ({
+  inputRoot: {
+    color: "inherit",
+    width: "100%"
+  },
+  inputInput: {
+    padding: theme.spacing(1, 1, 1, 1),
+    width: "100%"
+  }
+}))
+
 export const SearchScreen = () => {
-  const { styles, classes } = useStyles()
+  const { styles } = useStyles()
+  const classes = useClasses()
   const [searchParams, setSearchParams] = useSearchParams()
   const value = useSignalValue(searchStateSignal)
   const { data: collections = [] } = useCollectionsForSearch(value)
@@ -210,20 +222,8 @@ export const SearchScreen = () => {
   )
 }
 
-const useClasses = makeStyles((theme) => ({
-  inputRoot: {
-    color: "inherit",
-    width: "100%"
-  },
-  inputInput: {
-    padding: theme.spacing(1, 1, 1, 1),
-    width: "100%"
-  }
-}))
-
 const useStyles = () => {
   const theme = useTheme()
-  const classes = useClasses()
 
   const styles = useCSS(
     () => ({
@@ -248,5 +248,5 @@ const useStyles = () => {
     [theme]
   )
 
-  return { styles, classes }
+  return { styles }
 }

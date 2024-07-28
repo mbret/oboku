@@ -21,7 +21,6 @@ export const BottomBar = () => {
   const reader = useSignalValue(readerStateSignal)
   const navigation = useObserve(reader?.navigation.state$ ?? NEVER)
   const { data: pagination } = usePagination()
-  // const showScrubber = (totalPages || 1) > 1
   const showScrubber = true
   const { useOptimizedTheme } = useLocalSettings()
 
