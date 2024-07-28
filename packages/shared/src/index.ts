@@ -2,6 +2,7 @@ export const READER_ACCEPTED_EXTENSIONS = {
   "text/plain": [".txt"],
   "application/x-cbz": [".cbz"],
   "application/zip": [".epub", ".zip"],
+  "application/x-zip-compressed": [".epub", ".zip"],
   "application/epub+zip": [".epub", ".zip"],
   "application/x-cbr": [".cbr"],
   "application/x-rar": [".cbr"]
