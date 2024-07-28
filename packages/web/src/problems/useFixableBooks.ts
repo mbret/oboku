@@ -2,21 +2,26 @@ import { useMemo } from "react"
 import { useBooks } from "../books/states"
 import { useCollections } from "../collections/useCollections"
 import { difference } from "lodash"
-import { CollectionDocType } from "@oboku/shared"
+import { BookDocType } from "@oboku/shared"
+import { DeepReadonlyObject } from "rxdb"
 
-export const useFixableCollections = () => {
+export const useFixableBooks = () => {
   const { data: unsafeCollections } = useCollections({
     includeProtected: true
   })
   const { data: unsafeBooks } = useBooks({ includeProtected: true })
-  const unsafeBookIds = useMemo(
-    () => unsafeBooks?.map((item) => item._id),
-    [unsafeBooks]
+
+  const unsafeCollectionIds = useMemo(
+    () => unsafeCollections?.map((item) => item._id),
+    [unsafeCollections]
   )
 
-  const collectionsWithDanglingBooks = unsafeCollections?.reduce(
+  const booksWithDanglingCollections = unsafeBooks?.reduce(
     (acc, doc) => {
-      const danglingItems = difference(doc.books, unsafeBookIds ?? [])
+      const danglingItems = difference(
+        doc.collections,
+        unsafeCollectionIds ?? []
+      )
 
       if (danglingItems.length > 0) {
         return [
@@ -30,8 +35,8 @@ export const useFixableCollections = () => {
 
       return acc
     },
-    [] as { doc: CollectionDocType; danglingItems: string[] }[]
+    [] as { doc: DeepReadonlyObject<BookDocType>; danglingItems: string[] }[]
   )
 
-  return { collectionsWithDanglingBooks }
+  return { booksWithDanglingCollections }
 }

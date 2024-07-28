@@ -20,6 +20,8 @@ import { getMetadataFromCollection } from "../collections/getMetadataFromCollect
 import { useFixableCollections } from "./useFixableCollections"
 import { useRepair } from "./useRepair"
 import { CollectionDanglingBooks } from "./CollectionDanglingBooks"
+import { useFixableBooks } from "./useFixableBooks"
+import { BookDanglingCollections } from "./BookDanglingCollections"
 
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
@@ -28,6 +30,7 @@ export const ProblemsScreen = memo(() => {
   const duplicatedBookTitles = useDuplicatedBookTitles()
   const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
   const { collectionsWithDanglingBooks } = useFixableCollections()
+  const { booksWithDanglingCollections } = useFixableBooks()
   const { mutate: repair } = useRepair()
   const collections = useObserve(
     () => latestDatabase$.pipe(switchMap((db) => db.obokucollection.find().$)),
@@ -40,9 +43,6 @@ export const ProblemsScreen = memo(() => {
   const collectionIds = useMemo(
     () => collections?.map((doc) => doc._id),
     [collections]
-  )
-  const booksWithInvalidCollections = books?.filter(
-    (doc) => difference(doc.collections, collectionIds ?? []).length > 0
   )
 
   const booksWithDanglingLinks = useBooksDanglingLinks()
@@ -137,30 +137,28 @@ export const ProblemsScreen = memo(() => {
               />
             </ListItem>
           )}
-          {!!collections && !!booksWithInvalidCollections?.length && (
-            <ListItem
-              alignItems="flex-start"
-              button
-              onClick={() => fixBookReferences(booksWithInvalidCollections)}
-            >
-              <ListItemIcon>
-                <BuildRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Books with invalid collections"
-                secondary={`
-                We found ${booksWithInvalidCollections.length} books with one or several reference(s) to non existing collection(s).`}
-              />
-            </ListItem>
-          )}
-          {collectionsWithDanglingBooks?.map(({ doc, danglingBooks }) => (
-            <CollectionDanglingBooks
+          {booksWithDanglingCollections?.map(({ danglingItems, doc }) => (
+            <BookDanglingCollections
               key={doc._id}
-              danglingBooks={danglingBooks}
+              danglingBooks={danglingItems}
               doc={doc}
               onClick={() =>
                 repair({
-                  danglingBooks,
+                  danglingItems,
+                  doc,
+                  type: "bookDanglingCollections"
+                })
+              }
+            />
+          ))}
+          {collectionsWithDanglingBooks?.map(({ doc, danglingItems }) => (
+            <CollectionDanglingBooks
+              key={doc._id}
+              danglingBooks={danglingItems}
+              doc={doc}
+              onClick={() =>
+                repair({
+                  danglingItems,
                   doc,
                   type: "collectionDanglingBooks"
                 })
