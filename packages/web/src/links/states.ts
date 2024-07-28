@@ -15,7 +15,19 @@ export const getLinksByIds = async (database: Database) => {
 
 export const useLinks = () => {
   return useForeverQuery({
-    queryKey: ["rxdb", "get", "many", "link"],
+    queryKey: ["rxdb", "get", "many", "links/list"],
+    queryFn: () => {
+      return latestDatabase$.pipe(
+        switchMap((db) => db.collections.link.find({}).$),
+        map((entries) => entries.map((item) => item.toJSON()))
+      )
+    }
+  })
+}
+
+export const useLinksDic = () => {
+  return useForeverQuery({
+    queryKey: ["rxdb", "get", "many", "links/dic"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.link.find({}).$),
@@ -57,7 +69,7 @@ const mapLinkTtoState = ({ link }: { link?: LinkDocType | null }) => {
 }
 
 export const getLinkState = (
-  linksState: ReturnType<typeof useLinks>["data"] = {},
+  linksState: ReturnType<typeof useLinksDic>["data"] = {},
   linkId: string
 ) => {
   const link = Object.values(linksState).find((link) => link?._id === linkId)
@@ -87,7 +99,7 @@ export const getLinkStateAsync = async ({
  * @todo optimize to refresh only when link id change
  */
 export const useLinkState = (linkId: string) => {
-  const { data: links = {} } = useLinks()
+  const { data: links = {} } = useLinksDic()
 
   const link = Object.values(links).find((link) => link?._id === linkId)
 
