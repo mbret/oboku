@@ -8,9 +8,7 @@ const hostname =
     ? window?.location?.hostname
     : sw?.location?.hostname
 
-export { API_URL } from "./constants.shared"
-export const API_COUCH_URI =
-  import.meta.env.VITE_API_COUCH_URI || `https://${hostname}:4003`
+export { API_URL, API_COUCH_URI } from "./constants.shared"
 
 export const IS_MOBILE_DEVICE = isMobileDetected()
 

@@ -23,7 +23,7 @@ export const useFixCollections = () => {
           await Promise.all(
             data.map(async ([resourceId]) => {
               const docsWithSameResourceId = await database?.obokucollection
-                .find({ selector: { resourceId: resourceId ?? `-1` } })
+                .find({ selector: { linkResourceId: resourceId ?? `-1` } })
                 .exec()
 
               const collectionsAsJson = docsWithSameResourceId.map(

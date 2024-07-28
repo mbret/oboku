@@ -43,10 +43,7 @@ export const useFixableBooks = () => {
 
   const booksWithDanglingLinks = unsafeBooks?.reduce(
     (acc, doc) => {
-      const danglingItems = difference(
-        doc.links,
-        linkIds ?? []
-      )
+      const danglingItems = difference(doc.links, linkIds ?? [])
 
       if (danglingItems.length > 0) {
         return [

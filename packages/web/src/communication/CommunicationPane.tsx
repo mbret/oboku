@@ -20,7 +20,7 @@ export const CommunicationPane = () => {
     networkMode: "online",
     queryFn: () =>
       httpClient.fetch<Communication[]>({
-        url: `${import.meta.env.VITE_SUPABASE_API_URL}/communication?limit=1`,
+        url: `${import.meta.env.VITE_SUPABASE_API_URL}/communication?limit=1&order=created_at.desc`,
         withAuth: false,
         headers: {
           apiKey: import.meta.env.VITE_SUPABASE_API_KEY ?? ""
