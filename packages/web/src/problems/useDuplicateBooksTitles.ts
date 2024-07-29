@@ -17,9 +17,12 @@ export const useDuplicatedBookTitles = () => {
   )
 
   return useMemo(() => {
-    const booksWithValidTitle = books?.filter(
-      (doc) => !!getMetadataFromBook(doc).title
-    )
+    const booksWithValidTitle = books
+      ?.filter((doc) => !!getMetadataFromBook(doc).title)
+      .map((item) => ({
+        ...item,
+        title: getMetadataFromBook(item).title
+      }))
 
     const docsByTitle = groupBy(booksWithValidTitle, "title")
 

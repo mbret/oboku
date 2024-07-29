@@ -84,6 +84,7 @@ export const useRemoveAllContents = () => {
           Report.error(e)
 
           createDialog({
+            autoStart: true,
             title: "Something went wrong!",
             content:
               "Something went wrong during the process. No need to panic since you already wanted to destroy everything anyway. If everything is gone, you should not worry too much, if you still have contents, try to do it again"

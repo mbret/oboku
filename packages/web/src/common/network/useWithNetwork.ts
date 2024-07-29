@@ -10,7 +10,7 @@ export const useWithNetwork = () => {
     stream.pipe(
       tap(() => {
         if (!networkState.online) {
-          createDialog({ preset: "OFFLINE" })
+          createDialog({ preset: "OFFLINE", autoStart: true })
 
           throw new OfflineError()
         }

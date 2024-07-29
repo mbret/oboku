@@ -9,7 +9,7 @@ export function withUnknownErrorDialog() {
         if (error instanceof CancelError) throw error
         if (error instanceof OfflineError) throw error
 
-        createDialog({ preset: "UNKNOWN_ERROR" })
+        createDialog({ preset: "UNKNOWN_ERROR", autoStart: true })
 
         throw error
       })

@@ -19,7 +19,7 @@ export const useRefreshBookMetadata = () => {
   return async (bookId: string) => {
     try {
       if (!network.online) {
-        return createDialog({ preset: "OFFLINE" })
+        return createDialog({ preset: "OFFLINE", autoStart: true })
       }
 
       const book = await database?.book

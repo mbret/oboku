@@ -232,7 +232,7 @@ export const ProfileScreen = () => {
       <List subheader={<ListSubheader disableSticky>About</ListSubheader>}>
         <ListItem
           button
-          onClick={() => createDialog({ preset: "NOT_IMPLEMENTED" })}
+          onClick={() => createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })}
         >
           <ListItemIcon>
             <GavelRounded />
@@ -306,7 +306,7 @@ export const ProfileScreen = () => {
         </ListItemButton>
         <ListItem
           button
-          onClick={() => createDialog({ preset: "NOT_IMPLEMENTED" })}
+          onClick={() => createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })}
         >
           <ListItemText primary="Delete my account" />
         </ListItem>

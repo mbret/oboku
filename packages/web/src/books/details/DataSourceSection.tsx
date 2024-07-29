@@ -47,7 +47,7 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
             }}
             onClick={() => {
               if (!dataSourcePlugin?.SelectItemComponent) {
-                createDialog({ preset: "NOT_IMPLEMENTED" })
+                createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })
               } else {
                 setIsSelectItemOpened(true)
               }

@@ -7,7 +7,7 @@ export function withOfflineErrorDialog() {
     return stream.pipe(
       catchError((error) => {
         if (error instanceof OfflineError) {
-          createDialog({ preset: "OFFLINE" })
+          createDialog({ preset: "OFFLINE", autoStart: true })
         }
 
         throw error

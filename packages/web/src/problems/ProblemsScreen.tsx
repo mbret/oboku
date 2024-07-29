@@ -1,9 +1,16 @@
-import { Box, List, ListItem, ListItemIcon, ListItemText } from "@mui/material"
+import {
+  Box,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText
+} from "@mui/material"
 import { groupBy } from "lodash"
 import { Fragment, memo, useMemo } from "react"
 import { Report } from "../debug/report.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { BuildRounded } from "@mui/icons-material"
+import { BuildRounded, DeleteForeverRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
 import {
   useDuplicatedBookTitles
@@ -20,11 +27,13 @@ import { CollectionDanglingBooks } from "./CollectionDanglingBooks"
 import { useFixableBooks } from "./useFixableBooks"
 import { BookDanglingCollections } from "./BookDanglingCollections"
 import { BookDanglingLinks } from "./BookDanglingLinks"
+import { useFixableLinks } from "./useFixableLinks"
 
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
   const duplicatedBookTitles = useDuplicatedBookTitles()
   // const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
+  const { danglingLinks } = useFixableLinks()
   const { collectionsWithDanglingBooks } = useFixableCollections()
   const { booksWithDanglingCollections, booksWithDanglingLinks } =
     useFixableBooks()
@@ -123,6 +132,27 @@ export const ProblemsScreen = memo(() => {
               `}
               />
             </ListItem>
+          )}
+          {danglingLinks.length > 0 && (
+            <ListItemButton
+              alignItems="flex-start"
+              onClick={() =>
+                repair({
+                  type: "danglingLinks",
+                  items: danglingLinks
+                })
+              }
+            >
+              <ListItemIcon>
+                <DeleteForeverRounded />
+              </ListItemIcon>
+              <ListItemText
+                primary="Dangling links"
+                secondary={`
+            We found ${danglingLinks.length} links not used by any books. They just take space and will not be used anymore. Safe to remove.
+            `}
+              />
+            </ListItemButton>
           )}
           {booksWithDanglingCollections?.map(({ danglingItems, doc }) => (
             <BookDanglingCollections

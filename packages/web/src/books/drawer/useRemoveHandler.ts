@@ -1,14 +1,13 @@
 import { getBookById, useRemoveBook } from "../helpers"
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/RxDbProvider"
-import { finalize, from, map, mergeMap, of, tap } from "rxjs"
+import { from, mergeMap, of } from "rxjs"
 import { isRemovableFromDataSource } from "../../links/isRemovableFromDataSource"
 import { getDataSourcePlugin } from "../../dataSources/getDataSourcePlugin"
 import { getLinkById } from "../../links/helpers"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { withUnknownErrorDialog } from "../../common/errors/withUnknownErrorDialog"
 import { withOfflineErrorDialog } from "../../common/network/withOfflineErrorDialog"
-import { useLock } from "../../common/BlockingBackdrop"
 
 const deleteBookNormallyDialog: Parameters<
   typeof createDialog<{ deleteFromDataSource: boolean }>

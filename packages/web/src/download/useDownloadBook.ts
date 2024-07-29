@@ -14,7 +14,7 @@ import { plugin } from "../plugins/local"
 import { isPluginError } from "../plugins/plugin-front"
 import { BookQueryResult } from "../books/states"
 import { createDialog } from "../common/dialogs/createDialog"
-import { firstValueFrom } from "rxjs"
+import { firstValueFrom, tap } from "rxjs"
 import { useMutation } from "reactjrx"
 
 class NoLinkFound extends Error {}
@@ -68,6 +68,7 @@ export const useDownloadBook = () => {
 
         if (!firstLink) {
           createDialog({
+            autoStart: true,
             title: "No link!",
             content:
               "Your book does not have a valid link to download the file. Please add one before proceeding"
@@ -127,6 +128,7 @@ export const useDownloadBook = () => {
 
             // @todo shorten this description and redirect to the documentation
             createDialog({
+              autoStart: true,
               preset: `UNKNOWN_ERROR`,
               title: `Unable to download`,
               content: `
