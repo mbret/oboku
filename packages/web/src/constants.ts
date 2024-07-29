@@ -1,14 +1,8 @@
 /* eslint-disable no-restricted-globals */
 import { isMobileDetected } from "./common/utils"
 
-// @ts-ignore
-const sw: ServiceWorkerGlobalScope = self as any
-const hostname =
-  typeof window === "object"
-    ? window?.location?.hostname
-    : sw?.location?.hostname
-
-export { API_URL, API_COUCH_URI } from "./constants.shared"
+export { API_URL } from "./constants.shared"
+export { API_COUCH_URI } from "./constants.shared"
 
 export const IS_MOBILE_DEVICE = isMobileDetected()
 
