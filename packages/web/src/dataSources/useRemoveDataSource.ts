@@ -1,5 +1,5 @@
 import { useMutation } from "reactjrx"
-import { getLatestDatabase } from "../rxdb/useCreateDatabase"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { combineLatest, from, mergeMap, of } from "rxjs"
 import { withDialog } from "../common/dialogs/withDialog"
 import { getLinksForDataSource } from "../links/dbHelpers"

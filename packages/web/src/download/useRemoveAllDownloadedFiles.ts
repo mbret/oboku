@@ -22,7 +22,7 @@ export const useRemoveAllDownloadedFiles = () => {
           const linkIds = book?.links ?? []
 
           if (linkIds.length > 0) {
-            const links = await db?.link.findByIds(linkIds)
+            const links = await db?.link.findByIds(linkIds).exec()
 
             const fileLink = Array.from(links?.values() ?? []).find(
               ({ type }) => type === plugin.type

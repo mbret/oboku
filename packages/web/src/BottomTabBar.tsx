@@ -55,7 +55,6 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
     }
   }, [])
 
-
   return (
     <div style={classes.container} onDragOver={onDragOver}>
       {children}

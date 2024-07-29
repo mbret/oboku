@@ -1,6 +1,6 @@
 import { Subject, from, mergeMap, withLatestFrom } from "rxjs"
 import { useSubscribeEffect } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 
 export const removeTag = new Subject<{ id: string }>()
 

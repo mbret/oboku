@@ -4,26 +4,22 @@ import {
   CollectionCollection,
   collectionCollectionMethods,
   collectionSchema,
-  collectionMigrationStrategies,
-  collectionDocMethods as collectionCollectionDocMethods
+  collectionMigrationStrategies
 } from "./collections/collection"
 import { applyHooks } from "./middleware"
 import {
   dataSourceSchema,
   dataSourceCollectionMethods,
   DataSourceCollection,
-  migrationStrategies as dataSourceMigrationStrategies,
-  collectionDocMethods as dataSourceCollectionDocMethods
+  migrationStrategies as dataSourceMigrationStrategies
 } from "./collections/dataSource"
 import { BookDocType, LinkDocType, TagsDocType } from "@oboku/shared"
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder"
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
 import { RxDBUpdatePlugin } from "rxdb/plugins/update"
-import { RxDBReplicationCouchDBPlugin } from "rxdb/plugins/replication-couchdb"
-import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
-import { RxDBMigrationPlugin } from "rxdb/plugins/migration"
-import { RxDBDevModePlugin } from "rxdb/plugins/dev-mode"
-import { getRxStoragePouch, addPouchPlugin } from "rxdb/plugins/pouchdb"
+import { RxDBMigrationPlugin } from "rxdb/plugins/migration-schema"
+import { disableWarnings, RxDBDevModePlugin } from "rxdb/plugins/dev-mode"
+import { getRxStorageDexie } from "rxdb/plugins/storage-dexie"
 import {
   BookCollection,
   bookCollectionMethods,
@@ -33,34 +29,27 @@ import {
 } from "./collections/book"
 import { tag, TagCollection } from "./collections/tags"
 import { link, LinkCollection } from "./collections/link"
-import pouchDbAdapterIdb from "pouchdb-adapter-idb"
-import pouchDbAdapterHttp from "pouchdb-adapter-http"
 import {
+  initializeSettings,
   SettingsCollection,
   SettingsDocType,
-  settingsCollectionMethods,
-  settingsMigrationStrategies,
   settingsSchema
 } from "./collections/settings"
+import { conflictHandler } from "./replication/conflictHandler"
+import { RxDBCleanupPlugin } from "rxdb/plugins/cleanup"
 
 // theses plugins does not get automatically added when building for production
-addRxPlugin(RxDBLeaderElectionPlugin)
 addRxPlugin(RxDBQueryBuilderPlugin)
 addRxPlugin(RxDBUpdatePlugin)
-addRxPlugin(RxDBReplicationCouchDBPlugin)
 addRxPlugin(RxDBMigrationPlugin)
+addRxPlugin(RxDBCleanupPlugin)
 
 if (import.meta.env.DEV) {
+  disableWarnings()
   addRxPlugin(RxDBDevModePlugin)
 }
 
-addPouchPlugin(pouchDbAdapterIdb)
-addPouchPlugin(pouchDbAdapterHttp)
-
 export type DocTypes = TagsDocType | BookDocType | LinkDocType | SettingsDocType
-
-// export type BookDocumentMutation = RxDocumentMutation<BookDocument | null, Partial<BookDocument> & { tagId?: string, collectionId?: string }>
-// export type BookDocumentRemoveMutation = RxDocumentMutation<BookDocument | null, { id: string }>
 
 export type MyDatabaseCollections = {
   tag: TagCollection
@@ -71,14 +60,14 @@ export type MyDatabaseCollections = {
   datasource: DataSourceCollection
 }
 
+export const settingsMigrationStrategies = {}
+
 export type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 
 export const createDatabase = async (
   params: Partial<Parameters<typeof createRxDatabase>[0]> = {}
 ) => {
-  const subStorage = getRxStoragePouch("idb", {
-    skip_setup: true
-  })
+  const storage = getRxStorageDexie()
 
   const db = await createRxDatabase<MyDatabaseCollections>({
     ...params,
@@ -88,60 +77,82 @@ export const createDatabase = async (
     // For most use cases, you should not use a validation plugin in production.
     storage: import.meta.env.DEV
       ? wrappedValidateAjvStorage({
-          storage: subStorage
+          storage
         })
-      : subStorage,
-    multiInstance: false
+      : storage,
+    multiInstance: false,
+    cleanupPolicy: {
+      /**
+       * The minimum time in milliseconds for how long
+       * a document has to be deleted before it is
+       * purged by the cleanup.
+       * [default=one month]
+       */
+      minimumDeletedTime: 1000 * 60 * 60 * 24 * 31, // one month,
+      /**
+       * The minimum amount of that that the RxCollection must have existed.
+       * This ensures that at the initial page load, more important
+       * tasks are not slowed down because a cleanup process is running.
+       * [default=60 seconds]
+       */
+      minimumCollectionAge: 1000 * 60, // 60 seconds
+      /**
+       * After the initial cleanup is done,
+       * a new cleanup is started after [runEach] milliseconds
+       * [default=5 minutes]
+       */
+      runEach: 1000 * 60 * 5, // 5 minutes
+      /**
+       * If set to true,
+       * RxDB will await all running replications
+       * to not have a replication cycle running.
+       * This ensures we do not remove deleted documents
+       * when they might not have already been replicated.
+       * [default=true]
+       */
+      awaitReplicationsInSync: true,
+      /**
+       * If true, it will only start the cleanup
+       * when the current instance is also the leader.
+       * This ensures that when RxDB is used in multiInstance mode,
+       * only one instance will start the cleanup.
+       * [default=true]
+       */
+      waitForLeadership: true
+    }
   })
 
-  await createCollections(db)
-  await initializeCollectionsData(db)
-
-  applyHooks(db)
-
-  return db
-}
-
-const createCollections = async (db: Database) => {
   await db.addCollections({
     book: {
       schema: bookSchema,
       methods: bookDocMethods,
       statics: bookCollectionMethods,
-      migrationStrategies: bookSchemaMigrationStrategies
+      migrationStrategies: bookSchemaMigrationStrategies,
+      conflictHandler
     },
     link,
     tag,
     settings: {
       schema: settingsSchema,
-      statics: settingsCollectionMethods,
-      migrationStrategies: settingsMigrationStrategies
+      conflictHandler
     },
     obokucollection: {
       schema: collectionSchema,
       statics: collectionCollectionMethods,
       migrationStrategies: collectionMigrationStrategies,
-      methods: collectionCollectionDocMethods
+      conflictHandler
     },
     datasource: {
       schema: dataSourceSchema,
       statics: dataSourceCollectionMethods,
-      methods: dataSourceCollectionDocMethods,
-      migrationStrategies: dataSourceMigrationStrategies
+      migrationStrategies: dataSourceMigrationStrategies,
+      conflictHandler
     }
   })
-}
 
-const initializeCollectionsData = async (db: Database) => {
-  try {
-    const settings = await db.settings.findOne().exec()
-    if (!settings) {
-      await db.settings.insert({
-        contentPassword: null,
-        _id: "settings"
-      })
-    }
-  } catch (e) {
-    console.warn(e)
-  }
+  await initializeSettings(db)
+
+  applyHooks(db)
+
+  return db
 }

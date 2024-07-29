@@ -1,7 +1,7 @@
 import { LinkDocType } from "@oboku/shared"
 import { plugins } from "../plugins/configure"
 import { useForeverQuery } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
@@ -15,7 +15,7 @@ export const getLinksByIds = async (database: Database) => {
 
 export const useLinks = () => {
   return useForeverQuery({
-    queryKey: ["rxdb", "get", "many", "links/list"],
+    queryKey: ["rxdb", "get", "many", "link/list"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.link.find({}).$),
@@ -27,7 +27,7 @@ export const useLinks = () => {
 
 export const useLinksDic = () => {
   return useForeverQuery({
-    queryKey: ["rxdb", "get", "many", "links/dic"],
+    queryKey: ["rxdb", "get", "many", "link/dic"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.link.find({}).$),

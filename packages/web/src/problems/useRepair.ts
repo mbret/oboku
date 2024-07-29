@@ -2,7 +2,7 @@ import { BookDocType, CollectionDocType } from "@oboku/shared"
 import { useMutation } from "reactjrx"
 import { first, from, map, mergeMap, of } from "rxjs"
 import { DeepReadonlyObject } from "rxdb"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 
 export const useRepair = () => {
   return useMutation({

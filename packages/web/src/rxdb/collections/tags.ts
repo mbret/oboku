@@ -1,35 +1,19 @@
 import { TagsDocType } from "@oboku/shared"
 import {
-  AtomicUpdateFunction,
   MigrationStrategies,
   RxCollection,
   RxDocument,
-  RxJsonSchema,
-  RxQuery
+  RxJsonSchema
 } from "rxdb"
-import { MongoUpdateSyntax } from "../../types"
-import { getReplicationProperties } from "../rxdb-plugins/replication"
-import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
+import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
+import { conflictHandler } from "../replication/conflictHandler"
 
-type DocMethods = {
-  updateSafe: (updateObj: MongoUpdateSyntax<TagsDocType>) => Promise<any>
-  incrementalModify: (
-    mutationFunction: AtomicUpdateFunction<TagsDocType>,
-    context?: string | undefined
-  ) => Promise<RxDocument<TagsDocType, DocMethods>>
-}
+type DocMethods = {}
 
 type CollectionMethods = {
   insertSafe: (
     json: Omit<TagsDocType, `_id` | "rx_model" | "_rev" | `rxdbMeta`>
-  ) => Promise<TagsDocument>
-  safeFind: (
-    updateObj: SafeMangoQuery<TagsDocType>
-  ) => RxQuery<TagsDocType, RxDocument<TagsDocType, DocMethods>[]>
-  updateSafe: (
-    json: SafeUpdateMongoUpdateSyntax<TagsDocType>,
-    cb: (collection: TagCollection) => RxQuery
   ) => Promise<TagsDocument>
 }
 
@@ -59,24 +43,11 @@ const schema: RxJsonSchema<Omit<TagsDocType, `_rev` | `rxdbMeta`>> = {
   required: ["isProtected", "name", "books"]
 }
 
-const docMethods: DocMethods = {
-  updateSafe: function (this: TagsDocument, updateObj) {
-    return this.update(updateObj)
-  },
-  incrementalModify: function (this: TagsDocument, mutationFunction) {
-    return this.atomicUpdate(mutationFunction)
-  }
-}
+const docMethods: DocMethods = {}
 
 const collectionMethods: CollectionMethods = {
   insertSafe: async function (this: TagCollection, json) {
     return this.insert({ _id: generateId(), ...json } as TagsDocType)
-  },
-  safeFind: function (this: TagCollection, json) {
-    return this.find(json)
-  },
-  updateSafe: async function (this: TagCollection, json, cb) {
-    return cb(this).update(json)
   }
 }
 
@@ -86,5 +57,6 @@ export const tag = {
   schema: schema,
   methods: docMethods,
   statics: collectionMethods,
-  migrationStrategies: migrationStrategies
+  migrationStrategies: migrationStrategies,
+  conflictHandler
 }

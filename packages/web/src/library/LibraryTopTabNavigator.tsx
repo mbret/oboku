@@ -3,17 +3,19 @@ import { Tab, Tabs, IconButton, useTheme } from "@mui/material"
 import { useNavigate, useLocation, Outlet } from "react-router-dom"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../constants"
-import { useSyncLibrary } from "./helpers"
 import { Sync } from "@mui/icons-material"
 import { useCSS } from "../common/utils"
+import { useSignalValue } from "reactjrx"
+import { syncSignal } from "../rxdb/replication/states"
+import { triggerReplication } from "../rxdb/replication/triggerReplication"
 
 export const LibraryTopTabNavigator = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const classes = useStyles()
-  const syncLibrary = useSyncLibrary()
   const [syncActive, setSyncActive] = useState(false)
   const theme = useTheme()
+  const activeSyncs = useSignalValue(syncSignal, (state) => state.active)
 
   useEffect(() => {
     if (syncActive) {
@@ -27,9 +29,9 @@ export const LibraryTopTabNavigator = () => {
     () => (
       <div style={{ marginLeft: theme.spacing(2) }}>
         <IconButton
-          disabled={syncActive}
+          disabled={activeSyncs > 0}
           onClick={() => {
-            syncLibrary()
+            triggerReplication()
             setSyncActive(true)
           }}
           color="inherit"
@@ -39,7 +41,7 @@ export const LibraryTopTabNavigator = () => {
         </IconButton>
       </div>
     ),
-    [syncLibrary, syncActive, theme]
+    [theme, activeSyncs]
   )
 
   return (

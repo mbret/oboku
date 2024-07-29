@@ -1,13 +1,18 @@
 import { useMutation } from "reactjrx"
-import { getLatestDatabase } from "../rxdb/useCreateDatabase"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, mergeMap } from "rxjs"
-import { useUpdateBooks } from "../books/useUpdateBooks"
+import { UpdateQuery } from "rxdb"
+import { BookDocType } from "@oboku/shared"
 
 export const useUpdateCollectionBooks = () => {
-  const { mutateAsync: updateBooks } = useUpdateBooks()
-
   return useMutation({
-    mutationFn: ({ id, updateObj }: { id: string; updateObj: any }) =>
+    mutationFn: ({
+      id,
+      updateObj
+    }: {
+      id: string
+      updateObj: UpdateQuery<BookDocType>
+    }) =>
       getLatestDatabase().pipe(
         mergeMap((database) =>
           from(
@@ -20,24 +25,24 @@ export const useUpdateCollectionBooks = () => {
                 }
               })
               .exec()
-          )
-        ),
-        mergeMap((collection) => {
-          if (!collection) throw new Error("no item")
+          ).pipe(
+            mergeMap((collection) => {
+              if (!collection) throw new Error("no item")
 
-          return from(
-            updateBooks({
-              queryObj: {
-                selector: {
-                  _id: {
-                    $in: collection.books
-                  }
-                }
-              },
-              updateObj
+              return from(
+                database.book
+                  .find({
+                    selector: {
+                      _id: {
+                        $in: collection.books
+                      }
+                    }
+                  })
+                  .update(updateObj)
+              )
             })
           )
-        })
+        )
       )
   })
 }

@@ -1,21 +1,9 @@
-import {
-  AtomicUpdateFunction,
-  RxCollection,
-  RxDocument,
-  RxJsonSchema,
-  RxQuery
-} from "rxdb"
-import { getReplicationProperties } from "../rxdb-plugins/replication"
-import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
+import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
+import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { CollectionDocType } from "@oboku/shared"
 import { generateId } from "./utils"
 
-export type CollectionDocMethods = {
-  incrementalModify: (
-    mutationFunction: AtomicUpdateFunction<CollectionDocType>,
-    context?: string | undefined
-  ) => Promise<RxDocument<CollectionDocType, CollectionDocMethods>>
-}
+export type CollectionDocMethods = {}
 
 export type CollectionDocument = RxDocument<
   CollectionDocType,
@@ -26,16 +14,6 @@ type CollectionCollectionMethods = {
   post: (
     json: Omit<CollectionDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>
   ) => Promise<CollectionDocument>
-  safeUpdate: (
-    json: SafeUpdateMongoUpdateSyntax<CollectionDocType>,
-    cb: (collection: CollectionCollection) => RxQuery
-  ) => Promise<CollectionDocument>
-  safeFind: (
-    updateObj: SafeMangoQuery<CollectionDocType>
-  ) => RxQuery<
-    CollectionDocType,
-    RxDocument<CollectionDocType, CollectionDocMethods>[]
-  >
 }
 
 export type CollectionCollection = RxCollection<
@@ -80,20 +58,8 @@ export const collectionSchema: RxJsonSchema<
 
 export const collectionMigrationStrategies = {}
 
-export const collectionDocMethods: CollectionDocMethods = {
-  incrementalModify: function (this: CollectionDocument, mutationFunction) {
-    return this.atomicUpdate(mutationFunction)
-  }
-}
-
 export const collectionCollectionMethods: CollectionCollectionMethods = {
   post: async function (this: CollectionCollection, json) {
     return this.insert({ _id: generateId(), ...json } as CollectionDocType)
-  },
-  safeUpdate: async function (this: CollectionCollection, json, cb) {
-    return cb(this).update(json)
-  },
-  safeFind: function (this: CollectionCollection, json) {
-    return this.find(json)
   }
 }

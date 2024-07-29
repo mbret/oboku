@@ -1,7 +1,7 @@
 import { groupBy } from "lodash"
 import { useMemo } from "react"
 import { Report } from "../debug/report.shared"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { switchMap } from "rxjs"
 import { useObserve } from "reactjrx"
 

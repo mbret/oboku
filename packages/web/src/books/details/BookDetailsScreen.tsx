@@ -63,6 +63,7 @@ export const BookDetailsScreen = memo(() => {
     protectedTagIds: useProtectedTagIds().data,
     tags: useTagsByIds().data
   })
+  const { data: link } = useLink({ id: book?.links[0] })
   const metadata = useMedataFromBook(book)
   const openBookActionDrawer = useBookActionDrawer({
     onDeleteBook: () => {
@@ -130,6 +131,7 @@ export const BookDetailsScreen = memo(() => {
             }}
             startIcon={<CloudDownloadRounded />}
             onClick={() => downloadFile(book)}
+            disabled={!link}
           >
             Download
           </Button>

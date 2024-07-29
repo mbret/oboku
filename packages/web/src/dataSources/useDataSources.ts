@@ -1,6 +1,6 @@
 import { filter, map, switchMap } from "rxjs"
 import { isDefined, useForeverQuery, useSignalValue } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { libraryStateSignal } from "../library/states"
 
 export const useDataSources = () => {

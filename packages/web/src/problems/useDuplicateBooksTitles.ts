@@ -6,7 +6,7 @@ import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 import { BookDocument } from "../rxdb/collections/book"
 import { useObserve } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { switchMap } from "rxjs"
 import { getMetadataFromBook } from "../books/metadata"
 
@@ -39,7 +39,7 @@ export const useDuplicatedBookTitles = () => {
 //       const yes = window.confirm(
 //         `
 //             This action will merge books that uses the same title.
-//             We will try to use a non destructive merge by keeping defined properties when possible. 
+//             We will try to use a non destructive merge by keeping defined properties when possible.
 //             You may want to re-sync after the operation to restore value with their latest state.
 //             `.replace(/  +/g, "")
 //       )

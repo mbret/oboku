@@ -8,7 +8,7 @@ import {
 import { useCollections } from "../collections/useCollections"
 import { map, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { useForeverQuery, useSignalValue } from "reactjrx"
 import { keyBy } from "lodash"
 import { Database } from "../rxdb"
@@ -16,7 +16,7 @@ import { BookDocType, CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject, MangoQuery } from "rxdb"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
 import { useMemo } from "react"
-import { observeBooks } from "./dbHelpers"
+import { observeBook, observeBooks } from "./dbHelpers"
 import { libraryStateSignal } from "../library/states"
 
 export const getBooksByIds = async (database: Database) => {
@@ -79,6 +79,29 @@ export const useBooksDic = () => {
   return { ...rest, data: transformedData }
 }
 
+export const useBookDoc = ({
+  id,
+  enabled = true
+}: {
+  id?: string
+  enabled?: boolean
+}) => {
+  return useForeverQuery({
+    queryKey: [`rxdb/bookDoc`, { id }],
+    enabled: enabled && !!id,
+    queryFn: () => {
+      return latestDatabase$.pipe(
+        switchMap((db) =>
+          observeBook({
+            db,
+            queryObj: id
+          })
+        )
+      )
+    }
+  })
+}
+
 export const useBook = ({
   id,
   enabled = true
@@ -87,17 +110,15 @@ export const useBook = ({
   enabled?: boolean
 }) => {
   return useForeverQuery({
-    queryKey: ["rxdb", "book", { id }],
+    queryKey: [`rxdb/bookJSON`, { id }],
     enabled: enabled && !!id,
     queryFn: () => {
       return latestDatabase$.pipe(
-        switchMap(
-          (db) =>
-            db.book.findOne({
-              selector: {
-                _id: id
-              }
-            }).$
+        switchMap((db) =>
+          observeBook({
+            db,
+            queryObj: id
+          })
         ),
         map((value) => {
           return value?.toJSON() ?? null

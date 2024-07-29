@@ -16,7 +16,7 @@ const provider = new GoogleAuthProvider()
 const auth = getAuth()
 
 export const useSignIn = () => {
-  const reCreateDb = useReCreateDb()
+  const { mutateAsync: reCreateDb } = useReCreateDb()
 
   const signIn = useCallback(() => {
     lock("authentication")
@@ -47,7 +47,7 @@ export const useSignIn = () => {
         of(authStateSignal.getValue()).pipe(
           switchMap((previousAuth) =>
             previousAuth?.email !== email
-              ? from(Promise.all([reCreateDb()]))
+              ? from(reCreateDb({ overwrite: true }))
               : of(previousAuth)
           ),
           tap(() => {

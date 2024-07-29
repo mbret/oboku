@@ -1,5 +1,5 @@
 import { useMutation } from "reactjrx"
-import { getLatestDatabase } from "../rxdb/useCreateDatabase"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { catchError, combineLatest, from, map, mergeMap, of, tap } from "rxjs"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useLock } from "../common/BlockingBackdrop"

@@ -1,4 +1,4 @@
-import { FC, Suspense, useState } from "react"
+import { Suspense, useState } from "react"
 import { AppNavigator } from "./navigation/AppNavigator"
 import { Theme, StyledEngineProvider, Fade, Box } from "@mui/material"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
@@ -6,8 +6,6 @@ import { TourProvider } from "./app-tour/TourProvider"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
 import { plugins } from "./plugins/configure"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
-import { RxDbProvider } from "./rxdb"
-import { useObservers } from "./rxdb/sync/useObservers"
 import { PreloadQueries } from "./PreloadQueries"
 import { SplashScreen } from "./SplashScreen"
 import { FirstTimeExperienceTours } from "./firstTimeExperience/FirstTimeExperienceTours"
@@ -26,12 +24,15 @@ import { signalEntriesToPersist } from "./profile"
 import { queryClient } from "./queries/queryClient"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
+import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
 import { profileStorageSignal } from "./profile/storage"
 import { authSignalStorageAdapter } from "./auth/storage"
 import { authStateSignal } from "./auth/authState"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
+import { RxDbProvider } from "./rxdb/RxDbProvider"
+import { Report } from "./debug/report.shared"
 
 // @todo move to sw
 LibArchive.init({
@@ -68,7 +69,7 @@ export function App() {
   return (
     <ErrorBoundary
       onError={(e) => {
-        console.error(e)
+        Report.error(e)
       }}
     >
       <StyledEngineProvider injectFirst>
@@ -76,51 +77,50 @@ export function App() {
           <QueryClientProvider client={queryClient}>
             <Suspense fallback={<SplashScreen show />}>
               {/* <SplashScreen show={!isAppReady} /> */}
-              <RxDbProvider>
-                {!isHydratingProfile && isAuthHydrated && (
-                  <>
-                    {plugins.reduce(
-                      (Comp, { Provider }) => {
-                        if (Provider) {
-                          return <Provider>{Comp}</Provider>
-                        }
-                        return Comp
-                      },
-                      <Fade in={isAppReady}>
-                        <Box height="100%">
-                          <DialogProvider>
-                            <TourProvider>
-                              <AppNavigator
-                                isProfileHydrated={isProfileHydrated}
-                              />
-                              <FirstTimeExperienceTours />
-                              <ManageBookCollectionsDialog />
-                              <ManageBookTagsDialog />
-                              <ManageTagBooksDialog />
-                              <AuthorizeActionDialog />
-                            </TourProvider>
-                            <UpdateAvailableDialog
-                              serviceWorker={waitingWorker}
+              {!isHydratingProfile && isAuthHydrated && (
+                <>
+                  {plugins.reduce(
+                    (Comp, { Provider }) => {
+                      if (Provider) {
+                        return <Provider>{Comp}</Provider>
+                      }
+                      return Comp
+                    },
+                    <Fade in={isAppReady}>
+                      <Box height="100%">
+                        <DialogProvider>
+                          <TourProvider>
+                            <AppNavigator
+                              isProfileHydrated={isProfileHydrated}
                             />
-                            <ReplicateRemoteDb />
-                            <BlockingBackdrop />
-                            <Effects />
-                          </DialogProvider>
-                        </Box>
-                      </Fade>
-                    )}
-                  </>
-                )}
+                            <FirstTimeExperienceTours />
+                            <ManageBookCollectionsDialog />
+                            <ManageBookTagsDialog />
+                            <ManageTagBooksDialog />
+                            <AuthorizeActionDialog />
+                          </TourProvider>
+                          <UpdateAvailableDialog
+                            serviceWorker={waitingWorker}
+                          />
+                          <BackgroundReplication />
+                          <BlockingBackdrop />
+                          <Effects />
+                        </DialogProvider>
+                      </Box>
+                    </Fade>
+                  )}
+                </>
+              )}
 
-                <PreloadQueries
-                  onReady={() => {
-                    setLoading((state) => ({
-                      ...state,
-                      isPreloadingQueries: false
-                    }))
-                  }}
-                />
-              </RxDbProvider>
+              <PreloadQueries
+                onReady={() => {
+                  setLoading((state) => ({
+                    ...state,
+                    isPreloadingQueries: false
+                  }))
+                }}
+              />
+              <RxDbProvider />
             </Suspense>
           </QueryClientProvider>
         </ThemeProvider>
@@ -128,10 +128,4 @@ export function App() {
       <BlurFilterReference />
     </ErrorBoundary>
   )
-}
-
-const ReplicateRemoteDb: FC = () => {
-  useObservers()
-
-  return null
 }

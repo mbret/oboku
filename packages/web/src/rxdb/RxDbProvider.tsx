@@ -1,42 +1,54 @@
-import { createContext, FC, ReactNode, useContext, useMemo } from "react"
-import { PromiseReturnType } from "../types"
-import { createDatabase } from "./databases"
-import { useCreateDatabase } from "./useCreateDatabase"
+import { memo, useEffect } from "react"
+import { Database, createDatabase } from "./databases"
+import { isDefined, signal, useMutation, useSignalValue } from "reactjrx"
+import { filter, first, from, map, of, switchMap, tap } from "rxjs"
 
-const DatabaseContext = createContext<{
-  db: PromiseReturnType<typeof createDatabase> | undefined
-  reCreate: () => ReturnType<typeof createDatabase>
-}>({ db: undefined, reCreate: () => ({}) as any })
+export const databaseSignal = signal<Database | undefined>({
+  key: "databaseState"
+})
 
-export const RxDbProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const { db, reCreate } = useCreateDatabase()
+export const latestDatabase$ = databaseSignal.subject.pipe(filter(isDefined))
 
-  const contextValue = useMemo(
-    () => ({
-      db,
-      reCreate
-    }),
-    [db, reCreate]
-  )
+export const getLatestDatabase = () => latestDatabase$.pipe(first())
 
-  return (
-    <DatabaseContext.Provider value={contextValue}>
-      {children}
-    </DatabaseContext.Provider>
-  )
+export const useReCreateDb = () => {
+  return useMutation({
+    mapOperator: "concat",
+    mutationFn: ({ overwrite = true }: { overwrite?: boolean } = {}) => {
+      const db = databaseSignal.getValue()
+
+      // soft create
+      if (!overwrite && db) return of(null)
+
+      databaseSignal.setValue(undefined)
+
+      const start$ = db ? from(db?.remove()).pipe(map(() => null)) : of(null)
+
+      // at this point we expect useDatabase to be rendered
+      // again with undefined database. So that nothing should interact with
+      // the db while it's being recreated
+      return start$.pipe(
+        switchMap(() => from(createDatabase({}))),
+        tap((newDb) => {
+          databaseSignal.setValue(newDb)
+        })
+      )
+    }
+  })
 }
 
 export const useDatabase = () => {
-  const { db } = useContext(DatabaseContext)
+  const db = useSignalValue(databaseSignal)
 
   return { db }
 }
 
-/**
- * @deprecated
- */
-export const useReCreateDb = () => {
-  const { reCreate } = useContext(DatabaseContext)
+export const RxDbProvider = memo(() => {
+  const { mutate: createDb } = useReCreateDb()
 
-  return reCreate
-}
+  useEffect(() => {
+    createDb({ overwrite: false })
+  }, [createDb])
+
+  return null
+})

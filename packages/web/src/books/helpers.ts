@@ -1,15 +1,10 @@
-import {
-  BookDocType,
-  ReadingStateState,
-  sortByTitleComparator
-} from "@oboku/shared"
+import { ReadingStateState, sortByTitleComparator } from "@oboku/shared"
 import { Database, useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../debug/report.shared"
 import { useCallback, useMemo } from "react"
 import { PromiseReturnType } from "../types"
 import { BookQueryResult, useBooksDic } from "./states"
-import { AtomicUpdateFunction } from "rxdb"
 import { useNetworkState } from "react-use"
 import { from } from "rxjs"
 import { usePluginRemoveBook } from "../plugins/usePluginRemoveBook"
@@ -81,23 +76,6 @@ export const useAddTagToBook = () => {
     mutationFn: async ({ _id, tagId }: { _id: string; tagId: string }) =>
       db?.book.findOne({ selector: { _id } }).update({ $push: { tags: tagId } })
   })
-}
-
-export const useAtomicUpdateBook = () => {
-  const { db: database } = useDatabase()
-
-  const updater = useCallback(
-    async (id: string, mutationFunction: AtomicUpdateFunction<BookDocType>) => {
-      const book = await database?.book
-        .findOne({ selector: { _id: id } })
-        .exec()
-
-      return await book?.incrementalModify(mutationFunction)
-    },
-    [database]
-  )
-
-  return [updater] as [typeof updater]
 }
 
 export const useAddCollectionToBook = () => {

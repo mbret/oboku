@@ -6,7 +6,7 @@ import { httpClient } from "../http/httpClient"
 import { isPluginError } from "../plugins/plugin-front"
 import { useMutation } from "reactjrx"
 import { useWithNetwork } from "../common/network/useWithNetwork"
-import { getLatestDatabase } from "../rxdb/useCreateDatabase"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { OfflineError } from "../common/errors/errors"
 import { getCollectionById } from "./dbHelpers"
 

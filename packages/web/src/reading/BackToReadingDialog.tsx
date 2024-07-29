@@ -8,7 +8,7 @@ import {
 import { SIGNAL_RESET, useMutation } from "reactjrx"
 import { getMetadataFromBook } from "../books/metadata"
 import { useCreateBackToBookDialog } from "./useCreateBackToBookDialog"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { from, switchMap } from "rxjs"
 import { CancelError } from "../common/errors/errors"
 import { catchCancelError } from "../common/errors/catchCancelError"

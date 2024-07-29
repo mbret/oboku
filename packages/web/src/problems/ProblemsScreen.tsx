@@ -11,7 +11,7 @@ import {
 } from "./useDuplicateBooksTitles"
 import { Alert } from "@mui/material"
 import { useObserve } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { switchMap } from "rxjs"
 import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
 import { useFixableCollections } from "./useFixableCollections"

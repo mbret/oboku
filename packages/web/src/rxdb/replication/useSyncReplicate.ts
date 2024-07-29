@@ -1,50 +1,33 @@
-import PouchDB from "pouchdb"
-import { first } from "rxjs/operators"
 import { authStateSignal } from "../../auth/authState"
-import { API_COUCH_URI } from "../../constants"
+import { from, mergeMap } from "rxjs"
+import { useMutation } from "reactjrx"
 import { RxCollection } from "rxdb"
-import { syncCollections } from "./syncCollections"
-import { merge, filter, map } from "rxjs"
-import { useMutation, useSignalValue } from "reactjrx"
+import { useReplicateCollection } from "./useReplicateCollection"
 
 export const useSyncReplicate = () => {
-  const { dbName } = useSignalValue(authStateSignal) || {}
-
+  const { mutateAsync } = useReplicateCollection()
   return useMutation({
     mutationFn: (collections: RxCollection[]) => {
-      const syncOptions = () => ({
-        remote: new PouchDB(`${API_COUCH_URI}/${dbName}`, {
-          fetch: (url, opts) => {
-            const token = authStateSignal.getValue()?.token
+      const { token, dbName } = authStateSignal.getValue() ?? {}
 
-            ;(opts?.headers as unknown as Map<string, string>).set(
-              "Authorization",
-              token ? `Bearer ${token}` : ``
-            )
-            return PouchDB.fetch(url, opts)
-          }
-        }),
-        direction: {
-          push: true
-        },
-        options: {
-          retry: false,
-          live: false,
-          timeout: 5000
-        }
-      })
+      if (!dbName || !token) throw new Error("Invalid database")
 
-      const state = syncCollections(collections, syncOptions)
+      const replicationStates = from(
+        Promise.all(
+          collections.map((collection) =>
+            mutateAsync({
+              collection,
+              live: false,
+              dbName,
+              token
+            })
+          )
+        )
+      )
 
-      return merge(
-        state.error$.pipe(
-          map((error) => {
-            throw error
-          })
-        ),
-        state.complete$.pipe(
-          filter((value) => value === true),
-          first()
+      return replicationStates.pipe(
+        mergeMap((states) =>
+          from(Promise.all(states.map((state) => state.awaitInSync())))
         )
       )
     }

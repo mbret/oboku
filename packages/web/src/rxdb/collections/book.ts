@@ -4,25 +4,15 @@ import {
   InsertAbleBookDocType
 } from "@oboku/shared"
 import {
-  AtomicUpdateFunction,
   MigrationStrategies,
   RxCollection,
   RxDocument,
-  RxJsonSchema,
-  RxQuery
+  RxJsonSchema
 } from "rxdb"
-import { MongoUpdateSyntax } from "../../types"
-import { getReplicationProperties } from "../rxdb-plugins/replication"
-import { SafeMangoQuery, SafeUpdateMongoUpdateSyntax } from "../types"
+import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
-type BookDocMethods = {
-  safeUpdate: (updateObj: MongoUpdateSyntax<BookDocType>) => Promise<any>
-  incrementalModify: (
-    mutationFunction: AtomicUpdateFunction<BookDocType>,
-    context?: string | undefined
-  ) => Promise<RxDocument<BookDocType, BookDocMethods>>
-}
+type BookDocMethods = {}
 
 export type BookDocument = RxDocument<BookDocType, BookDocMethods>
 
@@ -30,16 +20,6 @@ type BookCollectionMethods = {
   post: (
     json: Omit<InsertAbleBookDocType, "rx_model" | `rxdbMeta`>
   ) => Promise<BookDocument>
-  safeUpdate: (
-    json: SafeUpdateMongoUpdateSyntax<BookDocType>,
-    getter: (collection: BookCollection) => RxQuery
-  ) => Promise<BookDocument>
-  safeFind: (
-    updateObj: SafeMangoQuery<BookDocType>
-  ) => RxQuery<BookDocType, RxDocument<BookDocType, BookDocMethods>[]>
-  safeFindOne: (
-    updateObj: SafeMangoQuery<BookDocType>
-  ) => RxQuery<BookDocType, RxDocument<BookDocType, BookDocMethods> | null>
 }
 
 export type BookCollection = RxCollection<
@@ -48,27 +28,11 @@ export type BookCollection = RxCollection<
   BookCollectionMethods
 >
 
-export const bookDocMethods: BookDocMethods = {
-  safeUpdate: function (this: BookDocument, updateObj) {
-    return this.update(updateObj)
-  },
-  incrementalModify: function (this: BookDocument, mutationFunction) {
-    return this.atomicUpdate(mutationFunction)
-  }
-}
+export const bookDocMethods: BookDocMethods = {}
 
 export const bookCollectionMethods: BookCollectionMethods = {
   post: async function (this: BookCollection, json) {
     return this.insert({ _id: generateId(), ...json } as BookDocType)
-  },
-  safeUpdate: async function (this: BookCollection, json, getter) {
-    return getter(this).update(json)
-  },
-  safeFind: function (this: BookCollection, json) {
-    return this.find(json)
-  },
-  safeFindOne: function (this: BookCollection, json) {
-    return this.findOne(json)
   }
 }
 
