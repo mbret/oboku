@@ -28,13 +28,13 @@ import { LibraryBooksScreen } from "../library/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../library/shelves/LibraryCollectionScreen"
 import { LibraryTagsScreen } from "../library/LibraryTagsScreen"
 import { memo, useEffect, useRef } from "react"
-import { UnlockLibraryDialog } from "../auth/UnlockLibraryDialog"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
 import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
 import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
 import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
+import { SecurityScreen } from "../settings/SecurityScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -86,6 +86,7 @@ export const AppNavigator = ({
                 path={`${ROUTES.PROFILE}/manage-storage`}
                 element={<ManageStorageScreen />}
               />
+              <Route path={`${ROUTES.SECURITY}`} element={<SecurityScreen />} />
               <Route path={`${ROUTES.SETTINGS}`} element={<SettingsScreen />} />
               <Route
                 path={`${ROUTES.STATISTICS}`}
@@ -144,7 +145,6 @@ export const AppNavigator = ({
       <CollectionActionsDrawer />
       <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
       <TrackHistoryCanGoBack />
-      <UnlockLibraryDialog />
     </BrowserRouter>
   )
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { combineLatest, merge, NEVER, of, tap } from "rxjs"
-import { useSignOut } from "../../auth/helpers"
+import { useSignOut } from "../../auth/useSignOut"
 import { syncSignal } from "./states"
 import { triggerReplication$ } from "./triggerReplication"
 import { Report } from "../../debug/report.shared"

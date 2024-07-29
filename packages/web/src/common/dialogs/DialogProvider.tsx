@@ -1,7 +1,7 @@
 import { useSignalValue } from "reactjrx"
 import { DialogType, dialogSignal } from "./state"
 import { removeDialog } from "./removeDialog"
-import { ReactNode, useCallback } from "react"
+import { memo, ReactNode, useCallback } from "react"
 import {
   Button,
   Dialog,
@@ -118,11 +118,11 @@ const InnerDialog = () => {
   )
 }
 
-export const DialogProvider = ({ children }: { children: ReactNode }) => {
+export const DialogProvider = memo(({ children }: { children: ReactNode }) => {
   return (
     <>
       {children}
       <InnerDialog />
     </>
   )
-}
+})

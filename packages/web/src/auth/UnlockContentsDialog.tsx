@@ -8,19 +8,13 @@ import {
   TextField
 } from "@mui/material"
 import { crypto } from "@oboku/shared"
-import { FC, useEffect } from "react"
+import { useEffect } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { libraryStateSignal } from "../library/states"
-import { signal, useSignalValue } from "reactjrx"
 import { useSettings } from "../settings/helpers"
-
-export const unlockLibraryDialogSignal = signal({
-  key: "unlockLibraryDialog",
-  default: false
-})
 
 type Inputs = {
   unlockPassword: string
@@ -28,22 +22,25 @@ type Inputs = {
 
 const FORM_ID = "settings-unlock-library"
 
-export const UnlockLibraryDialog: FC<{}> = () => {
+export const UnlockContentsDialog = ({
+  onClose,
+  open
+}: {
+  open: boolean
+  onClose: () => void
+}) => {
   const { control, handleSubmit, setFocus, reset, setError } = useForm<Inputs>({
     defaultValues: {
       unlockPassword: ""
     }
   })
   const { data: accountSettings } = useSettings()
-  const isOpened = useSignalValue(unlockLibraryDialogSignal)
   const contentPassword = accountSettings?.contentPassword
   const { closeModalWithNavigation } = useModalNavigationControl(
     {
-      onExit: () => {
-        unlockLibraryDialogSignal.setValue(false)
-      }
+      onExit: onClose
     },
-    isOpened
+    open
   )
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
@@ -66,18 +63,18 @@ export const UnlockLibraryDialog: FC<{}> = () => {
 
   useEffect(() => {
     reset()
-  }, [isOpened, reset])
+  }, [open, reset])
 
   useEffect(() => {
-    if (isOpened) {
+    if (open) {
       setTimeout(() => {
         setFocus("unlockPassword")
       })
     }
-  }, [setFocus, isOpened])
+  }, [setFocus, open])
 
   return (
-    <Dialog onClose={() => closeModalWithNavigation()} open={isOpened}>
+    <Dialog onClose={() => closeModalWithNavigation()} open={open}>
       <DialogTitle>Unlock library protected contents</DialogTitle>
       <DialogContent>
         {!!contentPassword && (
