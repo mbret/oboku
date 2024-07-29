@@ -5,13 +5,13 @@ import { isPluginError } from "../plugins/plugin-front"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
-import { useAtomicUpdateBook } from "./helpers"
 import { Report } from "../debug/report.shared"
 import { createDialog } from "../common/dialogs/createDialog"
+import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
 
 export const useRefreshBookMetadata = () => {
   const { db: database } = useDatabase()
-  const [updateBook] = useAtomicUpdateBook()
+  const { mutateAsync: incrementalPatchBook } = useIncrementalBookPatch()
   const network = useNetworkState()
   const { mutateAsync: sync } = useSyncReplicate()
   const refreshPluginMetadata = usePluginRefreshMetadata()
@@ -31,7 +31,7 @@ export const useRefreshBookMetadata = () => {
         .exec()
 
       if (!firstLink) {
-        Report.warn(`Trying to refresh metadata of file item ${bookId}`)
+        Report.error(`No link found ${bookId}`)
 
         return
       }
@@ -43,10 +43,12 @@ export const useRefreshBookMetadata = () => {
       if (!database) return
 
       from(
-        updateBook(bookId, (old) => ({
-          ...old,
-          metadataUpdateStatus: "fetching"
-        }))
+        incrementalPatchBook({
+          doc: bookId,
+          patch: {
+            metadataUpdateStatus: "fetching"
+          }
+        })
       )
         .pipe(
           switchMap(() => from(sync([database.link, database.book]))),
@@ -55,11 +57,13 @@ export const useRefreshBookMetadata = () => {
           ),
           catchError((e) =>
             from(
-              updateBook(bookId, (old) => ({
-                ...old,
-                metadataUpdateStatus: null,
-                lastMetadataUpdateError: "unknown"
-              }))
+              incrementalPatchBook({
+                doc: bookId,
+                patch: {
+                  metadataUpdateStatus: null,
+                  lastMetadataUpdateError: "unknown"
+                }
+              })
             ).pipe(
               map((_) => {
                 throw e

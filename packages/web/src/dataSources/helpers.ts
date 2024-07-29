@@ -5,8 +5,7 @@ import { plugins } from "../plugins/configure"
 import { useCallback, useMemo } from "react"
 import { useNetworkState } from "react-use"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
-import { AtomicUpdateFunction } from "rxdb"
-import { catchError, EMPTY, from, switchMap, map, of, filter, tap } from "rxjs"
+import { catchError, EMPTY, from, switchMap, map, of, filter } from "rxjs"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { isDefined, useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
@@ -101,11 +100,19 @@ export const useCreateDataSource = () => {
   }
 }
 
+export const useRemoveDataSource = () => {
+  const { db } = useDatabase()
+
+  return useMutation({
+    mutationFn: async ({ id }: { id: string }) =>
+      db?.datasource.findOne({ selector: { _id: id } }).remove()
+  })
+}
 export const useAtomicUpdateDataSource = () => {
   const { db: database } = useDatabase()
 
   const atomicUpdateDataSource = useCallback(
-    (id: string, mutationFunction: AtomicUpdateFunction<DataSourceDocType>) =>
+    (id: string, mutationFunction: any) =>
       of(database).pipe(
         filter(isDefined),
         switchMap((db) =>

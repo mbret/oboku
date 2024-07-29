@@ -1,18 +1,8 @@
-import {
-  ComponentProps,
-  forwardRef,
-  memo,
-  useEffect,
-  useState
-} from "react"
+import { ComponentProps, forwardRef, memo, useEffect, useState } from "react"
 import RcSlider from "rc-slider"
 import "rc-slider/assets/index.css"
 import { readerStateSignal, useCurrentPage, useTotalPage } from "../states"
-import {
-  ComponentsVariants,
-  useTheme,
-  useThemeProps
-} from "@mui/material"
+import { ComponentsVariants, useTheme, useThemeProps } from "@mui/material"
 import { useObserve, useSignalValue } from "reactjrx"
 import { NEVER } from "rxjs"
 

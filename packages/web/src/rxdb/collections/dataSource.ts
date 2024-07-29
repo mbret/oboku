@@ -1,22 +1,14 @@
 import {
   RxDocument,
   RxJsonSchema,
-  RxQuery,
   RxCollection,
-  MigrationStrategies,
-  AtomicUpdateFunction
+  MigrationStrategies
 } from "rxdb"
 import { DataSourceDocType } from "@oboku/shared"
-import { SafeUpdateMongoUpdateSyntax } from "../types"
-import { getReplicationProperties } from "../rxdb-plugins/replication"
+import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
-export type DataSourceDocMethods = {
-  incrementalModify: (
-    mutationFunction: AtomicUpdateFunction<DataSourceDocType>,
-    context?: string | undefined
-  ) => Promise<RxDocument<DataSourceDocType, DataSourceDocMethods>>
-}
+export type DataSourceDocMethods = {}
 
 export type DataSourceDocument = RxDocument<
   DataSourceDocType,
@@ -27,10 +19,6 @@ type DataSourceCollectionMethods = {
   post: (
     json: Omit<DataSourceDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>
   ) => Promise<DataSourceDocument>
-  safeUpdate: (
-    json: SafeUpdateMongoUpdateSyntax<DataSourceDocType>,
-    cb: (dataSource: DataSourceCollection) => RxQuery
-  ) => Promise<DataSourceDocument>
 }
 
 export type DataSourceCollection = RxCollection<
@@ -39,11 +27,7 @@ export type DataSourceCollection = RxCollection<
   DataSourceCollectionMethods
 >
 
-export const collectionDocMethods: DataSourceDocMethods = {
-  incrementalModify: function (this: DataSourceDocument, mutationFunction) {
-    return this.atomicUpdate(mutationFunction)
-  }
-}
+export const collectionDocMethods: DataSourceDocMethods = {}
 
 export const dataSourceSchema: RxJsonSchema<
   Omit<DataSourceDocType, "rx_model" | "_rev" | `rxdbMeta`>
@@ -73,8 +57,5 @@ export const migrationStrategies: MigrationStrategies = {}
 export const dataSourceCollectionMethods: DataSourceCollectionMethods = {
   post: async function (this: DataSourceCollection, json) {
     return this.insert({ _id: generateId(), ...json } as DataSourceDocType)
-  },
-  safeUpdate: async function (this: DataSourceCollection, json, cb) {
-    return cb(this).update(json)
   }
 }

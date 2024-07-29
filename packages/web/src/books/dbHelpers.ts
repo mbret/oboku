@@ -1,42 +1,18 @@
 import { MangoQuery } from "rxdb"
 import { BookDocType } from "@oboku/shared"
-import { DeepReadonlyArray } from "rxdb/dist/types/types"
+import { DeepReadonlyArray, MangoQueryNoLimit } from "rxdb/dist/types/types"
 import { Database } from "../rxdb"
 import { map, of, switchMap } from "rxjs"
 import { intersection } from "lodash"
 
-export const getBooksQueryObj = ({
-  queryObj = {},
-  isNotInterested,
-  ids
+export const observeBook = ({
+  db,
+  queryObj
 }: {
-  queryObj?: MangoQuery<BookDocType>
-  isNotInterested?: "none" | "with" | "only"
-  ids?: DeepReadonlyArray<string>
-} = {}) => {
-  const finalQueryObj = {
-    ...queryObj,
-    selector: {
-      ...queryObj.selector,
-      ...(isNotInterested === "none" && {
-        isNotInterested: {
-          $ne: true
-        }
-      }),
-      ...(isNotInterested === "only" && {
-        isNotInterested: {
-          $eq: true
-        }
-      }),
-      ...(ids && {
-        _id: {
-          $in: ids
-        }
-      })
-    }
-  } satisfies MangoQuery<BookDocType>
-
-  return finalQueryObj
+  db: Database
+  queryObj?: string | MangoQueryNoLimit<BookDocType> | undefined
+}) => {
+  return db.book.findOne(queryObj).$
 }
 
 export const observeBooks = ({
@@ -52,11 +28,27 @@ export const observeBooks = ({
   ids?: DeepReadonlyArray<string>
   includeProtected: boolean
 }) => {
-  const finalQueryObj = getBooksQueryObj({
-    ids,
-    isNotInterested,
-    queryObj
-  })
+  const finalQueryObj: MangoQuery<BookDocType> = {
+    ...queryObj,
+    selector: {
+      ...queryObj.selector,
+      ...(isNotInterested === "none" && {
+        isNotInterested: {
+          $ne: true
+        }
+      }),
+      ...(isNotInterested === "only" && {
+        isNotInterested: {
+          $eq: true
+        }
+      }),
+      ...(ids && {
+        _id: {
+          $in: Array.from(ids)
+        }
+      })
+    }
+  }
 
   const protectedTags = db.tag.find({
     selector: {

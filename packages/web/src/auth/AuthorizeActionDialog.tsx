@@ -14,7 +14,7 @@ import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { signal, useSignalValue } from "reactjrx"
 import { Observable, from, map, mergeMap, of } from "rxjs"
 import { CancelError } from "../common/errors/errors"
-import { getLatestDatabase } from "../rxdb/useCreateDatabase"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getSettings } from "../settings/dbHelpers"
 
 const FORM_ID = "LockActionBehindUserPasswordDialog"

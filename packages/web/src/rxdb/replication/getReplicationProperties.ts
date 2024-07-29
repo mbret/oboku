@@ -3,7 +3,9 @@ export const getReplicationProperties = (name: string) => ({
     type: "string",
     enum: [name],
     default: name,
-    final: true,
-    rx_model: true
+    final: true
+  },
+  rxdbMeta: {
+    type: "object"
   }
 })

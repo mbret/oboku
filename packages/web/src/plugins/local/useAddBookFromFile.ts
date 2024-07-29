@@ -25,7 +25,7 @@ export const useAddBookFromFile = () => {
         })) || {}
 
       if (book) {
-        await downloadFile({ ...book, localFile: file })
+        await downloadFile({ ...book.toJSON(), localFile: file })
       }
     }
   })

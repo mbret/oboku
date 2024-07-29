@@ -4,7 +4,7 @@ import { useDatabase } from "../rxdb"
 import { useMutation } from "reactjrx"
 import { map, mergeMap, switchMap } from "rxjs"
 import { useForeverQuery } from "reactjrx"
-import { getLatestDatabase, latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
 import { Database } from "../rxdb"
 import { DeepReadonlyObject, MangoQuery } from "rxdb"
 

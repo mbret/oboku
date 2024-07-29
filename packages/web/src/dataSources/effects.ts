@@ -8,7 +8,7 @@ import {
   filter
 } from "rxjs"
 import { isDefined, useSubscribeEffect } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { toggleDatasourceProtected$ } from "./triggers"
 import { Report } from "../debug/report.shared"
 
@@ -22,7 +22,7 @@ const useToggleDataSourceProtectedAction = () => {
             filter(isDefined),
             switchMap((doc) =>
               from(
-                doc?.atomicPatch({
+                doc?.incrementalPatch({
                   isProtected: !doc.isProtected
                 })
               )

@@ -4,6 +4,7 @@ import { useCallback } from "react"
 import { Report } from "../debug/report.shared"
 import { from } from "rxjs"
 import { useRefreshBookMetadata } from "../books/useRefreshBookMetadata"
+import { UpdateQuery } from "rxdb"
 
 type EditLinkPayload = Partial<LinkDocType> & Required<Pick<LinkDocType, "_id">>
 
@@ -14,9 +15,9 @@ export const useEditLink = () => {
   return async (data: EditLinkPayload) => {
     const { _id, ...linkDataToUpate } = data
 
-    await db?.link.safeUpdate({ $set: linkDataToUpate }, (collection) =>
-      collection.findOne({ selector: { _id: data._id } })
-    )
+    await db?.link
+      .findOne({ selector: { _id: data._id } })
+      .update({ $set: linkDataToUpate } satisfies UpdateQuery<LinkDocType>)
 
     const completeLink = await db?.link
       .findOne({ selector: { _id: data._id } })
@@ -34,7 +35,7 @@ export const useRemoveDanglingLinks = () => {
   const removeDanglingLinks = useCallback(
     async (bookId: string) => {
       const book = await database?.book
-        .safeFindOne({ selector: { _id: bookId } })
+        .findOne({ selector: { _id: bookId } })
         .exec()
 
       if (book) {

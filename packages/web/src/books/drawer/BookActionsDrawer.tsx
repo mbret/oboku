@@ -16,7 +16,6 @@ import {
 import { useNavigate } from "react-router-dom"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { ROUTES } from "../../constants"
-import { useAtomicUpdateBook } from "../helpers"
 import {
   Drawer,
   Divider,
@@ -26,22 +25,20 @@ import {
 } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
-import { useBook, useIsBookLocal } from "../states"
+import { useBookDoc, useIsBookLocal } from "../states"
 import { Cover } from "../Cover"
 import { ReadingStateState } from "@oboku/shared"
-import { Report } from "../../debug/report.shared"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
 import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
 import { markAsInterested } from "../triggers"
-import {
-  booksDownloadStateSignal,
-  useBookDownloadState
-} from "../../download/states"
+import { useBookDownloadState } from "../../download/states"
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "./useRemoveHandler"
 import { getMetadataFromBook } from "../metadata"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
+import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
+import { useLink } from "../../links/states"
 
 type SignalState = {
   openedWith: undefined | string
@@ -85,12 +82,13 @@ export const BookActionsDrawer = memo(() => {
     actionsBlackList
   } = useSignalValue(bookActionDrawerSignal)
   const navigate = useNavigate()
-  const { data: book } = useBook({ id: bookId })
+  const { data: book } = useBookDoc({ id: bookId })
+  const { data: link } = useLink({ id: book?.links[0] })
   const downloadState = useBookDownloadState(bookId || "-1")
   const { data: isLocal } = useIsBookLocal({ id: bookId })
   const removeDownloadFile = useRemoveDownloadFile()
   const refreshBookMetadata = useRefreshBookMetadata()
-  const [updateBook] = useAtomicUpdateBook()
+  const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
   const classes = useStyles()
   const opened = !!bookId
   const { t } = useTranslation()
@@ -150,14 +148,16 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemButton
                   onClick={() => {
                     handleClose()
-                    updateBook(book._id, (old) => ({
-                      ...old,
-                      readingStateCurrentState: ReadingStateState.NotStarted,
-                      readingStateCurrentBookmarkProgressPercent: 0,
-                      readingStateCurrentBookmarkProgressUpdatedAt:
-                        new Date().toISOString(),
-                      readingStateCurrentBookmarkLocation: null
-                    })).catch(Report.error)
+                    incrementalBookPatch({
+                      doc: book,
+                      patch: {
+                        readingStateCurrentState: ReadingStateState.NotStarted,
+                        readingStateCurrentBookmarkProgressPercent: 0,
+                        readingStateCurrentBookmarkProgressUpdatedAt:
+                          new Date().toISOString(),
+                        readingStateCurrentBookmarkLocation: null
+                      }
+                    })
                   }}
                 >
                   <ListItemIcon>
@@ -171,14 +171,16 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemButton
                   onClick={() => {
                     handleClose()
-                    updateBook(book._id, (old) => ({
-                      ...old,
-                      readingStateCurrentState: ReadingStateState.Finished,
-                      readingStateCurrentBookmarkProgressPercent: 1,
-                      readingStateCurrentBookmarkProgressUpdatedAt:
-                        new Date().toISOString(),
-                      readingStateCurrentBookmarkLocation: null
-                    })).catch(Report.error)
+                    incrementalBookPatch({
+                      doc: book,
+                      patch: {
+                        readingStateCurrentState: ReadingStateState.Finished,
+                        readingStateCurrentBookmarkProgressPercent: 1,
+                        readingStateCurrentBookmarkProgressUpdatedAt:
+                          new Date().toISOString(),
+                        readingStateCurrentBookmarkLocation: null
+                      }
+                    })
                   }}
                 >
                   <ListItemIcon>
@@ -248,6 +250,7 @@ export const BookActionsDrawer = memo(() => {
                 handleClose()
                 refreshBookMetadata(book._id)
               }}
+              disabled={!link}
             >
               <ListItemIcon>
                 <SyncRounded />

@@ -21,7 +21,7 @@ import {
   upsertBookLinkEnd$
 } from "./triggers"
 import { isDefined, useSubscribeEffect } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
 
 const useUpsertBookLinkActionEffect = () => {
@@ -36,7 +36,7 @@ const useUpsertBookLinkActionEffect = () => {
           return from(
             Promise.all([
               database?.link
-                .safeFindOne({
+                .findOne({
                   selector: {
                     resourceId: data.linkResourceId,
                     type: data.linkType,
@@ -44,9 +44,7 @@ const useUpsertBookLinkActionEffect = () => {
                   }
                 })
                 .exec(),
-              database?.book
-                .safeFindOne({ selector: { _id: data.bookId } })
-                .exec()
+              database?.book.findOne({ selector: { _id: data.bookId } }).exec()
             ])
           ).pipe(
             switchMap(([existingLink, book]) => {
@@ -116,7 +114,7 @@ const useUpsertBookLinkActionEffect = () => {
           of(action).pipe(
             withLatestFrom(latestDatabase$),
             mergeMap(([{ id, isNotInterested }, db]) =>
-              from(db.book.safeFindOne({ selector: { _id: id } }).exec()).pipe(
+              from(db.book.findOne({ selector: { _id: id } }).exec()).pipe(
                 filter(isDefined),
                 switchMap((book) =>
                   from(

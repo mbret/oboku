@@ -5,13 +5,13 @@ const noop = () => {}
 
 export const Report = {
   log: (...data: any[]) => {
-    if (import.meta.env.PROD || isDebugEnabled()) {
+    if (import.meta.env.DEV || isDebugEnabled()) {
       // eslint-disable-next-line no-console
       console.log(`[oboku:log]`, ...data)
     }
   },
   info:
-    import.meta.env.PROD || isDebugEnabled()
+    import.meta.env.DEV || isDebugEnabled()
       ? Function.prototype.bind.call(console.info, console, `[oboku:info]`)
       : noop,
   /**

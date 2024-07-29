@@ -1,4 +1,11 @@
-import { useDatabase } from "./RxDbProvider"
+import { UpdateQuery } from "rxdb"
+import { type useDatabase } from "./index"
+import {
+  BookDocType,
+  CollectionDocType,
+  LinkDocType,
+  TagsDocType
+} from "@oboku/shared"
 
 type Database = NonNullable<ReturnType<typeof useDatabase>["db"]>
 
@@ -21,52 +28,48 @@ export const applyHooks = (db: Database) => {
 
     // Remove the book from all collections that are not anymore in this book
     // but that also still reference the book
-    await db.obokucollection.safeUpdate(
-      {
+    await db.obokucollection
+      .find({
+        selector: {
+          books: {
+            $in: [data._id]
+          },
+          _id: {
+            $nin: data.collections
+          }
+        }
+      })
+      .update({
         $pullAll: {
           books: [data._id]
         }
-      },
-      (collection) =>
-        collection.safeFind({
-          selector: {
-            books: {
-              $in: [data._id]
-            },
-            _id: {
-              $nin: data.collections
-            }
-          }
-        })
-    )
+      } satisfies UpdateQuery<CollectionDocType>)
 
     // add the book to any collections that are in this book
     // but does not reference it yet
-    await db.obokucollection.safeUpdate(
-      {
+    await db.obokucollection
+      .find({
+        selector: {
+          // if at least one of the books is data._id it will work.
+          // be careful with $nin
+          books: {
+            $nin: [data._id]
+          },
+          _id: {
+            $in: data.collections
+          }
+        }
+      })
+      .update({
         $push: {
           books: data._id
         }
-      },
-      (collection) =>
-        collection.safeFind({
-          selector: {
-            // if at least one of the books is data._id it will work.
-            // be careful with $nin
-            books: {
-              $nin: [data._id]
-            },
-            _id: {
-              $in: data.collections
-            }
-          }
-        })
-    )
+      } satisfies UpdateQuery<CollectionDocType>)
 
     // @todo bulk
     await Promise.all(
       tagsFromWhichToRemoveBook.map(async (tag) => {
-        await tag.updateSafe({
+        await tag.update({
           $pullAll: {
             books: [data._id]
           }
@@ -94,7 +97,7 @@ export const applyHooks = (db: Database) => {
     // @todo bulk
     await Promise.all(
       tagsFromWhichToAddBook.map(async (tag) => {
-        await tag.updateSafe({
+        await tag.update({
           $push: {
             books: data._id
           }
@@ -108,64 +111,58 @@ export const applyHooks = (db: Database) => {
      * When a book is removed, dettach it from all tags
      * that contains its reference
      */
-    await db.tag.updateSafe(
-      {
+    await db.tag
+      .find({
+        selector: {
+          books: {
+            $in: [data._id]
+          }
+        }
+      })
+      .update({
         $pullAll: {
           books: [data._id]
         }
-      },
-      (collection) =>
-        collection.find({
-          selector: {
-            books: {
-              $in: [data._id]
-            }
-          }
-        })
-    )
+      } satisfies UpdateQuery<TagsDocType>)
 
     // dettach all collections to this book
-    await db.obokucollection.safeUpdate(
-      {
+    await db.obokucollection
+      .find({
+        selector: {
+          books: {
+            $in: [data._id]
+          }
+        }
+      })
+      .update({
         $pullAll: {
           books: [data._id]
         }
-      },
-      (collection) =>
-        collection.find({
-          selector: {
-            books: {
-              $in: [data._id]
-            }
-          }
-        })
-    )
+      } satisfies UpdateQuery<CollectionDocType>)
 
     /**
      * Remove any link attached to that book
      */
-    await db.link.safeFind({ selector: { book: data._id } }).remove()
+    await db.link.find({ selector: { book: data._id } }).remove()
   }, true)
 
   db.book.postInsert(async function (data) {
     /**
      * When a book is added, make sure to attach it to any links
      */
-    await db.link.safeUpdate(
-      {
+    await db.link
+      .find({
+        selector: {
+          _id: {
+            $in: data.links
+          }
+        }
+      })
+      .update({
         $set: {
           book: data._id
         }
-      },
-      (collection) =>
-        collection.safeFind({
-          selector: {
-            _id: {
-              $in: data.links
-            }
-          }
-        })
-    )
+      } satisfies UpdateQuery<LinkDocType>)
   }, true)
 
   db.tag.postRemove(async function (data) {
@@ -182,7 +179,7 @@ export const applyHooks = (db: Database) => {
     // @todo bulk
     await Promise.all(
       booksFromWhichToRemoveTag.map(async (book) => {
-        await book.safeUpdate({
+        await book.update({
           $pullAll: {
             tags: [data._id]
           }
@@ -193,21 +190,19 @@ export const applyHooks = (db: Database) => {
 
   db.obokucollection.postRemove(async function (data) {
     // remove any book that were attached to this collection
-    await db.book.safeUpdate(
-      {
+    await db.book
+      .find({
+        selector: {
+          collections: {
+            $in: [data._id]
+          }
+        }
+      })
+      .update({
         $pullAll: {
           collections: [data._id]
         }
-      },
-      (collection) =>
-        collection.find({
-          selector: {
-            collections: {
-              $in: [data._id]
-            }
-          }
-        })
-    )
+      } satisfies UpdateQuery<BookDocType>)
   }, true)
 
   updateRelationBetweenLinksAndBooksHook(db)
@@ -219,21 +214,19 @@ const updateRelationBetweenLinksAndBooksHook = (db: Database) => {
     const bookId = data.book
     // when a link is added update the book with its id
     if (bookId) {
-      await db.book.safeUpdate(
-        {
+      await db.book
+        .find({
+          selector: {
+            _id: {
+              $in: [bookId]
+            }
+          }
+        })
+        .update({
           $set: {
             links: [data._id]
           }
-        },
-        (collection) =>
-          collection.safeFind({
-            selector: {
-              _id: {
-                $in: [bookId]
-              }
-            }
-          })
-      )
+        } satisfies UpdateQuery<BookDocType>)
     }
   }, EXEC_PARALLEL)
 }

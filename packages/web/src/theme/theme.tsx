@@ -66,6 +66,16 @@ export const theme = createTheme({
         })
       }
     },
+    MuiBottomNavigation: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          borderTopColor: theme.palette.primary.main,
+          borderTopWidth: 1,
+          borderTopStyle: "solid",
+          height: `calc(56px + env(safe-area-inset-bottom))`
+        })
+      }
+    },
     // Name of the component ⚛️
     MuiBottomNavigationAction: {
       styleOverrides: {
@@ -165,6 +175,17 @@ export const eInkTheme = createTheme(
           })
         }
       },
+
+      MuiLink: {
+        defaultProps: {
+          underline: "always"
+        }
+      },
+      MuiButton: {
+        defaultProps: {
+          disableRipple: true
+        }
+      },
       MuiBottomNavigationAction: {
         defaultProps: {
           disableRipple: true,
@@ -184,16 +205,6 @@ export const eInkTheme = createTheme(
               }
             }
           }
-        }
-      },
-      MuiLink: {
-        defaultProps: {
-          underline: "always"
-        }
-      },
-      MuiButton: {
-        defaultProps: {
-          disableRipple: true
         }
       }
     },

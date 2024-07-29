@@ -1,16 +1,8 @@
-import { LinkDocType, SafeMangoQuery } from "@oboku/shared"
-import {
-  AtomicUpdateFunction,
-  RxCollection,
-  RxDocument,
-  RxJsonSchema,
-  RxQuery
-} from "rxdb"
-import { MongoUpdateSyntax } from "../../types"
-import { getReplicationProperties } from "../rxdb-plugins/replication"
-import { SafeUpdateMongoUpdateSyntax } from "../types"
-import { TagsDocument } from "./tags"
+import { LinkDocType } from "@oboku/shared"
+import { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
+import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
+import { conflictHandler } from "../replication/conflictHandler"
 
 export type LinkCollection = RxCollection<
   LinkDocType,
@@ -18,13 +10,7 @@ export type LinkCollection = RxCollection<
   LinkCollectionMethods
 >
 
-type LinkDocMethods = {
-  safeUpdate: (updateObj: MongoUpdateSyntax<LinkDocType>) => Promise<any>
-  incrementalModify: (
-    mutationFunction: AtomicUpdateFunction<LinkDocType>,
-    context?: string | undefined
-  ) => Promise<RxDocument<LinkDocType, LinkDocMethods>>
-}
+type LinkDocMethods = {}
 
 type LinkDocument = RxDocument<LinkDocType, LinkDocMethods>
 
@@ -32,16 +18,6 @@ type LinkCollectionMethods = {
   safeInsert: (
     json: Omit<LinkDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>
   ) => Promise<LinkDocument>
-  safeUpdate: (
-    json: SafeUpdateMongoUpdateSyntax<LinkDocType>,
-    cb: (collection: LinkCollection) => RxQuery
-  ) => Promise<TagsDocument>
-  safeFind: (
-    updateObj: SafeMangoQuery<LinkDocType>
-  ) => RxQuery<LinkDocType, RxDocument<LinkDocType, LinkDocMethods>[]>
-  safeFindOne: (
-    updateObj: SafeMangoQuery<LinkDocType>
-  ) => RxQuery<LinkDocType, RxDocument<LinkDocType, LinkDocMethods> | null>
 }
 
 const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev` | `rxdbMeta`>> = {
@@ -66,27 +42,11 @@ const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev` | `rxdbMeta`>> = {
 
 const linkSchemaMigrationStrategies = {}
 
-const linkDocMethods: LinkDocMethods = {
-  safeUpdate: async function (this: LinkDocument, updateObj) {
-    return this.update(updateObj)
-  },
-  incrementalModify: function (this: LinkDocument, mutationFunction) {
-    return this.atomicUpdate(mutationFunction)
-  }
-}
+const linkDocMethods: LinkDocMethods = {}
 
 const linkCollectionMethods: LinkCollectionMethods = {
   safeInsert: async function (this: LinkCollection, json) {
     return this.insert({ _id: generateId(), ...json } as LinkDocType)
-  },
-  safeUpdate: async function (this: LinkCollection, json, cb) {
-    return cb(this).update(json)
-  },
-  safeFind: function (this: LinkCollection, json) {
-    return this.find(json)
-  },
-  safeFindOne: function (this: LinkCollection, json) {
-    return this.findOne(json)
   }
 }
 
@@ -94,5 +54,6 @@ export const link = {
   schema: linkSchema,
   statics: linkCollectionMethods,
   methods: linkDocMethods,
-  migrationStrategies: linkSchemaMigrationStrategies
+  migrationStrategies: linkSchemaMigrationStrategies,
+  conflictHandler
 }

@@ -1,15 +1,10 @@
-import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
-import { SafeUpdateMongoUpdateSyntax } from "../types"
-import { getReplicationProperties } from "../rxdb-plugins/replication"
+import { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
+import { Database } from "../databases"
+import { getReplicationProperties } from "../replication/getReplicationProperties"
 
 export type SettingsDocument = RxDocument<SettingsDocType>
 
-type SettingsCollectionMethods = {
-  safeUpdate: (
-    json: SafeUpdateMongoUpdateSyntax<SettingsDocType>,
-    cb: (collection: SettingsCollection) => RxQuery
-  ) => Promise<SettingsDocument>
-}
+type SettingsCollectionMethods = {}
 
 export type SettingsDocType = {
   _id: "settings"
@@ -22,14 +17,6 @@ export type SettingsCollection = RxCollection<
   SettingsCollectionMethods
 >
 
-export const settingsCollectionMethods: SettingsCollectionMethods = {
-  safeUpdate: async function (this: SettingsCollection, json, cb) {
-    return cb(this).update(json)
-  }
-}
-
-export const settingsMigrationStrategies = {}
-
 export const settingsSchema: RxJsonSchema<SettingsDocType> = {
   version: 0,
   type: "object",
@@ -38,5 +25,16 @@ export const settingsSchema: RxJsonSchema<SettingsDocType> = {
     _id: { type: "string", final: true, maxLength: 100 },
     contentPassword: { type: ["string", "null"] },
     ...getReplicationProperties(`settings`)
+  }
+}
+
+export const initializeSettings = async (db: Database) => {
+  const settings = await db.settings.findOne().exec()
+
+  if (!settings) {
+    await db.settings.insert({
+      contentPassword: null,
+      _id: "settings"
+    })
   }
 }

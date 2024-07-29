@@ -34,11 +34,3 @@ export const isUploadBookDrawerOpenedStateSignal = signal({
   key: "isUploadBookDrawerOpenedState",
   default: false
 })
-
-export const syncStateSignal = signal({
-  key: "syncState",
-  default: {
-    isSyncing: false,
-    syncRefresh: 0
-  }
-})

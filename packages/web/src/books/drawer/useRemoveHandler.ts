@@ -1,6 +1,6 @@
 import { getBookById, useRemoveBook } from "../helpers"
 import { useMutation } from "reactjrx"
-import { getLatestDatabase } from "../../rxdb/useCreateDatabase"
+import { getLatestDatabase } from "../../rxdb/RxDbProvider"
 import { finalize, from, map, mergeMap, of, tap } from "rxjs"
 import { isRemovableFromDataSource } from "../../links/isRemovableFromDataSource"
 import { getDataSourcePlugin } from "../../dataSources/getDataSourcePlugin"

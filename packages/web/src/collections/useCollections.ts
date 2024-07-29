@@ -1,7 +1,7 @@
 import { CollectionDocType, directives, ReadingStateState } from "@oboku/shared"
 import { useLocalSettings } from "../settings/states"
 import { useForeverQuery, useSignalValue } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap, tap } from "rxjs"
 import { MangoQuery } from "rxdb"
 import { getMetadataFromCollection } from "./getMetadataFromCollection"
@@ -75,22 +75,22 @@ export const useCollections = ({
                 .filter(({ isNotInterested }) => !!isNotInterested)
                 .map(({ _id }) => _id)
 
-              const finalQueryObj = {
+              const finalQueryObj: MangoQuery<CollectionDocType> = {
                 ...queryObj,
                 selector: {
                   ...queryObj?.selector,
                   ...(ids && {
                     _id: {
-                      $in: ids
+                      $in: Array.from(ids)
                     }
                   }),
                   ...(bookIds && {
                     books: {
-                      $in: bookIds
+                      $in: Array.from(bookIds)
                     }
                   })
                 }
-              } satisfies MangoQuery<CollectionDocType>
+              }
 
               return db.collections.obokucollection.find(finalQueryObj).$.pipe(
                 /**

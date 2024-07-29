@@ -1,7 +1,7 @@
 import { crypto } from "@oboku/shared"
 import { Database } from "../rxdb"
 import { useForeverQuery, useMutation } from "reactjrx"
-import { getLatestDatabase, latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
 import { from, map, mergeMap, of, switchMap } from "rxjs"
 import { SettingsDocType } from "../rxdb/collections/settings"
 import { getSettingsDocument } from "./dbHelpers"

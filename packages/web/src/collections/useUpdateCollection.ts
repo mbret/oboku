@@ -15,7 +15,7 @@ export const useUpdateCollection = () => {
         .findOne({ selector: { _id } })
         .exec()
 
-      return item?.atomicUpdate((old) => ({
+      return item?.incrementalModify((old) => ({
         ...old,
         ...rest,
         metadata: old.metadata?.map((entry) =>

@@ -1,7 +1,7 @@
 import { directives } from "@oboku/shared"
 import { useForeverQuery, useSignalValue } from "reactjrx"
 import { switchMap, map } from "rxjs"
-import { latestDatabase$ } from "../rxdb/useCreateDatabase"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { useLocalSettings } from "../settings/states"
 import { observeEmptyCollection } from "./dbHelpers"
 import { getMetadataFromCollection } from "./getMetadataFromCollection"
