@@ -156,33 +156,17 @@ export const ProfileScreen = () => {
       <List
         subheader={<ListSubheader disableSticky>Information</ListSubheader>}
       >
-        <ListItemButton>
+        <ListItemButton target="__blank" href={`https://docs.oboku.me/support`}>
           <ListItemIcon>
             <LaunchRounded />
           </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography variant="body1" color="textSecondary">
-                <Link target="__blank" href="https://docs.oboku.me/support">
-                  Support Page
-                </Link>
-              </Typography>
-            }
-          />
+          <ListItemText primary={`Support Page`} />
         </ListItemButton>
-        <ListItemButton>
+        <ListItemButton target="__blank" href="https://docs.oboku.me">
           <ListItemIcon>
             <LaunchRounded />
           </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography variant="body1" color="textSecondary">
-                <Link target="__blank" href="https://docs.oboku.me">
-                  Documentation Page
-                </Link>{" "}
-              </Typography>
-            }
-          />
+          <ListItemText primary={`Documentation Page`} />
         </ListItemButton>
         <ListItem
           button
