@@ -5,15 +5,18 @@ import Typography from "@mui/material/Typography"
 import IconButton from "@mui/material/IconButton"
 import {
   ArrowBackIosRounded,
+  LockOpenRounded,
   MoreVertRounded,
   Search
 } from "@mui/icons-material"
-import { alpha, InputBase, useTheme } from "@mui/material"
+import { alpha, Box, InputBase, useTheme } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
 import { useSafeGoBack } from "./useSafeGoBack"
 import { ROUTES } from "../constants"
 import { useCSS } from "../common/utils"
 import { useNavigate } from "react-router-dom"
+import { libraryStateSignal } from "../library/states"
+import { useSignalValue } from "reactjrx"
 
 export const TopBarNavigation: FC<{
   title?: string
@@ -22,6 +25,7 @@ export const TopBarNavigation: FC<{
   color?: ComponentProps<typeof AppBar>["color"]
   rightComponent?: React.ReactNode
   hasSearch?: boolean
+  hasLockLibrary?: boolean
   goBackDefaultTo?: string
   onMoreClick?: () => void
 }> = memo(
@@ -33,8 +37,13 @@ export const TopBarNavigation: FC<{
     rightComponent,
     hasSearch = false,
     onMoreClick,
-    goBackDefaultTo
+    goBackDefaultTo,
+    hasLockLibrary
   }) => {
+    const isLibraryUnlocked = useSignalValue(
+      libraryStateSignal,
+      ({ isLibraryUnlocked }) => isLibraryUnlocked
+    )
     const { styles, classes } = useStyles({ color })
     const { goBack } = useSafeGoBack()
     const navigate = useNavigate()
@@ -46,21 +55,21 @@ export const TopBarNavigation: FC<{
             {showBack && (
               <IconButton
                 edge="start"
-                style={styles.menuButton}
                 onClick={() => goBack(goBackDefaultTo)}
                 size="large"
+                color="inherit"
               >
                 <ArrowBackIosRounded />
               </IconButton>
             )}
-            <div style={{ flexGrow: 1 }}>
+            <Box flexGrow={1}>
               {!hasSearch && (
                 <Typography variant="h6" style={{ flexGrow: 1 }}>
                   {title}
                 </Typography>
               )}
               {hasSearch && (
-                <div
+                <Box
                   className={classes.search}
                   onClick={() => {
                     navigate(ROUTES.SEARCH)
@@ -78,20 +87,31 @@ export const TopBarNavigation: FC<{
                     }}
                     inputProps={{ "aria-label": "search" }}
                   />
-                </div>
+                </Box>
               )}
-            </div>
-            {rightComponent}
-            {!rightComponent && !!onMoreClick && (
-              <IconButton
-                edge="end"
-                style={styles.menuButtonEnd}
-                onClick={onMoreClick}
-                size="large"
-              >
-                <MoreVertRounded />
-              </IconButton>
-            )}
+            </Box>
+            <Box display="flex" alignItems="center" ml={2}>
+              {hasLockLibrary && isLibraryUnlocked && (
+                <IconButton
+                  onClick={() => {
+                    libraryStateSignal.setValue((state) => ({
+                      ...state,
+                      isLibraryUnlocked: false
+                    }))
+                  }}
+                  size="large"
+                  color="inherit"
+                >
+                  <LockOpenRounded />
+                </IconButton>
+              )}
+              {rightComponent}
+              {!rightComponent && !!onMoreClick && (
+                <IconButton onClick={onMoreClick} size="large" color="inherit">
+                  <MoreVertRounded />
+                </IconButton>
+              )}
+            </Box>
           </>
         </Toolbar>
       </AppBar>
@@ -132,7 +152,7 @@ const useStyles = ({
   const styles = useCSS(
     () => ({
       menuButton: {
-        marginRight: theme.spacing(1),
+        // marginRight: theme.spacing(1),
         color: color === "transparent" ? "white" : "inherit"
       },
       menuButtonEnd: {

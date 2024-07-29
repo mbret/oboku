@@ -51,6 +51,7 @@ export const UnlockContentsDialog = ({
         ...state,
         isLibraryUnlocked: true
       }))
+
       closeModalWithNavigation()
     } else {
       setError(

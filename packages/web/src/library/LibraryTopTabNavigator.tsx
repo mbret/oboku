@@ -50,6 +50,7 @@ export const LibraryTopTabNavigator = () => {
         title="Library"
         showBack={false}
         hasSearch
+        hasLockLibrary
         rightComponent={TopBarNavigationRightComponent}
       />
       <Tabs

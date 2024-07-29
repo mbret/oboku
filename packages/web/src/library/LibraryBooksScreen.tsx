@@ -10,15 +10,7 @@ import {
   Box
 } from "@mui/material"
 import makeStyles from "@mui/styles/makeStyles"
-import {
-  AppsRounded,
-  TuneRounded,
-  ListRounded,
-  SortRounded,
-  NoEncryptionRounded,
-  BlurOffRounded,
-  FormatListBulletedRounded
-} from "@mui/icons-material"
+import { TuneRounded, SortRounded } from "@mui/icons-material"
 import { LibraryFiltersDrawer } from "./LibraryFiltersDrawer"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import { useCSS, useMeasureElement } from "../common/utils"
@@ -28,7 +20,6 @@ import {
 } from "./states"
 import { UploadBookDrawer } from "./UploadBookDrawer"
 import { SortByDialog } from "../books/bookList/SortByDialog"
-import { useLocalSettings } from "../settings/states"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useBooks } from "./useBooks"
@@ -38,14 +29,12 @@ import { ViewModeIconButton } from "../common/lists/ListActionsToolbar"
 
 export const LibraryBooksScreen = () => {
   const styles = useStyles()
-  const classes = useClasses()
   const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const isUploadBookDrawerOpened = useSignalValue(
     isUploadBookDrawerOpenedStateSignal
   )
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
-  const localSettings = useLocalSettings()
   const library = useSignalValue(libraryStateSignal)
   let numberOfFiltersApplied = 0
 
@@ -138,25 +127,6 @@ export const LibraryBooksScreen = () => {
                 : "Date added"}
           </Button>
         </div>
-        {library.isLibraryUnlocked && (
-          <div className={classes.extraInfo}>
-            {localSettings.unBlurWhenProtectedVisible && (
-              <BlurOffRounded fontSize="small" />
-            )}
-            <IconButton
-              onClick={() => {
-                libraryStateSignal.setValue((state) => ({
-                  ...state,
-                  isLibraryUnlocked: false
-                }))
-              }}
-              color="primary"
-              size="large"
-            >
-              <NoEncryptionRounded fontSize="small" />
-            </IconButton>
-          </div>
-        )}
         <ViewModeIconButton
           viewMode={library.viewMode}
           onViewModeChange={(value) => {
@@ -269,16 +239,3 @@ const useStyles = () => {
     []
   )
 }
-
-const useClasses = makeStyles((theme) => ({
-  extraInfo: {
-    display: "flex",
-    flexFlow: "row",
-    alignItems: "center",
-    marginLeft: theme.spacing(1),
-    overflow: "hidden",
-    "@media (max-width:370px)": {
-      display: "none"
-    }
-  }
-}))
