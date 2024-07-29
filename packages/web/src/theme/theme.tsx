@@ -170,12 +170,15 @@ export const eInkTheme = createTheme(
           elevation: 0
         },
         styleOverrides: {
-          root: ({}) => ({
-            borderBottom: "1px solid black"
-          })
+          root: ({ ownerState }) => {
+            return {
+              ...(ownerState.color !== "transparent" && {
+                borderBottom: "1px solid black"
+              })
+            }
+          }
         }
       },
-
       MuiLink: {
         defaultProps: {
           underline: "always"
