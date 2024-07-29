@@ -47,7 +47,6 @@ import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
 import { Report } from "../debug/report.shared"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { SIGNAL_RESET, useSignalValue, useUnmountObservable } from "reactjrx"
-import { firstTimeExperienceStateSignal } from "../firstTimeExperience/firstTimeExperienceStates"
 import { unlockLibraryDialogSignal } from "../auth/UnlockLibraryDialog"
 import { authStateSignal } from "../auth/authState"
 import { useRemoveAllContents } from "./useRemoveAllContents"
@@ -217,15 +216,6 @@ export const ProfileScreen = () => {
                 to find all useful links
               </Typography>
             }
-          />
-        </ListItem>
-        <ListItem
-          button
-          onClick={() => firstTimeExperienceStateSignal.setValue(SIGNAL_RESET)}
-        >
-          <ListItemText
-            primary="Restart the welcome tour"
-            secondary="This will display all the first time tours overlay again. Useful for a quick reminder on how to use the app"
           />
         </ListItem>
       </List>

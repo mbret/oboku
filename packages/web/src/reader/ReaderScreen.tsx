@@ -1,6 +1,5 @@
 import { FC, useEffect } from "react"
 import { useParams } from "react-router-dom"
-import { AppTourReader } from "../firstTimeExperience/AppTourReader"
 import { useWakeLock } from "../common/useWakeLock"
 import { useFullscreenAutoSwitch } from "./fullScreen"
 import { Reader } from "./Reader"
@@ -34,7 +33,6 @@ export const ReaderScreen: FC<{}> = () => {
   return (
     <>
       {bookId && <Reader bookId={bookId} />}
-      <AppTourReader />
       <MoreDialog />
     </>
   )

@@ -13,11 +13,9 @@ import { useCreateTag } from "../tags/helpers"
 import { TagActionsDrawer } from "../tags/TagActionsDrawer"
 import { useCSS, useMeasureElement } from "../common/utils"
 import { TagList } from "../tags/tagList/TagList"
-import { AppTourFirstTourTagsStep2 } from "../firstTimeExperience/AppTourFirstTourTags"
 import { useTagIds } from "../tags/helpers"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
-import { isTagsTourPossibleStateSignal } from "../firstTimeExperience/firstTimeExperienceStates"
 import { authorizeAction } from "../auth/AuthorizeActionDialog"
 
 export const LibraryTagsScreen = () => {
@@ -28,14 +26,6 @@ export const LibraryTagsScreen = () => {
   const { data: tags = [] } = useTagIds()
   const { mutate: addTag } = useCreateTag()
   const theme = useTheme()
-
-  useEffect(() => {
-    isTagsTourPossibleStateSignal.setValue(true)
-
-    return () => {
-      isTagsTourPossibleStateSignal.setValue(false)
-    }
-  }, [])
 
   const addItemButton = useMemo(
     () => (
@@ -77,7 +67,7 @@ export const LibraryTagsScreen = () => {
           flex: 1
         }}
       >
-        <AppTourFirstTourTagsStep2>{addItemButton}</AppTourFirstTourTagsStep2>
+        {addItemButton}
       </Toolbar>
     ),
     [theme, addItemButton]
