@@ -147,9 +147,9 @@ export const CollectionList: FC<{
               type: "grid"
             })
           }}
-          {...(restoreStateFromFirstValue.current?.type === "grid" && {
-            restoreStateFrom: restoreStateFromFirstValue.current.state
-          })}
+          // {...(restoreStateFromFirstValue.current?.type === "grid" && {
+          //   restoreStateFrom: restoreStateFromFirstValue.current.state
+          // })}
           {...rest}
         />
       ) : (
@@ -162,9 +162,9 @@ export const CollectionList: FC<{
           }}
           data={data}
           itemContent={rowRenderer}
-          {...(restoreStateFromFirstValue.current?.type === "list" && {
-            restoreStateFrom: restoreStateFromFirstValue.current.state
-          })}
+          // {...(restoreStateFromFirstValue.current?.type === "list" && {
+          //   restoreStateFrom: restoreStateFromFirstValue.current.state
+          // })}
           onScroll={() => {
             virtuosoRef.current?.getState((state) => {
               onStateChange?.({
