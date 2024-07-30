@@ -130,6 +130,7 @@ const AddCollectionDialog: FC<{
           label="Name"
           type="text"
           fullWidth
+          margin="normal"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />

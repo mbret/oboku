@@ -27,21 +27,19 @@ export const LibraryTopTabNavigator = () => {
 
   const TopBarNavigationRightComponent = useMemo(
     () => (
-      <div style={{ marginLeft: theme.spacing(2) }}>
-        <IconButton
-          disabled={activeSyncs > 0}
-          onClick={() => {
-            triggerReplication()
-            setSyncActive(true)
-          }}
-          color="inherit"
-          size="large"
-        >
-          <Sync />
-        </IconButton>
-      </div>
+      <IconButton
+        disabled={activeSyncs > 0}
+        onClick={() => {
+          triggerReplication()
+          setSyncActive(true)
+        }}
+        size="large"
+        color="inherit"
+      >
+        <Sync />
+      </IconButton>
     ),
-    [theme, activeSyncs]
+    [activeSyncs]
   )
 
   return (

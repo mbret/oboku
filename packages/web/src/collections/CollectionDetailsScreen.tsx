@@ -14,6 +14,8 @@ import { useCollection } from "./useCollection"
 import { COLLECTION_EMPTY_ID } from "../constants.shared"
 import { useMemo } from "react"
 import { useBooks } from "../books/states"
+import { useLocalSettings } from "../settings/states"
+import { BorderBottom } from "@mui/icons-material"
 
 type ScreenParams = {
   id: string
@@ -40,6 +42,7 @@ export const CollectionDetailsScreen = () => {
   const { data: collection } = useCollection({
     id
   })
+  const { useOptimizedTheme } = useLocalSettings()
 
   const { data: visibleBooks } = useBooks({
     ids: collection?.books ?? []
@@ -59,11 +62,6 @@ export const CollectionDetailsScreen = () => {
     }
   )
 
-  const titleTypoStyle = {
-    color: "white",
-    textShadow: "0px 0px 3px black"
-  }
-
   return (
     <>
       <div
@@ -76,7 +74,10 @@ export const CollectionDetailsScreen = () => {
           title=""
           showBack={true}
           position="absolute"
-          color="transparent"
+          sx={{
+            bgcolor: "transparent",
+            border: 0
+          }}
           {...(id !== COLLECTION_EMPTY_ID && {
             onMoreClick: openActionDrawer
           })}
@@ -97,19 +98,37 @@ export const CollectionDetailsScreen = () => {
               paddingLeft: theme.spacing(2),
               paddingRight: theme.spacing(2),
               width: "100%",
-              backgroundImage: `url(${CollectionBgSvg})`,
+              backgroundImage: useOptimizedTheme
+                ? undefined
+                : `url(${CollectionBgSvg})`,
               backgroundAttachment: "fixed",
-              backgroundSize: "cover"
+              backgroundSize: "cover",
+              ...(useOptimizedTheme && {
+                borderBottom: `1px solid black`
+              })
             }}
           >
             <div>
-              <Typography variant="h5" style={titleTypoStyle}>
+              <Typography
+                variant="h5"
+                style={{
+                  ...(!useOptimizedTheme && {
+                    color: "white",
+                    textShadow: "0px 0px 3px black"
+                  })
+                }}
+              >
                 {collection?.displayableName}
               </Typography>
               <Typography
                 variant="subtitle1"
                 gutterBottom
-                style={titleTypoStyle}
+                style={{
+                  ...(!useOptimizedTheme && {
+                    color: "white",
+                    textShadow: "0px 0px 3px black"
+                  })
+                }}
               >
                 {`${collection?.books?.length || 0} book(s)`}
               </Typography>

@@ -18,27 +18,28 @@ import { useNavigate } from "react-router-dom"
 import { libraryStateSignal } from "../library/states"
 import { useSignalValue } from "reactjrx"
 
-export const TopBarNavigation: FC<{
-  title?: string
-  showBack?: boolean
-  position?: ComponentProps<typeof AppBar>["position"]
-  color?: ComponentProps<typeof AppBar>["color"]
-  rightComponent?: React.ReactNode
-  hasSearch?: boolean
-  hasLockLibrary?: boolean
-  goBackDefaultTo?: string
-  onMoreClick?: () => void
-}> = memo(
+export const TopBarNavigation: FC<
+  {
+    title?: string
+    showBack?: boolean
+    rightComponent?: React.ReactNode
+    hasSearch?: boolean
+    hasLockLibrary?: boolean
+    goBackDefaultTo?: string
+    onMoreClick?: () => void
+  } & ComponentProps<typeof AppBar>
+> = memo(
   ({
     title,
     showBack = true,
     position = "static",
-    color,
     rightComponent,
     hasSearch = false,
     onMoreClick,
     goBackDefaultTo,
-    hasLockLibrary
+    hasLockLibrary,
+    color,
+    ...rest
   }) => {
     const isLibraryUnlocked = useSignalValue(
       libraryStateSignal,
@@ -49,7 +50,7 @@ export const TopBarNavigation: FC<{
     const navigate = useNavigate()
 
     return (
-      <AppBar position={position} elevation={0} color={color}>
+      <AppBar position={position} elevation={0} color={color} {...rest}>
         <Toolbar>
           <>
             {showBack && (
@@ -58,6 +59,7 @@ export const TopBarNavigation: FC<{
                 onClick={() => goBack(goBackDefaultTo)}
                 size="large"
                 color="inherit"
+                sx={{ mr: 1 }}
               >
                 <ArrowBackIosRounded />
               </IconButton>
