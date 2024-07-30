@@ -6,7 +6,9 @@ import React, {
   useRef,
   forwardRef,
   useMemo,
-  Ref
+  Ref,
+  useEffect,
+  useState
 } from "react"
 import { Box, List, Stack } from "@mui/material"
 import { CollectionListItemList } from "./CollectionListItemList"
@@ -19,6 +21,7 @@ import {
   StateSnapshot,
   Virtuoso,
   VirtuosoGrid,
+  VirtuosoGridHandle,
   VirtuosoHandle
 } from "react-virtuoso"
 
@@ -52,7 +55,9 @@ export const CollectionList: FC<{
     ...rest
   } = props
   const virtuosoRef = useRef<VirtuosoHandle>(null)
+  const virtuosoGridRef = useRef<VirtuosoGridHandle>(null)
   const windowSize = useWindowSize()
+  const [isReadyToBeShown, setIsReadyToBeShown] = useState(false)
   const restoreStateFromFirstValue = useRef(restoreStateFrom)
   const dynamicNumberOfItems = Math.max(Math.floor(windowSize.width / 350), 1)
   const itemsPerRow =
@@ -115,6 +120,19 @@ export const CollectionList: FC<{
     [itemsPerRow]
   )
 
+  useEffect(() => {
+    setTimeout(() => {
+      if (restoreStateFromFirstValue.current?.type === "grid") {
+        virtuosoGridRef.current?.scrollTo({
+          behavior: "instant",
+          left: 0,
+          top: restoreStateFromFirstValue.current.state.scrollTop
+        })
+      }
+      setIsReadyToBeShown(true)
+    }, 10)
+  }, [])
+
   if (props.static) {
     return (
       <List disablePadding>
@@ -131,8 +149,11 @@ export const CollectionList: FC<{
     <>
       {itemsPerRow > 1 ? (
         <VirtuosoGrid
-          ref={virtuosoRef}
-          style={style}
+          ref={virtuosoGridRef}
+          style={{
+            ...style,
+            visibility: isReadyToBeShown ? undefined : "hidden"
+          }}
           totalCount={itemsPerRow}
           components={{
             Header: renderHeader,
@@ -141,12 +162,23 @@ export const CollectionList: FC<{
           }}
           data={data}
           itemContent={rowRenderer}
-          stateChanged={(state) => {
+          onScroll={(event) => {
             onStateChange?.({
-              state,
+              state: {
+                gap: { column: 0, row: 0 },
+                item: { height: 0, width: 0 },
+                viewport: { height: 0, width: 0 },
+                scrollTop: (event.target as HTMLDivElement).scrollTop
+              },
               type: "grid"
             })
           }}
+          // stateChanged={(state) => {
+          //   onStateChange?.({
+          //     state,
+          //     type: "grid"
+          //   })
+          // }}
           // {...(restoreStateFromFirstValue.current?.type === "grid" && {
           //   restoreStateFrom: restoreStateFromFirstValue.current.state
           // })}
@@ -155,7 +187,10 @@ export const CollectionList: FC<{
       ) : (
         <Virtuoso
           ref={virtuosoRef}
-          style={style}
+          style={{
+            ...style,
+            visibility: isReadyToBeShown ? undefined : "hidden"
+          }}
           totalCount={itemsPerRow}
           components={{
             Header: renderHeader
@@ -165,10 +200,16 @@ export const CollectionList: FC<{
           // {...(restoreStateFromFirstValue.current?.type === "list" && {
           //   restoreStateFrom: restoreStateFromFirstValue.current.state
           // })}
-          onScroll={() => {
+          {...(restoreStateFromFirstValue.current?.type === "list" && {
+            initialScrollTop: restoreStateFromFirstValue.current.state.scrollTop
+          })}
+          onScroll={(event) => {
             virtuosoRef.current?.getState((state) => {
               onStateChange?.({
-                state,
+                state: {
+                  ranges: [],
+                  scrollTop: (event.target as HTMLDivElement).scrollTop
+                },
                 type: "list"
               })
             })
