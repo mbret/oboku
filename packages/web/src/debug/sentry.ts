@@ -15,7 +15,7 @@ init({
   autoSessionTracking: true,
   integrations: [
     captureConsoleIntegration({
-      levels: ["error", "warn"]
+      levels: ["error"]
     }),
     extraErrorDataIntegration(),
     httpClientIntegration()
