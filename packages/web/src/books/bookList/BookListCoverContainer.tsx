@@ -41,7 +41,7 @@ export const BookListCoverContainer: FC<
   }) => {
     const { data: item } = useBook({ id: bookId })
     const bookDownloadState = useBookDownloadState(bookId)
-    const { data: isBookProtected = true } = useIsBookProtected(item)
+    const { data: isBookProtected } = useIsBookProtected(item)
     const classes = useStyles({ item })
 
     return (

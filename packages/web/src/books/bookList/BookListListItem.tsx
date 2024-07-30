@@ -7,7 +7,6 @@ import {
   CloudDoneRounded,
   CloudDownloadRounded,
   DoneRounded,
-  DownloadDoneRounded,
   DownloadingRounded,
   ErrorRounded,
   LoopRounded,
@@ -17,7 +16,6 @@ import {
   ThumbDownOutlined
 } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
-import { useCSS } from "../../common/utils"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { getMetadataFromBook } from "../metadata"
 import { useBookDownloadState } from "../../download/states"
@@ -53,9 +51,8 @@ export const BookListListItem: FC<
     const theme = useTheme()
     const computedHeight = itemHeight || (size === "small" ? 50 : 100)
     const coverWidth = computedHeight * theme.custom.coverAverageRatio
-    const classes = useStyles({ coverWidth })
     const bookDownloadState = useBookDownloadState(bookId)
-    const { data: isBookProtected = true } = useIsBookProtected(book)
+    const { data: isBookProtected } = useIsBookProtected(book)
 
     const metadata = getMetadataFromBook(book)
 
@@ -77,15 +74,19 @@ export const BookListListItem: FC<
         {withCover && (
           <BookListCoverContainer
             bookId={bookId}
-            style={classes.coverContainer}
+            style={{
+              position: "relative",
+              display: "flex",
+              flex: `0 0 ${coverWidth}px`,
+              minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
+            }}
             withBadges={false}
             withReadingProgressStatus={false}
             mr={1}
           />
         )}
-        <div
+        <Stack
           style={{
-            display: "flex",
             flex: 1,
             minHeight: 0,
             flexDirection: "column",
@@ -153,11 +154,6 @@ export const BookListListItem: FC<
               )}
             </Box>
             <div style={{ display: "flex", flexDirection: "row" }}>
-              {/* {(book?.downloadState === DownloadState.Downloading) && (
-              <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <Chip size="small" label="downloading..." />
-              </div>
-            )} */}
               {book?.metadataUpdateStatus === "fetching" && (
                 <div
                   style={{
@@ -192,7 +188,7 @@ export const BookListListItem: FC<
                 )}
             </div>
           </Box>
-        </div>
+        </Stack>
         {withDrawerActions && (
           <Stack
             justifyContent="center"
@@ -215,19 +211,3 @@ export const BookListListItem: FC<
     )
   }
 )
-
-const useStyles = ({ coverWidth }: { coverWidth: number }) => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      coverContainer: {
-        position: "relative",
-        display: "flex",
-        flex: `0 0 ${coverWidth}px`,
-        minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
-      }
-    }),
-    [theme, coverWidth]
-  )
-}
