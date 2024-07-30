@@ -9,14 +9,14 @@ import {
   Toolbar,
   useTheme
 } from "@mui/material"
-import { useCreateTag } from "../tags/helpers"
-import { TagActionsDrawer } from "../tags/TagActionsDrawer"
-import { useCSS, useMeasureElement } from "../common/utils"
-import { TagList } from "../tags/tagList/TagList"
-import { useTagIds } from "../tags/helpers"
+import { useCreateTag } from "../../tags/helpers"
+import { TagActionsDrawer } from "../../tags/TagActionsDrawer"
+import { useCSS } from "../../common/utils"
+import { TagList } from "../../tags/tagList/TagList"
+import { useTagIds } from "../../tags/helpers"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
-import { errorToHelperText } from "../common/forms/errorToHelperText"
-import { authorizeAction } from "../auth/AuthorizeActionDialog"
+import { errorToHelperText } from "../../common/forms/errorToHelperText"
+import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 
 export const LibraryTagsScreen = () => {
   const classes = useStyles()
@@ -43,21 +43,6 @@ export const LibraryTagsScreen = () => {
     [setIsAddTagDialogOpened]
   )
 
-  const measurableListHeader = useMemo(
-    () => (
-      <Toolbar
-        style={{
-          paddingLeft: theme.spacing(2),
-          paddingRight: theme.spacing(2),
-          flex: 1
-        }}
-      >
-        {addItemButton}
-      </Toolbar>
-    ),
-    [theme, addItemButton]
-  )
-
   const listHeader = useMemo(
     () => (
       <Toolbar
@@ -75,18 +60,13 @@ export const LibraryTagsScreen = () => {
 
   const listRenderHeader = useCallback(() => listHeader, [listHeader])
 
-  const [listHeaderDimTracker, { height: listHeaderHeight }] =
-    useMeasureElement(measurableListHeader)
-
   return (
     <div style={classes.container}>
-      {listHeaderDimTracker}
       <TagList
         style={{
           height: "100%"
         }}
         data={tags}
-        headerHeight={listHeaderHeight}
         renderHeader={listRenderHeader}
         onItemClick={(tag) => {
           const action = () => setIsTagActionsDrawerOpenedWith(tag?._id)

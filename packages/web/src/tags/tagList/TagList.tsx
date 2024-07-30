@@ -1,52 +1,34 @@
-import React, { useCallback, FC, useMemo, memo } from "react"
-import { useTheme } from "@mui/material"
-import { useCSS } from "../../common/utils"
-import { ReactWindowList } from "../../common/lists/ReactWindowList"
+import React, { useCallback, memo, ComponentProps } from "react"
 import { TagListItemList } from "./TagListItemList"
+import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
-export const TagList: FC<{
-  renderHeader?: () => React.ReactNode
-  headerHeight?: number
-  style?: React.CSSProperties
-  data: string[]
-  onItemClick?: (tag: { _id: string; isProtected: boolean }) => void
-}> = memo((props) => {
-  const { renderHeader, headerHeight, style, data, onItemClick } = props
-  const classes = useStyle()
+const itemStyle = { height: 60 }
 
-  const rowRenderer = useCallback(
-    (item: string) => <TagListItemList id={item} onItemClick={onItemClick} />,
-    [onItemClick]
-  )
+export const TagList = memo(
+  (
+    props: {
+      renderHeader?: () => React.ReactNode
+      style?: React.CSSProperties
+      data: string[]
+      onItemClick?: (tag: { _id: string; isProtected: boolean }) => void
+    } & Pick<
+      ComponentProps<typeof VirtuosoList>,
+      "onStateChange" | "restoreStateFrom" | "data" | "style" | "renderHeader"
+    >
+  ) => {
+    const { onItemClick, ...rest } = props
 
-  const containerStyle = useMemo(
-    () => ({ ...classes.container, ...style }),
-    [style, classes]
-  )
+    const rowRenderer = useCallback(
+      (_: number, item: string) => (
+        <TagListItemList
+          id={item}
+          onItemClick={onItemClick}
+          style={itemStyle}
+        />
+      ),
+      [onItemClick]
+    )
 
-  return (
-    <div style={containerStyle}>
-      <ReactWindowList
-        data={data}
-        rowRenderer={rowRenderer}
-        itemsPerRow={1}
-        headerHeight={headerHeight}
-        renderHeader={renderHeader}
-        itemHeight={60}
-      />
-    </div>
-  )
-})
-
-const useStyle = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        display: "flex"
-      }
-    }),
-    [theme]
-  )
-}
+    return <VirtuosoList rowRenderer={rowRenderer} itemsPerRow={1} {...rest} />
+  }
+)
