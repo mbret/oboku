@@ -37,12 +37,15 @@ import {
 } from "./collections/settings"
 import { conflictHandler } from "./replication/conflictHandler"
 import { RxDBCleanupPlugin } from "rxdb/plugins/cleanup"
+import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
 
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBQueryBuilderPlugin)
 addRxPlugin(RxDBUpdatePlugin)
 addRxPlugin(RxDBMigrationPlugin)
 addRxPlugin(RxDBCleanupPlugin)
+// used by RxDBCleanupPlugin
+addRxPlugin(RxDBLeaderElectionPlugin)
 
 if (import.meta.env.DEV) {
   disableWarnings()
