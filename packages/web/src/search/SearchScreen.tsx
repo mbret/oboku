@@ -110,7 +110,7 @@ export const SearchScreen = () => {
     <div style={styles.container}>
       <TopBarNavigation
         showBack
-        rightComponent={
+        middleComponent={
           <form style={styles.search} autoComplete="off" onSubmit={onSubmit}>
             <InputBase
               placeholder="Alice in wonderland, myTag, ..."

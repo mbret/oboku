@@ -23,6 +23,7 @@ export const TopBarNavigation: FC<
     title?: string
     showBack?: boolean
     rightComponent?: React.ReactNode
+    middleComponent?: React.ReactNode
     hasSearch?: boolean
     hasLockLibrary?: boolean
     goBackDefaultTo?: string
@@ -34,6 +35,7 @@ export const TopBarNavigation: FC<
     showBack = true,
     position = "static",
     rightComponent,
+    middleComponent,
     hasSearch = false,
     onMoreClick,
     goBackDefaultTo,
@@ -65,7 +67,7 @@ export const TopBarNavigation: FC<
               </IconButton>
             )}
             <Box flexGrow={1}>
-              {!hasSearch && (
+              {!hasSearch && !!title && (
                 <Typography variant="h6" style={{ flexGrow: 1 }}>
                   {title}
                 </Typography>
@@ -91,6 +93,7 @@ export const TopBarNavigation: FC<
                   />
                 </Box>
               )}
+              {middleComponent}
             </Box>
             <Box display="flex" alignItems="center" ml={2}>
               {hasLockLibrary && isLibraryUnlocked && (
