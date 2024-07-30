@@ -9,6 +9,7 @@
     "@mui/lab": "^5.0.0-alpha.121",
     "@mui/material": "^5.15.21",
     "@mui/styles": "^5.15.21",
+    "react-virtuoso": "^4.7.13",
     "@oboku/shared": "0.8.0",
     "@prose-reader/core": "1.66.0",
     "@prose-reader/enhancer-hammer-gesture": "1.66.0",

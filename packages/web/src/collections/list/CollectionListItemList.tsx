@@ -34,7 +34,7 @@ export const CollectionListItemList: FC<
     onItemClick?: (tag: DeepReadonlyObject<CollectionDocType>) => void
     viewMode?: "container" | "text"
   } & ListItemProps
-> = memo(({ id, onItemClick }) => {
+> = memo(({ id, onItemClick, viewMode, ...rest }) => {
   const theme = useTheme()
   const { data: item } = useCollection({
     id
@@ -45,6 +45,7 @@ export const CollectionListItemList: FC<
     <ListItem
       onClick={() => item && onItemClick && onItemClick(item)}
       disablePadding
+      {...rest}
     >
       <ListItemButton
         disableGutters
@@ -60,7 +61,7 @@ export const CollectionListItemList: FC<
         <Stack
           sx={{
             bgcolor: "grey.200",
-            height: `100%`,
+            flex: 1,
             borderRadius: 2,
             overflow: "hidden",
             position: "relative",
@@ -131,7 +132,7 @@ export const CollectionListItemList: FC<
           })}
         >
           <ListItemText
-            primary={item?.displayableName}
+            primary={item?.displayableName ?? `\u00a0`}
             secondary={`${item?.books?.length || 0} book(s)`}
             primaryTypographyProps={{
               overflow: "hidden",

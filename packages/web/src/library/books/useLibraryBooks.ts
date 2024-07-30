@@ -1,11 +1,11 @@
 import { useRef } from "react"
-import { useBooksSortedBy } from "../books/helpers"
-import { useBooksAsArrayState } from "../books/states"
-import { DownloadState, booksDownloadStateSignal } from "../download/states"
+import { useBooksSortedBy } from "../../books/helpers"
+import { useBooksAsArrayState } from "../../books/states"
+import { DownloadState, booksDownloadStateSignal } from "../../download/states"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "./states"
+import { libraryStateSignal } from "../states"
 
-export const useBooks = () => {
+export const useLibraryBooks = () => {
   const results = useRef<string[]>([])
   const library = useSignalValue(libraryStateSignal)
   const filteredTags = library.tags

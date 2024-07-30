@@ -6,7 +6,7 @@ import { collectionsListSignal } from "./state"
 import { useCollection } from "../../collections/useCollection"
 import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 
-export const useShelves = () => {
+export const useLibraryShelves = () => {
   const { showNotInterestedCollections } = useSignalValue(
     libraryStateSignal,
     ({ showNotInterestedCollections }) => ({ showNotInterestedCollections })

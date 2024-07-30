@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react"
-import { BookList } from "../books/bookList/BookList"
+import { BookList } from "../../books/bookList/BookList"
 import {
   Button,
   Toolbar,
@@ -9,23 +9,22 @@ import {
   useTheme,
   Box
 } from "@mui/material"
-import makeStyles from "@mui/styles/makeStyles"
 import { TuneRounded, SortRounded } from "@mui/icons-material"
-import { LibraryFiltersDrawer } from "./LibraryFiltersDrawer"
-import EmptyLibraryAsset from "../assets/empty-library.svg"
-import { useCSS, useMeasureElement } from "../common/utils"
+import { LibraryFiltersDrawer } from "../LibraryFiltersDrawer"
+import EmptyLibraryAsset from "../../assets/empty-library.svg"
+import { useCSS, useMeasureElement } from "../../common/utils"
 import {
   libraryStateSignal,
   isUploadBookDrawerOpenedStateSignal
-} from "./states"
-import { UploadBookDrawer } from "./UploadBookDrawer"
-import { SortByDialog } from "../books/bookList/SortByDialog"
+} from "../states"
+import { UploadBookDrawer } from "../UploadBookDrawer"
+import { SortByDialog } from "../../books/bookList/SortByDialog"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { useBooks } from "./useBooks"
+import { useLibraryBooks } from "./useLibraryBooks"
 import { useSignalValue } from "reactjrx"
-import { isUploadBookFromDataSourceDialogOpenedSignal } from "../upload/state"
-import { ViewModeIconButton } from "../common/lists/ListActionsToolbar"
+import { isUploadBookFromDataSourceDialogOpenedSignal } from "../../upload/state"
+import { ViewModeIconButton } from "../../common/lists/ListActionsToolbar"
 
 export const LibraryBooksScreen = () => {
   const styles = useStyles()
@@ -43,7 +42,7 @@ export const LibraryBooksScreen = () => {
   if (library.downloadState !== undefined) numberOfFiltersApplied++
   if (library.isNotInterested === "only") numberOfFiltersApplied++
 
-  const books = useBooks()
+  const books = useLibraryBooks()
   const { t } = useTranslation()
 
   const addBookButton = useMemo(

@@ -13,8 +13,6 @@ import {
   VariableSizeList
 } from "react-window"
 import AutoSizer from "react-virtualized-auto-sizer"
-import { useCSS } from "../utils"
-import { useTheme } from "@mui/material"
 
 export const ReactWindowList: FC<{
   rowRenderer: (item: any, rowIndex: number, isLast: boolean) => React.ReactNode
