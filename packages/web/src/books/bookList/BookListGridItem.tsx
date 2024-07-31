@@ -1,4 +1,4 @@
-import { FC, memo } from "react"
+import { ComponentProps, FC, memo } from "react"
 import { Box, Typography, styled, useTheme } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
@@ -8,9 +8,8 @@ import { BookListCoverContainer } from "./BookListCoverContainer"
 import { useCSS } from "../../common/utils"
 import { getMetadataFromBook } from "../metadata"
 
-const ContainerBox = styled("div")`
+const ContainerBox = styled(Box)`
   cursor: pointer;
-  height: 100%;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -18,10 +17,12 @@ const ContainerBox = styled("div")`
   -webkit-tap-highlight-color: transparent;
 `
 
-export const BookListGridItem: FC<{
-  bookId: string
-  onItemClick?: (id: string) => void
-}> = memo(({ bookId, onItemClick }) => {
+export const BookListGridItem: FC<
+  {
+    bookId: string
+    onItemClick?: (id: string) => void
+  } & ComponentProps<typeof ContainerBox>
+> = memo(({ bookId, onItemClick, ...rest }) => {
   const { data: item } = useBook({
     id: bookId
   })
@@ -37,6 +38,7 @@ export const BookListGridItem: FC<{
         if (onItemClick) return onItemClick(bookId)
         return onDefaultItemClick(bookId)
       }}
+      {...rest}
     >
       <BookListCoverContainer
         bookId={bookId}

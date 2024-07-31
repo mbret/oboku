@@ -10,7 +10,7 @@ import {
 import { SortByDialog } from "../../books/bookList/SortByDialog"
 
 export type ListActionSorting = ComponentProps<typeof SortByDialog>["value"]
-export type ListActionViewMode = "grid" | "list" | "compact"
+export type ListActionViewMode = "grid" | "list" | "compact" | "horizontal"
 
 export const ViewModeIconButton = ({
   viewMode,

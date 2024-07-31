@@ -7,7 +7,8 @@ import {
   Badge,
   Typography,
   useTheme,
-  Box
+  Box,
+  Stack
 } from "@mui/material"
 import { TuneRounded, SortRounded } from "@mui/icons-material"
 import { LibraryFiltersDrawer } from "../LibraryFiltersDrawer"
@@ -61,30 +62,16 @@ export const LibraryBooksScreen = () => {
   )
 
   const listHeader = useMemo(
-    () => (
-      <Toolbar
-        style={{
-          paddingLeft: theme.spacing(1),
-          paddingRight: theme.spacing(1),
-          flex: 1
-        }}
-      >
-        {addBookButton}
-      </Toolbar>
-    ),
-    [theme, addBookButton]
+    () => <Toolbar>{addBookButton}</Toolbar>,
+    [addBookButton]
   )
 
   const bookListRenderHeader = useCallback(() => listHeader, [listHeader])
-
-  const [listHeaderDimTracker, { height: listHeaderHeight }] =
-    useMeasureElement(listHeader)
 
   useEffect(() => () => isUploadBookDrawerOpenedStateSignal.setValue(false), [])
 
   return (
     <div style={styles.container}>
-      {listHeaderDimTracker}
       <Toolbar
         style={{
           borderBottom: `1px solid ${theme.palette.grey[200]}`,
@@ -136,14 +123,17 @@ export const LibraryBooksScreen = () => {
           }}
         />
       </Toolbar>
-      <Box
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          height: "100%",
-          flex: 1,
-          overflow: "scroll"
-        }}
+      <Stack
+        flex={1}
+        style={
+          {
+            // display: "flex",
+            // flexDirection: "column",
+            // height: "100%",
+            // flex: 1,
+            // overflow: "scroll"
+          }
+        }
       >
         {books.length === 0 && (
           <div
@@ -191,10 +181,10 @@ export const LibraryBooksScreen = () => {
           <BookList
             viewMode={library.viewMode}
             sorting={library.sorting}
-            headerHeight={listHeaderHeight}
             data={books}
             style={styles.bookList}
             renderHeader={bookListRenderHeader}
+            restoreScrollId="libraryBookList"
           />
         )}
         <SortByDialog
@@ -216,7 +206,7 @@ export const LibraryBooksScreen = () => {
             isUploadBookFromDataSourceDialogOpenedSignal.setValue(type)
           }}
         />
-      </Box>
+      </Stack>
     </div>
   )
 }

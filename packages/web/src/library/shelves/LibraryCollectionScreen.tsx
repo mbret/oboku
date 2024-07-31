@@ -75,6 +75,7 @@ export const LibraryCollectionScreen = () => {
           viewMode={viewMode}
           onStateChange={libraryCollectionScreenPreviousScrollState.setValue}
           restoreStateFrom={libraryCollectionScreenPreviousScroll}
+          restoreScrollId="libraryShelves"
         />
       )}
       <AddCollectionDialog

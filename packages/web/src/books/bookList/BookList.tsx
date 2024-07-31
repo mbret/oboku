@@ -1,143 +1,171 @@
-import React, { useCallback, FC, memo, ReactNode } from "react"
-import { Box, useTheme } from "@mui/material"
+import React, { useCallback, FC, memo, ReactNode, ComponentProps } from "react"
+import { Box, BoxProps, Stack, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { BookListGridItem } from "./BookListGridItem"
 import { LibrarySorting } from "../../library/states"
 import { BookListListItem } from "./BookListListItem"
-import { ReactWindowList } from "../../common/lists/ReactWindowList"
 import { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 import { BookListCompactItem } from "./BookListCompactItem"
 import { useListItemHeight } from "./useListItemHeight"
+import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
 const ItemListContainer = ({
   children,
   isLast,
-  borders = false
+  borders = false,
+  ...rest
 }: {
   children: ReactNode
   isLast: boolean
   borders?: boolean
-}) => (
+} & BoxProps) => (
   <Box
     style={{
       flex: 1,
       alignItems: "center",
-      display: "flex",
-      height: "100%"
+      display: "flex"
     }}
     {...(!isLast &&
       borders && {
         borderBottom: "1px solid",
         borderColor: "grey.200"
       })}
+    {...rest}
   >
     {children}
   </Box>
 )
 
-export const BookList: FC<{
-  viewMode?: ListActionViewMode
-  renderHeader?: () => React.ReactNode
-  headerHeight?: number
-  sorting?: LibrarySorting
-  isHorizontal?: boolean
-  style?: React.CSSProperties
-  itemWidth?: number
-  data: string[]
-  density?: "dense" | "large"
-  onItemClick?: (id: string) => void
-  withBookActions?: boolean
-  static?: boolean
-}> = memo((props) => {
-  const {
-    viewMode = "grid",
-    renderHeader,
-    headerHeight,
-    density = "large",
-    isHorizontal = false,
-    style,
-    data,
-    itemWidth,
-    onItemClick,
-    withBookActions
-  } = props
-  const windowSize = useWindowSize()
-  const theme = useTheme()
-  const dynamicNumberOfItems = Math.round(windowSize.width / 200)
-  const itemsPerRow =
-    viewMode === "grid" && !isHorizontal
-      ? dynamicNumberOfItems > 0
-        ? dynamicNumberOfItems
-        : dynamicNumberOfItems
-      : 1
-  const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
-  const { itemHeight, itemMargin } = useListItemHeight({
-    density,
-    viewMode
-  })
+export const BookList = memo(
+  (
+    props: {
+      viewMode?: ListActionViewMode
+      sorting?: LibrarySorting
+      isHorizontal?: boolean
+      itemWidth?: number
+      density?: "dense" | "large"
+      onItemClick?: (id: string) => void
+      withBookActions?: boolean
+      static?: boolean
+    } & ComponentProps<typeof VirtuosoList>
+  ) => {
+    const {
+      viewMode = "grid",
+      density = "large",
+      isHorizontal = false,
+      style,
+      data,
+      itemWidth,
+      onItemClick,
+      withBookActions,
+      static: isStatic,
+      ...rest
+    } = props
+    const windowSize = useWindowSize()
+    const theme = useTheme()
+    const dynamicNumberOfItems = Math.round(windowSize.width / 200)
+    const itemsPerRow =
+      viewMode === "grid" && !isHorizontal
+        ? dynamicNumberOfItems > 0
+          ? dynamicNumberOfItems
+          : dynamicNumberOfItems
+        : 1
+    const adjustedRatioWhichConsiderBottom =
+      theme.custom.coverAverageRatio - 0.1
+    const { itemHeight, itemMargin } = useListItemHeight({
+      density,
+      viewMode
+    })
+    const computedItemWidth = itemWidth
+      ? itemWidth
+      : Math.floor(windowSize.width / itemsPerRow)
+    const computedItemHeight =
+      itemHeight ||
+      Math.floor(computedItemWidth / adjustedRatioWhichConsiderBottom)
 
-  // const rowBorderColor = theme.palette.grey[100]
+    const rowRenderer = useCallback(
+      (index: number, item: string, { size }: { size: number }) => {
+        const isLast = index === size - 1
 
-  const rowRenderer = useCallback(
-    (item: string, _: number, isLast: boolean) => {
-      return viewMode === "grid" ? (
-        <BookListGridItem bookId={item} />
-      ) : viewMode === "list" ? (
-        <ItemListContainer isLast={isLast}>
-          <BookListListItem
+        return viewMode === "grid" ? (
+          <BookListGridItem
             bookId={item}
-            itemHeight={(itemHeight || 0) - itemMargin}
-            onItemClick={onItemClick}
-            withDrawerActions={withBookActions}
-            pl={1}
+            style={{
+              height: computedItemHeight,
+              width: "100%"
+            }}
           />
-        </ItemListContainer>
-      ) : (
-        <ItemListContainer isLast={isLast} borders>
-          <BookListCompactItem
-            bookId={item}
-            itemHeight={(itemHeight || 0) - itemMargin}
-            onItemClick={onItemClick}
-            withDrawerActions={withBookActions}
-            pl={1}
-          />
-        </ItemListContainer>
-      )
-    },
-    [viewMode, itemHeight, itemMargin, onItemClick, withBookActions]
-  )
-
-  if (props.static) {
-    return (
-      <Box
-        style={style}
-        px={isHorizontal ? 0 : 1}
-        display="flex"
-        flexDirection="column"
-      >
-        {data.map((item, index) => (
-          <Box key={item} height={itemHeight}>
-            {rowRenderer(item, index, index === data.length - 1)}
-          </Box>
-        ))}
-      </Box>
+        ) : viewMode === "list" ? (
+          <ItemListContainer isLast={isLast} height={itemHeight}>
+            <BookListListItem
+              bookId={item}
+              itemHeight={(itemHeight || 0) - itemMargin}
+              onItemClick={onItemClick}
+              withDrawerActions={withBookActions}
+              pl={1}
+            />
+          </ItemListContainer>
+        ) : (
+          <ItemListContainer isLast={isLast} borders height={itemHeight}>
+            <BookListCompactItem
+              bookId={item}
+              itemHeight={(itemHeight || 0) - itemMargin}
+              onItemClick={onItemClick}
+              withDrawerActions={withBookActions}
+              pl={1}
+            />
+          </ItemListContainer>
+        )
+      },
+      [
+        viewMode,
+        itemHeight,
+        itemMargin,
+        onItemClick,
+        withBookActions,
+        computedItemHeight
+      ]
     )
-  }
 
-  return (
-    <Box style={style} display="flex">
-      <ReactWindowList
-        data={data}
-        rowRenderer={rowRenderer}
-        itemsPerRow={itemsPerRow}
-        preferredRatio={adjustedRatioWhichConsiderBottom}
-        headerHeight={headerHeight}
-        renderHeader={renderHeader}
-        layout={isHorizontal ? "horizontal" : "vertical"}
-        itemWidth={itemWidth}
-        // only used when list layout
-        itemHeight={itemHeight}
-      />
-    </Box>
-  )
-})
+    if (isStatic) {
+      return (
+        <Box
+          style={style}
+          px={isHorizontal ? 0 : 1}
+          display="flex"
+          flexDirection="column"
+        >
+          {data?.map((item, index) => (
+            <Box key={item} height={itemHeight}>
+              {rowRenderer(index, item, { size: data.length })}
+            </Box>
+          ))}
+        </Box>
+      )
+    }
+
+    return (
+      <Stack style={style}>
+        <VirtuosoList
+          data={data}
+          rowRenderer={rowRenderer}
+          itemsPerRow={itemsPerRow}
+          // layout={isHorizontal ? "horizontal" : "vertical"}
+          {...rest}
+        />
+      </Stack>
+    )
+
+    // return (
+    //   <Stack flex={1}>
+    //     <VirtualizedList
+    //       data={data}
+    //       rowRenderer={rowRenderer}
+    //       itemsPerRow={itemsPerRow}
+    //       style={style}
+    //       {...rest}
+    //     />
+    //   </Stack>
+    // )
+  }
+)

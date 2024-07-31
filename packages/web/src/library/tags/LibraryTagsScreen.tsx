@@ -67,6 +67,7 @@ export const LibraryTagsScreen = () => {
           height: "100%"
         }}
         data={tags}
+        restoreScrollId="libraryTagList"
         renderHeader={listRenderHeader}
         onItemClick={(tag) => {
           const action = () => setIsTagActionsDrawerOpenedWith(tag?._id)

@@ -1,5 +1,5 @@
 import { useCallback, FC, memo, ComponentProps, useMemo } from "react"
-import { Box, List, Stack } from "@mui/material"
+import { List, Stack } from "@mui/material"
 import { CollectionListItemList } from "./CollectionListItemList"
 import { CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
@@ -13,10 +13,7 @@ export const CollectionList: FC<
     viewMode?: ListActionViewMode
     itemMode?: ComponentProps<typeof CollectionListItemList>["viewMode"]
     static?: boolean
-  } & Pick<
-    ComponentProps<typeof VirtuosoList>,
-    "onStateChange" | "restoreStateFrom" | "data" | "style" | "renderHeader"
-  >
+  } & ComponentProps<typeof VirtuosoList>
 > = memo(({ itemMode, ...props }) => {
   const { viewMode, data, onItemClick, static: isStatic, ...rest } = props
   const windowSize = useWindowSize()
@@ -52,7 +49,7 @@ export const CollectionList: FC<
   if (isStatic) {
     return (
       <List disablePadding>
-        {data.map((item, index) => (
+        {data?.map((item, index) => (
           <Stack height={itemHeight} key={item}>
             {rowRenderer(index, item)}
           </Stack>
@@ -69,4 +66,13 @@ export const CollectionList: FC<
       {...rest}
     />
   )
+
+  // return (
+  //   <VirtualizedList
+  //     data={data}
+  //     itemsPerRow={itemsPerRow}
+  //     rowRenderer={rowRenderer}
+  //     {...rest}
+  //   />
+  // )
 })
