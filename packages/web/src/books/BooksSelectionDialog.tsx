@@ -15,10 +15,8 @@ export const BooksSelectionDialog = memo(
     onClose: () => void
     open: boolean
   } & ComponentProps<typeof SelectableBookList>) => {
-    const numberOfItemsSelected = data.reduce(
-      (acc, item) => acc + (selected[item] ? 1 : 0),
-      0
-    )
+    const numberOfItemsSelected =
+      data?.reduce((acc, item) => acc + (selected[item] ? 1 : 0), 0) ?? 0
 
     return (
       <Dialog open={open} onClose={onClose} fullScreen>

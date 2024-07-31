@@ -7,7 +7,6 @@ import { VirtuosoList } from "../../common/lists/VirtuosoList"
 export const SelectableBookList = memo(
   (
     props: {
-      data: string[]
       selected: Record<string, boolean>
       onItemClick: (id: { id: string; selected: boolean }) => void
     } & ComponentProps<typeof VirtuosoList>

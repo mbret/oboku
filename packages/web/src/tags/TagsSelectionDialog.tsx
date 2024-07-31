@@ -1,19 +1,11 @@
-import { FC, useMemo } from "react"
+import { ComponentProps, useMemo } from "react"
 import { Dialog, DialogContent, useTheme } from "@mui/material"
 import { DialogTopBar } from "../navigation/DialogTopBar"
 import { useCSS } from "../common/utils"
 import { SelectableTagList } from "./tagList/SelectableTagList"
 import { SelectionDialogBottom } from "../common/SelectionDialogBottom"
 
-export const TagsSelectionDialog: FC<{
-  onItemClick: (id: { id: string; selected: boolean }) => void
-  data: string[]
-  onClose: () => void
-  selected: (item: string) => boolean
-  open: boolean
-  title?: string
-  hasBackNavigation?: boolean
-}> = ({
+export const TagsSelectionDialog = ({
   onItemClick,
   data,
   onClose,
@@ -21,20 +13,28 @@ export const TagsSelectionDialog: FC<{
   title = `Tags selection`,
   selected,
   hasBackNavigation
-}) => {
+}: {
+  onClose: () => void
+  selected: (item: string) => boolean
+  open: boolean
+  title?: string
+  hasBackNavigation?: boolean
+} & ComponentProps<typeof SelectableTagList>) => {
   const styles = useStyles()
-  const normalizedData = useMemo(
+  const selectedData = useMemo(
     () =>
-      data.map((item) => ({
-        id: item,
-        selected: selected(item)
-      })),
+      data?.reduce(
+        (acc, item) => ({
+          ...acc,
+          [item]: selected(item)
+        }),
+        {} as Record<string, boolean>
+      ) ?? {},
     [data, selected]
   )
-  const numberOfItemsSelected = normalizedData.reduce(
-    (acc, { selected }) => acc + (selected ? 1 : 0),
-    0
-  )
+
+  const numberOfItemsSelected =
+    data?.reduce((acc, item) => acc + (selected(item) ? 1 : 0), 0) ?? 0
 
   return (
     <Dialog open={open} onClose={onClose} fullScreen>
@@ -43,14 +43,22 @@ export const TagsSelectionDialog: FC<{
         onClose={onClose}
         hasBackNavigation={hasBackNavigation}
       />
-      <DialogContent style={styles.container}>
-        <div style={styles.listContainer}>
-          <SelectableTagList
-            style={styles.list}
-            onItemClick={onItemClick}
-            data={normalizedData}
-          />
-        </div>
+      <DialogContent
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          padding: 0
+        }}
+      >
+        <SelectableTagList
+          style={{
+            flex: 1
+          }}
+          onItemClick={onItemClick}
+          data={data}
+          selected={selectedData}
+        />
         <SelectionDialogBottom
           onClose={onClose}
           numberOfItemsSelected={numberOfItemsSelected}
@@ -72,13 +80,6 @@ const useStyles = () => {
         flex: 1,
         overflow: "hidden",
         padding: 0
-      },
-      listContainer: {
-        flex: 1
-      },
-      list: {
-        flex: 1,
-        height: "100%"
       }
     }),
     [theme]
