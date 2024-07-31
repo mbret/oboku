@@ -1,86 +1,70 @@
-import { FC, useMemo } from "react"
-import { Dialog, DialogContent, useTheme } from "@mui/material"
+import { ComponentProps, memo, useMemo } from "react"
+import { Dialog, DialogContent } from "@mui/material"
 import { DialogTopBar } from "../navigation/DialogTopBar"
-import { useCSS } from "../common/utils"
 import { SelectableCollectionList } from "./list/SelectableCollectionList"
 import { SelectionDialogBottom } from "../common/SelectionDialogBottom"
 
-export const CollectionsSelectionDialog: FC<{
-  onItemClick: (id: { id: string; selected: boolean }) => void
-  data: string[]
-  onClose: () => void
-  selected: (item: string) => boolean
-  open: boolean
-  title?: string
-  hasBackNavigation?: boolean
-}> = ({
-  onItemClick,
-  data,
-  onClose,
-  open,
-  title = `Collections selection`,
-  selected,
-  hasBackNavigation
-}) => {
-  const styles = useStyles()
-  const normalizedData = useMemo(
-    () =>
-      data.map((item) => ({
-        id: item,
-        selected: selected(item)
-      })),
-    [data, selected]
-  )
-  const numberOfItemsSelected = normalizedData.reduce(
-    (acc, { selected }) => acc + (selected ? 1 : 0),
-    0
-  )
+export const CollectionsSelectionDialog = memo(
+  ({
+    onItemClick,
+    data,
+    onClose,
+    open,
+    title = `Collections selection`,
+    selected,
+    hasBackNavigation
+  }: {
+    onItemClick: (id: { id: string; selected: boolean }) => void
+    onClose: () => void
+    selected: (item: string) => boolean
+    open: boolean
+    title?: string
+    hasBackNavigation?: boolean
+  } & Omit<ComponentProps<typeof SelectableCollectionList>, "selected">) => {
+    const selectedData = useMemo(
+      () =>
+        data?.reduce(
+          (acc, item) => ({
+            ...acc,
+            [item]: selected(item)
+          }),
+          {} as Record<string, boolean>
+        ) ?? {},
+      [data, selected]
+    )
 
-  return (
-    <Dialog open={open} onClose={onClose} fullScreen>
-      <DialogTopBar
-        title={title}
-        onClose={onClose}
-        hasBackNavigation={hasBackNavigation}
-      />
-      <DialogContent style={styles.container}>
-        <div style={styles.listContainer}>
-          <SelectableCollectionList
-            style={styles.list}
-            onItemClick={onItemClick}
-            data={normalizedData}
-          />
-        </div>
-        <SelectionDialogBottom
+    const numberOfItemsSelected =
+      data?.reduce((acc, item) => acc + (selected(item) ? 1 : 0), 0) ?? 0
+
+    return (
+      <Dialog open={open} onClose={onClose} fullScreen>
+        <DialogTopBar
+          title={title}
           onClose={onClose}
-          numberOfItemsSelected={numberOfItemsSelected}
+          hasBackNavigation={hasBackNavigation}
         />
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        flex: 1,
-        overflow: "hidden",
-        padding: 0
-      },
-      listContainer: {
-        flex: 1
-      },
-      list: {
-        flex: 1,
-        height: "100%"
-      }
-    }),
-    [theme]
-  )
-}
+        <DialogContent
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            padding: 0
+          }}
+        >
+          <SelectableCollectionList
+            style={{
+              flex: 1
+            }}
+            onItemClick={onItemClick}
+            selected={selectedData}
+            data={data}
+          />
+          <SelectionDialogBottom
+            onClose={onClose}
+            numberOfItemsSelected={numberOfItemsSelected}
+          />
+        </DialogContent>
+      </Dialog>
+    )
+  }
+)

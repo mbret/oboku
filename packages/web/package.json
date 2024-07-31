@@ -42,8 +42,6 @@
     "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^6.8.2",
     "react-use": "17.5.0",
-    "react-virtualized-auto-sizer": "^1.0.7",
-    "react-window": "^1.8.8",
     "rxdb": "^15.28.1",
     "rxjs": "^7.5.7",
     "screenfull": "^6.0.2",
@@ -75,8 +73,6 @@
     "@types/hammerjs": "^2.0.41",
     "@types/jest": "^29.4.0",
     "@types/lodash.throttle": "^4.1.7",
-    "@types/react-virtualized-auto-sizer": "^1.0.1",
-    "@types/react-window": "^1.8.5",
     "@types/uuid": "^9.0.1"
   },
   "scripts": {
