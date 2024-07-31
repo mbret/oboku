@@ -179,6 +179,7 @@ export const VirtuosoList = memo(
         ) : (
           <Virtuoso
             ref={virtuosoRef}
+            className="withScrollBar"
             style={{
               ...style,
               visibility: isReadyToBeShown ? undefined : "hidden"

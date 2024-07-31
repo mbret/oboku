@@ -1,5 +1,5 @@
-import React, { useCallback, FC, memo, ReactNode, ComponentProps } from "react"
-import { Box, BoxProps, Stack, useTheme } from "@mui/material"
+import { useCallback, memo, ReactNode, ComponentProps } from "react"
+import { Box, BoxProps, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { BookListGridItem } from "./BookListGridItem"
 import { LibrarySorting } from "../../library/states"
@@ -41,7 +41,6 @@ export const BookList = memo(
     props: {
       viewMode?: ListActionViewMode
       sorting?: LibrarySorting
-      isHorizontal?: boolean
       itemWidth?: number
       density?: "dense" | "large"
       onItemClick?: (id: string) => void
@@ -52,7 +51,6 @@ export const BookList = memo(
     const {
       viewMode = "grid",
       density = "large",
-      isHorizontal = false,
       style,
       data,
       itemWidth,
@@ -65,7 +63,7 @@ export const BookList = memo(
     const theme = useTheme()
     const dynamicNumberOfItems = Math.round(windowSize.width / 200)
     const itemsPerRow =
-      viewMode === "grid" && !isHorizontal
+      viewMode === "grid"
         ? dynamicNumberOfItems > 0
           ? dynamicNumberOfItems
           : dynamicNumberOfItems
@@ -87,12 +85,12 @@ export const BookList = memo(
       (index: number, item: string, { size }: { size: number }) => {
         const isLast = index === size - 1
 
-        return viewMode === "grid" ? (
+        return viewMode === "grid" || viewMode === "horizontal" ? (
           <BookListGridItem
             bookId={item}
             style={{
-              height: computedItemHeight,
-              width: "100%"
+              height: viewMode === "horizontal" ? "100%" : computedItemHeight,
+              width: viewMode === "horizontal" ? computedItemWidth : "100%"
             }}
           />
         ) : viewMode === "list" ? (
@@ -123,7 +121,8 @@ export const BookList = memo(
         itemMargin,
         onItemClick,
         withBookActions,
-        computedItemHeight
+        computedItemHeight,
+        computedItemWidth
       ]
     )
 
@@ -131,7 +130,7 @@ export const BookList = memo(
       return (
         <Box
           style={style}
-          px={isHorizontal ? 0 : 1}
+          px={viewMode === "horizontal" ? 0 : 1}
           display="flex"
           flexDirection="column"
         >
@@ -145,15 +144,14 @@ export const BookList = memo(
     }
 
     return (
-      <Stack style={style}>
-        <VirtuosoList
-          data={data}
-          rowRenderer={rowRenderer}
-          itemsPerRow={itemsPerRow}
-          // layout={isHorizontal ? "horizontal" : "vertical"}
-          {...rest}
-        />
-      </Stack>
+      <VirtuosoList
+        data={data}
+        style={style}
+        rowRenderer={rowRenderer}
+        itemsPerRow={itemsPerRow}
+        horizontalDirection={viewMode === "horizontal"}
+        {...rest}
+      />
     )
 
     // return (

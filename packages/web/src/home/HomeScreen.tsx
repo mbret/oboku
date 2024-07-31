@@ -17,7 +17,13 @@ export const HomeScreen = memo(() => {
   const { t } = useTranslation()
 
   return (
-    <Box display="flex" flex={1} overflow="hidden" flexDirection="column">
+    <Box
+      display="flex"
+      flex={1}
+      overflow="hidden"
+      flexDirection="column"
+      pb={2}
+    >
       <TopBarNavigation
         title={"Home"}
         showBack={false}
