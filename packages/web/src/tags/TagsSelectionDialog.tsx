@@ -1,7 +1,6 @@
 import { ComponentProps, useMemo } from "react"
-import { Dialog, DialogContent, useTheme } from "@mui/material"
+import { Dialog, DialogContent } from "@mui/material"
 import { DialogTopBar } from "../navigation/DialogTopBar"
-import { useCSS } from "../common/utils"
 import { SelectableTagList } from "./tagList/SelectableTagList"
 import { SelectionDialogBottom } from "../common/SelectionDialogBottom"
 
@@ -19,8 +18,7 @@ export const TagsSelectionDialog = ({
   open: boolean
   title?: string
   hasBackNavigation?: boolean
-} & ComponentProps<typeof SelectableTagList>) => {
-  const styles = useStyles()
+} & Omit<ComponentProps<typeof SelectableTagList>, "selected">) => {
   const selectedData = useMemo(
     () =>
       data?.reduce(
@@ -65,23 +63,5 @@ export const TagsSelectionDialog = ({
         />
       </DialogContent>
     </Dialog>
-  )
-}
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        flex: 1,
-        overflow: "hidden",
-        padding: 0
-      }
-    }),
-    [theme]
   )
 }
