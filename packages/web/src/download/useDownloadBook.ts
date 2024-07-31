@@ -16,6 +16,7 @@ import { BookQueryResult } from "../books/states"
 import { createDialog } from "../common/dialogs/createDialog"
 import { firstValueFrom, tap } from "rxjs"
 import { useMutation } from "reactjrx"
+import { CancelError } from "../common/errors/errors"
 
 class NoLinkFound extends Error {}
 
@@ -99,8 +100,14 @@ export const useDownloadBook = () => {
               `Something is wrong as you are trying to download local book without passing the local file. Either you forgot to download properly the book back when the user added it or there is a invalid state and the book should open instead.`
             )
 
-            // @todo show a dialog
-            throw new Error(`Cannot download local file from another device`)
+            createDialog({
+              autoStart: true,
+              title: "Impossible to download!",
+              content:
+                "This book does not appear to be located on this device and cannot be downloaded here!"
+            })
+
+            throw new CancelError()
           }
         } else {
           const onDownloadProgress = (progress: number) => {
