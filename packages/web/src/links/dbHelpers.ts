@@ -1,5 +1,6 @@
 import { DataSourceDocType } from "@oboku/shared"
 import { Database } from "../rxdb"
+import { from } from "rxjs"
 
 export const getLinksForDataSource = (
   db: Database,
@@ -12,4 +13,12 @@ export const getLinksForDataSource = (
       }
     })
     .exec()
+}
+
+export const observeLinkById = (database: Database, id: string) => {
+  return database.link.findOne({
+    selector: {
+      _id: id
+    }
+  }).$
 }

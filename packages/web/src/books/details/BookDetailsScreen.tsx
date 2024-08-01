@@ -1,35 +1,18 @@
-import { FC, useState, useEffect, memo } from "react"
+import { memo } from "react"
 import Button from "@mui/material/Button"
 import {
   CloudDownloadRounded,
-  EditRounded,
   MenuBookOutlined,
   MoreVertOutlined
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import {
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Dialog,
-  DialogTitle,
-  DialogActions,
-  Typography,
-  Drawer,
-  DialogContent,
-  TextField,
-  Container,
-  Stack,
-  IconButton
-} from "@mui/material"
+import { Typography, Container, Stack, IconButton } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
 import { Alert } from "@mui/material"
 import { useDownloadBook } from "../../download/useDownloadBook"
 import { ROUTES } from "../../constants"
 import { useEnrichedBookState } from "../states"
 import { useLink } from "../../links/states"
-import { useEditLink } from "../../links/helpers"
 import { DataSourceSection } from "./DataSourceSection"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
@@ -53,9 +36,6 @@ export const BookDetailsScreen = memo(() => {
   const navigate = useNavigate()
   const { mutate: downloadFile } = useDownloadBook()
   const { goBack } = useSafeGoBack()
-  const [isLinkActionDrawerOpenWith, setIsLinkActionDrawerOpenWith] = useState<
-    undefined | string
-  >(undefined)
   const { id = `-1` } = useParams<ScreenParams>()
   const book = useEnrichedBookState({
     bookId: id,
@@ -72,7 +52,7 @@ export const BookDetailsScreen = memo(() => {
   })
 
   if (isDebugEnabled()) {
-    Report.info(`BookDetailsScreen`, { book })
+    Report.info(`BookDetailsScreen`, { book, link })
   }
 
   return (
@@ -187,98 +167,6 @@ export const BookDetailsScreen = memo(() => {
         <MetadataSourcePane bookId={id} />
         <DataSourceSection bookId={id} />
       </Container>
-      <LinkActionsDrawer
-        openWith={isLinkActionDrawerOpenWith}
-        bookId={book?._id}
-        onClose={() => setIsLinkActionDrawerOpenWith(undefined)}
-      />
     </Stack>
   )
 })
-
-const LinkActionsDrawer: FC<{
-  openWith: string | undefined
-  bookId: string | undefined
-  onClose: () => void
-}> = ({ openWith, onClose, bookId }) => {
-  const [isEditDialogOpenWith, setIsEditDialogOpenWith] = useState<
-    string | undefined
-  >(undefined)
-
-  return (
-    <>
-      <Drawer anchor="bottom" open={!!openWith} onClose={onClose}>
-        <List>
-          <ListItem
-            button
-            onClick={() => {
-              setIsEditDialogOpenWith(openWith)
-            }}
-          >
-            <ListItemIcon>
-              <EditRounded />
-            </ListItemIcon>
-            <ListItemText primary="Edit the location" />
-          </ListItem>
-        </List>
-      </Drawer>
-      <EditLinkDialog
-        openWith={isEditDialogOpenWith}
-        onClose={() => setIsEditDialogOpenWith(undefined)}
-      />
-    </>
-  )
-}
-
-const EditLinkDialog: FC<{
-  openWith: string | undefined
-  onClose: () => void
-}> = ({ onClose, openWith }) => {
-  const [location, setLocation] = useState("")
-  const { data: link } = useLink({ id: openWith || "-1" })
-  const editLink = useEditLink()
-
-  const onInnerClose = () => {
-    setLocation("")
-    onClose()
-  }
-
-  useEffect(() => {
-    setLocation((prev) => link?.resourceId || prev)
-  }, [link, openWith])
-
-  return (
-    <Dialog onClose={onInnerClose} open={!!openWith}>
-      <DialogTitle>Link edit</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          id="name"
-          label="Name"
-          type="text"
-          fullWidth
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onInnerClose} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={() => {
-            onInnerClose()
-            link &&
-              editLink({
-                _id: link._id,
-                resourceId: location
-              })
-          }}
-          color="primary"
-        >
-          Save
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}

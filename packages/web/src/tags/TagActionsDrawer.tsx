@@ -24,7 +24,7 @@ import {
 import { useUpdateTag } from "./helpers"
 import { useTag } from "./helpers"
 import { isManageTagBooksDialogOpenedWithState } from "./ManageTagBooksDialog"
-import { removeTag } from "./effects"
+import { useRemoveTag } from "./useRemoveTag"
 
 export const TagActionsDrawer: FC<{
   openWith: string | undefined
@@ -34,6 +34,7 @@ export const TagActionsDrawer: FC<{
   const editTag = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
     useState<string | undefined>(undefined)
+  const { mutate: removeTag } = useRemoveTag()
 
   return (
     <>
@@ -103,7 +104,7 @@ export const TagActionsDrawer: FC<{
           <ListItemButton
             onClick={() => {
               onClose()
-              openWith && removeTag.next({ id: openWith })
+              openWith && removeTag({ _id: openWith })
             }}
           >
             <ListItemIcon>

@@ -340,22 +340,6 @@ export const useBooksAsArrayState = ({
   }
 }
 
-/**
- * @deprecated
- */
-export const useBookLinksState = ({
-  bookId,
-  tags
-}: {
-  bookId: string
-  tags: ReturnType<typeof useTagsByIds>["data"]
-}) => {
-  const book = useBookState({ bookId, tags })
-  const { data: links } = useLinksDic()
-
-  return book?.links?.map((id) => getLinkState(links, id)) || []
-}
-
 export const books$ = latestDatabase$.pipe(
   switchMap((database) => database?.book.find({}).$)
 )

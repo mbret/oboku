@@ -6,6 +6,7 @@ import {
   LinkDocType,
   TagsDocType
 } from "@oboku/shared"
+import { Report } from "../debug/report.shared"
 
 type Database = NonNullable<ReturnType<typeof useDatabase>["db"]>
 
@@ -210,23 +211,27 @@ export const applyHooks = (db: Database) => {
 
 const updateRelationBetweenLinksAndBooksHook = (db: Database) => {
   db.link.postInsert(async (data) => {
-    // @todo there is a bug, it triggers twice the insert event
     const bookId = data.book
+
     // when a link is added update the book with its id
     if (bookId) {
-      await db.book
-        .find({
-          selector: {
-            _id: {
-              $in: [bookId]
+      try {
+        const book = await db.book
+          .findOne({
+            selector: {
+              _id: {
+                $eq: bookId
+              }
             }
-          }
+          })
+          .exec()
+
+        await book?.incrementalPatch({
+          links: [data._id]
         })
-        .update({
-          $set: {
-            links: [data._id]
-          }
-        } satisfies UpdateQuery<BookDocType>)
+      } catch (e) {
+        Report.error(e)
+      }
     }
   }, EXEC_PARALLEL)
 }

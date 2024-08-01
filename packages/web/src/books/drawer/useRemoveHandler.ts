@@ -1,13 +1,13 @@
 import { getBookById, useRemoveBook } from "../helpers"
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/RxDbProvider"
-import { from, mergeMap, of } from "rxjs"
+import { first, from, mergeMap, of } from "rxjs"
 import { isRemovableFromDataSource } from "../../links/isRemovableFromDataSource"
 import { getDataSourcePlugin } from "../../dataSources/getDataSourcePlugin"
-import { getLinkById } from "../../links/helpers"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { withUnknownErrorDialog } from "../../common/errors/withUnknownErrorDialog"
 import { withOfflineErrorDialog } from "../../common/network/withOfflineErrorDialog"
+import { observeLinkById } from "../../links/dbHelpers"
 
 const deleteBookNormallyDialog: Parameters<
   typeof createDialog<{ deleteFromDataSource: boolean }>
@@ -33,7 +33,9 @@ export const useRemoveHandler = (
 
               const linkId = book.links[0]
 
-              const link$ = !linkId ? of(null) : getLinkById(database, linkId)
+              const link$ = !linkId
+                ? of(null)
+                : observeLinkById(database, linkId).pipe(first())
 
               return link$.pipe(
                 mergeMap((firstLink) => {

@@ -31,7 +31,6 @@ import { ReadingStateState } from "@oboku/shared"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
 import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
-import { markAsInterested } from "../triggers"
 import { useBookDownloadState } from "../../download/states"
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "./useRemoveHandler"
@@ -193,11 +192,12 @@ export const BookActionsDrawer = memo(() => {
               <ListItemButton
                 onClick={() => {
                   handleClose(() => {
-                    bookId &&
-                      markAsInterested({
-                        id: bookId,
+                    incrementalBookPatch({
+                      doc: book,
+                      patch: {
                         isNotInterested: !book.isNotInterested
-                      })
+                      }
+                    })
                   })
                 }}
               >
