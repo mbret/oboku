@@ -2,20 +2,23 @@ import { useDatabase } from "../rxdb"
 import { DataSourceDocType, ObokuErrorCode } from "@oboku/shared"
 import { Report } from "../debug/report.shared"
 import { plugins } from "../plugins/configure"
-import { useCallback, useMemo } from "react"
+import { useMemo } from "react"
 import { useNetworkState } from "react-use"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
-import { catchError, EMPTY, from, switchMap, map, of, filter } from "rxjs"
+import { catchError, EMPTY, from, switchMap, map, filter, first } from "rxjs"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { isDefined, useMutation } from "reactjrx"
 import { isPluginError } from "../plugins/plugin-front"
 import { getDataSourcePlugin } from "./getDataSourcePlugin"
 import { httpClient } from "../http/httpClient"
 import { createDialog } from "../common/dialogs/createDialog"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { ModifyFunction } from "rxdb"
 
 export const useSynchronizeDataSource = () => {
   const { db: database } = useDatabase()
-  const { atomicUpdateDataSource } = useAtomicUpdateDataSource()
+  const { mutateAsync: atomicUpdateDataSource } =
+    useDataSourceIncrementalPatch()
   const synchronizeDataSource = usePluginSynchronize()
   const network = useNetworkState()
   const { mutateAsync: sync } = useSyncReplicate()
@@ -38,20 +41,27 @@ export const useSynchronizeDataSource = () => {
         filter(isDefined),
         switchMap((dataSource) => from(synchronizeDataSource(dataSource))),
         switchMap((data) => {
-          return atomicUpdateDataSource(_id, (old) => {
-            old.syncStatus = `fetching`
-
-            return old
-          }).pipe(
+          return from(
+            atomicUpdateDataSource({
+              id: _id,
+              patch: {
+                syncStatus: "fetching"
+              }
+            })
+          ).pipe(
             switchMap(() => from(sync([database.datasource]))),
             switchMap(() => from(httpClient.syncDataSource(_id, data.data))),
             catchError((e) =>
-              atomicUpdateDataSource(_id, (old) => ({
-                ...old,
-                syncStatus: null,
-                lastSyncErrorCode:
-                  ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE
-              })).pipe(
+              from(
+                atomicUpdateDataSource({
+                  id: _id,
+                  patch: {
+                    syncStatus: null,
+                    lastSyncErrorCode:
+                      ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE
+                  }
+                })
+              ).pipe(
                 map((_) => {
                   throw e
                 })
@@ -108,23 +118,51 @@ export const useRemoveDataSource = () => {
       db?.datasource.findOne({ selector: { _id: id } }).remove()
   })
 }
-export const useAtomicUpdateDataSource = () => {
-  const { db: database } = useDatabase()
 
-  const atomicUpdateDataSource = useCallback(
-    (id: string, mutationFunction: any) =>
-      of(database).pipe(
-        filter(isDefined),
+export const useDataSourceIncrementalPatch = () => {
+  return useMutation({
+    mutationFn: ({
+      id,
+      patch
+    }: {
+      id: string
+      patch: Partial<DataSourceDocType>
+    }) =>
+      latestDatabase$.pipe(
+        first(),
         switchMap((db) =>
           from(db.datasource.findOne({ selector: { _id: id } }).exec())
         ),
-        filter(isDefined),
-        switchMap((item) => from(item.incrementalModify(mutationFunction)))
-      ),
-    [database]
-  )
+        switchMap((item) => {
+          if (!item) return EMPTY
 
-  return { atomicUpdateDataSource }
+          return from(item.incrementalPatch(patch))
+        })
+      )
+  })
+}
+
+export const useDataSourceIncrementalModify = () => {
+  return useMutation({
+    mutationFn: ({
+      id,
+      mutationFunction
+    }: {
+      id: string
+      mutationFunction: ModifyFunction<DataSourceDocType>
+    }) =>
+      latestDatabase$.pipe(
+        first(),
+        switchMap((db) =>
+          from(db.datasource.findOne({ selector: { _id: id } }).exec())
+        ),
+        switchMap((item) => {
+          if (!item) return EMPTY
+
+          return from(item.incrementalModify(mutationFunction))
+        })
+      )
+  })
 }
 
 export const useDataSourceHelpers = (

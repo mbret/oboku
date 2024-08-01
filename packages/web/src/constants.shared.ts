@@ -15,4 +15,4 @@ export const API_URL =
   import.meta.env.VITE_API_URL || `http://localhost:5173/api/dev`
 export const API_COUCH_URI =
   import.meta.env.VITE_API_COUCH_URI || `https://${hostname}:4003`
-export const CLEANUP_DANGLING_LINKS_INTERVAL = 1000 * 60 * 5 // 5mn
+export const CLEANUP_DANGLING_LINKS_INTERVAL = 1000 * 60 * 10 // 10mn
