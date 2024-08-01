@@ -36,7 +36,7 @@ export const VirtualizedList = memo(
       count: renderHeader ? rowCount + 1 : rowCount,
       getScrollElement: () => parentRef.current,
       estimateSize: () => 1,
-      scrollMargin: parentOffsetRef.current,
+      scrollMargin: parentOffsetRef.current
       // overscan: 10
     })
 
@@ -164,9 +164,10 @@ export const VirtualizedList = memo(
                             width: getColumnWidth(column.index)
                           }}
                         >
-                          {rowRenderer(absoluteIndex, data[absoluteIndex], {
+                          {/* {rowRenderer(absoluteIndex, data[absoluteIndex], {
                             size: data.length
-                          })}
+                          })} */}
+                          {rowRenderer(absoluteIndex, data[absoluteIndex])}
                         </div>
                       )
                     })}
