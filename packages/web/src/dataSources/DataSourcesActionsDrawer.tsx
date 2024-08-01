@@ -13,14 +13,12 @@ import {
   RadioButtonUncheckedOutlined,
   CheckCircleRounded
 } from "@mui/icons-material"
-import {
-  useDataSourceIncrementalModify,
-  useSynchronizeDataSource
-} from "./helpers"
 import { useDataSource } from "./useDataSource"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "../library/states"
 import { useRemoveDataSource } from "./useRemoveDataSource"
+import { useDataSourceIncrementalModify } from "./useDataSourceIncrementalModify"
+import { useSynchronizeDataSource } from "./useSynchronizeDataSource"
 
 export const DataSourcesActionsDrawer: FC<{
   openWith: string

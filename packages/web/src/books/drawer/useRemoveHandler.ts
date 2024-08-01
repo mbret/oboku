@@ -3,11 +3,11 @@ import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/RxDbProvider"
 import { first, from, mergeMap, of } from "rxjs"
 import { isRemovableFromDataSource } from "../../links/isRemovableFromDataSource"
-import { getDataSourcePlugin } from "../../dataSources/getDataSourcePlugin"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { withUnknownErrorDialog } from "../../common/errors/withUnknownErrorDialog"
 import { withOfflineErrorDialog } from "../../common/network/withOfflineErrorDialog"
 import { observeLinkById } from "../../links/dbHelpers"
+import { getDataSourcePlugin } from "../../dataSources/helpers"
 
 const deleteBookNormallyDialog: Parameters<
   typeof createDialog<{ deleteFromDataSource: boolean }>
