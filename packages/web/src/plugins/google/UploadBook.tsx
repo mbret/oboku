@@ -3,7 +3,7 @@ import { useDrivePicker } from "./lib/useDrivePicker"
 import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
-import { catchError, EMPTY, from, of, switchMap, takeUntil, timer } from "rxjs"
+import { catchError, from, of, switchMap, takeUntil, timer } from "rxjs"
 import { useMount } from "react-use"
 import { useMutation, useUnmountObservable } from "reactjrx"
 import { ObokuPlugin } from "../plugin-front"
@@ -28,7 +28,7 @@ export const UploadBook: ObokuPlugin["UploadComponent"] = memo(
         switchMap((data) => {
           onClose()
 
-          if (data.action !== "picked") return of(EMPTY)
+          if (data.action !== "picked") return of(null)
 
           const docs = data?.docs || []
 

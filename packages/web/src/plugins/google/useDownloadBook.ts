@@ -3,7 +3,7 @@ import { isDriveResponseError } from "./lib/types"
 import { useAccessToken } from "./lib/useAccessToken"
 import { ObokuPlugin } from "../plugin-front"
 import { httpClient } from "../../http/httpClient"
-import { catchError, filter, from, mergeMap, of } from "rxjs"
+import { catchError, from, mergeMap, of } from "rxjs"
 import { gapiOrThrow$ } from "./lib/gapi"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({

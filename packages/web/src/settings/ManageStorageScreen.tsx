@@ -27,11 +27,10 @@ import { difference } from "lodash"
 import Alert from "@mui/material/Alert"
 import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
-import { useMutation } from "reactjrx"
-import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
 import { useRemoveCoversInCache } from "../covers/useRemoveCoversInCache"
 import { useDownloadedBooks } from "../download/useDownloadedBooks"
 import { useBooks } from "../books/states"
+import { useRemoveAllDownloads } from "./useRemoveAllDownloads"
 
 export const ManageStorageScreen = () => {
   const books = useDownloadedBooks()
@@ -45,7 +44,6 @@ export const ManageStorageScreen = () => {
     useStorageUse([books])
   const { mutate: removeCoversInCache } = useRemoveCoversInCache()
   const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
-  const deleteAllDownloadedFiles = useRemoveAllDownloadedFiles()
   const { data: downloadedBookIds = [], refetch: refetchDownloadedFilesInfo } =
     useDownloadedFilesInfo()
   const extraDownloadFilesIds = difference(downloadedBookIds, bookIds)
@@ -54,17 +52,9 @@ export const ManageStorageScreen = () => {
     () => bookIds.filter((id) => visibleBookIds?.includes(id)),
     [bookIds, visibleBookIds]
   )
-  const { mutate: onDeleteAllDownloadsClick } = useMutation({
-    mutationFn: async () => {
-      const isConfirmed = confirm(
-        "Are you sure you want to delete all downloads at once?"
-      )
-
-      if (isConfirmed) {
-        await deleteAllDownloadedFiles(bookIds)
-
-        refetchDownloadedFilesInfo()
-      }
+  const { mutate: removeAllDownloads } = useRemoveAllDownloads({
+    onSuccess: () => {
+      refetchDownloadedFilesInfo()
     }
   })
 
@@ -129,7 +119,7 @@ export const ManageStorageScreen = () => {
           />
         </ListItemButton>
         {bookIdsToDisplay.length > 0 && (
-          <ListItemButton onClick={() => onDeleteAllDownloadsClick()}>
+          <ListItemButton onClick={() => removeAllDownloads()}>
             <ListItemIcon>
               <DeleteRounded />
             </ListItemIcon>
