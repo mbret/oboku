@@ -1,7 +1,17 @@
 import { useRemoveDownloadFile } from "./useRemoveDownloadFile"
 import { plugin as localPlugin } from "../plugins/local"
 import { useMutation } from "reactjrx"
-import { combineLatest, first, from, map, of, switchMap, tap } from "rxjs"
+import {
+  combineLatest,
+  defaultIfEmpty,
+  endWith,
+  first,
+  from,
+  map,
+  of,
+  switchMap,
+  tap
+} from "rxjs"
 import { getBookKeysFromStorage } from "./helpers"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 
@@ -51,15 +61,16 @@ export const useRemoveAllDownloadedFiles = () => {
               )
             ),
             map((books) => books.filter((book) => !!book)),
-            switchMap((books) =>
-              combineLatest(
+            switchMap((books) => {
+              return combineLatest(
                 books.map((book) =>
                   from(removeDownloadFile({ bookId: book._id }))
                 )
               )
-            )
+            })
           )
-        })
+        }),
+        defaultIfEmpty(null)
       )
     }
   })
