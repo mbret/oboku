@@ -31,6 +31,7 @@ import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
 import { RxDbProvider } from "./rxdb/RxDbProvider"
 import { Report } from "./debug/report.shared"
+import { RestoreDownloadState } from "./download/RestoreDownloadState"
 
 // @todo move to sw
 LibArchive.init({
@@ -48,6 +49,7 @@ export function App() {
   const [loading, setLoading] = useState({
     isPreloadingQueries: true
   })
+  const [isDownloadsHydrated, setIsDownloadsHydrated] = useState(false)
   const { waitingWorker } = useRegisterServiceWorker()
   const profileSignalStorageAdapter = useSignalValue(profileStorageSignal)
 
@@ -62,7 +64,8 @@ export function App() {
   })
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
-  const isAppReady = isAuthHydrated && !loading.isPreloadingQueries
+  const isAppReady =
+    isDownloadsHydrated && isAuthHydrated && !loading.isPreloadingQueries
 
   return (
     <ErrorBoundary
@@ -111,6 +114,11 @@ export function App() {
                     ...state,
                     isPreloadingQueries: false
                   }))
+                }}
+              />
+              <RestoreDownloadState
+                onReady={() => {
+                  setIsDownloadsHydrated(true)
                 }}
               />
               <RxDbProvider />

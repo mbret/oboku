@@ -1,6 +1,6 @@
 import { useMutation } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { EMPTY, first, from, switchMap } from "rxjs"
+import { first, from, of, switchMap } from "rxjs"
 
 export const useRemoveTag = () => {
   return useMutation({
@@ -8,7 +8,7 @@ export const useRemoveTag = () => {
       latestDatabase$.pipe(
         first(),
         switchMap((db) => from(db.obokucollection.findOne(_id).exec())),
-        switchMap((item) => (item ? from(item.incrementalRemove()) : EMPTY))
+        switchMap((item) => (item ? from(item.incrementalRemove()) : of(null)))
       )
   })
 }

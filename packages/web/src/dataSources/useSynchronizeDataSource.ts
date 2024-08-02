@@ -1,7 +1,7 @@
 import { ObokuErrorCode } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useMutation, isDefined } from "reactjrx"
-import { from, filter, switchMap, catchError, map, EMPTY } from "rxjs"
+import { from, filter, switchMap, catchError, map, of } from "rxjs"
 import { createDialog } from "../common/dialogs/createDialog"
 import { httpClient } from "../http/httpClient"
 import { isPluginError } from "../plugins/plugin-front"
@@ -66,11 +66,11 @@ export const useSynchronizeDataSource = () => {
           )
         }),
         catchError((e) => {
-          if (isPluginError(e) && e.code === "cancelled") return EMPTY
+          if (isPluginError(e) && e.code === "cancelled") return of(null)
 
           Report.error(e)
 
-          return EMPTY
+          return of(null)
         })
       )
     }

@@ -86,6 +86,7 @@ export const useDownloadBook = () => {
             downloadProgress: 100,
             downloadState: DownloadState.Downloaded
           })
+
           return
         }
 
@@ -111,11 +112,7 @@ export const useDownloadBook = () => {
           }
         } else {
           const onDownloadProgress = (progress: number) => {
-            // if ((event.target as XMLHttpRequest).getAllResponseHeaders().indexOf('oboku-content-length')) {
-            // const contentLength = parseInt((event.target as XMLHttpRequest).getResponseHeader('oboku-content-length') || '1')
-            // throttleSetProgress(Math.round((event.loaded / contentLength) * 100))
             throttleSetProgress(Math.round(progress * 100))
-            // }
           }
 
           const downloadResponse = await firstValueFrom(

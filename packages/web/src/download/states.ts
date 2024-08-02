@@ -21,8 +21,6 @@ export const booksDownloadStateSignal = signal<
   default: {}
 })
 
-export const normalizedBookDownloadsStatePersist = booksDownloadStateSignal
-
 /**
  * @deprecated
  */

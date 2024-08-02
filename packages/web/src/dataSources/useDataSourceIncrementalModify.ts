@@ -1,7 +1,7 @@
 import { DataSourceDocType } from "@oboku/shared"
 import { useMutation } from "reactjrx"
 import { ModifyFunction } from "rxdb"
-import { first, switchMap, from, EMPTY } from "rxjs"
+import { first, switchMap, from, of } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 
 export const useDataSourceIncrementalModify = () => {
@@ -19,7 +19,7 @@ export const useDataSourceIncrementalModify = () => {
           from(db.datasource.findOne({ selector: { _id: id } }).exec())
         ),
         switchMap((item) => {
-          if (!item) return EMPTY
+          if (!item) return of(null)
 
           return from(item.incrementalModify(mutationFunction))
         })

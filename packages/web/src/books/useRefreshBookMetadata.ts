@@ -1,5 +1,5 @@
 import { useNetworkState } from "react-use"
-import { from, switchMap, catchError, map, EMPTY } from "rxjs"
+import { from, switchMap, catchError, map, of } from "rxjs"
 import { httpClient } from "../http/httpClient"
 import { isPluginError } from "../plugins/plugin-front"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
@@ -73,7 +73,7 @@ export const useRefreshBookMetadata = () => {
           catchError((e) => {
             Report.error(e)
 
-            return EMPTY
+            return of(null)
           })
         )
         .subscribe()

@@ -1,6 +1,6 @@
 import { useMutation } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { combineLatest, EMPTY, first, from, switchMap } from "rxjs"
+import { combineLatest, first, from, of, switchMap } from "rxjs"
 import { useEffect } from "react"
 import { isBefore, subMonths } from "date-fns"
 import { Report } from "../debug/report.shared"
@@ -47,7 +47,7 @@ const useRemoveDanglingLinks = () => {
                 )
               }
 
-              return EMPTY
+              return of(null)
             })
           )
         )
