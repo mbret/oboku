@@ -4,13 +4,11 @@ import { useMutation } from "reactjrx"
 import {
   combineLatest,
   defaultIfEmpty,
-  endWith,
   first,
   from,
   map,
   of,
-  switchMap,
-  tap
+  switchMap
 } from "rxjs"
 import { getBookKeysFromStorage } from "./helpers"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
