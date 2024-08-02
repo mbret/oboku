@@ -26,6 +26,8 @@ export const useRestoreDownloadState = ({
             )
           )
 
+          if (items$.length === 0) return of([])
+
           return combineLatest(items$)
         }),
         switchMap((items) => {
