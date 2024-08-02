@@ -5,7 +5,7 @@ import { plugin } from "../plugins/local"
 
 export const useRemoveAllDownloadedFiles = () => {
   const { db } = useDatabase()
-  const removeDownloadFile = useRemoveDownloadFile()
+  const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
 
   return useCallback(
     async (bookIds: string[]) => {
@@ -31,7 +31,7 @@ export const useRemoveAllDownloadedFiles = () => {
             if (fileLink) return
           }
 
-          return removeDownloadFile(id)
+          return removeDownloadFile({ bookId: id })
         })
       )
     },

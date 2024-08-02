@@ -44,7 +44,7 @@ export const ManageStorageScreen = () => {
   const { quotaUsed, quotaInGb, usedInMb, covers, coversWightInMb } =
     useStorageUse([books])
   const { mutate: removeCoversInCache } = useRemoveCoversInCache()
-  const removeDownloadFile = useRemoveDownloadFile()
+  const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
   const deleteAllDownloadedFiles = useRemoveAllDownloadedFiles()
   const { data: downloadedBookIds = [], refetch: refetchDownloadedFilesInfo } =
     useDownloadedFilesInfo()
@@ -69,7 +69,9 @@ export const ManageStorageScreen = () => {
   })
 
   const removeExtraBooks = useCallback(() => {
-    Promise.all(extraDownloadFilesIds.map((id) => removeDownloadFile(id)))
+    Promise.all(
+      extraDownloadFilesIds.map((id) => removeDownloadFile({ bookId: id }))
+    )
       .then(() => refetchDownloadedFilesInfo())
       .catch(Report.error)
   }, [refetchDownloadedFilesInfo, extraDownloadFilesIds, removeDownloadFile])

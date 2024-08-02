@@ -85,7 +85,7 @@ export const BookActionsDrawer = memo(() => {
   const { data: link } = useLink({ id: book?.links[0] })
   const downloadState = useBookDownloadState(bookId || "-1")
   const { data: isLocal } = useIsBookLocal({ id: bookId })
-  const removeDownloadFile = useRemoveDownloadFile()
+  const { mutate: removeDownloadFile } = useRemoveDownloadFile()
   const refreshBookMetadata = useRefreshBookMetadata()
   const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
   const classes = useStyles()
@@ -263,7 +263,7 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemButton
                   onClick={() => {
                     handleClose()
-                    bookId && removeDownloadFile(bookId)
+                    bookId && removeDownloadFile({ bookId })
                   }}
                 >
                   <ListItemIcon>

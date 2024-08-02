@@ -16,7 +16,7 @@ import { CancelError, OfflineError } from "../common/errors/errors"
 import { useLock } from "../common/BlockingBackdrop"
 
 export const useRemoveBook = () => {
-  const removeDownload = useRemoveDownloadFile()
+  const { mutateAsync: removeDownload } = useRemoveDownloadFile()
   const { db } = useDatabase()
   const removeBookFromDataSource = usePluginRemoveBook()
   const network = useNetworkState()
@@ -49,7 +49,7 @@ export const useRemoveBook = () => {
       const unlock = lock()
 
       await Promise.all([
-        removeDownload(id),
+        removeDownload({ bookId: id }),
         db?.book.findOne({ selector: { _id: id } }).remove()
       ])
 

@@ -15,7 +15,7 @@ export const useShowRemoveBookOnExitDialog = ({
   onSettled?: () => void
   bookId?: string
 }) => {
-  const removeDownloadFile = useRemoveDownloadFile()
+  const { mutate: removeDownloadFile } = useRemoveDownloadFile()
   const { data: book } = useBook({ id: bookId })
   const readingState = book?.readingStateCurrentState
   const [wasAlreadyFinished, setWasAlreadyFinished] = useState(true)
@@ -52,7 +52,7 @@ export const useShowRemoveBookOnExitDialog = ({
             cancelTitle: "Keep",
             canEscape: false,
             onConfirm: () => {
-              removeDownloadFile(book._id).catch(noop)
+              removeDownloadFile({ bookId: book._id })
             }
           }).$
         })
