@@ -123,7 +123,7 @@ export const VirtuosoList = memo(
           })
         }
         setIsReadyToBeShown(true)
-      }, 20)
+      }, 30)
     }, [])
 
     const size = data.length
