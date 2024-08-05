@@ -63,21 +63,18 @@ export const AuthorizeActionDialog: FC<{}> = () => {
     }
   })
 
-  const {
-    mutate: validatePassword,
-    reset: resetValidatePasswordMutation,
-    error
-  } = useValidateAppPassword({
-    onSuccess: () => {
-      onClose()
-      action && action()
-    },
-    onError: () => {
-      setError("password", {
-        message: "Invalid"
-      })
-    }
-  })
+  const { mutate: validatePassword, reset: resetValidatePasswordMutation } =
+    useValidateAppPassword({
+      onSuccess: () => {
+        onClose()
+        action && action()
+      },
+      onError: () => {
+        setError("password", {
+          message: "Invalid"
+        })
+      }
+    })
 
   const onClose = () => {
     actionSignal.setValue(undefined)

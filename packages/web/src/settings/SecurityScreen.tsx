@@ -14,6 +14,7 @@ import { useSettings, useUpdateSettings } from "./helpers"
 import { SetupContentsPasswordDialog } from "../auth/SetupContentsPasswordDialog"
 
 export const SecurityScreen = memo(() => {
+
   const { data: accountSettings } = useSettings()
   const [
     isEditContentPasswordDialogOpened,

@@ -125,7 +125,7 @@ export const ManageStorageScreen = () => {
             </ListItemIcon>
             <ListItemText
               primary="Delete all downloads"
-              secondary="It will not delete books only available on this device"
+              secondary="Local books will not be deleted"
             />
           </ListItemButton>
         )}
