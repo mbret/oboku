@@ -9,7 +9,8 @@ import {
   PortableWifiOffRounded,
   LocalLibraryRounded,
   CloudSyncRounded,
-  HomeRounded
+  HomeRounded,
+  ExtensionRounded
 } from "@mui/icons-material"
 import { useNavigate, useLocation } from "react-router-dom"
 import { ROUTES } from "../constants"
@@ -74,6 +75,10 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
         <BottomNavigationAction
           icon={<CloudSyncRounded />}
           value={ROUTES.DATASOURCES}
+        />
+        <BottomNavigationAction
+          icon={<ExtensionRounded />}
+          value={ROUTES.PLUGINS}
         />
         <BottomNavigationAction
           icon={<AccountCircleRounded />}

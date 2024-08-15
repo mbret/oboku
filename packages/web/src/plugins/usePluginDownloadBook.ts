@@ -1,7 +1,7 @@
 import { API_URL } from "../constants"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
-import { ObokuPlugin } from "./plugin-front"
+import { ObokuPlugin } from "./types"
 import { useMutation } from "reactjrx"
 import { from } from "rxjs"
 

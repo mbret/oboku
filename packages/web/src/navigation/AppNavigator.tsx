@@ -35,6 +35,8 @@ import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
 import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
 import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
 import { SecurityScreen } from "../settings/SecurityScreen"
+import { PluginsScreen } from "../plugins/PluginsScreen"
+import { PluginScreen } from "../plugins/PluginScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -86,6 +88,7 @@ export const AppNavigator = ({
                 path={`${ROUTES.PROFILE}/manage-storage`}
                 element={<ManageStorageScreen />}
               />
+              <Route path="plugins/:type" element={<PluginScreen />} />
               <Route path={`${ROUTES.SECURITY}`} element={<SecurityScreen />} />
               <Route path={`${ROUTES.SETTINGS}`} element={<SettingsScreen />} />
               <Route
@@ -95,6 +98,7 @@ export const AppNavigator = ({
               <Route path="*" element={<BottomTabBarRouteWrapper />}>
                 <Route index element={<HomeScreen />} />
                 <Route path="profile" element={<ProfileScreen />} />
+                <Route path="plugins" element={<PluginsScreen />} />
                 <Route path="library" element={<LibraryTopTabNavigator />}>
                   <Route path="books" element={<LibraryBooksScreen />} />
                   <Route

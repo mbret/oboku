@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 import { useAccessToken } from "./lib/useAccessToken"
-import { ObokuPlugin } from "../plugin-front"
+import { ObokuPlugin } from "../types"
 import { firstValueFrom } from "rxjs"
 
 export const useRefreshMetadata: ObokuPlugin[`useRefreshMetadata`] = ({

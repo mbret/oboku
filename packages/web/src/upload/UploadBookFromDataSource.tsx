@@ -4,7 +4,7 @@ import { useDataSourcePlugin } from "../dataSources/helpers"
 import { TagsSelector } from "../tags/TagsSelector"
 import { ButtonDialog } from "../common/ButtonDialog"
 import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
-import { ObokuPlugin } from "../plugins/plugin-front"
+import { ObokuPlugin } from "../plugins/types"
 import { useMount } from "react-use"
 
 type UploadComponentProps = ComponentProps<

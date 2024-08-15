@@ -14,6 +14,8 @@ export const ROUTES = {
   SECURITY: "/profile/security",
   SETTINGS: "/profile/settings",
   STATISTICS: "/profile/statistics",
+  PLUGINS: "/plugins",
+  PLUGINS_TYPE: "/plugins/:type",
   DATASOURCES: "/sync",
   DATASOURCES_LIST: "/sync/datasources",
   DATASOURCES_REPORTS: "/sync/reports",

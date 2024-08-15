@@ -1,5 +1,5 @@
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
-import { ObokuPlugin, extractIdFromResourceId } from "../plugin-front"
+import { ObokuPlugin, extractIdFromResourceId } from "../types"
 import { httpClient } from "../../http/httpClient"
 import { from, map } from "rxjs"
 

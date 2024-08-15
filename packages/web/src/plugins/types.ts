@@ -11,12 +11,14 @@ import {
   ReactNode
 } from "react"
 import { Button } from "@mui/material"
-import { PostBook, PostLink } from "./types"
 import { Observable } from "rxjs"
 
-export { ImgIcon } from "./ImgIcon"
+export { ImgIcon } from "./plugin-front/ImgIcon"
 
 export { dataSourceHelpers }
+
+export type PostLink = Pick<LinkDocType, "resourceId" | "type">
+export type PostBook = {}
 
 type Item = {
   resourceId: string
@@ -84,7 +86,11 @@ export type ObokuPlugin = {
   uniqueResourceIdentifier: string
   name: string
   canSynchronize?: boolean
+  /**
+   * Unique ID for the plugin
+   */
   type: string
+  description?: string
   sensitive?: boolean
   Icon?: FunctionComponent<Record<string, never>>
   UploadComponent?: FunctionComponent<
@@ -115,6 +121,7 @@ export type ObokuPlugin = {
     ) => void
   }>
   Provider?: FunctionComponent<{ children: ReactNode }>
+  InfoScreen?: () => JSX.Element
   useRefreshMetadata?: UseRefreshMetadataHook
   useSynchronize?: UseSynchronizeHook
   useDownloadBook?: UseDownloadHook
@@ -127,4 +134,4 @@ export const extractIdFromResourceId = (
   resourceId: string
 ) => resourceId.replace(`${uniqueResourceIdentifier}-`, ``)
 
-export * from "./errors"
+export * from "./plugin-front/errors"

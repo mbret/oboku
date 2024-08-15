@@ -1,6 +1,6 @@
 import { DropboxAuth } from "dropbox"
 import { CLIENT_ID } from "../constants"
-import { ObokuPluginError } from "../../plugin-front"
+import { ObokuPluginError } from "../../types"
 import { ROUTES } from "../../../constants"
 
 const defaultWindowOptions = {

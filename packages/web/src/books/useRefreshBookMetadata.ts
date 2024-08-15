@@ -1,7 +1,7 @@
 import { useNetworkState } from "react-use"
 import { from, switchMap, catchError, map, of } from "rxjs"
 import { httpClient } from "../http/httpClient"
-import { isPluginError } from "../plugins/plugin-front"
+import { isPluginError } from "../plugins/types"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"

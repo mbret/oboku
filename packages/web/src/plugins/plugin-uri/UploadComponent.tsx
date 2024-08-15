@@ -10,7 +10,7 @@ import {
   Typography
 } from "@mui/material"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
-import { ObokuPlugin } from "../plugin-front"
+import { ObokuPlugin } from "../types"
 import { generateResourceId } from "@oboku/shared"
 import { object, string } from "yup"
 

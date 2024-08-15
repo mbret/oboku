@@ -21,7 +21,7 @@ import { plugins as dataSourcePlugins } from "../plugins/configure"
 import { AddDataSource } from "./AddDataSource"
 import { ObokuErrorCode } from "@oboku/shared"
 import { useDataSources } from "./useDataSources"
-import { ObokuPlugin } from "../plugins/plugin-front"
+import { ObokuPlugin } from "../plugins/types"
 
 export const DataSourcesListScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)

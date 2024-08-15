@@ -1,7 +1,7 @@
 import { extractIdFromResourceId } from "./lib/resources"
 import { isDriveResponseError } from "./lib/types"
 import { useAccessToken } from "./lib/useAccessToken"
-import { ObokuPlugin } from "../plugin-front"
+import { ObokuPlugin } from "../types"
 import { httpClient } from "../../http/httpClient"
 import { catchError, from, mergeMap, of } from "rxjs"
 import { gapiOrThrow$ } from "./lib/gapi"

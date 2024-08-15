@@ -6,7 +6,7 @@ import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { catchError, from, of, switchMap, takeUntil, timer } from "rxjs"
 import { useMount } from "react-use"
 import { useMutation, useUnmountObservable } from "reactjrx"
-import { ObokuPlugin } from "../plugin-front"
+import { ObokuPlugin } from "../types"
 import { memo } from "react"
 
 export const UploadBook: ObokuPlugin["UploadComponent"] = memo(

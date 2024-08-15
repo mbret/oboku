@@ -1,4 +1,4 @@
-import { ObokuPluginError } from "../../plugin-front"
+import { ObokuPluginError } from "../../types"
 import { gsiOrThrow$, gsiSignal } from "./gsi"
 import { catchError, filter, first, from, mergeMap, of, tap } from "rxjs"
 import {
