@@ -1,4 +1,4 @@
-import { List, ListItem, ListItemText } from "@mui/material"
+import { capitalize, List, ListItem, ListItemText } from "@mui/material"
 import { useSignalValue } from "reactjrx"
 import { gapiSignal } from "./lib/gapi"
 import { gsiSignal } from "./lib/gsi"
@@ -16,10 +16,16 @@ export const InfoScreen = () => {
   return (
     <List>
       <ListItem>
-        <ListItemText primary="Google API" secondary={`${gapi.state}`} />
+        <ListItemText
+          primary="Google API"
+          secondary={`${capitalize(gapi.state)}. ${gapi.error ? `Error: ${gapi.error}` : ``}`}
+        />
       </ListItem>
       <ListItem>
-        <ListItemText primary="Google GSI API" secondary={`${gsi.state}`} />
+        <ListItemText
+          primary="Google GSI API"
+          secondary={`${capitalize(gsi.state)}.`}
+        />
       </ListItem>
       <ListItem>
         <ListItemText
