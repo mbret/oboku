@@ -79,10 +79,14 @@ export const theme = createTheme({
     // Name of the component ⚛️
     MuiBottomNavigationAction: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           // disable the lift up effect when an icon is selected
-          padding: "0 !important"
-        }
+          padding: "0 !important",
+          [theme.breakpoints.down("sm")]: {
+            // avoid H scrolling on small screen due to many icons
+            minWidth: "60px"
+          }
+        })
       }
     },
     MuiListItem: {
