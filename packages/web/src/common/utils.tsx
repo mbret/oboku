@@ -8,6 +8,7 @@ import {
   map,
   merge,
   Observable,
+  of,
   shareReplay,
   startWith
 } from "rxjs"
@@ -77,18 +78,29 @@ export const loadScript = ({ id, src }: { id: string; src: string }) => {
   return defer(() => {
     const existingElement = document.getElementById(id)
 
-    if (existingElement) {
+    // already loaded
+    if (existingElement?.dataset["state"] === "success") {
+      return of(null)
+    }
+
+    // error state
+    if (existingElement?.dataset["state"] === "error") {
       existingElement.remove()
     }
 
-    const script = document.createElement("script")
+    const script =
+      existingElement instanceof HTMLScriptElement
+        ? existingElement
+        : document.createElement("script")
     script.id = id
     script.src = src
     script.async = true
     script.defer = true
+    script.dataset["state"] = "loading"
 
     const scriptLoad$ = new Observable((observer) => {
       script.onload = () => {
+        script.dataset["state"] = "success"
         observer.next()
         observer.complete()
       }
@@ -96,12 +108,15 @@ export const loadScript = ({ id, src }: { id: string; src: string }) => {
 
     const scriptError$ = new Observable((observer) => {
       script.onerror = (e: Event | string) => {
+        script.dataset["state"] = "error"
         observer.error(e)
         observer.complete()
       }
     })
 
-    document.body.appendChild(script)
+    if (!document.body.contains(script)) {
+      document.body.appendChild(script)
+    }
 
     return merge(scriptLoad$, scriptError$).pipe(first())
   })
