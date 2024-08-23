@@ -1,13 +1,10 @@
-import { createReader } from "@prose-reader/core"
 import { filter, switchMap } from "rxjs"
-import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
 import {
   isDefined,
   signal,
   useForeverQuery,
 } from "reactjrx"
-
-export const createAppReader = gesturesEnhancer(createReader)
+import { createAppReader } from "./useCreateReader"
 
 export type ReaderInstance = ReturnType<typeof createAppReader>
 
