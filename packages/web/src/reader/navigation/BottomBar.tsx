@@ -7,7 +7,7 @@ import { FloatingBottom } from "./FloatingBottom"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useLocalSettings } from "../../settings/states"
 
-export const BottomBar = () => {
+export const BottomBar = ({ bookId }: { bookId: string }) => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const reader = useSignalValue(readerSignal)
   const readerState = useObserve(() => reader?.state$, [reader])
@@ -15,6 +15,8 @@ export const BottomBar = () => {
   const navigation = useObserve(() => reader?.navigation.state$, [reader])
   const showScrubber = true
   const { useOptimizedTheme } = useLocalSettings()
+  const settings = useObserve(() => reader?.settings.values$, [reader])
+  const readingDirection = settings?.computedPageTurnDirection
 
   return (
     <AppBar
@@ -49,7 +51,7 @@ export const BottomBar = () => {
         </div>
       ) : (
         <>
-          <PageInformation style={{ flex: 1 }} />
+          <PageInformation style={{ flex: 1 }} bookId={bookId} />
           <div
             style={{
               display: "flex",
@@ -59,10 +61,18 @@ export const BottomBar = () => {
           >
             <IconButton
               color="inherit"
-              style={{ transform: `rotateY(180deg)` }}
-              disabled={!navigation?.canGoLeftSpineItem}
+              style={{
+                transform:
+                  readingDirection === "vertical"
+                    ? `rotate(-90deg)`
+                    : `rotateY(180deg)`
+              }}
+              disabled={
+                !navigation?.canGoLeftSpineItem &&
+                !navigation?.canGoTopSpineItem
+              }
               onClick={(_) => {
-                reader?.navigation.goToLeftSpineItem()
+                reader?.navigation.goToLeftOrTopSpineItem()
               }}
               size="large"
             >
@@ -75,15 +85,22 @@ export const BottomBar = () => {
             >
               {showScrubber && (
                 <Box pl={3} pr={3} display="flex">
-                  <Scrubber />
+                  <Scrubber bookId={bookId} />
                 </Box>
               )}
             </div>
             <IconButton
               color="inherit"
-              disabled={!navigation?.canGoRightSpineItem}
+              style={{
+                transform:
+                  readingDirection === "vertical" ? `rotate(90deg)` : undefined
+              }}
+              disabled={
+                !navigation?.canGoRightSpineItem &&
+                !navigation?.canGoBottomSpineItem
+              }
               onClick={(_) => {
-                reader?.navigation.goToRightSpineItem()
+                reader?.navigation.goToRightOrBottomSpineItem()
               }}
               size="large"
             >

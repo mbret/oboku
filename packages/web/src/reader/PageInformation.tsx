@@ -1,18 +1,16 @@
 import React, { FC } from "react"
 import { Typography, useTheme } from "@mui/material"
-import {
-  readerSignal,
-  useCurrentPage,
-  usePagination,
-  useTotalPage
-} from "./states"
+import { readerSignal, usePagination } from "./states"
 import { useObserve, useSignalValue } from "reactjrx"
+import { useCurrentPage } from "./pagination/useCurrentPage"
+import { useTotalPages } from "./pagination/useTotalPages"
 
 export const PageInformation: FC<{
   style: React.CSSProperties
-}> = ({ style }) => {
+  bookId: string
+}> = ({ style, bookId }) => {
   const theme = useTheme()
-  const currentPage = useCurrentPage() || 0
+  const currentPage = useCurrentPage({ bookId }) || 0
   const reader = useSignalValue(readerSignal)
   const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
   const { renditionLayout } = manifest ?? {}
@@ -22,7 +20,7 @@ export const PageInformation: FC<{
   const roundedProgress = Math.floor((percentageEstimateOfBook || 0) * 100)
   const displayableProgress = roundedProgress > 0 ? roundedProgress : 1
   const currentPageToDisplay = currentPage + 1
-  const totalPagesToDisplay = useTotalPage() || 1
+  const totalPagesToDisplay = useTotalPages({ bookId }) || 1
 
   const buildTitleChain = (
     subChapterInfo: NonNullable<typeof chapterInfo>

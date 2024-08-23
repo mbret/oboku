@@ -1,9 +1,13 @@
-import { ComponentProps, forwardRef, memo, useEffect, useState } from "react"
+import { ComponentProps, forwardRef, memo, useEffect } from "react"
 import RcSlider from "rc-slider"
 import "rc-slider/assets/index.css"
-import { readerSignal, useCurrentPage, useTotalPage } from "../states"
+import { readerSignal } from "../states"
 import { ComponentsVariants, useTheme, useThemeProps } from "@mui/material"
 import { useObserve, useSignal, useSignalValue, useSubscribe } from "reactjrx"
+import { useTotalPages } from "../pagination/useTotalPages"
+import { useCurrentPage } from "../pagination/useCurrentPage"
+import { useIsUsingReverseNavigation } from "./useIsUsingReverseNavigation"
+import { useIsUsingPagesPerChapter } from "../pagination/useIsUsingPagesPerChapter"
 
 interface ScrubberProps extends ComponentProps<typeof RcSlider> {
   disabled?: boolean
@@ -81,12 +85,14 @@ const ObokuScrubber = forwardRef<HTMLDivElement, ScrubberProps>(
   }
 )
 
-export const Scrubber = memo(() => {
+export const Scrubber = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
-  const currentPage = useCurrentPage()
-  const totalPages = useTotalPage() || 1
+  const currentPage = useCurrentPage({ bookId })
+  const totalPages = useTotalPages({ bookId }) || 1
   const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
-  const { readingDirection, renditionLayout } = manifest ?? {}
+  const { renditionLayout } = manifest ?? {}
+  const isUsingReverseNavigation = useIsUsingReverseNavigation()
+  const isUsingPagesPerChapter = useIsUsingPagesPerChapter({ bookId })
   const [value, valueSignal] = useSignal({ default: currentPage || 0 })
   const pagination = useObserve(() => reader?.pagination.state$, [reader])
   const max = totalPages <= 1 ? 2 : totalPages - 1
@@ -116,8 +122,7 @@ export const Scrubber = memo(() => {
         if (typeof value === `number`) {
           valueSignal.setValue(value)
 
-          // @todo onChange will change directly when moving scrubber, on after change is good however it triggers twice
-          if (renditionLayout !== "reflowable") {
+          if (!isUsingPagesPerChapter) {
             reader?.navigation.goToSpineItem(value)
           } else {
             reader?.navigation.goToPageOfSpineItem(
@@ -127,7 +132,7 @@ export const Scrubber = memo(() => {
           }
         }
       }}
-      reverse={readingDirection === "rtl"}
+      reverse={isUsingReverseNavigation}
       step={step}
     />
   )

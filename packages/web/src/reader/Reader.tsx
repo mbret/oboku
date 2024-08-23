@@ -2,11 +2,9 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
-import { useState, useEffect, FC, memo, useRef } from "react"
-import { useNavigate } from "react-router-dom"
-import { useMeasure } from "react-use"
+import { useEffect, FC, memo, useRef } from "react"
 import { useBook } from "../books/states"
-import { ReactReaderProps, readerSignal } from "./states"
+import { readerSignal } from "./states"
 import { TopBar } from "./navigation/TopBar"
 import { BottomBar } from "./navigation/BottomBar"
 import { useGestureHandler } from "./gestures"
@@ -32,14 +30,6 @@ export const Reader: FC<{
   })
   const readerContainerRef = useRef<HTMLDivElement>(null)
   const isBookLoadedRef = useRef(false)
-  const navigate = useNavigate()
-  const [
-    containerMeasureRef,
-    { width: containerWidth, height: containerHeight }
-  ] = useMeasure()
-  const [loadOptions, setLoadOptions] = useState<
-    ReactReaderProps["loadOptions"] | undefined
-  >()
   const {
     data: manifest,
     isRarFile,
@@ -70,7 +60,7 @@ export const Reader: FC<{
       reader.load({
         containerElement,
         manifest: {
-          ...manifest,
+          ...manifest
           // readingDirection: "ltr"
         },
         cfi: book.readingStateCurrentBookmarkLocation || undefined
@@ -89,7 +79,6 @@ export const Reader: FC<{
         height: `100%`,
         width: `100%`
       }}
-      ref={containerMeasureRef as any}
     >
       <div
         style={{
@@ -109,7 +98,7 @@ export const Reader: FC<{
         />
       )}
       <TopBar bookId={bookId} />
-      <BottomBar />
+      <BottomBar bookId={bookId} />
     </div>
   )
 })

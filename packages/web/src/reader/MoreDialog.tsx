@@ -15,9 +15,10 @@ import React, { useCallback } from "react"
 import { FC } from "react"
 import { useCSS } from "../common/utils"
 import { DialogTopBar } from "../navigation/DialogTopBar"
-import { usePagination, useCurrentPage, readerSignal } from "./states"
+import { usePagination, readerSignal } from "./states"
 import { SettingsList } from "./settings/SettingsList"
 import { signal, useObserve, useSignalValue } from "reactjrx"
+import { useCurrentPage } from "./pagination/useCurrentPage"
 
 const isContentsDialogOpenedStateSignal = signal<boolean>({
   key: "isContentsDialogOpenedState",
@@ -30,7 +31,7 @@ export const useMoreDialog = () => ({
   }, [])
 })
 
-export const MoreDialog: FC<{}> = () => {
+export const MoreDialog = ({ bookId }: { bookId?: string }) => {
   const isContentsDialogOpened = useSignalValue(
     isContentsDialogOpenedStateSignal
   )
@@ -41,7 +42,7 @@ export const MoreDialog: FC<{}> = () => {
   const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
   const { title, nav } = manifest ?? {}
   const chapterInfo = pagination?.beginChapterInfo
-  const currentPage = useCurrentPage() || 0
+  const currentPage = useCurrentPage({ bookId }) || 0
   const toc = nav?.toc || []
   const styles = useStyles()
 
