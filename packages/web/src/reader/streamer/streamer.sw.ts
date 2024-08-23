@@ -2,7 +2,11 @@ import { ServiceWorkerStreamer } from "@prose-reader/streamer"
 import { STREAMER_URL_PREFIX } from "../../constants.shared"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { getArchiveForZipFile } from "./getArchiveForFile.shared"
-import { StreamerFileNotFoundError, StreamerFileNotSupportedError } from "../../errors/errors.shared"
+import {
+  StreamerFileNotFoundError,
+  StreamerFileNotSupportedError
+} from "../../errors/errors.shared"
+import { directives } from "@oboku/shared"
 
 export const streamer = new ServiceWorkerStreamer({
   cleanArchiveAfter: 5 * 60 * 1000,
@@ -42,5 +46,22 @@ export const streamer = new ServiceWorkerStreamer({
     console.error(error)
 
     return new Response(String(error), { status: 500 })
+  },
+  onManifestSuccess: async ({ manifest, archive }) => {
+    const { isWebtoon } = directives.extractDirectivesFromName(archive.filename)
+
+    if (isWebtoon) {
+      return {
+        ...manifest,
+        renditionLayout: "reflowable",
+        renditionFlow: "scrolled-continuous",
+        spineItems: manifest.spineItems.map((item) => ({
+          ...item,
+          renditionLayout: "reflowable" as const
+        }))
+      }
+    }
+
+    return manifest
   }
 })

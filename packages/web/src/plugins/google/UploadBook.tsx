@@ -3,9 +3,9 @@ import { useDrivePicker } from "./lib/useDrivePicker"
 import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
-import { catchError, from, of, switchMap, takeUntil, timer } from "rxjs"
+import { catchError, from, of, switchMap, timer } from "rxjs"
 import { useMount } from "react-use"
-import { useMutation, useUnmountObservable } from "reactjrx"
+import { useMutation } from "reactjrx"
 import { ObokuPlugin } from "../types"
 import { memo } from "react"
 
@@ -16,7 +16,6 @@ export const UploadBook: ObokuPlugin["UploadComponent"] = memo(
       UNIQUE_RESOURCE_IDENTIFIER
     )
     const { pick } = useDrivePicker({ requestPopup })
-    const unMount$ = useUnmountObservable()
 
     const { mutate } = useMutation({
       mapOperator: "switch",
@@ -61,8 +60,7 @@ export const UploadBook: ObokuPlugin["UploadComponent"] = memo(
           onClose()
 
           throw error
-        }),
-        takeUntil(unMount$.current)
+        })
       )
     })
 
