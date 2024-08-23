@@ -5,6 +5,7 @@ import { createReader, Manifest } from "@prose-reader/core"
 import { readerSignal } from "./states"
 import { useReaderSettingsState } from "./settings/states"
 import { useFetchResource } from "./streamer/useFetchResource"
+import { localSettingsSignal, useLocalSettings } from "../settings/states"
 
 export type ReaderInstance = ReturnType<typeof createAppReader>
 
@@ -36,12 +37,19 @@ export const useCreateReader = ({
     if (
       !isCreated &&
       manifest &&
-      ((isRarFile && fetchResource) || !isRarFile)
+      ((isRarFile && fetchResource) || !isRarFile) &&
+      !readerSignal.getValue()
     ) {
       setIsCreated(true)
 
       const instance = createAppReader({
+        ...(localSettingsSignal.getValue().useOptimizedTheme && {
+          pageTurnAnimation: "none"
+        }),
         gestures: {
+          ...(localSettingsSignal.getValue().useOptimizedTheme && {
+            panNavigation: false
+          })
           // @todo
           // fontScaleMax: FONT_SCALE_MAX,
           // fontScaleMin: FONT_SCALE_MIN

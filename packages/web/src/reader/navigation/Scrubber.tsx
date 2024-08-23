@@ -42,6 +42,7 @@ const ObokuScrubber = forwardRef<HTMLDivElement, ScrubberProps>(
         ref={ref}
         {...rest}
         disabled={disabled}
+        keyboard={false}
         styles={{
           rail: {
             backgroundColor: contrastMode ? "white" : theme.palette.grey["800"],
