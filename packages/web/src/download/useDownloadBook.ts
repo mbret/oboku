@@ -16,7 +16,7 @@ import { BookQueryResult } from "../books/states"
 import { createDialog } from "../common/dialogs/createDialog"
 import { firstValueFrom, tap } from "rxjs"
 import { useMutation } from "reactjrx"
-import { CancelError } from "../common/errors/errors"
+import { CancelError } from "../errors/errors.shared"
 
 class NoLinkFound extends Error {}
 

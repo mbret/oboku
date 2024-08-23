@@ -2,55 +2,41 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
-import { useState, useEffect, useCallback, FC, memo } from "react"
+import { useState, useEffect, FC, memo, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useMeasure } from "react-use"
-import { Box, Button, Link, Typography, useTheme } from "@mui/material"
 import { useBook } from "../books/states"
-import {
-  createAppReader,
-  ReactReaderProps,
-  readerStateSignal,
-  isBookReadyStateSignal
-} from "./states"
+import { ReactReaderProps, readerSignal } from "./states"
 import { TopBar } from "./navigation/TopBar"
 import { BottomBar } from "./navigation/BottomBar"
-import { useBookResize } from "./layout"
 import { useGestureHandler } from "./gestures"
 import { BookLoading } from "./BookLoading"
-import Hammer from "hammerjs"
-import { useCSS } from "../common/utils"
-import { Reader as ObokuReader } from "@prose-reader/react"
-import { useFetchResource } from "./streamer/useFetchResource"
-import { useUpdateBookState } from "./bookHelpers"
-import { FloatingBottom } from "./FloatingBottom"
-import { FONT_SCALE_MAX, FONT_SCALE_MIN } from "./constants"
+import { useSyncBookProgress } from "./progress/useSyncBookProgress"
+import { FloatingBottom } from "./navigation/FloatingBottom"
 import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSettings"
 import { Notification } from "./Notification"
 import { useReaderSettingsState } from "./settings/states"
-import { useSignalValue } from "reactjrx"
-import { getMetadataFromBook } from "../books/metadata"
+import { useObserve, useSignalValue } from "reactjrx"
 import { useManifest } from "./manifest/useManifest"
-import { FileNotSupportedError } from "./errors.shared"
+import { useCreateReader } from "./useCreateReader"
+import { BookError } from "./BookError"
 
 export const Reader: FC<{
   bookId: string
 }> = memo(({ bookId }) => {
-  const reader = useSignalValue(readerStateSignal)
-  const isBookReady = useSignalValue(isBookReadyStateSignal)
+  const reader = useSignalValue(readerSignal)
+  const readerState = useObserve(() => reader?.state$, [reader])
   const readerSettings = useReaderSettingsState()
   const { data: book } = useBook({
     id: bookId
   })
+  const readerContainerRef = useRef<HTMLDivElement>(null)
+  const isBookLoadedRef = useRef(false)
   const navigate = useNavigate()
   const [
     containerMeasureRef,
     { width: containerWidth, height: containerHeight }
   ] = useMeasure()
-  const [readerContainerHammer, setReaderContainerHammer] = useState<
-    HammerManager | undefined
-  >(undefined)
-  const styles = useStyles()
   const [loadOptions, setLoadOptions] = useState<
     ReactReaderProps["loadOptions"] | undefined
   >()
@@ -59,113 +45,41 @@ export const Reader: FC<{
     isRarFile,
     error: manifestError
   } = useManifest(bookId)
-
-  /**
-   * In case of rar archive, we will use our local resource fetcher
-   */
-  const { fetchResource } = useFetchResource(isRarFile ? bookId : undefined)
-
-  const [readerOptions, setReaderOptions] = useState<
-    ReactReaderProps["options"] | undefined
-  >()
   const isBookError = !!manifestError
   // We don't want to display overlay for comics / manga
   const showFloatingMenu =
     reader?.context.manifest?.renditionLayout !== "pre-paginated"
 
-  useBookResize(reader, containerWidth, containerHeight)
-  useGestureHandler(readerContainerHammer)
-  useUpdateBookState(bookId)
+  useGestureHandler()
+  useSyncBookProgress(bookId)
   usePersistReaderInstanceSettings()
+  useCreateReader({ manifest, bookId, isRarFile })
 
   useEffect(() => {
-    return () => {
-      isBookReadyStateSignal.setValue(false)
-    }
-  }, [])
+    const containerElement = readerContainerRef.current
 
-  const onBookReady = useCallback(() => {
-    isBookReadyStateSignal.setValue(true)
-  }, [])
-
-  useEffect(() => {
     if (
+      !isBookLoadedRef.current &&
+      reader &&
       manifest &&
-      book &&
-      !readerOptions &&
-      ((isRarFile && fetchResource) || !isRarFile)
+      containerElement &&
+      book
     ) {
-      setReaderOptions({
-        forceSinglePageMode: true,
-        numberOfAdjacentSpineItemToPreLoad:
-          manifest.renditionLayout === "pre-paginated" ? 1 : 1,
-        hammerGesture: {
-          enableFontScalePinch: true,
-          fontScaleMax: FONT_SCALE_MAX,
-          fontScaleMin: FONT_SCALE_MIN
-        },
-        fontScale: readerSettings.fontScale ?? 1,
-        ...(isRarFile && {
-          fetchResource
-        })
-      })
+      isBookLoadedRef.current = true
 
-      setLoadOptions({
+      reader.load({
+        containerElement,
+        manifest: {
+          ...manifest,
+          // readingDirection: "ltr"
+        },
         cfi: book.readingStateCurrentBookmarkLocation || undefined
       })
     }
-  }, [book, manifest, readerOptions, isRarFile, fetchResource, readerSettings])
-
-  const metadata = getMetadataFromBook(book)
+  }, [manifest, book, reader])
 
   if (isBookError) {
-    if (manifestError instanceof FileNotSupportedError) {
-      return (
-        <div style={styles.infoContainer}>
-          <Box mb={2}>
-            <Typography>
-              Oups! it looks like the book <b>{metadata?.title}</b> is not
-              supported yet. If you would like to be able to open it please
-              visit the{" "}
-              <Link href="https://docs.oboku.me" target="__blank">
-                documentation
-              </Link>{" "}
-              and try to reach out.
-            </Typography>
-          </Box>
-          <Button
-            onClick={() => navigate(-1)}
-            variant="contained"
-            color="primary"
-          >
-            Go back
-          </Button>
-        </div>
-      )
-    }
-    return (
-      <div style={styles.infoContainer}>
-        <Box mb={2}>
-          <Typography variant="h6" align="center">
-            Oups!
-          </Typography>
-          <Typography align="center">
-            Sorry it looks like we are unable to load the book. If the problem
-            persist try to restart the app. If it still does not work,{" "}
-            <Link href="https://docs.oboku.me/support" target="__blank">
-              contact us
-            </Link>
-          </Typography>
-        </Box>
-        <Button
-          onClick={() => navigate(-1)}
-          variant="contained"
-          color="primary"
-        >
-          Go back
-        </Button>
-      </div>
-    )
+    return <BookError bookId={bookId} manifestError={manifestError} />
   }
 
   return (
@@ -183,28 +97,9 @@ export const Reader: FC<{
           width: `100%`,
           position: "relative"
         }}
-        ref={(ref) => {
-          if (ref && !readerContainerHammer) {
-            const hammerInstance = new Hammer(ref)
-
-            // @see https://hammerjs.github.io/recognizer-pinch/
-            hammerInstance.get("pinch").set({ enable: true })
-
-            setReaderContainerHammer(hammerInstance)
-          }
-        }}
+        ref={readerContainerRef}
       >
-        {!!loadOptions && !!readerOptions && (
-          <ObokuReader
-            options={readerOptions}
-            manifest={manifest}
-            loadOptions={loadOptions}
-            onReady={onBookReady}
-            onReader={readerStateSignal.setValue}
-            createReader={createAppReader}
-          />
-        )}
-        {!isBookReady && <BookLoading />}
+        {readerState === "idle" && <BookLoading />}
       </div>
       <Notification />
       {showFloatingMenu && (
@@ -218,24 +113,3 @@ export const Reader: FC<{
     </div>
   )
 })
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      infoContainer: {
-        margin: "auto",
-        maxWidth: 500,
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(2),
-        display: "flex",
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column"
-      }
-    }),
-    [theme]
-  )
-}

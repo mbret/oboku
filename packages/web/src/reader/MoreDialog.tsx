@@ -15,10 +15,9 @@ import React, { useCallback } from "react"
 import { FC } from "react"
 import { useCSS } from "../common/utils"
 import { DialogTopBar } from "../navigation/DialogTopBar"
-import { usePagination, useCurrentPage, readerStateSignal } from "./states"
+import { usePagination, useCurrentPage, readerSignal } from "./states"
 import { SettingsList } from "./settings/SettingsList"
 import { signal, useObserve, useSignalValue } from "reactjrx"
-import { NEVER } from "rxjs"
 
 const isContentsDialogOpenedStateSignal = signal<boolean>({
   key: "isContentsDialogOpenedState",
@@ -37,9 +36,9 @@ export const MoreDialog: FC<{}> = () => {
   )
   const { toggleMoreDialog } = useMoreDialog()
   const [value, setValue] = React.useState("toc")
-  const reader = useSignalValue(readerStateSignal)
+  const reader = useSignalValue(readerSignal)
   const { data: pagination } = usePagination()
-  const { manifest } = useObserve(reader?.context.state$ ?? NEVER) || {}
+  const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
   const { title, nav } = manifest ?? {}
   const chapterInfo = pagination?.beginChapterInfo
   const currentPage = useCurrentPage() || 0
@@ -80,7 +79,7 @@ export const MoreDialog: FC<{}> = () => {
           color="primary"
           onClick={() => {
             toggleMoreDialog()
-            reader?.viewportNavigator.goToUrl(tocItem.href)
+            reader?.navigation.goToUrl(tocItem.href)
           }}
           style={{
             paddingLeft: theme.spacing(lvl * 2)

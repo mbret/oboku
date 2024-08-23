@@ -3,11 +3,12 @@ import { Alert } from "@mui/material"
 import { useTranslation } from "react-i18next"
 import { Google } from "@mui/icons-material"
 import { useSignIn } from "./useSignIn"
-import { ErrorMessage, isCancelError } from "../common/errors/errors"
 import { OrDivider } from "../common/OrDivider"
 import { links } from "@oboku/shared"
 import { useMutation } from "reactjrx"
 import { Logo } from "../common/Logo"
+import { isCancelError } from "../errors/errors.shared"
+import { ErrorMessage } from "../errors/ErrorMessage"
 
 export const LoginScreen = () => {
   const { signIn } = useSignIn()

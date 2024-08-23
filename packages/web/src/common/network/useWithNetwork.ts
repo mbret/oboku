@@ -1,7 +1,7 @@
 import { Observable, tap } from "rxjs"
 import { useNetworkState } from "react-use"
-import { OfflineError } from "../errors/errors"
 import { createDialog } from "../dialogs/createDialog"
+import { OfflineError } from "../../errors/errors.shared"
 
 export const useWithNetwork = () => {
   const networkState = useNetworkState()

@@ -1,6 +1,6 @@
 import { Box } from "@mui/material"
-import { PercentageIndicator } from "./common/PercentageIndicator"
-import { TimeIndicator } from "./common/TimeIndicator"
+import { PercentageIndicator } from "../common/PercentageIndicator"
+import { TimeIndicator } from "../common/TimeIndicator"
 
 export const FloatingBottom = ({
   enableTime,

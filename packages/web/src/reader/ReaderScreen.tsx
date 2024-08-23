@@ -6,9 +6,8 @@ import { Reader } from "./Reader"
 import { MoreDialog } from "./MoreDialog"
 import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
 import {
-  isBookReadyStateSignal,
   isMenuShownStateSignal,
-  readerStateSignal
+  readerSignal
 } from "./states"
 import { SIGNAL_RESET } from "reactjrx"
 
@@ -22,9 +21,8 @@ export const ReaderScreen: FC<{}> = () => {
   useEffect(
     () => () => {
       ;[
-        isBookReadyStateSignal,
         isMenuShownStateSignal,
-        readerStateSignal
+        readerSignal
       ].forEach((signal) => signal.setValue(SIGNAL_RESET))
     },
     []

@@ -1,8 +1,8 @@
 import { useQuery } from "reactjrx"
 import { generateManifestFromArchive } from "@prose-reader/streamer"
 import { getManifestBaseUrl } from "../streamer/getManifestBaseUrl.shared"
-import { FileNotSupportedError } from "../errors.shared"
 import { useArchiveForRarFile } from "../streamer/useArchiveForRarFile"
+import { StreamerFileNotSupportedError } from "../../errors/errors.shared"
 
 export const useManifestFromRar = ({
   bookId,
@@ -27,7 +27,7 @@ export const useManifestFromRar = ({
         return manifest
       }
 
-      throw new FileNotSupportedError()
+      throw new StreamerFileNotSupportedError()
     },
     gcTime: 0,
     staleTime: Infinity,

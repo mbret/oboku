@@ -1,7 +1,7 @@
 import { MutationCache, QueryCache, QueryClient } from "reactjrx"
 import { Report } from "../debug/report.shared"
-import { CancelError } from "../common/errors/errors"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
+import { CancelError } from "../errors/errors.shared"
 
 export const queryClient = new QueryClient({
   mutationCache: new MutationCache({

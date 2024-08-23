@@ -5,7 +5,7 @@ import { withDialog } from "../common/dialogs/withDialog"
 import { getLinksForDataSource } from "../links/dbHelpers"
 import { useRemoveBook } from "../books/helpers"
 import { observeDataSourceById } from "./dbHelpers"
-import { withUnknownErrorDialog } from "../common/errors/withUnknownErrorDialog"
+import { withUnknownErrorDialog } from "../errors/withUnknownErrorDialog"
 
 export const useRemoveDataSource = () => {
   const { mutateAsync: removeBook } = useRemoveBook()

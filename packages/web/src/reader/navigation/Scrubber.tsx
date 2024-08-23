@@ -1,10 +1,9 @@
 import { ComponentProps, forwardRef, memo, useEffect, useState } from "react"
 import RcSlider from "rc-slider"
 import "rc-slider/assets/index.css"
-import { readerStateSignal, useCurrentPage, useTotalPage } from "../states"
+import { readerSignal, useCurrentPage, useTotalPage } from "../states"
 import { ComponentsVariants, useTheme, useThemeProps } from "@mui/material"
-import { useObserve, useSignalValue } from "reactjrx"
-import { NEVER } from "rxjs"
+import { useObserve, useSignal, useSignalValue, useSubscribe } from "reactjrx"
 
 interface ScrubberProps extends ComponentProps<typeof RcSlider> {
   disabled?: boolean
@@ -83,19 +82,29 @@ const ObokuScrubber = forwardRef<HTMLDivElement, ScrubberProps>(
 )
 
 export const Scrubber = memo(() => {
-  const reader = useSignalValue(readerStateSignal)
+  const reader = useSignalValue(readerSignal)
   const currentPage = useCurrentPage()
   const totalPages = useTotalPage() || 1
-  const { manifest } = useObserve(reader?.context.state$ ?? NEVER) || {}
+  const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
   const { readingDirection, renditionLayout } = manifest ?? {}
-  const [value, setValue] = useState(currentPage || 0)
+  const [value, valueSignal] = useSignal({ default: currentPage || 0 })
+  const pagination = useObserve(() => reader?.pagination.state$, [reader])
   const max = totalPages <= 1 ? 2 : totalPages - 1
   const step = 1
   const disabled = totalPages === 1
 
   useEffect(() => {
-    setValue(currentPage || 0)
-  }, [currentPage])
+    valueSignal.setValue(currentPage || 0)
+  }, [valueSignal, currentPage])
+
+  useSubscribe(
+    () =>
+      reader?.navigation.throttleLock({
+        duration: 100,
+        trigger: valueSignal.subject
+      }),
+    [reader]
+  )
 
   return (
     <ObokuScrubber
@@ -105,13 +114,16 @@ export const Scrubber = memo(() => {
       disabled={disabled}
       onChange={(value) => {
         if (typeof value === `number`) {
-          setValue(value)
+          valueSignal.setValue(value)
 
           // @todo onChange will change directly when moving scrubber, on after change is good however it triggers twice
           if (renditionLayout !== "reflowable") {
-            reader?.viewportNavigator.goToSpineItem(value)
+            reader?.navigation.goToSpineItem(value)
           } else {
-            reader?.viewportNavigator.goToPageOfCurrentChapter(value)
+            reader?.navigation.goToPageOfSpineItem(
+              value,
+              pagination?.beginSpineItemIndex ?? 0
+            )
           }
         }
       }}

@@ -1,6 +1,6 @@
 import { Observable, share } from "rxjs"
-import { CancelError } from "../errors/errors"
 import { DialogType, dialogSignal } from "./state"
+import { CancelError } from "../../errors/errors.shared"
 
 let generatedId = 0
 

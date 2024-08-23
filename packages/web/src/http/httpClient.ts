@@ -1,16 +1,6 @@
 import { authStateSignal } from "../auth/authState"
 import { API_URL } from "../constants"
-
-export class HttpClientError extends Error {
-  constructor(
-    public response: {
-      data: unknown
-    }
-  ) {
-    super("HttpClient response error")
-    this.response = response
-  }
-}
+import { HttpClientError } from "./HttpClientError.shared"
 
 type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
 
@@ -140,6 +130,11 @@ class HttpClient {
 
         xhr.onerror = function () {
           // handle non-HTTP error (e.g. network down)
+          /**
+           * Failing with status 0 and text `` after downloading a couple of mb
+           * may indicate a low storage device. It can be detected to display
+           * related error message
+           */
           reject({
             status: xhr.status,
             statusText: xhr.statusText

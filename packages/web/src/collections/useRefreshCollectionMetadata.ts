@@ -7,8 +7,8 @@ import { isPluginError } from "../plugins/types"
 import { useMutation } from "reactjrx"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
-import { OfflineError } from "../common/errors/errors"
 import { getCollectionById } from "./dbHelpers"
+import { OfflineError } from "../errors/errors.shared"
 
 export const useRefreshCollectionMetadata = () => {
   const { mutateAsync: updateCollection } = useUpdateCollection()

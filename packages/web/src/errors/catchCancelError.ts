@@ -1,5 +1,5 @@
 import { Observable, catchError } from "rxjs"
-import { CancelError } from "./errors"
+import { CancelError } from "./errors.shared"
 
 export const catchCancelError =
   <T>(cb: (err: unknown) => Observable<T>) =>

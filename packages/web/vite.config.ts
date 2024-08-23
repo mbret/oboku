@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => ({
     emptyOutDir: true,
     assetsInlineLimit: 0
   },
+  css: {
+    devSourcemap: true
+  },
   optimizeDeps: {
     esbuildOptions: {
       // Node.js global to browser globalThis

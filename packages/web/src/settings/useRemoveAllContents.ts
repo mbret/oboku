@@ -5,8 +5,8 @@ import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useLock } from "../common/BlockingBackdrop"
 import { useWithAuthorization } from "../auth/AuthorizeActionDialog"
 import { Report } from "../debug/report.shared"
-import { CancelError } from "../common/errors/errors"
 import { createDialog } from "../common/dialogs/createDialog"
+import { CancelError } from "../errors/errors.shared"
 
 export const useRemoveAllContents = () => {
   const { mutateAsync: sync } = useSyncReplicate()

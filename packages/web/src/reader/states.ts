@@ -1,10 +1,10 @@
 import { createReader } from "@prose-reader/core"
 import { filter, switchMap } from "rxjs"
-import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
+import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
 import { Props as GenericReactReaderProps } from "@prose-reader/react"
 import { isDefined, signal, useForeverQuery, useSignalValue } from "reactjrx"
 
-export const createAppReader = hammerGestureEnhancer(createReader)
+export const createAppReader = gesturesEnhancer(createReader)
 
 export type ReaderInstance = ReturnType<typeof createAppReader>
 
@@ -13,14 +13,11 @@ export type ReactReaderProps = GenericReactReaderProps<
   ReaderInstance
 >
 
-export const readerStateSignal = signal<ReaderInstance | undefined>({
+export const readerSignal = signal<ReaderInstance | undefined>({
   key: "readerState"
 })
 
-export const isBookReadyStateSignal = signal({
-  key: "isBookReadyState",
-  default: false
-})
+export const reader$ = readerSignal.subject.pipe(filter(isDefined))
 
 export const isMenuShownStateSignal = signal({
   key: "isMenuShownState",
@@ -33,15 +30,15 @@ export const usePagination = () =>
   useForeverQuery({
     queryKey: ["pagination"],
     queryFn: () => {
-      return readerStateSignal.subject.pipe(
+      return readerSignal.subject.pipe(
         filter(isDefined),
-        switchMap((reader) => reader.pagination.paginationInfo$)
+        switchMap((reader) => reader.pagination.state$)
       )
     }
   })
 
 export const useCurrentPage = () => {
-  const reader = useSignalValue(readerStateSignal)
+  const reader = useSignalValue(readerSignal)
   const { data: { beginPageIndexInSpineItem, beginSpineItemIndex } = {} } =
     usePagination()
   const { renditionLayout } = reader?.context.manifest ?? {}
@@ -52,7 +49,7 @@ export const useCurrentPage = () => {
 }
 
 export const useTotalPage = () => {
-  const reader = useSignalValue(readerStateSignal)
+  const reader = useSignalValue(readerSignal)
   const { renditionLayout } = reader?.context.manifest ?? {}
   const { data: { numberOfTotalPages, beginNumberOfPagesInSpineItem } = {} } =
     usePagination()

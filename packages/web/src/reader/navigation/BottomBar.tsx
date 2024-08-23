@@ -1,26 +1,18 @@
 import { AppBar, Box, IconButton, Typography, useTheme } from "@mui/material"
 import { PageInformation } from "../PageInformation"
-import {
-  usePagination,
-  readerStateSignal,
-  isBookReadyStateSignal,
-  isMenuShownStateSignal
-} from "../states"
+import { readerSignal, isMenuShownStateSignal } from "../states"
 import { Scrubber } from "./Scrubber"
 import { DoubleArrowRounded } from "@mui/icons-material"
-import { FloatingBottom } from "../FloatingBottom"
+import { FloatingBottom } from "./FloatingBottom"
 import { useObserve, useSignalValue } from "reactjrx"
-import { NEVER } from "rxjs"
 import { useLocalSettings } from "../../settings/states"
 
 export const BottomBar = () => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
-  const isBookReady = useSignalValue(isBookReadyStateSignal)
-  const isLoading = !isBookReady
+  const reader = useSignalValue(readerSignal)
+  const readerState = useObserve(() => reader?.state$, [reader])
   const theme = useTheme()
-  const reader = useSignalValue(readerStateSignal)
-  const navigation = useObserve(reader?.navigation.state$ ?? NEVER)
-  const { data: pagination } = usePagination()
+  const navigation = useObserve(() => reader?.navigation.state$, [reader])
   const showScrubber = true
   const { useOptimizedTheme } = useLocalSettings()
 
@@ -39,7 +31,7 @@ export const BottomBar = () => {
         visibility: isMenuShow ? "visible" : "hidden"
       }}
     >
-      {isLoading ? (
+      {readerState === "idle" ? (
         <div
           style={{
             display: "flex",

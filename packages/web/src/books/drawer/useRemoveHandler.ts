@@ -4,10 +4,10 @@ import { getLatestDatabase } from "../../rxdb/RxDbProvider"
 import { first, from, mergeMap, of } from "rxjs"
 import { isRemovableFromDataSource } from "../../links/isRemovableFromDataSource"
 import { createDialog } from "../../common/dialogs/createDialog"
-import { withUnknownErrorDialog } from "../../common/errors/withUnknownErrorDialog"
 import { withOfflineErrorDialog } from "../../common/network/withOfflineErrorDialog"
 import { observeLinkById } from "../../links/dbHelpers"
 import { getDataSourcePlugin } from "../../dataSources/helpers"
+import { withUnknownErrorDialog } from "../../errors/withUnknownErrorDialog"
 
 const deleteBookNormallyDialog: Parameters<
   typeof createDialog<{ deleteFromDataSource: boolean }>

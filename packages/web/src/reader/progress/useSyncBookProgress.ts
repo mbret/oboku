@@ -1,11 +1,11 @@
-import { usePagination } from "./states"
+import { usePagination } from "../states"
 import { ReadingStateState } from "@oboku/shared"
-import { useDatabase } from "../rxdb"
+import { useDatabase } from "../../rxdb"
 import { useMutation } from "reactjrx"
 import { useEffect } from "react"
 import { from, mergeMap, timer } from "rxjs"
 
-export const useUpdateBookState = (bookId: string) => {
+export const useSyncBookProgress = (bookId: string) => {
   const { db } = useDatabase()
   const {
     data: { beginCfi, percentageEstimateOfBook: totalBookProgress } = {}

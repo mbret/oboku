@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
-import {
-  isBookReadyStateSignal,
-  isMenuShownStateSignal,
-  readerStateSignal
-} from "../states"
+import { isMenuShownStateSignal, readerSignal } from "../states"
 import {
   AppBar,
   IconButton,
@@ -24,18 +20,17 @@ import { useCSS } from "../../common/utils"
 import { useMoreDialog } from "../MoreDialog"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useShowRemoveBookOnExitDialog } from "./useShowRemoveBookOnExitDialog"
-import { NEVER } from "rxjs"
 
 export const TopBar = ({ bookId }: { bookId: string }) => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
-  const isBookReady = useSignalValue(isBookReadyStateSignal)
+  const reader = useSignalValue(readerSignal)
+  const readerState = useObserve(() => reader?.state$, [reader])
   const classes = useStyles({ isMenuShow })
-  const reader = useSignalValue(readerStateSignal)
   const { goBack } = useSafeGoBack()
   const [isFullScreen, setIsFullScreen] = useState(
     screenfull.isEnabled && screenfull.isFullscreen
   )
-  const { manifest } = useObserve(reader?.context.state$ ?? NEVER) || {}
+  const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
   const { title, filename } = manifest ?? {}
   const theme = useTheme()
   const { toggleMoreDialog } = useMoreDialog()
@@ -103,7 +98,7 @@ export const TopBar = ({ bookId }: { bookId: string }) => {
         <div>
           <IconButton
             color="inherit"
-            disabled={!isBookReady}
+            disabled={readerState === "idle"}
             onClick={toggleMoreDialog}
             size="large"
           >
