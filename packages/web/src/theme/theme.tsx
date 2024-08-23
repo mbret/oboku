@@ -170,14 +170,13 @@ export const eInkTheme = createTheme(
       },
       MuiAppBar: {
         defaultProps: {
-          // color: "default",
           elevation: 0
         },
         styleOverrides: {
           root: ({ ownerState }) => {
             return {
               color: "black",
-              backgroundColor: "transparent",
+              backgroundColor: "white",
               ...(ownerState.color !== "transparent" && {
                 borderBottom: "1px solid black"
               })
