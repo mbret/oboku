@@ -13,12 +13,12 @@ import { TabContext, TabList, TabPanel } from "@mui/lab"
 import { FiberManualRecordRounded } from "@mui/icons-material"
 import React, { useCallback } from "react"
 import { FC } from "react"
-import { useCSS } from "../common/utils"
-import { DialogTopBar } from "../navigation/DialogTopBar"
-import { usePagination, readerSignal } from "./states"
-import { SettingsList } from "./settings/SettingsList"
+import { useCSS } from "../../common/utils"
+import { DialogTopBar } from "../../navigation/DialogTopBar"
+import { usePagination, readerSignal } from "../states"
+import { SettingsList } from "../settings/SettingsList"
 import { signal, useObserve, useSignalValue } from "reactjrx"
-import { useCurrentPage } from "./pagination/useCurrentPage"
+import { useCurrentPage } from "../pagination/useCurrentPage"
 
 const isContentsDialogOpenedStateSignal = signal<boolean>({
   key: "isContentsDialogOpenedState",

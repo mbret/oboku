@@ -17,7 +17,7 @@ import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import screenfull from "screenfull"
 import { Report } from "../../debug/report.shared"
 import { useCSS } from "../../common/utils"
-import { useMoreDialog } from "../MoreDialog"
+import { useMoreDialog } from "./MoreDialog"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useShowRemoveBookOnExitDialog } from "./useShowRemoveBookOnExitDialog"
 

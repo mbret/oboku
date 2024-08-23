@@ -1,53 +1,38 @@
 import { Manifest } from "@prose-reader/shared"
-import { useManifestFromRar } from "./useManifestFromRar"
-import { useManifestFromStreamer } from "./useManifestFromStreamer"
-import { directives } from "@oboku/shared"
-import { Report } from "../../debug/report.shared"
-import { useEffect, useMemo } from "react"
+import { useQuery } from "reactjrx"
+import { webStreamer } from "../streamer/webStreamer"
+import { STREAMER_URL_PREFIX } from "../../constants.shared"
 
-const getNormalizedManifest = (data: Manifest): Manifest => {
-  const { direction } = directives.extractDirectivesFromName(data.filename)
-
-  return {
-    ...data,
-    readingDirection: direction
-      ? direction
-      : data.filename.endsWith(`.cbz`)
-        ? "rtl"
-        : data.readingDirection
-  }
+const getManifestBaseUrl = (origin: string, epubFileName: string) => {
+  return `${origin}/${STREAMER_URL_PREFIX}/${epubFileName}/`
 }
 
 export const useManifest = (bookId: string | undefined) => {
-  const manifestFromStreamer = useManifestFromStreamer({
-    bookId
+  return useQuery({
+    queryKey: ["reader/streamer/manifest", { bookId }],
+    queryFn: async () => {
+      const response = await fetch(
+        `${window.location.origin}/streamer/${bookId}/manifest`
+      )
+
+      if (response.status === 415) {
+        const rarResponse = await webStreamer.fetchManifest({
+          key: bookId ?? ``,
+          baseUrl: getManifestBaseUrl(window.location.origin, bookId ?? "")
+        })
+
+        return {
+          manifest: await rarResponse.json(),
+          isRar: true
+        }
+      }
+
+      const data: Manifest = await response.json()
+
+      return { manifest: data, isRar: false }
+    },
+    staleTime: Infinity,
+    retry: (_, error) => !(error instanceof Response && error.status === 415),
+    enabled: !!bookId
   })
-
-  const isInvalidType = manifestFromStreamer.data === null
-
-  const manifestFromRarQuery = useManifestFromRar({
-    bookId,
-    enabled: isInvalidType
-  })
-
-  const manifest = manifestFromStreamer.data || manifestFromRarQuery.data
-  const normalizedManifest = useMemo(
-    () => manifest && getNormalizedManifest(manifest),
-    [manifest]
-  )
-
-  useEffect(() => {
-    if (normalizedManifest) {
-      Report.log(`manifest`, normalizedManifest)
-    }
-  }, [normalizedManifest])
-
-  if (isInvalidType)
-    return {
-      ...manifestFromRarQuery,
-      isRarFile: !!normalizedManifest,
-      data: normalizedManifest
-    }
-
-  return { ...manifestFromStreamer, isRarFile: false, data: normalizedManifest }
 }

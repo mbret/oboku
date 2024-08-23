@@ -1,9 +1,9 @@
 import React, { FC } from "react"
 import { Typography, useTheme } from "@mui/material"
-import { readerSignal, usePagination } from "./states"
+import { readerSignal, usePagination } from "../states"
 import { useObserve, useSignalValue } from "reactjrx"
-import { useCurrentPage } from "./pagination/useCurrentPage"
-import { useTotalPages } from "./pagination/useTotalPages"
+import { useCurrentPage } from "../pagination/useCurrentPage"
+import { useTotalPages } from "../pagination/useTotalPages"
 
 export const PageInformation: FC<{
   style: React.CSSProperties

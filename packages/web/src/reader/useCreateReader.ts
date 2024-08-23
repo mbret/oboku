@@ -4,8 +4,9 @@ import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
 import { createReader, Manifest } from "@prose-reader/core"
 import { readerSignal } from "./states"
 import { useReaderSettingsState } from "./settings/states"
-import { useFetchResource } from "./streamer/useFetchResource"
-import { localSettingsSignal, useLocalSettings } from "../settings/states"
+import { localSettingsSignal } from "../settings/states"
+import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
+import { webStreamer } from "./streamer/webStreamer"
 
 export type ReaderInstance = ReturnType<typeof createAppReader>
 
@@ -16,11 +17,11 @@ export const createAppReader = gesturesEnhancer(
 
 export const useCreateReader = ({
   manifest,
-  isRarFile,
+  isRar,
   bookId
 }: {
   manifest: Manifest | undefined
-  isRarFile?: boolean
+  isRar?: boolean
   bookId: string
 }) => {
   const [isCreated, setIsCreated] = useState(false)
@@ -28,18 +29,8 @@ export const useCreateReader = ({
   const readerSettingsLiveRef = useLiveRef(readerSettings)
   const reader = useSignalValue(readerSignal)
 
-  /**
-   * In case of rar archive, we will use our local resource fetcher
-   */
-  const { fetchResource } = useFetchResource(isRarFile ? bookId : undefined)
-
   useEffect(() => {
-    if (
-      !isCreated &&
-      manifest &&
-      ((isRarFile && fetchResource) || !isRarFile) &&
-      !readerSignal.getValue()
-    ) {
+    if (isRar !== undefined && !isCreated && !readerSignal.getValue()) {
       setIsCreated(true)
 
       const instance = createAppReader({
@@ -55,7 +46,16 @@ export const useCreateReader = ({
           // fontScaleMin: FONT_SCALE_MIN
         },
         fontScale: readerSettingsLiveRef.current.fontScale ?? 1,
-        fetchResource
+        ...(isRar && {
+          fetchResource: async (item) => {
+            const resourcePath = getResourcePathFromUrl(item.href)
+
+            return webStreamer.fetchResource({
+              key: bookId,
+              resourcePath
+            })
+          }
+        })
       })
 
       // @ts-ignore
@@ -63,7 +63,7 @@ export const useCreateReader = ({
 
       readerSignal.setValue(instance)
     }
-  }, [manifest, isRarFile, isCreated, readerSettingsLiveRef, fetchResource])
+  }, [isRar, isCreated, readerSettingsLiveRef, bookId])
 
   useEffect(() => {
     if (reader) {

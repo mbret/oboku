@@ -1,6 +1,6 @@
 import { STREAMER_URL_PREFIX } from "../../constants.shared"
 
-export const getEpubNameFromUrl = (url: string) => {
+const getEpubNameFromUrl = (url: string) => {
   const { pathname } = new URL(url)
   const urlWithoutPrefix = pathname.substring(`/${STREAMER_URL_PREFIX}/`.length)
   const nextSlashIndex = urlWithoutPrefix.indexOf("/")
@@ -10,4 +10,13 @@ export const getEpubNameFromUrl = (url: string) => {
   }
 
   return urlWithoutPrefix
+}
+
+export const getResourcePathFromUrl = (url: string) => {
+  const urlObj = new URL(url)
+  const epubFileName = getEpubNameFromUrl(url)
+
+  return decodeURIComponent(
+    urlObj.pathname.replace(`/${STREAMER_URL_PREFIX}/${epubFileName}/`, ``)
+  )
 }

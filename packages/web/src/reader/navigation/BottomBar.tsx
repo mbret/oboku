@@ -1,5 +1,5 @@
 import { AppBar, Box, IconButton, Typography, useTheme } from "@mui/material"
-import { PageInformation } from "../PageInformation"
+import { PageInformation } from "./PageInformation"
 import { readerSignal, isMenuShownStateSignal } from "../states"
 import { Scrubber } from "./Scrubber"
 import { DoubleArrowRounded } from "@mui/icons-material"

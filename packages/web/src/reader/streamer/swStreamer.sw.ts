@@ -6,9 +6,10 @@ import {
   StreamerFileNotFoundError,
   StreamerFileNotSupportedError
 } from "../../errors/errors.shared"
-import { directives } from "@oboku/shared"
+import { onResourceError } from "./onResourceError.shared"
+import { onManifestSuccess } from "./onManifestSuccess.shared"
 
-export const streamer = new ServiceWorkerStreamer({
+export const swStreamer = new ServiceWorkerStreamer({
   cleanArchiveAfter: 5 * 60 * 1000,
   getUriInfo: (event) => {
     const url = new URL(event.request.url)
@@ -35,33 +36,6 @@ export const streamer = new ServiceWorkerStreamer({
 
     return newArchive
   },
-  onError: (error) => {
-    if (error instanceof StreamerFileNotSupportedError) {
-      return new Response(error.message, { status: 415 })
-    }
-    if (error instanceof StreamerFileNotFoundError) {
-      return new Response(error.message, { status: 404 })
-    }
-
-    console.error(error)
-
-    return new Response(String(error), { status: 500 })
-  },
-  onManifestSuccess: async ({ manifest, archive }) => {
-    const { isWebtoon } = directives.extractDirectivesFromName(archive.filename)
-
-    if (isWebtoon) {
-      return {
-        ...manifest,
-        renditionLayout: "reflowable",
-        renditionFlow: "scrolled-continuous",
-        spineItems: manifest.spineItems.map((item) => ({
-          ...item,
-          renditionLayout: "reflowable" as const
-        }))
-      }
-    }
-
-    return manifest
-  }
+  onError: onResourceError,
+  onManifestSuccess
 })
