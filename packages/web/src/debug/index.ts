@@ -6,6 +6,11 @@ import "./sentry"
 // @ts-ignore
 window.localforage = localforage
 
+if (isDebugEnabled()) {
+  // @ts-ignore
+  window.__PROSE_READER_DEBUG = true
+}
+
 if (!isDebugEnabled()) {
   console.log = () => {}
   console.warn = () => {}
