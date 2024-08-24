@@ -39,7 +39,7 @@ export const useCreateReader = ({
         }),
         gestures: {
           ...(localSettingsSignal.getValue().useOptimizedTheme && {
-            panNavigation: false
+            panNavigation: "swipe"
           })
           // @todo
           // fontScaleMax: FONT_SCALE_MAX,
