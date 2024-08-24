@@ -4,20 +4,21 @@ import { useAccessToken } from "./lib/useAccessToken"
 import { ObokuPlugin } from "../types"
 import { httpClient } from "../../http/httpClient"
 import { catchError, from, mergeMap, of } from "rxjs"
-import { gapiOrThrow$ } from "./lib/gapi"
+import { useGoogleScripts } from "./lib/scripts"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   requestPopup
 }) => {
   const { requestToken } = useAccessToken({ requestPopup })
+  const { getGoogleScripts } = useGoogleScripts()
 
   const downloadBook = ({ link, onDownloadProgress }) => {
     return requestToken({
       scope: ["https://www.googleapis.com/auth/drive.readonly"]
     }).pipe(
       mergeMap(() => {
-        return gapiOrThrow$.pipe(
-          mergeMap((gapi) => {
+        return getGoogleScripts().pipe(
+          mergeMap(([, gapi]) => {
             const fileId = extractIdFromResourceId(link.resourceId)
 
             return from(
@@ -38,7 +39,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
                     url: `https://content.googleapis.com/drive/v3/files/${fileId}?alt=media&key=AIzaSyBgTV-RQecG_TFwilsdUJXqKmeXEiNSWUg`,
                     // url: `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
                     headers: {
-                      Authorization: `Bearer ${gapi.auth.getToken().access_token}`,
+                      Authorization: `Bearer ${gapi.auth.getToken().access_token}`
                       // "X-Goog-Encode-Response-If-Executable": "base64"
                       // "x-javascript-user-agent":
                       //   "google-api-javascript-client/1.1.0",

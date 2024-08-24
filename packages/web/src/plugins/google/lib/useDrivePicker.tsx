@@ -1,7 +1,7 @@
 import { DEVELOPER_KEY, APP_ID } from "./constants"
 import { useAccessToken } from "./useAccessToken"
 import { finalize, first, from, switchMap } from "rxjs"
-import { gsiOrThrow$ } from "./gsi"
+import { useGoogleScripts } from "./scripts"
 
 export const useDrivePicker = ({
   requestPopup
@@ -9,11 +9,12 @@ export const useDrivePicker = ({
   requestPopup: () => Promise<boolean>
 }) => {
   const { requestToken } = useAccessToken({ requestPopup })
+  const { getGoogleScripts } = useGoogleScripts()
 
   const pick = ({ select }: { select: "file" | "folder" }) =>
-    gsiOrThrow$.pipe(
+    getGoogleScripts().pipe(
       first(),
-      switchMap((gsi) => {
+      switchMap(([gsi]) => {
         return requestToken({
           scope: [`https://www.googleapis.com/auth/drive.readonly`]
         }).pipe(

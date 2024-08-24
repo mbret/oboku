@@ -11,6 +11,7 @@ import {
 } from "rxjs"
 import { loadScript } from "../../../common/utils"
 import { retryOnFailure } from "./scripts"
+import { GapiNotAvailableError } from "./errors"
 
 const ID = "oboku-google-api-script"
 
@@ -34,7 +35,7 @@ export const gapiSignal = signal<
 export const gapiOrThrow$ = gapiSignal.subject.pipe(
   map(({ gapi }) => {
     if (!gapi) {
-      throw new Error("gapi not available")
+      throw new GapiNotAvailableError()
     }
 
     return gapi

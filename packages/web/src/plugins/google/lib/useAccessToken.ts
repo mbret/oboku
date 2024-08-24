@@ -1,6 +1,5 @@
 import { ObokuPluginError } from "../../types"
-import { gsiOrThrow$, gsiSignal } from "./gsi"
-import { catchError, filter, first, from, mergeMap, of, tap } from "rxjs"
+import { catchError, first, from, mergeMap, of, tap } from "rxjs"
 import {
   accessTokenSignal,
   consentShownSignal,
@@ -9,6 +8,7 @@ import {
   requestGoogleAccessToken
 } from "./auth"
 import { Report } from "../../../debug/report.shared"
+import { useGoogleScripts } from "./scripts"
 
 const isPopupClosedError = (error: unknown) => {
   return (
@@ -24,10 +24,12 @@ export const useAccessToken = ({
 }: {
   requestPopup: () => Promise<boolean>
 }) => {
+  const { getGoogleScripts } = useGoogleScripts()
+
   const requestToken = ({ scope }: { scope: string[] }) =>
-    gsiOrThrow$.pipe(
+    getGoogleScripts().pipe(
       first(),
-      mergeMap((gsi) => {
+      mergeMap(([gsi]) => {
         const firstScope = scope[0]
         const accessToken = accessTokenSignal.getValue()
 
