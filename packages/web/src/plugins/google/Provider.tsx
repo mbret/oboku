@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useEffect } from "react"
 import { BlockingScreen } from "../../common/BlockingBackdrop"
 import { ObokuPlugin } from "../types"
 import { useLoadGapi } from "./lib/gapi"
@@ -9,8 +9,13 @@ import { consentShownSignal } from "./lib/auth"
 export const Provider: ObokuPlugin["Provider"] = memo(({ children }) => {
   const consentPopupShown = useSignalValue(consentShownSignal)
 
-  useLoadGapi()
-  useLoadGsi()
+  const { mutate: loadGapi } = useLoadGapi()
+  const { mutate: loadGsi } = useLoadGsi()
+
+  useEffect(() => {
+    loadGapi()
+    loadGsi()
+  }, [loadGapi, loadGsi])
 
   return (
     <>

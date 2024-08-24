@@ -78,7 +78,7 @@ const initClient = () =>
   )
 
 export const useLoadGapi = () => {
-  const { mutate } = useMutation({
+  return useMutation({
     mapOperator: "switch",
     mutationKey: ["pluginGoogleScriptMutation"],
     mutationFn: () => {
@@ -147,10 +147,4 @@ export const useLoadGapi = () => {
       )
     }
   })
-
-  useEffect(() => {
-    mutate()
-  }, [mutate])
-
-  return { mutate }
 }
