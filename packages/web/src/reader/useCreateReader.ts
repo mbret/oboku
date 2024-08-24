@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { SIGNAL_RESET, useLiveRef, useSignalValue } from "reactjrx"
 import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
-import { createReader, Manifest } from "@prose-reader/core"
+import { createReader } from "@prose-reader/core"
 import { readerSignal } from "./states"
 import { useReaderSettingsState } from "./settings/states"
 import { localSettingsSignal } from "../settings/states"
@@ -16,12 +16,10 @@ export const createAppReader = gesturesEnhancer(
 )
 
 export const useCreateReader = ({
-  manifest,
-  isRar,
+  isUsingWebStreamer,
   bookId
 }: {
-  manifest: Manifest | undefined
-  isRar?: boolean
+  isUsingWebStreamer?: boolean
   bookId: string
 }) => {
   const [isCreated, setIsCreated] = useState(false)
@@ -30,7 +28,11 @@ export const useCreateReader = ({
   const reader = useSignalValue(readerSignal)
 
   useEffect(() => {
-    if (isRar !== undefined && !isCreated && !readerSignal.getValue()) {
+    if (
+      isUsingWebStreamer !== undefined &&
+      !isCreated &&
+      !readerSignal.getValue()
+    ) {
       setIsCreated(true)
 
       const instance = createAppReader({
@@ -41,12 +43,9 @@ export const useCreateReader = ({
           ...(localSettingsSignal.getValue().useOptimizedTheme && {
             panNavigation: "swipe"
           })
-          // @todo
-          // fontScaleMax: FONT_SCALE_MAX,
-          // fontScaleMin: FONT_SCALE_MIN
         },
         fontScale: readerSettingsLiveRef.current.fontScale ?? 1,
-        ...(isRar && {
+        ...(isUsingWebStreamer && {
           fetchResource: async (item) => {
             const resourcePath = getResourcePathFromUrl(item.href)
 
@@ -63,7 +62,7 @@ export const useCreateReader = ({
 
       readerSignal.setValue(instance)
     }
-  }, [isRar, isCreated, readerSettingsLiveRef, bookId])
+  }, [isUsingWebStreamer, isCreated, readerSettingsLiveRef, bookId])
 
   useEffect(() => {
     if (reader) {

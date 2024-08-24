@@ -1,7 +1,7 @@
 import { ServiceWorkerStreamer } from "@prose-reader/streamer"
 import { STREAMER_URL_PREFIX } from "../../constants.shared"
 import { getBookFile } from "../../download/getBookFile.shared"
-import { getArchiveForZipFile } from "./getArchiveForFile.shared"
+import { getArchiveForZipFile, isRarFile } from "./archives.shared"
 import {
   StreamerFileNotFoundError,
   StreamerFileNotSupportedError
@@ -28,13 +28,11 @@ export const swStreamer = new ServiceWorkerStreamer({
       throw new StreamerFileNotFoundError(`FileNotFoundError`)
     }
 
-    const newArchive = await getArchiveForZipFile(file)
-
-    if (!newArchive) {
+    if (isRarFile(file)) {
       throw new StreamerFileNotSupportedError(`FileNotSupportedError`)
     }
 
-    return newArchive
+    return await getArchiveForZipFile(file)
   },
   onError: onResourceError,
   onManifestSuccess

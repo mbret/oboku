@@ -9,6 +9,7 @@ import { Report } from "../../debug/report.shared"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { PromiseReturnType } from "../../types"
 import { Archive as LibARchive } from "libarchive.js"
+import { StreamerFileNotSupportedError } from "../../errors/errors.shared"
 
 const jsZipCompatibleMimeTypes = [`application/epub+zip`, `application/x-cbz`]
 
@@ -24,9 +25,15 @@ const loadDataWithJsZip = async (data: Blob | File) => {
   }
 }
 
+export const isRarFile = (
+  file: NonNullable<PromiseReturnType<typeof getBookFile>>
+) => {
+  return file.data.name.endsWith(".rar") || file.data.name.endsWith(".cbr")
+}
+
 export const getArchiveForZipFile = async (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>
-): Promise<Archive | undefined> => {
+): Promise<Archive> => {
   try {
     const normalizedName = file.name.toLowerCase()
 
@@ -55,7 +62,7 @@ export const getArchiveForZipFile = async (
       return createArchiveFromText(file.data)
     }
 
-    return undefined
+    throw new StreamerFileNotSupportedError(`FileNotSupportedError`)
   } catch (e) {
     Report.error(
       "getArchiveForFile: An error occurred while getting archive for file"

@@ -2,6 +2,7 @@ import { Manifest } from "@prose-reader/shared"
 import { useQuery } from "reactjrx"
 import { webStreamer } from "../streamer/webStreamer"
 import { STREAMER_URL_PREFIX } from "../../constants.shared"
+import { serviceWorkerReadySignal } from "../../workers/states"
 
 const getManifestBaseUrl = (origin: string, epubFileName: string) => {
   return `${origin}/${STREAMER_URL_PREFIX}/${epubFileName}/`
@@ -11,25 +12,33 @@ export const useManifest = (bookId: string | undefined) => {
   return useQuery({
     queryKey: ["reader/streamer/manifest", { bookId }],
     queryFn: async () => {
-      const response = await fetch(
-        `${window.location.origin}/streamer/${bookId}/manifest`
-      )
+      const swStreamerResponse = serviceWorkerReadySignal.getValue()
+        ? await fetch(`${window.location.origin}/streamer/${bookId}/manifest`)
+        : undefined
 
-      if (response.status === 415) {
-        const rarResponse = await webStreamer.fetchManifest({
+      if (
+        !swStreamerResponse ||
+        swStreamerResponse.status === 415 ||
+        /**
+         * Most likely service worker is not registered.
+         * Can happens on firefox during development
+         */
+        swStreamerResponse.headers.get("Content-Type") === "text/html"
+      ) {
+        const webStreamerResponse = await webStreamer.fetchManifest({
           key: bookId ?? ``,
           baseUrl: getManifestBaseUrl(window.location.origin, bookId ?? "")
         })
 
         return {
-          manifest: await rarResponse.json(),
-          isRar: true
+          manifest: await webStreamerResponse.json(),
+          isUsingWebStreamer: true
         }
       }
 
-      const data: Manifest = await response.json()
+      const data: Manifest = await swStreamerResponse.json()
 
-      return { manifest: data, isRar: false }
+      return { manifest: data, isUsingWebStreamer: false }
     },
     staleTime: Infinity,
     retry: (_, error) => !(error instanceof Response && error.status === 415),

@@ -25,14 +25,14 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   const readerState = useObserve(() => reader?.state$, [reader])
   const readerSettings = useReaderSettingsState()
   const readerContainerRef = useRef<HTMLDivElement>(null)
-  const { data: { isRar, manifest } = {}, error: manifestError } =
+  const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
     useManifest(bookId)
   const isBookError = !!manifestError
   // We don't want to display overlay for comics / manga
   const showFloatingMenu =
     reader?.context.manifest?.renditionLayout !== "pre-paginated"
 
-  useCreateReader({ manifest, bookId, isRar })
+  useCreateReader({ bookId, isUsingWebStreamer })
   useLoadManifest({
     bookId,
     containerElement: readerContainerRef.current,
