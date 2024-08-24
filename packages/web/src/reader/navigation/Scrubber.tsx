@@ -124,12 +124,16 @@ export const Scrubber = memo(({ bookId }: { bookId: string }) => {
           valueSignal.setValue(value)
 
           if (!isUsingPagesPerChapter) {
-            reader?.navigation.goToSpineItem(value)
+            reader?.navigation.goToSpineItem({
+              indexOrId: value,
+              animation: false
+            })
           } else {
-            reader?.navigation.goToPageOfSpineItem(
-              value,
-              pagination?.beginSpineItemIndex ?? 0
-            )
+            reader?.navigation.goToPageOfSpineItem({
+              pageIndex: value,
+              spineItemId: pagination?.beginSpineItemIndex ?? 0,
+              animation: false
+            })
           }
         }
       }}
