@@ -11,6 +11,16 @@ import { SIGNAL_RESET } from "reactjrx"
 export const ReaderScreen = memo(() => {
   const { bookId } = useParams<{ bookId?: string }>()
 
+  return (
+    <>
+      {bookId && <Reader bookId={bookId} />}
+      <MoreDialog bookId={bookId} />
+      <Effects bookId={bookId} />
+    </>
+  )
+})
+
+const Effects = memo(({ bookId }: { bookId?: string }) => {
   useTrackBookBeingRead(bookId)
   useWakeLock()
   useFullscreenAutoSwitch()
@@ -24,10 +34,5 @@ export const ReaderScreen = memo(() => {
     []
   )
 
-  return (
-    <>
-      {bookId && <Reader bookId={bookId} />}
-      <MoreDialog bookId={bookId} />
-    </>
-  )
+  return null
 })
