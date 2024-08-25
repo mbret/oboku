@@ -11,7 +11,7 @@ import {
 } from "@mui/material"
 import { TabContext, TabList, TabPanel } from "@mui/lab"
 import { FiberManualRecordRounded } from "@mui/icons-material"
-import React, { useCallback } from "react"
+import React, { memo, useCallback } from "react"
 import { FC } from "react"
 import { useCSS } from "../../common/utils"
 import { DialogTopBar } from "../../navigation/DialogTopBar"
@@ -31,7 +31,7 @@ export const useMoreDialog = () => ({
   }, [])
 })
 
-export const MoreDialog = ({ bookId }: { bookId?: string }) => {
+export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
   const isContentsDialogOpened = useSignalValue(
     isContentsDialogOpenedStateSignal
   )
@@ -131,7 +131,7 @@ export const MoreDialog = ({ bookId }: { bookId?: string }) => {
       </Dialog>
     </TabContext>
   )
-}
+})
 
 const useStyles = () => {
   const theme = useTheme()

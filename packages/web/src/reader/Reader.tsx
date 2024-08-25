@@ -49,6 +49,7 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
         bookId={bookId}
         isUsingWebStreamer={isUsingWebStreamer}
         manifest={manifest}
+        containerElement={readerContainerRef.current}
       />
     </>
   )
@@ -85,18 +86,18 @@ const Effects = memo(
   ({
     bookId,
     isUsingWebStreamer,
-    manifest
+    manifest,
+    containerElement
   }: {
     bookId: string
     isUsingWebStreamer?: boolean
     manifest?: Manifest
+    containerElement?: HTMLElement | null
   }) => {
-    const readerContainerRef = useRef<HTMLDivElement>(null)
-
     useCreateReader({ bookId, isUsingWebStreamer })
     useLoadManifest({
       bookId,
-      containerElement: readerContainerRef.current,
+      containerElement,
       manifest
     })
 
