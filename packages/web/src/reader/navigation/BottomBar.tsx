@@ -52,7 +52,7 @@ export const BottomBar = memo(({ bookId }: { bookId: string }) => {
         </div>
       ) : (
         <>
-          <PageInformation style={{ flex: 1 }} bookId={bookId} />
+          <PageInformation flex={1} bookId={bookId} />
           <div
             style={{
               display: "flex",

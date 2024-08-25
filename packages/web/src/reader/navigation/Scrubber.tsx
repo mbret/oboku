@@ -5,7 +5,7 @@ import { readerSignal } from "../states"
 import { ComponentsVariants, useTheme, useThemeProps } from "@mui/material"
 import { useObserve, useSignal, useSignalValue, useSubscribe } from "reactjrx"
 import { useTotalPages } from "../pagination/useTotalPages"
-import { useCurrentPage } from "../pagination/useCurrentPage"
+import { useCurrentPages } from "../pagination/useCurrentPages"
 import { useIsUsingReverseNavigation } from "./useIsUsingReverseNavigation"
 import { useIsUsingPagesPerChapter } from "../pagination/useIsUsingPagesPerChapter"
 
@@ -88,10 +88,8 @@ const ObokuScrubber = forwardRef<HTMLDivElement, ScrubberProps>(
 
 export const Scrubber = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
-  const currentPage = useCurrentPage({ bookId })
+  const [currentPage] = useCurrentPages({ bookId })
   const totalPages = useTotalPages({ bookId }) || 1
-  const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
-  const { renditionLayout } = manifest ?? {}
   const isUsingReverseNavigation = useIsUsingReverseNavigation()
   const isUsingPagesPerChapter = useIsUsingPagesPerChapter({ bookId })
   const [value, valueSignal] = useSignal({ default: currentPage || 0 })

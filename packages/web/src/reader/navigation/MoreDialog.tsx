@@ -18,7 +18,7 @@ import { DialogTopBar } from "../../navigation/DialogTopBar"
 import { usePagination, readerSignal } from "../states"
 import { SettingsList } from "../settings/SettingsList"
 import { signal, useObserve, useSignalValue } from "reactjrx"
-import { useCurrentPage } from "../pagination/useCurrentPage"
+import { useCurrentPages } from "../pagination/useCurrentPages"
 
 const isContentsDialogOpenedStateSignal = signal<boolean>({
   key: "isContentsDialogOpenedState",
@@ -42,7 +42,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
   const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
   const { title, nav } = manifest ?? {}
   const chapterInfo = pagination?.beginChapterInfo
-  const currentPage = useCurrentPage({ bookId }) || 0
+  const [currentPage] = useCurrentPages({ bookId }) || 0
   const toc = nav?.toc || []
   const styles = useStyles()
 
@@ -74,7 +74,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
           primary={tocItem.title}
           {...{
             ...(currentSubChapter?.path === tocItem.path && {
-              secondary: `Currently on page ${currentPage + 1}`
+              secondary: `Currently on page ${(currentPage ?? 0) + 1}`
             })
           }}
           color="primary"
