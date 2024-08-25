@@ -10,7 +10,13 @@ export default defineConfig(({ mode }) => ({
     sourcemap: true,
     minify: mode !== "development",
     emptyOutDir: true,
-    assetsInlineLimit: 0
+    assetsInlineLimit: 0,
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        raw: "raw.html"
+      }
+    }
   },
   css: {
     devSourcemap: true
