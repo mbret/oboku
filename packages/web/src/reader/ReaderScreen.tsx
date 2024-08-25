@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react"
+import { memo, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { useWakeLock } from "../common/useWakeLock"
 import { useFullscreenAutoSwitch } from "./settings/fullScreen"
@@ -8,7 +8,7 @@ import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
 import { isMenuShownStateSignal, readerSignal } from "./states"
 import { SIGNAL_RESET } from "reactjrx"
 
-export const ReaderScreen = () => {
+export const ReaderScreen = memo(() => {
   const { bookId } = useParams<{ bookId?: string }>()
 
   useTrackBookBeingRead(bookId)
@@ -30,4 +30,4 @@ export const ReaderScreen = () => {
       <MoreDialog bookId={bookId} />
     </>
   )
-}
+})

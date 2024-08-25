@@ -19,43 +19,51 @@ import { useCreateReader } from "./useCreateReader"
 import { BookError } from "./BookError"
 import { Box } from "@mui/material"
 import { useLoadManifest } from "./useLoadReader"
+import { Manifest } from "@prose-reader/shared"
 
 export const Reader = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
   const readerState = useObserve(() => reader?.state$, [reader])
-  const readerSettings = useReaderSettingsState()
   const readerContainerRef = useRef<HTMLDivElement>(null)
   const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
     useManifest(bookId)
   const isBookError = !!manifestError
-  // We don't want to display overlay for comics / manga
-  const showFloatingMenu =
-    reader?.context.manifest?.renditionLayout !== "pre-paginated"
-
-  useCreateReader({ bookId, isUsingWebStreamer })
-  useLoadManifest({
-    bookId,
-    containerElement: readerContainerRef.current,
-    manifest
-  })
-
-  useGestureHandler()
-  useSyncBookProgress(bookId)
-  usePersistReaderInstanceSettings()
 
   if (isBookError) {
     return <BookError bookId={bookId} manifestError={manifestError} />
   }
 
   return (
-    <Box position="relative" height="100%" width="100%">
-      <Box
-        position="relative"
-        height="100%"
-        width="100%"
-        ref={readerContainerRef}
+    <>
+      <Box position="relative" height="100%" width="100%">
+        <Box
+          position="relative"
+          height="100%"
+          width="100%"
+          ref={readerContainerRef}
+        />
+        {readerState !== "ready" && <BookLoading />}
+        <Interface bookId={bookId} />
+      </Box>
+      <Effects
+        bookId={bookId}
+        isUsingWebStreamer={isUsingWebStreamer}
+        manifest={manifest}
       />
-      {readerState !== "ready" && <BookLoading />}
+    </>
+  )
+})
+
+const Interface = memo(({ bookId }: { bookId: string }) => {
+  const reader = useSignalValue(readerSignal)
+  const readerState = useObserve(() => reader?.state$, [reader])
+  // We don't want to display overlay for comics / manga
+  const showFloatingMenu =
+    reader?.context.manifest?.renditionLayout !== "pre-paginated"
+  const readerSettings = useReaderSettingsState()
+
+  return (
+    <>
       {readerState === "ready" && (
         <>
           <Notification />
@@ -69,6 +77,33 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
           <BottomBar bookId={bookId} />
         </>
       )}
-    </Box>
+    </>
   )
 })
+
+const Effects = memo(
+  ({
+    bookId,
+    isUsingWebStreamer,
+    manifest
+  }: {
+    bookId: string
+    isUsingWebStreamer?: boolean
+    manifest?: Manifest
+  }) => {
+    const readerContainerRef = useRef<HTMLDivElement>(null)
+
+    useCreateReader({ bookId, isUsingWebStreamer })
+    useLoadManifest({
+      bookId,
+      containerElement: readerContainerRef.current,
+      manifest
+    })
+
+    useGestureHandler()
+    useSyncBookProgress(bookId)
+    usePersistReaderInstanceSettings()
+
+    return null
+  }
+)

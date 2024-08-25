@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { memo, useCallback, useEffect, useState } from "react"
 import { isMenuShownStateSignal, readerSignal } from "../states"
 import {
   AppBar,
@@ -21,7 +21,7 @@ import { useMoreDialog } from "./MoreDialog"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useShowRemoveBookOnExitDialog } from "./useShowRemoveBookOnExitDialog"
 
-export const TopBar = ({ bookId }: { bookId: string }) => {
+export const TopBar = memo(({ bookId }: { bookId: string }) => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const reader = useSignalValue(readerSignal)
   const readerState = useObserve(() => reader?.state$, [reader])
@@ -118,7 +118,7 @@ export const TopBar = ({ bookId }: { bookId: string }) => {
       </Toolbar>
     </AppBar>
   )
-}
+})
 
 const useStyles = ({ isMenuShow }: { isMenuShow: boolean }) => {
   return useCSS(

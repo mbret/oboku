@@ -6,8 +6,9 @@ import { DoubleArrowRounded } from "@mui/icons-material"
 import { FloatingBottom } from "./FloatingBottom"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useLocalSettings } from "../../settings/states"
+import { memo } from "react"
 
-export const BottomBar = ({ bookId }: { bookId: string }) => {
+export const BottomBar = memo(({ bookId }: { bookId: string }) => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const reader = useSignalValue(readerSignal)
   const readerState = useObserve(() => reader?.state$, [reader])
@@ -112,4 +113,4 @@ export const BottomBar = ({ bookId }: { bookId: string }) => {
       <FloatingBottom enableProgress enableTime />
     </AppBar>
   )
-}
+})
