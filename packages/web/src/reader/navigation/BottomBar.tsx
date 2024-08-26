@@ -1,4 +1,11 @@
-import { AppBar, Box, IconButton, Typography, useTheme } from "@mui/material"
+import {
+  AppBar,
+  Box,
+  IconButton,
+  Stack,
+  Typography,
+  useTheme
+} from "@mui/material"
 import { PageInformation } from "./PageInformation"
 import { readerSignal, isMenuShownStateSignal } from "../states"
 import { Scrubber } from "./Scrubber"
@@ -31,7 +38,8 @@ export const BottomBar = memo(({ bookId }: { bookId: string }) => {
         ...(useOptimizedTheme && {
           borderTop: "1px solid black"
         }),
-        visibility: isMenuShow ? "visible" : "hidden"
+        visibility: isMenuShow ? "visible" : "hidden",
+        alignItems: "center"
       }}
     >
       {readerState === "idle" ? (
@@ -51,7 +59,7 @@ export const BottomBar = memo(({ bookId }: { bookId: string }) => {
           </Typography>
         </div>
       ) : (
-        <>
+        <Stack flex={1} pt={1} gap={0} maxWidth={620} width="100%">
           <PageInformation flex={1} bookId={bookId} />
           <div
             style={{
@@ -108,7 +116,7 @@ export const BottomBar = memo(({ bookId }: { bookId: string }) => {
               <DoubleArrowRounded />
             </IconButton>
           </div>
-        </>
+        </Stack>
       )}
       <FloatingBottom enableProgress enableTime />
     </AppBar>
