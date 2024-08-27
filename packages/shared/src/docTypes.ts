@@ -181,10 +181,13 @@ type MangoOperator =
   | "$allMatch"
   | "$elemMatch"
 
-type ConditionOperator<T> = {
+type MangoSelectorOperator<T> = {
   $nin?: any[]
   $in?: any[]
   $ne?: T
+  $elemMatch?: {
+    $eq: T extends Array<any> ? T[number] : T
+  }
 }
 
 interface MangoQuery<RxDocType> {
@@ -194,7 +197,7 @@ interface MangoQuery<RxDocType> {
     | {
         [key in keyof RxDocType]?:
           | RxDocType[key]
-          | ConditionOperator<RxDocType[key]>
+          | MangoSelectorOperator<RxDocType[key]>
       }
     | {
         $or: {

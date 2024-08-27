@@ -56,8 +56,7 @@ export const syncCollection = async ({
 
   await repairCollectionBooks({
     collectionId,
-    ctx,
-    helpers
+    ctx
   })
 
   triggerMetadataRefresh({

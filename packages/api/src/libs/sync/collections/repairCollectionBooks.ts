@@ -1,9 +1,7 @@
 import { Logger } from "@libs/logger"
-import { DataSourcePlugin } from "@libs/plugins/types"
 import { difference } from "lodash"
 import { Context } from "../types"
-
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
+import { atomicUpdate, find, findOne } from "@libs/couch/dbHelpers"
 
 const logger = Logger.child({ module: "sync/repairCollectionBooks" })
 
@@ -25,39 +23,51 @@ const logger = Logger.child({ module: "sync/repairCollectionBooks" })
  * collection.
  */
 export const repairCollectionBooks = async ({
-  helpers,
   ctx,
   collectionId
 }: {
   ctx: Context
-  helpers: Helpers
   collectionId: string
 }) => {
-  const collection = await helpers.findOne("obokucollection", {
+  const collection = await findOne(ctx.db, "obokucollection", {
     selector: { _id: collectionId }
   })
 
   if (collection) {
-    const booksHavingThisCollectionAttached = await helpers.find("book", {
-      selector: { _id: { $in: collection?.books || [] } },
-      /**
-       * @todo If a collection have more than 999 books we have a problem.
-       * We need to find a safer way to detect anomaly.
-       */
-      limit: 999
-    })
-
-    const bookIdsHavingThisCollectionAttached =
-      booksHavingThisCollectionAttached.map(({ _id }) => _id)
+    const [booksHavingCollectionAttached, booksFromCollectionList] =
+      await Promise.all([
+        find(ctx.db, `book`, {
+          selector: {
+            collections: {
+              $elemMatch: {
+                $eq: collection._id
+              }
+            }
+          },
+          /**
+           * @todo If a collection have more than 999 books we have a problem.
+           * We need to find a safer way to detect anomaly.
+           */
+          limit: 999
+        }),
+        find(ctx.db, `book`, {
+          selector: { _id: { $in: collection?.books || [] } },
+          /**
+           * @todo If a collection have more than 999 books we have a problem.
+           * We need to find a safer way to detect anomaly.
+           */
+          limit: 999
+        })
+      ])
 
     const missingsBooksInCollection = difference(
-      bookIdsHavingThisCollectionAttached,
+      booksHavingCollectionAttached.map(({ _id }) => _id),
       collection.books
     )
 
     const danglingBooks = difference(
       collection.books,
-      bookIdsHavingThisCollectionAttached
+      booksFromCollectionList.map(({ _id }) => _id)
     )
 
     if (missingsBooksInCollection.length > 0 || danglingBooks.length > 0) {
@@ -65,7 +75,7 @@ export const repairCollectionBooks = async ({
         `${collectionId} has ${missingsBooksInCollection.join(`,`)} missed books and ${danglingBooks.join(`,`)} dangling books`
       )
 
-      await helpers.atomicUpdate("obokucollection", collection._id, (old) => ({
+      await atomicUpdate(ctx.db, "obokucollection", collection._id, (old) => ({
         ...old,
         books: [
           ...new Set([
