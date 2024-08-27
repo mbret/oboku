@@ -6,17 +6,15 @@ import {
   DataSourcePlugin,
   SynchronizeAbleDataSource
 } from "@libs/plugins/types"
-import { registerOrUpdateCollection } from "./collections/registerOrUpdateCollection"
+import { syncCollection } from "./collections/syncCollection"
 import { createTagFromName } from "@libs/couch/dbHelpers"
-import nano from "nano"
 import { createOrUpdateBook } from "./books/createOrUpdateBook"
+import { Context } from "./types"
 
 const logger = Logger.child({ module: "sync" })
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
-type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0] & {
-  db: nano.DocumentScope<unknown>
-}
+
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 function isFolder(
@@ -33,7 +31,7 @@ function isFile(
 
 export const synchronizeFromDataSource = async (
   synchronizeAble: SynchronizeAbleDataSource,
-  ctx: Context & { authorization: string; db: nano.DocumentScope<unknown> },
+  ctx: Context,
   helpers: ReturnType<typeof createHelpers>
 ) => {
   console.log(
@@ -148,7 +146,7 @@ const syncFolder = async ({
   // - metadata says otherwise
   // - parent is not already a collection
   if (isFolder(item) && isCollection) {
-    await registerOrUpdateCollection({ ctx, item, helpers })
+    await syncCollection({ ctx, item, helpers })
   }
 
   logger.info(
