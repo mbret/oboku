@@ -7,6 +7,23 @@ type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 
 const logger = Logger.child({ module: "sync/repairCollectionBooks" })
 
+/**
+ * Try to repair books links
+ *
+ * @important
+ * We don't do the repair on client side automatically since these issues can
+ * appear during partial / incomplete / errored sync. We cannot reliably detect when
+ * we can do the repairs ourselves. The repairs can be safely done on sync or on repair
+ * page on the web app.
+ *
+ * @scenario 1
+ * The book does not exist anymore or is not attached to the collection but the collection
+ * still have the book attached. We need to remove it from the collection.
+ *
+ * @scenario 2
+ * The book has the collection attached but not the collection. We need to reattach it to the
+ * collection.
+ */
 export const repairCollectionBooks = async ({
   helpers,
   ctx,
