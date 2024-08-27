@@ -6,7 +6,7 @@ import { map, switchMap, tap } from "rxjs"
 import { MangoQuery } from "rxdb"
 import { getMetadataFromCollection } from "./getMetadataFromCollection"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
-import { libraryStateSignal } from "../library/states"
+import { libraryStateSignal } from "../library/books/states"
 import { difference, intersection } from "lodash"
 import { observeBooks } from "../books/dbHelpers"
 

@@ -1,6 +1,6 @@
 import { ReadingStateState } from "@oboku/shared"
 import { useCallback } from "react"
-import { libraryStateSignal } from "./states"
+import { libraryStateSignal } from "./books/states"
 
 export const useToggleTag = () => {
   return useCallback(async (tagId: string) => {

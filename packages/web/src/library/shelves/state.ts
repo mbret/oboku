@@ -1,8 +1,9 @@
 import { signal } from "reactjrx"
 
-export const collectionsListSignal = signal<{
+export const libraryShelvesSettingsSignal = signal<{
   readingState: "ongoing" | "finished" | "any"
   viewMode: "grid" | "list"
+  showNotInterestedCollections?: boolean
 }>({
   key: "collectionsListSignal",
   default: {

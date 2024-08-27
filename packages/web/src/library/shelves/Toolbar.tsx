@@ -1,8 +1,8 @@
 import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
-import { FiltersDrawer } from "./FiltersDrawer"
+import { FiltersDrawer } from "./filters/FiltersDrawer"
 import { ComponentProps, useCallback, useState } from "react"
 
-export const FilterBar = ({
+export const Toolbar = ({
   ...rest
 }: ComponentProps<typeof ListActionsToolbar>) => {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false)

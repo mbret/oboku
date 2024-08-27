@@ -2,22 +2,18 @@ import { useState, useMemo, useEffect } from "react"
 import { BookList } from "../../books/bookList/BookList"
 import {
   Button,
-  Toolbar,
-  IconButton,
-  Badge,
   Typography,
   useTheme,
-  Box,
-  Stack
+  Stack,
+  Toolbar as MuiToolbar
 } from "@mui/material"
-import { TuneRounded, SortRounded } from "@mui/icons-material"
 import { LibraryFiltersDrawer } from "../LibraryFiltersDrawer"
 import EmptyLibraryAsset from "../../assets/empty-library.svg"
-import { useCSS, useMeasureElement } from "../../common/utils"
+import { useCSS } from "../../common/utils"
 import {
   libraryStateSignal,
   isUploadBookDrawerOpenedStateSignal
-} from "../states"
+} from "./states"
 import { UploadBookDrawer } from "../UploadBookDrawer"
 import { SortByDialog } from "../../books/bookList/SortByDialog"
 import { useCallback } from "react"
@@ -25,7 +21,8 @@ import { useTranslation } from "react-i18next"
 import { useLibraryBooks } from "./useLibraryBooks"
 import { useSignalValue } from "reactjrx"
 import { isUploadBookFromDataSourceDialogOpenedSignal } from "../../upload/state"
-import { ViewModeIconButton } from "../../common/lists/ListActionsToolbar"
+import { Toolbar } from "./Toolbar"
+import { useResetFilters } from "./filters/useResetFilters"
 
 export const LibraryBooksScreen = () => {
   const styles = useStyles()
@@ -37,6 +34,7 @@ export const LibraryBooksScreen = () => {
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const library = useSignalValue(libraryStateSignal)
   let numberOfFiltersApplied = 0
+  const resetFilters = useResetFilters()
 
   if ((library.tags.length || 0) > 0) numberOfFiltersApplied++
   if ((library.readingStates.length || 0) > 0) numberOfFiltersApplied++
@@ -62,7 +60,7 @@ export const LibraryBooksScreen = () => {
   )
 
   const listHeader = useMemo(
-    () => <Toolbar>{addBookButton}</Toolbar>,
+    () => <MuiToolbar>{addBookButton}</MuiToolbar>,
     [addBookButton]
   )
 
@@ -73,56 +71,13 @@ export const LibraryBooksScreen = () => {
   return (
     <div style={styles.container}>
       <Toolbar
-        style={{
-          borderBottom: `1px solid ${theme.palette.grey[200]}`,
-          boxSizing: "border-box"
+        onFilterClick={() => setIsFiltersDrawerOpened(true)}
+        onSortClick={() => setIsSortingDialogOpened(true)}
+        onClearFilterClick={() => {
+          resetFilters()
         }}
-      >
-        <IconButton
-          edge="start"
-          onClick={() => setIsFiltersDrawerOpened(true)}
-          size="large"
-          color="primary"
-        >
-          {numberOfFiltersApplied > 0 ? (
-            <Badge badgeContent={numberOfFiltersApplied}>
-              <TuneRounded />
-            </Badge>
-          ) : (
-            <TuneRounded />
-          )}
-        </IconButton>
-        <div
-          style={{
-            flexGrow: 1,
-            justifyContent: "flex-start",
-            flexFlow: "row",
-            display: "flex",
-            alignItems: "center"
-          }}
-        >
-          <Button
-            variant="text"
-            onClick={() => setIsSortingDialogOpened(true)}
-            startIcon={<SortRounded />}
-          >
-            {library.sorting === "activity"
-              ? "Recent activity"
-              : library.sorting === "alpha"
-                ? "A > Z"
-                : "Date added"}
-          </Button>
-        </div>
-        <ViewModeIconButton
-          viewMode={library.viewMode}
-          onViewModeChange={(value) => {
-            libraryStateSignal.setValue((state) => ({
-              ...state,
-              viewMode: value
-            }))
-          }}
-        />
-      </Toolbar>
+        numberOfFiltersApplied={numberOfFiltersApplied}
+      />
       <Stack
         flex={1}
         style={
@@ -144,9 +99,9 @@ export const LibraryBooksScreen = () => {
               flex: 1
             }}
           >
-            <Toolbar style={{ width: "100%", boxSizing: "border-box" }}>
+            <MuiToolbar style={{ width: "100%", boxSizing: "border-box" }}>
               {addBookButton}
-            </Toolbar>
+            </MuiToolbar>
             <div
               style={{
                 display: "flex",

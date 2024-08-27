@@ -1,7 +1,7 @@
 import { ReadingStateState } from "@oboku/shared"
-import { DownloadState } from "../download/states"
+import { DownloadState } from "../../download/states"
 import { signal } from "reactjrx"
-import { ListActionViewMode } from "../common/lists/ListActionsToolbar"
+import { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 
 export type LibraryDocType = {
   viewMode: ListActionViewMode
@@ -11,12 +11,11 @@ export type LibraryDocType = {
   readingStates: ReadingStateState[]
   downloadState?: DownloadState | undefined
   isNotInterested?: "only" | "hide"
-  showNotInterestedCollections?: boolean
 }
 
 export type LibrarySorting = "date" | "activity" | "alpha"
 
-const defaultValue: LibraryDocType = {
+export const libraryStateSignalDefaultValue: LibraryDocType = {
   isLibraryUnlocked: false,
   viewMode: "grid",
   sorting: "date",
@@ -27,7 +26,7 @@ const defaultValue: LibraryDocType = {
 
 export const libraryStateSignal = signal({
   key: "libraryState",
-  default: defaultValue
+  default: libraryStateSignalDefaultValue
 })
 
 export const isUploadBookDrawerOpenedStateSignal = signal({

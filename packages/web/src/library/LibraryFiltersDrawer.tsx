@@ -22,7 +22,7 @@ import { ReadingStateState } from "@oboku/shared"
 import { DownloadState } from "../download/states"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "./states"
+import { libraryStateSignal } from "./books/states"
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean

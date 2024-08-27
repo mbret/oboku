@@ -12,29 +12,26 @@ import {
   RadioButtonUncheckedOutlined
 } from "@mui/icons-material"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../states"
 import {
-  CollectionReadingStateDialog,
+  ReadingStateFilterDialog,
   getDisplayableReadingState
-} from "./CollectionStateDialog"
-import { collectionsListSignal } from "./state"
+} from "./ReadingStateFilterDialog"
+import { libraryShelvesSettingsSignal } from "../state"
 
 export const FiltersDrawer: FC<{
   open: boolean
   onClose: () => void
 }> = memo(({ open, onClose }) => {
-  const { showNotInterestedCollections } = useSignalValue(
-    libraryStateSignal,
-    ({ showNotInterestedCollections }) => ({ showNotInterestedCollections })
-  )
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] =
     useState(false)
-  const { readingState: collectionReadingState } = useSignalValue(
-    collectionsListSignal,
-    ({ readingState }) => ({
-      readingState
-    })
-  )
+  const { readingState: collectionReadingState, showNotInterestedCollections } =
+    useSignalValue(
+      libraryShelvesSettingsSignal,
+      ({ readingState, showNotInterestedCollections }) => ({
+        readingState,
+        showNotInterestedCollections
+      })
+    )
 
   return (
     <>
@@ -56,7 +53,7 @@ export const FiltersDrawer: FC<{
             </ListItemButton>
             <ListItemButton
               onClick={() =>
-                libraryStateSignal.setValue((state) => ({
+                libraryShelvesSettingsSignal.setValue((state) => ({
                   ...state,
                   showNotInterestedCollections:
                     !state.showNotInterestedCollections
@@ -78,7 +75,7 @@ export const FiltersDrawer: FC<{
           </List>
         </div>
       </Drawer>
-      <CollectionReadingStateDialog
+      <ReadingStateFilterDialog
         open={isReadingStateDialogOpened}
         onClose={() => setIsReadingStateDialogOpened(false)}
       />

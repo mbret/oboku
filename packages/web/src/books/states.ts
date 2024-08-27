@@ -17,7 +17,7 @@ import { DeepReadonlyObject, MangoQuery } from "rxdb"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
 import { useMemo } from "react"
 import { observeBook, observeBooks } from "./dbHelpers"
-import { libraryStateSignal } from "../library/states"
+import { libraryStateSignal } from "../library/books/states"
 
 export const getBooksByIds = async (database: Database) => {
   const result = await database.collections.book.find({}).exec()

@@ -13,7 +13,7 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
-import { libraryStateSignal } from "../library/states"
+import { libraryStateSignal } from "../library/books/states"
 import { useSettings } from "../settings/helpers"
 
 type Inputs = {

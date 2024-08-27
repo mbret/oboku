@@ -15,7 +15,7 @@ import {
 } from "@mui/icons-material"
 import { useDataSource } from "./useDataSource"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../library/states"
+import { libraryStateSignal } from "../library/books/states"
 import { useRemoveDataSource } from "./useRemoveDataSource"
 import { useDataSourceIncrementalModify } from "./useDataSourceIncrementalModify"
 import { useSynchronizeDataSource } from "./useSynchronizeDataSource"

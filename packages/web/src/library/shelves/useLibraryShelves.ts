@@ -1,23 +1,22 @@
 import { useCollections } from "../../collections/useCollections"
 import { useMemo } from "react"
-import { libraryStateSignal } from "../states"
+import { libraryStateSignal } from "../books/states"
 import { useSignalValue } from "reactjrx"
-import { collectionsListSignal } from "./state"
+import { libraryShelvesSettingsSignal } from "./state"
 import { useCollection } from "../../collections/useCollection"
 import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 
 export const useLibraryShelves = () => {
-  const { showNotInterestedCollections } = useSignalValue(
-    libraryStateSignal,
-    ({ showNotInterestedCollections }) => ({ showNotInterestedCollections })
-  )
-  const collectionReadingState = useSignalValue(
-    collectionsListSignal,
-    (state) => state.readingState
+  const { readingState, showNotInterestedCollections } = useSignalValue(
+    libraryShelvesSettingsSignal,
+    ({ readingState, showNotInterestedCollections }) => ({
+      readingState,
+      showNotInterestedCollections
+    })
   )
   const { data: collections } = useCollections({
     isNotInterested: showNotInterestedCollections ? "with" : "none",
-    readingState: collectionReadingState
+    readingState
   })
   const { data: emptyCollection } = useCollection({
     id: COLLECTION_EMPTY_ID,

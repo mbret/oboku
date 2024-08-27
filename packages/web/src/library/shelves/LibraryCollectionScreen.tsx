@@ -1,12 +1,12 @@
 import { useState, useMemo, useCallback, ComponentProps } from "react"
-import { Button, Stack, Toolbar } from "@mui/material"
+import { Button, Stack, Toolbar as MuiToolbar } from "@mui/material"
 import { ROUTES } from "../../constants"
 import { useNavigate } from "react-router-dom"
 import { CollectionList } from "../../collections/list/CollectionList"
 import { signal, useSignalValue } from "reactjrx"
 import { useLibraryShelves } from "./useLibraryShelves"
-import { FilterBar } from "./FilterBar"
-import { collectionsListSignal } from "./state"
+import { Toolbar } from "./Toolbar"
+import { libraryShelvesSettingsSignal } from "./state"
 import { CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
 import { AddCollectionDialog } from "./AddCollectionDialog"
@@ -29,14 +29,14 @@ export const LibraryCollectionScreen = () => {
     libraryCollectionScreenPreviousScrollState
   )
   const { viewMode } = useSignalValue(
-    collectionsListSignal,
+    libraryShelvesSettingsSignal,
     ({ viewMode }) => ({ viewMode })
   )
   const { data: collections } = useLibraryShelves()
 
   const listHeader = useMemo(
     () => (
-      <Toolbar>
+      <MuiToolbar>
         <Button
           style={{
             width: "100%"
@@ -47,7 +47,7 @@ export const LibraryCollectionScreen = () => {
         >
           Create a new collection
         </Button>
-      </Toolbar>
+      </MuiToolbar>
     ),
     [setIsAddCollectionDialogOpened]
   )
@@ -63,7 +63,7 @@ export const LibraryCollectionScreen = () => {
 
   return (
     <Stack flex={1} overflow="hidden">
-      <FilterBar />
+      <Toolbar />
       {!!collections && (
         <CollectionList
           style={{

@@ -3,7 +3,7 @@ import { useBooksSortedBy } from "../../books/helpers"
 import { useBooksAsArrayState } from "../../books/states"
 import { DownloadState, booksDownloadStateSignal } from "../../download/states"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../states"
+import { libraryStateSignal } from "./states"
 
 export const useLibraryBooks = () => {
   const results = useRef<string[]>([])

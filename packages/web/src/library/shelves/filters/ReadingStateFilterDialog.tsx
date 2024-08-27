@@ -11,9 +11,9 @@ import {
 } from "@mui/material"
 import { FC } from "react"
 import { useSignalValue } from "reactjrx"
-import { collectionsListSignal } from "./state"
+import { libraryShelvesSettingsSignal } from "../state"
 
-type State = ReturnType<(typeof collectionsListSignal)["getValue"]>
+type State = ReturnType<(typeof libraryShelvesSettingsSignal)["getValue"]>
 type ReadingState = State["readingState"]
 
 export const getDisplayableReadingState = (readingState: ReadingState) => {
@@ -27,11 +27,11 @@ export const getDisplayableReadingState = (readingState: ReadingState) => {
   }
 }
 
-export const CollectionReadingStateDialog: FC<{
+export const ReadingStateFilterDialog: FC<{
   open: boolean
   onClose: () => void
 }> = ({ open, onClose }) => {
-  const state = useSignalValue(collectionsListSignal)
+  const state = useSignalValue(libraryShelvesSettingsSignal)
   const readingStates = ["any", "ongoing", "finished"] as ReadingState[]
 
   return (
@@ -43,7 +43,7 @@ export const CollectionReadingStateDialog: FC<{
             name="collection-state-radio-group"
             value={state.readingState}
             onChange={(event) => {
-              collectionsListSignal.setValue((state) => ({
+              libraryShelvesSettingsSignal.setValue((state) => ({
                 ...state,
                 readingState: event.target.value as ReadingState
               }))

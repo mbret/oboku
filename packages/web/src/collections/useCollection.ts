@@ -5,7 +5,7 @@ import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { useLocalSettings } from "../settings/states"
 import { observeEmptyCollection } from "./dbHelpers"
 import { getMetadataFromCollection } from "./getMetadataFromCollection"
-import { libraryStateSignal } from "../library/states"
+import { libraryStateSignal } from "../library/books/states"
 import { COLLECTION_EMPTY_ID } from "../constants.shared"
 
 export const useCollection = ({

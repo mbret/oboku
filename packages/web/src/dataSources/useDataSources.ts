@@ -1,7 +1,7 @@
 import { filter, map, switchMap } from "rxjs"
 import { isDefined, useForeverQuery, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { libraryStateSignal } from "../library/states"
+import { libraryStateSignal } from "../library/books/states"
 
 export const useDataSources = () => {
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)

@@ -34,7 +34,7 @@ import {
 import { useNavigate } from "react-router-dom"
 import { useStorageUse } from "./useStorageUse"
 import { useSignOut } from "../auth/useSignOut"
-import { libraryStateSignal } from "../library/states"
+import { libraryStateSignal } from "../library/books/states"
 import packageJson from "../../package.json"
 import { ROUTES } from "../constants"
 import { toggleDebug } from "../debug"

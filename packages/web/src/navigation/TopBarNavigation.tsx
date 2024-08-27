@@ -15,7 +15,7 @@ import { useSafeGoBack } from "./useSafeGoBack"
 import { ROUTES } from "../constants"
 import { useCSS } from "../common/utils"
 import { useNavigate } from "react-router-dom"
-import { libraryStateSignal } from "../library/states"
+import { libraryStateSignal } from "../library/books/states"
 import { useSignalValue } from "reactjrx"
 
 export const TopBarNavigation: FC<
