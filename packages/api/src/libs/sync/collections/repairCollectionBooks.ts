@@ -68,8 +68,10 @@ export const repairCollectionBooks = async ({
       await helpers.atomicUpdate("obokucollection", collection._id, (old) => ({
         ...old,
         books: [
-          ...missingsBooksInCollection,
-          ...old.books.filter((id) => !danglingBooks.includes(id))
+          ...new Set([
+            ...missingsBooksInCollection,
+            ...old.books.filter((id) => !danglingBooks.includes(id))
+          ])
         ]
       }))
 
