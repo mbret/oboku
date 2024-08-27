@@ -1,40 +1,30 @@
 import fs from "fs"
 import path from "path"
-import { pluginFacade } from "../plugins/facade"
+import { pluginFacade } from "../../../libs/plugins/facade"
+import { BookMetadata, directives } from "@oboku/shared"
 import {
-  BookDocType,
-  BookMetadata,
-  LinkDocType,
-  directives
-} from "@oboku/shared"
-import { detectMimeTypeFromContent, mergeSkippingUndefined } from "../utils"
+  detectMimeTypeFromContent,
+  mergeSkippingUndefined
+} from "../../../libs/utils"
 import { Logger } from "@libs/logger"
-import { saveCoverFromZipArchiveToBucket } from "./saveCoverFromZipArchiveToBucket"
-import { saveCoverFromExternalLinkToBucket } from "./saveCoverFromExternalLinkToBucket"
-import { METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "../../constants"
+import { METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "../../../constants"
 import { getBookSourcesMetadata } from "@libs/metadata/getBookSourcesMetadata"
 import { reduceMetadata } from "@libs/metadata/reduceMetadata"
 import { downloadToTmpFolder } from "@libs/download/downloadToTmpFolder"
 import { isBookProtected } from "@libs/couch/isBookProtected"
 import nano from "nano"
 import { atomicUpdate } from "@libs/couch/dbHelpers"
-import { saveCoverFromRarArchiveToBucket } from "./saveCoverFromRarArchiveToBucket"
 import { getRarArchive } from "@libs/archives/getRarArchive"
-import { getMetadataFromRarArchive } from "@libs/metadata/getMetadataFromRarArchive"
-import { getMetadataFromZipArchive } from "@libs/metadata/getMetadataFromZipArchive"
+import { Context } from "@functions/refreshMetadataLongProcess/src/types"
+import { getMetadataFromRarArchive } from "@libs/books/metadata/getMetadataFromRarArchive"
+import { getMetadataFromZipArchive } from "@libs/books/metadata/getMetadataFromZipArchive"
+import { Extractor } from "node-unrar-js"
+import { updateCover } from "./updateCover"
 
 const logger = Logger.child({ module: "retrieveMetadataAndSaveCover" })
 
-export type RetrieveMetadataAndSaveCoverContext = {
-  userName: string
-  userNameHex: string
-  credentials?: any
-  book: BookDocType
-  link: LinkDocType
-}
-
 export const retrieveMetadataAndSaveCover = async (
-  ctx: RetrieveMetadataAndSaveCoverContext & {
+  ctx: Context & {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
   }
@@ -130,13 +120,6 @@ export const retrieveMetadataAndSaveCover = async (
 
     fileToUnlink = tmpFilePath
     contentType = downloadMetadata.contentType || contentType
-    /**
-     * At this point we have the real content-type so our assumptions
-     * are corrects.
-     */
-    const isExtractAble = contentType
-      ? METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)
-      : false
 
     console.log(
       `syncMetadata processing ${ctx.book._id}`,
@@ -147,16 +130,8 @@ export const retrieveMetadataAndSaveCover = async (
       contentType
     )
 
-    if (!canDownload || !isExtractAble || ignoreMetadata === "file") {
-      // @todo prioritize which cover we take
-      const coverLink = metadataList.find(
-        (metadata) => metadata.coverLink
-      )?.coverLink
-
-      if (coverLink) {
-        await saveCoverFromExternalLinkToBucket(ctx, ctx.book, coverLink)
-      }
-    }
+    const isRarArchive = contentType === "application/x-rar"
+    let archiveExtractor: Extractor<Uint8Array> | undefined = undefined
 
     if (typeof tmpFilePath === "string" && tmpFilePath) {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
@@ -165,18 +140,15 @@ export const retrieveMetadataAndSaveCover = async (
           (await detectMimeTypeFromContent(tmpFilePath)) || contentType
       }
 
-      const coverObjectKey = `cover-${ctx.userNameHex}-${ctx.book._id}`
-
       if (ignoreMetadata !== "file") {
-        if (contentType === "application/x-rar") {
-          const extractor = await getRarArchive(tmpFilePath)
-
-          await saveCoverFromRarArchiveToBucket(coverObjectKey, extractor)
-
+        if (isRarArchive) {
+          archiveExtractor = await getRarArchive(tmpFilePath)
           const fileMetadata = await getMetadataFromRarArchive(
-            extractor,
-            contentType
+            archiveExtractor,
+            contentType ?? ``
           )
+
+          console.log(`file metadata for book ${ctx.book._id}`, fileMetadata)
 
           metadataList.push(fileMetadata)
         } else if (
@@ -188,19 +160,9 @@ export const retrieveMetadataAndSaveCover = async (
             contentType
           )
 
-          logger.info(`coverRelativePath`, fileMetadata.coverLink)
+          console.log(`file metadata for book ${ctx.book._id}`, fileMetadata)
 
           metadataList.push(fileMetadata)
-
-          if (fileMetadata.coverLink) {
-            await saveCoverFromZipArchiveToBucket(
-              coverObjectKey,
-              tmpFilePath,
-              fileMetadata.coverLink
-            )
-          } else {
-            console.log(`No cover path found for ${tmpFilePath}`)
-          }
         } else {
           logger.info(
             `${contentType} cannot be extracted to retrieve information (cover, etc)`
@@ -208,6 +170,14 @@ export const retrieveMetadataAndSaveCover = async (
         }
       }
     }
+
+    await updateCover({
+      book: ctx.book,
+      ctx,
+      metadataList,
+      archiveExtractor,
+      tmpFilePath
+    })
 
     console.log(
       `metadataDaemon Finished processing book ${ctx.book._id} with resource id ${ctx.link.resourceId}`

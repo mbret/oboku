@@ -69,7 +69,8 @@ export type OPF = {
 
 export * as directives from "./directives"
 
-export * from "./docTypes"
+export * from "./db/docTypes"
+export * from "./db/books"
 
 export * from "./dataSources"
 export * from "./sorting"

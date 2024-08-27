@@ -1,4 +1,3 @@
-import { BookDocType } from "@oboku/shared"
 import { Logger } from "@libs/logger"
 import axios from "axios"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
@@ -11,10 +10,10 @@ type Context = {
 
 export const saveCoverFromExternalLinkToBucket = async (
   ctx: Context,
-  book: Pick<BookDocType, `_id`>,
+  bookId: string,
   coverUrl: string
 ) => {
-  const objectKey = `cover-${ctx.userNameHex}-${book._id}`
+  const objectKey = `cover-${ctx.userNameHex}-${bookId}`
 
   Logger.info(`prepare to save cover ${objectKey}`)
 

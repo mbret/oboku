@@ -3,7 +3,7 @@ import fs from "fs"
 import path from "path"
 import unzipper from "unzipper"
 import { parseXmlAsJson } from "@libs/books/parseXmlAsJson"
-import { parseOpfMetadata } from "./opf/parseOpfMetadata"
+import { parseOpfMetadata } from "../../metadata/opf/parseOpfMetadata"
 import { Logger } from "@libs/logger"
 import { COVER_ALLOWED_EXT } from "src/constants"
 

@@ -1,6 +1,6 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import sharp from "sharp"
-import { COVER_MAXIMUM_SIZE_FOR_STORAGE } from "../../constants"
+import { COVER_MAXIMUM_SIZE_FOR_STORAGE } from "src/constants"
 
 const s3 = new S3Client()
 

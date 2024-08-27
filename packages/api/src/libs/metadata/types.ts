@@ -1,3 +1,3 @@
-import { BookMetadata as SharedMetadata } from "@oboku/shared"
+import { BookMetadata } from "@oboku/shared"
 
-export type Metadata = SharedMetadata
+export type Metadata = BookMetadata

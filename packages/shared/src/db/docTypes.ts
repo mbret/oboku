@@ -1,15 +1,7 @@
-import { BookMetadata, CollectionMetadata } from "./metadata"
-
-type CouchDBMeta = {
-  _id: string
-  _rev: string
-}
-
-type RxDbMeta = {
-  rxdbMeta: {
-    lwt: number
-  }
-}
+import { BookMetadata, CollectionMetadata } from "../metadata"
+import { BookDocType } from "./books"
+import { CouchDBMeta } from "./couchdb"
+import { RxDbMeta } from "./rxdb"
 
 type CommonBase = CouchDBMeta & RxDbMeta
 
@@ -59,12 +51,6 @@ export type DataSourceDocType = CommonBase & {
   isProtected?: boolean
 }
 
-export enum ReadingStateState {
-  Finished = "FINISHED",
-  NotStarted = "NOT_STARTED",
-  Reading = "READING"
-}
-
 export type InsertAbleBookDocType = Omit<BookDocType, "_id" | "_rev">
 
 /**
@@ -78,25 +64,6 @@ export type DeprecatedBookDocType = {
   rights: string | null
   subject: string[] | null
   title: string | null
-}
-
-export type BookDocType = CommonBase & {
-  createdAt: number
-  lastMetadataUpdatedAt: number | null
-  metadataUpdateStatus: null | "fetching"
-  lastMetadataUpdateError: null | string
-  readingStateCurrentBookmarkLocation: string | null
-  readingStateCurrentBookmarkProgressPercent: number
-  readingStateCurrentBookmarkProgressUpdatedAt: string | null
-  readingStateCurrentState: ReadingStateState
-  tags: string[]
-  links: string[]
-  collections: string[]
-  rx_model: "book"
-  modifiedAt: string | null
-  isAttachedToDataSource: boolean
-  isNotInterested?: boolean
-  metadata?: BookMetadata[]
 }
 
 export type TagsDocType = CommonBase & {
@@ -158,28 +125,6 @@ export function isCollection(
 ): document is CollectionDocType {
   return (document as CollectionDocType).rx_model === "obokucollection"
 }
-
-type MangoOperator =
-  | "$lt"
-  | "$lte"
-  | "$eq"
-  | "$ne"
-  | "$gte"
-  | "$gt"
-  | "$exists"
-  | "$type"
-  | "$in"
-  | "$nin"
-  | "$size"
-  | "$mod"
-  | "$regex"
-  | "$or"
-  | "$and"
-  | "$nor"
-  | "$not"
-  | "$all"
-  | "$allMatch"
-  | "$elemMatch"
 
 type MangoSelectorOperator<T> = {
   $nin?: any[]
