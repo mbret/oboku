@@ -34,7 +34,6 @@ export type SynchronizeAbleDataSource = {
 type Helpers = {
   refreshBookMetadata: (opts: { bookId: string }) => Promise<any>
   getDataSourceData: <Data>() => Promise<Partial<Data>>
-  isBookCoverExist: (bookId: string) => Promise<boolean>
   findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
     model: M,
     query: SafeMangoQuery<D>

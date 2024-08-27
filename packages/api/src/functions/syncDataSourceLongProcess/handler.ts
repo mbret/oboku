@@ -2,7 +2,6 @@ import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { withMiddy } from "@libs/lambda"
 import { AWS_API_URI } from "../../constants"
 import { configure as configureGoogleDataSource } from "@libs/plugins/google"
-import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { withToken } from "@libs/auth"
 import schema from "./schema"
 import { createHttpError } from "@libs/httpErrors"
@@ -13,8 +12,6 @@ import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
 import { pluginFacade } from "@libs/plugins/facade"
 import { Logger } from "@libs/logger"
-
-const s3 = new S3Client()
 
 const logger = Logger.child({ module: "handler" })
 
@@ -73,29 +70,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       logger.info(response)
     }
 
-    const isBookCoverExist = async ({ coverId }: { coverId: string }) => {
-      try {
-        await s3.send(
-          new HeadObjectCommand({
-            Bucket: "oboku-covers",
-            Key: `cover-${coverId}`
-          })
-        )
-
-        return true
-      } catch (e) {
-        if ((e as any)?.$metadata?.httpStatusCode === 404) return false
-        if ((e as any).code === "NotFound") return false
-        throw e
-      }
-    }
-
     await pluginFacade.sync({
       userName: name,
       dataSourceId,
       db: await getNanoDbForUser(name, jwtPrivateKey),
       refreshBookMetadata,
-      isBookCoverExist,
       credentials,
       authorization
     })

@@ -4,6 +4,7 @@ import { Extractor } from "node-unrar-js"
 import { saveCoverFromRarArchiveToBucket } from "@libs/books/covers/saveCoverFromRarArchiveToBucket"
 import { Context } from "./types"
 import { saveCoverFromExternalLinkToBucket } from "@libs/books/covers/saveCoverFromExternalLinkToBucket"
+import { isBookCoverExist } from "@libs/books/covers/isBookCoverExist"
 
 export const updateCover = async ({
   metadataList,
@@ -27,7 +28,8 @@ export const updateCover = async ({
   if (
     metadataForCover?.type === currentMetadaForCover?.type &&
     metadataForCover?.coverLink &&
-    metadataForCover.coverLink === currentMetadaForCover?.coverLink
+    metadataForCover.coverLink === currentMetadaForCover?.coverLink &&
+    (await isBookCoverExist(coverObjectKey))
   ) {
     console.log(
       `Skipping cover update for ${book._id} since the current and new cover link are equals`

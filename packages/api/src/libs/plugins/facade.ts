@@ -47,15 +47,13 @@ export const pluginFacade = {
     credentials,
     refreshBookMetadata,
     authorization,
-    db,
-    isBookCoverExist
+    db
   }: {
     dataSourceId: string
     userName: string
     credentials?: any
     authorization: string
     refreshBookMetadata: ({ bookId }: { bookId: string }) => Promise<any>
-    isBookCoverExist: ({ coverId }: { coverId: string }) => Promise<boolean>
     db: createNano.DocumentScope<unknown>
   }) => {
     console.log(
@@ -64,13 +62,7 @@ export const pluginFacade = {
 
     const syncReport = new SyncReport(dataSourceId, userName)
     const nameHex = Buffer.from(userName).toString("hex")
-    const helpers = createHelpers(
-      dataSourceId,
-      refreshBookMetadata,
-      db,
-      isBookCoverExist,
-      nameHex
-    )
+    const helpers = createHelpers(dataSourceId, refreshBookMetadata, db)
 
     try {
       const dataSource = await helpers.findOne("datasource", {
@@ -99,7 +91,8 @@ export const pluginFacade = {
         dataSourceType: type,
         authorization,
         db,
-        syncReport
+        syncReport,
+        userNameHex: nameHex
       }
       const plugin = plugins.find((plugin) => plugin.type === type)
 

@@ -18,8 +18,6 @@ export const createHelpers = (
   dataSourceId: string,
   refreshBookMetadata: ({ bookId }: { bookId: string }) => Promise<any>,
   db: createNano.DocumentScope<unknown>,
-  getBookCover: ({ coverId }: { coverId: string }) => Promise<boolean>,
-  nameHex: string
 ) => {
   const helpers = {
     refreshBookMetadata: (opts: { bookId: string }) =>
@@ -39,8 +37,6 @@ export const createHelpers = (
 
       return data
     },
-    isBookCoverExist: async (bookId: string) =>
-      getBookCover({ coverId: `${nameHex}-${bookId}` }),
     findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
       model: M,
       query: SafeMangoQuery<D>
