@@ -83,7 +83,7 @@ export const repairCollectionBooks = async ({
       if (missingsBooksInCollection.length > 0) {
         ctx.syncReport.addBooksToCollection({
           collection,
-          books: danglingBooks.map((_id) => ({ _id }))
+          books: missingsBooksInCollection.map((_id) => ({ _id }))
         })
       }
     }
