@@ -4,6 +4,20 @@ import { HttpClientError } from "./HttpClientError.shared"
 
 type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
 
+type XMLHttpResponseError = {
+  status: number
+  statusText: string
+  __xmlerror: true
+}
+
+export const isXMLHttpResponseError = (
+  error: unknown
+): error is XMLHttpResponseError => {
+  if (error && typeof error === "object" && "__xmlerror" in error) return true
+
+  return false
+}
+
 class HttpClient {
   fetch = async <T>({
     url,
@@ -121,8 +135,9 @@ class HttpClient {
           } else {
             reject({
               status: xhr.status,
-              statusText: xhr.statusText
-            })
+              statusText: xhr.statusText,
+              __xmlerror: true
+            } satisfies XMLHttpResponseError)
           }
         }
 
@@ -137,8 +152,9 @@ class HttpClient {
            */
           reject({
             status: xhr.status,
-            statusText: xhr.statusText
-          })
+            statusText: xhr.statusText,
+            __xmlerror: true
+          } satisfies XMLHttpResponseError)
         }
       }
     )

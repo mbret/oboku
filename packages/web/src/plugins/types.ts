@@ -93,7 +93,7 @@ export type ObokuPlugin = {
   description?: string
   sensitive?: boolean
   Icon?: FunctionComponent<Record<string, never>>
-  UploadComponent?: FunctionComponent<
+  UploadBookComponent?: FunctionComponent<
     {
       onClose: (bookToAdd?: { book: PostBook; link: PostLink }) => void
       requestPopup: () => Promise<boolean>

@@ -7,7 +7,7 @@ export const plugin: ObokuPlugin = {
   uniqueResourceIdentifier: "file",
   type: PLUGIN_FILE_TYPE,
   name: "file",
-  UploadComponent: UploadBook,
+  UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
   description: "Manage books from your device (local)"
 }

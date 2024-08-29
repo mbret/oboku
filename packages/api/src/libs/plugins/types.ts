@@ -1,4 +1,3 @@
-import { Request } from "request"
 import {
   LinkDocType,
   dataSourceHelpers,
@@ -12,6 +11,7 @@ import fetch from "node-fetch"
 import createNano from "nano"
 import { Metadata } from "@libs/metadata/types"
 import { SyncReport } from "@libs/sync/SyncReport"
+import { IncomingMessage } from "http"
 
 export { dataSourceHelpers, cheerio, fetch }
 
@@ -81,7 +81,7 @@ export type DataSourcePlugin = {
     link: LinkDocType,
     credentials?: any
   ) => Promise<{
-    stream: NodeJS.ReadableStream | Request
+    stream: NodeJS.ReadableStream | IncomingMessage
     metadata: Omit<Metadata, "type"> & { contentType?: string }
   }>
   sync?: (

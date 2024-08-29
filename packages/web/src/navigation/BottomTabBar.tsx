@@ -12,15 +12,14 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { ROUTES } from "../constants"
 import { useNetworkState } from "react-use"
 import { SIGNAL_RESET, useSignalValue } from "reactjrx"
-import { UploadBookFromDataSource } from "../upload/UploadBookFromDataSource"
-import { isUploadBookFromDataSourceDialogOpenedSignal } from "../upload/state"
+import { uploadBookDialogOpenedSignal, UploadBookDialog } from "../upload/UploadBookDialog"
 import { PLUGIN_FILE_TYPE } from "@oboku/shared"
 
 export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
   const location = useLocation()
   const navigate = useNavigate()
   const isUploadBookFromDataSourceDialogOpened = useSignalValue(
-    isUploadBookFromDataSourceDialogOpenedSignal
+    uploadBookDialogOpenedSignal
   )
   const dragStatus = useRef<undefined | "entered">(undefined)
 
@@ -35,7 +34,7 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
   const onDragOver = useCallback(() => {
     if (dragStatus.current !== "entered") {
       dragStatus.current = "entered"
-      isUploadBookFromDataSourceDialogOpenedSignal.setValue(PLUGIN_FILE_TYPE)
+      uploadBookDialogOpenedSignal.setValue(PLUGIN_FILE_TYPE)
     }
   }, [])
 
@@ -43,10 +42,10 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
     dragStatus.current = undefined
 
     if (
-      isUploadBookFromDataSourceDialogOpenedSignal.getValue() ===
+      uploadBookDialogOpenedSignal.getValue() ===
       PLUGIN_FILE_TYPE
     ) {
-      isUploadBookFromDataSourceDialogOpenedSignal.setValue(SIGNAL_RESET)
+      uploadBookDialogOpenedSignal.setValue(SIGNAL_RESET)
     }
   }, [])
 
@@ -82,13 +81,13 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
         />
       </BottomNavigation>
       {isUploadBookFromDataSourceDialogOpened && (
-        <UploadBookFromDataSource
+        <UploadBookDialog
           openWith={isUploadBookFromDataSourceDialogOpened}
           {...(isUploadBookFromDataSourceDialogOpened === PLUGIN_FILE_TYPE && {
             onDragLeave
           })}
           onClose={() =>
-            isUploadBookFromDataSourceDialogOpenedSignal.setValue(SIGNAL_RESET)
+            uploadBookDialogOpenedSignal.setValue(SIGNAL_RESET)
           }
         />
       )}

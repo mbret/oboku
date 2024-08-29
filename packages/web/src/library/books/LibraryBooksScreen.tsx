@@ -19,9 +19,9 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useLibraryBooks } from "./useLibraryBooks"
 import { useSignalValue } from "reactjrx"
-import { isUploadBookFromDataSourceDialogOpenedSignal } from "../../upload/state"
 import { Toolbar } from "./Toolbar"
 import { useResetFilters } from "./filters/useResetFilters"
+import { uploadBookDialogOpenedSignal } from "../../upload/UploadBookDialog"
 
 export const LibraryBooksScreen = () => {
   const theme = useTheme()
@@ -166,7 +166,7 @@ export const LibraryBooksScreen = () => {
           open={isUploadBookDrawerOpened}
           onClose={(type) => {
             isUploadBookDrawerOpenedStateSignal.setValue(false)
-            isUploadBookFromDataSourceDialogOpenedSignal.setValue(type)
+            uploadBookDialogOpenedSignal.setValue(type)
           }}
         />
       </Stack>

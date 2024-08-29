@@ -1,17 +1,22 @@
-import { ComponentProps, DOMAttributes, FC, memo, useCallback } from "react"
+import { ComponentProps, DOMAttributes, memo, useCallback } from "react"
 import { useAddBook } from "../books/helpers"
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { TagsSelector } from "../tags/TagsSelector"
 import { ButtonDialog } from "../common/ButtonDialog"
 import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
 import { ObokuPlugin } from "../plugins/types"
-import { useMount } from "react-use"
+import { signal } from "reactjrx"
+import { capitalize, Dialog } from "@mui/material"
 
-type UploadComponentProps = ComponentProps<
-  NonNullable<ObokuPlugin[`UploadComponent`]>
+type UploadBookComponentProps = ComponentProps<
+  NonNullable<ObokuPlugin[`UploadBookComponent`]>
 >
 
-export const UploadBookFromDataSource = memo(
+export const uploadBookDialogOpenedSignal = signal<string | undefined>({
+  default: undefined
+})
+
+export const UploadBookDialog = memo(
   ({
     openWith,
     onClose: onFinalClose,
@@ -24,7 +29,7 @@ export const UploadBookFromDataSource = memo(
     const dataSource = useDataSourcePlugin(openWith)
     const createRequestPopup = useCreateRequestPopupDialog()
 
-    const onClose: UploadComponentProps[`onClose`] = useCallback(
+    const onClose: UploadBookComponentProps[`onClose`] = useCallback(
       (bookToAdd) => {
         if (dataSource && bookToAdd) {
           addBook({
@@ -50,9 +55,9 @@ export const UploadBookFromDataSource = memo(
 
     return (
       <>
-        {dataSource.UploadComponent && (
-          <dataSource.UploadComponent
-            title={`Add a book with ${dataSource.name}`}
+        {dataSource.UploadBookComponent && (
+          <dataSource.UploadBookComponent
+            title={`Add a book with plugin ${capitalize(dataSource.name)}`}
             TagsSelector={TagsSelector}
             ButtonDialog={ButtonDialog}
             onClose={onClose}

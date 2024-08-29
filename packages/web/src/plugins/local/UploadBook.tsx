@@ -16,7 +16,7 @@ import { ObokuPlugin } from "../types"
 import { DragEventHandler, useRef } from "react"
 import { useAddBookFromFile } from "./useAddBookFromFile"
 
-export const UploadBook: ObokuPlugin["UploadComponent"] & {
+export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
   openFrom?: string
 } = ({ onClose, onDragLeave }) => {
   const { mutate: addBookFromFile } = useAddBookFromFile()

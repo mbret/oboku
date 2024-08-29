@@ -1,16 +1,16 @@
 import { HttpRounded } from "@mui/icons-material"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
-import { UploadComponent } from "./UploadComponent"
 import { useDownloadBook } from "./useDownloadBook"
 import { ObokuPlugin } from "../types"
+import { UploadBookComponent } from "./UploadBookComponent"
 
 const plugin: ObokuPlugin = {
   type: TYPE,
-  name: "link",
+  name: "uri",
   canSynchronize: false,
   uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   Icon: HttpRounded,
-  UploadComponent,
+  UploadBookComponent,
   useDownloadBook,
   description: "Manage books from URI / URL"
 }

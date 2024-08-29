@@ -1,12 +1,10 @@
-import { ParsedUrlQuery } from "querystring"
-
 // extract params from a router and validate them against a schema
 export const extractParams = <
   Schema extends {
     [index: string]: "string" | "string[]" | "object" | "boolean"
   }
 >(
-  params: Record<string, unknown> | ParsedUrlQuery | null | undefined,
+  params: Record<string, unknown> | null | undefined,
   schema: Schema
 ) => {
   return Object.keys(schema).reduce(

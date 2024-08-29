@@ -9,7 +9,7 @@ import { useMutation } from "reactjrx"
 import { ObokuPlugin } from "../types"
 import { memo } from "react"
 
-export const UploadBook: ObokuPlugin["UploadComponent"] = memo(
+export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
   ({ onClose, requestPopup }) => {
     const [addBook] = useAddBook()
     const { generateResourceId } = useDataSourceHelpers(

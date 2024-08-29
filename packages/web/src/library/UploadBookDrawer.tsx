@@ -4,7 +4,8 @@ import {
   List,
   ListItemText,
   ListItemIcon,
-  ListItemButton
+  ListItemButton,
+  capitalize
 } from "@mui/material"
 import { plugins as dataSourcePlugins } from "../dataSources"
 import { useLocalSettings } from "../settings/states"
@@ -27,8 +28,8 @@ export const UploadBookDrawer: FC<{
           <List>
             {dataSourcePlugins
               .filter(
-                ({ UploadComponent, sensitive }) =>
-                  !!UploadComponent &&
+                ({ UploadBookComponent, sensitive }) =>
+                  !!UploadBookComponent &&
                   (showSensitiveDataSources ? true : sensitive !== true)
               )
               .map((dataSource) => (
@@ -39,7 +40,9 @@ export const UploadBookDrawer: FC<{
                   <ListItemIcon>
                     {dataSource.Icon && <dataSource.Icon />}
                   </ListItemIcon>
-                  <ListItemText primary={`From ${dataSource.name}`} />
+                  <ListItemText
+                    primary={`From ${capitalize(dataSource.name)}`}
+                  />
                 </ListItemButton>
               ))}
           </List>
