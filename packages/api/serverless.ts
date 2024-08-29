@@ -54,11 +54,10 @@ Object.keys(functions).forEach((key) => {
 
 const serverlessConfiguration: AWS & any = {
   service: "oboku-api",
-  frameworkVersion: "3",
+  frameworkVersion: "4",
   useDotenv: true,
   plugins: [
     "serverless-offline",
-    "serverless-esbuild",
     /**
      * @see https://www.serverless.com/framework/docs/providers/aws/events/sqs
      * SQS
