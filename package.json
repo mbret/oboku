@@ -52,7 +52,7 @@
     "typescript": "^5.5.4",
     "vercel": "^37.2.1",
     "vite": "^5.0.0",
-    "vite-plugin-dts": "^3.6.3",
+    "vite-plugin-dts": "^4.0.3",
     "vite-plugin-pwa": "^0.20.0",
     "vite-plugin-svgr": "^4.1.0",
     "vitest": "^2.0.5",
@@ -70,6 +70,6 @@
     "react-markdown": "^9.0.1",
     "reactjrx": "^1.97.0",
     "remark-gfm": "^4.0.0",
-    "sharp": "^0.33.4"
+    "sharp": "^0.33.5"
   }
 }
