@@ -45,6 +45,7 @@
     "rollup-plugin-analyzer": "^4.0.0",
     "rollup-plugin-node-externals": "7.0.1",
     "serverless": "^4.2.4",
+    "serverless-esbuild": "^1.39.0",
     "serverless-offline": "^14.2.0",
     "typescript": "^5.5.4",
     "vercel": "^37.2.1",

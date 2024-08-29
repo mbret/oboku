@@ -57,6 +57,7 @@ const serverlessConfiguration: AWS & any = {
   frameworkVersion: "4",
   useDotenv: true,
   plugins: [
+    "serverless-esbuild",
     "serverless-offline",
     /**
      * @see https://www.serverless.com/framework/docs/providers/aws/events/sqs
@@ -227,6 +228,9 @@ const serverlessConfiguration: AWS & any = {
     }
   },
   package: { individually: true },
+  build: {
+    esbuild: false
+  },
   custom: {
     esbuild: {
       minify: false,
