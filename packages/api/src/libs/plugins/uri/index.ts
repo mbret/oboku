@@ -1,7 +1,6 @@
 import { DataSourcePlugin } from "@libs/plugins/types"
 import axios from "axios"
 import { IncomingMessage } from "http"
-import { inspect } from "util"
 
 export type UriLinkData = { uri?: string }
 
