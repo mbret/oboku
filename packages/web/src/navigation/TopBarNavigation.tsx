@@ -12,7 +12,6 @@ import {
 import { alpha, Box, InputBase, styled, useTheme } from "@mui/material"
 import { useSafeGoBack } from "./useSafeGoBack"
 import { ROUTES } from "../constants"
-import { useCSS } from "../common/utils"
 import { useNavigate } from "react-router-dom"
 import { libraryStateSignal } from "../library/books/states"
 import { useSignalValue } from "reactjrx"
@@ -54,7 +53,6 @@ export const TopBarNavigation: FC<
       libraryStateSignal,
       ({ isLibraryUnlocked }) => isLibraryUnlocked
     )
-    const { styles } = useStyles({ color })
     const theme = useTheme()
     const { goBack } = useSafeGoBack()
     const navigate = useNavigate()
@@ -96,9 +94,19 @@ export const TopBarNavigation: FC<
                     navigate(ROUTES.SEARCH)
                   }}
                 >
-                  <div style={styles.searchIcon}>
+                  <Box
+                    sx={{
+                      padding: theme.spacing(0, 2),
+                      height: "100%",
+                      position: "absolute",
+                      pointerEvents: "none",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}
+                  >
                     <Search />
-                  </div>
+                  </Box>
                   <SearchInput
                     placeholder="Searchs"
                     readOnly
@@ -139,35 +147,3 @@ export const TopBarNavigation: FC<
     )
   }
 )
-
-const useStyles = ({
-  color
-}: {
-  color: ComponentProps<typeof AppBar>["color"]
-}) => {
-  const theme = useTheme()
-
-  const styles = useCSS(
-    () => ({
-      menuButton: {
-        // marginRight: theme.spacing(1),
-        color: color === "transparent" ? "white" : "inherit"
-      },
-      menuButtonEnd: {
-        color: color === "transparent" ? "white" : "inherit"
-      },
-      searchIcon: {
-        padding: theme.spacing(0, 2),
-        height: "100%",
-        position: "absolute",
-        pointerEvents: "none",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center"
-      }
-    }),
-    [theme, color]
-  )
-
-  return { styles }
-}

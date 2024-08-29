@@ -11,7 +11,6 @@ import {
 } from "@mui/material"
 import { useCreateTag } from "../../tags/helpers"
 import { TagActionsDrawer } from "../../tags/TagActionsDrawer"
-import { useCSS } from "../../common/utils"
 import { TagList } from "../../tags/tagList/TagList"
 import { useTagIds } from "../../tags/helpers"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
@@ -19,7 +18,6 @@ import { errorToHelperText } from "../../common/forms/errorToHelperText"
 import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 
 export const LibraryTagsScreen = () => {
-  const classes = useStyles()
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] =
     useState<string | undefined>(undefined)
@@ -61,7 +59,12 @@ export const LibraryTagsScreen = () => {
   const listRenderHeader = useCallback(() => listHeader, [listHeader])
 
   return (
-    <div style={classes.container}>
+    <div
+      style={{
+        flex: 1,
+        overflow: "auto"
+      }}
+    >
       <TagList
         style={{
           height: "100%"
@@ -166,18 +169,5 @@ const AddTagDialog: FC<{
         </Button>
       </DialogActions>
     </Dialog>
-  )
-}
-
-const useStyles = () => {
-  return useCSS(
-    () => ({
-      container: {
-        flex: 1,
-        overflow: "auto"
-      },
-      list: {}
-    }),
-    []
   )
 }

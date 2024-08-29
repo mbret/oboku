@@ -1,5 +1,5 @@
 import React, { FC, memo } from "react"
-import { Box, BoxProps, Chip, useTheme } from "@mui/material"
+import { Box, BoxProps, Chip } from "@mui/material"
 import {
   CheckOutlined,
   CloudDownloadRounded,
@@ -13,7 +13,6 @@ import { useBook, useIsBookProtected } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import { ReadingProgress } from "./ReadingProgress"
 import { DownloadState, useBookDownloadState } from "../../download/states"
-import { useCSS } from "../../common/utils"
 import { CoverIconBadge } from "./CoverIconBadge"
 
 type Book = ReturnType<typeof useBook>["data"]
@@ -42,11 +41,15 @@ export const BookListCoverContainer: FC<
     const { data: item } = useBook({ id: bookId })
     const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected } = useIsBookProtected(item)
-    const classes = useStyles({ item })
 
     return (
       <Box
-        style={{ ...classes.coverContainer, ...style }}
+        sx={{
+          position: "relative",
+          display: "flex",
+          minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
+        }}
+        style={style}
         className={className}
         {...rest}
       >
@@ -66,7 +69,19 @@ export const BookListCoverContainer: FC<
             }}
           />
         )}
-        <Box style={classes.bodyContainer} gap={1}>
+        <Box
+          sx={{
+            position: "absolute",
+            height: "100%",
+            width: "100%",
+            top: 0,
+            display: "flex",
+            padding: (theme) => theme.spacing(0.5),
+            flexDirection: "column",
+            alignItems: "center"
+          }}
+          gap={1}
+        >
           {withBadges && (
             <Box
               display="flex"
@@ -129,9 +144,16 @@ export const BookListCoverContainer: FC<
             )}
           {withDownloadStatus &&
             bookDownloadState?.downloadState === DownloadState.Downloading && (
-              <div style={classes.pauseButton}>
+              <Box
+                sx={{
+                  transform: "translate(-50%, -50%)",
+                  position: "absolute",
+                  left: "50%",
+                  top: "50%"
+                }}
+              >
                 <Chip color="primary" size="small" label="downloading..." />
-              </div>
+              </Box>
             )}
         </Box>
         {withReadingProgressStatus && (
@@ -141,7 +163,12 @@ export const BookListCoverContainer: FC<
                 progress={
                   (item?.readingStateCurrentBookmarkProgressPercent || 0) * 100
                 }
-                style={classes.readingProgress}
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: "50%",
+                  transform: "translateX(-50%)"
+                }}
               />
             )}
           </>
@@ -150,40 +177,3 @@ export const BookListCoverContainer: FC<
     )
   }
 )
-
-const useStyles = ({ item }: { item: Book }) => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      coverContainer: {
-        position: "relative",
-        display: "flex",
-        minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
-      },
-      bodyContainer: {
-        position: "absolute",
-        height: "100%",
-        width: "100%",
-        top: 0,
-        display: "flex",
-        padding: theme.spacing(0.5),
-        flexDirection: "column",
-        alignItems: "center"
-      },
-      readingProgress: {
-        position: "absolute",
-        bottom: 0,
-        left: "50%",
-        transform: "translateX(-50%)"
-      },
-      pauseButton: {
-        transform: "translate(-50%, -50%)",
-        position: "absolute",
-        left: "50%",
-        top: "50%"
-      }
-    }),
-    [theme, item]
-  )
-}

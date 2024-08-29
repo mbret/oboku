@@ -16,7 +16,6 @@ import {
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import screenfull from "screenfull"
 import { Report } from "../../debug/report.shared"
-import { useCSS } from "../../common/utils"
 import { useMoreDialog } from "./MoreDialog"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useShowRemoveBookOnExitDialog } from "./useShowRemoveBookOnExitDialog"
@@ -25,7 +24,6 @@ export const TopBar = memo(({ bookId }: { bookId: string }) => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const reader = useSignalValue(readerSignal)
   const readerState = useObserve(() => reader?.state$, [reader])
-  const classes = useStyles({ isMenuShow })
   const { goBack } = useSafeGoBack()
   const [isFullScreen, setIsFullScreen] = useState(
     screenfull.isEnabled && screenfull.isFullscreen
@@ -69,7 +67,16 @@ export const TopBar = memo(({ bookId }: { bookId: string }) => {
   }, [])
 
   return (
-    <AppBar position="fixed" elevation={0} style={classes.appBar}>
+    <AppBar
+      position="fixed"
+      elevation={0}
+      style={{
+        top: 0,
+        left: 0,
+        width: "100%",
+        visibility: isMenuShow ? "visible" : "hidden"
+      }}
+    >
       <Toolbar style={{ flex: 1 }}>
         <IconButton
           edge="start"
@@ -119,17 +126,3 @@ export const TopBar = memo(({ bookId }: { bookId: string }) => {
     </AppBar>
   )
 })
-
-const useStyles = ({ isMenuShow }: { isMenuShow: boolean }) => {
-  return useCSS(
-    () => ({
-      appBar: {
-        top: 0,
-        left: 0,
-        width: "100%",
-        visibility: isMenuShow ? "visible" : "hidden"
-      }
-    }),
-    [isMenuShow]
-  )
-}

@@ -12,7 +12,6 @@ import {
 import { TabContext, TabList, TabPanel } from "@mui/lab"
 import { FiberManualRecordRounded } from "@mui/icons-material"
 import React, { memo, useCallback } from "react"
-import { useCSS } from "../../common/utils"
 import { DialogTopBar } from "../../navigation/DialogTopBar"
 import { usePagination, readerSignal } from "../states"
 import { SettingsList } from "../settings/SettingsList"
@@ -35,6 +34,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
     isContentsDialogOpenedStateSignal
   )
   const { toggleMoreDialog } = useMoreDialog()
+  const theme = useTheme()
   const [value, setValue] = React.useState("toc")
   const reader = useSignalValue(readerSignal)
   const { data: pagination } = usePagination()
@@ -43,9 +43,6 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
   const chapterInfo = pagination?.beginChapterInfo
   const [currentPage] = useCurrentPages({ bookId }) || 0
   const toc = nav?.toc || []
-  const styles = useStyles()
-
-  const theme = useTheme()
 
   let currentSubChapter = chapterInfo
 
@@ -110,16 +107,25 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
       >
         <DialogTopBar title={title} onClose={toggleMoreDialog} />
         <TabList
-          style={styles.tabsContainer}
+          style={{
+            border: `1px solid ${theme.palette.primary.light}`,
+            borderTop: "none",
+            borderLeft: "none",
+            borderRight: "none"
+          }}
           onChange={handleChange}
           indicatorColor="primary"
         >
           <Tab label="Chapters" value="toc" />
           <Tab label="Settings" value="settings" />
         </TabList>
-        <DialogContent style={styles.container}>
+        <DialogContent
+          style={{
+            padding: 0
+          }}
+        >
           <TabPanel value="toc" sx={{ padding: 0 }}>
-            <List component="nav" style={styles.root}>
+            <List component="nav">
               {toc.map((tocItem, index) => buildTocForItem(tocItem, index, 0))}
             </List>
           </TabPanel>
@@ -131,23 +137,3 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
     </TabContext>
   )
 })
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        padding: 0
-      },
-      tabsContainer: {
-        border: `1px solid ${theme.palette.primary.light}`,
-        borderTop: "none",
-        borderLeft: "none",
-        borderRight: "none"
-      },
-      root: {}
-    }),
-    [theme]
-  )
-}

@@ -23,7 +23,6 @@ import {
 import { useMount } from "react-use"
 import { BookList } from "../books/bookList/BookList"
 import { CollectionList } from "../collections/list/CollectionList"
-import { useCSS } from "../common/utils"
 import { ROUTES } from "../constants"
 import { SEARCH_MAX_PREVIEW_ITEMS } from "../constants.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
@@ -75,14 +74,25 @@ const SearchInput = styled(InputBase)(({ theme }) => ({
   }
 }))
 
+const StyledForm = styled(`form`)(({ theme }) => ({
+  position: "relative",
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  "&:hover": {
+    backgroundColor: alpha(theme.palette.common.white, 0.25)
+  },
+  marginLeft: 0,
+  width: "100%"
+}))
+
 export const SearchScreen = () => {
-  const { styles } = useStyles()
   const [searchParams, setSearchParams] = useSearchParams()
   const value = useSignalValue(searchStateSignal)
   const { data: collections = [] } = useCollectionsForSearch(value)
   const { data: books = [] } = useBooksForSearch(value)
   const inputRef = useRef<HTMLElement>()
   const navigate = useNavigate()
+  const theme = useTheme()
   const [bookExpanded, setBookExpanded] = useState(true)
   const [collectionsExpanded, setCollectionsExpanded] = useState(true)
 
@@ -101,11 +111,19 @@ export const SearchScreen = () => {
   )
 
   return (
-    <div style={styles.container}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column" as const,
+        overflow: "hidden",
+        flex: 1,
+        height: "100%"
+      }}
+    >
       <TopBarNavigation
         showBack
         middleComponent={
-          <form style={styles.search} autoComplete="off" onSubmit={onSubmit}>
+          <StyledForm autoComplete="off" onSubmit={onSubmit}>
             <SearchInput
               placeholder="Alice in wonderland, myTag, ..."
               value={value || ""}
@@ -128,7 +146,7 @@ export const SearchScreen = () => {
                 )
               }}
             />
-          </form>
+          </StyledForm>
         }
       />
       <ListActionsToolbar />
@@ -214,33 +232,4 @@ export const SearchScreen = () => {
       </Box>
     </div>
   )
-}
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  const styles = useCSS(
-    () => ({
-      container: {
-        display: "flex",
-        flexDirection: "column" as const,
-        overflow: "hidden",
-        flex: 1,
-        height: "100%"
-      },
-      search: {
-        position: "relative",
-        borderRadius: theme.shape.borderRadius,
-        backgroundColor: alpha(theme.palette.common.white, 0.15),
-        "&:hover": {
-          backgroundColor: alpha(theme.palette.common.white, 0.25)
-        },
-        marginLeft: 0,
-        width: "100%"
-      }
-    }),
-    [theme]
-  )
-
-  return { styles }
 }

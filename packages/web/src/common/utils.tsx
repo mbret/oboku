@@ -55,16 +55,6 @@ export const isMobileDetected = () => {
   }
 }
 
-/**
- * @deprecated
- */
-export const useCSS = <T extends React.CSSProperties, K>(
-  css: () => { [key in keyof K]: T },
-  deps?: React.DependencyList
-) => {
-  return useMemo(css, deps ?? [])
-}
-
 const onOnline$ = fromEvent(window, "online")
 const onOffline$ = fromEvent(window, "offline")
 

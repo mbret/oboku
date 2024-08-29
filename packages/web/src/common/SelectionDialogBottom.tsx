@@ -1,5 +1,4 @@
-import { Button, Typography, useTheme } from "@mui/material"
-import { useCSS } from "./utils"
+import { Box, Button, Typography } from "@mui/material"
 
 export const SelectionDialogBottom = ({
   onClose,
@@ -8,40 +7,29 @@ export const SelectionDialogBottom = ({
   onClose: () => void
   numberOfItemsSelected: number
 }) => {
-  const styles = useStyles()
-
   return (
-    <div style={styles.buttonContainer}>
+    <Box
+      sx={{
+        padding: (theme) =>
+          `${theme.spacing(1)} ${theme.spacing(2)} ${theme.spacing(
+            2
+          )} ${theme.spacing(2)}`,
+        borderTop: (theme) => `1px solid ${theme.palette["grey"]["500"]}`
+      }}
+    >
       <Typography gutterBottom align="center" variant="body2">
         {numberOfItemsSelected} item(s) selected
       </Typography>
       <Button
-        style={styles.button}
+        style={{
+          width: "100%"
+        }}
         variant="outlined"
         color="primary"
         onClick={onClose}
       >
         Ok
       </Button>
-    </div>
-  )
-}
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      buttonContainer: {
-        padding: `${theme.spacing(1)} ${theme.spacing(2)} ${theme.spacing(
-          2
-        )} ${theme.spacing(2)}`,
-        borderTop: `1px solid ${theme.palette["grey"]["500"]}`
-      },
-      button: {
-        width: "100%"
-      }
-    }),
-    [theme]
+    </Box>
   )
 }

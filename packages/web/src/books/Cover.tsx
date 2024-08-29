@@ -1,7 +1,7 @@
 import React, { FC, memo, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
 import placeholder from "../assets/cover-placeholder.png"
-import { useTheme } from "@mui/material"
+import { Box, styled } from "@mui/material"
 import { useBook } from "./states"
 import { useBlurredTagIds } from "../tags/helpers"
 import { useCSS } from "../common/utils"
@@ -30,6 +30,26 @@ const useBookCoverState = ({ bookId }: { bookId: string }) => {
   }
 }
 
+const CoverImg = styled(`img`)<{
+  withShadow?: boolean
+  fullWidth?: boolean
+  rounded?: boolean
+}>(({ theme, withShadow, fullWidth, rounded }) => ({
+  position: "relative",
+  height: "100%",
+  justifySelf: "flex-end",
+  objectFit: "cover",
+  ...(withShadow && {
+    boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`
+  }),
+  ...(fullWidth && {
+    width: "100%"
+  }),
+  ...(rounded && {
+    borderRadius: 5
+  })
+}))
+
 type Props = {
   bookId: string
   style?: React.CSSProperties
@@ -56,7 +76,6 @@ export const Cover: FC<Props> = memo(
     })
     const [hasError, setHasError] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
-    const classes = useStyle({ withShadow, fullWidth, rounded, isLoading })
     const assetHash = book?.lastMetadataUpdatedAt?.toString()
     const localSettings = useLocalSettings()
     const shouldBlurCover =
@@ -89,27 +108,44 @@ export const Cover: FC<Props> = memo(
     }, [originalSrc])
 
     return (
-      <div style={{ ...classes.container, ...style }}>
+      <Box
+        sx={{
+          width: "100%",
+          height: "100%"
+        }}
+        style={style}
+      >
         {isLoading && (
-          <img
+          <CoverImg
             alt="img"
             src={placeholder}
-            style={classes.img}
+            fullWidth={fullWidth}
+            rounded={rounded}
+            withShadow={withShadow}
             {...(shouldBlurCover && {
-              className: `${classes.img} blurFilter`
+              className: `blurFilter`
             })}
             {...rest}
           />
         )}
-        <picture style={classes.picture}>
+        <picture
+          style={{
+            width: "100%",
+            ...(isLoading && {
+              display: "none"
+            })
+          }}
+        >
           <source srcSet={coverSrc} type="image/webp" />
           <source srcSet={coverSrcJpg} type="image/jpeg" />
-          <img
+          <CoverImg
             alt="img"
             src={coverSrc}
-            style={classes.img}
+            fullWidth={fullWidth}
+            rounded={rounded}
+            withShadow={withShadow}
             {...(shouldBlurCover && {
-              className: `${classes.img} blurFilter`
+              className: `blurFilter`
             })}
             onLoad={() => {
               setIsLoading(false)
@@ -120,51 +156,7 @@ export const Cover: FC<Props> = memo(
             {...rest}
           />
         </picture>
-      </div>
+      </Box>
     )
   }
 )
-
-type StyleProps = Pick<Props, "withShadow" | "fullWidth" | "rounded"> & {
-  isLoading: boolean
-}
-
-const useStyle = ({
-  withShadow,
-  fullWidth,
-  rounded,
-  isLoading
-}: StyleProps) => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        width: "100%",
-        height: "100%"
-      },
-      picture: {
-        width: "100%",
-        ...(isLoading && {
-          display: "none"
-        })
-      },
-      img: {
-        position: "relative",
-        height: "100%",
-        justifySelf: "flex-end",
-        objectFit: "cover",
-        ...(withShadow && {
-          boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`
-        }),
-        ...(fullWidth && {
-          width: "100%"
-        }),
-        ...(rounded && {
-          borderRadius: 5
-        })
-      }
-    }),
-    [theme, withShadow, fullWidth, rounded, isLoading]
-  )
-}

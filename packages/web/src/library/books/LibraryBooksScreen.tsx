@@ -9,7 +9,6 @@ import {
 } from "@mui/material"
 import { LibraryFiltersDrawer } from "../LibraryFiltersDrawer"
 import EmptyLibraryAsset from "../../assets/empty-library.svg"
-import { useCSS } from "../../common/utils"
 import {
   libraryStateSignal,
   isUploadBookDrawerOpenedStateSignal
@@ -25,7 +24,6 @@ import { Toolbar } from "./Toolbar"
 import { useResetFilters } from "./filters/useResetFilters"
 
 export const LibraryBooksScreen = () => {
-  const styles = useStyles()
   const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const isUploadBookDrawerOpened = useSignalValue(
@@ -69,7 +67,15 @@ export const LibraryBooksScreen = () => {
   useEffect(() => () => isUploadBookDrawerOpenedStateSignal.setValue(false), [])
 
   return (
-    <div style={styles.container}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        flex: 1,
+        overflow: "hidden"
+      }}
+    >
       <Toolbar
         onFilterClick={() => setIsFiltersDrawerOpened(true)}
         onSortClick={() => setIsSortingDialogOpened(true)}
@@ -137,7 +143,9 @@ export const LibraryBooksScreen = () => {
             viewMode={library.viewMode}
             sorting={library.sorting}
             data={books}
-            style={styles.bookList}
+            style={{
+              height: "100%"
+            }}
             renderHeader={bookListRenderHeader}
             restoreScrollId="libraryBookList"
           />
@@ -163,23 +171,5 @@ export const LibraryBooksScreen = () => {
         />
       </Stack>
     </div>
-  )
-}
-
-const useStyles = () => {
-  return useCSS(
-    () => ({
-      container: {
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        flex: 1,
-        overflow: "hidden"
-      },
-      bookList: {
-        height: "100%"
-      }
-    }),
-    []
   )
 }
