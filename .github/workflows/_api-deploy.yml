@@ -34,6 +34,8 @@ on:
         required: true
       SUPABASE_SERVICE_ROLE_KEY:
         required: true
+      SERVERLESS_ACCESS_KEY:
+        required: true
 
 jobs:
   deploy:
