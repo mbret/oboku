@@ -1,6 +1,5 @@
 import { memo, useCallback } from "react"
 import List from "@mui/material/List"
-import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
 import {
   SyncRounded,
@@ -293,15 +292,14 @@ export const BookActionsDrawer = memo(() => {
             <>
               <Divider />
               <List>
-                <ListItem
-                  button
+                <ListItemButton
                   onClick={() => bookId && onRemovePress({ bookId })}
                 >
                   <ListItemIcon>
                     <DeleteForeverRounded />
                   </ListItemIcon>
                   <ListItemText primary="Remove from library" />
-                </ListItem>
+                </ListItemButton>
               </List>
             </>
           )}

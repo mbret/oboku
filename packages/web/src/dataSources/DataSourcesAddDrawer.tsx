@@ -1,9 +1,9 @@
 import {
   Drawer,
-  ListItem,
   List,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  ListItemButton
 } from "@mui/material"
 import { FC } from "react"
 import { plugins } from "../plugins/configure"
@@ -20,8 +20,7 @@ export const DataSourcesAddDrawer: FC<{
         <div role="presentation">
           <List>
             {dataSourcesPlugins.map((dataSource) => (
-              <ListItem
-                button
+              <ListItemButton
                 onClick={() => onClose(dataSource.type)}
                 key={dataSource.type}
               >
@@ -29,7 +28,7 @@ export const DataSourcesAddDrawer: FC<{
                   {dataSource.Icon && <dataSource.Icon />}
                 </ListItemIcon>
                 <ListItemText primary={`From ${dataSource.name}`} />
-              </ListItem>
+              </ListItemButton>
             ))}
           </List>
         </div>

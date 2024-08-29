@@ -1,6 +1,6 @@
 import {
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   ListSubheader,
@@ -44,9 +44,8 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
         }
       >
         {!!link && !!dataSourcePlugin && (
-          <ListItem
+          <ListItemButton
             key={link?._id}
-            button
             sx={{
               px: [null, 3]
             }}
@@ -76,7 +75,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
             <Stack width={50} alignItems="center" flexShrink={0}>
               <MoreVertRounded />
             </Stack>
-          </ListItem>
+          </ListItemButton>
         )}
       </List>
       {dataSourcePlugin?.SelectItemComponent && (

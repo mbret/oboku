@@ -8,11 +8,13 @@ const searchParams = new URLSearchParams(window.location.search)
 const bookFile = searchParams.get("file")
 
 const reader = gesturesEnhancer(createReader)({
-  numberOfAdjacentSpineItemToPreLoad: 3,
+  numberOfAdjacentSpineItemToPreLoad: 3
 })
 
 ;(async () => {
-  const manifestResposne = await fetch(`${window.origin}/streamer/${bookFile}/manifest`)
+  const manifestResposne = await fetch(
+    `${window.origin}/streamer/${bookFile}/manifest`
+  )
 
   const manifest = await manifestResposne.json()
 

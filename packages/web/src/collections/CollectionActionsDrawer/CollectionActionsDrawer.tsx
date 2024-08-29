@@ -1,6 +1,5 @@
 import {
   Drawer,
-  ListItem,
   Divider,
   List,
   ListItemIcon,
@@ -82,8 +81,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
         onClose={() => closeModalWithNavigation()}
       >
         <List>
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => {
               setIsEditCollectionDialogOpenedWithId(collectionId)
             }}
@@ -92,7 +90,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
               <Edit />
             </ListItemIcon>
             <ListItemText primary="Rename" />
-          </ListItem>
+          </ListItemButton>
           <ListItemButton
             onClick={() => {
               closeModalWithNavigation()
@@ -129,8 +127,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
             </ListItemIcon>
             <ListItemText primary="Mark all books as interested" />
           </ListItemButton>
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => {
               setIsManageBookDialogOpened(true)
             }}
@@ -139,7 +136,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
               <LibraryAddRounded />
             </ListItemIcon>
             <ListItemText primary="Manage books" />
-          </ListItem>
+          </ListItemButton>
           {collection?.type === "series" && (
             <ListItemButton
               onClick={() => {

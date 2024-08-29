@@ -1,11 +1,11 @@
-import React, { FC, useEffect, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import {
   Dialog,
   DialogTitle,
   ListItemText,
-  ListItem,
   List,
-  ListItemIcon
+  ListItemIcon,
+  ListItemButton
 } from "@mui/material"
 import { RadioButtonUnchecked, RadioButtonChecked } from "@mui/icons-material"
 
@@ -35,7 +35,7 @@ export const SortByDialog: FC<{
     <Dialog onClose={onClose} open={open}>
       <DialogTitle>Sort by</DialogTitle>
       <List>
-        <ListItem button onClick={() => onSortChange("alpha")}>
+        <ListItemButton onClick={() => onSortChange("alpha")}>
           <ListItemIcon>
             {innerSorting === "alpha" ? (
               <RadioButtonChecked />
@@ -44,8 +44,8 @@ export const SortByDialog: FC<{
             )}
           </ListItemIcon>
           <ListItemText primary="Alphabetical - A > Z" />
-        </ListItem>
-        <ListItem button onClick={() => onSortChange("date")}>
+        </ListItemButton>
+        <ListItemButton onClick={() => onSortChange("date")}>
           <ListItemIcon>
             {innerSorting === "date" ? (
               <RadioButtonChecked />
@@ -54,8 +54,8 @@ export const SortByDialog: FC<{
             )}
           </ListItemIcon>
           <ListItemText primary="Date added" />
-        </ListItem>
-        <ListItem button onClick={() => onSortChange("activity")}>
+        </ListItemButton>
+        <ListItemButton onClick={() => onSortChange("activity")}>
           <ListItemIcon>
             {innerSorting === "activity" ? (
               <RadioButtonChecked />
@@ -64,7 +64,7 @@ export const SortByDialog: FC<{
             )}
           </ListItemIcon>
           <ListItemText primary="Recent activity" />
-        </ListItem>
+        </ListItemButton>
       </List>
     </Dialog>
   )

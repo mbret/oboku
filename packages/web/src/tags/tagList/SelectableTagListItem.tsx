@@ -1,9 +1,8 @@
 import { FC, memo } from "react"
-import { ListItem, ListItemText, useTheme } from "@mui/material"
+import { ListItemButton, ListItemText, useTheme } from "@mui/material"
 import { useCSS } from "../../common/utils"
 import { BlurOnRounded, LockRounded } from "@mui/icons-material"
 import { useTag } from "../helpers"
-import { TagsDocType } from "@oboku/shared"
 import { Checkbox } from "../../common/Checkbox"
 
 export const SelectableTagListItem: FC<{
@@ -15,8 +14,7 @@ export const SelectableTagListItem: FC<{
   const styles = useStyle()
 
   return (
-    <ListItem
-      button
+    <ListItemButton
       style={styles.container}
       onClick={() => onItemClick && onItemClick()}
     >
@@ -26,7 +24,7 @@ export const SelectableTagListItem: FC<{
         {tag?.isBlurEnabled && <BlurOnRounded color="primary" />}
       </div>
       <Checkbox selected={selected} />
-    </ListItem>
+    </ListItemButton>
   )
 })
 

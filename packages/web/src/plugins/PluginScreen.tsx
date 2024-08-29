@@ -1,9 +1,6 @@
 import { memo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import {
-  capitalize,
-  Stack
-} from "@mui/material"
+import { capitalize, Stack } from "@mui/material"
 import { plugins } from "./configure"
 import { useParams } from "react-router-dom"
 

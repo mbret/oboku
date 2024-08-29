@@ -115,9 +115,8 @@ export const ProblemsScreen = memo(() => {
             </ListItem>
           )}
           {duplicatedCollections.length > 0 && (
-            <ListItem
+            <ListItemButton
               alignItems="flex-start"
-              button
               onClick={() => fixCollections(duplicatedCollections)}
             >
               <ListItemIcon>
@@ -131,7 +130,7 @@ export const ProblemsScreen = memo(() => {
               It is not recommended to keep duplicate resourceId since it could lead to unpredictable sync.
               `}
               />
-            </ListItem>
+            </ListItemButton>
           )}
           {danglingLinks.length > 0 && (
             <ListItemButton

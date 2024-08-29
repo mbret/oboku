@@ -4,7 +4,6 @@ import {
   DialogTitle,
   Drawer,
   List,
-  ListItem,
   ListItemText,
   ListItemIcon,
   DialogActions,
@@ -45,17 +44,15 @@ export const TagActionsDrawer: FC<{
         transitionDuration={0}
       >
         <List>
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => setIsEditTagDialogOpenedWithId(openWith)}
           >
             <ListItemIcon>
               <EditRounded />
             </ListItemIcon>
             <ListItemText primary="Rename" />
-          </ListItem>
-          <ListItem
-            button
+          </ListItemButton>
+          <ListItemButton
             onClick={() =>
               openWith &&
               editTag({ _id: openWith, isProtected: !tag?.isProtected })
@@ -69,9 +66,8 @@ export const TagActionsDrawer: FC<{
               primary="Mark as protected"
               secondary="This will lock and hide books behind it. Use unlock features to display them"
             />
-          </ListItem>
-          <ListItem
-            button
+          </ListItemButton>
+          <ListItemButton
             onClick={() =>
               openWith &&
               editTag({ _id: openWith, isBlurEnabled: !tag?.isBlurEnabled })
@@ -85,9 +81,8 @@ export const TagActionsDrawer: FC<{
               primary="Blur covers"
               secondary="Apply a blur filter on book covers. Useful for sensitive content"
             />
-          </ListItem>
-          <ListItem
-            button
+          </ListItemButton>
+          <ListItemButton
             onClick={() => {
               onClose()
               isManageTagBooksDialogOpenedWithState.setValue(openWith)
@@ -97,7 +92,7 @@ export const TagActionsDrawer: FC<{
               <LibraryAddRounded />
             </ListItemIcon>
             <ListItemText primary="Manage books" />
-          </ListItem>
+          </ListItemButton>
         </List>
         <Divider />
         <List>

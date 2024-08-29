@@ -17,7 +17,7 @@ import {
 export const createHelpers = (
   dataSourceId: string,
   refreshBookMetadata: ({ bookId }: { bookId: string }) => Promise<any>,
-  db: createNano.DocumentScope<unknown>,
+  db: createNano.DocumentScope<unknown>
 ) => {
   const helpers = {
     refreshBookMetadata: (opts: { bookId: string }) =>

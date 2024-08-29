@@ -3,7 +3,6 @@ import {
   BarChartRounded,
   GavelRounded,
   LaunchRounded,
-  LinkRounded,
   LockOpenRounded,
   LockRounded,
   SecurityRounded,
@@ -26,7 +25,6 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  Typography,
   useTheme,
   FormControlLabel,
   ListItemButton
@@ -73,11 +71,10 @@ export const ProfileScreen = () => {
       <TopBarNavigation title={"Profile"} showBack={false} />
       <List>
         <ListSubheader disableSticky>Account</ListSubheader>
-        <ListItem button onClick={(_) => signOut()}>
+        <ListItemButton onClick={(_) => signOut()}>
           <ListItemText primary="Sign out" secondary={auth?.email} />
-        </ListItem>
-        <ListItem
-          button
+        </ListItemButton>
+        <ListItemButton
           onClick={() => {
             if (library.isLibraryUnlocked) {
               libraryStateSignal.setValue((state) => ({
@@ -101,7 +98,7 @@ export const ProfileScreen = () => {
           />
           {library.isLibraryUnlocked && <LockOpenRounded color="action" />}
           {!library.isLibraryUnlocked && <LockRounded color="action" />}
-        </ListItem>
+        </ListItemButton>
         <ListItemButton
           onClick={() => {
             navigate(ROUTES.SECURITY)
@@ -112,8 +109,7 @@ export const ProfileScreen = () => {
           </ListItemIcon>
           <ListItemText primary="Security" />
         </ListItemButton>
-        <ListItem
-          button
+        <ListItemButton
           onClick={() => {
             navigate(ROUTES.STATISTICS)
           }}
@@ -122,11 +118,10 @@ export const ProfileScreen = () => {
             <BarChartRounded />
           </ListItemIcon>
           <ListItemText primary="Statistics" />
-        </ListItem>
+        </ListItemButton>
       </List>
       <List subheader={<ListSubheader disableSticky>Device</ListSubheader>}>
-        <ListItem
-          button
+        <ListItemButton
           onClick={() => {
             navigate(ROUTES.SETTINGS)
           }}
@@ -135,9 +130,8 @@ export const ProfileScreen = () => {
             <SettingsRounded />
           </ListItemIcon>
           <ListItemText primary="Device settings" />
-        </ListItem>
-        <ListItem
-          button
+        </ListItemButton>
+        <ListItemButton
           onClick={() => {
             navigate(`${ROUTES.PROFILE}/manage-storage`)
           }}
@@ -151,7 +145,7 @@ export const ProfileScreen = () => {
               2
             )}%) used of ${quotaInGb} GB`}
           />
-        </ListItem>
+        </ListItemButton>
       </List>
       <List
         subheader={<ListSubheader disableSticky>Information</ListSubheader>}
@@ -168,8 +162,7 @@ export const ProfileScreen = () => {
           </ListItemIcon>
           <ListItemText primary={`Documentation Page`} />
         </ListItemButton>
-        <ListItem
-          button
+        <ListItemButton
           onClick={() =>
             createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })
           }
@@ -178,7 +171,7 @@ export const ProfileScreen = () => {
             <GavelRounded />
           </ListItemIcon>
           <ListItemText primary="Terms of Service" />
-        </ListItem>
+        </ListItemButton>
         <ListItem>
           <ListItemText primary="App Version" secondary={packageJson.version} />
         </ListItem>
@@ -189,13 +182,13 @@ export const ProfileScreen = () => {
             <ListSubheader disableSticky>Developer options</ListSubheader>
           }
         >
-          <ListItem button onClick={toggleDebug}>
+          <ListItemButton onClick={toggleDebug}>
             <ListItemText
               primary={
                 isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
               }
             />
-          </ListItem>
+          </ListItemButton>
           {/* <ListItem
             button
             onClick={() => setIsDeleteMyDataDialogOpened(true)}
@@ -215,12 +208,12 @@ export const ProfileScreen = () => {
         }
         style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
       >
-        <ListItem button onClick={() => navigate(ROUTES.PROBLEMS)}>
+        <ListItemButton onClick={() => navigate(ROUTES.PROBLEMS)}>
           <ListItemText
             primary="Repair my account / anomalies"
             secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one this section"
           />
-        </ListItem>
+        </ListItemButton>
         <ListItemButton
           onClick={() => {
             removeAllContents()
@@ -231,14 +224,13 @@ export const ProfileScreen = () => {
             secondary="Remove all contents from your account"
           />
         </ListItemButton>
-        <ListItem
-          button
+        <ListItemButton
           onClick={() =>
             createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })
           }
         >
           <ListItemText primary="Delete my account" />
-        </ListItem>
+        </ListItemButton>
       </List>
 
       <UnlockContentsDialog

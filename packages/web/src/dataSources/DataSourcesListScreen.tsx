@@ -4,13 +4,13 @@ import {
   Button,
   Toolbar,
   List,
-  ListItem,
   ListItemText,
   SvgIcon,
   ListItemIcon,
   Typography,
   useTheme,
-  Box
+  Box,
+  ListItemButton
 } from "@mui/material"
 import { Alert } from "@mui/material"
 import { DataSourcesAddDrawer } from "./DataSourcesAddDrawer"
@@ -70,9 +70,8 @@ export const DataSourcesListScreen = () => {
             )
 
             return (
-              <ListItem
+              <ListItemButton
                 key={syncSource._id}
-                button
                 onClick={() => setIsActionsDrawerOpenWith(syncSource._id)}
               >
                 {dataSource && (
@@ -117,7 +116,7 @@ export const DataSourcesListScreen = () => {
                   }
                 />
                 {syncSource?.isProtected && <LockRounded color="primary" />}
-              </ListItem>
+              </ListItemButton>
             )
           })}
         </List>

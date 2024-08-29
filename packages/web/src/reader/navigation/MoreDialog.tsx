@@ -3,7 +3,7 @@ import {
   Dialog,
   DialogContent,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Tab,
@@ -12,7 +12,6 @@ import {
 import { TabContext, TabList, TabPanel } from "@mui/lab"
 import { FiberManualRecordRounded } from "@mui/icons-material"
 import React, { memo, useCallback } from "react"
-import { FC } from "react"
 import { useCSS } from "../../common/utils"
 import { DialogTopBar } from "../../navigation/DialogTopBar"
 import { usePagination, readerSignal } from "../states"
@@ -64,7 +63,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
     lvl: number
   ) => (
     <React.Fragment key={index}>
-      <ListItem button style={{}}>
+      <ListItemButton style={{}}>
         <ListItemIcon>
           {currentSubChapter?.path === tocItem.path && (
             <FiberManualRecordRounded color="primary" />
@@ -89,7 +88,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
         {/* {tocItem.contents.length > 0 && (
           <ExpandLessRounded />
         )} */}
-      </ListItem>
+      </ListItemButton>
       {tocItem.contents.length > 0 && (
         <Collapse in={true} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>

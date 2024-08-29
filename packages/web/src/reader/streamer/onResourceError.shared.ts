@@ -1,4 +1,7 @@
-import { StreamerFileNotFoundError, StreamerFileNotSupportedError } from "../../errors/errors.shared"
+import {
+  StreamerFileNotFoundError,
+  StreamerFileNotSupportedError
+} from "../../errors/errors.shared"
 
 export const onResourceError = (error: unknown) => {
   if (error instanceof StreamerFileNotSupportedError) {
