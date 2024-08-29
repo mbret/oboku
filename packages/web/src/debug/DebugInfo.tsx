@@ -1,6 +1,5 @@
 import { Box, Typography, useTheme } from "@mui/material"
 import { ComponentProps, FC } from "react"
-import makeStyles from "@mui/styles/makeStyles"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
 import TableCell from "@mui/material/TableCell"
@@ -13,7 +12,6 @@ type Info = { [key: string]: string | number }
 export const DebugInfo: FC<
   { info: Info | Info[] } & ComponentProps<typeof Box>
 > = ({ info, ...rest }) => {
-  const classes = useStyles()
   const theme = useTheme()
 
   if (!isDebugEnabled()) return null
@@ -25,7 +23,9 @@ export const DebugInfo: FC<
       </Box>
       <TableContainer>
         <Table
-          className={classes.table}
+          style={{
+            minWidth: 650
+          }}
           size="small"
           aria-label="a dense table"
         >
@@ -46,9 +46,3 @@ export const DebugInfo: FC<
     </Box>
   )
 }
-
-const useStyles = makeStyles({
-  table: {
-    minWidth: 650
-  }
-})

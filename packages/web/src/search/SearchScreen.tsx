@@ -13,7 +13,6 @@ import {
   Typography,
   useTheme
 } from "@mui/material"
-import makeStyles from "@mui/styles/makeStyles"
 import React, { useCallback, useMemo, useRef, useState } from "react"
 import {
   generatePath,
@@ -69,20 +68,15 @@ const SeeMore = ({
   )
 }
 
-const useClasses = makeStyles((theme) => ({
-  inputRoot: {
-    color: "inherit",
-    width: "100%"
-  },
-  inputInput: {
+const SearchInput = styled(InputBase)(({ theme }) => ({
+  ".MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 1),
-    width: "100%"
+    width: "100%",
   }
 }))
 
 export const SearchScreen = () => {
   const { styles } = useStyles()
-  const classes = useClasses()
   const [searchParams, setSearchParams] = useSearchParams()
   const value = useSignalValue(searchStateSignal)
   const { data: collections = [] } = useCollectionsForSearch(value)
@@ -112,15 +106,15 @@ export const SearchScreen = () => {
         showBack
         middleComponent={
           <form style={styles.search} autoComplete="off" onSubmit={onSubmit}>
-            <InputBase
+            <SearchInput
               placeholder="Alice in wonderland, myTag, ..."
               value={value || ""}
+              sx={{
+                color: "inherit",
+                width: "100%"
+              }}
               inputRef={inputRef as any}
               autoFocus
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput
-              }}
               inputProps={{ "aria-label": "search" }}
               onChange={(e) => {
                 searchStateSignal.setValue(e.target.value)

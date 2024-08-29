@@ -1,20 +1,19 @@
 import { FC, useEffect, useState } from "react"
-import { SelectProps } from "@mui/material"
+import { SelectProps, useTheme } from "@mui/material"
 import Input from "@mui/material/Input"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import FormControl from "@mui/material/FormControl"
 import Select from "@mui/material/Select"
-import makeStyles from "@mui/styles/makeStyles"
 import { useTag, useTagIds } from "./helpers"
 import { TagChip } from "./TagChip"
 
 export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
   onChange: onUpChange
 }) => {
-  const classes = useStyles()
   const { data: tags = [] } = useTagIds()
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const theme = useTheme()
 
   const onChange: NonNullable<SelectProps[`onChange`]> = (event) => {
     setSelectedTags(event.target.value as string[])
@@ -23,9 +22,20 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
   const renderValue = (
     selected: string[]
   ): ReturnType<NonNullable<SelectProps[`renderValue`]>> => (
-    <div className={classes.chips}>
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap"
+      }}
+    >
       {selected.map((value) => (
-        <TagChip key={value} id={value} className={classes.chip} />
+        <TagChip
+          key={value}
+          id={value}
+          style={{
+            margin: theme.spacing(0.5)
+          }}
+        />
       ))}
     </div>
   )
@@ -35,7 +45,12 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
   }, [selectedTags, onUpChange])
 
   return (
-    <FormControl className={classes.formControl}>
+    <FormControl
+      style={{
+        marginTop: theme.spacing(4),
+        width: `100%`
+      }}
+    >
       <InputLabel id="tags-selector-multiple-label">Tags</InputLabel>
       <Select
         labelId="tags-selector-multiple-label"
@@ -61,20 +76,3 @@ const TagName: FC<{ id: string }> = ({ id }) => {
 
   return <>{data?.name}</>
 }
-
-const useStyles = makeStyles((theme) => ({
-  formControl: {
-    marginTop: theme.spacing(4),
-    width: `100%`
-  },
-  chips: {
-    display: "flex",
-    flexWrap: "wrap"
-  },
-  chip: {
-    margin: theme.spacing(0.5)
-  },
-  noLabel: {
-    marginTop: theme.spacing(3)
-  }
-}))

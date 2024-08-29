@@ -9,14 +9,21 @@ import {
   MoreVertRounded,
   Search
 } from "@mui/icons-material"
-import { alpha, Box, InputBase, useTheme } from "@mui/material"
-import makeStyles from "@mui/styles/makeStyles"
+import { alpha, Box, InputBase, styled, useTheme } from "@mui/material"
 import { useSafeGoBack } from "./useSafeGoBack"
 import { ROUTES } from "../constants"
 import { useCSS } from "../common/utils"
 import { useNavigate } from "react-router-dom"
 import { libraryStateSignal } from "../library/books/states"
 import { useSignalValue } from "reactjrx"
+
+const SearchInput = styled(InputBase)(({ theme }) => ({
+  ".MuiInputBase-input": {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    width: "100%"
+  }
+}))
 
 export const TopBarNavigation: FC<
   {
@@ -47,7 +54,8 @@ export const TopBarNavigation: FC<
       libraryStateSignal,
       ({ isLibraryUnlocked }) => isLibraryUnlocked
     )
-    const { styles, classes } = useStyles({ color })
+    const { styles } = useStyles({ color })
+    const theme = useTheme()
     const { goBack } = useSafeGoBack()
     const navigate = useNavigate()
 
@@ -74,7 +82,16 @@ export const TopBarNavigation: FC<
               )}
               {hasSearch && (
                 <Box
-                  className={classes.search}
+                  sx={{
+                    position: "relative",
+                    borderRadius: 1,
+                    backgroundColor: alpha(theme.palette.common.white, 0.15),
+                    "&:hover": {
+                      backgroundColor: alpha(theme.palette.common.white, 0.25)
+                    },
+                    marginLeft: 0,
+                    width: "100%"
+                  }}
                   onClick={() => {
                     navigate(ROUTES.SEARCH)
                   }}
@@ -82,12 +99,11 @@ export const TopBarNavigation: FC<
                   <div style={styles.searchIcon}>
                     <Search />
                   </div>
-                  <InputBase
-                    placeholder="Search…"
+                  <SearchInput
+                    placeholder="Searchs"
                     readOnly
-                    classes={{
-                      root: classes.inputRoot,
-                      input: classes.inputInput
+                    sx={{
+                      color: "inherit"
                     }}
                     inputProps={{ "aria-label": "search" }}
                   />
@@ -124,35 +140,12 @@ export const TopBarNavigation: FC<
   }
 )
 
-const useClasses = makeStyles((theme) => ({
-  inputRoot: {
-    color: "inherit",
-    width: "100%"
-  },
-  inputInput: {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    width: "100%"
-  },
-  search: {
-    position: "relative",
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    "&:hover": {
-      backgroundColor: alpha(theme.palette.common.white, 0.25)
-    },
-    marginLeft: 0,
-    width: "100%"
-  }
-}))
-
 const useStyles = ({
   color
 }: {
   color: ComponentProps<typeof AppBar>["color"]
 }) => {
   const theme = useTheme()
-  const classes = useClasses()
 
   const styles = useCSS(
     () => ({
@@ -176,5 +169,5 @@ const useStyles = ({
     [theme, color]
   )
 
-  return { styles, classes }
+  return { styles }
 }
