@@ -71,7 +71,7 @@ const SeeMore = ({
 const SearchInput = styled(InputBase)(({ theme }) => ({
   ".MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 1),
-    width: "100%",
+    width: "100%"
   }
 }))
 

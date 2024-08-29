@@ -38,11 +38,6 @@ LibArchive.init({
   workerUrl: "/libarchive.js.worker-bundle.js"
 })
 
-declare module "@mui/styles/defaultTheme" {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface DefaultTheme extends Theme {}
-}
-
 const authSignalEntries = [{ signal: authStateSignal, version: 0 }]
 
 export function App() {
