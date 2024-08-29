@@ -228,6 +228,14 @@ const serverlessConfiguration: AWS & any = {
     }
   },
   package: { individually: true },
+  /**
+   * @important
+   * There are issue with v4 embedded esbuild and middy files
+   * @see https://github.com/middyjs/middy/issues/1208
+   * @see https://www.reddit.com/r/typescript/comments/1abj9k2/middy_with_ts_and_serverless_offline/
+   * 
+   * for the moment the plugin works but not v4 esbuild.
+   */
   build: {
     esbuild: false
   },
