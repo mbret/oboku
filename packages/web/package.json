@@ -1,6 +1,6 @@
 {
   "name": "@oboku/web",
-  "version": "0.107.5",
+  "version": "0.107.6",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.13.3",
