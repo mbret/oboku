@@ -68,4 +68,6 @@ jobs:
           echo "COVERS_PLACEHOLDER_BUCKET_KEY=${{inputs.COVERS_PLACEHOLDER_BUCKET_KEY}}" >> packages/api/.env
           echo "OFFLINE=false" >> packages/api/.env
       - name: Deploy
-        run: npx lerna exec --scope @oboku/api -- serverless deploy --stage ${{ inputs.STAGE }}
+        run: |
+          echo "Secret is: $SERVERLESS_ACCESS_KEY"
+          npx lerna exec --scope @oboku/api -- serverless deploy --stage ${{ inputs.STAGE }}
