@@ -6,7 +6,7 @@ import {
   ListItemIcon,
   ListItemText
 } from "@mui/material"
-import { groupBy } from "lodash"
+import { groupBy } from "@oboku/shared"
 import { Fragment, memo, useMemo } from "react"
 import { Report } from "../debug/report.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
@@ -45,17 +45,23 @@ export const ProblemsScreen = memo(() => {
 
   const duplicatedCollections = useMemo(() => {
     const collectionsByResourceId = groupBy(collections, "linkResourceId")
-    const duplicatedCollections = Object.keys(collectionsByResourceId)
-      .filter((resourceId) => collectionsByResourceId[resourceId]!.length > 1)
-      .map((resourceId) => [
-        resourceId,
-        {
-          name: getMetadataFromCollection(
-            collectionsByResourceId[resourceId]![0]
-          )?.title,
-          number: collectionsByResourceId[resourceId]!.length
-        }
-      ])
+    const linkResourceIds = Object.keys(collectionsByResourceId)
+    const duplicatedCollections = linkResourceIds
+      .filter(
+        (resourceId) => (collectionsByResourceId[resourceId]?.length ?? 0) > 1
+      )
+      .map((resourceId) => {
+        const _collections = collectionsByResourceId[resourceId] ?? []
+        const collection = _collections[0]
+
+        return [
+          resourceId,
+          {
+            name: getMetadataFromCollection(collection?.toJSON())?.title,
+            number: collectionsByResourceId[resourceId]!.length
+          }
+        ]
+      })
 
     Report.log(
       `Found ${duplicatedCollections.length} duplicated resource id`,

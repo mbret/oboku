@@ -68,7 +68,6 @@
     "@types/google.accounts": "^0.0.14",
     "@types/google.picker": "0.0.42",
     "@types/jest": "^29.4.0",
-    "@types/lodash.throttle": "^4.1.7",
     "@types/uuid": "^10.0.0"
   },
   "scripts": {

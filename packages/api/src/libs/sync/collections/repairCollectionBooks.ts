@@ -1,5 +1,5 @@
 import { Logger } from "@libs/logger"
-import { difference } from "lodash"
+import { difference } from "@oboku/shared"
 import { Context } from "../types"
 import { atomicUpdate, find, findOne } from "@libs/couch/dbHelpers"
 

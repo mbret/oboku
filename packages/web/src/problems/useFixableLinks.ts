@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { useBooks } from "../books/states"
-import { difference } from "lodash"
+import { difference } from "@oboku/shared"
 import { useLinks } from "../links/states"
 
 export const useFixableLinks = () => {

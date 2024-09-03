@@ -1,4 +1,4 @@
-import { CollectionDocType, directives, ReadingStateState } from "@oboku/shared"
+import { CollectionDocType, difference, directives, ReadingStateState } from "@oboku/shared"
 import { useLocalSettings } from "../settings/states"
 import { useForeverQuery, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
@@ -7,7 +7,7 @@ import { MangoQuery } from "rxdb"
 import { getMetadataFromCollection } from "./getMetadataFromCollection"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
 import { libraryStateSignal } from "../library/books/states"
-import { difference, intersection } from "lodash"
+import { intersection } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
 
 export type Collection = CollectionDocType

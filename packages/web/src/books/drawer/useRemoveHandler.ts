@@ -1,4 +1,4 @@
-import { getBookById, useRemoveBook } from "../helpers"
+import { useRemoveBook } from "../helpers"
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/RxDbProvider"
 import { first, from, mergeMap, of } from "rxjs"
@@ -8,6 +8,7 @@ import { withOfflineErrorDialog } from "../../common/network/withOfflineErrorDia
 import { observeLinkById } from "../../links/dbHelpers"
 import { getDataSourcePlugin } from "../../dataSources/helpers"
 import { withUnknownErrorDialog } from "../../errors/withUnknownErrorDialog"
+import { getBookById } from "../dbHelpers"
 
 const deleteBookNormallyDialog: Parameters<
   typeof createDialog<{ deleteFromDataSource: boolean }>
@@ -27,7 +28,7 @@ export const useRemoveHandler = (
     mutationFn: ({ bookId }: { bookId: string }) => {
       const mutation$ = getLatestDatabase().pipe(
         mergeMap((database) => {
-          return getBookById({ database, id: bookId }).pipe(
+          return from(getBookById({ database, id: bookId })).pipe(
             mergeMap((book) => {
               if (!book) throw new Error("book not found")
 

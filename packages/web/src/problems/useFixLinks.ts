@@ -1,4 +1,3 @@
-import { mergeWith } from "lodash"
 import { useCallback } from "react"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
@@ -38,7 +37,7 @@ export const useFixLinks = () => {
                 const mutatedPrevious = { ...previous }
 
                 // we use || to be as less destructive as possible
-                return mergeWith((a, b) => b || a, mutatedPrevious, current)
+                return { ...mutatedPrevious, ...current }
               }, dataAsJson[0])
 
               if (!mergedDoc) return

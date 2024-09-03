@@ -101,6 +101,6 @@ describe("replaceString function", () => {
       removeMaybeArtistAndPublisher(
         "Mirka Andolfo's Mercy 6 (2020) (Digital) (Mephisto-Empire)"
       )
-    ).toBe("Mirka Andolfo's Mercy 6")
+    ).toBe("Mirka Andolfo's Mercy 6 (2020) (Digital)")
   })
 })

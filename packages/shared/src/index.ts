@@ -86,4 +86,8 @@ export * from "./metadata"
 
 export * from "./sync/reports"
 
-export * from "./objects"
+export * from "./utils/objects"
+export * from "./utils/difference"
+export * from "./utils/truncate"
+export * from "./utils/intersection"
+export * from "./utils/groupBy"

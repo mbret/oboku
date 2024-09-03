@@ -1,14 +1,10 @@
-import { BookDocType, ReadingStateState } from "@oboku/shared"
-import { groupBy, mergeWith } from "lodash"
-import { useCallback, useMemo } from "react"
-import { DeepMutable } from "rxdb/dist/types/types"
-import { Report } from "../debug/report.shared"
-import { useDatabase } from "../rxdb"
+import { useMemo } from "react"
 import { BookDocument } from "../rxdb/collections/book"
 import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { switchMap } from "rxjs"
 import { getMetadataFromBook } from "../books/metadata"
+import { groupBy } from "@oboku/shared"
 
 export const useDuplicatedBookTitles = () => {
   const books = useObserve(

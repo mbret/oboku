@@ -1,6 +1,5 @@
 import { directives } from "@oboku/shared"
 import { createHelpers } from "../plugins/helpers"
-import { uniq } from "lodash"
 import { Logger } from "@libs/logger"
 import {
   DataSourcePlugin,
@@ -91,7 +90,7 @@ const syncTags = async ({
 }) => {
   console.log(`syncTags for item ${item.name} and lvl ${lvl}`)
 
-  const tagNames = uniq(getItemTags(item, helpers))
+  const tagNames = Array.from(new Set(getItemTags(item, helpers)))
 
   console.log(`found ${tagNames.length} tags`)
 

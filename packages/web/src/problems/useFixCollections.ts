@@ -1,5 +1,4 @@
 import { CollectionDocType } from "@oboku/shared"
-import { mergeWith } from "lodash"
 import { useCallback } from "react"
 import { DeepMutable } from "rxdb/dist/types/types"
 import { Report } from "../debug/report.shared"
@@ -38,7 +37,7 @@ export const useFixCollections = () => {
                   const mutatedPrevious = { ...previous }
 
                   // we use || to be as less destructive as possible
-                  return mergeWith((a, b) => b || a, mutatedPrevious, current)
+                  return { ...mutatedPrevious, ...current }
                 },
                 collectionsAsJson[0]
               )

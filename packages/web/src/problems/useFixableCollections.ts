@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { useBooks } from "../books/states"
 import { useCollections } from "../collections/useCollections"
-import { difference } from "lodash"
+import { difference } from "@oboku/shared"
 import { CollectionDocType } from "@oboku/shared"
 
 export const useFixableCollections = () => {
