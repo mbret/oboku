@@ -44,8 +44,9 @@ export const ManageStorageScreen = () => {
     useStorageUse([books])
   const { mutate: removeCoversInCache } = useRemoveCoversInCache()
   const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
-  const { data: downloadedBookIds = [], refetch: refetchDownloadedFilesInfo } =
+  const { data: downloadedBooks = [], refetch: refetchDownloadedFilesInfo } =
     useDownloadedFilesInfo()
+  const downloadedBookIds = downloadedBooks.map(({ id }) => id)
   const extraDownloadFilesIds = difference(downloadedBookIds, bookIds)
   const theme = useTheme()
   const bookIdsToDisplay = useMemo(

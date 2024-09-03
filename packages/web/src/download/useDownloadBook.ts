@@ -1,4 +1,3 @@
-import localforage from "localforage"
 import { DownloadState, booksDownloadStateSignal } from "./states"
 import { Report } from "../debug/report.shared"
 import { DOWNLOAD_PREFIX } from "../constants.shared"
@@ -32,6 +31,7 @@ import {
 import { useMutation } from "reactjrx"
 import { CancelError } from "../errors/errors.shared"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { dexieDb } from "../rxdb/dexie"
 
 class NoLinkFound extends Error {}
 
@@ -105,7 +105,9 @@ export const useDownloadBook = () => {
           )
 
           const fileExist$ = from(
-            localforage.getItem<BookFile>(`${DOWNLOAD_PREFIX}-${bookId}`)
+            dexieDb.downloads.get({
+              id: bookId
+            })
           )
 
           return merge(
@@ -213,13 +215,11 @@ export const useDownloadBook = () => {
                     )
 
                     return from(
-                      localforage.setItem<BookFile>(
-                        `${DOWNLOAD_PREFIX}-${bookId}`,
-                        {
-                          data,
-                          name
-                        }
-                      )
+                      dexieDb.downloads.add({
+                        id: bookId,
+                        data,
+                        name
+                      })
                     )
                   }),
                   tap(() => {

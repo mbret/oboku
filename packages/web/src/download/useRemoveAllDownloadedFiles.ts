@@ -3,6 +3,7 @@ import { plugin as localPlugin } from "../plugins/local"
 import { useMutation } from "reactjrx"
 import {
   combineLatest,
+  combineLatestWith,
   defaultIfEmpty,
   first,
   from,
@@ -10,26 +11,24 @@ import {
   of,
   switchMap
 } from "rxjs"
-import { getBookKeysFromStorage } from "./helpers"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { dexieDb } from "../rxdb/dexie"
 
 export const useRemoveAllDownloadedFiles = () => {
   const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
 
   return useMutation({
     mutationFn: () => {
-      return combineLatest([
-        latestDatabase$,
-        from(getBookKeysFromStorage())
-      ]).pipe(
+      return latestDatabase$.pipe(
         first(),
-        switchMap(([db, keys]) => {
+        combineLatestWith(from(dexieDb.downloads.toArray())),
+        switchMap(([db, items]) => {
           const books$ = from(
             db.book
               .find({
                 selector: {
                   _id: {
-                    $in: keys.map(({ bookId }) => bookId)
+                    $in: items.map(({ id }) => id)
                   }
                 }
               })

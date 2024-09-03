@@ -1,9 +1,8 @@
-import localforage from "localforage"
 import { memo, useEffect } from "react"
 import { useMutation } from "reactjrx"
-import { combineLatest, from, map, of, switchMap } from "rxjs"
+import { from, of, switchMap } from "rxjs"
 import { booksDownloadStateSignal, DownloadState } from "./states"
-import { getBookKeysFromStorage } from "./helpers"
+import { dexieDb } from "../rxdb/dexie"
 
 export const useRestoreDownloadState = ({
   onSuccess
@@ -14,30 +13,15 @@ export const useRestoreDownloadState = ({
     onSuccess,
     mapOperator: "switch",
     mutationFn: () =>
-      from(getBookKeysFromStorage()).pipe(
-        switchMap((keys) => {
-          const items$ = keys.map(({ key, bookId }) =>
-            from(localforage.getItem<{ data: Blob }>(key)).pipe(
-              map((item) => ({
-                item,
-                key,
-                bookId
-              }))
-            )
-          )
-
-          if (items$.length === 0) return of([])
-
-          return combineLatest(items$)
-        }),
+      from(dexieDb.downloads.toArray()).pipe(
         switchMap((items) => {
-          const state = items.reduce((acc, { bookId, item, key }) => {
+          const state = items.reduce((acc, { id: bookId, name, data }) => {
             return {
               ...acc,
               [bookId]: {
                 downloadProgress: 100,
                 downloadState: DownloadState.Downloaded,
-                size: item?.data.size
+                size: data.size
               }
             }
           }, {})

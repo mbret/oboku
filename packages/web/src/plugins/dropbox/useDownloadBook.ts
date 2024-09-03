@@ -1,4 +1,4 @@
-import { Dropbox, DropboxResponse, files } from "dropbox"
+import { Dropbox, type DropboxResponse, type files } from "dropbox"
 import { authUser } from "./lib/auth"
 import { extractIdFromResourceId } from "./helpers"
 import { ObokuPlugin } from "../types"

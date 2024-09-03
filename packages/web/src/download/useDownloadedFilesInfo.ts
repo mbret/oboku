@@ -1,14 +1,12 @@
-import localforage from "localforage"
 import { useQuery } from "reactjrx"
+import { dexieDb } from "../rxdb/dexie"
 
 export const useDownloadedFilesInfo = () =>
   useQuery({
     queryKey: ["download", "files"],
     queryFn: async () => {
-      const keys = await localforage.keys()
+      const resposne = await dexieDb.downloads.toArray()
 
-      return keys
-        .filter((name) => name.startsWith(`book-download`))
-        .map((name) => name.replace(`book-download-`, ``))
+      return resposne
     }
   })

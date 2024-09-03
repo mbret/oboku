@@ -1,10 +1,6 @@
-import localforage from "localforage"
 import { isDebugEnabled } from "./isDebugEnabled.shared"
 import "./reportWebVitals"
 import "./sentry"
-
-// @ts-ignore
-window.localforage = localforage
 
 if (isDebugEnabled()) {
   // @ts-ignore

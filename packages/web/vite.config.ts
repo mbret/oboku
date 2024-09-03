@@ -63,7 +63,7 @@ export default defineConfig(({ mode }) => ({
           // sourcemap will be uploaded on reporting service directly
           "**/*.{js.map}"
         ],
-        maximumFileSizeToCacheInBytes: 5e6
+        maximumFileSizeToCacheInBytes: 9e6
       },
       srcDir: "src",
       filename: "service-worker.ts",
