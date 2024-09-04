@@ -9,14 +9,14 @@ import {
   Radio,
   RadioGroup
 } from "@mui/material"
-import { FC } from "react"
-import { useSignalValue } from "reactjrx"
-import { libraryShelvesSettingsSignal } from "../state"
+import { memo } from "react"
+import { SignalValue, useSignalValue } from "reactjrx"
+import { libraryShelvesFiltersSignal } from "./states"
 
-type State = ReturnType<(typeof libraryShelvesSettingsSignal)["getValue"]>
+type State = SignalValue<typeof libraryShelvesFiltersSignal>
 type ReadingState = State["readingState"]
 
-export const getDisplayableReadingState = (readingState: ReadingState) => {
+export const getLabel = (readingState: ReadingState) => {
   switch (readingState) {
     case "ongoing":
       return "Ongoing"
@@ -27,44 +27,44 @@ export const getDisplayableReadingState = (readingState: ReadingState) => {
   }
 }
 
-export const ReadingStateFilterDialog: FC<{
-  open: boolean
-  onClose: () => void
-}> = ({ open, onClose }) => {
-  const state = useSignalValue(libraryShelvesSettingsSignal)
-  const readingStates = ["any", "ongoing", "finished"] as ReadingState[]
+export const ReadingStateFilterDialog = memo(
+  ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+    const state = useSignalValue(libraryShelvesFiltersSignal)
+    const readingStates = ["any", "ongoing", "finished"] as ReadingState[]
 
-  return (
-    <Dialog onClose={onClose} open={open}>
-      <DialogTitle>Reading state</DialogTitle>
-      <DialogContent>
-        <FormControl>
-          <RadioGroup
-            name="collection-state-radio-group"
-            value={state.readingState}
-            onChange={(event) => {
-              libraryShelvesSettingsSignal.setValue((state) => ({
-                ...state,
-                readingState: event.target.value as ReadingState
-              }))
-            }}
-          >
-            {readingStates.map((readingState) => (
-              <FormControlLabel
-                key={readingState}
-                value={readingState}
-                control={<Radio />}
-                label={getDisplayableReadingState(readingState)}
-              />
-            ))}
-          </RadioGroup>
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} autoFocus>
-          Ok
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
+    return (
+      <Dialog onClose={onClose} open={open}>
+        <DialogTitle>Reading state</DialogTitle>
+        <DialogContent>
+          <FormControl>
+            <RadioGroup
+              name="collection-state-radio-group"
+              value={state.readingState}
+              onChange={(event) => {
+                libraryShelvesFiltersSignal.setValue((state) => ({
+                  ...state,
+                  readingState: event.target.value as ReadingState
+                }))
+                onClose()
+              }}
+            >
+              {readingStates.map((readingState) => (
+                <FormControlLabel
+                  key={readingState}
+                  value={readingState}
+                  control={<Radio />}
+                  label={getLabel(readingState)}
+                />
+              ))}
+            </RadioGroup>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} autoFocus>
+            cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    )
+  }
+)

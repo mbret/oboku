@@ -6,7 +6,7 @@ import { CollectionList } from "../../collections/list/CollectionList"
 import { signal, useSignalValue } from "reactjrx"
 import { useLibraryShelves } from "./useLibraryShelves"
 import { Toolbar } from "./Toolbar"
-import { libraryShelvesSettingsSignal } from "./state"
+import { libraryShelvesFiltersSignal } from "./filters/states"
 import { CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
 import { AddCollectionDialog } from "./AddCollectionDialog"
@@ -29,7 +29,7 @@ export const LibraryCollectionScreen = () => {
     libraryCollectionScreenPreviousScrollState
   )
   const { viewMode } = useSignalValue(
-    libraryShelvesSettingsSignal,
+    libraryShelvesFiltersSignal,
     ({ viewMode }) => ({ viewMode })
   )
   const { data: collections } = useLibraryShelves()

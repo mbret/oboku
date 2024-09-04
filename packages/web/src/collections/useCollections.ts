@@ -1,4 +1,10 @@
-import { CollectionDocType, difference, directives, ReadingStateState } from "@oboku/shared"
+import {
+  CollectionDocType,
+  difference,
+  directives,
+  groupBy,
+  ReadingStateState
+} from "@oboku/shared"
 import { useLocalSettings } from "../settings/states"
 import { useForeverQuery, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
@@ -52,7 +58,8 @@ export const useCollections = ({
         showCollectionWithProtectedContent,
         includeProtected,
         hideDirectivesFromCollectionName,
-        isNotInterested
+        isNotInterested,
+        readingState
       },
       queryObj
     ],
@@ -92,7 +99,10 @@ export const useCollections = ({
                 }
               }
 
-              return db.collections.obokucollection.find(finalQueryObj).$.pipe(
+              const collections$ =
+                db.collections.obokucollection.find(finalQueryObj).$
+
+              return collections$.pipe(
                 /**
                  * @important
                  *
@@ -158,22 +168,11 @@ export const useCollections = ({
                  */
                 map((collections) =>
                   collections.filter((collection) => {
-                    if (collection.books.length === 0) return true
-
                     const booksFromCollection = books.filter((book) =>
                       collection.books.includes(book._id)
                     )
 
-                    const onlyWantOngoingAndIsFinished =
-                      readingState === "ongoing" &&
-                      booksFromCollection.length > 0 &&
-                      booksFromCollection.every(
-                        (book) =>
-                          book.readingStateCurrentState ===
-                          ReadingStateState.Finished
-                      )
-
-                    const onlyWantFinishedAndHasSomeNonFinished =
+                    if (
                       readingState === "finished" &&
                       (booksFromCollection.some(
                         (book) =>
@@ -181,10 +180,18 @@ export const useCollections = ({
                           ReadingStateState.Finished
                       ) ||
                         booksFromCollection.length === 0)
+                    ) {
+                      return false
+                    }
 
                     if (
-                      onlyWantFinishedAndHasSomeNonFinished ||
-                      onlyWantOngoingAndIsFinished
+                      readingState === "ongoing" &&
+                      booksFromCollection.length > 0 &&
+                      booksFromCollection.every(
+                        (book) =>
+                          book.readingStateCurrentState ===
+                          ReadingStateState.Finished
+                      )
                     ) {
                       return false
                     }

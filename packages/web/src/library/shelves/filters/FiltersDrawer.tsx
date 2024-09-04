@@ -14,9 +14,9 @@ import {
 import { useSignalValue } from "reactjrx"
 import {
   ReadingStateFilterDialog,
-  getDisplayableReadingState
+  getLabel
 } from "./ReadingStateFilterDialog"
-import { libraryShelvesSettingsSignal } from "../state"
+import { libraryShelvesFiltersSignal } from "./states"
 
 export const FiltersDrawer: FC<{
   open: boolean
@@ -26,7 +26,7 @@ export const FiltersDrawer: FC<{
     useState(false)
   const { readingState: collectionReadingState, showNotInterestedCollections } =
     useSignalValue(
-      libraryShelvesSettingsSignal,
+      libraryShelvesFiltersSignal,
       ({ readingState, showNotInterestedCollections }) => ({
         readingState,
         showNotInterestedCollections
@@ -45,7 +45,7 @@ export const FiltersDrawer: FC<{
             >
               <ListItemText
                 primary="Reading state"
-                secondary={getDisplayableReadingState(collectionReadingState)}
+                secondary={getLabel(collectionReadingState)}
               />
               <ListItemIcon>
                 <ArrowForwardIosRounded />
@@ -53,7 +53,7 @@ export const FiltersDrawer: FC<{
             </ListItemButton>
             <ListItemButton
               onClick={() =>
-                libraryShelvesSettingsSignal.setValue((state) => ({
+                libraryShelvesFiltersSignal.setValue((state) => ({
                   ...state,
                   showNotInterestedCollections:
                     !state.showNotInterestedCollections
