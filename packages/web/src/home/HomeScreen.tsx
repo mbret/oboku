@@ -22,7 +22,7 @@ export const HomeScreen = memo(() => {
       flex={1}
       overflow="hidden"
       flexDirection="column"
-      pb={2}
+      mb={2}
     >
       <TopBarNavigation
         title={"Home"}
