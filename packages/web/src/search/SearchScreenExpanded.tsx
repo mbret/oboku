@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom"
 import { BookList } from "../books/bookList/BookList"
-import { CollectionList } from "../collections/list/CollectionList"
+import { CollectionList } from "../collections/lists/CollectionList"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useCollectionsForSearch } from "./useCollectionsForSearch"
 import { useBooksForSearch } from "./useBooksForSearch"

@@ -22,7 +22,7 @@ import {
 } from "react-router-dom"
 import { useMount } from "react-use"
 import { BookList } from "../books/bookList/BookList"
-import { CollectionList } from "../collections/list/CollectionList"
+import { CollectionList } from "../collections/lists/CollectionList"
 import { ROUTES } from "../constants"
 import { SEARCH_MAX_PREVIEW_ITEMS } from "../constants.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
