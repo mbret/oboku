@@ -1,4 +1,4 @@
-import { FC, memo } from "react"
+import { memo } from "react"
 import {
   Box,
   IconButton,
@@ -12,11 +12,11 @@ import {
 } from "@mui/material"
 import { LockRounded, MoreVert } from "@mui/icons-material"
 import { CollectionDocType } from "@oboku/shared"
-import { Cover } from "../../books/Cover"
+import { Cover } from "../../../books/Cover"
 import { DeepReadonlyObject } from "rxdb"
-import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
-import { useCollection } from "../useCollection"
-import { COLLECTION_EMPTY_ID } from "../../constants.shared"
+import { useCollectionActionsDrawer } from "../../CollectionActionsDrawer/useCollectionActionsDrawer"
+import { useCollection } from "../../useCollection"
+import { COLLECTION_EMPTY_ID } from "../../../constants.shared"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,
@@ -28,7 +28,7 @@ const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
   padding: theme.spacing(2)
 }))
 
-export const CollectionListItemList = memo(
+export const CollectionListItem = memo(
   ({
     id,
     onItemClick,

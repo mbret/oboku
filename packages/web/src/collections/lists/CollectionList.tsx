@@ -1,6 +1,6 @@
 import { useCallback, FC, memo, ComponentProps, useMemo } from "react"
 import { List, Stack } from "@mui/material"
-import { CollectionListItemList } from "./CollectionListItemList"
+import { CollectionListItem } from "./items/CollectionListItem"
 import { CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
 import { useWindowSize } from "react-use"
@@ -11,7 +11,7 @@ export const CollectionList: FC<
   {
     onItemClick?: (item: DeepReadonlyObject<CollectionDocType>) => void
     viewMode?: ListActionViewMode
-    itemMode?: ComponentProps<typeof CollectionListItemList>["viewMode"]
+    itemMode?: ComponentProps<typeof CollectionListItem>["viewMode"]
     static?: boolean
   } & ComponentProps<typeof VirtuosoList>
 > = memo(({ itemMode, ...props }) => {
@@ -36,7 +36,7 @@ export const CollectionList: FC<
 
   const rowRenderer = useCallback(
     (_: number, item: string) => (
-      <CollectionListItemList
+      <CollectionListItem
         id={item}
         onItemClick={onItemClick}
         viewMode={itemMode}

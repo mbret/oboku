@@ -1,8 +1,8 @@
 import { FC, memo } from "react"
 import { Box, ListItemButton, ListItemText } from "@mui/material"
-import { Checkbox } from "../../common/Checkbox"
-import { getMetadataFromCollection } from "../getMetadataFromCollection"
-import { useCollection } from "../useCollection"
+import { Checkbox } from "../../../common/Checkbox"
+import { getMetadataFromCollection } from "../../getMetadataFromCollection"
+import { useCollection } from "../../useCollection"
 
 export const SelectableCollectionListItem: FC<{
   id: string
