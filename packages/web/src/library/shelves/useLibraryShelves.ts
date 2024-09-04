@@ -10,7 +10,6 @@ export const useLibraryShelves = () => {
     libraryShelvesFiltersSignal
   )
 
-  console.log({readingState, showNotInterestedCollections})
   const { data: collections } = useCollections({
     isNotInterested: showNotInterestedCollections ? "with" : "none",
     readingState
