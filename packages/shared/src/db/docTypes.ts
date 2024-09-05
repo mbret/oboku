@@ -1,4 +1,4 @@
-import { BookMetadata, CollectionMetadata } from "../metadata"
+import { CollectionMetadata } from "../metadata"
 import { BookDocType } from "./books"
 import { CouchDBMeta } from "./couchdb"
 import { RxDbMeta } from "./rxdb"
@@ -188,8 +188,6 @@ interface MangoQuery<RxDocType> {
   // Include execution statistics in the query response. Optional, default: false.
   // execution_stats?: boolean;
 }
-
-type OneValue<T> = T extends Array<any> ? T[number] : T
 
 export type MangoQuerySelector<T> = T
 

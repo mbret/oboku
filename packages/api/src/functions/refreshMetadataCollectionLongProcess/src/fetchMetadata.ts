@@ -1,5 +1,6 @@
 import { Logger } from "@libs/logger"
 import { getSeriesMetadata } from "@libs/metadata/biblioreads/getSeriesMetadata"
+import { getSeriesMetadata as getMangadexSeriesMetadata } from "@libs/metadata/mangadex/getSeriesMetadata"
 import { getSeriesMetadata as getComicVineSeriesMetadata } from "@libs/metadata/comicvine/getSeriesMetadata"
 import { getSeriesMetadata as getMangaUpdatesSeriesMetadata } from "@libs/metadata/mangaupdates/getSeriesMetadata"
 import { getGoogleSeriesMetadata } from "@libs/metadata/google/getGoogleSeriesMetadata"
@@ -35,25 +36,30 @@ export const fetchMetadata = async (
     }
   }
 
-  const biblioreads = await getSeriesMetadata(metadata)
+  const [biblioreads, comicvine, mangaupdates, mangadex] = await Promise.all([
+    getSeriesMetadata(metadata),
+    getComicVineSeriesMetadata({
+      ...metadata,
+      comicVineApiKey
+    }),
+    getMangaUpdatesSeriesMetadata(metadata),
+    getMangadexSeriesMetadata(metadata)
+  ])
 
   if (biblioreads) {
     list.push(biblioreads)
   }
 
-  const comicvine = await getComicVineSeriesMetadata({
-    ...metadata,
-    comicVineApiKey
-  })
-
   if (comicvine) {
     list.push(comicvine)
   }
 
-  const mangaupdates = await getMangaUpdatesSeriesMetadata(metadata)
-
   if (mangaupdates) {
     list.push(mangaupdates)
+  }
+
+  if (mangadex) {
+    list.push(mangadex)
   }
 
   return list

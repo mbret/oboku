@@ -8,7 +8,7 @@ import { getParametersValue } from "@libs/ssm"
 import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
 import { Logger } from "@libs/logger"
-import { refreshMetadata } from "@libs/collections/refreshMetadata"
+import { refreshMetadata } from "./src/refreshMetadata"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event

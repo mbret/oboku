@@ -8,6 +8,7 @@ import { atomicUpdate } from "@libs/couch/dbHelpers"
 import nano from "nano"
 import { Logger } from "@libs/logger"
 import { pluginFacade } from "@libs/plugins/facade"
+import { computeMetadata } from "@libs/collections/computeMetadata"
 
 export const refreshMetadata = async (
   collection: CollectionDocType,
@@ -47,7 +48,7 @@ export const refreshMetadata = async (
 
     // we always get updated link data
     // we take a chance to update the collection from its resource
-    const metadataLink =
+    const linkMetadataInfo =
       collection.linkResourceId && collection.linkType
         ? await pluginFacade.getMetadata({
             resourceId: collection.linkResourceId,
@@ -56,8 +57,8 @@ export const refreshMetadata = async (
           })
         : undefined
 
-    const linkModifiedAt = metadataLink?.modifiedAt
-      ? new Date(metadataLink.modifiedAt)
+    const linkModifiedAt = linkMetadataInfo?.modifiedAt
+      ? new Date(linkMetadataInfo.modifiedAt)
       : undefined
     const collectionMetadataUpdatedAt = collection?.lastMetadataUpdatedAt
       ? new Date(collection?.lastMetadataUpdatedAt)
@@ -84,7 +85,7 @@ export const refreshMetadata = async (
       }
     }
 
-    if (soft && !metadataLink && collection.lastMetadataUpdatedAt) {
+    if (soft && !linkMetadataInfo && collection.lastMetadataUpdatedAt) {
       Logger.info(
         `${collection._id} does not have link and is already refreshed, ignoring it!`
       )
@@ -98,15 +99,18 @@ export const refreshMetadata = async (
     const metadataUser = collection.metadata?.find(
       (item) => item.type === "user"
     )
+    const { title: userTitle, startYear: userStartYear } = computeMetadata([
+      metadataUser
+    ])
 
     const directivesFromLink = directives.extractDirectivesFromName(
-      metadataLink?.name ?? ""
+      linkMetadataInfo?.name ?? ""
     )
 
     const title = directives.removeDirectiveFromString(
-      metadataLink?.name ?? metadataUser?.title ?? ""
+      linkMetadataInfo?.name ?? userTitle ?? ""
     )
-    const year = directivesFromLink.year ?? metadataUser?.startYear
+    const year = directivesFromLink.year ?? userStartYear
 
     const updatedMetadataList = await fetchMetadata(
       { title, year: year ? String(year) : undefined },
@@ -122,7 +126,7 @@ export const refreshMetadata = async (
       const linkMetadata: CollectionMetadata = {
         type: "link",
         ...old.metadata?.find((item) => item.type === "link"),
-        title: metadataLink?.name
+        title: linkMetadataInfo?.name
       }
 
       return {

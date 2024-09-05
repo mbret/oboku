@@ -67,7 +67,9 @@ export class SyncReport {
   }
 
   protected getCollectionLabel(item: Partial<CollectionDocType>) {
-    return item.metadata?.find(({ type }) => type === "link")?.title
+    const title = item.metadata?.find(({ type }) => type === "link")?.title
+
+    return typeof title === "string" ? title : title?.en
   }
 
   addItem(
