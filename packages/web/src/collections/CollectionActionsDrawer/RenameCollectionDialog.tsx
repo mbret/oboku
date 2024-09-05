@@ -7,7 +7,7 @@ import {
   Button
 } from "@mui/material"
 import { useEffect, useState, FC } from "react"
-import { getMetadataFromCollection } from "../getMetadataFromCollection"
+import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { useUpdateCollection } from "../useUpdateCollection"
 import { useCollection } from "../useCollection"
 
@@ -32,7 +32,7 @@ export const RenameCollectionDialog: FC<{
     }
   }
 
-  const title = getMetadataFromCollection(collection)?.title
+  const title = getCollectionComputedMetadata(collection)?.title
 
   useEffect(() => {
     setName((prev) => title || prev)

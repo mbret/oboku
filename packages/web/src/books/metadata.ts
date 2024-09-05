@@ -49,7 +49,7 @@ export const getMetadataFromBook = (
   /**
    * link is the raw format, we don't want it to be on top
    */
-  const orderedList = [deprecated, ...list].sort((a, b) =>
+  const orderedList = [deprecated, ...list].sort((a) =>
     a.type === "link" ? -1 : 1
   )
 

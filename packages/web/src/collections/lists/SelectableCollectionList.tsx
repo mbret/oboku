@@ -1,5 +1,5 @@
 import { useCallback, memo, ComponentProps } from "react"
-import { SelectableCollectionListItem } from "./items/SelectableCollectionListItem"
+import { SelectableCollectionListItem } from "./SelectableCollectionListItem"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
 export const SelectableCollectionList = memo(

@@ -1,5 +1,5 @@
 import React, { FC } from "react"
-import { Typography, useTheme } from "@mui/material"
+import { Box, Typography, useTheme } from "@mui/material"
 import { MenuBookRounded } from "@mui/icons-material"
 import { useMeasure } from "react-use"
 
@@ -17,13 +17,13 @@ export const ReadingProgress: FC<{
   }
 
   return (
-    <div
+    <Box
       ref={ref as any}
       className={className}
+      position="relative"
       style={{
         width: "100%",
         textAlign: "center",
-        paddingBottom: theme.spacing(1),
         ...style
       }}
     >
@@ -42,6 +42,6 @@ export const ReadingProgress: FC<{
       >
         {Math.floor(progress) || 1}%
       </Typography>
-    </div>
+    </Box>
   )
 }

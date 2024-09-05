@@ -20,7 +20,7 @@ import { Alert } from "@mui/material"
 import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { switchMap } from "rxjs"
-import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
+import { getCollectionComputedMetadata } from "../collections/getCollectionComputedMetadata"
 import { useFixableCollections } from "./useFixableCollections"
 import { useRepair } from "./useRepair"
 import { CollectionDanglingBooks } from "./CollectionDanglingBooks"
@@ -57,7 +57,7 @@ export const ProblemsScreen = memo(() => {
         return [
           resourceId,
           {
-            name: getMetadataFromCollection(collection?.toJSON())?.title,
+            name: getCollectionComputedMetadata(collection?.toJSON())?.title,
             number: collectionsByResourceId[resourceId]!.length
           }
         ]

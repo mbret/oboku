@@ -1,8 +1,8 @@
 import { FC, memo } from "react"
 import { Box, ListItemButton, ListItemText } from "@mui/material"
-import { Checkbox } from "../../../common/Checkbox"
-import { getMetadataFromCollection } from "../../getMetadataFromCollection"
-import { useCollection } from "../../useCollection"
+import { Checkbox } from "../../common/Checkbox"
+import { useCollection } from "../useCollection"
+import { useCollectionComputedMetadata } from "../useCollectionComputedMetadata"
 
 export const SelectableCollectionListItem: FC<{
   id: string
@@ -10,6 +10,7 @@ export const SelectableCollectionListItem: FC<{
   selected: boolean
 }> = memo(({ id, onItemClick, selected }) => {
   const { data } = useCollection({ id })
+  const metadata = useCollectionComputedMetadata(data)
 
   return (
     <ListItemButton
@@ -18,7 +19,7 @@ export const SelectableCollectionListItem: FC<{
       }}
       onClick={() => data && onItemClick && onItemClick(data?._id)}
     >
-      <ListItemText primary={getMetadataFromCollection(data)?.title} />
+      <ListItemText primary={metadata.displayTitle} />
       <Box mr={1}></Box>
       <Checkbox selected={selected} />
     </ListItemButton>

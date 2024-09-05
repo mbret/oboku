@@ -12,10 +12,14 @@ import {
 import { useCollectionActionsDrawer } from "./CollectionActionsDrawer/useCollectionActionsDrawer"
 import { useCollection } from "./useCollection"
 import { COLLECTION_EMPTY_ID } from "../constants.shared"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { useBooks } from "../books/states"
 import { useLocalSettings } from "../settings/states"
-import { BorderBottom } from "@mui/icons-material"
+import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
+import { Report } from "../debug/report.shared"
+import { getCollectionComputedMetadata } from "./getCollectionComputedMetadata"
+import { useCollectionDisplayTitle } from "./useCollectionDisplayTitle"
+import { useCollectionComputedMetadata } from "./useCollectionComputedMetadata"
 
 type ScreenParams = {
   id: string
@@ -48,6 +52,7 @@ export const CollectionDetailsScreen = () => {
     ids: collection?.books ?? []
   })
 
+  const metadata = useCollectionComputedMetadata(collection)
   const visibleBookIds = useMemo(
     () => visibleBooks?.map((item) => item._id) ?? [],
     [visibleBooks]
@@ -61,6 +66,13 @@ export const CollectionDetailsScreen = () => {
       }
     }
   )
+
+  useEffect(() => {
+    Report.log({
+      collection,
+      metadata
+    })
+  }, [collection, metadata])
 
   return (
     <>
@@ -118,7 +130,7 @@ export const CollectionDetailsScreen = () => {
                   })
                 }}
               >
-                {collection?.displayableName}
+                {metadata.displayTitle}
               </Typography>
               <Typography
                 variant="subtitle1"

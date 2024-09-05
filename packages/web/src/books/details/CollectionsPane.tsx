@@ -1,4 +1,4 @@
-import { getMetadataFromCollection } from "../../collections/getMetadataFromCollection"
+import { getCollectionComputedMetadata } from "../../collections/getCollectionComputedMetadata"
 import { useCollections } from "../../collections/useCollections"
 import { ROUTES } from "../../constants"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
@@ -16,7 +16,7 @@ export const CollectionsPane = ({ bookId }: { bookId?: string }) => {
     <MetadataItemList
       label="Member of collections"
       values={collections?.map((item) => ({
-        label: getMetadataFromCollection(item).title,
+        label: getCollectionComputedMetadata(item).title,
         to: ROUTES.COLLECTION_DETAILS.replace(":id", item._id)
       }))}
       emptyLabel="None yet"

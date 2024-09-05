@@ -1,7 +1,7 @@
 import { LinkOffRounded } from "@mui/icons-material"
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material"
 import { CollectionDocType } from "@oboku/shared"
-import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
+import { getCollectionComputedMetadata } from "../collections/getCollectionComputedMetadata"
 
 export const CollectionDanglingBooks = ({
   danglingBooks,
@@ -20,7 +20,7 @@ export const CollectionDanglingBooks = ({
       <ListItemText
         primary={`Non existing books`}
         secondary={`
-        Collection "${getMetadataFromCollection(doc).title}" contains ${danglingBooks.length} books that does not exist anymore. It is safe to repair but you should verify your collection before and afterward.
+        Collection "${getCollectionComputedMetadata(doc).title}" contains ${danglingBooks.length} books that does not exist anymore. It is safe to repair but you should verify your collection before and afterward.
       `}
       />
     </ListItemButton>

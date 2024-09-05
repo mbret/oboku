@@ -1,6 +1,6 @@
 import { useCallback, FC, memo, ComponentProps, useMemo } from "react"
 import { List, Stack } from "@mui/material"
-import { CollectionListItem } from "./items/CollectionListItem"
+import { CollectionListItem } from "./CollectionListItem"
 import { CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
 import { useWindowSize } from "react-use"
