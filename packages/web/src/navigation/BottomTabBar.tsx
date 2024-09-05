@@ -12,7 +12,10 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { ROUTES } from "../constants"
 import { useNetworkState } from "react-use"
 import { SIGNAL_RESET, useSignalValue } from "reactjrx"
-import { uploadBookDialogOpenedSignal, UploadBookDialog } from "../upload/UploadBookDialog"
+import {
+  uploadBookDialogOpenedSignal,
+  UploadBookDialog
+} from "../upload/UploadBookDialog"
 import { PLUGIN_FILE_TYPE } from "@oboku/shared"
 
 export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
@@ -41,10 +44,7 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
   const onDragLeave = useCallback(() => {
     dragStatus.current = undefined
 
-    if (
-      uploadBookDialogOpenedSignal.getValue() ===
-      PLUGIN_FILE_TYPE
-    ) {
+    if (uploadBookDialogOpenedSignal.getValue() === PLUGIN_FILE_TYPE) {
       uploadBookDialogOpenedSignal.setValue(SIGNAL_RESET)
     }
   }, [])
@@ -86,9 +86,7 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
           {...(isUploadBookFromDataSourceDialogOpened === PLUGIN_FILE_TYPE && {
             onDragLeave
           })}
-          onClose={() =>
-            uploadBookDialogOpenedSignal.setValue(SIGNAL_RESET)
-          }
+          onClose={() => uploadBookDialogOpenedSignal.setValue(SIGNAL_RESET)}
         />
       )}
     </Box>

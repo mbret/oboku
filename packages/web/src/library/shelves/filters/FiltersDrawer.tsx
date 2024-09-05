@@ -12,10 +12,7 @@ import {
   RadioButtonUncheckedOutlined
 } from "@mui/icons-material"
 import { useSignalValue } from "reactjrx"
-import {
-  ReadingStateFilterDialog,
-  getLabel
-} from "./ReadingStateFilterDialog"
+import { ReadingStateFilterDialog, getLabel } from "./ReadingStateFilterDialog"
 import { libraryShelvesFiltersSignal } from "./states"
 
 export const FiltersDrawer: FC<{

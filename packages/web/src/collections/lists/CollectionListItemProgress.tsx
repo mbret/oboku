@@ -1,7 +1,11 @@
 import { CheckCircleOutlineRounded } from "@mui/icons-material"
 import { Box } from "@mui/material"
 
-export const CollectionListItemProgress = ({ progress }: { progress: number }) => {
+export const CollectionListItemProgress = ({
+  progress
+}: {
+  progress: number
+}) => {
   const isFinished = progress >= 100
 
   return (
