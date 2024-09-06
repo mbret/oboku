@@ -111,7 +111,6 @@ export const CollectionDetailsScreen = () => {
             pt={headerPt}
             minHeight={headerHeight}
             px={2}
-            pb={1}
             style={{
               backgroundImage: useOptimizedTheme
                 ? undefined
