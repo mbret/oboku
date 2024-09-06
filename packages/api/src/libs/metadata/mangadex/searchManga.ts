@@ -1,5 +1,4 @@
 import axios from "axios"
-import { parse } from "url"
 
 type Response = {
   result: "ok" | "unknown"
