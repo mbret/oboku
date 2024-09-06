@@ -1,5 +1,5 @@
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { Box, Typography, useTheme } from "@mui/material"
+import { Box, Stack, Typography, useMediaQuery, useTheme } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
 import EmptyLibraryAsset from "../assets/empty-library.svg"
 import CollectionBgSvg from "../assets/series-bg.svg"
@@ -15,11 +15,10 @@ import { COLLECTION_EMPTY_ID } from "../constants.shared"
 import { useEffect, useMemo } from "react"
 import { useBooks } from "../books/states"
 import { useLocalSettings } from "../settings/states"
-import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { Report } from "../debug/report.shared"
-import { getCollectionComputedMetadata } from "./getCollectionComputedMetadata"
-import { useCollectionDisplayTitle } from "./useCollectionDisplayTitle"
 import { useCollectionComputedMetadata } from "./useCollectionComputedMetadata"
+import { useCollectionCoverUri } from "./useCollectionCoverUri"
+import placeholder from "../assets/cover-placeholder.png"
 
 type ScreenParams = {
   id: string
@@ -57,6 +56,27 @@ export const CollectionDetailsScreen = () => {
     () => visibleBooks?.map((item) => item._id) ?? [],
     [visibleBooks]
   )
+  const { uri: coverUri, hasCover } = useCollectionCoverUri(collection)
+  const headerPt = [
+    `calc(${theme.spacing(1)} + ${50}px)`,
+    `calc(${theme.spacing(1)} + ${60}px)`,
+    `calc(${theme.spacing(1)} + ${70}px)`
+  ]
+  const headerHeight = [
+    `calc(${headerPt[0]} + 90px)`,
+    `calc(${headerPt[1]} + 150px)`,
+    `calc(${headerPt[2]} + 250px)`
+  ]
+  const coverHeight = [
+    `calc(${headerHeight[0]} - ${headerPt[0]})`,
+    `calc(${headerHeight[1]} - ${headerPt[1]})`,
+    `calc(${headerHeight[2]} - ${headerPt[2]})`
+  ]
+  const coverWidth = [
+    `calc(${coverHeight[0]} / 1.5)`,
+    `calc(${coverHeight[1]} / 1.5)`,
+    `calc(${coverHeight[2]} / 1.5)`
+  ]
 
   const { open: openActionDrawer } = useCollectionActionsDrawer(
     id,
@@ -76,76 +96,83 @@ export const CollectionDetailsScreen = () => {
 
   return (
     <>
-      <div
-        style={{
-          flex: 1,
-          height: "100%"
-        }}
-      >
+      <Stack flex={1}>
         <TopBarNavigation
-          title=""
           showBack={true}
-          position="absolute"
-          sx={{
-            bgcolor: "transparent",
-            border: 0
-          }}
           {...(id !== COLLECTION_EMPTY_ID && {
             onMoreClick: openActionDrawer
           })}
+          color="transparent"
+          position="absolute"
         />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
-            flex: 1
-          }}
-        >
-          <Box
+        <Stack flex={1}>
+          <Stack
+            position="relative"
+            pt={headerPt}
+            minHeight={headerHeight}
+            px={2}
+            pb={1}
             style={{
-              paddingTop: `calc(${theme.spacing(1)} + ${50}px)`,
-              display: "flex",
-              alignItems: "flex-end",
-              paddingLeft: theme.spacing(2),
-              paddingRight: theme.spacing(2),
-              width: "100%",
               backgroundImage: useOptimizedTheme
                 ? undefined
-                : `url(${CollectionBgSvg})`,
-              backgroundAttachment: "fixed",
+                : `url(${hasCover ? (coverUri ?? placeholder) : CollectionBgSvg})`,
+              backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
-              ...(useOptimizedTheme && {
-                borderBottom: `1px solid black`
-              })
+              backgroundPosition: "center"
             }}
           >
-            <div>
-              <Typography
-                variant="h5"
-                style={{
-                  ...(!useOptimizedTheme && {
-                    color: "white",
-                    textShadow: "0px 0px 3px black"
-                  })
+            {!useOptimizedTheme && (
+              <Box
+                position="absolute"
+                left={0}
+                top={0}
+                height="100%"
+                width="100%"
+                sx={{
+                  background:
+                    "linear-gradient(to bottom,rgb(255 255 255 / 0.7) 10%, rgb(255 255 255 / 1) 100%)"
                 }}
-              >
-                {metadata.displayTitle}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                gutterBottom
-                style={{
-                  ...(!useOptimizedTheme && {
-                    color: "white",
-                    textShadow: "0px 0px 3px black"
-                  })
-                }}
-              >
-                {`${collection?.books?.length || 0} book(s)`}
-              </Typography>
-            </div>
-          </Box>
+              />
+            )}
+            <Stack direction="row" gap={2}>
+              {!!hasCover && (
+                <Box
+                  position="relative"
+                  component="img"
+                  src={coverUri ?? placeholder}
+                  width={coverWidth}
+                  height={coverHeight}
+                  borderRadius={1}
+                  sx={{
+                    objectFit: "cover",
+                    objectPosition: "center center"
+                  }}
+                />
+              )}
+              <Stack gap={1} pt={hasCover ? 0.5 : 0}>
+                <Typography
+                  position="relative"
+                  component="h1"
+                  sx={{
+                    typography: { ":default": "h6", sm: "h4" }
+                  }}
+                  lineHeight={1}
+                  fontWeight="bold"
+                >
+                  {metadata.displayTitle}
+                </Typography>
+                <Typography
+                  sx={{
+                    typography: { ":default": "body2", sm: "body1" }
+                  }}
+                  position="relative"
+                  gutterBottom
+                >
+                  {`${collection?.books?.length || 0} book(s)`}
+                </Typography>
+              </Stack>
+            </Stack>
+          </Stack>
           <BookListWithControls
             data={visibleBookIds}
             sorting={sorting}
@@ -204,8 +231,8 @@ export const CollectionDetailsScreen = () => {
               </div>
             }
           />
-        </div>
-      </div>
+        </Stack>
+      </Stack>
     </>
   )
 }

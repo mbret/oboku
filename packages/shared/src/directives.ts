@@ -21,6 +21,7 @@ export const extractDirectivesFromName = (
   year?: string
   ignoreMetadata?: string | undefined
   isWebtoon: boolean
+  metadataTitle?: string
 } => {
   let isNotACollection = false
   let tags: string[] = []
@@ -30,6 +31,7 @@ export const extractDirectivesFromName = (
   let isbn = undefined
   let series: boolean | undefined = undefined
   let ignoreMetadata: string | undefined = undefined
+  let metadataTitle: string | undefined = undefined
   let isWebtoon: boolean = false
 
   const directives = resourceId
@@ -48,6 +50,11 @@ export const extractDirectivesFromName = (
     if (directive.startsWith("metadata-ignore~")) {
       const value = directive.replace(/metadata-ignore\~/, "")
       ignoreMetadata = value
+    }
+
+    if (directive.startsWith("metadata-title~")) {
+      const value = directive.replace(/metadata-title\~/, "")
+      metadataTitle = value
     }
 
     if (directive === "ignore") {
@@ -92,7 +99,8 @@ export const extractDirectivesFromName = (
     isbn,
     year,
     ignoreMetadata,
-    isWebtoon
+    isWebtoon,
+    metadataTitle
   }
 }
 

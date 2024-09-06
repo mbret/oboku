@@ -1,4 +1,5 @@
 import axios from "axios"
+import { parse } from "url"
 
 type Response = {
   result: "ok" | "unknown"
@@ -56,11 +57,26 @@ type Response = {
       availableTranslatedLanguages: string[]
       latestUploadedChapter: string
     }
-    relationships: Array<{
-      id: "string"
-      type: "author" | "artist" | "cover_art" | "manga"
-      related?: "prequel" | "unknown"
-    }>
+    relationships: Array<
+      | {
+          id: string
+          type: "author" | "artist" | "manga"
+          related?: "prequel" | "unknown"
+        }
+      | {
+          id: string
+          type: "cover_art"
+          attributes: {
+            fileName: string
+            description: string
+            volume: string
+            locale: string
+            version: number
+            createdAt: string
+            updatedAt: string
+          }
+        }
+    >
   }>
   limit: number
   offset: number
@@ -68,14 +84,24 @@ type Response = {
 }
 
 export const searchManga = async (title: string) => {
-  return axios<Response>({
+  const response = await axios<Response>({
     method: "get",
     url: "https://api.mangadex.org/manga",
     headers: {
       "Content-Type": "application/json"
     },
     params: {
-      title
+      title,
+      includes: ["cover_art"],
+      order: {
+        relevance: "desc"
+      }
     }
   })
+
+  const { url, params } = response.config
+
+  console.log(`[mangadex.searchManga] url: ${JSON.stringify({ url, params })}`)
+
+  return response
 }
