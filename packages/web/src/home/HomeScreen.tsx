@@ -22,7 +22,6 @@ export const HomeScreen = memo(() => {
       flex={1}
       overflow="hidden"
       flexDirection="column"
-      mb={2}
     >
       <TopBarNavigation
         title={"Home"}
@@ -30,7 +29,7 @@ export const HomeScreen = memo(() => {
         hasSearch
         hasLockLibrary
       />
-      <Box height="100%" overflow="scroll">
+      <Box height="100%" overflow="scroll" pb={2}>
         <CommunicationPane />
         {continueReadingBooks.length === 0 && !isPending && (
           <div
