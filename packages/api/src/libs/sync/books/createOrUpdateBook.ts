@@ -15,7 +15,7 @@ import {
   addTagsToBookIfNotExist,
   createBook
 } from "@libs/couch/dbHelpers"
-import { isBookCoverExist } from "@libs/books/covers/isBookCoverExist"
+import { isCoverExist } from "@libs/books/covers/isCoverExist"
 import { Context } from "../types"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
@@ -225,7 +225,7 @@ export const createOrUpdateBook = async ({
 
       if (
         metadataAreOlderThanModifiedDate ||
-        !(await isBookCoverExist(coverObjectKey))
+        !(await isCoverExist(coverObjectKey))
       ) {
         await helpers
           .refreshBookMetadata({ bookId: existingBook?._id })

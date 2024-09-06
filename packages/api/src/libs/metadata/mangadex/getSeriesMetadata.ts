@@ -17,6 +17,9 @@ export const getSeriesMetadata = async (metadata: {
     const statisticsResponse = await getStatistics([result.id])
     const statistics = statisticsResponse.data.statistics ?? {}
     const seriesStastistics = statistics[result.id]
+    const cover = result.relationships.find(
+      (relationship) => relationship.type === "cover_art"
+    )
 
     if (result) {
       return {
@@ -27,7 +30,12 @@ export const getSeriesMetadata = async (metadata: {
           en: result.attributes.title.en
         },
         // x/10
-        rating: seriesStastistics?.rating?.bayesian
+        rating: seriesStastistics?.rating?.bayesian,
+        ...(cover && {
+          cover: {
+            uri: `https://mangadex.org/covers/${result.id}/${cover.attributes.fileName}`
+          }
+        })
       } satisfies CollectionMetadata
     }
   } catch (e) {

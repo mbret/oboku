@@ -4,11 +4,12 @@ import {
   directives
 } from "@oboku/shared"
 import { fetchMetadata } from "./fetchMetadata"
-import { atomicUpdate } from "@libs/couch/dbHelpers"
+import { atomicUpdate, findOne } from "@libs/couch/dbHelpers"
 import nano from "nano"
 import { Logger } from "@libs/logger"
 import { pluginFacade } from "@libs/plugins/facade"
 import { computeMetadata } from "@libs/collections/computeMetadata"
+import { saveOrUpdateCover } from "./saveOrUpdateCover"
 
 export const refreshMetadata = async (
   collection: CollectionDocType,
@@ -108,39 +109,55 @@ export const refreshMetadata = async (
     )
 
     const title = directives.removeDirectiveFromString(
-      linkMetadataInfo?.name ?? userTitle ?? ""
+      directivesFromLink.metadataTitle ??
+        linkMetadataInfo?.name ??
+        userTitle ??
+        ""
     )
+
     const year = directivesFromLink.year ?? userStartYear
 
-    const updatedMetadataList = await fetchMetadata(
+    const externalMetadatas = await fetchMetadata(
       { title, year: year ? String(year) : undefined },
       { withGoogle: true, googleApiKey, comicVineApiKey }
     )
 
-    await atomicUpdate(db, "obokucollection", collection._id, (old) => {
-      const persistentMetadataList =
-        old.metadata?.filter((entry) =>
-          (["user"] as CollectionMetadata["type"][]).includes(entry.type)
-        ) ?? []
+    const linkMetadata: CollectionMetadata = {
+      type: "link",
+      ...collection.metadata?.find((item) => item.type === "link"),
+      title: linkMetadataInfo?.name
+    }
 
-      const linkMetadata: CollectionMetadata = {
-        type: "link",
-        ...old.metadata?.find((item) => item.type === "link"),
-        title: linkMetadataInfo?.name
-      }
-
-      return {
-        ...old,
-        lastMetadataUpdatedAt: new Date().toISOString(),
-        metadataUpdateStatus: "idle",
-        lastMetadataUpdateError: null,
-        metadata: [
-          ...persistentMetadataList,
-          ...updatedMetadataList,
-          linkMetadata
-        ]
-      } satisfies CollectionDocType
+    // try to get latest collection to stay as fresh as possible
+    const currentCollection = await findOne(db, "obokucollection", {
+      selector: { _id: collection._id }
     })
+
+    if (!currentCollection) throw new Error("Unable to find collection")
+
+    const userMetadata =
+      currentCollection.metadata?.filter((entry) => entry.type === "user") ?? []
+    const metadata = [...userMetadata, ...externalMetadatas, linkMetadata]
+
+    // cannot be done in // since metadata status will trigger cover refresh
+    await saveOrUpdateCover(currentCollection, {
+      _id: currentCollection._id,
+      metadata
+    })
+
+    await atomicUpdate(
+      db,
+      "obokucollection",
+      collection._id,
+      (old) =>
+        ({
+          ...old,
+          lastMetadataUpdatedAt: new Date().toISOString(),
+          metadataUpdateStatus: "idle",
+          lastMetadataUpdateError: null,
+          metadata
+        }) satisfies CollectionDocType
+    )
   } catch (error) {
     await atomicUpdate(
       db,

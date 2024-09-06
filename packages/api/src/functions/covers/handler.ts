@@ -11,8 +11,7 @@ const s3 = new S3Client({
 })
 
 const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
-  const coverId = event.pathParameters?.id ?? ``
-  const objectKey = `cover-${coverId}`
+  const objectKey = event.pathParameters?.id ?? ``
   const format = event.queryStringParameters?.format || "image/webp"
 
   const userCover = await getCover(s3, objectKey)

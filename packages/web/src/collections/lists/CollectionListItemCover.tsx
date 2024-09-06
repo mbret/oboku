@@ -19,6 +19,7 @@ import { CollectionListItemBookCovers } from "./CollectionListItemBookCovers"
 import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { CollectionListItemProgress } from "./CollectionListItemProgress"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
+import { useCollectionCoverUri } from "../useCollectionCoverUri"
 
 export const CollectionListItemCover = memo(({ id }: { id: string }) => {
   const theme = useTheme()
@@ -27,6 +28,7 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
   })
   const metadata = getCollectionComputedMetadata(item)
   const readingProgress = useCollectionReadingProgress({ id })
+  const { hasCover, uri: coverUri } = useCollectionCoverUri(item)
 
   return (
     <Stack
@@ -44,19 +46,37 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
       width="100%"
       justifyContent="center"
     >
-      <Box
-        style={{
-          backgroundColor: theme.palette.grey[300],
-          height: "50%",
-          width: "100%",
-          borderTopLeftRadius: "50%",
-          borderTopRightRadius: "50%",
-          alignSelf: "flex-end",
-          position: "absolute",
-          bottom: 0,
-          left: 0
-        }}
-      />
+      {!!coverUri ? (
+        <Box
+          position="absolute"
+          left={0}
+          top={0}
+          component="img"
+          src={coverUri}
+          width="100%"
+          height="100%"
+          borderRadius={1}
+          sx={{
+            opacity: 0.4,
+            objectFit: "cover",
+            objectPosition: "center center"
+          }}
+        />
+      ) : (
+        <Box
+          style={{
+            backgroundColor: theme.palette.grey[300],
+            height: "50%",
+            width: "100%",
+            borderTopLeftRadius: "50%",
+            borderTopRightRadius: "50%",
+            alignSelf: "flex-end",
+            position: "absolute",
+            bottom: 0,
+            left: 0
+          }}
+        />
+      )}
       <CollectionListItemBookCovers id={id} />
       {id !== COLLECTION_EMPTY_ID && (
         <>

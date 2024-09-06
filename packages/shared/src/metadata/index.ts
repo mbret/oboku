@@ -43,6 +43,11 @@ export type CollectionMetadata = {
   startYear?: number
   publisherName?: string
   rating?: number
+  cover?: {
+    uri: string
+    createdAt?: string
+    updatedAt?: string
+  }
   status?: "completed" | "ongoing" | "unknown"
   /**
    * googleBookApi: Metadata scrapped through google book api

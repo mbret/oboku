@@ -1,5 +1,12 @@
-import { ComponentProps, FC, useState } from "react"
-import { Toolbar, IconButton, useTheme, Button, Badge } from "@mui/material"
+import { ComponentProps, FC, memo, useState } from "react"
+import {
+  Toolbar,
+  ToolbarProps,
+  IconButton,
+  useTheme,
+  Button,
+  Badge
+} from "@mui/material"
 import {
   AppsRounded,
   FormatListBulletedRounded,
@@ -45,84 +52,88 @@ export const ViewModeIconButton = ({
   )
 }
 
-export const ListActionsToolbar: FC<{
-  viewMode?: ListActionViewMode
-  sorting?: ListActionSorting
-  onViewModeChange?: (viewMode: ListActionViewMode) => void
-  onSortingChange?: (sorting: ListActionSorting) => void
-  numberOfFiltersApplied?: number
-  onFilterClick?: () => void
-}> = ({
-  viewMode,
-  onViewModeChange,
-  onSortingChange,
-  sorting,
-  onFilterClick,
-  numberOfFiltersApplied = 0
-}) => {
-  const theme = useTheme()
-  const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
+export const ListActionsToolbar = memo(
+  ({
+    viewMode,
+    onViewModeChange,
+    onSortingChange,
+    sorting,
+    onFilterClick,
+    numberOfFiltersApplied = 0,
+    ...rest
+  }: {
+    viewMode?: ListActionViewMode
+    sorting?: ListActionSorting
+    onViewModeChange?: (viewMode: ListActionViewMode) => void
+    onSortingChange?: (sorting: ListActionSorting) => void
+    numberOfFiltersApplied?: number
+    onFilterClick?: () => void
+  } & ToolbarProps) => {
+    const theme = useTheme()
+    const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
 
-  return (
-    <>
-      <Toolbar
-        style={{
-          borderBottom: `1px solid ${theme.palette.grey[200]}`,
-          boxSizing: "border-box"
-        }}
-      >
-        {!!onFilterClick && (
-          <IconButton
-            edge="start"
-            onClick={() => onFilterClick && onFilterClick()}
-            size="large"
-            color="primary"
-          >
-            {numberOfFiltersApplied > 0 ? (
-              <Badge badgeContent={numberOfFiltersApplied}>
-                <TuneRounded />
-              </Badge>
-            ) : (
-              <TuneRounded />
-            )}
-          </IconButton>
-        )}
-        {!!sorting && (
-          <div
-            style={{
-              flexGrow: 1,
-              justifyContent: "flex-start",
-              flexFlow: "row",
-              display: "flex",
-              alignItems: "center"
-            }}
-          >
-            <Button
-              variant="text"
-              onClick={() => setIsSortingDialogOpened(true)}
-              startIcon={<SortRounded />}
+    return (
+      <>
+        <Toolbar
+          style={{
+            borderBottom: `1px solid ${theme.palette.grey[200]}`,
+            boxSizing: "border-box"
+          }}
+          {...rest}
+        >
+          {!!onFilterClick && (
+            <IconButton
+              edge="start"
+              onClick={() => onFilterClick && onFilterClick()}
+              size="large"
+              color="primary"
             >
-              {sorting === "activity"
-                ? "Recent activity"
-                : sorting === "alpha"
-                  ? "A > Z"
-                  : "Date added"}
-            </Button>
-          </div>
-        )}
-        {!!viewMode && (
-          <ViewModeIconButton
-            viewMode={viewMode}
-            onViewModeChange={onViewModeChange}
-          />
-        )}
-      </Toolbar>
-      <SortByDialog
-        value={sorting}
-        onClose={() => setIsSortingDialogOpened(false)}
-        open={isSortingDialogOpened}
-        onChange={onSortingChange}
-      />
-    </>
-  )
-}
+              {numberOfFiltersApplied > 0 ? (
+                <Badge badgeContent={numberOfFiltersApplied}>
+                  <TuneRounded />
+                </Badge>
+              ) : (
+                <TuneRounded />
+              )}
+            </IconButton>
+          )}
+          {!!sorting && (
+            <div
+              style={{
+                flexGrow: 1,
+                justifyContent: "flex-start",
+                flexFlow: "row",
+                display: "flex",
+                alignItems: "center"
+              }}
+            >
+              <Button
+                variant="text"
+                onClick={() => setIsSortingDialogOpened(true)}
+                startIcon={<SortRounded />}
+              >
+                {sorting === "activity"
+                  ? "Recent activity"
+                  : sorting === "alpha"
+                    ? "A > Z"
+                    : "Date added"}
+              </Button>
+            </div>
+          )}
+          {!!viewMode && (
+            <ViewModeIconButton
+              viewMode={viewMode}
+              onViewModeChange={onViewModeChange}
+            />
+          )}
+        </Toolbar>
+        <SortByDialog
+          value={sorting}
+          onClose={() => setIsSortingDialogOpened(false)}
+          open={isSortingDialogOpened}
+          onChange={onSortingChange}
+        />
+      </>
+    )
+  }
+)

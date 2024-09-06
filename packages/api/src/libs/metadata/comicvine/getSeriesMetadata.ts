@@ -1,4 +1,4 @@
-import { CollectionMetadata } from "@oboku/shared"
+  import { CollectionMetadata } from "@oboku/shared"
 import { Logger } from "@libs/logger"
 import { URL } from "url"
 import axios from "axios"
