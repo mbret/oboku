@@ -1,22 +1,21 @@
 import { ReadingStateState, sortByTitleComparator } from "@oboku/shared"
-import { Database, useDatabase } from "../rxdb"
+import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Report } from "../debug/report.shared"
-import { useCallback, useMemo } from "react"
+import { useMemo } from "react"
 import { PromiseReturnType } from "../types"
-import { BookQueryResult, useBooksDic } from "./states"
+import { BookQueryResult, useBooks } from "./states"
 import { useNetworkState } from "react-use"
-import { from } from "rxjs"
 import { usePluginRemoveBook } from "../plugins/usePluginRemoveBook"
 import { useMutation } from "reactjrx"
-import { isPluginError } from "../plugins/plugin-front"
+import { isPluginError } from "../plugins/types"
 import { getMetadataFromBook } from "./metadata"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
-import { CancelError, OfflineError } from "../common/errors/errors"
 import { useLock } from "../common/BlockingBackdrop"
+import { CancelError, OfflineError } from "../errors/errors.shared"
 
 export const useRemoveBook = () => {
-  const removeDownload = useRemoveDownloadFile()
+  const { mutateAsync: removeDownload } = useRemoveDownloadFile()
   const { db } = useDatabase()
   const removeBookFromDataSource = usePluginRemoveBook()
   const network = useNetworkState()
@@ -49,7 +48,7 @@ export const useRemoveBook = () => {
       const unlock = lock()
 
       await Promise.all([
-        removeDownload(id),
+        removeDownload({ bookId: id }),
         db?.book.findOne({ selector: { _id: id } }).remove()
       ])
 
@@ -165,15 +164,15 @@ export const useBookIdsSortedBy = (
   ids: string[],
   sorting: "date" | "activity" | "alpha" | undefined
 ) => {
-  const { data: normalizedBooks = {} } = useBooksDic()
+  const { data: books } = useBooks()
 
   return useMemo(() => {
-    const books = ids
-      .map((id) => normalizedBooks[id])
+    const filteredBooks = ids
+      .map((id) => books?.find((book) => book._id === id))
       .filter((maybeBook) => !!maybeBook) as BookQueryResult[]
 
-    return sortBooksBy(books, sorting).map(({ _id }) => _id)
-  }, [normalizedBooks, ids, sorting])
+    return sortBooksBy(filteredBooks, sorting).map(({ _id }) => _id)
+  }, [books, ids, sorting])
 }
 
 export const useBooksSortedBy = (
@@ -215,20 +214,3 @@ const sortBooksBy = (
       return books
   }
 }
-
-export const getBookById = ({
-  database,
-  id
-}: {
-  database: Database
-  id: string
-}) =>
-  from(
-    database.collections.book
-      .findOne({
-        selector: {
-          _id: id
-        }
-      })
-      .exec()
-  )

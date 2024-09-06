@@ -2,8 +2,10 @@ import { FC, useCallback, useEffect, useState } from "react"
 import {
   BarChartRounded,
   GavelRounded,
+  LaunchRounded,
   LockOpenRounded,
   LockRounded,
+  SecurityRounded,
   SettingsRounded,
   StorageRounded
 } from "@mui/icons-material"
@@ -23,22 +25,14 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  TextField,
-  Typography,
   useTheme,
   FormControlLabel,
   ListItemButton
 } from "@mui/material"
 import { useNavigate } from "react-router-dom"
 import { useStorageUse } from "./useStorageUse"
-import { authorizeAction } from "../auth/AuthorizeActionDialog"
-import { useSignOut } from "../auth/helpers"
-import {
-  useSettings,
-  useUpdateContentPassword,
-  useUpdateSettings
-} from "./helpers"
-import { libraryStateSignal } from "../library/states"
+import { useSignOut } from "../auth/useSignOut"
+import { libraryStateSignal } from "../library/books/states"
 import packageJson from "../../package.json"
 import { ROUTES } from "../constants"
 import { toggleDebug } from "../debug"
@@ -46,28 +40,23 @@ import { useDatabase } from "../rxdb"
 import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
 import { Report } from "../debug/report.shared"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
-import { SIGNAL_RESET, useSignalValue, useUnmountObservable } from "reactjrx"
-import { firstTimeExperienceStateSignal } from "../firstTimeExperience/firstTimeExperienceStates"
-import { unlockLibraryDialogSignal } from "../auth/UnlockLibraryDialog"
+import { useSignalValue, useUnmountObservable } from "reactjrx"
+import { UnlockContentsDialog } from "../auth/UnlockContentsDialog"
 import { authStateSignal } from "../auth/authState"
 import { useRemoveAllContents } from "./useRemoveAllContents"
 import { createDialog } from "../common/dialogs/createDialog"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
-  const [
-    isEditContentPasswordDialogOpened,
-    setIsEditContentPasswordDialogOpened
-  ] = useState(false)
+  const [isUnlockContentsDialogOpened, setIsUnlockContentsDialogOpened] =
+    useState(false)
   const [isDeleteMyDataDialogOpened, setIsDeleteMyDataDialogOpened] =
     useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([])
   const auth = useSignalValue(authStateSignal)
-  const { data: accountSettings } = useSettings()
   const library = useSignalValue(libraryStateSignal)
   const signOut = useSignOut()
   const theme = useTheme()
-  const { mutate: updateSettings } = useUpdateSettings()
   const { mutate: removeAllContents } = useRemoveAllContents()
 
   return (
@@ -82,41 +71,10 @@ export const ProfileScreen = () => {
       <TopBarNavigation title={"Profile"} showBack={false} />
       <List>
         <ListSubheader disableSticky>Account</ListSubheader>
-        <ListItem button onClick={(_) => signOut()}>
+        <ListItemButton onClick={(_) => signOut()}>
           <ListItemText primary="Sign out" secondary={auth?.email} />
-        </ListItem>
-        <ListItemButton
-          sx={
-            accountSettings?.contentPassword
-              ? {}
-              : {
-                  bgcolor: alpha(theme.palette.error.light, 0.2)
-                }
-          }
-          onClick={() => {
-            if (accountSettings?.contentPassword) {
-              authorizeAction(() => setIsEditContentPasswordDialogOpened(true))
-            } else {
-              setIsEditContentPasswordDialogOpened(true)
-            }
-          }}
-        >
-          <ListItemText
-            primary={
-              accountSettings?.contentPassword
-                ? "Change app password"
-                : "Initialize app password (Recommended)"
-            }
-            secondary={
-              accountSettings?.contentPassword
-                ? "Used to authorize sensitive actions"
-                : "When set, it will be used to authorize sensitive actions"
-            }
-          />
         </ListItemButton>
-
-        <ListItem
-          button
+        <ListItemButton
           onClick={() => {
             if (library.isLibraryUnlocked) {
               libraryStateSignal.setValue((state) => ({
@@ -124,7 +82,7 @@ export const ProfileScreen = () => {
                 isLibraryUnlocked: false
               }))
             } else {
-              unlockLibraryDialogSignal.setValue(true)
+              setIsUnlockContentsDialogOpened(true)
             }
           }}
         >
@@ -140,9 +98,18 @@ export const ProfileScreen = () => {
           />
           {library.isLibraryUnlocked && <LockOpenRounded color="action" />}
           {!library.isLibraryUnlocked && <LockRounded color="action" />}
-        </ListItem>
-        <ListItem
-          button
+        </ListItemButton>
+        <ListItemButton
+          onClick={() => {
+            navigate(ROUTES.SECURITY)
+          }}
+        >
+          <ListItemIcon>
+            <SecurityRounded />
+          </ListItemIcon>
+          <ListItemText primary="Security" />
+        </ListItemButton>
+        <ListItemButton
           onClick={() => {
             navigate(ROUTES.STATISTICS)
           }}
@@ -151,15 +118,10 @@ export const ProfileScreen = () => {
             <BarChartRounded />
           </ListItemIcon>
           <ListItemText primary="Statistics" />
-        </ListItem>
+        </ListItemButton>
       </List>
-      <List
-        subheader={
-          <ListSubheader disableSticky>Settings & device</ListSubheader>
-        }
-      >
-        <ListItem
-          button
+      <List subheader={<ListSubheader disableSticky>Device</ListSubheader>}>
+        <ListItemButton
           onClick={() => {
             navigate(ROUTES.SETTINGS)
           }}
@@ -168,9 +130,8 @@ export const ProfileScreen = () => {
             <SettingsRounded />
           </ListItemIcon>
           <ListItemText primary="Device settings" />
-        </ListItem>
-        <ListItem
-          button
+        </ListItemButton>
+        <ListItemButton
           onClick={() => {
             navigate(`${ROUTES.PROFILE}/manage-storage`)
           }}
@@ -184,63 +145,35 @@ export const ProfileScreen = () => {
               2
             )}%) used of ${quotaInGb} GB`}
           />
-        </ListItem>
+        </ListItemButton>
       </List>
       <List
-        subheader={
-          <ListSubheader disableSticky>Help and feedback</ListSubheader>
-        }
+        subheader={<ListSubheader disableSticky>Information</ListSubheader>}
       >
-        <ListItem button>
-          <ListItemText
-            primary="Do you need any help?"
-            secondary={
-              <Typography variant="body2" color="textSecondary">
-                You can visit our{" "}
-                <Link target="__blank" href="https://docs.oboku.me/support">
-                  support page
-                </Link>
-              </Typography>
-            }
-          />
-        </ListItem>
-        <ListItem button>
-          <ListItemText
-            primary="I have a request"
-            secondary={
-              <Typography variant="body2" color="textSecondary">
-                Whether it is a bug, a feature request or anything else, please
-                visit the{" "}
-                <Link target="__blank" href="https://docs.oboku.me">
-                  doc
-                </Link>{" "}
-                to find all useful links
-              </Typography>
-            }
-          />
-        </ListItem>
-        <ListItem
-          button
-          onClick={() => firstTimeExperienceStateSignal.setValue(SIGNAL_RESET)}
-        >
-          <ListItemText
-            primary="Restart the welcome tour"
-            secondary="This will display all the first time tours overlay again. Useful for a quick reminder on how to use the app"
-          />
-        </ListItem>
-      </List>
-      <List subheader={<ListSubheader disableSticky>About</ListSubheader>}>
-        <ListItem
-          button
-          onClick={() => createDialog({ preset: "NOT_IMPLEMENTED" })}
+        <ListItemButton target="__blank" href={`https://docs.oboku.me/support`}>
+          <ListItemIcon>
+            <LaunchRounded />
+          </ListItemIcon>
+          <ListItemText primary={`Support Page`} />
+        </ListItemButton>
+        <ListItemButton target="__blank" href="https://docs.oboku.me">
+          <ListItemIcon>
+            <LaunchRounded />
+          </ListItemIcon>
+          <ListItemText primary={`Documentation Page`} />
+        </ListItemButton>
+        <ListItemButton
+          onClick={() =>
+            createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })
+          }
         >
           <ListItemIcon>
             <GavelRounded />
           </ListItemIcon>
           <ListItemText primary="Terms of Service" />
-        </ListItem>
+        </ListItemButton>
         <ListItem>
-          <ListItemText primary="Version" secondary={packageJson.version} />
+          <ListItemText primary="App Version" secondary={packageJson.version} />
         </ListItem>
       </List>
       <>
@@ -249,13 +182,13 @@ export const ProfileScreen = () => {
             <ListSubheader disableSticky>Developer options</ListSubheader>
           }
         >
-          <ListItem button onClick={toggleDebug}>
+          <ListItemButton onClick={toggleDebug}>
             <ListItemText
               primary={
                 isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
               }
             />
-          </ListItem>
+          </ListItemButton>
           {/* <ListItem
             button
             onClick={() => setIsDeleteMyDataDialogOpened(true)}
@@ -275,25 +208,12 @@ export const ProfileScreen = () => {
         }
         style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
       >
-        {!!accountSettings?.contentPassword && (
-          <ListItemButton
-            onClick={() => {
-              authorizeAction(() => {
-                updateSettings({
-                  contentPassword: null
-                })
-              })
-            }}
-          >
-            <ListItemText primary="Remove app password" />
-          </ListItemButton>
-        )}
-        <ListItem button onClick={() => navigate(ROUTES.PROBLEMS)}>
+        <ListItemButton onClick={() => navigate(ROUTES.PROBLEMS)}>
           <ListItemText
             primary="Repair my account / anomalies"
             secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one this section"
           />
-        </ListItem>
+        </ListItemButton>
         <ListItemButton
           onClick={() => {
             removeAllContents()
@@ -304,16 +224,18 @@ export const ProfileScreen = () => {
             secondary="Remove all contents from your account"
           />
         </ListItemButton>
-        <ListItem
-          button
-          onClick={() => createDialog({ preset: "NOT_IMPLEMENTED" })}
+        <ListItemButton
+          onClick={() =>
+            createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })
+          }
         >
           <ListItemText primary="Delete my account" />
-        </ListItem>
+        </ListItemButton>
       </List>
-      <EditContentPasswordDialog
-        open={isEditContentPasswordDialogOpened}
-        onClose={() => setIsEditContentPasswordDialogOpened(false)}
+
+      <UnlockContentsDialog
+        open={isUnlockContentsDialogOpened}
+        onClose={() => setIsUnlockContentsDialogOpened(false)}
       />
       <DeleteMyDataDialog
         open={isDeleteMyDataDialogOpened}
@@ -437,65 +359,6 @@ const DeleteMyDataDialog: FC<{
         </Button>
         <Button onClick={onSubmit} color="primary" disabled={isDeleting}>
           {isDeleting ? `Deleting...` : `Confirm`}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-}
-
-const EditContentPasswordDialog: FC<{
-  open: boolean
-  onClose: () => void
-}> = ({ onClose, open }) => {
-  const updatePassword = useUpdateContentPassword()
-  const { data: accountSettings } = useSettings()
-  const [text, setText] = useState("")
-  const contentPassword = accountSettings?.contentPassword || ""
-
-  const onInnerClose = () => {
-    onClose()
-  }
-
-  useEffect(() => {
-    setText(contentPassword)
-  }, [contentPassword])
-
-  useEffect(() => {
-    setText("")
-  }, [open])
-
-  return (
-    <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>Set up your content password</DialogTitle>
-      <DialogContent>
-        <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
-          <DialogContentText>
-            This password will be needed to unlock and access books using a
-            protected tag.
-          </DialogContentText>
-          <TextField
-            autoFocus
-            id="name"
-            label="Password"
-            type="password"
-            fullWidth
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-        </form>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onInnerClose} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={async () => {
-            onInnerClose()
-            updatePassword(text)
-          }}
-          color="primary"
-        >
-          Change
         </Button>
       </DialogActions>
     </Dialog>

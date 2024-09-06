@@ -1,6 +1,5 @@
 import { FC, useCallback, useEffect, useState } from "react"
 import { Backdrop, CircularProgress, useTheme } from "@mui/material"
-import { useCSS } from "../common/utils"
 import { signal, useSignalValue } from "reactjrx"
 import { ObservedValueOf, Subject } from "rxjs"
 
@@ -51,7 +50,6 @@ export const useLock = () => {
 }
 
 export const BlockingBackdrop: FC<{}> = () => {
-  const classes = useStyles()
   const open = useIsLockedState()
   const [active, setActive] = useState(false)
   const theme = useTheme()
@@ -93,7 +91,10 @@ export const BlockingBackdrop: FC<{}> = () => {
   return (
     <Backdrop
       open={active}
-      style={{ ...classes.backdrop, zIndex: theme.zIndex.tooltip + 1 }}
+      sx={{
+        zIndex: theme.zIndex.tooltip + 1,
+        color: "#fff"
+      }}
     >
       <CircularProgress color="inherit" />
     </Backdrop>
@@ -109,18 +110,4 @@ export const BlockingScreen = () => {
   }, [lock])
 
   return null
-}
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      backdrop: {
-        zIndex: theme.zIndex.drawer + 1,
-        color: "#fff"
-      }
-    }),
-    [theme]
-  )
 }

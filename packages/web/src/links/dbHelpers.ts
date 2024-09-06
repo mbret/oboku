@@ -13,3 +13,11 @@ export const getLinksForDataSource = (
     })
     .exec()
 }
+
+export const observeLinkById = (database: Database, id: string) => {
+  return database.link.findOne({
+    selector: {
+      _id: id
+    }
+  }).$
+}

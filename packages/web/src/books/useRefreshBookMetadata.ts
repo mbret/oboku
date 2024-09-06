@@ -1,7 +1,7 @@
 import { useNetworkState } from "react-use"
-import { from, switchMap, catchError, map, EMPTY } from "rxjs"
+import { from, switchMap, catchError, map, of } from "rxjs"
 import { httpClient } from "../http/httpClient"
-import { isPluginError } from "../plugins/plugin-front"
+import { isPluginError } from "../plugins/types"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
@@ -19,7 +19,7 @@ export const useRefreshBookMetadata = () => {
   return async (bookId: string) => {
     try {
       if (!network.online) {
-        return createDialog({ preset: "OFFLINE" })
+        return createDialog({ preset: "OFFLINE", autoStart: true })
       }
 
       const book = await database?.book
@@ -73,7 +73,7 @@ export const useRefreshBookMetadata = () => {
           catchError((e) => {
             Report.error(e)
 
-            return EMPTY
+            return of(null)
           })
         )
         .subscribe()

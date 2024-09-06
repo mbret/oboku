@@ -1,40 +1,74 @@
-import { useCallback } from "react"
-import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "./useRemoveDownloadFile"
-import { plugin } from "../plugins/local"
+import { plugin as localPlugin } from "../plugins/local"
+import { useMutation } from "reactjrx"
+import {
+  combineLatest,
+  combineLatestWith,
+  defaultIfEmpty,
+  first,
+  from,
+  map,
+  of,
+  switchMap
+} from "rxjs"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { dexieDb } from "../rxdb/dexie"
 
 export const useRemoveAllDownloadedFiles = () => {
-  const { db } = useDatabase()
-  const removeDownloadFile = useRemoveDownloadFile()
+  const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
 
-  return useCallback(
-    async (bookIds: string[]) => {
-      return await Promise.all(
-        bookIds.map(async (id) => {
-          const book = await db?.book
-            .findOne({
-              selector: {
-                _id: id
-              }
+  return useMutation({
+    mutationFn: () => {
+      return latestDatabase$.pipe(
+        first(),
+        combineLatestWith(from(dexieDb.downloads.toArray())),
+        switchMap(([db, items]) => {
+          const books$ = from(
+            db.book
+              .find({
+                selector: {
+                  _id: {
+                    $in: items.map(({ id }) => id)
+                  }
+                }
+              })
+              .exec()
+          )
+
+          return books$.pipe(
+            switchMap((books) =>
+              combineLatest(
+                books.map((book) => {
+                  // valid to remove
+                  if (book.links.length === 0) return of(book)
+
+                  return from(db.link.findByIds(book.links).exec()).pipe(
+                    switchMap((links) => {
+                      const fileLink = Array.from(links?.values() ?? []).find(
+                        ({ type }) => type === localPlugin.type
+                      )
+
+                      // local book, don't remove
+                      if (fileLink) return of(null)
+
+                      return of(book)
+                    })
+                  )
+                })
+              )
+            ),
+            map((books) => books.filter((book) => !!book)),
+            switchMap((books) => {
+              return combineLatest(
+                books.map((book) =>
+                  from(removeDownloadFile({ bookId: book._id }))
+                )
+              )
             })
-            .exec()
-
-          const linkIds = book?.links ?? []
-
-          if (linkIds.length > 0) {
-            const links = await db?.link.findByIds(linkIds).exec()
-
-            const fileLink = Array.from(links?.values() ?? []).find(
-              ({ type }) => type === plugin.type
-            )
-
-            if (fileLink) return
-          }
-
-          return removeDownloadFile(id)
-        })
+          )
+        }),
+        defaultIfEmpty(null)
       )
-    },
-    [db, removeDownloadFile]
-  )
+    }
+  })
 }

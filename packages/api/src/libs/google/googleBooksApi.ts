@@ -36,8 +36,6 @@ export const findByISBN = async (isbn: string, apiKey: string) => {
 export const findByTitle = async (name: string, apiKey: string) => {
   const uri = `${GOOGLE_BOOK_API_URL}/volumes?q=intitle:${encodeURIComponent(name)}&key=${apiKey}`
 
-  console.log(uri)
-
   const response = await performWithBackoff({
     asyncFunction: () => axios.get<GoogleBooksApiResult>(uri),
     retry: (error: unknown) => {
@@ -46,7 +44,6 @@ export const findByTitle = async (name: string, apiKey: string) => {
     }
   })
 
-  console.log(response)
   if (response.status === 200) {
     // Logger.info(`google findByName response`, response.data)
 

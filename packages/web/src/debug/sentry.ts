@@ -1,12 +1,12 @@
 import { version } from "../../package.json"
 import "./reportWebVitals"
 import { SENTRY_DSN } from "../constants.shared"
-import { init } from "@sentry/react"
 import {
+  init,
   captureConsoleIntegration,
   extraErrorDataIntegration,
   httpClientIntegration
-} from "@sentry/integrations"
+} from "@sentry/react"
 
 init({
   dsn: SENTRY_DSN,
@@ -15,7 +15,7 @@ init({
   autoSessionTracking: true,
   integrations: [
     captureConsoleIntegration({
-      levels: ["error", "warn"]
+      levels: ["error"]
     }),
     extraErrorDataIntegration(),
     httpClientIntegration()

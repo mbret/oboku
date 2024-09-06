@@ -1,41 +1,38 @@
-import { FC, useEffect } from "react"
+import { memo, useEffect } from "react"
 import { useParams } from "react-router-dom"
-import { AppTourReader } from "../firstTimeExperience/AppTourReader"
 import { useWakeLock } from "../common/useWakeLock"
-import { useFullscreenAutoSwitch } from "./fullScreen"
+import { useFullscreenAutoSwitch } from "./settings/fullScreen"
 import { Reader } from "./Reader"
-import { MoreDialog } from "./MoreDialog"
+import { MoreDialog } from "./navigation/MoreDialog"
 import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
-import {
-  isBookReadyStateSignal,
-  isMenuShownStateSignal,
-  readerStateSignal
-} from "./states"
+import { isMenuShownStateSignal, readerSignal } from "./states"
 import { SIGNAL_RESET } from "reactjrx"
 
-export const ReaderScreen: FC<{}> = () => {
+export const ReaderScreen = memo(() => {
   const { bookId } = useParams<{ bookId?: string }>()
 
+  return (
+    <>
+      {bookId && <Reader bookId={bookId} />}
+      <MoreDialog bookId={bookId} />
+      <Effects bookId={bookId} />
+    </>
+  )
+})
+
+const Effects = memo(({ bookId }: { bookId?: string }) => {
   useTrackBookBeingRead(bookId)
   useWakeLock()
   useFullscreenAutoSwitch()
 
   useEffect(
     () => () => {
-      ;[
-        isBookReadyStateSignal,
-        isMenuShownStateSignal,
-        readerStateSignal
-      ].forEach((signal) => signal.setValue(SIGNAL_RESET))
+      ;[isMenuShownStateSignal, readerSignal].forEach((signal) =>
+        signal.setValue(SIGNAL_RESET)
+      )
     },
     []
   )
 
-  return (
-    <>
-      {bookId && <Reader bookId={bookId} />}
-      <AppTourReader />
-      <MoreDialog />
-    </>
-  )
-}
+  return null
+})

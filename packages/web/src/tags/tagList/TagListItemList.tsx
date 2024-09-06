@@ -1,6 +1,5 @@
-import { FC, memo } from "react"
-import { ListItem, ListItemIcon, ListItemText, useTheme } from "@mui/material"
-import { useCSS } from "../../common/utils"
+import { ComponentProps, FC, memo } from "react"
+import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material"
 import {
   BlurOnRounded,
   LocalOfferRounded,
@@ -8,43 +7,34 @@ import {
 } from "@mui/icons-material"
 import { useTag } from "../helpers"
 
-export const TagListItemList: FC<{
-  id: string
-  onItemClick?: (tag: { _id: string; isProtected: boolean }) => void
-}> = memo(({ id, onItemClick }) => {
-  const { data: tag } = useTag(id)
-  const styles = useStyle()
+export const TagListItemList = memo(
+  ({
+    id,
+    onItemClick,
+    ...rest
+  }: {
+    id: string
+    onItemClick?: (tag: { _id: string; isProtected: boolean }) => void
+  } & ComponentProps<typeof ListItemButton>) => {
+    const { data: tag } = useTag(id)
 
-  return (
-    <ListItem
-      button
-      style={styles.container}
-      onClick={() => tag && onItemClick && onItemClick(tag)}
-    >
-      <ListItemIcon>
-        <LocalOfferRounded />
-      </ListItemIcon>
-      <ListItemText
-        primary={tag?.name}
-        secondary={`${
-          tag?.isProtected ? "?" : tag?.books?.length || 0
-        } book(s)`}
-      />
-      {tag?.isProtected && <LockRounded color="primary" />}
-      {tag?.isBlurEnabled && <BlurOnRounded color="primary" />}
-    </ListItem>
-  )
-})
-
-const useStyle = () => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        height: `100%`
-      }
-    }),
-    [theme]
-  )
-}
+    return (
+      <ListItemButton
+        onClick={() => tag && onItemClick && onItemClick(tag)}
+        {...rest}
+      >
+        <ListItemIcon>
+          <LocalOfferRounded />
+        </ListItemIcon>
+        <ListItemText
+          primary={tag?.name}
+          secondary={`${
+            tag?.isProtected ? "?" : tag?.books?.length || 0
+          } book(s)`}
+        />
+        {tag?.isProtected && <LockRounded color="primary" />}
+        {tag?.isBlurEnabled && <BlurOnRounded color="primary" />}
+      </ListItemButton>
+    )
+  }
+)

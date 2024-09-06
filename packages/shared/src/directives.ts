@@ -20,6 +20,7 @@ export const extractDirectivesFromName = (
   series: boolean | undefined
   year?: string
   ignoreMetadata?: string | undefined
+  isWebtoon: boolean
 } => {
   let isNotACollection = false
   let tags: string[] = []
@@ -29,6 +30,7 @@ export const extractDirectivesFromName = (
   let isbn = undefined
   let series: boolean | undefined = undefined
   let ignoreMetadata: string | undefined = undefined
+  let isWebtoon: boolean = false
 
   const directives = resourceId
     .match(/(\[oboku\~[^\]]*\])+/gi)
@@ -37,6 +39,10 @@ export const extractDirectivesFromName = (
   directives?.forEach((directive) => {
     if (directive === "no_collection") {
       isNotACollection = true
+    }
+
+    if (directive === "webtoon") {
+      isWebtoon = true
     }
 
     if (directive.startsWith("metadata-ignore~")) {
@@ -85,7 +91,8 @@ export const extractDirectivesFromName = (
     direction,
     isbn,
     year,
-    ignoreMetadata
+    ignoreMetadata,
+    isWebtoon
   }
 }
 

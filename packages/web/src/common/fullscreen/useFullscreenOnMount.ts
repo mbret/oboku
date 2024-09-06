@@ -5,7 +5,6 @@ import {
   EMPTY,
   catchError,
   defer,
-  endWith,
   from,
   mergeMap,
   retry,
@@ -13,8 +12,8 @@ import {
   timer
 } from "rxjs"
 import { useSubscribe } from "reactjrx"
-import { CancelError } from "../errors/errors"
 import { createDialog } from "../dialogs/createDialog"
+import { CancelError } from "../../errors/errors.shared"
 
 const isPermissionCheckFailedError = (error: unknown): error is TypeError =>
   error instanceof TypeError &&

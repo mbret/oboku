@@ -3,15 +3,8 @@ import { plugins } from "../plugins/configure"
 import { useForeverQuery } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
-import { keyBy } from "lodash"
 import { Database } from "../rxdb"
 import { isRemovableFromDataSource } from "./isRemovableFromDataSource"
-
-export const getLinksByIds = async (database: Database) => {
-  const result = await database.collections.link.find({}).exec()
-
-  return keyBy(result, "_id")
-}
 
 export const useLinks = () => {
   return useForeverQuery({
@@ -20,18 +13,6 @@ export const useLinks = () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.link.find({}).$),
         map((entries) => entries.map((item) => item.toJSON()))
-      )
-    }
-  })
-}
-
-export const useLinksDic = () => {
-  return useForeverQuery({
-    queryKey: ["rxdb", "get", "many", "link/dic"],
-    queryFn: () => {
-      return latestDatabase$.pipe(
-        switchMap((db) => db.collections.link.find({}).$),
-        map((entries) => keyBy(entries, "_id"))
       )
     }
   })
@@ -69,12 +50,12 @@ const mapLinkTtoState = ({ link }: { link?: LinkDocType | null }) => {
 }
 
 export const getLinkState = (
-  linksState: ReturnType<typeof useLinksDic>["data"] = {},
+  links: ReturnType<typeof useLinks>["data"],
   linkId: string
 ) => {
-  const link = Object.values(linksState).find((link) => link?._id === linkId)
+  const link = links?.find((link) => link?._id === linkId)
 
-  return mapLinkTtoState({ link: link?.toJSON() })
+  return mapLinkTtoState({ link })
 }
 
 export const getLinkStateAsync = async ({
@@ -99,11 +80,11 @@ export const getLinkStateAsync = async ({
  * @todo optimize to refresh only when link id change
  */
 export const useLinkState = (linkId: string) => {
-  const { data: links = {} } = useLinksDic()
+  const { data: links } = useLinks()
 
-  const link = Object.values(links).find((link) => link?._id === linkId)
+  const link = links?.find((link) => link?._id === linkId)
 
   return mapLinkTtoState({
-    link: link?.toJSON()
+    link
   })
 }

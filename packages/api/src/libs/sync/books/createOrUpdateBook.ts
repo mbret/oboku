@@ -7,7 +7,6 @@ import {
   DataSourcePlugin,
   SynchronizeAbleDataSource
 } from "@libs/plugins/types"
-import nano from "nano"
 import { Logger } from "@libs/logger"
 import { updateTagsForBook } from "./updateTagsForBook"
 import { synchronizeBookWithParentCollections } from "./synchronizeBookWithParentCollections"
@@ -16,11 +15,10 @@ import {
   addTagsToBookIfNotExist,
   createBook
 } from "@libs/couch/dbHelpers"
+import { isBookCoverExist } from "@libs/books/covers/isBookCoverExist"
+import { Context } from "../types"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
-type Context = Parameters<NonNullable<DataSourcePlugin["sync"]>>[0] & {
-  db: nano.DocumentScope<unknown>
-}
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 const logger = Logger.child({ module: "sync.books" })
@@ -223,9 +221,11 @@ export const createOrUpdateBook = async ({
       const metadataAreOlderThanModifiedDate =
         lastMetadataUpdatedAt < new Date(item.modifiedAt || 0)
 
+      const coverObjectKey = `cover-${ctx.userNameHex}-${existingBook._id}`
+
       if (
         metadataAreOlderThanModifiedDate ||
-        !(await helpers.isBookCoverExist(existingBook._id))
+        !(await isBookCoverExist(coverObjectKey))
       ) {
         await helpers
           .refreshBookMetadata({ bookId: existingBook?._id })

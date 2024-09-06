@@ -9,6 +9,7 @@ import {
   Drawer,
   List,
   ListItem,
+  ListItemButton,
   ListItemSecondaryAction,
   ListItemText,
   ListSubheader
@@ -49,8 +50,7 @@ export const SettingsScreen = memo(() => {
           <ListItem>
             <ListItemText primary="Language" secondary={navigator.language} />
           </ListItem>
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
@@ -70,14 +70,13 @@ export const SettingsScreen = memo(() => {
                 <RadioButtonUncheckedOutlined />
               )}
             </ListItemSecondaryAction>
-          </ListItem>
+          </ListItemButton>
         </List>
         <List>
           <ListSubheader disableSticky>
             Privacy & sensitive content
           </ListSubheader>
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
@@ -96,9 +95,8 @@ export const SettingsScreen = memo(() => {
                 <RadioButtonUncheckedOutlined />
               )}
             </ListItemSecondaryAction>
-          </ListItem>
-          <ListItem
-            button
+          </ListItemButton>
+          <ListItemButton
             onClick={() => {
               setIsShowCollectionDrawerOpened(true)
             }}
@@ -111,9 +109,8 @@ export const SettingsScreen = memo(() => {
                 ]
               }
             />
-          </ListItem>
-          <ListItem
-            button
+          </ListItemButton>
+          <ListItemButton
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
@@ -129,11 +126,10 @@ export const SettingsScreen = memo(() => {
                 <RadioButtonUncheckedOutlined />
               )}
             </ListItemSecondaryAction>
-          </ListItem>
+          </ListItemButton>
         </List>
         <List subheader={<ListSubheader disableSticky>Reading</ListSubheader>}>
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => {
               setIsDrawerOpened(true)
             }}
@@ -144,7 +140,7 @@ export const SettingsScreen = memo(() => {
                 fullScreenModes[localSettings.readingFullScreenSwitchMode]
               }
             />
-          </ListItem>
+          </ListItemButton>
         </List>
         <List
           subheader={
@@ -153,8 +149,7 @@ export const SettingsScreen = memo(() => {
             </ListSubheader>
           }
         >
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
@@ -173,7 +168,7 @@ export const SettingsScreen = memo(() => {
                 <RadioButtonUncheckedOutlined />
               )}
             </ListItemSecondaryAction>
-          </ListItem>
+          </ListItemButton>
         </List>
       </Box>
       <Drawer
@@ -187,8 +182,7 @@ export const SettingsScreen = memo(() => {
               fullScreenModes
             ) as LocalSettings["readingFullScreenSwitchMode"][]
           ).map((text) => (
-            <ListItem
-              button
+            <ListItemButton
               key={text}
               onClick={() => {
                 localSettingsSignal.setValue((old) => ({
@@ -199,7 +193,7 @@ export const SettingsScreen = memo(() => {
               }}
             >
               <ListItemText primary={fullScreenModes[text]} />
-            </ListItem>
+            </ListItemButton>
           ))}
         </List>
       </Drawer>
@@ -260,8 +254,7 @@ const MultipleChoiceDrawer = <Choice extends { value: string; label: string }>({
     <Drawer {...rest}>
       <List>
         {choices.map(({ value, label }) => (
-          <ListItem
-            button
+          <ListItemButton
             key={value}
             onClick={(e) => {
               onChoiceSelect(value)
@@ -273,7 +266,7 @@ const MultipleChoiceDrawer = <Choice extends { value: string; label: string }>({
                 secondary: `selected`
               })}
             />
-          </ListItem>
+          </ListItemButton>
         ))}
       </List>
     </Drawer>

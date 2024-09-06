@@ -56,15 +56,17 @@ export const hasGrantedPermissions = (
   )
 }
 
+export const getTokenExpirationDate = (accessToken: GoogleAccessToken) => {
+  const createdAtDate = new Date(accessToken.created_at)
+
+  return addSeconds(createdAtDate, parseInt(accessToken.expires_in, 10))
+}
+
 export const hasTokenAccessAtLeast10mnLeft = (
   accessToken: GoogleAccessToken
 ) => {
-  const createdAtDate = new Date(accessToken.created_at)
   const tenMinutesFromNow = addMinutes(new Date(), 10)
-  const expirationDate = addSeconds(
-    createdAtDate,
-    parseInt(accessToken.expires_in, 10)
-  )
+  const expirationDate = getTokenExpirationDate(accessToken)
   const hasAtLeastTenMinutesLeft = isBefore(tenMinutesFromNow, expirationDate)
 
   return hasAtLeastTenMinutesLeft

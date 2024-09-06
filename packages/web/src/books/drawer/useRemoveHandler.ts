@@ -1,14 +1,14 @@
-import { getBookById, useRemoveBook } from "../helpers"
+import { useRemoveBook } from "../helpers"
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/RxDbProvider"
-import { finalize, from, map, mergeMap, of, tap } from "rxjs"
+import { first, from, mergeMap, of } from "rxjs"
 import { isRemovableFromDataSource } from "../../links/isRemovableFromDataSource"
-import { getDataSourcePlugin } from "../../dataSources/getDataSourcePlugin"
-import { getLinkById } from "../../links/helpers"
 import { createDialog } from "../../common/dialogs/createDialog"
-import { withUnknownErrorDialog } from "../../common/errors/withUnknownErrorDialog"
 import { withOfflineErrorDialog } from "../../common/network/withOfflineErrorDialog"
-import { useLock } from "../../common/BlockingBackdrop"
+import { observeLinkById } from "../../links/dbHelpers"
+import { getDataSourcePlugin } from "../../dataSources/helpers"
+import { withUnknownErrorDialog } from "../../errors/withUnknownErrorDialog"
+import { getBookById } from "../dbHelpers"
 
 const deleteBookNormallyDialog: Parameters<
   typeof createDialog<{ deleteFromDataSource: boolean }>
@@ -28,13 +28,15 @@ export const useRemoveHandler = (
     mutationFn: ({ bookId }: { bookId: string }) => {
       const mutation$ = getLatestDatabase().pipe(
         mergeMap((database) => {
-          return getBookById({ database, id: bookId }).pipe(
+          return from(getBookById({ database, id: bookId })).pipe(
             mergeMap((book) => {
               if (!book) throw new Error("book not found")
 
               const linkId = book.links[0]
 
-              const link$ = !linkId ? of(null) : getLinkById(database, linkId)
+              const link$ = !linkId
+                ? of(null)
+                : observeLinkById(database, linkId).pipe(first())
 
               return link$.pipe(
                 mergeMap((firstLink) => {

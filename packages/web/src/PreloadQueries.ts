@@ -1,6 +1,8 @@
 import { memo, useEffect, useState } from "react"
 import { useSettings } from "./settings/helpers"
 import { useLiveRef } from "reactjrx"
+import { useLibraryShelves } from "./library/shelves/useLibraryShelves"
+import { useLibraryBooks } from "./library/books/useLibraryBooks"
 
 const usePrefetchAccountSettings = () => {
   const [prefetched, setPrefetched] = useState(false)
@@ -37,6 +39,9 @@ const usePrefetchAccountSettings = () => {
 export const PreloadQueries = memo(({ onReady }: { onReady: () => void }) => {
   const isAccountSettingsPreloaded = usePrefetchAccountSettings()
   const onReadyRef = useLiveRef(onReady)
+
+  useLibraryShelves()
+  useLibraryBooks()
 
   const isReady = isAccountSettingsPreloaded
 

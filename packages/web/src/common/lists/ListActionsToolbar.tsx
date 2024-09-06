@@ -4,16 +4,13 @@ import {
   AppsRounded,
   FormatListBulletedRounded,
   ListRounded,
-  LockOpenRounded,
   SortRounded,
   TuneRounded
 } from "@mui/icons-material"
 import { SortByDialog } from "../../books/bookList/SortByDialog"
-import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../../library/states"
 
 export type ListActionSorting = ComponentProps<typeof SortByDialog>["value"]
-export type ListActionViewMode = "grid" | "list" | "compact"
+export type ListActionViewMode = "grid" | "list" | "compact" | "horizontal"
 
 export const ViewModeIconButton = ({
   viewMode,
@@ -64,7 +61,6 @@ export const ListActionsToolbar: FC<{
   numberOfFiltersApplied = 0
 }) => {
   const theme = useTheme()
-  const library = useSignalValue(libraryStateSignal)
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
 
   return (
@@ -112,19 +108,6 @@ export const ListActionsToolbar: FC<{
                   ? "A > Z"
                   : "Date added"}
             </Button>
-          </div>
-        )}
-        {library.isLibraryUnlocked && (
-          <div
-            style={{
-              display: "flex",
-              flexFlow: "row",
-              alignItems: "center",
-              marginLeft: theme.spacing(1),
-              overflow: "hidden"
-            }}
-          >
-            <LockOpenRounded fontSize="small" />
           </div>
         )}
         {!!viewMode && (

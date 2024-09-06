@@ -1,74 +1,144 @@
 import { useEffect } from "react"
 import { signal, useMutation } from "reactjrx"
-import { combineLatest, defer, from, map, mergeMap, tap } from "rxjs"
+import {
+  catchError,
+  combineLatest,
+  defer,
+  from,
+  map,
+  mergeMap,
+  tap
+} from "rxjs"
 import { loadScript } from "../../../common/utils"
 import { retryOnFailure } from "./scripts"
+import { GapiNotAvailableError } from "./errors"
 
 const ID = "oboku-google-api-script"
 
 export const gapiSignal = signal<
-  { gapi: undefined; state: "loading" } | { gapi: typeof gapi; state: "loaded" }
+  | {
+      gapi: undefined
+      state: "loading"
+      error?: string
+      loadingStep: undefined | "api" | "client"
+    }
+  | { gapi: typeof gapi; state: "loaded"; error?: string }
 >({
-  default: { gapi: undefined, state: "loading" }
+  default: {
+    gapi: undefined,
+    state: "loading",
+    error: undefined,
+    loadingStep: undefined
+  }
 })
 
 export const gapiOrThrow$ = gapiSignal.subject.pipe(
   map(({ gapi }) => {
     if (!gapi) {
-      throw new Error("gapi not available")
+      throw new GapiNotAvailableError()
     }
 
     return gapi
   })
 )
 
+const loadGapiClient = () =>
+  defer(() =>
+    from(
+      new Promise((resolve, reject) => {
+        window.gapi.load("client", {
+          callback: resolve,
+          onerror: reject
+        })
+      })
+    )
+  )
+
+const loadPicker = () =>
+  defer(() =>
+    from(
+      new Promise((resolve, reject) => {
+        window.gapi.load("picker", {
+          callback: resolve,
+          onerror: reject
+        })
+      })
+    )
+  )
+
+const initClient = () =>
+  defer(() =>
+    from(
+      window.gapi.client.init({
+        apiKey: "AIzaSyBgTV-RQecG_TFwilsdUJXqKmeXEiNSWUg",
+        discoveryDocs: [
+          "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
+        ]
+      })
+    )
+  )
+
 export const useLoadGapi = () => {
-  const { mutate } = useMutation({
+  return useMutation({
     mapOperator: "switch",
+    mutationKey: ["pluginGoogleScriptMutation"],
     mutationFn: () => {
       return loadScript({
         id: ID,
         src: "https://apis.google.com/js/api.js"
       }).pipe(
+        catchError((error) => {
+          gapiSignal.setValue((state) => ({
+            ...state,
+            error: "Error while loading script"
+          }))
+
+          throw error
+        }),
         retryOnFailure,
         mergeMap(() =>
           combineLatest([
-            defer(() =>
-              from(
-                new Promise((resolve, reject) => {
-                  window.gapi.load("client", {
-                    callback: resolve,
-                    onerror: reject
-                  })
-                })
-              )
-            ).pipe(retryOnFailure),
-            defer(() =>
-              from(
-                new Promise((resolve, reject) => {
-                  window.gapi.load("picker", {
-                    callback: resolve,
-                    onerror: reject
-                  })
-                })
-              )
-            ).pipe(retryOnFailure)
+            loadGapiClient().pipe(
+              catchError((error) => {
+                gapiSignal.setValue((state) => ({
+                  ...state,
+                  error: "Error while loading client script"
+                }))
+
+                throw error
+              }),
+              retryOnFailure
+            ),
+            loadPicker().pipe(
+              catchError((error) => {
+                gapiSignal.setValue((state) => ({
+                  ...state,
+                  error: "Error while loading picker script"
+                }))
+
+                throw error
+              }),
+              retryOnFailure
+            )
           ]).pipe(
             mergeMap(() =>
-              defer(() =>
-                from(
-                  window.gapi.client.init({
-                    discoveryDocs: [
-                      "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
-                    ]
-                  })
-                )
-              ).pipe(retryOnFailure)
+              initClient().pipe(
+                catchError((error) => {
+                  gapiSignal.setValue((state) => ({
+                    ...state,
+                    error: "Error while initializing the client"
+                  }))
+
+                  throw error
+                }),
+                retryOnFailure
+              )
             ),
             map(() => {
               gapiSignal.setValue({
                 gapi: window.gapi,
-                state: "loaded"
+                state: "loaded",
+                error: undefined
               })
 
               return gapiSignal.getValue()
@@ -78,8 +148,4 @@ export const useLoadGapi = () => {
       )
     }
   })
-
-  useEffect(() => {
-    mutate()
-  }, [mutate])
 }

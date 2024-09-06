@@ -4,7 +4,6 @@ import {
   DialogTitle,
   Drawer,
   List,
-  ListItem,
   ListItemText,
   ListItemIcon,
   DialogActions,
@@ -24,7 +23,7 @@ import {
 import { useUpdateTag } from "./helpers"
 import { useTag } from "./helpers"
 import { isManageTagBooksDialogOpenedWithState } from "./ManageTagBooksDialog"
-import { removeTag } from "./effects"
+import { useRemoveTag } from "./useRemoveTag"
 
 export const TagActionsDrawer: FC<{
   openWith: string | undefined
@@ -34,6 +33,7 @@ export const TagActionsDrawer: FC<{
   const editTag = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
     useState<string | undefined>(undefined)
+  const { mutate: removeTag } = useRemoveTag()
 
   return (
     <>
@@ -44,17 +44,15 @@ export const TagActionsDrawer: FC<{
         transitionDuration={0}
       >
         <List>
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => setIsEditTagDialogOpenedWithId(openWith)}
           >
             <ListItemIcon>
               <EditRounded />
             </ListItemIcon>
             <ListItemText primary="Rename" />
-          </ListItem>
-          <ListItem
-            button
+          </ListItemButton>
+          <ListItemButton
             onClick={() =>
               openWith &&
               editTag({ _id: openWith, isProtected: !tag?.isProtected })
@@ -68,9 +66,8 @@ export const TagActionsDrawer: FC<{
               primary="Mark as protected"
               secondary="This will lock and hide books behind it. Use unlock features to display them"
             />
-          </ListItem>
-          <ListItem
-            button
+          </ListItemButton>
+          <ListItemButton
             onClick={() =>
               openWith &&
               editTag({ _id: openWith, isBlurEnabled: !tag?.isBlurEnabled })
@@ -84,9 +81,8 @@ export const TagActionsDrawer: FC<{
               primary="Blur covers"
               secondary="Apply a blur filter on book covers. Useful for sensitive content"
             />
-          </ListItem>
-          <ListItem
-            button
+          </ListItemButton>
+          <ListItemButton
             onClick={() => {
               onClose()
               isManageTagBooksDialogOpenedWithState.setValue(openWith)
@@ -96,14 +92,14 @@ export const TagActionsDrawer: FC<{
               <LibraryAddRounded />
             </ListItemIcon>
             <ListItemText primary="Manage books" />
-          </ListItem>
+          </ListItemButton>
         </List>
         <Divider />
         <List>
           <ListItemButton
             onClick={() => {
               onClose()
-              openWith && removeTag.next({ id: openWith })
+              openWith && removeTag({ _id: openWith })
             }}
           >
             <ListItemIcon>

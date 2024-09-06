@@ -14,10 +14,10 @@ import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching"
 import { registerRoute } from "workbox-routing"
 import { StaleWhileRevalidate } from "workbox-strategies"
 import { STREAMER_URL_PREFIX } from "./constants.shared"
-import { readerFetchListener } from "./reader/streamer/serviceWorker.sw"
 import { messageSubject } from "./workers/messages.sw"
 import { registerCoversCacheCleanup } from "./covers/registerCoversCacheCleanup.sw"
 import { coversFetchListener } from "./covers/coversFetchListener.sw"
+import { swStreamer } from "./reader/streamer/swStreamer.sw"
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -103,5 +103,5 @@ self.addEventListener(`fetch`, (event) => {
 
   if (isHandledByCovers) return
 
-  readerFetchListener(event)
+  swStreamer.fetchEventListener(event)
 })

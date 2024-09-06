@@ -24,17 +24,19 @@ import { SettingsScreen } from "../settings/SettingsScreen"
 import { StatisticsScreen } from "../settings/StatisticsScreen"
 import { BackToReadingDialog } from "../reading/BackToReadingDialog"
 import { ProblemsScreen } from "../problems/ProblemsScreen"
-import { LibraryBooksScreen } from "../library/LibraryBooksScreen"
+import { LibraryBooksScreen } from "../library/books/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../library/shelves/LibraryCollectionScreen"
-import { LibraryTagsScreen } from "../library/LibraryTagsScreen"
+import { LibraryTagsScreen } from "../library/tags/LibraryTagsScreen"
 import { memo, useEffect, useRef } from "react"
-import { UnlockLibraryDialog } from "../auth/UnlockLibraryDialog"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
 import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
 import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
 import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
+import { SecurityScreen } from "../settings/SecurityScreen"
+import { PluginsScreen } from "../plugins/PluginsScreen"
+import { PluginScreen } from "../plugins/PluginScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -86,6 +88,8 @@ export const AppNavigator = ({
                 path={`${ROUTES.PROFILE}/manage-storage`}
                 element={<ManageStorageScreen />}
               />
+              <Route path="plugins/:type" element={<PluginScreen />} />
+              <Route path={`${ROUTES.SECURITY}`} element={<SecurityScreen />} />
               <Route path={`${ROUTES.SETTINGS}`} element={<SettingsScreen />} />
               <Route
                 path={`${ROUTES.STATISTICS}`}
@@ -94,6 +98,7 @@ export const AppNavigator = ({
               <Route path="*" element={<BottomTabBarRouteWrapper />}>
                 <Route index element={<HomeScreen />} />
                 <Route path="profile" element={<ProfileScreen />} />
+                <Route path="plugins" element={<PluginsScreen />} />
                 <Route path="library" element={<LibraryTopTabNavigator />}>
                   <Route path="books" element={<LibraryBooksScreen />} />
                   <Route
@@ -144,7 +149,6 @@ export const AppNavigator = ({
       <CollectionActionsDrawer />
       <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
       <TrackHistoryCanGoBack />
-      <UnlockLibraryDialog />
     </BrowserRouter>
   )
 }

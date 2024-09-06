@@ -4,9 +4,9 @@ import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { ReadingStateState } from "@oboku/shared"
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/RxDbProvider"
-import { mergeMap, noop, of } from "rxjs"
-import { getBookById } from "../../books/helpers"
+import { from, mergeMap, of } from "rxjs"
 import { createDialog } from "../../common/dialogs/createDialog"
+import { getBookById } from "../../books/dbHelpers"
 
 export const useShowRemoveBookOnExitDialog = ({
   onSettled,
@@ -15,7 +15,7 @@ export const useShowRemoveBookOnExitDialog = ({
   onSettled?: () => void
   bookId?: string
 }) => {
-  const removeDownloadFile = useRemoveDownloadFile()
+  const { mutate: removeDownloadFile } = useRemoveDownloadFile()
   const { data: book } = useBook({ id: bookId })
   const readingState = book?.readingStateCurrentState
   const [wasAlreadyFinished, setWasAlreadyFinished] = useState(true)
@@ -34,7 +34,7 @@ export const useShowRemoveBookOnExitDialog = ({
 
           return of({ database, id: bookId })
         }),
-        mergeMap(({ database, id }) => getBookById({ database, id })),
+        mergeMap(({ database, id }) => from(getBookById({ database, id }))),
         mergeMap((book) => {
           const isBookFinished =
             book?.readingStateCurrentState === ReadingStateState.Finished
@@ -52,7 +52,7 @@ export const useShowRemoveBookOnExitDialog = ({
             cancelTitle: "Keep",
             canEscape: false,
             onConfirm: () => {
-              removeDownloadFile(book._id).catch(noop)
+              removeDownloadFile({ bookId: book._id })
             }
           }).$
         })

@@ -1,6 +1,6 @@
-import { intersection } from "lodash"
+import { intersection } from "@oboku/shared"
 import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
-import { getLinkState, useLink, useLinksDic } from "../links/states"
+import { getLinkState, useLink, useLinks } from "../links/states"
 import {
   getBookDownloadsState,
   booksDownloadStateSignal
@@ -10,23 +10,12 @@ import { map, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { useForeverQuery, useSignalValue } from "reactjrx"
-import { keyBy } from "lodash"
-import { Database } from "../rxdb"
 import { BookDocType, CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject, MangoQuery } from "rxdb"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
 import { useMemo } from "react"
 import { observeBook, observeBooks } from "./dbHelpers"
-import { libraryStateSignal } from "../library/states"
-
-export const getBooksByIds = async (database: Database) => {
-  const result = await database.collections.book.find({}).exec()
-
-  return keyBy(
-    result.map((book) => book.toJSON()),
-    "_id"
-  )
-}
+import { libraryStateSignal } from "../library/books/states"
 
 export const useBooks = ({
   queryObj = {},
@@ -66,17 +55,6 @@ export const useBooks = ({
         map((items) => items.map((item) => item.toJSON()))
       )
   })
-}
-
-export const useBooksDic = () => {
-  const { data, ...rest } = useBooks()
-
-  const transformedData = useMemo(
-    () => (data ? keyBy(data, "_id") : undefined),
-    [data]
-  )
-
-  return { ...rest, data: transformedData }
 }
 
 export const useBookDoc = ({
@@ -182,26 +160,26 @@ export const useBookState = ({
  * @deprecated
  */
 export const getEnrichedBookState = ({
-  bookId,
   normalizedBookDownloadsState,
   protectedTagIds = [],
   tags,
   normalizedLinks,
   normalizedCollections,
-  normalizedBooks = {}
+  book,
+  bookId
 }: {
-  bookId: string
   normalizedBookDownloadsState: ReturnType<
     typeof booksDownloadStateSignal.getValue
   >
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
-  normalizedLinks: ReturnType<typeof useLinksDic>["data"]
+  normalizedLinks: ReturnType<typeof useLinks>["data"]
   normalizedCollections: CollectionDocType[] | undefined
-  normalizedBooks: ReturnType<typeof useBooksDic>["data"]
+  book?: DeepReadonlyObject<BookDocType> | null
+  bookId: string
 }) => {
-  const book = getBookState({
-    book: normalizedBooks[bookId],
+  const enrichedBook = getBookState({
+    book,
     tags,
     collections: normalizedCollections
   })
@@ -210,19 +188,19 @@ export const getEnrichedBookState = ({
     normalizedBookDownloadsState
   })
 
-  const linkId = book?.links[0]
+  const linkId = enrichedBook?.links[0]
 
-  if (!book || !linkId) return undefined
+  if (!enrichedBook || !linkId) return undefined
 
   const firstLink = getLinkState(normalizedLinks, linkId)
 
   const isLocal = firstLink?.type === localPlugin.type
 
   return {
-    ...book,
+    ...enrichedBook,
     ...(downloadState || {}),
     isLocal,
-    isProtected: isBookProtected(protectedTagIds, book)
+    isProtected: isBookProtected(protectedTagIds, enrichedBook)
   }
 }
 
@@ -269,29 +247,29 @@ export const useEnrichedBookState = ({
   protectedTagIds: ReturnType<typeof useProtectedTagIds>["data"]
   tags: ReturnType<typeof useTagsByIds>["data"]
 }) => {
-  const { data: normalizedLinks } = useLinksDic()
+  const { data: normalizedLinks } = useLinks()
   const { data: normalizedCollections } = useCollections()
-  const { data: normalizedBooks } = useBooksDic()
+  const { data: book } = useBook({ id: bookId })
 
   return useMemo(
     () =>
       getEnrichedBookState({
+        book,
         bookId,
         normalizedBookDownloadsState,
         protectedTagIds,
         tags,
         normalizedLinks,
-        normalizedCollections,
-        normalizedBooks
+        normalizedCollections
       }),
     [
       normalizedLinks,
       normalizedCollections,
-      normalizedBooks,
-      bookId,
       normalizedBookDownloadsState,
       protectedTagIds,
-      tags
+      tags,
+      book,
+      bookId
     ]
   )
 }
@@ -306,7 +284,7 @@ export const useBooksAsArrayState = ({
     typeof booksDownloadStateSignal.getValue
   >
 }) => {
-  const { data: books = {}, isPending } = useBooksDic()
+  const { data: books, isPending } = useBooks()
   const { data: visibleBooks } = useBooks()
   const visibleBookIds = useMemo(
     () => visibleBooks?.map((item) => item._id) ?? [],
@@ -324,7 +302,7 @@ export const useBooksAsArrayState = ({
         normalizedBookDownloadsState
       })
 
-      const book = books[id]
+      const book = books?.find((book) => book._id === id)
 
       if (!book) return acc
 
@@ -338,22 +316,6 @@ export const useBooksAsArrayState = ({
     }, bookResult),
     isPending
   }
-}
-
-/**
- * @deprecated
- */
-export const useBookLinksState = ({
-  bookId,
-  tags
-}: {
-  bookId: string
-  tags: ReturnType<typeof useTagsByIds>["data"]
-}) => {
-  const book = useBookState({ bookId, tags })
-  const { data: links } = useLinksDic()
-
-  return book?.links?.map((id) => getLinkState(links, id)) || []
 }
 
 export const books$ = latestDatabase$.pipe(

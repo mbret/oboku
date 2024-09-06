@@ -2,240 +2,109 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
-import { useState, useEffect, useCallback, FC, memo } from "react"
-import { useNavigate } from "react-router-dom"
-import { useMeasure } from "react-use"
-import { Box, Button, Link, Typography, useTheme } from "@mui/material"
-import { useBook } from "../books/states"
-import {
-  createAppReader,
-  ReactReaderProps,
-  readerStateSignal,
-  isBookReadyStateSignal
-} from "./states"
+import { memo, useRef } from "react"
+import { readerSignal } from "./states"
 import { TopBar } from "./navigation/TopBar"
 import { BottomBar } from "./navigation/BottomBar"
-import { useBookResize } from "./layout"
-import { useGestureHandler } from "./gestures"
+import { useGestureHandler } from "./gestures/gestures"
 import { BookLoading } from "./BookLoading"
-import Hammer from "hammerjs"
-import { useCSS } from "../common/utils"
-import { Reader as ObokuReader } from "@prose-reader/react"
-import { useFetchResource } from "./streamer/useFetchResource"
-import { useUpdateBookState } from "./bookHelpers"
-import { FloatingBottom } from "./FloatingBottom"
-import { FONT_SCALE_MAX, FONT_SCALE_MIN } from "./constants"
+import { useSyncBookProgress } from "./progress/useSyncBookProgress"
+import { FloatingBottom } from "./navigation/FloatingBottom"
 import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSettings"
-import { Notification } from "./Notification"
+import { Notification } from "./notifications/Notification"
 import { useReaderSettingsState } from "./settings/states"
-import { useSignalValue } from "reactjrx"
-import { getMetadataFromBook } from "../books/metadata"
+import { useObserve, useSignalValue } from "reactjrx"
 import { useManifest } from "./manifest/useManifest"
-import { FileNotSupportedError } from "./errors.shared"
+import { useCreateReader } from "./useCreateReader"
+import { BookError } from "./BookError"
+import { Box } from "@mui/material"
+import { useLoadManifest } from "./useLoadReader"
+import { Manifest } from "@prose-reader/shared"
 
-export const Reader: FC<{
-  bookId: string
-}> = memo(({ bookId }) => {
-  const reader = useSignalValue(readerStateSignal)
-  const isBookReady = useSignalValue(isBookReadyStateSignal)
-  const readerSettings = useReaderSettingsState()
-  const { data: book } = useBook({
-    id: bookId
-  })
-  const navigate = useNavigate()
-  const [
-    containerMeasureRef,
-    { width: containerWidth, height: containerHeight }
-  ] = useMeasure()
-  const [readerContainerHammer, setReaderContainerHammer] = useState<
-    HammerManager | undefined
-  >(undefined)
-  const styles = useStyles()
-  const [loadOptions, setLoadOptions] = useState<
-    ReactReaderProps["loadOptions"] | undefined
-  >()
-  const {
-    data: manifest,
-    isRarFile,
-    error: manifestError
-  } = useManifest(bookId)
-
-  /**
-   * In case of rar archive, we will use our local resource fetcher
-   */
-  const { fetchResource } = useFetchResource(isRarFile ? bookId : undefined)
-
-  const [readerOptions, setReaderOptions] = useState<
-    ReactReaderProps["options"] | undefined
-  >()
+export const Reader = memo(({ bookId }: { bookId: string }) => {
+  const reader = useSignalValue(readerSignal)
+  const readerState = useObserve(() => reader?.state$, [reader])
+  const readerContainerRef = useRef<HTMLDivElement>(null)
+  const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
+    useManifest(bookId)
   const isBookError = !!manifestError
-  // We don't want to display overlay for comics / manga
-  const showFloatingMenu =
-    reader?.context.manifest?.renditionLayout !== "pre-paginated"
-
-  useBookResize(reader, containerWidth, containerHeight)
-  useGestureHandler(readerContainerHammer)
-  useUpdateBookState(bookId)
-  usePersistReaderInstanceSettings()
-
-  useEffect(() => {
-    return () => {
-      isBookReadyStateSignal.setValue(false)
-    }
-  }, [])
-
-  const onBookReady = useCallback(() => {
-    isBookReadyStateSignal.setValue(true)
-  }, [])
-
-  useEffect(() => {
-    if (
-      manifest &&
-      book &&
-      !readerOptions &&
-      ((isRarFile && fetchResource) || !isRarFile)
-    ) {
-      setReaderOptions({
-        forceSinglePageMode: true,
-        numberOfAdjacentSpineItemToPreLoad:
-          manifest.renditionLayout === "pre-paginated" ? 1 : 1,
-        hammerGesture: {
-          enableFontScalePinch: true,
-          fontScaleMax: FONT_SCALE_MAX,
-          fontScaleMin: FONT_SCALE_MIN
-        },
-        fontScale: readerSettings.fontScale ?? 1,
-        ...(isRarFile && {
-          fetchResource
-        })
-      })
-
-      setLoadOptions({
-        cfi: book.readingStateCurrentBookmarkLocation || undefined
-      })
-    }
-  }, [book, manifest, readerOptions, isRarFile, fetchResource, readerSettings])
-
-  const metadata = getMetadataFromBook(book)
 
   if (isBookError) {
-    if (manifestError instanceof FileNotSupportedError) {
-      return (
-        <div style={styles.infoContainer}>
-          <Box mb={2}>
-            <Typography>
-              Oups! it looks like the book <b>{metadata?.title}</b> is not
-              supported yet. If you would like to be able to open it please
-              visit the{" "}
-              <Link href="https://docs.oboku.me" target="__blank">
-                documentation
-              </Link>{" "}
-              and try to reach out.
-            </Typography>
-          </Box>
-          <Button
-            onClick={() => navigate(-1)}
-            variant="contained"
-            color="primary"
-          >
-            Go back
-          </Button>
-        </div>
-      )
-    }
-    return (
-      <div style={styles.infoContainer}>
-        <Box mb={2}>
-          <Typography variant="h6" align="center">
-            Oups!
-          </Typography>
-          <Typography align="center">
-            Sorry it looks like we are unable to load the book. If the problem
-            persist try to restart the app. If it still does not work,{" "}
-            <Link href="https://docs.oboku.me/support" target="__blank">
-              contact us
-            </Link>
-          </Typography>
-        </Box>
-        <Button
-          onClick={() => navigate(-1)}
-          variant="contained"
-          color="primary"
-        >
-          Go back
-        </Button>
-      </div>
-    )
+    return <BookError bookId={bookId} manifestError={manifestError} />
   }
 
   return (
-    <div
-      style={{
-        position: "relative",
-        height: `100%`,
-        width: `100%`
-      }}
-      ref={containerMeasureRef as any}
-    >
-      <div
-        style={{
-          height: `100%`,
-          width: `100%`,
-          position: "relative"
-        }}
-        ref={(ref) => {
-          if (ref && !readerContainerHammer) {
-            const hammerInstance = new Hammer(ref)
-
-            // @see https://hammerjs.github.io/recognizer-pinch/
-            hammerInstance.get("pinch").set({ enable: true })
-
-            setReaderContainerHammer(hammerInstance)
-          }
-        }}
-      >
-        {!!loadOptions && !!readerOptions && (
-          <ObokuReader
-            options={readerOptions}
-            manifest={manifest}
-            loadOptions={loadOptions}
-            onReady={onBookReady}
-            onReader={readerStateSignal.setValue}
-            createReader={createAppReader}
-          />
-        )}
-        {!isBookReady && <BookLoading />}
-      </div>
-      <Notification />
-      {showFloatingMenu && (
-        <FloatingBottom
-          enableProgress={readerSettings.floatingProgress === "bottom"}
-          enableTime={readerSettings.floatingTime === "bottom"}
+    <>
+      <Box position="relative" height="100%" width="100%">
+        <Box
+          position="relative"
+          height="100%"
+          width="100%"
+          ref={readerContainerRef}
         />
-      )}
-      <TopBar bookId={bookId} />
-      <BottomBar />
-    </div>
+        {readerState !== "ready" && <BookLoading />}
+        <Interface bookId={bookId} />
+      </Box>
+      <Effects
+        bookId={bookId}
+        isUsingWebStreamer={isUsingWebStreamer}
+        manifest={manifest}
+        containerElement={readerContainerRef.current}
+      />
+    </>
   )
 })
 
-const useStyles = () => {
-  const theme = useTheme()
+const Interface = memo(({ bookId }: { bookId: string }) => {
+  const reader = useSignalValue(readerSignal)
+  const readerState = useObserve(() => reader?.state$, [reader])
+  // We don't want to display overlay for comics / manga
+  const showFloatingMenu =
+    reader?.context.manifest?.renditionLayout !== "pre-paginated"
+  const readerSettings = useReaderSettingsState()
 
-  return useCSS(
-    () => ({
-      infoContainer: {
-        margin: "auto",
-        maxWidth: 500,
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(2),
-        display: "flex",
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column"
-      }
-    }),
-    [theme]
+  return (
+    <>
+      {readerState === "ready" && (
+        <>
+          <Notification />
+          {showFloatingMenu && (
+            <FloatingBottom
+              enableProgress={readerSettings.floatingProgress === "bottom"}
+              enableTime={readerSettings.floatingTime === "bottom"}
+            />
+          )}
+          <TopBar bookId={bookId} />
+          <BottomBar bookId={bookId} />
+        </>
+      )}
+    </>
   )
-}
+})
+
+const Effects = memo(
+  ({
+    bookId,
+    isUsingWebStreamer,
+    manifest,
+    containerElement
+  }: {
+    bookId: string
+    isUsingWebStreamer?: boolean
+    manifest?: Manifest
+    containerElement?: HTMLElement | null
+  }) => {
+    useCreateReader({ bookId, isUsingWebStreamer })
+    useLoadManifest({
+      bookId,
+      containerElement,
+      manifest
+    })
+
+    useGestureHandler()
+    useSyncBookProgress(bookId)
+    usePersistReaderInstanceSettings()
+
+    return null
+  }
+)

@@ -1,11 +1,11 @@
 import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
-import { combineLatest, from, mergeMap, of } from "rxjs"
+import { combineLatest, first, from, mergeMap, of } from "rxjs"
 import { withDialog } from "../common/dialogs/withDialog"
 import { getLinksForDataSource } from "../links/dbHelpers"
 import { useRemoveBook } from "../books/helpers"
-import { getDataSourceById } from "./dbHelpers"
-import { withUnknownErrorDialog } from "../common/errors/withUnknownErrorDialog"
+import { observeDataSourceById } from "./dbHelpers"
+import { withUnknownErrorDialog } from "../errors/withUnknownErrorDialog"
 
 export const useRemoveDataSource = () => {
   const { mutateAsync: removeBook } = useRemoveBook()
@@ -33,7 +33,8 @@ export const useRemoveDataSource = () => {
           ]
         }),
         mergeMap(([[db], deleteBooks]) =>
-          from(getDataSourceById(db, id)).pipe(
+          observeDataSourceById(db, id).pipe(
+            first(),
             mergeMap((dataSource) => {
               if (!dataSource) throw new Error("Invalid data source")
 

@@ -2,13 +2,11 @@ import { Suspense, useState } from "react"
 import { AppNavigator } from "./navigation/AppNavigator"
 import { Theme, StyledEngineProvider, Fade, Box } from "@mui/material"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
-import { TourProvider } from "./app-tour/TourProvider"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
 import { plugins } from "./plugins/configure"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./PreloadQueries"
 import { SplashScreen } from "./SplashScreen"
-import { FirstTimeExperienceTours } from "./firstTimeExperience/FirstTimeExperienceTours"
 import { BlurFilterReference } from "./books/BlurFilterReference"
 import "./i18n"
 import { ErrorBoundary } from "@sentry/react"
@@ -33,16 +31,12 @@ import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
 import { RxDbProvider } from "./rxdb/RxDbProvider"
 import { Report } from "./debug/report.shared"
+import { RestoreDownloadState } from "./download/RestoreDownloadState"
 
 // @todo move to sw
 LibArchive.init({
   workerUrl: "/libarchive.js.worker-bundle.js"
 })
-
-declare module "@mui/styles/defaultTheme" {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface DefaultTheme extends Theme {}
-}
 
 const authSignalEntries = [{ signal: authStateSignal, version: 0 }]
 
@@ -50,6 +44,7 @@ export function App() {
   const [loading, setLoading] = useState({
     isPreloadingQueries: true
   })
+  const [isDownloadsHydrated, setIsDownloadsHydrated] = useState(false)
   const { waitingWorker } = useRegisterServiceWorker()
   const profileSignalStorageAdapter = useSignalValue(profileStorageSignal)
 
@@ -64,7 +59,8 @@ export function App() {
   })
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
-  const isAppReady = isAuthHydrated && !loading.isPreloadingQueries
+  const isAppReady =
+    isDownloadsHydrated && isAuthHydrated && !loading.isPreloadingQueries
 
   return (
     <ErrorBoundary
@@ -89,16 +85,11 @@ export function App() {
                     <Fade in={isAppReady}>
                       <Box height="100%">
                         <DialogProvider>
-                          <TourProvider>
-                            <AppNavigator
-                              isProfileHydrated={isProfileHydrated}
-                            />
-                            <FirstTimeExperienceTours />
-                            <ManageBookCollectionsDialog />
-                            <ManageBookTagsDialog />
-                            <ManageTagBooksDialog />
-                            <AuthorizeActionDialog />
-                          </TourProvider>
+                          <AppNavigator isProfileHydrated={isProfileHydrated} />
+                          <ManageBookCollectionsDialog />
+                          <ManageBookTagsDialog />
+                          <ManageTagBooksDialog />
+                          <AuthorizeActionDialog />
                           <UpdateAvailableDialog
                             serviceWorker={waitingWorker}
                           />
@@ -118,6 +109,11 @@ export function App() {
                     ...state,
                     isPreloadingQueries: false
                   }))
+                }}
+              />
+              <RestoreDownloadState
+                onReady={() => {
+                  setIsDownloadsHydrated(true)
                 }}
               />
               <RxDbProvider />

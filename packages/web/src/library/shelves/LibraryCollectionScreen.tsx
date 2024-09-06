@@ -1,41 +1,25 @@
-import { useState, FC, useMemo, useCallback, ComponentProps } from "react"
-import Dialog from "@mui/material/Dialog"
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Stack,
-  TextField,
-  Toolbar
-} from "@mui/material"
+import { useState, useMemo, useCallback, ComponentProps } from "react"
+import { Button, Stack, Toolbar as MuiToolbar } from "@mui/material"
 import { ROUTES } from "../../constants"
 import { useNavigate } from "react-router-dom"
-import { useMeasureElement } from "../../common/utils"
-import { CollectionList } from "../../collections/list/CollectionList"
-import { useDebouncedCallback } from "use-debounce"
+import { CollectionList } from "../../collections/lists/CollectionList"
 import { signal, useSignalValue } from "reactjrx"
-import { useShelves } from "./useShelves"
-import { FilterBar } from "./FilterBar"
-import { useCreateCollection } from "../../collections/useCreateCollection"
-import { collectionsListSignal } from "./state"
+import { useLibraryShelves } from "./useLibraryShelves"
+import { Toolbar } from "./Toolbar"
+import { libraryShelvesFiltersSignal } from "./filters/states"
 import { CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject } from "rxdb"
+import { AddCollectionDialog } from "./AddCollectionDialog"
 
-type Scroll = Parameters<
-  NonNullable<ComponentProps<typeof CollectionList>["onScroll"]>
->[0]
+type RestoreStateFromState = ComponentProps<
+  typeof CollectionList
+>["restoreStateFrom"]
 
-const libraryCollectionScreenPreviousScrollState = signal<Scroll>({
-  key: `libraryCollectionScreenPreviousScrollState`,
-  default: {
-    horizontalScrollDirection: `backward`,
-    scrollLeft: 0,
-    scrollTop: 0,
-    scrollUpdateWasRequested: false,
-    verticalScrollDirection: `forward`
-  }
-})
+const libraryCollectionScreenPreviousScrollState =
+  signal<RestoreStateFromState>({
+    key: `libraryCollectionScreenPreviousScrollState`,
+    default: undefined
+  })
 
 export const LibraryCollectionScreen = () => {
   const navigate = useNavigate()
@@ -45,17 +29,14 @@ export const LibraryCollectionScreen = () => {
     libraryCollectionScreenPreviousScrollState
   )
   const { viewMode } = useSignalValue(
-    collectionsListSignal,
+    libraryShelvesFiltersSignal,
     ({ viewMode }) => ({ viewMode })
   )
-  const { data: collections = [] } = useShelves()
+  const { data: collections } = useLibraryShelves()
 
-  const onScroll = useDebouncedCallback((value: Scroll) => {
-    libraryCollectionScreenPreviousScrollState.setValue(value)
-  }, 300)
   const listHeader = useMemo(
     () => (
-      <Toolbar>
+      <MuiToolbar>
         <Button
           style={{
             width: "100%"
@@ -66,15 +47,12 @@ export const LibraryCollectionScreen = () => {
         >
           Create a new collection
         </Button>
-      </Toolbar>
+      </MuiToolbar>
     ),
     [setIsAddCollectionDialogOpened]
   )
 
   const listRenderHeader = useCallback(() => listHeader, [listHeader])
-
-  const [listHeaderDimTracker, { height: listHeaderHeight }] =
-    useMeasureElement(listHeader)
 
   const onItemClick = useCallback(
     (item: DeepReadonlyObject<CollectionDocType>) => {
@@ -85,71 +63,25 @@ export const LibraryCollectionScreen = () => {
 
   return (
     <Stack flex={1} overflow="hidden">
-      {listHeaderDimTracker}
-      <FilterBar />
-      <CollectionList
-        style={{
-          flex: 1
-        }}
-        data={collections}
-        headerHeight={listHeaderHeight}
-        renderHeader={listRenderHeader}
-        onItemClick={onItemClick}
-        onScroll={onScroll}
-        viewMode={viewMode}
-        initialScrollLeft={libraryCollectionScreenPreviousScroll.scrollLeft}
-        initialScrollTop={libraryCollectionScreenPreviousScroll.scrollTop}
-      />
+      <Toolbar />
+      {!!collections && (
+        <CollectionList
+          style={{
+            flex: 1
+          }}
+          data={collections}
+          renderHeader={listRenderHeader}
+          onItemClick={onItemClick}
+          viewMode={viewMode}
+          onStateChange={libraryCollectionScreenPreviousScrollState.setValue}
+          restoreStateFrom={libraryCollectionScreenPreviousScroll}
+          restoreScrollId="libraryShelves"
+        />
+      )}
       <AddCollectionDialog
         onClose={() => setIsAddCollectionDialogOpened(false)}
         open={isAddCollectionDialogOpened}
       />
     </Stack>
-  )
-}
-
-const AddCollectionDialog: FC<{
-  open: boolean
-  onClose: () => void
-}> = ({ onClose, open }) => {
-  const [name, setName] = useState("")
-  const { mutate: addCollection } = useCreateCollection()
-
-  const onInnerClose = () => {
-    setName("")
-    onClose()
-  }
-
-  return (
-    <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>Create a new collection</DialogTitle>
-      <DialogContent>
-        <TextField
-          autoFocus
-          id="name"
-          label="Name"
-          type="text"
-          fullWidth
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onInnerClose} color="primary">
-          Cancel
-        </Button>
-        <Button
-          onClick={() => {
-            onInnerClose()
-            if (name) {
-              addCollection({ name })
-            }
-          }}
-          color="primary"
-        >
-          Add
-        </Button>
-      </DialogActions>
-    </Dialog>
   )
 }

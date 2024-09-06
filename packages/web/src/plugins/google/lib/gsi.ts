@@ -23,7 +23,7 @@ export const gsiOrThrow$ = gsiSignal.subject.pipe(
 )
 
 export const useLoadGsi = () => {
-  const { mutate } = useMutation({
+  return useMutation({
     mapOperator: "switch",
     mutationFn: () =>
       loadScript({
@@ -41,8 +41,4 @@ export const useLoadGsi = () => {
         })
       )
   })
-
-  useEffect(() => {
-    mutate()
-  }, [mutate])
 }

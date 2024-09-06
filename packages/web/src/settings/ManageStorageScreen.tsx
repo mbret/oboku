@@ -23,15 +23,14 @@ import { BookList } from "../books/bookList/BookList"
 import { bookActionDrawerSignal } from "../books/drawer/BookActionsDrawer"
 import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
-import { difference } from "lodash"
+import { difference } from "@oboku/shared"
 import Alert from "@mui/material/Alert"
 import { Report } from "../debug/report.shared"
 import { useEffect } from "react"
-import { useMutation } from "reactjrx"
-import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
 import { useRemoveCoversInCache } from "../covers/useRemoveCoversInCache"
 import { useDownloadedBooks } from "../download/useDownloadedBooks"
 import { useBooks } from "../books/states"
+import { useRemoveAllDownloads } from "./useRemoveAllDownloads"
 
 export const ManageStorageScreen = () => {
   const books = useDownloadedBooks()
@@ -44,32 +43,26 @@ export const ManageStorageScreen = () => {
   const { quotaUsed, quotaInGb, usedInMb, covers, coversWightInMb } =
     useStorageUse([books])
   const { mutate: removeCoversInCache } = useRemoveCoversInCache()
-  const removeDownloadFile = useRemoveDownloadFile()
-  const deleteAllDownloadedFiles = useRemoveAllDownloadedFiles()
-  const { data: downloadedBookIds = [], refetch: refetchDownloadedFilesInfo } =
+  const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
+  const { data: downloadedBooks = [], refetch: refetchDownloadedFilesInfo } =
     useDownloadedFilesInfo()
+  const downloadedBookIds = downloadedBooks.map(({ id }) => id)
   const extraDownloadFilesIds = difference(downloadedBookIds, bookIds)
   const theme = useTheme()
   const bookIdsToDisplay = useMemo(
     () => bookIds.filter((id) => visibleBookIds?.includes(id)),
     [bookIds, visibleBookIds]
   )
-  const { mutate: onDeleteAllDownloadsClick } = useMutation({
-    mutationFn: async () => {
-      const isConfirmed = confirm(
-        "Are you sure you want to delete all downloads at once?"
-      )
-
-      if (isConfirmed) {
-        await deleteAllDownloadedFiles(bookIds)
-
-        refetchDownloadedFilesInfo()
-      }
+  const { mutate: removeAllDownloads } = useRemoveAllDownloads({
+    onSuccess: () => {
+      refetchDownloadedFilesInfo()
     }
   })
 
   const removeExtraBooks = useCallback(() => {
-    Promise.all(extraDownloadFilesIds.map((id) => removeDownloadFile(id)))
+    Promise.all(
+      extraDownloadFilesIds.map((id) => removeDownloadFile({ bookId: id }))
+    )
       .then(() => refetchDownloadedFilesInfo())
       .catch(Report.error)
   }, [refetchDownloadedFilesInfo, extraDownloadFilesIds, removeDownloadFile])
@@ -127,13 +120,13 @@ export const ManageStorageScreen = () => {
           />
         </ListItemButton>
         {bookIdsToDisplay.length > 0 && (
-          <ListItemButton onClick={() => onDeleteAllDownloadsClick()}>
+          <ListItemButton onClick={() => removeAllDownloads()}>
             <ListItemIcon>
               <DeleteRounded />
             </ListItemIcon>
             <ListItemText
               primary="Delete all downloads"
-              secondary="It will not delete books only available on this device"
+              secondary="Local books will not be deleted"
             />
           </ListItemButton>
         )}

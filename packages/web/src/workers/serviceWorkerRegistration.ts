@@ -3,6 +3,7 @@
 
 import { Report } from "../debug/report.shared"
 import { registerCommunication } from "./communication.web"
+import { serviceWorkerReadySignal } from "./states"
 
 // This lets the app load faster on subsequent visits in production, and gives
 // it offline capabilities. However, it also means that developers (and users)
@@ -170,3 +171,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
       )
     })
 }
+
+navigator.serviceWorker.ready.then(() => [
+  serviceWorkerReadySignal.setValue(true)
+])

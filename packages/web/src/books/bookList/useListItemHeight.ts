@@ -34,14 +34,14 @@ export const useListItemHeight = ({
     densityMultiplier
 
   const itemHeight =
-    viewMode === "grid"
+    viewMode === "grid" || viewMode === "horizontal"
       ? undefined
       : viewMode === "list"
         ? listItemHeight
         : compactItemHeight
 
   const itemMargin =
-    viewMode === "grid"
+    viewMode === "grid" || viewMode === "horizontal"
       ? 0
       : viewMode === "list"
         ? listItemMargin

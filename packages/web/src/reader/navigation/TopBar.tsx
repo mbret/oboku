@@ -1,9 +1,5 @@
-import { useCallback, useEffect, useState } from "react"
-import {
-  isBookReadyStateSignal,
-  isMenuShownStateSignal,
-  readerStateSignal
-} from "../states"
+import { memo, useCallback, useEffect, useState } from "react"
+import { isMenuShownStateSignal, readerSignal } from "../states"
 import {
   AppBar,
   IconButton,
@@ -20,22 +16,19 @@ import {
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import screenfull from "screenfull"
 import { Report } from "../../debug/report.shared"
-import { useCSS } from "../../common/utils"
-import { useMoreDialog } from "../MoreDialog"
+import { useMoreDialog } from "./MoreDialog"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useShowRemoveBookOnExitDialog } from "./useShowRemoveBookOnExitDialog"
-import { NEVER } from "rxjs"
 
-export const TopBar = ({ bookId }: { bookId: string }) => {
+export const TopBar = memo(({ bookId }: { bookId: string }) => {
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
-  const isBookReady = useSignalValue(isBookReadyStateSignal)
-  const classes = useStyles({ isMenuShow })
-  const reader = useSignalValue(readerStateSignal)
+  const reader = useSignalValue(readerSignal)
+  const readerState = useObserve(() => reader?.state$, [reader])
   const { goBack } = useSafeGoBack()
   const [isFullScreen, setIsFullScreen] = useState(
     screenfull.isEnabled && screenfull.isFullscreen
   )
-  const { manifest } = useObserve(reader?.context.state$ ?? NEVER) || {}
+  const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
   const { title, filename } = manifest ?? {}
   const theme = useTheme()
   const { toggleMoreDialog } = useMoreDialog()
@@ -74,7 +67,16 @@ export const TopBar = ({ bookId }: { bookId: string }) => {
   }, [])
 
   return (
-    <AppBar position="fixed" elevation={0} style={classes.appBar}>
+    <AppBar
+      position="fixed"
+      elevation={0}
+      style={{
+        top: 0,
+        left: 0,
+        width: "100%",
+        visibility: isMenuShow ? "visible" : "hidden"
+      }}
+    >
       <Toolbar style={{ flex: 1 }}>
         <IconButton
           edge="start"
@@ -103,7 +105,7 @@ export const TopBar = ({ bookId }: { bookId: string }) => {
         <div>
           <IconButton
             color="inherit"
-            disabled={!isBookReady}
+            disabled={readerState === "idle"}
             onClick={toggleMoreDialog}
             size="large"
           >
@@ -123,18 +125,4 @@ export const TopBar = ({ bookId }: { bookId: string }) => {
       </Toolbar>
     </AppBar>
   )
-}
-
-const useStyles = ({ isMenuShow }: { isMenuShow: boolean }) => {
-  return useCSS(
-    () => ({
-      appBar: {
-        top: 0,
-        left: 0,
-        width: "100%",
-        visibility: isMenuShow ? "visible" : "hidden"
-      }
-    }),
-    [isMenuShow]
-  )
-}
+})

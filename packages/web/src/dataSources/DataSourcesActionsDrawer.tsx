@@ -1,6 +1,5 @@
 import {
   Drawer,
-  ListItem,
   List,
   ListItemIcon,
   ListItemText,
@@ -14,12 +13,12 @@ import {
   RadioButtonUncheckedOutlined,
   CheckCircleRounded
 } from "@mui/icons-material"
-import { useSynchronizeDataSource } from "./helpers"
 import { useDataSource } from "./useDataSource"
-import { toggleDatasourceProtected } from "./triggers"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../library/states"
+import { libraryStateSignal } from "../library/books/states"
 import { useRemoveDataSource } from "./useRemoveDataSource"
+import { useDataSourceIncrementalModify } from "./useDataSourceIncrementalModify"
+import { useSynchronizeDataSource } from "./useSynchronizeDataSource"
 
 export const DataSourcesActionsDrawer: FC<{
   openWith: string
@@ -29,6 +28,7 @@ export const DataSourcesActionsDrawer: FC<{
   const { mutate: removeDataSource } = useRemoveDataSource()
   const { data: dataSource } = useDataSource(openWith)
   const library = useSignalValue(libraryStateSignal)
+  const { mutate: modifyDataSource } = useDataSourceIncrementalModify()
 
   return (
     <>
@@ -46,17 +46,22 @@ export const DataSourcesActionsDrawer: FC<{
             <ListItemText primary="Synchronize" />
           </ListItemButton>
         </List>
-        <ListItem
-          button
+        <ListItemButton
           onClick={() => {
-            toggleDatasourceProtected(openWith)
-
             const datasourceWillBeHidden =
               !dataSource?.isProtected && !library.isLibraryUnlocked
 
             if (datasourceWillBeHidden) {
               onClose()
             }
+
+            modifyDataSource({
+              id: openWith,
+              mutationFunction: (old) => ({
+                ...old,
+                isProtected: !old.isProtected
+              })
+            })
           }}
         >
           <ListItemIcon>
@@ -67,11 +72,10 @@ export const DataSourcesActionsDrawer: FC<{
             primary="Mark as protected"
             secondary="This will lock and hide books behind it. Use unlock features to display them"
           />
-        </ListItem>
+        </ListItemButton>
         <Divider />
         <List>
-          <ListItem
-            button
+          <ListItemButton
             onClick={() => {
               onClose()
               removeDataSource({ id: openWith })
@@ -81,7 +85,7 @@ export const DataSourcesActionsDrawer: FC<{
               <DeleteForeverRounded />
             </ListItemIcon>
             <ListItemText primary="Remove the data source" />
-          </ListItem>
+          </ListItemButton>
         </List>
       </Drawer>
     </>

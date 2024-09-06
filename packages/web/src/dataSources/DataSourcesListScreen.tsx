@@ -4,13 +4,13 @@ import {
   Button,
   Toolbar,
   List,
-  ListItem,
   ListItemText,
   SvgIcon,
   ListItemIcon,
   Typography,
   useTheme,
-  Box
+  Box,
+  ListItemButton
 } from "@mui/material"
 import { Alert } from "@mui/material"
 import { DataSourcesAddDrawer } from "./DataSourcesAddDrawer"
@@ -21,7 +21,7 @@ import { plugins as dataSourcePlugins } from "../plugins/configure"
 import { AddDataSource } from "./AddDataSource"
 import { ObokuErrorCode } from "@oboku/shared"
 import { useDataSources } from "./useDataSources"
-import { ObokuPlugin } from "../plugins/plugin-front"
+import { ObokuPlugin } from "../plugins/types"
 
 export const DataSourcesListScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
@@ -70,9 +70,8 @@ export const DataSourcesListScreen = () => {
             )
 
             return (
-              <ListItem
+              <ListItemButton
                 key={syncSource._id}
-                button
                 onClick={() => setIsActionsDrawerOpenWith(syncSource._id)}
               >
                 {dataSource && (
@@ -117,7 +116,7 @@ export const DataSourcesListScreen = () => {
                   }
                 />
                 {syncSource?.isProtected && <LockRounded color="primary" />}
-              </ListItem>
+              </ListItemButton>
             )
           })}
         </List>

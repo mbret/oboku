@@ -10,9 +10,9 @@ import { getMetadataFromBook } from "../books/metadata"
 import { useCreateBackToBookDialog } from "./useCreateBackToBookDialog"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { from, switchMap } from "rxjs"
-import { CancelError } from "../common/errors/errors"
-import { catchCancelError } from "../common/errors/catchCancelError"
 import { ReadingStateState } from "@oboku/shared"
+import { CancelError } from "../errors/errors.shared"
+import { catchCancelError } from "../errors/catchCancelError"
 
 const BASE_READER_ROUTE = ROUTES.READER.replace(`/:id`, ``)
 

@@ -1,12 +1,15 @@
-import { Observable, share, tap } from "rxjs"
-import { CancelError } from "../errors/errors"
+import { Observable, share } from "rxjs"
 import { DialogType, dialogSignal } from "./state"
+import { CancelError } from "../../errors/errors.shared"
 
 let generatedId = 0
 
-export const createDialog = <Result = undefined>(
-  dialog: Omit<DialogType<Result>, "id">
-) => {
+export const createDialog = <Result = undefined>({
+  autoStart = false,
+  ...dialog
+}: Omit<DialogType<Result>, "id"> & {
+  autoStart?: boolean
+}) => {
   generatedId++
   const id = generatedId.toString()
 
@@ -56,6 +59,10 @@ export const createDialog = <Result = undefined>(
       }
     }
   }).pipe(share())
+
+  if (autoStart) {
+    $.subscribe()
+  }
 
   return { id, $ }
 }

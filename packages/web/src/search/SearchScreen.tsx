@@ -13,7 +13,6 @@ import {
   Typography,
   useTheme
 } from "@mui/material"
-import makeStyles from "@mui/styles/makeStyles"
 import React, { useCallback, useMemo, useRef, useState } from "react"
 import {
   generatePath,
@@ -23,8 +22,7 @@ import {
 } from "react-router-dom"
 import { useMount } from "react-use"
 import { BookList } from "../books/bookList/BookList"
-import { CollectionList } from "../collections/list/CollectionList"
-import { useCSS } from "../common/utils"
+import { CollectionList } from "../collections/lists/CollectionList"
 import { ROUTES } from "../constants"
 import { SEARCH_MAX_PREVIEW_ITEMS } from "../constants.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
@@ -69,26 +67,32 @@ const SeeMore = ({
   )
 }
 
-const useClasses = makeStyles((theme) => ({
-  inputRoot: {
-    color: "inherit",
-    width: "100%"
-  },
-  inputInput: {
+const SearchInput = styled(InputBase)(({ theme }) => ({
+  ".MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 1),
     width: "100%"
   }
 }))
 
+const StyledForm = styled(`form`)(({ theme }) => ({
+  position: "relative",
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  "&:hover": {
+    backgroundColor: alpha(theme.palette.common.white, 0.25)
+  },
+  marginLeft: 0,
+  width: "100%"
+}))
+
 export const SearchScreen = () => {
-  const { styles } = useStyles()
-  const classes = useClasses()
   const [searchParams, setSearchParams] = useSearchParams()
   const value = useSignalValue(searchStateSignal)
   const { data: collections = [] } = useCollectionsForSearch(value)
   const { data: books = [] } = useBooksForSearch(value)
   const inputRef = useRef<HTMLElement>()
   const navigate = useNavigate()
+  const theme = useTheme()
   const [bookExpanded, setBookExpanded] = useState(true)
   const [collectionsExpanded, setCollectionsExpanded] = useState(true)
 
@@ -107,20 +111,28 @@ export const SearchScreen = () => {
   )
 
   return (
-    <div style={styles.container}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column" as const,
+        overflow: "hidden",
+        flex: 1,
+        height: "100%"
+      }}
+    >
       <TopBarNavigation
         showBack
-        rightComponent={
-          <form style={styles.search} autoComplete="off" onSubmit={onSubmit}>
-            <InputBase
+        middleComponent={
+          <StyledForm autoComplete="off" onSubmit={onSubmit}>
+            <SearchInput
               placeholder="Alice in wonderland, myTag, ..."
               value={value || ""}
+              sx={{
+                color: "inherit",
+                width: "100%"
+              }}
               inputRef={inputRef as any}
               autoFocus
-              classes={{
-                root: classes.inputRoot,
-                input: classes.inputInput
-              }}
               inputProps={{ "aria-label": "search" }}
               onChange={(e) => {
                 searchStateSignal.setValue(e.target.value)
@@ -134,7 +146,7 @@ export const SearchScreen = () => {
                 )
               }}
             />
-          </form>
+          </StyledForm>
         }
       />
       <ListActionsToolbar />
@@ -220,33 +232,4 @@ export const SearchScreen = () => {
       </Box>
     </div>
   )
-}
-
-const useStyles = () => {
-  const theme = useTheme()
-
-  const styles = useCSS(
-    () => ({
-      container: {
-        display: "flex",
-        flexDirection: "column" as const,
-        overflow: "hidden",
-        flex: 1,
-        height: "100%"
-      },
-      search: {
-        position: "relative",
-        borderRadius: theme.shape.borderRadius,
-        backgroundColor: alpha(theme.palette.common.white, 0.15),
-        "&:hover": {
-          backgroundColor: alpha(theme.palette.common.white, 0.25)
-        },
-        marginLeft: 0,
-        width: "100%"
-      }
-    }),
-    [theme]
-  )
-
-  return { styles }
 }

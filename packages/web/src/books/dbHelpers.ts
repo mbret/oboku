@@ -3,7 +3,25 @@ import { BookDocType } from "@oboku/shared"
 import { DeepReadonlyArray, MangoQueryNoLimit } from "rxdb/dist/types/types"
 import { Database } from "../rxdb"
 import { map, of, switchMap } from "rxjs"
-import { intersection } from "lodash"
+import { intersection } from "@oboku/shared"
+
+export const getBookById = async ({
+  database,
+  id
+}: {
+  database: Database
+  id: string
+}) => {
+  const book = await database.collections.book
+    .findOne({
+      selector: {
+        _id: id
+      }
+    })
+    .exec()
+
+  return book?.toJSON()
+}
 
 export const observeBook = ({
   db,

@@ -1,6 +1,5 @@
 import { memo, useCallback } from "react"
 import List from "@mui/material/List"
-import ListItem from "@mui/material/ListItem"
 import ListItemText from "@mui/material/ListItemText"
 import {
   SyncRounded,
@@ -21,9 +20,9 @@ import {
   Divider,
   ListItemIcon,
   Typography,
-  ListItemButton
+  ListItemButton,
+  useTheme
 } from "@mui/material"
-import makeStyles from "@mui/styles/makeStyles"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
 import { useBookDoc, useIsBookLocal } from "../states"
 import { Cover } from "../Cover"
@@ -31,7 +30,6 @@ import { ReadingStateState } from "@oboku/shared"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
 import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
-import { markAsInterested } from "../triggers"
 import { useBookDownloadState } from "../../download/states"
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "./useRemoveHandler"
@@ -86,12 +84,12 @@ export const BookActionsDrawer = memo(() => {
   const { data: link } = useLink({ id: book?.links[0] })
   const downloadState = useBookDownloadState(bookId || "-1")
   const { data: isLocal } = useIsBookLocal({ id: bookId })
-  const removeDownloadFile = useRemoveDownloadFile()
+  const { mutate: removeDownloadFile } = useRemoveDownloadFile()
   const refreshBookMetadata = useRefreshBookMetadata()
   const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
-  const classes = useStyles()
   const opened = !!bookId
   const { t } = useTranslation()
+  const theme = useTheme()
 
   const { closeModalWithNavigation: handleClose } = useModalNavigationControl(
     {
@@ -116,11 +114,45 @@ export const BookActionsDrawer = memo(() => {
     <Drawer anchor="bottom" open={opened} onClose={() => handleClose()}>
       {book && (
         <>
-          <div className={classes.topContainer}>
-            <div className={classes.coverContainer}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              marginLeft: theme.spacing(2),
+              marginRight: theme.spacing(2),
+              marginTop: theme.spacing(2),
+              height: 60,
+              [theme.breakpoints.up("sm")]: {
+                height: 100
+              },
+              [theme.breakpoints.up("md")]: {
+                height: 130
+              }
+            }}
+          >
+            <div
+              style={{
+                width: 60 * theme.custom.coverAverageRatio,
+                [theme.breakpoints.up("sm")]: {
+                  width: 100 * theme.custom.coverAverageRatio
+                },
+                [theme.breakpoints.up("md")]: {
+                  width: 130 * theme.custom.coverAverageRatio
+                },
+                height: "100%",
+                flexShrink: 0
+              }}
+            >
               <Cover bookId={book._id} />
             </div>
-            <div className={classes.topDetails}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                marginLeft: 10,
+                overflow: "hidden"
+              }}
+            >
               <Typography variant="body1" noWrap>
                 {metadata.title}
               </Typography>
@@ -193,11 +225,12 @@ export const BookActionsDrawer = memo(() => {
               <ListItemButton
                 onClick={() => {
                   handleClose(() => {
-                    bookId &&
-                      markAsInterested({
-                        id: bookId,
+                    incrementalBookPatch({
+                      doc: book,
+                      patch: {
                         isNotInterested: !book.isNotInterested
-                      })
+                      }
+                    })
                   })
                 }}
               >
@@ -263,7 +296,7 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemButton
                   onClick={() => {
                     handleClose()
-                    bookId && removeDownloadFile(bookId)
+                    bookId && removeDownloadFile({ bookId })
                   }}
                 >
                   <ListItemIcon>
@@ -293,15 +326,14 @@ export const BookActionsDrawer = memo(() => {
             <>
               <Divider />
               <List>
-                <ListItem
-                  button
+                <ListItemButton
                   onClick={() => bookId && onRemovePress({ bookId })}
                 >
                   <ListItemIcon>
                     <DeleteForeverRounded />
                   </ListItemIcon>
                   <ListItemText primary="Remove from library" />
-                </ListItem>
+                </ListItemButton>
               </List>
             </>
           )}
@@ -310,37 +342,3 @@ export const BookActionsDrawer = memo(() => {
     </Drawer>
   )
 })
-
-const useStyles = makeStyles((theme) => ({
-  topContainer: {
-    display: "flex",
-    flexDirection: "row",
-    marginLeft: theme.spacing(2),
-    marginRight: theme.spacing(2),
-    marginTop: theme.spacing(2),
-    height: 60,
-    [theme.breakpoints.up("sm")]: {
-      height: 100
-    },
-    [theme.breakpoints.up("md")]: {
-      height: 130
-    }
-  },
-  coverContainer: {
-    width: 60 * theme.custom.coverAverageRatio,
-    [theme.breakpoints.up("sm")]: {
-      width: 100 * theme.custom.coverAverageRatio
-    },
-    [theme.breakpoints.up("md")]: {
-      width: 130 * theme.custom.coverAverageRatio
-    },
-    height: "100%",
-    flexShrink: 0
-  },
-  topDetails: {
-    display: "flex",
-    flexDirection: "column",
-    marginLeft: 10,
-    overflow: "hidden"
-  }
-}))

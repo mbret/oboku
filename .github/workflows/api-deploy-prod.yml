@@ -6,6 +6,9 @@ on:
   push:
     branches: [master]
 
+env:
+  SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   deploy-aws:
@@ -24,3 +27,4 @@ jobs:
       CONTACT_TO_ADDRESS: ${{ secrets.CONTACT_TO_ADDRESS }}
       FIREBASE_CONFIG: ${{ secrets.FIREBASE_CONFIG }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}

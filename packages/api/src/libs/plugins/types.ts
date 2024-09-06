@@ -1,4 +1,3 @@
-import { Request } from "request"
 import {
   LinkDocType,
   dataSourceHelpers,
@@ -12,6 +11,7 @@ import fetch from "node-fetch"
 import createNano from "nano"
 import { Metadata } from "@libs/metadata/types"
 import { SyncReport } from "@libs/sync/SyncReport"
+import { IncomingMessage } from "http"
 
 export { dataSourceHelpers, cheerio, fetch }
 
@@ -34,7 +34,6 @@ export type SynchronizeAbleDataSource = {
 type Helpers = {
   refreshBookMetadata: (opts: { bookId: string }) => Promise<any>
   getDataSourceData: <Data>() => Promise<Partial<Data>>
-  isBookCoverExist: (bookId: string) => Promise<boolean>
   findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
     model: M,
     query: SafeMangoQuery<D>
@@ -82,7 +81,7 @@ export type DataSourcePlugin = {
     link: LinkDocType,
     credentials?: any
   ) => Promise<{
-    stream: NodeJS.ReadableStream | Request
+    stream: NodeJS.ReadableStream | IncomingMessage
     metadata: Omit<Metadata, "type"> & { contentType?: string }
   }>
   sync?: (

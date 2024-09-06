@@ -1,7 +1,7 @@
-import { Dropbox, DropboxResponse, files } from "dropbox"
+import { Dropbox, type DropboxResponse, type files } from "dropbox"
 import { authUser } from "./lib/auth"
 import { extractIdFromResourceId } from "./helpers"
-import { ObokuPlugin } from "../plugin-front"
+import { ObokuPlugin } from "../types"
 import { from, map, mergeMap } from "rxjs"
 
 // this property is somehow missing. must be a bug in dropbox

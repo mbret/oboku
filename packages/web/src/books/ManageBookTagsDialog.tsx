@@ -3,7 +3,7 @@ import { FC } from "react"
 import { useTagIds } from "../tags/helpers"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useAddTagToBook, useRemoveTagFromBook } from "./helpers"
-import { useBook, useBookState } from "./states"
+import { useBook } from "./states"
 import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
 const openManageBookTagsDialogStateSignal = signal<string | undefined>({

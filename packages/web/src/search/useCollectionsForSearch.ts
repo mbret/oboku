@@ -1,5 +1,5 @@
 import { sortByTitleComparator } from "@oboku/shared"
-import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
+import { getCollectionComputedMetadata } from "../collections/getCollectionComputedMetadata"
 import { useMemo } from "react"
 import { useSignalValue } from "reactjrx"
 import { searchListActionsToolbarSignal } from "./list/states"
@@ -20,7 +20,7 @@ export const useCollectionsForSearch = (search: string) => {
     () =>
       data
         ?.filter((item) => {
-          const name = getMetadataFromCollection(item).title ?? ""
+          const name = getCollectionComputedMetadata(item).title ?? ""
 
           const searchRegex = new RegExp(
             search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
@@ -32,8 +32,8 @@ export const useCollectionsForSearch = (search: string) => {
         })
         .sort((a, b) =>
           sortByTitleComparator(
-            getMetadataFromCollection(a).title || "",
-            getMetadataFromCollection(b).title || ""
+            getCollectionComputedMetadata(a).title || "",
+            getCollectionComputedMetadata(b).title || ""
           )
         )
         .map((item) => item._id),

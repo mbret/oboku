@@ -5,8 +5,8 @@ import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useLock } from "../common/BlockingBackdrop"
 import { useWithAuthorization } from "../auth/AuthorizeActionDialog"
 import { Report } from "../debug/report.shared"
-import { CancelError } from "../common/errors/errors"
 import { createDialog } from "../common/dialogs/createDialog"
+import { CancelError } from "../errors/errors.shared"
 
 export const useRemoveAllContents = () => {
   const { mutateAsync: sync } = useSyncReplicate()
@@ -84,6 +84,7 @@ export const useRemoveAllContents = () => {
           Report.error(e)
 
           createDialog({
+            autoStart: true,
             title: "Something went wrong!",
             content:
               "Something went wrong during the process. No need to panic since you already wanted to destroy everything anyway. If everything is gone, you should not worry too much, if you still have contents, try to do it again"

@@ -13,7 +13,10 @@ export const RecentlyAddedSection = memo(() => {
           <Typography variant="h6" component="h1" padding={1} paddingTop={2}>
             Recently added
           </Typography>
-          <HomeBookList data={recentlyAddedBooks} />
+          <HomeBookList
+            data={recentlyAddedBooks}
+            restoreScrollId="homeScreenRecentlyAddedBookList"
+          />
         </Box>
       )}
     </>

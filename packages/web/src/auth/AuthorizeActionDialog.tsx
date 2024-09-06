@@ -13,9 +13,9 @@ import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { signal, useSignalValue } from "reactjrx"
 import { Observable, from, map, mergeMap, of } from "rxjs"
-import { CancelError } from "../common/errors/errors"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getSettings } from "../settings/dbHelpers"
+import { CancelError } from "../errors/errors.shared"
 
 const FORM_ID = "LockActionBehindUserPasswordDialog"
 
@@ -63,21 +63,18 @@ export const AuthorizeActionDialog: FC<{}> = () => {
     }
   })
 
-  const {
-    mutate: validatePassword,
-    reset: resetValidatePasswordMutation,
-    error
-  } = useValidateAppPassword({
-    onSuccess: () => {
-      onClose()
-      action && action()
-    },
-    onError: () => {
-      setError("password", {
-        message: "Invalid"
-      })
-    }
-  })
+  const { mutate: validatePassword, reset: resetValidatePasswordMutation } =
+    useValidateAppPassword({
+      onSuccess: () => {
+        onClose()
+        action && action()
+      },
+      onError: () => {
+        setError("password", {
+          message: "Invalid"
+        })
+      }
+    })
 
   const onClose = () => {
     actionSignal.setValue(undefined)

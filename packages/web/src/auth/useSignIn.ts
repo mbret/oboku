@@ -3,13 +3,13 @@ import { useCallback } from "react"
 import { catchError, finalize, from, of, switchMap, tap } from "rxjs"
 import { lock, unlock } from "../common/BlockingBackdrop"
 import { API_URL } from "../constants"
-import { CancelError } from "../common/errors/errors"
 import { useReCreateDb } from "../rxdb"
 import { authStateSignal } from "./authState"
 import { httpClient } from "../http/httpClient"
 import { setProfile } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
 import { currentProfileSignal } from "../profile/currentProfile"
+import { CancelError } from "../errors/errors.shared"
 
 const provider = new GoogleAuthProvider()
 

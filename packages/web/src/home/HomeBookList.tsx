@@ -16,10 +16,9 @@ export const HomeBookList = memo((props: ComponentProps<typeof BookList>) => {
 
   return (
     <BookList
-      isHorizontal
       itemWidth={itemWidth}
       style={listStyle}
-      viewMode="grid"
+      viewMode="horizontal"
       {...props}
     />
   )

@@ -1,27 +1,32 @@
 import {
-  Button,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   ListSubheader,
   Stack
 } from "@mui/material"
 import { MoreVertRounded } from "@mui/icons-material"
-import { FC, useState } from "react"
+import { FC, memo, useState } from "react"
 import { useDataSourcePlugin } from "../../dataSources/helpers"
 import { Report } from "../../debug/report.shared"
-import { useBookLinksState } from "../states"
+import { useBook } from "../states"
 import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
-import { upsertBookLink } from "../triggers"
-import { useTagsByIds } from "../../tags/helpers"
 import { createDialog } from "../../common/dialogs/createDialog"
+import { useUpsertBookLink } from "../useUpdateBookLink"
+import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
+import { useLink } from "../../links/states"
 
-export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
-  const link = useBookLinksState({ bookId, tags: useTagsByIds().data })[0]
+export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
+  const { data: book } = useBook({ id: bookId })
+  const { data: link } = useLink({ id: book?.links[0] })
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
   const [isSelectItemOpened, setIsSelectItemOpened] = useState(false)
   const createRequestPopupDialog = useCreateRequestPopupDialog()
+  const refreshMetadata = useRefreshBookMetadata()
+  const { mutate: upsertBookLink } = useUpsertBookLink({
+    onSuccess: () => [refreshMetadata(bookId)]
+  })
 
   return (
     <>
@@ -39,15 +44,14 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
         }
       >
         {!!link && !!dataSourcePlugin && (
-          <ListItem
+          <ListItemButton
             key={link?._id}
-            button
             sx={{
               px: [null, 3]
             }}
             onClick={() => {
               if (!dataSourcePlugin?.SelectItemComponent) {
-                createDialog({ preset: "NOT_IMPLEMENTED" })
+                createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })
               } else {
                 setIsSelectItemOpened(true)
               }
@@ -71,7 +75,7 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
             <Stack width={50} alignItems="center" flexShrink={0}>
               <MoreVertRounded />
             </Stack>
-          </ListItem>
+          </ListItemButton>
         )}
       </List>
       {dataSourcePlugin?.SelectItemComponent && (
@@ -82,6 +86,7 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
           })}
           onClose={(error, item) => {
             setIsSelectItemOpened(false)
+
             if (error) {
               Report.error(error)
             } else {
@@ -98,4 +103,4 @@ export const DataSourceSection: FC<{ bookId: string }> = ({ bookId }) => {
       )}
     </>
   )
-}
+})

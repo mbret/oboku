@@ -27,7 +27,14 @@ export type BookMetadata = {
 }
 
 export type CollectionMetadata = {
-  title?: string
+  title?:
+    | string
+    | {
+        en?: string
+        es?: string
+        ru?: string
+        "ja-ro"?: string
+      }
   aliases?: string[]
   authors?: string[]
   description?: string
@@ -36,6 +43,7 @@ export type CollectionMetadata = {
   startYear?: number
   publisherName?: string
   rating?: number
+  status?: "completed" | "ongoing" | "unknown"
   /**
    * googleBookApi: Metadata scrapped through google book api
    * link: metadata scrapped from the current link
@@ -52,6 +60,7 @@ export type CollectionMetadata = {
     | "biblioreads"
     | "comicvine"
     | "mangaupdates"
+    | "mangadex"
 }
 
 export const COLLECTION_METADATA_LOCK_MN = 5

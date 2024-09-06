@@ -1,13 +1,12 @@
-import { CollectionDocType, directives, ReadingStateState } from "@oboku/shared"
+import { CollectionDocType, difference, ReadingStateState } from "@oboku/shared"
 import { useLocalSettings } from "../settings/states"
 import { useForeverQuery, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { map, switchMap, tap } from "rxjs"
+import { map, switchMap } from "rxjs"
 import { MangoQuery } from "rxdb"
-import { getMetadataFromCollection } from "./getMetadataFromCollection"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
-import { libraryStateSignal } from "../library/states"
-import { difference, intersection } from "lodash"
+import { libraryStateSignal } from "../library/books/states"
+import { intersection } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
 
 export type Collection = CollectionDocType
@@ -34,7 +33,6 @@ export const useCollections = ({
   ids?: DeepReadonlyArray<string>
   includeProtected?: boolean
 } = {}) => {
-  const { hideDirectivesFromCollectionName } = useLocalSettings()
   const serializedBookIds = JSON.stringify(bookIds)
   const serializedIds = JSON.stringify(ids)
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
@@ -51,8 +49,8 @@ export const useCollections = ({
         serializedIds,
         showCollectionWithProtectedContent,
         includeProtected,
-        hideDirectivesFromCollectionName,
-        isNotInterested
+        isNotInterested,
+        readingState
       },
       queryObj
     ],
@@ -92,119 +90,108 @@ export const useCollections = ({
                 }
               }
 
-              return db.collections.obokucollection.find(finalQueryObj).$.pipe(
-                /**
-                 * @important
-                 *
-                 * Fitler out collections containing protected books
-                 */
-                map((collections) =>
-                  collections.filter((collection) => {
-                    if (
-                      includeProtected ||
-                      collection.books.length === 0 ||
-                      showCollectionWithProtectedContent === "hasNormalContent"
-                    )
-                      return true
+              const collections$ =
+                db.collections.obokucollection.find(finalQueryObj).$
 
+              return collections$.pipe(
+                map((collections) =>
+                  collections
                     /**
-                     * If we have a book that is not in the list of protected books
-                     * we can assume it's unsafe
+                     * @important
+                     *
+                     * Fitler out collections containing protected books
                      */
-                    const extraBooksFromCollection = difference(
-                      collection.books,
-                      visibleBooks
-                    )
+                    .filter((collection) => {
+                      if (
+                        includeProtected ||
+                        collection.books.length === 0 ||
+                        showCollectionWithProtectedContent ===
+                          "hasNormalContent"
+                      )
+                        return true
 
-                    const hasSuspiciousExtraBook =
-                      extraBooksFromCollection.length > 0
-
-                    return !hasSuspiciousExtraBook
-                  })
-                ),
-                /**
-                 * @important
-                 *
-                 * Filter out collections based on interest content.
-                 * The only case is if we only want not interested, in
-                 * this case we want collections that contains at least
-                 * one of the not interested book.
-                 */
-                map((collections) =>
-                  collections.filter((collection) => {
-                    if (isNotInterested === "only") {
-                      return collection.books.length === 0
-                        ? false
-                        : intersection(collection.books, bookIds).length > 0
-                    }
-
-                    if (
-                      isNotInterested === "none" &&
-                      collection.books.length > 0
-                    ) {
-                      const booksNotProtected = difference(
+                      /**
+                       * If we have a book that is not in the list of protected books
+                       * we can assume it's unsafe
+                       */
+                      const extraBooksFromCollection = difference(
                         collection.books,
-                        notInterestedBookIds
+                        visibleBooks
                       )
 
-                      return booksNotProtected.length > 0
-                    }
+                      const hasSuspiciousExtraBook =
+                        extraBooksFromCollection.length > 0
 
-                    return true
-                  })
-                ),
-                /**
-                 * Filter collection by reading state
-                 */
-                map((collections) =>
-                  collections.filter((collection) => {
-                    if (collection.books.length === 0) return true
+                      return !hasSuspiciousExtraBook
+                    })
+                    /**
+                     * @important
+                     *
+                     * Filter out collections based on interest content.
+                     * The only case is if we only want not interested, in
+                     * this case we want collections that contains at least
+                     * one of the not interested book.
+                     */
+                    .filter((collection) => {
+                      if (isNotInterested === "only") {
+                        return collection.books.length === 0
+                          ? false
+                          : intersection(collection.books, bookIds).length > 0
+                      }
 
-                    const booksFromCollection = books.filter((book) =>
-                      collection.books.includes(book._id)
-                    )
+                      if (
+                        isNotInterested === "none" &&
+                        collection.books.length > 0
+                      ) {
+                        const booksNotProtected = difference(
+                          collection.books,
+                          notInterestedBookIds
+                        )
 
-                    const onlyWantOngoingAndIsFinished =
-                      readingState === "ongoing" &&
-                      booksFromCollection.length > 0 &&
-                      booksFromCollection.every(
-                        (book) =>
-                          book.readingStateCurrentState ===
-                          ReadingStateState.Finished
+                        return booksNotProtected.length > 0
+                      }
+
+                      return true
+                    })
+                    /**
+                     * Filter collection by reading state
+                     */
+                    .filter((collection) => {
+                      const booksFromCollection = books.filter((book) =>
+                        collection.books.includes(book._id)
                       )
 
-                    const onlyWantFinishedAndHasSomeNonFinished =
-                      readingState === "finished" &&
-                      (booksFromCollection.some(
-                        (book) =>
-                          book.readingStateCurrentState !==
-                          ReadingStateState.Finished
-                      ) ||
-                        booksFromCollection.length === 0)
+                      if (
+                        readingState === "finished" &&
+                        (booksFromCollection.some(
+                          (book) =>
+                            book.readingStateCurrentState !==
+                            ReadingStateState.Finished
+                        ) ||
+                          booksFromCollection.length === 0)
+                      ) {
+                        return false
+                      }
 
-                    if (
-                      onlyWantFinishedAndHasSomeNonFinished ||
-                      onlyWantOngoingAndIsFinished
-                    ) {
-                      return false
-                    }
+                      if (
+                        readingState === "ongoing" &&
+                        booksFromCollection.length > 0 &&
+                        booksFromCollection.every(
+                          (book) =>
+                            book.readingStateCurrentState ===
+                            ReadingStateState.Finished
+                        )
+                      ) {
+                        return false
+                      }
 
-                    return true
-                  })
+                      return true
+                    })
+                    .map((item) => item?.toJSON() as CollectionDocType)
                 )
               )
             })
           )
-        ),
-        map((items) =>
-          items.map((item) => ({
-            ...(item?.toJSON() as CollectionDocType),
-            displayableName: hideDirectivesFromCollectionName
-              ? directives.removeDirectiveFromString(
-                  getMetadataFromCollection(item).title ?? ""
-                )
-              : getMetadataFromCollection(item).title
-          }))
         )
       )
     },

@@ -14,12 +14,12 @@ import {
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
 import { FC, useState } from "react"
 import { useTagIds, useTags } from "../../tags/helpers"
-import { useCreateDataSource } from "../../dataSources/helpers"
 import { GoogleDriveDataSourceData } from "@oboku/shared"
 import { useDrivePicker } from "./lib/useDrivePicker"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
-import { catchError, EMPTY, takeUntil, tap } from "rxjs"
+import { catchError, of, takeUntil, tap } from "rxjs"
 import { useUnmountObservable } from "reactjrx"
+import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 
 export const GoogleDriveDataSource: FC<{
   onClose: () => void
@@ -105,7 +105,7 @@ export const GoogleDriveDataSource: FC<{
                     catchError((error) => {
                       console.error(error)
 
-                      return EMPTY
+                      return of(null)
                     })
                   )
                   .subscribe()

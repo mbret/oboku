@@ -10,7 +10,6 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scrollbar-width: none;
 }
 
 html,
@@ -24,6 +23,9 @@ body {
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+*:not(.withScrollBar) {
   scrollbar-width: none;
 }
 
@@ -37,10 +39,12 @@ code {
     monospace;
 }
 
-::-webkit-scrollbar {
-  width: 0px; /* Remove scrollbar space */
+::-webkit-scrollbar:not(.withScrollBar) {
+  /* Remove scrollbar space */
+  width: 0px;
   height: 0;
-  background: transparent; /* Optional: just make scrollbar invisible */
+  /* optional: just make scrollbar invisible; */
+  background: transparent;
 }
 
 .sentry-error-embed-wrapper {

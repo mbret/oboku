@@ -1,17 +1,9 @@
-import { useBooksActionEffects } from "./books/effects"
-import { effects as datasourceEffects } from "./dataSources/effects"
-import { useDownloadsEffects } from "./download/effects"
-import { useTagEffects } from "./tags/effects"
-
-const effects = [
-  ...datasourceEffects,
-  useTagEffects,
-  useDownloadsEffects,
-  useBooksActionEffects
-]
+import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
+import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 
 export const Effects = () => {
-  effects.forEach((effectHook) => effectHook())
+  useCleanupDanglingLinks()
+  useRemoveDownloadWhenBookIsNotInterested()
 
   return null
 }

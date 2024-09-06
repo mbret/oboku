@@ -1,68 +1,47 @@
-import React, { useCallback, FC, useMemo, memo } from "react"
+import { useCallback, memo, ComponentProps } from "react"
 import { useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { SelectableBookListItem } from "./SelectableBookListItem"
-import { useCSS } from "../../common/utils"
-import { ReactWindowList } from "../../common/lists/ReactWindowList"
+import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
-export const SelectableBookList: FC<{
-  style?: React.CSSProperties
-  data: { id: string; selected: boolean }[]
-  onItemClick: (id: { id: string; selected: boolean }) => void
-}> = memo((props) => {
-  const theme = useTheme()
-  const { style, data, onItemClick } = props
-  const windowSize = useWindowSize()
-  const classes = useStyle({ isHorizontal: false })
-  const itemsPerRow = 1
-  const adjustedRatioWhichConsiderBottom = theme.custom.coverAverageRatio - 0.1
-  const densityMultiplier = 1
-  const itemHeight =
-    (windowSize.width > theme.breakpoints.values["sm"] ? 200 : 150) *
-    theme.custom.coverAverageRatio *
-    densityMultiplier
+export const SelectableBookList = memo(
+  (
+    props: {
+      selected: Record<string, boolean>
+      onItemClick: (id: { id: string; selected: boolean }) => void
+    } & ComponentProps<typeof VirtuosoList>
+  ) => {
+    const theme = useTheme()
+    const { data, onItemClick, selected, ...rest } = props
+    const windowSize = useWindowSize()
+    const itemsPerRow = 1
+    const densityMultiplier = 1
+    const itemHeight =
+      (windowSize.width > theme.breakpoints.values["sm"] ? 150 : 100) *
+      theme.custom.coverAverageRatio *
+      densityMultiplier
 
-  const rowRenderer = useCallback(
-    (item: { id: string; selected: boolean }) => (
-      <SelectableBookListItem
-        bookId={item.id}
-        itemHeight={itemHeight - 4}
-        selected={item.selected}
-        onItemClick={() => onItemClick(item)}
-        paddingBottom={4}
-      />
-    ),
-    [itemHeight, onItemClick]
-  )
+    const rowRenderer = useCallback(
+      (_: number, item: string) => (
+        <SelectableBookListItem
+          bookId={item}
+          itemHeight={itemHeight}
+          selected={!!selected[item]}
+          onItemClick={() =>
+            onItemClick({ id: item, selected: !!selected[item] })
+          }
+        />
+      ),
+      [itemHeight, onItemClick, selected]
+    )
 
-  const containerStyle = useMemo(
-    () => ({ ...classes.container, ...style }),
-    [style, classes]
-  )
-
-  return (
-    <div style={containerStyle}>
-      <ReactWindowList
+    return (
+      <VirtuosoList
         data={data}
         rowRenderer={rowRenderer}
         itemsPerRow={itemsPerRow}
-        preferredRatio={adjustedRatioWhichConsiderBottom}
-        layout="vertical"
-        itemHeight={itemHeight}
+        {...rest}
       />
-    </div>
-  )
-})
-
-const useStyle = ({ isHorizontal }: { isHorizontal: boolean }) => {
-  const theme = useTheme()
-
-  return useCSS(
-    () => ({
-      container: {
-        display: "flex"
-      }
-    }),
-    [theme, isHorizontal]
-  )
-}
+    )
+  }
+)

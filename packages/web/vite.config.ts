@@ -7,10 +7,20 @@ import path from "path"
 
 export default defineConfig(({ mode }) => ({
   build: {
+    /**
+     * @todo they takes enormous amount of mb.
+     * Migrate to sending it to sentry directly.
+     */
     sourcemap: true,
     minify: mode !== "development",
     emptyOutDir: true,
-    assetsInlineLimit: 0
+    assetsInlineLimit: 0,
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        raw: "raw.html"
+      }
+    }
   },
   optimizeDeps: {
     esbuildOptions: {
@@ -54,7 +64,7 @@ export default defineConfig(({ mode }) => ({
           // sourcemap will be uploaded on reporting service directly
           "**/*.{js.map}"
         ],
-        maximumFileSizeToCacheInBytes: 5e6
+        maximumFileSizeToCacheInBytes: 9e6
       },
       srcDir: "src",
       filename: "service-worker.ts",

@@ -33,12 +33,17 @@ export const ManageTagBooksDialog: FC<{}> = () => {
     isManageTagBooksDialogOpenedWithState.setValue(undefined)
   }
 
-  const data = useMemo(
+  const data = useMemo(() => books.map((item) => item._id), [books])
+
+  const selected = useMemo(
     () =>
-      books.map((item) => ({
-        id: item._id,
-        selected: !!tagBooks.find((id) => id === item._id)
-      })),
+      books.reduce(
+        (acc, item) => ({
+          ...acc,
+          [item._id]: !!tagBooks.find((id) => id === item._id)
+        }),
+        {}
+      ),
     [books, tagBooks]
   )
 
@@ -59,6 +64,7 @@ export const ManageTagBooksDialog: FC<{}> = () => {
       onClose={onClose}
       data={data}
       onItemClick={onItemClick}
+      selected={selected}
     />
   )
 }

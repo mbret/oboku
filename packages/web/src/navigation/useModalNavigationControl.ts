@@ -38,7 +38,9 @@ export const useModalNavigationControl = (
   useEffect(() => {
     if (id) {
       const hash = `#modal-${uuidv4()}`
+
       setCurrentHash(hash)
+
       navigate(
         {
           hash: window.location.hash,

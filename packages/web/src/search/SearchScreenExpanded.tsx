@@ -1,11 +1,11 @@
-import { truncate } from "lodash"
 import { useParams } from "react-router-dom"
 import { BookList } from "../books/bookList/BookList"
-import { CollectionList } from "../collections/list/CollectionList"
+import { CollectionList } from "../collections/lists/CollectionList"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useCollectionsForSearch } from "./useCollectionsForSearch"
 import { useBooksForSearch } from "./useBooksForSearch"
 import { ListActionsToolbar } from "./list/ListActionsToolbar"
+import { truncate } from "@oboku/shared"
 
 const getTitle = (type?: string) => {
   switch (type) {

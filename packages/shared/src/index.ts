@@ -69,7 +69,8 @@ export type OPF = {
 
 export * as directives from "./directives"
 
-export * from "./docTypes"
+export * from "./db/docTypes"
+export * from "./db/books"
 
 export * from "./dataSources"
 export * from "./sorting"
@@ -85,4 +86,9 @@ export * from "./metadata"
 
 export * from "./sync/reports"
 
-export * from "./objects"
+export * from "./utils/objects"
+export * from "./utils/difference"
+export * from "./utils/truncate"
+export * from "./utils/intersection"
+export * from "./utils/groupBy"
+export * from "./utils/mergeWith"

@@ -7,7 +7,7 @@ import DropboxIconAsset from "../../assets/dropbox.svg?react"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import { ObokuPlugin } from "../plugin-front"
+import { ObokuPlugin } from "../types"
 
 const DropboxIcon = () => (
   <SvgIcon>
@@ -20,11 +20,12 @@ export const plugin: ObokuPlugin = {
   type: `dropbox`,
   name: "Dropbox",
   Icon: DropboxIcon,
-  UploadComponent: UploadBook,
+  UploadBookComponent: UploadBook,
   AddDataSource,
   useDownloadBook,
   useRemoveBook: undefined,
   useRefreshMetadata,
   useSynchronize,
-  canSynchronize: true
+  canSynchronize: true,
+  description: "Manage books and collections from Dropbox"
 }

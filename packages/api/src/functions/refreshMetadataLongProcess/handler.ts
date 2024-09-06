@@ -8,11 +8,11 @@ import { configure as configureGoogleDataSource } from "@libs/plugins/google"
 import schema from "./schema"
 import { atomicUpdate, findOne, getNanoDbForUser } from "@libs/couch/dbHelpers"
 import { PromiseReturnType } from "@libs/types"
-import { retrieveMetadataAndSaveCover } from "@libs/books/retrieveMetadataAndSaveCover"
 import { getParametersValue } from "@libs/ssm"
 import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
 import { Logger } from "@libs/logger"
+import { retrieveMetadataAndSaveCover } from "./src/retrieveMetadataAndSaveCover"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event

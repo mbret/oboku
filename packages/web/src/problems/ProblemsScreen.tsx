@@ -1,9 +1,16 @@
-import { Box, List, ListItem, ListItemIcon, ListItemText } from "@mui/material"
-import { groupBy } from "lodash"
+import {
+  Box,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText
+} from "@mui/material"
+import { groupBy } from "@oboku/shared"
 import { Fragment, memo, useMemo } from "react"
 import { Report } from "../debug/report.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { BuildRounded } from "@mui/icons-material"
+import { BuildRounded, DeleteForeverRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
 import {
   useDuplicatedBookTitles
@@ -13,18 +20,20 @@ import { Alert } from "@mui/material"
 import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { switchMap } from "rxjs"
-import { getMetadataFromCollection } from "../collections/getMetadataFromCollection"
+import { getCollectionComputedMetadata } from "../collections/getCollectionComputedMetadata"
 import { useFixableCollections } from "./useFixableCollections"
 import { useRepair } from "./useRepair"
 import { CollectionDanglingBooks } from "./CollectionDanglingBooks"
 import { useFixableBooks } from "./useFixableBooks"
 import { BookDanglingCollections } from "./BookDanglingCollections"
 import { BookDanglingLinks } from "./BookDanglingLinks"
+import { useFixableLinks } from "./useFixableLinks"
 
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
   const duplicatedBookTitles = useDuplicatedBookTitles()
   // const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
+  const { danglingLinks } = useFixableLinks()
   const { collectionsWithDanglingBooks } = useFixableCollections()
   const { booksWithDanglingCollections, booksWithDanglingLinks } =
     useFixableBooks()
@@ -36,17 +45,23 @@ export const ProblemsScreen = memo(() => {
 
   const duplicatedCollections = useMemo(() => {
     const collectionsByResourceId = groupBy(collections, "linkResourceId")
-    const duplicatedCollections = Object.keys(collectionsByResourceId)
-      .filter((resourceId) => collectionsByResourceId[resourceId]!.length > 1)
-      .map((resourceId) => [
-        resourceId,
-        {
-          name: getMetadataFromCollection(
-            collectionsByResourceId[resourceId]![0]
-          )?.title,
-          number: collectionsByResourceId[resourceId]!.length
-        }
-      ])
+    const linkResourceIds = Object.keys(collectionsByResourceId)
+    const duplicatedCollections = linkResourceIds
+      .filter(
+        (resourceId) => (collectionsByResourceId[resourceId]?.length ?? 0) > 1
+      )
+      .map((resourceId) => {
+        const _collections = collectionsByResourceId[resourceId] ?? []
+        const collection = _collections[0]
+
+        return [
+          resourceId,
+          {
+            name: getCollectionComputedMetadata(collection?.toJSON())?.title,
+            number: collectionsByResourceId[resourceId]!.length
+          }
+        ]
+      })
 
     Report.log(
       `Found ${duplicatedCollections.length} duplicated resource id`,
@@ -106,9 +121,8 @@ export const ProblemsScreen = memo(() => {
             </ListItem>
           )}
           {duplicatedCollections.length > 0 && (
-            <ListItem
+            <ListItemButton
               alignItems="flex-start"
-              button
               onClick={() => fixCollections(duplicatedCollections)}
             >
               <ListItemIcon>
@@ -122,7 +136,28 @@ export const ProblemsScreen = memo(() => {
               It is not recommended to keep duplicate resourceId since it could lead to unpredictable sync.
               `}
               />
-            </ListItem>
+            </ListItemButton>
+          )}
+          {danglingLinks.length > 0 && (
+            <ListItemButton
+              alignItems="flex-start"
+              onClick={() =>
+                repair({
+                  type: "danglingLinks",
+                  items: danglingLinks
+                })
+              }
+            >
+              <ListItemIcon>
+                <DeleteForeverRounded />
+              </ListItemIcon>
+              <ListItemText
+                primary="Dangling links"
+                secondary={`
+            We found ${danglingLinks.length} links not used by any books. They just take space and will not be used anymore. Safe to remove.
+            `}
+              />
+            </ListItemButton>
           )}
           {booksWithDanglingCollections?.map(({ danglingItems, doc }) => (
             <BookDanglingCollections

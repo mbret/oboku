@@ -1,10 +1,10 @@
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { useDrivePicker } from "./lib/useDrivePicker"
-import { catchError, EMPTY, takeUntil, tap } from "rxjs"
+import { catchError, EMPTY, of, takeUntil, tap } from "rxjs"
 import { useEffect } from "react"
 import { useUnmountObservable } from "reactjrx"
-import { ObokuPlugin } from "../plugin-front"
+import { ObokuPlugin } from "../types"
 
 export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
   onClose,
@@ -44,7 +44,7 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
         catchError((error) => {
           onClose({ code: `unknown`, originalError: error })
 
-          return EMPTY
+          return of(null)
         }),
         takeUntil(unMount$.current)
       )
@@ -53,7 +53,7 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
     return () => {
       stream$.unsubscribe()
     }
-  }, [open, pick, unMount$])
+  }, [open, pick, unMount$, generateResourceId, onClose])
 
   if (!open) return null
 

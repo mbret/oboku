@@ -1,5 +1,5 @@
 import { useAccessToken } from "./lib/useAccessToken"
-import { ObokuPlugin } from "../plugin-front"
+import { ObokuPlugin } from "../types"
 import { firstValueFrom } from "rxjs"
 
 export const useSynchronize: ObokuPlugin[`useSynchronize`] = ({

@@ -12,8 +12,14 @@ import {
 import { useCollectionActionsDrawer } from "./CollectionActionsDrawer/useCollectionActionsDrawer"
 import { useCollection } from "./useCollection"
 import { COLLECTION_EMPTY_ID } from "../constants.shared"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { useBooks } from "../books/states"
+import { useLocalSettings } from "../settings/states"
+import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
+import { Report } from "../debug/report.shared"
+import { getCollectionComputedMetadata } from "./getCollectionComputedMetadata"
+import { useCollectionDisplayTitle } from "./useCollectionDisplayTitle"
+import { useCollectionComputedMetadata } from "./useCollectionComputedMetadata"
 
 type ScreenParams = {
   id: string
@@ -40,11 +46,13 @@ export const CollectionDetailsScreen = () => {
   const { data: collection } = useCollection({
     id
   })
+  const { useOptimizedTheme } = useLocalSettings()
 
   const { data: visibleBooks } = useBooks({
     ids: collection?.books ?? []
   })
 
+  const metadata = useCollectionComputedMetadata(collection)
   const visibleBookIds = useMemo(
     () => visibleBooks?.map((item) => item._id) ?? [],
     [visibleBooks]
@@ -59,10 +67,12 @@ export const CollectionDetailsScreen = () => {
     }
   )
 
-  const titleTypoStyle = {
-    color: "white",
-    textShadow: "0px 0px 3px black"
-  }
+  useEffect(() => {
+    Report.log({
+      collection,
+      metadata
+    })
+  }, [collection, metadata])
 
   return (
     <>
@@ -76,7 +86,10 @@ export const CollectionDetailsScreen = () => {
           title=""
           showBack={true}
           position="absolute"
-          color="transparent"
+          sx={{
+            bgcolor: "transparent",
+            border: 0
+          }}
           {...(id !== COLLECTION_EMPTY_ID && {
             onMoreClick: openActionDrawer
           })}
@@ -97,19 +110,37 @@ export const CollectionDetailsScreen = () => {
               paddingLeft: theme.spacing(2),
               paddingRight: theme.spacing(2),
               width: "100%",
-              backgroundImage: `url(${CollectionBgSvg})`,
+              backgroundImage: useOptimizedTheme
+                ? undefined
+                : `url(${CollectionBgSvg})`,
               backgroundAttachment: "fixed",
-              backgroundSize: "cover"
+              backgroundSize: "cover",
+              ...(useOptimizedTheme && {
+                borderBottom: `1px solid black`
+              })
             }}
           >
             <div>
-              <Typography variant="h5" style={titleTypoStyle}>
-                {collection?.displayableName}
+              <Typography
+                variant="h5"
+                style={{
+                  ...(!useOptimizedTheme && {
+                    color: "white",
+                    textShadow: "0px 0px 3px black"
+                  })
+                }}
+              >
+                {metadata.displayTitle}
               </Typography>
               <Typography
                 variant="subtitle1"
                 gutterBottom
-                style={titleTypoStyle}
+                style={{
+                  ...(!useOptimizedTheme && {
+                    color: "white",
+                    textShadow: "0px 0px 3px black"
+                  })
+                }}
               >
                 {`${collection?.books?.length || 0} book(s)`}
               </Typography>

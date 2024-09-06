@@ -1,26 +1,14 @@
-import { createReader } from "@prose-reader/core"
 import { filter, switchMap } from "rxjs"
-import { hammerGestureEnhancer } from "@prose-reader/enhancer-hammer-gesture"
-import { Props as GenericReactReaderProps } from "@prose-reader/react"
-import { isDefined, signal, useForeverQuery, useSignalValue } from "reactjrx"
-
-export const createAppReader = hammerGestureEnhancer(createReader)
+import { isDefined, signal, useForeverQuery } from "reactjrx"
+import { createAppReader } from "./useCreateReader"
 
 export type ReaderInstance = ReturnType<typeof createAppReader>
 
-export type ReactReaderProps = GenericReactReaderProps<
-  Parameters<typeof createAppReader>[0],
-  ReaderInstance
->
-
-export const readerStateSignal = signal<ReaderInstance | undefined>({
+export const readerSignal = signal<ReaderInstance | undefined>({
   key: "readerState"
 })
 
-export const isBookReadyStateSignal = signal({
-  key: "isBookReadyState",
-  default: false
-})
+export const reader$ = readerSignal.subject.pipe(filter(isDefined))
 
 export const isMenuShownStateSignal = signal({
   key: "isMenuShownState",
@@ -33,31 +21,9 @@ export const usePagination = () =>
   useForeverQuery({
     queryKey: ["pagination"],
     queryFn: () => {
-      return readerStateSignal.subject.pipe(
+      return readerSignal.subject.pipe(
         filter(isDefined),
-        switchMap((reader) => reader.pagination.paginationInfo$)
+        switchMap((reader) => reader.pagination.state$)
       )
     }
   })
-
-export const useCurrentPage = () => {
-  const reader = useSignalValue(readerStateSignal)
-  const { data: { beginPageIndexInSpineItem, beginSpineItemIndex } = {} } =
-    usePagination()
-  const { renditionLayout } = reader?.context.manifest ?? {}
-
-  if (renditionLayout === "reflowable") return beginPageIndexInSpineItem
-
-  return beginSpineItemIndex
-}
-
-export const useTotalPage = () => {
-  const reader = useSignalValue(readerStateSignal)
-  const { renditionLayout } = reader?.context.manifest ?? {}
-  const { data: { numberOfTotalPages, beginNumberOfPagesInSpineItem } = {} } =
-    usePagination()
-
-  if (renditionLayout === "reflowable") return beginNumberOfPagesInSpineItem
-
-  return numberOfTotalPages
-}

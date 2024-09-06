@@ -4,7 +4,6 @@ import {
   DialogTitle,
   Drawer,
   List,
-  ListItem,
   ListItemText,
   ListItemIcon,
   DialogActions,
@@ -22,7 +21,7 @@ import { ReadingStateState } from "@oboku/shared"
 import { DownloadState } from "../download/states"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "./states"
+import { libraryStateSignal } from "./books/states"
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean
@@ -46,7 +45,7 @@ export const LibraryFiltersDrawer: FC<{
       >
         <div role="presentation">
           <List>
-            <ListItem button onClick={() => setIsTagsDialogOpened(true)}>
+            <ListItemButton onClick={() => setIsTagsDialogOpened(true)}>
               <ListItemText
                 primary="Tags"
                 secondary={
@@ -58,11 +57,8 @@ export const LibraryFiltersDrawer: FC<{
               <ListItemIcon>
                 <ArrowForwardIosRounded />
               </ListItemIcon>
-            </ListItem>
-            <ListItem
-              button
-              onClick={() => setIsReadingStateDialogOpened(true)}
-            >
+            </ListItemButton>
+            <ListItemButton onClick={() => setIsReadingStateDialogOpened(true)}>
               <ListItemText
                 primary="Reading state"
                 secondary={
@@ -76,9 +72,8 @@ export const LibraryFiltersDrawer: FC<{
               <ListItemIcon>
                 <ArrowForwardIosRounded />
               </ListItemIcon>
-            </ListItem>
-            <ListItem
-              button
+            </ListItemButton>
+            <ListItemButton
               onClick={() =>
                 libraryStateSignal.setValue((state) => ({
                   ...state,
@@ -98,7 +93,7 @@ export const LibraryFiltersDrawer: FC<{
                   <CheckCircleRounded />
                 )}
               </ListItemIcon>
-            </ListItem>
+            </ListItemButton>
             <ListItemButton
               onClick={() =>
                 libraryStateSignal.setValue((state) => ({
@@ -152,8 +147,7 @@ const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
     <Dialog onClose={onClose} aria-labelledby="simple-dialog-title" open={open}>
       <DialogTitle>Reading state</DialogTitle>
       {readingStates.map((readingState) => (
-        <ListItem
-          button
+        <ListItemButton
           key={readingState}
           onClick={() => {
             if (library.readingStates.includes(readingState)) {
@@ -177,7 +171,7 @@ const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
           ) : (
             <RadioButtonUncheckedOutlined />
           )}
-        </ListItem>
+        </ListItemButton>
       ))}
       <DialogActions>
         <Button onClick={onClose} color="primary" autoFocus>

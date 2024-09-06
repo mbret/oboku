@@ -13,6 +13,8 @@ export const errorToHelperText = (
       return "Required"
     case "pattern":
       return messages?.pattern ?? "Invalid value"
+    case "minLength":
+      return messages?.pattern ?? "Value too short"
     default:
       return error.message
   }

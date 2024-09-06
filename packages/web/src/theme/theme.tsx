@@ -79,10 +79,14 @@ export const theme = createTheme({
     // Name of the component ⚛️
     MuiBottomNavigationAction: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           // disable the lift up effect when an icon is selected
-          padding: "0 !important"
-        }
+          padding: "0 !important",
+          [theme.breakpoints.down("sm")]: {
+            // avoid H scrolling on small screen due to many icons
+            minWidth: "60px"
+          }
+        })
       }
     },
     MuiListItem: {
@@ -166,16 +170,20 @@ export const eInkTheme = createTheme(
       },
       MuiAppBar: {
         defaultProps: {
-          color: "default",
           elevation: 0
         },
         styleOverrides: {
-          root: ({}) => ({
-            borderBottom: "1px solid black"
-          })
+          root: ({ ownerState }) => {
+            return {
+              color: "black",
+              backgroundColor: "white",
+              ...(ownerState.color !== "transparent" && {
+                borderBottom: "1px solid black"
+              })
+            }
+          }
         }
       },
-
       MuiLink: {
         defaultProps: {
           underline: "always"

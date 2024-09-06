@@ -29,12 +29,17 @@ export const ManageCollectionBooksDialog: FC<{
     [collection]
   )
 
-  const data = useMemo(
+  const data = useMemo(() => books.map((item) => item._id), [books])
+
+  const selected = useMemo(
     () =>
-      books.map((item) => ({
-        id: item._id,
-        selected: !!collectionBooks.find((id) => id === item._id)
-      })),
+      books.reduce(
+        (acc, item) => ({
+          ...acc,
+          [item._id]: !!collectionBooks.find((id) => id === item._id)
+        }),
+        {} as Record<string, boolean>
+      ),
     [books, collectionBooks]
   )
 
@@ -55,6 +60,7 @@ export const ManageCollectionBooksDialog: FC<{
       onClose={onClose}
       onItemClick={onItemClick}
       data={data}
+      selected={selected}
     />
   )
 }

@@ -1,5 +1,6 @@
 import {
   catchError,
+  combineLatest,
   filter,
   first,
   mergeMap,
@@ -9,6 +10,9 @@ import {
 } from "rxjs"
 import { networkState$ } from "../../../common/utils"
 import { Report } from "../../../debug/report.shared"
+import { gsiOrThrow$ } from "./gsi"
+import { gapiOrThrow$, useLoadGapi } from "./gapi"
+import { createDialog } from "../../../common/dialogs/createDialog"
 
 export const retryOnFailure = <O>(stream: Observable<O>) =>
   stream.pipe(
@@ -37,3 +41,26 @@ export const retryOnFailure = <O>(stream: Observable<O>) =>
       }
     })
   )
+
+export const useGoogleScripts = () => {
+  const { mutate: loadGapi } = useLoadGapi()
+
+  const getGoogleScripts = () => {
+    return combineLatest([gsiOrThrow$, gapiOrThrow$]).pipe(
+      catchError((error) => {
+        createDialog({
+          autoStart: true,
+          title: "Script error",
+          content:
+            "One or several required Google scripts has not been loaded yet. If the problem persist visit the plugin settings page to try reloading them."
+        })
+
+        loadGapi()
+
+        throw error
+      })
+    )
+  }
+
+  return { getGoogleScripts }
+}

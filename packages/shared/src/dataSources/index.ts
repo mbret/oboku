@@ -1,4 +1,4 @@
-import { DataSourceDocType } from "../docTypes"
+import { DataSourceDocType } from "../db/docTypes"
 
 export type GoogleDriveDataSourceData = {
   applyTags: string[]
