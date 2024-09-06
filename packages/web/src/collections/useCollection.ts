@@ -15,12 +15,7 @@ export const useCollection = ({
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
 
   return useForeverQuery({
-    queryKey: [
-      "rxdb",
-      "collection",
-      id,
-      { isLibraryUnlocked }
-    ],
+    queryKey: ["rxdb", "collection", id, { isLibraryUnlocked }],
     enabled: !!id,
     queryFn: () => {
       return latestDatabase$.pipe(
