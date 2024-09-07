@@ -1,20 +1,25 @@
 import { ComponentProps, memo, useState } from "react"
 import {
   CheckCircleRounded,
+  Inbox,
   RadioButtonUncheckedOutlined
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
   Box,
+  Checkbox,
   Drawer,
   List,
   ListItem,
   ListItemButton,
+  ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
-  ListSubheader
+  ListSubheader,
+  Switch
 } from "@mui/material"
 import { localSettingsSignal, useLocalSettings } from "./states"
+import { ListItemSwitch } from "../common/ListItemSwitch"
 
 type LocalSettings = ReturnType<typeof useLocalSettings>
 
@@ -50,7 +55,9 @@ export const SettingsScreen = memo(() => {
           <ListItem>
             <ListItemText primary="Language" secondary={navigator.language} />
           </ListItem>
-          <ListItemButton
+          <ListItemSwitch
+            primary="Automatically hide directives from collection name"
+            secondary={`Will display a collection named "My collection [oboku~foo]" as "My collection"`}
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
@@ -58,44 +65,26 @@ export const SettingsScreen = memo(() => {
                   !old.hideDirectivesFromCollectionName
               }))
             }}
-          >
-            <ListItemText
-              primary="Automatically hide directives from collection name"
-              secondary={`Will display a collection named "My collection [oboku~foo]" as "My collection"`}
-            />
-            <ListItemSecondaryAction>
-              {localSettings.hideDirectivesFromCollectionName ? (
-                <CheckCircleRounded />
-              ) : (
-                <RadioButtonUncheckedOutlined />
-              )}
-            </ListItemSecondaryAction>
-          </ListItemButton>
+            checked={localSettings.hideDirectivesFromCollectionName}
+            id="settings-screen-setting-hideDirectivesFromCollectionName"
+          />
         </List>
         <List>
           <ListSubheader disableSticky>
             Privacy & sensitive content
           </ListSubheader>
-          <ListItemButton
+          <ListItemSwitch
+            primary="Show sensitive data sources"
+            secondary="Some data sources deal with sensitive content or website and are hidden by default"
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
                 showSensitiveDataSources: !old.showSensitiveDataSources
               }))
             }}
-          >
-            <ListItemText
-              primary="Show sensitive data sources"
-              secondary="Some data sources deal with sensitive content or website and are hidden by default"
-            />
-            <ListItemSecondaryAction>
-              {localSettings.showSensitiveDataSources ? (
-                <CheckCircleRounded />
-              ) : (
-                <RadioButtonUncheckedOutlined />
-              )}
-            </ListItemSecondaryAction>
-          </ListItemButton>
+            checked={localSettings.showSensitiveDataSources}
+            id="settings-screen-setting-showSensitiveDataSources"
+          />
           <ListItemButton
             onClick={() => {
               setIsShowCollectionDrawerOpened(true)
@@ -110,23 +99,18 @@ export const SettingsScreen = memo(() => {
               }
             />
           </ListItemButton>
-          <ListItemButton
+
+          <ListItemSwitch
+            primary="Unblur cover when protected content is visible"
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
                 unBlurWhenProtectedVisible: !old.unBlurWhenProtectedVisible
               }))
             }}
-          >
-            <ListItemText primary="Unblur cover when protected content is visible" />
-            <ListItemSecondaryAction>
-              {localSettings.unBlurWhenProtectedVisible ? (
-                <CheckCircleRounded />
-              ) : (
-                <RadioButtonUncheckedOutlined />
-              )}
-            </ListItemSecondaryAction>
-          </ListItemButton>
+            checked={localSettings.unBlurWhenProtectedVisible}
+            id="settings-screen-setting-unBlurWhenProtectedVisible"
+          />
         </List>
         <List subheader={<ListSubheader disableSticky>Reading</ListSubheader>}>
           <ListItemButton
@@ -149,26 +133,18 @@ export const SettingsScreen = memo(() => {
             </ListSubheader>
           }
         >
-          <ListItemButton
+          <ListItemSwitch
+            primary="Optimized theme"
+            secondary="Will use a more adapted app design (black & white, more contrast, ...)"
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
                 useOptimizedTheme: !old.useOptimizedTheme
               }))
             }}
-          >
-            <ListItemText
-              primary="Optimized theme"
-              secondary="Will use a more adapted app design (black & white, more contrast, ...)"
-            />
-            <ListItemSecondaryAction>
-              {localSettings.useOptimizedTheme ? (
-                <CheckCircleRounded />
-              ) : (
-                <RadioButtonUncheckedOutlined />
-              )}
-            </ListItemSecondaryAction>
-          </ListItemButton>
+            checked={localSettings.useOptimizedTheme}
+            id="settings-screen-setting-useOptimizedTheme"
+          />
         </List>
       </Box>
       <Drawer
