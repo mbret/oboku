@@ -20,6 +20,7 @@ import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { CollectionListItemProgress } from "./CollectionListItemProgress"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
 import { useCollectionCoverUri } from "../useCollectionCoverUri"
+import { StatusChip } from "../series/StatusChip"
 
 export const CollectionListItemCover = memo(({ id }: { id: string }) => {
   const theme = useTheme()
@@ -96,45 +97,11 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
             }}
           />
           {item?.type === "series" && (
-            <Chip
-              label={
-                <Stack direction="row" alignItems="center" gap={1}>
-                  <Typography
-                    variant="caption"
-                    lineHeight="inherit"
-                    color="inherit"
-                  >
-                    {capitalize(metadata.status ?? "unknown")}
-                  </Typography>
-                  {metadata.rating !== undefined && (
-                    <Stack direction="row" alignItems="center">
-                      <StarRounded fontSize="small" color="warning" />
-                      <Typography
-                        color="warning"
-                        variant="caption"
-                        lineHeight="inherit"
-                        fontWeight="bold"
-                      >
-                        {metadata.rating.toFixed(1)}
-                      </Typography>
-                    </Stack>
-                  )}
-                </Stack>
-              }
-              icon={
-                <CircleRounded
-                  color={
-                    metadata.status === "ongoing"
-                      ? "success"
-                      : metadata.status === "completed"
-                        ? "info"
-                        : "warning"
-                  }
-                />
-              }
-              size="small"
+            <StatusChip
+              rating={metadata.rating}
+              status={metadata.status}
               sx={{
-                bgcolor: "white",
+                  bgcolor: "white",
                 position: "absolute",
                 right: 0,
                 bottom: 0,

@@ -25,10 +25,6 @@ body {
   box-sizing: border-box;
 }
 
-*:not(.withScrollBar) {
-  scrollbar-width: none;
-}
-
 #root {
   margin: 0;
   height: 100%;
@@ -37,14 +33,6 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
-}
-
-::-webkit-scrollbar:not(.withScrollBar) {
-  /* Remove scrollbar space */
-  width: 0px;
-  height: 0;
-  /* optional: just make scrollbar invisible; */
-  background: transparent;
 }
 
 .sentry-error-embed-wrapper {

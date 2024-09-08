@@ -9,6 +9,7 @@ export const BookListWithControls: FC<
     data: string[]
     renderEmptyList?: React.ReactNode
     ListActionsToolbarProps?: Partial<ComponentProps<typeof ListActionsToolbar>>
+    useWindowScroll?: boolean
   } & Pick<
     ComponentProps<typeof ListActionsToolbar>,
     "viewMode" | "onViewModeChange" | "sorting" | "onSortingChange"
@@ -20,42 +21,36 @@ export const BookListWithControls: FC<
   viewMode,
   onViewModeChange,
   onSortingChange,
-  ListActionsToolbarProps
+  ListActionsToolbarProps,
+  useWindowScroll
 }) => {
   const sortedData = useBookIdsSortedBy(data, sorting)
 
   return (
-    <Stack
-      style={{
-        height: "100%",
-        flex: 1,
-        overflow: "hidden"
-      }}
-    >
-      <ListActionsToolbar
-        viewMode={viewMode ?? "grid"}
-        onViewModeChange={onViewModeChange}
-        sorting={sorting ?? "alpha"}
-        onSortingChange={onSortingChange}
-        {...ListActionsToolbarProps}
-      />
-      <div
-        style={{
-          display: "flex",
-          height: "100%",
-          overflow: "scroll",
-          flex: 1
-        }}
-      >
+    <Stack flex={1}>
+      <Stack flex={1}>
         {sortedData.length === 0 && !!renderEmptyList && renderEmptyList}
         {sortedData.length > 0 && (
           <BookList
             data={sortedData}
             viewMode={viewMode}
-            style={{ height: "100%", width: "100%" }}
+            renderHeader={() => (
+              <ListActionsToolbar
+                viewMode={viewMode ?? "grid"}
+                onViewModeChange={onViewModeChange}
+                sorting={sorting ?? "alpha"}
+                onSortingChange={onSortingChange}
+                {...ListActionsToolbarProps}
+              />
+            )}
+            useWindowScroll={useWindowScroll}
+            style={{
+              height: "100%",
+              width: "100%"
+            }}
           />
         )}
-      </div>
+      </Stack>
     </Stack>
   )
 }

@@ -1,24 +1,26 @@
-import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { Box, Stack, Typography, useMediaQuery, useTheme } from "@mui/material"
+import { TopBarNavigation } from "../../navigation/TopBarNavigation"
+import { Box, Stack, Typography, useTheme } from "@mui/material"
 import { useNavigate, useParams } from "react-router-dom"
-import EmptyLibraryAsset from "../assets/empty-library.svg"
-import CollectionBgSvg from "../assets/series-bg.svg"
-import { BookListWithControls } from "../books/bookList/BookListWithControls"
+import EmptyLibraryAsset from "../../assets/empty-library.svg"
+import CollectionBgSvg from "../../assets/series-bg.svg"
+import { BookListWithControls } from "../../books/bookList/BookListWithControls"
 import { signal, useSignalValue } from "reactjrx"
 import {
   ListActionSorting,
   ListActionViewMode
-} from "../common/lists/ListActionsToolbar"
-import { useCollectionActionsDrawer } from "./CollectionActionsDrawer/useCollectionActionsDrawer"
-import { useCollection } from "./useCollection"
-import { COLLECTION_EMPTY_ID } from "../constants.shared"
+} from "../../common/lists/ListActionsToolbar"
+import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
+import { useCollection } from "../useCollection"
+import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 import { useEffect, useMemo } from "react"
-import { useBooks } from "../books/states"
-import { useLocalSettings } from "../settings/states"
-import { Report } from "../debug/report.shared"
-import { useCollectionComputedMetadata } from "./useCollectionComputedMetadata"
-import { useCollectionCoverUri } from "./useCollectionCoverUri"
-import placeholder from "../assets/cover-placeholder.png"
+import { useBooks } from "../../books/states"
+import { useLocalSettings } from "../../settings/states"
+import { Report } from "../../debug/report.shared"
+import { useCollectionComputedMetadata } from "../useCollectionComputedMetadata"
+import { useCollectionCoverUri } from "../useCollectionCoverUri"
+import placeholder from "../../assets/cover-placeholder.png"
+import { StatusChip } from "../series/StatusChip"
+import { useWindowScroll } from "react-use"
 
 type ScreenParams = {
   id: string
@@ -63,7 +65,7 @@ export const CollectionDetailsScreen = () => {
     `calc(${theme.spacing(1)} + ${70}px)`
   ]
   const headerHeight = [
-    `calc(${headerPt[0]} + 90px)`,
+    `calc(${headerPt[0]} + 100px)`,
     `calc(${headerPt[1]} + 150px)`,
     `calc(${headerPt[2]} + 250px)`
   ]
@@ -86,6 +88,7 @@ export const CollectionDetailsScreen = () => {
       }
     }
   )
+  const { x, y } = useWindowScroll()
 
   useEffect(() => {
     Report.log({
@@ -96,16 +99,36 @@ export const CollectionDetailsScreen = () => {
 
   return (
     <>
-      <Stack flex={1}>
+      <Stack
+        flex={1}
+        sx={{
+          scrollbarWidth: "initial"
+        }}
+      >
         <TopBarNavigation
+          title={metadata.title}
           showBack={true}
           {...(id !== COLLECTION_EMPTY_ID && {
             onMoreClick: openActionDrawer
           })}
           color="transparent"
-          position="absolute"
+          sx={{
+            bgcolor: `rgba(255, 255, 255, ${Math.min(1, y / 70)})`,
+            borderBottom: `1px solid rgba(0, 0, 0, ${Math.min(1, y / 400)})`
+          }}
+          TitleProps={{
+            sx: {
+              opacity: Math.min(1, y / 100)
+            }
+          }}
+          position="fixed"
         />
-        <Stack flex={1}>
+        <Stack
+          flex={1}
+          sx={{
+            scrollbarWidth: "initial"
+          }}
+        >
           <Stack
             position="relative"
             pt={headerPt}
@@ -133,7 +156,7 @@ export const CollectionDetailsScreen = () => {
                 }}
               />
             )}
-            <Stack direction="row" gap={2}>
+            <Stack direction="row" gap={2} justifyContent="flex-start">
               {!!hasCover && (
                 <Box
                   position="relative"
@@ -148,32 +171,43 @@ export const CollectionDetailsScreen = () => {
                   }}
                 />
               )}
-              <Stack gap={1} pt={hasCover ? 0.5 : 0}>
+              <Stack
+                pt={hasCover ? 0.5 : 0}
+                position="relative"
+                alignItems="flex-start"
+              >
                 <Typography
-                  position="relative"
                   component="h1"
                   sx={{
-                    typography: { ":default": "h6", sm: "h4" }
+                    typography: ["h6", "h4"]
                   }}
-                  lineHeight={1}
                   fontWeight="bold"
                 >
                   {metadata.displayTitle}
                 </Typography>
                 <Typography
                   sx={{
-                    typography: { ":default": "body2", sm: "body1" }
+                    typography: ["body2", "body1"]
                   }}
-                  position="relative"
                   gutterBottom
                 >
                   {`${collection?.books?.length || 0} book(s)`}
                 </Typography>
+                {collection?.type === "series" && (
+                  <StatusChip
+                    rating={metadata.rating}
+                    status={metadata.status}
+                    sx={{
+                      bgcolor: "transparent"
+                    }}
+                  />
+                )}
               </Stack>
             </Stack>
           </Stack>
           <BookListWithControls
             data={visibleBookIds}
+            useWindowScroll
             sorting={sorting}
             viewMode={viewMode}
             onViewModeChange={(value) => {

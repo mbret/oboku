@@ -1,7 +1,7 @@
 import React, { FC, ComponentProps, memo } from "react"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
-import Typography from "@mui/material/Typography"
+import Typography, { TypographyProps } from "@mui/material/Typography"
 import IconButton from "@mui/material/IconButton"
 import {
   ArrowBackIosRounded,
@@ -34,6 +34,7 @@ export const TopBarNavigation: FC<
     hasLockLibrary?: boolean
     goBackDefaultTo?: string
     onMoreClick?: () => void
+    TitleProps?: TypographyProps
   } & ComponentProps<typeof AppBar>
 > = memo(
   ({
@@ -47,6 +48,7 @@ export const TopBarNavigation: FC<
     goBackDefaultTo,
     hasLockLibrary,
     color,
+    TitleProps,
     ...rest
   }) => {
     const isLibraryUnlocked = useSignalValue(
@@ -72,9 +74,16 @@ export const TopBarNavigation: FC<
                 <ArrowBackIosRounded />
               </IconButton>
             )}
-            <Box flexGrow={1}>
+            <Box flexGrow={1} overflow="hidden">
               {!hasSearch && !!title && (
-                <Typography variant="h6" style={{ flexGrow: 1 }}>
+                <Typography
+                  variant="h6"
+                  style={{ flexGrow: 1 }}
+                  whiteSpace="nowrap"
+                  textOverflow="ellipsis"
+                  overflow="hidden"
+                  {...TitleProps}
+                >
                   {title}
                 </Typography>
               )}

@@ -16,7 +16,7 @@ import { ROUTES } from "../constants"
 export const PluginsScreen = memo(() => {
   return (
     <>
-      <Stack flex={1} overflow="scroll">
+      <Stack flex={1} overflow="auto">
         <TopBarNavigation title={"Plugins"} showBack={false} />
         <List>
           {plugins.map((plugin) => (

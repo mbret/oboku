@@ -48,7 +48,7 @@ export const SettingsScreen = memo(() => {
 
   return (
     <>
-      <Box display="flex" flex={1} overflow="scroll" flexDirection="column">
+      <Box display="flex" flex={1} flexDirection="column">
         <TopBarNavigation title={"Settings"} />
         <List>
           <ListSubheader disableSticky>General</ListSubheader>
