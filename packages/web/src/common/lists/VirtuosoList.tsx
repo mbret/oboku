@@ -65,6 +65,7 @@ export const VirtuosoList = memo(
     restoreStateFrom?:
       | { type: "list"; state: StateSnapshot }
       | { type: "grid"; state: GridStateSnapshot }
+    useWindowScroll?: boolean
   }) => {
     const virtuosoRef = useRef<VirtuosoHandle>(null)
     const virtuosoGridRef = useRef<VirtuosoGridHandle>(null)
@@ -134,7 +135,6 @@ export const VirtuosoList = memo(
         {itemsPerRow > 1 ? (
           <VirtuosoGrid
             ref={virtuosoGridRef}
-            className="withScrollBar"
             style={{
               ...style,
               visibility: isReadyToBeShown ? undefined : "hidden",
@@ -179,7 +179,6 @@ export const VirtuosoList = memo(
         ) : (
           <Virtuoso
             ref={virtuosoRef}
-            className="withScrollBar"
             style={{
               ...style,
               visibility: isReadyToBeShown ? undefined : "hidden"

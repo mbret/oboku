@@ -17,19 +17,14 @@ export const HomeScreen = memo(() => {
   const { t } = useTranslation()
 
   return (
-    <Box
-      display="flex"
-      flex={1}
-      overflow="hidden"
-      flexDirection="column"
-    >
+    <Box display="flex" flex={1} flexDirection="column" overflow="auto">
       <TopBarNavigation
         title={"Home"}
         showBack={false}
         hasSearch
         hasLockLibrary
       />
-      <Box height="100%" overflow="scroll" pb={2}>
+      <Box pb={2}>
         <CommunicationPane />
         {continueReadingBooks.length === 0 && !isPending && (
           <div

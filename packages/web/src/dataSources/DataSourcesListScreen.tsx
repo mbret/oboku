@@ -40,7 +40,7 @@ export const DataSourcesListScreen = () => {
         style={{
           display: "flex",
           flex: 1,
-          overflow: "scroll",
+          overflow: "auto",
           flexFlow: "column"
         }}
       >

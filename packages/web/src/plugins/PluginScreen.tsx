@@ -11,7 +11,7 @@ export const PluginScreen = memo(() => {
 
   return (
     <>
-      <Stack flex={1} overflow="scroll">
+      <Stack flex={1} overflow="auto">
         <TopBarNavigation
           title={capitalize(plugin?.name ?? "plugin")}
           showBack

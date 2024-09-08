@@ -71,7 +71,6 @@ export const LibraryBooksScreen = () => {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100%",
         flex: 1,
         overflow: "hidden"
       }}
@@ -84,18 +83,7 @@ export const LibraryBooksScreen = () => {
         }}
         numberOfFiltersApplied={numberOfFiltersApplied}
       />
-      <Stack
-        flex={1}
-        style={
-          {
-            // display: "flex",
-            // flexDirection: "column",
-            // height: "100%",
-            // flex: 1,
-            // overflow: "scroll"
-          }
-        }
-      >
+      <Stack flex={1}>
         {books.length === 0 && (
           <div
             style={{
@@ -116,8 +104,6 @@ export const LibraryBooksScreen = () => {
                 flexFlow: "column",
                 alignItems: "center",
                 textAlign: "center",
-                // paddingLeft: theme.spacing(2),
-                // paddingRight: theme.spacing(2),
                 width: "80%",
                 maxWidth: theme.custom.maxWidthCenteredContent
               }}

@@ -25,7 +25,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
     width: 600,
     height: 600,
     fit: "inside",
-    withoutEnlargement: true
+    withoutEnlargement: true  
   })
 
   const converted =

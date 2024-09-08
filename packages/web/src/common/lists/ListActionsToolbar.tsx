@@ -76,7 +76,6 @@ export const ListActionsToolbar = memo(
       <>
         <Toolbar
           style={{
-            borderBottom: `1px solid ${theme.palette.grey[200]}`,
             boxSizing: "border-box"
           }}
           {...rest}
