@@ -164,7 +164,7 @@ export const BookListListItem: FC<
                 >
                   <Chip
                     size="small"
-                    avatar={<LoopRounded className="icon-spin" />}
+                    avatar={<LoopRounded className="oboku-infinite-spin" />}
                     label="metadata..."
                   />
                 </div>

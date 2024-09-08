@@ -115,7 +115,7 @@ export const BookListCoverContainer: FC<
             <Chip
               color="primary"
               size="small"
-              icon={<LoopRounded color="primary" className="icon-spin" />}
+              icon={<LoopRounded color="primary" className="oboku-infinite-spin" />}
               label="metadata..."
             />
           )}

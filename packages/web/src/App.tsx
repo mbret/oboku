@@ -6,7 +6,7 @@ import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog
 import { plugins } from "./plugins/configure"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./PreloadQueries"
-import { SplashScreen } from "./SplashScreen"
+import { SplashScreen } from "./common/SplashScreen"
 import { BlurFilterReference } from "./books/BlurFilterReference"
 import "./i18n"
 import { ErrorBoundary } from "@sentry/react"
@@ -72,7 +72,6 @@ export function App() {
         <ThemeProvider>
           <QueryClientProvider client={queryClient}>
             <Suspense fallback={<SplashScreen show />}>
-              {/* <SplashScreen show={!isAppReady} /> */}
               {!isHydratingProfile && isAuthHydrated && (
                 <>
                   {plugins.reduce(

@@ -1,6 +1,7 @@
 import { ComponentProps, forwardRef } from "react"
 import RcSlider from "rc-slider"
 import "rc-slider/assets/index.css"
+import "./index.css"
 import { ComponentsVariants, useTheme, useThemeProps } from "@mui/material"
 
 interface ScrubberProps extends ComponentProps<typeof RcSlider> {
