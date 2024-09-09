@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { Typography, useTheme, Box } from "@mui/material"
+import { Typography, Box } from "@mui/material"
 import { useContinueReadingBooks } from "./helpers"
 import { HomeBookList } from "./HomeBookList"
 

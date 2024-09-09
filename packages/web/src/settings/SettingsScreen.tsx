@@ -1,22 +1,13 @@
 import { ComponentProps, memo, useState } from "react"
-import {
-  CheckCircleRounded,
-  Inbox,
-  RadioButtonUncheckedOutlined
-} from "@mui/icons-material"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
   Box,
-  Checkbox,
   Drawer,
   List,
   ListItem,
   ListItemButton,
-  ListItemIcon,
-  ListItemSecondaryAction,
   ListItemText,
   ListSubheader,
-  Switch
 } from "@mui/material"
 import { localSettingsSignal, useLocalSettings } from "./states"
 import { ListItemSwitch } from "../common/ListItemSwitch"

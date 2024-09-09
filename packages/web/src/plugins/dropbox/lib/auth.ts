@@ -1,7 +1,7 @@
 import { DropboxAuth } from "dropbox"
 import { CLIENT_ID } from "../constants"
-import { ObokuPluginError } from "../../types"
-import { ROUTES } from "../../../constants"
+import { ROUTES } from "../../../constants.web"
+import { ObokuPluginError } from "../../../errors/errors.shared"
 
 const defaultWindowOptions = {
   toolbar: "no",
@@ -9,8 +9,6 @@ const defaultWindowOptions = {
 }
 
 let dropboxAuth = new DropboxAuth({ clientId: CLIENT_ID })
-
-export const getLastDpx = () => dropboxAuth
 
 const isAccessTokenStillSufficient = () => {
   const accessTokenExpiresAt: Date | undefined =

@@ -3,7 +3,7 @@ import { DownloadState } from "../../download/states"
 import { signal } from "reactjrx"
 import { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 
-export type LibraryDocType = {
+type LibraryDocType = {
   viewMode: ListActionViewMode
   sorting: LibrarySorting
   isLibraryUnlocked: boolean

@@ -13,7 +13,7 @@ import {
 import {
   READER_NOTIFICATION_THROTTLE_TIME,
   READER_NOTIFICATION_TIME_TO_SCREEN
-} from "../../constants"
+} from "../../constants.web"
 import { reader$ } from "../states"
 import { useForeverQuery } from "reactjrx"
 

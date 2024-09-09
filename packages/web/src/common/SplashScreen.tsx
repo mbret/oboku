@@ -1,6 +1,6 @@
 import { Box, Fade } from "@mui/material"
 import { memo, useState } from "react"
-import { Logo } from "./common/Logo"
+import { Logo } from "./Logo"
 
 export const SplashScreen = memo(({ show }: { show: boolean }) => {
   const [hidden, setHidden] = useState(false)

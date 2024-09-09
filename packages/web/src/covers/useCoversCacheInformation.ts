@@ -1,6 +1,6 @@
 import { useQuery } from "reactjrx"
 import { from, switchMap, map } from "rxjs"
-import { COVERS_CACHE_KEY } from "./constants.sw"
+import { SW_COVERS_CACHE_KEY } from "../constants.shared"
 
 export const USE_COVERS_CACHE_INFORMATION_KEY = ["storage/covers/size"]
 
@@ -9,7 +9,7 @@ export const useCoversCacheInformation = () =>
     queryKey: USE_COVERS_CACHE_INFORMATION_KEY,
     gcTime: 5 * 60 * 1000,
     queryFn: () =>
-      from(caches.open(COVERS_CACHE_KEY)).pipe(
+      from(caches.open(SW_COVERS_CACHE_KEY)).pipe(
         switchMap((cache) =>
           from(cache.keys()).pipe(
             map((keys) => {

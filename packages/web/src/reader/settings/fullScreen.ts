@@ -1,4 +1,4 @@
-import { IS_MOBILE_DEVICE } from "../../constants"
+import { IS_MOBILE_DEVICE } from "../../constants.web"
 import { useLocalSettings } from "../../settings/states"
 import { useFullscreenOnMount } from "../../common/fullscreen/useFullscreenOnMount"
 

@@ -1,5 +1,5 @@
 import { replicateCouchDB } from "rxdb/plugins/replication-couchdb"
-import { API_COUCH_URI } from "../../constants"
+import { API_COUCH_URI } from "../../constants.web"
 import { RxCollection } from "rxdb"
 
 export const replicateCouchDBCollection = ({

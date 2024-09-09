@@ -13,7 +13,7 @@ import { BottomTabBar } from "./BottomTabBar"
 import { ProfileScreen } from "../settings/ProfileScreen"
 import { ManageStorageScreen } from "../settings/ManageStorageScreen"
 import { LibraryTopTabNavigator } from "../library/LibraryTopTabNavigator"
-import { ROUTES } from "../constants"
+import { ROUTES } from "../constants.web"
 import { BookDetailsScreen } from "../books/details/BookDetailsScreen"
 import { CollectionDetailsScreen } from "../collections/details/CollectionDetailsScreen"
 import { BookActionsDrawer } from "../books/drawer/BookActionsDrawer"
@@ -152,8 +152,6 @@ export const AppNavigator = ({
     </BrowserRouter>
   )
 }
-
-let i = 0
 
 const TrackHistoryCanGoBack = memo(() => {
   const { pathname, state } = useLocation()

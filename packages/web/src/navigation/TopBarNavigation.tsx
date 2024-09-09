@@ -11,7 +11,7 @@ import {
 } from "@mui/icons-material"
 import { alpha, Box, InputBase, styled, useTheme } from "@mui/material"
 import { useSafeGoBack } from "./useSafeGoBack"
-import { ROUTES } from "../constants"
+import { ROUTES } from "../constants.web"
 import { useNavigate } from "react-router-dom"
 import { libraryStateSignal } from "../library/books/states"
 import { useSignalValue } from "reactjrx"

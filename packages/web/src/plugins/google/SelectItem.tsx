@@ -1,7 +1,7 @@
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { useDrivePicker } from "./lib/useDrivePicker"
-import { catchError, EMPTY, of, takeUntil, tap } from "rxjs"
+import { catchError, of, takeUntil, tap } from "rxjs"
 import { useEffect } from "react"
 import { useUnmountObservable } from "reactjrx"
 import { ObokuPlugin } from "../types"

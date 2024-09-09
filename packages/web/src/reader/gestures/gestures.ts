@@ -9,13 +9,7 @@ export const useGestureHandler = () => {
   useEffect(() => {
     const deregister = reader?.gestures.hookManager.register(
       "beforeTap",
-      ({ event }) => {
-        const target = event.event.target
-
-        // if (isWithinBookmarkArea(target)) {
-        //   return false
-        // }
-
+      ({}) => {
         return true
       }
     )

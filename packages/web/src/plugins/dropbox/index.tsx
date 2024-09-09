@@ -1,3 +1,4 @@
+/// <reference types="@types/dropbox-chooser" />
 import { UploadBook } from "./UploadBook"
 import { SvgIcon } from "@mui/material"
 
@@ -27,5 +28,5 @@ export const plugin: ObokuPlugin = {
   useRefreshMetadata,
   useSynchronize,
   canSynchronize: true,
-  description: "Manage books and collections from Dropbox"
+  description: "Manage books and collections from Dropbox",
 }

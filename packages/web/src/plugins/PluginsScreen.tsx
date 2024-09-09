@@ -11,7 +11,7 @@ import {
 import { plugins } from "./configure"
 import { ExtensionRounded } from "@mui/icons-material"
 import { Link } from "react-router-dom"
-import { ROUTES } from "../constants"
+import { ROUTES } from "../constants.web"
 
 export const PluginsScreen = memo(() => {
   return (

@@ -13,7 +13,6 @@ import {
   DataSourceCollection,
   migrationStrategies as dataSourceMigrationStrategies
 } from "./collections/dataSource"
-import { BookDocType, LinkDocType, TagsDocType } from "@oboku/shared"
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder"
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
 import { RxDBUpdatePlugin } from "rxdb/plugins/update"
@@ -32,7 +31,6 @@ import { link, LinkCollection } from "./collections/link"
 import {
   initializeSettings,
   SettingsCollection,
-  SettingsDocType,
   settingsSchema
 } from "./collections/settings"
 import { conflictHandler } from "./replication/conflictHandler"
@@ -52,9 +50,7 @@ if (import.meta.env.DEV) {
   addRxPlugin(RxDBDevModePlugin)
 }
 
-export type DocTypes = TagsDocType | BookDocType | LinkDocType | SettingsDocType
-
-export type MyDatabaseCollections = {
+type MyDatabaseCollections = {
   tag: TagCollection
   book: BookCollection
   link: LinkCollection
@@ -62,8 +58,6 @@ export type MyDatabaseCollections = {
   obokucollection: CollectionCollection
   datasource: DataSourceCollection
 }
-
-export const settingsMigrationStrategies = {}
 
 export type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 

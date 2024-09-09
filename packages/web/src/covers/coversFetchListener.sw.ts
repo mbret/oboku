@@ -1,5 +1,4 @@
-import { API_URL } from "../constants.shared"
-import { COVERS_CACHE_KEY } from "./constants.sw"
+import { API_URL, SW_COVERS_CACHE_KEY } from "../constants.shared"
 import { getCoverIdFromUrl } from "./helpers.shared"
 
 export const coversFetchListener = (event: FetchEvent) => {
@@ -11,7 +10,7 @@ export const coversFetchListener = (event: FetchEvent) => {
   ) {
     event.respondWith(
       (async () => {
-        const cache = await caches.open(COVERS_CACHE_KEY)
+        const cache = await caches.open(SW_COVERS_CACHE_KEY)
 
         const cachedResponse = await cache.match(event.request)
 

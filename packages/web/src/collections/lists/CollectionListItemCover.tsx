@@ -1,18 +1,6 @@
 import { memo } from "react"
-import {
-  Box,
-  useTheme,
-  Stack,
-  Chip,
-  capitalize,
-  Typography
-} from "@mui/material"
-import {
-  CircleRounded,
-  FolderRounded,
-  StarRounded,
-  StyleRounded
-} from "@mui/icons-material"
+import { Box, useTheme, Stack, Chip } from "@mui/material"
+import { FolderRounded, StyleRounded } from "@mui/icons-material"
 import { useCollection } from "../useCollection"
 import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 import { CollectionListItemBookCovers } from "./CollectionListItemBookCovers"
@@ -29,7 +17,7 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
   })
   const metadata = getCollectionComputedMetadata(item)
   const readingProgress = useCollectionReadingProgress({ id })
-  const { hasCover, uri: coverUri } = useCollectionCoverUri(item)
+  const { uri: coverUri } = useCollectionCoverUri(item)
 
   return (
     <Stack
@@ -101,7 +89,7 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
               rating={metadata.rating}
               status={metadata.status}
               sx={{
-                  bgcolor: "white",
+                bgcolor: "white",
                 position: "absolute",
                 right: 0,
                 bottom: 0,

@@ -1,11 +1,11 @@
-import { RxCollection, RxDocument, RxJsonSchema, RxQuery } from "rxdb"
+import { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { CollectionDocType } from "@oboku/shared"
 import { generateId } from "./utils"
 
-export type CollectionDocMethods = {}
+type CollectionDocMethods = {}
 
-export type CollectionDocument = RxDocument<
+type CollectionDocument = RxDocument<
   CollectionDocType,
   CollectionDocMethods
 >

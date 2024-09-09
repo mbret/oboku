@@ -14,7 +14,7 @@ import {
 } from "@mui/icons-material"
 import { useNavigate } from "react-router-dom"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
-import { ROUTES } from "../../constants"
+import { ROUTES } from "../../constants.web"
 import {
   Drawer,
   Divider,

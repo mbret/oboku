@@ -1,3 +1,7 @@
+/// <reference types="@types/gapi" />
+/// <reference types="@types/gapi.client.drive-v3" />
+/// <reference types="@types/google.accounts" />
+/// <reference types="@types/google.picker" />
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import GoogleDriveAsset from "../../assets/google-drive.svg?react"
 import { SvgIcon } from "@mui/material"

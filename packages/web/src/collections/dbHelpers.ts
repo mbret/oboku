@@ -4,8 +4,6 @@ import { CollectionDocType } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
 import { COLLECTION_EMPTY_ID } from "../constants.shared"
 
-export type Collection = CollectionDocType
-
 export const getCollectionById = (database: Database, id: string) => {
   return from(database.collections.obokucollection.findOne(id).exec()).pipe(
     map((result) => result?.toJSON())

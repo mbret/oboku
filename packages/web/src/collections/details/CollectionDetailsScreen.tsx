@@ -88,7 +88,7 @@ export const CollectionDetailsScreen = () => {
       }
     }
   )
-  const { x, y } = useWindowScroll()
+  const { y } = useWindowScroll()
 
   useEffect(() => {
     Report.log({

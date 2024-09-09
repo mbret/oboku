@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { signal, useMutation } from "reactjrx"
 import { map } from "rxjs"
 import { loadScript } from "../../../common/utils"

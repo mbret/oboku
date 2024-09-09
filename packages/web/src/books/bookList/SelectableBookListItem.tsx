@@ -1,5 +1,5 @@
 import { Box, Typography, useTheme } from "@mui/material"
-import React, { FC, memo } from "react"
+import React, { memo } from "react"
 import { useEnrichedBookState } from "../states"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { Checkbox } from "../../common/Checkbox"

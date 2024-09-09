@@ -139,26 +139,6 @@ const getBookState = ({
 /**
  * @deprecated
  */
-export const useBookState = ({
-  bookId,
-  tags = {}
-}: {
-  bookId?: string
-  tags: ReturnType<typeof useTagsByIds>["data"]
-}) => {
-  const { data: book } = useBook({ id: bookId })
-  const { data: collections } = useCollections()
-
-  return getBookState({
-    book,
-    collections,
-    tags
-  })
-}
-
-/**
- * @deprecated
- */
 export const getEnrichedBookState = ({
   normalizedBookDownloadsState,
   protectedTagIds = [],
@@ -317,7 +297,3 @@ export const useBooksAsArrayState = ({
     isPending
   }
 }
-
-export const books$ = latestDatabase$.pipe(
-  switchMap((database) => database?.book.find({}).$)
-)

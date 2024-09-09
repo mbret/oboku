@@ -1,7 +1,7 @@
 import { useMutation } from "reactjrx"
 import { createDialog } from "../common/dialogs/createDialog"
 import { useNavigate } from "react-router-dom"
-import { ROUTES } from "../constants"
+import { ROUTES } from "../constants.web"
 import { map } from "rxjs"
 
 export const useCreateBackToBookDialog = () => {

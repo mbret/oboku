@@ -14,7 +14,7 @@ import { generateId } from "./utils"
 
 type BookDocMethods = {}
 
-export type BookDocument = RxDocument<BookDocType, BookDocMethods>
+type BookDocument = RxDocument<BookDocType, BookDocMethods>
 
 type BookCollectionMethods = {
   post: (

@@ -11,7 +11,6 @@ import {
   ListItemText,
   styled,
   Typography,
-  useTheme
 } from "@mui/material"
 import React, { useCallback, useMemo, useRef, useState } from "react"
 import {
@@ -23,7 +22,7 @@ import {
 import { useMount } from "react-use"
 import { BookList } from "../books/bookList/BookList"
 import { CollectionList } from "../collections/lists/CollectionList"
-import { ROUTES } from "../constants"
+import { ROUTES } from "../constants.web"
 import { SEARCH_MAX_PREVIEW_ITEMS } from "../constants.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useCollectionsForSearch } from "./useCollectionsForSearch"
@@ -92,7 +91,6 @@ export const SearchScreen = () => {
   const { data: books = [] } = useBooksForSearch(value)
   const inputRef = useRef<HTMLElement>()
   const navigate = useNavigate()
-  const theme = useTheme()
   const [bookExpanded, setBookExpanded] = useState(true)
   const [collectionsExpanded, setCollectionsExpanded] = useState(true)
 

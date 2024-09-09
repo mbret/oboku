@@ -6,7 +6,7 @@ import { useTotalPages } from "../pagination/useTotalPages"
 import { useCurrentPages } from "../pagination/useCurrentPages"
 import { useIsUsingReverseNavigation } from "./useIsUsingReverseNavigation"
 import { useIsUsingPagesPerChapter } from "../pagination/useIsUsingPagesPerChapter"
-import { ObokuRcSlider } from "./ObokuRcSlider"
+import { ObokuRcSlider } from "./slider/ObokuRcSlider"
 
 export const Scrubber = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)

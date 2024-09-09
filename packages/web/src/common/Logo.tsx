@@ -1,5 +1,4 @@
 import { Typography, useTheme } from "@mui/material"
-import React from "react"
 
 export const Logo = () => {
   const theme = useTheme()

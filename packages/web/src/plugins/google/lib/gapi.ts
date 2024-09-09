@@ -1,4 +1,3 @@
-import { useEffect } from "react"
 import { signal, useMutation } from "reactjrx"
 import {
   catchError,
@@ -7,7 +6,6 @@ import {
   from,
   map,
   mergeMap,
-  tap
 } from "rxjs"
 import { loadScript } from "../../../common/utils"
 import { retryOnFailure } from "./scripts"

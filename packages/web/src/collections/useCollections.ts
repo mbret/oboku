@@ -9,8 +9,6 @@ import { libraryStateSignal } from "../library/books/states"
 import { intersection } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
 
-export type Collection = CollectionDocType
-
 export const useCollections = ({
   queryObj,
   bookIds,

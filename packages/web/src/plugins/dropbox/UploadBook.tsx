@@ -8,7 +8,7 @@ import { BlockingScreen } from "../../common/BlockingBackdrop"
 import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
-import useIsMounted from "./lib/useIsMounted"
+import { useIsMounted } from "./lib/useIsMounted"
 
 export const UploadBook: FC<{
   onClose: () => void

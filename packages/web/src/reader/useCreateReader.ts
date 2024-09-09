@@ -8,8 +8,6 @@ import { localSettingsSignal } from "../settings/states"
 import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
 import { webStreamer } from "./streamer/webStreamer"
 
-export type ReaderInstance = ReturnType<typeof createAppReader>
-
 export const createAppReader = gesturesEnhancer(
   // __
   createReader

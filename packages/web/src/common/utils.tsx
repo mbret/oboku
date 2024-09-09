@@ -1,6 +1,3 @@
-import { useMeasure } from "react-use"
-import React, { useMemo } from "react"
-import { UseMeasureResult } from "react-use/lib/useMeasure"
 import {
   defer,
   first,
@@ -12,24 +9,6 @@ import {
   shareReplay,
   startWith
 } from "rxjs"
-
-export const useMeasureElement = (element: React.ReactNode) => {
-  const [ref, dim] = useMeasure() as UseMeasureResult
-
-  const elementToRender = useMemo(
-    () => (
-      <div
-        ref={ref as any}
-        style={{ position: "absolute", visibility: "hidden" }}
-      >
-        {element}
-      </div>
-    ),
-    [element, ref]
-  )
-
-  return [elementToRender, dim] as [typeof elementToRender, typeof dim]
-}
 
 export const bytesToMb = (value: number) => (value / 1e6).toFixed(2)
 

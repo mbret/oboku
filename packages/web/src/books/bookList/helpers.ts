@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import { ROUTES } from "../../constants"
+import { ROUTES } from "../../constants.web"
 import { useDownloadBook } from "../../download/useDownloadBook"
 import { getEnrichedBookState } from "../states"
 import { booksDownloadStateSignal } from "../../download/states"

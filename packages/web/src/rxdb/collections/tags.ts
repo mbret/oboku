@@ -17,7 +17,7 @@ type CollectionMethods = {
   ) => Promise<TagsDocument>
 }
 
-export type TagsDocument = RxDocument<TagsDocType, DocMethods>
+type TagsDocument = RxDocument<TagsDocType, DocMethods>
 
 export type TagCollection = RxCollection<
   TagsDocType,
