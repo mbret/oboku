@@ -3,12 +3,11 @@ import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useUpdateCollection } from "./useUpdateCollection"
 import { httpClient } from "../http/httpClient"
-import { isPluginError } from "../plugins/types"
 import { useMutation } from "reactjrx"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getCollectionById } from "./dbHelpers"
-import { OfflineError } from "../errors/errors.shared"
+import { isPluginError, OfflineError } from "../errors/errors.shared"
 
 export const useRefreshCollectionMetadata = () => {
   const { mutateAsync: updateCollection } = useUpdateCollection()

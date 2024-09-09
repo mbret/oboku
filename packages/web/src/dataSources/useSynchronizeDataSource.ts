@@ -4,12 +4,12 @@ import { useMutation, isDefined } from "reactjrx"
 import { from, filter, switchMap, catchError, map, of } from "rxjs"
 import { createDialog } from "../common/dialogs/createDialog"
 import { httpClient } from "../http/httpClient"
-import { isPluginError } from "../plugins/types"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { useDatabase } from "../rxdb"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useDataSourceIncrementalPatch } from "./useDataSourceIncrementalPatch"
 import { Report } from "../debug/report.shared"
+import { isPluginError } from "../errors/errors.shared"
 
 export const useSynchronizeDataSource = () => {
   const { db: database } = useDatabase()

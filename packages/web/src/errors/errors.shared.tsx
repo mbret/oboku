@@ -1,22 +1,8 @@
-import { ObokuErrorCode } from "@oboku/shared"
 import { HttpClientError } from "../http/HttpClientError.shared"
 
 type HttpApiError = {
   response: {
     data: { errors: { code?: string }[] }
-  }
-}
-
-export const createServerError = async (response: Response) => {
-  try {
-    const body = await response.json()
-    const errors =
-      body?.errors?.map((error) => ({
-        code: error?.code
-      })) || []
-    throw new ServerError(response, errors)
-  } catch (e) {
-    throw e
   }
 }
 
@@ -35,6 +21,22 @@ export class OfflineError extends Error {
 export class StreamerFileNotSupportedError extends Error {}
 export class StreamerFileNotFoundError extends Error {}
 
+type Code = "unknown" | "cancelled"
+
+export class ObokuPluginError extends Error {
+  code: Code
+  obokuError = true
+
+  constructor({ code }: { code: Code }) {
+    super(`Plugin error with code: ${code}`)
+
+    this.code = code
+
+    // 👇️ because we are extending a built-in class
+    Object.setPrototypeOf(this, ObokuPluginError.prototype)
+  }
+}
+
 export const isCancelError = (error: unknown) => error instanceof CancelError
 
 export const isApiError = (error: unknown): error is HttpApiError => {
@@ -48,14 +50,6 @@ export const isApiError = (error: unknown): error is HttpApiError => {
   )
 }
 
-export class ServerError extends Error {
-  constructor(
-    public response: Response,
-    public errors: { code?: ObokuErrorCode }[]
-  ) {
-    super("Error with server")
-    this.response = response
-    this.name = "ServerError"
-    this.errors = errors
-  }
-}
+export const isPluginError = (error: unknown): error is ObokuPluginError =>
+  error instanceof ObokuPluginError ||
+  (!!error && typeof error === "object" && "obokuError" in error)

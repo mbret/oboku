@@ -62,7 +62,7 @@ const tagsByIds$ = tags$.pipe(
   )
 )
 
-export const protectedTags$ = tags$.pipe(
+const protectedTags$ = tags$.pipe(
   map((tag) => tag.filter(({ isProtected }) => isProtected))
 )
 
@@ -126,19 +126,13 @@ export const useTags = ({
 export const useTagsByIds = () =>
   useForeverQuery({ queryFn: tagsByIds$, queryKey: ["tagsById"] })
 
-export const useProtectedTags = () =>
-  useForeverQuery({
-    queryFn: protectedTags$,
-    queryKey: ["protectedTags"]
-  })
-
 export const useTagIds = () =>
   useForeverQuery({
     queryFn: () => tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
     queryKey: ["tagsIds"]
   })
 
-export const blurredTags$ = tags$.pipe(
+const blurredTags$ = tags$.pipe(
   map((tags) => tags.filter(({ isBlurEnabled }) => isBlurEnabled))
 )
 

@@ -23,6 +23,4 @@ export const localSettingsSignal = signal<{
   default: localSettingsStateDefaultValues
 })
 
-export const localSettingsStatePersist = localSettingsSignal
-
 export const useLocalSettings = () => useSignalValue(localSettingsSignal)

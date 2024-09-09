@@ -1,7 +1,6 @@
 import {
   DataSourceDocType,
   LinkDocType,
-  dataSourceHelpers
 } from "@oboku/shared"
 import {
   ComponentProps,
@@ -13,12 +12,8 @@ import {
 import { Button } from "@mui/material"
 import { Observable } from "rxjs"
 
-export { ImgIcon } from "./plugin-front/ImgIcon"
-
-export { dataSourceHelpers }
-
-export type PostLink = Pick<LinkDocType, "resourceId" | "type">
-export type PostBook = {}
+type PostLink = Pick<LinkDocType, "resourceId" | "type">
+type PostBook = {}
 
 type Item = {
   resourceId: string
@@ -35,7 +30,7 @@ type StreamValue = {
   progress: number
 }
 
-export type UseDownloadHook = (options: {
+type UseDownloadHook = (options: {
   apiUri: string
   requestPopup: () => Promise<boolean>
 }) => (params: {
@@ -53,21 +48,21 @@ export type UseDownloadHook = (options: {
     }
 >
 
-export type UseRefreshMetadataHook = (options: {
+type UseRefreshMetadataHook = (options: {
   requestPopup: () => Promise<boolean>
 }) => (data: { linkType: string }) => Promise<{
   data?: object
 }>
 
-export type UseSynchronizeHook = (options: {
+type UseSynchronizeHook = (options: {
   requestPopup: () => Promise<boolean>
 }) => () => Promise<{
   data?: object
 }>
 
-export type UseRemoveBook = (options: {
-  requestPopup: () => Promise<boolean>
-}) => (link: LinkDocType) => Promise<
+type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
+  link: LinkDocType
+) => Promise<
   | {
       data: Record<string, unknown>
     }
@@ -78,7 +73,7 @@ export type UseRemoveBook = (options: {
     }
 >
 
-export type UseSyncSourceInfo = (dataSource: DataSourceDocType) => {
+type UseSyncSourceInfo = (dataSource: DataSourceDocType) => {
   name?: string
 }
 
@@ -133,5 +128,3 @@ export const extractIdFromResourceId = (
   uniqueResourceIdentifier: string,
   resourceId: string
 ) => resourceId.replace(`${uniqueResourceIdentifier}-`, ``)
-
-export * from "./plugin-front/errors"

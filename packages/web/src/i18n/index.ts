@@ -28,8 +28,3 @@ i18n
       error && console.error(error)
     }
   )
-
-// @ts-ignore
-window.i18n = i18n
-
-export { i18n }

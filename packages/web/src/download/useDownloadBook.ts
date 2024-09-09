@@ -5,7 +5,6 @@ import { bytesToMb } from "../common/utils"
 import { createCbzFromReadableStream } from "./createCbzFromReadableStream"
 import { usePluginDownloadBook } from "../plugins/usePluginDownloadBook"
 import { plugin as pluginLocalFile } from "../plugins/local"
-import { isPluginError } from "../plugins/types"
 import { BookQueryResult } from "../books/states"
 import { createDialog } from "../common/dialogs/createDialog"
 import {
@@ -27,7 +26,7 @@ import {
   throttleTime
 } from "rxjs"
 import { useMutation } from "reactjrx"
-import { CancelError } from "../errors/errors.shared"
+import { CancelError, isPluginError } from "../errors/errors.shared"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { dexieDb } from "../rxdb/dexie"
 

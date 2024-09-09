@@ -10,20 +10,20 @@ const lockState = signal<Key[]>({
   default: []
 })
 
-export const useIsLockedState = () => {
+const useIsLockedState = () => {
   return !!useSignalValue(lockState).length
 }
 
 const lockSubject = new Subject<string>()
 
-export const lock$ = lockSubject.asObservable()
+const lock$ = lockSubject.asObservable()
 
 export const lock = (options: ObservedValueOf<typeof lockSubject>) =>
   lockSubject.next(options)
 
 const unlockSubject = new Subject<string>()
 
-export const unlock$ = unlockSubject.asObservable()
+const unlock$ = unlockSubject.asObservable()
 
 export const unlock = (options: ObservedValueOf<typeof unlockSubject>) =>
   unlockSubject.next(options)

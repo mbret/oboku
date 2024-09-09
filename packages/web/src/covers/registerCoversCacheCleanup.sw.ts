@@ -14,17 +14,17 @@ import {
 } from "rxjs"
 import { createSwDatabase } from "../rxdb/db.sw"
 import { profileUpdate$ } from "../workers/messages.sw"
-import { WEB_OBOKU_PROFILE_REQUEST_MESSAGE_DATA } from "../workers/types"
-import { COVERS_CACHE_KEY, REPORT_NAMESPACE } from "./constants.sw"
+import { type WEB_OBOKU_PROFILE_REQUEST_MESSAGE_DATA } from "../workers/types"
 import {
   getMetadataFromRequest,
   hasAnotherMoreRecentCoverForThisRequest
 } from "./helpers.shared"
 import { Report } from "../debug/report.shared"
+import { SW_COVERS_CACHE_KEY } from "../constants.shared"
 
 declare const self: ServiceWorkerGlobalScope
 
-const cache$ = defer(() => from(caches.open(COVERS_CACHE_KEY)))
+const cache$ = defer(() => from(caches.open(SW_COVERS_CACHE_KEY)))
 const database$ = defer(() => from(createSwDatabase()))
 const requestProfileUpdate$ = defer(() =>
   from(self.clients.matchAll()).pipe(
@@ -71,7 +71,7 @@ export const registerCoversCacheCleanup = () => {
                        */
                       if (!profile) {
                         Report.info(
-                          REPORT_NAMESPACE,
+                          `[sw/covers]`,
                           `No current profile set, deleting all covers in cache`
                         )
                         return clearAllCovers()
@@ -101,14 +101,14 @@ export const registerCoversCacheCleanup = () => {
 
                       if (requestsNotForCurrentProfile.length) {
                         Report.info(
-                          REPORT_NAMESPACE,
+                          `[sw/covers]`,
                           `Removing ${requestsNotForCurrentProfile.length} covers not related to current profile in cache`
                         )
                       }
 
                       if (cacheKeysNotInDb.length) {
                         Report.info(
-                          REPORT_NAMESPACE,
+                          `[sw/covers]`,
                           `Removing ${cacheKeysNotInDb.length} obsolete covers in cache`
                         )
                       }
@@ -160,20 +160,16 @@ export const registerCoversCacheCleanup = () => {
   interval(5 * 60 * 1000 * 2)
     .pipe(
       tap(() => {
-        Report.info(REPORT_NAMESPACE, `cleanup process started`)
+        Report.info(`[sw/covers]`, `cleanup process started`)
       }),
       switchMap(() =>
         combineLatest([cleanupForProfile$, cleanupOutdatedCovers$])
       ),
       tap(() => {
-        Report.info(REPORT_NAMESPACE, `cleanup process success`)
+        Report.info(`[sw/covers]`, `cleanup process success`)
       }),
       catchError((error) => {
-        Report.info(
-          REPORT_NAMESPACE,
-          `cleanup process failed with error`,
-          error
-        )
+        Report.info(`[sw/covers]`, `cleanup process failed with error`, error)
 
         console.error(error)
 

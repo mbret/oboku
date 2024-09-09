@@ -1,4 +1,3 @@
-import { ObokuPluginError } from "../../types"
 import { catchError, first, from, mergeMap, of, tap } from "rxjs"
 import {
   accessTokenSignal,
@@ -9,6 +8,7 @@ import {
 } from "./auth"
 import { Report } from "../../../debug/report.shared"
 import { useGoogleScripts } from "./scripts"
+import { ObokuPluginError } from "../../../errors/errors.shared"
 
 const isPopupClosedError = (error: unknown) => {
   return (

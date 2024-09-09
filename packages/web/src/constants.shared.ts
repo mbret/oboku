@@ -16,3 +16,4 @@ export const API_URL =
 export const API_COUCH_URI =
   import.meta.env.VITE_API_COUCH_URI || `https://${hostname}:4003`
 export const CLEANUP_DANGLING_LINKS_INTERVAL = 1000 * 60 * 10 // 10mn
+export const SW_COVERS_CACHE_KEY = `covers`

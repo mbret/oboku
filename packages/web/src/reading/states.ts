@@ -5,7 +5,6 @@ export const bookBeingReadStateSignal = signal<string | undefined>({
   default: undefined
 })
 
-export const bookBeingReadStatePersist = bookBeingReadStateSignal
 export const hasOpenedReaderAlreadyStateSignal = signal({
   key: `hasOpenedReaderAlreadyState`,
   default: false

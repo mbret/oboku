@@ -3,9 +3,9 @@ import { getReplicationProperties } from "../replication/getReplicationPropertie
 import { CollectionDocType } from "@oboku/shared"
 import { generateId } from "./utils"
 
-export type CollectionDocMethods = {}
+type CollectionDocMethods = {}
 
-export type CollectionDocument = RxDocument<
+type CollectionDocument = RxDocument<
   CollectionDocType,
   CollectionDocMethods
 >

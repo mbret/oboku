@@ -1,8 +1,6 @@
-import { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
+import { RxCollection, RxJsonSchema } from "rxdb"
 import { Database } from "../databases"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
-
-export type SettingsDocument = RxDocument<SettingsDocType>
 
 type SettingsCollectionMethods = {}
 

@@ -1,13 +1,13 @@
 import { useNetworkState } from "react-use"
 import { from, switchMap, catchError, map, of } from "rxjs"
 import { httpClient } from "../http/httpClient"
-import { isPluginError } from "../plugins/types"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { Report } from "../debug/report.shared"
 import { createDialog } from "../common/dialogs/createDialog"
 import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
+import { isPluginError } from "../errors/errors.shared"
 
 export const useRefreshBookMetadata = () => {
   const { db: database } = useDatabase()

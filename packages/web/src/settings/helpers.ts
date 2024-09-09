@@ -6,7 +6,7 @@ import { from, map, mergeMap, of, switchMap } from "rxjs"
 import { SettingsDocType } from "../rxdb/collections/settings"
 import { getSettingsDocument } from "./dbHelpers"
 
-export const getSettingsOrThrow = (database: Database) => {
+const getSettingsOrThrow = (database: Database) => {
   return getSettingsDocument(database).pipe(
     map((settings) => {
       if (!settings) {

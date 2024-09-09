@@ -3,7 +3,7 @@ import { Database, createDatabase } from "./databases"
 import { isDefined, signal, useMutation, useSignalValue } from "reactjrx"
 import { filter, first, from, map, of, switchMap, tap } from "rxjs"
 
-export const databaseSignal = signal<Database | undefined>({
+const databaseSignal = signal<Database | undefined>({
   key: "databaseState"
 })
 

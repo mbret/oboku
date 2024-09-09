@@ -75,16 +75,3 @@ export const getLinkStateAsync = async ({
 
   return mapLinkTtoState({ link: link?.toJSON() })
 }
-
-/**
- * @todo optimize to refresh only when link id change
- */
-export const useLinkState = (linkId: string) => {
-  const { data: links } = useLinks()
-
-  const link = links?.find((link) => link?._id === linkId)
-
-  return mapLinkTtoState({
-    link
-  })
-}

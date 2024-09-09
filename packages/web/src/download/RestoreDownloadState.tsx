@@ -4,7 +4,7 @@ import { from, of, switchMap } from "rxjs"
 import { booksDownloadStateSignal, DownloadState } from "./states"
 import { dexieDb } from "../rxdb/dexie"
 
-export const useRestoreDownloadState = ({
+const useRestoreDownloadState = ({
   onSuccess
 }: {
   onSuccess: () => void

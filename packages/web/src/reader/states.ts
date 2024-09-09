@@ -2,7 +2,7 @@ import { filter, switchMap } from "rxjs"
 import { isDefined, signal, useForeverQuery } from "reactjrx"
 import { createAppReader } from "./useCreateReader"
 
-export type ReaderInstance = ReturnType<typeof createAppReader>
+type ReaderInstance = ReturnType<typeof createAppReader>
 
 export const readerSignal = signal<ReaderInstance | undefined>({
   key: "readerState"

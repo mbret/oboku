@@ -8,11 +8,10 @@ import { BookQueryResult, useBooks } from "./states"
 import { useNetworkState } from "react-use"
 import { usePluginRemoveBook } from "../plugins/usePluginRemoveBook"
 import { useMutation } from "reactjrx"
-import { isPluginError } from "../plugins/types"
 import { getMetadataFromBook } from "./metadata"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
 import { useLock } from "../common/BlockingBackdrop"
-import { CancelError, OfflineError } from "../errors/errors.shared"
+import { CancelError, isPluginError, OfflineError } from "../errors/errors.shared"
 
 export const useRemoveBook = () => {
   const { mutateAsync: removeDownload } = useRemoveDownloadFile()

@@ -8,9 +8,9 @@ import { DataSourceDocType } from "@oboku/shared"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
-export type DataSourceDocMethods = {}
+type DataSourceDocMethods = {}
 
-export type DataSourceDocument = RxDocument<
+type DataSourceDocument = RxDocument<
   DataSourceDocType,
   DataSourceDocMethods
 >
@@ -26,8 +26,6 @@ export type DataSourceCollection = RxCollection<
   DataSourceDocMethods,
   DataSourceCollectionMethods
 >
-
-export const collectionDocMethods: DataSourceDocMethods = {}
 
 export const dataSourceSchema: RxJsonSchema<
   Omit<DataSourceDocType, "rx_model" | "_rev" | `rxdbMeta`>

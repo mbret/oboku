@@ -120,7 +120,7 @@ export const App = memo(() => {
   )
 })
 
-export const Effects = memo(() => {
+const Effects = memo(() => {
   useCleanupDanglingLinks()
   useRemoveDownloadWhenBookIsNotInterested()
 
