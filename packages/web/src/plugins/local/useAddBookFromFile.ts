@@ -25,7 +25,8 @@ export const useAddBookFromFile = () => {
         })) || {}
 
       if (book) {
-        await downloadFile({ ...book.toJSON(), localFile: file })
+        // pre download file for this device
+        await downloadFile({ ...book.toJSON(), file })
       }
     }
   })
