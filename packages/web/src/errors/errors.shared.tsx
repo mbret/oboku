@@ -26,11 +26,25 @@ type Code = "unknown" | "cancelled"
 export class ObokuPluginError extends Error {
   code: Code
   obokuError = true
+  severity: "internal" | "user" = "internal"
 
-  constructor({ code }: { code: Code }) {
+  constructor({
+    code,
+    message,
+    severity = "internal"
+  }: {
+    code: Code
+    message?: string
+    severity?: "internal" | "user"
+  }) {
     super(`Plugin error with code: ${code}`)
 
     this.code = code
+    this.severity = severity
+
+    if (message) {
+      this.message = message
+    }
 
     // 👇️ because we are extending a built-in class
     Object.setPrototypeOf(this, ObokuPluginError.prototype)
