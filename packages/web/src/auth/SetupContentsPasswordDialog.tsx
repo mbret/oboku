@@ -22,7 +22,7 @@ type Inputs = {
 export const SetupContentsPasswordDialog = memo(
   ({ onClose, open }: { open: boolean; onClose: () => void }) => {
     const { data: accountSettings } = useSettings()
-    const { control, handleSubmit, setFocus, setError, reset } =
+    const { control, handleSubmit, setFocus, reset } =
       useForm<Inputs>({
         defaultValues: {
           appPassword: ""

@@ -41,8 +41,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
   const { mutate: removeCollection } = useRemoveCollection()
   const [isManageBookDialogOpened, setIsManageBookDialogOpened] =
     useState(false)
-  const { mutate: refreshCollectionMetadata, ...rest } =
-    useRefreshCollectionMetadata()
+  const { mutate: refreshCollectionMetadata } = useRefreshCollectionMetadata()
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
   const { mutate: updateCollectionBooks } = useUpdateCollectionBooks()
   const { closeModalWithNavigation } = useModalNavigationControl(

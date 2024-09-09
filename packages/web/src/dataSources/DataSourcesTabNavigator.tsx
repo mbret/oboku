@@ -1,4 +1,4 @@
-import { Tab, Tabs, Box, Stack } from "@mui/material"
+import { Tab, Tabs, Stack } from "@mui/material"
 import { Outlet, Link } from "react-router-dom"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../constants.web"

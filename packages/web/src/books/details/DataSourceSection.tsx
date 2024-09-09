@@ -7,7 +7,7 @@ import {
   Stack
 } from "@mui/material"
 import { MoreVertRounded } from "@mui/icons-material"
-import { FC, memo, useState } from "react"
+import { memo, useState } from "react"
 import { useDataSourcePlugin } from "../../dataSources/helpers"
 import { Report } from "../../debug/report.shared"
 import { useBook } from "../states"

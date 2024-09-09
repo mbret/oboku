@@ -1,7 +1,5 @@
 import { DownloadState, booksDownloadStateSignal } from "./states"
 import { Report } from "../debug/report.shared"
-import { DOWNLOAD_PREFIX } from "../constants.shared"
-import { BookFile } from "./types"
 import { getLinkStateAsync } from "../links/states"
 import { bytesToMb } from "../common/utils"
 import { createCbzFromReadableStream } from "./createCbzFromReadableStream"

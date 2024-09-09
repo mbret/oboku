@@ -12,10 +12,6 @@ import { Report } from "../debug/report.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { BuildRounded, DeleteForeverRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
-import {
-  useDuplicatedBookTitles
-  // useFixDuplicatedBookTitles
-} from "./useDuplicateBooksTitles"
 import { Alert } from "@mui/material"
 import { useObserve } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
@@ -31,7 +27,6 @@ import { useFixableLinks } from "./useFixableLinks"
 
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
-  const duplicatedBookTitles = useDuplicatedBookTitles()
   // const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
   const { danglingLinks } = useFixableLinks()
   const { collectionsWithDanglingBooks } = useFixableCollections()

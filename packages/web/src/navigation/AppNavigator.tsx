@@ -153,8 +153,6 @@ export const AppNavigator = ({
   )
 }
 
-let i = 0
-
 const TrackHistoryCanGoBack = memo(() => {
   const { pathname, state } = useLocation()
   const isFirstChange = useRef(true)

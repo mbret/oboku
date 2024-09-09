@@ -15,8 +15,6 @@ import { ReadingProgress } from "./ReadingProgress"
 import { DownloadState, useBookDownloadState } from "../../download/states"
 import { CoverIconBadge } from "./CoverIconBadge"
 
-type Book = ReturnType<typeof useBook>["data"]
-
 export const BookListCoverContainer: FC<
   {
     bookId: string

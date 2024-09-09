@@ -11,7 +11,6 @@ import {
   ListItemText,
   styled,
   Typography,
-  useTheme
 } from "@mui/material"
 import React, { useCallback, useMemo, useRef, useState } from "react"
 import {
@@ -92,7 +91,6 @@ export const SearchScreen = () => {
   const { data: books = [] } = useBooksForSearch(value)
   const inputRef = useRef<HTMLElement>()
   const navigate = useNavigate()
-  const theme = useTheme()
   const [bookExpanded, setBookExpanded] = useState(true)
   const [collectionsExpanded, setCollectionsExpanded] = useState(true)
 

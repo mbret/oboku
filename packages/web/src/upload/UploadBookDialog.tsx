@@ -6,7 +6,7 @@ import { ButtonDialog } from "../common/ButtonDialog"
 import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
 import { ObokuPlugin } from "../plugins/types"
 import { signal } from "reactjrx"
-import { capitalize, Dialog } from "@mui/material"
+import { capitalize } from "@mui/material"
 
 type UploadBookComponentProps = ComponentProps<
   NonNullable<ObokuPlugin[`UploadBookComponent`]>

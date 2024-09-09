@@ -1,9 +1,8 @@
-import { ComponentProps, FC, memo, useState } from "react"
+import { ComponentProps, memo, useState } from "react"
 import {
   Toolbar,
   ToolbarProps,
   IconButton,
-  useTheme,
   Button,
   Badge
 } from "@mui/material"
@@ -69,7 +68,6 @@ export const ListActionsToolbar = memo(
     numberOfFiltersApplied?: number
     onFilterClick?: () => void
   } & ToolbarProps) => {
-    const theme = useTheme()
     const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
 
     return (
