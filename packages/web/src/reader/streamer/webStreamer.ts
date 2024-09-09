@@ -22,7 +22,9 @@ export const webStreamer = new Streamer({
       return await getArchiveForRarFile(file)
     }
 
-    return await getArchiveForZipFile(file)
+    const archive = await getArchiveForZipFile(file)
+
+    return archive
   },
   onError: onResourceError,
   onManifestSuccess
