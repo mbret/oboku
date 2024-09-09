@@ -1,6 +1,6 @@
 import { getCollectionComputedMetadata } from "../../collections/getCollectionComputedMetadata"
 import { useCollections } from "../../collections/useCollections"
-import { ROUTES } from "../../constants"
+import { ROUTES } from "../../constants.web"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
 import { useBook } from "../states"
 import { MetadataItemList } from "./MetadataItemList"

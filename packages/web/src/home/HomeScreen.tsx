@@ -1,7 +1,7 @@
 import { memo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Typography, useTheme, Button, Box } from "@mui/material"
-import { ROUTES } from "../constants"
+import { ROUTES } from "../constants.web"
 import { useNavigate } from "react-router-dom"
 import ContinueReadingAsset from "../assets/continue-reading.svg"
 import { useTranslation } from "react-i18next"

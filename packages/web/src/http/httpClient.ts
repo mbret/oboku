@@ -1,5 +1,5 @@
 import { authStateSignal } from "../auth/authState"
-import { API_URL } from "../constants"
+import { API_URL } from "../constants.web"
 import { HttpClientError } from "./HttpClientError.shared"
 
 type FetchParams = NonNullable<Parameters<typeof fetch>[1]>

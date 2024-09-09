@@ -1,6 +1,6 @@
 import { memo, useEffect } from "react"
 import { useLocation } from "react-router-dom"
-import { ROUTES } from "../constants"
+import { ROUTES } from "../constants.web"
 import {
   hasOpenedReaderAlreadyStateSignal,
   bookBeingReadStateSignal

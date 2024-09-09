@@ -1,18 +1,17 @@
-import { Suspense, useState } from "react"
+import { memo, Suspense, useState } from "react"
 import { AppNavigator } from "./navigation/AppNavigator"
-import { Theme, StyledEngineProvider, Fade, Box } from "@mui/material"
+import { StyledEngineProvider, Fade, Box } from "@mui/material"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
 import { plugins } from "./plugins/configure"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
-import { PreloadQueries } from "./PreloadQueries"
+import { PreloadQueries } from "./queries/PreloadQueries"
 import { SplashScreen } from "./common/SplashScreen"
 import { BlurFilterReference } from "./books/BlurFilterReference"
 import "./i18n"
 import { ErrorBoundary } from "@sentry/react"
 import { ManageBookTagsDialog } from "./books/ManageBookTagsDialog"
 import { ManageTagBooksDialog } from "./tags/ManageTagBooksDialog"
-import { Effects } from "./Effects"
 import {
   usePersistSignals,
   QueryClientProvider,
@@ -32,6 +31,8 @@ import { Archive as LibArchive } from "libarchive.js"
 import { RxDbProvider } from "./rxdb/RxDbProvider"
 import { Report } from "./debug/report.shared"
 import { RestoreDownloadState } from "./download/RestoreDownloadState"
+import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
+import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
 
 // @todo move to sw
 LibArchive.init({
@@ -40,10 +41,8 @@ LibArchive.init({
 
 const authSignalEntries = [{ signal: authStateSignal, version: 0 }]
 
-export function App() {
-  const [loading, setLoading] = useState({
-    isPreloadingQueries: true
-  })
+export const App = memo(() => {
+  const [isPreloadingQueries, setIsPreloadingQueries] = useState(true)
   const [isDownloadsHydrated, setIsDownloadsHydrated] = useState(false)
   const { waitingWorker } = useRegisterServiceWorker()
   const profileSignalStorageAdapter = useSignalValue(profileStorageSignal)
@@ -60,7 +59,7 @@ export function App() {
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
   const isAppReady =
-    isDownloadsHydrated && isAuthHydrated && !loading.isPreloadingQueries
+    isDownloadsHydrated && isAuthHydrated && !isPreloadingQueries
 
   return (
     <ErrorBoundary
@@ -72,18 +71,18 @@ export function App() {
         <ThemeProvider>
           <QueryClientProvider client={queryClient}>
             <Suspense fallback={<SplashScreen show />}>
-              {!isHydratingProfile && isAuthHydrated && (
-                <>
-                  {plugins.reduce(
-                    (Comp, { Provider }) => {
-                      if (Provider) {
-                        return <Provider>{Comp}</Provider>
-                      }
-                      return Comp
-                    },
-                    <Fade in={isAppReady}>
-                      <Box height="100%">
-                        <DialogProvider>
+              <DialogProvider>
+                {!isHydratingProfile && isAuthHydrated && (
+                  <>
+                    {plugins.reduce(
+                      (Comp, { Provider }) => {
+                        if (Provider) {
+                          return <Provider>{Comp}</Provider>
+                        }
+                        return Comp
+                      },
+                      <Fade in={isAppReady}>
+                        <Box height="100%">
                           <AppNavigator isProfileHydrated={isProfileHydrated} />
                           <ManageBookCollectionsDialog />
                           <ManageBookTagsDialog />
@@ -95,27 +94,23 @@ export function App() {
                           <BackgroundReplication />
                           <BlockingBackdrop />
                           <Effects />
-                        </DialogProvider>
-                      </Box>
-                    </Fade>
-                  )}
-                </>
-              )}
-
-              <PreloadQueries
-                onReady={() => {
-                  setLoading((state) => ({
-                    ...state,
-                    isPreloadingQueries: false
-                  }))
-                }}
-              />
-              <RestoreDownloadState
-                onReady={() => {
-                  setIsDownloadsHydrated(true)
-                }}
-              />
-              <RxDbProvider />
+                        </Box>
+                      </Fade>
+                    )}
+                  </>
+                )}
+                <PreloadQueries
+                  onReady={() => {
+                    setIsPreloadingQueries(false)
+                  }}
+                />
+                <RestoreDownloadState
+                  onReady={() => {
+                    setIsDownloadsHydrated(true)
+                  }}
+                />
+                <RxDbProvider />
+              </DialogProvider>
             </Suspense>
           </QueryClientProvider>
         </ThemeProvider>
@@ -123,4 +118,11 @@ export function App() {
       <BlurFilterReference />
     </ErrorBoundary>
   )
-}
+})
+
+export const Effects = memo(() => {
+  useCleanupDanglingLinks()
+  useRemoveDownloadWhenBookIsNotInterested()
+
+  return null
+})

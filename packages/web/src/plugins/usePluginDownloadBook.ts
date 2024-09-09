@@ -1,4 +1,4 @@
-import { API_URL } from "../constants"
+import { API_URL } from "../constants.web"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 import { ObokuPlugin } from "./types"
