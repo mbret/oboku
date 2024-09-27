@@ -1,10 +1,12 @@
 export class HttpClientError extends Error {
-  constructor(
-    public response: {
-      data: unknown
+  public response: { data: unknown; original: Response }
+
+  constructor({ data, response }: { response: Response; data: unknown }) {
+    super(`Response error with status ${response.status} for ${response.url}`)
+
+    this.response = {
+      original: response,
+      data
     }
-  ) {
-    super("HttpClient response error")
-    this.response = response
   }
 }

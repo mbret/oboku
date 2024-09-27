@@ -42,11 +42,7 @@ class HttpClient {
 
     const data = await response.json()
 
-    if (response.status >= 400)
-      throw new HttpClientError({
-        ...response,
-        data
-      })
+    if (response.status >= 400) throw new HttpClientError({ response, data })
 
     return { data }
   }
