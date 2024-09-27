@@ -5,7 +5,6 @@
  * couchdb admin directly or probably by completely pruning db data.
  */
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { withMiddy } from "@libs/lambda"
 import schema from "./schema"
 import { initializeApp } from "firebase-admin/app"
 import { getAuth } from "firebase-admin/auth"

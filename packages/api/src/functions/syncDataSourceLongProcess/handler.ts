@@ -1,5 +1,4 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { withMiddy } from "@libs/lambda"
 import { AWS_API_URI } from "../../constants"
 import { configure as configureGoogleDataSource } from "@libs/plugins/google"
 import { withToken } from "@libs/auth"
@@ -12,6 +11,7 @@ import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
 import { pluginFacade } from "@libs/plugins/facade"
 import { Logger } from "@libs/logger"
+import { withMiddy } from "@libs/middy/withMiddy"
 
 const logger = Logger.child({ module: "handler" })
 

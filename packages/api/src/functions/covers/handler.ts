@@ -1,10 +1,10 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { withMiddy } from "@libs/lambda"
 import { S3Client } from "@aws-sdk/client-s3"
 import sharp from "sharp"
 import { getCover } from "./getCover"
 import { getCoverPlaceholder } from "./getCoverPlaceholder"
 import createError from "http-errors"
+import { withMiddy } from "@libs/middy/withMiddy"
 
 const s3 = new S3Client({
   region: `us-east-1`

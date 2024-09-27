@@ -1,5 +1,4 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { withMiddy } from "@libs/lambda"
 import { withToken } from "@libs/auth"
 import { configure as configureGoogleDataSource } from "@libs/plugins/google"
 import schema from "./schema"
@@ -9,6 +8,7 @@ import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
 import { Logger } from "@libs/logger"
 import { refreshMetadata } from "./src/refreshMetadata"
+import { withMiddy } from "@libs/middy/withMiddy"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event

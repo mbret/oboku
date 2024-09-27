@@ -1,8 +1,8 @@
 import fetch, { AbortError } from "node-fetch"
 import { createHttpError } from "@libs/httpErrors"
-import { withMiddy } from "@libs/lambda"
 import { APIGatewayProxyEvent } from "aws-lambda"
 import AbortController from "abort-controller"
+import { withMiddy } from "@libs/middy/withMiddy"
 
 const lambda = async (event: APIGatewayProxyEvent) => {
   const params = event.queryStringParameters

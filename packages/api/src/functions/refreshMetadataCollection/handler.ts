@@ -1,5 +1,5 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { getAwsLambda, withMiddy } from "@libs/lambda"
+import { getAwsLambda } from "@libs/lambda"
 import { getNormalizedHeader } from "@libs/utils"
 import schema from "./schema"
 import { InvokeCommand } from "@aws-sdk/client-lambda"
@@ -7,6 +7,7 @@ import { STAGE } from "src/constants"
 import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
 import { lock } from "@libs/supabase/lock"
 import { Logger } from "@libs/logger"
+import { withMiddy } from "@libs/middy/withMiddy"
 
 const logger = Logger.child({ module: "handler" })
 
