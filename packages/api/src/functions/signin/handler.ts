@@ -6,7 +6,6 @@
  */
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import schema from "./schema"
-import { initializeApp } from "firebase-admin/app"
 import { getAuth } from "firebase-admin/auth"
 import { getAdminNano, getOrCreateUserFromEmail } from "@libs/couch/dbHelpers"
 import { generateToken } from "@libs/auth"
@@ -14,15 +13,7 @@ import { ObokuErrorCode } from "@oboku/shared"
 import { createHttpError } from "@libs/httpErrors"
 import { getParametersValue } from "@libs/ssm"
 import { withMiddy } from "@libs/middy/withMiddy"
-
-const firebaseConfig = JSON.parse(
-  Buffer.from(process.env.FIREBASE_CONFIG ?? "", "base64").toString() ?? "{}"
-)
-
-/**
- * This is an admin without privileges
- */
-const app = initializeApp(firebaseConfig)
+import { getFirebaseApp } from "@libs/firebase/app"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -33,8 +24,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   })
 
   const { token } = event.body
+  const firebaseAopp = getFirebaseApp()
 
-  const { email, email_verified } = await getAuth(app).verifyIdToken(token)
+  const { email, email_verified } =
+    await getAuth(firebaseAopp).verifyIdToken(token)
 
   if (!email) {
     throw createHttpError(400, {
