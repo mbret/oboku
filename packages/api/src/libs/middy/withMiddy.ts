@@ -1,13 +1,11 @@
 import middy from "@middy/core"
-import { jsonSafeParse } from "@middy/util"
 import middyJsonBodyParser from "@middy/http-json-body-parser"
 import httpErrorHandler from "@middy/http-error-handler"
 import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import cors from "@middy/http-cors"
 import { transpileSchema } from "@middy/validator/transpile"
 import validator from "@middy/validator"
-import { createHttpError } from "@libs/httpErrors"
-import { ObokuErrorCode } from "@oboku/shared"
+import { unexpectedErrorToHttpError } from "./unexpectedErrorToHttpError"
 
 export const withMiddy = (
   handler: any,
@@ -68,25 +66,7 @@ export const withMiddy = (
           fallbackMessage: `An error occurred`
         })
       )
-      .use({
-        onError: async (request) => {
-          if (request.error) {
-            console.error("error received", request.error)
-          }
-
-          if (request.error) {
-            request.error = createHttpError(500, {
-              code: ObokuErrorCode.UNKNOWN,
-              message: request.error.message
-            })
-
-            // eslint-disable-next-line no-extra-semi
-            ;(request.error as any).expose =
-              (request.error as any)?.expose ??
-              process.env.NODE_ENV === "development"
-          }
-        }
-      })
+      .use(unexpectedErrorToHttpError())
       // @todo eventually protect the api and only allow a subset of origins
       .use(
         withCors

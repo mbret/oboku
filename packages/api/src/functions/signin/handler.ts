@@ -13,6 +13,7 @@ import { generateToken } from "@libs/auth"
 import { ObokuErrorCode } from "@oboku/shared"
 import { createHttpError } from "@libs/httpErrors"
 import { getParametersValue } from "@libs/ssm"
+import { withMiddy } from "@libs/middy/withMiddy"
 
 const firebaseConfig = JSON.parse(
   Buffer.from(process.env.FIREBASE_CONFIG ?? "", "base64").toString() ?? "{}"
