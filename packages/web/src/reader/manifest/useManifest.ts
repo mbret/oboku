@@ -30,6 +30,10 @@ export const useManifest = (bookId: string | undefined) => {
           baseUrl: getManifestBaseUrl(window.location.origin, bookId ?? "")
         })
 
+        if (webStreamerResponse.status >= 400) {
+          throw webStreamerResponse
+        }
+
         return {
           manifest: await webStreamerResponse.json(),
           isUsingWebStreamer: true

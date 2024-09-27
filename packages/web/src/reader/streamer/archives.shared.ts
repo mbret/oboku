@@ -11,7 +11,11 @@ import { PromiseReturnType } from "../../types"
 import { Archive as LibARchive } from "libarchive.js"
 import { StreamerFileNotSupportedError } from "../../errors/errors.shared"
 
-const jsZipCompatibleMimeTypes = [`application/epub+zip`, `application/x-cbz`]
+const jsZipCompatibleMimeTypes = [
+  `application/epub+zip`,
+  `application/x-cbz`,
+  `application/zip`
+]
 
 const loadDataWithJsZip = async (data: Blob | File) => {
   try {

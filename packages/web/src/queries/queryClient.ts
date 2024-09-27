@@ -1,5 +1,4 @@
 import { MutationCache, QueryCache, QueryClient } from "reactjrx"
-import { Report } from "../debug/report.shared"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { CancelError } from "../errors/errors.shared"
 
@@ -12,14 +11,14 @@ export const queryClient = new QueryClient({
         alert(String(error))
       }
 
-      Report.error(error)
+      console.error(error)
     }
   }),
   queryCache: new QueryCache({
     onError: (error) => {
       if (error instanceof CancelError) return
 
-      Report.error(error)
+      console.error(error)
     }
   }),
   defaultOptions: {

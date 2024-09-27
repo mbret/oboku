@@ -1,7 +1,7 @@
 import { ObokuErrorCode } from "@oboku/shared"
 import createError from "http-errors"
 
-type ErrorEntry = { code: ObokuErrorCode }
+type ErrorEntry = { code: ObokuErrorCode; message?: string }
 type ErrorEntries = ErrorEntry[]
 
 export const createHttpError = (

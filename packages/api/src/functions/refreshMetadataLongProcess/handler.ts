@@ -1,5 +1,4 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { withMiddy } from "@libs/lambda"
 import fs from "fs"
 import path from "path"
 import { OFFLINE, TMP_DIR } from "../../constants"
@@ -13,6 +12,7 @@ import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
 import { Logger } from "@libs/logger"
 import { retrieveMetadataAndSaveCover } from "./src/retrieveMetadataAndSaveCover"
+import { withMiddy } from "@libs/middy/withMiddy"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event

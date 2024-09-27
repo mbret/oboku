@@ -1,9 +1,9 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { withToken } from "@libs/auth"
-import { withMiddy } from "@libs/lambda"
 import schema from "./schema"
 import { getParametersValue } from "@libs/ssm"
 import { supabase } from "@libs/supabase/client"
+import { withMiddy } from "@libs/middy/withMiddy"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event

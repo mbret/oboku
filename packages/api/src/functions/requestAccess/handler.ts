@@ -1,10 +1,10 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { createHttpError } from "@libs/httpErrors"
-import { withMiddy } from "@libs/lambda"
 import schema from "./schema"
 import nodemailer from "nodemailer"
 import { CONTACT_TO_ADDRESS } from "../../constants"
 import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm"
+import { withMiddy } from "@libs/middy/withMiddy"
 
 const ssm = new SSMClient({ region: "us-east-1" })
 
