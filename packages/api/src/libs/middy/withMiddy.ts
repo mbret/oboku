@@ -7,6 +7,20 @@ import { transpileSchema } from "@middy/validator/transpile"
 import validator from "@middy/validator"
 import { unexpectedErrorToHttpError } from "./unexpectedErrorToHttpError"
 
+import * as Sentry from "@sentry/aws-serverless"
+// import { nodeProfilingIntegration } from "@sentry/profiling-node"
+
+Sentry.init({
+  dsn: "https://0d7a61df8dba4122be660fcc1161bf49@o490447.ingest.us.sentry.io/5554285",
+  // integrations: [nodeProfilingIntegration()],
+  // Add Tracing by setting tracesSampleRate and adding integration
+  // Set tracesSampleRate to 1.0 to capture 100% of transactions
+  // We recommend adjusting this value in production
+  tracesSampleRate: 1.0,
+  // Set sampling rate for profiling - this is relative to tracesSampleRate
+  profilesSampleRate: 1.0,
+})
+
 export const withMiddy = (
   handler: any,
   {
@@ -28,8 +42,10 @@ export const withMiddy = (
     before: () => {}
   }
 
+  const handlerWithSentry = Sentry.wrapHandler(handler)
+
   return (
-    middy(handler)
+    middy(handlerWithSentry)
       /**
        * Some lambda are invoked from others lambda and therefore does not comply to the right format. These lambda.
        * We make sure to have headers so the middy json does not fail
