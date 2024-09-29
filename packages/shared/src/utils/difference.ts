@@ -2,7 +2,7 @@ type List<T> = ArrayLike<T>
 
 export function difference<T>(
   array: List<T> | null | undefined,
-  ...values: Array<List<T>>
+  ...values: Array<List<T> | undefined | null>
 ): T[] {
   // If the first array is undefined or null, return an empty array
   if (!array) {
@@ -13,11 +13,12 @@ export function difference<T>(
   const valuesSet = values.flat()
 
   // Filter the first array, keeping only the elements not in any of the subsequent arrays
-  const finalArray = []
+  const finalArray: T[] = []
 
   for (let i = 0; i < array.length; i++) {
     // @ts-ignore
     if (!valuesSet.includes(array[i])) {
+      // @ts-ignore
       finalArray.push(array[i])
     }
   }

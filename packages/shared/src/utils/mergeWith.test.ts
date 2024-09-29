@@ -10,6 +10,8 @@ const customizer = (objValue: any, srcValue: any) => {
   if (typeof objValue === "number" && typeof srcValue === "number") {
     return objValue + srcValue // custom merge for numbers
   }
+
+  return undefined
 }
 
 it("should merge simple objects from source to destination", () => {
@@ -77,6 +79,8 @@ it("should use customizer to merge dates", () => {
     if (objValue instanceof Date && srcValue instanceof Date) {
       return new Date(Math.max(objValue.getTime(), srcValue.getTime()))
     }
+
+    return undefined
   }
 
   const obj1 = { date: new Date("2023-01-01") }

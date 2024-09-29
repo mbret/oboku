@@ -18,17 +18,17 @@ export const extractDirectivesFromName = (
   direction: "rtl" | "ltr" | undefined
   isbn?: string | undefined
   series: boolean | undefined
-  year?: string
+  year?: string | undefined
   ignoreMetadata?: string | undefined
   isWebtoon: boolean
-  metadataTitle?: string
+  metadataTitle?: string | undefined
 } => {
   let isNotACollection = false
   let tags: string[] = []
   let isIgnored = false
-  let direction = undefined
-  let year = undefined
-  let isbn = undefined
+  let direction: "rtl" | "ltr" | undefined = undefined
+  let year: string | undefined = undefined
+  let isbn: string | undefined = undefined
   let series: boolean | undefined = undefined
   let ignoreMetadata: string | undefined = undefined
   let metadataTitle: string | undefined = undefined

@@ -1,4 +1,5 @@
 type ValueIteratee<T> = ((value: T) => string | number) | keyof T
+
 interface Dictionary<T> {
   [index: string]: T
 }
