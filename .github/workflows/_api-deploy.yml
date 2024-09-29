@@ -63,6 +63,7 @@ jobs:
           echo "CONTACT_TO_ADDRESS=${{secrets.CONTACT_TO_ADDRESS}}" >> packages/api/.env
           echo "SUPABASE_SERVICE_ROLE_KEY=${{secrets.SUPABASE_SERVICE_ROLE_KEY}}" >> packages/api/.env
           echo "COUCH_DB_URL=${{secrets.COUCH_DB_URL}}" >> packages/api/.env
+          echo "SENTRY_DSN=${{secrets.SENTRY_DSN}}" >> packages/api/.env
           echo "AWS_API_URI=${{inputs.AWS_API_URI}}" >> packages/api/.env
           echo "SUPABASE_PROJECT_URL=${{inputs.SUPABASE_PROJECT_URL}}" >> packages/api/.env
           echo "GOOGLE_BOOK_API_URL=${{inputs.GOOGLE_BOOK_API_URL}}" >> packages/api/.env

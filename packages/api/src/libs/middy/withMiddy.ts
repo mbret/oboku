@@ -11,7 +11,7 @@ import * as Sentry from "@sentry/aws-serverless"
 // import { nodeProfilingIntegration } from "@sentry/profiling-node"
 
 Sentry.init({
-  dsn: "https://0d7a61df8dba4122be660fcc1161bf49@o490447.ingest.us.sentry.io/5554285",
+  dsn: process.env.SENTRY_DSN,
   // integrations: [nodeProfilingIntegration()],
   // Add Tracing by setting tracesSampleRate and adding integration
   // Set tracesSampleRate to 1.0 to capture 100% of transactions
