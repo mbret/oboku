@@ -29,7 +29,9 @@ export const replicateCouchDBCollection = ({
       if (!optionsWithAuth.headers) {
         optionsWithAuth.headers = {}
       }
+
       // add bearer token to headers
+      // @ts-expect-error
       optionsWithAuth.headers["Authorization"] = `Bearer ${token}`
 
       if (

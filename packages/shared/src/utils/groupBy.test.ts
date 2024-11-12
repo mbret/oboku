@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest"
+import { it, expect } from "vitest"
 import { groupBy } from "./groupBy" // Adjust the import path as needed
 
 it("should group numbers by Math.floor", () => {
@@ -84,7 +84,7 @@ it("should handle arrays with mixed types correctly", () => {
 })
 
 it("should group using a complex iteratee function", () => {
-  const result = groupBy(["apple", "banana", "pear"], (x) => x[0])
+  const result = groupBy(["apple", "banana", "pear"], (x) => x[0] ?? ``)
   expect(result).toEqual({
     a: ["apple"],
     b: ["banana"],
