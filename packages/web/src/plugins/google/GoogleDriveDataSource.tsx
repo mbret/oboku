@@ -97,8 +97,15 @@ export const GoogleDriveDataSource: FC<{
                 pick({ select: "folder" })
                   .pipe(
                     tap((data) => {
-                      if (data.action === google.picker.Action.PICKED) {
-                        setSelectedFolder(data.docs[0])
+                      const doc = data.docs?.[0]
+                      const { name, id } = doc ?? {}
+
+                      if (
+                        data.action === google.picker.Action.PICKED &&
+                        name &&
+                        id
+                      ) {
+                        setSelectedFolder({ name, id })
                       }
                     }),
                     takeUntil(unMount$.current),

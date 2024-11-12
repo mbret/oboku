@@ -1,6 +1,5 @@
 import { MouseEvent, useCallback, useEffect, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
-import { v4 as uuidv4 } from "uuid"
 
 export const useModalNavigationControl = (
   { onExit }: { onExit: () => void },
@@ -37,7 +36,7 @@ export const useModalNavigationControl = (
 
   useEffect(() => {
     if (id) {
-      const hash = `#modal-${uuidv4()}`
+      const hash = `#modal-${crypto.randomUUID()}`
 
       setCurrentHash(hash)
 
