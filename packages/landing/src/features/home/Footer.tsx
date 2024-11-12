@@ -47,6 +47,9 @@ export const Footer = () => {
               >
                 Documentation
               </MuiLink>
+              <MuiLink href="/contact" variant="body2" underline="hover">
+                Contact
+              </MuiLink>
               <MuiLink
                 href={links.github}
                 target="_blank"

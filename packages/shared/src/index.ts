@@ -93,5 +93,3 @@ export * from "./utils/intersection"
 export * from "./utils/groupBy"
 export * from "./utils/mergeWith"
 export * from "./collections"
-
-console.log("ASDASDASDASD")
