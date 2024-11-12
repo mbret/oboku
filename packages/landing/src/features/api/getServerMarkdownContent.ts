@@ -5,8 +5,8 @@ export const getServerMarkdownContent = async (
 ) => {
   const origin =
     process.env.NODE_ENV === "development"
-      ? `http://${headers().get("host")}`
-      : `https://${headers().get("host")}`
+      ? `http://${(await headers()).get("host")}`
+      : `https://${(await headers()).get("host")}`
 
   const response = await fetch(
     `${origin}/api/markdown?path=${encodeURIComponent(path)}`,

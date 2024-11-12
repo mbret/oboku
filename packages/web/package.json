@@ -63,8 +63,8 @@
     "@types/dropbox-chooser": "^1.0.3",
     "@types/gapi": "0.0.47",
     "@types/gapi.client.drive-v3": "^0.0.5",
-    "@types/google.accounts": "^0.0.14",
-    "@types/google.picker": "0.0.42",
+    "@types/google.accounts": "^0.0.15",
+    "@types/google.picker": "^0.0.45",
     "@types/uuid": "^10.0.0"
   },
   "scripts": {

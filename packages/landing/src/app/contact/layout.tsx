@@ -1,12 +1,12 @@
 import { Metadata } from "next"
 
-export async function generateMetadata({}: {}): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata> {
   return {
     title: `oboku | Contact`
   }
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children
 }: {
   children: React.ReactNode
