@@ -5,7 +5,7 @@ import {
   ListItemText,
   ListSubheader,
   Stack,
-  Typography,
+  Typography
 } from "@mui/material"
 import {
   Google,
@@ -50,8 +50,9 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
           const metadata = book?.metadata?.find((item) => item.type === type)
 
           const numberOfProperties = metadata
-            ? Object.keys(metadata).filter((key) => metadata[key] !== undefined)
-                .length
+            ? Object.keys(metadata).filter(
+                (key) => metadata[key as keyof typeof metadata] !== undefined
+              ).length
             : 0
 
           return (
