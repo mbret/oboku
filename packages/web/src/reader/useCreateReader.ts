@@ -7,6 +7,7 @@ import { useReaderSettingsState } from "./settings/states"
 import { localSettingsSignal } from "../settings/states"
 import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
 import { webStreamer } from "./streamer/webStreamer"
+import { from } from "rxjs"
 
 export const createAppReader = gesturesEnhancer(
   // __
@@ -44,13 +45,15 @@ export const useCreateReader = ({
         },
         fontScale: readerSettingsLiveRef.current.fontScale ?? 1,
         ...(isUsingWebStreamer && {
-          fetchResource: async (item) => {
+          getResource: (item) => {
             const resourcePath = getResourcePathFromUrl(item.href)
 
-            return webStreamer.fetchResource({
-              key: bookId,
-              resourcePath
-            })
+            return from(
+              webStreamer.fetchResource({
+                key: bookId,
+                resourcePath
+              })
+            )
           }
         })
       })

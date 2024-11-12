@@ -56,14 +56,15 @@ export const theme = createTheme({
         variant: "outlined"
       },
       styleOverrides: {
-        root: ({ theme, ownerState }) => ({
-          "&:focus": {
-            boxShadow: `0 0 0 0.2rem ${alpha(
-              theme.palette[ownerState.color ?? "primary"].main,
-              0.5
-            )}`
+        root: ({ theme, ownerState }) => {
+          const color = ownerState.color ?? "primary"
+
+          return {
+            "&:focus": {
+              boxShadow: `0 0 0 0.2rem ${alpha(theme.palette[color === "inherit" ? "primary" : color].main, 0.5)}`
+            }
           }
-        })
+        }
       }
     },
     MuiBottomNavigation: {

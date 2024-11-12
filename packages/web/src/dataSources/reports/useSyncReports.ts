@@ -63,6 +63,11 @@ export const useSyncReports = () =>
                 added: 0,
                 updated: 0,
                 deleted: 0
+              },
+              datasource: {
+                added: 0,
+                updated: 0,
+                deleted: 0
               }
             }
           )

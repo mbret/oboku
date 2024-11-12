@@ -68,12 +68,12 @@ export const CollectionListItem = memo(
             width="100%"
             direction="row"
             alignItems="center"
-            {...(id !== COLLECTION_EMPTY_ID && {
-              onClick: (e) => {
+            onClick={(e) => {
+              if (id !== COLLECTION_EMPTY_ID) {
                 e.stopPropagation()
                 openActionDrawer()
               }
-            })}
+            }}
           >
             <ListItemText
               primary={title ?? `\u00a0`}

@@ -6,7 +6,7 @@ import { searchListActionsToolbarSignal } from "./states"
 
 export const ListActionsToolbar = ({
   ...rest
-}: ComponentProps<typeof ListActionsToolbar>) => {
+}: ComponentProps<typeof CommonListActionsToolbar>) => {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false)
   const searchListActionsToolbar = useSignalValue(
     searchListActionsToolbarSignal

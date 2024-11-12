@@ -3,13 +3,23 @@ import { initReactI18next } from "react-i18next"
 import LanguageDetector from "i18next-browser-languagedetector"
 import * as translations from "./resources"
 
-const resources = Object.keys(translations).reduce((acc, key) => {
-  acc[key] = {
-    translation: translations[key]
-  }
+const translationKeys = Object.keys(
+  translations
+) as (keyof typeof translations)[]
 
-  return acc
-}, {})
+const resources = translationKeys.reduce(
+  (acc, key) => {
+    acc[key] = {
+      translation: translations[key]
+    }
+
+    return acc
+  },
+  {} as Record<
+    (typeof translationKeys)[number],
+    { translation: Record<string, unknown> }
+  >
+)
 
 i18n
   .use(LanguageDetector)

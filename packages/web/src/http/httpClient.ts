@@ -119,6 +119,7 @@ class HttpClient {
         xhr.responseType = responseType
 
         Object.keys(headers).forEach((key) => {
+          // @ts-expect-error
           xhr.setRequestHeader(key, headers[key])
         })
 

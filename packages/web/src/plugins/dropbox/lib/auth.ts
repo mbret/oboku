@@ -67,10 +67,15 @@ export const authUser = ({
       const _oauthWindow = window.open(
         authUrl.toString(),
         "DropboxOAuth",
-        Object.keys(defaultWindowOptions)
+        (
+          Object.keys(
+            defaultWindowOptions
+          ) as (keyof typeof defaultWindowOptions)[]
+        )
           .map((key) => `${key}=${defaultWindowOptions[key]}`)
           .join(",")
       )
+
       _oauthWindow?.focus()
 
       /**
@@ -93,7 +98,9 @@ export const authUser = ({
               redirectUri,
               code || ""
             )
+
             if (timedOut) return
+            
             const { result } = response as any
 
             dropboxAuth.setAccessToken(result.access_token)

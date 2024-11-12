@@ -12,7 +12,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   const { requestToken } = useAccessToken({ requestPopup })
   const { getGoogleScripts } = useGoogleScripts()
 
-  const downloadBook = ({ link, onDownloadProgress }) => {
+  return ({ link, onDownloadProgress }) => {
     return requestToken({
       scope: ["https://www.googleapis.com/auth/drive.readonly"]
     }).pipe(
@@ -85,6 +85,4 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
       })
     )
   }
-
-  return downloadBook
 }
