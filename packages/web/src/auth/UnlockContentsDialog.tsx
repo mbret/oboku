@@ -44,7 +44,7 @@ export const UnlockContentsDialog = ({
   )
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    const hashedPassword = crypto.hashContentPassword(data.unlockPassword)
+    const hashedPassword = await crypto.hashContentPassword(data.unlockPassword)
 
     if (contentPassword === hashedPassword) {
       libraryStateSignal.setValue((state) => ({
