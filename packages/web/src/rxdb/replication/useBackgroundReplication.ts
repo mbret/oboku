@@ -4,7 +4,7 @@ import { useSignOut } from "../../auth/useSignOut"
 import { syncSignal } from "./states"
 import { triggerReplication$ } from "./triggerReplication"
 import { useReplicateCollection } from "./useReplicateCollection"
-import { useSubscribe } from "reactjrx"
+import { useSignalValue, useSubscribe } from "reactjrx"
 import { authStateSignal } from "../../auth/authState"
 import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
@@ -14,7 +14,7 @@ export const useBackgroundReplication = () => {
   const signOut = useSignOut()
   const { db: database } = useDatabase()
   const { online } = useNetworkState()
-  const { token, dbName } = authStateSignal.getValue() ?? {}
+  const { token, dbName } = useSignalValue(authStateSignal) ?? {}
   const { data: bookReplicationState, mutate: replicateBook } =
     useReplicateCollection()
   const { data: tagReplicationState, mutate: replicateTag } =
@@ -136,12 +136,11 @@ export const useBackgroundReplication = () => {
     [collectionReplicationState, online]
   )
 
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    if (!token || !online) {
       linkReplicationState?.cancel()
-    },
-    [linkReplicationState, online]
-  )
+    }
+  }, [linkReplicationState, online, token])
 
   useEffect(() => {
     if (!database || !token || !dbName || !online) return
