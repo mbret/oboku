@@ -43,7 +43,7 @@ export const useValidateAppPassword = (options: {
       return getLatestDatabase().pipe(
         mergeMap((database) => getSettingsOrThrow(database)),
         mergeMap((settings) =>
-          from(crypto.hashContentPassword(input)).pipe(
+          from(hashContentPassword(input)).pipe(
             map((hashedInput) => {
               if (hashedInput !== settings.contentPassword) {
                 throw new Error("Invalid password")
