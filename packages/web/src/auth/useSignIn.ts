@@ -13,13 +13,19 @@ import { CancelError } from "../errors/errors.shared"
 
 const provider = new GoogleAuthProvider()
 
-const auth = getAuth()
-
 export const useSignIn = () => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
 
   const signIn = useCallback(() => {
     lock("authentication")
+
+    /**
+     * @important
+     * This should be at the root of module but there is a bug where events
+     * get added forever.
+     * @see https://github.com/firebase/firebase-js-sdk/issues/8642
+     */
+    const auth = getAuth()
 
     return from(signInWithPopup(auth, provider)).pipe(
       catchError((e) => {

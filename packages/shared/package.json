@@ -16,8 +16,5 @@
     "start": "vite build --watch --mode development",
     "build": "tsc",
     "test": "vitest run"
-  },
-  "peerDependencies": {
-    "crypto-js": "4.x"
   }
 }

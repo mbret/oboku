@@ -1,10 +1,10 @@
-import { crypto } from "@oboku/shared"
 import { Database } from "../rxdb"
 import { useForeverQuery, useMutation } from "reactjrx"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
-import { from, map, mergeMap, of, switchMap } from "rxjs"
+import { from, map, mergeMap, switchMap } from "rxjs"
 import { SettingsDocType } from "../rxdb/collections/settings"
 import { getSettingsDocument } from "./dbHelpers"
+import { hashContentPassword } from "../common/crypto"
 
 const getSettingsOrThrow = (database: Database) => {
   return getSettingsDocument(database).pipe(
@@ -21,8 +21,8 @@ const getSettingsOrThrow = (database: Database) => {
 export const useUpdateContentPassword = () => {
   const { mutate: updateSettings } = useUpdateSettings()
 
-  return (password: string) => {
-    const hashed = crypto.hashContentPassword(password)
+  return async (password: string) => {
+    const hashed = await hashContentPassword(password)
 
     updateSettings({
       contentPassword: hashed
@@ -42,15 +42,17 @@ export const useValidateAppPassword = (options: {
 
       return getLatestDatabase().pipe(
         mergeMap((database) => getSettingsOrThrow(database)),
-        mergeMap((settings) => {
-          const hashedInput = crypto.hashContentPassword(input)
+        mergeMap((settings) =>
+          from(hashContentPassword(input)).pipe(
+            map((hashedInput) => {
+              if (hashedInput !== settings.contentPassword) {
+                throw new Error("Invalid password")
+              }
 
-          if (hashedInput !== settings.contentPassword) {
-            throw new Error("Invalid password")
-          }
-
-          return of(null)
-        })
+              return null
+            })
+          )
+        )
       )
     }
   })

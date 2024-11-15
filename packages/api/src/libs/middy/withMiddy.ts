@@ -18,7 +18,7 @@ Sentry.init({
   // We recommend adjusting this value in production
   tracesSampleRate: 1.0,
   // Set sampling rate for profiling - this is relative to tracesSampleRate
-  profilesSampleRate: 1.0,
+  profilesSampleRate: 1.0
 })
 
 export const withMiddy = (
