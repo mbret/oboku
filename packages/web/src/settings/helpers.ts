@@ -1,10 +1,10 @@
-import { crypto } from "@oboku/shared"
 import { Database } from "../rxdb"
 import { useForeverQuery, useMutation } from "reactjrx"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
 import { from, map, mergeMap, switchMap } from "rxjs"
 import { SettingsDocType } from "../rxdb/collections/settings"
 import { getSettingsDocument } from "./dbHelpers"
+import { hashContentPassword } from "../common/crypto"
 
 const getSettingsOrThrow = (database: Database) => {
   return getSettingsDocument(database).pipe(
@@ -22,7 +22,7 @@ export const useUpdateContentPassword = () => {
   const { mutate: updateSettings } = useUpdateSettings()
 
   return async (password: string) => {
-    const hashed = await crypto.hashContentPassword(password)
+    const hashed = await hashContentPassword(password)
 
     updateSettings({
       contentPassword: hashed

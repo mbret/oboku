@@ -7,7 +7,6 @@ import {
   DialogTitle,
   TextField
 } from "@mui/material"
-import { crypto } from "@oboku/shared"
 import { useEffect } from "react"
 import { Controller, SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
@@ -15,6 +14,7 @@ import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFi
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { libraryStateSignal } from "../library/books/states"
 import { useSettings } from "../settings/helpers"
+import { hashContentPassword } from "../common/crypto"
 
 type Inputs = {
   unlockPassword: string
@@ -44,7 +44,7 @@ export const UnlockContentsDialog = ({
   )
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    const hashedPassword = await crypto.hashContentPassword(data.unlockPassword)
+    const hashedPassword = await hashContentPassword(data.unlockPassword)
 
     if (contentPassword === hashedPassword) {
       libraryStateSignal.setValue((state) => ({

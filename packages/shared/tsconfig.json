@@ -20,5 +20,5 @@
     "noUncheckedIndexedAccess": true,
     "useUnknownInCatchVariables": true
   },
-  "include": ["src"]
+  "include": ["src", "../web/src/common/crypto.ts"]
 }

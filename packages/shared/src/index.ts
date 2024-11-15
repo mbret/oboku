@@ -75,8 +75,6 @@ export * from "./db/books"
 export * from "./dataSources"
 export * from "./sorting"
 
-export * as crypto from "./crypto"
-
 export { ObokuErrorCode, ObokuSharedError } from "./errors"
 
 export * from "./plugin-imhentai-shared"
