@@ -14,7 +14,8 @@ import { StreamerFileNotSupportedError } from "../../errors/errors.shared"
 const jsZipCompatibleMimeTypes = [
   `application/epub+zip`,
   `application/x-cbz`,
-  `application/zip`
+  `application/zip`,
+  `application/x-zip-compressed`,
 ]
 
 const loadDataWithJsZip = async (data: Blob | File) => {
