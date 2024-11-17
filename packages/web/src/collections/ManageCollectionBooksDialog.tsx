@@ -14,7 +14,7 @@ import { useCollection } from "./useCollection"
 export const ManageCollectionBooksDialog: FC<{
   onClose: () => void
   open: boolean
-  collectionId: string
+  collectionId?: string
 }> = ({ onClose, open, collectionId }) => {
   const { data: collection } = useCollection({
     id: collectionId
