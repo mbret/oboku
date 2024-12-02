@@ -153,17 +153,5 @@ export const BookList = memo(
         {...rest}
       />
     )
-
-    // return (
-    //   <Stack flex={1}>
-    //     <VirtualizedList
-    //       data={data}
-    //       rowRenderer={rowRenderer}
-    //       itemsPerRow={itemsPerRow}
-    //       style={style}
-    //       {...rest}
-    //     />
-    //   </Stack>
-    // )
   }
 )

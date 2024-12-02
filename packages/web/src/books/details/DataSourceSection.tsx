@@ -39,7 +39,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
               px: [null, 3]
             }}
           >
-            Link
+            Provider
           </ListSubheader>
         }
       >
@@ -70,7 +70,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
                   textOverflow: "ellipsis"
                 }
               }}
-              secondary={`This book has been created from ${dataSourcePlugin.name}. Click to edit the data source`}
+              secondary={`This book is attached to ${dataSourcePlugin.name}. Click to edit the link`}
             />
             <Stack width={50} alignItems="center" flexShrink={0}>
               <MoreVertRounded />

@@ -24,8 +24,5 @@ export const TagList = memo(
     )
 
     return <VirtuosoList rowRenderer={rowRenderer} itemsPerRow={1} {...rest} />
-    // return (
-    //   <VirtualizedList rowRenderer={rowRenderer} itemsPerRow={1} {...rest} />
-    // )
   }
 )

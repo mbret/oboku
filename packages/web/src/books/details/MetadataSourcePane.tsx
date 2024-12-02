@@ -41,7 +41,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
               px: [null, 3]
             }}
           >
-            Metadata sources
+            Metadata Sources
           </ListSubheader>
         }
         disablePadding
