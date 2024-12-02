@@ -12,5 +12,6 @@ export const createHttpError = (
   if (Array.isArray(error)) {
     return createError(code, JSON.stringify({ errors: error }), opts)
   }
+
   return createError(code, JSON.stringify({ errors: [error] }), opts)
 }

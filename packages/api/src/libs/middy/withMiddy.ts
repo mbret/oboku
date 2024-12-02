@@ -5,9 +5,9 @@ import httpHeaderNormalizer from "@middy/http-header-normalizer"
 import cors from "@middy/http-cors"
 import { transpileSchema } from "@middy/validator/transpile"
 import validator from "@middy/validator"
-import { unexpectedErrorToHttpError } from "./unexpectedErrorToHttpError"
 
 import * as Sentry from "@sentry/aws-serverless"
+import { ObokuErrorCode } from "@oboku/shared"
 // import { nodeProfilingIntegration } from "@sentry/profiling-node"
 
 Sentry.init({
@@ -78,11 +78,16 @@ export const withMiddy = (
             }
       })
       .use(
+        /**
+         * Non http response will be converted to http response and use
+         * the fallback message
+         */
         httpErrorHandler({
-          fallbackMessage: `An error occurred`
+          fallbackMessage: JSON.stringify({
+            errors: [{ code: ObokuErrorCode.UNKNOWN }]
+          })
         })
       )
-      .use(unexpectedErrorToHttpError())
       // @todo eventually protect the api and only allow a subset of origins
       .use(
         withCors

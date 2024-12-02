@@ -31,9 +31,10 @@ import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 import { useCollection } from "../useCollection"
 
 export const CollectionActionsDrawer: FC<{}> = () => {
-  const { openedWith: collectionId } = useSignalValue(
+  const { openedWith, lastId: collectionId } = useSignalValue(
     collectionActionDrawerState
   )
+
   const [
     isEditCollectionDialogOpenedWithId,
     setIsEditCollectionDialogOpenedWithId
@@ -47,15 +48,18 @@ export const CollectionActionsDrawer: FC<{}> = () => {
   const { closeModalWithNavigation } = useModalNavigationControl(
     {
       onExit: () => {
-        collectionActionDrawerState.setValue({ openedWith: undefined })
+        collectionActionDrawerState.setValue({
+          openedWith: undefined,
+          lastId: collectionId
+        })
+
         setIsEditCollectionDialogOpenedWithId(undefined)
         setIsManageBookDialogOpened(false)
       }
     },
-    collectionId
+    openedWith
   )
   const { data: collection } = useCollection({ id: collectionId })
-  const opened = !!collectionId
 
   const onRemoveCollection = (id: string) => {
     closeModalWithNavigation()
@@ -70,13 +74,11 @@ export const CollectionActionsDrawer: FC<{}> = () => {
       COLLECTION_METADATA_LOCK_MN
   )
 
-  if (!collectionId) return null
-
   return (
     <>
       <Drawer
         anchor="bottom"
-        open={opened && !subActionOpened}
+        open={!!openedWith && !subActionOpened}
         onClose={() => closeModalWithNavigation()}
       >
         <List>
@@ -94,7 +96,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
             onClick={() => {
               closeModalWithNavigation()
               updateCollectionBooks({
-                id: collectionId,
+                id: collectionId ?? ``,
                 updateObj: {
                   $set: {
                     isNotInterested: true
@@ -112,7 +114,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
             onClick={() => {
               closeModalWithNavigation()
               updateCollectionBooks({
-                id: collectionId,
+                id: collectionId ?? ``,
                 updateObj: {
                   $set: {
                     isNotInterested: false
@@ -139,7 +141,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
           {collection?.type === "series" && (
             <ListItemButton
               onClick={() => {
-                refreshCollectionMetadata(collectionId)
+                refreshCollectionMetadata(collectionId ?? ``)
               }}
               disabled={isRefreshingMetadata}
             >
@@ -158,7 +160,9 @@ export const CollectionActionsDrawer: FC<{}> = () => {
         </List>
         <Divider />
         <List>
-          <ListItemButton onClick={() => onRemoveCollection(collectionId)}>
+          <ListItemButton
+            onClick={() => onRemoveCollection(collectionId ?? ``)}
+          >
             <ListItemIcon>
               <DeleteForeverRounded />
             </ListItemIcon>

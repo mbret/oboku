@@ -5,7 +5,11 @@ import { signal, useSignalValue } from "reactjrx"
 
 export const collectionActionDrawerState = signal<{
   openedWith: undefined | string
-}>({ key: "collectionActionDrawerState", default: { openedWith: undefined } })
+  lastId?: undefined | string
+}>({
+  key: "collectionActionDrawerState",
+  default: { openedWith: undefined, lastId: undefined }
+})
 
 export const collectionActionDrawerChangesState = signal<
   undefined | [string, `delete`]
@@ -26,7 +30,7 @@ export const useCollectionActionsDrawer = (
   const latestChangesEmittedRef = useRef(collectionActionDrawerChanges)
 
   const open = useCallback(() => {
-    collectionActionDrawerState.setValue({ openedWith: id })
+    collectionActionDrawerState.setValue({ openedWith: id, lastId: id })
   }, [id])
 
   useEffect(() => {

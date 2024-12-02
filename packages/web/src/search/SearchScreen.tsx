@@ -148,7 +148,7 @@ export const SearchScreen = () => {
         }
       />
       <ListActionsToolbar />
-      <Box overflow="scroll">
+      <Box overflow="auto">
         <Accordion
           disableGutters
           elevation={0}

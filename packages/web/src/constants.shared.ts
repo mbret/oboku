@@ -1,9 +1,10 @@
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sw: ServiceWorkerGlobalScope = self as any
 const hostname =
   typeof window === "object"
     ? window?.location?.hostname
     : sw?.location?.hostname
+
 
 export const STREAMER_URL_PREFIX = `streamer`
 export const DOWNLOAD_PREFIX = `book-download`
