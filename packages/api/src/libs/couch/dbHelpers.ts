@@ -384,11 +384,16 @@ export const getNano = async ({
  * WARNING: be very careful when using nano as admin since you will have full power.
  * As you know with great power comes great responsibilities
  */
-export const getDangerousAdminNano = async (
-  options: {
-    sub?: string
-    privateKey: string
-  } & Omit<NonNullable<Parameters<typeof getNano>[0]>, "jwtToken">
-) => {
-  return getNano({ jwtToken: await generateAdminToken(options) })
+export const getDangerousAdminNano = async ({
+  sub,
+  privateKey,
+  ...rest
+}: {
+  sub?: string
+  privateKey: string
+} & Omit<NonNullable<Parameters<typeof getNano>[0]>, "jwtToken">) => {
+  return getNano({
+    ...rest,
+    jwtToken: await generateAdminToken({ sub, privateKey })
+  })
 }
