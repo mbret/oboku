@@ -7,7 +7,10 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import schema from "./schema"
 import { getAuth } from "firebase-admin/auth"
-import { getAdminNano, getOrCreateUserFromEmail } from "@libs/couch/dbHelpers"
+import {
+  getDangerousAdminNano,
+  getOrCreateUserFromEmail
+} from "@libs/couch/dbHelpers"
 import { generateToken } from "@libs/auth"
 import { ObokuErrorCode } from "@oboku/shared"
 import { createHttpError } from "@libs/httpErrors"
@@ -18,8 +21,8 @@ import { getFirebaseApp } from "@libs/firebase/app"
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
-  const [jwtPrivateKey = ``] = await getParametersValue({
-    Names: ["jwt-private-key"],
+  const [jwtPrivateKey = ``, xAccessSecret = ``] = await getParametersValue({
+    Names: ["jwt-private-key", "x-access-secret"],
     WithDecryption: true
   })
 
@@ -41,7 +44,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     })
   }
 
-  const adminNano = await getAdminNano({ privateKey: jwtPrivateKey })
+  const adminNano = await getDangerousAdminNano({
+    privateKey: jwtPrivateKey,
+    xAccessSecret
+  })
 
   const user = await getOrCreateUserFromEmail(adminNano, email)
 
