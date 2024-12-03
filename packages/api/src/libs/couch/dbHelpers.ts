@@ -359,12 +359,16 @@ export const getNanoDbForUser = async (name: string, privateKey: string) => {
   return db.use(`userdb-${hexEncodedUserId}`)
 }
 
-export const getNano = async ({ jwtToken }: { jwtToken?: string } = {}) => {
+export const getNano = async ({
+  jwtToken,
+  xAccessSecret
+}: { jwtToken?: string; xAccessSecret?: string } = {}) => {
   return createNano({
     url: COUCH_DB_URL,
     requestDefaults: {
       headers: {
         "content-type": "application/json",
+        "x-access-secret": xAccessSecret,
         accept: "application/json",
         ...(jwtToken && {
           Authorization: `Bearer ${jwtToken}`
@@ -378,24 +382,11 @@ export const getNano = async ({ jwtToken }: { jwtToken?: string } = {}) => {
  * WARNING: be very careful when using nano as admin since you will have full power.
  * As you know with great power comes great responsibilities
  */
-export const getAdminNano = async (options: {
-  sub?: string
-  privateKey: string
-}) => {
+export const getDangerousAdminNano = async (
+  options: {
+    sub?: string
+    privateKey: string
+  } & Omit<NonNullable<Parameters<typeof getNano>[0]>, "jwtToken">
+) => {
   return getNano({ jwtToken: await generateAdminToken(options) })
-}
-
-export const auth = async (username: string, userpass: string) => {
-  const db = await getNano()
-
-  try {
-    const response = await db.auth(username, userpass)
-    if (!response.ok || !response.name) {
-      return null
-    }
-    return response
-  } catch (e) {
-    if ((e as any)?.statusCode === 401) return null
-    throw e
-  }
 }
