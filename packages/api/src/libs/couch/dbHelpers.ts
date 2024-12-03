@@ -363,8 +363,6 @@ export const getNano = async ({
   jwtToken,
   xAccessSecret
 }: { jwtToken?: string; xAccessSecret?: string } = {}) => {
-  console.log(`FOOO xAccessSecret`, xAccessSecret)
-
   return createNano({
     url: COUCH_DB_URL,
     requestDefaults: {
