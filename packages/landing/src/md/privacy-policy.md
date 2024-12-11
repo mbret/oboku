@@ -8,9 +8,10 @@ This privacy policy (the "Policy") describes how oboku collects, uses, and share
 
 We collect the following types of personal information from you:
 
-- **Contact information:** This includes your email.
-- **Technical information:** This includes your IP address, browser type, and operating system.
-- **Usage information:** This includes the pages you visit on our website, the links you click, and the actions you take.
+- **Contact information:** This includes your email. (eg: We need it to let you sign-in with google)
+- **Technical information:** This includes your IP address, browser type, and operating system. (These are logs present on our servers and will disappear after some time. We do not retain them but they exist for a certain period of time.)
+- **Usage information:** This includes the pages you visit on our website, the links you click, and the actions you take. (We need to track a bit of what is going on to fix bugs, help you and improve. We do not collect any personal info regarding, books, visuals, etc.)
+- **Database** As you may expect, your account (library, books, reading state, etc) are stored in a database. This database is encrypted and private to you.
 
 ## How Do We Use Your Personal Information?
 
@@ -21,10 +22,12 @@ We use your personal information for the following purposes:
 - **To send communications:** We may in some circumstances send you email. For example before important breaking changes or if we have important changes that you should be aware of.
 - **To comply with laws and regulations:** We may use your personal information to comply with applicable laws and regulations. Only on last resorts and if no other choices. We prefer to destroy your personal information rather than giving them up.
 
+While we strive to comply with all legal mandates, our data systems operate under complex and automated processes. These processes are designed for efficiency and security but may, on rare occasions, lead to unforeseen outcomes, such as unintentional and very unfortunate data loss. As a result, we would not
+be able to recover and hand over your data to any third party.
+
 ## How Do We Share Your Personal Information?
 
-As far as we know, we don't share anything with anyone. We don't want to share your information since we value your privacy.
-We will try everything possible to prevent disclosure due to laws and regulations.
+We don't share anything with anyone. Others collect already too much. Yes it's free and No you are not the product.
 
 ## Your Rights
 

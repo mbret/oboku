@@ -51,9 +51,8 @@ export const generateAdminToken = async ({
 }) => {
   const data: Token = {
     name: "admin",
-    sub: "admin",
-    "_couchdb.roles": ["_admin"],
-    ...options
+    sub: options.sub ?? "admin",
+    "_couchdb.roles": ["_admin"]
   }
 
   return jwt.sign(data, privateKey, { algorithm: "RS256" })
