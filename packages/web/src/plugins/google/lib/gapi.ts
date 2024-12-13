@@ -7,9 +7,8 @@ import {
   map,
   mergeMap,
 } from "rxjs"
-import { loadScript } from "../../../common/utils"
-import { retryOnFailure } from "./scripts"
 import { GapiNotAvailableError } from "./errors"
+import { loadScript, retryOnFailure } from "../../../common/scripts"
 
 const ID = "oboku-google-api-script"
 

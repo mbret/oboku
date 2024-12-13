@@ -1,7 +1,6 @@
 import { signal, useMutation } from "reactjrx"
 import { map } from "rxjs"
-import { loadScript } from "../../../common/utils"
-import { retryOnFailure } from "./scripts"
+import { loadScript, retryOnFailure } from "../../../common/scripts"
 
 const GSI_ID = "oboku-google-gsi-script"
 
