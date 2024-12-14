@@ -7,6 +7,10 @@ import {
 } from "./types"
 
 export const registerCommunication = () => {
+  if (!("serviceWorker" in navigator)) {
+    return
+  }
+
   from(navigator.serviceWorker.ready)
     .pipe(
       switchMap((sw) => {
