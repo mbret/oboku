@@ -22,27 +22,38 @@ export const coversFetchListener = (event: FetchEvent) => {
          * We want to be able to access the response headers (avoid opaque).
          * So we make sure to have a cors enabled request.
          */
-        const response = await fetch(event.request, {
-          mode: "cors",
-          credentials: "omit"
-        })
-        const clonedResponse = response.clone()
+        try {
+          const response = await fetch(event.request, {
+            mode: "cors",
+            credentials: "omit"
+          })
 
-        const coverId = getCoverIdFromUrl(url) ?? `-1`
+          const clonedResponse = response.clone()
 
-        cache.put(
-          new Request(event.request.url, {
-            headers: {
-              "oboku-sw-time-cached": Date.now().toString(),
-              "oboku-sw-cover-id": coverId,
-              "oboku-sw-cover-size":
-                response.headers.get("Content-Length") || "0"
-            }
-          }),
-          clonedResponse
-        )
+          const coverId = getCoverIdFromUrl(url) ?? `-1`
 
-        return response
+          cache.put(
+            new Request(event.request.url, {
+              headers: {
+                "oboku-sw-time-cached": Date.now().toString(),
+                "oboku-sw-cover-id": coverId,
+                "oboku-sw-cover-size":
+                  response.headers.get("Content-Length") || "0"
+              }
+            }),
+            clonedResponse
+          )
+
+          return response
+        } catch (error) {
+          console.error(error)
+
+          // Pass through the original fetch error
+          return new Response(null, {
+            status: 502, // or whatever status code is appropriate
+            statusText: error instanceof Error ? error.message : "Network error"
+          })
+        }
       })()
     )
 
