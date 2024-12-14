@@ -51,7 +51,14 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
 
   return (
     <Box
-      sx={{ display: "flex", height: "100%", flexDirection: "column", flex: 1 }}
+      sx={{
+        display: "flex",
+        height: "100%",
+        flexDirection: "column",
+        flex: 1,
+        overflow: "hidden",
+        position: "relative"
+      }}
       onDragOver={onDragOver}
     >
       {children}

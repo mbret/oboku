@@ -16,6 +16,7 @@ const rootElm = document.getElementById("root")
 
 if (rootElm) {
   const root = createRoot(rootElm)
+
   root.render(
     <React.StrictMode>
       <Sentry.ErrorBoundary>
