@@ -54,7 +54,8 @@ export const refreshMetadata = async (
         ? await pluginFacade.getMetadata({
             link: {
               resourceId: collection.linkResourceId,
-              type: collection.linkType
+              type: collection.linkType,
+              data: null
             },
             credentials
           })
