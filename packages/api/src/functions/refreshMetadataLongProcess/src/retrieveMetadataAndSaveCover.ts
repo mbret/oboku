@@ -26,7 +26,8 @@ export const retrieveMetadataAndSaveCover = async (
     db: nano.DocumentScope<unknown>
   }
 ) => {
-  logger.info(
+  console.log(
+    `[retrieveMetadataAndSaveCover]`,
     `syncMetadata run for user ${ctx.userName} with book ${ctx.book._id}`
   )
   let bookNameForDebug = ""
@@ -37,6 +38,7 @@ export const retrieveMetadataAndSaveCover = async (
     bookNameForDebug = reduceMetadata(ctx.book.metadata).title || ""
 
     console.log(
+      `[retrieveMetadataAndSaveCover]`,
       `processing ${ctx.book._id} with link of type ${ctx.link.type}`,
       { link: ctx.link }
     )
@@ -118,11 +120,15 @@ export const retrieveMetadataAndSaveCover = async (
     fileToUnlink = tmpFilePath
     contentType = downloadMetadata.contentType || contentType
 
-    console.log(`syncMetadata processing ${ctx.book._id}`, {
-      linkMetadata,
-      contentType,
-      tmpFilePath
-    })
+    console.log(
+      `[retrieveMetadataAndSaveCover]`,
+      `syncMetadata processing ${ctx.book._id}`,
+      {
+        linkMetadata,
+        contentType,
+        tmpFilePath
+      }
+    )
 
     const isRarArchive = contentType === "application/x-rar"
     let archiveExtractor: Extractor<Uint8Array> | undefined = undefined
@@ -174,7 +180,9 @@ export const retrieveMetadataAndSaveCover = async (
     })
 
     console.log(
-      `metadataDaemon Finished processing book ${ctx.book._id} with resource id ${ctx.link.resourceId}`
+      `[retrieveMetadataAndSaveCover]`,
+      `prepare to update ${ctx.book._id} with`,
+      { metadataList }
     )
 
     await atomicUpdate(ctx.db, "book", ctx.book._id, (old) => {

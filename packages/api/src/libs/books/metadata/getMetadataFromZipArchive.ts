@@ -68,7 +68,9 @@ export const getMetadataFromZipArchive = async (
      * Path in the archive to the cover image
      */
     coverLink: opfCoverLink
-      ? `${opfBasePath}/${opfCoverLink}`
+      ? opfBasePath !== ""
+        ? `${opfBasePath}/${opfCoverLink}`
+        : opfCoverLink
       : firstValidImagePath
   }
 }
