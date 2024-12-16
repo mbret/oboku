@@ -40,6 +40,12 @@ export const ReportSummary = memo(
                   (s) updated
                 </Typography>
               )}
+              {!!entry[rxModel].fetchedMetadata && (
+                <Typography variant="body2">
+                  {entry[rxModel].fetchedMetadata} {getRxModelLabelFromValue(rxModel)}
+                  (s) with metadata fetched
+                </Typography>
+              )}
             </Stack>
           )
         )}

@@ -27,7 +27,8 @@ export const synchronizeBookWithParentCollections = async (
 ) => {
   const parentResourceIds = parents?.map((parent) => parent.resourceId) || []
 
-  logger.info(
+  console.log(
+    `[synchronizeBookWithParentCollections]`,
     `${book._id} with ${parentResourceIds.length} parentResourceIds ${parentResourceIds}`
   )
 

@@ -14,6 +14,7 @@ export type BookMetadata = {
   isbn?: string
   publisher?: string | undefined
   rights?: string | undefined
+  googleVolumeId?: string | undefined
   /**
    * googleBookApi: Metadata scrapped through google book api
    * link: metadata scrapped from the current link

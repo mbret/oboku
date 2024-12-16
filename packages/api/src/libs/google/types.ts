@@ -12,7 +12,7 @@ export type Item = {
     title: string
     authors: string[]
     publisher: string
-    publishedDate: YEAR
+    publishedDate?: YEAR
     language: "de" | "fr"
     pageCount?: number
     categories?: Category[]

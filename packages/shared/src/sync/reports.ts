@@ -7,6 +7,7 @@ export type ReportEntry = {
   // used for link & books
   linkedTo?: { id: string; label?: string; rx_model: RxModel }[]
   unlinkedTo?: { id: string; label?: string; rx_model: RxModel }[]
+  fetchedMetadata?: boolean
   added?: boolean
   updated?: boolean
   deleted?: boolean

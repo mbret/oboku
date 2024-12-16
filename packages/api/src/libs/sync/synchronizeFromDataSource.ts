@@ -148,8 +148,8 @@ const syncFolder = async ({
     await syncCollection({ ctx, item, helpers })
   }
 
-  logger.info(
-    `syncFolder ${item.name}: with items ${item.items?.length || 0} items`
+  console.log(
+    `[syncFolder] ${item.name}: with items ${item.items?.length || 0} items`
   )
 
   await Promise.all(
@@ -174,5 +174,5 @@ const syncFolder = async ({
     })
   )
 
-  logger.info(`syncFolder ${item.name} DONE!`)
+  console.log(`[syncFolder] ${item.name} DONE!`)
 }

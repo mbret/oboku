@@ -13,7 +13,9 @@ export const useAddBookFromFile = () => {
         (await addBook({
           link: {
             book: null,
-            data: {} satisfies PLUGIN_FILE_DATA,
+            data: {
+              filename: file.name
+            } satisfies PLUGIN_FILE_DATA,
             resourceId: "file",
             type: PLUGIN_FILE_TYPE,
             createdAt: new Date().toISOString(),

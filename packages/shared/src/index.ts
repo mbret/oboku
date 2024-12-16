@@ -1,21 +1,3 @@
-export const READER_ACCEPTED_EXTENSIONS = {
-  "text/plain": [".txt"],
-  "application/x-cbz": [".cbz"],
-  "application/zip": [".epub", ".zip"],
-  "application/x-zip-compressed": [".epub", ".zip"],
-  "application/epub+zip": [".epub", ".zip"],
-  "application/x-cbr": [".cbr"],
-  "application/x-rar": [".cbr"]
-}
-
-export const READER_SUPPORTED_MIME_TYPES = Object.keys(
-  READER_ACCEPTED_EXTENSIONS
-)
-
-export const READER_SUPPORTED_EXTENSIONS = Object.values(
-  READER_ACCEPTED_EXTENSIONS
-).reduce((prev, next) => [...prev, ...next], [])
-
 export const design = {
   palette: {
     orange: `rgb(225, 100, 50, 1)`
@@ -91,3 +73,4 @@ export * from "./utils/intersection"
 export * from "./utils/groupBy"
 export * from "./utils/mergeWith"
 export * from "./collections"
+export * from "./contentType"

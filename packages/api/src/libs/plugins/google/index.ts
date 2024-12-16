@@ -7,10 +7,9 @@ import { drive_v3, google } from "googleapis"
 import {
   GoogleDriveDataSourceData,
   READER_SUPPORTED_MIME_TYPES,
-  READER_SUPPORTED_EXTENSIONS
+  isFileSupported
 } from "@oboku/shared"
 import { configure } from "./configure"
-import path from "path"
 import {
   DataSourcePlugin,
   SynchronizeAbleDataSource
@@ -150,39 +149,35 @@ export const dataSource: DataSourcePlugin = {
         )
 
         const files = await getNextRes()
+        const supportedFiles = files.filter((file) => {
+          return (
+            file.trashed !== true && (isFolder(file) || isFileSupported(file))
+          )
+        })
 
         return Promise.all(
-          files
-            .filter(
-              (file) =>
-                file.trashed !== true &&
-                (isFolder(file) ||
-                  READER_SUPPORTED_EXTENSIONS.includes(
-                    path.extname(file.name || ``).toLowerCase()
-                  ))
-            )
-            .map(
-              async (
-                file
-              ): Promise<SynchronizeAbleDataSource["items"][number]> => {
-                if (isFolder(file)) {
-                  return {
-                    type: "folder",
-                    resourceId: generateResourceId(file.id || ""),
-                    items: await getContentsFromFolder(file.id || ""),
-                    name: file.name || "",
-                    modifiedAt: file.modifiedTime || new Date().toISOString()
-                  }
-                }
-
+          supportedFiles.map(
+            async (
+              file
+            ): Promise<SynchronizeAbleDataSource["items"][number]> => {
+              if (isFolder(file)) {
                 return {
-                  type: "file",
+                  type: "folder",
                   resourceId: generateResourceId(file.id || ""),
+                  items: await getContentsFromFolder(file.id || ""),
                   name: file.name || "",
                   modifiedAt: file.modifiedTime || new Date().toISOString()
                 }
               }
-            )
+
+              return {
+                type: "file",
+                resourceId: generateResourceId(file.id || ""),
+                name: file.name || "",
+                modifiedAt: file.modifiedTime || new Date().toISOString()
+              }
+            }
+          )
         )
       }
     )

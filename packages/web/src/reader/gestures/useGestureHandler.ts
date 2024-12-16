@@ -7,12 +7,12 @@ export const useGestureHandler = () => {
 
   useSubscribe(
     () =>
-      reader?.gestures.unhandledEvent$.pipe(
-        tap((event) => {
+      reader?.gestures.gestures$.pipe(
+        tap(({ event, handled }) => {
           /**
            * Toggle menu when tap is not navigating
            */
-          if (event.type === "tap") {
+          if (event.type === "tap" && !handled) {
             isMenuShownStateSignal.setValue((val) => !val)
           }
         })
