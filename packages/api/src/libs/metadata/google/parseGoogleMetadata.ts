@@ -1,9 +1,9 @@
 import { extractDateComponents } from "../extractDateComponents"
 import { Metadata } from "../types"
-import { GoogleBooksApiResult } from "@libs/google/googleBooksApi"
+import { GoogleBooksApiVolumesResponseData } from "@libs/google/googleBooksApi"
 
 export const parseGoogleMetadata = (
-  response: GoogleBooksApiResult
+  response: Pick<GoogleBooksApiVolumesResponseData, "items">
 ): Omit<Metadata, "type"> => {
   let coverLink: string | undefined
 

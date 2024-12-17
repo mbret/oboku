@@ -117,6 +117,7 @@ export const findOne = async <
   if (Array.isArray(fieldsWithRequiredFields)) {
     fieldsWithRequiredFields.push(`rx_model`)
   }
+
   const response = await retryFn(() =>
     db.find({
       ...restQuery,

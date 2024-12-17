@@ -1,4 +1,4 @@
-export function extractDateComponents(dateStr: string) {
+export function extractDateComponents(dateStr: string | undefined = "") {
   const parts = dateStr.split(" ")
   let day = undefined,
     month = undefined,

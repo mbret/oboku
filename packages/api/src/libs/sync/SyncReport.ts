@@ -8,7 +8,7 @@ import {
 } from "@oboku/shared"
 
 export class SyncReport {
-  report: {
+  protected readonly report: {
     created_at: string
     ended_at: string
     report: ReportEntry[]
@@ -17,6 +17,8 @@ export class SyncReport {
     ended_at: new Date().toISOString(),
     report: []
   }
+
+  protected readonly references: Record<string, string> = {}
 
   protected state: SupabaseTableSyncReportsEntry["state"] = "success"
 
@@ -70,6 +72,12 @@ export class SyncReport {
     const title = item.metadata?.find(({ type }) => type === "link")?.title
 
     return typeof title === "string" ? title : title?.en
+  }
+
+  upsetReference(id: string | undefined, label: string) {
+    if (!id) return this
+
+    this.references[id] = label
   }
 
   addItem(
@@ -301,12 +309,21 @@ export class SyncReport {
     })
   }
 
+  fetchBookMetadata(bookId: string) {
+    const item = this.getOrCreateEntry("book", { id: bookId })
+
+    item.fetchedMetadata = true
+  }
+
   async send() {
     try {
       const response = await supabase.from("sync_reports").insert({
         created_at: this.report.created_at,
         ended_at: this.report.ended_at,
-        report: this.report.report,
+        report: this.report.report.map((entry) => ({
+          ...entry,
+          label: entry.label ?? this.references[entry.id] ?? entry.id
+        })),
         datasource_id: this.datasourceId,
         user_name: this.userName,
         state: this.state

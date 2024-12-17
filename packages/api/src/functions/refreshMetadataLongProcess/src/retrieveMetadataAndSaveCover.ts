@@ -2,10 +2,7 @@ import fs from "fs"
 import path from "path"
 import { pluginFacade } from "../../../libs/plugins/facade"
 import { BookMetadata, directives } from "@oboku/shared"
-import {
-  detectMimeTypeFromContent,
-  mergeSkippingUndefined
-} from "../../../libs/utils"
+import { detectMimeTypeFromContent } from "../../../libs/utils"
 import { Logger } from "@libs/logger"
 import { METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "../../../constants"
 import { getBookSourcesMetadata } from "@libs/metadata/getBookSourcesMetadata"
@@ -29,7 +26,8 @@ export const retrieveMetadataAndSaveCover = async (
     db: nano.DocumentScope<unknown>
   }
 ) => {
-  logger.info(
+  console.log(
+    `[retrieveMetadataAndSaveCover]`,
     `syncMetadata run for user ${ctx.userName} with book ${ctx.book._id}`
   )
   let bookNameForDebug = ""
@@ -39,8 +37,10 @@ export const retrieveMetadataAndSaveCover = async (
   try {
     bookNameForDebug = reduceMetadata(ctx.book.metadata).title || ""
 
-    logger.info(
-      `syncMetadata processing ${ctx.book._id} with resource id ${ctx.link.resourceId}`
+    console.log(
+      `[retrieveMetadataAndSaveCover]`,
+      `processing ${ctx.book._id} with link of type ${ctx.link.type}`,
+      { link: ctx.link }
     )
 
     const bookIsProtected = await isBookProtected(ctx.db, ctx.book)
@@ -49,31 +49,23 @@ export const retrieveMetadataAndSaveCover = async (
     // in case some directive are needed to prevent downloading huge file.
     const { canDownload = false, ...linkResourceMetadata } =
       (await pluginFacade.getMetadata({
-        linkType: ctx.link.type,
-        credentials: ctx.credentials,
-        resourceId: ctx.link.resourceId
+        link: ctx.link,
+        credentials: ctx.credentials
       })) ?? {}
 
-    const { isbn, ignoreMetadata } = directives.extractDirectivesFromName(
-      linkResourceMetadata.name ?? ""
-    )
+    const { isbn, ignoreMetadataFile, ignoreMetadataSources, googleVolumeId } =
+      directives.extractDirectivesFromName(linkResourceMetadata.name ?? "")
 
-    const existingLinkMetadata = ctx.book.metadata?.find(
-      (item) => item.type === "link"
-    )
+    const linkMetadata: BookMetadata = {
+      type: "link",
+      isbn,
+      title: linkResourceMetadata.name,
+      contentType: linkResourceMetadata.contentType,
+      googleVolumeId,
+      ...linkResourceMetadata.bookMetadata
+    }
 
-    const newLinkMetadata: BookMetadata = mergeSkippingUndefined(
-      existingLinkMetadata ?? {},
-      {
-        type: "link",
-        isbn,
-        title: linkResourceMetadata.name,
-        contentType: linkResourceMetadata.contentType,
-        ...linkResourceMetadata.bookMetadata
-      }
-    )
-
-    let contentType = newLinkMetadata.contentType
+    let contentType = linkMetadata.contentType
     /**
      * Not all plugins return the valid content type so
      * we can only make some assumptions based on what we have
@@ -83,19 +75,21 @@ export const retrieveMetadataAndSaveCover = async (
       (contentType &&
         METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType))
 
-    const sourcesMetadata = await getBookSourcesMetadata(
-      {
-        ...newLinkMetadata,
-        // some plugins returns filename and not title
-        title: path.parse(newLinkMetadata.title ?? "").name
-      },
-      {
-        googleApiKey: ctx.googleApiKey,
-        withGoogle: !bookIsProtected
-      }
-    )
+    const sourcesMetadata = ignoreMetadataSources
+      ? []
+      : await getBookSourcesMetadata(
+          {
+            ...linkMetadata,
+            // some plugins returns filename and not title
+            title: path.parse(linkMetadata.title ?? "").name
+          },
+          {
+            googleApiKey: ctx.googleApiKey,
+            withGoogle: !bookIsProtected
+          }
+        )
 
-    const metadataList = [newLinkMetadata, ...sourcesMetadata]
+    const metadataList = [linkMetadata, ...sourcesMetadata]
 
     const { filepath: tmpFilePath, metadata: downloadMetadata } =
       canDownload && isMaybeExtractAble
@@ -127,12 +121,13 @@ export const retrieveMetadataAndSaveCover = async (
     contentType = downloadMetadata.contentType || contentType
 
     console.log(
+      `[retrieveMetadataAndSaveCover]`,
       `syncMetadata processing ${ctx.book._id}`,
-      tmpFilePath,
       {
-        linkMetadata: newLinkMetadata
-      },
-      contentType
+        linkMetadata,
+        contentType,
+        tmpFilePath
+      }
     )
 
     const isRarArchive = contentType === "application/x-rar"
@@ -145,7 +140,7 @@ export const retrieveMetadataAndSaveCover = async (
           (await detectMimeTypeFromContent(tmpFilePath)) || contentType
       }
 
-      if (ignoreMetadata !== "file") {
+      if (!ignoreMetadataFile) {
         if (isRarArchive) {
           archiveExtractor = await getRarArchive(tmpFilePath)
           const fileMetadata = await getMetadataFromRarArchive(
@@ -185,23 +180,15 @@ export const retrieveMetadataAndSaveCover = async (
     })
 
     console.log(
-      `metadataDaemon Finished processing book ${ctx.book._id} with resource id ${ctx.link.resourceId}`
+      `[retrieveMetadataAndSaveCover]`,
+      `prepare to update ${ctx.book._id} with`,
+      { metadataList }
     )
 
     await atomicUpdate(ctx.db, "book", ctx.book._id, (old) => {
-      const linkMetadata = old.metadata?.find((item) => item.type === "link")
-
       return {
         ...old,
-        /**
-         * We should always use previous link metadata. Some
-         * links do not have server state
-         */
-        metadata: metadataList.map((item) =>
-          item.type !== "link"
-            ? item
-            : mergeSkippingUndefined(linkMetadata ?? {}, item)
-        ),
+        metadata: metadataList,
         lastMetadataUpdatedAt: new Date().getTime(),
         metadataUpdateStatus: null,
         lastMetadataUpdateError: null

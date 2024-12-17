@@ -1,19 +1,14 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { AWS_API_URI } from "../../constants"
 import { configure as configureGoogleDataSource } from "@libs/plugins/google"
 import { withToken } from "@libs/auth"
 import schema from "./schema"
 import { createHttpError } from "@libs/httpErrors"
 import { getNanoDbForUser } from "@libs/couch/dbHelpers"
-import axios from "axios"
 import { getParametersValue } from "@libs/ssm"
 import { deleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
-import { pluginFacade } from "@libs/plugins/facade"
-import { Logger } from "@libs/logger"
 import { withMiddy } from "@libs/middy/withMiddy"
-
-const logger = Logger.child({ module: "handler" })
+import { sync } from "@libs/sync/sync"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
@@ -49,32 +44,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       throw createHttpError(400)
     }
 
-    const refreshBookMetadata = async ({ bookId }: { bookId: string }) => {
-      logger.info(`send refreshBookMetadata request for ${bookId}`)
-
-      const response = await axios({
-        method: `post`,
-        url: `${AWS_API_URI}/refresh-metadata`,
-        data: {
-          bookId
-        },
-        headers: {
-          "content-type": "application/json",
-          accept: "application/json",
-          "oboku-credentials": JSON.stringify(credentials),
-          authorization: authorization
-        }
-      })
-
-      logger.info(`refreshBookMetadata request success for ${bookId}`)
-      logger.info(response)
-    }
-
-    await pluginFacade.sync({
+    await sync({
       userName: name,
       dataSourceId,
       db: await getNanoDbForUser(name, jwtPrivateKey),
-      refreshBookMetadata,
       credentials,
       authorization
     })

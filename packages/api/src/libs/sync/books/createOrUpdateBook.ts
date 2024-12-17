@@ -41,8 +41,12 @@ export const createOrUpdateBook = async ({
   helpers: Helpers
 }) => {
   const { dataSourceType, dataSourceId, syncReport, db } = ctx
+
   try {
-    Logger.info(`createOrUpdateBook "${item.name}":`, item.resourceId)
+    console.log(
+      `[sync.books] [createOrUpdateBook] "${item.name}":`,
+      item.resourceId
+    )
 
     const parentTagNames = parents.reduce(
       (tags: string[], parent) => [
@@ -141,6 +145,8 @@ export const createOrUpdateBook = async ({
       }
     }
 
+    syncReport.upsetReference(existingBook?._id, item.name)
+
     if (!linkForResourceId || !existingBook) {
       let bookId = existingBook?._id
 
@@ -231,7 +237,8 @@ export const createOrUpdateBook = async ({
           .refreshBookMetadata({ bookId: existingBook?._id })
           .catch(logger.error)
 
-        Logger.info(
+        console.log(
+          `[sync.books] [createOrUpdateBook]`,
           `book ${
             linkForResourceId.book
           } has changed in metadata, refresh triggered ${lastMetadataUpdatedAt} ${new Date(
@@ -281,7 +288,7 @@ export const createOrUpdateBook = async ({
       })
     }
 
-    Logger.info(`createOrUpdateBook "${item.name}": DONE!`)
+    console.log(`[createOrUpdateBook]`, `"${item.name}": DONE!`)
   } catch (e) {
     logger.error(
       `createOrUpdateBook something went wrong for book ${item.name} (${item.resourceId})`

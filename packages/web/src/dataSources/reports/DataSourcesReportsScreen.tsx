@@ -59,7 +59,17 @@ export const DataSourcesReportsScreen = memo(() => {
                     {!!entry.report.report.length && (
                       <Stack>
                         {entry.report.report.map(
-                          ({ rx_model, linkedTo, label, id, added }, index) => {
+                          (
+                            {
+                              rx_model,
+                              linkedTo,
+                              label,
+                              id,
+                              added,
+                              ...reportEntry
+                            },
+                            index
+                          ) => {
                             const linkedToBooks =
                               linkedTo?.filter(
                                 (item) => item.rx_model === "book"
@@ -131,6 +141,19 @@ export const DataSourcesReportsScreen = memo(() => {
                                               `"${label ?? id}"`
                                           )
                                           .join(`, `)}
+                                      </Typography>
+                                    </Box>
+                                  )}
+                                {rx_model === `book` &&
+                                  reportEntry.fetchedMetadata && (
+                                    <Box>
+                                      {icon}{" "}
+                                      <Typography
+                                        variant="caption"
+                                        component="span"
+                                      >
+                                        Book <b>{label ?? id}</b> had metadata
+                                        refetch
                                       </Typography>
                                     </Box>
                                   )}

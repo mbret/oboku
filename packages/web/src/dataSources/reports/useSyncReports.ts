@@ -15,14 +15,17 @@ export const useSyncReports = () =>
       const entries = response?.data
         .map((report) => {
           return report.report.reduce(
-            (acc, { rx_model, added, deleted, updated }) => {
+            (acc, { rx_model, added, deleted, updated, fetchedMetadata }) => {
               const updateWith = (entry: {
                 added: number
                 deleted: number
                 updated: number
+                fetchedMetadata: number
               }) => {
                 return {
-                  ...entry,
+                  ...(fetchedMetadata && {
+                    fetchedMetadata: entry.fetchedMetadata + 1
+                  }),
                   ...(added && {
                     added: entry.added + 1
                   }),
@@ -47,27 +50,32 @@ export const useSyncReports = () =>
               book: {
                 added: 0,
                 updated: 0,
-                deleted: 0
+                deleted: 0,
+                fetchedMetadata: 0
               },
               tag: {
                 added: 0,
                 updated: 0,
-                deleted: 0
+                deleted: 0,
+                fetchedMetadata: 0
               },
               link: {
                 added: 0,
                 updated: 0,
-                deleted: 0
+                deleted: 0,
+                fetchedMetadata: 0
               },
               obokucollection: {
                 added: 0,
                 updated: 0,
-                deleted: 0
+                deleted: 0,
+                fetchedMetadata: 0
               },
               datasource: {
                 added: 0,
                 updated: 0,
-                deleted: 0
+                deleted: 0,
+                fetchedMetadata: 0
               }
             }
           )
