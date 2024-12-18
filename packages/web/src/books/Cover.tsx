@@ -8,6 +8,7 @@ import { API_URL } from "../constants.web"
 import { useLocalSettings } from "../settings/states"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
+import { useBookCover } from "./useBookCover"
 
 const useBookCoverState = ({ bookId }: { bookId: string }) => {
   const blurredTags = useBlurredTagIds().data ?? []
@@ -94,13 +95,7 @@ export const Cover: FC<Props> = memo(
 
     urlParams.append("format", "image/jpeg")
 
-    const originalJpgSrc = book
-      ? `${API_URL}/covers/cover-${auth?.nameHex}-${book._id}?${urlParams.toString()}`
-      : undefined
-
-    const coverSrc = originalSrc && !hasError ? originalSrc : placeholder
-    const coverSrcJpg =
-      originalJpgSrc && !hasError ? originalJpgSrc : placeholder
+    const { coverSrc, coverSrcJpg } = useBookCover({ bookId })
 
     useEffect(() => {
       setHasError(false)
@@ -135,11 +130,17 @@ export const Cover: FC<Props> = memo(
             })
           }}
         >
-          <source srcSet={coverSrc} type="image/webp" />
-          <source srcSet={coverSrcJpg} type="image/jpeg" />
+          <source
+            srcSet={hasError ? placeholder : coverSrc}
+            type="image/webp"
+          />
+          <source
+            srcSet={hasError ? placeholder : coverSrcJpg}
+            type="image/jpeg"
+          />
           <CoverImg
             alt="img"
-            src={coverSrc}
+            src={hasError ? placeholder : coverSrc}
             fullWidth={fullWidth}
             rounded={rounded}
             withShadow={withShadow}

@@ -18,7 +18,7 @@ import { useLocalSettings } from "../../settings/states"
 import { Report } from "../../debug/report.shared"
 import { useCollectionComputedMetadata } from "../useCollectionComputedMetadata"
 import { useCollectionCoverUri } from "../useCollectionCoverUri"
-import placeholder from "../../assets/cover-placeholder.png"
+import coverPlaceholder from "../../assets/cover-placeholder.png"
 import { StatusChip } from "../series/StatusChip"
 import { useWindowScroll } from "react-use"
 
@@ -137,7 +137,7 @@ export const CollectionDetailsScreen = () => {
             style={{
               backgroundImage: useOptimizedTheme
                 ? undefined
-                : `url(${hasCover ? (coverUri ?? placeholder) : CollectionBgSvg})`,
+                : `url(${hasCover ? (coverUri ?? coverPlaceholder) : CollectionBgSvg})`,
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
               backgroundPosition: "center"
@@ -161,7 +161,7 @@ export const CollectionDetailsScreen = () => {
                 <Box
                   position="relative"
                   component="img"
-                  src={coverUri ?? placeholder}
+                  src={coverUri ?? coverPlaceholder}
                   width={coverWidth}
                   height={coverHeight}
                   borderRadius={1}
