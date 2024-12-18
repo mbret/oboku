@@ -46,14 +46,15 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       ),
       switchMap(([params, db]) =>
         from(
-          findOne(db, "obokucollection", {
-            selector: { _id: collectionId }
-          })
+          findOne(
+            "obokucollection",
+            {
+              selector: { _id: collectionId }
+            },
+            { throwOnNotFound: true, db }
+          )
         ).pipe(
           mergeMap((collection) => {
-            if (!collection)
-              throw new Error(`Unable to find book ${collectionId}`)
-
             return from(
               refreshMetadata(collection, {
                 db,

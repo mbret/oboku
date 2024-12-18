@@ -119,9 +119,9 @@ export const refreshMetadata = async (
   }
 
   // try to get latest collection to stay as fresh as possible
-  const currentCollection = await findOne(db, "obokucollection", {
+  const currentCollection = await findOne("obokucollection", {
     selector: { _id: collection._id }
-  })
+  }, { db })
 
   if (!currentCollection) throw new Error("Unable to find collection")
 

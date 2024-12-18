@@ -29,9 +29,15 @@ export const repairCollectionBooks = async ({
   ctx: Context
   collectionId: string
 }) => {
-  const collection = await findOne(ctx.db, "obokucollection", {
-    selector: { _id: collectionId }
-  })
+  const collection = await findOne(
+    "obokucollection",
+    {
+      selector: { _id: collectionId }
+    },
+    {
+      db: ctx.db
+    }
+  )
 
   if (collection) {
     const [booksHavingCollectionAttached, booksFromCollectionList] =

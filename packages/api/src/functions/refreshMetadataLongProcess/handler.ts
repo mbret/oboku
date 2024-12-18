@@ -72,7 +72,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
     const db = await getNanoDbForUser(userName, jwtPrivateKey)
 
-    const book = await findOne(db, "book", { selector: { _id: bookId } })
+    const book = await findOne("book", { selector: { _id: bookId } }, { db })
 
     if (!book) throw new Error(`Unable to find book ${bookId}`)
 
@@ -85,7 +85,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
     const firstLinkId = (book.links || [])[0] || "-1"
 
-    const link = await findOne(db, "link", { selector: { _id: firstLinkId } })
+    const link = await findOne(
+      "link",
+      { selector: { _id: firstLinkId } },
+      { db }
+    )
 
     if (!link) throw new Error(`Unable to find link ${firstLinkId}`)
 
