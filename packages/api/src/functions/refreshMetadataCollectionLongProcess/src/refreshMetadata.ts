@@ -95,6 +95,9 @@ export const refreshMetadata = async (
     linkMetadataInfo?.name ?? ""
   )
 
+  // for nwo we can only make a series through directives
+  const collectionType = directivesFromLink.series ? "series" : "shelve"
+
   const title = directives.removeDirectiveFromString(
     directivesFromLink.metadataTitle ??
       linkMetadataInfo?.name ??
@@ -105,7 +108,7 @@ export const refreshMetadata = async (
   const year = directivesFromLink.year ?? userStartYear
 
   const externalMetadatas =
-    collection.type === "series"
+    collectionType === "series"
       ? await fetchMetadata(
           { title, year: year ? String(year) : undefined },
           { withGoogle: true, googleApiKey, comicVineApiKey }
@@ -119,9 +122,13 @@ export const refreshMetadata = async (
   }
 
   // try to get latest collection to stay as fresh as possible
-  const currentCollection = await findOne("obokucollection", {
-    selector: { _id: collection._id }
-  }, { db })
+  const currentCollection = await findOne(
+    "obokucollection",
+    {
+      selector: { _id: collection._id }
+    },
+    { db }
+  )
 
   if (!currentCollection) throw new Error("Unable to find collection")
 
@@ -142,6 +149,7 @@ export const refreshMetadata = async (
     (old) =>
       ({
         ...old,
+        type: collectionType,
         lastMetadataUpdatedAt: new Date().toISOString(),
         metadataUpdateStatus: "idle",
         lastMetadataUpdateError: null,
