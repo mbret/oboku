@@ -13,6 +13,9 @@ import { User } from "../couchDbEntities"
 import { waitForRandomTime } from "../utils"
 import { COUCH_DB_URL } from "../../constants"
 import { generatePassword } from "../authentication/generatePassword"
+import { findOne } from "./findOne"
+
+export { findOne }
 
 export const createUser = async (
   db: createNano.ServerScope,
@@ -100,39 +103,6 @@ export const insert = async <
   const doc = await db.insert(finalData as any)
 
   if (!doc.ok) throw new Error("Unable to create document")
-
-  return doc
-}
-
-export const findOne = async <
-  M extends DocType["rx_model"],
-  D extends ModelOf<M>
->(
-  db: createNano.DocumentScope<unknown>,
-  rxModel: M,
-  query: SafeMangoQuery<D>
-) => {
-  const { fields, ...restQuery } = query
-  const fieldsWithRequiredFields = fields
-  if (Array.isArray(fieldsWithRequiredFields)) {
-    fieldsWithRequiredFields.push(`rx_model`)
-  }
-
-  const response = await retryFn(() =>
-    db.find({
-      ...restQuery,
-      fields: fields as string[],
-      selector: { rx_model: rxModel, ...(query?.selector as any) },
-      limit: 1
-    })
-  )
-
-  if (response.docs.length === 0) return null
-
-  const doc = response
-    .docs[0] as createNano.MangoResponse<unknown>["docs"][number] & D
-
-  if (rxModel !== doc.rx_model) throw new Error(`Invalid document type`)
 
   return doc
 }
@@ -246,7 +216,7 @@ export const getOrCreateTagFromName = (
 ) => {
   return retryFn(async () => {
     // Get all tag ids and create one if it does not exist
-    const existingTag = await findOne(db, "tag", { selector: { name } })
+    const existingTag = await findOne("tag", { selector: { name } }, { db })
     if (existingTag) {
       return existingTag._id
     }
@@ -276,7 +246,7 @@ export const createTagFromName = (
   silent: boolean
 ) => {
   return retryFn(async () => {
-    const existingTag = await findOne(db, "tag", { selector: { name } })
+    const existingTag = await findOne("tag", { selector: { name } }, { db })
 
     if (existingTag) {
       if (silent) {

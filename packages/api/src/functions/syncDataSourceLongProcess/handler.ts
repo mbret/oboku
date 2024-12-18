@@ -1,6 +1,6 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { configure as configureGoogleDataSource } from "@libs/plugins/google"
-import { withToken } from "@libs/auth"
+import { getAuthTokenAsync } from "@libs/auth"
 import schema from "./schema"
 import { createHttpError } from "@libs/httpErrors"
 import { getNanoDbForUser } from "@libs/couch/dbHelpers"
@@ -31,7 +31,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     const credentials = JSON.parse(event.body.credentials ?? JSON.stringify({}))
     const authorization = event.body.authorization ?? ``
 
-    const { name } = await withToken(
+    const { name } = await getAuthTokenAsync(
       {
         headers: {
           authorization

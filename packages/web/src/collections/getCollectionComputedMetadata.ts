@@ -19,16 +19,17 @@ export const getCollectionComputedMetadata = (
   const list = item?.metadata ?? []
 
   const orderedList = [...list].sort((a, b) => {
-    // mangadex has higher priority
-    if (a.type === "mangadex") return 1
+    const priority: Record<CollectionMetadata["type"], number> = {
+      user: 5,
+      mangadex: 4,
+      mangaupdates: 3,
+      biblioreads: 2,
+      link: 1,
+      googleBookApi: 0,
+      comicvine: -1
+    }
 
-    // mangaupdates has priority
-    if (a.type === "mangaupdates" && b.type === "biblioreads") return 1
-
-    /**
-     * link is the raw format, we don't want it to be on top
-     */
-    return a.type === "link" ? -1 : 1
+    return (priority[a.type] || 0) - (priority[b.type] || 0)
   })
 
   const reducedMetadata = orderedList.reduce((acc, { type, ...item }) => {

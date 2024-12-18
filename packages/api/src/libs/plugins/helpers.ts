@@ -23,9 +23,13 @@ export const createHelpers = (
     refreshBookMetadata: (opts: { bookId: string }) =>
       refreshBookMetadata(opts).catch(console.error),
     getDataSourceData: async <Data>(): Promise<Partial<Data>> => {
-      const dataSource = await findOne(db, "datasource", {
-        selector: { _id: dataSourceId }
-      })
+      const dataSource = await findOne(
+        "datasource",
+        {
+          selector: { _id: dataSourceId }
+        },
+        { db }
+      )
       let data = {}
       try {
         if (dataSource?.data) {
@@ -40,7 +44,7 @@ export const createHelpers = (
     findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
       model: M,
       query: SafeMangoQuery<D>
-    ) => findOne(db, model, query),
+    ) => findOne(model, query, { db }),
     find: <M extends DocType["rx_model"], D extends ModelOf<M>>(
       model: M,
       query: SafeMangoQuery<D>

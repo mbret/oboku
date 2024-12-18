@@ -2,7 +2,7 @@ import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import fs from "fs"
 import path from "path"
 import { OFFLINE, TMP_DIR } from "../../constants"
-import { withToken } from "@libs/auth"
+import { getAuthTokenAsync } from "@libs/auth"
 import { configure as configureGoogleDataSource } from "@libs/plugins/google"
 import schema from "./schema"
 import { atomicUpdate, findOne, getNanoDbForUser } from "@libs/couch/dbHelpers"
@@ -55,7 +55,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
     const credentials = JSON.parse(rawCredentials)
 
-    const { name: userName } = await withToken(
+    const { name: userName } = await getAuthTokenAsync(
       {
         headers: {
           authorization
@@ -72,7 +72,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
     const db = await getNanoDbForUser(userName, jwtPrivateKey)
 
-    const book = await findOne(db, "book", { selector: { _id: bookId } })
+    const book = await findOne("book", { selector: { _id: bookId } }, { db })
 
     if (!book) throw new Error(`Unable to find book ${bookId}`)
 
@@ -85,7 +85,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
     const firstLinkId = (book.links || [])[0] || "-1"
 
-    const link = await findOne(db, "link", { selector: { _id: firstLinkId } })
+    const link = await findOne(
+      "link",
+      { selector: { _id: firstLinkId } },
+      { db }
+    )
 
     if (!link) throw new Error(`Unable to find link ${firstLinkId}`)
 
