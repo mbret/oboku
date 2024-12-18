@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken"
 import { APIGatewayProxyEvent } from "aws-lambda"
 import { createHttpError } from "./httpErrors"
+import { from } from "rxjs"
 
 const isAuthorized = async ({
   privateKey,
@@ -58,7 +59,7 @@ export const generateAdminToken = async ({
   return jwt.sign(data, privateKey, { algorithm: "RS256" })
 }
 
-export const withToken = async (
+export const getAuthTokenAsync = async (
   event: Pick<APIGatewayProxyEvent, `headers`>,
   privateKey: string
 ) => {
@@ -68,3 +69,15 @@ export const withToken = async (
 
   return await isAuthorized({ authorization, privateKey })
 }
+
+export const getAuthToken = (authorization: string, privateKey: string) =>
+  from(
+    getAuthTokenAsync(
+      {
+        headers: {
+          authorization
+        }
+      },
+      privateKey
+    )
+  )

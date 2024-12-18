@@ -45,7 +45,8 @@
     "unzipper": "^0.12.3",
     "yup": "^1.3.2",
     "@sentry/aws-serverless": "^8.32.0",
-    "@sentry/profiling-node": "^8.32.0"
+    "@sentry/profiling-node": "^8.32.0",
+    "rxjs": "^7.5.7"
   },
   "devDependencies": {
     "@types/node": "^20",

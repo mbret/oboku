@@ -2,6 +2,14 @@ import { APIGatewayProxyEvent } from "aws-lambda"
 import fs from "fs"
 import unzipper from "unzipper"
 import { READER_SUPPORTED_MIME_TYPES } from "@oboku/shared"
+import {
+  catchError,
+  ignoreElements,
+  map,
+  Observable,
+  switchMap,
+  tap
+} from "rxjs"
 
 export const waitForRandomTime = (min: number, max: number) =>
   new Promise((resolve) =>
@@ -134,3 +142,31 @@ export function mergeSkippingUndefined<T extends object>(
 
   return result as T
 }
+
+export const onBeforeError =
+  <T>(callback: (error: unknown) => Observable<any>) =>
+  (stream: Observable<T>) =>
+    stream.pipe(
+      catchError((error) =>
+        callback(error).pipe(
+          tap(() => {
+            throw error
+          }),
+          ignoreElements()
+        )
+      )
+    )
+
+export const switchMapMergeOuter = <T, R>(
+  project: (value: T) => Observable<R>
+) =>
+  switchMap((outer: T) =>
+    project(outer).pipe(map((inner) => ({ ...outer, ...inner })))
+  )
+
+export const switchMapCombineOuter = <T, R>(
+  project: (value: T) => Observable<R>
+) =>
+  switchMap((outer: T) =>
+    project(outer).pipe(map<R, [T, R]>((inner) => [outer, inner]))
+  )

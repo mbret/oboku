@@ -1,5 +1,5 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { withToken } from "@libs/auth"
+import { getAuthTokenAsync } from "@libs/auth"
 import schema from "./schema"
 import { getParametersValue } from "@libs/ssm"
 import { supabase } from "@libs/supabase/client"
@@ -15,7 +15,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     WithDecryption: true
   })
 
-  const { name } = await withToken(
+  const { name } = await getAuthTokenAsync(
     {
       headers: {
         authorization

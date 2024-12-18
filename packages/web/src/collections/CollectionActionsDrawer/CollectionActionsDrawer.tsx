@@ -29,12 +29,12 @@ import { useRefreshCollectionMetadata } from "../useRefreshCollectionMetadata"
 import { useRemoveCollection } from "../useRemoveCollection"
 import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 import { useCollection } from "../useCollection"
+import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 
 export const CollectionActionsDrawer: FC<{}> = () => {
   const { openedWith, lastId: collectionId } = useSignalValue(
     collectionActionDrawerState
   )
-
   const [
     isEditCollectionDialogOpenedWithId,
     setIsEditCollectionDialogOpenedWithId
@@ -138,7 +138,7 @@ export const CollectionActionsDrawer: FC<{}> = () => {
             </ListItemIcon>
             <ListItemText primary="Manage books" />
           </ListItemButton>
-          {collection?.type === "series" && (
+          {collection && collection._id !== COLLECTION_EMPTY_ID && (
             <ListItemButton
               onClick={() => {
                 refreshCollectionMetadata(collectionId ?? ``)

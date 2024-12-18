@@ -1,4 +1,4 @@
-  import { CollectionMetadata } from "@oboku/shared"
+import { CollectionMetadata } from "@oboku/shared"
 import { Logger } from "@libs/logger"
 import { URL } from "url"
 import axios from "axios"
@@ -25,7 +25,7 @@ type Result = {
       issue_number: string
     }
     id: number
-    image: {
+    image?: {
       icon_url: string
       medium_url: string
       screen_url: string
@@ -34,7 +34,7 @@ type Result = {
       super_url: string
       thumb_url: string
       tiny_url: string
-      original_url: string
+      original_url?: string
       image_tags: string
     }
     last_issue: {
@@ -93,7 +93,12 @@ export const getSeriesMetadata = async ({
       description: result?.description,
       aliases: result?.aliases ? [result?.aliases] : undefined,
       startYear: result?.start_year ? Number(result?.start_year) : undefined,
-      publisherName: result?.publisher.name
+      publisherName: result?.publisher.name,
+      ...(result.image?.original_url && {
+        cover: {
+          uri: result.image?.original_url
+        }
+      })
     } satisfies CollectionMetadata
   } catch (e) {
     Logger.error(e)

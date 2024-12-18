@@ -1,92 +1,82 @@
 import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import { withToken } from "@libs/auth"
-import { configure as configureGoogleDataSource } from "@libs/plugins/google"
+import { getAuthToken } from "@libs/auth"
 import schema from "./schema"
 import { findOne, getNanoDbForUser } from "@libs/couch/dbHelpers"
-import { getParametersValue } from "@libs/ssm"
-import { deleteLock } from "@libs/supabase/deleteLock"
+import { withDeleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
-import { Logger } from "@libs/logger"
 import { refreshMetadata } from "./src/refreshMetadata"
 import { withMiddy } from "@libs/middy/withMiddy"
+import { from, lastValueFrom, map, mergeMap, of, switchMap } from "rxjs"
+import { parameters$ } from "./src/parameters"
+import {
+  onBeforeError,
+  switchMapCombineOuter,
+  switchMapMergeOuter
+} from "@libs/utils"
+import { withConfiguredGoogle } from "@libs/google/withConfiguredGoogle"
+import { markCollectionAsError } from "./src/collections"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   event
 ) => {
-  const [
-    client_id = ``,
-    client_secret = ``,
-    googleApiKey = ``,
-    jwtPrivateKey = ``,
-    comicVineApiKey = ``
-  ] = await getParametersValue({
-    Names: [
-      "GOOGLE_CLIENT_ID",
-      "GOOGLE_CLIENT_SECRET",
-      "GOOGLE_API_KEY",
-      "jwt-private-key",
-      "COMiCVINE_API_KEY"
-    ],
-    WithDecryption: true
-  })
-
-  configureGoogleDataSource({
-    client_id,
-    client_secret
-  })
-
-  const soft = event.body.soft === true
-  const authorization = event.body.authorization ?? ``
-  const rawCredentials = event.body.credentials ?? JSON.stringify({})
-  const credentials = JSON.parse(rawCredentials)
-
-  const { name: userName } = await withToken(
-    {
-      headers: {
-        authorization
-      }
-    },
-    jwtPrivateKey
-  )
-
-  const collectionId: string | undefined = event.body.collectionId
-
-  if (!collectionId) {
-    throw new Error(`Unable to parse event.body -> ${event.body}`)
-  }
-
+  const collectionId = event.body.collectionId ?? ""
   const lockId = `metadata-collection_${collectionId}`
 
-  const db = await getNanoDbForUser(userName, jwtPrivateKey)
+  const result = await lastValueFrom(
+    of(event).pipe(
+      map((event) => {
+        const soft = event.body.soft === true
+        const authorization = event.body.authorization ?? ``
+        const rawCredentials = event.body.credentials ?? JSON.stringify({})
+        const credentials = JSON.parse(rawCredentials)
 
-  const collection = await findOne(db, "obokucollection", {
-    selector: { _id: collectionId }
-  })
+        return {
+          soft,
+          authorization,
+          credentials
+        }
+      }),
+      switchMapMergeOuter(() => parameters$),
+      withConfiguredGoogle,
+      switchMapMergeOuter((params) =>
+        getAuthToken(params.authorization, params.jwtPrivateKey)
+      ),
+      switchMapCombineOuter(({ name: userName, jwtPrivateKey }) =>
+        from(getNanoDbForUser(userName, jwtPrivateKey))
+      ),
+      switchMap(([params, db]) =>
+        from(
+          findOne(db, "obokucollection", {
+            selector: { _id: collectionId }
+          })
+        ).pipe(
+          mergeMap((collection) => {
+            if (!collection)
+              throw new Error(`Unable to find book ${collectionId}`)
 
-  if (!collection) throw new Error(`Unable to find book ${collectionId}`)
+            return from(
+              refreshMetadata(collection, {
+                db,
+                ...params
+              })
+            )
+          }),
+          onBeforeError(() => markCollectionAsError({ db, collectionId }))
+        )
+      ),
+      map(() => {
+        console.info(`lambda executed with success for ${collectionId}`)
 
-  try {
-    await refreshMetadata(collection, {
-      googleApiKey,
-      db,
-      credentials,
-      soft,
-      comicVineApiKey
-    })
-  } catch (e) {
-    await deleteLock(supabase, lockId)
+        return {
+          statusCode: 200,
+          body: JSON.stringify({})
+        }
+      }),
+      withDeleteLock(supabase, lockId)
+    )
+  )
 
-    throw e
-  }
-
-  await deleteLock(supabase, lockId)
-
-  Logger.info(`lambda executed with success for ${collection._id}`)
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify({})
-  }
+  return result
 }
 
 export const main = withMiddy(lambda, {
