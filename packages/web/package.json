@@ -68,7 +68,11 @@
     "@types/google.accounts": "^0.0.15",
     "@types/google.picker": "^0.0.47",
     "@types/uuid": "^10.0.0",
-    "@vitejs/plugin-react": "^4.1.1"
+    "@vitejs/plugin-react": "^4.1.1",
+    "vite": "^6.0.6",
+    "vite-plugin-dts": "^4.0.3",
+    "vite-plugin-pwa": "^0.21.0",
+    "vite-plugin-svgr": "^4.1.0"
   },
   "scripts": {
     "predeploy": "npm run build",
