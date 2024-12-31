@@ -258,7 +258,6 @@ const serverlessConfiguration = {
          * of the bundled function.
          */
         "sharp",
-        `readable-stream`,
         // most likely not required
         `aws-lambda`,
         `node-unrar-js`
