@@ -71,7 +71,8 @@ export const withMiddy = (
       .use({
         onError: withCors
           ? cors({
-              headers: `*`
+              headers: "*",
+              origin: "*"
             }).onError
           : () => {
               //
