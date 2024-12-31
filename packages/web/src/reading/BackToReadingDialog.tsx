@@ -5,7 +5,7 @@ import {
   hasOpenedReaderAlreadyStateSignal,
   bookBeingReadStateSignal
 } from "./states"
-import { SIGNAL_RESET, useMutation } from "reactjrx"
+import { SIGNAL_RESET, useSwitchMutation$ } from "reactjrx"
 import { getMetadataFromBook } from "../books/metadata"
 import { useCreateBackToBookDialog } from "./useCreateBackToBookDialog"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
@@ -22,8 +22,7 @@ export const BackToReadingDialog = memo(
     const isWithinReaderRoute = location.pathname.startsWith(BASE_READER_ROUTE)
     const { mutateAsync: createBackToBookDialog } = useCreateBackToBookDialog()
 
-    const { mutate: checkBackToReading } = useMutation({
-      mapOperator: "switch",
+    const { mutate: checkBackToReading } = useSwitchMutation$({
       mutationFn: () => {
         const bookBeingReadId = bookBeingReadStateSignal.getValue()
 

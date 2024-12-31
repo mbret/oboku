@@ -24,7 +24,7 @@ import {
   useTheme
 } from "@mui/material"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
-import { useBookDoc, useIsBookLocal } from "../states"
+import { useBook, useIsBookLocal } from "../states"
 import { Cover } from "../Cover"
 import { ReadingStateState } from "@oboku/shared"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
@@ -80,7 +80,7 @@ export const BookActionsDrawer = memo(() => {
     actionsBlackList
   } = useSignalValue(bookActionDrawerSignal)
   const navigate = useNavigate()
-  const { data: book } = useBookDoc({ id: bookId })
+  const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const downloadState = useBookDownloadState(bookId || "-1")
   const { data: isLocal } = useIsBookLocal({ id: bookId })
@@ -181,7 +181,7 @@ export const BookActionsDrawer = memo(() => {
                   onClick={() => {
                     handleClose()
                     incrementalBookPatch({
-                      doc: book,
+                      doc: book._id,
                       patch: {
                         readingStateCurrentState: ReadingStateState.NotStarted,
                         readingStateCurrentBookmarkProgressPercent: 0,
@@ -204,7 +204,7 @@ export const BookActionsDrawer = memo(() => {
                   onClick={() => {
                     handleClose()
                     incrementalBookPatch({
-                      doc: book,
+                      doc: book._id,
                       patch: {
                         readingStateCurrentState: ReadingStateState.Finished,
                         readingStateCurrentBookmarkProgressPercent: 1,
@@ -226,7 +226,7 @@ export const BookActionsDrawer = memo(() => {
                 onClick={() => {
                   handleClose(() => {
                     incrementalBookPatch({
-                      doc: book,
+                      doc: book._id,
                       patch: {
                         isNotInterested: !book.isNotInterested
                       }

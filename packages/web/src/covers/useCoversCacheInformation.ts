@@ -1,11 +1,11 @@
-import { useQuery } from "reactjrx"
 import { from, switchMap, map } from "rxjs"
 import { SW_COVERS_CACHE_KEY } from "../constants.shared"
+import { useQuery$ } from "reactjrx"
 
 export const USE_COVERS_CACHE_INFORMATION_KEY = ["storage/covers/size"]
 
 export const useCoversCacheInformation = () =>
-  useQuery({
+  useQuery$({
     queryKey: USE_COVERS_CACHE_INFORMATION_KEY,
     gcTime: 5 * 60 * 1000,
     queryFn: () =>

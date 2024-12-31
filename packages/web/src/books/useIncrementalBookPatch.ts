@@ -1,11 +1,11 @@
-import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, mergeMap, of } from "rxjs"
 import { RxDocument } from "rxdb"
 import { BookDocType } from "@oboku/shared"
+import { useMutation$ } from "reactjrx"
 
 export const useIncrementalBookPatch = () =>
-  useMutation({
+  useMutation$({
     mutationFn: ({
       doc,
       patch

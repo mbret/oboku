@@ -25,10 +25,10 @@ import {
   tap,
   throttleTime
 } from "rxjs"
-import { useMutation } from "reactjrx"
 import { CancelError, isPluginError } from "../errors/errors.shared"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { dexieDb } from "../rxdb/dexie"
+import { useMutation$ } from "reactjrx"
 
 class NoLinkFound extends Error {}
 
@@ -48,7 +48,7 @@ const setDownloadData = (
 export const useDownloadBook = () => {
   const { downloadPluginBook } = usePluginDownloadBook()
 
-  return useMutation({
+  return useMutation$({
     mutationFn: ({
       _id: bookId,
       links,

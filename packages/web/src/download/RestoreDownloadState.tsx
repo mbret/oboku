@@ -1,17 +1,16 @@
 import { memo, useEffect } from "react"
-import { useMutation } from "reactjrx"
 import { from, of, switchMap } from "rxjs"
 import { booksDownloadStateSignal, DownloadState } from "./states"
 import { dexieDb } from "../rxdb/dexie"
+import { useMutation$ } from "reactjrx"
 
 const useRestoreDownloadState = ({
   onSuccess
 }: {
   onSuccess: () => void
 }) => {
-  return useMutation({
+  return useMutation$({
     onSuccess,
-    mapOperator: "switch",
     mutationFn: () =>
       from(dexieDb.downloads.toArray()).pipe(
         switchMap((items) => {

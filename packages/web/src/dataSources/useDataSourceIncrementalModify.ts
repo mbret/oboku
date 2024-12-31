@@ -1,11 +1,11 @@
 import { DataSourceDocType } from "@oboku/shared"
-import { useMutation } from "reactjrx"
 import { ModifyFunction } from "rxdb"
 import { first, switchMap, from, of } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { useMutation$ } from "reactjrx"
 
 export const useDataSourceIncrementalModify = () => {
-  return useMutation({
+  return useMutation$({
     mutationFn: ({
       id,
       mutationFunction

@@ -1,5 +1,5 @@
 import { filter, switchMap } from "rxjs"
-import { isDefined, signal, useForeverQuery } from "reactjrx"
+import { isDefined, signal, useQuery$ } from "reactjrx"
 import { createAppReader } from "./useCreateReader"
 
 type ReaderInstance = ReturnType<typeof createAppReader>
@@ -18,7 +18,7 @@ export const isMenuShownStateSignal = signal({
 // =======> Please do not forget to add atom to the reset part !
 
 export const usePagination = () =>
-  useForeverQuery({
+  useQuery$({
     queryKey: ["pagination"],
     queryFn: () => {
       return readerSignal.subject.pipe(

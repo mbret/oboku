@@ -1,6 +1,6 @@
 import { ObokuErrorCode } from "@oboku/shared"
 import { useNetworkState } from "react-use"
-import { useMutation, isDefined } from "reactjrx"
+import { useMutation$, isDefined } from "reactjrx"
 import { from, filter, switchMap, catchError, map, of } from "rxjs"
 import { createDialog } from "../common/dialogs/createDialog"
 import { httpClient } from "../http/httpClient"
@@ -19,7 +19,7 @@ export const useSynchronizeDataSource = () => {
   const network = useNetworkState()
   const { mutateAsync: sync } = useSyncReplicate()
 
-  return useMutation({
+  return useMutation$({
     mutationFn: (_id: string) => {
       if (!network.online) {
         return createDialog({ preset: "OFFLINE" }).$

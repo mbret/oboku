@@ -1,14 +1,13 @@
-import { useMutation } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { combineLatest, first, from, of, switchMap } from "rxjs"
 import { useEffect } from "react"
 import { isBefore, subMonths } from "date-fns"
 import { Report } from "../debug/report.shared"
 import { CLEANUP_DANGLING_LINKS_INTERVAL } from "../constants.shared"
+import { useMutation$ } from "reactjrx"
 
 const useRemoveDanglingLinks = () => {
-  return useMutation({
-    mapOperator: "switch",
+  return useMutation$({
     mutationFn: () => {
       return latestDatabase$.pipe(
         first(),

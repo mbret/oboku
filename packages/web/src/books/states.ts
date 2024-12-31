@@ -9,7 +9,7 @@ import { useCollections } from "../collections/useCollections"
 import { map, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { useForeverQuery, useSignalValue } from "reactjrx"
+import { useQuery$, useSignalValue } from "reactjrx"
 import { BookDocType, CollectionDocType } from "@oboku/shared"
 import { DeepReadonlyObject, MangoQuery } from "rxdb"
 import { DeepReadonlyArray } from "rxdb/dist/types/types"
@@ -32,7 +32,7 @@ export const useBooks = ({
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
   const includeProtected = _includeProtected || isLibraryUnlocked
 
-  return useForeverQuery({
+  return useQuery$({
     queryKey: [
       "rxdb",
       "get",
@@ -41,8 +41,8 @@ export const useBooks = ({
       { isNotInterested, serializedIds, includeProtected },
       queryObj
     ],
-    queryFn: () =>
-      latestDatabase$.pipe(
+    queryFn: () => {
+      return latestDatabase$.pipe(
         switchMap((db) =>
           observeBooks({
             db,
@@ -52,29 +52,9 @@ export const useBooks = ({
             queryObj
           })
         ),
-        map((items) => items.map((item) => item.toJSON()))
-      )
-  })
-}
-
-export const useBookDoc = ({
-  id,
-  enabled = true
-}: {
-  id?: string
-  enabled?: boolean
-}) => {
-  return useForeverQuery({
-    queryKey: [`rxdb/bookDoc`, { id }],
-    enabled: enabled && !!id,
-    queryFn: () => {
-      return latestDatabase$.pipe(
-        switchMap((db) =>
-          observeBook({
-            db,
-            queryObj: id
-          })
-        )
+        map((items) => {
+          return items.map((item) => item.toJSON())
+        })
       )
     }
   })
@@ -87,7 +67,7 @@ export const useBook = ({
   id?: string
   enabled?: boolean
 }) => {
-  return useForeverQuery({
+  return useQuery$({
     queryKey: [`rxdb/bookJSON`, { id }],
     enabled: enabled && !!id,
     queryFn: () => {
@@ -265,6 +245,7 @@ export const useBooksAsArrayState = ({
   >
 }) => {
   const { data: books, isPending } = useBooks()
+
   const { data: visibleBooks } = useBooks()
   const visibleBookIds = useMemo(
     () => visibleBooks?.map((item) => item._id) ?? [],

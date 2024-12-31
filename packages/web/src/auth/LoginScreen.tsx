@@ -5,16 +5,15 @@ import { Google } from "@mui/icons-material"
 import { useSignIn } from "./useSignIn"
 import { OrDivider } from "../common/OrDivider"
 import { links } from "@oboku/shared"
-import { useMutation } from "reactjrx"
 import { Logo } from "../common/Logo"
 import { isCancelError } from "../errors/errors.shared"
 import { ErrorMessage } from "../errors/ErrorMessage"
+import { useMutation$ } from "reactjrx"
 
 export const LoginScreen = () => {
   const { signIn } = useSignIn()
-  const { mutate, isPending, error } = useMutation({
-    mutationFn: signIn,
-    mapOperator: "switch"
+  const { mutate, isPending, error } = useMutation$({
+    mutationFn: signIn
   })
   const theme = useTheme()
   const { t } = useTranslation()

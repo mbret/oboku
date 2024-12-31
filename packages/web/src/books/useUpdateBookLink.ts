@@ -1,11 +1,11 @@
-import { useMutation } from "reactjrx"
+import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { useUpsertLink } from "../links/useUpsertLink"
 
 export const useUpsertBookLink = ({ onSuccess }: { onSuccess: () => void }) => {
   const { mutateAsync: upsertLink } = useUpsertLink()
 
-  return useMutation({
+  return useMutation$({
     onSuccess,
     mutationFn: ({
       bookId,

@@ -2,11 +2,11 @@ import { useEffect, useState } from "react"
 import { useBook } from "../../books/states"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { ReadingStateState } from "@oboku/shared"
-import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/RxDbProvider"
 import { from, mergeMap, of } from "rxjs"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { getBookById } from "../../books/dbHelpers"
+import { useMutation$ } from "reactjrx"
 
 export const useShowRemoveBookOnExitDialog = ({
   onSettled,
@@ -26,7 +26,7 @@ export const useShowRemoveBookOnExitDialog = ({
     }
   }, [readingState, setWasAlreadyFinished])
 
-  return useMutation({
+  return useMutation$({
     mutationFn: () =>
       getLatestDatabase().pipe(
         mergeMap((database) => {

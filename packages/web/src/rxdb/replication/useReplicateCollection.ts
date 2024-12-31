@@ -1,8 +1,8 @@
-import { useMutation } from "reactjrx"
 import { replicateCouchDBCollection } from "./replicateCouchDBCollection"
 import { RxCollection } from "rxdb"
 import { Report } from "../../debug/report.shared"
 import { distinctUntilChanged, skip } from "rxjs"
+import { useMutation } from "@tanstack/react-query"
 
 export const useReplicateCollection = <
   Collection extends RxCollection<RxDocumentType>,

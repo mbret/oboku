@@ -7,11 +7,15 @@ import { PromiseReturnType } from "../types"
 import { BookQueryResult, useBooks } from "./states"
 import { useNetworkState } from "react-use"
 import { usePluginRemoveBook } from "../plugins/usePluginRemoveBook"
-import { useMutation } from "reactjrx"
 import { getMetadataFromBook } from "./metadata"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
 import { useLock } from "../common/BlockingBackdrop"
-import { CancelError, isPluginError, OfflineError } from "../errors/errors.shared"
+import {
+  CancelError,
+  isPluginError,
+  OfflineError
+} from "../errors/errors.shared"
+import { useMutation } from "@tanstack/react-query"
 
 export const useRemoveBook = () => {
   const { mutateAsync: removeDownload } = useRemoveDownloadFile()

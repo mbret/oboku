@@ -1,6 +1,6 @@
 import { memo, useEffect } from "react"
 import { Database, createDatabase } from "./databases"
-import { isDefined, signal, useMutation, useSignalValue } from "reactjrx"
+import { isDefined, signal, useMutation$, useSignalValue } from "reactjrx"
 import { filter, first, from, map, of, switchMap, tap } from "rxjs"
 
 const databaseSignal = signal<Database | undefined>({
@@ -12,8 +12,11 @@ export const latestDatabase$ = databaseSignal.subject.pipe(filter(isDefined))
 export const getLatestDatabase = () => latestDatabase$.pipe(first())
 
 export const useReCreateDb = () => {
-  return useMutation({
-    mapOperator: "concat",
+  return useMutation$({
+    mutationKey: ["recreateDb"],
+    scope: {
+      id: "recreateDb"
+    },
     mutationFn: ({ overwrite = true }: { overwrite?: boolean } = {}) => {
       const db = databaseSignal.getValue()
 

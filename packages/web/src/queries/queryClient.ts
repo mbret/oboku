@@ -1,6 +1,6 @@
-import { MutationCache, QueryCache, QueryClient } from "reactjrx"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { CancelError } from "../errors/errors.shared"
+import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query"
 
 export const queryClient = new QueryClient({
   mutationCache: new MutationCache({

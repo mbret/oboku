@@ -1,10 +1,10 @@
-import { useMutation } from "reactjrx"
+import { useMutation$ } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { first, from, of, switchMap } from "rxjs"
 import { Report } from "../debug/report.shared"
 
 export const useUpsertLink = () => {
-  return useMutation({
+  return useMutation$({
     mutationFn: ({
       bookId,
       resourceId,

@@ -1,10 +1,10 @@
+import { useMutation$ } from "reactjrx"
 import { dexieDb } from "../rxdb/dexie"
 import { DownloadState, booksDownloadStateSignal } from "./states"
-import { useMutation } from "reactjrx"
 import { from, tap } from "rxjs"
 
 export const useRemoveDownloadFile = () => {
-  return useMutation({
+  return useMutation$({
     mutationFn: ({ bookId }: { bookId: string }) =>
       from(dexieDb.downloads.delete(bookId)).pipe(
         tap(() => {

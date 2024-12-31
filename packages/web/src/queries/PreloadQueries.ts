@@ -47,7 +47,7 @@ export const PreloadQueries = memo(({ onReady }: { onReady: () => void }) => {
 
   useEffect(() => {
     if (isReady) {
-      onReadyRef.current()
+      onReadyRef.current?.()
     }
   }, [isReady, onReadyRef])
 

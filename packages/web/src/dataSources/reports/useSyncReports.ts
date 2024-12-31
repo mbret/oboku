@@ -1,7 +1,7 @@
-import { useQuery } from "reactjrx"
 import { httpClient } from "../../http/httpClient"
 import { SupabaseTableSyncReportsEntries } from "@oboku/shared"
 import { API_URL } from "../../constants.web"
+import { useQuery } from "@tanstack/react-query"
 
 export const useSyncReports = () =>
   useQuery({
