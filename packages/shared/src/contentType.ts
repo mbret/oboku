@@ -2,7 +2,7 @@ export const getUrlExtension = (url: string) => {
   return url.split(/[#?]/)[0]?.split(`.`).pop()?.trim() || ``
 }
 
-export const READER_ACCEPTED_EXTENSIONS = {
+export const READER_ACCEPTED_FILE_TYPES = {
   "text/plain": [".txt"],
   "application/x-cbz": [".cbz"],
   "application/zip": [".epub", ".zip"],
@@ -12,13 +12,13 @@ export const READER_ACCEPTED_EXTENSIONS = {
   "application/x-rar": [".cbr"]
 }
 
-export const READER_SUPPORTED_MIME_TYPES = Object.keys(
-  READER_ACCEPTED_EXTENSIONS
+export const READER_ACCEPTED_MIME_TYPES = Object.keys(
+  READER_ACCEPTED_FILE_TYPES
 )
 
-export const READER_SUPPORTED_EXTENSIONS = Object.values(
-  READER_ACCEPTED_EXTENSIONS
-).reduce((prev, next) => [...prev, ...next], [])
+export const READER_ACCEPTED_EXTENSIONS = Object.values(
+  READER_ACCEPTED_FILE_TYPES
+).flat()
 
 export const isFileSupported = ({
   mimeType,
@@ -30,7 +30,7 @@ export const isFileSupported = ({
   const extension = `.${getUrlExtension(name || "")}`
 
   return (
-    READER_SUPPORTED_EXTENSIONS.includes(extension) ||
-    READER_SUPPORTED_MIME_TYPES.includes(mimeType ?? "")
+    READER_ACCEPTED_EXTENSIONS.includes(extension) ||
+    READER_ACCEPTED_MIME_TYPES.includes(mimeType ?? "")
   )
 }

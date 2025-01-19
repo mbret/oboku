@@ -6,7 +6,7 @@ import { Dropbox, files } from "dropbox"
 import { Readable } from "stream"
 import {
   DropboxDataSourceData,
-  READER_SUPPORTED_EXTENSIONS
+  READER_ACCEPTED_EXTENSIONS
 } from "@oboku/shared"
 import { PromiseReturnType } from "../../types"
 import {
@@ -115,7 +115,7 @@ export const dataSource: DataSourcePlugin = {
             const data = response.result.entries.filter(
               (entry) =>
                 entry[".tag"] === "folder" ||
-                READER_SUPPORTED_EXTENSIONS.some((extension) =>
+                READER_ACCEPTED_EXTENSIONS.some((extension) =>
                   entry.name.toLowerCase().endsWith(extension)
                 )
             )

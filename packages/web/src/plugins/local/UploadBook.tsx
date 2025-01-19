@@ -11,7 +11,7 @@ import {
 } from "@mui/material"
 import { useDropzone } from "react-dropzone"
 import { Report } from "../../debug/report.shared"
-import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
+import { READER_ACCEPTED_FILE_TYPES } from "@oboku/shared"
 import { ObokuPlugin } from "../types"
 import { DragEventHandler, useRef } from "react"
 import { useAddBookFromFile } from "./useAddBookFromFile"
@@ -21,7 +21,7 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
 } = ({ onClose, onDragLeave }) => {
   const { mutate: addBookFromFile } = useAddBookFromFile()
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
-    accept: READER_ACCEPTED_EXTENSIONS
+    accept: READER_ACCEPTED_FILE_TYPES
   })
   const dialogRef = useRef<HTMLDivElement>(null)
 
