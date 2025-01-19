@@ -151,6 +151,7 @@ export const useAddBook = () => {
           isAttachedToDataSource: false,
           ...rest
         })
+
         refreshMetadata(newBook._id)
 
         return { book: newBook, link: linkAdded }

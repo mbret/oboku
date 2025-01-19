@@ -32,7 +32,7 @@ export const useLink = ({ id }: { id?: string }) => {
               }
             }).$
         ),
-        map((entry) => entry?.toJSON())
+        map((entry) => entry?.toJSON() ?? null)
       )
   })
 }
