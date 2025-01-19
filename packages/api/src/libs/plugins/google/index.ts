@@ -6,7 +6,7 @@ import { authorize } from "./helpers"
 import { drive_v3, google } from "googleapis"
 import {
   GoogleDriveDataSourceData,
-  READER_SUPPORTED_MIME_TYPES,
+  READER_ACCEPTED_MIME_TYPES,
   isFileSupported
 } from "@oboku/shared"
 import { configure } from "./configure"
@@ -124,7 +124,7 @@ export const dataSource: DataSourcePlugin = {
               q: `
             '${id}' in parents and (
               mimeType='application/vnd.google-apps.folder' 
-              ${READER_SUPPORTED_MIME_TYPES.map(
+              ${READER_ACCEPTED_MIME_TYPES.map(
                 (mimeType) => ` or mimeType='${mimeType}'`
               ).join("")}
             )

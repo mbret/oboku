@@ -2,6 +2,7 @@ import { DEVELOPER_KEY, APP_ID } from "./constants"
 import { useAccessToken } from "./useAccessToken"
 import { finalize, first, from, switchMap } from "rxjs"
 import { useGoogleScripts } from "./scripts"
+import { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
 
 export const useDrivePicker = ({
   requestPopup
@@ -27,6 +28,7 @@ export const useDrivePicker = ({
                   .addView(
                     new google.picker.DocsView()
                       .setIncludeFolders(true)
+                      .setMimeTypes(READER_ACCEPTED_MIME_TYPES.join(","))
                       .setSelectFolderEnabled(
                         select === "folder" ? true : false
                       )

@@ -12,7 +12,7 @@ export const READER_ACCEPTED_FILE_TYPES = {
   "application/x-rar": [".cbr"]
 }
 
-export const READER_SUPPORTED_MIME_TYPES = Object.keys(
+export const READER_ACCEPTED_MIME_TYPES = Object.keys(
   READER_ACCEPTED_FILE_TYPES
 )
 
@@ -31,6 +31,6 @@ export const isFileSupported = ({
 
   return (
     READER_ACCEPTED_EXTENSIONS.includes(extension) ||
-    READER_SUPPORTED_MIME_TYPES.includes(mimeType ?? "")
+    READER_ACCEPTED_MIME_TYPES.includes(mimeType ?? "")
   )
 }

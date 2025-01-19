@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda"
 import fs from "fs"
 import unzipper from "unzipper"
-import { READER_SUPPORTED_MIME_TYPES } from "@oboku/shared"
+import { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
 import {
   catchError,
   ignoreElements,
@@ -30,8 +30,8 @@ export const getNormalizedHeader = (
 
 export const detectMimeTypeFromContent = async (
   filepath: string
-): Promise<(typeof READER_SUPPORTED_MIME_TYPES)[number] | undefined> => {
-  let mimeType: (typeof READER_SUPPORTED_MIME_TYPES)[number] | undefined =
+): Promise<(typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined> => {
+  let mimeType: (typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined =
     undefined
   try {
     await fs
