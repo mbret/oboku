@@ -9,6 +9,7 @@ import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { useIsMounted } from "./lib/useIsMounted"
+import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
 
 export const UploadBook: FC<{
   onClose: () => void
@@ -28,6 +29,7 @@ export const UploadBook: FC<{
 
       window.Dropbox.choose({
         multiselect: true,
+        extensions: READER_ACCEPTED_EXTENSIONS,
         linkType: "direct",
         cancel: function () {
           if (!isMounted()) return
