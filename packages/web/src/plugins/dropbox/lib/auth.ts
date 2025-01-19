@@ -44,7 +44,10 @@ export const authUser = ({
     // to handle it without for even long sync. Otherwise we should ask user credentials again
     if (isAccessTokenStillSufficient()) return resolve(dropboxAuth)
 
-    const redirectUri = `${window.location.origin}/${ROUTES.AUTH_CALLBACK}`
+    const redirectUri = new URL(
+      ROUTES.AUTH_CALLBACK,
+      window.location.origin
+    ).toString()
     const usePKCE = true
     const authType = "code"
     const tokenAccessType = "online"
@@ -100,7 +103,7 @@ export const authUser = ({
             )
 
             if (timedOut) return
-            
+
             const { result } = response as any
 
             dropboxAuth.setAccessToken(result.access_token)
