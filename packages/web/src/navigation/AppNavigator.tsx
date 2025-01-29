@@ -53,7 +53,11 @@ export const AppNavigator = ({
   const isAuthenticated = !!auth?.token
 
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_relativeSplatPath: true
+      }}
+    >
       <div
         style={{
           flexShrink: 0,

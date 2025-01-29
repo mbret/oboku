@@ -29,7 +29,7 @@ export const TagActionsDrawer: FC<{
   openWith: string | undefined
   onClose: () => void
 }> = ({ openWith, onClose }) => {
-  const { data: tag } = useTag(openWith || "-1")
+  const { data: tag } = useTag(openWith)
   const editTag = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
     useState<string | undefined>(undefined)
@@ -127,7 +127,7 @@ const EditTagDialog: FC<{
   onClose: () => void
 }> = ({ onClose, open, id }) => {
   const [name, setName] = useState("")
-  const { data: tag } = useTag(id || "-1")
+  const { data: tag } = useTag(id)
   const { name: tagName } = tag ?? {}
   const editTag = useUpdateTag()
 
