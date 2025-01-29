@@ -1,6 +1,5 @@
 import { useTheme, Button, Box, Link, Typography, Stack } from "@mui/material"
 import { Alert } from "@mui/material"
-import { useTranslation } from "react-i18next"
 import { Google } from "@mui/icons-material"
 import { useSignIn } from "./useSignIn"
 import { OrDivider } from "../common/OrDivider"
@@ -16,7 +15,6 @@ export const LoginScreen = () => {
     mutationFn: signIn
   })
   const theme = useTheme()
-  const { t } = useTranslation()
 
   return (
     <Stack
@@ -51,7 +49,7 @@ export const LoginScreen = () => {
           startIcon={<Google />}
           disabled={isPending}
         >
-          {t("authScreen.sign.google")}
+          Sign in with Google
         </Button>
         <Box mt={2}>
           <Alert severity="info" variant="outlined">

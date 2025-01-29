@@ -17,8 +17,14 @@ export default defineConfig(({ mode }) => ({
     assetsInlineLimit: 0,
     rollupOptions: {
       input: {
-        main: "index.html",
-        raw: "raw.html"
+        main: "index.html"
+      },
+      output: {
+        manualChunks: {
+          ["jszip"]: ["jszip"],
+          ["dropbox"]: ["dropbox"],
+          ["xmldoc"]: ["xmldoc"],
+        }
       }
     }
   },

@@ -1,5 +1,4 @@
 import { isDebugEnabled } from "./isDebugEnabled.shared"
-import "./reportWebVitals"
 import "./sentry"
 
 if (isDebugEnabled()) {

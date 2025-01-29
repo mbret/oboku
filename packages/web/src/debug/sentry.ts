@@ -1,5 +1,4 @@
 import { version } from "../../package.json"
-import "./reportWebVitals"
 import { SENTRY_DSN } from "../constants.shared"
 import {
   init,

@@ -19,7 +19,8 @@
     "@mui/material": "^6.0.0",
     "@mui/material-nextjs": "^6.0.1",
     "@mui/styles": "^6.0.0",
-    "@oboku/shared": "0.8.0"
+    "@oboku/shared": "0.8.0",
+    "remark-gfm": "^4.0.0"
   },
   "devDependencies": {
     "typescript": "^5.5.4",

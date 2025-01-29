@@ -28,7 +28,6 @@ import { useBook, useIsBookLocal } from "../states"
 import { Cover } from "../Cover"
 import { ReadingStateState } from "@oboku/shared"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
-import { useTranslation } from "react-i18next"
 import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
 import { useBookDownloadState } from "../../download/states"
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
@@ -88,7 +87,6 @@ export const BookActionsDrawer = memo(() => {
   const refreshBookMetadata = useRefreshBookMetadata()
   const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
   const opened = !!bookId
-  const { t } = useTranslation()
   const theme = useTheme()
 
   const { closeModalWithNavigation: handleClose } = useModalNavigationControl(
@@ -275,7 +273,7 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemIcon>
                   <LocalOfferRounded />
                 </ListItemIcon>
-                <ListItemText primary={t("book.actionDrawer.manageTags")} />
+                <ListItemText primary="Manage tags" />
               </ListItemButton>
             )}
             <ListItemButton
