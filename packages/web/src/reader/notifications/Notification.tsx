@@ -15,14 +15,14 @@ import {
   READER_NOTIFICATION_TIME_TO_SCREEN
 } from "../../constants.web"
 import { reader$ } from "../states"
-import { useForeverQuery } from "reactjrx"
+import { useQuery$ } from "reactjrx"
 
 type Notification = {
   message: string
 }
 
 const useNotification = () =>
-  useForeverQuery({
+  useQuery$({
     networkMode: "always",
     queryKey: ["notification"],
     queryFn: () =>

@@ -1,9 +1,9 @@
 import { map, switchMap } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { useForeverQuery } from "reactjrx"
+import { useQuery$ } from "reactjrx"
 
 export const useDataSource = (id: string) =>
-  useForeverQuery({
+  useQuery$({
     queryKey: ["rxdb", "dataSource", id],
     queryFn: () =>
       latestDatabase$.pipe(

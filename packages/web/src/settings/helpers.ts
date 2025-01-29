@@ -1,5 +1,5 @@
 import { Database } from "../rxdb"
-import { useForeverQuery, useMutation } from "reactjrx"
+import { useQuery$, useMutation$ } from "reactjrx"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
 import { from, map, mergeMap, switchMap } from "rxjs"
 import { SettingsDocType } from "../rxdb/collections/settings"
@@ -34,9 +34,8 @@ export const useValidateAppPassword = (options: {
   onSuccess: () => void
   onError: () => void
 }) => {
-  return useMutation({
+  return useMutation$({
     ...options,
-    mapOperator: "switch",
     mutationFn: (input: string) => {
       if (!input) throw new Error("Invalid password")
 
@@ -63,7 +62,7 @@ export const useSettings = (
     enabled?: boolean
   } = {}
 ) => {
-  const data = useForeverQuery({
+  const data = useQuery$({
     queryKey: ["rxdb", "settings"],
     queryFn: () =>
       latestDatabase$.pipe(
@@ -84,7 +83,7 @@ export const useSettings = (
 }
 
 export const useUpdateSettings = () => {
-  return useMutation({
+  return useMutation$({
     mutationFn: (data: Partial<SettingsDocType>) =>
       getLatestDatabase().pipe(
         mergeMap((database) => getSettingsOrThrow(database)),

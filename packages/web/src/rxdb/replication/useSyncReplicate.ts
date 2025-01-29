@@ -1,12 +1,12 @@
 import { authStateSignal } from "../../auth/authState"
 import { from, mergeMap } from "rxjs"
-import { useMutation } from "reactjrx"
 import { RxCollection } from "rxdb"
 import { useReplicateCollection } from "./useReplicateCollection"
+import { useMutation$ } from "reactjrx"
 
 export const useSyncReplicate = () => {
   const { mutateAsync } = useReplicateCollection()
-  return useMutation({
+  return useMutation$({
     mutationFn: (collections: RxCollection[]) => {
       const { token, dbName } = authStateSignal.getValue() ?? {}
 

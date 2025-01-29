@@ -1,4 +1,4 @@
-import { useQuery } from "reactjrx"
+import { useQuery } from "@tanstack/react-query"
 import { dexieDb } from "../rxdb/dexie"
 
 export const useDownloadedFilesInfo = () =>

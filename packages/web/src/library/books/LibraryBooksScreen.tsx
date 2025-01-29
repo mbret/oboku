@@ -16,7 +16,6 @@ import {
 import { UploadBookDrawer } from "../UploadBookDrawer"
 import { SortByDialog } from "../../books/bookList/SortByDialog"
 import { useCallback } from "react"
-import { useTranslation } from "react-i18next"
 import { useLibraryBooks } from "./useLibraryBooks"
 import { useSignalValue } from "reactjrx"
 import { Toolbar } from "./Toolbar"
@@ -40,7 +39,6 @@ export const LibraryBooksScreen = () => {
   if (library.isNotInterested === "only") numberOfFiltersApplied++
 
   const books = useLibraryBooks()
-  const { t } = useTranslation()
 
   const addBookButton = useMemo(
     () => (
@@ -51,10 +49,10 @@ export const LibraryBooksScreen = () => {
           isUploadBookDrawerOpenedStateSignal.setValue(true)
         }}
       >
-        {t(`library.button.book.add.title`)}
+        Add a new book
       </Button>
     ),
-    [t]
+    []
   )
 
   const listHeader = useMemo(

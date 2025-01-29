@@ -1,4 +1,4 @@
-import { useForeverQuery, useSignalValue } from "reactjrx"
+import {  useQuery$, useSignalValue } from "reactjrx"
 import { switchMap, map } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { observeEmptyCollection } from "./dbHelpers"
@@ -14,7 +14,7 @@ export const useCollection = ({
 }) => {
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
 
-  return useForeverQuery({
+  return useQuery$({
     queryKey: ["rxdb", "collection", id, { isLibraryUnlocked }],
     enabled: !!id,
     queryFn: () => {

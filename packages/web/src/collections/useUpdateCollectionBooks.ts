@@ -1,11 +1,11 @@
-import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, mergeMap } from "rxjs"
 import { UpdateQuery } from "rxdb"
 import { BookDocType } from "@oboku/shared"
+import { useMutation$ } from "reactjrx"
 
 export const useUpdateCollectionBooks = () => {
-  return useMutation({
+  return useMutation$({
     mutationFn: ({
       id,
       updateObj

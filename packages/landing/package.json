@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "next": "^15.0.3",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.10.6",
@@ -19,12 +19,13 @@
     "@mui/material": "^6.0.0",
     "@mui/material-nextjs": "^6.0.1",
     "@mui/styles": "^6.0.0",
-    "@oboku/shared": "0.8.0"
+    "@oboku/shared": "0.8.0",
+    "remark-gfm": "^4.0.0"
   },
   "devDependencies": {
     "typescript": "^5.5.4",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "^15.0.3"
   }

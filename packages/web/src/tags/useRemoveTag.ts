@@ -1,9 +1,9 @@
-import { useMutation } from "reactjrx"
+import { useMutation$ } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { first, from, of, switchMap } from "rxjs"
 
 export const useRemoveTag = () => {
-  return useMutation({
+  return useMutation$({
     mutationFn: ({ _id }: { _id: string }) =>
       latestDatabase$.pipe(
         first(),

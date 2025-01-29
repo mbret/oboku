@@ -1,13 +1,13 @@
 import { LinkDocType } from "@oboku/shared"
 import { plugins } from "../plugins/configure"
-import { useForeverQuery } from "reactjrx"
+import { useQuery$ } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
 import { Database } from "../rxdb"
 import { isRemovableFromDataSource } from "./isRemovableFromDataSource"
 
 export const useLinks = () => {
-  return useForeverQuery({
+  return useQuery$({
     queryKey: ["rxdb", "get", "many", "link/list"],
     queryFn: () => {
       return latestDatabase$.pipe(
@@ -19,7 +19,7 @@ export const useLinks = () => {
 }
 
 export const useLink = ({ id }: { id?: string }) => {
-  return useForeverQuery({
+  return useQuery$({
     queryKey: ["rxdb", "get", "single", "link", id],
     enabled: !!id,
     queryFn: () =>
@@ -32,7 +32,7 @@ export const useLink = ({ id }: { id?: string }) => {
               }
             }).$
         ),
-        map((entry) => entry?.toJSON())
+        map((entry) => entry?.toJSON() ?? null)
       )
   })
 }

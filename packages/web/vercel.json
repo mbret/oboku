@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/raw", "destination": "/raw.html" },
     { "source": "/(.*)", "destination": "/" }
   ],
   "git": {

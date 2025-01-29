@@ -1,13 +1,19 @@
-import { Report } from "../../debug/report.shared"
 import { useDrivePicker } from "./lib/useDrivePicker"
 import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
-import { catchError, from, of, switchMap, timer } from "rxjs"
+import {
+  catchError,
+  from,
+  map,
+  of,
+  switchMap,
+  timer
+} from "rxjs"
 import { useMount } from "react-use"
-import { useMutation } from "reactjrx"
 import { ObokuPlugin } from "../types"
 import { memo } from "react"
+import { useSwitchMutation$ } from "reactjrx"
 
 export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
   ({ onClose, requestPopup }) => {
@@ -17,8 +23,7 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
     )
     const { pick } = useDrivePicker({ requestPopup })
 
-    const { mutate } = useMutation({
-      mapOperator: "switch",
+    const { mutate } = useSwitchMutation$({
       /**
        * timer prevent double mount from dev mode
        */
@@ -51,11 +56,12 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
                     createdAt: new Date().toISOString(),
                     modifiedAt: null
                   }
-                }).catch(Report.error)
+                })
               })
             )
           )
         }),
+        map(() => null),
         catchError((error) => {
           onClose()
 

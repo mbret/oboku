@@ -1,6 +1,6 @@
-import { useQuery } from "reactjrx"
 import { httpClient } from "../http/httpClient"
 import { Alert, AlertTitle, Box, Link, Typography } from "@mui/material"
+import { useQuery } from "@tanstack/react-query"
 import { ComponentProps } from "react"
 import Markdown from "react-markdown"
 

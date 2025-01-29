@@ -1,4 +1,3 @@
-import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { combineLatest, first, from, mergeMap, of } from "rxjs"
 import { withDialog } from "../common/dialogs/withDialog"
@@ -6,11 +5,12 @@ import { getLinksForDataSource } from "../links/dbHelpers"
 import { useRemoveBook } from "../books/helpers"
 import { observeDataSourceById } from "./dbHelpers"
 import { withUnknownErrorDialog } from "../errors/withUnknownErrorDialog"
+import { useMutation$ } from "reactjrx"
 
 export const useRemoveDataSource = () => {
   const { mutateAsync: removeBook } = useRemoveBook()
 
-  return useMutation({
+  return useMutation$({
     mutationFn: ({ id }: { id: string }) =>
       getLatestDatabase().pipe(
         withDialog({ preset: "CONFIRM" }),

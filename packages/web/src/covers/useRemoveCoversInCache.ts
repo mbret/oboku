@@ -1,12 +1,13 @@
-import { useMutation, useQueryClient } from "reactjrx"
+import { useMutation$ } from "reactjrx"
 import { from, switchMap } from "rxjs"
 import { USE_COVERS_CACHE_INFORMATION_KEY } from "./useCoversCacheInformation"
 import { SW_COVERS_CACHE_KEY } from "../constants.shared"
+import { useQueryClient } from "@tanstack/react-query"
 
 export const useRemoveCoversInCache = () => {
   const client = useQueryClient()
 
-  return useMutation({
+  return useMutation$({
     mutationFn: () =>
       from(caches.open(SW_COVERS_CACHE_KEY)).pipe(
         switchMap((cache) =>

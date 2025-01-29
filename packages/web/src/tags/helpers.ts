@@ -1,12 +1,12 @@
 import { TagsDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
-import { useMutation } from "reactjrx"
 import { map, mergeMap, switchMap } from "rxjs"
-import { useForeverQuery } from "reactjrx"
+import { useQuery$ } from "reactjrx"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
 import { Database } from "../rxdb"
 import { DeepReadonlyObject, MangoQuery } from "rxdb"
+import { useMutation } from "@tanstack/react-query"
 
 export const useCreateTag = () => {
   const { db } = useDatabase()
@@ -91,9 +91,10 @@ export const getTagsByIds = async (db: Database) => {
   )
 }
 
-export const useTag = (id: string) =>
-  useForeverQuery({
+export const useTag = (id?: string) => {
+  return useQuery$({
     queryKey: ["rxdb", "tag", id],
+    enabled: !!id,
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap((db) => {
@@ -105,6 +106,7 @@ export const useTag = (id: string) =>
         })
       )
   })
+}
 
 export const useTags = ({
   queryObj,
@@ -113,7 +115,7 @@ export const useTags = ({
   enabled?: boolean
   queryObj?: MangoQuery<TagsDocType> | undefined
 } = {}) =>
-  useForeverQuery({
+  useQuery$({
     queryKey: ["rxdb", "tags", queryObj],
     queryFn: () =>
       getLatestDatabase().pipe(
@@ -124,10 +126,10 @@ export const useTags = ({
   })
 
 export const useTagsByIds = () =>
-  useForeverQuery({ queryFn: tagsByIds$, queryKey: ["tagsById"] })
+  useQuery$({ queryFn: tagsByIds$, queryKey: ["tagsById"] })
 
 export const useTagIds = () =>
-  useForeverQuery({
+  useQuery$({
     queryFn: () => tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
     queryKey: ["tagsIds"]
   })
@@ -137,13 +139,13 @@ const blurredTags$ = tags$.pipe(
 )
 
 export const useBlurredTagIds = () =>
-  useForeverQuery({
+  useQuery$({
     queryFn: () => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
     queryKey: ["blurredTagIds"]
   })
 
 export const useProtectedTagIds = (options: { enabled?: boolean } = {}) =>
-  useForeverQuery({
+  useQuery$({
     queryKey: ["protectedTagIds"],
     queryFn: () =>
       protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),

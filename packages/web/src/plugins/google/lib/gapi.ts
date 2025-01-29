@@ -1,12 +1,5 @@
-import { signal, useMutation } from "reactjrx"
-import {
-  catchError,
-  combineLatest,
-  defer,
-  from,
-  map,
-  mergeMap,
-} from "rxjs"
+import { signal, useSwitchMutation$ } from "reactjrx"
+import { catchError, combineLatest, defer, from, map, mergeMap } from "rxjs"
 import { GapiNotAvailableError } from "./errors"
 import { loadScript, retryOnFailure } from "../../../common/scripts"
 
@@ -76,8 +69,7 @@ const initClient = () =>
   )
 
 export const useLoadGapi = () => {
-  return useMutation({
-    mapOperator: "switch",
+  return useSwitchMutation$({
     mutationKey: ["pluginGoogleScriptMutation"],
     mutationFn: () => {
       return loadScript({

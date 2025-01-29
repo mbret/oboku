@@ -1,7 +1,7 @@
 import { useRemoveBook } from "../helpers"
-import { useMutation } from "reactjrx"
+import { useMutation$ } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/RxDbProvider"
-import { first, from, mergeMap, of } from "rxjs"
+import { defaultIfEmpty, first, from, mergeMap, of } from "rxjs"
 import { isRemovableFromDataSource } from "../../links/isRemovableFromDataSource"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { withOfflineErrorDialog } from "../../common/network/withOfflineErrorDialog"
@@ -24,7 +24,7 @@ export const useRemoveHandler = (
 ) => {
   const { mutateAsync: removeBook } = useRemoveBook()
 
-  return useMutation({
+  return useMutation$({
     mutationFn: ({ bookId }: { bookId: string }) => {
       const mutation$ = getLatestDatabase().pipe(
         mergeMap((database) => {
@@ -80,6 +80,7 @@ export const useRemoveHandler = (
             })
           )
         }),
+        defaultIfEmpty(null),
         withOfflineErrorDialog(),
         withUnknownErrorDialog()
       )

@@ -13,13 +13,11 @@ import {
   useTheme
 } from "@mui/material"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 import { generateResourceId } from "@oboku/shared"
-import { object, string } from "yup"
+import { string } from "zod"
 
-const schema = object().shape({
-  bookUrl: string().url().required()
-})
+const bookUrlSchema = string().url()
 
 export const UploadBookComponent: ObokuPlugin["UploadBookComponent"] = ({
   onClose,
@@ -28,7 +26,7 @@ export const UploadBookComponent: ObokuPlugin["UploadBookComponent"] = ({
   const [bookUrl, setBookUrl] = useState("")
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down("md"))
-  const isValid = schema.isValidSync({ bookUrl })
+  const isValid = bookUrlSchema.safeParse(bookUrl).success
   const filename = bookUrl.substring(bookUrl.lastIndexOf("/") + 1) || "unknown"
 
   const handleConfirm = () => {

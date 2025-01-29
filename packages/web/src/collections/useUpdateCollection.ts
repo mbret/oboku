@@ -1,6 +1,6 @@
 import { CollectionDocType } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
-import { useMutation } from "reactjrx"
+import { useMutation } from "@tanstack/react-query"
 
 export const useUpdateCollection = () => {
   const { db } = useDatabase()

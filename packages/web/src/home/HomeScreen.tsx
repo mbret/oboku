@@ -4,7 +4,6 @@ import { Typography, useTheme, Button, Box } from "@mui/material"
 import { ROUTES } from "../constants.web"
 import { useNavigate } from "react-router-dom"
 import ContinueReadingAsset from "../assets/continue-reading.svg"
-import { useTranslation } from "react-i18next"
 import { useContinueReadingBooks } from "./helpers"
 import { ContinueReadingSection } from "./ContinueReadingSection"
 import { RecentlyAddedSection } from "./RecentlyAddedSection"
@@ -14,7 +13,6 @@ export const HomeScreen = memo(() => {
   const theme = useTheme()
   const navigate = useNavigate()
   const { data: continueReadingBooks, isPending } = useContinueReadingBooks()
-  const { t } = useTranslation()
 
   return (
     <Box display="flex" flex={1} flexDirection="column" overflow="auto">
@@ -61,7 +59,7 @@ export const HomeScreen = memo(() => {
               size="large"
               onClick={() => navigate(ROUTES.LIBRARY_BOOKS, { replace: true })}
             >
-              {t(`button.title.exploreMyLibrary`)}
+              Explore my library
             </Button>
           </div>
         )}

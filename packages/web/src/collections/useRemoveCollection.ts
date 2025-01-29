@@ -1,5 +1,5 @@
+import { useMutation } from "@tanstack/react-query"
 import { useDatabase } from "../rxdb"
-import { useMutation } from "reactjrx"
 
 export const useRemoveCollection = () => {
   const { db } = useDatabase()

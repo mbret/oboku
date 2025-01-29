@@ -6,11 +6,10 @@ import "@fontsource/roboto/300.css"
 import "@fontsource/roboto/400.css"
 import "@fontsource/roboto/500.css"
 import "@fontsource/roboto/700.css"
-import "react-responsive-carousel/lib/styles/carousel.min.css"
 import "./main.css"
 import "./common/animations.css"
 import { App } from "./App"
-import * as Sentry from "@sentry/react"
+import {ErrorBoundary} from "@sentry/react"
 
 const rootElm = document.getElementById("root")
 
@@ -19,9 +18,9 @@ if (rootElm) {
 
   root.render(
     <React.StrictMode>
-      <Sentry.ErrorBoundary>
+      <ErrorBoundary>
         <App />
-      </Sentry.ErrorBoundary>
+      </ErrorBoundary>
     </React.StrictMode>
   )
 }

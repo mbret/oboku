@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/react"
+import { captureMessage } from "@sentry/react"
 import { isDebugEnabled } from "./isDebugEnabled.shared"
 
 const noop = () => {}
@@ -24,9 +24,9 @@ export const Report = {
   },
   captureMessage: (
     message: string,
-    captureContext?: Parameters<typeof Sentry.captureMessage>[1]
+    captureContext?: Parameters<typeof captureMessage>[1]
   ) => {
-    Sentry.captureMessage(message, captureContext)
+    captureMessage(message, captureContext)
   },
   warn: (...data: any[]) => {
     if (import.meta.env.DEV || isDebugEnabled()) {

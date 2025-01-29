@@ -1,4 +1,4 @@
-import { signal, useMutation } from "reactjrx"
+import { signal, useSwitchMutation$ } from "reactjrx"
 import { map } from "rxjs"
 import { loadScript, retryOnFailure } from "../../../common/scripts"
 
@@ -21,8 +21,7 @@ export const gsiOrThrow$ = gsiSignal.subject.pipe(
 )
 
 export const useLoadGsi = () => {
-  return useMutation({
-    mapOperator: "switch",
+  return useSwitchMutation$({
     mutationFn: () =>
       loadScript({
         id: GSI_ID,

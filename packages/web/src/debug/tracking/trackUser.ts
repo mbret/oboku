@@ -1,14 +1,14 @@
 import { authStateSignal } from "../../auth/authState"
-import * as Sentry from "@sentry/react"
+import { setUser } from "@sentry/react"
 
 authStateSignal.subject.subscribe((auth) => {
   if (auth) {
-    Sentry.setUser({
+    setUser({
       email: auth.email,
       id: auth.nameHex,
       username: auth.dbName
     })
   } else {
-    Sentry.setUser(null)
+    setUser(null)
   }
 })

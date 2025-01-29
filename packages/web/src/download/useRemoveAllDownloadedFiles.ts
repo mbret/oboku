@@ -1,6 +1,5 @@
 import { useRemoveDownloadFile } from "./useRemoveDownloadFile"
 import { plugin as localPlugin } from "../plugins/local"
-import { useMutation } from "reactjrx"
 import {
   combineLatest,
   combineLatestWith,
@@ -13,11 +12,12 @@ import {
 } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { dexieDb } from "../rxdb/dexie"
+import { useMutation$ } from "reactjrx"
 
 export const useRemoveAllDownloadedFiles = () => {
   const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
 
-  return useMutation({
+  return useMutation$({
     mutationFn: () => {
       return latestDatabase$.pipe(
         first(),

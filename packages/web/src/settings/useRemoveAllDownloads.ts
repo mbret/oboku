@@ -1,4 +1,4 @@
-import { useMutation } from "reactjrx"
+import { useMutation$ } from "reactjrx"
 import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedFiles"
 import { from, of } from "rxjs"
 
@@ -10,7 +10,7 @@ export const useRemoveAllDownloads = ({
   const { mutateAsync: deleteAllDownloadedFiles } =
     useRemoveAllDownloadedFiles()
 
-  return useMutation({
+  return useMutation$({
     onSuccess,
     mutationFn: () => {
       const isConfirmed = confirm(

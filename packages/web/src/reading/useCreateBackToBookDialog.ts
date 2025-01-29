@@ -1,13 +1,13 @@
-import { useMutation } from "reactjrx"
 import { createDialog } from "../common/dialogs/createDialog"
 import { useNavigate } from "react-router-dom"
 import { ROUTES } from "../constants.web"
 import { map } from "rxjs"
+import { useMutation$ } from "reactjrx"
 
 export const useCreateBackToBookDialog = () => {
   const navigate = useNavigate()
 
-  return useMutation({
+  return useMutation$({
     mutationFn: ({ bookId, title }: { bookId: string; title?: string }) =>
       createDialog({
         title: `Take me back to my book`,

@@ -43,7 +43,7 @@ export const useCreateReader = ({
             panNavigation: "swipe"
           })
         },
-        fontScale: readerSettingsLiveRef.current.fontScale ?? 1,
+        fontScale: readerSettingsLiveRef.current?.fontScale ?? 1,
         ...(isUsingWebStreamer && {
           getResource: (item) => {
             const resourcePath = getResourcePathFromUrl(item.href)

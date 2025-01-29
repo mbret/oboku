@@ -1,4 +1,3 @@
-import { useMutation } from "reactjrx"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { catchError, combineLatest, from, map, mergeMap, of, tap } from "rxjs"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
@@ -7,13 +6,14 @@ import { useWithAuthorization } from "../auth/AuthorizeActionDialog"
 import { Report } from "../debug/report.shared"
 import { createDialog } from "../common/dialogs/createDialog"
 import { CancelError } from "../errors/errors.shared"
+import { useMutation$ } from "reactjrx"
 
 export const useRemoveAllContents = () => {
   const { mutateAsync: sync } = useSyncReplicate()
   const [lock] = useLock()
   const withAuthorization = useWithAuthorization()
 
-  return useMutation({
+  return useMutation$({
     mutationFn: () =>
       getLatestDatabase().pipe(
         mergeMap((db) =>

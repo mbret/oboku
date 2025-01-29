@@ -1,6 +1,6 @@
 import { CollectionDocType, difference, ReadingStateState } from "@oboku/shared"
 import { useLocalSettings } from "../settings/states"
-import { useForeverQuery, useSignalValue } from "reactjrx"
+import { useQuery$, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
 import { MangoQuery } from "rxdb"
@@ -37,7 +37,7 @@ export const useCollections = ({
   const { showCollectionWithProtectedContent } = useLocalSettings()
   const includeProtected = _includeProtected || isLibraryUnlocked
 
-  return useForeverQuery({
+  return useQuery$({
     queryKey: [
       "rxdb",
       "get",
