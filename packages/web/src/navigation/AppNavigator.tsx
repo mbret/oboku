@@ -5,7 +5,7 @@ import {
   Navigate,
   Outlet,
   useLocation
-} from "react-router-dom"
+} from "react-router"
 import { HomeScreen } from "../home/HomeScreen"
 import { LoginScreen } from "../auth/LoginScreen"
 import { ReaderScreen } from "../reader/ReaderScreen"
@@ -53,12 +53,7 @@ export const AppNavigator = ({
   const isAuthenticated = !!auth?.token
 
   return (
-    <BrowserRouter
-      future={{
-        v7_relativeSplatPath: true,
-        v7_startTransition: true
-      }}
-    >
+    <BrowserRouter>
       <div
         style={{
           flexShrink: 0,

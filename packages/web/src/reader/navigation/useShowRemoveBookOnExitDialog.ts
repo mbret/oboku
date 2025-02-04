@@ -24,7 +24,7 @@ export const useShowRemoveBookOnExitDialog = ({
     if (readingState && readingState !== ReadingStateState.Finished) {
       setWasAlreadyFinished(false)
     }
-  }, [readingState, setWasAlreadyFinished])
+  }, [readingState])
 
   return useMutation$({
     mutationFn: () =>

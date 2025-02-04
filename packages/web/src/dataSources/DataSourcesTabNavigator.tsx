@@ -1,5 +1,5 @@
 import { Tab, Tabs, Stack } from "@mui/material"
-import { Outlet, Link } from "react-router-dom"
+import { Outlet, Link } from "react-router"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../constants.web"
 import { useRouteMatch } from "../common/useRouteMatch"

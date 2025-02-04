@@ -8,7 +8,7 @@ import {
   HomeRounded,
   ExtensionRounded
 } from "@mui/icons-material"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router"
 import { ROUTES } from "../constants.web"
 import { useNetworkState } from "react-use"
 import { SIGNAL_RESET, useSignalValue } from "reactjrx"

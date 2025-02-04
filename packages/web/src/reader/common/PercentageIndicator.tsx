@@ -1,4 +1,4 @@
-import { Typography, TypographyProps } from "@mui/material"
+import { Typography, type TypographyProps } from "@mui/material"
 import { usePagination } from "../states"
 
 export const PercentageIndicator = (props: TypographyProps) => {

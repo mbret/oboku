@@ -12,7 +12,7 @@ import {
   ThumbUpOutlined,
   ThumbDownOutlined
 } from "@mui/icons-material"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { ROUTES } from "../../constants.web"
 import {
