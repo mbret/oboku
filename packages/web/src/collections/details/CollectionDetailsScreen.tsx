@@ -1,6 +1,6 @@
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Box, Stack, Typography, useTheme } from "@mui/material"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router"
 import EmptyLibraryAsset from "../../assets/empty-library.svg"
 import CollectionBgSvg from "../../assets/series-bg.svg"
 import { BookListWithControls } from "../../books/bookList/BookListWithControls"

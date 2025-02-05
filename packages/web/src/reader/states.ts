@@ -1,6 +1,6 @@
 import { filter, switchMap } from "rxjs"
 import { isDefined, signal, useQuery$ } from "reactjrx"
-import { createAppReader } from "./useCreateReader"
+import type { createAppReader } from "./useCreateReader"
 
 type ReaderInstance = ReturnType<typeof createAppReader>
 

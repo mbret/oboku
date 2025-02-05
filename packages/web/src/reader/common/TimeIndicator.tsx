@@ -1,4 +1,4 @@
-import { Typography, TypographyProps } from "@mui/material"
+import { Typography, type TypographyProps } from "@mui/material"
 import { useTime } from "../../common/useTime"
 
 export const TimeIndicator = (props: TypographyProps) => {

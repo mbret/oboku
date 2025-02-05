@@ -6,11 +6,11 @@ import cors from "@middy/http-cors"
 import { transpileSchema } from "@middy/validator/transpile"
 import validator from "@middy/validator"
 
-import * as Sentry from "@sentry/aws-serverless"
+import { init, wrapHandler } from "@sentry/aws-serverless"
 import { ObokuErrorCode } from "@oboku/shared"
 // import { nodeProfilingIntegration } from "@sentry/profiling-node"
 
-Sentry.init({
+init({
   dsn: process.env.SENTRY_DSN,
   // integrations: [nodeProfilingIntegration()],
   // Add Tracing by setting tracesSampleRate and adding integration
@@ -42,7 +42,7 @@ export const withMiddy = (
     before: () => {}
   }
 
-  const handlerWithSentry = Sentry.wrapHandler(handler)
+  const handlerWithSentry = wrapHandler(handler)
 
   return (
     middy(handlerWithSentry)

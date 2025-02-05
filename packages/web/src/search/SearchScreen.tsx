@@ -18,7 +18,7 @@ import {
   Link,
   useNavigate,
   useSearchParams
-} from "react-router-dom"
+} from "react-router"
 import { useMount } from "react-use"
 import { BookList } from "../books/bookList/BookList"
 import { CollectionList } from "../collections/lists/CollectionList"
