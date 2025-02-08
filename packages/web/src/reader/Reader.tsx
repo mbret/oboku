@@ -7,7 +7,6 @@ import { isMenuShownStateSignal, readerSignal } from "./states"
 import { useGestureHandler } from "./gestures/useGestureHandler"
 import { BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
-import { FloatingBottom } from "./navigation/FloatingBottom"
 import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSettings"
 import { Notification } from "./notifications/Notification"
 import { useReaderSettingsState } from "./settings/states"
@@ -18,7 +17,7 @@ import { BookError } from "./BookError"
 import { Box } from "@mui/material"
 import { useLoadManifest } from "./useLoadReader"
 import type { Manifest } from "@prose-reader/shared"
-import { ReactReaderProvider, QuickMenu } from "@prose-reader/react-reader"
+import { ReactReaderProvider, ReactReader } from "@prose-reader/react-reader"
 import { useShowRemoveBookOnExitDialog } from "./navigation/useShowRemoveBookOnExitDialog"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { useMoreDialog } from "./navigation/MoreDialog"
@@ -60,9 +59,6 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
 const Interface = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
   const readerState = useObserve(() => reader?.state$, [reader])
-  // We don't want to display overlay for comics / manga
-  const showFloatingMenu =
-    reader?.context.manifest?.renditionLayout !== "pre-paginated"
   const readerSettings = useReaderSettingsState()
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const { goBack } = useSafeGoBack()
@@ -79,7 +75,7 @@ const Interface = memo(({ bookId }: { bookId: string }) => {
       {readerState === "ready" && (
         <>
           <ReactReaderProvider reader={reader}>
-            <QuickMenu
+            <ReactReader
               open={isMenuShow}
               onBackClick={() => {
                 mutate()
@@ -87,15 +83,13 @@ const Interface = memo(({ bookId }: { bookId: string }) => {
               onMoreClick={() => {
                 toggleMoreDialog()
               }}
+              enableFloatingTime={readerSettings.floatingTime === "bottom"}
+              enableFloatingProgress={
+                readerSettings.floatingProgress === "bottom"
+              }
             />
           </ReactReaderProvider>
           <Notification />
-          {showFloatingMenu && (
-            <FloatingBottom
-              enableProgress={readerSettings.floatingProgress === "bottom"}
-              enableTime={readerSettings.floatingTime === "bottom"}
-            />
-          )}
         </>
       )}
     </>
