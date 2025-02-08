@@ -25,7 +25,7 @@
     "@middy/http-header-normalizer": "^5.5.1",
     "@middy/http-json-body-parser": "^5.5.1",
     "@middy/http-response-serializer": "^5.5.1",
-    "@middy/validator": "^5.5.1",
+    "@middy/validator": "^6.0.0",
     "@oboku/shared": "^0.8.0",
     "@supabase/supabase-js": "^2.39.7",
     "abort-controller": "^3.0.0",
