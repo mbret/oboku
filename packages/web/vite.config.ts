@@ -3,7 +3,7 @@ import { VitePWA } from "vite-plugin-pwa"
 import react from "@vitejs/plugin-react"
 import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
-import path from "path"
+import path from "node:path"
 
 export default defineConfig(({ mode }) => ({
   build: {
@@ -21,9 +21,9 @@ export default defineConfig(({ mode }) => ({
       },
       output: {
         manualChunks: {
-          ["jszip"]: ["jszip"],
-          ["dropbox"]: ["dropbox"],
-          ["xmldoc"]: ["xmldoc"],
+          jszip: ["jszip"],
+          dropbox: ["dropbox"],
+          xmldoc: ["xmldoc"]
         }
       }
     }
@@ -70,7 +70,8 @@ export default defineConfig(({ mode }) => ({
           // sourcemap will be uploaded on reporting service directly
           "**/*.{js.map}"
         ],
-        maximumFileSizeToCacheInBytes: 9e6
+        // sources map are really massive, they will be optimized when served by server
+        maximumFileSizeToCacheInBytes: 15e6 // 15 MB limit
       },
       srcDir: "src",
       filename: "service-worker.ts",

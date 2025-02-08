@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { Tab, Tabs, IconButton } from "@mui/material"
-import { useNavigate, useLocation, Outlet } from "react-router-dom"
+import { useNavigate, useLocation, Outlet } from "react-router"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../constants.web"
 import { Sync } from "@mui/icons-material"

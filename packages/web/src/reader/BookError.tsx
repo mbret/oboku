@@ -1,7 +1,7 @@
 import { Box, Typography, Button, Link } from "@mui/material"
 import { getMetadataFromBook } from "../books/metadata"
 import { useBook } from "../books/states"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { StreamerFileNotSupportedError } from "../errors/errors.shared"
 
 export const BookError = ({

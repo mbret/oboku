@@ -10,7 +10,7 @@ import {
 } from "@mui/material"
 import { plugins } from "./configure"
 import { ExtensionRounded } from "@mui/icons-material"
-import { Link } from "react-router-dom"
+import { Link } from "react-router"
 import { ROUTES } from "../constants.web"
 
 export const PluginsScreen = memo(() => {

@@ -3,13 +3,10 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
 import { memo, useRef } from "react"
-import { readerSignal } from "./states"
-import { TopBar } from "./navigation/TopBar"
-import { BottomBar } from "./navigation/BottomBar"
+import { isMenuShownStateSignal, readerSignal } from "./states"
 import { useGestureHandler } from "./gestures/useGestureHandler"
 import { BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
-import { FloatingBottom } from "./navigation/FloatingBottom"
 import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSettings"
 import { Notification } from "./notifications/Notification"
 import { useReaderSettingsState } from "./settings/states"
@@ -19,7 +16,11 @@ import { useCreateReader } from "./useCreateReader"
 import { BookError } from "./BookError"
 import { Box } from "@mui/material"
 import { useLoadManifest } from "./useLoadReader"
-import { Manifest } from "@prose-reader/shared"
+import type { Manifest } from "@prose-reader/shared"
+import { ReactReaderProvider, ReactReader } from "@prose-reader/react-reader"
+import { useShowRemoveBookOnExitDialog } from "./navigation/useShowRemoveBookOnExitDialog"
+import { useSafeGoBack } from "../navigation/useSafeGoBack"
+import { useMoreDialog } from "./navigation/MoreDialog"
 
 export const Reader = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
@@ -35,7 +36,7 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
 
   return (
     <>
-      <Box position="relative" height="100%" width="100%">
+      <Box position="relative" height="100%" width="100%" overflow="hidden">
         <Box
           position="relative"
           height="100%"
@@ -58,24 +59,37 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
 const Interface = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
   const readerState = useObserve(() => reader?.state$, [reader])
-  // We don't want to display overlay for comics / manga
-  const showFloatingMenu =
-    reader?.context.manifest?.renditionLayout !== "pre-paginated"
   const readerSettings = useReaderSettingsState()
+  const isMenuShow = useSignalValue(isMenuShownStateSignal)
+  const { goBack } = useSafeGoBack()
+  const { toggleMoreDialog } = useMoreDialog()
+  const { mutate } = useShowRemoveBookOnExitDialog({
+    bookId,
+    onSettled: () => {
+      goBack()
+    }
+  })
 
   return (
     <>
       {readerState === "ready" && (
         <>
-          <Notification />
-          {showFloatingMenu && (
-            <FloatingBottom
-              enableProgress={readerSettings.floatingProgress === "bottom"}
-              enableTime={readerSettings.floatingTime === "bottom"}
+          <ReactReaderProvider reader={reader}>
+            <ReactReader
+              open={isMenuShow}
+              onBackClick={() => {
+                mutate()
+              }}
+              onMoreClick={() => {
+                toggleMoreDialog()
+              }}
+              enableFloatingTime={readerSettings.floatingTime === "bottom"}
+              enableFloatingProgress={
+                readerSettings.floatingProgress === "bottom"
+              }
             />
-          )}
-          <TopBar bookId={bookId} />
-          <BottomBar bookId={bookId} />
+          </ReactReaderProvider>
+          <Notification />
         </>
       )}
     </>

@@ -1,5 +1,5 @@
 import { createDialog } from "../common/dialogs/createDialog"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { ROUTES } from "../constants.web"
 import { map } from "rxjs"
 import { useMutation$ } from "reactjrx"

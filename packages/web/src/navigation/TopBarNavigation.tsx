@@ -12,7 +12,7 @@ import {
 import { alpha, Box, InputBase, styled, useTheme } from "@mui/material"
 import { useSafeGoBack } from "./useSafeGoBack"
 import { ROUTES } from "../constants.web"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { libraryStateSignal } from "../library/books/states"
 import { useSignalValue } from "reactjrx"
 

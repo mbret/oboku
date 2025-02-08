@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, ComponentProps } from "react"
 import { Button, Stack, Toolbar as MuiToolbar } from "@mui/material"
 import { ROUTES } from "../../constants.web"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import { CollectionList } from "../../collections/lists/CollectionList"
 import { signal, useSignalValue } from "reactjrx"
 import { useLibraryShelves } from "./useLibraryShelves"

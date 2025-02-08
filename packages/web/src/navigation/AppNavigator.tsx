@@ -5,7 +5,7 @@ import {
   Navigate,
   Outlet,
   useLocation
-} from "react-router-dom"
+} from "react-router"
 import { HomeScreen } from "../home/HomeScreen"
 import { LoginScreen } from "../auth/LoginScreen"
 import { ReaderScreen } from "../reader/ReaderScreen"
