@@ -21,7 +21,7 @@ import Image from "next/image"
 const ButtonsContainer = ({ children }: { children: ReactNode }) => {
   return (
     <Box display="flex" gap={2} flexDirection="column" width="100%">
-      <>{children}</>
+      {children}
     </Box>
   )
 }

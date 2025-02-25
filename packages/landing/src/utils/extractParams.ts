@@ -9,7 +9,7 @@ export const extractParams = <
 ) => {
   return Object.keys(schema).reduce(
     (acc, queryKey) => {
-      const queryValue = (params ?? {})[queryKey]
+      const queryValue = params?.[queryKey]
 
       if (queryValue !== undefined) {
         const validateAs = schema[queryKey]

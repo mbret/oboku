@@ -3,8 +3,8 @@
  * This API is not secure, it will load regardlessly any content provided
  * under messages/markdowns
  */
-import path from "path"
-import { promises as fs } from "fs"
+import path from "node:path"
+import { promises as fs } from "node:fs"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { extractParams } from "../../utils/extractParams"
 
