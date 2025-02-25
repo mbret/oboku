@@ -1,6 +1,6 @@
 {
   "name": "@oboku/web",
-  "version": "0.129.0",
+  "version": "0.130.0",
   "private": true,
   "dependencies": {
     "@chakra-ui/react": "^3.5.1",
@@ -80,7 +80,11 @@
     "test": "vitest run"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
