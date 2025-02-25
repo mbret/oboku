@@ -1,6 +1,6 @@
 import axios, { isAxiosError } from "axios"
 import { GOOGLE_BOOK_API_URL } from "../../constants"
-import { Item } from "./types"
+import type { Item } from "./types"
 import { performWithBackoff } from "@libs/utils"
 
 export type GoogleBooksApiVolumesResponseData = {
@@ -24,7 +24,7 @@ export const findByISBN = async (isbn: string, apiKey: string) => {
     retry: (error: unknown) => {
       // we retry on Too many request error
       return isAxiosError(error) && error.response?.status === 429
-    }
+    },
   })
 
   if (response.status === 200) {
@@ -46,7 +46,7 @@ export const findByTitle = async (name: string, apiKey: string) => {
     retry: (error: unknown) => {
       // we retry on Too many request error
       return isAxiosError(error) && error.response?.status === 429
-    }
+    },
   })
 
   if (response.status === 200) {
@@ -68,12 +68,12 @@ export const findByVolumeId = async (name: string, apiKey: string) => {
     retry: (error: unknown) => {
       // we retry on Too many request error
       return isAxiosError(error) && error.response?.status === 429
-    }
+    },
   })
 
   if (response.status === 200) {
     return {
-      items: [response.data]
+      items: [response.data],
     }
   }
 
@@ -84,12 +84,12 @@ export const findSeriesByTitle = async (name: string, apiKey: string) => {
   const response = await performWithBackoff({
     asyncFunction: () =>
       axios.get<GoogleBooksApiVolumesResponseData>(
-        `${GOOGLE_BOOK_API_URL}/volumes?q=intitle:${name}&key=${apiKey}`
+        `${GOOGLE_BOOK_API_URL}/volumes?q=intitle:${name}&key=${apiKey}`,
       ),
     retry: (error: unknown) => {
       // we retry on Too many request error
       return isAxiosError(error) && error.response?.status === 429
-    }
+    },
   })
 
   if (response.status === 200) {

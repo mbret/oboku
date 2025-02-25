@@ -1,6 +1,12 @@
 import { CircleRounded, StarRounded } from "@mui/icons-material"
-import { Chip, ChipProps, Stack, Typography, capitalize } from "@mui/material"
-import { CollectionMetadata } from "@oboku/shared"
+import {
+  Chip,
+  type ChipProps,
+  Stack,
+  Typography,
+  capitalize,
+} from "@mui/material"
+import type { CollectionMetadata } from "@oboku/shared"
 import { memo } from "react"
 
 export const StatusChip = memo(
@@ -46,5 +52,5 @@ export const StatusChip = memo(
         {...rest}
       />
     )
-  }
+  },
 )

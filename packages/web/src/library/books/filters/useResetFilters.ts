@@ -8,7 +8,7 @@ export const useResetFilters = () => {
       tags: [],
       readingStates: libraryStateSignalDefaultValue.readingStates,
       downloadState: libraryStateSignalDefaultValue.downloadState,
-      isNotInterested: libraryStateSignalDefaultValue.isNotInterested
+      isNotInterested: libraryStateSignalDefaultValue.isNotInterested,
     }))
   }, [])
 }

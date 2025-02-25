@@ -1,9 +1,9 @@
 import { EMPTY, from, fromEvent, switchMap } from "rxjs"
 import { getProfile } from "../profile/currentProfile"
-import {
+import type {
   SW_OBOKU_PROFILE_UPDATE_MESSAGE_EVENT,
   SW_OBOKU_PROFILE_UPDATE_MESSAGE_EVENT_DATA,
-  UKNOWN_REQUEST_MESSAGE_EVENT
+  UKNOWN_REQUEST_MESSAGE_EVENT,
 } from "./types"
 
 export const registerCommunication = () => {
@@ -19,7 +19,7 @@ export const registerCommunication = () => {
             (
               event:
                 | UKNOWN_REQUEST_MESSAGE_EVENT
-                | SW_OBOKU_PROFILE_UPDATE_MESSAGE_EVENT
+                | SW_OBOKU_PROFILE_UPDATE_MESSAGE_EVENT,
             ) => {
               if (
                 "data" in event &&
@@ -29,15 +29,15 @@ export const registerCommunication = () => {
               ) {
                 sw.active?.postMessage({
                   type: "OBOKU_PROFILE_UPDATE",
-                  profile: getProfile()
+                  profile: getProfile(),
                 } satisfies SW_OBOKU_PROFILE_UPDATE_MESSAGE_EVENT_DATA)
               }
 
               return EMPTY
-            }
-          )
+            },
+          ),
         )
-      })
+      }),
     )
     .subscribe()
 }

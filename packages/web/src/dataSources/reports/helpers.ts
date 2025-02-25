@@ -2,11 +2,11 @@ import {
   CloudRounded,
   FolderRounded,
   LocalOfferRounded,
-  MenuBookRounded
+  MenuBookRounded,
 } from "@mui/icons-material"
 
 export const getRxModelLabelFromValue = (
-  rxModel: "obokucollection" | "book" | "tag" | "link" | "datasource"
+  rxModel: "obokucollection" | "book" | "tag" | "link" | "datasource",
 ) => {
   switch (rxModel) {
     case "obokucollection":
@@ -23,7 +23,7 @@ export const getRxModelLabelFromValue = (
 }
 
 export const getRxModelIconFromValue = (
-  rxModel: "obokucollection" | "book" | "tag" | "link" | "datasource"
+  rxModel: "obokucollection" | "book" | "tag" | "link" | "datasource",
 ) => {
   switch (rxModel) {
     case "obokucollection":

@@ -2,7 +2,7 @@
  * @see https://www.dropbox.com/developers/chooser
  * @see https://www.dropbox.com/lp/developers/reference/oauth-guide
  */
-import { FC, memo } from "react"
+import { type FC, memo } from "react"
 import { BlockingScreen } from "../../common/BlockingBackdrop"
 import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
@@ -17,7 +17,7 @@ export const UploadBook: FC<{
 }> = memo(({ onClose }) => {
   const [addBook] = useAddBook()
   const { generateResourceId } = useDataSourceHelpers(
-    UNIQUE_RESOURCE_IDENTIFIER
+    UNIQUE_RESOURCE_IDENTIFIER,
   )
 
   const { mutateAsync: addBooks } = useMutation$({
@@ -28,9 +28,9 @@ export const UploadBook: FC<{
             metadata: [
               {
                 type: "link",
-                title: doc.name
-              }
-            ]
+                title: doc.name,
+              },
+            ],
           },
           link: {
             book: null,
@@ -38,18 +38,18 @@ export const UploadBook: FC<{
             resourceId: generateResourceId(doc.id),
             type: `dropbox`,
             createdAt: new Date().toISOString(),
-            modifiedAt: null
-          }
-        })
+            modifiedAt: null,
+          },
+        }),
       )
 
       return from(Promise.all(promises)).pipe(defaultIfEmpty(null))
-    }
+    },
   })
 
   const { choose } = useDropboxChoose({
     onSettled: onClose,
-    onSuccess: addBooks
+    onSuccess: addBooks,
   })
 
   useMountOnce(() => {

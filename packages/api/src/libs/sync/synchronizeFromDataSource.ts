@@ -1,14 +1,14 @@
 import { directives } from "@oboku/shared"
-import { createHelpers } from "../plugins/helpers"
+import type { createHelpers } from "../plugins/helpers"
 import { Logger } from "@libs/logger"
-import {
+import type {
   DataSourcePlugin,
-  SynchronizeAbleDataSource
+  SynchronizeAbleDataSource,
 } from "@libs/plugins/types"
 import { syncCollection } from "./collections/syncCollection"
 import { createTagFromName } from "@libs/couch/dbHelpers"
 import { createOrUpdateBook } from "./books/createOrUpdateBook"
-import { Context } from "./types"
+import type { Context } from "./types"
 
 const logger = Logger.child({ module: "sync" })
 
@@ -17,13 +17,13 @@ type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 function isFolder(
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem
+  item: SynchronizeAbleDataSource | SynchronizeAbleItem,
 ): item is SynchronizeAbleItem {
   return (item as SynchronizeAbleItem).type === "folder"
 }
 
 function isFile(
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem
+  item: SynchronizeAbleDataSource | SynchronizeAbleItem,
 ): item is SynchronizeAbleItem {
   return (item as SynchronizeAbleItem).type === "file"
 }
@@ -31,10 +31,10 @@ function isFile(
 export const synchronizeFromDataSource = async (
   synchronizeAble: SynchronizeAbleDataSource,
   ctx: Context,
-  helpers: ReturnType<typeof createHelpers>
+  helpers: ReturnType<typeof createHelpers>,
 ) => {
   console.log(
-    `dataSourcesSync run for user ${ctx.userName} with dataSource ${ctx.dataSourceId}`
+    `dataSourcesSync run for user ${ctx.userName} with dataSource ${ctx.dataSourceId}`,
   )
 
   await syncTags({
@@ -43,7 +43,7 @@ export const synchronizeFromDataSource = async (
     item: synchronizeAble,
     hasCollectionAsParent: false,
     lvl: 0,
-    parents: []
+    parents: [],
   })
 
   await syncFolder({
@@ -52,13 +52,13 @@ export const synchronizeFromDataSource = async (
     item: synchronizeAble,
     hasCollectionAsParent: false,
     lvl: 0,
-    parents: []
+    parents: [],
   })
 }
 
 const getItemTags = (
   item: SynchronizeAbleDataSource | SynchronizeAbleItem,
-  helpers: Helpers
+  helpers: Helpers,
 ): string[] => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
 
@@ -79,7 +79,7 @@ const syncTags = async ({
   helpers,
   item,
   lvl,
-  ctx
+  ctx,
 }: {
   ctx: Context
   helpers: Helpers
@@ -103,7 +103,7 @@ const syncTags = async ({
 
         ctx.syncReport.addTag({ _id: id, name: tag })
       }
-    })
+    }),
   )
 }
 
@@ -113,7 +113,7 @@ const syncFolder = async ({
   hasCollectionAsParent,
   item,
   lvl,
-  parents
+  parents,
 }: {
   ctx: Context & { authorization: string }
   helpers: Helpers
@@ -137,7 +137,7 @@ const syncFolder = async ({
   }
 
   await Promise.all(
-    metadataForFolder.tags.map((name) => helpers.getOrCreateTagFromName(name))
+    metadataForFolder.tags.map((name) => helpers.getOrCreateTagFromName(name)),
   )
 
   // Do not register as collection if
@@ -149,7 +149,7 @@ const syncFolder = async ({
   }
 
   console.log(
-    `[syncFolder] ${item.name}: with items ${item.items?.length || 0} items`
+    `[syncFolder] ${item.name}: with items ${item.items?.length || 0} items`,
   )
 
   await Promise.all(
@@ -159,7 +159,7 @@ const syncFolder = async ({
           ctx,
           item: subItem,
           helpers,
-          parents: [...parents, item]
+          parents: [...parents, item],
         })
       } else if (isFolder(subItem)) {
         await syncFolder({
@@ -168,10 +168,10 @@ const syncFolder = async ({
           lvl: lvl + 1,
           hasCollectionAsParent: isCollection,
           item: subItem,
-          parents: [...parents, item]
+          parents: [...parents, item],
         })
       }
-    })
+    }),
   )
 
   console.log(`[syncFolder] ${item.name} DONE!`)

@@ -1,4 +1,10 @@
-import { MouseEvent, useCallback, useEffect, useRef, useState } from "react"
+import {
+  type MouseEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { useLocation, useNavigate } from "react-router"
 
 export const useModalNavigationControl = (
@@ -7,13 +13,13 @@ export const useModalNavigationControl = (
    * Make sure the value is consistent for the same rendered dialog.
    * Usually isOpened or the id given to the dialog is ok.
    */
-  id: string | boolean | undefined
+  id: string | boolean | undefined,
 ) => {
   const navigate = useNavigate()
   const [currentHash, setCurrentHash] = useState<string | undefined>(undefined)
   const closeCb = useRef<() => void>()
   const { state } = useLocation()
-  const modalHash: string | undefined = state && state.__oboku_modal
+  const modalHash: string | undefined = state?.__oboku_modal
   const [synced, setSynced] = useState(false)
   const onExitRef = useRef(onExit)
   onExitRef.current = onExit
@@ -23,10 +29,10 @@ export const useModalNavigationControl = (
       setCurrentHash(undefined)
       setSynced(false)
       onExitRef.current()
-      closeCb.current && closeCb.current()
+      closeCb.current?.()
       closeCb.current = undefined
     }
-  }, [currentHash, setCurrentHash, modalHash, synced])
+  }, [currentHash, modalHash, synced])
 
   useEffect(() => {
     if (currentHash && currentHash === modalHash) {
@@ -44,9 +50,9 @@ export const useModalNavigationControl = (
         {
           hash: window.location.hash,
           search: window.location.search,
-          pathname: window.location.pathname
+          pathname: window.location.pathname,
         },
-        { state: { __oboku_modal: hash } }
+        { state: { __oboku_modal: hash } },
       )
     } else {
       setCurrentHash(undefined)
@@ -64,7 +70,7 @@ export const useModalNavigationControl = (
       // closing process
       navigate(-1)
     },
-    [navigate]
+    [navigate],
   )
 
   return { closeModalWithNavigation: close }

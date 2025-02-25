@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
-import { ObokuPlugin } from "./types"
+import type { ObokuPlugin } from "./types"
 
 export const usePluginRefreshMetadata = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
@@ -20,11 +20,9 @@ export const usePluginRefreshMetadata = () => {
 
   getPluginFn.current = plugins.map((plugin) => ({
     type: plugin.type,
-    refreshMetadata:
-      plugin.useRefreshMetadata &&
-      plugin.useRefreshMetadata({
-        requestPopup: createRequestPopupDialog({ name: plugin.name })
-      })
+    refreshMetadata: plugin.useRefreshMetadata?.({
+      requestPopup: createRequestPopupDialog({ name: plugin.name }),
+    }),
   }))
 
   const refreshMetadata: ReturnType<
@@ -43,5 +41,5 @@ export const usePluginRefreshMetadata = () => {
     return {}
   }
 
-  return useCallback(refreshMetadata, [getPluginFn])
+  return useCallback(refreshMetadata, [])
 }

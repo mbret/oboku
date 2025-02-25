@@ -1,7 +1,7 @@
 export default {
   type: "object",
   properties: {
-    token: { type: "string" }
+    token: { type: "string" },
   },
-  required: ["token"]
+  required: ["token"],
 } as const

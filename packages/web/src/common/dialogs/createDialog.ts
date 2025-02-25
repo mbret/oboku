@@ -1,5 +1,5 @@
 import { Observable, share } from "rxjs"
-import { DialogType, dialogSignal } from "./state"
+import { type DialogType, dialogSignal } from "./state"
 import { CancelError } from "../../errors/errors.shared"
 
 let generatedId = 0
@@ -13,7 +13,7 @@ export const createDialog = <Result = undefined>({
   generatedId++
   const id = generatedId.toString()
 
-  const $ = new Observable<Result>((observer) => {
+  const $ = new Observable<Result | null>((observer) => {
     let isClosed = false
 
     const wrappedDialog: DialogType<Result> = {
@@ -28,7 +28,7 @@ export const createDialog = <Result = undefined>({
       onConfirm: () => {
         isClosed = true
         const data = dialog.onConfirm?.()
-        observer.next(data)
+        observer.next(data ?? null)
         observer.complete()
 
         return data as Result
@@ -43,8 +43,8 @@ export const createDialog = <Result = undefined>({
           observer.complete()
 
           return data as Result
-        }
-      }))
+        },
+      })),
     }
 
     dialogSignal.setValue((old) => [...old, wrappedDialog])

@@ -1,5 +1,5 @@
-import { Box, BoxProps } from "@mui/material"
-import { ReactNode, memo } from "react"
+import { Box, type BoxProps } from "@mui/material"
+import { type ReactNode, memo } from "react"
 
 export const CoverIconBadge = memo(
   ({ children, ...rest }: { children: ReactNode } & BoxProps) => {
@@ -15,5 +15,5 @@ export const CoverIconBadge = memo(
         {children}
       </Box>
     )
-  }
+  },
 )

@@ -12,10 +12,10 @@ export const TagsRow = ({ bookId }: { bookId?: string }) => {
     queryObj: {
       selector: {
         _id: {
-          $in: Array.from(book?.tags ?? [])
-        }
-      }
-    }
+          $in: Array.from(book?.tags ?? []),
+        },
+      },
+    },
   })
 
   return (

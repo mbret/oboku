@@ -1,7 +1,7 @@
 import { useSignalValue } from "reactjrx"
 import { ListActionsToolbar as CommonListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { FiltersDrawer } from "./FiltersDrawer"
-import { ComponentProps, useState } from "react"
+import { type ComponentProps, useState } from "react"
 import { searchListActionsToolbarSignal } from "./states"
 
 export const ListActionsToolbar = ({
@@ -9,7 +9,7 @@ export const ListActionsToolbar = ({
 }: ComponentProps<typeof CommonListActionsToolbar>) => {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false)
   const searchListActionsToolbar = useSignalValue(
-    searchListActionsToolbarSignal
+    searchListActionsToolbarSignal,
   )
   const numberOfFiltersApplied =
     searchListActionsToolbar.notInterestedContents !== "none" ? 1 : 0

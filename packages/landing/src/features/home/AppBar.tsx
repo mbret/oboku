@@ -15,13 +15,13 @@ import {
   ListItemIcon,
   ListItemText,
   Link as MuiLink,
-  SwipeableDrawer
+  SwipeableDrawer,
 } from "@mui/material"
 import {
   AutoStoriesRounded,
   GitHub,
   PhoneIphoneRounded,
-  Reddit
+  Reddit,
 } from "@mui/icons-material"
 import { links } from "@oboku/shared"
 import { DiscordMarkBlueIcon } from "./DiscordMarkBlueIcon"
@@ -94,7 +94,7 @@ export default function AppBar() {
           color="transparent"
           style={{
             border: "none",
-            backgroundColor: "white"
+            backgroundColor: "white",
           }}
         >
           <Toolbar>

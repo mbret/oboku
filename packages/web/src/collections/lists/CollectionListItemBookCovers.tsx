@@ -6,7 +6,7 @@ import { useCollection } from "../useCollection"
 export const CollectionListItemBookCovers = memo(({ id }: { id: string }) => {
   const theme = useTheme()
   const { data: item } = useCollection({
-    id
+    id,
   })
 
   return (
@@ -27,10 +27,10 @@ export const CollectionListItemBookCovers = memo(({ id }: { id: string }) => {
               width: coverHeight * theme.custom.coverAverageRatio,
               ...(length > 2 &&
                 i === 1 && {
-                  marginTop: -10
+                  marginTop: -10,
                 }),
               marginRight: 5,
-              marginLeft: 5
+              marginLeft: 5,
             }}
           />
         )

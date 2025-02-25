@@ -1,12 +1,12 @@
 import { LinkOffRounded } from "@mui/icons-material"
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material"
-import { CollectionDocType } from "@oboku/shared"
+import type { CollectionDocType } from "@oboku/shared"
 import { getCollectionComputedMetadata } from "../collections/getCollectionComputedMetadata"
 
 export const CollectionDanglingBooks = ({
   danglingBooks,
   doc,
-  onClick
+  onClick,
 }: {
   doc: CollectionDocType
   danglingBooks: string[]

@@ -1,7 +1,7 @@
 import { EditOutlined } from "@mui/icons-material"
-import { Button, Chip, Stack, StackProps, Typography } from "@mui/material"
+import { Button, Chip, Stack, type StackProps, Typography } from "@mui/material"
 import { Link } from "react-router"
-import { DeepReadonlyArray } from "rxdb/dist/types/types"
+import type { DeepReadonlyArray } from "rxdb/dist/types/types"
 
 export const MetadataItemList = ({
   values,
@@ -40,12 +40,12 @@ export const MetadataItemList = ({
             size="medium"
             key={index}
             style={{
-              maxWidth: 320
+              maxWidth: 320,
             }}
             {...(item.to && {
               clickable: true,
               to: item.to,
-              component: Link
+              component: Link,
             })}
           />
         ))}

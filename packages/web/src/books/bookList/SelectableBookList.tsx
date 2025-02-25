@@ -1,4 +1,4 @@
-import { useCallback, memo, ComponentProps } from "react"
+import { useCallback, memo, type ComponentProps } from "react"
 import { useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { SelectableBookListItem } from "./SelectableBookListItem"
@@ -9,7 +9,7 @@ export const SelectableBookList = memo(
     props: {
       selected: Record<string, boolean>
       onItemClick: (id: { id: string; selected: boolean }) => void
-    } & ComponentProps<typeof VirtuosoList>
+    } & ComponentProps<typeof VirtuosoList>,
   ) => {
     const theme = useTheme()
     const { data, onItemClick, selected, ...rest } = props
@@ -17,7 +17,7 @@ export const SelectableBookList = memo(
     const itemsPerRow = 1
     const densityMultiplier = 1
     const itemHeight =
-      (windowSize.width > theme.breakpoints.values["sm"] ? 150 : 100) *
+      (windowSize.width > theme.breakpoints.values.sm ? 150 : 100) *
       theme.custom.coverAverageRatio *
       densityMultiplier
 
@@ -32,7 +32,7 @@ export const SelectableBookList = memo(
           }
         />
       ),
-      [itemHeight, onItemClick, selected]
+      [itemHeight, onItemClick, selected],
     )
 
     return (
@@ -43,5 +43,5 @@ export const SelectableBookList = memo(
         {...rest}
       />
     )
-  }
+  },
 )

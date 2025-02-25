@@ -30,7 +30,7 @@ export const useSynchronizeDataSource = () => {
       }
 
       const datasource$ = from(
-        database.datasource.findOne({ selector: { _id } }).exec()
+        database.datasource.findOne({ selector: { _id } }).exec(),
       )
 
       return datasource$.pipe(
@@ -41,9 +41,9 @@ export const useSynchronizeDataSource = () => {
             atomicUpdateDataSource({
               id: _id,
               patch: {
-                syncStatus: "fetching"
-              }
-            })
+                syncStatus: "fetching",
+              },
+            }),
           ).pipe(
             switchMap(() => from(sync([database.datasource]))),
             switchMap(() => from(httpClient.syncDataSource(_id, data.data))),
@@ -54,15 +54,15 @@ export const useSynchronizeDataSource = () => {
                   patch: {
                     syncStatus: null,
                     lastSyncErrorCode:
-                      ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE
-                  }
-                })
+                      ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE,
+                  },
+                }),
               ).pipe(
                 map((_) => {
                   throw e
-                })
-              )
-            )
+                }),
+              ),
+            ),
           )
         }),
         catchError((e) => {
@@ -71,8 +71,8 @@ export const useSynchronizeDataSource = () => {
           Report.error(e)
 
           return of(null)
-        })
+        }),
       )
-    }
+    },
   })
 }

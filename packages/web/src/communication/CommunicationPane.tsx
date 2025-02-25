@@ -1,7 +1,7 @@
 import { httpClient } from "../http/httpClient"
 import { Alert, AlertTitle, Box, Link, Typography } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
-import { ComponentProps } from "react"
+import type { ComponentProps } from "react"
 import Markdown from "react-markdown"
 
 type Communication = {
@@ -23,9 +23,9 @@ export const CommunicationPane = () => {
         url: `${import.meta.env.VITE_SUPABASE_API_URL}/communication?limit=1&order=created_at.desc`,
         withAuth: false,
         headers: {
-          apiKey: import.meta.env.VITE_SUPABASE_API_KEY ?? ""
-        }
-      })
+          apiKey: import.meta.env.VITE_SUPABASE_API_KEY ?? "",
+        },
+      }),
   })
 
   const latestNews = data?.data[0]
@@ -38,11 +38,10 @@ export const CommunicationPane = () => {
           <Markdown
             components={{
               a: ({ children, ref, ...props }) => (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 <Link ref={ref as any} target="_blank" {...props}>
                   {children}
                 </Link>
-              )
+              ),
             }}
           >
             {latestNews?.content ?? ""}

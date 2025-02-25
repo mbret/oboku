@@ -1,4 +1,4 @@
-import { CollectionMetadata } from "@oboku/shared"
+import type { CollectionMetadata } from "@oboku/shared"
 import { getSeries } from "./getSeries"
 import { Logger } from "@libs/logger"
 
@@ -14,7 +14,7 @@ export const getSeriesMetadata = async (metadata: {
     return {
       type: "biblioreads",
       title: series?.data.title,
-      description: series?.data.desc
+      description: series?.data.desc,
     }
   } catch (e) {
     Logger.error(e)

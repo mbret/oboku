@@ -10,18 +10,18 @@ import {
   Typography,
   useTheme,
   Box,
-  ListItemButton
+  ListItemButton,
 } from "@mui/material"
 import { Alert } from "@mui/material"
 import { DataSourcesAddDrawer } from "./DataSourcesAddDrawer"
 import { DataSourcesActionsDrawer } from "./DataSourcesActionsDrawer"
-import { Error, LockRounded } from "@mui/icons-material"
-import { DataSourceDocType } from "@oboku/shared"
+import { Error as ErrorIcon, LockRounded } from "@mui/icons-material"
+import type { DataSourceDocType } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "../plugins/configure"
 import { AddDataSource } from "./AddDataSource"
 import { ObokuErrorCode } from "@oboku/shared"
 import { useDataSources } from "./useDataSources"
-import { ObokuPlugin } from "../plugins/types"
+import type { ObokuPlugin } from "../plugins/types"
 
 export const DataSourcesListScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
@@ -41,7 +41,7 @@ export const DataSourcesListScreen = () => {
           display: "flex",
           flex: 1,
           overflow: "auto",
-          flexFlow: "column"
+          flexFlow: "column",
         }}
       >
         <Alert severity="info">
@@ -54,7 +54,7 @@ export const DataSourcesListScreen = () => {
         <Toolbar>
           <Button
             style={{
-              width: "100%"
+              width: "100%",
             }}
             variant="outlined"
             color="primary"
@@ -66,7 +66,7 @@ export const DataSourcesListScreen = () => {
         <List>
           {syncSources?.map((syncSource) => {
             const dataSource = dataSourcePlugins.find(
-              (dataSource) => dataSource.type === syncSource.type
+              (dataSource) => dataSource.type === syncSource.type,
             )
 
             return (
@@ -89,7 +89,7 @@ export const DataSourcesListScreen = () => {
                         component="span"
                         style={{ flexDirection: "row", display: "flex" }}
                       >
-                        <Error
+                        <ErrorIcon
                           fontSize="small"
                           style={{ marginRight: theme.spacing(1) }}
                         />
@@ -108,7 +108,7 @@ export const DataSourcesListScreen = () => {
                       </Box>
                     ) : syncSource?.lastSyncedAt ? (
                       `Last synced at ${new Date(
-                        syncSource?.lastSyncedAt
+                        syncSource?.lastSyncedAt,
                       ).toDateString()}`
                     ) : (
                       "Not synced yet"
@@ -126,7 +126,7 @@ export const DataSourcesListScreen = () => {
         onClose={(type) => {
           setIsDrawerOpened(false)
           const dataSource = dataSourcePlugins.find(
-            (dataSource) => type === dataSource.type
+            (dataSource) => type === dataSource.type,
           )
           if (dataSource) {
             setIsAddDataSourceOpenedWith(dataSource)
@@ -151,13 +151,11 @@ export const DataSourcesListScreen = () => {
 
 const SyncSourceLabel = ({ syncSource }: { syncSource: DataSourceDocType }) => {
   const dataSource = dataSourcePlugins.find(
-    (dataSource) => dataSource.type === syncSource.type
+    (dataSource) => dataSource.type === syncSource.type,
   )
 
   const { name = dataSource?.name } =
-    (dataSource?.useSyncSourceInfo &&
-      dataSource.useSyncSourceInfo(syncSource)) ||
-    {}
+    dataSource?.useSyncSourceInfo?.(syncSource) || {}
 
   return <Typography noWrap>{name}</Typography>
 }

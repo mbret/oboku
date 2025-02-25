@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import { isMobileDetected } from "./common/utils"
 
 export { API_URL } from "./constants.shared"
@@ -28,7 +27,7 @@ export const ROUTES = {
   AUTH_CALLBACK: "/auth_callback",
   READER: "/reader/:id",
   SEARCH: "/search",
-  PROBLEMS: "/problems"
+  PROBLEMS: "/problems",
 } as const
 
 export const READER_NOTIFICATION_TIME_TO_SCREEN = 2000

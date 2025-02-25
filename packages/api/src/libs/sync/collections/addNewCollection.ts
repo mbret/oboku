@@ -1,10 +1,10 @@
 import { Logger } from "@libs/logger"
-import {
+import type {
   DataSourcePlugin,
-  SynchronizeAbleDataSource
+  SynchronizeAbleDataSource,
 } from "@libs/plugins/types"
 import { directives } from "@oboku/shared"
-import { Context } from "../types"
+import type { Context } from "../types"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
@@ -14,7 +14,7 @@ const logger = Logger.child({ module: "sync/addNewCollection" })
 export const addNewCollection = async ({
   item: { name, resourceId: linkResourceId },
   helpers,
-  ctx
+  ctx,
 }: {
   ctx: Context
   item: SynchronizeAbleItem
@@ -24,11 +24,11 @@ export const addNewCollection = async ({
 
   const linkMetadata = {
     type: "link" as const,
-    title: name
+    title: name,
   }
 
   logger.info(
-    `registerOrUpdateCollection ${name} does not exist yet and will be created`
+    `registerOrUpdateCollection ${name} does not exist yet and will be created`,
   )
 
   /**
@@ -45,9 +45,9 @@ export const addNewCollection = async ({
     syncAt: new Date().toISOString(),
     type: directiveValues.series ? ("series" as const) : ("shelve" as const),
     rxdbMeta: {
-      lwt: new Date().getTime()
+      lwt: new Date().getTime(),
     },
-    metadata: [linkMetadata]
+    metadata: [linkMetadata],
   }
 
   const created = await helpers.create("obokucollection", collectionToAdd)

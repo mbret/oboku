@@ -6,8 +6,6 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "tsc": "tsc --noEmit",
     "api:prepare-layer": "npx ts-node scripts/prepareLayers.ts",
     "api:start": "sls offline --httpPort 3001",
     "api:package": "serverless package",

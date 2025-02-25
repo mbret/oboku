@@ -12,7 +12,7 @@ export const useFixLinks = () => {
                 This action will merge links that uses the same resourceId.
                 We will try to use a non destructive merge by keeping defined properties when possible. 
                 You may want to re-sync after the operation to restore value with their latest state.
-                `.replace(/  +/g, "")
+                `.replace(/ {2,}/g, ""),
       )
 
       if (yes && database) {
@@ -24,7 +24,7 @@ export const useFixLinks = () => {
                 .exec()
 
               const dataAsJson = docsWithSameResourceId.map((document) =>
-                document.toJSON()
+                document.toJSON(),
               )
 
               const booksToReattachToMergedLink = dataAsJson
@@ -47,13 +47,13 @@ export const useFixLinks = () => {
               // we update the first entry with the all merged data
               await docsWithSameResourceId[0]?.incrementalModify((oldData) => ({
                 ...oldData,
-                ...safeMergedDoc
+                ...safeMergedDoc,
               }))
 
               // then we make sure each book is attached to the correct link
               const bookDocs = await database.book
                 .find({
-                  selector: { _id: { $in: booksToReattachToMergedLink } }
+                  selector: { _id: { $in: booksToReattachToMergedLink } },
                 })
                 .exec()
 
@@ -61,9 +61,9 @@ export const useFixLinks = () => {
                 bookDocs.map(async (doc) => {
                   await doc.incrementalModify((old) => ({
                     ...old,
-                    links: [...new Set([...old.links, mergedDoc._id])]
+                    links: [...new Set([...old.links, mergedDoc._id])],
                   }))
-                })
+                }),
               )
 
               // if all books has been successfully updated we can now delete dangling links
@@ -71,15 +71,15 @@ export const useFixLinks = () => {
               await Promise.all(
                 docsWithSameResourceId
                   .slice(1)
-                  .map(async (document) => document.remove())
+                  .map(async (document) => document.remove()),
               )
-            })
+            }),
           )
         } catch (e) {
           Report.error(e)
         }
       }
     },
-    [database]
+    [database],
   )
 }

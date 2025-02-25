@@ -1,4 +1,4 @@
-import { DataSourceDocType } from "../db/docTypes"
+import type { DataSourceDocType } from "../db/docTypes"
 
 export type GoogleDriveDataSourceData = {
   applyTags: string[]
@@ -14,16 +14,16 @@ export type DropboxDataSourceData = {
 
 export const generateResourceId = (
   uniqueResourceIdentifier: string,
-  resourceId: string
+  resourceId: string,
 ) => `${uniqueResourceIdentifier}-${resourceId}`
 
 export const extractIdFromResourceId = (
   uniqueResourceIdentifier: string,
-  resourceId: string
+  resourceId: string,
 ) => resourceId.replace(`${uniqueResourceIdentifier}-`, ``)
 
 export const extractSyncSourceData = <Data extends Record<any, any>>({
-  data
+  data,
 }: DataSourceDocType) => {
   try {
     return JSON.parse(data) as Data
@@ -35,5 +35,5 @@ export const extractSyncSourceData = <Data extends Record<any, any>>({
 export const dataSourceHelpers = {
   generateResourceId,
   extractIdFromResourceId,
-  extractSyncSourceData
+  extractSyncSourceData,
 }

@@ -1,4 +1,4 @@
-import Dexie, { EntityTable } from "dexie"
+import Dexie, { type EntityTable } from "dexie"
 
 interface Downloads {
   id: string
@@ -11,5 +11,5 @@ export const dexieDb = new Dexie(`oboku-dexie`) as Dexie & {
 }
 
 dexieDb.version(1).stores({
-  downloads: `++id, data, name`
+  downloads: `++id, data, name`,
 })

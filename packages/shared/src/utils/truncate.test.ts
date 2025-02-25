@@ -10,10 +10,10 @@ describe("truncate", () => {
   it("should truncate the string and add the omission string when necessary", () => {
     expect(truncate("Hello, World!", { length: 5 })).toBe("Hell...")
     expect(
-      truncate("Truncate this sentence.", { length: 8, omission: "--" })
+      truncate("Truncate this sentence.", { length: 8, omission: "--" }),
     ).toBe("Truncat--")
     expect(truncate("A long string with many characters", { length: 15 })).toBe(
-      "A long string ..."
+      "A long string ...",
     )
   })
 
@@ -34,16 +34,16 @@ describe("truncate", () => {
 
   it("should handle the case where omission length is equal to maxLength", () => {
     expect(
-      truncate("This is a test string", { length: 3, omission: "..." })
+      truncate("This is a test string", { length: 3, omission: "..." }),
     ).toBe("Th...")
   })
 
   it("should return the correct result when omission is a custom string", () => {
     expect(truncate("Hello, World!", { length: 7, omission: "***" })).toBe(
-      "Hello,***"
+      "Hello,***",
     )
     expect(
-      truncate("Custom omission test", { length: 12, omission: " [cut]" })
+      truncate("Custom omission test", { length: 12, omission: " [cut]" }),
     ).toBe("Custom omis [cut]")
   })
 
@@ -57,6 +57,6 @@ describe("truncate", () => {
 
   it("should handle very long strings efficiently", () => {
     const longString = "a".repeat(100000)
-    expect(truncate(longString, { length: 100 })).toBe("a".repeat(99) + "...")
+    expect(truncate(longString, { length: 100 })).toBe(`${"a".repeat(99)}...`)
   })
 })

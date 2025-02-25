@@ -1,5 +1,4 @@
 import { useCallback } from "react"
-import { FC } from "react"
 import { useTagIds } from "../tags/helpers"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useAddTagToBook, useRemoveTagFromBook } from "./helpers"
@@ -8,7 +7,7 @@ import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
 const openManageBookTagsDialogStateSignal = signal<string | undefined>({
   key: "openManageBookTagsDialogState",
-  default: undefined
+  default: undefined,
 })
 
 export const useManageBookTagsDialog = () => {
@@ -23,12 +22,12 @@ export const useManageBookTagsDialog = () => {
   return { openManageBookTagsDialog, closeManageBookTagsDialog }
 }
 
-export const ManageBookTagsDialog: FC<{}> = () => {
+export const ManageBookTagsDialog = () => {
   const bookId = useSignalValue(openManageBookTagsDialogStateSignal)
   const open = !!bookId
   const { data: tags = [] } = useTagIds()
   const { data: book } = useBook({
-    id: bookId
+    id: bookId,
   })
   const { mutate: addTagToBook } = useAddTagToBook()
   const { mutate: removeFromBook } = useRemoveTagFromBook()
@@ -40,7 +39,7 @@ export const ManageBookTagsDialog: FC<{}> = () => {
 
   const selected = useCallback(
     (item: string) => !!bookTags?.find((id) => id === item),
-    [bookTags]
+    [bookTags],
   )
 
   const onItemClick = useCallback(
@@ -51,7 +50,7 @@ export const ManageBookTagsDialog: FC<{}> = () => {
         bookId && addTagToBook({ _id: bookId, tagId })
       }
     },
-    [removeFromBook, addTagToBook, bookId]
+    [removeFromBook, addTagToBook, bookId],
   )
 
   return (

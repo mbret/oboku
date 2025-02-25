@@ -1,14 +1,14 @@
-import { PromiseReturnType } from "@libs/types"
-import { BookDocType, LinkDocType } from "@oboku/shared"
-import path from "path"
-import fs from "fs"
+import type { PromiseReturnType } from "@libs/types"
+import type { BookDocType, LinkDocType } from "@oboku/shared"
+import path from "node:path"
+import fs from "node:fs"
 import { TMP_DIR } from "src/constants"
 import { pluginFacade } from "@libs/plugins/facade"
 
 export const downloadToTmpFolder = (
   book: BookDocType,
   link: LinkDocType,
-  credentials?: any
+  credentials?: any,
 ) =>
   new Promise<{
     filepath: string
@@ -40,8 +40,8 @@ export const downloadToTmpFolder = (
           .on("finish", () =>
             resolve({
               filepath,
-              metadata
-            })
+              metadata,
+            }),
           )
           .on("error", reject)
       })

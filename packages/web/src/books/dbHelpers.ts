@@ -1,13 +1,16 @@
-import { MangoQuery } from "rxdb"
-import { BookDocType } from "@oboku/shared"
-import { DeepReadonlyArray, MangoQueryNoLimit } from "rxdb/dist/types/types"
-import { Database } from "../rxdb"
+import type { MangoQuery } from "rxdb"
+import type { BookDocType } from "@oboku/shared"
+import type {
+  DeepReadonlyArray,
+  MangoQueryNoLimit,
+} from "rxdb/dist/types/types"
+import type { Database } from "../rxdb"
 import { map, of, switchMap } from "rxjs"
 import { intersection } from "@oboku/shared"
 
 export const getBookById = async ({
   database,
-  id
+  id,
 }: {
   database: Database
   id: string
@@ -15,8 +18,8 @@ export const getBookById = async ({
   const book = await database.collections.book
     .findOne({
       selector: {
-        _id: id
-      }
+        _id: id,
+      },
     })
     .exec()
 
@@ -25,7 +28,7 @@ export const getBookById = async ({
 
 export const observeBook = ({
   db,
-  queryObj
+  queryObj,
 }: {
   db: Database
   queryObj?: string | MangoQueryNoLimit<BookDocType> | undefined
@@ -38,7 +41,7 @@ export const observeBooks = ({
   queryObj = {},
   isNotInterested,
   ids,
-  includeProtected
+  includeProtected,
 }: {
   db: Database
   queryObj?: MangoQuery<BookDocType>
@@ -52,28 +55,28 @@ export const observeBooks = ({
       ...queryObj.selector,
       ...(isNotInterested === "none" && {
         isNotInterested: {
-          $ne: true
-        }
+          $ne: true,
+        },
       }),
       ...(isNotInterested === "only" && {
         isNotInterested: {
-          $eq: true
-        }
+          $eq: true,
+        },
       }),
       ...(ids && {
         _id: {
-          $in: Array.from(ids)
-        }
-      })
-    }
+          $in: Array.from(ids),
+        },
+      }),
+    },
   }
 
   const protectedTags = db.tag.find({
     selector: {
       isProtected: {
-        $eq: true
-      }
-    }
+        $eq: true,
+      },
+    },
   })
 
   const books$ = db.book.find(finalQueryObj).$
@@ -88,10 +91,10 @@ export const observeBooks = ({
 
           return books?.filter(
             (book) =>
-              intersection(protectedTagIds, book?.tags || []).length === 0
+              intersection(protectedTagIds, book?.tags || []).length === 0,
           )
-        })
+        }),
       )
-    })
+    }),
   )
 }

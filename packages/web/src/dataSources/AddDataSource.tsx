@@ -1,6 +1,6 @@
-import { FC } from "react"
+import type { FC } from "react"
 import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
-import { ObokuPlugin } from "../plugins/types"
+import type { ObokuPlugin } from "../plugins/types"
 
 export const AddDataSource: FC<{
   openWith: ObokuPlugin | undefined

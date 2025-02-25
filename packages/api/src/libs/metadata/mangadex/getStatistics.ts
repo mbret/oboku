@@ -18,10 +18,10 @@ export const getStatistics = async (ids: string[]) => {
     method: "get",
     url: "https://api.mangadex.org/statistics/manga",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     params: {
-      manga: ids
-    }
+      manga: ids,
+    },
   })
 }

@@ -28,8 +28,8 @@ export const useRefreshCollectionMetadata = () => {
 
               const pluginData$ = from(
                 getRefreshMetadataPluginData({
-                  linkType: collection.linkType ?? ""
-                })
+                  linkType: collection.linkType ?? "",
+                }),
               )
 
               return pluginData$.pipe(
@@ -38,34 +38,34 @@ export const useRefreshCollectionMetadata = () => {
                     updateCollection({
                       _id: collectionId,
                       metadataUpdateStatus: "fetching",
-                      lastMetadataStartedAt: new Date().toISOString()
-                    })
+                      lastMetadataStartedAt: new Date().toISOString(),
+                    }),
                   ).pipe(
                     switchMap(() => from(sync([db.obokucollection]))),
                     switchMap(() =>
                       from(
                         httpClient.refreshCollectionMetadata(
                           collectionId,
-                          pluginMetadata
-                        )
-                      )
+                          pluginMetadata,
+                        ),
+                      ),
                     ),
                     catchError((error) => {
                       return from(
                         updateCollection({
                           _id: collectionId,
-                          metadataUpdateStatus: "idle"
-                        })
+                          metadataUpdateStatus: "idle",
+                        }),
                       ).pipe(
                         map(() => {
                           throw error
-                        })
+                        }),
                       )
-                    })
+                    }),
                   )
-                })
+                }),
               )
-            })
+            }),
           )
         }),
         catchError((e) => {
@@ -76,7 +76,7 @@ export const useRefreshCollectionMetadata = () => {
             return of(null)
 
           throw e
-        })
-      )
+        }),
+      ),
   })
 }

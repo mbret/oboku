@@ -1,4 +1,4 @@
-import { useCallback, memo, ComponentProps } from "react"
+import { useCallback, memo, type ComponentProps } from "react"
 import { SelectableTagListItem } from "./SelectableTagListItem"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
@@ -22,7 +22,7 @@ export const SelectableTagList = memo(
           }
         />
       ),
-      [onItemClick, selected]
+      [onItemClick, selected],
     )
 
     return (
@@ -33,5 +33,5 @@ export const SelectableTagList = memo(
         {...rest}
       />
     )
-  }
+  },
 )

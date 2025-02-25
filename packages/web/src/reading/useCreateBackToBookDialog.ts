@@ -12,11 +12,11 @@ export const useCreateBackToBookDialog = () => {
       createDialog({
         title: `Take me back to my book`,
         content: `You were reading "${title ?? `unknown`}" the last time you used this device. Do you want to go back to reading?`,
-        cancellable: true
+        cancellable: true,
       }).$.pipe(
         map(() => {
           navigate(ROUTES.READER.replace(":id", bookId))
-        })
-      )
+        }),
+      ),
   })
 }

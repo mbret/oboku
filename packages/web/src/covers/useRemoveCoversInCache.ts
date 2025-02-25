@@ -14,16 +14,16 @@ export const useRemoveCoversInCache = () => {
           from(cache.keys()).pipe(
             switchMap((keys) => {
               return from(
-                Promise.all(keys.map((request) => cache.delete(request)))
+                Promise.all(keys.map((request) => cache.delete(request))),
               )
-            })
-          )
-        )
+            }),
+          ),
+        ),
       ),
     onSuccess: () => {
       client.invalidateQueries({
-        queryKey: USE_COVERS_CACHE_INFORMATION_KEY
+        queryKey: USE_COVERS_CACHE_INFORMATION_KEY,
       })
-    }
+    },
   })
 }

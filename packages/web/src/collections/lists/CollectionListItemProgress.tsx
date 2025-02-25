@@ -2,7 +2,7 @@ import { CheckCircleOutlineRounded } from "@mui/icons-material"
 import { Box } from "@mui/material"
 
 export const CollectionListItemProgress = ({
-  progress
+  progress,
 }: {
   progress: number
 }) => {
@@ -18,7 +18,7 @@ export const CollectionListItemProgress = ({
         width={`${progress.toFixed(0)}%`}
         bgcolor="white"
         sx={{
-          opacity: 0.5
+          opacity: 0.5,
         }}
       />
       {isFinished && (
@@ -27,7 +27,7 @@ export const CollectionListItemProgress = ({
             position: "absolute",
             top: 0,
             right: 0,
-            m: 1
+            m: 1,
           }}
         />
       )}

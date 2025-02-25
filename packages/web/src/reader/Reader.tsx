@@ -26,8 +26,10 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
   const readerState = useObserve(() => reader?.state$, [reader])
   const readerContainerRef = useRef<HTMLDivElement>(null)
-  const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
-    useManifest(bookId)
+  const {
+    data: { isUsingWebStreamer, manifest } = {},
+    error: manifestError,
+  } = useManifest(bookId)
   const isBookError = !!manifestError
 
   if (isBookError) {
@@ -67,21 +69,28 @@ const Interface = memo(({ bookId }: { bookId: string }) => {
     bookId,
     onSettled: () => {
       goBack()
-    }
+    },
   })
 
   return (
     <>
       {readerState === "ready" && (
         <>
-          <ReactReaderProvider reader={reader}>
+          <ReactReaderProvider
+            reader={reader}
+            quickMenuOpen={isMenuShow}
+            onQuickMenuOpenChange={(isOpen) => {
+              isMenuShownStateSignal.setValue(isOpen)
+            }}
+          >
             <ReactReader
-              open={isMenuShow}
-              onBackClick={() => {
-                mutate()
-              }}
-              onMoreClick={() => {
-                toggleMoreDialog()
+              onItemClick={(item) => {
+                if (item === "more") {
+                  toggleMoreDialog()
+                }
+                if (item === "back") {
+                  mutate()
+                }
               }}
               enableFloatingTime={readerSettings.floatingTime === "bottom"}
               enableFloatingProgress={
@@ -101,7 +110,7 @@ const Effects = memo(
     bookId,
     isUsingWebStreamer,
     manifest,
-    containerElement
+    containerElement,
   }: {
     bookId: string
     isUsingWebStreamer?: boolean
@@ -112,7 +121,7 @@ const Effects = memo(
     useLoadManifest({
       bookId,
       containerElement,
-      manifest
+      manifest,
     })
 
     useGestureHandler()
@@ -120,5 +129,5 @@ const Effects = memo(
     usePersistReaderInstanceSettings()
 
     return null
-  }
+  },
 )

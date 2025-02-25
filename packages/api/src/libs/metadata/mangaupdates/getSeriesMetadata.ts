@@ -1,6 +1,6 @@
-import { CollectionMetadata } from "@oboku/shared"
+import type { CollectionMetadata } from "@oboku/shared"
 import { Logger } from "@libs/logger"
-import { URL } from "url"
+import { URL } from "node:url"
 import axios from "axios"
 
 type Result = {
@@ -62,9 +62,9 @@ export const getSeriesMetadata = async (metadata: {
       data: {
         search: metadata.title,
         ...(metadata.year && {
-          year: metadata.year
-        })
-      }
+          year: metadata.year,
+        }),
+      },
     })
 
     const result = response.data.results[0]
@@ -76,7 +76,7 @@ export const getSeriesMetadata = async (metadata: {
       title: result?.record?.title,
       description: result?.record?.description,
       rating: result?.record?.bayesian_rating,
-      startYear: result?.record?.year ? Number(result.record.year) : undefined
+      startYear: result?.record?.year ? Number(result.record.year) : undefined,
     } satisfies CollectionMetadata
   } catch (e) {
     Logger.error(e)

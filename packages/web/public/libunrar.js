@@ -1,4 +1,3 @@
-/* eslint-disable */
 // Copyright (c) 2015-2017 Matthew Brennan Jones <matthew.brennan.jones@gmail.com>
 // Copyright (c) 2015 wcchoi
 // Copyright (c) 1993-2013 Alexander L. Roshal

@@ -1,4 +1,4 @@
-import { BookDocType, LinkDocType } from "@oboku/shared"
+import type { BookDocType, LinkDocType } from "@oboku/shared"
 
 export type Context = {
   userName: string

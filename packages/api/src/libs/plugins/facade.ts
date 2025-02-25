@@ -1,4 +1,4 @@
-import { LinkDocType } from "@oboku/shared"
+import type { LinkDocType } from "@oboku/shared"
 import { plugins } from "./plugins"
 
 const urlPlugin = plugins.find(({ type }) => type === `URI`)
@@ -6,7 +6,7 @@ const urlPlugin = plugins.find(({ type }) => type === `URI`)
 export const pluginFacade = {
   getMetadata: async ({
     credentials,
-    link
+    link,
   }: {
     link: Pick<LinkDocType, "type" | "resourceId" | "data">
     credentials?: any
@@ -17,7 +17,7 @@ export const pluginFacade = {
       return await plugin.getMetadata({
         id: link.resourceId,
         credentials,
-        data: link.data
+        data: link.data,
       })
     }
 
@@ -26,10 +26,10 @@ export const pluginFacade = {
   download: async (link: LinkDocType, credentials?: any) => {
     const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
 
-    if (plugin && plugin.download) {
+    if (plugin?.download) {
       return plugin.download(link, credentials)
     }
 
     throw new Error(`No dataSource found for action`)
-  }
+  },
 }

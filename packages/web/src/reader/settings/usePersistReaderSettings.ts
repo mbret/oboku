@@ -14,10 +14,10 @@ export const usePersistReaderInstanceSettings = () => {
             tap((settings) => {
               setReaderSettingsState((state) => ({
                 ...state,
-                fontScale: settings.fontScale
+                fontScale: settings.fontScale,
               }))
-            })
+            }),
           ),
-    [reader]
+    [reader],
   )
 }

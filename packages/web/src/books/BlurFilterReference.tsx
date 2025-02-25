@@ -9,8 +9,8 @@ export const BlurFilterReference = memo(() => {
         styles={{
           ".blurFilter": {
             webkitFilter: `url("#blurFilterReference")`,
-            filter: `url("#blurFilterReference")`
-          }
+            filter: `url("#blurFilterReference")`,
+          },
         }}
       />
       <svg
@@ -23,16 +23,17 @@ export const BlurFilterReference = memo(() => {
           overflow: "hidden",
           padding: 0,
           position: "absolute",
-          width: 1
+          width: 1,
         }}
       >
+        <title>Blur filter reference</title>
         <filter id="blurFilterReference">
-          <feGaussianBlur stdDeviation="5"></feGaussianBlur>
+          <feGaussianBlur stdDeviation="5" />
           <feColorMatrix
             type="matrix"
             values="1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 9 0"
-          ></feColorMatrix>
-          <feComposite in2="SourceGraphic" operator="in"></feComposite>
+          />
+          <feComposite in2="SourceGraphic" operator="in" />
         </filter>
       </svg>
     </>

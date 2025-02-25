@@ -1,11 +1,11 @@
-import { useState, FC } from "react"
+import { useState, type FC } from "react"
 import Dialog from "@mui/material/Dialog"
 import {
   Button,
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField
+  TextField,
 } from "@mui/material"
 import { useCreateCollection } from "../../collections/useCreateCollection"
 

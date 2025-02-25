@@ -1,4 +1,4 @@
-import { RxConflictHandler, defaultConflictHandler } from "rxdb"
+import { type RxConflictHandler, defaultConflictHandler } from "rxdb"
 
 export const conflictHandler: RxConflictHandler<any> = (i, context) => {
   if (!i.newDocumentState) {
@@ -6,7 +6,7 @@ export const conflictHandler: RxConflictHandler<any> = (i, context) => {
 
     return Promise.resolve({
       isEqual: false,
-      documentData: i.realMasterState
+      documentData: i.realMasterState,
     })
   }
 

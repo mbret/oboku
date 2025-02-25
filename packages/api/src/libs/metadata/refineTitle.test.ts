@@ -4,7 +4,7 @@ import {
   removeMaybeArtistAndPublisher,
   removeZeroDigitFromMaybeVolumeNumber,
   removeZeroDigitFromVolumeNumber,
-  renameVolumeNumber
+  renameVolumeNumber,
 } from "./refineTitle"
 
 describe("replaceString function", () => {
@@ -19,20 +19,20 @@ describe("replaceString function", () => {
 
   test("Remove 0 digits from volume numbers", () => {
     expect(removeZeroDigitFromVolumeNumber("something vol 02")).toBe(
-      "something vol 2"
+      "something vol 2",
     )
     expect(removeZeroDigitFromVolumeNumber("something")).toBe("something")
     expect(removeZeroDigitFromVolumeNumber("something vol 04 foo")).toBe(
-      "something vol 4 foo"
+      "something vol 4 foo",
     )
     expect(removeZeroDigitFromVolumeNumber("something vol 04 ")).toBe(
-      "something vol 4 "
+      "something vol 4 ",
     )
     expect(removeZeroDigitFromVolumeNumber("something vfoo ")).toBe(
-      "something vfoo "
+      "something vfoo ",
     )
     expect(removeZeroDigitFromVolumeNumber("something v4f ")).toBe(
-      "something v4f "
+      "something v4f ",
     )
   })
 
@@ -45,7 +45,7 @@ describe("replaceString function", () => {
       ["04 ", "04 "],
       ["04", "04"],
       ["a04", "a04"],
-      ["a 04", "a 4"]
+      ["a 04", "a 4"],
     ] as const
 
     values.forEach(([a, b]) => {
@@ -53,38 +53,38 @@ describe("replaceString function", () => {
     })
 
     expect(removeZeroDigitFromMaybeVolumeNumber("something vfoo ")).toBe(
-      "something vfoo "
+      "something vfoo ",
     )
     expect(removeZeroDigitFromMaybeVolumeNumber("something v4f ")).toBe(
-      "something v4f "
+      "something v4f ",
     )
     expect(removeZeroDigitFromMaybeVolumeNumber("something 06 ")).toBe(
-      "something 6 "
+      "something 6 ",
     )
     expect(removeZeroDigitFromMaybeVolumeNumber("something 006 ")).toBe(
-      "something 6 "
+      "something 6 ",
     )
   })
 
   test('Replaces "something v02 [foo] (bar)" correctly', () => {
     expect(removeArtistAndPublisher("something v02 [foo] (bar)")).toBe(
-      "something v02"
+      "something v02",
     )
     expect(removeArtistAndPublisher("something v02 [foo] (bar) asdasd")).toBe(
-      "something v02 asdasd"
+      "something v02 asdasd",
     )
     expect(removeArtistAndPublisher("something vol 02 [foo] (bar)")).toBe(
-      "something vol 02"
+      "something vol 02",
     )
     expect(removeArtistAndPublisher("something")).toBe("something")
     expect(removeArtistAndPublisher("something v04 foo")).toBe(
-      "something v04 foo"
+      "something v04 foo",
     )
     expect(removeArtistAndPublisher("something v04 ")).toBe("something v04 ")
     expect(removeArtistAndPublisher("something vfoo ")).toBe("something vfoo ")
     expect(removeArtistAndPublisher("something v4f ")).toBe("something v4f ")
     expect(removeArtistAndPublisher("something v4f [foo] (bar)")).toBe(
-      "something v4f"
+      "something v4f",
     )
   })
 
@@ -99,8 +99,8 @@ describe("replaceString function", () => {
     expect(removeMaybeArtistAndPublisher("foo [bar] (foo)")).toBe("foo [bar]")
     expect(
       removeMaybeArtistAndPublisher(
-        "Mirka Andolfo's Mercy 6 (2020) (Digital) (Mephisto-Empire)"
-      )
+        "Mirka Andolfo's Mercy 6 (2020) (Digital) (Mephisto-Empire)",
+      ),
     ).toBe("Mirka Andolfo's Mercy 6 (2020) (Digital)")
   })
 })

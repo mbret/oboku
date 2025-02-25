@@ -1,4 +1,4 @@
-import { DataSourcePlugin } from "@libs/plugins/types"
+import type { DataSourcePlugin } from "@libs/plugins/types"
 import { PLUGIN_FILE_TYPE } from "@oboku/shared"
 
 export const plugin: DataSourcePlugin = {
@@ -10,8 +10,8 @@ export const plugin: DataSourcePlugin = {
       name: filename,
       canDownload: false,
       bookMetadata: {
-        title: filename
-      }
+        title: filename,
+      },
     }
-  }
+  },
 }

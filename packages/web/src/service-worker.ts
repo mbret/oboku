@@ -1,5 +1,4 @@
 /// <reference lib="webworker" />
-/* eslint-disable no-restricted-globals */
 
 // This service worker can be customized!
 // See https://developers.google.com/web/tools/workbox/modules
@@ -34,7 +33,7 @@ if (import.meta.env.PROD) {
 // Set up App Shell-style routing, so that all navigation requests
 // are fulfilled with your index.html shell. Learn more at
 // https://developers.google.com/web/fundamentals/architecture/app-shell
-const fileExtensionRegexp = new RegExp("/[^/?]+\\.[^/]+$")
+const fileExtensionRegexp = /\/[^\/?]+\.[^\/]+$/
 
 if (import.meta.env.PROD) {
   registerRoute(
@@ -59,7 +58,7 @@ if (import.meta.env.PROD) {
       // Return true to signal that we want to use the handler.
       return true
     },
-    createHandlerBoundToURL("/index.html")
+    createHandlerBoundToURL("/index.html"),
   )
 }
 
@@ -78,9 +77,9 @@ if (import.meta.env.PROD) {
       plugins: [
         // Ensure that once this runtime cache reaches a maximum size the
         // least-recently used images are removed.
-        new ExpirationPlugin({ maxEntries: 50 })
-      ]
-    })
+        new ExpirationPlugin({ maxEntries: 50 }),
+      ],
+    }),
   )
 }
 

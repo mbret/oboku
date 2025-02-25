@@ -7,7 +7,7 @@ import {
   ListItemIcon,
   ListItemText,
   Tab,
-  useTheme
+  useTheme,
 } from "@mui/material"
 import { TabContext, TabList, TabPanel } from "@mui/lab"
 import { FiberManualRecordRounded } from "@mui/icons-material"
@@ -20,18 +20,18 @@ import { useCurrentPages } from "../pagination/useCurrentPages"
 
 const isContentsDialogOpenedStateSignal = signal<boolean>({
   key: "isContentsDialogOpenedState",
-  default: false
+  default: false,
 })
 
 export const useMoreDialog = () => ({
   toggleMoreDialog: useCallback(() => {
     isContentsDialogOpenedStateSignal.setValue((val) => !val)
-  }, [])
+  }, []),
 })
 
 export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
   const isContentsDialogOpened = useSignalValue(
-    isContentsDialogOpenedStateSignal
+    isContentsDialogOpenedStateSignal,
   )
   const { toggleMoreDialog } = useMoreDialog()
   const theme = useTheme()
@@ -57,7 +57,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
   const buildTocForItem = (
     tocItem: (typeof toc)[number],
     index: number,
-    lvl: number
+    lvl: number,
   ) => (
     <React.Fragment key={index}>
       <ListItemButton style={{}}>
@@ -70,8 +70,8 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
           primary={tocItem.title}
           {...{
             ...(currentSubChapter?.path === tocItem.path && {
-              secondary: `Currently on page ${(currentPage ?? 0) + 1}`
-            })
+              secondary: `Currently on page ${(currentPage ?? 0) + 1}`,
+            }),
           }}
           color="primary"
           onClick={() => {
@@ -79,7 +79,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
             reader?.navigation.goToUrl(tocItem.href)
           }}
           style={{
-            paddingLeft: theme.spacing(lvl * 2)
+            paddingLeft: theme.spacing(lvl * 2),
           }}
         />
         {/* {tocItem.contents.length > 0 && (
@@ -90,7 +90,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
         <Collapse in={true} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             {tocItem.contents.map((tocItem, index) =>
-              buildTocForItem(tocItem, index, lvl + 1)
+              buildTocForItem(tocItem, index, lvl + 1),
             )}
           </List>
         </Collapse>
@@ -111,7 +111,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
             border: `1px solid ${theme.palette.primary.light}`,
             borderTop: "none",
             borderLeft: "none",
-            borderRight: "none"
+            borderRight: "none",
           }}
           onChange={handleChange}
           indicatorColor="primary"
@@ -121,7 +121,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
         </TabList>
         <DialogContent
           style={{
-            padding: 0
+            padding: 0,
           }}
         >
           <TabPanel value="toc" sx={{ padding: 0 }}>

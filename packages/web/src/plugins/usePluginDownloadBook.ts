@@ -1,7 +1,7 @@
 import { API_URL } from "../constants.web"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
-import { ObokuPlugin } from "./types"
+import type { ObokuPlugin } from "./types"
 import { from } from "rxjs"
 
 const useDownloadBookPlaceholder = () => {
@@ -19,10 +19,9 @@ export const usePluginDownloadBook = () => {
       downloadBook: plugin.useDownloadBook
         ? plugin.useDownloadBook({
             apiUri: API_URL ?? "",
-            requestPopup: createRequestPopupDialog({ name: plugin.name })
+            requestPopup: createRequestPopupDialog({ name: plugin.name }),
           })
-        : // eslint-disable-next-line react-hooks/rules-of-hooks
-          useDownloadBookPlaceholder()
+        : useDownloadBookPlaceholder(),
     }
   })
 
@@ -30,7 +29,7 @@ export const usePluginDownloadBook = () => {
     NonNullable<ObokuPlugin[`useDownloadBook`]>
   > = (options) => {
     const pluginHookResult = pluginHooksResults.find(
-      (plugin) => plugin.type === options.link.type
+      (plugin) => plugin.type === options.link.type,
     )
 
     if (!pluginHookResult) {

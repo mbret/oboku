@@ -15,7 +15,7 @@ import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { Provider } from "./Provider"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 import { InfoScreen } from "./InfoScreen"
 
 const GoogleDriveIcon = () => (
@@ -40,5 +40,5 @@ export const plugin: ObokuPlugin = {
   useSynchronize,
   Provider,
   InfoScreen,
-  description: "Manage books and collections from Google Drive"
+  description: "Manage books and collections from Google Drive",
 }

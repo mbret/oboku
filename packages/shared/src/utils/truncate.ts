@@ -2,11 +2,11 @@ export function truncate(
   str: string | null | undefined,
   {
     length,
-    omission = "..."
+    omission = "...",
   }: {
     length: number
     omission?: string
-  }
+  },
 ): string {
   if (str === null || str === undefined) return ``
 

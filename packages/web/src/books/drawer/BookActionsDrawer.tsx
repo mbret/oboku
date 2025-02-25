@@ -10,7 +10,7 @@ import {
   NoSimRounded,
   LocalOfferRounded,
   ThumbUpOutlined,
-  ThumbDownOutlined
+  ThumbDownOutlined,
 } from "@mui/icons-material"
 import { useNavigate } from "react-router"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
@@ -21,7 +21,7 @@ import {
   ListItemIcon,
   Typography,
   ListItemButton,
-  useTheme
+  useTheme,
 } from "@mui/material"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
 import { useBook, useIsBookLocal } from "../states"
@@ -46,11 +46,11 @@ type SignalState = {
 
 export const bookActionDrawerSignal = signal<SignalState>({
   key: "bookActionDrawerState",
-  default: { openedWith: undefined }
+  default: { openedWith: undefined },
 })
 
 export const useBookActionDrawer = ({
-  onDeleteBook
+  onDeleteBook,
 }: {
   onDeleteBook?: () => void
 } = {}) => {
@@ -62,10 +62,10 @@ export const useBookActionDrawer = ({
         ...params,
         onDeleteBook: () => {
           onDeleteBookRef.current?.()
-        }
+        },
       })
     },
-    [onDeleteBookRef]
+    [onDeleteBookRef],
   )
 }
 
@@ -76,7 +76,7 @@ export const BookActionsDrawer = memo(() => {
     openedWith: bookId,
     actions,
     onDeleteBook,
-    actionsBlackList
+    actionsBlackList,
   } = useSignalValue(bookActionDrawerSignal)
   const navigate = useNavigate()
   const { data: book } = useBook({ id: bookId })
@@ -93,9 +93,9 @@ export const BookActionsDrawer = memo(() => {
     {
       onExit: () => {
         bookActionDrawerSignal.setValue({ openedWith: undefined })
-      }
+      },
     },
-    bookId
+    bookId,
   )
 
   const { mutate: onRemovePress } = useRemoveHandler({
@@ -103,7 +103,7 @@ export const BookActionsDrawer = memo(() => {
       handleClose(() => {
         onDeleteBook?.()
       })
-    }
+    },
   })
 
   const metadata = getMetadataFromBook(book)
@@ -121,24 +121,24 @@ export const BookActionsDrawer = memo(() => {
               marginTop: theme.spacing(2),
               height: 60,
               [theme.breakpoints.up("sm")]: {
-                height: 100
+                height: 100,
               },
               [theme.breakpoints.up("md")]: {
-                height: 130
-              }
+                height: 130,
+              },
             }}
           >
             <div
               style={{
                 width: 60 * theme.custom.coverAverageRatio,
                 [theme.breakpoints.up("sm")]: {
-                  width: 100 * theme.custom.coverAverageRatio
+                  width: 100 * theme.custom.coverAverageRatio,
                 },
                 [theme.breakpoints.up("md")]: {
-                  width: 130 * theme.custom.coverAverageRatio
+                  width: 130 * theme.custom.coverAverageRatio,
                 },
                 height: "100%",
-                flexShrink: 0
+                flexShrink: 0,
               }}
             >
               <Cover bookId={book._id} />
@@ -148,7 +148,7 @@ export const BookActionsDrawer = memo(() => {
                 display: "flex",
                 flexDirection: "column",
                 marginLeft: 10,
-                overflow: "hidden"
+                overflow: "hidden",
               }}
             >
               <Typography variant="body1" noWrap>
@@ -185,8 +185,8 @@ export const BookActionsDrawer = memo(() => {
                         readingStateCurrentBookmarkProgressPercent: 0,
                         readingStateCurrentBookmarkProgressUpdatedAt:
                           new Date().toISOString(),
-                        readingStateCurrentBookmarkLocation: null
-                      }
+                        readingStateCurrentBookmarkLocation: null,
+                      },
                     })
                   }}
                 >
@@ -208,8 +208,8 @@ export const BookActionsDrawer = memo(() => {
                         readingStateCurrentBookmarkProgressPercent: 1,
                         readingStateCurrentBookmarkProgressUpdatedAt:
                           new Date().toISOString(),
-                        readingStateCurrentBookmarkLocation: null
-                      }
+                        readingStateCurrentBookmarkLocation: null,
+                      },
                     })
                   }}
                 >
@@ -226,8 +226,8 @@ export const BookActionsDrawer = memo(() => {
                     incrementalBookPatch({
                       doc: book._id,
                       patch: {
-                        isNotInterested: !book.isNotInterested
-                      }
+                        isNotInterested: !book.isNotInterested,
+                      },
                     })
                   })
                 }}

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 import { Link, Typography } from "@mui/material"
-import React, { ComponentProps } from "react"
+import React, { type ComponentProps } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
@@ -18,11 +18,11 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
       variant="h5"
       sx={{
         "p + &": {
-          marginTop: 2
+          marginTop: 2,
         },
         "ul + &": {
-          marginTop: 2
-        }
+          marginTop: 2,
+        },
       }}
       {...(rest as any)}
     >
@@ -34,7 +34,7 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
     <Typography component="p" {...(rest as any)}>
       {children}
     </Typography>
-  )
+  ),
 }
 
 export const Markdown = ({ children }: { children: string }) => {

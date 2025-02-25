@@ -19,8 +19,8 @@ export const useRemoveDownloadWhenBookIsNotInterested = () => {
             removeDownloadFile({ bookId: changes.documentData._id })
           }
         }),
-        retryAndLogError()
+        retryAndLogError(),
       ),
-    []
+    [],
   )
 }

@@ -1,5 +1,5 @@
 import { logEvent } from "firebase/analytics"
-import { Metric, onCLS, onFID, onLCP } from "web-vitals"
+import { type Metric, onCLS, onFID, onLCP } from "web-vitals"
 import { analytics } from "./tracking"
 import { Report } from "./report.shared"
 
@@ -23,7 +23,7 @@ const onReport = (props: Metric) => {
     // Use a non-interaction event to avoid affecting bounce rate.
     nonInteraction: true,
     // Use `sendBeacon()` if the browser supports it.
-    transport: "beacon"
+    transport: "beacon",
 
     // OPTIONAL: any additional params or debug info here.
     // See: https://web.dev/debug-web-vitals-in-the-field/

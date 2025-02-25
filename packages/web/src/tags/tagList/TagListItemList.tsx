@@ -1,9 +1,9 @@
-import { ComponentProps, memo } from "react"
+import { type ComponentProps, memo } from "react"
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material"
 import {
   BlurOnRounded,
   LocalOfferRounded,
-  LockRounded
+  LockRounded,
 } from "@mui/icons-material"
 import { useTag } from "../helpers"
 
@@ -36,5 +36,5 @@ export const TagListItemList = memo(
         {tag?.isBlurEnabled && <BlurOnRounded color="primary" />}
       </ListItemButton>
     )
-  }
+  },
 )

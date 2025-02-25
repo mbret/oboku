@@ -14,12 +14,12 @@ const useRemoveDanglingLinks = () => {
         switchMap((db) =>
           combineLatest([
             from(db.link.find().exec()),
-            from(db.book.find().exec())
+            from(db.book.find().exec()),
           ]).pipe(
             switchMap(([links, books]) => {
               const danglingLinks = links.filter((link) => {
                 const noExistingBook = !books.some((book) =>
-                  book.links.includes(link._id)
+                  book.links.includes(link._id),
                 )
 
                 return noExistingBook
@@ -33,25 +33,25 @@ const useRemoveDanglingLinks = () => {
                   const date = new Date(link.createdAt)
 
                   return isBefore(date, aMonthAgo)
-                }
+                },
               )
 
               Report.warn(
-                `Cleaning up dangling links. Found ${danglingLinks.length} dangling links and ${danglingLinksOlderThanMonth.length} older than a month to be deleted.`
+                `Cleaning up dangling links. Found ${danglingLinks.length} dangling links and ${danglingLinksOlderThanMonth.length} older than a month to be deleted.`,
               )
 
               if (danglingLinksOlderThanMonth.length > 0) {
                 return db.link.bulkRemove(
-                  danglingLinksOlderThanMonth.map((link) => link._id)
+                  danglingLinksOlderThanMonth.map((link) => link._id),
                 )
               }
 
               return of(null)
-            })
-          )
-        )
+            }),
+          ),
+        ),
       )
-    }
+    },
   })
 }
 
@@ -61,7 +61,7 @@ export const useCleanupDanglingLinks = () => {
   useEffect(() => {
     const timer = setInterval(
       removeDanglingLinks,
-      CLEANUP_DANGLING_LINKS_INTERVAL
+      CLEANUP_DANGLING_LINKS_INTERVAL,
     )
 
     return () => {

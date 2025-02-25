@@ -18,7 +18,7 @@ init({
   // We recommend adjusting this value in production
   tracesSampleRate: 1.0,
   // Set sampling rate for profiling - this is relative to tracesSampleRate
-  profilesSampleRate: 1.0
+  profilesSampleRate: 1.0,
 })
 
 export const withMiddy = (
@@ -26,7 +26,7 @@ export const withMiddy = (
   {
     withCors = true,
     withJsonBodyParser = true,
-    schema = {}
+    schema = {},
   }: {
     /**
      * cors middleware only support REST / HTTP format. Some lambda are invoked from
@@ -36,10 +36,10 @@ export const withMiddy = (
     withCors?: boolean
     withJsonBodyParser?: boolean
     schema?: Parameters<typeof transpileSchema>[0]
-  } = {}
+  } = {},
 ) => {
   const noop = {
-    before: () => {}
+    before: () => {},
   }
 
   const handlerWithSentry = wrapHandler(handler)
@@ -55,14 +55,14 @@ export const withMiddy = (
           if (!request.event.headers) {
             request.event.headers = {}
           }
-        }
+        },
       })
       .use(httpHeaderNormalizer())
       .use(withJsonBodyParser ? middyJsonBodyParser({}) : noop)
       .use(
         validator({
-          eventSchema: transpileSchema(schema)
-        })
+          eventSchema: transpileSchema(schema),
+        }),
       )
       /**
        * middy onError order changed and cors needs to be before to be executed after.
@@ -72,11 +72,11 @@ export const withMiddy = (
         onError: withCors
           ? cors({
               headers: "*",
-              origin: "*"
+              origin: "*",
             }).onError
           : () => {
               //
-            }
+            },
       })
       .use(
         /**
@@ -85,17 +85,17 @@ export const withMiddy = (
          */
         httpErrorHandler({
           fallbackMessage: JSON.stringify({
-            errors: [{ code: ObokuErrorCode.UNKNOWN }]
-          })
-        })
+            errors: [{ code: ObokuErrorCode.UNKNOWN }],
+          }),
+        }),
       )
       // @todo eventually protect the api and only allow a subset of origins
       .use(
         withCors
           ? cors({
-              headers: `*`
+              headers: `*`,
             })
-          : noop
+          : noop,
       )
   )
 }

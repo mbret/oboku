@@ -3,21 +3,21 @@ import {
   insert,
   findOne,
   find,
-  getOrCreateTagFromName
+  getOrCreateTagFromName,
 } from "@libs/couch/dbHelpers"
-import createNano from "nano"
+import type createNano from "nano"
 import {
-  SafeMangoQuery,
+  type SafeMangoQuery,
   ObokuErrorCode,
   ObokuSharedError,
-  DocType,
-  ModelOf
+  type DocType,
+  type ModelOf,
 } from "@oboku/shared"
 
 export const createHelpers = (
   dataSourceId: string,
   refreshBookMetadata: ({ bookId }: { bookId: string }) => Promise<any>,
-  db: createNano.DocumentScope<unknown>
+  db: createNano.DocumentScope<unknown>,
 ) => {
   const helpers = {
     refreshBookMetadata: (opts: { bookId: string }) =>
@@ -26,9 +26,9 @@ export const createHelpers = (
       const dataSource = await findOne(
         "datasource",
         {
-          selector: { _id: dataSourceId }
+          selector: { _id: dataSourceId },
         },
-        { db }
+        { db },
       )
       let data = {}
       try {
@@ -43,23 +43,23 @@ export const createHelpers = (
     },
     findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
       model: M,
-      query: SafeMangoQuery<D>
+      query: SafeMangoQuery<D>,
     ) => findOne(model, query, { db }),
     find: <M extends DocType["rx_model"], D extends ModelOf<M>>(
       model: M,
-      query: SafeMangoQuery<D>
+      query: SafeMangoQuery<D>,
     ) => find(db, model, query),
     atomicUpdate: <M extends DocType["rx_model"], K extends ModelOf<M>>(
       model: M,
       id: string,
-      cb: (oldData: createNano.DocumentGetResponse & K) => Partial<K>
+      cb: (oldData: createNano.DocumentGetResponse & K) => Partial<K>,
     ) => atomicUpdate(db, model, id, cb),
     create: <M extends DocType["rx_model"], D extends ModelOf<M>>(
       model: M,
-      data: Omit<D, "rx_model" | "_id" | "_rev">
+      data: Omit<D, "rx_model" | "_id" | "_rev">,
     ) => insert(db, model, data),
     // addTagsFromNameToBook: (bookId: string, tagNames: string[]) => addTagsFromNameToBook(db, bookId, tagNames),
-    getOrCreateTagFromName: (name: string) => getOrCreateTagFromName(db, name)
+    getOrCreateTagFromName: (name: string) => getOrCreateTagFromName(db, name),
   }
 
   return helpers
@@ -67,23 +67,23 @@ export const createHelpers = (
 
 export const createError = (
   code: "unknown" | "unauthorized" | "rateLimitExceeded" = "unknown",
-  previousError?: Error
+  previousError?: Error,
 ) => {
   switch (code) {
     case "unauthorized":
       return new ObokuSharedError(
         ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED,
-        previousError
+        previousError,
       )
     case "rateLimitExceeded":
       return new ObokuSharedError(
         ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED,
-        previousError
+        previousError,
       )
     default:
       return new ObokuSharedError(
         ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN,
-        previousError
+        previousError,
       )
   }
 }

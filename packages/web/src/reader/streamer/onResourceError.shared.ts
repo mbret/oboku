@@ -1,6 +1,6 @@
 import {
   StreamerFileNotFoundError,
-  StreamerFileNotSupportedError
+  StreamerFileNotSupportedError,
 } from "../../errors/errors.shared"
 
 export const onResourceError = (error: unknown) => {

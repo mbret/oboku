@@ -1,7 +1,7 @@
-import { ReadingStateState } from "@oboku/shared"
-import { DownloadState } from "../../download/states"
+import type { ReadingStateState } from "@oboku/shared"
+import type { DownloadState } from "../../download/states"
 import { signal } from "reactjrx"
-import { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
+import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 
 type LibraryDocType = {
   viewMode: ListActionViewMode
@@ -21,15 +21,15 @@ export const libraryStateSignalDefaultValue: LibraryDocType = {
   sorting: "date",
   tags: [],
   readingStates: [],
-  downloadState: undefined
+  downloadState: undefined,
 }
 
 export const libraryStateSignal = signal({
   key: "libraryState",
-  default: libraryStateSignalDefaultValue
+  default: libraryStateSignalDefaultValue,
 })
 
 export const isUploadBookDrawerOpenedStateSignal = signal({
   key: "isUploadBookDrawerOpenedState",
-  default: false
+  default: false,
 })

@@ -1,4 +1,4 @@
-import { ComponentProps, memo } from "react"
+import { type ComponentProps, memo } from "react"
 import { BookListListItem } from "./BookListListItem"
 
 export const BookListCompactItem = memo(
@@ -11,5 +11,5 @@ export const BookListCompactItem = memo(
         {...rest}
       />
     )
-  }
+  },
 )

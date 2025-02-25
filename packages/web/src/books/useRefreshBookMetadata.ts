@@ -37,7 +37,7 @@ export const useRefreshBookMetadata = () => {
       }
 
       const { data: pluginMetadata } = await refreshPluginMetadata({
-        linkType: firstLink.type
+        linkType: firstLink.type,
       })
 
       if (!database) return
@@ -46,14 +46,14 @@ export const useRefreshBookMetadata = () => {
         incrementalPatchBook({
           doc: bookId,
           patch: {
-            metadataUpdateStatus: "fetching"
-          }
-        })
+            metadataUpdateStatus: "fetching",
+          },
+        }),
       )
         .pipe(
           switchMap(() => from(sync([database.link, database.book]))),
           switchMap(() =>
-            from(httpClient.refreshBookMetadata(bookId, pluginMetadata))
+            from(httpClient.refreshBookMetadata(bookId, pluginMetadata)),
           ),
           catchError((e) =>
             from(
@@ -61,20 +61,20 @@ export const useRefreshBookMetadata = () => {
                 doc: bookId,
                 patch: {
                   metadataUpdateStatus: null,
-                  lastMetadataUpdateError: "unknown"
-                }
-              })
+                  lastMetadataUpdateError: "unknown",
+                },
+              }),
             ).pipe(
               map((_) => {
                 throw e
-              })
-            )
+              }),
+            ),
           ),
           catchError((e) => {
             Report.error(e)
 
             return of(null)
-          })
+          }),
         )
         .subscribe()
     } catch (e) {

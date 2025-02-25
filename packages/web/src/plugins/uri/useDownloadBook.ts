@@ -1,5 +1,5 @@
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
-import { ObokuPlugin, extractIdFromResourceId } from "../types"
+import { type ObokuPlugin, extractIdFromResourceId } from "../types"
 import { httpClient, isXMLHttpResponseError } from "../../http/httpClient"
 import { catchError, from, map } from "rxjs"
 import { createDialog } from "../../common/dialogs/createDialog"
@@ -9,7 +9,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
   return ({ link, onDownloadProgress }) => {
     const downloadLink = extractIdFromResourceId(
       UNIQUE_RESOURCE_IDENTIFIER,
-      link.resourceId
+      link.resourceId,
     )
     const filename =
       downloadLink.substring(downloadLink.lastIndexOf("/") + 1) || "unknown"
@@ -21,8 +21,8 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
         url: downloadLink,
         onDownloadProgress: (event) => {
           onDownloadProgress(event.loaded / (event.total ?? 1))
-        }
-      })
+        },
+      }),
     ).pipe(
       map((mediaResponse) => {
         return { data: mediaResponse.data, name: filename }
@@ -37,14 +37,14 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
             autoStart: true,
             title: "Unable to download",
             content:
-              "Make sure the resource is configured to allow cross origin requests (CORS)"
+              "Make sure the resource is configured to allow cross origin requests (CORS)",
           })
 
           throw new CancelError()
         }
 
         throw error
-      })
+      }),
     )
   }
 }

@@ -4,7 +4,7 @@ import { Report } from "../debug/report.shared"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
-    undefined
+    undefined,
   )
   const firstTime = useRef(true)
 
@@ -18,7 +18,7 @@ export const useRegisterServiceWorker = () => {
         onUpdate: (reg) => reg.waiting && setWaitingWorker(reg.waiting),
         onWaitingServiceWorkerFound: async (reg) => {
           reg.waiting && setWaitingWorker(reg.waiting)
-        }
+        },
       })
     }
   }, [])

@@ -6,7 +6,7 @@ import {
   List,
   ListItemButton,
   ListItemText,
-  ListSubheader
+  ListSubheader,
 } from "@mui/material"
 import { authorizeAction } from "../auth/AuthorizeActionDialog"
 import { theme } from "../theme/theme"
@@ -17,7 +17,7 @@ export const SecurityScreen = memo(() => {
   const { data: accountSettings } = useSettings()
   const [
     isEditContentPasswordDialogOpened,
-    setIsEditContentPasswordDialogOpened
+    setIsEditContentPasswordDialogOpened,
   ] = useState(false)
   const { mutate: updateSettings } = useUpdateSettings()
 
@@ -30,7 +30,7 @@ export const SecurityScreen = memo(() => {
             onClick={() => {
               if (accountSettings?.contentPassword) {
                 authorizeAction(() =>
-                  setIsEditContentPasswordDialogOpened(true)
+                  setIsEditContentPasswordDialogOpened(true),
                 )
               } else {
                 setIsEditContentPasswordDialogOpened(true)
@@ -67,7 +67,7 @@ export const SecurityScreen = memo(() => {
               onClick={() => {
                 authorizeAction(() => {
                   updateSettings({
-                    contentPassword: null
+                    contentPassword: null,
                   })
                 })
               }}

@@ -5,12 +5,12 @@ import {
   ListItemButton as MuiListItemButton,
   ListItemText,
   styled,
-  ListItemProps,
-  Stack
+  type ListItemProps,
+  Stack,
 } from "@mui/material"
 import { LockRounded, MoreVert } from "@mui/icons-material"
-import { CollectionDocType } from "@oboku/shared"
-import { DeepReadonlyObject } from "rxdb"
+import type { CollectionDocType } from "@oboku/shared"
+import type { DeepReadonlyObject } from "rxdb"
 import { CollectionListItemCover } from "./CollectionListItemCover"
 import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
@@ -21,11 +21,11 @@ import { useCollectionDisplayTitle } from "../useCollectionDisplayTitle"
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,
   flexFlow: "column",
-  position: "relative"
+  position: "relative",
 }))
 
 const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
-  padding: theme.spacing(2)
+  padding: theme.spacing(2),
 }))
 
 export const CollectionListItem = memo(
@@ -40,7 +40,7 @@ export const CollectionListItem = memo(
     viewMode?: "container" | "text"
   } & ListItemProps) => {
     const { data: item } = useCollection({
-      id
+      id,
     })
     const metadata = getCollectionComputedMetadata(item)
     const { open: openActionDrawer } = useCollectionActionsDrawer(id)
@@ -60,7 +60,7 @@ export const CollectionListItem = memo(
             alignSelf: "stretch",
             py: 2,
             px: 2,
-            borderRadius: 1
+            borderRadius: 1,
           }}
         >
           <CollectionListItemCover id={id} />
@@ -81,7 +81,7 @@ export const CollectionListItem = memo(
               primaryTypographyProps={{
                 overflow: "hidden",
                 whiteSpace: "nowrap",
-                textOverflow: "ellipsis"
+                textOverflow: "ellipsis",
               }}
             />
 
@@ -109,5 +109,5 @@ export const CollectionListItem = memo(
         </ListItemButton>
       </ListItem>
     )
-  }
+  },
 )

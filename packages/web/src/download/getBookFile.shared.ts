@@ -3,7 +3,7 @@ import { Report } from "../debug/report.shared"
 import { dexieDb } from "../rxdb/dexie"
 
 export const getBookFile = async (
-  bookId: string
+  bookId: string,
 ): Promise<{
   name: string
   data: File
@@ -20,16 +20,16 @@ export const getBookFile = async (
         ...data,
         data: !(file instanceof File)
           ? new File([file], data.name, {
-              type: file.type
+              type: file.type,
             })
-          : file
+          : file,
       }
     }
 
     return null
   } catch (e) {
     Report.error(
-      "getBookFile: An error occurred while getting item from storage"
+      "getBookFile: An error occurred while getting item from storage",
     )
 
     throw e

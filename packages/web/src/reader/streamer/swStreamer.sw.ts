@@ -4,7 +4,7 @@ import { getBookFile } from "../../download/getBookFile.shared"
 import { getArchiveForZipFile, isRarFile } from "./archives.shared"
 import {
   StreamerFileNotFoundError,
-  StreamerFileNotSupportedError
+  StreamerFileNotSupportedError,
 } from "../../errors/errors.shared"
 import { onResourceError } from "./onResourceError.shared"
 import { onManifestSuccess } from "./onManifestSuccess.shared"
@@ -18,7 +18,7 @@ export const swStreamer = new ServiceWorkerStreamer({
     if (!shouldIntercept) return undefined
 
     return {
-      baseUrl: `${url.origin}/${STREAMER_URL_PREFIX}`
+      baseUrl: `${url.origin}/${STREAMER_URL_PREFIX}`,
     }
   },
   getArchive: async (bookId) => {
@@ -35,5 +35,5 @@ export const swStreamer = new ServiceWorkerStreamer({
     return await getArchiveForZipFile(file)
   },
   onError: onResourceError,
-  onManifestSuccess
+  onManifestSuccess,
 })

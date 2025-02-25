@@ -18,8 +18,8 @@ export const gapiSignal = signal<
     gapi: undefined,
     state: "loading",
     error: undefined,
-    loadingStep: undefined
-  }
+    loadingStep: undefined,
+  },
 })
 
 export const gapiOrThrow$ = gapiSignal.subject.pipe(
@@ -29,7 +29,7 @@ export const gapiOrThrow$ = gapiSignal.subject.pipe(
     }
 
     return gapi
-  })
+  }),
 )
 
 const loadGapiClient = () =>
@@ -38,10 +38,10 @@ const loadGapiClient = () =>
       new Promise((resolve, reject) => {
         window.gapi.load("client", {
           callback: resolve,
-          onerror: reject
+          onerror: reject,
         })
-      })
-    )
+      }),
+    ),
   )
 
 const loadPicker = () =>
@@ -50,10 +50,10 @@ const loadPicker = () =>
       new Promise((resolve, reject) => {
         window.gapi.load("picker", {
           callback: resolve,
-          onerror: reject
+          onerror: reject,
         })
-      })
-    )
+      }),
+    ),
   )
 
 const initClient = () =>
@@ -62,10 +62,10 @@ const initClient = () =>
       window.gapi.client.init({
         apiKey: "AIzaSyBgTV-RQecG_TFwilsdUJXqKmeXEiNSWUg",
         discoveryDocs: [
-          "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"
-        ]
-      })
-    )
+          "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
+        ],
+      }),
+    ),
   )
 
 export const useLoadGapi = () => {
@@ -74,12 +74,12 @@ export const useLoadGapi = () => {
     mutationFn: () => {
       return loadScript({
         id: ID,
-        src: "https://apis.google.com/js/api.js"
+        src: "https://apis.google.com/js/api.js",
       }).pipe(
         catchError((error) => {
           gapiSignal.setValue((state) => ({
             ...state,
-            error: "Error while loading script"
+            error: "Error while loading script",
           }))
 
           throw error
@@ -91,50 +91,50 @@ export const useLoadGapi = () => {
               catchError((error) => {
                 gapiSignal.setValue((state) => ({
                   ...state,
-                  error: "Error while loading client script"
+                  error: "Error while loading client script",
                 }))
 
                 throw error
               }),
-              retryOnFailure
+              retryOnFailure,
             ),
             loadPicker().pipe(
               catchError((error) => {
                 gapiSignal.setValue((state) => ({
                   ...state,
-                  error: "Error while loading picker script"
+                  error: "Error while loading picker script",
                 }))
 
                 throw error
               }),
-              retryOnFailure
-            )
+              retryOnFailure,
+            ),
           ]).pipe(
             mergeMap(() =>
               initClient().pipe(
                 catchError((error) => {
                   gapiSignal.setValue((state) => ({
                     ...state,
-                    error: "Error while initializing the client"
+                    error: "Error while initializing the client",
                   }))
 
                   throw error
                 }),
-                retryOnFailure
-              )
+                retryOnFailure,
+              ),
             ),
             map(() => {
               gapiSignal.setValue({
                 gapi: window.gapi,
                 state: "loaded",
-                error: undefined
+                error: undefined,
               })
 
               return gapiSignal.getValue()
-            })
-          )
-        )
+            }),
+          ),
+        ),
       )
-    }
+    },
   })
 }

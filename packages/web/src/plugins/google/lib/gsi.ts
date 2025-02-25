@@ -7,7 +7,7 @@ const GSI_ID = "oboku-google-gsi-script"
 export const gsiSignal = signal<
   { gsi: typeof google; state: "loaded" } | { gsi: undefined; state: "loading" }
 >({
-  default: { gsi: undefined, state: "loading" }
+  default: { gsi: undefined, state: "loading" },
 })
 
 export const gsiOrThrow$ = gsiSignal.subject.pipe(
@@ -17,7 +17,7 @@ export const gsiOrThrow$ = gsiSignal.subject.pipe(
     }
 
     return gsi
-  })
+  }),
 )
 
 export const useLoadGsi = () => {
@@ -25,17 +25,17 @@ export const useLoadGsi = () => {
     mutationFn: () =>
       loadScript({
         id: GSI_ID,
-        src: "https://accounts.google.com/gsi/client"
+        src: "https://accounts.google.com/gsi/client",
       }).pipe(
         retryOnFailure,
         map(() => {
           gsiSignal.setValue({
             gsi: window.google,
-            state: "loaded"
+            state: "loaded",
           })
 
           return gsiSignal.getValue()
-        })
-      )
+        }),
+      ),
   })
 }

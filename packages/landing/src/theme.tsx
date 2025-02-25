@@ -6,29 +6,29 @@ import { design } from "@oboku/shared"
 export const theme = createTheme({
   palette: {
     primary: {
-      main: design.palette.orange
+      main: design.palette.orange,
     },
     text: {
       // primary: "#505256"
-    }
+    },
   },
   components: {
     MuiTypography: {
       styleOverrides: {
         body1: {
           // color: "#505256"
-        }
-      }
+        },
+      },
     },
     MuiButton: {
       defaultProps: {
-        disableElevation: true
+        disableElevation: true,
       },
       styleOverrides: {
         root: {
-          textTransform: "capitalize"
-        }
-      }
-    }
-  }
+          textTransform: "capitalize",
+        },
+      },
+    },
+  },
 })

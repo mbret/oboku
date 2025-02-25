@@ -1,18 +1,16 @@
-import {
-  DataSourceDocType,
-  LinkDocType,
-} from "@oboku/shared"
-import {
+import type { DataSourceDocType, LinkDocType } from "@oboku/shared"
+import type {
   ComponentProps,
   DOMAttributes,
   FC,
   FunctionComponent,
-  ReactNode
+  ReactNode,
 } from "react"
-import { Button } from "@mui/material"
-import { Observable } from "rxjs"
+import type { Button } from "@mui/material"
+import type { Observable } from "rxjs"
 
 type PostLink = Pick<LinkDocType, "resourceId" | "type">
+// biome-ignore lint/complexity/noBannedTypes: <explanation>
 type PostBook = {}
 
 type Item = {
@@ -61,7 +59,7 @@ type UseSynchronizeHook = (options: {
 }>
 
 type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
-  link: LinkDocType
+  link: LinkDocType,
 ) => Promise<
   | {
       data: Record<string, unknown>
@@ -112,7 +110,7 @@ export type ObokuPlugin = {
     requestPopup: () => Promise<boolean>
     onClose: (
       error?: SelectionError | undefined,
-      item?: Item | undefined
+      item?: Item | undefined,
     ) => void
   }>
   Provider?: FunctionComponent<{ children: ReactNode }>
@@ -126,5 +124,5 @@ export type ObokuPlugin = {
 
 export const extractIdFromResourceId = (
   uniqueResourceIdentifier: string,
-  resourceId: string
+  resourceId: string,
 ) => resourceId.replace(`${uniqueResourceIdentifier}-`, ``)

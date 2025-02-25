@@ -8,6 +8,6 @@ export const libraryShelvesFiltersSignal = signal<{
   key: "libraryShelvesFiltersSignal",
   default: {
     readingState: "any",
-    viewMode: "grid"
-  }
+    viewMode: "grid",
+  },
 })

@@ -14,7 +14,7 @@ import { ManageTagBooksDialog } from "./tags/ManageTagBooksDialog"
 import {
   usePersistSignals,
   useSignalValue,
-  QueryClientProvider$
+  QueryClientProvider$,
 } from "reactjrx"
 import { signalEntriesToPersist } from "./profile"
 import { queryClient } from "./queries/queryClient"
@@ -36,7 +36,7 @@ import { QueryClientProvider } from "@tanstack/react-query"
 
 // @todo move to sw
 LibArchive.init({
-  workerUrl: "/libarchive.js.worker-bundle.js"
+  workerUrl: "/libarchive.js.worker-bundle.js",
 })
 
 const authSignalEntries = [{ signal: authStateSignal, version: 0 }]
@@ -49,12 +49,12 @@ export const App = memo(() => {
 
   const { isHydrated: isProfileHydrated } = usePersistSignals({
     adapter: profileSignalStorageAdapter,
-    entries: signalEntriesToPersist
+    entries: signalEntriesToPersist,
   })
 
   const { isHydrated: isAuthHydrated } = usePersistSignals({
     adapter: authSignalStorageAdapter,
-    entries: authSignalEntries
+    entries: authSignalEntries,
   })
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
@@ -73,35 +73,31 @@ export const App = memo(() => {
             <QueryClientProvider$>
               <Suspense fallback={<SplashScreen show />}>
                 <DialogProvider>
-                  {!isHydratingProfile && isAuthHydrated && (
-                    <>
-                      {plugins.reduce(
-                        (Comp, { Provider }) => {
-                          if (Provider) {
-                            return <Provider>{Comp}</Provider>
-                          }
-                          return Comp
-                        },
-                        <Fade in={isAppReady}>
-                          <Box height="100%">
-                            <AppNavigator
-                              isProfileHydrated={isProfileHydrated}
-                            />
-                            <ManageBookCollectionsDialog />
-                            <ManageBookTagsDialog />
-                            <ManageTagBooksDialog />
-                            <AuthorizeActionDialog />
-                            <UpdateAvailableDialog
-                              serviceWorker={waitingWorker}
-                            />
-                            <BackgroundReplication />
-                            <BlockingBackdrop />
-                            <Effects />
-                          </Box>
-                        </Fade>
-                      )}
-                    </>
-                  )}
+                  {!isHydratingProfile &&
+                    isAuthHydrated &&
+                    plugins.reduce(
+                      (Comp, { Provider }) => {
+                        if (Provider) {
+                          return <Provider>{Comp}</Provider>
+                        }
+                        return Comp
+                      },
+                      <Fade in={isAppReady}>
+                        <Box height="100%">
+                          <AppNavigator isProfileHydrated={isProfileHydrated} />
+                          <ManageBookCollectionsDialog />
+                          <ManageBookTagsDialog />
+                          <ManageTagBooksDialog />
+                          <AuthorizeActionDialog />
+                          <UpdateAvailableDialog
+                            serviceWorker={waitingWorker}
+                          />
+                          <BackgroundReplication />
+                          <BlockingBackdrop />
+                          <Effects />
+                        </Box>
+                      </Fade>,
+                    )}
                   <PreloadQueries
                     onReady={() => {
                       setIsPreloadingQueries(false)

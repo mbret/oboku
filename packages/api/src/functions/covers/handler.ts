@@ -1,4 +1,4 @@
-import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { S3Client } from "@aws-sdk/client-s3"
 import sharp from "sharp"
 import { getCover } from "./getCover"
@@ -7,7 +7,7 @@ import createError from "http-errors"
 import { withMiddy } from "@libs/middy/withMiddy"
 
 const s3 = new S3Client({
-  region: `us-east-1`
+  region: `us-east-1`,
 })
 
 const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
@@ -25,13 +25,13 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
     width: 600,
     height: 600,
     fit: "inside",
-    withoutEnlargement: true  
+    withoutEnlargement: true,
   })
 
   const converted =
     format === "image/jpeg"
       ? resized.toFormat("jpeg").jpeg({
-          force: true
+          force: true,
         })
       : resized.webp()
 
@@ -44,11 +44,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent = async (event) => {
     headers: {
       "Content-Length": buffer.byteLength,
       "Content-type": "image/webp",
-      "Cache-Control": "public, max-age=31536000, immutable"
-    }
+      "Cache-Control": "public, max-age=31536000, immutable",
+    },
   }
 }
 
 export const main = withMiddy(lambda, {
-  withJsonBodyParser: false
+  withJsonBodyParser: false,
 })

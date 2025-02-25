@@ -9,14 +9,13 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Typography
+  Typography,
 } from "@mui/material"
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
-import { ComponentProps, FC, useState } from "react"
-import { DropboxDataSourceData } from "@oboku/shared"
+import { type ComponentProps, type FC, useState } from "react"
+import type { DropboxDataSourceData } from "@oboku/shared"
 import { useTagIds, useTags } from "../../tags/helpers"
 import { Picker } from "./Picker"
-import { DropboxFile } from "./types"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
 import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 
@@ -26,12 +25,12 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   }>({})
   const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
   const addDataSource = useCreateDataSource()
-  const [selectedFolder, setSelectedFolder] = useState<DropboxFile | undefined>(
-    undefined
-  )
-  const [folderChain, setFolderChain] = useState<DropboxFile[]>([
-    { name: "", id: "root", isDir: true }
-  ])
+  const [selectedFolder, setSelectedFolder] = useState<
+    Dropbox.ChooserFile | undefined
+  >(undefined)
+  const [folderChain, setFolderChain] = useState<
+    readonly Dropbox.ChooserFile[]
+  >([{ name: "", id: "root", isDir: true, link: "", bytes: 0, icon: "" }])
   const currentFolder = folderChain[folderChain.length - 1]
   const { data: tags = [] } = useTags()
   const { data: tagIds = [] } = useTagIds()
@@ -72,7 +71,7 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
               <ListItem>
                 <Button
                   style={{
-                    flex: 1
+                    flex: 1,
                   }}
                   startIcon={<ArrowBackIosRounded style={{}} />}
                   variant="outlined"
@@ -114,11 +113,11 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
                 const customData: DropboxDataSourceData = {
                   applyTags: Object.keys(selectedTags),
                   folderId: selectedFolder.id,
-                  folderName: selectedFolder.name
+                  folderName: selectedFolder.name,
                 }
                 addDataSource({
                   type: `dropbox`,
-                  data: JSON.stringify(customData)
+                  data: JSON.stringify(customData),
                 })
               }
             }}

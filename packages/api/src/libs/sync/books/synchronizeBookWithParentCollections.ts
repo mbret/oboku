@@ -1,11 +1,11 @@
 import { find } from "@libs/couch/dbHelpers"
 import { Logger } from "@libs/logger"
-import {
+import type {
   DataSourcePlugin,
-  SynchronizeAbleDataSource
+  SynchronizeAbleDataSource,
 } from "@libs/plugins/types"
-import { BookDocType } from "@oboku/shared"
-import nano from "nano"
+import type { BookDocType } from "@oboku/shared"
+import type nano from "nano"
 
 const logger = Logger.child({ module: "synchronizeBookWithParentCollections" })
 
@@ -23,13 +23,13 @@ export const synchronizeBookWithParentCollections = async (
   book: Partial<BookDocType> & { _id: string },
   parents: SynchronizeAbleItem[],
   helpers: Helpers,
-  context: Context
+  context: Context,
 ) => {
   const parentResourceIds = parents?.map((parent) => parent.resourceId) || []
 
   console.log(
     `[synchronizeBookWithParentCollections]`,
-    `${book._id} with ${parentResourceIds.length} parentResourceIds ${parentResourceIds}`
+    `${book._id} with ${parentResourceIds.length} parentResourceIds ${parentResourceIds}`,
   )
 
   // Retrieve all the new collection to which attach the book and add the book in the list
@@ -50,36 +50,36 @@ export const synchronizeBookWithParentCollections = async (
         selector: {
           $or: parentResourceIds.map((linkResourceId) => ({ linkResourceId })),
           books: {
-            $nin: [book._id]
-          }
-        }
-      }
+            $nin: [book._id],
+          },
+        },
+      },
     )
 
     if (collectionsThatHaveNotThisBookAsReferenceYet.length > 0) {
       logger.info(
-        `synchronizeBookWithParentCollections ${collectionsThatHaveNotThisBookAsReferenceYet.length} collections does not have ${book._id} attached to them yet`
+        `synchronizeBookWithParentCollections ${collectionsThatHaveNotThisBookAsReferenceYet.length} collections does not have ${book._id} attached to them yet`,
       )
 
       await Promise.all(
         collectionsThatHaveNotThisBookAsReferenceYet.map((collection) => {
           helpers.atomicUpdate("obokucollection", collection._id, (old) => ({
             ...old,
-            books: [...old.books.filter((id) => id !== book._id), book._id]
+            books: [...old.books.filter((id) => id !== book._id), book._id],
           }))
 
           context.syncReport.addBooksToCollection({
             collection,
-            books: [{ _id: book._id }]
+            books: [{ _id: book._id }],
           })
-        })
+        }),
       )
     }
 
     const parentCollections = await find(context.db, "obokucollection", {
       selector: {
-        $or: parentResourceIds.map((linkResourceId) => ({ linkResourceId }))
-      }
+        $or: parentResourceIds.map((linkResourceId) => ({ linkResourceId })),
+      },
     })
     const parentCollectionIds = parentCollections.map(({ _id }) => _id)
 
@@ -93,7 +93,7 @@ export const synchronizeBookWithParentCollections = async (
      */
     const bookWithCollections = await helpers.findOne("book", {
       selector: { _id: book._id },
-      fields: [`collections`, `_id`]
+      fields: [`collections`, `_id`],
     })
 
     if (!bookWithCollections) return
@@ -101,22 +101,22 @@ export const synchronizeBookWithParentCollections = async (
     const { collections: bookCollections } = bookWithCollections
 
     const collectionsNotInBookYet = parentCollections.filter(
-      ({ _id }) => !bookCollections.includes(_id)
+      ({ _id }) => !bookCollections.includes(_id),
     )
 
     if (collectionsNotInBookYet.length) {
       logger.info(
-        `synchronizeBookWithParentCollections ${book._id} has some missing parent collections. It will be updated to include them`
+        `synchronizeBookWithParentCollections ${book._id} has some missing parent collections. It will be updated to include them`,
       )
 
       await helpers.atomicUpdate("book", book._id, (old) => ({
         ...old,
-        collections: [...new Set([...old.collections, ...parentCollectionIds])]
+        collections: [...new Set([...old.collections, ...parentCollectionIds])],
       }))
 
       context.syncReport.addCollectionsToBook({
         book,
-        collections: collectionsNotInBookYet
+        collections: collectionsNotInBookYet,
       })
     }
   }

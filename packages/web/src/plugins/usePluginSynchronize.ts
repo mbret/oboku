@@ -1,8 +1,8 @@
-import { DataSourceDocType } from "@oboku/shared"
+import type { DataSourceDocType } from "@oboku/shared"
 import { useCallback, useRef } from "react"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
-import { ObokuPlugin } from "./types"
+import type { ObokuPlugin } from "./types"
 
 export const usePluginSynchronize = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
@@ -21,16 +21,14 @@ export const usePluginSynchronize = () => {
 
   getPluginFn.current = plugins.map((plugin) => ({
     type: plugin.type,
-    synchronize:
-      plugin.useSynchronize &&
-      plugin.useSynchronize({
-        requestPopup: createRequestPopupDialog({ name: plugin.name })
-      })
+    synchronize: plugin.useSynchronize?.({
+      requestPopup: createRequestPopupDialog({ name: plugin.name }),
+    }),
   }))
 
   const execute = async (dataSource: DataSourceDocType) => {
     const found = getPluginFn.current.find(
-      (plugin) => plugin.type === dataSource.type
+      (plugin) => plugin.type === dataSource.type,
     )
     if (found) {
       if (!found.synchronize) {
@@ -43,5 +41,5 @@ export const usePluginSynchronize = () => {
     throw new Error("no datasource found for this link")
   }
 
-  return useCallback(execute, [getPluginFn])
+  return useCallback(execute, [])
 }

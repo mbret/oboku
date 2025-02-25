@@ -1,9 +1,9 @@
 import { useCallback } from "react"
 import { authUser } from "./lib/auth"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 
 export const useRefreshMetadata: ObokuPlugin[`useRefreshMetadata`] = ({
-  requestPopup
+  requestPopup,
 }) => {
   return useCallback(
     async (link) => {
@@ -11,6 +11,6 @@ export const useRefreshMetadata: ObokuPlugin[`useRefreshMetadata`] = ({
 
       return { data: auth }
     },
-    [requestPopup]
+    [requestPopup],
   )
 }

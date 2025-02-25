@@ -8,6 +8,6 @@ export const useFullscreenAutoSwitch = () => {
   useFullscreenOnMount({
     enabled:
       readingFullScreenSwitchMode === "always" ||
-      (readingFullScreenSwitchMode === "automatic" && IS_MOBILE_DEVICE)
+      (readingFullScreenSwitchMode === "automatic" && IS_MOBILE_DEVICE),
   })
 }

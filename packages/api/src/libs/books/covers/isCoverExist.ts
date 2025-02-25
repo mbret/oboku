@@ -7,8 +7,8 @@ export const isCoverExist = async (coverObjectKey: string) => {
     await s3.send(
       new HeadObjectCommand({
         Bucket: "oboku-covers",
-        Key: coverObjectKey
-      })
+        Key: coverObjectKey,
+      }),
     )
 
     return true

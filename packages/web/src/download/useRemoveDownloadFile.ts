@@ -12,10 +12,10 @@ export const useRemoveDownloadFile = () => {
             ...prev,
             [bookId]: {
               ...prev[bookId],
-              downloadState: DownloadState.None
-            }
+              downloadState: DownloadState.None,
+            },
           }))
-        })
-      )
+        }),
+      ),
   })
 }

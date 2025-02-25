@@ -8,22 +8,22 @@ export const collectionActionDrawerState = signal<{
   lastId?: undefined | string
 }>({
   key: "collectionActionDrawerState",
-  default: { openedWith: undefined, lastId: undefined }
+  default: { openedWith: undefined, lastId: undefined },
 })
 
 export const collectionActionDrawerChangesState = signal<
   undefined | [string, `delete`]
 >({
   key: `collectionActionDrawerChangesState`,
-  default: undefined
+  default: undefined,
 })
 
 export const useCollectionActionsDrawer = (
   id: string,
-  onChanges?: (change: `delete`) => void
+  onChanges?: (change: `delete`) => void,
 ) => {
   const collectionActionDrawerChanges = useSignalValue(
-    collectionActionDrawerChangesState
+    collectionActionDrawerChangesState,
   )
   // we use this to only ever emit once every changes
   // this also ensure when first subscribing to the hook we do not trigger the previous changes
@@ -38,7 +38,7 @@ export const useCollectionActionsDrawer = (
       if (collectionActionDrawerChanges !== latestChangesEmittedRef.current) {
         const [changeForId, change] = collectionActionDrawerChanges
         if (changeForId === id) {
-          onChanges && onChanges(change)
+          onChanges?.(change)
           latestChangesEmittedRef.current = collectionActionDrawerChanges
         }
       }
@@ -46,6 +46,6 @@ export const useCollectionActionsDrawer = (
   }, [collectionActionDrawerChanges, onChanges, id])
 
   return {
-    open
+    open,
   }
 }

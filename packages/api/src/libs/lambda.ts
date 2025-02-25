@@ -5,6 +5,6 @@ export const getAwsLambda = () =>
   new LambdaClient({
     region: "us-east-1",
     ...(OFFLINE && {
-      endpoint: `http://localhost:3002`
-    })
+      endpoint: `http://localhost:3002`,
+    }),
   })

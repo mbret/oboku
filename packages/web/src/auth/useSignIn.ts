@@ -44,17 +44,17 @@ export const useSignIn = () => {
           }>({
             url: `${API_URL}/signin`,
             body: {
-              token
-            }
-          })
-        )
+              token,
+            },
+          }),
+        ),
       ),
       switchMap(({ data: { dbName, email, token, nameHex } }) =>
         of(authStateSignal.getValue()).pipe(
           switchMap((previousAuth) =>
             previousAuth?.email !== email
               ? from(reCreateDb({ overwrite: true }))
-              : of(previousAuth)
+              : of(previousAuth),
           ),
           tap(() => {
             authStateSignal.setValue({ dbName, email, token, nameHex })
@@ -63,12 +63,12 @@ export const useSignIn = () => {
 
             setProfile(nameHex)
             currentProfileSignal.setValue(nameHex)
-          })
-        )
+          }),
+        ),
       ),
       finalize(() => {
         unlock("authentication")
-      })
+      }),
     )
   }, [reCreateDb])
 

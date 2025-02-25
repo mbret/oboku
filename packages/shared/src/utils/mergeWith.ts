@@ -4,7 +4,7 @@ type MergeCustomizer<T> = (
   key: keyof T,
   object: T,
   source: T,
-  stack: any[]
+  stack: any[],
 ) => T[keyof T] | undefined
 
 function isObject(value: any): value is Record<string, any> {
@@ -15,7 +15,7 @@ function mergeTwo(
   object: any,
   source: any,
   customizer: MergeCustomizer<any>,
-  stack: any[]
+  stack: any[],
 ): any {
   const merged: any = { ...object }
 
@@ -29,7 +29,7 @@ function mergeTwo(
       key,
       object,
       source,
-      stack
+      stack,
     )
 
     if (customResult !== undefined) {
@@ -49,14 +49,14 @@ function mergeTwo(
 export function mergeWith<TObject, TSource>(
   object: TObject,
   source: TSource,
-  customizer: MergeCustomizer<any>
+  customizer: MergeCustomizer<any>,
 ): TObject & TSource
 
 export function mergeWith<TObject, TSource1, TSource2>(
   object: TObject,
   source1: TSource1,
   source2: TSource2,
-  customizer: MergeCustomizer<any>
+  customizer: MergeCustomizer<any>,
 ): TObject & TSource1 & TSource2
 
 export function mergeWith<TObject, TSource1, TSource2, TSource3>(
@@ -64,7 +64,7 @@ export function mergeWith<TObject, TSource1, TSource2, TSource3>(
   source1: TSource1,
   source2: TSource2,
   source3: TSource3,
-  customizer: MergeCustomizer<any>
+  customizer: MergeCustomizer<any>,
 ): TObject & TSource1 & TSource2 & TSource3
 
 export function mergeWith<TObject, TSource1, TSource2, TSource3, TSource4>(
@@ -73,7 +73,7 @@ export function mergeWith<TObject, TSource1, TSource2, TSource3, TSource4>(
   source2: TSource2,
   source3: TSource3,
   source4: TSource4,
-  customizer: MergeCustomizer<any>
+  customizer: MergeCustomizer<any>,
 ): TObject & TSource1 & TSource2 & TSource3 & TSource4
 
 export function mergeWith(destination: any, ...sources: any[]): any {

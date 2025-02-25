@@ -1,4 +1,4 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { GetObjectCommand, type S3Client } from "@aws-sdk/client-s3"
 
 export const getCoverPlaceholder = async (s3Client: S3Client) => {
   try {
@@ -6,8 +6,8 @@ export const getCoverPlaceholder = async (s3Client: S3Client) => {
       new GetObjectCommand({
         Bucket: process.env.COVERS_BUCKET_NAME,
         Key: process.env.COVERS_PLACEHOLDER_BUCKET_KEY,
-        ResponseContentType: ""
-      })
+        ResponseContentType: "",
+      }),
     )
 
     if (!response.Body) {

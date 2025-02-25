@@ -1,4 +1,4 @@
-import { useState, FC, useEffect } from "react"
+import { useState, type FC, useEffect } from "react"
 import Dialog from "@mui/material/Dialog"
 import {
   DialogTitle,
@@ -11,14 +11,14 @@ import {
   Divider,
   DialogContent,
   TextField,
-  ListItemButton
+  ListItemButton,
 } from "@mui/material"
 import {
   CheckCircleRounded,
   DeleteForeverRounded,
   EditRounded,
   LibraryAddRounded,
-  RadioButtonUncheckedOutlined
+  RadioButtonUncheckedOutlined,
 } from "@mui/icons-material"
 import { useUpdateTag } from "./helpers"
 import { useTag } from "./helpers"
@@ -143,6 +143,8 @@ const EditTagDialog: FC<{
   }
 
   useEffect(() => {
+    void id
+
     setName((prev) => tagName || prev)
   }, [tagName, id])
 

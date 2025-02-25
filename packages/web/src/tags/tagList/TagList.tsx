@@ -1,4 +1,4 @@
-import { useCallback, memo, ComponentProps } from "react"
+import { useCallback, memo, type ComponentProps } from "react"
 import { TagListItemList } from "./TagListItemList"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
@@ -8,7 +8,7 @@ export const TagList = memo(
   (
     props: {
       onItemClick?: (tag: { _id: string; isProtected: boolean }) => void
-    } & ComponentProps<typeof VirtuosoList>
+    } & ComponentProps<typeof VirtuosoList>,
   ) => {
     const { onItemClick, ...rest } = props
 
@@ -20,9 +20,9 @@ export const TagList = memo(
           style={itemStyle}
         />
       ),
-      [onItemClick]
+      [onItemClick],
     )
 
     return <VirtuosoList rowRenderer={rowRenderer} itemsPerRow={1} {...rest} />
-  }
+  },
 )

@@ -1,4 +1,5 @@
-import React, { FC, memo, useEffect, useState } from "react"
+import type React from "react"
+import { type FC, memo, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
 import placeholder from "../assets/cover-placeholder.png"
 import { Box, styled } from "@mui/material"
@@ -14,7 +15,7 @@ const useBookCoverState = ({ bookId }: { bookId: string }) => {
   const blurredTags = useBlurredTagIds().data ?? []
 
   const { data: enrichedBook } = useBook({
-    id: bookId
+    id: bookId,
   })
 
   if (!enrichedBook) return undefined
@@ -25,8 +26,8 @@ const useBookCoverState = ({ bookId }: { bookId: string }) => {
     _id,
     lastMetadataUpdatedAt,
     isBlurred: enrichedBook.tags.some((bookTagId) =>
-      blurredTags.includes(bookTagId)
-    )
+      blurredTags.includes(bookTagId),
+    ),
   }
 }
 
@@ -40,14 +41,14 @@ const CoverImg = styled(`img`)<{
   justifySelf: "flex-end",
   objectFit: "cover",
   ...(withShadow && {
-    boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`
+    boxShadow: `0px 0px 3px ${theme.palette.grey[400]}`,
   }),
   ...(fullWidth && {
-    width: "100%"
+    width: "100%",
   }),
   ...(rounded && {
-    borderRadius: 5
-  })
+    borderRadius: 5,
+  }),
 }))
 
 type Props = {
@@ -72,7 +73,7 @@ export const Cover: FC<Props> = memo(
     const auth = useSignalValue(authStateSignal)
     const isMounted = useMountedState()
     const book = useBookCoverState({
-      bookId
+      bookId,
     })
     const [hasError, setHasError] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
@@ -85,8 +86,8 @@ export const Cover: FC<Props> = memo(
 
     const urlParams = new URLSearchParams({
       ...(assetHash && {
-        hash: assetHash
-      })
+        hash: assetHash,
+      }),
     })
 
     const originalSrc = book
@@ -98,6 +99,7 @@ export const Cover: FC<Props> = memo(
     const { coverSrc, coverSrcJpg } = useBookCover({ bookId })
 
     useEffect(() => {
+      void originalSrc
       setHasError(false)
     }, [originalSrc])
 
@@ -105,7 +107,7 @@ export const Cover: FC<Props> = memo(
       <Box
         sx={{
           width: "100%",
-          height: "100%"
+          height: "100%",
         }}
         style={style}
       >
@@ -117,7 +119,7 @@ export const Cover: FC<Props> = memo(
             rounded={rounded}
             withShadow={withShadow}
             {...(shouldBlurCover && {
-              className: `blurFilter`
+              className: `blurFilter`,
             })}
             {...rest}
           />
@@ -126,8 +128,8 @@ export const Cover: FC<Props> = memo(
           style={{
             width: "100%",
             ...(isLoading && {
-              display: "none"
-            })
+              display: "none",
+            }),
           }}
         >
           <source
@@ -145,7 +147,7 @@ export const Cover: FC<Props> = memo(
             rounded={rounded}
             withShadow={withShadow}
             {...(shouldBlurCover && {
-              className: `blurFilter`
+              className: `blurFilter`,
             })}
             onLoad={() => {
               setIsLoading(false)
@@ -158,5 +160,5 @@ export const Cover: FC<Props> = memo(
         </picture>
       </Box>
     )
-  }
+  },
 )

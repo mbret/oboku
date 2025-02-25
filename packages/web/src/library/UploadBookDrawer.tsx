@@ -1,11 +1,11 @@
-import { FC } from "react"
+import type { FC } from "react"
 import {
   Drawer,
   List,
   ListItemText,
   ListItemIcon,
   ListItemButton,
-  capitalize
+  capitalize,
 } from "@mui/material"
 import { plugins as dataSourcePlugins } from "../dataSources"
 import { useLocalSettings } from "../settings/states"
@@ -30,7 +30,7 @@ export const UploadBookDrawer: FC<{
               .filter(
                 ({ UploadBookComponent, sensitive }) =>
                   !!UploadBookComponent &&
-                  (showSensitiveDataSources ? true : sensitive !== true)
+                  (showSensitiveDataSources ? true : sensitive !== true),
               )
               .map((dataSource) => (
                 <ListItemButton

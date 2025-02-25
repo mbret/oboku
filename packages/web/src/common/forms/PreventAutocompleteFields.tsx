@@ -8,21 +8,21 @@ export const PreventAutocompleteFields = () => {
       {/* fake fields are a workaround for chrome autofill getting the wrong fields */}
       <input
         style={{
-          display: "none"
+          display: "none",
         }}
         type="text"
         name="prevent_autofill"
       />
       <input
         style={{
-          display: "none"
+          display: "none",
         }}
         type="password"
         name="password_fake"
       />
       <input
         style={{
-          display: "none"
+          display: "none",
         }}
         type="password"
         name="password"

@@ -7,16 +7,16 @@ type GoogleAccessToken = google.accounts.oauth2.TokenResponse & {
 }
 
 export const accessTokenSignal = signal<GoogleAccessToken | undefined>({
-  default: undefined
+  default: undefined,
 })
 
 export const consentShownSignal = signal({
-  default: false
+  default: false,
 })
 
 export const requestGoogleAccessToken = async (
   gsi: typeof google,
-  scopes: string[]
+  scopes: string[],
 ) => {
   return await new Promise<google.accounts.oauth2.TokenResponse>(
     (resolve, reject) => {
@@ -32,18 +32,18 @@ export const requestGoogleAccessToken = async (
         prompt: "select_account",
         scope: scopes.join(" "),
         callback: resolve,
-        error_callback: reject
+        error_callback: reject,
       })
 
       tokenClient.requestAccessToken({})
-    }
+    },
   )
 }
 
 export const hasGrantedPermissions = (
   gsi: typeof google,
   accessToken: google.accounts.oauth2.TokenResponse,
-  scopes: string[]
+  scopes: string[],
 ) => {
   const firstScope = scopes[0]
 
@@ -52,7 +52,7 @@ export const hasGrantedPermissions = (
   return gsi.accounts.oauth2.hasGrantedAllScopes(
     accessToken,
     firstScope,
-    ...scopes
+    ...scopes,
   )
 }
 
@@ -63,7 +63,7 @@ export const getTokenExpirationDate = (accessToken: GoogleAccessToken) => {
 }
 
 export const hasTokenAccessAtLeast10mnLeft = (
-  accessToken: GoogleAccessToken
+  accessToken: GoogleAccessToken,
 ) => {
   const tenMinutesFromNow = addMinutes(new Date(), 10)
   const expirationDate = getTokenExpirationDate(accessToken)

@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from "react"
+import { type FC, useCallback, useEffect, useState } from "react"
 import {
   BarChartRounded,
   GavelRounded,
@@ -7,7 +7,7 @@ import {
   LockRounded,
   SecurityRounded,
   SettingsRounded,
-  StorageRounded
+  StorageRounded,
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
@@ -26,7 +26,7 @@ import {
   ListSubheader,
   useTheme,
   FormControlLabel,
-  ListItemButton
+  ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
 import { useStorageUse } from "./useStorageUse"
@@ -64,7 +64,7 @@ export const ProfileScreen = () => {
         display: "flex",
         flex: 1,
         overflow: "auto",
-        flexDirection: "column"
+        flexDirection: "column",
       }}
     >
       <TopBarNavigation title={"Profile"} showBack={false} />
@@ -78,7 +78,7 @@ export const ProfileScreen = () => {
             if (library.isLibraryUnlocked) {
               libraryStateSignal.setValue((state) => ({
                 ...state,
-                isLibraryUnlocked: false
+                isLibraryUnlocked: false,
               }))
             } else {
               setIsUnlockContentsDialogOpened(true)
@@ -141,7 +141,7 @@ export const ProfileScreen = () => {
           <ListItemText
             primary="Storage"
             secondary={`${usedInMb} MB (${(quotaUsed * 100).toFixed(
-              2
+              2,
             )}%) used of ${quotaInGb} GB`}
           />
         </ListItemButton>
@@ -175,27 +175,25 @@ export const ProfileScreen = () => {
           <ListItemText primary="App Version" secondary={packageJson.version} />
         </ListItem>
       </List>
-      <>
-        <List
-          subheader={
-            <ListSubheader disableSticky>Developer options</ListSubheader>
-          }
-        >
-          <ListItemButton onClick={toggleDebug}>
-            <ListItemText
-              primary={
-                isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
-              }
-            />
-          </ListItemButton>
-          {/* <ListItem
+      <List
+        subheader={
+          <ListSubheader disableSticky>Developer options</ListSubheader>
+        }
+      >
+        <ListItemButton onClick={toggleDebug}>
+          <ListItemText
+            primary={
+              isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
+            }
+          />
+        </ListItemButton>
+        {/* <ListItem
             button
             onClick={() => setIsDeleteMyDataDialogOpened(true)}
           >
             <ListItemText primary="Delete my data" />
           </ListItem> */}
-        </List>
-      </>
+      </List>
       <List
         subheader={
           <ListSubheader
@@ -260,28 +258,28 @@ const DeleteMyDataDialog: FC<{
 
     if (db) {
       const deleteTags$ = from(db.tag.find().exec()).pipe(
-        switchMap((res) => from(db.tag.bulkRemove(res.map((r) => r._id))))
+        switchMap((res) => from(db.tag.bulkRemove(res.map((r) => r._id)))),
       )
 
       const deleteBooks$ = from(db.book.find().exec()).pipe(
-        switchMap((res) => from(db.book.bulkRemove(res.map((r) => r._id))))
+        switchMap((res) => from(db.book.bulkRemove(res.map((r) => r._id)))),
       )
 
       const deleteLinks$ = from(db.link.find().exec()).pipe(
-        switchMap((res) => from(db.link.bulkRemove(res.map((r) => r._id))))
+        switchMap((res) => from(db.link.bulkRemove(res.map((r) => r._id)))),
       )
 
       const deleteCollections$ = from(db.obokucollection.find().exec()).pipe(
         switchMap((res) =>
-          from(db.obokucollection.bulkRemove(res.map((r) => r._id)))
-        )
+          from(db.obokucollection.bulkRemove(res.map((r) => r._id))),
+        ),
       )
 
       forkJoin([
         isTagChecked ? deleteTags$ : of(undefined),
         isBookChecked ? deleteBooks$ : of(undefined),
         isBookChecked ? deleteLinks$ : of(undefined),
-        isCollectionChecked ? deleteCollections$ : of(undefined)
+        isCollectionChecked ? deleteCollections$ : of(undefined),
       ])
         .pipe(
           catchError((e) => {
@@ -292,13 +290,14 @@ const DeleteMyDataDialog: FC<{
           tap(() => {
             onClose()
           }),
-          takeUntil(unMount$.current)
+          takeUntil(unMount$.current),
         )
         .subscribe()
     }
   }, [onClose, db, unMount$, isTagChecked, isBookChecked, isCollectionChecked])
 
   useEffect(() => {
+    void open
     setIsDeleting(false)
     setIsTagChecked(false)
     setIsBookChecked(false)

@@ -1,12 +1,12 @@
 import { from, map } from "rxjs"
-import { Database } from "../rxdb"
-import { CollectionDocType } from "@oboku/shared"
+import type { Database } from "../rxdb"
+import type { CollectionDocType } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
 import { COLLECTION_EMPTY_ID } from "../constants.shared"
 
 export const getCollectionById = (database: Database, id: string) => {
   return from(database.collections.obokucollection.findOne(id).exec()).pipe(
-    map((result) => result?.toJSON())
+    map((result) => result?.toJSON()),
   )
 }
 
@@ -19,7 +19,7 @@ export const getCollections = async (database: Database) => {
 export const observeEmptyCollection = ({
   db,
   includeProtected,
-  isNotInterested
+  isNotInterested,
 }: {
   db: Database
   includeProtected: boolean
@@ -30,12 +30,12 @@ export const observeEmptyCollection = ({
     queryObj: {
       selector: {
         collections: {
-          $size: 0
-        }
-      }
+          $size: 0,
+        },
+      },
     },
     isNotInterested,
-    includeProtected
+    includeProtected,
   }).pipe(
     map((books) => {
       const collection: CollectionDocType = {
@@ -46,10 +46,10 @@ export const observeEmptyCollection = ({
         modifiedAt: null,
         rx_model: "obokucollection",
         rxdbMeta: { lwt: 0 },
-        metadata: [{ type: "user", title: "Books without collection" }]
+        metadata: [{ type: "user", title: "Books without collection" }],
       }
 
       return collection
-    })
+    }),
   )
 }

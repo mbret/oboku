@@ -1,5 +1,5 @@
-import { FC, useEffect, useState } from "react"
-import { SelectProps, useTheme } from "@mui/material"
+import { type FC, useEffect, useState } from "react"
+import { type SelectProps, useTheme } from "@mui/material"
 import Input from "@mui/material/Input"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
@@ -9,7 +9,7 @@ import { useTag, useTagIds } from "./helpers"
 import { TagChip } from "./TagChip"
 
 export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
-  onChange: onUpChange
+  onChange: onUpChange,
 }) => {
   const { data: tags = [] } = useTagIds()
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -20,12 +20,12 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
   }
 
   const renderValue = (
-    selected: string[]
+    selected: string[],
   ): ReturnType<NonNullable<SelectProps[`renderValue`]>> => (
     <div
       style={{
         display: "flex",
-        flexWrap: "wrap"
+        flexWrap: "wrap",
       }}
     >
       {selected.map((value) => (
@@ -33,7 +33,7 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
           key={value}
           id={value}
           style={{
-            margin: theme.spacing(0.5)
+            margin: theme.spacing(0.5),
           }}
         />
       ))}
@@ -48,7 +48,7 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
     <FormControl
       style={{
         marginTop: theme.spacing(4),
-        width: `100%`
+        width: `100%`,
       }}
     >
       <InputLabel id="tags-selector-multiple-label">Tags</InputLabel>

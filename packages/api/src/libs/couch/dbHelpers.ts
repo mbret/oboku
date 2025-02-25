@@ -1,13 +1,13 @@
-import createNano, { MangoResponse } from "nano"
+import createNano, { type MangoResponse } from "nano"
 import { generateAdminToken, generateToken } from "../auth"
 import {
-  SafeMangoQuery,
-  InsertAbleBookDocType,
+  type SafeMangoQuery,
+  type InsertAbleBookDocType,
   ReadingStateState,
-  DocType,
-  ModelOf,
-  DataSourceDocType,
-  isShallowEqual
+  type DocType,
+  type ModelOf,
+  type DataSourceDocType,
+  isShallowEqual,
 } from "@oboku/shared"
 import { User } from "../couchDbEntities"
 import { waitForRandomTime } from "../utils"
@@ -20,7 +20,7 @@ export { findOne }
 export const createUser = async (
   db: createNano.ServerScope,
   username: string,
-  password: string
+  password: string,
 ) => {
   const obokuDb = db.use("_users")
   const newUser = new User(`org.couchdb.user:${username}`, username, password)
@@ -30,16 +30,16 @@ export const createUser = async (
 
 export const getOrCreateUserFromEmail = async (
   db: createNano.ServerScope,
-  email: string
+  email: string,
 ) => {
   const usersDb = db.use<User>("_users")
 
   const {
-    docs: [user]
+    docs: [user],
   } = await usersDb.find({
     selector: {
-      email
-    }
+      email,
+    },
   })
 
   if (user) return user
@@ -51,11 +51,11 @@ export const getOrCreateUserFromEmail = async (
   if (!ok) throw new Error("Error when creating user")
 
   const {
-    docs: [createdUser]
+    docs: [createdUser],
   } = await usersDb.find({
     selector: {
-      email
-    }
+      email,
+    },
   })
 
   return createdUser
@@ -63,12 +63,12 @@ export const getOrCreateUserFromEmail = async (
 
 export async function atomicUpdate<
   M extends DocType["rx_model"],
-  K extends ModelOf<M>
+  K extends ModelOf<M>,
 >(
   db: createNano.DocumentScope<unknown>,
   rxModel: M,
   id: string,
-  cb: (oldData: createNano.DocumentGetResponse & K) => Partial<K>
+  cb: (oldData: createNano.DocumentGetResponse & K) => Partial<K>,
 ) {
   return retryFn(async () => {
     const doc = (await db.get(id)) as createNano.DocumentGetResponse & K
@@ -83,7 +83,7 @@ export async function atomicUpdate<
       ...rest,
       rx_model,
       _rev: doc._rev,
-      _id: doc._id
+      _id: doc._id,
     })
 
     return response
@@ -92,11 +92,11 @@ export async function atomicUpdate<
 
 export const insert = async <
   M extends DocType["rx_model"],
-  D extends ModelOf<M>
+  D extends ModelOf<M>,
 >(
   db: createNano.DocumentScope<unknown>,
   rxModel: M,
-  data: Omit<D, "rx_model" | "_id" | "_rev">
+  data: Omit<D, "rx_model" | "_id" | "_rev">,
 ) => {
   const finalData = { ...data, rx_model: rxModel }
 
@@ -108,27 +108,27 @@ export const insert = async <
 }
 
 export const findAllDataSources = async (
-  db: createNano.DocumentScope<unknown>
+  db: createNano.DocumentScope<unknown>,
 ) => {
   return db.find({
     selector: {
-      rx_model: "datasource"
-    }
+      rx_model: "datasource",
+    },
   }) as Promise<MangoResponse<DataSourceDocType>>
 }
 
 export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
   db: createNano.DocumentScope<unknown>,
   rxModel: M,
-  query: SafeMangoQuery<D>
+  query: SafeMangoQuery<D>,
 ) => {
   const { fields, ...restQuery } = query
   const response = await retryFn(() =>
     db.find({
       ...restQuery,
       fields: fields as string[],
-      selector: { rx_model: rxModel, ...(query?.selector as any) }
-    })
+      selector: { rx_model: rxModel, ...(query?.selector as any) },
+    }),
   )
 
   return response.docs as (createNano.MangoResponse<unknown>["docs"][number] &
@@ -137,7 +137,7 @@ export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
 
 export const createBook = async (
   db: createNano.DocumentScope<unknown>,
-  data: Partial<InsertAbleBookDocType> = {}
+  data: Partial<InsertAbleBookDocType> = {},
 ) => {
   const insertData: InsertAbleBookDocType = {
     collections: [],
@@ -155,7 +155,7 @@ export const createBook = async (
     modifiedAt: null,
     isAttachedToDataSource: false,
     rxdbMeta: { lwt: new Date().getTime() },
-    ...data
+    ...data,
   }
 
   return insert(db, "book", { ...insertData, ...data })
@@ -164,7 +164,7 @@ export const createBook = async (
 export const addTagsToBookIfNotExist = async (
   db: createNano.DocumentScope<unknown>,
   bookId: string,
-  tagIds: string[]
+  tagIds: string[],
 ) => {
   if (tagIds.length === 0) return [null, null] as const
 
@@ -176,7 +176,7 @@ export const addTagsToBookIfNotExist = async (
 
       return {
         ...old,
-        tags
+        tags,
       }
     }),
     Promise.all(
@@ -188,11 +188,11 @@ export const addTagsToBookIfNotExist = async (
 
           return {
             ...old,
-            books
+            books,
           }
-        })
-      )
-    )
+        }),
+      ),
+    ),
   ])
 
   return [bookUpdate, tagUpdate] as const
@@ -212,7 +212,7 @@ export const addTagsToBookIfNotExist = async (
 
 export const getOrCreateTagFromName = (
   db: createNano.DocumentScope<unknown>,
-  name: string
+  name: string,
 ) => {
   return retryFn(async () => {
     // Get all tag ids and create one if it does not exist
@@ -227,8 +227,8 @@ export const getOrCreateTagFromName = (
       createdAt: new Date().toISOString(),
       modifiedAt: null,
       rxdbMeta: {
-        lwt: new Date().getTime()
-      }
+        lwt: new Date().getTime(),
+      },
     })
 
     return insertedTag.id
@@ -243,7 +243,7 @@ export const getOrCreateTagFromName = (
 export const createTagFromName = (
   db: createNano.DocumentScope<unknown>,
   name: string,
-  silent: boolean
+  silent: boolean,
 ) => {
   return retryFn(async () => {
     const existingTag = await findOne("tag", { selector: { name } }, { db })
@@ -251,9 +251,8 @@ export const createTagFromName = (
     if (existingTag) {
       if (silent) {
         return { id: existingTag._id, created: false }
-      } else {
-        throw new Error(`Tag already exists`)
       }
+      throw new Error(`Tag already exists`)
     }
 
     const insertedTag = await insert(db, "tag", {
@@ -263,8 +262,8 @@ export const createTagFromName = (
       createdAt: new Date().toISOString(),
       modifiedAt: null,
       rxdbMeta: {
-        lwt: new Date().getTime()
-      }
+        lwt: new Date().getTime(),
+      },
     })
 
     return { id: insertedTag.id, created: true }
@@ -274,7 +273,7 @@ export const createTagFromName = (
 export const addLinkToBookIfNotExist = async (
   db: createNano.DocumentScope<unknown>,
   bookId: string,
-  linkId: string
+  linkId: string,
 ) => {
   const [bookUpdate, linkUpdate] = await Promise.all([
     atomicUpdate(db, "book", bookId, (old) => {
@@ -284,13 +283,13 @@ export const addLinkToBookIfNotExist = async (
 
       return {
         ...old,
-        links
+        links,
       }
     }),
     atomicUpdate(db, "link", linkId, (old) => ({
       ...old,
-      book: bookId
-    }))
+      book: bookId,
+    })),
   ])
 
   return bookUpdate || linkUpdate
@@ -324,7 +323,7 @@ export const getNanoDbForUser = async (name: string, privateKey: string) => {
   const hexEncodedUserId = Buffer.from(name).toString("hex")
 
   const db = await getNano({
-    jwtToken: await generateToken(name, privateKey)
+    jwtToken: await generateToken(name, privateKey),
   })
 
   return db.use(`userdb-${hexEncodedUserId}`)
@@ -332,7 +331,7 @@ export const getNanoDbForUser = async (name: string, privateKey: string) => {
 
 export const getNano = async ({
   jwtToken,
-  xAccessSecret
+  xAccessSecret,
 }: { jwtToken?: string; xAccessSecret?: string } = {}) => {
   return createNano({
     url: COUCH_DB_URL,
@@ -342,10 +341,10 @@ export const getNano = async ({
         "x-access-secret": xAccessSecret,
         accept: "application/json",
         ...(jwtToken && {
-          Authorization: `Bearer ${jwtToken}`
-        })
-      }
-    }
+          Authorization: `Bearer ${jwtToken}`,
+        }),
+      },
+    },
   })
 }
 
@@ -363,6 +362,6 @@ export const getDangerousAdminNano = async ({
 } & Omit<NonNullable<Parameters<typeof getNano>[0]>, "jwtToken">) => {
   return getNano({
     ...rest,
-    jwtToken: await generateAdminToken({ sub, privateKey })
+    jwtToken: await generateAdminToken({ sub, privateKey }),
   })
 }

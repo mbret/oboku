@@ -1,8 +1,8 @@
 import {
   GetParameterCommand,
-  GetParameterCommandInput,
+  type GetParameterCommandInput,
   GetParametersCommand,
-  SSMClient
+  SSMClient,
 } from "@aws-sdk/client-ssm"
 
 const ssm = new SSMClient({ region: "us-east-1" })
@@ -18,7 +18,7 @@ type ParameterName =
 export const getParameterValue = (
   options: Omit<GetParameterCommandInput, `Name`> & {
     Name: ParameterName
-  }
+  },
 ) =>
   ssm
     .send(new GetParameterCommand(options))
@@ -38,7 +38,7 @@ export const getParametersValue = (options: {
 
       return acc
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   )
 
   return ssm.send(new GetParametersCommand(options)).then(
@@ -46,8 +46,8 @@ export const getParametersValue = (options: {
       value.Parameters?.slice()
         .sort(
           (a, b) =>
-            (orderMap[a.Name ?? ``] ?? 1) - (orderMap[b.Name ?? ``] ?? 1)
+            (orderMap[a.Name ?? ``] ?? 1) - (orderMap[b.Name ?? ``] ?? 1),
         )
-        .map((parameter) => parameter.Value) ?? []
+        .map((parameter) => parameter.Value) ?? [],
   )
 }

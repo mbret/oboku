@@ -9,12 +9,12 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Typography
+  Typography,
 } from "@mui/material"
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
-import { FC, useState } from "react"
+import { type FC, useState } from "react"
 import { useTagIds, useTags } from "../../tags/helpers"
-import { GoogleDriveDataSourceData } from "@oboku/shared"
+import type { GoogleDriveDataSourceData } from "@oboku/shared"
 import { useDrivePicker } from "./lib/useDrivePicker"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
 import { catchError, of, takeUntil, tap } from "rxjs"
@@ -70,7 +70,7 @@ export const GoogleDriveDataSource: FC<{
               <ListItem>
                 <Button
                   style={{
-                    flex: 1
+                    flex: 1,
                   }}
                   startIcon={<ArrowBackIosRounded style={{}} />}
                   variant="outlined"
@@ -113,7 +113,7 @@ export const GoogleDriveDataSource: FC<{
                       console.error(error)
 
                       return of(null)
-                    })
+                    }),
                   )
                   .subscribe()
               }}
@@ -135,11 +135,11 @@ export const GoogleDriveDataSource: FC<{
                 const customData: GoogleDriveDataSourceData = {
                   applyTags: Object.keys(selectedTags),
                   folderId: selectedFolder.id,
-                  folderName: selectedFolder.name
+                  folderName: selectedFolder.name,
                 }
                 addDataSource({
                   type: `DRIVE`,
-                  data: JSON.stringify(customData)
+                  data: JSON.stringify(customData),
                 })
               }
             }}

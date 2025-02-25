@@ -1,13 +1,13 @@
-import { Metadata } from "next"
+import type { Metadata } from "next"
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: `oboku | Contact`
+    title: `oboku | Contact`,
   }
 }
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode
 }) {

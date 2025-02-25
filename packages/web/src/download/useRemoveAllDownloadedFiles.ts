@@ -8,7 +8,7 @@ import {
   from,
   map,
   of,
-  switchMap
+  switchMap,
 } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { dexieDb } from "../rxdb/dexie"
@@ -28,11 +28,11 @@ export const useRemoveAllDownloadedFiles = () => {
               .find({
                 selector: {
                   _id: {
-                    $in: items.map(({ id }) => id)
-                  }
-                }
+                    $in: items.map(({ id }) => id),
+                  },
+                },
               })
-              .exec()
+              .exec(),
           )
 
           return books$.pipe(
@@ -45,30 +45,30 @@ export const useRemoveAllDownloadedFiles = () => {
                   return from(db.link.findByIds(book.links).exec()).pipe(
                     switchMap((links) => {
                       const fileLink = Array.from(links?.values() ?? []).find(
-                        ({ type }) => type === localPlugin.type
+                        ({ type }) => type === localPlugin.type,
                       )
 
                       // local book, don't remove
                       if (fileLink) return of(null)
 
                       return of(book)
-                    })
+                    }),
                   )
-                })
-              )
+                }),
+              ),
             ),
             map((books) => books.filter((book) => !!book)),
             switchMap((books) => {
               return combineLatest(
                 books.map((book) =>
-                  from(removeDownloadFile({ bookId: book._id }))
-                )
+                  from(removeDownloadFile({ bookId: book._id })),
+                ),
               )
-            })
+            }),
           )
         }),
-        defaultIfEmpty(null)
+        defaultIfEmpty(null),
       )
-    }
+    },
   })
 }

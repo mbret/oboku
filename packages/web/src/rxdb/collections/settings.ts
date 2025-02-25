@@ -1,7 +1,8 @@
-import { RxCollection, RxJsonSchema } from "rxdb"
-import { Database } from "../databases"
+import type { RxCollection, RxJsonSchema } from "rxdb"
+import type { Database } from "../databases"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 
+// biome-ignore lint/complexity/noBannedTypes: <explanation>
 type SettingsCollectionMethods = {}
 
 export type SettingsDocType = {
@@ -11,6 +12,7 @@ export type SettingsDocType = {
 
 export type SettingsCollection = RxCollection<
   SettingsDocType,
+  // biome-ignore lint/complexity/noBannedTypes: <explanation>
   {},
   SettingsCollectionMethods
 >
@@ -22,8 +24,8 @@ export const settingsSchema: RxJsonSchema<SettingsDocType> = {
   properties: {
     _id: { type: "string", final: true, maxLength: 100 },
     contentPassword: { type: ["string", "null"] },
-    ...getReplicationProperties(`settings`)
-  }
+    ...getReplicationProperties(`settings`),
+  },
 }
 
 export const initializeSettings = async (db: Database) => {
@@ -32,7 +34,7 @@ export const initializeSettings = async (db: Database) => {
   if (!settings) {
     await db.settings.insert({
       contentPassword: null,
-      _id: "settings"
+      _id: "settings",
     })
   }
 }

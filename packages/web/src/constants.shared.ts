@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const sw: ServiceWorkerGlobalScope = self as any
 const hostname =
   typeof window === "object"

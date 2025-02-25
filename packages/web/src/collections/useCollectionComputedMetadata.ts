@@ -1,15 +1,15 @@
-import { CollectionDocType } from "@oboku/shared"
+import type { CollectionDocType } from "@oboku/shared"
 import { useMemo } from "react"
 import { getCollectionComputedMetadata } from "./getCollectionComputedMetadata"
-import { DeepReadonlyObject } from "rxdb"
+import type { DeepReadonlyObject } from "rxdb"
 import { useCollectionDisplayTitle } from "./useCollectionDisplayTitle"
 
 export const useCollectionComputedMetadata = (
-  collection?: DeepReadonlyObject<CollectionDocType> | null
+  collection?: DeepReadonlyObject<CollectionDocType> | null,
 ) => {
   const metadata = useMemo(
     () => getCollectionComputedMetadata(collection),
-    [collection]
+    [collection],
   )
 
   const displayTitle = useCollectionDisplayTitle(metadata.title)
@@ -17,8 +17,8 @@ export const useCollectionComputedMetadata = (
   return useMemo(
     () => ({
       ...metadata,
-      displayTitle
+      displayTitle,
     }),
-    [metadata, displayTitle]
+    [metadata, displayTitle],
   )
 }

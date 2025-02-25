@@ -12,14 +12,14 @@ export const queryClient = new QueryClient({
       }
 
       console.error(error)
-    }
+    },
   }),
   queryCache: new QueryCache({
     onError: (error) => {
       if (error instanceof CancelError) return
 
       console.error(error)
-    }
+    },
   }),
   defaultOptions: {
     mutations: {
@@ -28,7 +28,7 @@ export const queryClient = new QueryClient({
        * Same as for queries, most of mutations are offline by default.
        * Don't forget to change it when needed
        */
-      networkMode: "always"
+      networkMode: "always",
     },
     queries: {
       /**
@@ -45,7 +45,7 @@ export const queryClient = new QueryClient({
        * offline PWA.
        * Don't forget to set it back to default when making online queries
        */
-      networkMode: "always"
-    }
-  }
+      networkMode: "always",
+    },
+  },
 })

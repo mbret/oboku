@@ -17,6 +17,6 @@ export const getResourcePathFromUrl = (url: string) => {
   const epubFileName = getEpubNameFromUrl(url)
 
   return decodeURIComponent(
-    urlObj.pathname.replace(`/${STREAMER_URL_PREFIX}/${epubFileName}/`, ``)
+    urlObj.pathname.replace(`/${STREAMER_URL_PREFIX}/${epubFileName}/`, ``),
   )
 }

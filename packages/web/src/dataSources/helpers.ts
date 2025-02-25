@@ -4,18 +4,18 @@ import { useMemo } from "react"
 export const useDataSourceHelpers = (
   idOrObj:
     | (typeof plugins)[number]["uniqueResourceIdentifier"]
-    | { uniqueResourceIdentifier: string }
+    | { uniqueResourceIdentifier: string },
 ) => {
   const id =
-    typeof idOrObj === `string` ? idOrObj : idOrObj.uniqueResourceIdentifier
+    typeof idOrObj === "string" ? idOrObj : idOrObj.uniqueResourceIdentifier
 
   return useMemo(
     () => ({
       generateResourceId: (resourceId: string) => `${id}-${resourceId}`,
       extractIdFromResourceId: (resourceId: string) =>
-        resourceId.replace(`${id}-`, ``)
+        resourceId.replace(`${id}-`, ``),
     }),
-    [id]
+    [id],
   )
 }
 

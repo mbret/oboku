@@ -1,11 +1,11 @@
-import { BookMetadata } from "../metadata"
-import { CouchDBMeta } from "./couchdb"
-import { RxDbMeta } from "./rxdb"
+import type { BookMetadata } from "../metadata"
+import type { CouchDBMeta } from "./couchdb"
+import type { RxDbMeta } from "./rxdb"
 
 export enum ReadingStateState {
   Finished = "FINISHED",
   NotStarted = "NOT_STARTED",
-  Reading = "READING"
+  Reading = "READING",
 }
 
 export type BookDocType = CouchDBMeta &

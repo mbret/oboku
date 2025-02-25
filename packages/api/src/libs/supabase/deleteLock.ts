@@ -1,13 +1,13 @@
 import { Logger } from "@libs/logger"
-import { SupabaseClient } from "@supabase/supabase-js"
+import type { SupabaseClient } from "@supabase/supabase-js"
 import {
   catchError,
   from,
   ignoreElements,
   map,
-  Observable,
+  type Observable,
   switchMap,
-  tap
+  tap,
 } from "rxjs"
 
 export const deleteLock = async (supabase: SupabaseClient, lockId: string) => {
@@ -25,15 +25,15 @@ export const withDeleteLock =
   (stream: Observable<T>) => {
     return stream.pipe(
       switchMap((value) =>
-        from(deleteLock(supabase, lockId)).pipe(map(() => value))
+        from(deleteLock(supabase, lockId)).pipe(map(() => value)),
       ),
       catchError((error) =>
         from(deleteLock(supabase, lockId)).pipe(
           tap(() => {
             throw error
           }),
-          ignoreElements()
-        )
-      )
+          ignoreElements(),
+        ),
+      ),
     )
   }

@@ -1,6 +1,6 @@
 import { authStateSignal } from "../../auth/authState"
 import { from, mergeMap } from "rxjs"
-import { RxCollection } from "rxdb"
+import type { RxCollection } from "rxdb"
 import { useReplicateCollection } from "./useReplicateCollection"
 import { useMutation$ } from "reactjrx"
 
@@ -19,17 +19,17 @@ export const useSyncReplicate = () => {
               collection,
               live: false,
               dbName,
-              token
-            })
-          )
-        )
+              token,
+            }),
+          ),
+        ),
       )
 
       return replicationStates.pipe(
         mergeMap((states) =>
-          from(Promise.all(states.map((state) => state.awaitInSync())))
-        )
+          from(Promise.all(states.map((state) => state.awaitInSync()))),
+        ),
       )
-    }
+    },
   })
 }

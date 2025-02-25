@@ -75,19 +75,12 @@
   "scripts": {
     "predeploy": "npm run build",
     "start": "vite",
-    "build": "vite build",
+    "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "vitest run",
-    "tsc": "tsc",
-    "format": "eslint --fix '**/*.{js,ts,tsx}'",
-    "lint": "eslint '**/*.{js,ts,tsx}'"
+    "test": "vitest run"
   },
   "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
+    "production": [">0.2%", "not dead", "not op_mini all"],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",

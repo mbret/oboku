@@ -1,4 +1,4 @@
-import { FC, memo } from "react"
+import { type FC, memo } from "react"
 import { Box, ListItemButton, ListItemText } from "@mui/material"
 import { BlurOnRounded, LockRounded } from "@mui/icons-material"
 import { useTag } from "../helpers"
@@ -14,14 +14,14 @@ export const SelectableTagListItem: FC<{
   return (
     <ListItemButton
       style={{
-        height: `100%`
+        height: `100%`,
       }}
-      onClick={() => onItemClick && onItemClick()}
+      onClick={() => onItemClick?.()}
     >
       <ListItemText primary={tag?.name} />
       <Box
         sx={{
-          marginRight: 1
+          marginRight: 1,
         }}
       >
         {tag?.isProtected && <LockRounded color="primary" />}

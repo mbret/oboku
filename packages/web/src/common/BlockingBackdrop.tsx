@@ -1,13 +1,13 @@
-import { FC, useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Backdrop, CircularProgress, useTheme } from "@mui/material"
 import { signal, useSignalValue } from "reactjrx"
-import { ObservedValueOf, Subject } from "rxjs"
+import { type ObservedValueOf, Subject } from "rxjs"
 
 type Key = string
 
 const lockState = signal<Key[]>({
   key: "lock",
-  default: []
+  default: [],
 })
 
 const useIsLockedState = () => {
@@ -43,13 +43,13 @@ export const useLock = () => {
 
       return () => unlock(key)
     },
-    [unlock]
+    [unlock],
   )
 
   return [lock, unlock] as [typeof lock, typeof unlock]
 }
 
-export const BlockingBackdrop: FC<{}> = () => {
+export const BlockingBackdrop = () => {
   const open = useIsLockedState()
   const [active, setActive] = useState(false)
   const theme = useTheme()
@@ -93,7 +93,7 @@ export const BlockingBackdrop: FC<{}> = () => {
       open={active}
       sx={{
         zIndex: theme.zIndex.tooltip + 1,
-        color: "#fff"
+        color: "#fff",
       }}
     >
       <CircularProgress color="inherit" />

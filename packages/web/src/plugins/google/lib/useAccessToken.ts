@@ -4,7 +4,7 @@ import {
   consentShownSignal,
   hasGrantedPermissions,
   hasTokenAccessAtLeast10mnLeft,
-  requestGoogleAccessToken
+  requestGoogleAccessToken,
 } from "./auth"
 import { Report } from "../../../debug/report.shared"
 import { useGoogleScripts } from "./scripts"
@@ -20,7 +20,7 @@ const isPopupClosedError = (error: unknown) => {
 }
 
 export const useAccessToken = ({
-  requestPopup
+  requestPopup,
 }: {
   requestPopup: () => Promise<boolean>
 }) => {
@@ -72,15 +72,15 @@ export const useAccessToken = ({
 
                 const googleAccessToken = {
                   ...accessToken,
-                  created_at: Date.now()
+                  created_at: Date.now(),
                 }
 
                 accessTokenSignal.setValue(googleAccessToken)
 
                 return of(googleAccessToken)
-              })
+              }),
             )
-          })
+          }),
         )
       }),
       catchError((e) => {
@@ -91,7 +91,7 @@ export const useAccessToken = ({
         }
 
         throw e
-      })
+      }),
     )
 
   return { requestToken }

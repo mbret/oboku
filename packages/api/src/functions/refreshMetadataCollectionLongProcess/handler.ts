@@ -1,6 +1,6 @@
-import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { getAuthToken } from "@libs/auth"
-import schema from "./schema"
+import type schema from "./schema"
 import { findOne, getNanoDbForUser } from "@libs/couch/dbHelpers"
 import { withDeleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"
@@ -11,13 +11,13 @@ import { parameters$ } from "./src/parameters"
 import {
   onBeforeError,
   switchMapCombineOuter,
-  switchMapMergeOuter
+  switchMapMergeOuter,
 } from "@libs/utils"
 import { withConfiguredGoogle } from "@libs/google/withConfiguredGoogle"
 import { markCollectionAsError } from "./src/collections"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
-  event
+  event,
 ) => {
   const collectionId = event.body.collectionId ?? ""
   const lockId = `metadata-collection_${collectionId}`
@@ -33,48 +33,48 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
         return {
           soft,
           authorization,
-          credentials
+          credentials,
         }
       }),
       switchMapMergeOuter(() => parameters$),
       withConfiguredGoogle,
       switchMapMergeOuter((params) =>
-        getAuthToken(params.authorization, params.jwtPrivateKey)
+        getAuthToken(params.authorization, params.jwtPrivateKey),
       ),
       switchMapCombineOuter(({ name: userName, jwtPrivateKey }) =>
-        from(getNanoDbForUser(userName, jwtPrivateKey))
+        from(getNanoDbForUser(userName, jwtPrivateKey)),
       ),
       switchMap(([params, db]) =>
         from(
           findOne(
             "obokucollection",
             {
-              selector: { _id: collectionId }
+              selector: { _id: collectionId },
             },
-            { throwOnNotFound: true, db }
-          )
+            { throwOnNotFound: true, db },
+          ),
         ).pipe(
           mergeMap((collection) => {
             return from(
               refreshMetadata(collection, {
                 db,
-                ...params
-              })
+                ...params,
+              }),
             )
           }),
-          onBeforeError(() => markCollectionAsError({ db, collectionId }))
-        )
+          onBeforeError(() => markCollectionAsError({ db, collectionId })),
+        ),
       ),
       map(() => {
         console.info(`lambda executed with success for ${collectionId}`)
 
         return {
           statusCode: 200,
-          body: JSON.stringify({})
+          body: JSON.stringify({}),
         }
       }),
-      withDeleteLock(supabase, lockId)
-    )
+      withDeleteLock(supabase, lockId),
+    ),
   )
 
   return result
@@ -82,5 +82,5 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
 export const main = withMiddy(lambda, {
   withCors: false,
-  withJsonBodyParser: false
+  withJsonBodyParser: false,
 })

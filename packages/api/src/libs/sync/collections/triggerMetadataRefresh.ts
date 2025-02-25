@@ -1,7 +1,7 @@
 import { Logger } from "@libs/logger"
 import axios from "axios"
 import { AWS_API_URI } from "src/constants"
-import { Context } from "../types"
+import type { Context } from "../types"
 
 const logger = Logger.child({ module: "sync/triggerMetadataRefresh" })
 
@@ -11,7 +11,7 @@ const logger = Logger.child({ module: "sync/triggerMetadataRefresh" })
  */
 export const triggerMetadataRefresh = async ({
   ctx,
-  collectionId
+  collectionId,
 }: {
   ctx: Context
   collectionId: string
@@ -23,13 +23,13 @@ export const triggerMetadataRefresh = async ({
     url: `${AWS_API_URI}/refresh-metadata-collection`,
     data: {
       collectionId,
-      soft: true
+      soft: true,
     },
     headers: {
       "content-type": "application/json",
       accept: "application/json",
       "oboku-credentials": JSON.stringify(ctx.credentials),
-      authorization: ctx.authorization
-    }
+      authorization: ctx.authorization,
+    },
   }).catch(logger.error)
 }

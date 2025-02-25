@@ -11,12 +11,12 @@ import { from } from "rxjs"
 
 export const createAppReader = gesturesEnhancer(
   // __
-  createReader
+  createReader,
 )
 
 export const useCreateReader = ({
   isUsingWebStreamer,
-  bookId
+  bookId,
 }: {
   isUsingWebStreamer?: boolean
   bookId: string
@@ -36,12 +36,12 @@ export const useCreateReader = ({
 
       const instance = createAppReader({
         ...(localSettingsSignal.getValue().useOptimizedTheme && {
-          pageTurnAnimation: "none"
+          pageTurnAnimation: "none",
         }),
         gestures: {
           ...(localSettingsSignal.getValue().useOptimizedTheme && {
-            panNavigation: "swipe"
-          })
+            panNavigation: "swipe",
+          }),
         },
         fontScale: readerSettingsLiveRef.current?.fontScale ?? 1,
         ...(isUsingWebStreamer && {
@@ -51,11 +51,11 @@ export const useCreateReader = ({
             return from(
               webStreamer.fetchResource({
                 key: bookId,
-                resourcePath
-              })
+                resourcePath,
+              }),
             )
-          }
-        })
+          },
+        }),
       })
 
       // @ts-ignore

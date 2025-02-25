@@ -1,7 +1,4 @@
-import {
-  catchError,
-  combineLatest,
-} from "rxjs"
+import { catchError, combineLatest } from "rxjs"
 import { gsiOrThrow$ } from "./gsi"
 import { gapiOrThrow$, useLoadGapi } from "./gapi"
 import { createDialog } from "../../../common/dialogs/createDialog"
@@ -16,13 +13,13 @@ export const useGoogleScripts = () => {
           autoStart: true,
           title: "Script error",
           content:
-            "One or several required Google scripts has not been loaded yet. If the problem persist visit the plugin settings page to try reloading them."
+            "One or several required Google scripts has not been loaded yet. If the problem persist visit the plugin settings page to try reloading them.",
         })
 
         loadGapi()
 
         throw error
-      })
+      }),
     )
   }
 

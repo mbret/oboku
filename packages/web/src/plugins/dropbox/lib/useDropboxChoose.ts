@@ -29,7 +29,7 @@ export const useDropboxChoose = (options: {
         promise.finally(() => {
           optionsRef.current?.onSettled?.()
         })
-      }
+      },
     })
   }, [optionsRef])
 

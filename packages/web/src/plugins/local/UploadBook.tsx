@@ -7,13 +7,13 @@ import {
   List,
   ListItem,
   ListItemText,
-  Typography
+  Typography,
 } from "@mui/material"
 import { useDropzone } from "react-dropzone"
 import { Report } from "../../debug/report.shared"
 import { READER_ACCEPTED_FILE_TYPES } from "@oboku/shared"
-import { ObokuPlugin } from "../types"
-import { DragEventHandler, useRef } from "react"
+import type { ObokuPlugin } from "../types"
+import { type DragEventHandler, useRef } from "react"
 import { useAddBookFromFile } from "./useAddBookFromFile"
 
 export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
@@ -21,7 +21,7 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
 } = ({ onClose, onDragLeave }) => {
   const { mutate: addBookFromFile } = useAddBookFromFile()
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
-    accept: READER_ACCEPTED_FILE_TYPES
+    accept: READER_ACCEPTED_FILE_TYPES,
   })
   const dialogRef = useRef<HTMLDivElement>(null)
 
@@ -36,7 +36,7 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
   }
 
   const _onDragLeave: DragEventHandler<HTMLDivElement> = (e) => {
-    onDragLeave && onDragLeave(e)
+    onDragLeave?.(e)
   }
 
   return (
@@ -45,8 +45,8 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
       componentsProps={{
         root: {
           ref: dialogRef,
-          onDragLeave: _onDragLeave
-        }
+          onDragLeave: _onDragLeave,
+        },
       }}
       open
       fullScreen
@@ -59,7 +59,7 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
             justifyContent: "center",
             alignItems: "center",
             flex: 1,
-            display: "flex"
+            display: "flex",
           }}
         >
           <input {...getInputProps()} />

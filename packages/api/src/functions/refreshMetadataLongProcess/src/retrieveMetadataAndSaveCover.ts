@@ -1,20 +1,20 @@
-import fs from "fs"
-import path from "path"
+import fs from "node:fs"
+import path from "node:path"
 import { pluginFacade } from "../../../libs/plugins/facade"
-import { BookMetadata, directives } from "@oboku/shared"
+import { type BookMetadata, directives } from "@oboku/shared"
 import { detectMimeTypeFromContent } from "../../../libs/utils"
 import { Logger } from "@libs/logger"
 import { METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS } from "../../../constants"
 import { getBookSourcesMetadata } from "@libs/metadata/getBookSourcesMetadata"
 import { reduceMetadata } from "@libs/metadata/reduceMetadata"
 import { isBookProtected } from "@libs/couch/isBookProtected"
-import nano from "nano"
+import type nano from "nano"
 import { atomicUpdate } from "@libs/couch/dbHelpers"
 import { getRarArchive } from "@libs/archives/getRarArchive"
-import { Context } from "@functions/refreshMetadataLongProcess/src/types"
+import type { Context } from "@functions/refreshMetadataLongProcess/src/types"
 import { getMetadataFromRarArchive } from "@libs/books/metadata/getMetadataFromRarArchive"
 import { getMetadataFromZipArchive } from "@libs/books/metadata/getMetadataFromZipArchive"
-import { Extractor } from "node-unrar-js"
+import type { Extractor } from "node-unrar-js"
 import { updateCover } from "./updateCover"
 import { downloadToTmpFolder } from "@libs/archives/downloadToTmpFolder"
 
@@ -24,11 +24,11 @@ export const retrieveMetadataAndSaveCover = async (
   ctx: Context & {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
-  }
+  },
 ) => {
   console.log(
     `[retrieveMetadataAndSaveCover]`,
-    `syncMetadata run for user ${ctx.userName} with book ${ctx.book._id}`
+    `syncMetadata run for user ${ctx.userName} with book ${ctx.book._id}`,
   )
   let bookNameForDebug = ""
 
@@ -40,7 +40,7 @@ export const retrieveMetadataAndSaveCover = async (
     console.log(
       `[retrieveMetadataAndSaveCover]`,
       `processing ${ctx.book._id} with link of type ${ctx.link.type}`,
-      { link: ctx.link }
+      { link: ctx.link },
     )
 
     const bookIsProtected = await isBookProtected(ctx.db, ctx.book)
@@ -50,7 +50,7 @@ export const retrieveMetadataAndSaveCover = async (
     const { canDownload = false, ...linkResourceMetadata } =
       (await pluginFacade.getMetadata({
         link: ctx.link,
-        credentials: ctx.credentials
+        credentials: ctx.credentials,
       })) ?? {}
 
     const { isbn, ignoreMetadataFile, ignoreMetadataSources, googleVolumeId } =
@@ -62,7 +62,7 @@ export const retrieveMetadataAndSaveCover = async (
       title: linkResourceMetadata.name,
       contentType: linkResourceMetadata.contentType,
       googleVolumeId,
-      ...linkResourceMetadata.bookMetadata
+      ...linkResourceMetadata.bookMetadata,
     }
 
     let contentType = linkMetadata.contentType
@@ -81,12 +81,12 @@ export const retrieveMetadataAndSaveCover = async (
           {
             ...linkMetadata,
             // some plugins returns filename and not title
-            title: path.parse(linkMetadata.title ?? "").name
+            title: path.parse(linkMetadata.title ?? "").name,
           },
           {
             googleApiKey: ctx.googleApiKey,
-            withGoogle: !bookIsProtected
-          }
+            withGoogle: !bookIsProtected,
+          },
         )
 
     const metadataList = [linkMetadata, ...sourcesMetadata]
@@ -104,9 +104,9 @@ export const retrieveMetadataAndSaveCover = async (
 
               return {
                 filepath: undefined,
-                metadata: { contentType: undefined }
+                metadata: { contentType: undefined },
               }
-            }
+            },
           )
         : { filepath: undefined, metadata: {} }
 
@@ -126,8 +126,8 @@ export const retrieveMetadataAndSaveCover = async (
       {
         linkMetadata,
         contentType,
-        tmpFilePath
-      }
+        tmpFilePath,
+      },
     )
 
     const isRarArchive = contentType === "application/x-rar"
@@ -145,7 +145,7 @@ export const retrieveMetadataAndSaveCover = async (
           archiveExtractor = await getRarArchive(tmpFilePath)
           const fileMetadata = await getMetadataFromRarArchive(
             archiveExtractor,
-            contentType ?? ``
+            contentType ?? ``,
           )
 
           console.log(`file metadata for book ${ctx.book._id}`, fileMetadata)
@@ -157,7 +157,7 @@ export const retrieveMetadataAndSaveCover = async (
         ) {
           const fileMetadata = await getMetadataFromZipArchive(
             tmpFilePath,
-            contentType
+            contentType,
           )
 
           console.log(`file metadata for book ${ctx.book._id}`, fileMetadata)
@@ -165,7 +165,7 @@ export const retrieveMetadataAndSaveCover = async (
           metadataList.push(fileMetadata)
         } else {
           logger.info(
-            `${contentType} cannot be extracted to retrieve information (cover, etc)`
+            `${contentType} cannot be extracted to retrieve information (cover, etc)`,
           )
         }
       }
@@ -176,13 +176,13 @@ export const retrieveMetadataAndSaveCover = async (
       ctx,
       metadataList,
       archiveExtractor,
-      tmpFilePath
+      tmpFilePath,
     })
 
     console.log(
       `[retrieveMetadataAndSaveCover]`,
       `prepare to update ${ctx.book._id} with`,
-      { metadataList }
+      { metadataList },
     )
 
     await atomicUpdate(ctx.db, "book", ctx.book._id, (old) => {
@@ -191,18 +191,18 @@ export const retrieveMetadataAndSaveCover = async (
         metadata: metadataList,
         lastMetadataUpdatedAt: new Date().getTime(),
         metadataUpdateStatus: null,
-        lastMetadataUpdateError: null
+        lastMetadataUpdateError: null,
       }
     })
 
     return {
       link: {
-        contentLength: fileContentLength
-      }
+        contentLength: fileContentLength,
+      },
     }
   } catch (e) {
     console.log(
-      `Error while processing book ${ctx.book._id} ${bookNameForDebug}`
+      `Error while processing book ${ctx.book._id} ${bookNameForDebug}`,
     )
 
     throw e

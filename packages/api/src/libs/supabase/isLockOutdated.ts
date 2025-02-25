@@ -1,4 +1,4 @@
-import { Lock } from "./types"
+import type { Lock } from "./types"
 
 export const isLockOutdated = (lock: Lock, maximumTime: number) => {
   const created_at = new Date(lock.created_at)

@@ -1,12 +1,11 @@
 import fetch, { AbortError } from "node-fetch"
 import { createHttpError } from "@libs/httpErrors"
-import { APIGatewayProxyEvent } from "aws-lambda"
+import type { APIGatewayProxyEvent } from "aws-lambda"
 import AbortController from "abort-controller"
 import { withMiddy } from "@libs/middy/withMiddy"
 
 const lambda = async (event: APIGatewayProxyEvent) => {
   const params = event.queryStringParameters
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { Host, host, Origin, origin, ...headers } = event.headers
   const bodyStr = (event.body as string) ?? ``
 
@@ -42,7 +41,7 @@ const lambda = async (event: APIGatewayProxyEvent) => {
       method: event.httpMethod,
       signal: controller.signal,
       body: hasBody ? bodyStr : undefined,
-      headers: headers as any
+      headers: headers as any,
     })
     console.log(`Got response from ${url} ---> {statusCode: ${res.status}}`)
 
@@ -72,10 +71,10 @@ const lambda = async (event: APIGatewayProxyEvent) => {
         // 'content-length': res.headers.get('content-length') || ``,
         "Content-Length": bodyBuffer.byteLength,
         "Access-Control-Allow-Origin": "*", // Required for CORS support to work
-        "Access-Control-Allow-Credentials": true // Required for cookies, authorization headers with HTTPS
+        "Access-Control-Allow-Credentials": true, // Required for cookies, authorization headers with HTTPS
       },
       body: bodyBuffer.toString("base64"),
-      isBase64Encoded: true
+      isBase64Encoded: true,
     }
   } catch (e) {
     if (e instanceof AbortError) {

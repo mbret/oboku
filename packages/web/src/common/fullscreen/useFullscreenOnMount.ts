@@ -9,7 +9,7 @@ import {
   mergeMap,
   retry,
   throwError,
-  timer
+  timer,
 } from "rxjs"
 import { useSubscribe } from "reactjrx"
 import { createDialog } from "../dialogs/createDialog"
@@ -44,14 +44,14 @@ export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
                         content:
                           "Your browser does not allow automatic fullscreen without an interaction",
                         confirmTitle: "Fullscreen",
-                        cancellable: true
-                      }).$
-                )
+                        cancellable: true,
+                      }).$,
+                ),
               )
             }
 
             throw error
-          }
+          },
         }),
         catchError((error) => {
           if (
@@ -64,7 +64,7 @@ export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
           Report.error(error)
 
           return EMPTY
-        })
+        }),
       )
     }
 

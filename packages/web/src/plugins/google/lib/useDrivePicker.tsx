@@ -5,7 +5,7 @@ import { useGoogleScripts } from "./scripts"
 import { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
 
 export const useDrivePicker = ({
-  requestPopup
+  requestPopup,
 }: {
   requestPopup: () => Promise<boolean>
 }) => {
@@ -17,7 +17,7 @@ export const useDrivePicker = ({
       first(),
       switchMap(([gsi]) => {
         return requestToken({
-          scope: [`https://www.googleapis.com/auth/drive.readonly`]
+          scope: [`https://www.googleapis.com/auth/drive.readonly`],
         }).pipe(
           switchMap((accessToken) => {
             let picker: google.picker.Picker
@@ -29,9 +29,7 @@ export const useDrivePicker = ({
                     new google.picker.DocsView()
                       .setIncludeFolders(true)
                       .setMimeTypes(READER_ACCEPTED_MIME_TYPES.join(","))
-                      .setSelectFolderEnabled(
-                        select === "folder" ? true : false
-                      )
+                      .setSelectFolderEnabled(select === "folder"),
                   )
                   .setOAuthToken(accessToken.access_token)
                   .setDeveloperKey(DEVELOPER_KEY)
@@ -48,18 +46,18 @@ export const useDrivePicker = ({
                   .build()
 
                 picker.setVisible(true)
-              })
+              }),
             ).pipe(
               finalize(() => {
                 picker.dispose()
-              })
+              }),
             )
-          })
+          }),
         )
-      })
+      }),
     )
 
   return {
-    pick
+    pick,
   }
 }

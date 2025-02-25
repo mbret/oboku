@@ -8,11 +8,11 @@ import { useBooks } from "../books/states"
 
 export const useBooksForSearch = (search: string) => {
   const { notInterestedContents } = useSignalValue(
-    searchListActionsToolbarSignal
+    searchListActionsToolbarSignal,
   )
 
   const { data: visibleBooks } = useBooks({
-    isNotInterested: notInterestedContents
+    isNotInterested: notInterestedContents,
   })
 
   const filteredBooks = useMemo(
@@ -21,7 +21,7 @@ export const useBooksForSearch = (search: string) => {
         ?.filter((book) => {
           const searchRegex = new RegExp(
             search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
-            "i"
+            "i",
           )
 
           const metadata = book.metadata?.length
@@ -41,11 +41,11 @@ export const useBooksForSearch = (search: string) => {
         .sort((a, b) =>
           sortByTitleComparator(
             getMetadataFromBook(a).title || "",
-            getMetadataFromBook(b).title || ""
-          )
+            getMetadataFromBook(b).title || "",
+          ),
         )
         .map((item) => item._id),
-    [search, visibleBooks]
+    [search, visibleBooks],
   )
 
   return { data: filteredBooks }

@@ -2,7 +2,7 @@
  * @see https://github.com/googleapis/google-auth-library-nodejs
  * @see https://github.com/googleapis/google-api-nodejs-client#authentication-and-authorization
  */
-import { drive_v3, google } from "googleapis"
+import { type drive_v3, google } from "googleapis"
 import { getSecrets } from "./configure"
 
 export type File = NonNullable<drive_v3.Schema$FileList["files"]>[number]
@@ -18,7 +18,7 @@ export const authorize = async (ctx: { credentials?: any }) => {
   const { client_id, client_secret } = getSecrets()
   const oauth2Client = new google.auth.OAuth2({
     clientId: client_id,
-    clientSecret: client_secret
+    clientSecret: client_secret,
   })
 
   oauth2Client.setCredentials(ctx.credentials || {})

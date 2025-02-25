@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import {
   hasOpenedReaderAlreadyStateSignal,
-  bookBeingReadStateSignal
+  bookBeingReadStateSignal,
 } from "./states"
 import { SIGNAL_RESET } from "reactjrx"
 
@@ -15,6 +15,6 @@ export const useTrackBookBeingRead = (bookId: string | undefined) => {
     () => () => {
       bookBeingReadStateSignal.setValue(SIGNAL_RESET)
     },
-    []
+    [],
   )
 }

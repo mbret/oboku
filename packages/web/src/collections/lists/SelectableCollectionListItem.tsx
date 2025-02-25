@@ -1,4 +1,4 @@
-import { FC, memo } from "react"
+import { type FC, memo } from "react"
 import { Box, ListItemButton, ListItemText } from "@mui/material"
 import { Checkbox } from "../../common/Checkbox"
 import { useCollection } from "../useCollection"
@@ -15,12 +15,12 @@ export const SelectableCollectionListItem: FC<{
   return (
     <ListItemButton
       sx={{
-        height: `100%`
+        height: `100%`,
       }}
       onClick={() => data && onItemClick && onItemClick(data?._id)}
     >
       <ListItemText primary={metadata.displayTitle} />
-      <Box mr={1}></Box>
+      <Box mr={1} />
       <Checkbox selected={selected} />
     </ListItemButton>
   )

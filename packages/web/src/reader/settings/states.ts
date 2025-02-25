@@ -8,8 +8,8 @@ export const readerSettingsStateSignal = signal<{
   key: "readerSettingsState",
   default: {
     floatingProgress: "bottom",
-    floatingTime: "bottom"
-  }
+    floatingTime: "bottom",
+  },
 })
 
 export const setReaderSettingsState = readerSettingsStateSignal.setValue

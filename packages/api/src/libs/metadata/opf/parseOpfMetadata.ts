@@ -1,9 +1,9 @@
-import { Metadata } from "@libs/metadata/types"
-import { OPF } from "@oboku/shared"
+import type { Metadata } from "@libs/metadata/types"
+import type { OPF } from "@oboku/shared"
 import { extractDateComponents } from "../extractDateComponents"
 
 const extractLanguage = (
-  metadata?: undefined | null | string | { ["#text"]?: string }
+  metadata?: undefined | null | string | { "#text"?: string },
 ): string | null => {
   if (!metadata) return null
 
@@ -15,7 +15,7 @@ const extractLanguage = (
 }
 
 const normalizeDate = (
-  date: NonNullable<NonNullable<OPF["package"]>["metadata"]>["dc:date"]
+  date: NonNullable<NonNullable<OPF["package"]>["metadata"]>["dc:date"],
 ) => {
   if (!date) return { year: undefined, month: undefined, day: undefined }
 
@@ -29,12 +29,12 @@ const findCoverPathFromOpf = (opf: OPF) => {
   const meta = opf.package?.metadata?.meta
   const normalizedMeta = Array.isArray(meta) ? meta : meta ? [meta] : []
   const coverInMeta = normalizedMeta.find(
-    (item) => item?.name === "cover" && (item?.content?.length || 0) > 0
+    (item) => item?.name === "cover" && (item?.content?.length || 0) > 0,
   )
   let href = ""
 
   const isImage = (
-    item: NonNullable<NonNullable<typeof manifest>["item"]>[number]
+    item: NonNullable<NonNullable<typeof manifest>["item"]>[number],
   ) =>
     item["media-type"] &&
     (item["media-type"].indexOf("image/") > -1 ||
@@ -43,7 +43,7 @@ const findCoverPathFromOpf = (opf: OPF) => {
 
   if (coverInMeta) {
     const item = manifest?.item?.find(
-      (item) => item.id === coverInMeta?.content && isImage(item)
+      (item) => item.id === coverInMeta?.content && isImage(item),
     )
 
     if (item) {
@@ -68,7 +68,7 @@ export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
 
   const language = extractLanguage(metadata["dc:language"])
   const creator = Array.isArray(creatrawCreator)
-    ? (creatrawCreator[0] ?? {})["#text"]
+    ? creatrawCreator[0]?.["#text"]
     : typeof creatrawCreator === "object"
       ? creatrawCreator["#text"]
       : creatrawCreator
@@ -83,7 +83,7 @@ export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
     title:
       typeof metadata["dc:title"] === "object"
         ? metadata["dc:title"]["#text"]
-        : metadata["title"] || metadata["dc:title"],
+        : metadata.title || metadata["dc:title"],
     publisher:
       typeof metadata["dc:publisher"] === "string"
         ? metadata["dc:publisher"]
@@ -95,6 +95,6 @@ export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
     date: normalizeDate(metadata["dc:date"]),
     subjects: subjects ? subjects : [],
     authors: creator ? [creator] : [],
-    coverLink: findCoverPathFromOpf(opf)
+    coverLink: findCoverPathFromOpf(opf),
   }
 }

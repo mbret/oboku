@@ -1,7 +1,7 @@
-import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { getAwsLambda } from "@libs/lambda"
 import { getNormalizedHeader } from "@libs/utils"
-import schema from "./schema"
+import type schema from "./schema"
 import { InvokeCommand } from "@aws-sdk/client-lambda"
 import { STAGE } from "src/constants"
 import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
@@ -12,7 +12,7 @@ import { withMiddy } from "@libs/middy/withMiddy"
 const logger = Logger.child({ module: "handler" })
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
-  event
+  event,
 ) => {
   const client = getAwsLambda()
 
@@ -24,9 +24,9 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
         collectionId: event.body.collectionId,
         soft: event.body.soft,
         credentials: getNormalizedHeader(event, `oboku-credentials`),
-        authorization: getNormalizedHeader(event, `authorization`)
-      }
-    })
+        authorization: getNormalizedHeader(event, `authorization`),
+      },
+    }),
   })
 
   logger.info(`invoke for ${event.body.collectionId}`)
@@ -40,7 +40,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       const response = await client.send(command)
 
       logger.info(
-        `${event.body.collectionId}: command sent with success ${response.$metadata.requestId}`
+        `${event.body.collectionId}: command sent with success ${response.$metadata.requestId}`,
       )
       logger.info(response)
     } else {
@@ -54,7 +54,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   return {
     statusCode: 202,
-    body: JSON.stringify({})
+    body: JSON.stringify({}),
   }
 }
 

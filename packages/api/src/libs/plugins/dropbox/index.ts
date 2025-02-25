@@ -2,16 +2,16 @@
  * @see https://github.com/dropbox/dropbox-sdk-js/tree/main/examples/javascript/download
  */
 import nodeFetch from "node-fetch"
-import { Dropbox, files } from "dropbox"
-import { Readable } from "stream"
+import { Dropbox, type files } from "dropbox"
+import { Readable } from "node:stream"
 import {
-  DropboxDataSourceData,
-  READER_ACCEPTED_EXTENSIONS
+  type DropboxDataSourceData,
+  READER_ACCEPTED_EXTENSIONS,
 } from "@oboku/shared"
-import { PromiseReturnType } from "../../types"
-import {
+import type { PromiseReturnType } from "../../types"
+import type {
   DataSourcePlugin,
-  SynchronizeAbleDataSource
+  SynchronizeAbleDataSource,
 } from "@libs/plugins/types"
 import { createThrottler } from "@libs/utils"
 import { createError } from "../helpers"
@@ -25,17 +25,17 @@ export const dataSource: DataSourcePlugin = {
   getMetadata: async ({ id, credentials }) => {
     const dbx = new Dropbox({
       accessToken: credentials.accessToken,
-      fetch: nodeFetch
+      fetch: nodeFetch,
     })
     const fileId = extractIdFromResourceId(id)
 
     const response = await dbx.filesGetMetadata({
-      path: `${fileId}`
+      path: `${fileId}`,
     })
 
     return {
       name: response.result.name,
-      canDownload: true
+      canDownload: true,
     }
   },
   /**
@@ -44,12 +44,12 @@ export const dataSource: DataSourcePlugin = {
   download: async (link, credentials) => {
     const dbx = new Dropbox({
       accessToken: credentials.accessToken,
-      fetch: nodeFetch
+      fetch: nodeFetch,
     })
     const fileId = extractIdFromResourceId(link.resourceId)
 
     const response = await dbx.filesDownload({
-      path: `${fileId}`
+      path: `${fileId}`,
     })
 
     const results = response.result
@@ -61,15 +61,15 @@ export const dataSource: DataSourcePlugin = {
       read() {
         this.push(fileBinary)
         this.push(null)
-      }
+      },
     })
 
     return {
       metadata: {
         name: "",
-        size: results.size.toString()
+        size: results.size.toString(),
       },
-      stream
+      stream,
     }
   },
   sync: async ({ credentials }, helpers) => {
@@ -77,7 +77,7 @@ export const dataSource: DataSourcePlugin = {
 
     const dbx = new Dropbox({
       accessToken: credentials.accessToken,
-      fetch: nodeFetch
+      fetch: nodeFetch,
     })
 
     const { folderId } =
@@ -99,7 +99,7 @@ export const dataSource: DataSourcePlugin = {
               | PromiseReturnType<
                   typeof dbx.filesListFolder
                 >["result"]["cursor"]
-              | undefined
+              | undefined,
           ): Promise<Res> => {
             let response: PromiseReturnType<typeof dbx.filesListFolderContinue>
             if (cursor) {
@@ -109,23 +109,22 @@ export const dataSource: DataSourcePlugin = {
                 path: id,
                 include_deleted: false,
                 include_non_downloadable_files: false,
-                include_media_info: true
+                include_media_info: true,
               })
             }
             const data = response.result.entries.filter(
               (entry) =>
                 entry[".tag"] === "folder" ||
                 READER_ACCEPTED_EXTENSIONS.some((extension) =>
-                  entry.name.toLowerCase().endsWith(extension)
-                )
+                  entry.name.toLowerCase().endsWith(extension),
+                ),
             )
 
             if (response.result.has_more) {
               return [...data, ...(await getNextRes(response.result.cursor))]
-            } else {
-              return data
             }
-          }
+            return data
+          },
         )
 
         const results = await getNextRes()
@@ -133,46 +132,46 @@ export const dataSource: DataSourcePlugin = {
         return Promise.all(
           results.map(
             async (
-              item
+              item,
             ): Promise<SynchronizeAbleDataSource["items"][number]> => {
               if (item[".tag"] === "file") {
                 return {
                   type: "file",
                   resourceId: generateResourceId(
-                    (item as files.FileMetadataReference).id
+                    (item as files.FileMetadataReference).id,
                   ),
                   name: item.name,
-                  modifiedAt: item.server_modified
+                  modifiedAt: item.server_modified,
                 }
               }
 
               return {
                 type: "folder",
                 resourceId: generateResourceId(
-                  (item as files.FolderMetadataReference).id
+                  (item as files.FolderMetadataReference).id,
                 ),
                 items: await getContentsFromFolder(
-                  (item as files.FolderMetadataReference).id
+                  (item as files.FolderMetadataReference).id,
                 ),
                 name: item.name,
-                modifiedAt: new Date().toISOString()
+                modifiedAt: new Date().toISOString(),
               }
-            }
-          )
+            },
+          ),
         )
-      }
+      },
     )
 
     const [items, rootFolderResponse] = await Promise.all([
       await getContentsFromFolder(folderId),
       await dbx.filesGetMetadata({
-        path: folderId
-      })
+        path: folderId,
+      }),
     ])
 
     return {
       items,
-      name: rootFolderResponse.result.name
+      name: rootFolderResponse.result.name,
     }
-  }
+  },
 }

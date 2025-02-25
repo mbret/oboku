@@ -1,10 +1,10 @@
-import { UpdateQuery } from "rxdb"
-import { type useDatabase } from "./index"
-import {
+import type { UpdateQuery } from "rxdb"
+import type { useDatabase } from "./index"
+import type {
   BookDocType,
   CollectionDocType,
   LinkDocType,
-  TagsDocType
+  TagsDocType,
 } from "@oboku/shared"
 import { Report } from "../debug/report.shared"
 
@@ -13,17 +13,17 @@ type Database = NonNullable<ReturnType<typeof useDatabase>["db"]>
 const EXEC_PARALLEL = true
 
 export const applyHooks = (db: Database) => {
-  db.book.postSave(async function (data, d) {
+  db.book.postSave(async (data, d) => {
     const tagsFromWhichToRemoveBook = await db.tag
       .find({
         selector: {
           books: {
-            $in: [data._id]
+            $in: [data._id],
           },
           _id: {
-            $nin: data.tags
-          }
-        }
+            $nin: data.tags,
+          },
+        },
       })
       .exec()
 
@@ -33,17 +33,17 @@ export const applyHooks = (db: Database) => {
       .find({
         selector: {
           books: {
-            $in: [data._id]
+            $in: [data._id],
           },
           _id: {
-            $nin: data.collections
-          }
-        }
+            $nin: data.collections,
+          },
+        },
       })
       .update({
         $pullAll: {
-          books: [data._id]
-        }
+          books: [data._id],
+        },
       } satisfies UpdateQuery<CollectionDocType>)
 
     // add the book to any collections that are in this book
@@ -54,17 +54,17 @@ export const applyHooks = (db: Database) => {
           // if at least one of the books is data._id it will work.
           // be careful with $nin
           books: {
-            $nin: [data._id]
+            $nin: [data._id],
           },
           _id: {
-            $in: data.collections
-          }
-        }
+            $in: data.collections,
+          },
+        },
       })
       .update({
         $push: {
-          books: data._id
-        }
+          books: data._id,
+        },
       } satisfies UpdateQuery<CollectionDocType>)
 
     // @todo bulk
@@ -72,10 +72,10 @@ export const applyHooks = (db: Database) => {
       tagsFromWhichToRemoveBook.map(async (tag) => {
         await tag.update({
           $pullAll: {
-            books: [data._id]
-          }
+            books: [data._id],
+          },
         })
-      })
+      }),
     )
 
     // Update all the tags that are referenced by this book but are
@@ -86,12 +86,12 @@ export const applyHooks = (db: Database) => {
           books: {
             // if at least one of the books is data._id it will work.
             // be careful with $nin
-            $nin: [data._id]
+            $nin: [data._id],
           },
           _id: {
-            $in: data.tags
-          }
-        }
+            $in: data.tags,
+          },
+        },
       })
       .exec()
 
@@ -100,14 +100,14 @@ export const applyHooks = (db: Database) => {
       tagsFromWhichToAddBook.map(async (tag) => {
         await tag.update({
           $push: {
-            books: data._id
-          }
+            books: data._id,
+          },
         })
-      })
+      }),
     )
   }, true)
 
-  db.book.postRemove(async function (data) {
+  db.book.postRemove(async (data) => {
     /**
      * When a book is removed, dettach it from all tags
      * that contains its reference
@@ -116,14 +116,14 @@ export const applyHooks = (db: Database) => {
       .find({
         selector: {
           books: {
-            $in: [data._id]
-          }
-        }
+            $in: [data._id],
+          },
+        },
       })
       .update({
         $pullAll: {
-          books: [data._id]
-        }
+          books: [data._id],
+        },
       } satisfies UpdateQuery<TagsDocType>)
 
     // dettach all collections to this book
@@ -131,14 +131,14 @@ export const applyHooks = (db: Database) => {
       .find({
         selector: {
           books: {
-            $in: [data._id]
-          }
-        }
+            $in: [data._id],
+          },
+        },
       })
       .update({
         $pullAll: {
-          books: [data._id]
-        }
+          books: [data._id],
+        },
       } satisfies UpdateQuery<CollectionDocType>)
 
     /**
@@ -147,7 +147,7 @@ export const applyHooks = (db: Database) => {
     await db.link.find({ selector: { book: data._id } }).remove()
   }, true)
 
-  db.book.postInsert(async function (data) {
+  db.book.postInsert(async (data) => {
     /**
      * When a book is added, make sure to attach it to any links
      */
@@ -155,25 +155,25 @@ export const applyHooks = (db: Database) => {
       .find({
         selector: {
           _id: {
-            $in: data.links
-          }
-        }
+            $in: data.links,
+          },
+        },
       })
       .update({
         $set: {
-          book: data._id
-        }
+          book: data._id,
+        },
       } satisfies UpdateQuery<LinkDocType>)
   }, true)
 
-  db.tag.postRemove(async function (data) {
+  db.tag.postRemove(async (data) => {
     const booksFromWhichToRemoveTag = await db.book
       .find({
         selector: {
           tags: {
-            $in: [data._id]
-          }
-        }
+            $in: [data._id],
+          },
+        },
       })
       .exec()
 
@@ -182,27 +182,27 @@ export const applyHooks = (db: Database) => {
       booksFromWhichToRemoveTag.map(async (book) => {
         await book.update({
           $pullAll: {
-            tags: [data._id]
-          }
+            tags: [data._id],
+          },
         })
-      })
+      }),
     )
   }, true)
 
-  db.obokucollection.postRemove(async function (data) {
+  db.obokucollection.postRemove(async (data) => {
     // remove any book that were attached to this collection
     await db.book
       .find({
         selector: {
           collections: {
-            $in: [data._id]
-          }
-        }
+            $in: [data._id],
+          },
+        },
       })
       .update({
         $pullAll: {
-          collections: [data._id]
-        }
+          collections: [data._id],
+        },
       } satisfies UpdateQuery<BookDocType>)
   }, true)
 
@@ -220,14 +220,14 @@ const updateRelationBetweenLinksAndBooksHook = (db: Database) => {
           .findOne({
             selector: {
               _id: {
-                $eq: bookId
-              }
-            }
+                $eq: bookId,
+              },
+            },
           })
           .exec()
 
         await book?.incrementalPatch({
-          links: [data._id]
+          links: [data._id],
         })
       } catch (e) {
         Report.error(e)

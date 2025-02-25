@@ -5,7 +5,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText
+  ListItemText,
 } from "@mui/material"
 import { setReaderSettingsState, useReaderSettingsState } from "./states"
 
@@ -42,7 +42,7 @@ export const SettingsList = () => {
             setReaderSettingsState((state) => ({
               ...state,
               floatingTime:
-                state.floatingTime === "bottom" ? undefined : "bottom"
+                state.floatingTime === "bottom" ? undefined : "bottom",
             }))
           }}
         >
@@ -69,7 +69,7 @@ export const SettingsList = () => {
             setReaderSettingsState((state) => ({
               ...state,
               floatingProgress:
-                state.floatingProgress === "bottom" ? undefined : "bottom"
+                state.floatingProgress === "bottom" ? undefined : "bottom",
             }))
           }}
         >

@@ -1,6 +1,6 @@
-import { DataSourcePlugin } from "@libs/plugins/types"
+import type { DataSourcePlugin } from "@libs/plugins/types"
 import axios from "axios"
-import { IncomingMessage } from "http"
+import type { IncomingMessage } from "node:http"
 
 export type UriLinkData = { uri?: string }
 
@@ -24,15 +24,15 @@ export const dataSource: DataSourcePlugin = {
     const downloadLink = extractIdFromResourceId(link.resourceId)
 
     const response = await axios.get(downloadLink, {
-      responseType: "stream"
+      responseType: "stream",
     })
 
     return {
       metadata: (await dataSource.getMetadata({ id: link.resourceId })) ?? {},
       // @todo request is deprecated, switch to something else
       // @see https://github.com/request/request/issues/3143
-      stream: response.data as IncomingMessage
+      stream: response.data as IncomingMessage,
     }
   },
-  sync: async () => ({ items: [], name: "" })
+  sync: async () => ({ items: [], name: "" }),
 }

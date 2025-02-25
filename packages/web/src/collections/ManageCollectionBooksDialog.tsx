@@ -1,7 +1,7 @@
-import { FC } from "react"
+import type { FC } from "react"
 import {
   useRemoveCollectionFromBook,
-  useAddCollectionToBook
+  useAddCollectionToBook,
 } from "../books/helpers"
 import { useBooksAsArrayState } from "../books/states"
 import { useMemo } from "react"
@@ -17,16 +17,16 @@ export const ManageCollectionBooksDialog: FC<{
   collectionId?: string
 }> = ({ onClose, open, collectionId }) => {
   const { data: collection } = useCollection({
-    id: collectionId
+    id: collectionId,
   })
   const { data: books } = useBooksAsArrayState({
-    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal)
+    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal),
   })
   const { mutate: addToBook } = useAddCollectionToBook()
   const { mutate: removeFromBook } = useRemoveCollectionFromBook()
   const collectionBooks = useMemo(
     () => collection?.books?.map((item) => item) || [],
-    [collection]
+    [collection],
   )
 
   const data = useMemo(() => books.map((item) => item._id), [books])
@@ -36,11 +36,11 @@ export const ManageCollectionBooksDialog: FC<{
       books.reduce(
         (acc, item) => ({
           ...acc,
-          [item._id]: !!collectionBooks.find((id) => id === item._id)
+          [item._id]: !!collectionBooks.find((id) => id === item._id),
         }),
-        {} as Record<string, boolean>
+        {} as Record<string, boolean>,
       ),
-    [books, collectionBooks]
+    [books, collectionBooks],
   )
 
   const onItemClick = useCallback(
@@ -51,7 +51,7 @@ export const ManageCollectionBooksDialog: FC<{
         collectionId && addToBook({ _id: bookId, collectionId })
       }
     },
-    [collectionId, addToBook, removeFromBook]
+    [collectionId, addToBook, removeFromBook],
   )
 
   return (

@@ -1,4 +1,4 @@
-import { ComponentProps, memo, useMemo } from "react"
+import { type ComponentProps, memo, useMemo } from "react"
 import { Dialog, DialogContent } from "@mui/material"
 import { DialogTopBar } from "../navigation/DialogTopBar"
 import { SelectableCollectionList } from "./lists/SelectableCollectionList"
@@ -12,7 +12,7 @@ export const CollectionsSelectionDialog = memo(
     open,
     title = `Collections selection`,
     selected,
-    hasBackNavigation
+    hasBackNavigation,
   }: {
     onItemClick: (id: { id: string; selected: boolean }) => void
     onClose: () => void
@@ -26,11 +26,11 @@ export const CollectionsSelectionDialog = memo(
         data?.reduce(
           (acc, item) => ({
             ...acc,
-            [item]: selected(item)
+            [item]: selected(item),
           }),
-          {} as Record<string, boolean>
+          {} as Record<string, boolean>,
         ) ?? {},
-      [data, selected]
+      [data, selected],
     )
 
     const numberOfItemsSelected =
@@ -48,12 +48,12 @@ export const CollectionsSelectionDialog = memo(
             flex: 1,
             display: "flex",
             flexDirection: "column",
-            padding: 0
+            padding: 0,
           }}
         >
           <SelectableCollectionList
             style={{
-              flex: 1
+              flex: 1,
             }}
             onItemClick={onItemClick}
             selected={selectedData}
@@ -66,5 +66,5 @@ export const CollectionsSelectionDialog = memo(
         </DialogContent>
       </Dialog>
     )
-  }
+  },
 )

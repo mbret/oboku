@@ -1,4 +1,4 @@
-import { Observable, catchError } from "rxjs"
+import { type Observable, catchError } from "rxjs"
 import { CancelError, OfflineError } from "./errors.shared"
 import { createDialog } from "../common/dialogs/createDialog"
 
@@ -12,7 +12,7 @@ export function withUnknownErrorDialog() {
         createDialog({ preset: "UNKNOWN_ERROR", autoStart: true })
 
         throw error
-      })
+      }),
     )
   }
 }

@@ -9,7 +9,7 @@ export const getManga = async (id: string) => {
     method: "get",
     url: `https://api.mangadex.org/manga/${id}`,
     headers: {
-      "Content-Type": "application/json"
-    }
+      "Content-Type": "application/json",
+    },
   })
 }

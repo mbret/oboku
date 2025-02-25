@@ -2,16 +2,16 @@ import { useMemo } from "react"
 import { useBooks } from "../books/states"
 import { useCollections } from "../collections/useCollections"
 import { difference } from "@oboku/shared"
-import { CollectionDocType } from "@oboku/shared"
+import type { CollectionDocType } from "@oboku/shared"
 
 export const useFixableCollections = () => {
   const { data: unsafeCollections } = useCollections({
-    includeProtected: true
+    includeProtected: true,
   })
   const { data: unsafeBooks } = useBooks({ includeProtected: true })
   const unsafeBookIds = useMemo(
     () => unsafeBooks?.map((item) => item._id),
-    [unsafeBooks]
+    [unsafeBooks],
   )
 
   const collectionsWithDanglingBooks = unsafeCollections?.reduce(
@@ -23,14 +23,14 @@ export const useFixableCollections = () => {
           ...acc,
           {
             doc,
-            danglingItems
-          }
+            danglingItems,
+          },
         ]
       }
 
       return acc
     },
-    [] as { doc: CollectionDocType; danglingItems: string[] }[]
+    [] as { doc: CollectionDocType; danglingItems: string[] }[],
   )
 
   return { collectionsWithDanglingBooks }

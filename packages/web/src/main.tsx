@@ -9,7 +9,7 @@ import "@fontsource/roboto/700.css"
 import "./main.css"
 import "./common/animations.css"
 import { App } from "./App"
-import {ErrorBoundary} from "@sentry/react"
+import { ErrorBoundary } from "@sentry/react"
 
 const rootElm = document.getElementById("root")
 
@@ -21,6 +21,6 @@ if (rootElm) {
       <ErrorBoundary>
         <App />
       </ErrorBoundary>
-    </React.StrictMode>
+    </React.StrictMode>,
   )
 }

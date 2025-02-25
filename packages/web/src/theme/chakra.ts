@@ -12,9 +12,9 @@ export const einkSystem = createSystem(
     theme: {
       tokens: {
         durations: {
-          moderate: { value: "0ms" }
-        }
-      }
-    }
-  })
+          moderate: { value: "0ms" },
+        },
+      },
+    },
+  }),
 )

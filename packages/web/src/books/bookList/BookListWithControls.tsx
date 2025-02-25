@@ -1,4 +1,5 @@
-import React, { ComponentProps, FC } from "react"
+import type React from "react"
+import type { ComponentProps, FC } from "react"
 import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { useBookIdsSortedBy } from "../helpers"
 import { BookList } from "./BookList"
@@ -22,7 +23,7 @@ export const BookListWithControls: FC<
   onViewModeChange,
   onSortingChange,
   ListActionsToolbarProps,
-  useWindowScroll
+  useWindowScroll,
 }) => {
   const sortedData = useBookIdsSortedBy(data, sorting)
 
@@ -46,7 +47,7 @@ export const BookListWithControls: FC<
             useWindowScroll={useWindowScroll}
             style={{
               height: "100%",
-              width: "100%"
+              width: "100%",
             }}
           />
         )}

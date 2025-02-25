@@ -15,11 +15,11 @@ export default {
         request: {
           parameters: {
             paths: {
-              id: true
-            }
-          }
-        }
-      }
-    }
-  ]
+              id: true,
+            },
+          },
+        },
+      },
+    },
+  ],
 }

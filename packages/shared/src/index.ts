@@ -1,7 +1,7 @@
 export const design = {
   palette: {
-    orange: `rgb(225, 100, 50, 1)`
-  }
+    orange: `rgb(225, 100, 50, 1)`,
+  },
 }
 
 export const links = {
@@ -11,7 +11,7 @@ export const links = {
   linkedin: `https://www.linkedin.com/in/maxime-bret`,
   github: `https://github.com/mbret/oboku`,
   discord: `https://discord.gg/eB6MrMmmPN`,
-  reddit: `https://www.reddit.com/r/oboku/`
+  reddit: `https://www.reddit.com/r/oboku/`,
 }
 
 export type OPF = {

@@ -1,15 +1,15 @@
 import { directives } from "@oboku/shared"
-import { Archive, Manifest } from "@prose-reader/streamer"
+import type { Archive, Manifest } from "@prose-reader/streamer"
 
 export const onManifestSuccess = async ({
   manifest,
-  archive
+  archive,
 }: {
   archive: Archive
   manifest: Manifest
 }): Promise<Manifest> => {
   const { isWebtoon, direction } = directives.extractDirectivesFromName(
-    archive.filename
+    archive.filename,
   )
 
   const readingDirection = direction
@@ -26,13 +26,13 @@ export const onManifestSuccess = async ({
       renditionFlow: "scrolled-continuous",
       spineItems: manifest.spineItems.map((item) => ({
         ...item,
-        renditionLayout: "reflowable" as const
-      }))
+        renditionLayout: "reflowable" as const,
+      })),
     }
   }
 
   return {
     ...manifest,
-    readingDirection
+    readingDirection,
   }
 }

@@ -8,5 +8,5 @@ export const useDownloadedFilesInfo = () =>
       const resposne = await dexieDb.downloads.toArray()
 
       return resposne
-    }
+    },
   })

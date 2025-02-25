@@ -1,4 +1,4 @@
-import { ComponentProps } from "react"
+import type { ComponentProps } from "react"
 import Chip from "@mui/material/Chip"
 import { useTag } from "./helpers"
 

@@ -15,10 +15,10 @@ export const getBooks = (title: string) => {
     method: "post",
     url: "https://biblioreads.eu.org/api/search/books",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     data: {
-      queryURL: `https://www.goodreads.com/search?q=${encodeURIComponent(title)}`
-    }
+      queryURL: `https://www.goodreads.com/search?q=${encodeURIComponent(title)}`,
+    },
   })
 }

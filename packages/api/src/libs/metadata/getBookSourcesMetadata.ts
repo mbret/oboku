@@ -1,4 +1,4 @@
-import { Metadata } from "./types"
+import type { Metadata } from "./types"
 import { getGoogleBookMetadata } from "./google/getGoogleBookMetadata"
 import { Logger } from "@libs/logger"
 import { isAxiosError } from "axios"
@@ -17,13 +17,13 @@ const swallowGoogleError = async <T>(promise: Promise<T>) => {
 
 export const getBookSourcesMetadata = async (
   metadata: Metadata,
-  { googleApiKey, withGoogle }: { googleApiKey?: string; withGoogle: boolean }
+  { googleApiKey, withGoogle }: { googleApiKey?: string; withGoogle: boolean },
 ): Promise<Metadata[]> => {
   const list = []
 
   if (withGoogle) {
     const google = await swallowGoogleError(
-      getGoogleBookMetadata(metadata, googleApiKey ?? "")
+      getGoogleBookMetadata(metadata, googleApiKey ?? ""),
     )
 
     if (google) {

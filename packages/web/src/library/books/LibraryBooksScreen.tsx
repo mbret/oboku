@@ -5,13 +5,13 @@ import {
   Typography,
   useTheme,
   Stack,
-  Toolbar as MuiToolbar
+  Toolbar as MuiToolbar,
 } from "@mui/material"
 import { LibraryFiltersDrawer } from "../LibraryFiltersDrawer"
 import EmptyLibraryAsset from "../../assets/empty-library.svg"
 import {
   libraryStateSignal,
-  isUploadBookDrawerOpenedStateSignal
+  isUploadBookDrawerOpenedStateSignal,
 } from "./states"
 import { UploadBookDrawer } from "../UploadBookDrawer"
 import { SortByDialog } from "../../books/bookList/SortByDialog"
@@ -26,7 +26,7 @@ export const LibraryBooksScreen = () => {
   const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const isUploadBookDrawerOpened = useSignalValue(
-    isUploadBookDrawerOpenedStateSignal
+    isUploadBookDrawerOpenedStateSignal,
   )
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const library = useSignalValue(libraryStateSignal)
@@ -52,12 +52,12 @@ export const LibraryBooksScreen = () => {
         Add a new book
       </Button>
     ),
-    []
+    [],
   )
 
   const listHeader = useMemo(
     () => <MuiToolbar>{addBookButton}</MuiToolbar>,
-    [addBookButton]
+    [addBookButton],
   )
 
   const bookListRenderHeader = useCallback(() => listHeader, [listHeader])
@@ -70,7 +70,7 @@ export const LibraryBooksScreen = () => {
         display: "flex",
         flexDirection: "column",
         flex: 1,
-        overflow: "hidden"
+        overflow: "hidden",
       }}
     >
       <Toolbar
@@ -88,7 +88,7 @@ export const LibraryBooksScreen = () => {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              flex: 1
+              flex: 1,
             }}
           >
             <MuiToolbar style={{ width: "100%", boxSizing: "border-box" }}>
@@ -103,12 +103,12 @@ export const LibraryBooksScreen = () => {
                 alignItems: "center",
                 textAlign: "center",
                 width: "80%",
-                maxWidth: theme.custom.maxWidthCenteredContent
+                maxWidth: theme.custom.maxWidthCenteredContent,
               }}
             >
               <img
                 style={{
-                  width: "100%"
+                  width: "100%",
                 }}
                 src={EmptyLibraryAsset}
                 alt="libray"
@@ -128,7 +128,7 @@ export const LibraryBooksScreen = () => {
             sorting={library.sorting}
             data={books}
             style={{
-              height: "100%"
+              height: "100%",
             }}
             renderHeader={bookListRenderHeader}
             restoreScrollId="libraryBookList"

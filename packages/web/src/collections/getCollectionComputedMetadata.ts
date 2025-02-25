@@ -1,5 +1,9 @@
-import { CollectionDocType, CollectionMetadata, mergeWith } from "@oboku/shared"
-import { DeepReadonlyObject } from "rxdb"
+import {
+  type CollectionDocType,
+  type CollectionMetadata,
+  mergeWith,
+} from "@oboku/shared"
+import type { DeepReadonlyObject } from "rxdb"
 
 type DeprecatedDocType = {
   name: string
@@ -14,7 +18,7 @@ type Return = DeepReadonlyObject<Omit<CollectionMetadata, "type" | "title">> & {
 export const getCollectionComputedMetadata = (
   item?: DeepReadonlyObject<
     CollectionDocType & Partial<DeprecatedDocType>
-  > | null
+  > | null,
 ): Return => {
   const list = item?.metadata ?? []
 
@@ -26,7 +30,7 @@ export const getCollectionComputedMetadata = (
       biblioreads: 2,
       link: 1,
       googleBookApi: 0,
-      comicvine: -1
+      comicvine: -1,
     }
 
     return (priority[a.type] || 0) - (priority[b.type] || 0)
@@ -41,13 +45,13 @@ export const getCollectionComputedMetadata = (
       acc,
       {
         ...item,
-        title: computedTitle
+        title: computedTitle,
       },
       (objValue, srcValue) => {
         if (srcValue === null) return objValue ?? srcValue
 
         return undefined
-      }
+      },
     ) as Return
 
     return mergedValue

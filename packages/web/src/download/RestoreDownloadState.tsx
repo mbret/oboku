@@ -5,7 +5,7 @@ import { dexieDb } from "../rxdb/dexie"
 import { useMutation$ } from "reactjrx"
 
 const useRestoreDownloadState = ({
-  onSuccess
+  onSuccess,
 }: {
   onSuccess: () => void
 }) => {
@@ -20,23 +20,23 @@ const useRestoreDownloadState = ({
               [bookId]: {
                 downloadProgress: 100,
                 downloadState: DownloadState.Downloaded,
-                size: data.size
-              }
+                size: data.size,
+              },
             }
           }, {})
 
           booksDownloadStateSignal.setValue(state)
 
           return of(null)
-        })
-      )
+        }),
+      ),
   })
 }
 
 export const RestoreDownloadState = memo(
   ({ onReady }: { onReady: () => void }) => {
     const { mutate: restoreDownloadState } = useRestoreDownloadState({
-      onSuccess: onReady
+      onSuccess: onReady,
     })
 
     useEffect(() => {
@@ -44,5 +44,5 @@ export const RestoreDownloadState = memo(
     }, [restoreDownloadState])
 
     return null
-  }
+  },
 )

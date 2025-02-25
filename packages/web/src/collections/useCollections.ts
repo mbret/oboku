@@ -1,10 +1,14 @@
-import { CollectionDocType, difference, ReadingStateState } from "@oboku/shared"
+import {
+  type CollectionDocType,
+  difference,
+  ReadingStateState,
+} from "@oboku/shared"
 import { useLocalSettings } from "../settings/states"
 import { useQuery$, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
-import { MangoQuery } from "rxdb"
-import { DeepReadonlyArray } from "rxdb/dist/types/types"
+import type { MangoQuery } from "rxdb"
+import type { DeepReadonlyArray } from "rxdb/dist/types/types"
 import { libraryStateSignal } from "../library/books/states"
 import { intersection } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
@@ -48,9 +52,9 @@ export const useCollections = ({
         showCollectionWithProtectedContent,
         includeProtected,
         isNotInterested,
-        readingState
+        readingState,
       },
-      queryObj
+      queryObj,
     ],
     queryFn: () => {
       return latestDatabase$.pipe(
@@ -63,7 +67,7 @@ export const useCollections = ({
            */
           observeBooks({
             db,
-            includeProtected
+            includeProtected,
           }).pipe(
             switchMap((books) => {
               const visibleBooks = books.map(({ _id }) => _id)
@@ -77,15 +81,15 @@ export const useCollections = ({
                   ...queryObj?.selector,
                   ...(ids && {
                     _id: {
-                      $in: Array.from(ids)
-                    }
+                      $in: Array.from(ids),
+                    },
                   }),
                   ...(bookIds && {
                     books: {
-                      $in: Array.from(bookIds)
-                    }
-                  })
-                }
+                      $in: Array.from(bookIds),
+                    },
+                  }),
+                },
               }
 
               const collections$ =
@@ -114,7 +118,7 @@ export const useCollections = ({
                        */
                       const extraBooksFromCollection = difference(
                         collection.books,
-                        visibleBooks
+                        visibleBooks,
                       )
 
                       const hasSuspiciousExtraBook =
@@ -143,7 +147,7 @@ export const useCollections = ({
                       ) {
                         const booksNotProtected = difference(
                           collection.books,
-                          notInterestedBookIds
+                          notInterestedBookIds,
                         )
 
                         return booksNotProtected.length > 0
@@ -156,7 +160,7 @@ export const useCollections = ({
                      */
                     .filter((collection) => {
                       const booksFromCollection = books.filter((book) =>
-                        collection.books.includes(book._id)
+                        collection.books.includes(book._id),
                       )
 
                       if (
@@ -164,7 +168,7 @@ export const useCollections = ({
                         (booksFromCollection.some(
                           (book) =>
                             book.readingStateCurrentState !==
-                            ReadingStateState.Finished
+                            ReadingStateState.Finished,
                         ) ||
                           booksFromCollection.length === 0)
                       ) {
@@ -177,7 +181,7 @@ export const useCollections = ({
                         booksFromCollection.every(
                           (book) =>
                             book.readingStateCurrentState ===
-                            ReadingStateState.Finished
+                            ReadingStateState.Finished,
                         )
                       ) {
                         return false
@@ -185,14 +189,14 @@ export const useCollections = ({
 
                       return true
                     })
-                    .map((item) => item?.toJSON() as CollectionDocType)
-                )
+                    .map((item) => item?.toJSON() as CollectionDocType),
+                ),
               )
-            })
-          )
-        )
+            }),
+          ),
+        ),
       )
     },
-    ...options
+    ...options,
   })
 }

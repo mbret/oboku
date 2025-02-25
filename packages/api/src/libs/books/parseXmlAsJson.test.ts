@@ -18,7 +18,7 @@ describe("Given basic xml", () => {
       "?xml": {
         encoding: "utf-8",
         standalone: "no",
-        version: "1.0"
+        version: "1.0",
       },
       html: {
         body: "",
@@ -26,8 +26,8 @@ describe("Given basic xml", () => {
         "xml:lang": "en",
         xmlns: "http://www.w3.org/1999/xhtml",
         "xmlns:epub": "http://www.idpf.org/2007/ops",
-        head: { title: "Cover" }
-      }
+        head: { title: "Cover" },
+      },
     })
   })
 })

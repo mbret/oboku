@@ -1,6 +1,6 @@
-import { FC, memo } from "react"
+import { type FC, memo } from "react"
 import { Drawer, List, ListItemText, ListItemButton } from "@mui/material"
-import { SignalValue, useSignalValue } from "reactjrx"
+import { type SignalValue, useSignalValue } from "reactjrx"
 import { searchListActionsToolbarSignal } from "./states"
 
 export const FiltersDrawer: FC<{
@@ -8,13 +8,13 @@ export const FiltersDrawer: FC<{
   onClose: () => void
 }> = memo(({ open, onClose }) => {
   const { notInterestedContents } = useSignalValue(
-    searchListActionsToolbarSignal
+    searchListActionsToolbarSignal,
   )
 
   const getNotInterestedLabelFromValue = (
     value: SignalValue<
       typeof searchListActionsToolbarSignal
-    >["notInterestedContents"]
+    >["notInterestedContents"],
   ) => {
     switch (value) {
       case "only":
@@ -22,7 +22,7 @@ export const FiltersDrawer: FC<{
       case "with":
         return "Yes"
       default:
-        "None"
+        ;("None")
     }
 
     return "None"
@@ -42,14 +42,14 @@ export const FiltersDrawer: FC<{
                       ? "with"
                       : state.notInterestedContents === "with"
                         ? "only"
-                        : "none"
+                        : "none",
                 }))
               }
             >
               <ListItemText
                 primary="Show not interested contents"
                 secondary={getNotInterestedLabelFromValue(
-                  notInterestedContents
+                  notInterestedContents,
                 )}
               />
             </ListItemButton>

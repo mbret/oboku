@@ -1,4 +1,4 @@
-import { ComponentProps, FC, memo } from "react"
+import { type ComponentProps, type FC, memo } from "react"
 import { Box, Typography, styled } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
@@ -23,7 +23,7 @@ export const BookListGridItem: FC<
   } & ComponentProps<typeof ContainerBox>
 > = memo(({ bookId, onItemClick, ...rest }) => {
   const { data: item } = useBook({
-    id: bookId
+    id: bookId,
   })
   const onDefaultItemClick = useDefaultItemClickHandler()
 
@@ -45,7 +45,7 @@ export const BookListGridItem: FC<
           display: "flex",
           flex: 1,
           // marginTop: theme.spacing(1),
-          minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
+          minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
         }}
         size="medium"
         withBadges
@@ -58,7 +58,7 @@ export const BookListGridItem: FC<
           display: "flex",
           alignItems: "center",
           paddingLeft: 2,
-          paddingRight: 5
+          paddingRight: 5,
           // marginBottom: theme.spacing(1),
         }}
         onClick={(e) => {
@@ -72,7 +72,7 @@ export const BookListGridItem: FC<
             style={{
               whiteSpace: "nowrap",
               overflow: "hidden",
-              textOverflow: "ellipsis"
+              textOverflow: "ellipsis",
             }}
           >
             {metadata?.title || "Unknown"}
@@ -83,7 +83,7 @@ export const BookListGridItem: FC<
         </div>
         <MoreVert
           style={{
-            transform: "translate(50%, 0%)"
+            transform: "translate(50%, 0%)",
           }}
         />
       </Box>

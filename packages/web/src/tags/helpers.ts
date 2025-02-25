@@ -1,11 +1,11 @@
-import { TagsDocType } from "@oboku/shared"
+import type { TagsDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
 import { map, mergeMap, switchMap } from "rxjs"
 import { useQuery$ } from "reactjrx"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
-import { Database } from "../rxdb"
-import { DeepReadonlyObject, MangoQuery } from "rxdb"
+import type { Database } from "../rxdb"
+import type { DeepReadonlyObject, MangoQuery } from "rxdb"
 import { useMutation } from "@tanstack/react-query"
 
 export const useCreateTag = () => {
@@ -18,8 +18,8 @@ export const useCreateTag = () => {
         books: [],
         isProtected: false,
         createdAt: new Date().toISOString(),
-        modifiedAt: null
-      })
+        modifiedAt: null,
+      }),
   })
 }
 
@@ -37,16 +37,16 @@ export const useUpdateTag = () => {
         .then((doc) =>
           doc?.incrementalModify((doc) => ({
             ...doc,
-            ...rest
-          }))
+            ...rest,
+          })),
         ),
-    [db]
+    [db],
   )
 }
 
 const tags$ = latestDatabase$.pipe(
   switchMap((database) => database.tag.find({}).$),
-  map((tags) => tags.map((item) => item.toJSON()))
+  map((tags) => tags.map((item) => item.toJSON())),
 )
 
 const tagsByIds$ = tags$.pipe(
@@ -57,13 +57,13 @@ const tagsByIds$ = tags$.pipe(
 
         return acc
       },
-      {} as Record<string, DeepReadonlyObject<TagsDocType>>
-    )
-  )
+      {} as Record<string, DeepReadonlyObject<TagsDocType>>,
+    ),
+  ),
 )
 
 const protectedTags$ = tags$.pipe(
-  map((tag) => tag.filter(({ isProtected }) => isProtected))
+  map((tag) => tag.filter(({ isProtected }) => isProtected)),
 )
 
 /**
@@ -87,7 +87,7 @@ export const getTagsByIds = async (db: Database) => {
 
       return acc
     },
-    {} as Record<string, TagsDocType>
+    {} as Record<string, TagsDocType>,
   )
 }
 
@@ -101,10 +101,10 @@ export const useTag = (id?: string) => {
           return db.tag.findOne(id).$.pipe(
             map((result) => {
               return result?.toJSON()
-            })
+            }),
           )
-        })
-      )
+        }),
+      ),
   })
 }
 
@@ -120,9 +120,9 @@ export const useTags = ({
     queryFn: () =>
       getLatestDatabase().pipe(
         mergeMap((database) => database.tag.find(queryObj).$),
-        map((items) => items.map((item) => item.toJSON()))
+        map((items) => items.map((item) => item.toJSON())),
       ),
-    ...options
+    ...options,
   })
 
 export const useTagsByIds = () =>
@@ -131,17 +131,17 @@ export const useTagsByIds = () =>
 export const useTagIds = () =>
   useQuery$({
     queryFn: () => tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    queryKey: ["tagsIds"]
+    queryKey: ["tagsIds"],
   })
 
 const blurredTags$ = tags$.pipe(
-  map((tags) => tags.filter(({ isBlurEnabled }) => isBlurEnabled))
+  map((tags) => tags.filter(({ isBlurEnabled }) => isBlurEnabled)),
 )
 
 export const useBlurredTagIds = () =>
   useQuery$({
     queryFn: () => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    queryKey: ["blurredTagIds"]
+    queryKey: ["blurredTagIds"],
   })
 
 export const useProtectedTagIds = (options: { enabled?: boolean } = {}) =>
@@ -149,5 +149,5 @@ export const useProtectedTagIds = (options: { enabled?: boolean } = {}) =>
     queryKey: ["protectedTagIds"],
     queryFn: () =>
       protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    ...options
+    ...options,
   })

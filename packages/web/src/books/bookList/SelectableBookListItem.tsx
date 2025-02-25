@@ -1,5 +1,6 @@
 import { Box, Typography, useTheme } from "@mui/material"
-import React, { memo } from "react"
+import type React from "react"
+import { memo } from "react"
 import { useEnrichedBookState } from "../states"
 import { BookListCoverContainer } from "./BookListCoverContainer"
 import { Checkbox } from "../../common/Checkbox"
@@ -15,7 +16,7 @@ export const SelectableBookListItem = memo(
     onItemClick,
     itemHeight,
     selected = true,
-    padding = 1
+    padding = 1,
   }: {
     bookId: string
     onItemClick?: (id: string) => void
@@ -30,7 +31,7 @@ export const SelectableBookListItem = memo(
       bookId,
       normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal),
       protectedTagIds: useProtectedTagIds().data,
-      tags: useTagsByIds().data
+      tags: useTagsByIds().data,
     })
     const theme = useTheme()
     const computedHeight = itemHeight
@@ -49,7 +50,7 @@ export const SelectableBookListItem = memo(
           flexGrow: 1,
           overflow: "hidden",
           height: itemHeight,
-          ...style
+          ...style,
         }}
         px={padding}
         py={padding / 2}
@@ -60,7 +61,7 @@ export const SelectableBookListItem = memo(
             position: "relative",
             display: "flex",
             flex: `0 0 ${coverWidth}`,
-            minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
+            minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
           }}
           withBadges={false}
           withReadingProgressStatus={false}
@@ -73,7 +74,7 @@ export const SelectableBookListItem = memo(
             minHeight: 0,
             flexDirection: "column",
             marginLeft: theme.spacing(1),
-            overflow: "hidden"
+            overflow: "hidden",
           }}
         >
           <Typography noWrap variant="body1" display="block">
@@ -88,5 +89,5 @@ export const SelectableBookListItem = memo(
         </div>
       </Box>
     )
-  }
+  },
 )

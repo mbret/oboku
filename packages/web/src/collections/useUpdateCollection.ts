@@ -1,4 +1,4 @@
-import { CollectionDocType } from "@oboku/shared"
+import type { CollectionDocType } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
 import { useMutation } from "@tanstack/react-query"
 
@@ -21,9 +21,9 @@ export const useUpdateCollection = () => {
         metadata: old.metadata?.map((entry) =>
           entry.type === "user"
             ? { ...entry, title: name ?? entry.title }
-            : entry
-        )
+            : entry,
+        ),
       }))
-    }
+    },
   })
 }

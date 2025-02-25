@@ -12,13 +12,9 @@ import {
   styled,
   Typography,
 } from "@mui/material"
-import React, { useCallback, useMemo, useRef, useState } from "react"
-import {
-  generatePath,
-  Link,
-  useNavigate,
-  useSearchParams
-} from "react-router"
+import type React from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
+import { generatePath, Link, useNavigate, useSearchParams } from "react-router"
 import { useMount } from "react-use"
 import { BookList } from "../books/bookList/BookList"
 import { CollectionList } from "../collections/lists/CollectionList"
@@ -33,14 +29,14 @@ import { searchStateSignal } from "./states"
 
 const Accordion = styled(MuiAccordion)({
   ":before": {
-    backgroundColor: "transparent"
-  }
+    backgroundColor: "transparent",
+  },
 })
 
 const SeeMore = ({
   size,
   search,
-  type
+  type,
 }: {
   size?: number
   search: string
@@ -54,7 +50,7 @@ const SeeMore = ({
         to={generatePath(`:search/:type`, {
           // will use /%20/ (space) instead of nothing and crashing
           search: search === `` ? ` ` : search,
-          type
+          type,
         })}
       >
         <ListItemText
@@ -69,8 +65,8 @@ const SeeMore = ({
 const SearchInput = styled(InputBase)(({ theme }) => ({
   ".MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 1),
-    width: "100%"
-  }
+    width: "100%",
+  },
 }))
 
 const StyledForm = styled(`form`)(({ theme }) => ({
@@ -78,10 +74,10 @@ const StyledForm = styled(`form`)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
   backgroundColor: alpha(theme.palette.common.white, 0.15),
   "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25)
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
   },
   marginLeft: 0,
-  width: "100%"
+  width: "100%",
 }))
 
 export const SearchScreen = () => {
@@ -105,7 +101,7 @@ export const SearchScreen = () => {
 
   const visibleCollections = useMemo(
     () => collections.slice(0, SEARCH_MAX_PREVIEW_ITEMS),
-    [collections]
+    [collections],
   )
 
   return (
@@ -115,7 +111,7 @@ export const SearchScreen = () => {
         flexDirection: "column" as const,
         overflow: "hidden",
         flex: 1,
-        height: "100%"
+        height: "100%",
       }}
     >
       <TopBarNavigation
@@ -127,7 +123,7 @@ export const SearchScreen = () => {
               value={value || ""}
               sx={{
                 color: "inherit",
-                width: "100%"
+                width: "100%",
               }}
               inputRef={inputRef as any}
               autoFocus
@@ -136,11 +132,11 @@ export const SearchScreen = () => {
                 searchStateSignal.setValue(e.target.value)
                 setSearchParams(
                   {
-                    value: e.target.value
+                    value: e.target.value,
                   },
                   {
-                    replace: true
-                  }
+                    replace: true,
+                  },
                 )
               }}
             />
@@ -165,8 +161,8 @@ export const SearchScreen = () => {
           <AccordionDetails
             {...(books.length && {
               style: {
-                padding: 0
-              }
+                padding: 0,
+              },
             })}
           >
             <Box height="auto">
@@ -200,8 +196,8 @@ export const SearchScreen = () => {
           <AccordionDetails
             {...(collections.length && {
               style: {
-                padding: 0
-              }
+                padding: 0,
+              },
             })}
           >
             {collections.length ? (

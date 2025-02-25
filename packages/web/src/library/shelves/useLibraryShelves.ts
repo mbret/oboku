@@ -7,16 +7,16 @@ import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 
 export const useLibraryShelves = () => {
   const { readingState, showNotInterestedCollections } = useSignalValue(
-    libraryShelvesFiltersSignal
+    libraryShelvesFiltersSignal,
   )
 
   const { data: collections } = useCollections({
     isNotInterested: showNotInterestedCollections ? "with" : "none",
-    readingState
+    readingState,
   })
   const { data: emptyCollection } = useCollection({
     id: COLLECTION_EMPTY_ID,
-    isNotInterested: showNotInterestedCollections ? "with" : "none"
+    isNotInterested: showNotInterestedCollections ? "with" : "none",
   })
 
   const collectionIds = useMemo(() => {

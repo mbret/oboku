@@ -1,5 +1,5 @@
 import { httpClient } from "../../http/httpClient"
-import { SupabaseTableSyncReportsEntries } from "@oboku/shared"
+import type { SupabaseTableSyncReportsEntries } from "@oboku/shared"
 import { API_URL } from "../../constants.web"
 import { useQuery } from "@tanstack/react-query"
 
@@ -9,7 +9,7 @@ export const useSyncReports = () =>
     queryFn: async () => {
       const response = await httpClient.fetch<SupabaseTableSyncReportsEntries>({
         url: `${API_URL}/sync/reports`,
-        withAuth: true
+        withAuth: true,
       })
 
       const entries = response?.data
@@ -24,23 +24,23 @@ export const useSyncReports = () =>
               }) => {
                 return {
                   ...(fetchedMetadata && {
-                    fetchedMetadata: entry.fetchedMetadata + 1
+                    fetchedMetadata: entry.fetchedMetadata + 1,
                   }),
                   ...(added && {
-                    added: entry.added + 1
+                    added: entry.added + 1,
                   }),
                   ...(deleted && {
-                    deleted: entry.deleted + 1
+                    deleted: entry.deleted + 1,
                   }),
                   ...(updated && {
-                    updated: entry.updated + 1
-                  })
+                    updated: entry.updated + 1,
+                  }),
                 }
               }
 
               return {
                 ...acc,
-                [rx_model]: updateWith(acc[rx_model])
+                [rx_model]: updateWith(acc[rx_model]),
               }
             },
             {
@@ -51,33 +51,33 @@ export const useSyncReports = () =>
                 added: 0,
                 updated: 0,
                 deleted: 0,
-                fetchedMetadata: 0
+                fetchedMetadata: 0,
               },
               tag: {
                 added: 0,
                 updated: 0,
                 deleted: 0,
-                fetchedMetadata: 0
+                fetchedMetadata: 0,
               },
               link: {
                 added: 0,
                 updated: 0,
                 deleted: 0,
-                fetchedMetadata: 0
+                fetchedMetadata: 0,
               },
               obokucollection: {
                 added: 0,
                 updated: 0,
                 deleted: 0,
-                fetchedMetadata: 0
+                fetchedMetadata: 0,
               },
               datasource: {
                 added: 0,
                 updated: 0,
                 deleted: 0,
-                fetchedMetadata: 0
-              }
-            }
+                fetchedMetadata: 0,
+              },
+            },
           )
         })
         .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
@@ -85,5 +85,5 @@ export const useSyncReports = () =>
       return entries
     },
     networkMode: "online",
-    gcTime: 5 * 60 * 1000
+    gcTime: 5 * 60 * 1000,
   })

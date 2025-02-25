@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken"
-import { APIGatewayProxyEvent } from "aws-lambda"
+import type { APIGatewayProxyEvent } from "aws-lambda"
 import { createHttpError } from "./httpErrors"
 import { from } from "rxjs"
 
 const isAuthorized = async ({
   privateKey,
-  authorization
+  authorization,
 }: {
   authorization?: string
   privateKey: string
@@ -36,7 +36,7 @@ export const generateToken = async (name: string, privateKey: string) => {
   const tokenData: Token = {
     name,
     sub: name,
-    "_couchdb.roles": [name]
+    "_couchdb.roles": [name],
   }
 
   return jwt.sign(tokenData, privateKey, { algorithm: "RS256" })
@@ -53,7 +53,7 @@ export const generateAdminToken = async ({
   const data: Token = {
     name: "admin",
     sub: options.sub ?? "admin",
-    "_couchdb.roles": ["_admin"]
+    "_couchdb.roles": ["_admin"],
   }
 
   return jwt.sign(data, privateKey, { algorithm: "RS256" })
@@ -61,7 +61,7 @@ export const generateAdminToken = async ({
 
 export const getAuthTokenAsync = async (
   event: Pick<APIGatewayProxyEvent, `headers`>,
-  privateKey: string
+  privateKey: string,
 ) => {
   const authorization =
     (event.headers.Authorization as string | undefined) ||
@@ -75,9 +75,9 @@ export const getAuthToken = (authorization: string, privateKey: string) =>
     getAuthTokenAsync(
       {
         headers: {
-          authorization
-        }
+          authorization,
+        },
       },
-      privateKey
-    )
+      privateKey,
+    ),
   )

@@ -1,4 +1,4 @@
-import { DataSourceDocType } from "@oboku/shared"
+import type { DataSourceDocType } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useDatabase } from "../rxdb"
 import { useSynchronizeDataSource } from "./useSynchronizeDataSource"
@@ -16,14 +16,14 @@ export const useCreateDataSource = () => {
     data: Omit<
       Payload,
       "lastSyncedAt" | "createdAt" | "modifiedAt" | "syncStatus"
-    >
+    >,
   ) => {
     const dataSource = await db?.datasource.post({
       ...data,
       lastSyncedAt: null,
       createdAt: new Date().toISOString(),
       modifiedAt: null,
-      syncStatus: null
+      syncStatus: null,
     })
 
     if (dataSource && network.online) {

@@ -5,9 +5,9 @@ import EmptyLibraryAsset from "../../assets/empty-library.svg"
 import CollectionBgSvg from "../../assets/series-bg.svg"
 import { BookListWithControls } from "../../books/bookList/BookListWithControls"
 import { signal, useSignalValue } from "reactjrx"
-import {
+import type {
   ListActionSorting,
-  ListActionViewMode
+  ListActionViewMode,
 } from "../../common/lists/ListActionsToolbar"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
 import { useCollection } from "../useCollection"
@@ -33,8 +33,8 @@ export const collectionDetailsScreenListControlsStateSignal = signal<{
   key: "collectionDetailsScreenListControlsStateSignal",
   default: {
     viewMode: "grid",
-    sorting: "alpha"
-  }
+    sorting: "alpha",
+  },
 })
 
 export const CollectionDetailsScreen = () => {
@@ -42,42 +42,42 @@ export const CollectionDetailsScreen = () => {
   const navigate = useNavigate()
   const { id = `-1` } = useParams<ScreenParams>()
   const { viewMode, sorting } = useSignalValue(
-    collectionDetailsScreenListControlsStateSignal
+    collectionDetailsScreenListControlsStateSignal,
   )
   const { data: collection } = useCollection({
-    id
+    id,
   })
   const { useOptimizedTheme } = useLocalSettings()
 
   const { data: visibleBooks } = useBooks({
-    ids: collection?.books ?? []
+    ids: collection?.books ?? [],
   })
 
   const metadata = useCollectionComputedMetadata(collection)
   const visibleBookIds = useMemo(
     () => visibleBooks?.map((item) => item._id) ?? [],
-    [visibleBooks]
+    [visibleBooks],
   )
   const { uri: coverUri, hasCover } = useCollectionCoverUri(collection)
   const headerPt = [
     `calc(${theme.spacing(1)} + ${50}px)`,
     `calc(${theme.spacing(1)} + ${60}px)`,
-    `calc(${theme.spacing(1)} + ${70}px)`
+    `calc(${theme.spacing(1)} + ${70}px)`,
   ]
   const headerHeight = [
     `calc(${headerPt[0]} + 100px)`,
     `calc(${headerPt[1]} + 150px)`,
-    `calc(${headerPt[2]} + 250px)`
+    `calc(${headerPt[2]} + 250px)`,
   ]
   const coverHeight = [
     `calc(${headerHeight[0]} - ${headerPt[0]})`,
     `calc(${headerHeight[1]} - ${headerPt[1]})`,
-    `calc(${headerHeight[2]} - ${headerPt[2]})`
+    `calc(${headerHeight[2]} - ${headerPt[2]})`,
   ]
   const coverWidth = [
     `calc(${coverHeight[0]} / 1.5)`,
     `calc(${coverHeight[1]} / 1.5)`,
-    `calc(${coverHeight[2]} / 1.5)`
+    `calc(${coverHeight[2]} / 1.5)`,
   ]
 
   const { open: openActionDrawer } = useCollectionActionsDrawer(
@@ -86,14 +86,14 @@ export const CollectionDetailsScreen = () => {
       if (changes === `delete`) {
         navigate(-1)
       }
-    }
+    },
   )
   const { y } = useWindowScroll()
 
   useEffect(() => {
     Report.log({
       collection,
-      metadata
+      metadata,
     })
   }, [collection, metadata])
 
@@ -102,31 +102,31 @@ export const CollectionDetailsScreen = () => {
       <Stack
         flex={1}
         sx={{
-          scrollbarWidth: "initial"
+          scrollbarWidth: "initial",
         }}
       >
         <TopBarNavigation
           title={metadata.title}
           showBack={true}
           {...(id !== COLLECTION_EMPTY_ID && {
-            onMoreClick: openActionDrawer
+            onMoreClick: openActionDrawer,
           })}
           color="transparent"
           sx={{
             bgcolor: `rgba(255, 255, 255, ${Math.min(1, y / 70)})`,
-            borderBottom: `1px solid rgba(0, 0, 0, ${Math.min(1, y / 400)})`
+            borderBottom: `1px solid rgba(0, 0, 0, ${Math.min(1, y / 400)})`,
           }}
           TitleProps={{
             sx: {
-              opacity: Math.min(1, y / 100)
-            }
+              opacity: Math.min(1, y / 100),
+            },
           }}
           position="fixed"
         />
         <Stack
           flex={1}
           sx={{
-            scrollbarWidth: "initial"
+            scrollbarWidth: "initial",
           }}
         >
           <Stack
@@ -140,7 +140,7 @@ export const CollectionDetailsScreen = () => {
                 : `url(${hasCover ? (coverUri ?? coverPlaceholder) : CollectionBgSvg})`,
               backgroundRepeat: "no-repeat",
               backgroundSize: "cover",
-              backgroundPosition: "center"
+              backgroundPosition: "center",
             }}
           >
             {!useOptimizedTheme && (
@@ -152,7 +152,7 @@ export const CollectionDetailsScreen = () => {
                 width="100%"
                 sx={{
                   background:
-                    "linear-gradient(to bottom,rgb(255 255 255 / 0.7) 10%, rgb(255 255 255 / 1) 100%)"
+                    "linear-gradient(to bottom,rgb(255 255 255 / 0.7) 10%, rgb(255 255 255 / 1) 100%)",
                 }}
               />
             )}
@@ -167,7 +167,7 @@ export const CollectionDetailsScreen = () => {
                   borderRadius={1}
                   sx={{
                     objectFit: "cover",
-                    objectPosition: "center center"
+                    objectPosition: "center center",
                   }}
                 />
               )}
@@ -179,7 +179,7 @@ export const CollectionDetailsScreen = () => {
                 <Typography
                   component="h1"
                   sx={{
-                    typography: ["h6", "h4"]
+                    typography: ["h6", "h4"],
                   }}
                   fontWeight="bold"
                 >
@@ -187,7 +187,7 @@ export const CollectionDetailsScreen = () => {
                 </Typography>
                 <Typography
                   sx={{
-                    typography: ["body2", "body1"]
+                    typography: ["body2", "body1"],
                   }}
                   gutterBottom
                 >
@@ -198,7 +198,7 @@ export const CollectionDetailsScreen = () => {
                     rating={metadata.rating}
                     status={metadata.status}
                     sx={{
-                      bgcolor: "transparent"
+                      bgcolor: "transparent",
                     }}
                   />
                 )}
@@ -214,16 +214,16 @@ export const CollectionDetailsScreen = () => {
               collectionDetailsScreenListControlsStateSignal.setValue(
                 (state) => ({
                   ...state,
-                  viewMode: value
-                })
+                  viewMode: value,
+                }),
               )
             }}
             onSortingChange={(value) => {
               collectionDetailsScreenListControlsStateSignal.setValue(
                 (state) => ({
                   ...state,
-                  sorting: value
-                })
+                  sorting: value,
+                }),
               )
             }}
             renderEmptyList={
@@ -232,7 +232,7 @@ export const CollectionDetailsScreen = () => {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  flex: 1
+                  flex: 1,
                 }}
               >
                 <div
@@ -244,12 +244,12 @@ export const CollectionDetailsScreen = () => {
                     alignItems: "center",
                     textAlign: "center",
                     width: "80%",
-                    maxWidth: theme.custom.maxWidthCenteredContent
+                    maxWidth: theme.custom.maxWidthCenteredContent,
                   }}
                 >
                   <img
                     style={{
-                      width: "100%"
+                      width: "100%",
                     }}
                     src={EmptyLibraryAsset}
                     alt="libray"

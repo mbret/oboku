@@ -1,22 +1,24 @@
-import React, {
+import type React from "react"
+import {
   memo,
   useRef,
   forwardRef,
   useMemo,
-  Ref,
+  type Ref,
   useEffect,
-  useState
+  useState,
 } from "react"
 import { Box, Stack } from "@mui/material"
 import {
-  GridItemProps,
-  GridListProps,
-  GridStateSnapshot,
-  StateSnapshot,
+  type ContextProp,
+  type GridItemProps,
+  type GridListProps,
+  type GridStateSnapshot,
+  type StateSnapshot,
   Virtuoso,
   VirtuosoGrid,
-  VirtuosoGridHandle,
-  VirtuosoHandle
+  type VirtuosoGridHandle,
+  type VirtuosoHandle,
 } from "react-virtuoso"
 import { signal, useSignalValue } from "reactjrx"
 
@@ -30,7 +32,7 @@ const restoreScrollSignal = signal<
   >
 >({
   key: "restoreScrollSignal",
-  default: {}
+  default: {},
 })
 
 export const VirtuosoList = memo(
@@ -54,13 +56,13 @@ export const VirtuosoList = memo(
     rowRenderer?: (
       rowIndex: number,
       item: string,
-      context: Context
+      context: Context,
     ) => React.ReactNode
     horizontalDirection?: boolean
     onStateChange?: (
       state:
         | { type: "list"; state: StateSnapshot }
-        | { type: "grid"; state: GridStateSnapshot }
+        | { type: "grid"; state: GridStateSnapshot },
     ) => void
     restoreStateFrom?:
       | { type: "list"; state: StateSnapshot }
@@ -71,23 +73,20 @@ export const VirtuosoList = memo(
     const virtuosoGridRef = useRef<VirtuosoGridHandle>(null)
     const [isReadyToBeShown, setIsReadyToBeShown] = useState(false)
     const restoreScrollState = useSignalValue(restoreScrollSignal, (state) =>
-      restoreScrollId ? state[restoreScrollId] : undefined
+      restoreScrollId ? state[restoreScrollId] : undefined,
     )
     const restoreStateFromFirstValue = useRef(restoreScrollState)
 
     const GridListComponent = useMemo(
       () =>
-        forwardRef<
-          any,
-          GridListProps & {
-            context?: Context
-          }
-        >(({ children, ...props }, ref) => (
-          <Stack ref={ref as any} flexWrap="wrap" direction="row" {...props}>
-            {children}
-          </Stack>
-        )),
-      []
+        forwardRef<any, GridListProps & ContextProp<Context>>(
+          ({ children, ...props }, ref) => (
+            <Stack ref={ref as any} flexWrap="wrap" direction="row" {...props}>
+              {children}
+            </Stack>
+          ),
+        ),
+      [],
     )
 
     const GridItem = useMemo(
@@ -111,7 +110,7 @@ export const VirtuosoList = memo(
             {children}
           </Box>
         ),
-      [itemsPerRow]
+      [itemsPerRow],
     )
 
     useEffect(() => {
@@ -120,7 +119,7 @@ export const VirtuosoList = memo(
           virtuosoGridRef.current?.scrollTo({
             behavior: "instant",
             left: 0,
-            top: restoreStateFromFirstValue.current.state.scrollTop
+            top: restoreStateFromFirstValue.current.state.scrollTop,
           })
         }
         setIsReadyToBeShown(true)
@@ -133,18 +132,18 @@ export const VirtuosoList = memo(
     return (
       <>
         {itemsPerRow > 1 ? (
-          <VirtuosoGrid
+          <VirtuosoGrid<string, Context>
             ref={virtuosoGridRef}
             style={{
               ...style,
               visibility: isReadyToBeShown ? undefined : "hidden",
-              scrollbarWidth: "initial"
+              scrollbarWidth: "initial",
             }}
             totalCount={data.length}
             components={{
               Header: renderHeader,
               Item: GridItem,
-              List: GridListComponent
+              List: GridListComponent,
             }}
             data={data}
             itemContent={rowRenderer}
@@ -158,10 +157,10 @@ export const VirtuosoList = memo(
                       gap: { column: 0, row: 0 },
                       item: { height: 0, width: 0 },
                       viewport: { height: 0, width: 0 },
-                      scrollTop: (event.target as HTMLDivElement).scrollTop
+                      scrollTop: (event.target as HTMLDivElement).scrollTop,
                     },
-                    type: "grid"
-                  }
+                    type: "grid",
+                  },
                 }))
               }
             }}
@@ -181,11 +180,11 @@ export const VirtuosoList = memo(
             ref={virtuosoRef}
             style={{
               ...style,
-              visibility: isReadyToBeShown ? undefined : "hidden"
+              visibility: isReadyToBeShown ? undefined : "hidden",
             }}
             totalCount={data.length}
             components={{
-              Header: renderHeader
+              Header: renderHeader,
             }}
             context={context}
             data={data}
@@ -196,7 +195,7 @@ export const VirtuosoList = memo(
             // })}
             {...(restoreStateFromFirstValue.current?.type === "list" && {
               initialScrollTop:
-                restoreStateFromFirstValue.current.state.scrollTop
+                restoreStateFromFirstValue.current.state.scrollTop,
             })}
             onScroll={(event) => {
               virtuosoRef.current?.getState((state) => {
@@ -206,10 +205,10 @@ export const VirtuosoList = memo(
                     [restoreScrollId]: {
                       state: {
                         ranges: [],
-                        scrollTop: (event.target as HTMLDivElement).scrollTop
+                        scrollTop: (event.target as HTMLDivElement).scrollTop,
                       },
-                      type: "list"
-                    }
+                      type: "list",
+                    },
                   }))
                 }
               })
@@ -219,5 +218,5 @@ export const VirtuosoList = memo(
         )}
       </>
     )
-  }
+  },
 )

@@ -5,14 +5,14 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField
+  TextField,
 } from "@mui/material"
-import { FC, useEffect } from "react"
+import { useEffect } from "react"
 import { useValidateAppPassword } from "../settings/helpers"
 import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { signal, useSignalValue } from "reactjrx"
-import { Observable, from, map, mergeMap, of } from "rxjs"
+import { type Observable, from, map, mergeMap, of } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getSettings } from "../settings/dbHelpers"
 import { CancelError } from "../errors/errors.shared"
@@ -30,7 +30,7 @@ const actionSignal = signal<
 export const authorizeAction = (action: () => void, onCancel?: () => void) =>
   actionSignal.setValue({
     action,
-    onCancel
+    onCancel,
   })
 
 export function useWithAuthorization() {
@@ -43,37 +43,37 @@ export function useWithAuthorization() {
             settings?.contentPassword
               ? from(
                   new Promise<void>((resolve, reject) =>
-                    authorizeAction(resolve, () => reject(new CancelError()))
-                  )
+                    authorizeAction(resolve, () => reject(new CancelError())),
+                  ),
                 ).pipe(map(() => data))
-              : of(data)
-          )
-        )
-      )
+              : of(data),
+          ),
+        ),
+      ),
     )
   }
 }
 
-export const AuthorizeActionDialog: FC<{}> = () => {
+export const AuthorizeActionDialog = () => {
   const { action, onCancel = () => {} } = useSignalValue(actionSignal) ?? {}
   const open = !!action
   const { control, handleSubmit, setFocus, setError, reset } = useForm<Inputs>({
     defaultValues: {
-      password: ""
-    }
+      password: "",
+    },
   })
 
   const { mutate: validatePassword, reset: resetValidatePasswordMutation } =
     useValidateAppPassword({
       onSuccess: () => {
         onClose()
-        action && action()
+        action?.()
       },
       onError: () => {
         setError("password", {
-          message: "Invalid"
+          message: "Invalid",
         })
-      }
+      },
     })
 
   const onClose = () => {

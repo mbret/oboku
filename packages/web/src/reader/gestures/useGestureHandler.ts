@@ -15,8 +15,8 @@ export const useGestureHandler = () => {
           if (event.type === "tap" && !handled) {
             isMenuShownStateSignal.setValue((val) => !val)
           }
-        })
+        }),
       ),
-    [reader]
+    [reader],
   )
 }

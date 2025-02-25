@@ -10,10 +10,10 @@ export const REGEXP_SPECIAL_CHAR =
 
 export const useCollectionsForSearch = (search: string) => {
   const { notInterestedContents } = useSignalValue(
-    searchListActionsToolbarSignal
+    searchListActionsToolbarSignal,
   )
   const { data } = useCollections({
-    isNotInterested: notInterestedContents
+    isNotInterested: notInterestedContents,
   })
 
   const filteredList = useMemo(
@@ -24,7 +24,7 @@ export const useCollectionsForSearch = (search: string) => {
 
           const searchRegex = new RegExp(
             search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
-            "i"
+            "i",
           )
 
           const indexOfFirstMatch = name?.search(searchRegex) || 0
@@ -33,11 +33,11 @@ export const useCollectionsForSearch = (search: string) => {
         .sort((a, b) =>
           sortByTitleComparator(
             getCollectionComputedMetadata(a).title || "",
-            getCollectionComputedMetadata(b).title || ""
-          )
+            getCollectionComputedMetadata(b).title || "",
+          ),
         )
         .map((item) => item._id),
-    [data, search]
+    [data, search],
   )
 
   return { data: filteredList }

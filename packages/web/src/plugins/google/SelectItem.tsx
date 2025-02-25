@@ -4,15 +4,15 @@ import { useDrivePicker } from "./lib/useDrivePicker"
 import { catchError, of, takeUntil, tap } from "rxjs"
 import { useEffect } from "react"
 import { useUnmountObservable } from "reactjrx"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 
 export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
   onClose,
   open,
-  requestPopup
+  requestPopup,
 }) => {
   const { generateResourceId } = useDataSourceHelpers(
-    UNIQUE_RESOURCE_IDENTIFIER
+    UNIQUE_RESOURCE_IDENTIFIER,
   )
   const { pick } = useDrivePicker({ requestPopup })
   const unMount$ = useUnmountObservable()
@@ -25,7 +25,7 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
         tap((data) => {
           if (data.action !== google.picker.Action.PICKED) {
             return onClose({
-              code: `unknown`
+              code: `unknown`,
             })
           }
 
@@ -33,11 +33,11 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
 
           if (!doc) {
             onClose({
-              code: `unknown`
+              code: `unknown`,
             })
           } else {
             onClose(undefined, {
-              resourceId: generateResourceId(doc.id)
+              resourceId: generateResourceId(doc.id),
             })
           }
         }),
@@ -46,7 +46,7 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
 
           return of(null)
         }),
-        takeUntil(unMount$.current)
+        takeUntil(unMount$.current),
       )
       .subscribe()
 

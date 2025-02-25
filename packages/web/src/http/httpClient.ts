@@ -11,7 +11,7 @@ type XMLHttpResponseError = {
 }
 
 export const isXMLHttpResponseError = (
-  error: unknown
+  error: unknown,
 ): error is XMLHttpResponseError => {
   if (error && typeof error === "object" && "__xmlerror" in error) return true
 
@@ -34,10 +34,10 @@ class HttpClient {
       headers: {
         ...(authState?.token &&
           withAuth && {
-            Authorization: `Bearer ${authState?.token}`
+            Authorization: `Bearer ${authState?.token}`,
           }),
-        ...params.headers
-      }
+        ...params.headers,
+      },
     })
 
     const data = await response.json()
@@ -51,7 +51,7 @@ class HttpClient {
     options: Omit<FetchParams, "body" | "method"> & {
       url: string
       body: Record<string, unknown>
-    }
+    },
   ) => {
     return this.fetch<T>({
       ...options,
@@ -59,52 +59,52 @@ class HttpClient {
       body: JSON.stringify(options.body),
       headers: {
         "Content-Type": "application/json",
-        ...options.headers
-      }
+        ...options.headers,
+      },
     })
   }
 
   refreshBookMetadata = (
     bookId: string,
-    credentials?: { [key: string]: any }
+    credentials?: { [key: string]: any },
   ) =>
     this.post({
       url: `${API_URL}/refresh-metadata`,
       body: { bookId },
       headers: {
-        "oboku-credentials": JSON.stringify(credentials ?? {})
-      }
+        "oboku-credentials": JSON.stringify(credentials ?? {}),
+      },
     })
 
   refreshCollectionMetadata = (
     collectionId: string,
-    credentials?: { [key: string]: any }
+    credentials?: { [key: string]: any },
   ) =>
     this.post({
       url: `${API_URL}/refresh-metadata-collection`,
       body: { collectionId },
       headers: {
-        "oboku-credentials": JSON.stringify(credentials ?? {})
-      }
+        "oboku-credentials": JSON.stringify(credentials ?? {}),
+      },
     })
 
   syncDataSource = (
     dataSourceId: string,
-    credentials?: { [key: string]: any }
+    credentials?: { [key: string]: any },
   ) =>
     this.post({
       url: `${API_URL}/sync-datasource`,
       body: { dataSourceId },
       headers: {
-        "oboku-credentials": JSON.stringify(credentials)
-      }
+        "oboku-credentials": JSON.stringify(credentials),
+      },
     })
 
   download = <T>({
     url,
     responseType,
     onDownloadProgress,
-    headers = {}
+    headers = {},
   }: {
     url: string
     responseType: XMLHttpRequestResponseType
@@ -125,7 +125,7 @@ class HttpClient {
 
         xhr.send()
 
-        xhr.onload = function () {
+        xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             const data = xhr.response
             resolve({ data, status: xhr.status, statusText: xhr.statusText })
@@ -133,14 +133,14 @@ class HttpClient {
             reject({
               status: xhr.status,
               statusText: xhr.statusText,
-              __xmlerror: true
+              __xmlerror: true,
             } satisfies XMLHttpResponseError)
           }
         }
 
         xhr.onprogress = onDownloadProgress
 
-        xhr.onerror = function () {
+        xhr.onerror = () => {
           // handle non-HTTP error (e.g. network down)
           /**
            * Failing with status 0 and text `` after downloading a couple of mb
@@ -150,10 +150,10 @@ class HttpClient {
           reject({
             status: xhr.status,
             statusText: xhr.statusText,
-            __xmlerror: true
+            __xmlerror: true,
           } satisfies XMLHttpResponseError)
         }
-      }
+      },
     )
   }
 }

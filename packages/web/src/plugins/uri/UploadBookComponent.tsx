@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
   useMediaQuery,
-  useTheme
+  useTheme,
 } from "@mui/material"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import type { ObokuPlugin } from "../types"
@@ -21,7 +21,7 @@ const bookUrlSchema = string().url()
 
 export const UploadBookComponent: ObokuPlugin["UploadBookComponent"] = ({
   onClose,
-  title
+  title,
 }) => {
   const [bookUrl, setBookUrl] = useState("")
   const theme = useTheme()
@@ -33,12 +33,12 @@ export const UploadBookComponent: ObokuPlugin["UploadBookComponent"] = ({
     setBookUrl("")
     onClose({
       book: {
-        title: filename
+        title: filename,
       },
       link: {
         resourceId: generateResourceId(UNIQUE_RESOURCE_IDENTIFIER, bookUrl),
-        type: TYPE
-      }
+        type: TYPE,
+      },
     })
   }
 

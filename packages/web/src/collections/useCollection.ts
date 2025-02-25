@@ -1,4 +1,4 @@
-import {  useQuery$, useSignalValue } from "reactjrx"
+import { useQuery$, useSignalValue } from "reactjrx"
 import { switchMap, map } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { observeEmptyCollection } from "./dbHelpers"
@@ -7,7 +7,7 @@ import { COLLECTION_EMPTY_ID } from "../constants.shared"
 
 export const useCollection = ({
   id,
-  isNotInterested
+  isNotInterested,
 }: {
   id?: string
   isNotInterested?: "with" | "none" | "only" | undefined
@@ -24,14 +24,14 @@ export const useCollection = ({
             return observeEmptyCollection({
               db,
               includeProtected: isLibraryUnlocked,
-              isNotInterested
+              isNotInterested,
             })
 
           return db.obokucollection
             .findOne({
               selector: {
-                _id: id
-              }
+                _id: id,
+              },
             })
             .$.pipe(map((collection) => collection?.toJSON()))
         }),
@@ -39,8 +39,8 @@ export const useCollection = ({
           if (!value) return null
 
           return value
-        })
+        }),
       )
-    }
+    },
   })
 }

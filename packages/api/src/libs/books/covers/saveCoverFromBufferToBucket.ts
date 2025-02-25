@@ -6,14 +6,14 @@ const s3 = new S3Client()
 
 export const saveCoverFromBufferToBucket = async (
   buffer: Buffer,
-  objectKey: string
+  objectKey: string,
 ) => {
   const resized = await sharp(buffer)
     .resize({
       withoutEnlargement: true,
       width: COVER_MAXIMUM_SIZE_FOR_STORAGE.width,
       height: COVER_MAXIMUM_SIZE_FOR_STORAGE.height,
-      fit: "inside"
+      fit: "inside",
     })
     .webp()
     .toBuffer()
@@ -22,7 +22,7 @@ export const saveCoverFromBufferToBucket = async (
     new PutObjectCommand({
       Bucket: "oboku-covers",
       Body: resized,
-      Key: objectKey
-    })
+      Key: objectKey,
+    }),
   )
 }

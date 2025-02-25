@@ -5,10 +5,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField
+  TextField,
 } from "@mui/material"
 import { useEffect } from "react"
-import { Controller, SubmitHandler, useForm } from "react-hook-form"
+import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
@@ -24,23 +24,23 @@ const FORM_ID = "settings-unlock-library"
 
 export const UnlockContentsDialog = ({
   onClose,
-  open
+  open,
 }: {
   open: boolean
   onClose: () => void
 }) => {
   const { control, handleSubmit, setFocus, reset, setError } = useForm<Inputs>({
     defaultValues: {
-      unlockPassword: ""
-    }
+      unlockPassword: "",
+    },
   })
   const { data: accountSettings } = useSettings()
   const contentPassword = accountSettings?.contentPassword
   const { closeModalWithNavigation } = useModalNavigationControl(
     {
-      onExit: onClose
+      onExit: onClose,
     },
-    open
+    open,
   )
 
   const onSubmit: SubmitHandler<Inputs> = async (data) => {
@@ -49,7 +49,7 @@ export const UnlockContentsDialog = ({
     if (contentPassword === hashedPassword) {
       libraryStateSignal.setValue((state) => ({
         ...state,
-        isLibraryUnlocked: true
+        isLibraryUnlocked: true,
       }))
 
       closeModalWithNavigation()
@@ -57,12 +57,14 @@ export const UnlockContentsDialog = ({
       setError(
         "unlockPassword",
         { message: "Wrong credential" },
-        { shouldFocus: true }
+        { shouldFocus: true },
       )
     }
   }
 
   useEffect(() => {
+    void open
+
     reset()
   }, [open, reset])
 

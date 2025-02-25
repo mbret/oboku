@@ -1,4 +1,4 @@
-import { Observable, catchError } from "rxjs"
+import { type Observable, catchError } from "rxjs"
 import { CancelError } from "./errors.shared"
 
 export const catchCancelError =
@@ -11,5 +11,5 @@ export const catchCancelError =
         }
 
         throw err
-      })
+      }),
     )

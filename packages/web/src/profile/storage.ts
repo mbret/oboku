@@ -8,7 +8,7 @@ export const profileStorageSignal = signal({
     return !profile
       ? undefined
       : createLocalStorageAdapter({
-          key: `profile-${profile}`
+          key: `profile-${profile}`,
         })
-  }
+  },
 })

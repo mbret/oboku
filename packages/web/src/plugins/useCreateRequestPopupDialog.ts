@@ -10,12 +10,12 @@ export const useCreateRequestPopupDialog = () => {
           createDialog({
             preset: "CONFIRM",
             title: `Plugin ${name} requires some actions`,
-            content: `To proceed, the plugin ${name} requires some action from you which involve opening a popup`
-          }).$
+            content: `To proceed, the plugin ${name} requires some action from you which involve opening a popup`,
+          }).$,
         )
           .then(() => true)
           .catch(() => false)
       },
-    []
+    [],
   )
 }

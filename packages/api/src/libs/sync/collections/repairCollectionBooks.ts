@@ -1,6 +1,6 @@
 import { Logger } from "@libs/logger"
 import { difference } from "@oboku/shared"
-import { Context } from "../types"
+import type { Context } from "../types"
 import { atomicUpdate, find, findOne } from "@libs/couch/dbHelpers"
 
 const logger = Logger.child({ module: "sync/repairCollectionBooks" })
@@ -24,7 +24,7 @@ const logger = Logger.child({ module: "sync/repairCollectionBooks" })
  */
 export const repairCollectionBooks = async ({
   ctx,
-  collectionId
+  collectionId,
 }: {
   ctx: Context
   collectionId: string
@@ -32,11 +32,11 @@ export const repairCollectionBooks = async ({
   const collection = await findOne(
     "obokucollection",
     {
-      selector: { _id: collectionId }
+      selector: { _id: collectionId },
     },
     {
-      db: ctx.db
-    }
+      db: ctx.db,
+    },
   )
 
   if (collection) {
@@ -46,15 +46,15 @@ export const repairCollectionBooks = async ({
           selector: {
             collections: {
               $elemMatch: {
-                $eq: collection._id
-              }
-            }
+                $eq: collection._id,
+              },
+            },
           },
           /**
            * @todo If a collection have more than 999 books we have a problem.
            * We need to find a safer way to detect anomaly.
            */
-          limit: 999
+          limit: 999,
         }),
         find(ctx.db, `book`, {
           selector: { _id: { $in: collection?.books || [] } },
@@ -62,23 +62,23 @@ export const repairCollectionBooks = async ({
            * @todo If a collection have more than 999 books we have a problem.
            * We need to find a safer way to detect anomaly.
            */
-          limit: 999
-        })
+          limit: 999,
+        }),
       ])
 
     const missingsBooksInCollection = difference(
       booksHavingCollectionAttached.map(({ _id }) => _id),
-      collection.books
+      collection.books,
     )
 
     const danglingBooks = difference(
       collection.books,
-      booksFromCollectionList.map(({ _id }) => _id)
+      booksFromCollectionList.map(({ _id }) => _id),
     )
 
     if (missingsBooksInCollection.length > 0 || danglingBooks.length > 0) {
       logger.info(
-        `${collectionId} has ${missingsBooksInCollection.join(`,`)} missed books and ${danglingBooks.join(`,`)} dangling books`
+        `${collectionId} has ${missingsBooksInCollection.join(`,`)} missed books and ${danglingBooks.join(`,`)} dangling books`,
       )
 
       await atomicUpdate(ctx.db, "obokucollection", collection._id, (old) => ({
@@ -86,22 +86,22 @@ export const repairCollectionBooks = async ({
         books: [
           ...new Set([
             ...missingsBooksInCollection,
-            ...old.books.filter((id) => !danglingBooks.includes(id))
-          ])
-        ]
+            ...old.books.filter((id) => !danglingBooks.includes(id)),
+          ]),
+        ],
       }))
 
       if (danglingBooks.length > 0) {
         ctx.syncReport.removeBooksFromCollection({
           collection,
-          books: danglingBooks.map((_id) => ({ _id }))
+          books: danglingBooks.map((_id) => ({ _id })),
         })
       }
 
       if (missingsBooksInCollection.length > 0) {
         ctx.syncReport.addBooksToCollection({
           collection,
-          books: missingsBooksInCollection.map((_id) => ({ _id }))
+          books: missingsBooksInCollection.map((_id) => ({ _id })),
         })
       }
     }

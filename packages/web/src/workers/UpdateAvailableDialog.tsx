@@ -5,9 +5,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Link
+  Link,
 } from "@mui/material"
-import { FC, useEffect } from "react"
+import { type FC, useEffect } from "react"
 import { useLock } from "../common/BlockingBackdrop"
 import { filter, first, fromEvent, tap } from "rxjs"
 import { Report } from "../debug/report.shared"
@@ -52,7 +52,7 @@ export const UpdateAvailableDialog: FC<{
                 first(),
                 tap(() => {
                   window.location.reload()
-                })
+                }),
               )
               .subscribe()
 

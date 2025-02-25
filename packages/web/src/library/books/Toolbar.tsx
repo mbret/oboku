@@ -4,7 +4,7 @@ import {
   Button,
   IconButton,
   Toolbar as MuiToolbar,
-  Stack
+  Stack,
 } from "@mui/material"
 import { ViewModeIconButton } from "../../common/lists/ListActionsToolbar"
 import { libraryStateSignal } from "./states"
@@ -14,7 +14,7 @@ export const Toolbar = ({
   onFilterClick,
   onSortClick,
   onClearFilterClick,
-  numberOfFiltersApplied
+  numberOfFiltersApplied,
 }: {
   onFilterClick: () => void
   onClearFilterClick: () => void
@@ -27,7 +27,7 @@ export const Toolbar = ({
     <MuiToolbar
       sx={(theme) => ({
         borderBottom: `1px solid ${theme.palette.grey[200]}`,
-        boxSizing: "border-box"
+        boxSizing: "border-box",
       })}
     >
       <IconButton
@@ -50,7 +50,7 @@ export const Toolbar = ({
           justifyContent: "flex-start",
           flexFlow: "row",
           display: "flex",
-          alignItems: "center"
+          alignItems: "center",
         }}
       >
         <Button
@@ -81,7 +81,7 @@ export const Toolbar = ({
         onViewModeChange={(value) => {
           libraryStateSignal.setValue((state) => ({
             ...state,
-            viewMode: value
+            viewMode: value,
           }))
         }}
       />

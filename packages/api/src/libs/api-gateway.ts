@@ -1,7 +1,7 @@
 import type {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
-  Handler
+  Handler,
 } from "aws-lambda"
 import type { FromSchema, JSONSchema } from "json-schema-to-ts"
 
@@ -11,7 +11,7 @@ type ValidatedAPIGatewayProxyEvent<S extends JSONSchema> = Omit<
 > & { body: FromSchema<S> }
 
 export type ValidatedEventAPIGatewayProxyEvent<
-  S extends JSONSchema = Record<string, unknown>
+  S extends JSONSchema = Record<string, unknown>,
 > = Handler<ValidatedAPIGatewayProxyEvent<S>, APIGatewayProxyResult>
 
 export const getEventBody = (event: APIGatewayProxyEvent) => {
