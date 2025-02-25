@@ -1,6 +1,6 @@
 import type { CollectionMetadata } from "@oboku/shared"
 import { Logger } from "@libs/logger"
-import { URL } from "url"
+import { URL } from "node:url"
 import axios from "axios"
 
 type Result = {

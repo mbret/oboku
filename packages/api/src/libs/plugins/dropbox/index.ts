@@ -3,7 +3,7 @@
  */
 import nodeFetch from "node-fetch"
 import { Dropbox, type files } from "dropbox"
-import { Readable } from "stream"
+import { Readable } from "node:stream"
 import {
   type DropboxDataSourceData,
   READER_ACCEPTED_EXTENSIONS,
@@ -122,9 +122,8 @@ export const dataSource: DataSourcePlugin = {
 
             if (response.result.has_more) {
               return [...data, ...(await getNextRes(response.result.cursor))]
-            } else {
-              return data
             }
+              return data
           },
         )
 

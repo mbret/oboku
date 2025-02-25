@@ -26,7 +26,7 @@ export const pluginFacade = {
   download: async (link: LinkDocType, credentials?: any) => {
     const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
 
-    if (plugin && plugin.download) {
+    if (plugin?.download) {
       return plugin.download(link, credentials)
     }
 

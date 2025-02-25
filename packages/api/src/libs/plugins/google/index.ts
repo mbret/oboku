@@ -141,10 +141,9 @@ export const dataSource: DataSourcePlugin = {
             pageToken = response.data.nextPageToken || undefined
             if (!pageToken) {
               return data
-            } else {
+            }
               const nextRes = await getNextRes(pageToken)
               return [...data, ...nextRes]
-            }
           },
         )
 

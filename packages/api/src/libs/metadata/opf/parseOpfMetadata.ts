@@ -3,7 +3,7 @@ import type { OPF } from "@oboku/shared"
 import { extractDateComponents } from "../extractDateComponents"
 
 const extractLanguage = (
-  metadata?: undefined | null | string | { ["#text"]?: string },
+  metadata?: undefined | null | string | { "#text"?: string },
 ): string | null => {
   if (!metadata) return null
 
@@ -68,7 +68,7 @@ export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
 
   const language = extractLanguage(metadata["dc:language"])
   const creator = Array.isArray(creatrawCreator)
-    ? (creatrawCreator[0] ?? {})["#text"]
+    ? creatrawCreator[0]?.["#text"]
     : typeof creatrawCreator === "object"
       ? creatrawCreator["#text"]
       : creatrawCreator
@@ -83,7 +83,7 @@ export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
     title:
       typeof metadata["dc:title"] === "object"
         ? metadata["dc:title"]["#text"]
-        : metadata["title"] || metadata["dc:title"],
+        : metadata.title || metadata["dc:title"],
     publisher:
       typeof metadata["dc:publisher"] === "string"
         ? metadata["dc:publisher"]

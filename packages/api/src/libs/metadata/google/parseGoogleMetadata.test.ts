@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type { GoogleBooksApiVolumesResponseData } from "@libs/google/googleBooksApi"
 import { parseGoogleMetadata } from "./parseGoogleMetadata"
 import { describe, it, expect } from "vitest"
@@ -34,9 +33,11 @@ describe(`Given has series info`, () => {
         ...getDefaultData(),
         items: [
           {
+            // biome-ignore lint/style/noNonNullAssertion: <explanation>
             ...(getDefaultData().items ?? [])[0]!,
             volumeInfo: {
-              ...getDefaultData().items![0]!.volumeInfo,
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              ...getDefaultData().items?.[0]?.volumeInfo!,
               title: "My title Vol. 1",
               seriesInfo: {
                 bookDisplayNumber: "1",
@@ -56,9 +57,11 @@ describe(`Given has series info`, () => {
         ...getDefaultData(),
         items: [
           {
-            ...getDefaultData().items![0]!,
+            // biome-ignore lint/style/noNonNullAssertion: <explanation>
+            ...getDefaultData().items?.[0]!,
             volumeInfo: {
-              ...getDefaultData().items![0]!.volumeInfo,
+              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              ...getDefaultData().items?.[0]?.volumeInfo!,
               title: "My title",
               seriesInfo: {
                 bookDisplayNumber: "1",
@@ -79,9 +82,11 @@ describe(`Given no series info`, () => {
       ...getDefaultData(),
       items: [
         {
-          ...getDefaultData().items![0]!,
+          // biome-ignore lint/style/noNonNullAssertion: <explanation>
+          ...getDefaultData().items?.[0]!,
           volumeInfo: {
-            ...getDefaultData().items![0]!.volumeInfo,
+            // biome-ignore lint/style/noNonNullAssertion: <explanation>
+            ...getDefaultData().items?.[0]?.volumeInfo!,
             title: "My title",
             seriesInfo: undefined,
           },

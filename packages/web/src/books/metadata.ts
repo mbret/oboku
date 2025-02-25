@@ -12,7 +12,6 @@ type Return = DeepReadonlyObject<Omit<BookMetadata, "type">> & {
   displayableDate?: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type GenericObject = { [key: string]: any }
 
 function mergeObjects(a: GenericObject, b: GenericObject): GenericObject {

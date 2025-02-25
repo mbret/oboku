@@ -11,7 +11,7 @@ import fetch from "node-fetch"
 import type createNano from "nano"
 import type { Metadata } from "@libs/metadata/types"
 import type { SyncReport } from "@libs/sync/SyncReport"
-import type { IncomingMessage } from "http"
+import type { IncomingMessage } from "node:http"
 
 export { dataSourceHelpers, cheerio, fetch }
 

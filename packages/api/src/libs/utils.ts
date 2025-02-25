@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent } from "aws-lambda"
-import fs from "fs"
+import fs from "node:fs"
 import unzipper from "unzipper"
 import type { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
 import {
@@ -99,9 +99,8 @@ export async function performWithBackoff<T>({
         minDelay,
         maxDelay,
       })
-    } else {
-      throw error
     }
+    throw error
   }
 }
 
@@ -134,7 +133,6 @@ export function mergeSkippingUndefined<T extends object>(
   objects.forEach((obj) => {
     Object.entries(obj).forEach(([key, value]) => {
       if (value !== undefined) {
-        // eslint-disable-next-line no-extra-semi
         ;(result as any)[key] = value
       }
     })

@@ -6,7 +6,6 @@ import { withMiddy } from "@libs/middy/withMiddy"
 
 const lambda = async (event: APIGatewayProxyEvent) => {
   const params = event.queryStringParameters
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { Host, host, Origin, origin, ...headers } = event.headers
   const bodyStr = (event.body as string) ?? ``
 
