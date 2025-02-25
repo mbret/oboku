@@ -23,7 +23,7 @@
     "indentWidth": 2
   },
   "organizeImports": {
-    "enabled": true
+    "enabled": false
   },
   "linter": {
     "enabled": false,
