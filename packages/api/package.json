@@ -48,7 +48,7 @@
     "rxjs": "^7.5.7"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/aws-lambda": "^8.10.111",
     "@types/http-errors": "^2.0.1",
     "@types/jsonwebtoken": "^9.0.1",
