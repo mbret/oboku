@@ -142,8 +142,8 @@ export const dataSource: DataSourcePlugin = {
             if (!pageToken) {
               return data
             }
-              const nextRes = await getNextRes(pageToken)
-              return [...data, ...nextRes]
+            const nextRes = await getNextRes(pageToken)
+            return [...data, ...nextRes]
           },
         )
 

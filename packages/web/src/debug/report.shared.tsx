@@ -6,7 +6,6 @@ const noop = () => {}
 export const Report = {
   log: (...data: any[]) => {
     if (import.meta.env.DEV || isDebugEnabled()) {
-      // eslint-disable-next-line no-console
       console.log(`[oboku:log]`, ...data)
     }
   },
@@ -19,7 +18,6 @@ export const Report = {
    * to sentry
    */
   error: (...data: any[]) => {
-    // eslint-disable-next-line no-console
     console.error(`[oboku:error]`, ...data)
   },
   captureMessage: (
@@ -30,7 +28,6 @@ export const Report = {
   },
   warn: (...data: any[]) => {
     if (import.meta.env.DEV || isDebugEnabled()) {
-      // eslint-disable-next-line no-console
       console.warn(`[oboku:warning]`, ...data)
     }
   },
@@ -44,13 +41,11 @@ export const Report = {
         : performanceEntry.duration
     if (import.meta.env.DEV || isDebugEnabled()) {
       if (performanceEntry.duration <= targetDuration) {
-        // eslint-disable-next-line no-console
         console.log(
           `[oboku:metric] `,
           `${performanceEntry.name} took ${duration}ms (${duration / 1000})s`,
         )
       } else {
-        // eslint-disable-next-line no-console
         console.warn(
           `[oboku:metric] `,
           `${performanceEntry.name} took ${performanceEntry.duration}ms which is above the ${targetDuration}ms target for this function`,
@@ -58,19 +53,18 @@ export const Report = {
       }
     }
   },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   measurePerformance: <F extends (...args: any[]) => any>(
     name: string,
+    // biome-ignore lint/style/useDefaultParameterLast: <explanation>
     targetDuration = 10,
     functionToMeasure: F,
   ) => {
     return (...args: Parameters<F>): ReturnType<F> => {
       const t0 = performance.now()
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = functionToMeasure(...(args as any))
 
-      if (response && response.then) {
+      if (response?.then) {
         return response.then((res: any) => {
           const t1 = performance.now()
           Report.metric({ name, duration: t1 - t0 }, targetDuration)

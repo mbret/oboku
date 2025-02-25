@@ -38,7 +38,6 @@ export const CommunicationPane = () => {
           <Markdown
             components={{
               a: ({ children, ref, ...props }) => (
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 <Link ref={ref as any} target="_blank" {...props}>
                   {children}
                 </Link>

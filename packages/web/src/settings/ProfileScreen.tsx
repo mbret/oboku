@@ -176,24 +176,24 @@ export const ProfileScreen = () => {
         </ListItem>
       </List>
       <List
-          subheader={
-            <ListSubheader disableSticky>Developer options</ListSubheader>
-          }
-        >
-          <ListItemButton onClick={toggleDebug}>
-            <ListItemText
-              primary={
-                isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
-              }
-            />
-          </ListItemButton>
-          {/* <ListItem
+        subheader={
+          <ListSubheader disableSticky>Developer options</ListSubheader>
+        }
+      >
+        <ListItemButton onClick={toggleDebug}>
+          <ListItemText
+            primary={
+              isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
+            }
+          />
+        </ListItemButton>
+        {/* <ListItem
             button
             onClick={() => setIsDeleteMyDataDialogOpened(true)}
           >
             <ListItemText primary="Delete my data" />
           </ListItem> */}
-        </List>
+      </List>
       <List
         subheader={
           <ListSubheader

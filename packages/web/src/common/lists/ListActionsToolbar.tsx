@@ -1,5 +1,11 @@
 import { type ComponentProps, memo, useState } from "react"
-import { Toolbar, type ToolbarProps, IconButton, Button, Badge } from "@mui/material"
+import {
+  Toolbar,
+  type ToolbarProps,
+  IconButton,
+  Button,
+  Badge,
+} from "@mui/material"
 import {
   AppsRounded,
   FormatListBulletedRounded,

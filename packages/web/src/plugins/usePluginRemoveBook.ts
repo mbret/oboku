@@ -11,10 +11,9 @@ export const usePluginRemoveBook = () => {
   // it will trigger all hooks
   const preparedHooks = plugins.map((plugin) => ({
     type: plugin.type,
-    useRemoveBook:
-      plugin.useRemoveBook?.({
-        requestPopup: createRequestPopupDialog({ name: plugin.name }),
-      }),
+    useRemoveBook: plugin.useRemoveBook?.({
+      requestPopup: createRequestPopupDialog({ name: plugin.name }),
+    }),
   }))
 
   const getPluginFn = useRef<typeof preparedHooks>([])

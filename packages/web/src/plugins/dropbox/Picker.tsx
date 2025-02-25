@@ -5,7 +5,7 @@
 import { type FC, useEffect } from "react"
 
 /**
- *
+ * @todo migrate to `useDropboxChoose`
  */
 export const Picker: FC<{
   onClose: (files?: readonly Dropbox.ChooserFile[]) => void

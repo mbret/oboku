@@ -6,7 +6,6 @@ import { useMutation } from "@tanstack/react-query"
 
 export const useReplicateCollection = <
   Collection extends RxCollection<RxDocumentType>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   RxDocumentType = any,
 >() => {
   return useMutation({

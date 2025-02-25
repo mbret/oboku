@@ -1,4 +1,10 @@
-import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react"
+import {
+  type MouseEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { useLocation, useNavigate } from "react-router"
 
 export const useModalNavigationControl = (

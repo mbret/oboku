@@ -42,6 +42,6 @@ export const saveCoverFromZipArchiveToBucket = async (
         e,
       )
     }
-      logger.error(e)
+    logger.error(e)
   }
 }

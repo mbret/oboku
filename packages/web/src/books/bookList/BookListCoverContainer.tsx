@@ -157,21 +157,20 @@ export const BookListCoverContainer: FC<
               </Box>
             )}
         </Box>
-        {withReadingProgressStatus && (
+        {withReadingProgressStatus &&
           item?.readingStateCurrentState === ReadingStateState.Reading && (
-              <ReadingProgress
-                progress={
-                  (item?.readingStateCurrentBookmarkProgressPercent || 0) * 100
-                }
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                }}
-              />
-            )
-        )}
+            <ReadingProgress
+              progress={
+                (item?.readingStateCurrentBookmarkProgressPercent || 0) * 100
+              }
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}
+            />
+          )}
       </Box>
     )
   },

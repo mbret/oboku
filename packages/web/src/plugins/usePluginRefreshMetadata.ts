@@ -20,10 +20,9 @@ export const usePluginRefreshMetadata = () => {
 
   getPluginFn.current = plugins.map((plugin) => ({
     type: plugin.type,
-    refreshMetadata:
-      plugin.useRefreshMetadata?.({
-        requestPopup: createRequestPopupDialog({ name: plugin.name }),
-      }),
+    refreshMetadata: plugin.useRefreshMetadata?.({
+      requestPopup: createRequestPopupDialog({ name: plugin.name }),
+    }),
   }))
 
   const refreshMetadata: ReturnType<

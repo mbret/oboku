@@ -123,7 +123,7 @@ export const dataSource: DataSourcePlugin = {
             if (response.result.has_more) {
               return [...data, ...(await getNextRes(response.result.cursor))]
             }
-              return data
+            return data
           },
         )
 

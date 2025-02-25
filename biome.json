@@ -11,6 +11,7 @@
       ".nx",
       "**/.test/**",
       "**/dist/**",
+      "**/.next/**",
       "**/.esbuild/**",
       "**/web/public/**",
       "CfiHandler.ts",

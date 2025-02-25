@@ -6,7 +6,7 @@ export const STAGE = process.env.STAGE ?? `dev`
 export const AWS_API_URI = process.env.AWS_API_URI ?? `__AWS_API_URI__`
 export const GOOGLE_BOOK_API_URL =
   process.env.GOOGLE_BOOK_API_URL ?? `__GOOGLE_BOOK_API_URL__`
-export const OFFLINE = process.env.OFFLINE  === `true`
+export const OFFLINE = process.env.OFFLINE === `true`
 
 // env unrelated to environment
 export const TMP_DIR = "/tmp"

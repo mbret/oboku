@@ -1,5 +1,11 @@
 import { CircleRounded, StarRounded } from "@mui/icons-material"
-import { Chip, type ChipProps, Stack, Typography, capitalize } from "@mui/material"
+import {
+  Chip,
+  type ChipProps,
+  Stack,
+  Typography,
+  capitalize,
+} from "@mui/material"
 import type { CollectionMetadata } from "@oboku/shared"
 import { memo } from "react"
 

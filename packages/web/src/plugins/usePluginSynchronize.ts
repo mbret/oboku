@@ -21,10 +21,9 @@ export const usePluginSynchronize = () => {
 
   getPluginFn.current = plugins.map((plugin) => ({
     type: plugin.type,
-    synchronize:
-      plugin.useSynchronize?.({
-        requestPopup: createRequestPopupDialog({ name: plugin.name }),
-      }),
+    synchronize: plugin.useSynchronize?.({
+      requestPopup: createRequestPopupDialog({ name: plugin.name }),
+    }),
   }))
 
   const execute = async (dataSource: DataSourceDocType) => {

@@ -7,7 +7,7 @@ export const sortByTitleComparator = (a: string, b: string) => {
       if (alist[i]?.match(/\d/)) {
         return +(alist[i] || ``) - +(blist[i] || ``)
       }
-        return (alist[i] || ``).localeCompare(blist[i] || ``)
+      return (alist[i] || ``).localeCompare(blist[i] || ``)
     }
   }
 

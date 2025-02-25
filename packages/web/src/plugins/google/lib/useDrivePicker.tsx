@@ -29,9 +29,7 @@ export const useDrivePicker = ({
                     new google.picker.DocsView()
                       .setIncludeFolders(true)
                       .setMimeTypes(READER_ACCEPTED_MIME_TYPES.join(","))
-                      .setSelectFolderEnabled(
-                        select  === "folder",
-                      ),
+                      .setSelectFolderEnabled(select === "folder"),
                   )
                   .setOAuthToken(accessToken.access_token)
                   .setDeveloperKey(DEVELOPER_KEY)

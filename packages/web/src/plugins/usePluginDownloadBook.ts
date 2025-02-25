@@ -21,8 +21,7 @@ export const usePluginDownloadBook = () => {
             apiUri: API_URL ?? "",
             requestPopup: createRequestPopupDialog({ name: plugin.name }),
           })
-        : // eslint-disable-next-line react-hooks/rules-of-hooks
-          useDownloadBookPlaceholder(),
+        : useDownloadBookPlaceholder(),
     }
   })
 

@@ -20,7 +20,7 @@ export const SelectableCollectionListItem: FC<{
       onClick={() => data && onItemClick && onItemClick(data?._id)}
     >
       <ListItemText primary={metadata.displayTitle} />
-      <Box mr={1}></Box>
+      <Box mr={1} />
       <Checkbox selected={selected} />
     </ListItemButton>
   )

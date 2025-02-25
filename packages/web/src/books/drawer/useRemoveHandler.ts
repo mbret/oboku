@@ -49,23 +49,23 @@ export const useRemoveHandler = (
                   if (!isRemovableFromDataSource({ link: firstLink })) {
                     return createDialog(deleteBookNormallyDialog).$
                   }
-                    return createDialog({
-                      preset: "CONFIRM",
-                      title: "Delete a book",
-                      content: `Do you wish to delete the original file present on the source ${plugin?.name} as well?`,
-                      actions: [
-                        {
-                          type: "confirm",
-                          title: "both",
-                          onConfirm: () => ({ deleteFromDataSource: true }),
-                        },
-                        {
-                          type: "confirm",
-                          title: "only oboku",
-                          onConfirm: () => ({ deleteFromDataSource: false }),
-                        },
-                      ],
-                    }).$
+                  return createDialog({
+                    preset: "CONFIRM",
+                    title: "Delete a book",
+                    content: `Do you wish to delete the original file present on the source ${plugin?.name} as well?`,
+                    actions: [
+                      {
+                        type: "confirm",
+                        title: "both",
+                        onConfirm: () => ({ deleteFromDataSource: true }),
+                      },
+                      {
+                        type: "confirm",
+                        title: "only oboku",
+                        onConfirm: () => ({ deleteFromDataSource: false }),
+                      },
+                    ],
+                  }).$
                 }),
                 mergeMap((result) =>
                   from(

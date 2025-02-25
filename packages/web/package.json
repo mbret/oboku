@@ -77,9 +77,7 @@
     "start": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "vitest run",
-    "tsc": "tsc",
-    "lint": "eslint '**/*.{js,ts,tsx}'"
+    "test": "vitest run"
   },
   "browserslist": {
     "production": [">0.2%", "not dead", "not op_mini all"],

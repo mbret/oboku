@@ -73,33 +73,31 @@ export const App = memo(() => {
             <QueryClientProvider$>
               <Suspense fallback={<SplashScreen show />}>
                 <DialogProvider>
-                  {!isHydratingProfile && isAuthHydrated && (
+                  {!isHydratingProfile &&
+                    isAuthHydrated &&
                     plugins.reduce(
-                        (Comp, { Provider }) => {
-                          if (Provider) {
-                            return <Provider>{Comp}</Provider>
-                          }
-                          return Comp
-                        },
-                        <Fade in={isAppReady}>
-                          <Box height="100%">
-                            <AppNavigator
-                              isProfileHydrated={isProfileHydrated}
-                            />
-                            <ManageBookCollectionsDialog />
-                            <ManageBookTagsDialog />
-                            <ManageTagBooksDialog />
-                            <AuthorizeActionDialog />
-                            <UpdateAvailableDialog
-                              serviceWorker={waitingWorker}
-                            />
-                            <BackgroundReplication />
-                            <BlockingBackdrop />
-                            <Effects />
-                          </Box>
-                        </Fade>,
-                      )
-                  )}
+                      (Comp, { Provider }) => {
+                        if (Provider) {
+                          return <Provider>{Comp}</Provider>
+                        }
+                        return Comp
+                      },
+                      <Fade in={isAppReady}>
+                        <Box height="100%">
+                          <AppNavigator isProfileHydrated={isProfileHydrated} />
+                          <ManageBookCollectionsDialog />
+                          <ManageBookTagsDialog />
+                          <ManageTagBooksDialog />
+                          <AuthorizeActionDialog />
+                          <UpdateAvailableDialog
+                            serviceWorker={waitingWorker}
+                          />
+                          <BackgroundReplication />
+                          <BlockingBackdrop />
+                          <Effects />
+                        </Box>
+                      </Fade>,
+                    )}
                   <PreloadQueries
                     onReady={() => {
                       setIsPreloadingQueries(false)

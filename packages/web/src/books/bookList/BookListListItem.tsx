@@ -1,4 +1,11 @@
-import { Box, type BoxProps, Chip, Stack, Typography, useTheme } from "@mui/material"
+import {
+  Box,
+  type BoxProps,
+  Chip,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/material"
 import { type FC, memo } from "react"
 import { useDefaultItemClickHandler } from "./helpers"
 import { useBook, useIsBookProtected } from "../states"
@@ -117,15 +124,14 @@ export const BookListListItem: FC<
             }}
           >
             <Box display="flex" flexDirection="row" gap={1}>
-              {withDownloadIcons && (
-                bookDownloadState?.isDownloading ? (
-                    <DownloadingRounded color="action" />
-                  ) : bookDownloadState?.isDownloaded ? (
-                    <CloudDoneRounded color="action" />
-                  ) : (
-                    <CloudDownloadRounded color="action" />
-                  )
-              )}
+              {withDownloadIcons &&
+                (bookDownloadState?.isDownloading ? (
+                  <DownloadingRounded color="action" />
+                ) : bookDownloadState?.isDownloaded ? (
+                  <CloudDoneRounded color="action" />
+                ) : (
+                  <CloudDownloadRounded color="action" />
+                ))}
               {isBookProtected && <NoEncryptionRounded color="action" />}
               {book?.isNotInterested && <ThumbDownOutlined color="action" />}
               {book?.readingStateCurrentState ===

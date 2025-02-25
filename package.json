@@ -8,9 +8,7 @@
   "engines": {
     "node": "20.x"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "start:web": "lerna run start --scope=@oboku/web",
     "start:landing": "lerna run dev --scope=@oboku/landing",

@@ -35,7 +35,7 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
       width="100%"
       justifyContent="center"
     >
-      {!!coverUri ? (
+      {coverUri ? (
         <Box
           position="absolute"
           left={0}

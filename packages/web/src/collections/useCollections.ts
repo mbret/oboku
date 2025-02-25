@@ -1,4 +1,8 @@
-import { type CollectionDocType, difference, ReadingStateState } from "@oboku/shared"
+import {
+  type CollectionDocType,
+  difference,
+  ReadingStateState,
+} from "@oboku/shared"
 import { useLocalSettings } from "../settings/states"
 import { useQuery$, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"

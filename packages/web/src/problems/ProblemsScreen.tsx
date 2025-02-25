@@ -103,11 +103,13 @@ export const ProblemsScreen = memo(() => {
             <ListItem alignItems="flex-start">
               <ListItemText
                 primary="Duplicated collection names"
-                secondary={duplicatedCollections.map(([id, { name, number }]) => (
-                      <Fragment key={id}>
-                        (x{number}) {name} <br />
-                      </Fragment>
-                    ))}
+                secondary={duplicatedCollections.map(
+                  ([id, { name, number }]) => (
+                    <Fragment key={id}>
+                      (x{number}) {name} <br />
+                    </Fragment>
+                  ),
+                )}
               />
             </ListItem>
           )}

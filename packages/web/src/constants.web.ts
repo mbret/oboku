@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-globals */
 import { isMobileDetected } from "./common/utils"
 
 export { API_URL } from "./constants.shared"
