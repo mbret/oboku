@@ -1,3 +1,7 @@
-export const stream = { Stream: () => {} }
+// biome-ignore lint/complexity/useArrowFunction: <explanation>
+// biome-ignore lint/style/useConst: <explanation>
+export let stream = { Stream: function () {} };
 
-export const Stream = () => {}
+// biome-ignore lint/complexity/useArrowFunction: <explanation>
+// biome-ignore lint/style/useConst: <explanation>
+export let Stream = function () {};
