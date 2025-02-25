@@ -9,7 +9,7 @@ export const Toolbar = ({
 
   const onFiltersDrawerClose = useCallback(() => {
     setIsFiltersDrawerOpen(false)
-  }, [setIsFiltersDrawerOpen])
+  }, [])
 
   return (
     <>

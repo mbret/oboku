@@ -63,6 +63,8 @@ export const UnlockContentsDialog = ({
   }
 
   useEffect(() => {
+    void open
+
     reset()
   }, [open, reset])
 

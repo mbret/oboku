@@ -2,6 +2,7 @@ import type { RxCollection, RxJsonSchema } from "rxdb"
 import type { Database } from "../databases"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 
+// biome-ignore lint/complexity/noBannedTypes: <explanation>
 type SettingsCollectionMethods = {}
 
 export type SettingsDocType = {

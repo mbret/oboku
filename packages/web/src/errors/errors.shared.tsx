@@ -59,7 +59,7 @@ export const isApiError = (error: unknown): error is HttpApiError => {
     !!error.response &&
     typeof error.response?.data === "object" &&
     error.response.data !== null &&
-    "errors" in error.response?.data &&
+    "errors" in error.response.data &&
     Array.isArray(error.response?.data.errors)
   )
 }

@@ -38,7 +38,7 @@ export const LibraryTagsScreen = () => {
         Create a new tag
       </Button>
     ),
-    [setIsAddTagDialogOpened],
+    [],
   )
 
   const listHeader = useMemo(
@@ -125,6 +125,8 @@ const AddTagDialog: FC<{
   }
 
   useEffect(() => {
+    void open
+
     reset()
   }, [open, reset])
 

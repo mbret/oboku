@@ -99,6 +99,7 @@ export const Cover: FC<Props> = memo(
     const { coverSrc, coverSrcJpg } = useBookCover({ bookId })
 
     useEffect(() => {
+      void originalSrc
       setHasError(false)
     }, [originalSrc])
 

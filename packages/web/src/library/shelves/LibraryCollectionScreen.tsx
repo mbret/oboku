@@ -49,7 +49,7 @@ export const LibraryCollectionScreen = () => {
         </Button>
       </MuiToolbar>
     ),
-    [setIsAddCollectionDialogOpened],
+    [],
   )
 
   const listRenderHeader = useCallback(() => listHeader, [listHeader])

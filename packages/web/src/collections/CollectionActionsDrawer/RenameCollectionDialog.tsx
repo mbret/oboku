@@ -35,6 +35,8 @@ export const RenameCollectionDialog: FC<{
   const title = getCollectionComputedMetadata(collection)?.title
 
   useEffect(() => {
+    void openWith
+
     setName((prev) => title || prev)
   }, [title, openWith])
 

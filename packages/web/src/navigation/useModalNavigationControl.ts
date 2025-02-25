@@ -32,7 +32,7 @@ export const useModalNavigationControl = (
       closeCb.current?.()
       closeCb.current = undefined
     }
-  }, [currentHash, setCurrentHash, modalHash, synced])
+  }, [currentHash, modalHash, synced])
 
   useEffect(() => {
     if (currentHash && currentHash === modalHash) {

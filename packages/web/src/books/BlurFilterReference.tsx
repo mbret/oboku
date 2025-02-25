@@ -26,6 +26,7 @@ export const BlurFilterReference = memo(() => {
           width: 1,
         }}
       >
+        <title>Blur filter reference</title>
         <filter id="blurFilterReference">
           <feGaussianBlur stdDeviation="5" />
           <feColorMatrix

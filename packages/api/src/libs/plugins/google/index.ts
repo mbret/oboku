@@ -138,11 +138,14 @@ export const dataSource: DataSourcePlugin = {
             })
 
             const data = response.data.files || []
-            pageToken = response.data.nextPageToken || undefined
-            if (!pageToken) {
+            const nextPageToken = response.data.nextPageToken || undefined
+
+            if (!nextPageToken) {
               return data
             }
-            const nextRes = await getNextRes(pageToken)
+
+            const nextRes = await getNextRes(nextPageToken)
+
             return [...data, ...nextRes]
           },
         )
