@@ -68,11 +68,11 @@ export const useRemoveHandler = (
                     }).$
                   }
                 }),
-                mergeMap(({ deleteFromDataSource }) =>
+                mergeMap((result) =>
                   from(
                     removeBook({
                       id: book._id,
-                      deleteFromDataSource: deleteFromDataSource
+                      deleteFromDataSource: result?.deleteFromDataSource
                     })
                   )
                 )

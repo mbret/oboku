@@ -13,7 +13,7 @@ export const createDialog = <Result = undefined>({
   generatedId++
   const id = generatedId.toString()
 
-  const $ = new Observable<Result>((observer) => {
+  const $ = new Observable<Result | null>((observer) => {
     let isClosed = false
 
     const wrappedDialog: DialogType<Result> = {
@@ -28,7 +28,7 @@ export const createDialog = <Result = undefined>({
       onConfirm: () => {
         isClosed = true
         const data = dialog.onConfirm?.()
-        observer.next(data)
+        observer.next(data ?? null)
         observer.complete()
 
         return data as Result

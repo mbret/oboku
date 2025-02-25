@@ -9,6 +9,7 @@ import React, {
 } from "react"
 import { Box, Stack } from "@mui/material"
 import {
+  ContextProp,
   GridItemProps,
   GridListProps,
   GridStateSnapshot,
@@ -79,9 +80,7 @@ export const VirtuosoList = memo(
       () =>
         forwardRef<
           any,
-          GridListProps & {
-            context?: Context
-          }
+          GridListProps & ContextProp<Context>
         >(({ children, ...props }, ref) => (
           <Stack ref={ref as any} flexWrap="wrap" direction="row" {...props}>
             {children}
@@ -133,7 +132,7 @@ export const VirtuosoList = memo(
     return (
       <>
         {itemsPerRow > 1 ? (
-          <VirtuosoGrid
+          <VirtuosoGrid<string, Context>
             ref={virtuosoGridRef}
             style={{
               ...style,

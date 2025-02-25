@@ -53,7 +53,7 @@ export const loadScript = ({ id, src }: { id: string; src: string }) => {
     script.defer = true
     script.dataset["state"] = "loading"
 
-    const scriptLoad$ = new Observable((observer) => {
+    const scriptLoad$ = new Observable<void>((observer) => {
       script.onload = () => {
         script.dataset["state"] = "success"
         observer.next()

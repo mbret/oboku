@@ -164,11 +164,6 @@ export const eInkTheme = createTheme(
       }
     },
     components: {
-      ObokuScrubber: {
-        defaultProps: {
-          contrastMode: true
-        }
-      },
       MuiAppBar: {
         defaultProps: {
           elevation: 0
