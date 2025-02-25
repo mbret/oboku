@@ -6,7 +6,7 @@ import {
   LocalLibraryRounded,
   CloudSyncRounded,
   HomeRounded,
-  ExtensionRounded
+  ExtensionRounded,
 } from "@mui/icons-material"
 import { useNavigate, useLocation } from "react-router"
 import { ROUTES } from "../constants.web"
@@ -14,7 +14,7 @@ import { useNetworkState } from "react-use"
 import { SIGNAL_RESET, useSignalValue } from "reactjrx"
 import {
   uploadBookDialogOpenedSignal,
-  UploadBookDialog
+  UploadBookDialog,
 } from "../upload/UploadBookDialog"
 import { PLUGIN_FILE_TYPE } from "@oboku/shared"
 
@@ -22,7 +22,7 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
   const location = useLocation()
   const navigate = useNavigate()
   const isUploadBookFromDataSourceDialogOpened = useSignalValue(
-    uploadBookDialogOpenedSignal
+    uploadBookDialogOpenedSignal,
   )
   const dragStatus = useRef<undefined | "entered">(undefined)
 
@@ -57,7 +57,7 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
         flexDirection: "column",
         flex: 1,
         overflow: "hidden",
-        position: "relative"
+        position: "relative",
       }}
       onDragOver={onDragOver}
     >
@@ -91,7 +91,7 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
         <UploadBookDialog
           openWith={isUploadBookFromDataSourceDialogOpened}
           {...(isUploadBookFromDataSourceDialogOpened === PLUGIN_FILE_TYPE && {
-            onDragLeave
+            onDragLeave,
           })}
           onClose={() => uploadBookDialogOpenedSignal.setValue(SIGNAL_RESET)}
         />
@@ -114,7 +114,7 @@ const OfflineIcon = () => {
         left: -5,
         bottom: -5,
         padding: 1,
-        borderTopRightRadius: 5
+        borderTopRightRadius: 5,
       }}
     >
       <PortableWifiOffRounded fontSize="small" style={{ color: "white" }} />

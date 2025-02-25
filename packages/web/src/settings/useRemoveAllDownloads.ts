@@ -3,7 +3,7 @@ import { useRemoveAllDownloadedFiles } from "../download/useRemoveAllDownloadedF
 import { from, of } from "rxjs"
 
 export const useRemoveAllDownloads = ({
-  onSuccess
+  onSuccess,
 }: {
   onSuccess: () => void
 }) => {
@@ -14,7 +14,7 @@ export const useRemoveAllDownloads = ({
     onSuccess,
     mutationFn: () => {
       const isConfirmed = confirm(
-        "Are you sure you want to delete all downloads at once?"
+        "Are you sure you want to delete all downloads at once?",
       )
 
       if (isConfirmed) {
@@ -22,6 +22,6 @@ export const useRemoveAllDownloads = ({
       }
 
       return of(null)
-    }
+    },
   })
 }

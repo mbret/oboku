@@ -43,7 +43,7 @@ it("should handle arrays with NaN correctly", () => {
 
 it("should handle arrays with special values like undefined and null", () => {
   expect(
-    intersection([undefined, null, 1], [1, undefined], [undefined])
+    intersection([undefined, null, 1], [1, undefined], [undefined]),
   ).toEqual([undefined])
 })
 

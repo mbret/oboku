@@ -25,7 +25,7 @@ export const DialogTopBar: FC<{
         <Typography
           variant="h6"
           style={{
-            flexGrow: 1
+            flexGrow: 1,
           }}
           noWrap
         >

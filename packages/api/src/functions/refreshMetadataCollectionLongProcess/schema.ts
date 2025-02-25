@@ -4,7 +4,7 @@ export default {
     collectionId: { type: "string" },
     credentials: { type: `string` },
     authorization: { type: `string` },
-    soft: { type: "boolean" }
+    soft: { type: "boolean" },
   },
-  required: ["collectionId"]
+  required: ["collectionId"],
 } as const

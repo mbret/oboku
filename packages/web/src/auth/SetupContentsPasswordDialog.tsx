@@ -5,7 +5,7 @@ import {
   DialogContentText,
   TextField,
   DialogActions,
-  Button
+  Button,
 } from "@mui/material"
 import { useEffect, memo } from "react"
 import { useUpdateContentPassword, useSettings } from "../settings/helpers"
@@ -22,12 +22,11 @@ type Inputs = {
 export const SetupContentsPasswordDialog = memo(
   ({ onClose, open }: { open: boolean; onClose: () => void }) => {
     const { data: accountSettings } = useSettings()
-    const { control, handleSubmit, setFocus, reset } =
-      useForm<Inputs>({
-        defaultValues: {
-          appPassword: ""
-        }
-      })
+    const { control, handleSubmit, setFocus, reset } = useForm<Inputs>({
+      defaultValues: {
+        appPassword: "",
+      },
+    })
     const hasPassword = !!accountSettings?.contentPassword
     const updatePassword = useUpdateContentPassword()
 
@@ -97,5 +96,5 @@ export const SetupContentsPasswordDialog = memo(
         </DialogActions>
       </Dialog>
     )
-  }
+  },
 )

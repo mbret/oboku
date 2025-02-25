@@ -11,8 +11,8 @@ export const useDownloadedBooks = () => {
     () =>
       books?.filter(
         (book) =>
-          downloadState[book._id]?.downloadState === DownloadState.Downloaded
+          downloadState[book._id]?.downloadState === DownloadState.Downloaded,
       ),
-    [downloadState, books]
+    [downloadState, books],
   )
 }

@@ -22,7 +22,7 @@ export const SelectableCollectionList = memo(
           }
         />
       ),
-      [onItemClick, selected]
+      [onItemClick, selected],
     )
 
     return (
@@ -33,5 +33,5 @@ export const SelectableCollectionList = memo(
         {...rest}
       />
     )
-  }
+  },
 )

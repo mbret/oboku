@@ -4,7 +4,7 @@ import {
   Dialog,
   TextField,
   DialogActions,
-  Button
+  Button,
 } from "@mui/material"
 import { useEffect, useState, FC } from "react"
 import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
@@ -17,7 +17,7 @@ export const RenameCollectionDialog: FC<{
 }> = ({ onClose, openWith }) => {
   const [name, setName] = useState("")
   const { data: collection } = useCollection({
-    id: openWith
+    id: openWith,
   })
   const { mutate: editCollection } = useUpdateCollection()
 

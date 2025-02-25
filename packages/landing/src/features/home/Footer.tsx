@@ -5,7 +5,7 @@ import {
   Container,
   Link as MuiLink,
   Stack,
-  Typography
+  Typography,
 } from "@mui/material"
 import { links } from "@oboku/shared"
 import Link from "next/link"
@@ -18,7 +18,7 @@ export const Footer = () => {
         sx={{
           display: "flex",
           flexDirection: "column",
-          gap: 8
+          gap: 8,
         }}
       >
         <Stack

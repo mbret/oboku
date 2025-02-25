@@ -25,7 +25,7 @@ export const coversFetchListener = (event: FetchEvent) => {
         try {
           const response = await fetch(event.request, {
             mode: "cors",
-            credentials: "omit"
+            credentials: "omit",
           })
 
           const clonedResponse = response.clone()
@@ -38,10 +38,10 @@ export const coversFetchListener = (event: FetchEvent) => {
                 "oboku-sw-time-cached": Date.now().toString(),
                 "oboku-sw-cover-id": coverId,
                 "oboku-sw-cover-size":
-                  response.headers.get("Content-Length") || "0"
-              }
+                  response.headers.get("Content-Length") || "0",
+              },
             }),
-            clonedResponse
+            clonedResponse,
           )
 
           return response
@@ -51,10 +51,11 @@ export const coversFetchListener = (event: FetchEvent) => {
           // Pass through the original fetch error
           return new Response(null, {
             status: 502, // or whatever status code is appropriate
-            statusText: error instanceof Error ? error.message : "Network error"
+            statusText:
+              error instanceof Error ? error.message : "Network error",
           })
         }
-      })()
+      })(),
     )
 
     return true

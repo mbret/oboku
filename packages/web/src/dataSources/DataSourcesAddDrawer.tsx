@@ -3,7 +3,7 @@ import {
   List,
   ListItemIcon,
   ListItemText,
-  ListItemButton
+  ListItemButton,
 } from "@mui/material"
 import { FC } from "react"
 import { plugins } from "../plugins/configure"

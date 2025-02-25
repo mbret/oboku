@@ -28,13 +28,13 @@ export const BooksSelectionDialog = memo(
             height: "100%",
             flex: 1,
             overflow: "hidden",
-            padding: 0
+            padding: 0,
           }}
         >
           <SelectableBookList
             style={{
               flex: 1,
-              height: "100%"
+              height: "100%",
             }}
             data={data}
             selected={selected}
@@ -47,5 +47,5 @@ export const BooksSelectionDialog = memo(
         </DialogContent>
       </Dialog>
     )
-  }
+  },
 )

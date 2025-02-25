@@ -5,7 +5,7 @@ import { from } from "rxjs"
 
 export const markCollectionAsFetching = ({
   db,
-  collectionId
+  collectionId,
 }: {
   db: nano.DocumentScope<unknown>
   collectionId: string
@@ -20,14 +20,14 @@ export const markCollectionAsFetching = ({
       return {
         ...old,
         metadataUpdateStatus: "fetching" as const,
-        lastMetadataStartedAt: new Date().toISOString()
+        lastMetadataStartedAt: new Date().toISOString(),
       }
-    })
+    }),
   )
 
 export const markCollectionAsError = ({
   db,
-  collectionId
+  collectionId,
 }: {
   db: nano.DocumentScope<unknown>
   collectionId: string
@@ -41,7 +41,7 @@ export const markCollectionAsError = ({
         ({
           ...old,
           metadataUpdateStatus: "idle",
-          lastMetadataUpdateError: "unknown"
-        }) satisfies CollectionDocType
-    )
+          lastMetadataUpdateError: "unknown",
+        }) satisfies CollectionDocType,
+    ),
   )

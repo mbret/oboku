@@ -26,7 +26,7 @@ export const useRepair = () => {
         | {
             type: "danglingLinks"
             items: string[]
-          }
+          },
     ) => {
       const db$ = latestDatabase$.pipe(first())
 
@@ -34,7 +34,7 @@ export const useRepair = () => {
         const yes = window.confirm(
           `
             This action will remove the invalid book references from the collection. It will not remove anything else.
-            `.replace(/  +/g, "")
+            `.replace(/  +/g, ""),
         )
 
         if (!yes) return of(null)
@@ -44,7 +44,7 @@ export const useRepair = () => {
             from(
               db.obokucollection
                 .findOne({ selector: { _id: action.doc._id } })
-                .exec()
+                .exec(),
             ).pipe(
               mergeMap((item) => {
                 if (!item) return of(null)
@@ -52,19 +52,19 @@ export const useRepair = () => {
                 return from(
                   item.incrementalModify((old) => {
                     const nonDanglingBooks = old.books.filter(
-                      (id) => !action.danglingItems.includes(id)
+                      (id) => !action.danglingItems.includes(id),
                     )
 
                     return {
                       ...old,
-                      books: nonDanglingBooks
+                      books: nonDanglingBooks,
                     }
-                  })
+                  }),
                 )
-              })
-            )
+              }),
+            ),
           ),
-          map(() => null)
+          map(() => null),
         )
       }
 
@@ -72,7 +72,7 @@ export const useRepair = () => {
         const yes = window.confirm(
           `
             This action will remove the invalid collection references from the book. It will not remove anything else.
-            `.replace(/  +/g, "")
+            `.replace(/  +/g, ""),
         )
 
         if (!yes) return of(null)
@@ -80,7 +80,7 @@ export const useRepair = () => {
         return db$.pipe(
           mergeMap((db) =>
             from(
-              db.book.findOne({ selector: { _id: action.doc._id } }).exec()
+              db.book.findOne({ selector: { _id: action.doc._id } }).exec(),
             ).pipe(
               mergeMap((item) => {
                 if (!item) return of(null)
@@ -88,19 +88,19 @@ export const useRepair = () => {
                 return from(
                   item.incrementalModify((old) => {
                     const nonDanglingCollections = old.collections.filter(
-                      (id) => !action.danglingItems.includes(id)
+                      (id) => !action.danglingItems.includes(id),
                     )
 
                     return {
                       ...old,
-                      collections: nonDanglingCollections
+                      collections: nonDanglingCollections,
                     }
-                  })
+                  }),
                 )
-              })
-            )
+              }),
+            ),
           ),
-          map(() => null)
+          map(() => null),
         )
       }
 
@@ -108,7 +108,7 @@ export const useRepair = () => {
         const yes = window.confirm(
           `
             This action will remove the invalid link references from the book. It will not remove anything else.
-            `.replace(/  +/g, "")
+            `.replace(/  +/g, ""),
         )
 
         if (!yes) return of(null)
@@ -116,7 +116,7 @@ export const useRepair = () => {
         return db$.pipe(
           mergeMap((db) =>
             from(
-              db.book.findOne({ selector: { _id: action.doc._id } }).exec()
+              db.book.findOne({ selector: { _id: action.doc._id } }).exec(),
             ).pipe(
               mergeMap((item) => {
                 if (!item) return of(null)
@@ -124,19 +124,19 @@ export const useRepair = () => {
                 return from(
                   item.incrementalModify((old) => {
                     const nonDanglingLinks = old.links.filter(
-                      (id) => !action.danglingItems.includes(id)
+                      (id) => !action.danglingItems.includes(id),
                     )
 
                     return {
                       ...old,
-                      links: nonDanglingLinks
+                      links: nonDanglingLinks,
                     }
-                  })
+                  }),
                 )
-              })
-            )
+              }),
+            ),
           ),
-          map(() => null)
+          map(() => null),
         )
       }
 
@@ -144,18 +144,18 @@ export const useRepair = () => {
         const yes = window.confirm(
           `
             This action will remove the non used links. It will not remove anything else.
-            `.replace(/  +/g, "")
+            `.replace(/  +/g, ""),
         )
 
         if (!yes) return of(null)
 
         return db$.pipe(
           mergeMap((db) => from(db.link.bulkRemove(action.items))),
-          map(() => null)
+          map(() => null),
         )
       }
 
       return of(null)
-    }
+    },
   })
 }

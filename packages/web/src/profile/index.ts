@@ -13,13 +13,13 @@ export const signalEntriesToPersist = [
     version: 0,
     hydrate: ({ value }) => ({
       ...value,
-      isLibraryUnlocked: false
-    })
+      isLibraryUnlocked: false,
+    }),
   } satisfies SignalPersistenceConfig<typeof libraryStateSignal>,
   { signal: libraryShelvesFiltersSignal, version: 0 },
   { signal: localSettingsSignal, version: 0 },
   { signal: bookBeingReadStateSignal, version: 0 },
   { signal: readerSettingsStateSignal, version: 0 },
   { signal: collectionDetailsScreenListControlsStateSignal, version: 0 },
-  { signal: searchListActionsToolbarSignal, version: 0 }
+  { signal: searchListActionsToolbarSignal, version: 0 },
 ]

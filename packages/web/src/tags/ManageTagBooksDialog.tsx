@@ -10,19 +10,19 @@ import { signal, useSignalValue } from "reactjrx"
 export const isManageTagBooksDialogOpenedWithState = signal<string | undefined>(
   {
     key: "isManageTagBooksDialogOpenedWith",
-    default: undefined
-  }
+    default: undefined,
+  },
 )
 
 export const ManageTagBooksDialog: FC<{}> = () => {
   const isManageTagBooksDialogOpenedWith = useSignalValue(
-    isManageTagBooksDialogOpenedWithState
+    isManageTagBooksDialogOpenedWithState,
   )
   const { data: tag } = useTag(isManageTagBooksDialogOpenedWith)
   const normalizedBookDownloadsState = useSignalValue(booksDownloadStateSignal)
 
   const { data: books } = useBooksAsArrayState({
-    normalizedBookDownloadsState
+    normalizedBookDownloadsState,
   })
   const { mutate: addTagToBook } = useAddTagToBook()
   const { mutate: removeFromBook } = useRemoveTagFromBook()
@@ -40,11 +40,11 @@ export const ManageTagBooksDialog: FC<{}> = () => {
       books.reduce(
         (acc, item) => ({
           ...acc,
-          [item._id]: !!tagBooks.find((id) => id === item._id)
+          [item._id]: !!tagBooks.find((id) => id === item._id),
         }),
-        {}
+        {},
       ),
-    [books, tagBooks]
+    [books, tagBooks],
   )
 
   const onItemClick = useCallback(
@@ -55,7 +55,7 @@ export const ManageTagBooksDialog: FC<{}> = () => {
         tagId && addTagToBook({ _id: bookId, tagId })
       }
     },
-    [removeFromBook, addTagToBook, tagId]
+    [removeFromBook, addTagToBook, tagId],
   )
 
   return (

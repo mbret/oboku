@@ -13,7 +13,7 @@ type DriveResponseError = {
 }
 
 export const isDriveResponseError = (
-  error: any
+  error: any,
 ): error is DriveResponseError => {
   return typeof error === "object" && `body` in error && `result` in error
 }

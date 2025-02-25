@@ -21,15 +21,15 @@ export const libraryStateSignalDefaultValue: LibraryDocType = {
   sorting: "date",
   tags: [],
   readingStates: [],
-  downloadState: undefined
+  downloadState: undefined,
 }
 
 export const libraryStateSignal = signal({
   key: "libraryState",
-  default: libraryStateSignalDefaultValue
+  default: libraryStateSignalDefaultValue,
 })
 
 export const isUploadBookDrawerOpenedStateSignal = signal({
   key: "isUploadBookDrawerOpenedState",
-  default: false
+  default: false,
 })

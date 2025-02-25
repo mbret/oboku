@@ -4,12 +4,12 @@ import {
   List,
   ListItemText,
   ListItemIcon,
-  ListItemButton
+  ListItemButton,
 } from "@mui/material"
 import {
   ArrowForwardIosRounded,
   CheckCircleRounded,
-  RadioButtonUncheckedOutlined
+  RadioButtonUncheckedOutlined,
 } from "@mui/icons-material"
 import { useSignalValue } from "reactjrx"
 import { ReadingStateFilterDialog, getLabel } from "./ReadingStateFilterDialog"
@@ -26,8 +26,8 @@ export const FiltersDrawer: FC<{
       libraryShelvesFiltersSignal,
       ({ readingState, showNotInterestedCollections }) => ({
         readingState,
-        showNotInterestedCollections
-      })
+        showNotInterestedCollections,
+      }),
     )
 
   return (
@@ -53,7 +53,7 @@ export const FiltersDrawer: FC<{
                 libraryShelvesFiltersSignal.setValue((state) => ({
                   ...state,
                   showNotInterestedCollections:
-                    !state.showNotInterestedCollections
+                    !state.showNotInterestedCollections,
                 }))
               }
             >

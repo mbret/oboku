@@ -5,9 +5,9 @@ const windowOfflineEvent$ = fromEvent(window, "offline")
 
 export const navigatorOnLine$ = merge(
   windowOnlineEvent$,
-  windowOfflineEvent$
+  windowOfflineEvent$,
 ).pipe(
   startWith(null),
   map(() => navigator.onLine),
-  share()
+  share(),
 )

@@ -5,7 +5,7 @@ export default {
   handler: `${handlerPath(__dirname)}/handler.main`,
   role: "lambdaDefault",
   environment: {
-    FIREBASE_CONFIG: "${env:FIREBASE_CONFIG}"
+    FIREBASE_CONFIG: "${env:FIREBASE_CONFIG}",
   },
   events: [
     {
@@ -16,10 +16,10 @@ export default {
         cors: true,
         request: {
           schemas: {
-            "application/json": schema
-          }
-        }
-      }
-    }
-  ]
+            "application/json": schema,
+          },
+        },
+      },
+    },
+  ],
 }

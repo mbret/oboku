@@ -21,9 +21,9 @@ export const useUpdateCollection = () => {
         metadata: old.metadata?.map((entry) =>
           entry.type === "user"
             ? { ...entry, title: name ?? entry.title }
-            : entry
-        )
+            : entry,
+        ),
       }))
-    }
+    },
   })
 }

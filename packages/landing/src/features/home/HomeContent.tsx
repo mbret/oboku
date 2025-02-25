@@ -8,7 +8,7 @@ import {
   Stack,
   styled,
   Typography,
-  useTheme
+  useTheme,
 } from "@mui/material"
 import image2 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
 import image1 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
@@ -41,7 +41,7 @@ export const HomeContent = () => {
         display: "flex",
         flex: 1,
         flexFlow: "column",
-        alignItems: "center"
+        alignItems: "center",
       }}
     >
       <Container
@@ -50,7 +50,7 @@ export const HomeContent = () => {
           display: "flex",
           flex: 1,
           flexFlow: "column",
-          alignItems: "center"
+          alignItems: "center",
         }}
       >
         <Box component="header" mb={2}>
@@ -73,7 +73,7 @@ export const HomeContent = () => {
             display: "flex",
             alignItems: "center",
             flexFlow: "column",
-            maxWidth: 600
+            maxWidth: 600,
           }}
         >
           <Typography
@@ -112,7 +112,7 @@ export const HomeContent = () => {
           elevation={4}
           sx={{
             overflow: "hidden",
-            borderRadius: 2
+            borderRadius: 2,
           }}
         >
           <HighlightImage
@@ -125,7 +125,7 @@ export const HomeContent = () => {
           elevation={4}
           sx={{
             overflow: "hidden",
-            borderRadius: 2
+            borderRadius: 2,
           }}
         >
           <HighlightImage

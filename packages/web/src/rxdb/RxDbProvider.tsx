@@ -4,7 +4,7 @@ import { isDefined, signal, useMutation$, useSignalValue } from "reactjrx"
 import { filter, first, from, map, of, switchMap, tap } from "rxjs"
 
 const databaseSignal = signal<Database | undefined>({
-  key: "databaseState"
+  key: "databaseState",
 })
 
 export const latestDatabase$ = databaseSignal.subject.pipe(filter(isDefined))
@@ -15,7 +15,7 @@ export const useReCreateDb = () => {
   return useMutation$({
     mutationKey: ["recreateDb"],
     scope: {
-      id: "recreateDb"
+      id: "recreateDb",
     },
     mutationFn: ({ overwrite = true }: { overwrite?: boolean } = {}) => {
       const db = databaseSignal.getValue()
@@ -34,9 +34,9 @@ export const useReCreateDb = () => {
         switchMap(() => from(createDatabase({}))),
         tap((newDb) => {
           databaseSignal.setValue(newDb)
-        })
+        }),
       )
-    }
+    },
   })
 }
 

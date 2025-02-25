@@ -10,7 +10,7 @@ const BASE_DETECTION_REGEX = `\\[oboku\\~[^\\]]*\\]`
  * "foo [oboku~tags~bar,bar2]" -> { tags: ['bar', 'bar2'] }
  */
 export const extractDirectivesFromName = (
-  resourceId: string
+  resourceId: string,
 ): {
   isNotACollection: boolean
   tags: string[]
@@ -114,7 +114,7 @@ export const extractDirectivesFromName = (
     ignoreMetadataSources,
     isWebtoon,
     metadataTitle,
-    googleVolumeId
+    googleVolumeId,
   }
 }
 

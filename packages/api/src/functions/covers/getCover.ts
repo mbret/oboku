@@ -6,8 +6,8 @@ export const getCover = async (s3Client: S3Client, objectKey: string) => {
       new GetObjectCommand({
         Bucket: process.env.COVERS_BUCKET_NAME,
         Key: objectKey,
-        ResponseContentType: ""
-      })
+        ResponseContentType: "",
+      }),
     )
 
     if (!response.Body) {

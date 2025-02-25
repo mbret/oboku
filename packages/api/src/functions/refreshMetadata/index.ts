@@ -18,10 +18,10 @@ export default {
             "X-Api-Key",
             "X-Amz-Security-Token",
             "X-Amz-User-Agent",
-            "oboku-credentials"
-          ]
-        }
-      }
-    }
-  ]
+            "oboku-credentials",
+          ],
+        },
+      },
+    },
+  ],
 }

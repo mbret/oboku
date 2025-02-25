@@ -9,7 +9,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Typography
+  Typography,
 } from "@mui/material"
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
 import { ComponentProps, FC, useState } from "react"
@@ -27,10 +27,10 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
   const addDataSource = useCreateDataSource()
   const [selectedFolder, setSelectedFolder] = useState<DropboxFile | undefined>(
-    undefined
+    undefined,
   )
   const [folderChain, setFolderChain] = useState<DropboxFile[]>([
-    { name: "", id: "root", isDir: true }
+    { name: "", id: "root", isDir: true },
   ])
   const currentFolder = folderChain[folderChain.length - 1]
   const { data: tags = [] } = useTags()
@@ -72,7 +72,7 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
               <ListItem>
                 <Button
                   style={{
-                    flex: 1
+                    flex: 1,
                   }}
                   startIcon={<ArrowBackIosRounded style={{}} />}
                   variant="outlined"
@@ -114,11 +114,11 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
                 const customData: DropboxDataSourceData = {
                   applyTags: Object.keys(selectedTags),
                   folderId: selectedFolder.id,
-                  folderName: selectedFolder.name
+                  folderName: selectedFolder.name,
                 }
                 addDataSource({
                   type: `dropbox`,
-                  data: JSON.stringify(customData)
+                  data: JSON.stringify(customData),
                 })
               }
             }}

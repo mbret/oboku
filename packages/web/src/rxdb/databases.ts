@@ -4,14 +4,14 @@ import {
   CollectionCollection,
   collectionCollectionMethods,
   collectionSchema,
-  collectionMigrationStrategies
+  collectionMigrationStrategies,
 } from "./collections/collection"
 import { applyHooks } from "./middleware"
 import {
   dataSourceSchema,
   dataSourceCollectionMethods,
   DataSourceCollection,
-  migrationStrategies as dataSourceMigrationStrategies
+  migrationStrategies as dataSourceMigrationStrategies,
 } from "./collections/dataSource"
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder"
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
@@ -24,14 +24,14 @@ import {
   bookCollectionMethods,
   bookDocMethods,
   bookSchema,
-  bookSchemaMigrationStrategies
+  bookSchemaMigrationStrategies,
 } from "./collections/book"
 import { tag, TagCollection } from "./collections/tags"
 import { link, LinkCollection } from "./collections/link"
 import {
   initializeSettings,
   SettingsCollection,
-  settingsSchema
+  settingsSchema,
 } from "./collections/settings"
 import { conflictHandler } from "./replication/conflictHandler"
 import { RxDBCleanupPlugin } from "rxdb/plugins/cleanup"
@@ -62,7 +62,7 @@ type MyDatabaseCollections = {
 export type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
 
 export const createDatabase = async (
-  params: Partial<Parameters<typeof createRxDatabase>[0]> = {}
+  params: Partial<Parameters<typeof createRxDatabase>[0]> = {},
 ) => {
   const storage = getRxStorageDexie()
 
@@ -74,7 +74,7 @@ export const createDatabase = async (
     // For most use cases, you should not use a validation plugin in production.
     storage: import.meta.env.DEV
       ? wrappedValidateAjvStorage({
-          storage
+          storage,
         })
       : storage,
     multiInstance: false,
@@ -115,8 +115,8 @@ export const createDatabase = async (
        * only one instance will start the cleanup.
        * [default=true]
        */
-      waitForLeadership: true
-    }
+      waitForLeadership: true,
+    },
   })
 
   await db.addCollections({
@@ -125,26 +125,26 @@ export const createDatabase = async (
       methods: bookDocMethods,
       statics: bookCollectionMethods,
       migrationStrategies: bookSchemaMigrationStrategies,
-      conflictHandler
+      conflictHandler,
     },
     link,
     tag,
     settings: {
       schema: settingsSchema,
-      conflictHandler
+      conflictHandler,
     },
     obokucollection: {
       schema: collectionSchema,
       statics: collectionCollectionMethods,
       migrationStrategies: collectionMigrationStrategies,
-      conflictHandler
+      conflictHandler,
     },
     datasource: {
       schema: dataSourceSchema,
       statics: dataSourceCollectionMethods,
       migrationStrategies: dataSourceMigrationStrategies,
-      conflictHandler
-    }
+      conflictHandler,
+    },
   })
 
   await initializeSettings(db)

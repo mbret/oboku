@@ -11,9 +11,9 @@ export const AuthCallbackScreen = () => {
       window.opener.postMessage(
         {
           source: "oauth-redirect",
-          params
+          params,
         },
-        `*`
+        `*`,
       )
       // close the popup
       window.close()

@@ -7,7 +7,7 @@ import {
   FormControl,
   FormControlLabel,
   Radio,
-  RadioGroup
+  RadioGroup,
 } from "@mui/material"
 import { memo } from "react"
 import { SignalValue, useSignalValue } from "reactjrx"
@@ -43,7 +43,7 @@ export const ReadingStateFilterDialog = memo(
               onChange={(event) => {
                 libraryShelvesFiltersSignal.setValue((state) => ({
                   ...state,
-                  readingState: event.target.value as ReadingState
+                  readingState: event.target.value as ReadingState,
                 }))
                 onClose()
               }}
@@ -66,5 +66,5 @@ export const ReadingStateFilterDialog = memo(
         </DialogActions>
       </Dialog>
     )
-  }
+  },
 )

@@ -1,7 +1,7 @@
 import { headers } from "next/headers"
 
 export const getServerMarkdownContent = async (
-  path: "terms-and-conditions" | "privacy-policy" | "about-us"
+  path: "terms-and-conditions" | "privacy-policy" | "about-us",
 ) => {
   const origin =
     process.env.NODE_ENV === "development"
@@ -11,8 +11,8 @@ export const getServerMarkdownContent = async (
   const response = await fetch(
     `${origin}/api/markdown?path=${encodeURIComponent(path)}`,
     {
-      method: "get"
-    }
+      method: "get",
+    },
   )
 
   return response

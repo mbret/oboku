@@ -8,14 +8,14 @@ import { useLinks } from "../links/states"
 
 export const useFixableBooks = () => {
   const { data: unsafeCollections } = useCollections({
-    includeProtected: true
+    includeProtected: true,
   })
   const { data: unsafeBooks } = useBooks({ includeProtected: true })
   const { data: links } = useLinks()
 
   const unsafeCollectionIds = useMemo(
     () => unsafeCollections?.map((item) => item._id),
-    [unsafeCollections]
+    [unsafeCollections],
   )
   const linkIds = useMemo(() => links?.map((item) => item._id), [links])
 
@@ -23,7 +23,7 @@ export const useFixableBooks = () => {
     (acc, doc) => {
       const danglingItems = difference(
         doc.collections,
-        unsafeCollectionIds ?? []
+        unsafeCollectionIds ?? [],
       )
 
       if (danglingItems.length > 0) {
@@ -31,14 +31,14 @@ export const useFixableBooks = () => {
           ...acc,
           {
             doc,
-            danglingItems
-          }
+            danglingItems,
+          },
         ]
       }
 
       return acc
     },
-    [] as { doc: DeepReadonlyObject<BookDocType>; danglingItems: string[] }[]
+    [] as { doc: DeepReadonlyObject<BookDocType>; danglingItems: string[] }[],
   )
 
   const booksWithDanglingLinks = unsafeBooks?.reduce(
@@ -50,14 +50,14 @@ export const useFixableBooks = () => {
           ...acc,
           {
             doc,
-            danglingItems
-          }
+            danglingItems,
+          },
         ]
       }
 
       return acc
     },
-    [] as { doc: DeepReadonlyObject<BookDocType>; danglingItems: string[] }[]
+    [] as { doc: DeepReadonlyObject<BookDocType>; danglingItems: string[] }[],
   )
 
   return { booksWithDanglingCollections, booksWithDanglingLinks }

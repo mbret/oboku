@@ -4,13 +4,13 @@ import { CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
 
 export const saveOrUpdateCover = async (
   prevCollection: Pick<CollectionDocType, "_id" | "metadata">,
-  currentCollection: Pick<CollectionDocType, "_id" | "metadata">
+  currentCollection: Pick<CollectionDocType, "_id" | "metadata">,
 ) => {
   const existingCover = prevCollection.metadata?.find(
-    (metadata) => metadata.cover
+    (metadata) => metadata.cover,
   )?.cover
   const cover = currentCollection.metadata?.find(
-    (metadata) => metadata.cover
+    (metadata) => metadata.cover,
   )?.cover
 
   if (!cover) return

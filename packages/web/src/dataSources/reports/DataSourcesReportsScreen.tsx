@@ -68,19 +68,19 @@ export const DataSourcesReportsScreen = memo(() => {
                               added,
                               ...reportEntry
                             },
-                            index
+                            index,
                           ) => {
                             const linkedToBooks =
                               linkedTo?.filter(
-                                (item) => item.rx_model === "book"
+                                (item) => item.rx_model === "book",
                               ) ?? []
                             const linkedToTags =
                               linkedTo?.filter(
-                                (item) => item.rx_model === "tag"
+                                (item) => item.rx_model === "tag",
                               ) ?? []
                             const linkedToCollections =
                               linkedTo?.filter(
-                                (item) => item.rx_model === "obokucollection"
+                                (item) => item.rx_model === "obokucollection",
                               ) ?? []
                             const ModelIcon = getRxModelIconFromValue(rx_model)
 
@@ -119,7 +119,7 @@ export const DataSourcesReportsScreen = memo(() => {
                                         {linkedToBooks
                                           .map(
                                             ({ id, label }) =>
-                                              `"${label ?? id}"`
+                                              `"${label ?? id}"`,
                                           )
                                           .join(`, `)}
                                       </Typography>
@@ -138,7 +138,7 @@ export const DataSourcesReportsScreen = memo(() => {
                                         {linkedToTags
                                           .map(
                                             ({ id, label }) =>
-                                              `"${label ?? id}"`
+                                              `"${label ?? id}"`,
                                           )
                                           .join(`, `)}
                                       </Typography>
@@ -170,7 +170,7 @@ export const DataSourcesReportsScreen = memo(() => {
                                         {linkedToBooks
                                           .map(
                                             ({ id, label }) =>
-                                              `"${label ?? id}"`
+                                              `"${label ?? id}"`,
                                           )
                                           .join(`, `)}
                                       </Typography>
@@ -189,7 +189,7 @@ export const DataSourcesReportsScreen = memo(() => {
                                         {linkedToCollections
                                           .map(
                                             ({ id, label }) =>
-                                              `"${label ?? id}"`
+                                              `"${label ?? id}"`,
                                           )
                                           .join(`, `)}
                                       </Typography>
@@ -197,7 +197,7 @@ export const DataSourcesReportsScreen = memo(() => {
                                   )}
                               </Fragment>
                             )
-                          }
+                          },
                         )}
                       </Stack>
                     )}

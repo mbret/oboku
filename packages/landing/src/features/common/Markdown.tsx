@@ -18,11 +18,11 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
       variant="h5"
       sx={{
         "p + &": {
-          marginTop: 2
+          marginTop: 2,
         },
         "ul + &": {
-          marginTop: 2
-        }
+          marginTop: 2,
+        },
       }}
       {...(rest as any)}
     >
@@ -34,7 +34,7 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
     <Typography component="p" {...(rest as any)}>
       {children}
     </Typography>
-  )
+  ),
 }
 
 export const Markdown = ({ children }: { children: string }) => {

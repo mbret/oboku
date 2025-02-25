@@ -13,6 +13,6 @@ export const computeMetadata = (metadata: (CollectionMetadata | undefined)[]) =>
 
     return {
       startYear: item.startYear,
-      title: typeof title === "string" ? title : (title?.en ?? acc.title)
+      title: typeof title === "string" ? title : (title?.en ?? acc.title),
     }
   }, {} as CollectionComputedMetadata)

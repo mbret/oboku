@@ -12,7 +12,7 @@ export const useFixableLinks = () => {
   const allLinksUsed =
     unsafeBooks?.reduce(
       (acc, book) => [...acc, ...book.links],
-      [] as string[]
+      [] as string[],
     ) ?? []
 
   const danglingLinks = difference(linkIds, allLinksUsed)

@@ -22,7 +22,7 @@ export const SelectableTagList = memo(
           }
         />
       ),
-      [onItemClick, selected]
+      [onItemClick, selected],
     )
 
     return (
@@ -33,5 +33,5 @@ export const SelectableTagList = memo(
         {...rest}
       />
     )
-  }
+  },
 )

@@ -18,7 +18,6 @@ export const useWakeLock = () => {
         setActive(false)
       }
     }
-
     ;(async () => {
       if ("wakeLock" in navigator) {
         try {

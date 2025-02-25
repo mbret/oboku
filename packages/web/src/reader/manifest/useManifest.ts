@@ -27,7 +27,7 @@ export const useManifest = (bookId: string | undefined) => {
       ) {
         const webStreamerResponse = await webStreamer.fetchManifest({
           key: bookId ?? ``,
-          baseUrl: getManifestBaseUrl(window.location.origin, bookId ?? "")
+          baseUrl: getManifestBaseUrl(window.location.origin, bookId ?? ""),
         })
 
         if (webStreamerResponse.status >= 400) {
@@ -36,7 +36,7 @@ export const useManifest = (bookId: string | undefined) => {
 
         return {
           manifest: await webStreamerResponse.json(),
-          isUsingWebStreamer: true
+          isUsingWebStreamer: true,
         }
       }
 
@@ -46,6 +46,6 @@ export const useManifest = (bookId: string | undefined) => {
     },
     staleTime: Infinity,
     retry: (_, error) => !(error instanceof Response && error.status === 415),
-    enabled: !!bookId
+    enabled: !!bookId,
   })
 }

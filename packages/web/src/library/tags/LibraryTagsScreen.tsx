@@ -7,7 +7,7 @@ import {
   DialogTitle,
   TextField,
   Toolbar,
-  useTheme
+  useTheme,
 } from "@mui/material"
 import { useCreateTag } from "../../tags/helpers"
 import { TagActionsDrawer } from "../../tags/TagActionsDrawer"
@@ -29,7 +29,7 @@ export const LibraryTagsScreen = () => {
     () => (
       <Button
         style={{
-          flex: 1
+          flex: 1,
         }}
         variant="outlined"
         color="primary"
@@ -38,7 +38,7 @@ export const LibraryTagsScreen = () => {
         Create a new tag
       </Button>
     ),
-    [setIsAddTagDialogOpened]
+    [setIsAddTagDialogOpened],
   )
 
   const listHeader = useMemo(
@@ -47,13 +47,13 @@ export const LibraryTagsScreen = () => {
         style={{
           paddingLeft: theme.spacing(2),
           paddingRight: theme.spacing(2),
-          flex: 1
+          flex: 1,
         }}
       >
         {addItemButton}
       </Toolbar>
     ),
-    [theme, addItemButton]
+    [theme, addItemButton],
   )
 
   const listRenderHeader = useCallback(() => listHeader, [listHeader])
@@ -62,12 +62,12 @@ export const LibraryTagsScreen = () => {
     <div
       style={{
         flex: 1,
-        overflow: "auto"
+        overflow: "auto",
       }}
     >
       <TagList
         style={{
-          height: "100%"
+          height: "100%",
         }}
         data={tags}
         restoreScrollId="libraryTagList"
@@ -111,8 +111,8 @@ const AddTagDialog: FC<{
 }> = ({ onClose, onConfirm, open }) => {
   const { control, handleSubmit, setFocus, reset } = useForm<Inputs>({
     defaultValues: {
-      name: ""
-    }
+      name: "",
+    },
   })
 
   const onInnerClose = () => {

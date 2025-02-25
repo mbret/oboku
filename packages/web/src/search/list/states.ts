@@ -5,6 +5,6 @@ export const searchListActionsToolbarSignal = signal<{
 }>({
   key: "searchListActionsToolbarSignal",
   default: {
-    notInterestedContents: "none"
-  }
+    notInterestedContents: "none",
+  },
 })

@@ -87,15 +87,15 @@ export const searchManga = async (title: string) => {
     method: "get",
     url: "https://api.mangadex.org/manga",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     params: {
       title,
       includes: ["cover_art"],
       order: {
-        relevance: "desc"
-      }
-    }
+        relevance: "desc",
+      },
+    },
   })
 
   const { url, params } = response.config

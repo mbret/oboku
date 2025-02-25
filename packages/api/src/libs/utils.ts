@@ -8,28 +8,28 @@ import {
   map,
   Observable,
   switchMap,
-  tap
+  tap,
 } from "rxjs"
 
 export const waitForRandomTime = (min: number, max: number) =>
   new Promise((resolve) =>
-    setTimeout(resolve, Math.floor(Math.random() * (max - min + 1) + min))
+    setTimeout(resolve, Math.floor(Math.random() * (max - min + 1) + min)),
   )
 
 export const getNormalizedHeader = (
   event: Pick<APIGatewayProxyEvent, `headers`>,
-  header: string
+  header: string,
 ): string | null | undefined => {
   const realKey =
     Object.keys(event.headers).find(
-      (key) => key.toLowerCase() === header.toLowerCase()
+      (key) => key.toLowerCase() === header.toLowerCase(),
     ) || header
 
   return event.headers[realKey]
 }
 
 export const detectMimeTypeFromContent = async (
-  filepath: string
+  filepath: string,
 ): Promise<(typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined> => {
   let mimeType: (typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined =
     undefined
@@ -47,7 +47,7 @@ export const detectMimeTypeFromContent = async (
       .promise()
   } catch (e) {
     console.log(
-      `Error when trying to detectMimeTypeFromContent with ${filepath}`
+      `Error when trying to detectMimeTypeFromContent with ${filepath}`,
     )
   }
 
@@ -56,12 +56,12 @@ export const detectMimeTypeFromContent = async (
 
 export const asError = (e: unknown) => {
   return {
-    message: hasMessage(e) ? e.message : ``
+    message: hasMessage(e) ? e.message : ``,
   }
 }
 
 const hasMessage = <MessageError extends { message: string }>(
-  e: MessageError | unknown
+  e: MessageError | unknown,
 ): e is MessageError => {
   return `message` in (e as any) && typeof (e as any).message === `string`
 }
@@ -72,7 +72,7 @@ export async function performWithBackoff<T>({
   attempt = 1,
   maxAttempts = 5,
   minDelay = 1000,
-  maxDelay = 10000
+  maxDelay = 10000,
 }: {
   asyncFunction: () => Promise<T>
   retry: (error: unknown) => boolean
@@ -97,7 +97,7 @@ export async function performWithBackoff<T>({
         retry,
         maxAttempts,
         minDelay,
-        maxDelay
+        maxDelay,
       })
     } else {
       throw error
@@ -121,7 +121,7 @@ export const createThrottler = (ms: number) => {
         list.push(() =>
           fn(...(args as any))
             .then(resolve)
-            .catch(reject)
+            .catch(reject),
         )
       })
 }
@@ -152,21 +152,21 @@ export const onBeforeError =
           tap(() => {
             throw error
           }),
-          ignoreElements()
-        )
-      )
+          ignoreElements(),
+        ),
+      ),
     )
 
 export const switchMapMergeOuter = <T, R>(
-  project: (value: T) => Observable<R>
+  project: (value: T) => Observable<R>,
 ) =>
   switchMap((outer: T) =>
-    project(outer).pipe(map((inner) => ({ ...outer, ...inner })))
+    project(outer).pipe(map((inner) => ({ ...outer, ...inner }))),
   )
 
 export const switchMapCombineOuter = <T, R>(
-  project: (value: T) => Observable<R>
+  project: (value: T) => Observable<R>,
 ) =>
   switchMap((outer: T) =>
-    project(outer).pipe(map<R, [T, R]>((inner) => [outer, inner]))
+    project(outer).pipe(map<R, [T, R]>((inner) => [outer, inner])),
   )

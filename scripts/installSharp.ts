@@ -4,11 +4,11 @@ const arg = require("arg")
 
 const args = arg(
   {
-    "--platform": [String]
+    "--platform": [String],
   },
   {
-    permissive: true
-  }
+    permissive: true,
+  },
 )
 
 console.log(args)
@@ -16,13 +16,13 @@ console.log(args)
 const spawn = (
   cmd: string,
   args?: Parameters<typeof spwn>[1],
-  options?: Parameters<typeof spwn>[2]
+  options?: Parameters<typeof spwn>[2],
 ) =>
   new Promise((resolve, reject) => {
     console.log(`run: ${cmd} ${args.join(" ")}`)
     const cp = spwn(cmd, args, {
       stdio: "inherit",
-      ...options
+      ...options,
     })
     cp.on("close", (code) => {
       if (code !== 0) reject(new Error("Error"))
@@ -57,7 +57,7 @@ console.log("Found sharp dependency in api package", version)
     console.log("Install correct sharp module for platform")
     // problems of lib download with spawn, using exec as fallback
     execSync(
-      `SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --verbose --arch=x64 --platform=${args["--platform"]} sharp@${version}`
+      `SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --verbose --arch=x64 --platform=${args["--platform"]} sharp@${version}`,
     )
   } catch (e) {
     console.error(e)

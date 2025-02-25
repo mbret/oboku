@@ -8,11 +8,11 @@ import {
   DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle
+  DialogTitle,
 } from "@mui/material"
 
 const enrichDialogWithPreset = (
-  dialog?: DialogType<unknown>
+  dialog?: DialogType<unknown>,
 ): DialogType<unknown> | undefined => {
   if (!dialog) return undefined
 
@@ -22,20 +22,20 @@ const enrichDialogWithPreset = (
         ...dialog,
         title: "Not implemented",
         content: "Sorry this feature is not yet implemented",
-        canEscape: true
+        canEscape: true,
       }
     case "OFFLINE":
       return {
         ...dialog,
         title: "Offline is great but...",
-        content: "You need to be online to proceed with this action"
+        content: "You need to be online to proceed with this action",
       }
     case "UNKNOWN_ERROR":
       return {
         title: "Oups, something went wrong!",
         content:
           "Something unexpected happened and oboku could not proceed with your action. Maybe you can try again?",
-        ...dialog
+        ...dialog,
       }
     case "CONFIRM":
       return {
@@ -45,7 +45,7 @@ const enrichDialogWithPreset = (
           dialog.content ||
           "Are you sure you want to proceed with this action?",
         cancellable:
-          dialog.cancellable !== undefined ? dialog.cancellable : true
+          dialog.cancellable !== undefined ? dialog.cancellable : true,
       }
     default:
       return dialog
@@ -73,8 +73,8 @@ const InnerDialog = () => {
     {
       title: currentDialog?.confirmTitle || "Ok",
       onConfirm: currentDialog?.onConfirm,
-      type: "confirm"
-    }
+      type: "confirm",
+    },
   ]
 
   return (
@@ -84,7 +84,7 @@ const InnerDialog = () => {
       transitionDuration={0}
       {...(currentDialog?.canEscape !== false && {
         onClose: onCancel,
-        disableEscapeKeyDown: true
+        disableEscapeKeyDown: true,
       })}
     >
       <DialogTitle>{currentDialog?.title}</DialogTitle>
@@ -106,7 +106,7 @@ const InnerDialog = () => {
             }}
             color="primary"
             style={{
-              whiteSpace: "nowrap"
+              whiteSpace: "nowrap",
             }}
             autoFocus
           >

@@ -29,9 +29,9 @@ export const CollectionList: FC<
 
   const itemStyle = useMemo(
     () => ({
-      height: itemHeight
+      height: itemHeight,
     }),
-    [itemHeight]
+    [itemHeight],
   )
 
   const rowRenderer = useCallback(
@@ -43,7 +43,7 @@ export const CollectionList: FC<
         style={itemStyle}
       />
     ),
-    [onItemClick, itemMode, itemStyle]
+    [onItemClick, itemMode, itemStyle],
   )
 
   if (isStatic) {

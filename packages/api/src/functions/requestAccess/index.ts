@@ -13,10 +13,10 @@ export default {
         cors: true,
         request: {
           schemas: {
-            "application/json": schema
-          }
-        }
-      }
-    }
-  ]
+            "application/json": schema,
+          },
+        },
+      },
+    },
+  ],
 }

@@ -4,7 +4,7 @@ import {
   CollectionDocType,
   ReportEntry,
   SupabaseTableSyncReportsEntry,
-  TagsDocType
+  TagsDocType,
 } from "@oboku/shared"
 
 export class SyncReport {
@@ -15,7 +15,7 @@ export class SyncReport {
   } = {
     created_at: new Date().toISOString(),
     ended_at: new Date().toISOString(),
-    report: []
+    report: [],
   }
 
   protected readonly references: Record<string, string> = {}
@@ -24,7 +24,7 @@ export class SyncReport {
 
   constructor(
     protected datasourceId: string,
-    protected userName: string
+    protected userName: string,
   ) {}
 
   end() {
@@ -37,23 +37,23 @@ export class SyncReport {
 
   protected hasEntry(rx_model: ReportEntry["rx_model"], id: string) {
     return this.report.report.find(
-      (entry) => entry.rx_model === rx_model && entry.id === id
+      (entry) => entry.rx_model === rx_model && entry.id === id,
     )
   }
 
   protected getOrCreateEntry(
     rx_model: ReportEntry["rx_model"],
-    { id, label }: { id: string; label?: string | null }
+    { id, label }: { id: string; label?: string | null },
   ) {
     const found = this.report.report.find(
-      (entry) => entry.rx_model === rx_model && entry.id === id
+      (entry) => entry.rx_model === rx_model && entry.id === id,
     )
 
     if (!found) {
       const entry: ReportEntry = {
         id,
         rx_model,
-        label: label || undefined
+        label: label || undefined,
       }
 
       this.report.report.push(entry)
@@ -82,7 +82,7 @@ export class SyncReport {
 
   addItem(
     rx_model: ReportEntry["rx_model"],
-    { id, label }: { id: string; label?: string }
+    { id, label }: { id: string; label?: string },
   ) {
     const item = this.getOrCreateEntry(rx_model, { id, label })
 
@@ -143,20 +143,20 @@ export class SyncReport {
     this.report.report.push({
       id,
       rx_model: "tag",
-      updated: true
+      updated: true,
     })
   }
 
   addOrUpdateBookToTag({
     book,
-    tag
+    tag,
   }: {
     book: Partial<BookDocType> & { _id: string }
     tag: Partial<TagsDocType> & { _id: string }
   }) {
     const foundTag = this.getOrCreateEntry("tag", {
       id: tag._id,
-      label: tag.name
+      label: tag.name,
     })
 
     foundTag.linkedTo = foundTag.linkedTo ?? []
@@ -165,7 +165,7 @@ export class SyncReport {
       foundTag.linkedTo?.push({
         id: book._id,
         label: this.getBookLabel(book),
-        rx_model: "book"
+        rx_model: "book",
       })
       this.updateTag(tag._id)
     }
@@ -173,14 +173,14 @@ export class SyncReport {
 
   addOrUpdateTagsToBook({
     book,
-    tags
+    tags,
   }: {
     book: Partial<BookDocType> & { _id: string }
     tags: (Partial<TagsDocType> & { _id: string })[]
   }) {
     const item = this.getOrCreateEntry("book", {
       id: book._id,
-      label: this.getBookLabel(book)
+      label: this.getBookLabel(book),
     })
 
     item.linkedTo = item.linkedTo ?? []
@@ -190,7 +190,7 @@ export class SyncReport {
         item.linkedTo?.push({
           id: tag._id,
           label: tag.name || undefined,
-          rx_model: "tag"
+          rx_model: "tag",
         })
         this.updateBook(book._id)
       }
@@ -205,14 +205,14 @@ export class SyncReport {
     this.report.report.push({
       id,
       rx_model: "tag",
-      deleted: true
+      deleted: true,
     })
   }
 
   addCollection(item: Partial<CollectionDocType> & { _id: string }) {
     this.addItem("obokucollection", {
       id: item._id,
-      label: this.getCollectionLabel(item)
+      label: this.getCollectionLabel(item),
     })
   }
 
@@ -224,20 +224,20 @@ export class SyncReport {
     this.report.report.push({
       id,
       rx_model: "obokucollection",
-      updated: true
+      updated: true,
     })
   }
 
   addCollectionsToBook({
     collections,
-    book
+    book,
   }: {
     book: Partial<BookDocType> & { _id: string }
     collections: (Partial<CollectionDocType> & { _id: string })[]
   }) {
     const item = this.getOrCreateEntry("book", {
       id: book._id,
-      label: this.getBookLabel(book)
+      label: this.getBookLabel(book),
     })
 
     item.linkedTo = item.linkedTo ?? []
@@ -247,7 +247,7 @@ export class SyncReport {
         item.linkedTo?.push({
           id: collection._id,
           label: this.getCollectionLabel(collection),
-          rx_model: "obokucollection"
+          rx_model: "obokucollection",
         })
 
         this.updateBook(book._id)
@@ -257,14 +257,14 @@ export class SyncReport {
 
   addBooksToCollection({
     collection,
-    books
+    books,
   }: {
     books: (Partial<BookDocType> & { _id: string })[]
     collection: Partial<CollectionDocType> & { _id: string }
   }) {
     const item = this.getOrCreateEntry("obokucollection", {
       id: collection._id,
-      label: this.getCollectionLabel(collection)
+      label: this.getCollectionLabel(collection),
     })
 
     item.linkedTo = item.linkedTo ?? []
@@ -274,7 +274,7 @@ export class SyncReport {
         item.linkedTo?.push({
           id: book._id,
           label: this.getBookLabel(book),
-          rx_model: "book"
+          rx_model: "book",
         })
 
         this.updateCollection(collection._id)
@@ -284,14 +284,14 @@ export class SyncReport {
 
   removeBooksFromCollection({
     collection,
-    books
+    books,
   }: {
     books: (Partial<BookDocType> & { _id: string })[]
     collection: Partial<CollectionDocType> & { _id: string }
   }) {
     const item = this.getOrCreateEntry("obokucollection", {
       id: collection._id,
-      label: this.getCollectionLabel(collection)
+      label: this.getCollectionLabel(collection),
     })
 
     item.unlinkedTo = item.unlinkedTo ?? []
@@ -301,7 +301,7 @@ export class SyncReport {
         item.unlinkedTo?.push({
           id: book._id,
           label: this.getBookLabel(book),
-          rx_model: "book"
+          rx_model: "book",
         })
 
         this.updateCollection(collection._id)
@@ -322,11 +322,11 @@ export class SyncReport {
         ended_at: this.report.ended_at,
         report: this.report.report.map((entry) => ({
           ...entry,
-          label: entry.label ?? this.references[entry.id] ?? entry.id
+          label: entry.label ?? this.references[entry.id] ?? entry.id,
         })),
         datasource_id: this.datasourceId,
         user_name: this.userName,
-        state: this.state
+        state: this.state,
       } satisfies SupabaseTableSyncReportsEntry)
 
       if (response.error) {

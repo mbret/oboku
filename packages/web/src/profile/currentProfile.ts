@@ -6,7 +6,7 @@ export const getProfile = () => {
 }
 
 export const currentProfileSignal = signal<string | undefined>({
-  default: getProfile() || undefined
+  default: getProfile() || undefined,
 })
 
 export const setProfile = (profile: string) => {

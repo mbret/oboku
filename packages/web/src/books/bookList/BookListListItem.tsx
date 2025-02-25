@@ -13,7 +13,7 @@ import {
   MenuBookRounded,
   MoreVert,
   NoEncryptionRounded,
-  ThumbDownOutlined
+  ThumbDownOutlined,
 } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 import { BookListCoverContainer } from "./BookListCoverContainer"
@@ -45,7 +45,7 @@ export const BookListListItem: FC<
     ...rest
   }) => {
     const { data: book } = useBook({
-      id: bookId
+      id: bookId,
     })
     const onDefaultItemClick = useDefaultItemClickHandler()
     const theme = useTheme()
@@ -67,7 +67,7 @@ export const BookListListItem: FC<
           overflow: "hidden",
           height: computedHeight,
           cursor: "pointer",
-          flexGrow: 1
+          flexGrow: 1,
         }}
         {...rest}
       >
@@ -78,7 +78,7 @@ export const BookListListItem: FC<
               position: "relative",
               display: "flex",
               flex: `0 0 ${coverWidth}px`,
-              minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
+              minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
             }}
             withBadges={false}
             withReadingProgressStatus={false}
@@ -90,7 +90,7 @@ export const BookListListItem: FC<
             flex: 1,
             minHeight: 0,
             flexDirection: "column",
-            overflow: "hidden"
+            overflow: "hidden",
           }}
         >
           <Typography
@@ -98,7 +98,7 @@ export const BookListListItem: FC<
             variant="body1"
             display="block"
             {...(size === "small" && {
-              variant: "body2"
+              variant: "body2",
             })}
           >
             {metadata?.title || "Unknown"}
@@ -113,7 +113,7 @@ export const BookListListItem: FC<
               display: "flex",
               justifyContent: "space-between",
               flex: 1,
-              alignItems: "flex-end"
+              alignItems: "flex-end",
             }}
           >
             <Box display="flex" flexDirection="row" gap={1}>
@@ -141,12 +141,12 @@ export const BookListListItem: FC<
                   <MenuBookRounded color="action" />
                   <Typography
                     style={{
-                      marginLeft: theme.spacing(0.5)
+                      marginLeft: theme.spacing(0.5),
                     }}
                   >
                     {Math.floor(
                       (book?.readingStateCurrentBookmarkProgressPercent || 0) *
-                        100
+                        100,
                     ) || 1}
                     %
                   </Typography>
@@ -159,7 +159,7 @@ export const BookListListItem: FC<
                   style={{
                     display: "flex",
                     flexDirection: "row",
-                    marginLeft: theme.spacing(1)
+                    marginLeft: theme.spacing(1),
                   }}
                 >
                   <Chip
@@ -175,7 +175,7 @@ export const BookListListItem: FC<
                     style={{
                       display: "flex",
                       flexDirection: "row",
-                      marginLeft: theme.spacing(1)
+                      marginLeft: theme.spacing(1),
                     }}
                   >
                     <Chip
@@ -196,7 +196,7 @@ export const BookListListItem: FC<
             flexDirection="row"
             style={{
               alignItems: "center",
-              marginLeft: theme.spacing(1)
+              marginLeft: theme.spacing(1),
             }}
             onClick={(e) => {
               e.stopPropagation()
@@ -209,5 +209,5 @@ export const BookListListItem: FC<
         )}
       </Box>
     )
-  }
+  },
 )

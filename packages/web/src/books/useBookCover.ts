@@ -10,8 +10,8 @@ export const useBookCover = ({ bookId }: { bookId?: string }) => {
 
   const urlParams = new URLSearchParams({
     ...(assetHash && {
-      hash: assetHash
-    })
+      hash: assetHash,
+    }),
   })
 
   const originalSrc = bookId
@@ -28,12 +28,12 @@ export const useBookCover = ({ bookId }: { bookId?: string }) => {
   const coverSrcJpg = originalJpgSrc
 
   const hasCoverMetadata = !!book?.metadata?.find(
-    (metadata) => metadata.coverLink
+    (metadata) => metadata.coverLink,
   )
 
   return {
     coverSrc,
     coverSrcJpg,
-    hasCoverMetadata
+    hasCoverMetadata,
   }
 }

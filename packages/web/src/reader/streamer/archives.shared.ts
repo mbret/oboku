@@ -2,7 +2,7 @@ import {
   Archive,
   createArchiveFromJszip,
   createArchiveFromLibArchive,
-  createArchiveFromText
+  createArchiveFromText,
 } from "@prose-reader/streamer"
 import { loadAsync } from "jszip"
 import { Report } from "../../debug/report.shared"
@@ -23,7 +23,7 @@ const loadDataWithJsZip = async (data: Blob | File) => {
     return await loadAsync(data)
   } catch (e) {
     Report.error(
-      "loadDataWithJsZip: An error occurred while loading file with jszip"
+      "loadDataWithJsZip: An error occurred while loading file with jszip",
     )
 
     throw e
@@ -31,13 +31,13 @@ const loadDataWithJsZip = async (data: Blob | File) => {
 }
 
 export const isRarFile = (
-  file: NonNullable<PromiseReturnType<typeof getBookFile>>
+  file: NonNullable<PromiseReturnType<typeof getBookFile>>,
 ) => {
   return file.data.name.endsWith(".rar") || file.data.name.endsWith(".cbr")
 }
 
 export const getArchiveForZipFile = async (
-  file: NonNullable<PromiseReturnType<typeof getBookFile>>
+  file: NonNullable<PromiseReturnType<typeof getBookFile>>,
 ): Promise<Archive> => {
   try {
     const normalizedName = file.name.toLowerCase()
@@ -52,11 +52,11 @@ export const getArchiveForZipFile = async (
       try {
         return createArchiveFromJszip(jszip, {
           orderByAlpha: true,
-          name: file.name
+          name: file.name,
         })
       } catch (e) {
         Report.error(
-          "createArchiveFromJszip: An error occurred while creating archive from jszip"
+          "createArchiveFromJszip: An error occurred while creating archive from jszip",
         )
 
         throw e
@@ -70,7 +70,7 @@ export const getArchiveForZipFile = async (
     throw new StreamerFileNotSupportedError(`FileNotSupportedError`)
   } catch (e) {
     Report.error(
-      "getArchiveForFile: An error occurred while getting archive for file"
+      "getArchiveForFile: An error occurred while getting archive for file",
     )
 
     throw e
@@ -83,12 +83,12 @@ export const getArchiveForZipFile = async (
  * We fallback to app main thread for rar archives
  */
 export const getArchiveForRarFile = async (
-  file: NonNullable<PromiseReturnType<typeof getBookFile>>
+  file: NonNullable<PromiseReturnType<typeof getBookFile>>,
 ) => {
   const archive = await LibARchive.open(file.data)
 
   return createArchiveFromLibArchive(archive, {
     orderByAlpha: true,
-    name: file.name
+    name: file.name,
   })
 }

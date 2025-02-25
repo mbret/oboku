@@ -5,14 +5,11 @@ import { generateId } from "./utils"
 
 type CollectionDocMethods = {}
 
-type CollectionDocument = RxDocument<
-  CollectionDocType,
-  CollectionDocMethods
->
+type CollectionDocument = RxDocument<CollectionDocType, CollectionDocMethods>
 
 type CollectionCollectionMethods = {
   post: (
-    json: Omit<CollectionDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>
+    json: Omit<CollectionDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>,
   ) => Promise<CollectionDocument>
 }
 
@@ -52,8 +49,8 @@ export const collectionSchema: RxJsonSchema<
     syncAt: { type: ["string"] },
     dataSourceId: { type: ["string", "null"] },
     metadata: { type: ["array"] },
-    ...getReplicationProperties(`obokucollection`)
-  }
+    ...getReplicationProperties(`obokucollection`),
+  },
 }
 
 export const collectionMigrationStrategies = {}
@@ -61,5 +58,5 @@ export const collectionMigrationStrategies = {}
 export const collectionCollectionMethods: CollectionCollectionMethods = {
   post: async function (this: CollectionCollection, json) {
     return this.insert({ _id: generateId(), ...json } as CollectionDocType)
-  }
+  },
 }

@@ -5,7 +5,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField
+  TextField,
 } from "@mui/material"
 import { useCreateCollection } from "../../collections/useCreateCollection"
 

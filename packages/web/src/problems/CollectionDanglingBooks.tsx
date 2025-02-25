@@ -6,7 +6,7 @@ import { getCollectionComputedMetadata } from "../collections/getCollectionCompu
 export const CollectionDanglingBooks = ({
   danglingBooks,
   doc,
-  onClick
+  onClick,
 }: {
   doc: CollectionDocType
   danglingBooks: string[]

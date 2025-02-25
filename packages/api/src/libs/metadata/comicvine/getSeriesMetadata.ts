@@ -73,14 +73,14 @@ export const getSeriesMetadata = async ({
 
     const response = await axios<Result>({
       method: "get",
-      url: url.toString()
+      url: url.toString(),
     })
 
     let result = response.data.results[0]
 
     if (metadata.year) {
       const refinedResultsWithYear = response.data.results.filter(
-        (item) => !item.start_year || item.start_year === metadata.year
+        (item) => !item.start_year || item.start_year === metadata.year,
       )
       result = refinedResultsWithYear[0]
     }
@@ -96,9 +96,9 @@ export const getSeriesMetadata = async ({
       publisherName: result?.publisher.name,
       ...(result.image?.original_url && {
         cover: {
-          uri: result.image?.original_url
-        }
-      })
+          uri: result.image?.original_url,
+        },
+      }),
     } satisfies CollectionMetadata
   } catch (e) {
     Logger.error(e)

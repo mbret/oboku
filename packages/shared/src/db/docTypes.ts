@@ -97,31 +97,31 @@ export type CollectionDocType = CommonBase & {
 }
 
 export function isTag(
-  document: TagsDocType | unknown
+  document: TagsDocType | unknown,
 ): document is TagsDocType {
   return (document as TagsDocType).rx_model === "tag"
 }
 
 export function isBook(
-  document: BookDocType | unknown
+  document: BookDocType | unknown,
 ): document is BookDocType {
   return (document as BookDocType).rx_model === "book"
 }
 
 export function isLink(
-  document: LinkDocType | unknown
+  document: LinkDocType | unknown,
 ): document is LinkDocType {
   return (document as LinkDocType).rx_model === "link"
 }
 
 export function isDataSource(
-  document: DataSourceDocType | unknown
+  document: DataSourceDocType | unknown,
 ): document is DataSourceDocType {
   return (document as DataSourceDocType).rx_model === "datasource"
 }
 
 export function isCollection(
-  document: CollectionDocType | unknown
+  document: CollectionDocType | unknown,
 ): document is CollectionDocType {
   return (document as CollectionDocType).rx_model === "obokucollection"
 }

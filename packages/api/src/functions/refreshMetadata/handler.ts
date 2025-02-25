@@ -13,7 +13,7 @@ const LOCK_MAX_DURATION_MN = 5
 const logger = Logger.child({ module: "handler" })
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
-  event
+  event,
 ) => {
   const client = getAwsLambda()
 
@@ -24,9 +24,9 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       body: {
         bookId: event.body.bookId,
         credentials: getNormalizedHeader(event, `oboku-credentials`),
-        authorization: getNormalizedHeader(event, `authorization`)
-      }
-    })
+        authorization: getNormalizedHeader(event, `authorization`),
+      },
+    }),
   })
 
   logger.info(`invoke for ${event.body.bookId}`)
@@ -40,7 +40,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       const response = await client.send(command)
 
       logger.info(
-        `${event.body.bookId}: command sent with success ${response.$metadata.requestId}`
+        `${event.body.bookId}: command sent with success ${response.$metadata.requestId}`,
       )
       logger.info(response)
     } else {
@@ -54,7 +54,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   return {
     statusCode: 202,
-    body: JSON.stringify({})
+    body: JSON.stringify({}),
   }
 }
 

@@ -12,10 +12,10 @@ export const getBook = (bookUrl: string) => {
     method: "post",
     url: "https://biblioreads.eu.org/api/book-scraper",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     data: {
-      queryURL: `${url.origin}${url.pathname}`
-    }
+      queryURL: `${url.origin}${url.pathname}`,
+    },
   })
 }

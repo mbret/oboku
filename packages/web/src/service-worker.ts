@@ -59,7 +59,7 @@ if (import.meta.env.PROD) {
       // Return true to signal that we want to use the handler.
       return true
     },
-    createHandlerBoundToURL("/index.html")
+    createHandlerBoundToURL("/index.html"),
   )
 }
 
@@ -78,9 +78,9 @@ if (import.meta.env.PROD) {
       plugins: [
         // Ensure that once this runtime cache reaches a maximum size the
         // least-recently used images are removed.
-        new ExpirationPlugin({ maxEntries: 50 })
-      ]
-    })
+        new ExpirationPlugin({ maxEntries: 50 }),
+      ],
+    }),
   )
 }
 

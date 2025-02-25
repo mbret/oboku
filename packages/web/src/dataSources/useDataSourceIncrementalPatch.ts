@@ -7,7 +7,7 @@ export const useDataSourceIncrementalPatch = () => {
   return useMutation$({
     mutationFn: ({
       id,
-      patch
+      patch,
     }: {
       id: string
       patch: Partial<DataSourceDocType>
@@ -15,13 +15,13 @@ export const useDataSourceIncrementalPatch = () => {
       latestDatabase$.pipe(
         first(),
         switchMap((db) =>
-          from(db.datasource.findOne({ selector: { _id: id } }).exec())
+          from(db.datasource.findOne({ selector: { _id: id } }).exec()),
         ),
         switchMap((item) => {
           if (!item) return of(null)
 
           return from(item.incrementalPatch(patch))
-        })
-      )
+        }),
+      ),
   })
 }

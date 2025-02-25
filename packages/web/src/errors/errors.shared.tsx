@@ -31,7 +31,7 @@ export class ObokuPluginError extends Error {
   constructor({
     code,
     message,
-    severity = "internal"
+    severity = "internal",
   }: {
     code: Code
     message?: string

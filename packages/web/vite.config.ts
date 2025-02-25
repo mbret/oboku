@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
     assetsInlineLimit: 0,
     rollupOptions: {
       input: {
-        main: "index.html"
+        main: "index.html",
       },
       output: {
         manualChunks: {
@@ -30,36 +30,36 @@ export default defineConfig(({ mode }) => ({
           // used by chakra -> ark
           zod: ["zod"],
           dexie: ["dexie"],
-          tanstack: ["@tanstack/query-core"]
-        }
-      }
-    }
+          tanstack: ["@tanstack/query-core"],
+        },
+      },
+    },
   },
   optimizeDeps: {
     esbuildOptions: {
       // Node.js global to browser globalThis
       // fix sax on browser
       define: {
-        global: "globalThis"
-      }
-    }
+        global: "globalThis",
+      },
+    },
   },
   server: {
     proxy: {
       "/api": {
         target: "http://localhost:3001",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, "")
-      }
-    }
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
+    },
   },
   /**
    * require('events') uses package events which is a web polyfill
    */
   resolve: {
     alias: {
-      stream: path.resolve(__dirname, "./stream-shim.js")
-    }
+      stream: path.resolve(__dirname, "./stream-shim.js"),
+    },
   },
   plugins: [
     VitePWA({
@@ -75,25 +75,25 @@ export default defineConfig(({ mode }) => ({
         globIgnores: [
           "**/node_modules/**/*",
           // sourcemap will be uploaded on reporting service directly
-          "**/*.{js.map}"
+          "**/*.{js.map}",
         ],
         // sources map are really massive, they will be optimized when served by server
-        maximumFileSizeToCacheInBytes: 15e6 // 15 MB limit
+        maximumFileSizeToCacheInBytes: 15e6, // 15 MB limit
       },
       srcDir: "src",
       filename: "service-worker.ts",
       ...(mode === "development" && {
         devOptions: {
-          enabled: true
-        }
-      })
+          enabled: true,
+        },
+      }),
     }),
     react({}),
     svgr({}),
     replace({
       // fix for util/util.js
       "process.env.NODE_DEBUG": false,
-      preventAssignment: true
-    })
-  ]
+      preventAssignment: true,
+    }),
+  ],
 }))

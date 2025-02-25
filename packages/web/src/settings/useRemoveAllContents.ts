@@ -22,8 +22,8 @@ export const useRemoveAllContents = () => {
             from(db.book.count().exec()),
             from(db.obokucollection.count().exec()),
             from(db.tag.count().exec()),
-            from(db.datasource.count().exec())
-          ])
+            from(db.datasource.count().exec()),
+          ]),
         ),
         mergeMap(
           ([
@@ -31,14 +31,14 @@ export const useRemoveAllContents = () => {
             bookCount,
             collectionCount,
             tagCount,
-            dataSourceCount
+            dataSourceCount,
           ]) => {
             const confirmed$ = createDialog({
               title: "Account reset",
               content: `This action will remove all of your content. Here is a breakdown of everything that will be removed:\n 
             ${bookCount} books, ${collectionCount} collections, ${tagCount} tags and ${dataSourceCount} data sources. \n\nThis operation can take a long time and you NEED to be connected to internet`,
               canEscape: true,
-              cancellable: true
+              cancellable: true,
             }).$
 
             return confirmed$.pipe(
@@ -51,8 +51,8 @@ export const useRemoveAllContents = () => {
                     database.obokucollection.find().remove(),
                     database.link.find().remove(),
                     database.tag.find().remove(),
-                    database.datasource.find().remove()
-                  ])
+                    database.datasource.find().remove(),
+                  ]),
                 ).pipe(
                   mergeMap(() =>
                     from(
@@ -61,19 +61,19 @@ export const useRemoveAllContents = () => {
                         database.obokucollection,
                         database.link,
                         database.tag,
-                        database.datasource
-                      ])
-                    )
+                        database.datasource,
+                      ]),
+                    ),
                   ),
                   catchError((e) => {
                     unlock()
 
                     throw e
-                  })
-                )
-              )
+                  }),
+                ),
+              ),
             )
-          }
+          },
         ),
         tap(() => {
           window.location.reload()
@@ -87,11 +87,11 @@ export const useRemoveAllContents = () => {
             autoStart: true,
             title: "Something went wrong!",
             content:
-              "Something went wrong during the process. No need to panic since you already wanted to destroy everything anyway. If everything is gone, you should not worry too much, if you still have contents, try to do it again"
+              "Something went wrong during the process. No need to panic since you already wanted to destroy everything anyway. If everything is gone, you should not worry too much, if you still have contents, try to do it again",
           })
 
           throw e
-        })
-      )
+        }),
+      ),
   })
 }

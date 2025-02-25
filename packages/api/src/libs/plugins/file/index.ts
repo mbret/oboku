@@ -10,8 +10,8 @@ export const plugin: DataSourcePlugin = {
       name: filename,
       canDownload: false,
       bookMetadata: {
-        title: filename
-      }
+        title: filename,
+      },
     }
-  }
+  },
 }

@@ -1,7 +1,7 @@
 import {
   CollectionDocType,
   CollectionMetadata,
-  directives
+  directives,
 } from "@oboku/shared"
 import { fetchMetadata } from "./fetchMetadata"
 import { atomicUpdate, findOne } from "@libs/couch/dbHelpers"
@@ -20,14 +20,14 @@ export const refreshMetadata = async (
     db,
     credentials,
     soft,
-    comicVineApiKey
+    comicVineApiKey,
   }: {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
     credentials?: any
     soft?: boolean
     comicVineApiKey: string
-  }
+  },
 ) => {
   const { isCollectionAlreadyUpdatedFromLink, linkMetadataInfo } =
     await lastValueFrom(
@@ -41,12 +41,12 @@ export const refreshMetadata = async (
                   link: {
                     resourceId: collection.linkResourceId,
                     type: collection.linkType,
-                    data: null
+                    data: null,
                   },
-                  credentials
-                })
+                  credentials,
+                }),
               )
-            : of(undefined)
+            : of(undefined),
         ),
         switchMap((linkMetadataInfo) => {
           const linkModifiedAt = linkMetadataInfo?.modifiedAt
@@ -62,8 +62,8 @@ export const refreshMetadata = async (
             linkModifiedAt.getTime() < collectionMetadataUpdatedAt.getTime()
 
           return of({ linkMetadataInfo, isCollectionAlreadyUpdatedFromLink })
-        })
-      )
+        }),
+      ),
     )
 
   /**
@@ -80,7 +80,7 @@ export const refreshMetadata = async (
 
   if (soft && !linkMetadataInfo && collection.lastMetadataUpdatedAt) {
     Logger.info(
-      `${collection._id} does not have link and is already refreshed, ignoring it!`
+      `${collection._id} does not have link and is already refreshed, ignoring it!`,
     )
 
     return
@@ -88,11 +88,11 @@ export const refreshMetadata = async (
 
   const metadataUser = collection.metadata?.find((item) => item.type === "user")
   const { title: userTitle, startYear: userStartYear } = computeMetadata([
-    metadataUser
+    metadataUser,
   ])
 
   const directivesFromLink = directives.extractDirectivesFromName(
-    linkMetadataInfo?.name ?? ""
+    linkMetadataInfo?.name ?? "",
   )
 
   // for nwo we can only make a series through directives
@@ -102,7 +102,7 @@ export const refreshMetadata = async (
     directivesFromLink.metadataTitle ??
       linkMetadataInfo?.name ??
       userTitle ??
-      ""
+      "",
   )
 
   const year = directivesFromLink.year ?? userStartYear
@@ -111,23 +111,23 @@ export const refreshMetadata = async (
     collectionType === "series"
       ? await fetchMetadata(
           { title, year: year ? String(year) : undefined },
-          { withGoogle: true, googleApiKey, comicVineApiKey }
+          { withGoogle: true, googleApiKey, comicVineApiKey },
         )
       : []
 
   const linkMetadata: CollectionMetadata = {
     type: "link",
     ...collection.metadata?.find((item) => item.type === "link"),
-    title: linkMetadataInfo?.name
+    title: linkMetadataInfo?.name,
   }
 
   // try to get latest collection to stay as fresh as possible
   const currentCollection = await findOne(
     "obokucollection",
     {
-      selector: { _id: collection._id }
+      selector: { _id: collection._id },
     },
-    { db }
+    { db },
   )
 
   if (!currentCollection) throw new Error("Unable to find collection")
@@ -139,7 +139,7 @@ export const refreshMetadata = async (
   // cannot be done in // since metadata status will trigger cover refresh
   await saveOrUpdateCover(currentCollection, {
     _id: currentCollection._id,
-    metadata
+    metadata,
   })
 
   await atomicUpdate(
@@ -153,7 +153,7 @@ export const refreshMetadata = async (
         lastMetadataUpdatedAt: new Date().toISOString(),
         metadataUpdateStatus: "idle",
         lastMetadataUpdateError: null,
-        metadata
-      }) satisfies CollectionDocType
+        metadata,
+      }) satisfies CollectionDocType,
   )
 }

@@ -9,9 +9,9 @@ export const HomeBookList = memo((props: ComponentProps<typeof BookList>) => {
   const listHeight = Math.floor(itemWidth / adjustedRatioWhichConsiderBottom)
   const listStyle = useMemo(
     () => ({
-      height: listHeight
+      height: listHeight,
     }),
-    [listHeight]
+    [listHeight],
   )
 
   return (

@@ -30,7 +30,7 @@ export const SearchScreenExpanded = () => {
         showBack
         goBackDefaultTo=".."
         title={`${getTitle(type)} results for "${truncate(search, {
-          length: 6
+          length: 6,
         })}"`}
       />
       <ListActionsToolbar />

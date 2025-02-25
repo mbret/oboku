@@ -23,12 +23,12 @@ const ItemListContainer = ({
     style={{
       flex: 1,
       alignItems: "center",
-      display: "flex"
+      display: "flex",
     }}
     {...(!isLast &&
       borders && {
         borderBottom: "1px solid",
-        borderColor: "grey.200"
+        borderColor: "grey.200",
       })}
     {...rest}
   >
@@ -46,7 +46,7 @@ export const BookList = memo(
       onItemClick?: (id: string) => void
       withBookActions?: boolean
       static?: boolean
-    } & ComponentProps<typeof VirtuosoList>
+    } & ComponentProps<typeof VirtuosoList>,
   ) => {
     const {
       viewMode = "grid",
@@ -72,7 +72,7 @@ export const BookList = memo(
       theme.custom.coverAverageRatio - 0.1
     const { itemHeight, itemMargin } = useListItemHeight({
       density,
-      viewMode
+      viewMode,
     })
     const computedItemWidth = itemWidth
       ? itemWidth
@@ -90,7 +90,7 @@ export const BookList = memo(
             bookId={item}
             style={{
               height: viewMode === "horizontal" ? "100%" : computedItemHeight,
-              width: viewMode === "horizontal" ? computedItemWidth : "100%"
+              width: viewMode === "horizontal" ? computedItemWidth : "100%",
             }}
           />
         ) : viewMode === "list" ? (
@@ -122,8 +122,8 @@ export const BookList = memo(
         onItemClick,
         withBookActions,
         computedItemHeight,
-        computedItemWidth
-      ]
+        computedItemWidth,
+      ],
     )
 
     if (isStatic) {
@@ -153,5 +153,5 @@ export const BookList = memo(
         {...rest}
       />
     )
-  }
+  },
 )

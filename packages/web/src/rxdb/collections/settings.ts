@@ -22,8 +22,8 @@ export const settingsSchema: RxJsonSchema<SettingsDocType> = {
   properties: {
     _id: { type: "string", final: true, maxLength: 100 },
     contentPassword: { type: ["string", "null"] },
-    ...getReplicationProperties(`settings`)
-  }
+    ...getReplicationProperties(`settings`),
+  },
 }
 
 export const initializeSettings = async (db: Database) => {
@@ -32,7 +32,7 @@ export const initializeSettings = async (db: Database) => {
   if (!settings) {
     await db.settings.insert({
       contentPassword: null,
-      _id: "settings"
+      _id: "settings",
     })
   }
 }

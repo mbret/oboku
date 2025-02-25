@@ -7,12 +7,12 @@ import { drive_v3, google } from "googleapis"
 import {
   GoogleDriveDataSourceData,
   READER_ACCEPTED_MIME_TYPES,
-  isFileSupported
+  isFileSupported,
 } from "@oboku/shared"
 import { configure } from "./configure"
 import {
   DataSourcePlugin,
-  SynchronizeAbleDataSource
+  SynchronizeAbleDataSource,
 } from "@libs/plugins/types"
 import { createThrottler } from "@libs/utils"
 import { createError } from "../helpers"
@@ -24,7 +24,7 @@ export const extractIdFromResourceId = (resourceId: string) =>
   resourceId.replace(`drive-`, ``)
 
 const isFolder = (
-  file: NonNullable<drive_v3.Schema$FileList["files"]>[number]
+  file: NonNullable<drive_v3.Schema$FileList["files"]>[number],
 ) => file.mimeType === "application/vnd.google-apps.folder"
 
 export const dataSource: DataSourcePlugin = {
@@ -33,16 +33,16 @@ export const dataSource: DataSourcePlugin = {
     const auth = await authorize({ credentials })
     const drive = google.drive({
       version: "v3",
-      auth
+      auth,
     })
 
     const metadata = (
       await drive.files.get(
         {
           fileId: extractIdFromResourceId(id),
-          fields: "size, name, mimeType, modifiedTime"
+          fields: "size, name, mimeType, modifiedTime",
         },
-        { responseType: "json" }
+        { responseType: "json" },
       )
     ).data
 
@@ -50,7 +50,7 @@ export const dataSource: DataSourcePlugin = {
       name: metadata.name ?? "",
       contentType: metadata.mimeType || undefined,
       modifiedAt: metadata.modifiedTime || undefined,
-      canDownload: true
+      canDownload: true,
     }
   },
   download: async (link, credentials) => {
@@ -62,39 +62,39 @@ export const dataSource: DataSourcePlugin = {
 
     const drive = google.drive({
       version: "v3",
-      auth
+      auth,
     })
 
     const metadata = (
       await drive.files.get(
         {
           fileId: extractIdFromResourceId(link.resourceId),
-          fields: "size, name"
+          fields: "size, name",
         },
-        { responseType: "json" }
+        { responseType: "json" },
       )
     ).data
 
     const response = await drive.files.get(
       {
         fileId: extractIdFromResourceId(link.resourceId),
-        alt: "media"
+        alt: "media",
       },
-      { responseType: "stream" }
+      { responseType: "stream" },
     )
 
     return {
       stream: response.data,
       metadata: {
         ...(metadata.size && {
-          size: metadata.size
+          size: metadata.size,
         }),
         name: "",
         ...(metadata.name && {
-          name: metadata.name
+          name: metadata.name,
         }),
-        contentType: response.headers["content-type"]
-      }
+        contentType: response.headers["content-type"],
+      },
     }
   },
   sync: async (ctx, helpers) => {
@@ -103,7 +103,7 @@ export const dataSource: DataSourcePlugin = {
     const auth = await authorize(ctx)
     const drive = google.drive({
       version: "v3",
-      auth
+      auth,
     })
 
     const { folderId } =
@@ -125,7 +125,7 @@ export const dataSource: DataSourcePlugin = {
             '${id}' in parents and (
               mimeType='application/vnd.google-apps.folder' 
               ${READER_ACCEPTED_MIME_TYPES.map(
-                (mimeType) => ` or mimeType='${mimeType}'`
+                (mimeType) => ` or mimeType='${mimeType}'`,
               ).join("")}
             )
           `,
@@ -134,7 +134,7 @@ export const dataSource: DataSourcePlugin = {
                 "nextPageToken, files(id, kind, name, mimeType, modifiedTime, parents, trashed)",
               pageToken: pageToken,
               supportsAllDrives: true,
-              pageSize: 10
+              pageSize: 10,
             })
 
             const data = response.data.files || []
@@ -145,7 +145,7 @@ export const dataSource: DataSourcePlugin = {
               const nextRes = await getNextRes(pageToken)
               return [...data, ...nextRes]
             }
-          }
+          },
         )
 
         const files = await getNextRes()
@@ -158,7 +158,7 @@ export const dataSource: DataSourcePlugin = {
         return Promise.all(
           supportedFiles.map(
             async (
-              file
+              file,
             ): Promise<SynchronizeAbleDataSource["items"][number]> => {
               if (isFolder(file)) {
                 return {
@@ -166,7 +166,7 @@ export const dataSource: DataSourcePlugin = {
                   resourceId: generateResourceId(file.id || ""),
                   items: await getContentsFromFolder(file.id || ""),
                   name: file.name || "",
-                  modifiedAt: file.modifiedTime || new Date().toISOString()
+                  modifiedAt: file.modifiedTime || new Date().toISOString(),
                 }
               }
 
@@ -174,25 +174,25 @@ export const dataSource: DataSourcePlugin = {
                 type: "file",
                 resourceId: generateResourceId(file.id || ""),
                 name: file.name || "",
-                modifiedAt: file.modifiedTime || new Date().toISOString()
+                modifiedAt: file.modifiedTime || new Date().toISOString(),
               }
-            }
-          )
+            },
+          ),
         )
-      }
+      },
     )
 
     try {
       const [items, rootFolderResponse] = await Promise.all([
         await getContentsFromFolder(folderId),
         await drive.files.get({
-          fileId: folderId
-        })
+          fileId: folderId,
+        }),
       ])
 
       return {
         items,
-        name: rootFolderResponse.data.name || ""
+        name: rootFolderResponse.data.name || "",
       }
     } catch (e) {
       if ((e as any)?.code === 401) {
@@ -209,5 +209,5 @@ export const dataSource: DataSourcePlugin = {
 
       throw e
     }
-  }
+  },
 }

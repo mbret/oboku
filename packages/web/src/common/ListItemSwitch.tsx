@@ -3,7 +3,7 @@ import {
   ListItemButton,
   ListItemText,
   ListItemTextProps,
-  Switch
+  Switch,
 } from "@mui/material"
 import { memo } from "react"
 
@@ -13,7 +13,7 @@ export const ListItemSwitch = memo(
     secondary,
     onClick,
     checked,
-    id
+    id,
   }: { onClick: () => void; checked: boolean; id: string } & Pick<
     ListItemTextProps,
     "primary" | "secondary"
@@ -26,7 +26,7 @@ export const ListItemSwitch = memo(
             onChange={onClick}
             checked={checked}
             inputProps={{
-              "aria-labelledby": id
+              "aria-labelledby": id,
             }}
           />
         }
@@ -37,5 +37,5 @@ export const ListItemSwitch = memo(
         </ListItemButton>
       </ListItem>
     )
-  }
+  },
 )

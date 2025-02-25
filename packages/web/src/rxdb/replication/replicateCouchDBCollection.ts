@@ -45,9 +45,9 @@ export const replicateCouchDBCollection = ({
           method: "post",
           headers: {
             ...optionsWithAuth.headers,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify({ selector: { rx_model: collection.name } })
+          body: JSON.stringify({ selector: { rx_model: collection.name } }),
         })
       }
 
@@ -75,7 +75,7 @@ export const replicateCouchDBCollection = ({
         }
 
         return docData
-      }
+      },
     },
     push: {
       /**
@@ -90,6 +90,6 @@ export const replicateCouchDBCollection = ({
        */
       modifier: (docData) => {
         return docData
-      }
-    }
+      },
+    },
   })

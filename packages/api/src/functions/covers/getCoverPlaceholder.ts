@@ -6,8 +6,8 @@ export const getCoverPlaceholder = async (s3Client: S3Client) => {
       new GetObjectCommand({
         Bucket: process.env.COVERS_BUCKET_NAME,
         Key: process.env.COVERS_PLACEHOLDER_BUCKET_KEY,
-        ResponseContentType: ""
-      })
+        ResponseContentType: "",
+      }),
     )
 
     if (!response.Body) {

@@ -9,10 +9,10 @@ interface ChromeStorageEstimate extends StorageEstimate {
 
 export const useStorageUse = (deps: DependencyList | undefined) => {
   const [storageQuota, setStorageQuota] = useState<number | undefined>(
-    undefined
+    undefined,
   )
   const [indexedDBUsage, setIndexedDBUsage] = useState<number | undefined>(
-    undefined
+    undefined,
   )
 
   const { data: coversSize } = useCoversCacheInformation()
@@ -38,6 +38,6 @@ export const useStorageUse = (deps: DependencyList | undefined) => {
     usedInMb,
     quotaInGb,
     coversWightInMb,
-    covers: coversSize?.size
+    covers: coversSize?.size,
   }
 }

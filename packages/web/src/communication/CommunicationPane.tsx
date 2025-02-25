@@ -23,9 +23,9 @@ export const CommunicationPane = () => {
         url: `${import.meta.env.VITE_SUPABASE_API_URL}/communication?limit=1&order=created_at.desc`,
         withAuth: false,
         headers: {
-          apiKey: import.meta.env.VITE_SUPABASE_API_KEY ?? ""
-        }
-      })
+          apiKey: import.meta.env.VITE_SUPABASE_API_KEY ?? "",
+        },
+      }),
   })
 
   const latestNews = data?.data[0]
@@ -42,7 +42,7 @@ export const CommunicationPane = () => {
                 <Link ref={ref as any} target="_blank" {...props}>
                   {children}
                 </Link>
-              )
+              ),
             }}
           >
             {latestNews?.content ?? ""}

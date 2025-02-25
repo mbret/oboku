@@ -18,7 +18,7 @@ type RestoreStateFromState = ComponentProps<
 const libraryCollectionScreenPreviousScrollState =
   signal<RestoreStateFromState>({
     key: `libraryCollectionScreenPreviousScrollState`,
-    default: undefined
+    default: undefined,
   })
 
 export const LibraryCollectionScreen = () => {
@@ -26,11 +26,11 @@ export const LibraryCollectionScreen = () => {
   const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] =
     useState(false)
   const libraryCollectionScreenPreviousScroll = useSignalValue(
-    libraryCollectionScreenPreviousScrollState
+    libraryCollectionScreenPreviousScrollState,
   )
   const { viewMode } = useSignalValue(
     libraryShelvesFiltersSignal,
-    ({ viewMode }) => ({ viewMode })
+    ({ viewMode }) => ({ viewMode }),
   )
   const { data: collections } = useLibraryShelves()
 
@@ -39,7 +39,7 @@ export const LibraryCollectionScreen = () => {
       <MuiToolbar>
         <Button
           style={{
-            width: "100%"
+            width: "100%",
           }}
           variant="outlined"
           color="primary"
@@ -49,7 +49,7 @@ export const LibraryCollectionScreen = () => {
         </Button>
       </MuiToolbar>
     ),
-    [setIsAddCollectionDialogOpened]
+    [setIsAddCollectionDialogOpened],
   )
 
   const listRenderHeader = useCallback(() => listHeader, [listHeader])
@@ -58,7 +58,7 @@ export const LibraryCollectionScreen = () => {
     (item: DeepReadonlyObject<CollectionDocType>) => {
       navigate(ROUTES.COLLECTION_DETAILS.replace(":id", item._id))
     },
-    [navigate]
+    [navigate],
   )
 
   return (
@@ -67,7 +67,7 @@ export const LibraryCollectionScreen = () => {
       {!!collections && (
         <CollectionList
           style={{
-            flex: 1
+            flex: 1,
           }}
           data={collections}
           renderHeader={listRenderHeader}

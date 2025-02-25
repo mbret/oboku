@@ -12,9 +12,9 @@ export const useLinks = () => {
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.link.find({}).$),
-        map((entries) => entries.map((item) => item.toJSON()))
+        map((entries) => entries.map((item) => item.toJSON())),
       )
-    }
+    },
   })
 }
 
@@ -28,12 +28,12 @@ export const useLink = ({ id }: { id?: string }) => {
           (db) =>
             db.collections.link.findOne({
               selector: {
-                _id: id
-              }
-            }).$
+                _id: id,
+              },
+            }).$,
         ),
-        map((entry) => entry?.toJSON() ?? null)
-      )
+        map((entry) => entry?.toJSON() ?? null),
+      ),
   })
 }
 
@@ -45,13 +45,13 @@ const mapLinkTtoState = ({ link }: { link?: LinkDocType | null }) => {
   return {
     ...link,
     isSynchronizable: !!linkPlugin?.canSynchronize,
-    isRemovableFromDataSource: isRemovableFromDataSource({ link })
+    isRemovableFromDataSource: isRemovableFromDataSource({ link }),
   }
 }
 
 export const getLinkState = (
   links: ReturnType<typeof useLinks>["data"],
-  linkId: string
+  linkId: string,
 ) => {
   const link = links?.find((link) => link?._id === linkId)
 
@@ -60,7 +60,7 @@ export const getLinkState = (
 
 export const getLinkStateAsync = async ({
   db,
-  linkId
+  linkId,
 }: {
   linkId: string
   db: Database
@@ -68,8 +68,8 @@ export const getLinkStateAsync = async ({
   const link = await db.link
     .findOne({
       selector: {
-        _id: linkId
-      }
+        _id: linkId,
+      },
     })
     .exec()
 

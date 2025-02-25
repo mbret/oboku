@@ -10,7 +10,7 @@ export const useCreateCollection = () => {
         books: [],
         createdAt: new Date().toISOString(),
         modifiedAt: null,
-        metadata: [{ type: "user", title: name }]
-      })
+        metadata: [{ type: "user", title: name }],
+      }),
   })
 }

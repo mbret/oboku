@@ -43,8 +43,8 @@ export const createDialog = <Result = undefined>({
           observer.complete()
 
           return data as Result
-        }
-      }))
+        },
+      })),
     }
 
     dialogSignal.setValue((old) => [...old, wrappedDialog])

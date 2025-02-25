@@ -8,7 +8,7 @@ import { pluginFacade } from "@libs/plugins/facade"
 export const downloadToTmpFolder = (
   book: BookDocType,
   link: LinkDocType,
-  credentials?: any
+  credentials?: any,
 ) =>
   new Promise<{
     filepath: string
@@ -40,8 +40,8 @@ export const downloadToTmpFolder = (
           .on("finish", () =>
             resolve({
               filepath,
-              metadata
-            })
+              metadata,
+            }),
           )
           .on("error", reject)
       })

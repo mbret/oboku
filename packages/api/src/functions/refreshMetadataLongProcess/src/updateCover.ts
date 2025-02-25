@@ -11,7 +11,7 @@ export const updateCover = async ({
   archiveExtractor,
   book,
   ctx,
-  tmpFilePath
+  tmpFilePath,
 }: {
   ctx: Context
   book: BookDocType
@@ -20,7 +20,7 @@ export const updateCover = async ({
   tmpFilePath?: string
 }) => {
   const currentMetadaForCover = book.metadata?.find(
-    (metadata) => metadata.coverLink
+    (metadata) => metadata.coverLink,
   )
   const coverObjectKey = `cover-${ctx.userNameHex}-${ctx.book._id}`
   const metadataForCover = metadataList.find((metadata) => metadata.coverLink)
@@ -32,7 +32,7 @@ export const updateCover = async ({
     (await isCoverExist(coverObjectKey))
   ) {
     console.log(
-      `Skipping cover update for ${book._id} since the current and new cover link are equals`
+      `Skipping cover update for ${book._id} since the current and new cover link are equals`,
     )
 
     return
@@ -46,7 +46,7 @@ export const updateCover = async ({
     await saveCoverFromRarArchiveToBucket(
       coverObjectKey,
       archiveExtractor,
-      metadataForCover.coverLink
+      metadataForCover.coverLink,
     )
 
     return
@@ -60,7 +60,7 @@ export const updateCover = async ({
     await saveCoverFromZipArchiveToBucket(
       coverObjectKey,
       tmpFilePath,
-      metadataForCover.coverLink
+      metadataForCover.coverLink,
     )
 
     return
@@ -74,7 +74,7 @@ export const updateCover = async ({
 
     await saveCoverFromExternalLinkToBucket(
       objectKey,
-      metadataForCover.coverLink
+      metadataForCover.coverLink,
     )
 
     return

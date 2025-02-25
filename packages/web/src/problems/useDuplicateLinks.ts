@@ -8,7 +8,7 @@ import { groupBy } from "@oboku/shared"
 export const useDuplicatedResourceIdLinks = () => {
   const links = useObserve(
     () => latestDatabase$.pipe(switchMap((db) => db?.link.find().$)),
-    []
+    [],
   )
 
   return useMemo(() => {
@@ -19,13 +19,13 @@ export const useDuplicatedResourceIdLinks = () => {
         resourceId,
         {
           name: dataByResourceId[resourceId]![0]?.resourceId,
-          number: dataByResourceId[resourceId]!.length
-        }
+          number: dataByResourceId[resourceId]!.length,
+        },
       ])
 
     Report.log(
       `Found ${duplicatedDocuments.length} duplicated link resourceIds`,
-      duplicatedDocuments
+      duplicatedDocuments,
     )
 
     return duplicatedDocuments as [string, { name: string; number: number }][]

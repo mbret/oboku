@@ -4,7 +4,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText
+  ListItemText,
 } from "@mui/material"
 import { groupBy } from "@oboku/shared"
 import { Fragment, memo, useMemo } from "react"
@@ -35,7 +35,7 @@ export const ProblemsScreen = memo(() => {
   const { mutate: repair } = useRepair()
   const collections = useObserve(
     () => latestDatabase$.pipe(switchMap((db) => db.obokucollection.find().$)),
-    []
+    [],
   )
 
   const duplicatedCollections = useMemo(() => {
@@ -43,7 +43,7 @@ export const ProblemsScreen = memo(() => {
     const linkResourceIds = Object.keys(collectionsByResourceId)
     const duplicatedCollections = linkResourceIds
       .filter(
-        (resourceId) => (collectionsByResourceId[resourceId]?.length ?? 0) > 1
+        (resourceId) => (collectionsByResourceId[resourceId]?.length ?? 0) > 1,
       )
       .map((resourceId) => {
         const _collections = collectionsByResourceId[resourceId] ?? []
@@ -53,14 +53,14 @@ export const ProblemsScreen = memo(() => {
           resourceId,
           {
             name: getCollectionComputedMetadata(collection?.toJSON())?.title,
-            number: collectionsByResourceId[resourceId]!.length
-          }
+            number: collectionsByResourceId[resourceId]!.length,
+          },
         ]
       })
 
     Report.log(
       `Found ${duplicatedCollections.length} duplicated resource id`,
-      duplicatedCollections
+      duplicatedCollections,
     )
 
     return duplicatedCollections as [string, { name: string; number: number }][]
@@ -139,7 +139,7 @@ export const ProblemsScreen = memo(() => {
               onClick={() =>
                 repair({
                   type: "danglingLinks",
-                  items: danglingLinks
+                  items: danglingLinks,
                 })
               }
             >
@@ -163,7 +163,7 @@ export const ProblemsScreen = memo(() => {
                 repair({
                   danglingItems,
                   doc,
-                  type: "bookDanglingCollections"
+                  type: "bookDanglingCollections",
                 })
               }
             />
@@ -177,7 +177,7 @@ export const ProblemsScreen = memo(() => {
                 repair({
                   danglingItems,
                   doc,
-                  type: "collectionDanglingBooks"
+                  type: "collectionDanglingBooks",
                 })
               }
             />
@@ -216,7 +216,7 @@ export const ProblemsScreen = memo(() => {
                 repair({
                   danglingItems,
                   doc,
-                  type: "bookDanglingLinks"
+                  type: "bookDanglingLinks",
                 })
               }
             />

@@ -9,9 +9,7 @@
     ".": "./src/index.ts"
   },
   "license": "MIT",
-  "files": [
-    "/src"
-  ],
+  "files": ["/src"],
   "scripts": {
     "start": "vite build --watch --mode development",
     "build": "tsc",

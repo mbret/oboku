@@ -2,14 +2,7 @@ import { useDrivePicker } from "./lib/useDrivePicker"
 import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
-import {
-  catchError,
-  from,
-  map,
-  of,
-  switchMap,
-  timer
-} from "rxjs"
+import { catchError, from, map, of, switchMap, timer } from "rxjs"
 import { useMount } from "react-use"
 import { ObokuPlugin } from "../types"
 import { memo } from "react"
@@ -19,7 +12,7 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
   ({ onClose, requestPopup }) => {
     const [addBook] = useAddBook()
     const { generateResourceId } = useDataSourceHelpers(
-      UNIQUE_RESOURCE_IDENTIFIER
+      UNIQUE_RESOURCE_IDENTIFIER,
     )
     const { pick } = useDrivePicker({ requestPopup })
 
@@ -44,9 +37,9 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
                     metadata: [
                       {
                         type: "link",
-                        title: doc.name
-                      }
-                    ]
+                        title: doc.name,
+                      },
+                    ],
                   },
                   link: {
                     book: null,
@@ -54,11 +47,11 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
                     resourceId: generateResourceId(doc.id),
                     type: `DRIVE`,
                     createdAt: new Date().toISOString(),
-                    modifiedAt: null
-                  }
+                    modifiedAt: null,
+                  },
                 })
-              })
-            )
+              }),
+            ),
           )
         }),
         map(() => null),
@@ -66,8 +59,8 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
           onClose()
 
           throw error
-        })
-      )
+        }),
+      ),
     })
 
     useMount(() => {
@@ -75,5 +68,5 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
     })
 
     return null
-  }
+  },
 )

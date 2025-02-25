@@ -1,6 +1,6 @@
 import {
   CheckCircleRounded,
-  RadioButtonUncheckedOutlined
+  RadioButtonUncheckedOutlined,
 } from "@mui/icons-material"
 
 export const Checkbox = ({ selected }: { selected: boolean }) => {

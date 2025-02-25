@@ -4,7 +4,7 @@ import { isLockOutdated } from "./isLockOutdated"
 
 export const lock = async (
   lockId: string,
-  maxDuration: number
+  maxDuration: number,
 ): Promise<{ alreadyLocked: boolean }> => {
   const response = await supabase
     .from("lock")
@@ -17,7 +17,7 @@ export const lock = async (
 
     if (!item) {
       Logger.info(
-        `${lockId} not found after receiving 409. Invalid state, ignoring invocation`
+        `${lockId} not found after receiving 409. Invalid state, ignoring invocation`,
       )
 
       return { alreadyLocked: true }
@@ -48,7 +48,7 @@ export const lock = async (
 
   if (response.status === 201) {
     Logger.info(
-      `New lock created for ${lockId} with id ${(response.data ?? [])[0].id}. Command will be sent`
+      `New lock created for ${lockId} with id ${(response.data ?? [])[0].id}. Command will be sent`,
     )
 
     return { alreadyLocked: false }

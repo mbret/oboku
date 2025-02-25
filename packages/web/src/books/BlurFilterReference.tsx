@@ -9,8 +9,8 @@ export const BlurFilterReference = memo(() => {
         styles={{
           ".blurFilter": {
             webkitFilter: `url("#blurFilterReference")`,
-            filter: `url("#blurFilterReference")`
-          }
+            filter: `url("#blurFilterReference")`,
+          },
         }}
       />
       <svg
@@ -23,7 +23,7 @@ export const BlurFilterReference = memo(() => {
           overflow: "hidden",
           padding: 0,
           position: "absolute",
-          width: 1
+          width: 1,
         }}
       >
         <filter id="blurFilterReference">

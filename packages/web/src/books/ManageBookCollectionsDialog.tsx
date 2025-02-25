@@ -7,19 +7,19 @@ import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
 const openManageBookCollectionsDialogStateSignal = signal<string | undefined>({
   key: "openManageBookCollectionsDialogState",
-  default: undefined
+  default: undefined,
 })
 
 export const useManageBookCollectionsDialog = () => {
   const openManageBookCollectionsDialog = useCallback(
     (bookId: string) =>
       openManageBookCollectionsDialogStateSignal.setValue(bookId),
-    []
+    [],
   )
 
   const closeManageBookCollectionsDialog = useCallback(
     () => openManageBookCollectionsDialogStateSignal.setValue(SIGNAL_RESET),
-    []
+    [],
   )
 
   return { openManageBookCollectionsDialog, closeManageBookCollectionsDialog }
@@ -29,11 +29,11 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
   const id = useSignalValue(openManageBookCollectionsDialogStateSignal)
   const open = !!id
   const { data: collections = [] } = useCollections({
-    enabled: open
+    enabled: open,
   })
   const collectionIds = useMemo(
     () => collections.map(({ _id }) => _id),
-    [collections]
+    [collections],
   )
   const { data: book } = useBook({ id })
   const { mutate: addToBook } = useAddCollectionToBook()
@@ -45,7 +45,7 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
 
   const onClose = useCallback(
     () => openManageBookCollectionsDialogStateSignal.setValue(undefined),
-    []
+    [],
   )
 
   const onItemClick = useCallback(
@@ -56,7 +56,7 @@ export const ManageBookCollectionsDialog: FC<{}> = () => {
         id && addToBook({ _id: id, collectionId })
       }
     },
-    [removeFromBook, addToBook, id]
+    [removeFromBook, addToBook, id],
   )
 
   return (

@@ -15,7 +15,7 @@ const loadFile = async (dir: string, locale: string) => {
 
   const withEnv = file.replaceAll(
     "${NEXT_PUBLIC_TRADEMARK}",
-    process.env.NEXT_PUBLIC_TRADEMARK ?? ""
+    process.env.NEXT_PUBLIC_TRADEMARK ?? "",
   )
 
   return withEnv
@@ -23,11 +23,11 @@ const loadFile = async (dir: string, locale: string) => {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const { locale, path: filePath } = extractParams(req.query, {
     locale: "string",
-    path: "string"
+    path: "string",
   })
 
   if (!filePath) {

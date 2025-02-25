@@ -6,13 +6,13 @@ const logger = Logger.child({ module: "saveCoverFromExternalLinkToBucket" })
 
 export const saveCoverFromExternalLinkToBucket = async (
   coverKey: string,
-  coverUrl: string
+  coverUrl: string,
 ) => {
   Logger.info(`prepare to save cover ${coverKey}`)
 
   try {
     const response = await axios.get<ArrayBuffer>(coverUrl, {
-      responseType: "arraybuffer"
+      responseType: "arraybuffer",
     })
     const entryAsBuffer = Buffer.from(response.data)
 

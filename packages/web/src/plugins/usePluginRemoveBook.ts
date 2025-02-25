@@ -14,8 +14,8 @@ export const usePluginRemoveBook = () => {
     useRemoveBook:
       plugin.useRemoveBook &&
       plugin.useRemoveBook({
-        requestPopup: createRequestPopupDialog({ name: plugin.name })
-      })
+        requestPopup: createRequestPopupDialog({ name: plugin.name }),
+      }),
   }))
 
   const getPluginFn = useRef<typeof preparedHooks>([])
@@ -34,12 +34,12 @@ export const usePluginRemoveBook = () => {
       }
 
       const found = getPluginFn.current.find(
-        (plugin) => plugin.type === link.type
+        (plugin) => plugin.type === link.type,
       )
 
       if (!found || !found.useRemoveBook) {
         throw new Error(
-          "no datasource found for this link or useRemoveBook is undefined"
+          "no datasource found for this link or useRemoveBook is undefined",
         )
       }
 
@@ -47,6 +47,6 @@ export const usePluginRemoveBook = () => {
 
       return res
     },
-    [getPluginFn, db]
+    [getPluginFn, db],
   )
 }

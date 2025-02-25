@@ -19,17 +19,17 @@ export const useSyncReplicate = () => {
               collection,
               live: false,
               dbName,
-              token
-            })
-          )
-        )
+              token,
+            }),
+          ),
+        ),
       )
 
       return replicationStates.pipe(
         mergeMap((states) =>
-          from(Promise.all(states.map((state) => state.awaitInSync())))
-        )
+          from(Promise.all(states.map((state) => state.awaitInSync()))),
+        ),
       )
-    }
+    },
   })
 }

@@ -5,14 +5,14 @@ import { COVER_ALLOWED_EXT } from "src/constants"
 
 export const getMetadataFromRarArchive = async (
   extractor: Extractor<Uint8Array>,
-  contentType: string
+  contentType: string,
 ): Promise<BookMetadata> => {
   const list = extractor.getFileList()
   const fileHeaders = [...list.fileHeaders]
 
   const firstImageFound = fileHeaders.find((fileHeader) => {
     const isAllowedImage = COVER_ALLOWED_EXT.includes(
-      path.extname(fileHeader.name).toLowerCase()
+      path.extname(fileHeader.name).toLowerCase(),
     )
 
     return isAllowedImage
@@ -21,7 +21,7 @@ export const getMetadataFromRarArchive = async (
   const opfFile = fileHeaders.find((header) => header.name.endsWith(`.opf`))
   const archiveIsNotEpub = !opfFile
   const onlyFileHeaders = fileHeaders.filter(
-    (header) => !header.flags.directory
+    (header) => !header.flags.directory,
   )
 
   if (archiveIsNotEpub) {
@@ -29,7 +29,7 @@ export const getMetadataFromRarArchive = async (
       type: "file",
       contentType,
       pageCount: onlyFileHeaders.length,
-      coverLink: firstImageFound?.name
+      coverLink: firstImageFound?.name,
     }
   }
 
@@ -37,6 +37,6 @@ export const getMetadataFromRarArchive = async (
     type: "file",
     contentType,
     pageCount: onlyFileHeaders.length,
-    coverLink: firstImageFound?.name
+    coverLink: firstImageFound?.name,
   }
 }

@@ -13,7 +13,7 @@ export const sync = async ({
   userName,
   credentials,
   authorization,
-  db
+  db,
 }: {
   dataSourceId: string
   userName: string
@@ -24,13 +24,13 @@ export const sync = async ({
   const syncReport = new SyncReport(dataSourceId, userName)
 
   console.log(
-    `dataSourceFacade started sync for ${dataSourceId} with user ${userName}`
+    `dataSourceFacade started sync for ${dataSourceId} with user ${userName}`,
   )
 
   const refreshBookMetadata = async ({ bookId }: { bookId: string }) => {
     console.log(
       `[syncDataSourceLongProcess] [refreshBookMetadata]`,
-      `request for ${bookId}`
+      `request for ${bookId}`,
     )
 
     syncReport.fetchBookMetadata(bookId)
@@ -39,27 +39,27 @@ export const sync = async ({
       method: `post`,
       url: `${AWS_API_URI}/refresh-metadata`,
       data: {
-        bookId
+        bookId,
       },
       headers: {
         "content-type": "application/json",
         accept: "application/json",
         "oboku-credentials": JSON.stringify(credentials),
-        authorization: authorization
-      }
+        authorization: authorization,
+      },
     })
 
     if (response.status >= 400) {
       console.error(
         `[syncDataSourceLongProcess] [refreshBookMetadata]`,
         `request error for ${bookId}`,
-        response.status
+        response.status,
       )
     } else {
       console.log(
         `[syncDataSourceLongProcess] [refreshBookMetadata]`,
         `request success for ${bookId}`,
-        response.status
+        response.status,
       )
     }
   }
@@ -69,7 +69,7 @@ export const sync = async ({
 
   try {
     const dataSource = await helpers.findOne("datasource", {
-      selector: { _id: dataSourceId }
+      selector: { _id: dataSourceId },
     })
 
     if (!dataSource) throw new Error("Data source not found")
@@ -77,7 +77,7 @@ export const sync = async ({
     if (dataSource.syncStatus !== "fetching") {
       await atomicUpdate(db, "datasource", dataSource._id, (old) => ({
         ...old,
-        syncStatus: "fetching" as const
+        syncStatus: "fetching" as const,
       }))
     }
 
@@ -95,7 +95,7 @@ export const sync = async ({
       authorization,
       db,
       syncReport,
-      userNameHex: nameHex
+      userNameHex: nameHex,
     }
     const plugin = plugins.find((plugin) => plugin.type === type)
 
@@ -117,7 +117,7 @@ export const sync = async ({
       ...old,
       lastSyncedAt,
       lastSyncErrorCode: null,
-      syncStatus: null
+      syncStatus: null,
     }))
 
     console.log(`dataSourcesSync for ${dataSourceId} completed successfully`)
@@ -132,7 +132,7 @@ export const sync = async ({
     await atomicUpdate(db, "datasource", dataSourceId, (old) => ({
       ...old,
       lastSyncErrorCode,
-      syncStatus: null
+      syncStatus: null,
     }))
 
     throw e

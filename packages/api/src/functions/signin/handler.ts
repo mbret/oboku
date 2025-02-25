@@ -9,7 +9,7 @@ import schema from "./schema"
 import { getAuth } from "firebase-admin/auth"
 import {
   getDangerousAdminNano,
-  getOrCreateUserFromEmail
+  getOrCreateUserFromEmail,
 } from "@libs/couch/dbHelpers"
 import { generateToken } from "@libs/auth"
 import { ObokuErrorCode } from "@oboku/shared"
@@ -19,11 +19,11 @@ import { withMiddy } from "@libs/middy/withMiddy"
 import { getFirebaseApp } from "@libs/firebase/app"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
-  event
+  event,
 ) => {
   const [jwtPrivateKey = ``, xAccessSecret = ``] = await getParametersValue({
     Names: ["jwt-private-key", "x-access-secret"],
-    WithDecryption: true
+    WithDecryption: true,
   })
 
   const { token } = event.body
@@ -34,19 +34,19 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   if (!email) {
     throw createHttpError(400, {
-      code: ObokuErrorCode.ERROR_SIGNIN_NO_EMAIL
+      code: ObokuErrorCode.ERROR_SIGNIN_NO_EMAIL,
     })
   }
 
   if (!email_verified) {
     throw createHttpError(400, {
-      code: ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED
+      code: ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED,
     })
   }
 
   const adminNano = await getDangerousAdminNano({
     privateKey: jwtPrivateKey,
-    xAccessSecret
+    xAccessSecret,
   })
 
   const user = await getOrCreateUserFromEmail(adminNano, email)
@@ -64,8 +64,8 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       token: userJwtToken,
       nameHex,
       dbName: `userdb-${nameHex}`,
-      email: user.email
-    })
+      email: user.email,
+    }),
   }
 }
 

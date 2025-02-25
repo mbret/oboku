@@ -9,7 +9,7 @@ export const Logo = () => {
         variant="h1"
         color="primary"
         style={{
-          fontWeight: theme.typography.fontWeightBold
+          fontWeight: theme.typography.fontWeightBold,
         }}
       >
         o
@@ -19,7 +19,7 @@ export const Logo = () => {
         style={{
           display: "flex",
           fontWeight: theme.typography.fontWeightBold,
-          flexFlow: "row"
+          flexFlow: "row",
         }}
       >
         boku

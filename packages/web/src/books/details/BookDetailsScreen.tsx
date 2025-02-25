@@ -3,7 +3,7 @@ import Button from "@mui/material/Button"
 import {
   CloudDownloadRounded,
   MenuBookOutlined,
-  MoreVertOutlined
+  MoreVertOutlined,
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Typography, Container, Stack, IconButton } from "@mui/material"
@@ -41,14 +41,14 @@ export const BookDetailsScreen = memo(() => {
     bookId: id,
     normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal),
     protectedTagIds: useProtectedTagIds().data,
-    tags: useTagsByIds().data
+    tags: useTagsByIds().data,
   })
   const { data: link } = useLink({ id: book?.links[0] })
   const metadata = useMedataFromBook(book)
   const openBookActionDrawer = useBookActionDrawer({
     onDeleteBook: () => {
       goBack()
-    }
+    },
   })
 
   if (isDebugEnabled()) {
@@ -59,7 +59,7 @@ export const BookDetailsScreen = memo(() => {
     <Stack
       style={{
         flex: 1,
-        overflow: "auto"
+        overflow: "auto",
       }}
       pb={4}
       gap={2}
@@ -71,7 +71,7 @@ export const BookDetailsScreen = memo(() => {
           display: "flex",
           flexDirection: ["column", "row"],
           gap: [1, 3],
-          mt: 2
+          mt: 2,
         }}
       >
         <CoverPane bookId={book?._id} />
@@ -80,7 +80,7 @@ export const BookDetailsScreen = memo(() => {
             alignItems: ["center", "flex-start"],
             flexFlow: "column",
             justifyContent: ["center", "flex-start"],
-            pt: [0, 5]
+            pt: [0, 5],
           }}
         >
           <Typography variant="body1">
@@ -98,7 +98,7 @@ export const BookDetailsScreen = memo(() => {
           gap: 1,
           mb: 1,
           display: "flex",
-          width: "100%"
+          width: "100%",
         }}
       >
         {book?.downloadState === "none" && (
@@ -107,7 +107,7 @@ export const BookDetailsScreen = memo(() => {
             color="primary"
             sx={{
               flex: [1, "none"],
-              minWidth: 260
+              minWidth: 260,
             }}
             startIcon={<CloudDownloadRounded />}
             onClick={() => downloadFile(book)}
@@ -120,7 +120,7 @@ export const BookDetailsScreen = memo(() => {
           <Button
             sx={{
               flex: [1, "none"],
-              minWidth: 260
+              minWidth: 260,
             }}
             variant="outlined"
             color="primary"
@@ -135,7 +135,7 @@ export const BookDetailsScreen = memo(() => {
             color="primary"
             sx={{
               flex: [1, "none"],
-              minWidth: 260
+              minWidth: 260,
             }}
             startIcon={<MenuBookOutlined />}
             onClick={() => navigate(ROUTES.READER.replace(":id", book._id))}
@@ -147,7 +147,7 @@ export const BookDetailsScreen = memo(() => {
           onClick={() => {
             openBookActionDrawer({
               openedWith: book?._id,
-              actionsBlackList: ["goToDetails"]
+              actionsBlackList: ["goToDetails"],
             })
           }}
         >

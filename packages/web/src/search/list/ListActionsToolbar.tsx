@@ -9,7 +9,7 @@ export const ListActionsToolbar = ({
 }: ComponentProps<typeof CommonListActionsToolbar>) => {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false)
   const searchListActionsToolbar = useSignalValue(
-    searchListActionsToolbarSignal
+    searchListActionsToolbarSignal,
   )
   const numberOfFiltersApplied =
     searchListActionsToolbar.notInterestedContents !== "none" ? 1 : 0

@@ -18,5 +18,5 @@ export type DialogType<T = undefined> = {
 }
 
 export const dialogSignal = signal<DialogType<unknown>[]>({
-  default: []
+  default: [],
 })

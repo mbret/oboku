@@ -7,10 +7,10 @@ export const useIsUsingPagesPerChapter = ({ bookId }: { bookId?: string }) => {
   const reader = useSignalValue(readerSignal)
   const { data: book } = useBook({ id: bookId })
   const linkMetadata = book?.metadata?.find(
-    (metadata) => metadata.type === "link"
+    (metadata) => metadata.type === "link",
   )
   const { isWebtoon } = directives.extractDirectivesFromName(
-    linkMetadata?.title ?? ``
+    linkMetadata?.title ?? ``,
   )
   const { renditionLayout } = reader?.context.manifest ?? {}
 

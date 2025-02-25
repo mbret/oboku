@@ -16,15 +16,15 @@ const getDefaultData = (): GoogleBooksApiVolumesResponseData => ({
         authors: [``],
         categories: [`Fiction`],
         imageLinks: {
-          thumbnail: ``
+          thumbnail: ``,
         },
         language: `de`,
         publishedDate: ``,
         publisher: ``,
-        title: "My title Vol. 1"
-      }
-    }
-  ]
+        title: "My title Vol. 1",
+      },
+    },
+  ],
 })
 
 describe(`Given has series info`, () => {
@@ -39,11 +39,11 @@ describe(`Given has series info`, () => {
               ...getDefaultData().items![0]!.volumeInfo,
               title: "My title Vol. 1",
               seriesInfo: {
-                bookDisplayNumber: "1"
-              }
-            }
-          }
-        ]
+                bookDisplayNumber: "1",
+              },
+            },
+          },
+        ],
       })
 
       expect(title).toBe(`My title Vol. 1`)
@@ -61,11 +61,11 @@ describe(`Given has series info`, () => {
               ...getDefaultData().items![0]!.volumeInfo,
               title: "My title",
               seriesInfo: {
-                bookDisplayNumber: "1"
-              }
-            }
-          }
-        ]
+                bookDisplayNumber: "1",
+              },
+            },
+          },
+        ],
       })
 
       expect(title).toBe(`My title Vol 1`)
@@ -83,10 +83,10 @@ describe(`Given no series info`, () => {
           volumeInfo: {
             ...getDefaultData().items![0]!.volumeInfo,
             title: "My title",
-            seriesInfo: undefined
-          }
-        }
-      ]
+            seriesInfo: undefined,
+          },
+        },
+      ],
     })
 
     expect(title).toBe(`My title`)

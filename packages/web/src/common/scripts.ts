@@ -1,4 +1,14 @@
-import { defer, filter, first, merge, mergeMap, Observable, of, retry, timer } from "rxjs"
+import {
+  defer,
+  filter,
+  first,
+  merge,
+  mergeMap,
+  Observable,
+  of,
+  retry,
+  timer,
+} from "rxjs"
 import { Report } from "../debug/report.shared"
 import { navigatorOnLine$ } from "./network/onLine"
 
@@ -21,12 +31,12 @@ export const retryOnFailure = <O>(stream: Observable<O>) =>
 
             return navigatorOnLine$.pipe(
               filter((onLine) => onLine),
-              first()
+              first(),
             )
-          })
+          }),
         )
-      }
-    })
+      },
+    }),
   )
 
 export const loadScript = ({ id, src }: { id: string; src: string }) => {

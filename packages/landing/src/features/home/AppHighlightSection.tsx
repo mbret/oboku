@@ -6,7 +6,7 @@ import {
   Chip,
   Container,
   Stack,
-  Typography
+  Typography,
 } from "@mui/material"
 import image1 from "./assets/image1.png"
 import image2 from "./assets/image2.png"
@@ -21,7 +21,7 @@ import Image from "next/image"
 const KeyCardPoint = ({
   description,
   imageSrc,
-  title
+  title,
 }: {
   title: string
   description: string
@@ -53,7 +53,7 @@ export const AppHighlightSection = () => {
         <Chip
           label="Key features"
           sx={{
-            alignSelf: "flex-start"
+            alignSelf: "flex-start",
           }}
         />
         <Typography variant="h4" component="h2">

@@ -1,13 +1,13 @@
 import {
   BookDocType,
   DeprecatedBookDocType,
-  InsertAbleBookDocType
+  InsertAbleBookDocType,
 } from "@oboku/shared"
 import {
   MigrationStrategies,
   RxCollection,
   RxDocument,
-  RxJsonSchema
+  RxJsonSchema,
 } from "rxdb"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
@@ -18,7 +18,7 @@ type BookDocument = RxDocument<BookDocType, BookDocMethods>
 
 type BookCollectionMethods = {
   post: (
-    json: Omit<InsertAbleBookDocType, "rx_model" | `rxdbMeta`>
+    json: Omit<InsertAbleBookDocType, "rx_model" | `rxdbMeta`>,
   ) => Promise<BookDocument>
 }
 
@@ -33,7 +33,7 @@ export const bookDocMethods: BookDocMethods = {}
 export const bookCollectionMethods: BookCollectionMethods = {
   post: async function (this: BookCollection, json) {
     return this.insert({ _id: generateId(), ...json } as BookDocType)
-  }
+  },
 }
 
 export const bookSchemaMigrationStrategies: MigrationStrategies = {}
@@ -50,7 +50,7 @@ export const bookSchema: RxJsonSchema<
     collections: {
       type: "array",
       ref: "obokucollection",
-      items: { type: "string" }
+      items: { type: "string" },
     },
     createdAt: { type: ["number"] },
     creator: { type: ["string", "null"] },
@@ -64,7 +64,7 @@ export const bookSchema: RxJsonSchema<
     readingStateCurrentBookmarkLocation: { type: ["string", "null"] },
     readingStateCurrentBookmarkProgressPercent: { type: ["number"] },
     readingStateCurrentBookmarkProgressUpdatedAt: {
-      type: ["string", "null"]
+      type: ["string", "null"],
     },
     readingStateCurrentState: { type: ["string"] },
     rights: { type: ["string", "null"] },
@@ -75,7 +75,7 @@ export const bookSchema: RxJsonSchema<
     isAttachedToDataSource: { type: ["boolean"] },
     isNotInterested: { type: ["boolean"] },
     metadata: { type: ["array"] },
-    ...getReplicationProperties(`book`)
+    ...getReplicationProperties(`book`),
   },
-  required: []
+  required: [],
 }

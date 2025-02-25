@@ -7,7 +7,7 @@ import { getMetadataFromBook } from "../books/metadata"
 export const BookDanglingCollections = ({
   danglingBooks,
   doc,
-  onClick
+  onClick,
 }: {
   doc: DeepReadonlyObject<BookDocType>
   danglingBooks: string[]

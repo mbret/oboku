@@ -16,7 +16,7 @@ type LinkDocument = RxDocument<LinkDocType, LinkDocMethods>
 
 type LinkCollectionMethods = {
   safeInsert: (
-    json: Omit<LinkDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>
+    json: Omit<LinkDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>,
   ) => Promise<LinkDocument>
 }
 
@@ -35,9 +35,9 @@ const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev` | `rxdbMeta`>> = {
     contentLength: { type: ["number", "null"] },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
-    ...getReplicationProperties(`link`)
+    ...getReplicationProperties(`link`),
   },
-  required: ["data", "resourceId", "type"]
+  required: ["data", "resourceId", "type"],
 }
 
 const linkSchemaMigrationStrategies = {}
@@ -47,7 +47,7 @@ const linkDocMethods: LinkDocMethods = {}
 const linkCollectionMethods: LinkCollectionMethods = {
   safeInsert: async function (this: LinkCollection, json) {
     return this.insert({ _id: generateId(), ...json } as LinkDocType)
-  }
+  },
 }
 
 export const link = {
@@ -55,5 +55,5 @@ export const link = {
   statics: linkCollectionMethods,
   methods: linkDocMethods,
   migrationStrategies: linkSchemaMigrationStrategies,
-  conflictHandler
+  conflictHandler,
 }

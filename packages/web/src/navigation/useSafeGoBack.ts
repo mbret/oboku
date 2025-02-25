@@ -12,14 +12,14 @@ export const useSafeGoBack = () => {
         navigate(defaultTo ?? ROUTES.HOME, {
           replace: true, // prevent infinite loop of fallback
           state: {
-            __obokuFallbackBack: true
-          }
+            __obokuFallbackBack: true,
+          },
         })
       } else {
         navigate(-1)
       }
     },
-    [navigate, pathname]
+    [navigate, pathname],
   )
 
   return useMemo(() => ({ goBack }), [goBack])

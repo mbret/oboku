@@ -2,7 +2,7 @@ import { Box, Button, Typography } from "@mui/material"
 
 export const SelectionDialogBottom = ({
   onClose,
-  numberOfItemsSelected
+  numberOfItemsSelected,
 }: {
   onClose: () => void
   numberOfItemsSelected: number
@@ -12,9 +12,9 @@ export const SelectionDialogBottom = ({
       sx={{
         padding: (theme) =>
           `${theme.spacing(1)} ${theme.spacing(2)} ${theme.spacing(
-            2
+            2,
           )} ${theme.spacing(2)}`,
-        borderTop: (theme) => `1px solid ${theme.palette["grey"]["500"]}`
+        borderTop: (theme) => `1px solid ${theme.palette["grey"]["500"]}`,
       }}
     >
       <Typography gutterBottom align="center" variant="body2">
@@ -22,7 +22,7 @@ export const SelectionDialogBottom = ({
       </Typography>
       <Button
         style={{
-          width: "100%"
+          width: "100%",
         }}
         variant="outlined"
         color="primary"

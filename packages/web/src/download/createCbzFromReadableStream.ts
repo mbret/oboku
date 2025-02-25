@@ -8,7 +8,7 @@ type StreamValue = {
 
 export const createCbzFromReadableStream = async (
   stream: ReadableStream<StreamValue>,
-  { onData }: { onData: (value: StreamValue) => void }
+  { onData }: { onData: (value: StreamValue) => void },
 ) => {
   const reader = stream.getReader()
 
@@ -21,7 +21,7 @@ export const createCbzFromReadableStream = async (
 
     const data = await zip.generateAsync({
       type: `blob`,
-      mimeType: `application/x-cbz`
+      mimeType: `application/x-cbz`,
     })
 
     return data
@@ -36,7 +36,7 @@ export const createCbzFromReadableStream = async (
 const processValue = async (
   reader: ReadableStreamDefaultReader<StreamValue>,
   zip: JSZip,
-  onData: (data: StreamValue) => void
+  onData: (data: StreamValue) => void,
 ): Promise<void> => {
   const { done, value } = await reader.read()
   if (done) {

@@ -46,5 +46,5 @@ export const StatusChip = memo(
         {...rest}
       />
     )
-  }
+  },
 )

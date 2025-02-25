@@ -14,7 +14,7 @@ export const getSeriesMetadata = async (metadata: {
     return {
       type: "biblioreads",
       title: series?.data.title,
-      description: series?.data.desc
+      description: series?.data.desc,
     }
   } catch (e) {
     Logger.error(e)

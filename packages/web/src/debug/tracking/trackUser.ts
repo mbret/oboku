@@ -6,7 +6,7 @@ authStateSignal.subject.subscribe((auth) => {
     setUser({
       email: auth.email,
       id: auth.nameHex,
-      username: auth.dbName
+      username: auth.dbName,
     })
   } else {
     setUser(null)

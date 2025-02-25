@@ -3,7 +3,7 @@ import { Metadata } from "../types"
 import { GoogleBooksApiVolumesResponseData } from "@libs/google/googleBooksApi"
 
 export const parseGoogleMetadata = (
-  response: Pick<GoogleBooksApiVolumesResponseData, "items">
+  response: Pick<GoogleBooksApiVolumesResponseData, "items">,
 ): Omit<Metadata, "type"> => {
   let coverLink: string | undefined
 
@@ -39,7 +39,7 @@ export const parseGoogleMetadata = (
       coverLink,
       description: item.volumeInfo.description,
       formatType: item.volumeInfo.categories?.includes(
-        "Comics & Graphic Novels"
+        "Comics & Graphic Novels",
       )
         ? ["comics", "manga"]
         : ["audio", "book", "comics", "manga"],
@@ -49,7 +49,7 @@ export const parseGoogleMetadata = (
       title,
       publisher: item.volumeInfo.publisher,
       languages: [item.volumeInfo.language],
-      subjects: item.volumeInfo.categories
+      subjects: item.volumeInfo.categories,
     }
   }
 

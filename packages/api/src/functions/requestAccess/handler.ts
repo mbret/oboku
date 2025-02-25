@@ -13,14 +13,14 @@ const getGmailAppPassword = () => {
     .send(
       new GetParameterCommand({
         Name: `gmail-app-password`,
-        WithDecryption: true
-      })
+        WithDecryption: true,
+      }),
     )
     .then((value) => value.Parameter?.Value)
 }
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
-  event
+  event,
 ) => {
   if (!event.body.email) {
     throw createHttpError(400)
@@ -30,20 +30,20 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     service: "gmail",
     auth: {
       user: CONTACT_TO_ADDRESS,
-      pass: (await getGmailAppPassword()) ?? ``
-    }
+      pass: (await getGmailAppPassword()) ?? ``,
+    },
   })
 
   await transporter.sendMail({
     from: event.body.email,
     to: CONTACT_TO_ADDRESS,
     subject: "Request access for oboku",
-    text: event.body.email
+    text: event.body.email,
   })
 
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: `success` })
+    body: JSON.stringify({ message: `success` }),
   }
 }
 

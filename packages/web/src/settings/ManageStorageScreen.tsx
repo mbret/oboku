@@ -11,12 +11,12 @@ import {
   useTheme,
   Button,
   Divider,
-  ListItemButton
+  ListItemButton,
 } from "@mui/material"
 import {
   DeleteRounded,
   ImageRounded,
-  StorageRounded
+  StorageRounded,
 } from "@mui/icons-material"
 import { useStorageUse } from "./useStorageUse"
 import { BookList } from "../books/bookList/BookList"
@@ -38,7 +38,7 @@ export const ManageStorageScreen = () => {
   const { data: visibleBooks } = useBooks()
   const visibleBookIds = useMemo(
     () => visibleBooks?.map((item) => item._id) ?? [],
-    [visibleBooks]
+    [visibleBooks],
   )
   const { quotaUsed, quotaInGb, usedInMb, covers, coversWightInMb } =
     useStorageUse([books])
@@ -51,17 +51,17 @@ export const ManageStorageScreen = () => {
   const theme = useTheme()
   const bookIdsToDisplay = useMemo(
     () => bookIds.filter((id) => visibleBookIds?.includes(id)),
-    [bookIds, visibleBookIds]
+    [bookIds, visibleBookIds],
   )
   const { mutate: removeAllDownloads } = useRemoveAllDownloads({
     onSuccess: () => {
       refetchDownloadedFilesInfo()
-    }
+    },
   })
 
   const removeExtraBooks = useCallback(() => {
     Promise.all(
-      extraDownloadFilesIds.map((id) => removeDownloadFile({ bookId: id }))
+      extraDownloadFilesIds.map((id) => removeDownloadFile({ bookId: id })),
     )
       .then(() => refetchDownloadedFilesInfo())
       .catch(Report.error)
@@ -71,9 +71,9 @@ export const ManageStorageScreen = () => {
     (id: string) =>
       bookActionDrawerSignal.setValue({
         openedWith: id,
-        actions: ["removeDownload"]
+        actions: ["removeDownload"],
       }),
-    []
+    [],
   )
 
   useEffect(() => {
@@ -154,7 +154,7 @@ export const ManageStorageScreen = () => {
         withBookActions={false}
         style={{
           height: "100%",
-          overflow: "hidden"
+          overflow: "hidden",
         }}
         onItemClick={onItemClick}
       />

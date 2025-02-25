@@ -14,6 +14,6 @@ export const useWithNetwork = () => {
 
           throw new OfflineError()
         }
-      })
+      }),
     )
 }

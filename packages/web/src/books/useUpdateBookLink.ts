@@ -10,7 +10,7 @@ export const useUpsertBookLink = ({ onSuccess }: { onSuccess: () => void }) => {
     mutationFn: ({
       bookId,
       linkResourceId,
-      linkType
+      linkType,
     }: {
       bookId: string
       linkResourceId: string
@@ -24,9 +24,9 @@ export const useUpsertBookLink = ({ onSuccess }: { onSuccess: () => void }) => {
         upsertLink({
           bookId,
           resourceId: linkResourceId,
-          type: linkType
-        })
+          type: linkType,
+        }),
       )
-    }
+    },
   })
 }

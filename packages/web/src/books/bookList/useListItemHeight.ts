@@ -4,7 +4,7 @@ import { useWindowSize } from "react-use"
 
 export const useListItemHeight = ({
   viewMode,
-  density
+  density,
 }: {
   viewMode: ListActionViewMode
   density: "large" | "dense"

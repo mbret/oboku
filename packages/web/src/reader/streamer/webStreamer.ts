@@ -3,7 +3,7 @@ import { getBookFile } from "../../download/getBookFile.shared"
 import {
   getArchiveForRarFile,
   getArchiveForZipFile,
-  isRarFile
+  isRarFile,
 } from "./archives.shared"
 import { StreamerFileNotFoundError } from "../../errors/errors.shared"
 import { onResourceError } from "./onResourceError.shared"
@@ -27,5 +27,5 @@ export const webStreamer = new Streamer({
     return archive
   },
   onError: onResourceError,
-  onManifestSuccess
+  onManifestSuccess,
 })

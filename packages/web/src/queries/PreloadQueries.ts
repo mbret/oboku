@@ -8,7 +8,7 @@ const usePrefetchAccountSettings = () => {
   const [prefetched, setPrefetched] = useState(false)
 
   const { data, status } = useSettings({
-    enabled: !prefetched
+    enabled: !prefetched,
   })
 
   const hasData = status === "success"

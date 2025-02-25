@@ -13,7 +13,7 @@ type ResponseWithFileBlob = DropboxResponse<files.FileMetadata> & {
 }
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
-  requestPopup
+  requestPopup,
 }) => {
   return ({ link }) => {
     return from(authUser({ requestPopup })).pipe(
@@ -22,8 +22,8 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
 
         return from(
           dropbox.filesDownload({
-            path: extractIdFromResourceId(link.resourceId)
-          })
+            path: extractIdFromResourceId(link.resourceId),
+          }),
         ).pipe(
           map((response: ResponseWithFileBlob) => {
             if (!response.result.fileBlob) {
@@ -32,11 +32,11 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
 
             return {
               data: response.result.fileBlob,
-              name: response.result.name
+              name: response.result.name,
             }
-          })
+          }),
         )
-      })
+      }),
     )
   }
 }

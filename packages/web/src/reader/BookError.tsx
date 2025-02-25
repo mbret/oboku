@@ -6,13 +6,13 @@ import { StreamerFileNotSupportedError } from "../errors/errors.shared"
 
 export const BookError = ({
   manifestError,
-  bookId
+  bookId,
 }: {
   manifestError: unknown
   bookId: string
 }) => {
   const { data: book } = useBook({
-    id: bookId
+    id: bookId,
   })
   const metadata = getMetadataFromBook(book)
   const navigate = useNavigate()
@@ -29,7 +29,7 @@ export const BookError = ({
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
-          flexDirection: "column"
+          flexDirection: "column",
         }}
       >
         <Box mb={2}>
@@ -65,7 +65,7 @@ export const BookError = ({
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        flexDirection: "column"
+        flexDirection: "column",
       }}
     >
       <Box mb={2}>

@@ -8,7 +8,7 @@ export const useContinueReadingBooks = () => {
   const { isPending } = useProtectedTagIds()
 
   const { data: booksAsArray, isLoading: isBooksPending } = useBooks({
-    isNotInterested: "none"
+    isNotInterested: "none",
   })
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "activity")
 
@@ -18,24 +18,24 @@ export const useContinueReadingBooks = () => {
         booksSortedByDate
           .filter(
             (book) =>
-              book.readingStateCurrentState === ReadingStateState.Reading
+              book.readingStateCurrentState === ReadingStateState.Reading,
           )
           .map((item) => item._id),
-      [booksSortedByDate]
+      [booksSortedByDate],
     ),
-    isPending: isPending || isBooksPending
+    isPending: isPending || isBooksPending,
   }
 }
 
 export const useRecentlyAddedBooks = () => {
   const { data: booksAsArray } = useBooks({
-    isNotInterested: "none"
+    isNotInterested: "none",
   })
 
   return useMemo(() => {
     // descend
     const booksSortedByDate = [...(booksAsArray ?? [])].sort((a, b) =>
-      a.createdAt < b.createdAt ? 1 : -1
+      a.createdAt < b.createdAt ? 1 : -1,
     )
 
     return booksSortedByDate.slice(0, 15).map((book) => book._id)

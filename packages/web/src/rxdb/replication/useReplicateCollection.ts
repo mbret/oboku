@@ -7,7 +7,7 @@ import { useMutation } from "@tanstack/react-query"
 export const useReplicateCollection = <
   Collection extends RxCollection<RxDocumentType>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  RxDocumentType = any
+  RxDocumentType = any,
 >() => {
   return useMutation({
     mutationFn: async ({
@@ -18,7 +18,7 @@ export const useReplicateCollection = <
     >[0]) => {
       const state = replicateCouchDBCollection({
         ...params,
-        collection
+        collection,
       })
 
       const id = Date.now()
@@ -28,12 +28,12 @@ export const useReplicateCollection = <
 
       // emits each document that was received from the remote
       state.received$.subscribe((doc) =>
-        Report.info(`[replication]`, replicationId, `pull`, doc._id, doc)
+        Report.info(`[replication]`, replicationId, `pull`, doc._id, doc),
       )
 
       // emits each document that was send to the remote
       state.sent$.subscribe((doc) =>
-        Report.info(`[replication]`, replicationId, `push`, doc._id, doc)
+        Report.info(`[replication]`, replicationId, `push`, doc._id, doc),
       )
 
       // emits all errors that happen when running the push- & pull-handlers.
@@ -71,6 +71,6 @@ export const useReplicateCollection = <
       })
 
       return state
-    }
+    },
   })
 }

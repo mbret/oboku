@@ -2,7 +2,7 @@ export default {
   type: "object",
   properties: {
     collectionId: { type: "string" },
-    soft: { type: "boolean" }
+    soft: { type: "boolean" },
   },
-  required: ["collectionId"]
+  required: ["collectionId"],
 } as const

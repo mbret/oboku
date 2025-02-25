@@ -9,7 +9,7 @@ export const useCollectionReadingProgress = ({ id }: { id: string }) => {
     books?.reduce(
       (acc, item) =>
         acc + (item.readingStateCurrentBookmarkProgressPercent ?? 0),
-      0
+      0,
     ) ?? 0
 
   return totalProgressPercent / (books?.length || 1)

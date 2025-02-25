@@ -8,9 +8,7 @@
   "engines": {
     "node": "20.x"
   },
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "start:web": "lerna run start --scope=@oboku/web",
     "start:landing": "lerna run dev --scope=@oboku/landing",
@@ -21,8 +19,8 @@
     "build:landing": "lerna run build --scope=@oboku/landing",
     "test": "lerna run test",
     "tsc": "lerna run tsc",
-    "format": "prettier -w . && lerna run format",
-    "lint": "lerna run lint",
+    "format": "npx @biomejs/biome format --write .",
+    "lint": "npx @biomejs/biome check . && lerna run lint",
     "postinstall": "npx ts-node scripts/installSharp.ts --project scripts/tsconfig.json --platform darwin"
   },
   "devDependencies": {
@@ -33,11 +31,9 @@
     "@typescript-eslint/parser": "^7.0.2",
     "esbuild": "^0.20.2",
     "eslint": "^8.57.0",
-    "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "lerna": "^8.1.4",
-    "prettier": "^3.3.2",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "rollup-plugin-analyzer": "^4.0.0",

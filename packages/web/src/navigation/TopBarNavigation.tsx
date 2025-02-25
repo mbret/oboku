@@ -7,7 +7,7 @@ import {
   ArrowBackIosRounded,
   LockOpenRounded,
   MoreVertRounded,
-  Search
+  Search,
 } from "@mui/icons-material"
 import { alpha, Box, InputBase, styled, useTheme } from "@mui/material"
 import { useSafeGoBack } from "./useSafeGoBack"
@@ -20,8 +20,8 @@ const SearchInput = styled(InputBase)(({ theme }) => ({
   ".MuiInputBase-input": {
     padding: theme.spacing(1, 1, 1, 0),
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    width: "100%"
-  }
+    width: "100%",
+  },
 }))
 
 export const TopBarNavigation: FC<
@@ -53,7 +53,7 @@ export const TopBarNavigation: FC<
   }) => {
     const isLibraryUnlocked = useSignalValue(
       libraryStateSignal,
-      ({ isLibraryUnlocked }) => isLibraryUnlocked
+      ({ isLibraryUnlocked }) => isLibraryUnlocked,
     )
     const theme = useTheme()
     const { goBack } = useSafeGoBack()
@@ -94,10 +94,10 @@ export const TopBarNavigation: FC<
                     borderRadius: 1,
                     backgroundColor: alpha(theme.palette.common.white, 0.15),
                     "&:hover": {
-                      backgroundColor: alpha(theme.palette.common.white, 0.25)
+                      backgroundColor: alpha(theme.palette.common.white, 0.25),
                     },
                     marginLeft: 0,
-                    width: "100%"
+                    width: "100%",
                   }}
                   onClick={() => {
                     navigate(ROUTES.SEARCH)
@@ -111,7 +111,7 @@ export const TopBarNavigation: FC<
                       pointerEvents: "none",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center"
+                      justifyContent: "center",
                     }}
                   >
                     <Search />
@@ -120,7 +120,7 @@ export const TopBarNavigation: FC<
                     placeholder="Searchs"
                     readOnly
                     sx={{
-                      color: "inherit"
+                      color: "inherit",
                     }}
                     inputProps={{ "aria-label": "search" }}
                   />
@@ -134,7 +134,7 @@ export const TopBarNavigation: FC<
                   onClick={() => {
                     libraryStateSignal.setValue((state) => ({
                       ...state,
-                      isLibraryUnlocked: false
+                      isLibraryUnlocked: false,
                     }))
                   }}
                   size="large"
@@ -154,5 +154,5 @@ export const TopBarNavigation: FC<
         </Toolbar>
       </AppBar>
     )
-  }
+  },
 )

@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField
+  TextField,
 } from "@mui/material"
 import { FC, useEffect } from "react"
 import { useValidateAppPassword } from "../settings/helpers"
@@ -30,7 +30,7 @@ const actionSignal = signal<
 export const authorizeAction = (action: () => void, onCancel?: () => void) =>
   actionSignal.setValue({
     action,
-    onCancel
+    onCancel,
   })
 
 export function useWithAuthorization() {
@@ -43,13 +43,13 @@ export function useWithAuthorization() {
             settings?.contentPassword
               ? from(
                   new Promise<void>((resolve, reject) =>
-                    authorizeAction(resolve, () => reject(new CancelError()))
-                  )
+                    authorizeAction(resolve, () => reject(new CancelError())),
+                  ),
                 ).pipe(map(() => data))
-              : of(data)
-          )
-        )
-      )
+              : of(data),
+          ),
+        ),
+      ),
     )
   }
 }
@@ -59,8 +59,8 @@ export const AuthorizeActionDialog: FC<{}> = () => {
   const open = !!action
   const { control, handleSubmit, setFocus, setError, reset } = useForm<Inputs>({
     defaultValues: {
-      password: ""
-    }
+      password: "",
+    },
   })
 
   const { mutate: validatePassword, reset: resetValidatePasswordMutation } =
@@ -71,9 +71,9 @@ export const AuthorizeActionDialog: FC<{}> = () => {
       },
       onError: () => {
         setError("password", {
-          message: "Invalid"
+          message: "Invalid",
         })
-      }
+      },
     })
 
   const onClose = () => {

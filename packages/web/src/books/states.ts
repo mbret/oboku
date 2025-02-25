@@ -3,7 +3,7 @@ import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
 import { getLinkState, useLink, useLinks } from "../links/states"
 import {
   getBookDownloadsState,
-  booksDownloadStateSignal
+  booksDownloadStateSignal,
 } from "../download/states"
 import { useCollections } from "../collections/useCollections"
 import { map, switchMap } from "rxjs"
@@ -21,7 +21,7 @@ export const useBooks = ({
   queryObj = {},
   isNotInterested,
   ids,
-  includeProtected: _includeProtected
+  includeProtected: _includeProtected,
 }: {
   queryObj?: MangoQuery<BookDocType>
   isNotInterested?: "none" | "with" | "only"
@@ -39,7 +39,7 @@ export const useBooks = ({
       "many",
       "books",
       { isNotInterested, serializedIds, includeProtected },
-      queryObj
+      queryObj,
     ],
     queryFn: () => {
       return latestDatabase$.pipe(
@@ -49,20 +49,20 @@ export const useBooks = ({
             includeProtected,
             ids,
             isNotInterested,
-            queryObj
-          })
+            queryObj,
+          }),
         ),
         map((items) => {
           return items.map((item) => item.toJSON())
-        })
+        }),
       )
-    }
+    },
   })
 }
 
 export const useBook = ({
   id,
-  enabled = true
+  enabled = true,
 }: {
   id?: string
   enabled?: boolean
@@ -75,14 +75,14 @@ export const useBook = ({
         switchMap((db) =>
           observeBook({
             db,
-            queryObj: id
-          })
+            queryObj: id,
+          }),
         ),
         map((value) => {
           return value?.toJSON() ?? null
-        })
+        }),
       )
-    }
+    },
   })
 }
 
@@ -90,7 +90,7 @@ export type BookQueryResult = NonNullable<ReturnType<typeof useBook>["data"]>
 
 const isBookProtected = (
   protectedTags: string[],
-  book: Pick<DeepReadonlyObject<BookDocType>, "tags">
+  book: Pick<DeepReadonlyObject<BookDocType>, "tags">,
 ) => intersection(protectedTags, book?.tags || []).length > 0
 
 /**
@@ -99,7 +99,7 @@ const isBookProtected = (
 const getBookState = ({
   collections,
   book,
-  tags = {}
+  tags = {},
 }: {
   collections: CollectionDocType[] | undefined
   book?: BookQueryResult | null
@@ -110,9 +110,9 @@ const getBookState = ({
   return {
     ...book,
     collections: book?.collections.filter(
-      (id) => !!collections?.find(({ _id }) => _id === id)
+      (id) => !!collections?.find(({ _id }) => _id === id),
     ),
-    tags: book?.tags.filter((id) => !!tags[id])
+    tags: book?.tags.filter((id) => !!tags[id]),
   }
 }
 
@@ -126,7 +126,7 @@ export const getEnrichedBookState = ({
   normalizedLinks,
   normalizedCollections,
   book,
-  bookId
+  bookId,
 }: {
   normalizedBookDownloadsState: ReturnType<
     typeof booksDownloadStateSignal.getValue
@@ -141,11 +141,11 @@ export const getEnrichedBookState = ({
   const enrichedBook = getBookState({
     book,
     tags,
-    collections: normalizedCollections
+    collections: normalizedCollections,
   })
   const downloadState = getBookDownloadsState({
     bookId,
-    normalizedBookDownloadsState
+    normalizedBookDownloadsState,
   })
 
   const linkId = enrichedBook?.links[0]
@@ -160,14 +160,14 @@ export const getEnrichedBookState = ({
     ...enrichedBook,
     ...(downloadState || {}),
     isLocal,
-    isProtected: isBookProtected(protectedTagIds, enrichedBook)
+    isProtected: isBookProtected(protectedTagIds, enrichedBook),
   }
 }
 
 export const useIsBookLocal = ({ id }: { id?: string }) => {
   const { data: book } = useBook({ id })
   const { data: link } = useLink({
-    id: book?.links[0]
+    id: book?.links[0],
   })
 
   const isLocal = link && link?.type === localPlugin.type
@@ -176,10 +176,10 @@ export const useIsBookLocal = ({ id }: { id?: string }) => {
 }
 
 export const useIsBookProtected = (
-  book?: Parameters<typeof isBookProtected>[1] | null
+  book?: Parameters<typeof isBookProtected>[1] | null,
 ) => {
   const { data: protectedTagIds, ...rest } = useProtectedTagIds({
-    enabled: !!book
+    enabled: !!book,
   })
 
   return {
@@ -187,7 +187,7 @@ export const useIsBookProtected = (
     data:
       protectedTagIds && book
         ? isBookProtected(protectedTagIds, book)
-        : undefined
+        : undefined,
   }
 }
 
@@ -198,7 +198,7 @@ export const useEnrichedBookState = ({
   bookId,
   normalizedBookDownloadsState,
   protectedTagIds,
-  tags
+  tags,
 }: {
   bookId: string
   normalizedBookDownloadsState: ReturnType<
@@ -220,7 +220,7 @@ export const useEnrichedBookState = ({
         protectedTagIds,
         tags,
         normalizedLinks,
-        normalizedCollections
+        normalizedCollections,
       }),
     [
       normalizedLinks,
@@ -229,8 +229,8 @@ export const useEnrichedBookState = ({
       protectedTagIds,
       tags,
       book,
-      bookId
-    ]
+      bookId,
+    ],
   )
 }
 
@@ -238,7 +238,7 @@ export const useEnrichedBookState = ({
  * @deprecated
  */
 export const useBooksAsArrayState = ({
-  normalizedBookDownloadsState
+  normalizedBookDownloadsState,
 }: {
   normalizedBookDownloadsState: ReturnType<
     typeof booksDownloadStateSignal.getValue
@@ -249,7 +249,7 @@ export const useBooksAsArrayState = ({
   const { data: visibleBooks } = useBooks()
   const visibleBookIds = useMemo(
     () => visibleBooks?.map((item) => item._id) ?? [],
-    [visibleBooks]
+    [visibleBooks],
   )
 
   const bookResult: (BookQueryResult & {
@@ -260,7 +260,7 @@ export const useBooksAsArrayState = ({
     data: visibleBookIds.reduce((acc, id) => {
       const downloadState = getBookDownloadsState({
         bookId: id,
-        normalizedBookDownloadsState
+        normalizedBookDownloadsState,
       })
 
       const book = books?.find((book) => book._id === id)
@@ -271,10 +271,10 @@ export const useBooksAsArrayState = ({
         ...acc,
         {
           ...book,
-          downloadState
-        }
+          downloadState,
+        },
       ]
     }, bookResult),
-    isPending
+    isPending,
   }
 }

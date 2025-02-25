@@ -32,7 +32,7 @@ export const HomeScreen = memo(() => {
               padding: theme.spacing(5),
               alignItems: "center",
               display: "flex",
-              flexFlow: "column"
+              flexFlow: "column",
             }}
           >
             <img
@@ -42,7 +42,7 @@ export const HomeScreen = memo(() => {
                 width: "100%",
                 maxHeight: 300,
                 objectFit: "contain",
-                paddingBottom: theme.spacing(3)
+                paddingBottom: theme.spacing(3),
               }}
             />
             <Typography

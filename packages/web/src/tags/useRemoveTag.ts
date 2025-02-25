@@ -8,7 +8,7 @@ export const useRemoveTag = () => {
       latestDatabase$.pipe(
         first(),
         switchMap((db) => from(db.obokucollection.findOne(_id).exec())),
-        switchMap((item) => (item ? from(item.incrementalRemove()) : of(null)))
-      )
+        switchMap((item) => (item ? from(item.incrementalRemove()) : of(null))),
+      ),
   })
 }

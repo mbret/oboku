@@ -42,7 +42,7 @@ const lambda = async (event: APIGatewayProxyEvent) => {
       method: event.httpMethod,
       signal: controller.signal,
       body: hasBody ? bodyStr : undefined,
-      headers: headers as any
+      headers: headers as any,
     })
     console.log(`Got response from ${url} ---> {statusCode: ${res.status}}`)
 
@@ -72,10 +72,10 @@ const lambda = async (event: APIGatewayProxyEvent) => {
         // 'content-length': res.headers.get('content-length') || ``,
         "Content-Length": bodyBuffer.byteLength,
         "Access-Control-Allow-Origin": "*", // Required for CORS support to work
-        "Access-Control-Allow-Credentials": true // Required for cookies, authorization headers with HTTPS
+        "Access-Control-Allow-Credentials": true, // Required for cookies, authorization headers with HTTPS
       },
       body: bodyBuffer.toString("base64"),
-      isBase64Encoded: true
+      isBase64Encoded: true,
     }
   } catch (e) {
     if (e instanceof AbortError) {

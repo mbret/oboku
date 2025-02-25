@@ -8,11 +8,11 @@ import {
   of,
   skip,
   switchMap,
-  throttleTime
+  throttleTime,
 } from "rxjs"
 import {
   READER_NOTIFICATION_THROTTLE_TIME,
-  READER_NOTIFICATION_TIME_TO_SCREEN
+  READER_NOTIFICATION_TIME_TO_SCREEN,
 } from "../../constants.web"
 import { reader$ } from "../states"
 import { useQuery$ } from "reactjrx"
@@ -34,24 +34,24 @@ const useNotification = () =>
             skip(1),
             map(
               (fontScale): Notification => ({
-                message: `Font scale changed to ${fontScale.toFixed(2)}`
-              })
-            )
+                message: `Font scale changed to ${fontScale.toFixed(2)}`,
+              }),
+            ),
           )
 
           return fontChangeNotification$
         }),
         throttleTime(READER_NOTIFICATION_THROTTLE_TIME, undefined, {
           leading: false,
-          trailing: true
+          trailing: true,
         }),
         switchMap((notification) =>
           merge(
             of(notification),
-            of(undefined).pipe(delay(READER_NOTIFICATION_TIME_TO_SCREEN))
-          )
-        )
-      )
+            of(undefined).pipe(delay(READER_NOTIFICATION_TIME_TO_SCREEN)),
+          ),
+        ),
+      ),
   })
 
 export const Notification = memo(() => {

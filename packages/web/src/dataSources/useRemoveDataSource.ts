@@ -23,14 +23,14 @@ export const useRemoveDataSource = () => {
             {
               title: "Yes",
               type: "confirm",
-              onConfirm: () => true
+              onConfirm: () => true,
             },
             {
               title: "No",
               type: "confirm",
-              onConfirm: () => false
-            }
-          ]
+              onConfirm: () => false,
+            },
+          ],
         }),
         mergeMap(([[db], deleteBooks]) =>
           observeDataSourceById(db, id).pipe(
@@ -51,21 +51,21 @@ export const useRemoveDataSource = () => {
                         : from(
                             removeBook({
                               id: link.book,
-                              deleteFromDataSource: false
-                            })
-                          )
+                              deleteFromDataSource: false,
+                            }),
+                          ),
                     )
 
                     return combineLatest([dataSourceDelete$, ...booksDelete$])
-                  })
+                  }),
                 )
               }
 
               return dataSourceDelete$
-            })
-          )
+            }),
+          ),
         ),
-        withUnknownErrorDialog()
-      )
+        withUnknownErrorDialog(),
+      ),
   })
 }

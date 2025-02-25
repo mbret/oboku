@@ -3,7 +3,7 @@ export default {
   properties: {
     dataSourceId: { type: "string" },
     credentials: { type: `string` },
-    authorization: { type: `string` }
+    authorization: { type: `string` },
   },
-  required: []
+  required: [],
 } as const

@@ -15,7 +15,7 @@ export const SelectableCollectionListItem: FC<{
   return (
     <ListItemButton
       sx={{
-        height: `100%`
+        height: `100%`,
       }}
       onClick={() => data && onItemClick && onItemClick(data?._id)}
     >

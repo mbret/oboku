@@ -12,7 +12,7 @@ export const getFirebaseApp = () => {
   if (app) return app
 
   const firebaseConfig = JSON.parse(
-    Buffer.from(process.env.FIREBASE_CONFIG ?? "", "base64").toString() ?? "{}"
+    Buffer.from(process.env.FIREBASE_CONFIG ?? "", "base64").toString() ?? "{}",
   )
 
   /**

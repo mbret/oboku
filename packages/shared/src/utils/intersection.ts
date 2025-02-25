@@ -16,6 +16,6 @@ export function intersection<T>(
   // Iterate through each element of the first array
   return Array.from(uniqueValues).filter((item) =>
     // Check if the item is included in all other arrays
-    restArrays.every((arr) => arr.includes(item))
+    restArrays.every((arr) => arr.includes(item)),
   )
 }

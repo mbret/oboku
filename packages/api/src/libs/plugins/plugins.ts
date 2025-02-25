@@ -10,5 +10,5 @@ export const plugins: DataSourcePlugin[] = [
   dropboxDataSource,
   urlDataSource,
   nhentaiPlugin,
-  filePlugin
+  filePlugin,
 ]

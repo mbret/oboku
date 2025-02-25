@@ -6,22 +6,22 @@ import { supabase } from "@libs/supabase/client"
 import { withMiddy } from "@libs/middy/withMiddy"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
-  event
+  event,
 ) => {
   const authorization = event.headers.authorization ?? ``
 
   const [jwtPrivateKey = ``] = await getParametersValue({
     Names: ["jwt-private-key"],
-    WithDecryption: true
+    WithDecryption: true,
   })
 
   const { name } = await getAuthTokenAsync(
     {
       headers: {
-        authorization
-      }
+        authorization,
+      },
     },
-    jwtPrivateKey
+    jwtPrivateKey,
   )
 
   const reportsResponse = await supabase
@@ -31,10 +31,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   return {
     statusCode: 200,
-    body: JSON.stringify(reportsResponse.data || [])
+    body: JSON.stringify(reportsResponse.data || []),
   }
 }
 
 export const main = withMiddy(lambda, {
-  withJsonBodyParser: false
+  withJsonBodyParser: false,
 })

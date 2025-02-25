@@ -9,8 +9,8 @@ export default {
         method: "get",
         path: "cors",
         // handle preflight cors
-        cors: true
-      }
-    }
-  ]
+        cors: true,
+      },
+    },
+  ],
 }

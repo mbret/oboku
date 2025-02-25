@@ -20,7 +20,7 @@ const fullScreenModes: Record<
 > = {
   automatic: "Automatic (based on device)",
   always: "Always",
-  never: "Never"
+  never: "Never",
 }
 
 const showCollectionWithProtectedContentLabels: Record<
@@ -28,7 +28,7 @@ const showCollectionWithProtectedContentLabels: Record<
   string
 > = {
   unlocked: "Only when unlocked (safe)",
-  hasNormalContent: "Yes (unsafe)"
+  hasNormalContent: "Yes (unsafe)",
 }
 
 export const SettingsScreen = memo(() => {
@@ -53,7 +53,7 @@ export const SettingsScreen = memo(() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
                 hideDirectivesFromCollectionName:
-                  !old.hideDirectivesFromCollectionName
+                  !old.hideDirectivesFromCollectionName,
               }))
             }}
             checked={localSettings.hideDirectivesFromCollectionName}
@@ -70,7 +70,7 @@ export const SettingsScreen = memo(() => {
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
-                showSensitiveDataSources: !old.showSensitiveDataSources
+                showSensitiveDataSources: !old.showSensitiveDataSources,
               }))
             }}
             checked={localSettings.showSensitiveDataSources}
@@ -96,7 +96,7 @@ export const SettingsScreen = memo(() => {
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
-                unBlurWhenProtectedVisible: !old.unBlurWhenProtectedVisible
+                unBlurWhenProtectedVisible: !old.unBlurWhenProtectedVisible,
               }))
             }}
             checked={localSettings.unBlurWhenProtectedVisible}
@@ -130,7 +130,7 @@ export const SettingsScreen = memo(() => {
             onClick={() => {
               localSettingsSignal.setValue((old) => ({
                 ...old,
-                useOptimizedTheme: !old.useOptimizedTheme
+                useOptimizedTheme: !old.useOptimizedTheme,
               }))
             }}
             checked={localSettings.useOptimizedTheme}
@@ -146,7 +146,7 @@ export const SettingsScreen = memo(() => {
         <List>
           {(
             Object.keys(
-              fullScreenModes
+              fullScreenModes,
             ) as LocalSettings["readingFullScreenSwitchMode"][]
           ).map((text) => (
             <ListItemButton
@@ -154,7 +154,7 @@ export const SettingsScreen = memo(() => {
               onClick={() => {
                 localSettingsSignal.setValue((old) => ({
                   ...old,
-                  readingFullScreenSwitchMode: text
+                  readingFullScreenSwitchMode: text,
                 }))
                 setIsDrawerOpened(false)
               }}
@@ -170,7 +170,7 @@ export const SettingsScreen = memo(() => {
         onChoiceSelect={(value) => {
           localSettingsSignal.setValue((old) => ({
             ...old,
-            readingFullScreenSwitchMode: value
+            readingFullScreenSwitchMode: value,
           }))
           setIsDrawerOpened(false)
         }}
@@ -178,7 +178,7 @@ export const SettingsScreen = memo(() => {
         anchor="bottom"
         choices={(
           Object.keys(
-            fullScreenModes
+            fullScreenModes,
           ) as LocalSettings["readingFullScreenSwitchMode"][]
         ).map((key) => ({ value: key, label: fullScreenModes[key] }))}
       />
@@ -188,7 +188,7 @@ export const SettingsScreen = memo(() => {
         onChoiceSelect={(value) => {
           localSettingsSignal.setValue((old) => ({
             ...old,
-            showCollectionWithProtectedContent: value
+            showCollectionWithProtectedContent: value,
           }))
           setIsShowCollectionDrawerOpened(false)
         }}
@@ -196,11 +196,11 @@ export const SettingsScreen = memo(() => {
         selected={localSettings.showCollectionWithProtectedContent}
         choices={(
           Object.keys(
-            showCollectionWithProtectedContentLabels
+            showCollectionWithProtectedContentLabels,
           ) as LocalSettings["showCollectionWithProtectedContent"][]
         ).map((key) => ({
           value: key,
-          label: showCollectionWithProtectedContentLabels[key]
+          label: showCollectionWithProtectedContentLabels[key],
         }))}
       />
     </>
@@ -230,7 +230,7 @@ const MultipleChoiceDrawer = <Choice extends { value: string; label: string }>({
             <ListItemText
               primary={label}
               {...(selected === value && {
-                secondary: `selected`
+                secondary: `selected`,
               })}
             />
           </ListItemButton>

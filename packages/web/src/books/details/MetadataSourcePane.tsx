@@ -5,14 +5,14 @@ import {
   ListItemText,
   ListSubheader,
   Stack,
-  Typography
+  Typography,
 } from "@mui/material"
 import {
   Google,
   InsertLinkOutlined,
   MoreVertRounded,
   PersonOutlineOutlined,
-  PlagiarismOutlined
+  PlagiarismOutlined,
 } from "@mui/icons-material"
 import { FC } from "react"
 import { useBook } from "../states"
@@ -28,7 +28,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
     "user",
     "file",
     "googleBookApi",
-    "link"
+    "link",
   ]
 
   return (
@@ -38,7 +38,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
         subheader={
           <ListSubheader
             sx={{
-              px: [null, 3]
+              px: [null, 3],
             }}
           >
             Metadata Sources
@@ -51,7 +51,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
 
           const numberOfProperties = metadata
             ? Object.keys(metadata).filter(
-                (key) => metadata[key as keyof typeof metadata] !== undefined
+                (key) => metadata[key as keyof typeof metadata] !== undefined,
               ).length
             : 0
 
@@ -59,7 +59,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
             <ListItemButton
               key={type}
               sx={{
-                px: [null, 3]
+                px: [null, 3],
               }}
             >
               <ListItemIcon>
@@ -86,7 +86,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
                   </Typography>
                 }
                 secondaryTypographyProps={{
-                  component: "div"
+                  component: "div",
                 }}
                 secondary={
                   !numberOfProperties ? (

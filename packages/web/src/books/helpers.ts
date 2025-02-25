@@ -13,7 +13,7 @@ import { useLock } from "../common/BlockingBackdrop"
 import {
   CancelError,
   isPluginError,
-  OfflineError
+  OfflineError,
 } from "../errors/errors.shared"
 import { useMutation } from "@tanstack/react-query"
 
@@ -27,7 +27,7 @@ export const useRemoveBook = () => {
   return useMutation({
     mutationFn: async ({
       id,
-      deleteFromDataSource
+      deleteFromDataSource,
     }: {
       id: string
       deleteFromDataSource?: boolean
@@ -52,11 +52,11 @@ export const useRemoveBook = () => {
 
       await Promise.all([
         removeDownload({ bookId: id }),
-        db?.book.findOne({ selector: { _id: id } }).remove()
+        db?.book.findOne({ selector: { _id: id } }).remove(),
       ])
 
       unlock()
-    }
+    },
   })
 }
 
@@ -67,7 +67,7 @@ export const useRemoveTagFromBook = () => {
     mutationFn: async ({ _id, tagId }: { _id: string; tagId: string }) =>
       db?.book
         .findOne({ selector: { _id } })
-        .update({ $pullAll: { tags: [tagId] } })
+        .update({ $pullAll: { tags: [tagId] } }),
   })
 }
 
@@ -76,7 +76,9 @@ export const useAddTagToBook = () => {
 
   return useMutation({
     mutationFn: async ({ _id, tagId }: { _id: string; tagId: string }) =>
-      db?.book.findOne({ selector: { _id } }).update({ $push: { tags: tagId } })
+      db?.book
+        .findOne({ selector: { _id } })
+        .update({ $push: { tags: tagId } }),
   })
 }
 
@@ -86,14 +88,14 @@ export const useAddCollectionToBook = () => {
   return useMutation({
     mutationFn: async ({
       _id,
-      collectionId
+      collectionId,
     }: {
       _id: string
       collectionId: string
     }) =>
       db?.book
         .findOne({ selector: { _id } })
-        .update({ $push: { collections: collectionId } })
+        .update({ $push: { collections: collectionId } }),
   })
 }
 
@@ -103,14 +105,14 @@ export const useRemoveCollectionFromBook = () => {
   return useMutation({
     mutationFn: async ({
       _id,
-      collectionId
+      collectionId,
     }: {
       _id: string
       collectionId: string
     }) =>
       db?.book
         .findOne({ selector: { _id } })
-        .update({ $pullAll: { collections: [collectionId] } })
+        .update({ $pullAll: { collections: [collectionId] } }),
   })
 }
 
@@ -125,7 +127,7 @@ export const useAddBook = () => {
 
   const addBook = async ({
     book,
-    link
+    link,
   }: {
     book?: Partial<Parameters<NonNullable<typeof database>["book"]["post"]>[0]>
     link: Parameters<NonNullable<typeof database>["link"]["safeInsert"]>[0]
@@ -149,7 +151,7 @@ export const useAddBook = () => {
           collections: [],
           modifiedAt: null,
           isAttachedToDataSource: false,
-          ...rest
+          ...rest,
         })
 
         refreshMetadata(newBook._id)
@@ -166,7 +168,7 @@ export const useAddBook = () => {
 
 export const useBookIdsSortedBy = (
   ids: string[],
-  sorting: "date" | "activity" | "alpha" | undefined
+  sorting: "date" | "activity" | "alpha" | undefined,
 ) => {
   const { data: books } = useBooks()
 
@@ -181,14 +183,14 @@ export const useBookIdsSortedBy = (
 
 export const useBooksSortedBy = (
   books: BookQueryResult[] | undefined,
-  sorting: "date" | "activity" | "alpha" | undefined
+  sorting: "date" | "activity" | "alpha" | undefined,
 ) => {
   return useMemo(() => sortBooksBy(books ?? [], sorting), [books, sorting])
 }
 
 const sortBooksBy = (
   books: BookQueryResult[],
-  sorting: "date" | "activity" | "alpha" | undefined
+  sorting: "date" | "activity" | "alpha" | undefined,
 ) => {
   switch (sorting) {
     case "date": {
@@ -210,8 +212,8 @@ const sortBooksBy = (
       return books.sort((a, b) =>
         sortByTitleComparator(
           getMetadataFromBook(a).title || "",
-          getMetadataFromBook(b).title || ""
-        )
+          getMetadataFromBook(b).title || "",
+        ),
       )
     }
     default:

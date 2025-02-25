@@ -8,7 +8,7 @@ export const useIncrementalBookPatch = () =>
   useMutation$({
     mutationFn: ({
       doc,
-      patch
+      patch,
     }: {
       doc: RxDocument<BookDocType> | string
       patch: Partial<BookDocType>
@@ -17,12 +17,12 @@ export const useIncrementalBookPatch = () =>
         mergeMap((db) =>
           typeof doc === "string"
             ? from(db.book.findOne({ selector: { _id: doc } }).exec())
-            : of(doc)
+            : of(doc),
         ),
         mergeMap((item) => {
           if (!item) return of(null)
 
           return from(item.incrementalPatch(patch))
-        })
-      )
+        }),
+      ),
   })

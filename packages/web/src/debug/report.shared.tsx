@@ -24,7 +24,7 @@ export const Report = {
   },
   captureMessage: (
     message: string,
-    captureContext?: Parameters<typeof captureMessage>[1]
+    captureContext?: Parameters<typeof captureMessage>[1],
   ) => {
     captureMessage(message, captureContext)
   },
@@ -36,7 +36,7 @@ export const Report = {
   },
   metric: (
     performanceEntry: PerformanceEntry | { name: string; duration: number },
-    targetDuration = Infinity
+    targetDuration = Infinity,
   ) => {
     const duration =
       typeof performanceEntry === "number"
@@ -47,13 +47,13 @@ export const Report = {
         // eslint-disable-next-line no-console
         console.log(
           `[oboku:metric] `,
-          `${performanceEntry.name} took ${duration}ms (${duration / 1000})s`
+          `${performanceEntry.name} took ${duration}ms (${duration / 1000})s`,
         )
       } else {
         // eslint-disable-next-line no-console
         console.warn(
           `[oboku:metric] `,
-          `${performanceEntry.name} took ${performanceEntry.duration}ms which is above the ${targetDuration}ms target for this function`
+          `${performanceEntry.name} took ${performanceEntry.duration}ms which is above the ${targetDuration}ms target for this function`,
         )
       }
     }
@@ -62,7 +62,7 @@ export const Report = {
   measurePerformance: <F extends (...args: any[]) => any>(
     name: string,
     targetDuration = 10,
-    functionToMeasure: F
+    functionToMeasure: F,
   ) => {
     return (...args: Parameters<F>): ReturnType<F> => {
       const t0 = performance.now()
@@ -83,5 +83,5 @@ export const Report = {
 
       return response
     }
-  }
+  },
 }

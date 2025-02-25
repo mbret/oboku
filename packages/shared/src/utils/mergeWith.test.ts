@@ -18,7 +18,7 @@ it("should merge simple objects from source to destination", () => {
   const result = mergeWith(
     { a: 1, b: 2, c: undefined, d: 5 },
     { b: 3, c: 4, d: undefined },
-    () => undefined
+    () => undefined,
   )
   expect(result).toEqual({ a: 1, b: 3, c: 4, d: 5 })
 })

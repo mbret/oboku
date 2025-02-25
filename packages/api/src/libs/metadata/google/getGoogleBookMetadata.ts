@@ -1,11 +1,15 @@
 import { Metadata } from "../types"
-import { findByISBN, findByTitle, findByVolumeId } from "@libs/google/googleBooksApi"
+import {
+  findByISBN,
+  findByTitle,
+  findByVolumeId,
+} from "@libs/google/googleBooksApi"
 import { parseGoogleMetadata } from "./parseGoogleMetadata"
 import { refineTitle } from "../refineTitle"
 
 export const getGoogleBookMetadata = async (
   metadata: Metadata,
-  apiKey: string
+  apiKey: string,
 ): Promise<Metadata | undefined> => {
   let titleRefined = metadata.title ?? ""
   let response = metadata.isbn
@@ -20,7 +24,7 @@ export const getGoogleBookMetadata = async (
 
     console.log(
       `[getGoogleBookMetadata]`,
-      `was unable to find result for isbn:${metadata.isbn} or title:${metadata.title} or volumeId:${metadata.googleVolumeId}. Trying to refine title with 1 deepness ${titleRefined}`
+      `was unable to find result for isbn:${metadata.isbn} or title:${metadata.title} or volumeId:${metadata.googleVolumeId}. Trying to refine title with 1 deepness ${titleRefined}`,
     )
 
     response = await findByTitle(titleRefined, apiKey)
@@ -30,7 +34,7 @@ export const getGoogleBookMetadata = async (
 
       console.log(
         `[getGoogleBookMetadata]`,
-        `was unable to find result for ${titleRefined}. Trying to refine title with 2 deepness ${titleRefined}`
+        `was unable to find result for ${titleRefined}. Trying to refine title with 2 deepness ${titleRefined}`,
       )
 
       response = await findByTitle(titleRefined, apiKey)
@@ -41,7 +45,7 @@ export const getGoogleBookMetadata = async (
 
       console.log(
         `[getGoogleBookMetadata]`,
-        `was unable to find result for ${titleRefined}. Trying to refine title with 3 deepness ${titleRefined}`
+        `was unable to find result for ${titleRefined}. Trying to refine title with 3 deepness ${titleRefined}`,
       )
 
       response = await findByTitle(titleRefined, apiKey)
@@ -52,7 +56,7 @@ export const getGoogleBookMetadata = async (
 
       console.log(
         `[getGoogleBookMetadata]`,
-        `was unable to find result for ${titleRefined}. Trying to refine title with 4 deepness ${titleRefined}`
+        `was unable to find result for ${titleRefined}. Trying to refine title with 4 deepness ${titleRefined}`,
       )
 
       response = await findByTitle(titleRefined, apiKey)
@@ -63,7 +67,7 @@ export const getGoogleBookMetadata = async (
 
       console.log(
         `[getGoogleBookMetadata]`,
-        `was unable to find result for ${titleRefined}. Trying to refine title with 5 deepness ${titleRefined}`
+        `was unable to find result for ${titleRefined}. Trying to refine title with 5 deepness ${titleRefined}`,
       )
 
       response = await findByTitle(titleRefined, apiKey)
@@ -71,7 +75,7 @@ export const getGoogleBookMetadata = async (
   }
 
   console.log(
-    `${response.items?.length ?? 0} items found from google book API for title "${metadata.title}" & isbn "${metadata.isbn}" thanks to refined title "${titleRefined}"`
+    `${response.items?.length ?? 0} items found from google book API for title "${metadata.title}" & isbn "${metadata.isbn}" thanks to refined title "${titleRefined}"`,
   )
 
   const parsedMetadata = parseGoogleMetadata(response)
@@ -80,6 +84,6 @@ export const getGoogleBookMetadata = async (
 
   return {
     ...parsedMetadata,
-    type: "googleBookApi"
+    type: "googleBookApi",
   }
 }

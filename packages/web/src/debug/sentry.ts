@@ -4,7 +4,7 @@ import {
   init,
   captureConsoleIntegration,
   extraErrorDataIntegration,
-  httpClientIntegration
+  httpClientIntegration,
 } from "@sentry/react"
 
 init({
@@ -14,10 +14,10 @@ init({
   autoSessionTracking: true,
   integrations: [
     captureConsoleIntegration({
-      levels: ["error"]
+      levels: ["error"],
     }),
     extraErrorDataIntegration(),
-    httpClientIntegration()
+    httpClientIntegration(),
   ],
   sendDefaultPii: true,
   release: version,
@@ -31,5 +31,5 @@ init({
   },
   // We recommend adjusting this value in production, or using tracesSampler
   // for finer control
-  tracesSampleRate: 1.0
+  tracesSampleRate: 1.0,
 })

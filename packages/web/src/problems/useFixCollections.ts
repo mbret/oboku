@@ -14,7 +14,7 @@ export const useFixCollections = () => {
             This action will merge collections that uses the same resourceId.
             We will try to use a non destructive merge by keeping defined properties when possible. 
             You may want to re-sync after the operation to restore value with their latest state.
-            `.replace(/  +/g, "")
+            `.replace(/  +/g, ""),
       )
 
       if (yes && database) {
@@ -27,7 +27,7 @@ export const useFixCollections = () => {
 
               const collectionsAsJson = docsWithSameResourceId.map(
                 (document) =>
-                  document.toJSON() as DeepMutable<CollectionDocType>
+                  document.toJSON() as DeepMutable<CollectionDocType>,
               )
 
               const mergedDoc = collectionsAsJson?.reduce(
@@ -39,7 +39,7 @@ export const useFixCollections = () => {
                   // we use || to be as less destructive as possible
                   return { ...mutatedPrevious, ...current }
                 },
-                collectionsAsJson[0]
+                collectionsAsJson[0],
               )
 
               if (!mergedDoc) return
@@ -49,22 +49,22 @@ export const useFixCollections = () => {
               // we update the first entry with the all merged data
               await docsWithSameResourceId[0]?.incrementalModify((oldData) => ({
                 ...oldData,
-                ...safeMergedDoc
+                ...safeMergedDoc,
               }))
 
               // then we remove all the other documents
               await Promise.all(
                 docsWithSameResourceId
                   .slice(1)
-                  .map(async (document) => document.remove())
+                  .map(async (document) => document.remove()),
               )
-            })
+            }),
           )
         } catch (e) {
           Report.error(e)
         }
       }
     },
-    [database]
+    [database],
   )
 }

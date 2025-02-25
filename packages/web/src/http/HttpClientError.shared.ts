@@ -6,7 +6,7 @@ export class HttpClientError extends Error {
 
     this.response = {
       original: response,
-      data
+      data,
     }
   }
 }

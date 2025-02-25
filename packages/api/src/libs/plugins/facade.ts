@@ -6,7 +6,7 @@ const urlPlugin = plugins.find(({ type }) => type === `URI`)
 export const pluginFacade = {
   getMetadata: async ({
     credentials,
-    link
+    link,
   }: {
     link: Pick<LinkDocType, "type" | "resourceId" | "data">
     credentials?: any
@@ -17,7 +17,7 @@ export const pluginFacade = {
       return await plugin.getMetadata({
         id: link.resourceId,
         credentials,
-        data: link.data
+        data: link.data,
       })
     }
 
@@ -31,5 +31,5 @@ export const pluginFacade = {
     }
 
     throw new Error(`No dataSource found for action`)
-  }
+  },
 }

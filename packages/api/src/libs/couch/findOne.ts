@@ -19,7 +19,7 @@ type FindOneOptions = FindOneOptionsWithThrow | FindOneOptionsWithoutThrow
 export function findOne<M extends DocType["rx_model"], D extends ModelOf<M>>(
   rxModel: M,
   query: SafeMangoQuery<D>,
-  options: FindOneOptionsWithThrow
+  options: FindOneOptionsWithThrow,
 ): Promise<
   D & {
     _id: string
@@ -30,7 +30,7 @@ export function findOne<M extends DocType["rx_model"], D extends ModelOf<M>>(
 export function findOne<M extends DocType["rx_model"], D extends ModelOf<M>>(
   rxModel: M,
   query: SafeMangoQuery<D>,
-  options: FindOneOptionsWithoutThrow
+  options: FindOneOptionsWithoutThrow,
 ): Promise<
   | (D & {
       _id: string
@@ -41,7 +41,7 @@ export function findOne<M extends DocType["rx_model"], D extends ModelOf<M>>(
 
 export async function findOne<
   M extends DocType["rx_model"],
-  D extends ModelOf<M>
+  D extends ModelOf<M>,
 >(rxModel: M, query: SafeMangoQuery<D>, options: FindOneOptions) {
   const { fields, ...restQuery } = query
   const fieldsWithRequiredFields = fields
@@ -54,8 +54,8 @@ export async function findOne<
       ...restQuery,
       fields: fields as string[],
       selector: { rx_model: rxModel, ...(query?.selector as any) },
-      limit: 1
-    })
+      limit: 1,
+    }),
   )
 
   if (response.docs.length === 0) {

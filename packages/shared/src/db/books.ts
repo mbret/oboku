@@ -5,7 +5,7 @@ import { RxDbMeta } from "./rxdb"
 export enum ReadingStateState {
   Finished = "FINISHED",
   NotStarted = "NOT_STARTED",
-  Reading = "READING"
+  Reading = "READING",
 }
 
 export type BookDocType = CouchDBMeta &

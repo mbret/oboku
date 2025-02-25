@@ -5,7 +5,7 @@ import { ObokuPluginError } from "../../../errors/errors.shared"
 
 const defaultWindowOptions = {
   toolbar: "no",
-  menubar: "no"
+  menubar: "no",
 }
 
 let dropboxAuth = new DropboxAuth({ clientId: CLIENT_ID })
@@ -31,7 +31,7 @@ const isAccessTokenStillSufficient = () => {
  * Token is valid for about 4 hours
  */
 export const authUser = ({
-  requestPopup
+  requestPopup,
 }: {
   requestPopup: () => Promise<boolean>
 }) => {
@@ -46,7 +46,7 @@ export const authUser = ({
 
     const redirectUri = new URL(
       ROUTES.AUTH_CALLBACK,
-      window.location.origin
+      window.location.origin,
     ).toString()
     const usePKCE = true
     const authType = "code"
@@ -60,7 +60,7 @@ export const authUser = ({
         tokenAccessType,
         undefined,
         "user",
-        usePKCE
+        usePKCE,
       )
 
       const confirmed = await requestPopup()
@@ -72,11 +72,11 @@ export const authUser = ({
         "DropboxOAuth",
         (
           Object.keys(
-            defaultWindowOptions
+            defaultWindowOptions,
           ) as (keyof typeof defaultWindowOptions)[]
         )
           .map((key) => `${key}=${defaultWindowOptions[key]}`)
-          .join(",")
+          .join(","),
       )
 
       _oauthWindow?.focus()
@@ -99,7 +99,7 @@ export const authUser = ({
           try {
             const response = await dropboxAuth.getAccessTokenFromCode(
               redirectUri,
-              code || ""
+              code || "",
             )
 
             if (timedOut) return
@@ -109,7 +109,7 @@ export const authUser = ({
             dropboxAuth.setAccessToken(result.access_token)
             dropboxAuth.setRefreshToken(result.refresh_token)
             dropboxAuth.setAccessTokenExpiresAt(
-              new Date(Date.now() + result.expires_in * 1000)
+              new Date(Date.now() + result.expires_in * 1000),
             )
 
             resolve(dropboxAuth)

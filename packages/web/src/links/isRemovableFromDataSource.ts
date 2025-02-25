@@ -2,7 +2,7 @@ import { LinkDocType } from "@oboku/shared"
 import { plugins } from "../dataSources"
 
 export const isRemovableFromDataSource = ({
-  link
+  link,
 }: {
   link?: LinkDocType | null
 }) => {

@@ -8,7 +8,7 @@ import { defaultIfEmpty, defer, from, noop, throttle } from "rxjs"
 export const useSyncBookProgress = (bookId: string) => {
   const { db } = useDatabase()
   const {
-    data: { beginCfi, percentageEstimateOfBook: totalBookProgress } = {}
+    data: { beginCfi, percentageEstimateOfBook: totalBookProgress } = {},
   } = usePagination()
   const [mutate$, mutate] = useObservableCallback()
 
@@ -27,7 +27,7 @@ export const useSyncBookProgress = (bookId: string) => {
               ...old,
               // cfi will be undefined at the beginning until pagination stabilize
               ...(beginCfi && {
-                readingStateCurrentBookmarkLocation: beginCfi || null
+                readingStateCurrentBookmarkLocation: beginCfi || null,
               }),
               readingStateCurrentBookmarkProgressUpdatedAt:
                 new Date().toISOString(),
@@ -35,12 +35,12 @@ export const useSyncBookProgress = (bookId: string) => {
                 ReadingStateState.Finished && {
                 readingStateCurrentState: ReadingStateState.Reading,
                 ...(totalBookProgress === 1 && {
-                  readingStateCurrentState: ReadingStateState.Finished
-                })
+                  readingStateCurrentState: ReadingStateState.Finished,
+                }),
               }),
               ...(typeof totalBookProgress === "number" && {
-                readingStateCurrentBookmarkProgressPercent: totalBookProgress
-              })
+                readingStateCurrentBookmarkProgressPercent: totalBookProgress,
+              }),
             }
           })
 
@@ -48,15 +48,15 @@ export const useSyncBookProgress = (bookId: string) => {
         }
 
         return from(updateBook())
-      }).pipe(defaultIfEmpty(null))
+      }).pipe(defaultIfEmpty(null)),
   })
 
   useSubscribe(
     () =>
       mutate$.pipe(
-        throttle(() => from(mutateAsync().catch(noop)), { trailing: true })
+        throttle(() => from(mutateAsync().catch(noop)), { trailing: true }),
       ),
-    [mutateAsync, mutate$]
+    [mutateAsync, mutate$],
   )
 
   useEffect(() => {

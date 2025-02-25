@@ -10,14 +10,14 @@ import {
   merge,
   defer,
   combineLatest,
-  retry
+  retry,
 } from "rxjs"
 import { createSwDatabase } from "../rxdb/db.sw"
 import { profileUpdate$ } from "../workers/messages.sw"
 import { type WEB_OBOKU_PROFILE_REQUEST_MESSAGE_DATA } from "../workers/types"
 import {
   getMetadataFromRequest,
-  hasAnotherMoreRecentCoverForThisRequest
+  hasAnotherMoreRecentCoverForThisRequest,
 } from "./helpers.shared"
 import { Report } from "../debug/report.shared"
 import { SW_COVERS_CACHE_KEY } from "../constants.shared"
@@ -31,16 +31,16 @@ const requestProfileUpdate$ = defer(() =>
     tap((clients) =>
       clients.forEach((client) => {
         client.postMessage({
-          type: "OBOKU_PROFILE_REQUEST_UPDATE"
+          type: "OBOKU_PROFILE_REQUEST_UPDATE",
         } satisfies WEB_OBOKU_PROFILE_REQUEST_MESSAGE_DATA)
-      })
+      }),
     ),
-    ignoreElements()
-  )
+    ignoreElements(),
+  ),
 )
 const crrentProfile$ = merge(
   profileUpdate$.pipe(first()),
-  requestProfileUpdate$
+  requestProfileUpdate$,
 )
 
 const clearAllCovers = () => {
@@ -48,10 +48,10 @@ const clearAllCovers = () => {
     switchMap((cache) =>
       from(cache.keys()).pipe(
         switchMap((cacheKeys) =>
-          from(Promise.all(cacheKeys.map((key) => cache.delete(key))))
-        )
-      )
-    )
+          from(Promise.all(cacheKeys.map((key) => cache.delete(key)))),
+        ),
+      ),
+    ),
   )
 }
 
@@ -72,7 +72,7 @@ export const registerCoversCacheCleanup = () => {
                       if (!profile) {
                         Report.info(
                           `[sw/covers]`,
-                          `No current profile set, deleting all covers in cache`
+                          `No current profile set, deleting all covers in cache`,
                         )
                         return clearAllCovers()
                       }
@@ -84,7 +84,7 @@ export const registerCoversCacheCleanup = () => {
                           if (!coverId.startsWith(profile)) return true
 
                           return false
-                        }
+                        },
                       )
 
                       const cacheKeysNotInDb = cacheKeys.filter((key) => {
@@ -102,14 +102,14 @@ export const registerCoversCacheCleanup = () => {
                       if (requestsNotForCurrentProfile.length) {
                         Report.info(
                           `[sw/covers]`,
-                          `Removing ${requestsNotForCurrentProfile.length} covers not related to current profile in cache`
+                          `Removing ${requestsNotForCurrentProfile.length} covers not related to current profile in cache`,
                         )
                       }
 
                       if (cacheKeysNotInDb.length) {
                         Report.info(
                           `[sw/covers]`,
-                          `Removing ${cacheKeysNotInDb.length} obsolete covers in cache`
+                          `Removing ${cacheKeysNotInDb.length} obsolete covers in cache`,
                         )
                       }
 
@@ -117,22 +117,22 @@ export const registerCoversCacheCleanup = () => {
                         Promise.all(
                           [
                             ...cacheKeysNotInDb,
-                            ...requestsNotForCurrentProfile
-                          ].map((key) => cache.delete(key))
-                        )
+                            ...requestsNotForCurrentProfile,
+                          ].map((key) => cache.delete(key)),
+                        ),
                       )
-                    })
+                    }),
                   )
-                })
+                }),
               )
-            })
-          )
+            }),
+          ),
         ),
         finalize(() => {
           db.destroy().catch(console.error)
-        })
-      )
-    )
+        }),
+      ),
+    ),
   )
 
   const cleanupOutdatedCovers$ = cache$.pipe(
@@ -149,12 +149,12 @@ export const registerCoversCacheCleanup = () => {
 
           return from(
             Promise.all(
-              keysToRemoveDueToNewerVersion.map((key) => cache.delete(key))
-            )
+              keysToRemoveDueToNewerVersion.map((key) => cache.delete(key)),
+            ),
           )
-        })
-      )
-    )
+        }),
+      ),
+    ),
   )
 
   interval(5 * 60 * 1000 * 2)
@@ -163,7 +163,7 @@ export const registerCoversCacheCleanup = () => {
         Report.info(`[sw/covers]`, `cleanup process started`)
       }),
       switchMap(() =>
-        combineLatest([cleanupForProfile$, cleanupOutdatedCovers$])
+        combineLatest([cleanupForProfile$, cleanupOutdatedCovers$]),
       ),
       tap(() => {
         Report.info(`[sw/covers]`, `cleanup process success`)
@@ -175,7 +175,7 @@ export const registerCoversCacheCleanup = () => {
 
         throw error
       }),
-      retry()
+      retry(),
     )
     .subscribe()
 }

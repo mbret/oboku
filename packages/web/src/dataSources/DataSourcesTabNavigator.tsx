@@ -12,7 +12,7 @@ export const DataSourcesTabNavigator = () => {
   const routeMatch = useRouteMatch([
     ROUTES.DATASOURCES,
     ROUTES.DATASOURCES_LIST,
-    ROUTES.DATASOURCES_REPORTS
+    ROUTES.DATASOURCES_REPORTS,
   ])
   const currentTab =
     routeMatch?.pattern?.path === ROUTES.DATASOURCES

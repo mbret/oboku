@@ -4,7 +4,7 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  Stack
+  Stack,
 } from "@mui/material"
 import { MoreVertRounded } from "@mui/icons-material"
 import { memo, useState } from "react"
@@ -25,7 +25,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
   const refreshMetadata = useRefreshBookMetadata()
   const { mutate: upsertBookLink } = useUpsertBookLink({
-    onSuccess: () => [refreshMetadata(bookId)]
+    onSuccess: () => [refreshMetadata(bookId)],
   })
 
   return (
@@ -36,7 +36,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
         subheader={
           <ListSubheader
             sx={{
-              px: [null, 3]
+              px: [null, 3],
             }}
           >
             Provider
@@ -47,7 +47,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
           <ListItemButton
             key={link?._id}
             sx={{
-              px: [null, 3]
+              px: [null, 3],
             }}
             onClick={() => {
               if (!dataSourcePlugin?.SelectItemComponent) {
@@ -67,8 +67,8 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
                   paddingRight: 10,
                   whiteSpace: "nowrap",
                   overflow: "hidden",
-                  textOverflow: "ellipsis"
-                }
+                  textOverflow: "ellipsis",
+                },
               }}
               secondary={`This book is attached to ${dataSourcePlugin.name}. Click to edit the link`}
             />
@@ -82,7 +82,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
         <dataSourcePlugin.SelectItemComponent
           open={isSelectItemOpened}
           requestPopup={createRequestPopupDialog({
-            name: dataSourcePlugin.name
+            name: dataSourcePlugin.name,
           })}
           onClose={(error, item) => {
             setIsSelectItemOpened(false)
@@ -94,7 +94,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
                 upsertBookLink({
                   bookId,
                   linkResourceId: item.resourceId,
-                  linkType: dataSourcePlugin.type
+                  linkType: dataSourcePlugin.type,
                 })
               }
             }

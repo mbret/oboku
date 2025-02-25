@@ -36,7 +36,7 @@ export const LibraryTopTabNavigator = () => {
         <Sync />
       </IconButton>
     ),
-    [activeSyncs]
+    [activeSyncs],
   )
 
   return (
@@ -45,7 +45,7 @@ export const LibraryTopTabNavigator = () => {
         display: "flex",
         flexFlow: "column",
         overflow: "hidden",
-        flex: 1
+        flex: 1,
       }}
     >
       <TopBarNavigation

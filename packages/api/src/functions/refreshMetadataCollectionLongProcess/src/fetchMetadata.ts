@@ -23,8 +23,8 @@ export const fetchMetadata = async (
   metadata: { title: string; year?: string },
   {
     withGoogle,
-    comicVineApiKey
-  }: { googleApiKey?: string; withGoogle: boolean; comicVineApiKey: string }
+    comicVineApiKey,
+  }: { googleApiKey?: string; withGoogle: boolean; comicVineApiKey: string },
 ): Promise<CollectionMetadata[]> => {
   const list = []
 
@@ -40,10 +40,10 @@ export const fetchMetadata = async (
     getSeriesMetadata(metadata),
     getComicVineSeriesMetadata({
       ...metadata,
-      comicVineApiKey
+      comicVineApiKey,
     }),
     getMangaUpdatesSeriesMetadata(metadata),
-    getMangadexSeriesMetadata(metadata)
+    getMangadexSeriesMetadata(metadata),
   ])
 
   if (biblioreads) {

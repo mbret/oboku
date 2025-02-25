@@ -4,7 +4,7 @@ export const errorToHelperText = (
   error?: FieldError,
   messages?: {
     pattern?: string
-  }
+  },
 ) => {
   if (!error?.type) return error?.message
 

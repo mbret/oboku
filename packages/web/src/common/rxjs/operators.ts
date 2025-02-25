@@ -10,5 +10,5 @@ export const retryAndLogError =
 
         throw error
       }),
-      retry()
+      retry(),
     )

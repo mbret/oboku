@@ -10,6 +10,6 @@ export const useDataSource = (id: string) =>
         switchMap((db) => {
           return db.datasource.findOne({ selector: { _id: id } }).$
         }),
-        map((entry) => entry?.toJSON())
-      )
+        map((entry) => entry?.toJSON()),
+      ),
   })

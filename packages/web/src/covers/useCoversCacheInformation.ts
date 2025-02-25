@@ -20,8 +20,8 @@ export const useCoversCacheInformation = () =>
               }, 0)
 
               return { size: keys.length, weight }
-            })
-          )
-        )
-      )
+            }),
+          ),
+        ),
+      ),
   })

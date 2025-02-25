@@ -9,7 +9,7 @@ export const SelectableBookList = memo(
     props: {
       selected: Record<string, boolean>
       onItemClick: (id: { id: string; selected: boolean }) => void
-    } & ComponentProps<typeof VirtuosoList>
+    } & ComponentProps<typeof VirtuosoList>,
   ) => {
     const theme = useTheme()
     const { data, onItemClick, selected, ...rest } = props
@@ -32,7 +32,7 @@ export const SelectableBookList = memo(
           }
         />
       ),
-      [itemHeight, onItemClick, selected]
+      [itemHeight, onItemClick, selected],
     )
 
     return (
@@ -43,5 +43,5 @@ export const SelectableBookList = memo(
         {...rest}
       />
     )
-  }
+  },
 )

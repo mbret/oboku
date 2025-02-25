@@ -12,7 +12,7 @@ import { useMutation$ } from "reactjrx"
 export const LoginScreen = () => {
   const { signIn } = useSignIn()
   const { mutate, isPending, error } = useMutation$({
-    mutationFn: signIn
+    mutationFn: signIn,
   })
   const theme = useTheme()
 
@@ -30,7 +30,7 @@ export const LoginScreen = () => {
           display: "flex",
           justifyContent: "center",
           flexFlow: "row",
-          paddingBottom: theme.spacing(4)
+          paddingBottom: theme.spacing(4),
         }}
       >
         <Logo />

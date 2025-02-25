@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Link
+  Link,
 } from "@mui/material"
 import { FC, useEffect } from "react"
 import { useLock } from "../common/BlockingBackdrop"
@@ -52,7 +52,7 @@ export const UpdateAvailableDialog: FC<{
                 first(),
                 tap(() => {
                   window.location.reload()
-                })
+                }),
               )
               .subscribe()
 

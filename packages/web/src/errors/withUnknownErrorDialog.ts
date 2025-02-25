@@ -12,7 +12,7 @@ export function withUnknownErrorDialog() {
         createDialog({ preset: "UNKNOWN_ERROR", autoStart: true })
 
         throw error
-      })
+      }),
     )
   }
 }

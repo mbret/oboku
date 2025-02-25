@@ -9,7 +9,7 @@ const logger = Logger.child({ module: "saveCoverFromArchiveToBucket" })
 export const saveCoverFromZipArchiveToBucket = async (
   coverObjectKey: string,
   epubFilepath: string,
-  coverPath: string
+  coverPath: string,
 ) => {
   if (coverPath === ``) {
     logger.error(`coverPath is empty string, ignoring process`, coverObjectKey)
@@ -39,7 +39,7 @@ export const saveCoverFromZipArchiveToBucket = async (
     if (message === `Input buffer contains unsupported image format`) {
       return logger.error(
         `It seems input is not a valid image. This can happens when for example the file is encrypted or something else went wrong during archive extraction`,
-        e
+        e,
       )
     } else {
       logger.error(e)

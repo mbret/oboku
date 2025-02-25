@@ -1,26 +1,25 @@
 module.exports = {
   env: {
     browser: true,
-    es2021: true
+    es2021: true,
   },
   extends: [
-    `prettier`,
     `plugin:react/recommended`,
     `plugin:react/jsx-runtime`,
-    `plugin:react-hooks/recommended`
+    `plugin:react-hooks/recommended`,
   ],
   parser: `@typescript-eslint/parser`,
   parserOptions: {
     ecmaVersion: 12,
     sourceType: `module`,
     ecmaFeatures: {
-      jsx: true
-    }
+      jsx: true,
+    },
   },
   settings: {
     react: {
-      version: "detect"
-    }
+      version: "detect",
+    },
   },
   plugins: [`@typescript-eslint`, `react`],
   rules: {
@@ -33,6 +32,6 @@ module.exports = {
     "react/display-name": ["off"],
     "react/prop-types": ["off"],
     "react/no-unescaped-entities": ["off"],
-    "react/no-unknown-property": ["off"] // use ts
-  }
+    "react/no-unknown-property": ["off"], // use ts
+  },
 }

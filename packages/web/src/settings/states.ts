@@ -8,7 +8,7 @@ const localSettingsStateDefaultValues = {
   unBlurWhenProtectedVisible: false,
   hideDirectivesFromCollectionName: true,
   showCollectionWithProtectedContent: "unlocked" as const,
-  showSensitiveDataSources: false
+  showSensitiveDataSources: false,
 }
 
 export const localSettingsSignal = signal<{
@@ -20,7 +20,7 @@ export const localSettingsSignal = signal<{
   showSensitiveDataSources: boolean
 }>({
   key: "localSettingsState",
-  default: localSettingsStateDefaultValues
+  default: localSettingsStateDefaultValues,
 })
 
 export const useLocalSettings = () => useSignalValue(localSettingsSignal)

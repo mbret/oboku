@@ -15,7 +15,7 @@ import { retrieveMetadataAndSaveCover } from "./src/retrieveMetadataAndSaveCover
 import { withMiddy } from "@libs/middy/withMiddy"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
-  event
+  event,
 ) => {
   const bookId = event.body.bookId
   const lockId = `metadata_${bookId}`
@@ -27,20 +27,20 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       client_id = ``,
       client_secret = ``,
       googleApiKey = ``,
-      jwtPrivateKey = ``
+      jwtPrivateKey = ``,
     ] = await getParametersValue({
       Names: [
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
         "GOOGLE_API_KEY",
-        "jwt-private-key"
+        "jwt-private-key",
       ],
-      WithDecryption: true
+      WithDecryption: true,
     })
 
     configureGoogleDataSource({
       client_id,
-      client_secret
+      client_secret,
     })
 
     if (!OFFLINE) {
@@ -49,7 +49,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       await Promise.all(
         files.map((file) => {
           return fs.promises.unlink(path.join(TMP_DIR, file))
-        })
+        }),
       )
     }
 
@@ -58,10 +58,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     const { name: userName } = await getAuthTokenAsync(
       {
         headers: {
-          authorization
-        }
+          authorization,
+        },
       },
-      jwtPrivateKey
+      jwtPrivateKey,
     )
     const userNameHex = Buffer.from(userName).toString("hex")
     const bookId: string | undefined = event.body.bookId
@@ -79,7 +79,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     if (book.metadataUpdateStatus !== "fetching") {
       await atomicUpdate(db, "book", book._id, (old) => ({
         ...old,
-        metadataUpdateStatus: "fetching" as const
+        metadataUpdateStatus: "fetching" as const,
       }))
     }
 
@@ -88,7 +88,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     const link = await findOne(
       "link",
       { selector: { _id: firstLinkId } },
-      { db }
+      { db },
     )
 
     if (!link) throw new Error(`Unable to find link ${firstLinkId}`)
@@ -103,13 +103,13 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
         book,
         link,
         googleApiKey,
-        db
+        db,
       })
     } catch (e) {
       await atomicUpdate(db, "book", book._id, (old) => ({
         ...old,
         metadataUpdateStatus: null,
-        lastMetadataUpdateError: "unknown"
+        lastMetadataUpdateError: "unknown",
       }))
 
       throw e
@@ -118,9 +118,9 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     await Promise.all([
       atomicUpdate(db, "link", link._id, (old) => ({
         ...old,
-        contentLength: data.link.contentLength
+        contentLength: data.link.contentLength,
       })),
-      deleteLock(supabase, lockId)
+      deleteLock(supabase, lockId),
     ])
 
     Logger.info(`lambda executed with success for ${book._id}`)
@@ -132,11 +132,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   return {
     statusCode: 200,
-    body: JSON.stringify({})
+    body: JSON.stringify({}),
   }
 }
 
 export const main = withMiddy(lambda, {
   withCors: false,
-  withJsonBodyParser: false
+  withJsonBodyParser: false,
 })

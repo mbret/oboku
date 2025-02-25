@@ -3,7 +3,7 @@ import { useLocation } from "react-router"
 import { ROUTES } from "../constants.web"
 import {
   hasOpenedReaderAlreadyStateSignal,
-  bookBeingReadStateSignal
+  bookBeingReadStateSignal,
 } from "./states"
 import { SIGNAL_RESET, useSwitchMutation$ } from "reactjrx"
 import { getMetadataFromBook } from "../books/metadata"
@@ -48,9 +48,9 @@ export const BackToReadingDialog = memo(
                 const { title } = getMetadataFromBook(book.toJSON())
 
                 return from(
-                  createBackToBookDialog({ bookId: bookBeingReadId, title })
+                  createBackToBookDialog({ bookId: bookBeingReadId, title }),
                 )
-              })
+              }),
             )
           }),
           catchCancelError((err) => {
@@ -61,9 +61,9 @@ export const BackToReadingDialog = memo(
             bookBeingReadStateSignal.setValue(SIGNAL_RESET)
 
             throw err
-          })
+          }),
         )
-      }
+      },
     })
 
     /**
@@ -76,5 +76,5 @@ export const BackToReadingDialog = memo(
     }, [isProfileHydrated, checkBackToReading])
 
     return null
-  }
+  },
 )

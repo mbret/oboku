@@ -26,8 +26,10 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
   const readerState = useObserve(() => reader?.state$, [reader])
   const readerContainerRef = useRef<HTMLDivElement>(null)
-  const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
-    useManifest(bookId)
+  const {
+    data: { isUsingWebStreamer, manifest } = {},
+    error: manifestError,
+  } = useManifest(bookId)
   const isBookError = !!manifestError
 
   if (isBookError) {
@@ -67,7 +69,7 @@ const Interface = memo(({ bookId }: { bookId: string }) => {
     bookId,
     onSettled: () => {
       goBack()
-    }
+    },
   })
 
   return (
@@ -82,7 +84,7 @@ const Interface = memo(({ bookId }: { bookId: string }) => {
             }}
           >
             <ReactReader
-              onItemClick={item => {
+              onItemClick={(item) => {
                 if (item === "more") {
                   toggleMoreDialog()
                 }
@@ -108,7 +110,7 @@ const Effects = memo(
     bookId,
     isUsingWebStreamer,
     manifest,
-    containerElement
+    containerElement,
   }: {
     bookId: string
     isUsingWebStreamer?: boolean
@@ -119,7 +121,7 @@ const Effects = memo(
     useLoadManifest({
       bookId,
       containerElement,
-      manifest
+      manifest,
     })
 
     useGestureHandler()
@@ -127,5 +129,5 @@ const Effects = memo(
     usePersistReaderInstanceSettings()
 
     return null
-  }
+  },
 )

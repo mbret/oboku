@@ -7,7 +7,7 @@ export const useModalNavigationControl = (
    * Make sure the value is consistent for the same rendered dialog.
    * Usually isOpened or the id given to the dialog is ok.
    */
-  id: string | boolean | undefined
+  id: string | boolean | undefined,
 ) => {
   const navigate = useNavigate()
   const [currentHash, setCurrentHash] = useState<string | undefined>(undefined)
@@ -44,9 +44,9 @@ export const useModalNavigationControl = (
         {
           hash: window.location.hash,
           search: window.location.search,
-          pathname: window.location.pathname
+          pathname: window.location.pathname,
         },
-        { state: { __oboku_modal: hash } }
+        { state: { __oboku_modal: hash } },
       )
     } else {
       setCurrentHash(undefined)
@@ -64,7 +64,7 @@ export const useModalNavigationControl = (
       // closing process
       navigate(-1)
     },
-    [navigate]
+    [navigate],
   )
 
   return { closeModalWithNavigation: close }

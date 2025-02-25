@@ -7,7 +7,7 @@ import {
   map,
   Observable,
   switchMap,
-  tap
+  tap,
 } from "rxjs"
 
 export const deleteLock = async (supabase: SupabaseClient, lockId: string) => {
@@ -25,15 +25,15 @@ export const withDeleteLock =
   (stream: Observable<T>) => {
     return stream.pipe(
       switchMap((value) =>
-        from(deleteLock(supabase, lockId)).pipe(map(() => value))
+        from(deleteLock(supabase, lockId)).pipe(map(() => value)),
       ),
       catchError((error) =>
         from(deleteLock(supabase, lockId)).pipe(
           tap(() => {
             throw error
           }),
-          ignoreElements()
-        )
-      )
+          ignoreElements(),
+        ),
+      ),
     )
   }

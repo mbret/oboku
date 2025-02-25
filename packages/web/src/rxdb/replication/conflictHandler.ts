@@ -6,7 +6,7 @@ export const conflictHandler: RxConflictHandler<any> = (i, context) => {
 
     return Promise.resolve({
       isEqual: false,
-      documentData: i.realMasterState
+      documentData: i.realMasterState,
     })
   }
 

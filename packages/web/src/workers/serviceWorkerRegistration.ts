@@ -20,8 +20,8 @@ const isLocalhost = Boolean(
     window.location.hostname === "[::1]" ||
     // 127.0.0.0/8 are considered localhost for IPv4.
     window.location.hostname.match(
-      /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
-    )
+      /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/,
+    ),
 )
 
 const CHECK_FOR_SW_UPDATE_EVERY = 600000 // 600000ms = 10mn
@@ -30,7 +30,7 @@ type Config = {
   onSuccess?: (registration: ServiceWorkerRegistration) => void
   onUpdate?: (registration: ServiceWorkerRegistration) => void
   onWaitingServiceWorkerFound?: (
-    registration: ServiceWorkerRegistration
+    registration: ServiceWorkerRegistration,
   ) => void
 }
 
@@ -85,7 +85,7 @@ export function register(config?: Config) {
 function registerValidSW(swUrl: string, config?: Config) {
   navigator.serviceWorker
     .register(swUrl, {
-      type: import.meta.env.MODE === "production" ? "classic" : "module"
+      type: import.meta.env.MODE === "production" ? "classic" : "module",
     })
     .then((registration) => {
       if (registration.waiting) {
@@ -107,7 +107,7 @@ function registerValidSW(swUrl: string, config?: Config) {
               // content until all client tabs are closed.
               console.log(
                 "New content is available and will be used when all " +
-                  "tabs for this page are closed. See https://cra.link/PWA."
+                  "tabs for this page are closed. See https://cra.link/PWA.",
               )
 
               // Execute callback
@@ -145,7 +145,7 @@ function registerValidSW(swUrl: string, config?: Config) {
 function checkValidServiceWorker(swUrl: string, config?: Config) {
   // Check if the service worker can be found. If it can't reload the page.
   fetch(swUrl, {
-    headers: { "Service-Worker": "script" }
+    headers: { "Service-Worker": "script" },
   })
     .then((response) => {
       // Ensure service worker exists, and that we really are getting a JS file.
@@ -167,11 +167,11 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
     })
     .catch(() => {
       console.log(
-        "No internet connection found. App is running in offline mode."
+        "No internet connection found. App is running in offline mode.",
       )
     })
 }
 
 navigator.serviceWorker.ready.then(() => [
-  serviceWorkerReadySignal.setValue(true)
+  serviceWorkerReadySignal.setValue(true),
 ])

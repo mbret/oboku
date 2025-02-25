@@ -9,20 +9,20 @@ export const READER_ACCEPTED_FILE_TYPES = {
   "application/x-zip-compressed": [".epub", ".zip"],
   "application/epub+zip": [".epub", ".zip"],
   "application/x-cbr": [".cbr"],
-  "application/x-rar": [".cbr"]
+  "application/x-rar": [".cbr"],
 }
 
 export const READER_ACCEPTED_MIME_TYPES = Object.keys(
-  READER_ACCEPTED_FILE_TYPES
+  READER_ACCEPTED_FILE_TYPES,
 )
 
 export const READER_ACCEPTED_EXTENSIONS = Object.values(
-  READER_ACCEPTED_FILE_TYPES
+  READER_ACCEPTED_FILE_TYPES,
 ).flat()
 
 export const isFileSupported = ({
   mimeType,
-  name
+  name,
 }: {
   name?: string | null
   mimeType?: string | null

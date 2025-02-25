@@ -3,7 +3,7 @@ import {
   MigrationStrategies,
   RxCollection,
   RxDocument,
-  RxJsonSchema
+  RxJsonSchema,
 } from "rxdb"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
@@ -13,7 +13,7 @@ type DocMethods = {}
 
 type CollectionMethods = {
   insertSafe: (
-    json: Omit<TagsDocType, `_id` | "rx_model" | "_rev" | `rxdbMeta`>
+    json: Omit<TagsDocType, `_id` | "rx_model" | "_rev" | `rxdbMeta`>,
   ) => Promise<TagsDocument>
 }
 
@@ -38,9 +38,9 @@ const schema: RxJsonSchema<Omit<TagsDocType, `_rev` | `rxdbMeta`>> = {
     books: { type: ["array"], items: { type: "string" } },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
-    ...getReplicationProperties(`tag`)
+    ...getReplicationProperties(`tag`),
   },
-  required: ["isProtected", "name", "books"]
+  required: ["isProtected", "name", "books"],
 }
 
 const docMethods: DocMethods = {}
@@ -48,7 +48,7 @@ const docMethods: DocMethods = {}
 const collectionMethods: CollectionMethods = {
   insertSafe: async function (this: TagCollection, json) {
     return this.insert({ _id: generateId(), ...json } as TagsDocType)
-  }
+  },
 }
 
 const migrationStrategies: MigrationStrategies = {}
@@ -58,5 +58,5 @@ export const tag = {
   methods: docMethods,
   statics: collectionMethods,
   migrationStrategies: migrationStrategies,
-  conflictHandler
+  conflictHandler,
 }

@@ -3,7 +3,7 @@ import { signal, useSignalValue } from "reactjrx"
 export enum DownloadState {
   None = "none",
   Downloaded = "downloaded",
-  Downloading = "downloading"
+  Downloading = "downloading",
 }
 
 export const booksDownloadStateSignal = signal<
@@ -18,7 +18,7 @@ export const booksDownloadStateSignal = signal<
   >
 >({
   key: "bookDownloadsState",
-  default: {}
+  default: {},
 })
 
 /**
@@ -26,7 +26,7 @@ export const booksDownloadStateSignal = signal<
  */
 export const getBookDownloadsState = ({
   bookId,
-  normalizedBookDownloadsState
+  normalizedBookDownloadsState,
 }: {
   bookId: string
   normalizedBookDownloadsState: ReturnType<
@@ -35,7 +35,7 @@ export const getBookDownloadsState = ({
 }) =>
   normalizedBookDownloadsState[bookId] || {
     downloadState: DownloadState.None,
-    downloadProgress: 0
+    downloadProgress: 0,
   }
 
 export const useBookDownloadState = (bookId?: string | null) => {
@@ -50,6 +50,6 @@ export const useBookDownloadState = (bookId?: string | null) => {
       bookDownloadState[bookId]?.downloadState === DownloadState.Downloaded,
     isDownloading:
       bookDownloadState[bookId]?.downloadState === DownloadState.Downloading,
-    ...bookDownloadState[bookId]
+    ...bookDownloadState[bookId],
   }
 }

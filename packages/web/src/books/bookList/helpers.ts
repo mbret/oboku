@@ -20,7 +20,7 @@ export const useDefaultItemClickHandler = () => {
 
       const normalizedCollections = await getCollections(db)
       const normalizedLinks = (await db.collections.link.find().exec()).map(
-        (link) => link.toJSON()
+        (link) => link.toJSON(),
       )
       const book = await getBookById({ database: db, id })
 
@@ -31,7 +31,7 @@ export const useDefaultItemClickHandler = () => {
         tags: db ? await getTagsByIds(db) : {},
         normalizedLinks,
         normalizedCollections,
-        book
+        book,
       })
 
       if (item?.downloadState === "none") {
@@ -40,6 +40,6 @@ export const useDefaultItemClickHandler = () => {
         navigate(ROUTES.READER.replace(":id", item?._id))
       }
     },
-    [db, downloadFile, navigate]
+    [db, downloadFile, navigate],
   )
 }

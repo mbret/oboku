@@ -8,7 +8,7 @@ export const useCurrentPages = ({ bookId }: { bookId?: string }) => {
     beginPageIndexInSpineItem,
     endPageIndexInSpineItem,
     beginAbsolutePageIndex,
-    endAbsolutePageIndex
+    endAbsolutePageIndex,
   } = useObserve(() => reader?.pagination.state$, [reader]) ?? {}
   const isUsingPagesPerChapter = useIsUsingPagesPerChapter({ bookId })
 

@@ -6,7 +6,7 @@ import {
   ErrorRounded,
   LoopRounded,
   NoEncryptionOutlined,
-  ThumbDownOutlined
+  ThumbDownOutlined,
 } from "@mui/icons-material"
 import { Cover } from "../Cover"
 import { useBook, useIsBookProtected } from "../states"
@@ -45,7 +45,7 @@ export const BookListCoverContainer: FC<
         sx={{
           position: "relative",
           display: "flex",
-          minHeight: 0 // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
+          minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
         }}
         style={style}
         className={className}
@@ -63,7 +63,7 @@ export const BookListCoverContainer: FC<
               height:
                 bookDownloadState?.downloadState === DownloadState.Downloading
                   ? `${100 - (bookDownloadState?.downloadProgress || 0)}%`
-                  : `100%`
+                  : `100%`,
             }}
           />
         )}
@@ -76,7 +76,7 @@ export const BookListCoverContainer: FC<
             display: "flex",
             padding: (theme) => theme.spacing(0.5),
             flexDirection: "column",
-            alignItems: "center"
+            alignItems: "center",
           }}
           gap={1}
         >
@@ -113,7 +113,9 @@ export const BookListCoverContainer: FC<
             <Chip
               color="primary"
               size="small"
-              icon={<LoopRounded color="primary" className="oboku-infinite-spin" />}
+              icon={
+                <LoopRounded color="primary" className="oboku-infinite-spin" />
+              }
               label="metadata..."
             />
           )}
@@ -134,7 +136,7 @@ export const BookListCoverContainer: FC<
                 left="50%"
                 top="50%"
                 style={{
-                  transform: "translate(-50%, -50%)"
+                  transform: "translate(-50%, -50%)",
                 }}
               >
                 <CloudDownloadRounded color="action" fontSize={size} />
@@ -147,7 +149,7 @@ export const BookListCoverContainer: FC<
                   transform: "translate(-50%, -50%)",
                   position: "absolute",
                   left: "50%",
-                  top: "50%"
+                  top: "50%",
                 }}
               >
                 <Chip color="primary" size="small" label="downloading..." />
@@ -165,7 +167,7 @@ export const BookListCoverContainer: FC<
                   position: "absolute",
                   bottom: 0,
                   left: "50%",
-                  transform: "translateX(-50%)"
+                  transform: "translateX(-50%)",
                 }}
               />
             )}
@@ -173,5 +175,5 @@ export const BookListCoverContainer: FC<
         )}
       </Box>
     )
-  }
+  },
 )

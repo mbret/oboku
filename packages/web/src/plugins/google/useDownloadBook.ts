@@ -7,14 +7,14 @@ import { catchError, from, mergeMap, of } from "rxjs"
 import { useGoogleScripts } from "./lib/scripts"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
-  requestPopup
+  requestPopup,
 }) => {
   const { requestToken } = useAccessToken({ requestPopup })
   const { getGoogleScripts } = useGoogleScripts()
 
   return ({ link, onDownloadProgress }) => {
     return requestToken({
-      scope: ["https://www.googleapis.com/auth/drive.readonly"]
+      scope: ["https://www.googleapis.com/auth/drive.readonly"],
     }).pipe(
       mergeMap(() => {
         return getGoogleScripts().pipe(
@@ -24,8 +24,8 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
             return from(
               gapi.client.drive.files.get({
                 fileId,
-                fields: "name,size"
-              })
+                fields: "name,size",
+              }),
             ).pipe(
               mergeMap((info) => {
                 return from(
@@ -39,7 +39,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
                     url: `https://content.googleapis.com/drive/v3/files/${fileId}?alt=media&key=AIzaSyBgTV-RQecG_TFwilsdUJXqKmeXEiNSWUg`,
                     // url: `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
                     headers: {
-                      Authorization: `Bearer ${gapi.auth.getToken().access_token}`
+                      Authorization: `Bearer ${gapi.auth.getToken().access_token}`,
                       // "X-Goog-Encode-Response-If-Executable": "base64"
                       // "x-javascript-user-agent":
                       //   "google-api-javascript-client/1.1.0",
@@ -55,15 +55,15 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
                     onDownloadProgress: (event) => {
                       const totalSize = parseInt(info.result.size || "1") || 1
                       onDownloadProgress(event.loaded / totalSize)
-                    }
-                  })
+                    },
+                  }),
                 ).pipe(
                   mergeMap((mediaResponse) => {
                     return of({
                       data: mediaResponse.data,
-                      name: info.result.name || ""
+                      name: info.result.name || "",
                     })
-                  })
+                  }),
                 )
               }),
               catchError((e) => {
@@ -72,17 +72,17 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
                     return of({
                       isError: true,
                       reason: `notFound`,
-                      error: e
+                      error: e,
                     } as const)
                   }
                 }
 
                 throw e
-              })
+              }),
             )
-          })
+          }),
         )
-      })
+      }),
     )
   }
 }

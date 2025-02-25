@@ -4,7 +4,7 @@ import {
   Route,
   Navigate,
   Outlet,
-  useLocation
+  useLocation,
 } from "react-router"
 import { HomeScreen } from "../home/HomeScreen"
 import { LoginScreen } from "../auth/LoginScreen"
@@ -45,7 +45,7 @@ const BottomTabBarRouteWrapper = () => (
 )
 
 export const AppNavigator = ({
-  isProfileHydrated
+  isProfileHydrated,
 }: {
   isProfileHydrated: boolean
 }) => {
@@ -60,7 +60,7 @@ export const AppNavigator = ({
           height: "100%",
           flex: 1,
           flexDirection: "column",
-          display: "flex"
+          display: "flex",
         }}
       >
         <Routes>
@@ -135,7 +135,7 @@ export const AppNavigator = ({
                 element={
                   <Navigate
                     to={{
-                      pathname: ROUTES.LOGIN
+                      pathname: ROUTES.LOGIN,
                     }}
                     replace
                   />
@@ -170,9 +170,9 @@ const TrackHistoryCanGoBack = memo(() => {
       window.history.replaceState(
         {
           ...window.history.state,
-          __obokuCanGoBack: true
+          __obokuCanGoBack: true,
         },
-        ``
+        ``,
       )
     }
     isFirstChange.current = false

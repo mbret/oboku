@@ -40,12 +40,12 @@ export const MetadataItemList = ({
             size="medium"
             key={index}
             style={{
-              maxWidth: 320
+              maxWidth: 320,
             }}
             {...(item.to && {
               clickable: true,
               to: item.to,
-              component: Link
+              component: Link,
             })}
           />
         ))}

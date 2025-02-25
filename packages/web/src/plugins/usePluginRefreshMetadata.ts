@@ -23,8 +23,8 @@ export const usePluginRefreshMetadata = () => {
     refreshMetadata:
       plugin.useRefreshMetadata &&
       plugin.useRefreshMetadata({
-        requestPopup: createRequestPopupDialog({ name: plugin.name })
-      })
+        requestPopup: createRequestPopupDialog({ name: plugin.name }),
+      }),
   }))
 
   const refreshMetadata: ReturnType<

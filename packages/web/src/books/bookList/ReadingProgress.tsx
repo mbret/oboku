@@ -24,7 +24,7 @@ export const ReadingProgress: FC<{
       style={{
         width: "100%",
         textAlign: "center",
-        ...style
+        ...style,
       }}
     >
       <MenuBookRounded style={{ opacity: "50%", fontSize: width * 0.4 }} />
@@ -37,7 +37,7 @@ export const ReadingProgress: FC<{
           color: "white",
           textShadow: "0px 0px 3px black",
           fontSize: width * 0.12,
-          fontWeight: theme.typography.fontWeightBold
+          fontWeight: theme.typography.fontWeightBold,
         }}
       >
         {Math.floor(progress) || 1}%

@@ -17,10 +17,10 @@ export const useDataSources = () => {
           }
 
           return db.datasource.find({
-            selector: { isProtected: { $ne: true } }
+            selector: { isProtected: { $ne: true } },
           }).$
         }),
-        map((items) => items.map((item) => item.toJSON()))
-      )
+        map((items) => items.map((item) => item.toJSON())),
+      ),
   })
 }

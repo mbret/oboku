@@ -10,7 +10,7 @@ import { useMutation$ } from "reactjrx"
 
 export const useShowRemoveBookOnExitDialog = ({
   onSettled,
-  bookId
+  bookId,
 }: {
   onSettled?: () => void
   bookId?: string
@@ -53,10 +53,10 @@ export const useShowRemoveBookOnExitDialog = ({
             canEscape: false,
             onConfirm: () => {
               removeDownloadFile({ bookId: book._id })
-            }
+            },
           }).$
-        })
+        }),
       ),
-    onSettled
+    onSettled,
   })
 }

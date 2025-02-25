@@ -3,7 +3,7 @@ import React, {
   useEffect,
   useLayoutEffect,
   useRef,
-  useState
+  useState,
 } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Box, Stack } from "@mui/material"
@@ -14,7 +14,7 @@ export const VirtualizedList = memo(
     rowRenderer,
     renderHeader,
     itemsPerRow: columnCount,
-    style
+    style,
   }: {
     data: string[]
     renderHeader?: (() => JSX.Element) | (() => React.ReactNode)
@@ -36,7 +36,7 @@ export const VirtualizedList = memo(
       count: renderHeader ? rowCount + 1 : rowCount,
       getScrollElement: () => parentRef.current,
       estimateSize: () => 1,
-      scrollMargin: parentOffsetRef.current
+      scrollMargin: parentOffsetRef.current,
       // overscan: 10
     })
 
@@ -44,7 +44,7 @@ export const VirtualizedList = memo(
       horizontal: true,
       count: columnCount,
       getScrollElement: () => parentRef.current,
-      estimateSize: () => 200
+      estimateSize: () => 200,
     })
 
     const getColumnWidth = (index: number) =>
@@ -57,7 +57,7 @@ export const VirtualizedList = memo(
         ? [
             columnItems[0]?.start,
             columnVirtualizer.getTotalSize() -
-              (columnItems[columnItems.length - 1]?.end ?? 0)
+              (columnItems[columnItems.length - 1]?.end ?? 0),
           ]
         : [0, 0]
 
@@ -82,7 +82,7 @@ export const VirtualizedList = memo(
         style={{
           ...style,
           overflow: "auto",
-          contain: "strict"
+          contain: "strict",
         }}
         // onScroll={(event) => {
         //   console.log((event.target as HTMLDivElement).scrollTop)
@@ -92,7 +92,7 @@ export const VirtualizedList = memo(
           style={{
             height: `${rowVirtualizer.getTotalSize()}px`,
             width: "100%",
-            position: "relative"
+            position: "relative",
           }}
         >
           {/* <div
@@ -142,8 +142,8 @@ export const VirtualizedList = memo(
                   display: "flex",
                   ...(isHeader && {
                     flexDirection: "column",
-                    width: "100%"
-                  })
+                    width: "100%",
+                  }),
                 }}
               >
                 {isHeader ? (
@@ -161,7 +161,7 @@ export const VirtualizedList = memo(
                         <div
                           key={column.key}
                           style={{
-                            width: getColumnWidth(column.index)
+                            width: getColumnWidth(column.index),
                           }}
                         >
                           {/* {rowRenderer(absoluteIndex, data[absoluteIndex], {
@@ -181,5 +181,5 @@ export const VirtualizedList = memo(
         </Box>
       </Stack>
     )
-  }
+  },
 )

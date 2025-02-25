@@ -24,7 +24,7 @@ export const DebugInfo: FC<
       <TableContainer>
         <Table
           style={{
-            minWidth: 650
+            minWidth: 650,
           }}
           size="small"
           aria-label="a dense table"

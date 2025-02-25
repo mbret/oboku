@@ -28,7 +28,7 @@ export const isShallowEqual = <T = any, R = any>(
   objectB: R,
   options?: {
     customEqual?: <T>(a: T, b: T) => boolean
-  }
+  },
 ): boolean => {
   // @ts-ignore
   if (objectA === objectB) {

@@ -9,18 +9,18 @@ export const getCoverIdFromUrl = (url: URL) => {
 export const getMetadataFromRequest = (request: Request) => {
   const coverId = request.headers.get(`oboku-sw-cover-id`) || `-1`
   const coverTimeCached = parseInt(
-    request.headers.get(`oboku-sw-time-cached`) || "0"
+    request.headers.get(`oboku-sw-time-cached`) || "0",
   )
 
   return {
     coverId,
-    coverTimeCached
+    coverTimeCached,
   }
 }
 
 export const hasAnotherMoreRecentCoverForThisRequest = (
   request: Request,
-  requests: readonly Request[]
+  requests: readonly Request[],
 ) => {
   const { coverId, coverTimeCached } = getMetadataFromRequest(request)
 

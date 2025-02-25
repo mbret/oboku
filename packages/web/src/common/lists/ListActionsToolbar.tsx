@@ -1,17 +1,11 @@
 import { ComponentProps, memo, useState } from "react"
-import {
-  Toolbar,
-  ToolbarProps,
-  IconButton,
-  Button,
-  Badge
-} from "@mui/material"
+import { Toolbar, ToolbarProps, IconButton, Button, Badge } from "@mui/material"
 import {
   AppsRounded,
   FormatListBulletedRounded,
   ListRounded,
   SortRounded,
-  TuneRounded
+  TuneRounded,
 } from "@mui/icons-material"
 import { SortByDialog } from "../../books/bookList/SortByDialog"
 
@@ -20,7 +14,7 @@ export type ListActionViewMode = "grid" | "list" | "compact" | "horizontal"
 
 export const ViewModeIconButton = ({
   viewMode,
-  onViewModeChange
+  onViewModeChange,
 }: {
   viewMode: ListActionViewMode
   onViewModeChange?: (viewMode: ListActionViewMode) => void
@@ -74,7 +68,7 @@ export const ListActionsToolbar = memo(
       <>
         <Toolbar
           style={{
-            boxSizing: "border-box"
+            boxSizing: "border-box",
           }}
           {...rest}
         >
@@ -101,7 +95,7 @@ export const ListActionsToolbar = memo(
                 justifyContent: "flex-start",
                 flexFlow: "row",
                 display: "flex",
-                alignItems: "center"
+                alignItems: "center",
               }}
             >
               <Button
@@ -132,5 +126,5 @@ export const ListActionsToolbar = memo(
         />
       </>
     )
-  }
+  },
 )

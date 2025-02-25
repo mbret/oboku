@@ -4,7 +4,7 @@ import {
   SafeMangoQuery,
   DocType,
   ModelOf,
-  BookMetadata
+  BookMetadata,
 } from "@oboku/shared"
 import cheerio from "cheerio"
 import fetch from "node-fetch"
@@ -36,7 +36,7 @@ type Helpers = {
   getDataSourceData: <Data>() => Promise<Partial<Data>>
   findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
     model: M,
-    query: SafeMangoQuery<D>
+    query: SafeMangoQuery<D>,
   ) => Promise<
     | ({
         _id: string
@@ -46,7 +46,7 @@ type Helpers = {
   >
   find: <M extends DocType["rx_model"], D extends ModelOf<M>>(
     model: M,
-    query: SafeMangoQuery<D>
+    query: SafeMangoQuery<D>,
   ) => Promise<
     {
       _id: string
@@ -56,11 +56,11 @@ type Helpers = {
   atomicUpdate: <M extends DocType["rx_model"], K extends ModelOf<M>>(
     model: M,
     id: string,
-    cb: (oldData: createNano.DocumentGetResponse & K) => Partial<K>
+    cb: (oldData: createNano.DocumentGetResponse & K) => Partial<K>,
   ) => Promise<unknown>
   create: <M extends DocType["rx_model"], D extends ModelOf<M>>(
     model: M,
-    data: Omit<D, "rx_model" | "_id" | "_rev">
+    data: Omit<D, "rx_model" | "_id" | "_rev">,
   ) => Promise<createNano.DocumentInsertResponse>
   getOrCreateTagFromName: (name: string) => void
 }
@@ -79,7 +79,7 @@ export type DataSourcePlugin = {
   >
   download?: (
     link: LinkDocType,
-    credentials?: any
+    credentials?: any,
   ) => Promise<{
     stream: NodeJS.ReadableStream | IncomingMessage
     metadata: Omit<Metadata, "type"> & { contentType?: string }
@@ -92,6 +92,6 @@ export type DataSourcePlugin = {
       dataSourceType: string
       syncReport: SyncReport
     },
-    helper: Helpers
+    helper: Helpers,
   ) => Promise<SynchronizeAbleDataSource>
 }

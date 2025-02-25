@@ -17,7 +17,7 @@ export class User implements iUser {
   constructor(
     public _id: string,
     public email: string,
-    public password: string
+    public password: string,
   ) {
     this.name = email
   }

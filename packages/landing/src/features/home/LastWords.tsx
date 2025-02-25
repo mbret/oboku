@@ -7,7 +7,7 @@ export const LastWords = () => {
         <Chip
           label="Hold on a few more seconds"
           sx={{
-            alignSelf: "flex-start"
+            alignSelf: "flex-start",
           }}
         />
         <Typography variant="h4" component="h2">

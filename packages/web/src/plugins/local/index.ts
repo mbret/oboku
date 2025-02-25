@@ -16,7 +16,7 @@ export const plugin: ObokuPlugin = {
       code: "unknown",
       severity: "user",
       message:
-        "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book using a cloud provider."
+        "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book using a cloud provider.",
     })
-  }
+  },
 }

@@ -11,17 +11,17 @@ const inter = Inter({ subsets: ["latin"] })
 const roboto = Roboto({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
-  display: "swap"
+  display: "swap",
 })
 
 export const metadata: Metadata = {
   title: "oboku | Your digital library",
   description:
-    "Your books, your cloud! Access, read and sync your personal library from your cloud, anytime, anywhere."
+    "Your books, your cloud! Access, read and sync your personal library from your cloud, anytime, anywhere.",
 }
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode
 }>) {

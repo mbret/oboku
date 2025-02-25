@@ -24,13 +24,13 @@ export const usePluginSynchronize = () => {
     synchronize:
       plugin.useSynchronize &&
       plugin.useSynchronize({
-        requestPopup: createRequestPopupDialog({ name: plugin.name })
-      })
+        requestPopup: createRequestPopupDialog({ name: plugin.name }),
+      }),
   }))
 
   const execute = async (dataSource: DataSourceDocType) => {
     const found = getPluginFn.current.find(
-      (plugin) => plugin.type === dataSource.type
+      (plugin) => plugin.type === dataSource.type,
     )
     if (found) {
       if (!found.synchronize) {

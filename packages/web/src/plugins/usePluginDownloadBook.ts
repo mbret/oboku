@@ -19,10 +19,10 @@ export const usePluginDownloadBook = () => {
       downloadBook: plugin.useDownloadBook
         ? plugin.useDownloadBook({
             apiUri: API_URL ?? "",
-            requestPopup: createRequestPopupDialog({ name: plugin.name })
+            requestPopup: createRequestPopupDialog({ name: plugin.name }),
           })
         : // eslint-disable-next-line react-hooks/rules-of-hooks
-          useDownloadBookPlaceholder()
+          useDownloadBookPlaceholder(),
     }
   })
 
@@ -30,7 +30,7 @@ export const usePluginDownloadBook = () => {
     NonNullable<ObokuPlugin[`useDownloadBook`]>
   > = (options) => {
     const pluginHookResult = pluginHooksResults.find(
-      (plugin) => plugin.type === options.link.type
+      (plugin) => plugin.type === options.link.type,
     )
 
     if (!pluginHookResult) {

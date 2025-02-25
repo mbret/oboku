@@ -13,7 +13,7 @@ import { StatusChip } from "../series/StatusChip"
 export const CollectionListItemCover = memo(({ id }: { id: string }) => {
   const theme = useTheme()
   const { data: item } = useCollection({
-    id
+    id,
   })
   const metadata = getCollectionComputedMetadata(item)
   const readingProgress = useCollectionReadingProgress({ id })
@@ -29,8 +29,8 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
         position: "relative",
         alignItems: "center",
         ...(id === COLLECTION_EMPTY_ID && {
-          opacity: 0.5
-        })
+          opacity: 0.5,
+        }),
       }}
       width="100%"
       justifyContent="center"
@@ -48,7 +48,7 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
           sx={{
             opacity: 0.4,
             objectFit: "cover",
-            objectPosition: "center center"
+            objectPosition: "center center",
           }}
         />
       ) : (
@@ -62,7 +62,7 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
             alignSelf: "flex-end",
             position: "absolute",
             bottom: 0,
-            left: 0
+            left: 0,
           }}
         />
       )}
@@ -81,7 +81,7 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
               position: "absolute",
               left: 0,
               bottom: 0,
-              m: 1
+              m: 1,
             }}
           />
           {item?.type === "series" && (
@@ -93,7 +93,7 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
                 position: "absolute",
                 right: 0,
                 bottom: 0,
-                m: 1
+                m: 1,
               }}
             />
           )}

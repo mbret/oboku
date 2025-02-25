@@ -22,7 +22,7 @@ export const BookListWithControls: FC<
   onViewModeChange,
   onSortingChange,
   ListActionsToolbarProps,
-  useWindowScroll
+  useWindowScroll,
 }) => {
   const sortedData = useBookIdsSortedBy(data, sorting)
 
@@ -46,7 +46,7 @@ export const BookListWithControls: FC<
             useWindowScroll={useWindowScroll}
             style={{
               height: "100%",
-              width: "100%"
+              width: "100%",
             }}
           />
         )}

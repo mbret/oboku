@@ -23,7 +23,7 @@ import {
   Subject,
   switchMap,
   tap,
-  throttleTime
+  throttleTime,
 } from "rxjs"
 import { CancelError, isPluginError } from "../errors/errors.shared"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
@@ -34,14 +34,14 @@ class NoLinkFound extends Error {}
 
 const setDownloadData = (
   bookId: string,
-  data: ReturnType<typeof booksDownloadStateSignal.getValue>[number]
+  data: ReturnType<typeof booksDownloadStateSignal.getValue>[number],
 ) => {
   booksDownloadStateSignal.setValue((prev) => ({
     ...prev,
     [bookId]: {
       ...prev[bookId],
-      ...data
-    }
+      ...data,
+    },
   }))
 }
 
@@ -52,7 +52,7 @@ export const useDownloadBook = () => {
     mutationFn: ({
       _id: bookId,
       links,
-      file
+      file,
     }: Pick<BookQueryResult, `_id` | `links`> & {
       file?: File
     }) => {
@@ -61,19 +61,19 @@ export const useDownloadBook = () => {
       const updateProgress$ = progressSubject.pipe(
         throttleTime(500, animationFrameScheduler, {
           leading: true,
-          trailing: true
+          trailing: true,
         }),
         tap((progress) => {
           setDownloadData(bookId, {
-            downloadProgress: progress
+            downloadProgress: progress,
           })
         }),
-        ignoreElements()
+        ignoreElements(),
       )
 
       setDownloadData(bookId, {
         downloadProgress: 0,
-        downloadState: DownloadState.Downloading
+        downloadState: DownloadState.Downloading,
       })
 
       return latestDatabase$.pipe(
@@ -82,8 +82,8 @@ export const useDownloadBook = () => {
           const link$ = from(
             getLinkStateAsync({
               linkId: links[0] || ``,
-              db: database
-            })
+              db: database,
+            }),
           ).pipe(
             map((link) => {
               if (!link) {
@@ -91,20 +91,20 @@ export const useDownloadBook = () => {
                   autoStart: true,
                   title: "No link!",
                   content:
-                    "Your book does not have a valid link to download the file. Please add one before proceeding"
+                    "Your book does not have a valid link to download the file. Please add one before proceeding",
                 })
 
                 throw new NoLinkFound()
               }
 
               return link
-            })
+            }),
           )
 
           const fileExist$ = from(
             dexieDb.downloads.get({
-              id: bookId
-            })
+              id: bookId,
+            }),
           )
 
           return merge(
@@ -115,7 +115,7 @@ export const useDownloadBook = () => {
                 if (fileExist) {
                   setDownloadData(bookId, {
                     downloadProgress: 100,
-                    downloadState: DownloadState.Downloaded
+                    downloadState: DownloadState.Downloaded,
                   })
 
                   return EMPTY
@@ -128,7 +128,7 @@ export const useDownloadBook = () => {
                 const downloadFile$ = defer(() =>
                   downloadPluginBook({
                     link,
-                    onDownloadProgress
+                    onDownloadProgress,
                   }).pipe(
                     switchMap((downloadResponse) => {
                       if (
@@ -145,7 +145,7 @@ export const useDownloadBook = () => {
                             This can happens if you removed the book from the data source or if you replaced it with another file.
                             Make sure the book is on your data source and try to fix the link for this book in the details screen to target the file. 
                             Attention, if you add the book on your data source and synchronize again, oboku will duplicate the book.
-                          `
+                          `,
                         })
 
                         throw new CancelError()
@@ -168,9 +168,9 @@ export const useDownloadBook = () => {
                                 downloadResponse.data,
                                 {
                                   onData: ({ progress }) =>
-                                    onDownloadProgress(progress)
-                                }
-                              )
+                                    onDownloadProgress(progress),
+                                },
+                              ),
                             )
 
                       return data$.pipe(
@@ -178,11 +178,11 @@ export const useDownloadBook = () => {
                           data,
                           name:
                             downloadResponse.name ??
-                            generateFilenameFromBlob(data, bookId)
-                        }))
+                            generateFilenameFromBlob(data, bookId),
+                        })),
                       )
-                    })
-                  )
+                    }),
+                  ),
                 )
 
                 const file$ = file
@@ -193,35 +193,35 @@ export const useDownloadBook = () => {
                   switchMap(({ data, name }) => {
                     Report.log(
                       `Saving ${bookId} into storage for a size of ${bytesToMb(
-                        data.size
-                      )} mb`
+                        data.size,
+                      )} mb`,
                     )
 
                     return from(
                       dexieDb.downloads.add({
                         id: bookId,
                         data,
-                        name
-                      })
+                        name,
+                      }),
                     )
                   }),
                   tap(() => {
                     setDownloadData(bookId, {
                       downloadProgress: 100,
-                      downloadState: DownloadState.Downloaded
+                      downloadState: DownloadState.Downloaded,
                     })
-                  })
+                  }),
                 )
               }),
               finalize(() => {
                 progressSubject.complete()
-              })
-            )
+              }),
+            ),
           )
         }),
         catchError((error) => {
           setDownloadData(bookId, {
-            downloadState: DownloadState.None
+            downloadState: DownloadState.None,
           })
 
           if (
@@ -234,7 +234,7 @@ export const useDownloadBook = () => {
             createDialog({
               autoStart: true,
               title: "Unable to download",
-              content: error.message
+              content: error.message,
             })
 
             if (error.severity === "user") return EMPTY
@@ -242,9 +242,9 @@ export const useDownloadBook = () => {
 
           throw error
         }),
-        defaultIfEmpty(null)
+        defaultIfEmpty(null),
       )
-    }
+    },
   })
 }
 

@@ -4,7 +4,7 @@ import {
   List,
   ListItemIcon,
   ListItemText,
-  ListItemButton
+  ListItemButton,
 } from "@mui/material"
 import { useState, FC } from "react"
 import {
@@ -13,12 +13,12 @@ import {
   LibraryAddRounded,
   ThumbDownOutlined,
   ThumbUpOutlined,
-  SyncRounded
+  SyncRounded,
 } from "@mui/icons-material"
 import { useSignalValue } from "reactjrx"
 import {
   collectionActionDrawerChangesState,
-  collectionActionDrawerState
+  collectionActionDrawerState,
 } from "./useCollectionActionsDrawer"
 import { RenameCollectionDialog } from "./RenameCollectionDialog"
 import { differenceInMinutes } from "date-fns"
@@ -33,11 +33,11 @@ import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 
 export const CollectionActionsDrawer: FC<{}> = () => {
   const { openedWith, lastId: collectionId } = useSignalValue(
-    collectionActionDrawerState
+    collectionActionDrawerState,
   )
   const [
     isEditCollectionDialogOpenedWithId,
-    setIsEditCollectionDialogOpenedWithId
+    setIsEditCollectionDialogOpenedWithId,
   ] = useState<string | undefined>(undefined)
   const { mutate: removeCollection } = useRemoveCollection()
   const [isManageBookDialogOpened, setIsManageBookDialogOpened] =
@@ -50,14 +50,14 @@ export const CollectionActionsDrawer: FC<{}> = () => {
       onExit: () => {
         collectionActionDrawerState.setValue({
           openedWith: undefined,
-          lastId: collectionId
+          lastId: collectionId,
         })
 
         setIsEditCollectionDialogOpenedWithId(undefined)
         setIsManageBookDialogOpened(false)
-      }
+      },
     },
-    openedWith
+    openedWith,
   )
   const { data: collection } = useCollection({ id: collectionId })
 
@@ -99,9 +99,9 @@ export const CollectionActionsDrawer: FC<{}> = () => {
                 id: collectionId ?? ``,
                 updateObj: {
                   $set: {
-                    isNotInterested: true
-                  }
-                }
+                    isNotInterested: true,
+                  },
+                },
               })
             }}
           >
@@ -117,9 +117,9 @@ export const CollectionActionsDrawer: FC<{}> = () => {
                 id: collectionId ?? ``,
                 updateObj: {
                   $set: {
-                    isNotInterested: false
-                  }
-                }
+                    isNotInterested: false,
+                  },
+                },
               })
             }}
           >

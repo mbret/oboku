@@ -11,7 +11,7 @@ export function withOfflineErrorDialog() {
         }
 
         throw error
-      })
+      }),
     )
   }
 }

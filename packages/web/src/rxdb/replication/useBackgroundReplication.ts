@@ -35,7 +35,7 @@ export const useBackgroundReplication = () => {
       bookReplicationState,
       tagReplicationState,
       collectionReplicationState,
-      linkReplicationState
+      linkReplicationState,
     ],
     [
       settingsReplicationState,
@@ -43,8 +43,8 @@ export const useBackgroundReplication = () => {
       bookReplicationState,
       tagReplicationState,
       collectionReplicationState,
-      linkReplicationState
-    ]
+      linkReplicationState,
+    ],
   )
 
   useWatchAndFixConflicts()
@@ -54,9 +54,9 @@ export const useBackgroundReplication = () => {
       triggerReplication$.pipe(
         tap(() => {
           replicationStates.forEach((state) => state?.reSync())
-        })
+        }),
       ),
-    [replicationStates]
+    [replicationStates],
   )
 
   useSubscribe(
@@ -78,62 +78,62 @@ export const useBackgroundReplication = () => {
                     signOut()
                   }
                 })
-              })
-            )
+              }),
+            ),
           )
-        })
+        }),
       ),
-    [replicationStates, signOut]
+    [replicationStates, signOut],
   )
 
   useSubscribe(
     () =>
       combineLatest(
-        replicationStates.map((state) => state?.active$ ?? of(false))
+        replicationStates.map((state) => state?.active$ ?? of(false)),
       ).pipe(
         tap((active) => {
           syncSignal.setValue((state) => ({
             ...state,
-            active: active.reduce((acc, value) => (value ? acc + 1 : acc), 0)
+            active: active.reduce((acc, value) => (value ? acc + 1 : acc), 0),
           }))
-        })
+        }),
       ),
-    [replicationStates]
+    [replicationStates],
   )
 
   useEffect(
     () => () => {
       settingsReplicationState?.cancel()
     },
-    [settingsReplicationState, online]
+    [settingsReplicationState, online],
   )
 
   useEffect(
     () => () => {
       dataSourceReplicationState?.cancel()
     },
-    [dataSourceReplicationState, online]
+    [dataSourceReplicationState, online],
   )
 
   useEffect(
     () => () => {
       bookReplicationState?.cancel()
     },
-    [bookReplicationState, online]
+    [bookReplicationState, online],
   )
 
   useEffect(
     () => () => {
       tagReplicationState?.cancel()
     },
-    [tagReplicationState, online]
+    [tagReplicationState, online],
   )
 
   useEffect(
     () => () => {
       collectionReplicationState?.cancel()
     },
-    [collectionReplicationState, online]
+    [collectionReplicationState, online],
   )
 
   useEffect(() => {
@@ -150,7 +150,7 @@ export const useBackgroundReplication = () => {
       collection: database?.datasource,
       token,
       dbName,
-      live: true
+      live: true,
     })
     replicateTag({ collection: database?.tag, token, dbName, live: true })
     replicateLink({ collection: database?.link, token, dbName, live: true })
@@ -158,13 +158,13 @@ export const useBackgroundReplication = () => {
       collection: database?.settings,
       token,
       dbName,
-      live: true
+      live: true,
     })
     replicateCollection({
       collection: database?.obokucollection,
       token,
       dbName,
-      live: true
+      live: true,
     })
   }, [
     database,
@@ -176,6 +176,6 @@ export const useBackgroundReplication = () => {
     replicateCollection,
     token,
     dbName,
-    online
+    online,
   ])
 }

@@ -9,7 +9,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Typography
+  Typography,
 } from "@mui/material"
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
 import { FC, useState } from "react"
@@ -70,7 +70,7 @@ export const GoogleDriveDataSource: FC<{
               <ListItem>
                 <Button
                   style={{
-                    flex: 1
+                    flex: 1,
                   }}
                   startIcon={<ArrowBackIosRounded style={{}} />}
                   variant="outlined"
@@ -113,7 +113,7 @@ export const GoogleDriveDataSource: FC<{
                       console.error(error)
 
                       return of(null)
-                    })
+                    }),
                   )
                   .subscribe()
               }}
@@ -135,11 +135,11 @@ export const GoogleDriveDataSource: FC<{
                 const customData: GoogleDriveDataSourceData = {
                   applyTags: Object.keys(selectedTags),
                   folderId: selectedFolder.id,
-                  folderName: selectedFolder.name
+                  folderName: selectedFolder.name,
                 }
                 addDataSource({
                   type: `DRIVE`,
-                  data: JSON.stringify(customData)
+                  data: JSON.stringify(customData),
                 })
               }
             }}

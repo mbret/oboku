@@ -7,7 +7,7 @@ type Key = string
 
 const lockState = signal<Key[]>({
   key: "lock",
-  default: []
+  default: [],
 })
 
 const useIsLockedState = () => {
@@ -43,7 +43,7 @@ export const useLock = () => {
 
       return () => unlock(key)
     },
-    [unlock]
+    [unlock],
   )
 
   return [lock, unlock] as [typeof lock, typeof unlock]
@@ -93,7 +93,7 @@ export const BlockingBackdrop: FC<{}> = () => {
       open={active}
       sx={{
         zIndex: theme.zIndex.tooltip + 1,
-        color: "#fff"
+        color: "#fff",
       }}
     >
       <CircularProgress color="inherit" />

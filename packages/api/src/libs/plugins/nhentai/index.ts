@@ -90,11 +90,11 @@ export const plugin: DataSourcePlugin = {
         languages,
         creators,
         subjects,
-        coverUrl
-      }
+        coverUrl,
+      },
     }
   },
   sync: async () => {
     throw new Error(`Not implemented`)
-  }
+  },
 }

@@ -24,10 +24,10 @@ export const getSeries = async (title: string) => {
     method: "post",
     url: "https://biblioreads.eu.org/api/series-scraper",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     data: {
-      queryURL: seriesUrl
-    }
+      queryURL: seriesUrl,
+    },
   })
 }

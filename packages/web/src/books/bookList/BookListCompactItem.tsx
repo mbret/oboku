@@ -11,5 +11,5 @@ export const BookListCompactItem = memo(
         {...rest}
       />
     )
-  }
+  },
 )

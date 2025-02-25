@@ -8,7 +8,7 @@ export const TagList = memo(
   (
     props: {
       onItemClick?: (tag: { _id: string; isProtected: boolean }) => void
-    } & ComponentProps<typeof VirtuosoList>
+    } & ComponentProps<typeof VirtuosoList>,
   ) => {
     const { onItemClick, ...rest } = props
 
@@ -20,9 +20,9 @@ export const TagList = memo(
           style={itemStyle}
         />
       ),
-      [onItemClick]
+      [onItemClick],
     )
 
     return <VirtuosoList rowRenderer={rowRenderer} itemsPerRow={1} {...rest} />
-  }
+  },
 )

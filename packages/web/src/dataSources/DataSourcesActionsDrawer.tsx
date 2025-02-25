@@ -4,14 +4,14 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-  ListItemButton
+  ListItemButton,
 } from "@mui/material"
 import { FC, memo } from "react"
 import {
   SyncRounded,
   DeleteForeverRounded,
   RadioButtonUncheckedOutlined,
-  CheckCircleRounded
+  CheckCircleRounded,
 } from "@mui/icons-material"
 import { useDataSource } from "./useDataSource"
 import { useSignalValue } from "reactjrx"
@@ -59,8 +59,8 @@ export const DataSourcesActionsDrawer: FC<{
               id: openWith,
               mutationFunction: (old) => ({
                 ...old,
-                isProtected: !old.isProtected
-              })
+                isProtected: !old.isProtected,
+              }),
             })
           }}
         >

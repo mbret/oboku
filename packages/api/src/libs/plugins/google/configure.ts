@@ -1,6 +1,6 @@
 let secrets = {
   client_id: "",
-  client_secret: ""
+  client_secret: "",
 }
 
 export const getSecrets = () => secrets

@@ -8,7 +8,7 @@ export const useUpsertLink = () => {
     mutationFn: ({
       bookId,
       resourceId,
-      type
+      type,
     }: {
       bookId: string
       resourceId: string
@@ -23,10 +23,10 @@ export const useUpsertLink = () => {
                 selector: {
                   resourceId,
                   type,
-                  book: bookId
-                }
+                  book: bookId,
+                },
               })
-              .exec()
+              .exec(),
           ).pipe(
             switchMap((existingLink) => {
               if (existingLink) {
@@ -42,13 +42,13 @@ export const useUpsertLink = () => {
                   type,
                   book: bookId,
                   createdAt: new Date().toISOString(),
-                  modifiedAt: null
-                })
+                  modifiedAt: null,
+                }),
               )
-            })
+            }),
           )
-        })
+        }),
       )
-    }
+    },
   })
 }

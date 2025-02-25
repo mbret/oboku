@@ -16,11 +16,11 @@ const deleteBookNormallyDialog: Parameters<
   preset: "CONFIRM",
   title: "Delete a book",
   content: `You are about to delete a book, are you sure ?`,
-  onConfirm: () => ({ deleteFromDataSource: false })
+  onConfirm: () => ({ deleteFromDataSource: false }),
 }
 
 export const useRemoveHandler = (
-  options: { onSuccess?: () => void; onError?: () => void } = {}
+  options: { onSuccess?: () => void; onError?: () => void } = {},
 ) => {
   const { mutateAsync: removeBook } = useRemoveBook()
 
@@ -57,14 +57,14 @@ export const useRemoveHandler = (
                         {
                           type: "confirm",
                           title: "both",
-                          onConfirm: () => ({ deleteFromDataSource: true })
+                          onConfirm: () => ({ deleteFromDataSource: true }),
                         },
                         {
                           type: "confirm",
                           title: "only oboku",
-                          onConfirm: () => ({ deleteFromDataSource: false })
-                        }
-                      ]
+                          onConfirm: () => ({ deleteFromDataSource: false }),
+                        },
+                      ],
                     }).$
                   }
                 }),
@@ -72,21 +72,21 @@ export const useRemoveHandler = (
                   from(
                     removeBook({
                       id: book._id,
-                      deleteFromDataSource: result?.deleteFromDataSource
-                    })
-                  )
-                )
+                      deleteFromDataSource: result?.deleteFromDataSource,
+                    }),
+                  ),
+                ),
               )
-            })
+            }),
           )
         }),
         defaultIfEmpty(null),
         withOfflineErrorDialog(),
-        withUnknownErrorDialog()
+        withUnknownErrorDialog(),
       )
 
       return mutation$
     },
-    ...options
+    ...options,
   })
 }

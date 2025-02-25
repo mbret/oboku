@@ -13,7 +13,7 @@ type UploadBookComponentProps = ComponentProps<
 >
 
 export const uploadBookDialogOpenedSignal = signal<string | undefined>({
-  default: undefined
+  default: undefined,
 })
 
 export const UploadBookDialog = memo(
@@ -35,20 +35,20 @@ export const UploadBookDialog = memo(
           addBook({
             book: {
               ...bookToAdd.book,
-              tags: []
+              tags: [],
             },
             link: {
               book: null,
               data: null,
               createdAt: new Date().toISOString(),
               modifiedAt: null,
-              ...bookToAdd.link
-            }
+              ...bookToAdd.link,
+            },
           })
         }
         onFinalClose()
       },
-      [onFinalClose, addBook, dataSource]
+      [onFinalClose, addBook, dataSource],
     )
 
     if (!dataSource) return null
@@ -67,5 +67,5 @@ export const UploadBookDialog = memo(
         )}
       </>
     )
-  }
+  },
 )

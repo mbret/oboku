@@ -11,7 +11,7 @@ import { withMiddy } from "@libs/middy/withMiddy"
 import { sync } from "@libs/sync/sync"
 
 const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
-  event
+  event,
 ) => {
   const { dataSourceId } = event.body
   const lockId = `sync_${dataSourceId}`
@@ -20,12 +20,12 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     const [client_id = ``, client_secret = ``, jwtPrivateKey = ``] =
       await getParametersValue({
         Names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "jwt-private-key"],
-        WithDecryption: true
+        WithDecryption: true,
       })
 
     configureGoogleDataSource({
       client_id,
-      client_secret
+      client_secret,
     })
 
     const credentials = JSON.parse(event.body.credentials ?? JSON.stringify({}))
@@ -34,10 +34,10 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
     const { name } = await getAuthTokenAsync(
       {
         headers: {
-          authorization
-        }
+          authorization,
+        },
       },
-      jwtPrivateKey
+      jwtPrivateKey,
     )
 
     if (!dataSourceId) {
@@ -49,7 +49,7 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
       dataSourceId,
       db: await getNanoDbForUser(name, jwtPrivateKey),
       credentials,
-      authorization
+      authorization,
     })
 
     await deleteLock(supabase, lockId)
@@ -61,11 +61,11 @@ const lambda: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
 
   return {
     statusCode: 200,
-    body: JSON.stringify({})
+    body: JSON.stringify({}),
   }
 }
 
 export const main = withMiddy(lambda, {
   withCors: false,
-  withJsonBodyParser: false
+  withJsonBodyParser: false,
 })

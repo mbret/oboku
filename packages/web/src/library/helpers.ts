@@ -9,12 +9,12 @@ export const useToggleTag = () => {
     if (tagExist) {
       libraryStateSignal.setValue((old) => ({
         ...old,
-        tags: old.tags.filter((id) => id !== tagId)
+        tags: old.tags.filter((id) => id !== tagId),
       }))
     } else {
       libraryStateSignal.setValue((old) => ({
         ...old,
-        tags: [...old.tags, tagId]
+        tags: [...old.tags, tagId],
       }))
     }
   }, [])

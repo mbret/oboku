@@ -11,5 +11,5 @@ export const catchCancelError =
         }
 
         throw err
-      })
+      }),
     )

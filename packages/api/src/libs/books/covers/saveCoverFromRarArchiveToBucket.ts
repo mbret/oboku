@@ -7,7 +7,7 @@ const logger = Logger.child({ module: "saveCoverFromArchiveToBucket" })
 export const saveCoverFromRarArchiveToBucket = async (
   coverObjectKey: string,
   extractor: Extractor<Uint8Array>,
-  fileName: string
+  fileName: string,
 ) => {
   try {
     Logger.info(`prepare to save cover ${coverObjectKey}`)

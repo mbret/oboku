@@ -8,12 +8,12 @@ import {
   ListItemIcon,
   DialogActions,
   Button,
-  ListItemButton
+  ListItemButton,
 } from "@mui/material"
 import {
   ArrowForwardIosRounded,
   CheckCircleRounded,
-  RadioButtonUncheckedOutlined
+  RadioButtonUncheckedOutlined,
 } from "@mui/icons-material"
 import { getDisplayableReadingState, useToggleTag } from "./helpers"
 import { useTagIds } from "../tags/helpers"
@@ -80,7 +80,7 @@ export const LibraryFiltersDrawer: FC<{
                   downloadState:
                     library.downloadState === DownloadState.Downloaded
                       ? undefined
-                      : DownloadState.Downloaded
+                      : DownloadState.Downloaded,
                 }))
               }
             >
@@ -99,7 +99,7 @@ export const LibraryFiltersDrawer: FC<{
                 libraryStateSignal.setValue((state) => ({
                   ...state,
                   isNotInterested:
-                    library.isNotInterested === "only" ? "hide" : "only"
+                    library.isNotInterested === "only" ? "hide" : "only",
                 }))
               }
             >
@@ -134,13 +134,13 @@ export const LibraryFiltersDrawer: FC<{
 
 const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
   open,
-  onClose
+  onClose,
 }) => {
   const library = useSignalValue(libraryStateSignal)
   const readingStates = [
     ReadingStateState.NotStarted,
     ReadingStateState.Reading,
-    ReadingStateState.Finished
+    ReadingStateState.Finished,
   ]
 
   return (
@@ -154,13 +154,13 @@ const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
               libraryStateSignal.setValue((state) => ({
                 ...state,
                 readingStates: library.readingStates.filter(
-                  (s) => s !== readingState
-                )
+                  (s) => s !== readingState,
+                ),
               }))
             } else {
               libraryStateSignal.setValue((state) => ({
                 ...state,
-                readingStates: [...library.readingStates, readingState]
+                readingStates: [...library.readingStates, readingState],
               }))
             }
           }}

@@ -3,7 +3,7 @@ import * as fs from "fs"
 // import * as util from "util"
 import {
   // exec as _exec,
-  execSync
+  execSync,
 } from "child_process"
 import * as serverlessConfiguration from "../serverless"
 
@@ -12,7 +12,6 @@ import * as serverlessConfiguration from "../serverless"
 // const externals: string[] = (serverlessConfiguration as any).custom.bundle
 const externals: string[] =
   (serverlessConfiguration as any).custom.esbuild.external ?? []
-
 ;(async () => {
   console.log("External library to inject into lib layer", externals)
 
@@ -35,8 +34,8 @@ const externals: string[] =
   fs.writeFileSync(
     `layers/nodejs/package.json`,
     JSON.stringify({
-      dependencies: keepDependencies
-    })
+      dependencies: keepDependencies,
+    }),
   )
 
   // install new deps

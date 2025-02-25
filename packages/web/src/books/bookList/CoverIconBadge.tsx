@@ -15,5 +15,5 @@ export const CoverIconBadge = memo(
         {children}
       </Box>
     )
-  }
+  },
 )

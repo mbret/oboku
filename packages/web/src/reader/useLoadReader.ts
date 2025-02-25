@@ -7,7 +7,7 @@ import { useBook } from "../books/states"
 export const useLoadManifest = ({
   manifest,
   containerElement,
-  bookId
+  bookId,
 }: {
   manifest?: Manifest
   containerElement?: HTMLElement | null
@@ -30,7 +30,7 @@ export const useLoadManifest = ({
       reader.load({
         containerElement,
         manifest,
-        cfi: book.readingStateCurrentBookmarkLocation || undefined
+        cfi: book.readingStateCurrentBookmarkLocation || undefined,
       })
     }
   }, [manifest, book, containerElement, reader])

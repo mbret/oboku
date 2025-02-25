@@ -2,10 +2,10 @@
 export const extractParams = <
   Schema extends {
     [index: string]: "string" | "string[]" | "object" | "boolean"
-  }
+  },
 >(
   params: Record<string, unknown> | null | undefined,
-  schema: Schema
+  schema: Schema,
 ) => {
   return Object.keys(schema).reduce(
     (acc, queryKey) => {
@@ -17,25 +17,26 @@ export const extractParams = <
         if (validateAs === "string")
           return {
             ...acc,
-            [queryKey]: typeof queryValue === "string" ? queryValue : undefined
+            [queryKey]: typeof queryValue === "string" ? queryValue : undefined,
           }
 
         if (validateAs === "string[]")
           return {
             ...acc,
-            [queryKey]: Array.isArray(queryValue) ? queryValue : undefined
+            [queryKey]: Array.isArray(queryValue) ? queryValue : undefined,
           }
 
         if (validateAs === "object")
           return {
             ...acc,
-            [queryKey]: typeof queryValue === "object" ? queryValue : undefined
+            [queryKey]: typeof queryValue === "object" ? queryValue : undefined,
           }
 
         if (validateAs === "boolean")
           return {
             ...acc,
-            [queryKey]: typeof queryValue === "boolean" ? queryValue : undefined
+            [queryKey]:
+              typeof queryValue === "boolean" ? queryValue : undefined,
           }
       }
 
@@ -49,6 +50,6 @@ export const extractParams = <
           : Schema[Key] extends "string[]"
             ? string[]
             : object
-    }
+    },
   )
 }

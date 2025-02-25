@@ -8,7 +8,7 @@ export const useUpdateCollectionBooks = () => {
   return useMutation$({
     mutationFn: ({
       id,
-      updateObj
+      updateObj,
     }: {
       id: string
       updateObj: UpdateQuery<BookDocType>
@@ -20,11 +20,11 @@ export const useUpdateCollectionBooks = () => {
               .findOne({
                 selector: {
                   _id: {
-                    $eq: id
-                  }
-                }
+                    $eq: id,
+                  },
+                },
               })
-              .exec()
+              .exec(),
           ).pipe(
             mergeMap((collection) => {
               if (!collection) throw new Error("no item")
@@ -34,15 +34,15 @@ export const useUpdateCollectionBooks = () => {
                   .find({
                     selector: {
                       _id: {
-                        $in: collection.books
-                      }
-                    }
+                        $in: collection.books,
+                      },
+                    },
                   })
-                  .update(updateObj)
+                  .update(updateObj),
               )
-            })
-          )
-        )
-      )
+            }),
+          ),
+        ),
+      ),
   })
 }

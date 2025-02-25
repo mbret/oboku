@@ -11,7 +11,7 @@ const logger = Logger.child({ module: "getMetadataFromZipArchive" })
 
 export const getMetadataFromZipArchive = async (
   tmpFilePath: string,
-  contentType: string
+  contentType: string,
 ): Promise<BookMetadata> => {
   let contentLength = 0
   const files: string[] = []
@@ -19,16 +19,16 @@ export const getMetadataFromZipArchive = async (
   let opfAsJson: OPF = {
     package: {
       manifest: {},
-      metadata: {}
-    }
+      metadata: {},
+    },
   }
 
   await fs
     .createReadStream(tmpFilePath)
     .pipe(
       unzipper.Parse({
-        verbose: false
-      })
+        verbose: false,
+      }),
     )
     .on("entry", async (entry: unzipper.Entry) => {
       contentLength = contentLength + entry.vars.compressedSize
@@ -56,7 +56,7 @@ export const getMetadataFromZipArchive = async (
 
   const firstValidImagePath = files
     .filter((file) =>
-      COVER_ALLOWED_EXT.includes(path.extname(file).toLowerCase())
+      COVER_ALLOWED_EXT.includes(path.extname(file).toLowerCase()),
     )
     .sort()[0]
 
@@ -71,6 +71,6 @@ export const getMetadataFromZipArchive = async (
       ? opfBasePath !== ""
         ? `${opfBasePath}/${opfCoverLink}`
         : opfCoverLink
-      : firstValidImagePath
+      : firstValidImagePath,
   }
 }

@@ -20,4 +20,5 @@ jobs:
       - name: Check
         run: |
           npm ci
+          npm run lint
           npm run build

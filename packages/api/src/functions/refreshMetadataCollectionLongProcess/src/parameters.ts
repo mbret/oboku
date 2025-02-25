@@ -13,10 +13,10 @@ export const parameters$ = defer(() =>
         "GOOGLE_CLIENT_SECRET",
         "GOOGLE_API_KEY",
         "jwt-private-key",
-        "COMiCVINE_API_KEY"
+        "COMiCVINE_API_KEY",
       ],
-      WithDecryption: true
-    })
+      WithDecryption: true,
+    }),
   ).pipe(
     map(
       ([
@@ -24,14 +24,14 @@ export const parameters$ = defer(() =>
         client_secret = ``,
         googleApiKey = ``,
         jwtPrivateKey = ``,
-        comicVineApiKey = ``
+        comicVineApiKey = ``,
       ]) => ({
         client_id,
         client_secret,
         googleApiKey,
         jwtPrivateKey,
-        comicVineApiKey
-      })
-    )
-  )
+        comicVineApiKey,
+      }),
+    ),
+  ),
 )
