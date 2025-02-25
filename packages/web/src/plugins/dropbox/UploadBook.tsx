@@ -2,7 +2,7 @@
  * @see https://www.dropbox.com/developers/chooser
  * @see https://www.dropbox.com/lp/developers/reference/oauth-guide
  */
-import { FC, memo } from "react"
+import { type FC, memo } from "react"
 import { BlockingScreen } from "../../common/BlockingBackdrop"
 import { useAddBook } from "../../books/helpers"
 import { useDataSourceHelpers } from "../../dataSources/helpers"

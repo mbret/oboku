@@ -1,5 +1,5 @@
 import { SdStorageRounded } from "@mui/icons-material"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 import { UploadBook } from "./UploadBook"
 import { PLUGIN_FILE_TYPE } from "@oboku/shared"
 import { ObokuPluginError } from "../../errors/errors.shared"

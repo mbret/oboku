@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react"
+import { type FC, useMemo } from "react"
 import { useRemoveTagFromBook, useAddTagToBook } from "../books/helpers"
 import { useBooksAsArrayState } from "../books/states"
 import { useCallback } from "react"

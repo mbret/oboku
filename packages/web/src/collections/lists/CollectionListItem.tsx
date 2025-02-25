@@ -5,12 +5,12 @@ import {
   ListItemButton as MuiListItemButton,
   ListItemText,
   styled,
-  ListItemProps,
+  type ListItemProps,
   Stack,
 } from "@mui/material"
 import { LockRounded, MoreVert } from "@mui/icons-material"
-import { CollectionDocType } from "@oboku/shared"
-import { DeepReadonlyObject } from "rxdb"
+import type { CollectionDocType } from "@oboku/shared"
+import type { DeepReadonlyObject } from "rxdb"
 import { CollectionListItemCover } from "./CollectionListItemCover"
 import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"

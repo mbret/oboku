@@ -1,5 +1,5 @@
-import { CollectionDocType, CollectionMetadata, mergeWith } from "@oboku/shared"
-import { DeepReadonlyObject } from "rxdb"
+import { type CollectionDocType, type CollectionMetadata, mergeWith } from "@oboku/shared"
+import type { DeepReadonlyObject } from "rxdb"
 
 type DeprecatedDocType = {
   name: string

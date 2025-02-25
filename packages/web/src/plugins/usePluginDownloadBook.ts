@@ -1,7 +1,7 @@
 import { API_URL } from "../constants.web"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
-import { ObokuPlugin } from "./types"
+import type { ObokuPlugin } from "./types"
 import { from } from "rxjs"
 
 const useDownloadBookPlaceholder = () => {

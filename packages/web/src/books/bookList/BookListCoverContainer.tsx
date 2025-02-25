@@ -1,5 +1,6 @@
-import React, { FC, memo } from "react"
-import { Box, BoxProps, Chip } from "@mui/material"
+import type React from "react"
+import { type FC, memo } from "react"
+import { Box, type BoxProps, Chip } from "@mui/material"
 import {
   CheckOutlined,
   CloudDownloadRounded,

@@ -15,7 +15,7 @@ import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { Provider } from "./Provider"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 import { InfoScreen } from "./InfoScreen"
 
 const GoogleDriveIcon = () => (

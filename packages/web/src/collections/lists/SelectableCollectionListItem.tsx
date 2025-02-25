@@ -1,4 +1,4 @@
-import { FC, memo } from "react"
+import { type FC, memo } from "react"
 import { Box, ListItemButton, ListItemText } from "@mui/material"
 import { Checkbox } from "../../common/Checkbox"
 import { useCollection } from "../useCollection"

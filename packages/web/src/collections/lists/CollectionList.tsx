@@ -1,10 +1,10 @@
-import { useCallback, FC, memo, ComponentProps, useMemo } from "react"
+import { useCallback, type FC, memo, type ComponentProps, useMemo } from "react"
 import { List, Stack } from "@mui/material"
 import { CollectionListItem } from "./CollectionListItem"
-import { CollectionDocType } from "@oboku/shared"
-import { DeepReadonlyObject } from "rxdb"
+import type { CollectionDocType } from "@oboku/shared"
+import type { DeepReadonlyObject } from "rxdb"
 import { useWindowSize } from "react-use"
-import { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
+import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
 export const CollectionList: FC<

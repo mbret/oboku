@@ -125,7 +125,7 @@ class HttpClient {
 
         xhr.send()
 
-        xhr.onload = function () {
+        xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             const data = xhr.response
             resolve({ data, status: xhr.status, statusText: xhr.statusText })
@@ -140,7 +140,7 @@ class HttpClient {
 
         xhr.onprogress = onDownloadProgress
 
-        xhr.onerror = function () {
+        xhr.onerror = () => {
           // handle non-HTTP error (e.g. network down)
           /**
            * Failing with status 0 and text `` after downloading a couple of mb

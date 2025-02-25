@@ -1,4 +1,4 @@
-import { useRef, useCallback, ReactNode, memo } from "react"
+import { useRef, useCallback, type ReactNode, memo } from "react"
 import { BottomNavigationAction, BottomNavigation, Box } from "@mui/material"
 import {
   AccountCircleRounded,

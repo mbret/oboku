@@ -1,7 +1,7 @@
-import { BookDocType, CollectionDocType } from "@oboku/shared"
+import type { BookDocType, CollectionDocType } from "@oboku/shared"
 import { useMutation$ } from "reactjrx"
 import { first, from, map, mergeMap, of } from "rxjs"
-import { DeepReadonlyObject } from "rxdb"
+import type { DeepReadonlyObject } from "rxdb"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 
 export const useRepair = () => {
@@ -34,7 +34,7 @@ export const useRepair = () => {
         const yes = window.confirm(
           `
             This action will remove the invalid book references from the collection. It will not remove anything else.
-            `.replace(/  +/g, ""),
+            `.replace(/ {2,}/g, ""),
         )
 
         if (!yes) return of(null)
@@ -72,7 +72,7 @@ export const useRepair = () => {
         const yes = window.confirm(
           `
             This action will remove the invalid collection references from the book. It will not remove anything else.
-            `.replace(/  +/g, ""),
+            `.replace(/ {2,}/g, ""),
         )
 
         if (!yes) return of(null)
@@ -108,7 +108,7 @@ export const useRepair = () => {
         const yes = window.confirm(
           `
             This action will remove the invalid link references from the book. It will not remove anything else.
-            `.replace(/  +/g, ""),
+            `.replace(/ {2,}/g, ""),
         )
 
         if (!yes) return of(null)
@@ -144,7 +144,7 @@ export const useRepair = () => {
         const yes = window.confirm(
           `
             This action will remove the non used links. It will not remove anything else.
-            `.replace(/  +/g, ""),
+            `.replace(/ {2,}/g, ""),
         )
 
         if (!yes) return of(null)

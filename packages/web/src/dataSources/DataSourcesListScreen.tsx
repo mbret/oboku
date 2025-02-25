@@ -16,12 +16,12 @@ import { Alert } from "@mui/material"
 import { DataSourcesAddDrawer } from "./DataSourcesAddDrawer"
 import { DataSourcesActionsDrawer } from "./DataSourcesActionsDrawer"
 import { Error, LockRounded } from "@mui/icons-material"
-import { DataSourceDocType } from "@oboku/shared"
+import type { DataSourceDocType } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "../plugins/configure"
 import { AddDataSource } from "./AddDataSource"
 import { ObokuErrorCode } from "@oboku/shared"
 import { useDataSources } from "./useDataSources"
-import { ObokuPlugin } from "../plugins/types"
+import type { ObokuPlugin } from "../plugins/types"
 
 export const DataSourcesListScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)

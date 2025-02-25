@@ -1,9 +1,9 @@
-import { LinkDocType } from "@oboku/shared"
+import type { LinkDocType } from "@oboku/shared"
 import { plugins } from "../plugins/configure"
 import { useQuery$ } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
-import { Database } from "../rxdb"
+import type { Database } from "../rxdb"
 import { isRemovableFromDataSource } from "./isRemovableFromDataSource"
 
 export const useLinks = () => {

@@ -1,7 +1,7 @@
 import { addRxPlugin, createRxDatabase } from "rxdb"
-import { PromiseReturnType } from "../types"
+import type { PromiseReturnType } from "../types"
 import {
-  CollectionCollection,
+  type CollectionCollection,
   collectionCollectionMethods,
   collectionSchema,
   collectionMigrationStrategies,
@@ -10,7 +10,7 @@ import { applyHooks } from "./middleware"
 import {
   dataSourceSchema,
   dataSourceCollectionMethods,
-  DataSourceCollection,
+  type DataSourceCollection,
   migrationStrategies as dataSourceMigrationStrategies,
 } from "./collections/dataSource"
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder"
@@ -20,17 +20,17 @@ import { RxDBMigrationPlugin } from "rxdb/plugins/migration-schema"
 import { disableWarnings, RxDBDevModePlugin } from "rxdb/plugins/dev-mode"
 import { getRxStorageDexie } from "rxdb/plugins/storage-dexie"
 import {
-  BookCollection,
+  type BookCollection,
   bookCollectionMethods,
   bookDocMethods,
   bookSchema,
   bookSchemaMigrationStrategies,
 } from "./collections/book"
-import { tag, TagCollection } from "./collections/tags"
-import { link, LinkCollection } from "./collections/link"
+import { tag, type TagCollection } from "./collections/tags"
+import { link, type LinkCollection } from "./collections/link"
 import {
   initializeSettings,
-  SettingsCollection,
+  type SettingsCollection,
   settingsSchema,
 } from "./collections/settings"
 import { conflictHandler } from "./replication/conflictHandler"

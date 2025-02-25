@@ -1,5 +1,5 @@
 import { logEvent } from "firebase/analytics"
-import { Metric, onCLS, onFID, onLCP } from "web-vitals"
+import { type Metric, onCLS, onFID, onLCP } from "web-vitals"
 import { analytics } from "./tracking"
 import { Report } from "./report.shared"
 

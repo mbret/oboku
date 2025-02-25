@@ -1,3 +1,3 @@
-export let stream = { Stream: function () {} }
+export const stream = { Stream: () => {} }
 
-export let Stream = function () {}
+export const Stream = () => {}

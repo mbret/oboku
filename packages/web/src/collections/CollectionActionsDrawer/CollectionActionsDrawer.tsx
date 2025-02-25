@@ -6,7 +6,7 @@ import {
   ListItemText,
   ListItemButton,
 } from "@mui/material"
-import { useState, FC } from "react"
+import { useState, type FC } from "react"
 import {
   Edit,
   DeleteForeverRounded,

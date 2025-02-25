@@ -1,5 +1,5 @@
-import { BookMetadata } from "@oboku/shared"
-import { Extractor } from "node-unrar-js"
+import type { BookMetadata } from "@oboku/shared"
+import type { Extractor } from "node-unrar-js"
 import path from "path"
 import { COVER_ALLOWED_EXT } from "src/constants"
 

@@ -1,9 +1,9 @@
-import {
+import type {
   BookDocType,
   DeprecatedBookDocType,
   InsertAbleBookDocType,
 } from "@oboku/shared"
-import {
+import type {
   MigrationStrategies,
   RxCollection,
   RxDocument,

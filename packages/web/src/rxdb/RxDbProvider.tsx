@@ -1,5 +1,5 @@
 import { memo, useEffect } from "react"
-import { Database, createDatabase } from "./databases"
+import { type Database, createDatabase } from "./databases"
 import { isDefined, signal, useMutation$, useSignalValue } from "reactjrx"
 import { filter, first, from, map, of, switchMap, tap } from "rxjs"
 

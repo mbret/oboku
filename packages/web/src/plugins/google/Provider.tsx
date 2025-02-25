@@ -1,6 +1,6 @@
 import { memo, useEffect } from "react"
 import { BlockingScreen } from "../../common/BlockingBackdrop"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 import { useLoadGapi } from "./lib/gapi"
 import { useLoadGsi } from "./lib/gsi"
 import { useSignalValue } from "reactjrx"

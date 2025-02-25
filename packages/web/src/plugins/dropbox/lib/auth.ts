@@ -8,7 +8,7 @@ const defaultWindowOptions = {
   menubar: "no",
 }
 
-let dropboxAuth = new DropboxAuth({ clientId: CLIENT_ID })
+const dropboxAuth = new DropboxAuth({ clientId: CLIENT_ID })
 
 const isAccessTokenStillSufficient = () => {
   const accessTokenExpiresAt: Date | undefined =
@@ -135,7 +135,7 @@ export const authUser = ({
         reject(new Error("Request timed out"))
       }, 1000 * 60)
 
-      listenToPopupCloseInterval = setInterval(function () {
+      listenToPopupCloseInterval = setInterval(() => {
         if (_oauthWindow?.closed) {
           cleanup()
 

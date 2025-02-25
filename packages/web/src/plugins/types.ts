@@ -1,13 +1,13 @@
-import { DataSourceDocType, LinkDocType } from "@oboku/shared"
-import {
+import type { DataSourceDocType, LinkDocType } from "@oboku/shared"
+import type {
   ComponentProps,
   DOMAttributes,
   FC,
   FunctionComponent,
   ReactNode,
 } from "react"
-import { Button } from "@mui/material"
-import { Observable } from "rxjs"
+import type { Button } from "@mui/material"
+import type { Observable } from "rxjs"
 
 type PostLink = Pick<LinkDocType, "resourceId" | "type">
 type PostBook = {}

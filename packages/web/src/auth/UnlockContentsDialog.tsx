@@ -8,7 +8,7 @@ import {
   TextField,
 } from "@mui/material"
 import { useEffect } from "react"
-import { Controller, SubmitHandler, useForm } from "react-hook-form"
+import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"

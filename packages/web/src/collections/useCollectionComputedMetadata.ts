@@ -1,7 +1,7 @@
-import { CollectionDocType } from "@oboku/shared"
+import type { CollectionDocType } from "@oboku/shared"
 import { useMemo } from "react"
 import { getCollectionComputedMetadata } from "./getCollectionComputedMetadata"
-import { DeepReadonlyObject } from "rxdb"
+import type { DeepReadonlyObject } from "rxdb"
 import { useCollectionDisplayTitle } from "./useCollectionDisplayTitle"
 
 export const useCollectionComputedMetadata = (

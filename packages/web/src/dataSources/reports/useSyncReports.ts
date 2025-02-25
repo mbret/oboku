@@ -1,5 +1,5 @@
 import { httpClient } from "../../http/httpClient"
-import { SupabaseTableSyncReportsEntries } from "@oboku/shared"
+import type { SupabaseTableSyncReportsEntries } from "@oboku/shared"
 import { API_URL } from "../../constants.web"
 import { useQuery } from "@tanstack/react-query"
 

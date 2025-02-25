@@ -1,7 +1,7 @@
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, mergeMap, of } from "rxjs"
-import { RxDocument } from "rxdb"
-import { BookDocType } from "@oboku/shared"
+import type { RxDocument } from "rxdb"
+import type { BookDocType } from "@oboku/shared"
 import { useMutation$ } from "reactjrx"
 
 export const useIncrementalBookPatch = () =>

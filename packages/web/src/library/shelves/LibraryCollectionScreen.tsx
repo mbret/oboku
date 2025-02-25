@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, ComponentProps } from "react"
+import { useState, useMemo, useCallback, type ComponentProps } from "react"
 import { Button, Stack, Toolbar as MuiToolbar } from "@mui/material"
 import { ROUTES } from "../../constants.web"
 import { useNavigate } from "react-router"
@@ -7,8 +7,8 @@ import { signal, useSignalValue } from "reactjrx"
 import { useLibraryShelves } from "./useLibraryShelves"
 import { Toolbar } from "./Toolbar"
 import { libraryShelvesFiltersSignal } from "./filters/states"
-import { CollectionDocType } from "@oboku/shared"
-import { DeepReadonlyObject } from "rxdb"
+import type { CollectionDocType } from "@oboku/shared"
+import type { DeepReadonlyObject } from "rxdb"
 import { AddCollectionDialog } from "./AddCollectionDialog"
 
 type RestoreStateFromState = ComponentProps<

@@ -1,7 +1,7 @@
 import { useSignalValue } from "reactjrx"
-import { DialogType, dialogSignal } from "./state"
+import { type DialogType, dialogSignal } from "./state"
 import { removeDialog } from "./removeDialog"
-import { memo, ReactNode, useCallback } from "react"
+import { memo, type ReactNode, useCallback } from "react"
 import {
   Button,
   Dialog,

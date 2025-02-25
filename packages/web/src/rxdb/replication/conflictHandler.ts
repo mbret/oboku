@@ -1,4 +1,4 @@
-import { RxConflictHandler, defaultConflictHandler } from "rxdb"
+import { type RxConflictHandler, defaultConflictHandler } from "rxdb"
 
 export const conflictHandler: RxConflictHandler<any> = (i, context) => {
   if (!i.newDocumentState) {

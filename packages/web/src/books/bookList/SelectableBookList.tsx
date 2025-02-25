@@ -1,4 +1,4 @@
-import { useCallback, memo, ComponentProps } from "react"
+import { useCallback, memo, type ComponentProps } from "react"
 import { useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { SelectableBookListItem } from "./SelectableBookListItem"

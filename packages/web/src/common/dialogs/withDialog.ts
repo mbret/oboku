@@ -1,5 +1,5 @@
-import { Observable, map, mergeMap } from "rxjs"
-import { DialogType } from "./state"
+import { type Observable, map, mergeMap } from "rxjs"
+import type { DialogType } from "./state"
 import { createDialog } from "./createDialog"
 
 export const withDialog = <Result = undefined>(

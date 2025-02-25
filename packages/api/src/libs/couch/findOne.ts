@@ -1,5 +1,5 @@
-import createNano from "nano"
-import { SafeMangoQuery, DocType, ModelOf } from "@oboku/shared"
+import type createNano from "nano"
+import type { SafeMangoQuery, DocType, ModelOf } from "@oboku/shared"
 import { retryFn } from "./dbHelpers"
 
 type FindOneOptionsBase = {

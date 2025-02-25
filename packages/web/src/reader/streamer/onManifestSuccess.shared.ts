@@ -1,5 +1,5 @@
 import { directives } from "@oboku/shared"
-import { Archive, Manifest } from "@prose-reader/streamer"
+import type { Archive, Manifest } from "@prose-reader/streamer"
 
 export const onManifestSuccess = async ({
   manifest,

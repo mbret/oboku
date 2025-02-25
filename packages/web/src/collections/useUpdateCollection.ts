@@ -1,4 +1,4 @@
-import { CollectionDocType } from "@oboku/shared"
+import type { CollectionDocType } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
 import { useMutation } from "@tanstack/react-query"
 

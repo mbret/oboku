@@ -1,5 +1,5 @@
 import { Subject, filter, map } from "rxjs"
-import { SW_OBOKU_PROFILE_UPDATE_MESSAGE_EVENT } from "./types"
+import type { SW_OBOKU_PROFILE_UPDATE_MESSAGE_EVENT } from "./types"
 
 export const messageSubject = new Subject<
   | SW_OBOKU_PROFILE_UPDATE_MESSAGE_EVENT

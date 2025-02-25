@@ -1,4 +1,4 @@
-import createNano from "nano"
+import type createNano from "nano"
 import { findTags } from "./findTags"
 
 export const isBookProtected = async (

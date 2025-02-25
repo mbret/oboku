@@ -1,7 +1,7 @@
-import { CollectionMetadata } from "../metadata"
-import { BookDocType } from "./books"
-import { CouchDBMeta } from "./couchdb"
-import { RxDbMeta } from "./rxdb"
+import type { CollectionMetadata } from "../metadata"
+import type { BookDocType } from "./books"
+import type { CouchDBMeta } from "./couchdb"
+import type { RxDbMeta } from "./rxdb"
 
 type CommonBase = CouchDBMeta & RxDbMeta
 
@@ -207,5 +207,3 @@ export type ModelOf<Type extends DocType["rx_model"]> = DocType extends infer DT
       : never
     : never
   : never
-
-export {}

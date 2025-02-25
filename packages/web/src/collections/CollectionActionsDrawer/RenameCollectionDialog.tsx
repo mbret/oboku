@@ -6,7 +6,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material"
-import { useEffect, useState, FC } from "react"
+import { useEffect, useState, type FC } from "react"
 import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { useUpdateCollection } from "../useUpdateCollection"
 import { useCollection } from "../useCollection"

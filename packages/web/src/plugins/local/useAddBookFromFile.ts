@@ -1,6 +1,6 @@
 import { useAddBook } from "../../books/helpers"
 import { useDownloadBook } from "../../download/useDownloadBook"
-import { PLUGIN_FILE_TYPE, PLUGIN_FILE_DATA } from "@oboku/shared"
+import { PLUGIN_FILE_TYPE, type PLUGIN_FILE_DATA } from "@oboku/shared"
 import { useMutation } from "@tanstack/react-query"
 
 export const useAddBookFromFile = () => {

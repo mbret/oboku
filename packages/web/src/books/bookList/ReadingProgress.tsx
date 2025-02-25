@@ -1,4 +1,5 @@
-import React, { FC } from "react"
+import type React from "react"
+import type { FC } from "react"
 import { Box, Typography, useTheme } from "@mui/material"
 import { MenuBookRounded } from "@mui/icons-material"
 import { useMeasure } from "react-use"

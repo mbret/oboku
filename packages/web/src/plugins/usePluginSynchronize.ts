@@ -1,8 +1,8 @@
-import { DataSourceDocType } from "@oboku/shared"
+import type { DataSourceDocType } from "@oboku/shared"
 import { useCallback, useRef } from "react"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
-import { ObokuPlugin } from "./types"
+import type { ObokuPlugin } from "./types"
 
 export const usePluginSynchronize = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()

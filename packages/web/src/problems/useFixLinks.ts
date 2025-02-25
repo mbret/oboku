@@ -12,7 +12,7 @@ export const useFixLinks = () => {
                 This action will merge links that uses the same resourceId.
                 We will try to use a non destructive merge by keeping defined properties when possible. 
                 You may want to re-sync after the operation to restore value with their latest state.
-                `.replace(/  +/g, ""),
+                `.replace(/ {2,}/g, ""),
       )
 
       if (yes && database) {

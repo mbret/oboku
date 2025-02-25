@@ -1,5 +1,5 @@
-import { DataSourceDocType } from "@oboku/shared"
-import { ModifyFunction } from "rxdb"
+import type { DataSourceDocType } from "@oboku/shared"
+import type { ModifyFunction } from "rxdb"
 import { first, switchMap, from, of } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { useMutation$ } from "reactjrx"

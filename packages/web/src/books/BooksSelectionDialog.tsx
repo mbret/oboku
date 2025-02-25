@@ -1,4 +1,4 @@
-import { ComponentProps, memo } from "react"
+import { type ComponentProps, memo } from "react"
 import { Dialog, DialogContent } from "@mui/material"
 import { DialogTopBar } from "../navigation/DialogTopBar"
 import { SelectableBookList } from "../books/bookList/SelectableBookList"

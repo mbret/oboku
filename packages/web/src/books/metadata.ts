@@ -1,11 +1,11 @@
 import {
-  BookDocType,
-  DeprecatedBookDocType,
-  BookMetadata,
+  type BookDocType,
+  type DeprecatedBookDocType,
+  type BookMetadata,
   directives,
 } from "@oboku/shared"
 import { useMemo } from "react"
-import { DeepReadonlyObject, RxDocument } from "rxdb"
+import type { DeepReadonlyObject, RxDocument } from "rxdb"
 
 type Return = DeepReadonlyObject<Omit<BookMetadata, "type">> & {
   language?: string

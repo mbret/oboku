@@ -1,6 +1,6 @@
-import { CollectionDocType } from "@oboku/shared"
+import type { CollectionDocType } from "@oboku/shared"
 import { useCallback } from "react"
-import { DeepMutable } from "rxdb/dist/types/types"
+import type { DeepMutable } from "rxdb/dist/types/types"
 import { Report } from "../debug/report.shared"
 import { useDatabase } from "../rxdb"
 
@@ -14,7 +14,7 @@ export const useFixCollections = () => {
             This action will merge collections that uses the same resourceId.
             We will try to use a non destructive merge by keeping defined properties when possible. 
             You may want to re-sync after the operation to restore value with their latest state.
-            `.replace(/  +/g, ""),
+            `.replace(/ {2,}/g, ""),
       )
 
       if (yes && database) {

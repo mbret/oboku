@@ -1,4 +1,4 @@
-import { LinkDocType } from "@oboku/shared"
+import type { LinkDocType } from "@oboku/shared"
 import { plugins } from "../dataSources"
 
 export const isRemovableFromDataSource = ({

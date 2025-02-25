@@ -5,7 +5,7 @@ import EmptyLibraryAsset from "../../assets/empty-library.svg"
 import CollectionBgSvg from "../../assets/series-bg.svg"
 import { BookListWithControls } from "../../books/bookList/BookListWithControls"
 import { signal, useSignalValue } from "reactjrx"
-import {
+import type {
   ListActionSorting,
   ListActionViewMode,
 } from "../../common/lists/ListActionsToolbar"

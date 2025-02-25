@@ -1,5 +1,5 @@
-import { DataSourceDocType } from "@oboku/shared"
-import { Database } from "../rxdb"
+import type { DataSourceDocType } from "@oboku/shared"
+import type { Database } from "../rxdb"
 
 export const getLinksForDataSource = (
   db: Database,

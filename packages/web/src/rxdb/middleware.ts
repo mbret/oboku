@@ -1,6 +1,6 @@
-import { UpdateQuery } from "rxdb"
-import { type useDatabase } from "./index"
-import {
+import type { UpdateQuery } from "rxdb"
+import type { useDatabase } from "./index"
+import type {
   BookDocType,
   CollectionDocType,
   LinkDocType,
@@ -13,7 +13,7 @@ type Database = NonNullable<ReturnType<typeof useDatabase>["db"]>
 const EXEC_PARALLEL = true
 
 export const applyHooks = (db: Database) => {
-  db.book.postSave(async function (data, d) {
+  db.book.postSave(async (data, d) => {
     const tagsFromWhichToRemoveBook = await db.tag
       .find({
         selector: {
@@ -107,7 +107,7 @@ export const applyHooks = (db: Database) => {
     )
   }, true)
 
-  db.book.postRemove(async function (data) {
+  db.book.postRemove(async (data) => {
     /**
      * When a book is removed, dettach it from all tags
      * that contains its reference
@@ -147,7 +147,7 @@ export const applyHooks = (db: Database) => {
     await db.link.find({ selector: { book: data._id } }).remove()
   }, true)
 
-  db.book.postInsert(async function (data) {
+  db.book.postInsert(async (data) => {
     /**
      * When a book is added, make sure to attach it to any links
      */
@@ -166,7 +166,7 @@ export const applyHooks = (db: Database) => {
       } satisfies UpdateQuery<LinkDocType>)
   }, true)
 
-  db.tag.postRemove(async function (data) {
+  db.tag.postRemove(async (data) => {
     const booksFromWhichToRemoveTag = await db.book
       .find({
         selector: {
@@ -189,7 +189,7 @@ export const applyHooks = (db: Database) => {
     )
   }, true)
 
-  db.obokucollection.postRemove(async function (data) {
+  db.obokucollection.postRemove(async (data) => {
     // remove any book that were attached to this collection
     await db.book
       .find({

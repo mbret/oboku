@@ -1,6 +1,6 @@
 import { authStateSignal } from "../../auth/authState"
 import { from, mergeMap } from "rxjs"
-import { RxCollection } from "rxdb"
+import type { RxCollection } from "rxdb"
 import { useReplicateCollection } from "./useReplicateCollection"
 import { useMutation$ } from "reactjrx"
 

@@ -1,5 +1,5 @@
-import { TagsDocType } from "@oboku/shared"
-import {
+import type { TagsDocType } from "@oboku/shared"
+import type {
   MigrationStrategies,
   RxCollection,
   RxDocument,

@@ -6,7 +6,7 @@ import {
   Divider,
   ListItemButton,
 } from "@mui/material"
-import { FC, memo } from "react"
+import { type FC, memo } from "react"
 import {
   SyncRounded,
   DeleteForeverRounded,

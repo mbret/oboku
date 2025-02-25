@@ -1,6 +1,6 @@
 import { Logger } from "@libs/logger"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
-import { Extractor } from "node-unrar-js"
+import type { Extractor } from "node-unrar-js"
 
 const logger = Logger.child({ module: "saveCoverFromArchiveToBucket" })
 

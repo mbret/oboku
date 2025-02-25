@@ -1,4 +1,5 @@
-import React, { FC, memo, useEffect, useState } from "react"
+import type React from "react"
+import { type FC, memo, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
 import placeholder from "../assets/cover-placeholder.png"
 import { Box, styled } from "@mui/material"

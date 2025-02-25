@@ -1,4 +1,4 @@
-import { FC, memo } from "react"
+import { type FC, memo } from "react"
 import { Box, ListItemButton, ListItemText } from "@mui/material"
 import { BlurOnRounded, LockRounded } from "@mui/icons-material"
 import { useTag } from "../helpers"

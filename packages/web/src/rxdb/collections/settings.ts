@@ -1,5 +1,5 @@
-import { RxCollection, RxJsonSchema } from "rxdb"
-import { Database } from "../databases"
+import type { RxCollection, RxJsonSchema } from "rxdb"
+import type { Database } from "../databases"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 
 type SettingsCollectionMethods = {}

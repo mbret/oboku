@@ -14,7 +14,7 @@ import {
 } from "rxjs"
 import { createSwDatabase } from "../rxdb/db.sw"
 import { profileUpdate$ } from "../workers/messages.sw"
-import { type WEB_OBOKU_PROFILE_REQUEST_MESSAGE_DATA } from "../workers/types"
+import type { WEB_OBOKU_PROFILE_REQUEST_MESSAGE_DATA } from "../workers/types"
 import {
   getMetadataFromRequest,
   hasAnotherMoreRecentCoverForThisRequest,

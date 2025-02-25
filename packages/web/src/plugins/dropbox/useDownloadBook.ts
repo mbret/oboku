@@ -1,7 +1,7 @@
 import { Dropbox, type DropboxResponse, type files } from "dropbox"
 import { authUser } from "./lib/auth"
 import { extractIdFromResourceId } from "./helpers"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 import { from, map, mergeMap } from "rxjs"
 
 // this property is somehow missing. must be a bug in dropbox
@@ -18,7 +18,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   return ({ link }) => {
     return from(authUser({ requestPopup })).pipe(
       mergeMap((auth) => {
-        let dropbox = new Dropbox({ auth })
+        const dropbox = new Dropbox({ auth })
 
         return from(
           dropbox.filesDownload({

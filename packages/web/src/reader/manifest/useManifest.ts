@@ -1,4 +1,4 @@
-import { Manifest } from "@prose-reader/shared"
+import type { Manifest } from "@prose-reader/shared"
 import { webStreamer } from "../streamer/webStreamer"
 import { STREAMER_URL_PREFIX } from "../../constants.shared"
 import { serviceWorkerReadySignal } from "../../workers/states"

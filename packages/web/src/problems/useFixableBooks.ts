@@ -2,8 +2,8 @@ import { useMemo } from "react"
 import { useBooks } from "../books/states"
 import { useCollections } from "../collections/useCollections"
 import { difference } from "@oboku/shared"
-import { BookDocType } from "@oboku/shared"
-import { DeepReadonlyObject } from "rxdb"
+import type { BookDocType } from "@oboku/shared"
+import type { DeepReadonlyObject } from "rxdb"
 import { useLinks } from "../links/states"
 
 export const useFixableBooks = () => {

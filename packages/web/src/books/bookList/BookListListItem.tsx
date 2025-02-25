@@ -1,5 +1,5 @@
-import { Box, BoxProps, Chip, Stack, Typography, useTheme } from "@mui/material"
-import { FC, memo } from "react"
+import { Box, type BoxProps, Chip, Stack, Typography, useTheme } from "@mui/material"
+import { type FC, memo } from "react"
 import { useDefaultItemClickHandler } from "./helpers"
 import { useBook, useIsBookProtected } from "../states"
 import { ReadingStateState } from "@oboku/shared"

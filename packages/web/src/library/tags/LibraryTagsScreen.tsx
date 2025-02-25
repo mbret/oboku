@@ -1,4 +1,4 @@
-import { useState, FC, useEffect, useCallback, useMemo } from "react"
+import { useState, type FC, useEffect, useCallback, useMemo } from "react"
 import Dialog from "@mui/material/Dialog"
 import {
   Button,
@@ -13,7 +13,7 @@ import { useCreateTag } from "../../tags/helpers"
 import { TagActionsDrawer } from "../../tags/TagActionsDrawer"
 import { TagList } from "../../tags/tagList/TagList"
 import { useTagIds } from "../../tags/helpers"
-import { Controller, SubmitHandler, useForm } from "react-hook-form"
+import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../../common/forms/errorToHelperText"
 import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 

@@ -4,7 +4,7 @@ import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { catchError, from, map, of, switchMap, timer } from "rxjs"
 import { useMount } from "react-use"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 import { memo } from "react"
 import { useSwitchMutation$ } from "reactjrx"
 

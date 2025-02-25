@@ -1,11 +1,11 @@
-import { TagsDocType } from "@oboku/shared"
+import type { TagsDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
 import { map, mergeMap, switchMap } from "rxjs"
 import { useQuery$ } from "reactjrx"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
-import { Database } from "../rxdb"
-import { DeepReadonlyObject, MangoQuery } from "rxdb"
+import type { Database } from "../rxdb"
+import type { DeepReadonlyObject, MangoQuery } from "rxdb"
 import { useMutation } from "@tanstack/react-query"
 
 export const useCreateTag = () => {

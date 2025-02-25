@@ -1,4 +1,4 @@
-import { ComponentProps, memo, useState } from "react"
+import { type ComponentProps, memo, useState } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
   Box,

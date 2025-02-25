@@ -1,6 +1,6 @@
 import { from, map } from "rxjs"
-import { Database } from "../rxdb"
-import { CollectionDocType } from "@oboku/shared"
+import type { Database } from "../rxdb"
+import type { CollectionDocType } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
 import { COLLECTION_EMPTY_ID } from "../constants.shared"
 

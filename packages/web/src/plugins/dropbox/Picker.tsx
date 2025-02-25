@@ -2,9 +2,9 @@
  * @see https://www.dropbox.com/developers/chooser
  * @see https://www.dropbox.com/lp/developers/reference/oauth-guide
  */
-import { FC, useEffect } from "react"
+import { type FC, useEffect } from "react"
 import { useAddBook } from "../../books/helpers"
-import { DropboxFile } from "./types"
+import type { DropboxFile } from "./types"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 
@@ -37,7 +37,7 @@ export const Picker: FC<{
           ...(select === "file" && {
             linkType: "direct",
           }),
-          cancel: function () {
+          cancel: () => {
             onClose()
           },
           success: async (files: DropboxFile[]) => {

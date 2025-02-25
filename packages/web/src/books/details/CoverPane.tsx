@@ -1,4 +1,4 @@
-import { useTheme, Box, BoxProps } from "@mui/material"
+import { useTheme, Box, type BoxProps } from "@mui/material"
 import { Cover } from "../Cover"
 
 export const CoverPane = ({

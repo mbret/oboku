@@ -1,6 +1,6 @@
-import { CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
+import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
 import { API_URL } from "../constants.shared"
-import { DeepReadonlyObject } from "rxdb"
+import type { DeepReadonlyObject } from "rxdb"
 import { useBookCover } from "../books/useBookCover"
 
 export const useCollectionCoverUri = (

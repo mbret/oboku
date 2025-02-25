@@ -1,7 +1,7 @@
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, mergeMap } from "rxjs"
-import { UpdateQuery } from "rxdb"
-import { BookDocType } from "@oboku/shared"
+import type { UpdateQuery } from "rxdb"
+import type { BookDocType } from "@oboku/shared"
 import { useMutation$ } from "reactjrx"
 
 export const useUpdateCollectionBooks = () => {

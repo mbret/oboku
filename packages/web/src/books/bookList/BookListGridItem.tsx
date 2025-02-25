@@ -1,4 +1,4 @@
-import { ComponentProps, FC, memo } from "react"
+import { type ComponentProps, type FC, memo } from "react"
 import { Box, Typography, styled } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"

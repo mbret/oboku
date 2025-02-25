@@ -1,4 +1,5 @@
-import React, { FC } from "react"
+import type React from "react"
+import type { FC } from "react"
 import { Typography, useTheme } from "@mui/material"
 
 export const OrDivider: FC<{ title?: string; style?: React.CSSProperties }> = ({

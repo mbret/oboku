@@ -1,7 +1,8 @@
-import React, { FC, ComponentProps, memo } from "react"
+import type React from "react"
+import { type FC, type ComponentProps, memo } from "react"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
-import Typography, { TypographyProps } from "@mui/material/Typography"
+import Typography, { type TypographyProps } from "@mui/material/Typography"
 import IconButton from "@mui/material/IconButton"
 import {
   ArrowBackIosRounded,

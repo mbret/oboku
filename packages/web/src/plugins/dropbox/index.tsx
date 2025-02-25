@@ -8,7 +8,7 @@ import DropboxIconAsset from "../../assets/dropbox.svg?react"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 
 const DropboxIcon = () => (
   <SvgIcon>

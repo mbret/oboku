@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo } from "react"
+import { type FC, useCallback, useMemo } from "react"
 import { useCollections } from "../collections/useCollections"
 import { useAddCollectionToBook, useRemoveCollectionFromBook } from "./helpers"
 import { useBook } from "./states"

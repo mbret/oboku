@@ -1,4 +1,4 @@
-import { BookMetadata, OPF } from "@oboku/shared"
+import type { BookMetadata, OPF } from "@oboku/shared"
 import fs from "fs"
 import path from "path"
 import unzipper from "unzipper"

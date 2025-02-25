@@ -1,7 +1,7 @@
 import { EditOutlined } from "@mui/icons-material"
-import { Button, Chip, Stack, StackProps, Typography } from "@mui/material"
+import { Button, Chip, Stack, type StackProps, Typography } from "@mui/material"
 import { Link } from "react-router"
-import { DeepReadonlyArray } from "rxdb/dist/types/types"
+import type { DeepReadonlyArray } from "rxdb/dist/types/types"
 
 export const MetadataItemList = ({
   values,

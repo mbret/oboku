@@ -1,5 +1,5 @@
 import { Button } from "@mui/material"
-import { ComponentProps } from "react"
+import type { ComponentProps } from "react"
 
 type Props = Omit<ComponentProps<typeof Button>, `type`> & {
   type: `confirm` | `cancel`

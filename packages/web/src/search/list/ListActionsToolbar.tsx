@@ -1,7 +1,7 @@
 import { useSignalValue } from "reactjrx"
 import { ListActionsToolbar as CommonListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { FiltersDrawer } from "./FiltersDrawer"
-import { ComponentProps, useState } from "react"
+import { type ComponentProps, useState } from "react"
 import { searchListActionsToolbarSignal } from "./states"
 
 export const ListActionsToolbar = ({

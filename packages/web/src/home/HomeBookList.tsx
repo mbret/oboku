@@ -1,4 +1,4 @@
-import { ComponentProps, memo, useMemo } from "react"
+import { type ComponentProps, memo, useMemo } from "react"
 import { useTheme } from "@mui/material"
 import { BookList } from "../books/bookList/BookList"
 

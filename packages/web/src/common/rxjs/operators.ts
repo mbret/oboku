@@ -1,4 +1,4 @@
-import { catchError, Observable, retry } from "rxjs"
+import { catchError, type Observable, retry } from "rxjs"
 import { Report } from "../../debug/report.shared"
 
 export const retryAndLogError =

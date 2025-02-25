@@ -1,7 +1,7 @@
-import { ReadingStateState } from "@oboku/shared"
-import { DownloadState } from "../../download/states"
+import type { ReadingStateState } from "@oboku/shared"
+import type { DownloadState } from "../../download/states"
 import { signal } from "reactjrx"
-import { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
+import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 
 type LibraryDocType = {
   viewMode: ListActionViewMode

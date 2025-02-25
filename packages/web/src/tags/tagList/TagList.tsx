@@ -1,4 +1,4 @@
-import { useCallback, memo, ComponentProps } from "react"
+import { useCallback, memo, type ComponentProps } from "react"
 import { TagListItemList } from "./TagListItemList"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
 

@@ -2,7 +2,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
-  ListItemTextProps,
+  type ListItemTextProps,
   Switch,
 } from "@mui/material"
 import { memo } from "react"

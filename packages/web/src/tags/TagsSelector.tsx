@@ -1,5 +1,5 @@
-import { FC, useEffect, useState } from "react"
-import { SelectProps, useTheme } from "@mui/material"
+import { type FC, useEffect, useState } from "react"
+import { type SelectProps, useTheme } from "@mui/material"
 import Input from "@mui/material/Input"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"

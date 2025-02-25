@@ -1,13 +1,13 @@
 import {
-  Archive,
+  type Archive,
   createArchiveFromJszip,
   createArchiveFromLibArchive,
   createArchiveFromText,
 } from "@prose-reader/streamer"
 import { loadAsync } from "jszip"
 import { Report } from "../../debug/report.shared"
-import { getBookFile } from "../../download/getBookFile.shared"
-import { PromiseReturnType } from "../../types"
+import type { getBookFile } from "../../download/getBookFile.shared"
+import type { PromiseReturnType } from "../../types"
 import { Archive as LibARchive } from "libarchive.js"
 import { StreamerFileNotSupportedError } from "../../errors/errors.shared"
 

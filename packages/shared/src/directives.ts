@@ -35,7 +35,7 @@ export const extractDirectivesFromName = (
   let ignoreMetadataFile = false
   let ignoreMetadataSources = false
   let metadataTitle: string | undefined = undefined
-  let isWebtoon: boolean = false
+  let isWebtoon = false
   let googleVolumeId: string | undefined = undefined
 
   const directives = resourceId

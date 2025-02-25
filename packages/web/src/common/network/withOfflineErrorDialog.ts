@@ -1,4 +1,4 @@
-import { Observable, catchError } from "rxjs"
+import { type Observable, catchError } from "rxjs"
 import { createDialog } from "../dialogs/createDialog"
 import { OfflineError } from "../../errors/errors.shared"
 

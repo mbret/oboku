@@ -1,6 +1,6 @@
 import { extractIdFromResourceId } from "./lib/resources"
 import { useAccessToken } from "./lib/useAccessToken"
-import { ObokuPlugin } from "../types"
+import type { ObokuPlugin } from "../types"
 import { firstValueFrom, map } from "rxjs"
 import { useGoogleScripts } from "./lib/scripts"
 

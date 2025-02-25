@@ -1,10 +1,10 @@
-import { ComponentProps, DOMAttributes, memo, useCallback } from "react"
+import { type ComponentProps, type DOMAttributes, memo, useCallback } from "react"
 import { useAddBook } from "../books/helpers"
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { TagsSelector } from "../tags/TagsSelector"
 import { ButtonDialog } from "../common/ButtonDialog"
 import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
-import { ObokuPlugin } from "../plugins/types"
+import type { ObokuPlugin } from "../plugins/types"
 import { signal } from "reactjrx"
 import { capitalize } from "@mui/material"
 

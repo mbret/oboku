@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import { useBooks } from "../books/states"
 import { useCollections } from "../collections/useCollections"
 import { difference } from "@oboku/shared"
-import { CollectionDocType } from "@oboku/shared"
+import type { CollectionDocType } from "@oboku/shared"
 
 export const useFixableCollections = () => {
   const { data: unsafeCollections } = useCollections({

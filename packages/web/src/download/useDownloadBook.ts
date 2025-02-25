@@ -4,7 +4,7 @@ import { getLinkStateAsync } from "../links/states"
 import { bytesToMb } from "../common/utils"
 import { createCbzFromReadableStream } from "./createCbzFromReadableStream"
 import { usePluginDownloadBook } from "../plugins/usePluginDownloadBook"
-import { BookQueryResult } from "../books/states"
+import type { BookQueryResult } from "../books/states"
 import { createDialog } from "../common/dialogs/createDialog"
 import {
   animationFrameScheduler,

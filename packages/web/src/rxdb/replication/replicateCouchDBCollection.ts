@@ -1,6 +1,6 @@
 import { replicateCouchDB } from "rxdb/plugins/replication-couchdb"
 import { API_COUCH_URI } from "../../constants.web"
-import { RxCollection } from "rxdb"
+import type { RxCollection } from "rxdb"
 
 export const replicateCouchDBCollection = ({
   dbName,

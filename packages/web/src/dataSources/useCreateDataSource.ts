@@ -1,4 +1,4 @@
-import { DataSourceDocType } from "@oboku/shared"
+import type { DataSourceDocType } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useDatabase } from "../rxdb"
 import { useSynchronizeDataSource } from "./useSynchronizeDataSource"

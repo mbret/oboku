@@ -1,18 +1,18 @@
 import { intersection } from "@oboku/shared"
-import { useProtectedTagIds, useTagsByIds } from "../tags/helpers"
+import { useProtectedTagIds, type useTagsByIds } from "../tags/helpers"
 import { getLinkState, useLink, useLinks } from "../links/states"
 import {
   getBookDownloadsState,
-  booksDownloadStateSignal,
+  type booksDownloadStateSignal,
 } from "../download/states"
 import { useCollections } from "../collections/useCollections"
 import { map, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { useQuery$, useSignalValue } from "reactjrx"
-import { BookDocType, CollectionDocType } from "@oboku/shared"
-import { DeepReadonlyObject, MangoQuery } from "rxdb"
-import { DeepReadonlyArray } from "rxdb/dist/types/types"
+import type { BookDocType, CollectionDocType } from "@oboku/shared"
+import type { DeepReadonlyObject, MangoQuery } from "rxdb"
+import type { DeepReadonlyArray } from "rxdb/dist/types/types"
 import { useMemo } from "react"
 import { observeBook, observeBooks } from "./dbHelpers"
 import { libraryStateSignal } from "../library/books/states"

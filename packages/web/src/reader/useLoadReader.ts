@@ -1,4 +1,4 @@
-import { Manifest } from "@prose-reader/shared"
+import type { Manifest } from "@prose-reader/shared"
 import { useEffect, useRef } from "react"
 import { useSignalValue } from "reactjrx"
 import { readerSignal } from "./states"

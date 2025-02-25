@@ -7,12 +7,12 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material"
-import { FC, useEffect } from "react"
+import { type FC, useEffect } from "react"
 import { useValidateAppPassword } from "../settings/helpers"
 import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { signal, useSignalValue } from "reactjrx"
-import { Observable, from, map, mergeMap, of } from "rxjs"
+import { type Observable, from, map, mergeMap, of } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getSettings } from "../settings/dbHelpers"
 import { CancelError } from "../errors/errors.shared"

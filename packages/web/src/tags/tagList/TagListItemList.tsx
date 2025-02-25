@@ -1,4 +1,4 @@
-import { ComponentProps, memo } from "react"
+import { type ComponentProps, memo } from "react"
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material"
 import {
   BlurOnRounded,

@@ -1,5 +1,5 @@
-import { LinkDocType } from "@oboku/shared"
-import { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
+import type { LinkDocType } from "@oboku/shared"
+import type { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 import { conflictHandler } from "../replication/conflictHandler"

@@ -1,5 +1,5 @@
 import { useTheme } from "@mui/material"
-import { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
+import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 import { useWindowSize } from "react-use"
 
 export const useListItemHeight = ({

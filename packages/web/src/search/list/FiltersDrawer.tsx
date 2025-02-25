@@ -1,6 +1,6 @@
-import { FC, memo } from "react"
+import { type FC, memo } from "react"
 import { Drawer, List, ListItemText, ListItemButton } from "@mui/material"
-import { SignalValue, useSignalValue } from "reactjrx"
+import { type SignalValue, useSignalValue } from "reactjrx"
 import { searchListActionsToolbarSignal } from "./states"
 
 export const FiltersDrawer: FC<{

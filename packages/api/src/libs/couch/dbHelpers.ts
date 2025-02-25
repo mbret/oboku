@@ -1,12 +1,12 @@
-import createNano, { MangoResponse } from "nano"
+import createNano, { type MangoResponse } from "nano"
 import { generateAdminToken, generateToken } from "../auth"
 import {
-  SafeMangoQuery,
-  InsertAbleBookDocType,
+  type SafeMangoQuery,
+  type InsertAbleBookDocType,
   ReadingStateState,
-  DocType,
-  ModelOf,
-  DataSourceDocType,
+  type DocType,
+  type ModelOf,
+  type DataSourceDocType,
   isShallowEqual,
 } from "@oboku/shared"
 import { User } from "../couchDbEntities"

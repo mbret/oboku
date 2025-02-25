@@ -1,10 +1,10 @@
-import {
+import type {
   RxDocument,
   RxJsonSchema,
   RxCollection,
   MigrationStrategies,
 } from "rxdb"
-import { DataSourceDocType } from "@oboku/shared"
+import type { DataSourceDocType } from "@oboku/shared"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 

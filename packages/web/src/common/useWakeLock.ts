@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react"
 import { Report } from "../debug/report.shared"
-import { PromiseReturnType } from "../types"
+import type { PromiseReturnType } from "../types"
 
 export const useWakeLock = () => {
   const [active, setActive] = useState(false)

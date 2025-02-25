@@ -1,4 +1,4 @@
-import Dexie, { EntityTable } from "dexie"
+import Dexie, { type EntityTable } from "dexie"
 
 interface Downloads {
   id: string

@@ -12,11 +12,11 @@ import {
   Typography,
 } from "@mui/material"
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
-import { ComponentProps, FC, useState } from "react"
-import { DropboxDataSourceData } from "@oboku/shared"
+import { type ComponentProps, type FC, useState } from "react"
+import type { DropboxDataSourceData } from "@oboku/shared"
 import { useTagIds, useTags } from "../../tags/helpers"
 import { Picker } from "./Picker"
-import { DropboxFile } from "./types"
+import type { DropboxFile } from "./types"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
 import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 

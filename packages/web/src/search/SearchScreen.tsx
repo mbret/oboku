@@ -12,7 +12,8 @@ import {
   styled,
   Typography,
 } from "@mui/material"
-import React, { useCallback, useMemo, useRef, useState } from "react"
+import type React from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { generatePath, Link, useNavigate, useSearchParams } from "react-router"
 import { useMount } from "react-use"
 import { BookList } from "../books/bookList/BookList"

@@ -14,9 +14,9 @@ import {
   PersonOutlineOutlined,
   PlagiarismOutlined,
 } from "@mui/icons-material"
-import { FC } from "react"
+import type { FC } from "react"
 import { useBook } from "../states"
-import { BookMetadata } from "@oboku/shared"
+import type { BookMetadata } from "@oboku/shared"
 import { useLink } from "../../links/states"
 import { getPluginFromType } from "../../plugins/getPluginFromType"
 

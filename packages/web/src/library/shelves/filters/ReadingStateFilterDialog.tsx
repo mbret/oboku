@@ -10,7 +10,7 @@ import {
   RadioGroup,
 } from "@mui/material"
 import { memo } from "react"
-import { SignalValue, useSignalValue } from "reactjrx"
+import { type SignalValue, useSignalValue } from "reactjrx"
 import { libraryShelvesFiltersSignal } from "./states"
 
 type State = SignalValue<typeof libraryShelvesFiltersSignal>

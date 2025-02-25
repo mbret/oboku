@@ -12,8 +12,8 @@ import {
 import { useDropzone } from "react-dropzone"
 import { Report } from "../../debug/report.shared"
 import { READER_ACCEPTED_FILE_TYPES } from "@oboku/shared"
-import { ObokuPlugin } from "../types"
-import { DragEventHandler, useRef } from "react"
+import type { ObokuPlugin } from "../types"
+import { type DragEventHandler, useRef } from "react"
 import { useAddBookFromFile } from "./useAddBookFromFile"
 
 export const UploadBook: ObokuPlugin["UploadBookComponent"] & {

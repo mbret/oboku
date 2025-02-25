@@ -1,8 +1,8 @@
-import { Database } from "../rxdb"
+import type { Database } from "../rxdb"
 import { useQuery$, useMutation$ } from "reactjrx"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
 import { from, map, mergeMap, switchMap } from "rxjs"
-import { SettingsDocType } from "../rxdb/collections/settings"
+import type { SettingsDocType } from "../rxdb/collections/settings"
 import { getSettingsDocument } from "./dbHelpers"
 import { hashContentPassword } from "../common/crypto"
 

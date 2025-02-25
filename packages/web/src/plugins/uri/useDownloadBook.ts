@@ -1,5 +1,5 @@
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
-import { ObokuPlugin, extractIdFromResourceId } from "../types"
+import { type ObokuPlugin, extractIdFromResourceId } from "../types"
 import { httpClient, isXMLHttpResponseError } from "../../http/httpClient"
 import { catchError, from, map } from "rxjs"
 import { createDialog } from "../../common/dialogs/createDialog"

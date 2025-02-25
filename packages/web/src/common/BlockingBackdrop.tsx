@@ -1,7 +1,7 @@
-import { FC, useCallback, useEffect, useState } from "react"
+import { type FC, useCallback, useEffect, useState } from "react"
 import { Backdrop, CircularProgress, useTheme } from "@mui/material"
 import { signal, useSignalValue } from "reactjrx"
-import { ObservedValueOf, Subject } from "rxjs"
+import { type ObservedValueOf, Subject } from "rxjs"
 
 type Key = string
 

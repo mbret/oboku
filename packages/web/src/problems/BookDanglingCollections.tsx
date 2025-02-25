@@ -1,7 +1,7 @@
 import { LinkOffRounded } from "@mui/icons-material"
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material"
-import { BookDocType } from "@oboku/shared"
-import { DeepReadonlyObject } from "rxdb"
+import type { BookDocType } from "@oboku/shared"
+import type { DeepReadonlyObject } from "rxdb"
 import { getMetadataFromBook } from "../books/metadata"
 
 export const BookDanglingCollections = ({

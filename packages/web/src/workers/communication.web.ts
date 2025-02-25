@@ -1,6 +1,6 @@
 import { EMPTY, from, fromEvent, switchMap } from "rxjs"
 import { getProfile } from "../profile/currentProfile"
-import {
+import type {
   SW_OBOKU_PROFILE_UPDATE_MESSAGE_EVENT,
   SW_OBOKU_PROFILE_UPDATE_MESSAGE_EVENT_DATA,
   UKNOWN_REQUEST_MESSAGE_EVENT,

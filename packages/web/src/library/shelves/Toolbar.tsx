@@ -1,6 +1,6 @@
 import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { FiltersDrawer } from "./filters/FiltersDrawer"
-import { ComponentProps, useCallback, useState } from "react"
+import { type ComponentProps, useCallback, useState } from "react"
 
 export const Toolbar = ({
   ...rest

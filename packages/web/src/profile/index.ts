@@ -5,7 +5,7 @@ import { localSettingsSignal } from "../settings/states"
 import { libraryShelvesFiltersSignal } from "../library/shelves/filters/states"
 import { collectionDetailsScreenListControlsStateSignal } from "../collections/details/CollectionDetailsScreen"
 import { searchListActionsToolbarSignal } from "../search/list/states"
-import { SignalPersistenceConfig } from "reactjrx"
+import type { SignalPersistenceConfig } from "reactjrx"
 
 export const signalEntriesToPersist = [
   {
