@@ -58,14 +58,14 @@ const InnerDialog = () => {
   const currentDialog = enrichDialogWithPreset(dialogs[0])
 
   const handleClose = useCallback(() => {
-    currentDialog?.onClose && currentDialog.onClose()
+    currentDialog?.onClose?.()
     if (currentDialog) {
       removeDialog(currentDialog.id)
     }
   }, [currentDialog])
 
   const onCancel = useCallback(() => {
-    currentDialog?.onCancel && currentDialog.onCancel()
+    currentDialog?.onCancel?.()
     handleClose()
   }, [handleClose, currentDialog])
 

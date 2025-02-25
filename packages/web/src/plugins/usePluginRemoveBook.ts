@@ -12,8 +12,7 @@ export const usePluginRemoveBook = () => {
   const preparedHooks = plugins.map((plugin) => ({
     type: plugin.type,
     useRemoveBook:
-      plugin.useRemoveBook &&
-      plugin.useRemoveBook({
+      plugin.useRemoveBook?.({
         requestPopup: createRequestPopupDialog({ name: plugin.name }),
       }),
   }))

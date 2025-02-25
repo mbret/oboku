@@ -16,7 +16,6 @@ import { type ComponentProps, type FC, useState } from "react"
 import type { DropboxDataSourceData } from "@oboku/shared"
 import { useTagIds, useTags } from "../../tags/helpers"
 import { Picker } from "./Picker"
-import type { DropboxFile } from "./types"
 import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
 import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 
@@ -26,12 +25,12 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
   }>({})
   const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
   const addDataSource = useCreateDataSource()
-  const [selectedFolder, setSelectedFolder] = useState<DropboxFile | undefined>(
-    undefined,
-  )
-  const [folderChain, setFolderChain] = useState<DropboxFile[]>([
-    { name: "", id: "root", isDir: true },
-  ])
+  const [selectedFolder, setSelectedFolder] = useState<
+    Dropbox.ChooserFile | undefined
+  >(undefined)
+  const [folderChain, setFolderChain] = useState<
+    readonly Dropbox.ChooserFile[]
+  >([{ name: "", id: "root", isDir: true, link: "", bytes: 0, icon: "" }])
   const currentFolder = folderChain[folderChain.length - 1]
   const { data: tags = [] } = useTags()
   const { data: tagIds = [] } = useTagIds()

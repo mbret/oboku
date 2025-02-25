@@ -14,7 +14,7 @@ export const SelectionDialogBottom = ({
           `${theme.spacing(1)} ${theme.spacing(2)} ${theme.spacing(
             2,
           )} ${theme.spacing(2)}`,
-        borderTop: (theme) => `1px solid ${theme.palette["grey"]["500"]}`,
+        borderTop: (theme) => `1px solid ${theme.palette.grey["500"]}`,
       }}
     >
       <Typography gutterBottom align="center" variant="body2">

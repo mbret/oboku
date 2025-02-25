@@ -36,7 +36,7 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
   }
 
   const _onDragLeave: DragEventHandler<HTMLDivElement> = (e) => {
-    onDragLeave && onDragLeave(e)
+    onDragLeave?.(e)
   }
 
   return (

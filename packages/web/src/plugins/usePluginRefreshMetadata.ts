@@ -21,8 +21,7 @@ export const usePluginRefreshMetadata = () => {
   getPluginFn.current = plugins.map((plugin) => ({
     type: plugin.type,
     refreshMetadata:
-      plugin.useRefreshMetadata &&
-      plugin.useRefreshMetadata({
+      plugin.useRefreshMetadata?.({
         requestPopup: createRequestPopupDialog({ name: plugin.name }),
       }),
   }))

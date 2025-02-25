@@ -155,8 +155,7 @@ const SyncSourceLabel = ({ syncSource }: { syncSource: DataSourceDocType }) => {
   )
 
   const { name = dataSource?.name } =
-    (dataSource?.useSyncSourceInfo &&
-      dataSource.useSyncSourceInfo(syncSource)) ||
+    (dataSource?.useSyncSourceInfo?.(syncSource)) ||
     {}
 
   return <Typography noWrap>{name}</Typography>

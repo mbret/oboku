@@ -17,7 +17,7 @@ export const SelectableBookList = memo(
     const itemsPerRow = 1
     const densityMultiplier = 1
     const itemHeight =
-      (windowSize.width > theme.breakpoints.values["sm"] ? 150 : 100) *
+      (windowSize.width > theme.breakpoints.values.sm ? 150 : 100) *
       theme.custom.coverAverageRatio *
       densityMultiplier
 

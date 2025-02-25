@@ -44,12 +44,12 @@ export const loadScript = ({ id, src }: { id: string; src: string }) => {
     const existingElement = document.getElementById(id)
 
     // already loaded
-    if (existingElement?.dataset["state"] === "success") {
+    if (existingElement?.dataset.state === "success") {
       return of(null)
     }
 
     // error state
-    if (existingElement?.dataset["state"] === "error") {
+    if (existingElement?.dataset.state === "error") {
       existingElement.remove()
     }
 
@@ -61,11 +61,11 @@ export const loadScript = ({ id, src }: { id: string; src: string }) => {
     script.src = src
     script.async = true
     script.defer = true
-    script.dataset["state"] = "loading"
+    script.dataset.state = "loading"
 
     const scriptLoad$ = new Observable<void>((observer) => {
       script.onload = () => {
-        script.dataset["state"] = "success"
+        script.dataset.state = "success"
         observer.next()
         observer.complete()
       }
@@ -73,7 +73,7 @@ export const loadScript = ({ id, src }: { id: string; src: string }) => {
 
     const scriptError$ = new Observable((observer) => {
       script.onerror = (e: Event | string) => {
-        script.dataset["state"] = "error"
+        script.dataset.state = "error"
         observer.error(e)
         observer.complete()
       }

@@ -67,7 +67,7 @@ export const AuthorizeActionDialog: FC<{}> = () => {
     useValidateAppPassword({
       onSuccess: () => {
         onClose()
-        action && action()
+        action?.()
       },
       onError: () => {
         setError("password", {

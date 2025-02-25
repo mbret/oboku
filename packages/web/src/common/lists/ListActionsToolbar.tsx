@@ -75,7 +75,7 @@ export const ListActionsToolbar = memo(
           {!!onFilterClick && (
             <IconButton
               edge="start"
-              onClick={() => onFilterClick && onFilterClick()}
+              onClick={() => onFilterClick?.()}
               size="large"
               color="primary"
             >

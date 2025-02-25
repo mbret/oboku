@@ -38,7 +38,7 @@ export const useCollectionActionsDrawer = (
       if (collectionActionDrawerChanges !== latestChangesEmittedRef.current) {
         const [changeForId, change] = collectionActionDrawerChanges
         if (changeForId === id) {
-          onChanges && onChanges(change)
+          onChanges?.(change)
           latestChangesEmittedRef.current = collectionActionDrawerChanges
         }
       }

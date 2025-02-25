@@ -53,7 +53,7 @@ export const ProblemsScreen = memo(() => {
           resourceId,
           {
             name: getCollectionComputedMetadata(collection?.toJSON())?.title,
-            number: collectionsByResourceId[resourceId]!.length,
+            number: collectionsByResourceId[resourceId]?.length,
           },
         ]
       })
@@ -103,15 +103,11 @@ export const ProblemsScreen = memo(() => {
             <ListItem alignItems="flex-start">
               <ListItemText
                 primary="Duplicated collection names"
-                secondary={
-                  <>
-                    {duplicatedCollections.map(([id, { name, number }]) => (
+                secondary={duplicatedCollections.map(([id, { name, number }]) => (
                       <Fragment key={id}>
                         (x{number}) {name} <br />
                       </Fragment>
                     ))}
-                  </>
-                }
               />
             </ListItem>
           )}

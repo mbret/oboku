@@ -48,7 +48,7 @@ export const useRemoveHandler = (
 
                   if (!isRemovableFromDataSource({ link: firstLink })) {
                     return createDialog(deleteBookNormallyDialog).$
-                  } else {
+                  }
                     return createDialog({
                       preset: "CONFIRM",
                       title: "Delete a book",
@@ -66,7 +66,6 @@ export const useRemoveHandler = (
                         },
                       ],
                     }).$
-                  }
                 }),
                 mergeMap((result) =>
                   from(

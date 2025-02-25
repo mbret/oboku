@@ -25,7 +25,7 @@ export const OrDivider: FC<{ title?: string; style?: React.CSSProperties }> = ({
           height: 1,
           width: "100%",
         }}
-      ></div>
+      />
       <div
         style={{
           marginLeft: theme.spacing(2),
@@ -41,7 +41,7 @@ export const OrDivider: FC<{ title?: string; style?: React.CSSProperties }> = ({
           borderBottom: `1px solid ${theme.palette.grey[600]}`,
           width: "100%",
         }}
-      ></div>
+      />
     </div>
   )
 }

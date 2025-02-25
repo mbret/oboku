@@ -158,8 +158,7 @@ export const BookListCoverContainer: FC<
             )}
         </Box>
         {withReadingProgressStatus && (
-          <>
-            {item?.readingStateCurrentState === ReadingStateState.Reading && (
+          item?.readingStateCurrentState === ReadingStateState.Reading && (
               <ReadingProgress
                 progress={
                   (item?.readingStateCurrentBookmarkProgressPercent || 0) * 100
@@ -171,8 +170,7 @@ export const BookListCoverContainer: FC<
                   transform: "translateX(-50%)",
                 }}
               />
-            )}
-          </>
+            )
         )}
       </Box>
     )

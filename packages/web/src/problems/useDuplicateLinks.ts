@@ -14,12 +14,12 @@ export const useDuplicatedResourceIdLinks = () => {
   return useMemo(() => {
     const dataByResourceId = groupBy(links, "resourceId")
     const duplicatedDocuments = Object.keys(dataByResourceId)
-      .filter((resourceId) => dataByResourceId[resourceId]!.length > 1)
+      .filter((resourceId) => (dataByResourceId[resourceId]?.length ?? 0) > 1)
       .map((resourceId) => [
         resourceId,
         {
-          name: dataByResourceId[resourceId]![0]?.resourceId,
-          number: dataByResourceId[resourceId]!.length,
+          name: dataByResourceId[resourceId]?.[0]?.resourceId,
+          number: dataByResourceId[resourceId]?.length,
         },
       ])
 

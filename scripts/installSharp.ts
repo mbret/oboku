@@ -1,5 +1,5 @@
 import packageJson from "../packages/api/package.json"
-import { spawn as spwn, execSync } from "child_process"
+import { spawn as spwn, execSync } from "node:child_process"
 const arg = require("arg")
 
 const args = arg(

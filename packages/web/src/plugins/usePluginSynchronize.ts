@@ -22,8 +22,7 @@ export const usePluginSynchronize = () => {
   getPluginFn.current = plugins.map((plugin) => ({
     type: plugin.type,
     synchronize:
-      plugin.useSynchronize &&
-      plugin.useSynchronize({
+      plugin.useSynchronize?.({
         requestPopup: createRequestPopupDialog({ name: plugin.name }),
       }),
   }))

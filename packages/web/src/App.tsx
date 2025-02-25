@@ -74,8 +74,7 @@ export const App = memo(() => {
               <Suspense fallback={<SplashScreen show />}>
                 <DialogProvider>
                   {!isHydratingProfile && isAuthHydrated && (
-                    <>
-                      {plugins.reduce(
+                    plugins.reduce(
                         (Comp, { Provider }) => {
                           if (Provider) {
                             return <Provider>{Comp}</Provider>
@@ -99,8 +98,7 @@ export const App = memo(() => {
                             <Effects />
                           </Box>
                         </Fade>,
-                      )}
-                    </>
+                      )
                   )}
                   <PreloadQueries
                     onReady={() => {

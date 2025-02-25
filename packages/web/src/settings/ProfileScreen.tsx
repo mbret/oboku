@@ -175,8 +175,7 @@ export const ProfileScreen = () => {
           <ListItemText primary="App Version" secondary={packageJson.version} />
         </ListItem>
       </List>
-      <>
-        <List
+      <List
           subheader={
             <ListSubheader disableSticky>Developer options</ListSubheader>
           }
@@ -195,7 +194,6 @@ export const ProfileScreen = () => {
             <ListItemText primary="Delete my data" />
           </ListItem> */}
         </List>
-      </>
       <List
         subheader={
           <ListSubheader

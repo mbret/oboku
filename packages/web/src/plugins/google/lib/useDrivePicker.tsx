@@ -30,7 +30,7 @@ export const useDrivePicker = ({
                       .setIncludeFolders(true)
                       .setMimeTypes(READER_ACCEPTED_MIME_TYPES.join(","))
                       .setSelectFolderEnabled(
-                        select === "folder" ? true : false,
+                        select  === "folder",
                       ),
                   )
                   .setOAuthToken(accessToken.access_token)

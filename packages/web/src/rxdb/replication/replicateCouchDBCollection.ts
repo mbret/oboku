@@ -32,15 +32,13 @@ export const replicateCouchDBCollection = ({
 
       // add bearer token to headers
       // @ts-expect-error
-      optionsWithAuth.headers["Authorization"] = `Bearer ${token}`
+      optionsWithAuth.headers.Authorization = `Bearer ${token}`
 
       if (
         typeof url === "string" &&
         url.startsWith(`${API_COUCH_URI}/${dbName}/_changes`)
       ) {
-        url = `${url}&filter=_selector`
-
-        return fetch(url, {
+        return fetch(`${url}&filter=_selector`, {
           ...optionsWithAuth,
           method: "post",
           headers: {
@@ -65,11 +63,12 @@ export const replicateCouchDBCollection = ({
        * before storing them in RxDB.
        * (optional)
        */
-      modifier: (docData: any) => {
+      modifier: (docData) => {
         // @todo move somewhere else
         if ("rx_model" in docData && docData.rx_model === "tag") {
           // old property not used anymore
           if ("isHidden" in docData) {
+            // biome-ignore lint/performance/noDelete: <explanation>
             delete docData.isHidden
           }
         }

@@ -118,15 +118,13 @@ export const BookListListItem: FC<
           >
             <Box display="flex" flexDirection="row" gap={1}>
               {withDownloadIcons && (
-                <>
-                  {bookDownloadState?.isDownloading ? (
+                bookDownloadState?.isDownloading ? (
                     <DownloadingRounded color="action" />
                   ) : bookDownloadState?.isDownloaded ? (
                     <CloudDoneRounded color="action" />
                   ) : (
                     <CloudDownloadRounded color="action" />
-                  )}
-                </>
+                  )
               )}
               {isBookProtected && <NoEncryptionRounded color="action" />}
               {book?.isNotInterested && <ThumbDownOutlined color="action" />}

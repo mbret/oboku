@@ -166,7 +166,7 @@ const TrackHistoryCanGoBack = memo(() => {
   }, [])
 
   useEffect(() => {
-    if (!isFirstChange.current && !(state || {})?.__obokuFallbackBack) {
+    if (!isFirstChange.current && !state?.__obokuFallbackBack) {
       window.history.replaceState(
         {
           ...window.history.state,

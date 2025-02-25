@@ -16,7 +16,7 @@ export const SelectableTagListItem: FC<{
       style={{
         height: `100%`,
       }}
-      onClick={() => onItemClick && onItemClick()}
+      onClick={() => onItemClick?.()}
     >
       <ListItemText primary={tag?.name} />
       <Box
