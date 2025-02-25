@@ -23,7 +23,14 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           jszip: ["jszip"],
           dropbox: ["dropbox"],
-          xmldoc: ["xmldoc"]
+          xmldoc: ["xmldoc"],
+          firebase: ["firebase/app", "firebase/analytics", "firebase/auth"],
+          rxjs: ["rxjs"],
+          datefns: ["date-fns"],
+          // used by chakra -> ark
+          zod: ["zod"],
+          dexie: ["dexie"],
+          tanstack: ["@tanstack/query-core"]
         }
       }
     }
