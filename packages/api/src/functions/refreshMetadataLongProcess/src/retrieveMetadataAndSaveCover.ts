@@ -1,5 +1,5 @@
-import fs from "fs"
-import path from "path"
+import fs from "node:fs"
+import path from "node:path"
 import { pluginFacade } from "../../../libs/plugins/facade"
 import { type BookMetadata, directives } from "@oboku/shared"
 import { detectMimeTypeFromContent } from "../../../libs/utils"

@@ -1,6 +1,6 @@
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import fs from "fs"
-import path from "path"
+import fs from "node:fs"
+import path from "node:path"
 import { OFFLINE, TMP_DIR } from "../../constants"
 import { getAuthTokenAsync } from "@libs/auth"
 import { configure as configureGoogleDataSource } from "@libs/plugins/google"

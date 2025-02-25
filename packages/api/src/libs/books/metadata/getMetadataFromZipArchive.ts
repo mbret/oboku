@@ -1,6 +1,6 @@
 import type { BookMetadata, OPF } from "@oboku/shared"
-import fs from "fs"
-import path from "path"
+import fs from "node:fs"
+import path from "node:path"
 import unzipper from "unzipper"
 import { parseXmlAsJson } from "@libs/books/parseXmlAsJson"
 import { parseOpfMetadata } from "../../metadata/opf/parseOpfMetadata"

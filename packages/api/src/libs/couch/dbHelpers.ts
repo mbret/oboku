@@ -251,9 +251,8 @@ export const createTagFromName = (
     if (existingTag) {
       if (silent) {
         return { id: existingTag._id, created: false }
-      } else {
-        throw new Error(`Tag already exists`)
       }
+        throw new Error(`Tag already exists`)
     }
 
     const insertedTag = await insert(db, "tag", {

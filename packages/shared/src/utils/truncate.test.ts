@@ -57,6 +57,6 @@ describe("truncate", () => {
 
   it("should handle very long strings efficiently", () => {
     const longString = "a".repeat(100000)
-    expect(truncate(longString, { length: 100 })).toBe("a".repeat(99) + "...")
+    expect(truncate(longString, { length: 100 })).toBe(`${"a".repeat(99)}...`)
   })
 })

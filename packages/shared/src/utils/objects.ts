@@ -7,9 +7,8 @@ const hasOwn = Object.prototype.hasOwnProperty
 export const is = (x: any, y: any): boolean => {
   if (x === y) {
     return x !== 0 || y !== 0 || 1 / x === 1 / y
-  } else {
-    return false
   }
+  return false
 }
 
 /**
@@ -34,10 +33,10 @@ export const isShallowEqual = <T = any, R = any>(
   if (objectA === objectB) {
     return true
   }
-  if (typeof objectA !== `object` || objectA === null) {
+  if (typeof objectA !== "object" || objectA === null) {
     return false
   }
-  if (typeof objectB !== `object` || objectB === null) {
+  if (typeof objectB !== "object" || objectB === null) {
     return false
   }
 
@@ -49,7 +48,7 @@ export const isShallowEqual = <T = any, R = any>(
   }
 
   const isEqual =
-    options && typeof options.customEqual === `function`
+    options && typeof options.customEqual === "function"
       ? options.customEqual
       : is
 

@@ -1,7 +1,7 @@
 import type { PromiseReturnType } from "@libs/types"
 import type { BookDocType, LinkDocType } from "@oboku/shared"
-import path from "path"
-import fs from "fs"
+import path from "node:path"
+import fs from "node:fs"
 import { TMP_DIR } from "src/constants"
 import { pluginFacade } from "@libs/plugins/facade"
 

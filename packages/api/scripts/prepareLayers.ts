@@ -1,10 +1,10 @@
 import packageJson from "../package.json"
-import * as fs from "fs"
+import * as fs from "node:fs"
 // import * as util from "util"
 import {
   // exec as _exec,
   execSync,
-} from "child_process"
+} from "node:child_process"
 import * as serverlessConfiguration from "../serverless"
 
 // const exec = util.promisify(_exec)

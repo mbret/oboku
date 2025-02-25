@@ -1,4 +1,4 @@
-import fs from "fs"
+import fs from "node:fs"
 import unzipper from "unzipper"
 import { Logger } from "@libs/logger"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
@@ -41,8 +41,7 @@ export const saveCoverFromZipArchiveToBucket = async (
         `It seems input is not a valid image. This can happens when for example the file is encrypted or something else went wrong during archive extraction`,
         e,
       )
-    } else {
-      logger.error(e)
     }
+      logger.error(e)
   }
 }

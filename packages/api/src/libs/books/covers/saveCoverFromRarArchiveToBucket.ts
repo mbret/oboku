@@ -15,7 +15,7 @@ export const saveCoverFromRarArchiveToBucket = async (
     const extracted = extractor.extract({ files: [fileName] })
     const files = [...extracted.files] // need to iterate till the end to release memory
     const file = files[0]
-    if (file && file.extraction) {
+    if (file?.extraction) {
       const coverBuffer = Buffer.from(file.extraction)
 
       await saveCoverFromBufferToBucket(coverBuffer, coverObjectKey)
