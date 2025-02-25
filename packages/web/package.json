@@ -75,7 +75,7 @@
   "scripts": {
     "predeploy": "npm run build",
     "start": "vite",
-    "build": "vite build",
+    "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "tsc": "tsc",
