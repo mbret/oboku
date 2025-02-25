@@ -74,14 +74,21 @@ const Interface = memo(({ bookId }: { bookId: string }) => {
     <>
       {readerState === "ready" && (
         <>
-          <ReactReaderProvider reader={reader}>
+          <ReactReaderProvider
+            reader={reader}
+            quickMenuOpen={isMenuShow}
+            onQuickMenuOpenChange={(isOpen) => {
+              isMenuShownStateSignal.setValue(isOpen)
+            }}
+          >
             <ReactReader
-              open={isMenuShow}
-              onBackClick={() => {
-                mutate()
-              }}
-              onMoreClick={() => {
-                toggleMoreDialog()
+              onItemClick={item => {
+                if (item === "more") {
+                  toggleMoreDialog()
+                }
+                if (item === "back") {
+                  mutate()
+                }
               }}
               enableFloatingTime={readerSettings.floatingTime === "bottom"}
               enableFloatingProgress={
