@@ -1,5 +1,4 @@
 import { useCallback } from "react"
-import type { FC } from "react"
 import { useTagIds } from "../tags/helpers"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useAddTagToBook, useRemoveTagFromBook } from "./helpers"
@@ -23,7 +22,7 @@ export const useManageBookTagsDialog = () => {
   return { openManageBookTagsDialog, closeManageBookTagsDialog }
 }
 
-export const ManageBookTagsDialog: FC<{}> = () => {
+export const ManageBookTagsDialog = () => {
   const bookId = useSignalValue(openManageBookTagsDialogStateSignal)
   const open = !!bookId
   const { data: tags = [] } = useTagIds()

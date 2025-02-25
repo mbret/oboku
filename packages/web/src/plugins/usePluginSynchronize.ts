@@ -41,5 +41,5 @@ export const usePluginSynchronize = () => {
     throw new Error("no datasource found for this link")
   }
 
-  return useCallback(execute, [getPluginFn])
+  return useCallback(execute, [])
 }

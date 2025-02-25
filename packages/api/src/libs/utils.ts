@@ -63,7 +63,7 @@ export const asError = (e: unknown) => {
 const hasMessage = <MessageError extends { message: string }>(
   e: MessageError | unknown,
 ): e is MessageError => {
-  return `message` in (e as any) && typeof (e as any).message === `string`
+  return `message` in (e as any) && typeof (e as any).message === "string"
 }
 
 export async function performWithBackoff<T>({

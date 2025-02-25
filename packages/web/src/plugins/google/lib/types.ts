@@ -1,5 +1,6 @@
 type DriveResponseError = {
   body?: string
+  // biome-ignore lint/complexity/noBannedTypes: <explanation>
   headers?: {}
   result?: {
     error?: {

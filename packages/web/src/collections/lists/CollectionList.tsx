@@ -31,7 +31,7 @@ export const CollectionList: FC<
     () => ({
       height: itemHeight,
     }),
-    [itemHeight],
+    [],
   )
 
   const rowRenderer = useCallback(

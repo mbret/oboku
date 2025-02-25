@@ -1,4 +1,4 @@
-import { type FC, useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Backdrop, CircularProgress, useTheme } from "@mui/material"
 import { signal, useSignalValue } from "reactjrx"
 import { type ObservedValueOf, Subject } from "rxjs"
@@ -49,7 +49,7 @@ export const useLock = () => {
   return [lock, unlock] as [typeof lock, typeof unlock]
 }
 
-export const BlockingBackdrop: FC<{}> = () => {
+export const BlockingBackdrop = () => {
   const open = useIsLockedState()
   const [active, setActive] = useState(false)
   const theme = useTheme()

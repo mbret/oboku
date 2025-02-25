@@ -3,6 +3,7 @@ import { getReplicationProperties } from "../replication/getReplicationPropertie
 import type { CollectionDocType } from "@oboku/shared"
 import { generateId } from "./utils"
 
+// biome-ignore lint/complexity/noBannedTypes: <explanation>
 type CollectionDocMethods = {}
 
 type CollectionDocument = RxDocument<CollectionDocType, CollectionDocMethods>

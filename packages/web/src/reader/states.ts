@@ -1,5 +1,5 @@
 import { filter, switchMap } from "rxjs"
-import { isDefined, signal, useQuery$ } from "reactjrx"
+import { isDefined, signal, useQuery$, useSignalValue } from "reactjrx"
 import type { createAppReader } from "./useCreateReader"
 
 type ReaderInstance = ReturnType<typeof createAppReader>
@@ -7,6 +7,10 @@ type ReaderInstance = ReturnType<typeof createAppReader>
 export const readerSignal = signal<ReaderInstance | undefined>({
   key: "readerState",
 })
+
+export const useReader = () => {
+  return useSignalValue(readerSignal)
+}
 
 export const reader$ = readerSignal.subject.pipe(filter(isDefined))
 

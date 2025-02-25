@@ -7,7 +7,7 @@ export const useDataSourceHelpers = (
     | { uniqueResourceIdentifier: string },
 ) => {
   const id =
-    typeof idOrObj === `string` ? idOrObj : idOrObj.uniqueResourceIdentifier
+    typeof idOrObj === "string" ? idOrObj : idOrObj.uniqueResourceIdentifier
 
   return useMemo(
     () => ({

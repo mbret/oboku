@@ -9,6 +9,7 @@ import { getReplicationProperties } from "../replication/getReplicationPropertie
 import { generateId } from "./utils"
 import { conflictHandler } from "../replication/conflictHandler"
 
+// biome-ignore lint/complexity/noBannedTypes: <explanation>
 type DocMethods = {}
 
 type CollectionMethods = {

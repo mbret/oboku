@@ -8,6 +8,7 @@ import type { DataSourceDocType } from "@oboku/shared"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
+// biome-ignore lint/complexity/noBannedTypes: <explanation>
 type DataSourceDocMethods = {}
 
 type DataSourceDocument = RxDocument<DataSourceDocType, DataSourceDocMethods>

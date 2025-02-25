@@ -57,7 +57,10 @@ export const VirtualizedList = memo(
         : [0, 0]
 
     useEffect(() => {
-      console.log("ICI")
+      // @todo both needed ?
+      void rowVirtualizer
+      void columnVirtualizer
+
       if (parentRef.current) {
         const observer = new ResizeObserver(() => {
           setRender(Symbol())
@@ -68,7 +71,6 @@ export const VirtualizedList = memo(
         return () => observer.disconnect()
       }
     }, [rowVirtualizer, columnVirtualizer])
-
     console.log({ data, items, columnItems, rowCount, columnCount })
 
     return (

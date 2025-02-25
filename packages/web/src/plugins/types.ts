@@ -10,6 +10,7 @@ import type { Button } from "@mui/material"
 import type { Observable } from "rxjs"
 
 type PostLink = Pick<LinkDocType, "resourceId" | "type">
+// biome-ignore lint/complexity/noBannedTypes: <explanation>
 type PostBook = {}
 
 type Item = {

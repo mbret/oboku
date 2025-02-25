@@ -15,7 +15,7 @@ import {
 import { Alert } from "@mui/material"
 import { DataSourcesAddDrawer } from "./DataSourcesAddDrawer"
 import { DataSourcesActionsDrawer } from "./DataSourcesActionsDrawer"
-import { Error, LockRounded } from "@mui/icons-material"
+import { Error as ErrorIcon, LockRounded } from "@mui/icons-material"
 import type { DataSourceDocType } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "../plugins/configure"
 import { AddDataSource } from "./AddDataSource"
@@ -89,7 +89,7 @@ export const DataSourcesListScreen = () => {
                         component="span"
                         style={{ flexDirection: "row", display: "flex" }}
                       >
-                        <Error
+                        <ErrorIcon
                           fontSize="small"
                           style={{ marginRight: theme.spacing(1) }}
                         />

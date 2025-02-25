@@ -103,6 +103,8 @@ export const useBackgroundReplication = () => {
 
   useEffect(
     () => () => {
+      void online
+
       settingsReplicationState?.cancel()
     },
     [settingsReplicationState, online],
@@ -110,6 +112,8 @@ export const useBackgroundReplication = () => {
 
   useEffect(
     () => () => {
+      void online
+
       dataSourceReplicationState?.cancel()
     },
     [dataSourceReplicationState, online],
@@ -117,6 +121,8 @@ export const useBackgroundReplication = () => {
 
   useEffect(
     () => () => {
+      void online
+
       bookReplicationState?.cancel()
     },
     [bookReplicationState, online],
@@ -124,6 +130,8 @@ export const useBackgroundReplication = () => {
 
   useEffect(
     () => () => {
+      void online
+
       tagReplicationState?.cancel()
     },
     [tagReplicationState, online],
@@ -131,6 +139,8 @@ export const useBackgroundReplication = () => {
 
   useEffect(
     () => () => {
+      void online
+
       collectionReplicationState?.cancel()
     },
     [collectionReplicationState, online],

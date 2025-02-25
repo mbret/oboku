@@ -6,7 +6,7 @@ import {
   ListItemText,
   ListItemButton,
 } from "@mui/material"
-import { useState, type FC } from "react"
+import { useState } from "react"
 import {
   Edit,
   DeleteForeverRounded,
@@ -31,7 +31,7 @@ import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 import { useCollection } from "../useCollection"
 import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 
-export const CollectionActionsDrawer: FC<{}> = () => {
+export const CollectionActionsDrawer = () => {
   const { openedWith, lastId: collectionId } = useSignalValue(
     collectionActionDrawerState,
   )

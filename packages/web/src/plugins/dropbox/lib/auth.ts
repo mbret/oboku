@@ -35,115 +35,117 @@ export const authUser = ({
 }: {
   requestPopup: () => Promise<boolean>
 }) => {
-  return new Promise<DropboxAuth>(async (resolve, reject) => {
-    let timedOut = false
-    let listenToPopupCloseInterval: ReturnType<typeof setInterval>
-    let listenToPopupTimeoutTimeout: ReturnType<typeof setTimeout>
+  return new Promise<DropboxAuth>((resolve, reject) => {
+    ;(async () => {
+      let timedOut = false
+      let listenToPopupCloseInterval: ReturnType<typeof setInterval>
+      let listenToPopupTimeoutTimeout: ReturnType<typeof setTimeout>
 
-    // when there is at least an hour left of authentication, the server should be able
-    // to handle it without for even long sync. Otherwise we should ask user credentials again
-    if (isAccessTokenStillSufficient()) return resolve(dropboxAuth)
+      // when there is at least an hour left of authentication, the server should be able
+      // to handle it without for even long sync. Otherwise we should ask user credentials again
+      if (isAccessTokenStillSufficient()) return resolve(dropboxAuth)
 
-    const redirectUri = new URL(
-      ROUTES.AUTH_CALLBACK,
-      window.location.origin,
-    ).toString()
-    const usePKCE = true
-    const authType = "code"
-    const tokenAccessType = "online"
-    const state = Math.random().toString(36).substring(7)
-    try {
-      const authUrl = await dropboxAuth.getAuthenticationUrl(
-        redirectUri,
-        state,
-        authType,
-        tokenAccessType,
-        undefined,
-        "user",
-        usePKCE,
-      )
-
-      const confirmed = await requestPopup()
-
-      if (!confirmed) throw new ObokuPluginError({ code: "cancelled" })
-
-      const _oauthWindow = window.open(
-        authUrl.toString(),
-        "DropboxOAuth",
-        (
-          Object.keys(
-            defaultWindowOptions,
-          ) as (keyof typeof defaultWindowOptions)[]
+      const redirectUri = new URL(
+        ROUTES.AUTH_CALLBACK,
+        window.location.origin,
+      ).toString()
+      const usePKCE = true
+      const authType = "code"
+      const tokenAccessType = "online"
+      const state = Math.random().toString(36).substring(7)
+      try {
+        const authUrl = await dropboxAuth.getAuthenticationUrl(
+          redirectUri,
+          state,
+          authType,
+          tokenAccessType,
+          undefined,
+          "user",
+          usePKCE,
         )
-          .map((key) => `${key}=${defaultWindowOptions[key]}`)
-          .join(","),
-      )
 
-      _oauthWindow?.focus()
+        const confirmed = await requestPopup()
 
-      /**
-       * The function in charge of handling the redirect once the popup has completed.
-       */
-      const handleRedirect = async (event: MessageEvent) => {
-        if (timedOut) return
+        if (!confirmed) throw new ObokuPluginError({ code: "cancelled" })
 
-        if (
-          event.isTrusted &&
-          event.origin === window.location.origin &&
-          event.data?.source === "oauth-redirect"
-        ) {
-          cleanup()
-          const urlParams = new URLSearchParams(event.data?.params || "")
-          const code = urlParams.get("code")
+        const _oauthWindow = window.open(
+          authUrl.toString(),
+          "DropboxOAuth",
+          (
+            Object.keys(
+              defaultWindowOptions,
+            ) as (keyof typeof defaultWindowOptions)[]
+          )
+            .map((key) => `${key}=${defaultWindowOptions[key]}`)
+            .join(","),
+        )
 
-          try {
-            const response = await dropboxAuth.getAccessTokenFromCode(
-              redirectUri,
-              code || "",
-            )
+        _oauthWindow?.focus()
 
-            if (timedOut) return
+        /**
+         * The function in charge of handling the redirect once the popup has completed.
+         */
+        const handleRedirect = async (event: MessageEvent) => {
+          if (timedOut) return
 
-            const { result } = response as any
+          if (
+            event.isTrusted &&
+            event.origin === window.location.origin &&
+            event.data?.source === "oauth-redirect"
+          ) {
+            cleanup()
+            const urlParams = new URLSearchParams(event.data?.params || "")
+            const code = urlParams.get("code")
 
-            dropboxAuth.setAccessToken(result.access_token)
-            dropboxAuth.setRefreshToken(result.refresh_token)
-            dropboxAuth.setAccessTokenExpiresAt(
-              new Date(Date.now() + result.expires_in * 1000),
-            )
+            try {
+              const response = await dropboxAuth.getAccessTokenFromCode(
+                redirectUri,
+                code || "",
+              )
 
-            resolve(dropboxAuth)
-          } catch (e) {
-            reject(e)
+              if (timedOut) return
+
+              const { result } = response as any
+
+              dropboxAuth.setAccessToken(result.access_token)
+              dropboxAuth.setRefreshToken(result.refresh_token)
+              dropboxAuth.setAccessTokenExpiresAt(
+                new Date(Date.now() + result.expires_in * 1000),
+              )
+
+              resolve(dropboxAuth)
+            } catch (e) {
+              reject(e)
+            }
           }
         }
-      }
 
-      const cleanup = () => {
-        clearInterval(listenToPopupCloseInterval)
-        clearTimeout(listenToPopupTimeoutTimeout)
-        window.removeEventListener("message", handleRedirect)
-      }
+        const cleanup = () => {
+          clearInterval(listenToPopupCloseInterval)
+          clearTimeout(listenToPopupTimeoutTimeout)
+          window.removeEventListener("message", handleRedirect)
+        }
 
-      window.addEventListener("message", handleRedirect, false)
+        window.addEventListener("message", handleRedirect, false)
 
-      listenToPopupTimeoutTimeout = setTimeout(() => {
-        timedOut = true
+        listenToPopupTimeoutTimeout = setTimeout(() => {
+          timedOut = true
 
-        cleanup()
-
-        reject(new Error("Request timed out"))
-      }, 1000 * 60)
-
-      listenToPopupCloseInterval = setInterval(() => {
-        if (_oauthWindow?.closed) {
           cleanup()
 
-          reject(new ObokuPluginError({ code: "cancelled" }))
-        }
-      }, 1000)
-    } catch (e) {
-      reject(e)
-    }
+          reject(new Error("Request timed out"))
+        }, 1000 * 60)
+
+        listenToPopupCloseInterval = setInterval(() => {
+          if (_oauthWindow?.closed) {
+            cleanup()
+
+            reject(new ObokuPluginError({ code: "cancelled" }))
+          }
+        }, 1000)
+      } catch (e) {
+        reject(e)
+      }
+    })()
   })
 }

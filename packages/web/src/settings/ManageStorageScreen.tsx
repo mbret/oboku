@@ -77,6 +77,7 @@ export const ManageStorageScreen = () => {
   )
 
   useEffect(() => {
+    void books
     refetchDownloadedFilesInfo()
   }, [books, refetchDownloadedFilesInfo])
 

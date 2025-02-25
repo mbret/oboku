@@ -1,4 +1,4 @@
-import { type FC, useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useCollections } from "../collections/useCollections"
 import { useAddCollectionToBook, useRemoveCollectionFromBook } from "./helpers"
 import { useBook } from "./states"
@@ -25,7 +25,7 @@ export const useManageBookCollectionsDialog = () => {
   return { openManageBookCollectionsDialog, closeManageBookCollectionsDialog }
 }
 
-export const ManageBookCollectionsDialog: FC<{}> = () => {
+export const ManageBookCollectionsDialog = () => {
   const id = useSignalValue(openManageBookCollectionsDialogStateSignal)
   const open = !!id
   const { data: collections = [] } = useCollections({

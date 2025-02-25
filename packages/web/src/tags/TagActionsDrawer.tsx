@@ -143,6 +143,8 @@ const EditTagDialog: FC<{
   }
 
   useEffect(() => {
+    void id
+
     setName((prev) => tagName || prev)
   }, [tagName, id])
 

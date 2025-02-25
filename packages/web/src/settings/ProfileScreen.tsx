@@ -297,6 +297,7 @@ const DeleteMyDataDialog: FC<{
   }, [onClose, db, unMount$, isTagChecked, isBookChecked, isCollectionChecked])
 
   useEffect(() => {
+    void open
     setIsDeleting(false)
     setIsTagChecked(false)
     setIsBookChecked(false)

@@ -45,6 +45,6 @@ export const usePluginRemoveBook = () => {
 
       return res
     },
-    [getPluginFn, db],
+    [db],
   )
 }

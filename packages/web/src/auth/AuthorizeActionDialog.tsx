@@ -7,7 +7,7 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material"
-import { type FC, useEffect } from "react"
+import { useEffect } from "react"
 import { useValidateAppPassword } from "../settings/helpers"
 import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
@@ -54,7 +54,7 @@ export function useWithAuthorization() {
   }
 }
 
-export const AuthorizeActionDialog: FC<{}> = () => {
+export const AuthorizeActionDialog = () => {
   const { action, onCancel = () => {} } = useSignalValue(actionSignal) ?? {}
   const open = !!action
   const { control, handleSubmit, setFocus, setError, reset } = useForm<Inputs>({

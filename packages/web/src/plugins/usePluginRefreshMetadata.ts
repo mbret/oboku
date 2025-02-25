@@ -41,5 +41,5 @@ export const usePluginRefreshMetadata = () => {
     return {}
   }
 
-  return useCallback(refreshMetadata, [getPluginFn])
+  return useCallback(refreshMetadata, [])
 }

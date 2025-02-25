@@ -1,4 +1,4 @@
-import { type FC, useMemo } from "react"
+import { useMemo } from "react"
 import { useRemoveTagFromBook, useAddTagToBook } from "../books/helpers"
 import { useBooksAsArrayState } from "../books/states"
 import { useCallback } from "react"
@@ -14,7 +14,7 @@ export const isManageTagBooksDialogOpenedWithState = signal<string | undefined>(
   },
 )
 
-export const ManageTagBooksDialog: FC<{}> = () => {
+export const ManageTagBooksDialog = () => {
   const isManageTagBooksDialogOpenedWith = useSignalValue(
     isManageTagBooksDialogOpenedWithState,
   )

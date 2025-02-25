@@ -11,6 +11,7 @@ export type SettingsDocType = {
 
 export type SettingsCollection = RxCollection<
   SettingsDocType,
+  // biome-ignore lint/complexity/noBannedTypes: <explanation>
   {},
   SettingsCollectionMethods
 >
