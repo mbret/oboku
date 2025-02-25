@@ -15,7 +15,8 @@
       "**/.esbuild/**",
       "**/web/public/**",
       "CfiHandler.ts",
-      "**/playwright-report/**"
+      "**/playwright-report/**",
+      "./package.json"
     ]
   },
   "formatter": {
