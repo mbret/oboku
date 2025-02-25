@@ -1,4 +1,4 @@
-import { Metadata } from "./types"
+import type { Metadata } from "./types"
 import { getGoogleBookMetadata } from "./google/getGoogleBookMetadata"
 import { Logger } from "@libs/logger"
 import { isAxiosError } from "axios"

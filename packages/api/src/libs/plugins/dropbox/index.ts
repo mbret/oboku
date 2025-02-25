@@ -2,14 +2,14 @@
  * @see https://github.com/dropbox/dropbox-sdk-js/tree/main/examples/javascript/download
  */
 import nodeFetch from "node-fetch"
-import { Dropbox, files } from "dropbox"
+import { Dropbox, type files } from "dropbox"
 import { Readable } from "stream"
 import {
-  DropboxDataSourceData,
+  type DropboxDataSourceData,
   READER_ACCEPTED_EXTENSIONS,
 } from "@oboku/shared"
-import { PromiseReturnType } from "../../types"
-import {
+import type { PromiseReturnType } from "../../types"
+import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "@libs/plugins/types"

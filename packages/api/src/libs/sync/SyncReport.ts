@@ -1,5 +1,5 @@
 import { supabase } from "@libs/supabase/client"
-import {
+import type {
   BookDocType,
   CollectionDocType,
   ReportEntry,

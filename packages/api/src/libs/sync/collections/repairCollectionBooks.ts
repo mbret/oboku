@@ -1,6 +1,6 @@
 import { Logger } from "@libs/logger"
 import { difference } from "@oboku/shared"
-import { Context } from "../types"
+import type { Context } from "../types"
 import { atomicUpdate, find, findOne } from "@libs/couch/dbHelpers"
 
 const logger = Logger.child({ module: "sync/repairCollectionBooks" })

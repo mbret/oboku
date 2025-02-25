@@ -5,13 +5,13 @@ import {
   find,
   getOrCreateTagFromName,
 } from "@libs/couch/dbHelpers"
-import createNano from "nano"
+import type createNano from "nano"
 import {
-  SafeMangoQuery,
+  type SafeMangoQuery,
   ObokuErrorCode,
   ObokuSharedError,
-  DocType,
-  ModelOf,
+  type DocType,
+  type ModelOf,
 } from "@oboku/shared"
 
 export const createHelpers = (

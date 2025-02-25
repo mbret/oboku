@@ -1,7 +1,7 @@
 import { Logger } from "@libs/logger"
 import axios from "axios"
 import { AWS_API_URI } from "src/constants"
-import { Context } from "../types"
+import type { Context } from "../types"
 
 const logger = Logger.child({ module: "sync/triggerMetadataRefresh" })
 

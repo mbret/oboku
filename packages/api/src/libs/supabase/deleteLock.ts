@@ -1,11 +1,11 @@
 import { Logger } from "@libs/logger"
-import { SupabaseClient } from "@supabase/supabase-js"
+import type { SupabaseClient } from "@supabase/supabase-js"
 import {
   catchError,
   from,
   ignoreElements,
   map,
-  Observable,
+  type Observable,
   switchMap,
   tap,
 } from "rxjs"

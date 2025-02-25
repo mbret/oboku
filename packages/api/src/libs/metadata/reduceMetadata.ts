@@ -1,4 +1,4 @@
-import { BookMetadata } from "@oboku/shared"
+import type { BookMetadata } from "@oboku/shared"
 
 export const reduceMetadata = (
   metadata?: BookMetadata[],

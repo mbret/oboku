@@ -1,6 +1,6 @@
 import { Logger } from "@libs/logger"
 import { searchManga } from "./searchManga"
-import { CollectionMetadata } from "@oboku/shared"
+import type { CollectionMetadata } from "@oboku/shared"
 import { getStatistics } from "./getStatistics"
 
 export const getSeriesMetadata = async (metadata: {

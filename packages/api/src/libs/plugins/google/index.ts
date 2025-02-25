@@ -3,14 +3,14 @@
  * [{"domain":"global","reason":"authError","message":"Invalid Credentials","locationType":"header","location":"Authorization"}]
  */
 import { authorize } from "./helpers"
-import { drive_v3, google } from "googleapis"
+import { type drive_v3, google } from "googleapis"
 import {
-  GoogleDriveDataSourceData,
+  type GoogleDriveDataSourceData,
   READER_ACCEPTED_MIME_TYPES,
   isFileSupported,
 } from "@oboku/shared"
 import { configure } from "./configure"
-import {
+import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "@libs/plugins/types"

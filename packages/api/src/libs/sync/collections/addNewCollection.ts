@@ -1,10 +1,10 @@
 import { Logger } from "@libs/logger"
-import {
+import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "@libs/plugins/types"
 import { directives } from "@oboku/shared"
-import { Context } from "../types"
+import type { Context } from "../types"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]

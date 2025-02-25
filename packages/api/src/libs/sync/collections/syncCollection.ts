@@ -1,11 +1,11 @@
 import { Logger } from "@libs/logger"
-import {
+import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "@libs/plugins/types"
 import { triggerMetadataRefresh } from "./triggerMetadataRefresh"
 import { repairCollectionBooks } from "./repairCollectionBooks"
-import { Context } from "../types"
+import type { Context } from "../types"
 import { addNewCollection } from "./addNewCollection"
 import { updateCollection } from "./updateCollection"
 

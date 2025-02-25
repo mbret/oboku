@@ -1,12 +1,12 @@
-import { APIGatewayProxyEvent } from "aws-lambda"
+import type { APIGatewayProxyEvent } from "aws-lambda"
 import fs from "fs"
 import unzipper from "unzipper"
-import { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
+import type { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
 import {
   catchError,
   ignoreElements,
   map,
-  Observable,
+  type Observable,
   switchMap,
   tap,
 } from "rxjs"
@@ -37,7 +37,7 @@ export const detectMimeTypeFromContent = async (
     await fs
       .createReadStream(filepath)
       .pipe(unzipper.Parse())
-      .on("entry", function (entry) {
+      .on("entry", (entry) => {
         if (!mimeType && entry.path.endsWith(".opf")) {
           mimeType = "application/epub+zip"
         }

@@ -1,5 +1,5 @@
-import { Metadata } from "@libs/metadata/types"
-import { OPF } from "@oboku/shared"
+import type { Metadata } from "@libs/metadata/types"
+import type { OPF } from "@oboku/shared"
 import { extractDateComponents } from "../extractDateComponents"
 
 const extractLanguage = (

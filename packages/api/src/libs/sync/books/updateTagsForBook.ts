@@ -1,9 +1,9 @@
 import { addTagsToBookIfNotExist } from "@libs/couch/dbHelpers"
 import { Logger } from "@libs/logger"
-import { DataSourcePlugin } from "@libs/plugins/types"
-import nano from "nano"
-import { SyncReport } from "../SyncReport"
-import { BookDocType } from "@oboku/shared"
+import type { DataSourcePlugin } from "@libs/plugins/types"
+import type nano from "nano"
+import type { SyncReport } from "../SyncReport"
+import type { BookDocType } from "@oboku/shared"
 
 const logger = Logger.child({ module: "sync" })
 

@@ -1,17 +1,17 @@
 import {
-  LinkDocType,
+  type LinkDocType,
   dataSourceHelpers,
-  SafeMangoQuery,
-  DocType,
-  ModelOf,
-  BookMetadata,
+  type SafeMangoQuery,
+  type DocType,
+  type ModelOf,
+  type BookMetadata,
 } from "@oboku/shared"
 import cheerio from "cheerio"
 import fetch from "node-fetch"
-import createNano from "nano"
-import { Metadata } from "@libs/metadata/types"
-import { SyncReport } from "@libs/sync/SyncReport"
-import { IncomingMessage } from "http"
+import type createNano from "nano"
+import type { Metadata } from "@libs/metadata/types"
+import type { SyncReport } from "@libs/sync/SyncReport"
+import type { IncomingMessage } from "http"
 
 export { dataSourceHelpers, cheerio, fetch }
 

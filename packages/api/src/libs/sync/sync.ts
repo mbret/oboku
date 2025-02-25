@@ -1,4 +1,4 @@
-import createNano from "nano"
+import type createNano from "nano"
 import { SyncReport } from "./SyncReport"
 import { createHelpers } from "@libs/plugins/helpers"
 import { atomicUpdate } from "@libs/couch/dbHelpers"

@@ -1,6 +1,6 @@
 import { extractDateComponents } from "../extractDateComponents"
-import { Metadata } from "../types"
-import { GoogleBooksApiVolumesResponseData } from "@libs/google/googleBooksApi"
+import type { Metadata } from "../types"
+import type { GoogleBooksApiVolumesResponseData } from "@libs/google/googleBooksApi"
 
 export const parseGoogleMetadata = (
   response: Pick<GoogleBooksApiVolumesResponseData, "items">,

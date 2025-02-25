@@ -1,9 +1,9 @@
 import {
-  BookDocType,
-  GoogleDriveDataSourceData,
+  type BookDocType,
+  type GoogleDriveDataSourceData,
   directives,
 } from "@oboku/shared"
-import {
+import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "@libs/plugins/types"
@@ -16,7 +16,7 @@ import {
   createBook,
 } from "@libs/couch/dbHelpers"
 import { isCoverExist } from "@libs/books/covers/isCoverExist"
-import { Context } from "../types"
+import type { Context } from "../types"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]

@@ -1,14 +1,14 @@
 import { directives } from "@oboku/shared"
-import { createHelpers } from "../plugins/helpers"
+import type { createHelpers } from "../plugins/helpers"
 import { Logger } from "@libs/logger"
-import {
+import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "@libs/plugins/types"
 import { syncCollection } from "./collections/syncCollection"
 import { createTagFromName } from "@libs/couch/dbHelpers"
 import { createOrUpdateBook } from "./books/createOrUpdateBook"
-import { Context } from "./types"
+import type { Context } from "./types"
 
 const logger = Logger.child({ module: "sync" })
 

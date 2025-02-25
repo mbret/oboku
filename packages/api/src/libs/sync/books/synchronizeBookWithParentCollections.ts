@@ -1,11 +1,11 @@
 import { find } from "@libs/couch/dbHelpers"
 import { Logger } from "@libs/logger"
-import {
+import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "@libs/plugins/types"
-import { BookDocType } from "@oboku/shared"
-import nano from "nano"
+import type { BookDocType } from "@oboku/shared"
+import type nano from "nano"
 
 const logger = Logger.child({ module: "synchronizeBookWithParentCollections" })
 

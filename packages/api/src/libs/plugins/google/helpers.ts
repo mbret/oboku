@@ -2,7 +2,7 @@
  * @see https://github.com/googleapis/google-auth-library-nodejs
  * @see https://github.com/googleapis/google-api-nodejs-client#authentication-and-authorization
  */
-import { drive_v3, google } from "googleapis"
+import { type drive_v3, google } from "googleapis"
 import { getSecrets } from "./configure"
 
 export type File = NonNullable<drive_v3.Schema$FileList["files"]>[number]

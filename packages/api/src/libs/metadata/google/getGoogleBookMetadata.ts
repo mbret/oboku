@@ -1,4 +1,4 @@
-import { Metadata } from "../types"
+import type { Metadata } from "../types"
 import {
   findByISBN,
   findByTitle,
