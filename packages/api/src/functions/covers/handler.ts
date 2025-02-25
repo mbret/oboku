@@ -1,4 +1,4 @@
-import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { S3Client } from "@aws-sdk/client-s3"
 import sharp from "sharp"
 import { getCover } from "./getCover"

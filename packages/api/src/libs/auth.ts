@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-import { APIGatewayProxyEvent } from "aws-lambda"
+import type { APIGatewayProxyEvent } from "aws-lambda"
 import { createHttpError } from "./httpErrors"
 import { from } from "rxjs"
 

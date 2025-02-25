@@ -1,6 +1,6 @@
-import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { getAuthTokenAsync } from "@libs/auth"
-import schema from "./schema"
+import type schema from "./schema"
 import { getParametersValue } from "@libs/ssm"
 import { supabase } from "@libs/supabase/client"
 import { withMiddy } from "@libs/middy/withMiddy"

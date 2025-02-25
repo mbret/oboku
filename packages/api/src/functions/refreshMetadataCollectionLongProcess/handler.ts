@@ -1,6 +1,6 @@
-import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { getAuthToken } from "@libs/auth"
-import schema from "./schema"
+import type schema from "./schema"
 import { findOne, getNanoDbForUser } from "@libs/couch/dbHelpers"
 import { withDeleteLock } from "@libs/supabase/deleteLock"
 import { supabase } from "@libs/supabase/client"

@@ -1,4 +1,4 @@
-import { CollectionMetadata } from "@oboku/shared"
+import type { CollectionMetadata } from "@oboku/shared"
 import { getSeries } from "./getSeries"
 import { Logger } from "@libs/logger"
 

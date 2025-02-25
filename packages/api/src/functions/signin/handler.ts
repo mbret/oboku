@@ -4,8 +4,8 @@
  * http calls will not re-create the user db automatically. It can be done through
  * couchdb admin directly or probably by completely pruning db data.
  */
-import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
-import schema from "./schema"
+import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import type schema from "./schema"
 import { getAuth } from "firebase-admin/auth"
 import {
   getDangerousAdminNano,

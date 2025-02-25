@@ -1,4 +1,4 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { GetObjectCommand, type S3Client } from "@aws-sdk/client-s3"
 
 export const getCoverPlaceholder = async (s3Client: S3Client) => {
   try {

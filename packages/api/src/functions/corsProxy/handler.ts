@@ -1,6 +1,6 @@
 import fetch, { AbortError } from "node-fetch"
 import { createHttpError } from "@libs/httpErrors"
-import { APIGatewayProxyEvent } from "aws-lambda"
+import type { APIGatewayProxyEvent } from "aws-lambda"
 import AbortController from "abort-controller"
 import { withMiddy } from "@libs/middy/withMiddy"
 

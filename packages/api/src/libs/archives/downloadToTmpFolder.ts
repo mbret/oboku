@@ -1,5 +1,5 @@
-import { PromiseReturnType } from "@libs/types"
-import { BookDocType, LinkDocType } from "@oboku/shared"
+import type { PromiseReturnType } from "@libs/types"
+import type { BookDocType, LinkDocType } from "@oboku/shared"
 import path from "path"
 import fs from "fs"
 import { TMP_DIR } from "src/constants"

@@ -1,6 +1,6 @@
-import { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
+import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway"
 import { createHttpError } from "@libs/httpErrors"
-import schema from "./schema"
+import type schema from "./schema"
 import nodemailer from "nodemailer"
 import { CONTACT_TO_ADDRESS } from "../../constants"
 import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm"

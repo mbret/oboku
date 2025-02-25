@@ -1,4 +1,4 @@
-import nano from "nano"
+import type nano from "nano"
 
 interface iUser extends nano.MaybeDocument {
   email: string

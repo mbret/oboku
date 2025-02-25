@@ -1,6 +1,6 @@
 import { isCoverExist } from "@libs/books/covers/isCoverExist"
 import { saveCoverFromExternalLinkToBucket } from "@libs/books/covers/saveCoverFromExternalLinkToBucket"
-import { CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
+import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
 
 export const saveOrUpdateCover = async (
   prevCollection: Pick<CollectionDocType, "_id" | "metadata">,

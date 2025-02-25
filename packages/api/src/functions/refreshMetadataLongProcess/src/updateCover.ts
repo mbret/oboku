@@ -1,8 +1,8 @@
 import { saveCoverFromZipArchiveToBucket } from "@libs/books/covers/saveCoverFromZipArchiveToBucket"
-import { BookDocType, BookMetadata } from "@oboku/shared"
-import { Extractor } from "node-unrar-js"
+import type { BookDocType, BookMetadata } from "@oboku/shared"
+import type { Extractor } from "node-unrar-js"
 import { saveCoverFromRarArchiveToBucket } from "@libs/books/covers/saveCoverFromRarArchiveToBucket"
-import { Context } from "./types"
+import type { Context } from "./types"
 import { saveCoverFromExternalLinkToBucket } from "@libs/books/covers/saveCoverFromExternalLinkToBucket"
 import { isCoverExist } from "@libs/books/covers/isCoverExist"
 

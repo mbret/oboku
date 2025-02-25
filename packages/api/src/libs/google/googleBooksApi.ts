@@ -1,6 +1,6 @@
 import axios, { isAxiosError } from "axios"
 import { GOOGLE_BOOK_API_URL } from "../../constants"
-import { Item } from "./types"
+import type { Item } from "./types"
 import { performWithBackoff } from "@libs/utils"
 
 export type GoogleBooksApiVolumesResponseData = {

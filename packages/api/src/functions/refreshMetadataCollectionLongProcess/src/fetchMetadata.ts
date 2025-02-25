@@ -4,7 +4,7 @@ import { getSeriesMetadata as getMangadexSeriesMetadata } from "@libs/metadata/m
 import { getSeriesMetadata as getComicVineSeriesMetadata } from "@libs/metadata/comicvine/getSeriesMetadata"
 import { getSeriesMetadata as getMangaUpdatesSeriesMetadata } from "@libs/metadata/mangaupdates/getSeriesMetadata"
 import { getGoogleSeriesMetadata } from "@libs/metadata/google/getGoogleSeriesMetadata"
-import { CollectionMetadata } from "@oboku/shared"
+import type { CollectionMetadata } from "@oboku/shared"
 import { isAxiosError } from "axios"
 
 const swallowGoogleError = async <T>(promise: Promise<T>) => {

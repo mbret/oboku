@@ -1,6 +1,6 @@
 import { atomicUpdate } from "@libs/couch/dbHelpers"
-import { CollectionDocType } from "@oboku/shared/src/db/docTypes"
-import nano from "nano"
+import type { CollectionDocType } from "@oboku/shared/src/db/docTypes"
+import type nano from "nano"
 import { from } from "rxjs"
 
 export const markCollectionAsFetching = ({

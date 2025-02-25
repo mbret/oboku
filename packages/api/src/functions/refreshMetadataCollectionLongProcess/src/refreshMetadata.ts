@@ -1,11 +1,11 @@
 import {
-  CollectionDocType,
-  CollectionMetadata,
+  type CollectionDocType,
+  type CollectionMetadata,
   directives,
 } from "@oboku/shared"
 import { fetchMetadata } from "./fetchMetadata"
 import { atomicUpdate, findOne } from "@libs/couch/dbHelpers"
-import nano from "nano"
+import type nano from "nano"
 import { Logger } from "@libs/logger"
 import { pluginFacade } from "@libs/plugins/facade"
 import { computeMetadata } from "@libs/collections/computeMetadata"
