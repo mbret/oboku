@@ -15,7 +15,7 @@ import { useManifest } from "./manifest/useManifest"
 import { useCreateReader } from "./useCreateReader"
 import { BookError } from "./BookError"
 import { Box } from "@mui/material"
-import { useLoadManifest } from "./useLoadReader"
+import { useLoadReader } from "./useLoadReader"
 import type { Manifest } from "@prose-reader/shared"
 import { ReactReaderProvider, ReactReader } from "@prose-reader/react-reader"
 import { useShowRemoveBookOnExitDialog } from "./navigation/useShowRemoveBookOnExitDialog"
@@ -118,7 +118,7 @@ const Effects = memo(
     containerElement?: HTMLElement | null
   }) => {
     useCreateReader({ bookId, isUsingWebStreamer })
-    useLoadManifest({
+    useLoadReader({
       bookId,
       containerElement,
       manifest,
