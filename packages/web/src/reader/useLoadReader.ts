@@ -4,7 +4,7 @@ import { useSignalValue } from "reactjrx"
 import { readerSignal } from "./states"
 import { useBook } from "../books/states"
 
-export const useLoadManifest = ({
+export const useLoadReader = ({
   manifest,
   containerElement,
   bookId,
