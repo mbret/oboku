@@ -33,7 +33,7 @@
     "fast-xml-parser": "^4.5.0",
     "firebase": "^11.0.1",
     "firebase-admin": "^13.0.0",
-    "googleapis": "^144.0.0",
+    "googleapis": "^146.0.0",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.0",
     "nano": "^10.1.2",

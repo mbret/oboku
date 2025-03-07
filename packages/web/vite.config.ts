@@ -20,17 +20,33 @@ export default defineConfig(({ mode }) => ({
         main: "index.html",
       },
       output: {
-        manualChunks: {
-          jszip: ["jszip"],
-          dropbox: ["dropbox"],
-          xmldoc: ["xmldoc"],
-          firebase: ["firebase/app", "firebase/analytics", "firebase/auth"],
-          rxjs: ["rxjs"],
-          datefns: ["date-fns"],
-          // used by chakra -> ark
-          zod: ["zod"],
-          dexie: ["dexie"],
-          tanstack: ["@tanstack/query-core"],
+        manualChunks: (id) => {
+          if (id.includes("firebase")) {
+            console.log("firebase", id)
+          }
+
+          if (
+            id.includes("/node_modules/firebase") ||
+            id.includes("/node_modules/@firebase") ||
+            id.includes("/node_modules/dropbox") ||
+            id.includes("/node_modules/jszip") ||
+            id.includes("/node_modules/xmldoc") ||
+            id.includes("/node_modules/dexie") ||
+            id.includes("/node_modules/rxdb") ||
+            id.includes("/node_modules/rxjs") ||
+            id.includes("/node_modules/date-fns") ||
+            id.includes("/node_modules/react")
+          ) {
+            return "vendors1"
+          }
+
+          // Create a 'vendor' chunk for node_modules
+          if (id.includes("node_modules")) {
+            return "vendors2"
+          }
+
+          // Everything else goes to 'index'
+          return "index"
         },
       },
     },
@@ -78,7 +94,7 @@ export default defineConfig(({ mode }) => ({
           "**/*.{js.map}",
         ],
         // sources map are really massive, they will be optimized when served by server
-        maximumFileSizeToCacheInBytes: 15e6, // 15 MB limit
+        maximumFileSizeToCacheInBytes: 13e6, // 13 MB limit
       },
       srcDir: "src",
       filename: "service-worker.ts",
