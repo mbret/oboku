@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { SIGNAL_RESET, useLiveRef, useSignalValue } from "reactjrx"
 import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
 import { createReader } from "@prose-reader/core"
+import { galleryEnhancer } from "@prose-reader/enhancer-gallery"
 import { readerSignal } from "./states"
 import { useReaderSettingsState } from "./settings/states"
 import { localSettingsSignal } from "../settings/states"
@@ -9,10 +10,7 @@ import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared
 import { webStreamer } from "./streamer/webStreamer"
 import { from } from "rxjs"
 
-export const createAppReader = gesturesEnhancer(
-  // __
-  createReader,
-)
+export const createAppReader = galleryEnhancer(gesturesEnhancer(createReader))
 
 export const useCreateReader = ({
   isUsingWebStreamer,

@@ -3,18 +3,32 @@ import { webStreamer } from "../streamer/webStreamer"
 import { STREAMER_URL_PREFIX } from "../../constants.shared"
 import { serviceWorkerReadySignal } from "../../workers/states"
 import { useQuery } from "@tanstack/react-query"
+import { useDatabase } from "../../rxdb"
+import { getMetadataFromBook } from "../../books/metadata"
 
 const getManifestBaseUrl = (origin: string, epubFileName: string) => {
   return `${origin}/${STREAMER_URL_PREFIX}/${epubFileName}/`
 }
 
 export const useManifest = (bookId: string | undefined) => {
+  const { db } = useDatabase()
+
   return useQuery({
     queryKey: ["reader/streamer/manifest", { bookId }],
     queryFn: async () => {
       const swStreamerResponse = serviceWorkerReadySignal.getValue()
         ? await fetch(`${window.location.origin}/streamer/${bookId}/manifest`)
         : undefined
+
+      const enrichManifest = async (_manifest: Manifest) => {
+        const book = await db?.book.findOne(bookId).exec()
+        const metadata = getMetadataFromBook(book)
+
+        return {
+          ..._manifest,
+          title: metadata.title ?? _manifest.title,
+        } satisfies Manifest
+      }
 
       if (
         !swStreamerResponse ||
@@ -35,17 +49,17 @@ export const useManifest = (bookId: string | undefined) => {
         }
 
         return {
-          manifest: await webStreamerResponse.json(),
+          manifest: await enrichManifest(await webStreamerResponse.json()),
           isUsingWebStreamer: true,
         }
       }
 
       const data: Manifest = await swStreamerResponse.json()
 
-      return { manifest: data, isUsingWebStreamer: false }
+      return { manifest: await enrichManifest(data), isUsingWebStreamer: false }
     },
     staleTime: Infinity,
     retry: (_, error) => !(error instanceof Response && error.status === 415),
-    enabled: !!bookId,
+    enabled: !!bookId && !!db,
   })
 }

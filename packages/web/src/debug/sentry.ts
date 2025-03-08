@@ -11,7 +11,6 @@ init({
   dsn: SENTRY_DSN,
   environment: import.meta.env.MODE,
   enabled: !import.meta.env.DEV,
-  autoSessionTracking: true,
   integrations: [
     captureConsoleIntegration({
       levels: ["error"],
