@@ -34,8 +34,7 @@ export default defineConfig(({ mode }) => ({
             id.includes("/node_modules/dexie") ||
             id.includes("/node_modules/rxdb") ||
             id.includes("/node_modules/rxjs") ||
-            id.includes("/node_modules/date-fns") ||
-            id.includes("/node_modules/react")
+            id.includes("/node_modules/date-fns")
           ) {
             return "vendors1"
           }

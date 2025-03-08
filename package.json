@@ -54,8 +54,5 @@
     "npm-force-resolutions": "^0.0.10",
     "pino": "^9.1.0",
     "sharp": "^0.33.5"
-  },
-  "overrides": {
-    "react-is": "^18.2.0"
   }
 }
