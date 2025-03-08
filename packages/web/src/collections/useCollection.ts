@@ -8,15 +8,17 @@ import { COLLECTION_EMPTY_ID } from "../constants.shared"
 export const useCollection = ({
   id,
   isNotInterested,
+  enabled = true,
 }: {
   id?: string
   isNotInterested?: "with" | "none" | "only" | undefined
+  enabled?: boolean
 }) => {
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
 
   return useQuery$({
     queryKey: ["rxdb", "collection", id, { isLibraryUnlocked }],
-    enabled: !!id,
+    enabled: !!id && !!enabled,
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => {
