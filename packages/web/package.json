@@ -80,6 +80,9 @@
     "preview": "vite preview",
     "test": "vitest run"
   },
+  "overrides": {
+    "react-is": "^18.2.0"
+  },
   "browserslist": {
     "production": [
       ">0.2%",
