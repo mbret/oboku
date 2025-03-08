@@ -21,7 +21,7 @@
     "@middy/http-cors": "^5.5.1",
     "@middy/http-error-handler": "^5.5.1",
     "@middy/http-header-normalizer": "^5.5.1",
-    "@middy/http-json-body-parser": "^5.5.1",
+    "@middy/http-json-body-parser": "^6.1.5",
     "@middy/http-response-serializer": "^5.5.1",
     "@middy/validator": "^5.5.1",
     "@oboku/shared": "^0.8.0",
