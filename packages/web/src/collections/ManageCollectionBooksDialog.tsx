@@ -1,66 +1,66 @@
-import type { FC } from "react"
 import {
   useRemoveCollectionFromBook,
   useAddCollectionToBook,
 } from "../books/helpers"
-import { useBooksAsArrayState } from "../books/states"
-import { useMemo } from "react"
+import { useBooks } from "../books/states"
+import { memo, useMemo } from "react"
 import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
-import { booksDownloadStateSignal } from "../download/states"
-import { useSignalValue } from "reactjrx"
 import { useCollection } from "./useCollection"
 
-export const ManageCollectionBooksDialog: FC<{
-  onClose: () => void
-  open: boolean
-  collectionId?: string
-}> = ({ onClose, open, collectionId }) => {
-  const { data: collection } = useCollection({
-    id: collectionId,
-  })
-  const { data: books } = useBooksAsArrayState({
-    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal),
-  })
-  const { mutate: addToBook } = useAddCollectionToBook()
-  const { mutate: removeFromBook } = useRemoveCollectionFromBook()
-  const collectionBooks = useMemo(
-    () => collection?.books?.map((item) => item) || [],
-    [collection],
-  )
+export const ManageCollectionBooksDialog = memo(
+  ({
+    onClose,
+    open,
+    collectionId,
+  }: {
+    onClose: () => void
+    open: boolean
+    collectionId?: string
+  }) => {
+    const { data: collection } = useCollection({
+      id: collectionId,
+    })
+    const { data: books } = useBooks({
+      enabled: open,
+      subscribed: open,
+    })
+    const { mutate: addToBook } = useAddCollectionToBook()
+    const { mutate: removeFromBook } = useRemoveCollectionFromBook()
 
-  const data = useMemo(() => books.map((item) => item._id), [books])
+    const data = useMemo(() => books?.map((item) => item._id) || [], [books])
 
-  const selected = useMemo(
-    () =>
-      books.reduce(
-        (acc, item) => ({
-          ...acc,
-          [item._id]: !!collectionBooks.find((id) => id === item._id),
-        }),
-        {} as Record<string, boolean>,
-      ),
-    [books, collectionBooks],
-  )
+    const selected = useMemo(
+      () =>
+        books?.reduce(
+          (acc, item) => ({
+            ...acc,
+            [item._id]: !!collection?.books?.find((id) => id === item._id),
+          }),
+          {} as Record<string, boolean>,
+        ) || {},
+      [books, collection],
+    )
 
-  const onItemClick = useCallback(
-    ({ id: bookId, selected }: { id: string; selected: boolean }) => {
-      if (selected) {
-        collectionId && removeFromBook({ _id: bookId, collectionId })
-      } else {
-        collectionId && addToBook({ _id: bookId, collectionId })
-      }
-    },
-    [collectionId, addToBook, removeFromBook],
-  )
+    const onItemClick = useCallback(
+      ({ id: bookId, selected }: { id: string; selected: boolean }) => {
+        if (selected) {
+          collectionId && removeFromBook({ _id: bookId, collectionId })
+        } else {
+          collectionId && addToBook({ _id: bookId, collectionId })
+        }
+      },
+      [collectionId, addToBook, removeFromBook],
+    )
 
-  return (
-    <BooksSelectionDialog
-      open={open}
-      onClose={onClose}
-      onItemClick={onItemClick}
-      data={data}
-      selected={selected}
-    />
-  )
-}
+    return (
+      <BooksSelectionDialog
+        open={open}
+        onClose={onClose}
+        onItemClick={onItemClick}
+        data={data}
+        selected={selected}
+      />
+    )
+  },
+)

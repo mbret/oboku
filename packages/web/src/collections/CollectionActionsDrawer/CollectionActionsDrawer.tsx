@@ -6,7 +6,7 @@ import {
   ListItemText,
   ListItemButton,
 } from "@mui/material"
-import { useState } from "react"
+import { memo, useState } from "react"
 import {
   Edit,
   DeleteForeverRounded,
@@ -31,7 +31,7 @@ import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 import { useCollection } from "../useCollection"
 import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 
-export const CollectionActionsDrawer = () => {
+export const CollectionActionsDrawer = memo(() => {
   const { openedWith, lastId: collectionId } = useSignalValue(
     collectionActionDrawerState,
   )
@@ -185,4 +185,4 @@ export const CollectionActionsDrawer = () => {
       />
     </>
   )
-}
+})

@@ -1,7 +1,7 @@
 import { useRef } from "react"
 import { useBooksSortedBy } from "../../books/helpers"
-import { useBooksAsArrayState } from "../../books/states"
-import { DownloadState, booksDownloadStateSignal } from "../../download/states"
+import { useBooks } from "../../books/states"
+import { DownloadState, useBooksDownloadState } from "../../download/states"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "./states"
 
@@ -9,14 +9,13 @@ export const useLibraryBooks = () => {
   const results = useRef<string[]>([])
   const library = useSignalValue(libraryStateSignal)
   const filteredTags = library.tags
-  const { data: unsortedBooks } = useBooksAsArrayState({
-    normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal),
-  })
+  const { data: unsortedBooks } = useBooks()
+  const booksDownloadState = useBooksDownloadState(unsortedBooks)
 
-  const filteredBooks = unsortedBooks.filter((book) => {
+  const filteredBooks = unsortedBooks?.filter((book) => {
     if (
       library.downloadState === DownloadState.Downloaded &&
-      book.downloadState.downloadState !== DownloadState.Downloaded
+      booksDownloadState[book._id]?.downloadState !== DownloadState.Downloaded
     ) {
       return false
     }

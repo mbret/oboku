@@ -16,18 +16,26 @@ import type { DeepReadonlyArray } from "rxdb/dist/types/types"
 import { useMemo } from "react"
 import { observeBook, observeBooks } from "./dbHelpers"
 import { libraryStateSignal } from "../library/books/states"
+import type { UseQueryOptions } from "@tanstack/react-query"
+
+type UseBooksOptions = UseQueryOptions<
+  DeepReadonlyObject<BookDocType>[],
+  unknown,
+  DeepReadonlyObject<BookDocType>[]
+>
 
 export const useBooks = ({
   queryObj = {},
   isNotInterested,
   ids,
   includeProtected: _includeProtected,
+  ...options
 }: {
   queryObj?: MangoQuery<BookDocType>
   isNotInterested?: "none" | "with" | "only"
   ids?: DeepReadonlyArray<string>
   includeProtected?: boolean
-} = {}) => {
+} & Omit<UseBooksOptions, "queryFn" | "queryKey"> = {}) => {
   const serializedIds = JSON.stringify(ids)
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
   const includeProtected = _includeProtected || isLibraryUnlocked
@@ -57,6 +65,7 @@ export const useBooks = ({
         }),
       )
     },
+    ...options,
   })
 }
 
@@ -120,7 +129,6 @@ const getBookState = ({
  * @deprecated
  */
 export const getEnrichedBookState = ({
-  normalizedBookDownloadsState,
   protectedTagIds = [],
   tags,
   normalizedLinks,
@@ -145,7 +153,6 @@ export const getEnrichedBookState = ({
   })
   const downloadState = getBookDownloadsState({
     bookId,
-    normalizedBookDownloadsState,
   })
 
   const linkId = enrichedBook?.links[0]
@@ -232,49 +239,4 @@ export const useEnrichedBookState = ({
       bookId,
     ],
   )
-}
-
-/**
- * @deprecated
- */
-export const useBooksAsArrayState = ({
-  normalizedBookDownloadsState,
-}: {
-  normalizedBookDownloadsState: ReturnType<
-    typeof booksDownloadStateSignal.getValue
-  >
-}) => {
-  const { data: books, isPending } = useBooks()
-
-  const { data: visibleBooks } = useBooks()
-  const visibleBookIds = useMemo(
-    () => visibleBooks?.map((item) => item._id) ?? [],
-    [visibleBooks],
-  )
-
-  const bookResult: (BookQueryResult & {
-    downloadState: ReturnType<typeof getBookDownloadsState>
-  })[] = []
-
-  return {
-    data: visibleBookIds.reduce((acc, id) => {
-      const downloadState = getBookDownloadsState({
-        bookId: id,
-        normalizedBookDownloadsState,
-      })
-
-      const book = books?.find((book) => book._id === id)
-
-      if (!book) return acc
-
-      return [
-        ...acc,
-        {
-          ...book,
-          downloadState,
-        },
-      ]
-    }, bookResult),
-    isPending,
-  }
 }

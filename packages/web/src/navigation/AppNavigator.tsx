@@ -33,10 +33,10 @@ import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
 import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
 import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
-import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
 import { SecurityScreen } from "../settings/SecurityScreen"
 import { PluginsScreen } from "../plugins/PluginsScreen"
 import { PluginScreen } from "../plugins/PluginScreen"
+import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>

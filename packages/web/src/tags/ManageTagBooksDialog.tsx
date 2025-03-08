@@ -1,10 +1,9 @@
-import { useMemo } from "react"
+import { memo, useMemo } from "react"
 import { useRemoveTagFromBook, useAddTagToBook } from "../books/helpers"
-import { useBooksAsArrayState } from "../books/states"
+import { useBooks } from "../books/states"
 import { useCallback } from "react"
 import { BooksSelectionDialog } from "../books/BooksSelectionDialog"
 import { useTag } from "./helpers"
-import { booksDownloadStateSignal } from "../download/states"
 import { signal, useSignalValue } from "reactjrx"
 
 export const isManageTagBooksDialogOpenedWithState = signal<string | undefined>(
@@ -14,37 +13,35 @@ export const isManageTagBooksDialogOpenedWithState = signal<string | undefined>(
   },
 )
 
-export const ManageTagBooksDialog = () => {
+export const ManageTagBooksDialog = memo(() => {
   const isManageTagBooksDialogOpenedWith = useSignalValue(
     isManageTagBooksDialogOpenedWithState,
   )
+  const isOpen = !!isManageTagBooksDialogOpenedWith
   const { data: tag } = useTag(isManageTagBooksDialogOpenedWith)
-  const normalizedBookDownloadsState = useSignalValue(booksDownloadStateSignal)
-
-  const { data: books } = useBooksAsArrayState({
-    normalizedBookDownloadsState,
+  const { data: books } = useBooks({
+    subscribed: isOpen,
   })
   const { mutate: addTagToBook } = useAddTagToBook()
   const { mutate: removeFromBook } = useRemoveTagFromBook()
-  const tagBooks = useMemo(() => tag?.books?.map((item) => item) || [], [tag])
   const tagId = isManageTagBooksDialogOpenedWith
 
   const onClose = () => {
     isManageTagBooksDialogOpenedWithState.setValue(undefined)
   }
 
-  const data = useMemo(() => books.map((item) => item._id), [books])
+  const data = useMemo(() => books?.map((item) => item._id), [books])
 
   const selected = useMemo(
     () =>
-      books.reduce(
+      books?.reduce(
         (acc, item) => ({
           ...acc,
-          [item._id]: !!tagBooks.find((id) => id === item._id),
+          [item._id]: !!tag?.books.find((id) => id === item._id),
         }),
         {},
-      ),
-    [books, tagBooks],
+      ) || {},
+    [books, tag],
   )
 
   const onItemClick = useCallback(
@@ -67,4 +64,4 @@ export const ManageTagBooksDialog = () => {
       selected={selected}
     />
   )
-}
+})
