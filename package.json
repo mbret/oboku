@@ -29,7 +29,7 @@
     "@rollup/plugin-replace": "^6.0.1",
     "@types/node": "^20",
     "@types/react-dom": "^18.0.11",
-    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.26.0",
     "@typescript-eslint/parser": "^7.0.2",
     "esbuild": "^0.20.2",
     "eslint": "^8.57.0",
