@@ -1,0 +1,13 @@
+services:
+  couchdb:
+    build:
+      context: ./apps/couchdb
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "5984:5984"
+    environment:
+      - COUCHDB_USER=${COUCHDB_USER}
+      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
+    volumes:
+        - ./.data/dbdata:/opt/couchdb/data

@@ -9,7 +9,8 @@
     "node": "20.x"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "start:web": "lerna run start --scope=@oboku/web",
