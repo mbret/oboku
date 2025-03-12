@@ -13,6 +13,7 @@
     "apps/*"
   ],
   "scripts": {
+    "docker:dev": "docker compose -f docker-compose.dev.yml up -d --build",
     "start:web": "lerna run start --scope=@oboku/web",
     "start:landing": "lerna run dev --scope=@oboku/landing",
     "start:api": "lerna run api:start",

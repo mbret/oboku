@@ -1,0 +1,21 @@
+services:
+  couchdb:
+    extends:
+      file: docker-compose.yml
+      service: couchdb
+
+  api:
+    extends:
+      file: docker-compose.yml
+      service: api
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+      target: development
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    volumes:
+      - ./apps/api:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run start:dev
