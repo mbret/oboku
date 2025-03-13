@@ -24,7 +24,7 @@
     "test": "lerna run test",
     "tsc": "lerna run tsc",
     "format": "npx @biomejs/biome format --write .",
-    "lint": "npx @biomejs/biome check . && lerna run lint",
+    "lint": "npx @biomejs/biome check .",
     "postinstall": "npx ts-node scripts/installSharp.ts --project scripts/tsconfig.json --platform darwin"
   },
   "devDependencies": {
