@@ -2,7 +2,7 @@ services:
   couchdb:
     build:
       context: ./apps/couchdb
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     restart: always
     ports:
       - "5984:5984"
@@ -15,7 +15,7 @@ services:
   api:
     build:
       context: ./apps/api
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
       target: production
     restart: always
     ports:
