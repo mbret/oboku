@@ -28,6 +28,8 @@ export class CoversController {
     @Param() params: { id: string },
     @Query() query: { format?: string },
   ) {
+    console.log("coucou")
+
     const objectKey = params.id ?? ``
     const format = query?.format || "image/webp"
 
