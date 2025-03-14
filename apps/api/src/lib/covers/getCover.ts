@@ -16,8 +16,6 @@ export const getCover = async (s3Client: S3Client, objectKey: string) => {
 
     return await response.Body.transformToByteArray()
   } catch (e) {
-    console.log({ e })
-
     if ((e as any)?.code === "NoSuchKey" || (e as any)?.Code === "NoSuchKey") {
       return null
     }
