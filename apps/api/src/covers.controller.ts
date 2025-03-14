@@ -56,6 +56,8 @@ export class CoversController {
 
     const buffer = await converted.toBuffer()
 
+    console.log("buffer", buffer)
+
     return new StreamableFile(buffer, {
       disposition: `inline`,
       type: "image/webp",
