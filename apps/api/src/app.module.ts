@@ -5,6 +5,7 @@ import { CoversController } from "./covers.controller"
 import { ConfigModule } from "@nestjs/config"
 import * as path from "node:path"
 import * as Joi from "joi"
+import { MetadataController } from "./metadata.controller"
 
 @Module({
   imports: [
@@ -41,7 +42,7 @@ import * as Joi from "joi"
       }),
     }),
   ],
-  controllers: [AppController, CoversController],
+  controllers: [AppController, CoversController, MetadataController],
   providers: [AppService],
 })
 export class AppModule {}

@@ -1,11 +1,16 @@
 import { Logger } from "@nestjs/common"
-import { supabase } from "./client"
+import { createSupabaseClient } from "./client"
 import { isLockOutdated } from "./isLockOutdated"
+import { ConfigService } from "@nestjs/config"
+import { EnvironmentVariables } from "src/types"
 
 export const lock = async (
   lockId: string,
   maxDuration: number,
+  config: ConfigService<EnvironmentVariables>,
 ): Promise<{ alreadyLocked: boolean }> => {
+  const supabase = createSupabaseClient(config)
+
   const response = await supabase
     .from("lock")
     .insert({ lock_id: lockId })

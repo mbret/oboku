@@ -147,6 +147,6 @@ export const sync = async ({
   } finally {
     syncReport.end()
 
-    await syncReport.send()
+    await syncReport.send(config)
   }
 }

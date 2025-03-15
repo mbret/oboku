@@ -16,18 +16,6 @@ export const waitForRandomTime = (min: number, max: number) =>
     setTimeout(resolve, Math.floor(Math.random() * (max - min + 1) + min)),
   )
 
-export const getNormalizedHeader = (
-  event: Pick<APIGatewayProxyEvent, `headers`>,
-  header: string,
-): string | null | undefined => {
-  const realKey =
-    Object.keys(event.headers).find(
-      (key) => key.toLowerCase() === header.toLowerCase(),
-    ) || header
-
-  return event.headers[realKey]
-}
-
 export const detectMimeTypeFromContent = async (
   filepath: string,
 ): Promise<(typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined> => {
