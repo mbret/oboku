@@ -1,31 +1,36 @@
 services:
-  couchdb:
-    build:
-      context: ./apps/couchdb
-      dockerfile: dockerfile
-    restart: always
-    ports:
-      - "5984:5984"
-    environment:
-      - COUCHDB_USER=${COUCHDB_USER}
-      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
-    volumes:
-        - ./.data/dbdata:/opt/couchdb/data
+  # couchdb:
+  #   build:
+  #     context: ./apps/couchdb
+  #     dockerfile: dockerfile
+  #   restart: always
+  #   ports:
+  #     - "5984:5984"
+  #   environment:
+  #     - COUCHDB_USER=${COUCHDB_USER}
+  #     - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
+  #   volumes:
+  #       - ./.data/dbdata:/opt/couchdb/data
 
   api:
     build:
-      context: ./apps/api
+      context: ./
       dockerfile: dockerfile
-      target: production
+      target: api
     restart: always
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - COUCHDB_URL=http://${COUCHDB_USER}:${COUCHDB_PASSWORD}@couchdb:5984
-      # covers bucket 
+      - COUCHDB_URL=${COUCHDB_URL}
       - COVERS_BUCKET_NAME=${COVERS_BUCKET_NAME}
       - COVERS_PLACEHOLDER_BUCKET_KEY=${COVERS_PLACEHOLDER_BUCKET_KEY}
-      # AWS Authentication
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - COUCHDB_USER=${COUCHDB_USER}
+      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
+      - STAGE=${STAGE}
+      - CONTACT_TO_ADDRESS=${CONTACT_TO_ADDRESS}
+      - AWS_API_URI=${AWS_API_URI}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_PROJECT_URL=${SUPABASE_PROJECT_URL}

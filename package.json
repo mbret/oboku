@@ -19,13 +19,12 @@
     "start:api": "lerna run api:start",
     "build": "lerna run build",
     "build:web": "lerna run build --scope=@oboku/web",
-    "build:api": "lerna run build --scope=@oboku/api",
+    "build:api": "lerna run build --scope=@oboku/api-legacy",
     "build:landing": "lerna run build --scope=@oboku/landing",
     "test": "lerna run test",
     "tsc": "lerna run tsc",
     "format": "npx @biomejs/biome format --write .",
-    "lint": "npx @biomejs/biome check .",
-    "postinstall": "npx ts-node scripts/installSharp.ts --project scripts/tsconfig.json --platform darwin"
+    "lint": "npx @biomejs/biome check ."
   },
   "devDependencies": {
     "@rollup/plugin-replace": "^6.0.1",

@@ -11,3 +11,5 @@ yarn-error.log
 .DS_STORE
 .nx
 .vercel
+.dist
+dist

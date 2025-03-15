@@ -16,4 +16,6 @@ export interface EnvironmentVariables {
   OFFLINE: boolean
   SUPABASE_SERVICE_ROLE_KEY: string
   SUPABASE_PROJECT_URL: string
+  COVERS_BUCKET_NAME: string
+  COVERS_PLACEHOLDER_BUCKET_KEY: string
 }

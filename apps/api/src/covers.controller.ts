@@ -39,7 +39,7 @@ export class CoversController {
     const objectKey = params.id ?? ``
     const format = query?.format || "image/webp"
 
-    const userCover = await getCover(s3, objectKey)
+    const userCover = await getCover(s3, objectKey, this.configService)
     const cover = userCover ? userCover : await getCoverPlaceholder(s3)
 
     if (!cover) {

@@ -1,5 +1,5 @@
 {
-  "name": "@oboku/api",
+  "name": "@oboku/api-legacy",
   "version": "1.0.0",
   "description": "Serverless aws-nodejs-typescript template",
   "main": "serverless.ts",

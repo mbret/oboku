@@ -1,10 +1,16 @@
 import { GetObjectCommand, type S3Client } from "@aws-sdk/client-s3"
+import { ConfigService } from "@nestjs/config"
+import { EnvironmentVariables } from "src/types"
 
-export const getCover = async (s3Client: S3Client, objectKey: string) => {
+export const getCover = async (
+  s3Client: S3Client,
+  objectKey: string,
+  config: ConfigService<EnvironmentVariables>,
+) => {
   try {
     const response = await s3Client.send(
       new GetObjectCommand({
-        Bucket: process.env.COVERS_BUCKET_NAME,
+        Bucket: config.getOrThrow("COVERS_BUCKET_NAME", { infer: true }),
         Key: objectKey,
         ResponseContentType: "",
       }),

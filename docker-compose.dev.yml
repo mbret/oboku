@@ -1,17 +1,17 @@
 services:
-  couchdb:
-    extends:
-      file: docker-compose.yml
-      service: couchdb
+  # couchdb:
+  #   extends:
+  #     file: docker-compose.yml
+  #     service: couchdb
 
   api:
     extends:
       file: docker-compose.yml
       service: api
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile
-      target: development
+      context: ./
+      dockerfile: dockerfile
+      target: api
     environment:
       - NODE_ENV=development
     restart: unless-stopped

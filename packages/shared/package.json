@@ -19,5 +19,9 @@
     "start": "vite build --watch --mode development",
     "build": "tsc && vite build",
     "test": "vitest run"
+  },
+  "devDependencies": {
+    "vite": "^6.2.2",
+    "vite-plugin-dts": "^4.0.3"
   }
 }

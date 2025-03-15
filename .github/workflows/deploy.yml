@@ -57,7 +57,7 @@ jobs:
       - name: Build and push API
         uses: docker/build-push-action@v6
         with:
-          context: ./apps/api
-          target: production
+          context: ./
+          target: api
           push: true
           tags: mbret/oboku-api:latest
