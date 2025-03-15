@@ -10,7 +10,7 @@
     "api:start": "sls offline --httpPort 3001",
     "api:package": "serverless package",
     "build": "tsc --noEmit",
-    "postinstall": "rm -rf node_modules/serverless"
+    "postinstall": "rm -rf node_modules/serverless && cd ../.. && npx ts-node scripts/installSharp.ts --project scripts/tsconfig.json --platform darwin"
   },
   "engines": {
     "node": "20.x"
