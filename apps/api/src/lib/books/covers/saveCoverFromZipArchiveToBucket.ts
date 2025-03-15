@@ -1,5 +1,5 @@
-import fs from "node:fs"
-import unzipper from "unzipper"
+import * as fs from "node:fs"
+import * as unzipper from "unzipper"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import { Logger } from "@nestjs/common"
 import { asError } from "src/lib/utils"

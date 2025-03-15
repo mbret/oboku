@@ -1,6 +1,6 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
 import { ConfigService } from "@nestjs/config"
-import sharp from "sharp"
+import * as sharp from "sharp"
 import { EnvironmentVariables } from "src/types"
 
 const s3 = new S3Client()

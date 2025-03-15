@@ -1,4 +1,5 @@
-import createNano, { type MangoResponse } from "nano"
+import * as createNano from "nano"
+import { type MangoResponse } from "nano"
 import { generateAdminToken, generateToken } from "../auth"
 import {
   type SafeMangoQuery,

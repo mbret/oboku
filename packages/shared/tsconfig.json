@@ -6,7 +6,7 @@
     "allowJs": true,
     "noEmit": true,
     "moduleResolution": "Bundler",
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "downlevelIteration": true,
     "strict": true,

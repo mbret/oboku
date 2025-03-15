@@ -1,7 +1,7 @@
-import jwt from "jsonwebtoken"
+import * as jwt from "jsonwebtoken"
 import type { APIGatewayProxyEvent } from "aws-lambda"
-import { createHttpError } from "./httpErrors"
 import { from } from "rxjs"
+import { UnauthorizedException } from "@nestjs/common"
 
 const isAuthorized = async ({
   privateKey,
@@ -17,12 +17,18 @@ const isAuthorized = async ({
 
     if (!privateKey) {
       console.error(`Unable to retrieve private key`)
-      throw createHttpError(401)
+      throw new UnauthorizedException()
     }
 
-    return jwt.verify(token, privateKey, { algorithms: ["RS256"] }) as Token
+    return jwt.verify(token, privateKey, {
+      algorithms: ["RS256"],
+    }) as Token
   } catch (e) {
-    throw createHttpError(401)
+    if (e instanceof jwt.JsonWebTokenError) {
+      throw new UnauthorizedException()
+    }
+
+    throw e
   }
 }
 

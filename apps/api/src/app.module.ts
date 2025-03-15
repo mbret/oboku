@@ -1,11 +1,13 @@
-import { Module } from "@nestjs/common"
+import { Module, OnModuleDestroy, OnModuleInit } from "@nestjs/common"
 import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
 import { CoversController } from "./covers.controller"
-import { ConfigModule } from "@nestjs/config"
+import { ConfigModule, ConfigService } from "@nestjs/config"
 import * as path from "node:path"
 import * as Joi from "joi"
 import { MetadataController } from "./metadata.controller"
+import { EnvironmentVariables } from "./types"
+import * as fs from "node:fs"
 
 @Module({
   imports: [
@@ -27,12 +29,16 @@ import { MetadataController } from "./metadata.controller"
           ],
           COVER_ALLOWED_EXT: [".jpg", ".jpeg", ".png"],
           COVER_MAXIMUM_SIZE_FOR_STORAGE: { width: 400, height: 600 },
+          /**
+           * Target a tmp folder in the container
+           */
+          TMP_DIR: "/tmp/oboku",
+          TMP_DIR_BOOKS: "/tmp/oboku/books",
         }),
       ],
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid("development", "production"),
         PORT: Joi.number().port().default(3000),
-        TMP_DIR: Joi.string().required(),
         COUCH_DB_URL: Joi.string().required(),
         CONTACT_TO_ADDRESS: Joi.string().required(),
         STAGE: Joi.string().valid("prod", "dev").required(),
@@ -45,4 +51,28 @@ import { MetadataController } from "./metadata.controller"
   controllers: [AppController, CoversController, MetadataController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private configService: ConfigService<EnvironmentVariables>) {}
+
+  /**
+   * Prepare all tmp folders
+   */
+  onModuleInit() {
+    const tmpDir = this.configService.getOrThrow("TMP_DIR", {
+      infer: true,
+    })
+
+    if (!fs.existsSync(tmpDir)) {
+      fs.mkdirSync(tmpDir, { recursive: true })
+    }
+
+    // make sure to cleanup on each restart
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+
+    const tmpDirBooks = this.configService.getOrThrow("TMP_DIR_BOOKS", {
+      infer: true,
+    })
+
+    fs.mkdirSync(tmpDirBooks, { recursive: true })
+  }
+}
