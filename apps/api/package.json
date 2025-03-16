@@ -25,6 +25,7 @@
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/event-emitter": "^3.0.1",
     "@oboku/shared": "^0.8.0",
     "@sentry/aws-serverless": "^9.5.0",
     "@sentry/nestjs": "^9.5.0",
@@ -45,14 +46,11 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.5",
-    "@nestjs/event-emitter": "^3.0.1",
     "unzipper": "^0.12.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.2.0",
-    "@eslint/js": "^9.18.0",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
@@ -63,9 +61,6 @@
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
     "@types/unzipper": "^0.10.11",
-    "eslint": "^9.18.0",
-    "eslint-config-prettier": "^10.0.1",
-    "eslint-plugin-prettier": "^5.2.2",
     "globals": "^16.0.0",
     "jest": "^29.7.0",
     "prettier": "^3.4.2",
@@ -75,8 +70,7 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript": "^5.7.3"
   },
   "jest": {
     "moduleFileExtensions": [

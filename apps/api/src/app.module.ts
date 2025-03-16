@@ -15,13 +15,11 @@ import { CollectionsController } from "./features/collections/collections.contro
 import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
 import { BooksMedataService } from "./features/books/BooksMedataService"
 import { InMemoryTaskQueueService } from "./features/queue/InMemoryTaskQueueService"
-import { SentryGlobalFilter, SentryModule } from "@sentry/nestjs/setup"
-import { APP_FILTER } from "@nestjs/core"
 import { AppConfigService } from "./features/config/AppConfigService"
 
 @Module({
   imports: [
-    SentryModule.forRoot(),
+    // SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       // this is mostly used during dev, for production it will be passed
@@ -76,10 +74,10 @@ import { AppConfigService } from "./features/config/AppConfigService"
     CollectionsController,
   ],
   providers: [
-    {
-      provide: APP_FILTER,
-      useClass: SentryGlobalFilter,
-    },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: SentryGlobalFilter,
+    // },
     AppService,
     CollectionMetadataService,
     InMemoryTaskQueueService,
