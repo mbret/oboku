@@ -91,7 +91,7 @@ export class DataSourcesController implements OnModuleInit {
     })
   }
 
-  @Get("reports")
+  @Get("sync-reports")
   async signin(@Headers() { authorization }: { authorization: string }) {
     const [jwtPrivateKey = ``] = await getParametersValue({
       Names: ["jwt-private-key"],
@@ -110,6 +110,7 @@ export class DataSourcesController implements OnModuleInit {
     const reportsResponse = await this.supabaseClient
       .from("sync_reports")
       .select("*")
+      .limit(30)
       .eq("user_name", name)
 
     return reportsResponse.data ?? {}
