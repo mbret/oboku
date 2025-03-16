@@ -1,15 +1,14 @@
-import { triggerMetadataRefresh } from "./triggerMetadataRefresh"
 import { repairCollectionBooks } from "./repairCollectionBooks"
 import type { Context } from "../types"
 import { addNewCollection } from "./addNewCollection"
 import { updateCollection } from "./updateCollection"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/types"
 import {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "src/lib/plugins/types"
 import { Logger } from "@nestjs/common"
+import { EventEmitter2 } from "@nestjs/event-emitter"
+import { CollectionMetadataRefreshEvent, Events } from "src/events"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
@@ -20,12 +19,12 @@ export const syncCollection = async ({
   item,
   helpers,
   ctx,
-  config,
+  eventEmitter,
 }: {
   ctx: Context
   item: SynchronizeAbleItem
   helpers: Helpers
-  config: ConfigService<EnvironmentVariables>
+  eventEmitter: EventEmitter2
 }) => {
   const { resourceId: linkResourceId } = item
 
@@ -63,9 +62,13 @@ export const syncCollection = async ({
     ctx,
   })
 
-  triggerMetadataRefresh({
-    collectionId,
-    ctx,
-    config,
-  })
+  eventEmitter.emit(
+    Events.COLLECTION_METADATA_REFRESH,
+    new CollectionMetadataRefreshEvent({
+      collectionId,
+      obokuCredentials: ctx.credentials,
+      authorization: ctx.authorization,
+      soft: true,
+    }),
+  )
 }

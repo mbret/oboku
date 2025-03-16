@@ -8,6 +8,7 @@ import { createTagFromName } from "../couch/dbHelpers"
 import { Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/types"
+import { EventEmitter2 } from "@nestjs/event-emitter"
 
 const logger = new Logger("sync")
 
@@ -32,6 +33,7 @@ export const synchronizeFromDataSource = async (
   ctx: Context,
   helpers: ReturnType<typeof createHelpers>,
   config: ConfigService<EnvironmentVariables>,
+  eventEmitter: EventEmitter2,
 ) => {
   console.log(
     `dataSourcesSync run for user ${ctx.userName} with dataSource ${ctx.dataSourceId}`,
@@ -54,6 +56,7 @@ export const synchronizeFromDataSource = async (
     lvl: 0,
     parents: [],
     config,
+    eventEmitter,
   })
 }
 
@@ -116,6 +119,7 @@ const syncFolder = async ({
   lvl,
   parents,
   config,
+  eventEmitter,
 }: {
   ctx: Context & { authorization: string }
   helpers: Helpers
@@ -124,6 +128,7 @@ const syncFolder = async ({
   item: SynchronizeAbleDataSource | SynchronizeAbleItem
   parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
   config: ConfigService<EnvironmentVariables>
+  eventEmitter: EventEmitter2
 }) => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
   logger.log(`syncFolder ${item.name}: metadata `, metadataForFolder)
@@ -148,7 +153,7 @@ const syncFolder = async ({
   // - metadata says otherwise
   // - parent is not already a collection
   if (isFolder(item) && isCollection) {
-    await syncCollection({ ctx, item, helpers, config })
+    await syncCollection({ ctx, item, helpers, eventEmitter })
   }
 
   console.log(
@@ -173,6 +178,7 @@ const syncFolder = async ({
           item: subItem,
           parents: [...parents, item],
           config,
+          eventEmitter,
         })
       }
     }),

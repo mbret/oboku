@@ -1,9 +1,6 @@
 import { Body, Controller, Headers, Post } from "@nestjs/common"
-import { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "./types"
 import { OnEvent } from "@nestjs/event-emitter"
-import { BooksMetadataRefreshEvent, Events } from "./events"
-import { refreshMetadata } from "./features/books/metadata/refreshMetadata"
+import { CollectionMetadataRefreshEvent, Events } from "./events"
 import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
 import { IsBoolean, IsString, IsOptional } from "class-validator"
 
@@ -18,10 +15,7 @@ class PostMetadataRefreshDto {
 
 @Controller("collections")
 export class CollectionsController {
-  constructor(
-    private configService: ConfigService<EnvironmentVariables>,
-    private collectionMetadataService: CollectionMetadataService,
-  ) {}
+  constructor(private collectionMetadataService: CollectionMetadataService) {}
 
   @Post("metadata/refresh")
   async metadataRefresh(
@@ -39,17 +33,13 @@ export class CollectionsController {
     })
   }
 
-  @OnEvent(Events.BOOKS_METADATA_REFRESH)
-  async handleBooksMetadataRefresh(event: BooksMetadataRefreshEvent) {
-    refreshMetadata(
-      {
-        bookId: event.data.bookId,
-      },
-      {
-        authorization: event.data.authorization,
-        "oboku-credentials": JSON.stringify(event.data.obokuCredentials),
-      },
-      this.configService,
-    )
+  @OnEvent(Events.COLLECTION_METADATA_REFRESH)
+  async handleMetadataRefresh(event: CollectionMetadataRefreshEvent) {
+    return this.collectionMetadataService.refreshMetadata({
+      collectionId: event.data.collectionId,
+      credentials: event.data.obokuCredentials,
+      authorization: event.data.authorization,
+      soft: event.data.soft,
+    })
   }
 }

@@ -100,6 +100,7 @@ export const sync = async ({
         ctx,
         helpers,
         config,
+        eventEmitter,
       )
     }
 
