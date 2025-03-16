@@ -4,7 +4,6 @@ WORKDIR /usr/src/app
 # ideally we want to at least strip `apps` so that sub target build
 # their own scope.
 COPY package*.json ./
-COPY scripts ./scripts
 COPY packages/shared ./packages/shared
 COPY lerna.json ./
 COPY nx.json ./
