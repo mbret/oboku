@@ -1,16 +1,16 @@
 import { BadRequestException, Body, Controller, Post } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "../types"
-import { getParametersValue } from "../lib/ssm"
-import { getFirebaseApp } from "../lib/firebase/app"
+import { EnvironmentVariables } from "../../types"
+import { getParametersValue } from "../../lib/ssm"
+import { getFirebaseApp } from "../../lib/firebase/app"
 import { App } from "firebase-admin/app"
 import { getAuth } from "firebase-admin/auth"
 import { ObokuErrorCode } from "@oboku/shared"
-import { generateToken } from "../lib/auth"
+import { generateToken } from "../../lib/auth"
 import {
   getDangerousAdminNano,
   getOrCreateUserFromEmail,
-} from "../lib/couch/dbHelpers"
+} from "../../lib/couch/dbHelpers"
 
 @Controller("auth")
 export class AuthController {
@@ -41,7 +41,7 @@ export class AuthController {
       })
     }
 
-    if (!email_verified || new Date()) {
+    if (!email_verified) {
       throw new BadRequestException({
         errors: [{ code: ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED }],
       })

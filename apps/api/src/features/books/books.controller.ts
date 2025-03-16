@@ -1,4 +1,11 @@
-import { Body, Controller, Headers, Logger, Post } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Headers,
+  Logger,
+  OnModuleInit,
+  Post,
+} from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "../../events"
 import { BooksMedataService } from "./BooksMedataService"
@@ -6,7 +13,7 @@ import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { from } from "rxjs"
 
 @Controller("books")
-export class BooksController {
+export class BooksController implements OnModuleInit {
   private logger = new Logger(BooksController.name)
   private QUEUE_NAME = "books.metadata.refresh"
 
