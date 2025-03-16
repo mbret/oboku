@@ -1,7 +1,7 @@
 import { Body, Controller, Headers, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
-import { BooksMetadataRefreshEvent, Events } from "../events"
-import { BooksMedataService } from "./books/BooksMedataService"
+import { BooksMetadataRefreshEvent, Events } from "../../events"
+import { BooksMedataService } from "./BooksMedataService"
 
 @Controller("books")
 export class BooksController {

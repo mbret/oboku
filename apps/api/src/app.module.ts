@@ -1,22 +1,23 @@
 import { Module, OnModuleInit } from "@nestjs/common"
 import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
-import { CoversController } from "./features/covers.controller"
+import { CoversController } from "./features/covers/covers.controller"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import * as path from "node:path"
 import * as Joi from "joi"
-import { BooksController } from "./features/books.controller"
+import { BooksController } from "./features/books/books.controller"
 import { EnvironmentVariables } from "./types"
 import * as fs from "node:fs"
 import { AuthController } from "./features/auth.controller"
-import { SyncController } from "./features/sync.controller"
+import { DataSourcesController } from "./features/datasources/datasources.controller"
 import { EventEmitterModule } from "@nestjs/event-emitter"
-import { CollectionsController } from "./features/collections.controller"
+import { CollectionsController } from "./features/collections/collections.controller"
 import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
 import { BooksMedataService } from "./features/books/BooksMedataService"
 import { InMemoryTaskQueueService } from "./features/queue/InMemoryTaskQueueService"
 import { SentryGlobalFilter, SentryModule } from "@sentry/nestjs/setup"
 import { APP_FILTER } from "@nestjs/core"
+import { AppConfigService } from "./features/config/AppConfigService"
 
 @Module({
   imports: [
@@ -71,7 +72,7 @@ import { APP_FILTER } from "@nestjs/core"
     CoversController,
     BooksController,
     AuthController,
-    SyncController,
+    DataSourcesController,
     CollectionsController,
   ],
   providers: [
@@ -83,6 +84,7 @@ import { APP_FILTER } from "@nestjs/core"
     CollectionMetadataService,
     InMemoryTaskQueueService,
     BooksMedataService,
+    AppConfigService,
   ],
 })
 export class AppModule implements OnModuleInit {

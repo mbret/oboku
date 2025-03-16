@@ -1,7 +1,7 @@
 import { Body, Controller, Headers, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
-import { CollectionMetadataRefreshEvent, Events } from "../events"
-import { CollectionMetadataService } from "./collections/CollectionMetadataService"
+import { CollectionMetadataRefreshEvent, Events } from "../../events"
+import { CollectionMetadataService } from "./CollectionMetadataService"
 import { IsBoolean, IsString, IsOptional } from "class-validator"
 
 class PostMetadataRefreshDto {

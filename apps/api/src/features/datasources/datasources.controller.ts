@@ -1,14 +1,14 @@
 import { Body, Controller, Get, Headers, Logger, Post } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "../types"
-import { getParametersValue } from "../lib/ssm"
-import { getAuthTokenAsync } from "../lib/auth"
-import { createSupabaseClient } from "../lib/supabase/client"
-import { lock } from "../lib/supabase/lock"
-import { deleteLock } from "../lib/supabase/deleteLock"
-import { getNanoDbForUser } from "../lib/couch/dbHelpers"
-import { sync } from "../lib/sync/sync"
-import { configure } from "../lib/plugins/google"
+import type { EnvironmentVariables } from "../../types"
+import { getParametersValue } from "../../lib/ssm"
+import { getAuthTokenAsync } from "../../lib/auth"
+import { createSupabaseClient } from "../../lib/supabase/client"
+import { lock } from "../../lib/supabase/lock"
+import { deleteLock } from "../../lib/supabase/deleteLock"
+import { getNanoDbForUser } from "../../lib/couch/dbHelpers"
+import { sync } from "../../lib/sync/sync"
+import { configure } from "../../lib/plugins/google"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 
 const syncLongProgress = async ({
@@ -72,8 +72,8 @@ const syncLongProgress = async ({
   }
 }
 
-@Controller("sync")
-export class SyncController {
+@Controller("datasources")
+export class DataSourcesController {
   protected supabaseClient: ReturnType<typeof createSupabaseClient>
 
   constructor(
@@ -107,12 +107,14 @@ export class SyncController {
     return reportsResponse.data ?? {}
   }
 
-  @Post("datasource")
+  @Post("sync")
   async syncDataSource(
     @Body() { dataSourceId }: { dataSourceId: string },
     @Headers() headers: { authorization: string; "oboku-credentials": string },
   ) {
-    const localLogger = new Logger(`${SyncController.name}.syncDataSource`)
+    const localLogger = new Logger(
+      `${DataSourcesController.name}.syncDataSource`,
+    )
 
     const LOCK_MAX_DURATION_MN = 10
 

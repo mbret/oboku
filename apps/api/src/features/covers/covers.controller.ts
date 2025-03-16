@@ -10,11 +10,11 @@ import {
 } from "@nestjs/common"
 import { S3Client } from "@aws-sdk/client-s3"
 import * as sharp from "sharp"
-import { getCover } from "../lib/covers/getCover"
-import { getCoverPlaceholder } from "../lib/covers/getCoverPlaceholder"
+import { getCover } from "../../lib/covers/getCover"
+import { getCoverPlaceholder } from "../../lib/covers/getCoverPlaceholder"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "../types"
-import { InMemoryTaskQueueService } from "./queue/InMemoryTaskQueueService"
+import { EnvironmentVariables } from "../../types"
+import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import {
   defer,
   delay,

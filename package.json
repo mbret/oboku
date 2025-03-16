@@ -32,10 +32,6 @@
     "@types/react-dom": "^18.0.11",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
-    "esbuild": "^0.20.2",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react": "^7.32.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
     "lerna": "^8.1.4",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
@@ -46,17 +42,8 @@
     "webpack-node-externals": "^3.0.0"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.689.0",
     "@aws-sdk/client-s3": "^3.689.0",
-    "@aws-sdk/client-sqs": "^3.689.0",
     "@aws-sdk/client-ssm": "^3.687.0",
-    "@emotion/cache": "^11.11.0",
-    "@nestjs/event-emitter": "^3.0.1",
-    "arg": "^5.0.2",
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.1",
-    "npm-force-resolutions": "^0.0.10",
-    "pino": "^9.1.0",
-    "sharp": "^0.33.5"
+    "@emotion/cache": "^11.11.0"
   }
 }
