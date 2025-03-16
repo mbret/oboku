@@ -32,19 +32,20 @@ describe("max concurrency", () => {
     const executionOrder: string[] = []
 
     // Create a task that records when it starts and completes
-    const createTask = (id: string, duration: number): Observable<string> => {
-      return defer(() => {
-        executionOrder.push(`${id}-start`)
+    const createTask = (id: string, duration: number) => {
+      return () =>
+        defer(() => {
+          executionOrder.push(`${id}-start`)
 
-        return timer(duration).pipe(
-          map(() => {
-            return id
-          }),
-          finalize(() => {
-            executionOrder.push(`${id}-end`)
-          }),
-        )
-      })
+          return timer(duration).pipe(
+            map(() => {
+              return id
+            }),
+            finalize(() => {
+              executionOrder.push(`${id}-end`)
+            }),
+          )
+        })
     }
 
     // Enqueue 3 tasks with different durations
@@ -94,16 +95,17 @@ describe("max concurrency", () => {
     const executionOrder: string[] = []
 
     // Create a task that records its execution
-    const createTask = (id: string, duration: number): Observable<string> => {
-      return defer(() => {
-        executionOrder.push(`${id}-start`)
-        return timer(duration).pipe(
-          map(() => id),
-          finalize(() => {
-            executionOrder.push(`${id}-end`)
-          }),
-        )
-      })
+    const createTask = (id: string, duration: number) => {
+      return () =>
+        defer(() => {
+          executionOrder.push(`${id}-start`)
+          return timer(duration).pipe(
+            map(() => id),
+            finalize(() => {
+              executionOrder.push(`${id}-end`)
+            }),
+          )
+        })
     }
 
     // Enqueue 3 tasks
@@ -147,16 +149,13 @@ describe("max concurrency", () => {
     const executedTasks: string[] = []
 
     // Create tasks with different values but same ID
-    const createTask = (
-      taskId: string,
-      value: string,
-      duration = 100,
-    ): Observable<string> => {
-      return defer(() => {
-        executedTasks.push(taskId)
-        // Use a timer to simulate async work
-        return timer(duration).pipe(map(() => value))
-      })
+    const createTask = (taskId: string, value: string, duration = 100) => {
+      return () =>
+        defer(() => {
+          executedTasks.push(taskId)
+          // Use a timer to simulate async work
+          return timer(duration).pipe(map(() => value))
+        })
     }
 
     // Fill the queue with a long-running task to ensure subsequent tasks are queued
@@ -240,7 +239,7 @@ describe("deduplication", () => {
         const executionOrder: string[] = []
 
         const createTask = (id: string, duration: number) => {
-          return defer(() => {
+          return () => {
             executionOrder.push(`${id}-start`)
 
             return timer(duration).pipe(
@@ -250,7 +249,7 @@ describe("deduplication", () => {
                 return id
               }),
             )
-          })
+          }
         }
 
         const task1$ = service.enqueue(queueName, createTask("task1", 100), {
