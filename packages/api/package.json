@@ -10,10 +10,10 @@
     "api:start": "sls offline --httpPort 3001",
     "api:package": "serverless package",
     "build": "tsc --noEmit",
-    "postinstall": "rm -rf node_modules/serverless && cd ../.. && npx ts-node scripts/installSharp.ts --project scripts/tsconfig.json --platform darwin"
+    "postinstall": "rm -rf node_modules/serverless"
   },
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "dependencies": {
     "node-unrar-js": "^2.0.2",
