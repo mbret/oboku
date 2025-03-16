@@ -11,6 +11,8 @@ import * as fs from "node:fs"
 import { AuthController } from "./auth.controller"
 import { SyncController } from "./sync.controller"
 import { EventEmitterModule } from "@nestjs/event-emitter"
+import { CollectionsController } from "./collections.controller"
+import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
 
 @Module({
   imports: [
@@ -65,8 +67,9 @@ import { EventEmitterModule } from "@nestjs/event-emitter"
     BooksController,
     AuthController,
     SyncController,
+    CollectionsController,
   ],
-  providers: [AppService],
+  providers: [AppService, CollectionMetadataService],
 })
 export class AppModule implements OnModuleInit {
   constructor(private configService: ConfigService<EnvironmentVariables>) {}

@@ -4,16 +4,19 @@ import {
   directives,
 } from "@oboku/shared"
 import { fetchMetadata } from "./fetchMetadata"
-import { atomicUpdate, findOne } from "@libs/couch/dbHelpers"
 import type nano from "nano"
-import { Logger } from "@libs/logger"
-import { pluginFacade } from "@libs/plugins/facade"
-import { computeMetadata } from "@libs/collections/computeMetadata"
 import { saveOrUpdateCover } from "./saveOrUpdateCover"
 import { from, lastValueFrom, of, switchMap } from "rxjs"
 import { markCollectionAsFetching } from "./collections"
+import { pluginFacade } from "src/lib/plugins/facade"
+import { Logger } from "@nestjs/common"
+import { computeMetadata } from "src/lib/collections/computeMetadata"
+import { findOne } from "src/lib/couch/findOne"
+import { atomicUpdate } from "src/lib/couch/dbHelpers"
+import { ConfigService } from "@nestjs/config"
+import type { EnvironmentVariables } from "src/types"
 
-export const refreshMetadata = async (
+export const processrefreshMetadata = async (
   collection: CollectionDocType,
   {
     googleApiKey,
@@ -28,6 +31,7 @@ export const refreshMetadata = async (
     soft?: boolean
     comicVineApiKey: string
   },
+  config: ConfigService<EnvironmentVariables>,
 ) => {
   const { isCollectionAlreadyUpdatedFromLink, linkMetadataInfo } =
     await lastValueFrom(
@@ -73,13 +77,13 @@ export const refreshMetadata = async (
    * This soft mode is mostly used during sync.
    */
   if (soft && isCollectionAlreadyUpdatedFromLink) {
-    Logger.info(`${collection._id} already has metadata, ignoring it!`)
+    Logger.log(`${collection._id} already has metadata, ignoring it!`)
 
     return
   }
 
   if (soft && !linkMetadataInfo && collection.lastMetadataUpdatedAt) {
-    Logger.info(
+    Logger.log(
       `${collection._id} does not have link and is already refreshed, ignoring it!`,
     )
 
@@ -137,10 +141,14 @@ export const refreshMetadata = async (
   const metadata = [...userMetadata, ...externalMetadatas, linkMetadata]
 
   // cannot be done in // since metadata status will trigger cover refresh
-  await saveOrUpdateCover(currentCollection, {
-    _id: currentCollection._id,
-    metadata,
-  })
+  await saveOrUpdateCover(
+    currentCollection,
+    {
+      _id: currentCollection._id,
+      metadata,
+    },
+    config,
+  )
 
   await atomicUpdate(
     db,
