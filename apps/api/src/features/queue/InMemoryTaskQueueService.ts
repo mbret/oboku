@@ -27,6 +27,13 @@ export interface QueueOptions {
    * If true, when a new task with the same id is added, the old one is removed
    */
   deduplicate?: boolean
+
+  /**
+   * Whether tasks with the same ID should run sequentially
+   * If true, tasks with the same ID will wait for previous tasks with that ID to complete
+   * before starting, regardless of maxConcurrent setting
+   */
+  sequentialTasksWithSameId?: boolean
 }
 
 export interface TaskOptions<T> {
@@ -217,10 +224,23 @@ export class InMemoryTaskQueueService {
     // Process as many tasks as possible
     while (pending.length > 0 && active.length < options.maxConcurrent) {
       // Get the next task (FIFO order)
-      const nextTask = pending.shift()
+      const nextTaskIndex = this.findNextTaskIndex(queue)
 
-      if (!nextTask) {
+      // If no suitable task was found, break the loop
+      if (nextTaskIndex === -1) {
         break
+      }
+
+      // Remove the task from pending and add it to active
+      // This is safe because we've checked the index is valid
+      const nextTask = pending.splice(nextTaskIndex, 1)[0]
+
+      // This should never happen, but check just to be safe
+      if (!nextTask) {
+        this.logger.error(
+          `Unexpected error: Task at index ${nextTaskIndex} is undefined`,
+        )
+        continue
       }
 
       // Add it to the active queue
@@ -294,5 +314,45 @@ export class InMemoryTaskQueueService {
         this.processNextTasks(queueName)
       }
     }
+  }
+
+  /**
+   * Finds the index of the next task to process
+   * Takes into account the sequentialTasksWithSameId option
+   */
+  private findNextTaskIndex(queue: {
+    options: QueueOptions
+    active: QueuedTask<any>[]
+    pending: QueuedTask<any>[]
+  }): number {
+    const { options, active, pending } = queue
+
+    // If sequentialTasksWithSameId is not enabled, just return the first task
+    if (!options.sequentialTasksWithSameId) {
+      return pending.length > 0 ? 0 : -1
+    }
+
+    // Get the IDs of tasks that are currently active
+    const activeTaskIds = active
+      .map((task) => task.id)
+      .filter((id): id is string => id !== undefined)
+
+    // Find the first task that doesn't have an active task with the same ID
+    for (let i = 0; i < pending.length; i++) {
+      const pendingTask = pending[i]
+
+      // Skip undefined tasks (should never happen)
+      if (!pendingTask) {
+        continue
+      }
+
+      // If the task has no ID or its ID is not in the active tasks, it can be processed
+      if (!pendingTask.id || !activeTaskIds.includes(pendingTask.id)) {
+        return i
+      }
+    }
+
+    // No suitable task found
+    return -1
   }
 }

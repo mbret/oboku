@@ -283,3 +283,77 @@ describe("deduplication", () => {
     })
   })
 })
+
+describe("sequential tasks with same ID", () => {
+  it("should run tasks with the same ID sequentially while allowing other tasks to run in parallel", async () => {
+    // Create a queue with sequentialTasksWithSameId enabled and maxConcurrent=3
+    const queueName = "test-sequential-same-id"
+    service.createQueue({
+      name: queueName,
+      maxConcurrent: 3, // Allow up to 3 concurrent tasks
+      sequentialTasksWithSameId: true, // Enable sequential execution for same IDs
+    })
+
+    const executionOrder: string[] = []
+
+    // Create a task that records when it starts and completes
+    const createTask = (id: string, taskId: string, duration: number) => {
+      return () =>
+        defer(() => {
+          executionOrder.push(`${id}-start`)
+
+          return timer(duration).pipe(
+            map(() => id),
+            finalize(() => {
+              executionOrder.push(`${id}-end`)
+            }),
+          )
+        })
+    }
+
+    // Enqueue tasks with different durations and IDs
+    // task1 and task2 have the same ID "A"
+    // task3 has ID "B"
+    // task4 has ID "A" again
+    const task1$ = service.enqueue(queueName, createTask("task1", "A", 100), {
+      id: "A",
+    })
+    const task2$ = service.enqueue(queueName, createTask("task2", "A", 50), {
+      id: "A",
+    })
+    const task3$ = service.enqueue(queueName, createTask("task3", "B", 75), {
+      id: "B",
+    })
+    const task4$ = service.enqueue(queueName, createTask("task4", "A", 60), {
+      id: "A",
+    })
+
+    // Wait for all tasks to complete
+    const [result1, result2, result3, result4] = await Promise.all([
+      lastValueFrom(task1$),
+      lastValueFrom(task2$),
+      lastValueFrom(task3$),
+      lastValueFrom(task4$),
+    ])
+
+    // Verify individual results
+    expect(result1).toBe("task1")
+    expect(result2).toBe("task2")
+    expect(result3).toBe("task3")
+    expect(result4).toBe("task4")
+
+    // Check the complete execution order
+    expect(executionOrder).toEqual(
+      expect.arrayContaining([
+        "task1-start",
+        "task3-start",
+        "task1-end",
+        "task2-start",
+        "task3-end",
+        "task2-end",
+        "task4-start",
+        "task4-end",
+      ]),
+    )
+  })
+})
