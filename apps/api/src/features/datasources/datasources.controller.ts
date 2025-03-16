@@ -1,10 +1,17 @@
-import { Body, Controller, Get, Headers, Logger, Post } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Logger,
+  OnModuleInit,
+  Post,
+} from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import type { EnvironmentVariables } from "../../types"
 import { getParametersValue } from "../../lib/ssm"
 import { getAuthTokenAsync } from "../../lib/auth"
 import { createSupabaseClient } from "../../lib/supabase/client"
-import { deleteLock } from "../../lib/supabase/deleteLock"
 import { getNanoDbForUser } from "../../lib/couch/dbHelpers"
 import { sync } from "../../lib/sync/sync"
 import { configure } from "../../lib/plugins/google"
@@ -16,65 +23,53 @@ const syncLongProgress = async ({
   dataSourceId,
   credentials,
   authorization,
-  supabase,
   config,
   eventEmitter,
 }: {
   config: ConfigService<EnvironmentVariables>
-  supabase: ReturnType<typeof createSupabaseClient>
   dataSourceId: string
   credentials: Record<string, string>
   authorization: string
   eventEmitter: EventEmitter2
 }) => {
-  const lockId = `sync_${dataSourceId}`
-
-  try {
-    const [client_id = ``, client_secret = ``, jwtPrivateKey = ``] =
-      await getParametersValue({
-        Names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "jwt-private-key"],
-        WithDecryption: true,
-      })
-
-    // @todo only do once in a service
-    configure({
-      client_id,
-      client_secret,
+  const [client_id = ``, client_secret = ``, jwtPrivateKey = ``] =
+    await getParametersValue({
+      Names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "jwt-private-key"],
+      WithDecryption: true,
     })
 
-    const { name } = await getAuthTokenAsync(
-      {
-        headers: {
-          authorization,
-        },
+  // @todo only do once in a service
+  configure({
+    client_id,
+    client_secret,
+  })
+
+  const { name } = await getAuthTokenAsync(
+    {
+      headers: {
+        authorization,
       },
+    },
+    jwtPrivateKey,
+  )
+
+  await sync({
+    userName: name,
+    dataSourceId,
+    db: await getNanoDbForUser(
+      name,
       jwtPrivateKey,
-    )
-
-    await sync({
-      userName: name,
-      dataSourceId,
-      db: await getNanoDbForUser(
-        name,
-        jwtPrivateKey,
-        config.getOrThrow("COUCH_DB_URL", { infer: true }),
-      ),
-      credentials,
-      authorization,
-      config,
-      eventEmitter,
-    })
-
-    await deleteLock(supabase, lockId)
-  } catch (e) {
-    await deleteLock(supabase, lockId)
-
-    throw e
-  }
+      config.getOrThrow("COUCH_DB_URL", { infer: true }),
+    ),
+    credentials,
+    authorization,
+    config,
+    eventEmitter,
+  })
 }
 
 @Controller("datasources")
-export class DataSourcesController {
+export class DataSourcesController implements OnModuleInit {
   private logger = new Logger(DataSourcesController.name)
   private SYNC_QUEUE_NAME = "datasources.sync"
   private supabaseClient: ReturnType<typeof createSupabaseClient>
@@ -135,7 +130,6 @@ export class DataSourcesController {
             dataSourceId,
             credentials: JSON.parse(headers["oboku-credentials"] ?? "{}"),
             authorization: headers.authorization,
-            supabase: this.supabaseClient,
             config: this.configService,
             eventEmitter: this.eventEmitter,
           }),
