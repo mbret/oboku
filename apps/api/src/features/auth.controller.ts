@@ -1,17 +1,17 @@
 import { BadRequestException, Body, Controller, Post } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "./types"
-import { getParametersValue } from "./lib/ssm"
-import { getFirebaseApp } from "./lib/firebase/app"
+import { EnvironmentVariables } from "../types"
+import { getParametersValue } from "../lib/ssm"
+import { getFirebaseApp } from "../lib/firebase/app"
 import { App } from "firebase-admin/app"
 import { getAuth } from "firebase-admin/auth"
 import { ObokuErrorCode } from "@oboku/shared"
-import { generateToken } from "./lib/auth"
+import { generateToken } from "../lib/auth"
 import {
   getDangerousAdminNano,
   getOrCreateUserFromEmail,
-} from "./lib/couch/dbHelpers"
-import { createHttpError } from "./lib/httpErrors"
+} from "../lib/couch/dbHelpers"
+import { createHttpError } from "../lib/httpErrors"
 
 @Controller("auth")
 export class AuthController {

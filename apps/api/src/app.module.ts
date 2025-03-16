@@ -1,23 +1,26 @@
 import { Module, OnModuleInit } from "@nestjs/common"
 import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
-import { CoversController } from "./covers.controller"
+import { CoversController } from "./features/covers.controller"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import * as path from "node:path"
 import * as Joi from "joi"
-import { BooksController } from "./books.controller"
+import { BooksController } from "./features/books.controller"
 import { EnvironmentVariables } from "./types"
 import * as fs from "node:fs"
-import { AuthController } from "./auth.controller"
-import { SyncController } from "./sync.controller"
+import { AuthController } from "./features/auth.controller"
+import { SyncController } from "./features/sync.controller"
 import { EventEmitterModule } from "@nestjs/event-emitter"
-import { CollectionsController } from "./collections.controller"
+import { CollectionsController } from "./features/collections.controller"
 import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
 import { BooksMedataService } from "./features/books/BooksMedataService"
 import { InMemoryTaskQueueService } from "./features/queue/InMemoryTaskQueueService"
+import { SentryGlobalFilter, SentryModule } from "@sentry/nestjs/setup"
+import { APP_FILTER } from "@nestjs/core"
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       // this is mostly used during dev, for production it will be passed
@@ -72,6 +75,10 @@ import { InMemoryTaskQueueService } from "./features/queue/InMemoryTaskQueueServ
     CollectionsController,
   ],
   providers: [
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
+    },
     AppService,
     CollectionMetadataService,
     InMemoryTaskQueueService,
