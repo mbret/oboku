@@ -1,13 +1,11 @@
-import { Body, Controller, Headers, Logger, Post } from "@nestjs/common"
-import { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "./types"
+import { Body, Controller, Headers, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "./events"
-import { refreshMetadata } from "./features/books/metadata/refreshMetadata"
+import { BooksMedataService } from "./features/books/BooksMedataService"
 
 @Controller("books")
 export class BooksController {
-  constructor(private configService: ConfigService<EnvironmentVariables>) {}
+  constructor(private booksMedataService: BooksMedataService) {}
 
   @Post("metadata/refresh")
   async metadataRefresh(
@@ -17,12 +15,12 @@ export class BooksController {
       authorization?: string
     },
   ) {
-    return refreshMetadata(body, headers, this.configService)
+    return this.booksMedataService.refreshMetadata(body, headers)
   }
 
   @OnEvent(Events.BOOKS_METADATA_REFRESH)
   async handleBooksMetadataRefresh(event: BooksMetadataRefreshEvent) {
-    refreshMetadata(
+    this.booksMedataService.refreshMetadata(
       {
         bookId: event.data.bookId,
       },
@@ -30,7 +28,6 @@ export class BooksController {
         authorization: event.data.authorization,
         "oboku-credentials": JSON.stringify(event.data.obokuCredentials),
       },
-      this.configService,
     )
   }
 }

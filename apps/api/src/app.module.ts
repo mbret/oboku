@@ -13,6 +13,8 @@ import { SyncController } from "./sync.controller"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { CollectionsController } from "./collections.controller"
 import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
+import { BooksMedataService } from "./features/books/BooksMedataService"
+import { InMemoryTaskQueueService } from "./features/queue/InMemoryTaskQueueService"
 
 @Module({
   imports: [
@@ -69,7 +71,12 @@ import { CollectionMetadataService } from "./features/collections/CollectionMeta
     SyncController,
     CollectionsController,
   ],
-  providers: [AppService, CollectionMetadataService],
+  providers: [
+    AppService,
+    CollectionMetadataService,
+    InMemoryTaskQueueService,
+    BooksMedataService,
+  ],
 })
 export class AppModule implements OnModuleInit {
   constructor(private configService: ConfigService<EnvironmentVariables>) {}

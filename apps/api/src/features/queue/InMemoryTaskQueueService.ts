@@ -2,6 +2,13 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Observable, Subject, defer, from, throwError } from "rxjs"
 import { finalize, tap, share, takeUntil } from "rxjs/operators"
 
+export class TaskRejectionError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = "TaskRejectionError"
+  }
+}
+
 export interface QueueOptions {
   /**
    * Maximum number of tasks that can run in parallel
@@ -28,11 +35,6 @@ export interface TaskOptions<T> {
    * If not provided, the task will never be deduplicated
    */
   id?: string
-
-  /**
-   * Optional context data to be passed to the task
-   */
-  context?: T
 }
 
 interface QueuedTask<R> {
@@ -87,7 +89,7 @@ export class InMemoryTaskQueueService {
    */
   enqueue<R>(
     queueName: string,
-    task: Observable<R> | (() => Observable<R>),
+    taskFactory: () => Observable<R>,
     options: TaskOptions<any> = {},
   ): Observable<R> {
     const queue = this.queues.get(queueName)
@@ -101,13 +103,6 @@ export class InMemoryTaskQueueService {
 
     // Create a subject that will emit the task result
     const subject = new Subject<R>()
-
-    // Create a factory function that will create the observable when needed
-    const taskFactory = () => {
-      // If task is already an observable, wrap it in a defer to ensure fresh execution
-      // If task is a function, it will be called when the observable is subscribed to
-      return typeof task === "function" ? defer(task) : defer(() => task)
-    }
 
     // Create the task object
     const queuedTask: QueuedTask<R> = {
@@ -125,7 +120,7 @@ export class InMemoryTaskQueueService {
         // Remove the existing task and reject its subject
         const existingTask = pending.splice(existingTaskIndex, 1)[0]
         existingTask?.subject.error(
-          new Error(`Task ${id} was replaced by a newer task`),
+          new TaskRejectionError(`Task ${id} was replaced by a newer task`),
         )
         this.logger.log(`Replaced pending task ${id} in queue "${queueName}"`)
       }
