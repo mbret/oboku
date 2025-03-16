@@ -8,7 +8,6 @@ import {
   type DropboxDataSourceData,
   READER_ACCEPTED_EXTENSIONS,
 } from "@oboku/shared"
-import type { PromiseReturnType } from "../../types"
 import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
@@ -89,19 +88,21 @@ export const dataSource: DataSourcePlugin = {
 
     const getContentsFromFolder = throttle(
       async (id: string): Promise<SynchronizeAbleDataSource["items"]> => {
-        type Res = PromiseReturnType<
-          typeof dbx.filesListFolder
+        type Res = Awaited<
+          ReturnType<typeof dbx.filesListFolder>
         >["result"]["entries"]
 
         const getNextRes = throttle(
           async (
             cursor?:
-              | PromiseReturnType<
-                  typeof dbx.filesListFolder
+              | Awaited<
+                  ReturnType<typeof dbx.filesListFolder>
                 >["result"]["cursor"]
               | undefined,
           ): Promise<Res> => {
-            let response: PromiseReturnType<typeof dbx.filesListFolderContinue>
+            let response: Awaited<
+              ReturnType<typeof dbx.filesListFolderContinue>
+            >
             if (cursor) {
               response = await dbx.filesListFolderContinue({ cursor })
             } else {

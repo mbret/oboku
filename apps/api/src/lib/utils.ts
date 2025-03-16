@@ -1,4 +1,3 @@
-import type { APIGatewayProxyEvent } from "aws-lambda"
 import * as fs from "node:fs"
 import * as unzipper from "unzipper"
 import type { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
@@ -111,22 +110,6 @@ export const createThrottler = (ms: number) => {
             .catch(reject),
         )
       })
-}
-
-export function mergeSkippingUndefined<T extends object>(
-  ...objects: Partial<T>[]
-): T {
-  const result: Partial<T> = {}
-
-  objects.forEach((obj) => {
-    Object.entries(obj).forEach(([key, value]) => {
-      if (value !== undefined) {
-        ;(result as any)[key] = value
-      }
-    })
-  })
-
-  return result as T
 }
 
 export const onBeforeError =

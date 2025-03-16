@@ -2,7 +2,6 @@ import type { BookDocType, LinkDocType } from "@oboku/shared"
 import * as path from "node:path"
 import * as fs from "node:fs"
 import { pluginFacade } from "src/lib/plugins/facade"
-import { PromiseReturnType } from "../types"
 import { EnvironmentVariables } from "src/types"
 import { ConfigService } from "@nestjs/config"
 
@@ -14,7 +13,7 @@ export const downloadToTmpFolder = (
 ) =>
   new Promise<{
     filepath: string
-    metadata: PromiseReturnType<typeof pluginFacade.download>["metadata"]
+    metadata: Awaited<ReturnType<typeof pluginFacade.download>>["metadata"]
   }>((resolve, reject) => {
     pluginFacade
       .download(link, credentials)

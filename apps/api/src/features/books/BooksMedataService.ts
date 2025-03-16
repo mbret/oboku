@@ -11,7 +11,6 @@ import {
   getNanoDbForUser,
 } from "src/lib/couch/dbHelpers"
 import { getAuthTokenAsync } from "src/lib/auth"
-import { PromiseReturnType } from "src/lib/types"
 import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSaveCover"
 
 @Injectable()
@@ -102,7 +101,7 @@ export class BooksMedataService {
 
     if (!link) throw new Error(`Unable to find link ${firstLinkId}`)
 
-    let data: PromiseReturnType<typeof retrieveMetadataAndSaveCover>
+    let data: Awaited<ReturnType<typeof retrieveMetadataAndSaveCover>>
 
     try {
       data = await retrieveMetadataAndSaveCover(

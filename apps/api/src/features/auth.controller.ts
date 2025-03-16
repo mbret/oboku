@@ -11,7 +11,6 @@ import {
   getDangerousAdminNano,
   getOrCreateUserFromEmail,
 } from "../lib/couch/dbHelpers"
-import { createHttpError } from "../lib/httpErrors"
 
 @Controller("auth")
 export class AuthController {
@@ -38,13 +37,13 @@ export class AuthController {
 
     if (!email) {
       throw new BadRequestException({
-        code: ObokuErrorCode.ERROR_SIGNIN_NO_EMAIL,
+        errors: [{ code: ObokuErrorCode.ERROR_SIGNIN_NO_EMAIL }],
       })
     }
 
-    if (!email_verified) {
-      throw createHttpError(400, {
-        code: ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED,
+    if (!email_verified || new Date()) {
+      throw new BadRequestException({
+        errors: [{ code: ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED }],
       })
     }
 
