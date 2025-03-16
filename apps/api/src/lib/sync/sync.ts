@@ -2,12 +2,13 @@ import type createNano from "nano"
 import { SyncReport } from "./SyncReport"
 import { synchronizeFromDataSource } from "./synchronizeFromDataSource"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
-import axios from "axios"
 import { createHelpers } from "../plugins/helpers"
 import { atomicUpdate } from "../couch/dbHelpers"
 import { plugins } from "../plugins/plugins"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/types"
+import { EventEmitter2 } from "@nestjs/event-emitter"
+import { BooksMetadataRefreshEvent, Events } from "src/events"
 
 export const sync = async ({
   dataSourceId,
@@ -16,6 +17,7 @@ export const sync = async ({
   authorization,
   db,
   config,
+  eventEmitter,
 }: {
   dataSourceId: string
   userName: string
@@ -23,6 +25,7 @@ export const sync = async ({
   authorization: string
   db: createNano.DocumentScope<unknown>
   config: ConfigService<EnvironmentVariables>
+  eventEmitter: EventEmitter2
 }) => {
   const syncReport = new SyncReport(dataSourceId, userName)
 
@@ -38,33 +41,14 @@ export const sync = async ({
 
     syncReport.fetchBookMetadata(bookId)
 
-    const response = await axios({
-      method: `post`,
-      url: `${config.get("AWS_API_URI", { infer: true })}/refresh-metadata`,
-      data: {
+    eventEmitter.emit(
+      Events.BOOKS_METADATA_REFRESH,
+      new BooksMetadataRefreshEvent({
         bookId,
-      },
-      headers: {
-        "content-type": "application/json",
-        accept: "application/json",
-        "oboku-credentials": JSON.stringify(credentials),
-        authorization: authorization,
-      },
-    })
-
-    if (response.status >= 400) {
-      console.error(
-        `[syncDataSourceLongProcess] [refreshBookMetadata]`,
-        `request error for ${bookId}`,
-        response.status,
-      )
-    } else {
-      console.log(
-        `[syncDataSourceLongProcess] [refreshBookMetadata]`,
-        `request success for ${bookId}`,
-        response.status,
-      )
-    }
+        authorization,
+        obokuCredentials: credentials,
+      }),
+    )
   }
 
   const nameHex = Buffer.from(userName).toString("hex")

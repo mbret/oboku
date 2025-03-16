@@ -5,11 +5,12 @@ import { CoversController } from "./covers.controller"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import * as path from "node:path"
 import * as Joi from "joi"
-import { MetadataController } from "./metadata.controller"
+import { BooksController } from "./books.controller"
 import { EnvironmentVariables } from "./types"
 import * as fs from "node:fs"
 import { AuthController } from "./auth.controller"
 import { SyncController } from "./sync.controller"
+import { EventEmitterModule } from "@nestjs/event-emitter"
 
 @Module({
   imports: [
@@ -56,11 +57,12 @@ import { SyncController } from "./sync.controller"
         OFFLINE: Joi.boolean().default(false),
       }),
     }),
+    EventEmitterModule.forRoot(),
   ],
   controllers: [
     AppController,
     CoversController,
-    MetadataController,
+    BooksController,
     AuthController,
     SyncController,
   ],

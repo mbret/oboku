@@ -1,20 +1,20 @@
-import { Body, Controller, Headers, Logger, Post } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "./types"
-import { lock } from "./lib/supabase/lock"
-import { getParametersValue } from "./lib/ssm"
-import { configure } from "./lib/plugins/google"
 import * as fs from "node:fs"
 import * as path from "node:path"
-import { atomicUpdate, findOne } from "./lib/couch/dbHelpers"
-import { getAuthTokenAsync } from "./lib/auth"
-import { getNanoDbForUser } from "./lib/couch/dbHelpers"
-import { retrieveMetadataAndSaveCover } from "./features/metadata/retrieveMetadataAndSaveCover"
-import { PromiseReturnType } from "./lib/types"
-import { deleteLock } from "./lib/supabase/deleteLock"
-import { createSupabaseClient } from "./lib/supabase/client"
+import { EnvironmentVariables } from "src/types"
+import { createSupabaseClient } from "src/lib/supabase/client"
+import { Logger } from "@nestjs/common"
+import { getParametersValue } from "src/lib/ssm"
+import { configure } from "src/lib/plugins/google"
+import { findOne } from "src/lib/couch/dbHelpers"
+import { atomicUpdate } from "src/lib/couch/dbHelpers"
+import { getAuthTokenAsync } from "src/lib/auth"
+import { getNanoDbForUser } from "src/lib/couch/dbHelpers"
+import { PromiseReturnType } from "src/lib/types"
+import { retrieveMetadataAndSaveCover } from "src/features/metadata/retrieveMetadataAndSaveCover"
+import { deleteLock } from "src/lib/supabase/deleteLock"
 
-const refreshMetadata = async (
+export const refreshMetadataLongProcess = async (
   {
     authorization,
     bookId,
@@ -136,57 +136,5 @@ const refreshMetadata = async (
     await deleteLock(supabase, lockId)
 
     throw error
-  }
-}
-
-const LOCK_MAX_DURATION_MN = 5
-
-@Controller("refresh-metadata")
-export class MetadataController {
-  constructor(private configService: ConfigService<EnvironmentVariables>) {}
-
-  @Post()
-  async refreshMetadata(
-    @Body() body: { bookId: string },
-    @Headers() headers: {
-      "oboku-credentials"?: string
-      authorization?: string
-    },
-  ) {
-    const supabase = createSupabaseClient(this.configService)
-
-    Logger.log(`invoke for ${body.bookId}`)
-
-    try {
-      const lockId = `metadata_${body.bookId}`
-
-      const { alreadyLocked } = await lock(
-        lockId,
-        LOCK_MAX_DURATION_MN,
-        supabase,
-      )
-
-      if (!alreadyLocked) {
-        refreshMetadata(
-          {
-            authorization: headers.authorization ?? "",
-            bookId: body.bookId,
-            rawCredentials: headers["oboku-credentials"] ?? "{}",
-          },
-          this.configService,
-          supabase,
-        ).catch(Logger.error.bind(Logger))
-
-        Logger.log(`${body.bookId}: command sent with success`)
-      } else {
-        Logger.log(`${body.bookId} is already locked, ignoring!`)
-      }
-    } catch (error) {
-      Logger.error(error)
-
-      throw error
-    }
-
-    return {}
   }
 }
