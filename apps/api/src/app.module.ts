@@ -9,6 +9,7 @@ import { MetadataController } from "./metadata.controller"
 import { EnvironmentVariables } from "./types"
 import * as fs from "node:fs"
 import { AuthController } from "./auth.controller"
+import { SyncController } from "./sync.controller"
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { AuthController } from "./auth.controller"
     CoversController,
     MetadataController,
     AuthController,
+    SyncController,
   ],
   providers: [AppService],
 })
