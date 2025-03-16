@@ -18,4 +18,5 @@ export interface EnvironmentVariables {
   SUPABASE_PROJECT_URL: string
   COVERS_BUCKET_NAME: string
   COVERS_PLACEHOLDER_BUCKET_KEY: string
+  FIREBASE_CONFIG: string
 }

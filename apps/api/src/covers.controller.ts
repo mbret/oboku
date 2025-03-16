@@ -16,15 +16,11 @@ import { EnvironmentVariables } from "./types"
 
 @Controller("covers")
 export class CoversController {
-  constructor(private configService: ConfigService<EnvironmentVariables>) {}
+  private s3Client: S3Client
 
-  @Get(":id")
-  @Header("Cache-Control", "public, max-age=31536000, immutable")
-  async findOne(
-    @Param() params: { id: string },
-    @Query() query: { format?: string },
-  ) {
-    const s3 = new S3Client({
+  constructor(private configService: ConfigService<EnvironmentVariables>) {
+    // Create S3Client once during controller instantiation
+    this.s3Client = new S3Client({
       region: `us-east-1`,
       credentials: {
         accessKeyId: this.configService.getOrThrow("AWS_ACCESS_KEY_ID", {
@@ -36,11 +32,25 @@ export class CoversController {
         ),
       },
     })
+  }
+
+  @Get(":id")
+  @Header("Cache-Control", "public, max-age=31536000, immutable")
+  async findOne(
+    @Param() params: { id: string },
+    @Query() query: { format?: string },
+  ) {
     const objectKey = params.id ?? ``
     const format = query?.format || "image/webp"
 
-    const userCover = await getCover(s3, objectKey, this.configService)
-    const cover = userCover ? userCover : await getCoverPlaceholder(s3)
+    const userCover = await getCover(
+      this.s3Client,
+      objectKey,
+      this.configService,
+    )
+    const cover = userCover
+      ? userCover
+      : await getCoverPlaceholder(this.s3Client)
 
     if (!cover) {
       throw new NotFoundException()

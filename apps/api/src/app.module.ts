@@ -1,4 +1,4 @@
-import { Module, OnModuleDestroy, OnModuleInit } from "@nestjs/common"
+import { Module, OnModuleInit } from "@nestjs/common"
 import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
 import { CoversController } from "./covers.controller"
@@ -8,6 +8,7 @@ import * as Joi from "joi"
 import { MetadataController } from "./metadata.controller"
 import { EnvironmentVariables } from "./types"
 import * as fs from "node:fs"
+import { AuthController } from "./auth.controller"
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import * as fs from "node:fs"
         CONTACT_TO_ADDRESS: Joi.string().required(),
         STAGE: Joi.string().valid("prod", "dev").default("prod"),
         AWS_API_URI: Joi.string().required(),
+        FIREBASE_CONFIG: Joi.string().required(),
         GOOGLE_BOOK_API_URL: Joi.string().default(
           "https://www.googleapis.com/books/v1",
         ),
@@ -54,7 +56,12 @@ import * as fs from "node:fs"
       }),
     }),
   ],
-  controllers: [AppController, CoversController, MetadataController],
+  controllers: [
+    AppController,
+    CoversController,
+    MetadataController,
+    AuthController,
+  ],
   providers: [AppService],
 })
 export class AppModule implements OnModuleInit {

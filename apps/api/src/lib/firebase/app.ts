@@ -8,11 +8,11 @@ let app: ReturnType<typeof initializeApp> | undefined
  *
  * Do not call it outside of a lambda to mitigate uncaught error.
  */
-export const getFirebaseApp = () => {
+export const getFirebaseApp = (config?: string) => {
   if (app) return app
 
   const firebaseConfig = JSON.parse(
-    Buffer.from(process.env.FIREBASE_CONFIG ?? "", "base64").toString() ?? "{}",
+    Buffer.from(config ?? "", "base64").toString() ?? "{}",
   )
 
   /**
