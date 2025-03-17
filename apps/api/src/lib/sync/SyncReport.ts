@@ -1,5 +1,3 @@
-import { ConfigService } from "@nestjs/config"
-import { createSupabaseClient } from "../supabase/client"
 import type {
   BookDocType,
   CollectionDocType,
@@ -7,7 +5,6 @@ import type {
   SupabaseTableSyncReportsEntry,
   TagsDocType,
 } from "@oboku/shared"
-import { EnvironmentVariables } from "src/types"
 
 export class SyncReport {
   protected readonly report: {
@@ -317,27 +314,17 @@ export class SyncReport {
     item.fetchedMetadata = true
   }
 
-  async send(config: ConfigService<EnvironmentVariables>) {
-    try {
-      const supabase = createSupabaseClient(config)
-
-      const response = await supabase.from("sync_reports").insert({
-        created_at: this.report.created_at,
-        ended_at: this.report.ended_at,
-        report: this.report.report.map((entry) => ({
-          ...entry,
-          label: entry.label ?? this.references[entry.id] ?? entry.id,
-        })),
-        datasource_id: this.datasourceId,
-        user_name: this.userName,
-        state: this.state,
-      } satisfies SupabaseTableSyncReportsEntry)
-
-      if (response.error) {
-        console.error(response.error)
-      }
-    } catch (e) {
-      console.error(e)
+  prepare() {
+    return {
+      created_at: this.report.created_at,
+      ended_at: this.report.ended_at,
+      report: this.report.report.map((entry) => ({
+        ...entry,
+        label: entry.label ?? this.references[entry.id] ?? entry.id,
+      })),
+      datasource_id: this.datasourceId,
+      user_name: this.userName,
+      state: this.state,
     }
   }
 }

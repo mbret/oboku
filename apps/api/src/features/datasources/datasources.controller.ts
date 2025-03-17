@@ -8,16 +8,16 @@ import {
   Post,
 } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "../../types"
+import type { EnvironmentVariables } from "../config/types"
 import { getParametersValue } from "../../lib/ssm"
 import { getAuthTokenAsync } from "../../lib/auth"
-import { createSupabaseClient } from "../../lib/supabase/client"
 import { getNanoDbForUser } from "../../lib/couch/dbHelpers"
 import { sync } from "../../lib/sync/sync"
 import { configure } from "../../lib/plugins/google"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { from } from "rxjs"
+import { SyncReportPostresService } from "../postgres/SyncReportPostresService"
 
 const syncLongProgress = async ({
   dataSourceId,
@@ -25,12 +25,14 @@ const syncLongProgress = async ({
   authorization,
   config,
   eventEmitter,
+  syncReportPostgresService,
 }: {
   config: ConfigService<EnvironmentVariables>
   dataSourceId: string
   credentials: Record<string, string>
   authorization: string
   eventEmitter: EventEmitter2
+  syncReportPostgresService: SyncReportPostresService
 }) => {
   const [client_id = ``, client_secret = ``, jwtPrivateKey = ``] =
     await getParametersValue({
@@ -65,6 +67,7 @@ const syncLongProgress = async ({
     authorization,
     config,
     eventEmitter,
+    syncReportPostgresService,
   })
 }
 
@@ -72,15 +75,13 @@ const syncLongProgress = async ({
 export class DataSourcesController implements OnModuleInit {
   private logger = new Logger(DataSourcesController.name)
   private SYNC_QUEUE_NAME = "datasources.sync"
-  private supabaseClient: ReturnType<typeof createSupabaseClient>
 
   constructor(
     private readonly taskQueueService: InMemoryTaskQueueService,
     private readonly configService: ConfigService<EnvironmentVariables>,
     private readonly eventEmitter: EventEmitter2,
-  ) {
-    this.supabaseClient = createSupabaseClient(this.configService)
-  }
+    private readonly syncReportPostgresService: SyncReportPostresService,
+  ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
@@ -107,13 +108,9 @@ export class DataSourcesController implements OnModuleInit {
       jwtPrivateKey,
     )
 
-    const reportsResponse = await this.supabaseClient
-      .from("sync_reports")
-      .select("*")
-      .limit(30)
-      .eq("user_name", name)
-
-    return reportsResponse.data ?? {}
+    return await this.syncReportPostgresService.getAllSyncReportsByUser({
+      userName: name,
+    })
   }
 
   @Post("sync")
@@ -133,6 +130,7 @@ export class DataSourcesController implements OnModuleInit {
             authorization: headers.authorization,
             config: this.configService,
             eventEmitter: this.eventEmitter,
+            syncReportPostgresService: this.syncReportPostgresService,
           }),
         ),
       {

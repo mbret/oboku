@@ -7,7 +7,7 @@ import {
   findByVolumeId,
 } from "src/lib/google/googleBooksApi"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/types"
+import { EnvironmentVariables } from "src/features/config/types"
 
 export const getGoogleBookMetadata = async (
   metadata: Metadata,

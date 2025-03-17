@@ -2,7 +2,7 @@ import { ConfigService } from "@nestjs/config"
 import type { BookMetadata } from "@oboku/shared"
 import type { Extractor } from "node-unrar-js"
 import * as path from "node:path"
-import { EnvironmentVariables } from "src/types"
+import { EnvironmentVariables } from "src/features/config/types"
 
 export const getMetadataFromRarArchive = async (
   extractor: Extractor<Uint8Array>,

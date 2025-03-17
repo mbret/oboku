@@ -11,12 +11,11 @@ export interface EnvironmentVariables {
   PORT: number
   COUCH_DB_URL: string
   CONTACT_TO_ADDRESS: string
-  STAGE: "prod" | "dev"
   GOOGLE_BOOK_API_URL: string
-  OFFLINE: boolean
-  SUPABASE_SERVICE_ROLE_KEY: string
-  SUPABASE_PROJECT_URL: string
   COVERS_BUCKET_NAME: string
   COVERS_PLACEHOLDER_BUCKET_KEY: string
   FIREBASE_CONFIG: string
+  POSTGRES_USER: string
+  POSTGRES_PASSWORD: string
+  POSTGRES_MAX_REPORTS_PER_USER: number
 }

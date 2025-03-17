@@ -17,7 +17,7 @@ import {
 import { processrefreshMetadata } from "./metadata/processRefreshMetadata"
 import { parameters$ } from "./metadata/parameters"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/types"
+import { EnvironmentVariables } from "src/features/config/types"
 
 @Injectable()
 export class CollectionMetadataService {

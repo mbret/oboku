@@ -11,6 +11,17 @@ services:
   #     - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
   #   volumes:
   #       - ./.data/dbdata:/opt/couchdb/data
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: oboku
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./.data/postgres/data:/var/lib/postgresql/data
 
   api:
     build:
@@ -32,7 +43,7 @@ services:
       - STAGE=${STAGE}
       - CONTACT_TO_ADDRESS=${CONTACT_TO_ADDRESS}
       - AWS_API_URI=${AWS_API_URI}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      - SUPABASE_PROJECT_URL=${SUPABASE_PROJECT_URL}
       - FIREBASE_CONFIG=${FIREBASE_CONFIG}
       - SENTRY_DSN=${SENTRY_DSN}
+      - POSTGRES_USER: ${POSTGRES_USER}
+      - POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

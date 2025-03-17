@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/types"
+import { EnvironmentVariables } from "src/features/config/types"
 import { getParametersValue } from "src/lib/ssm"
 import { configure } from "src/lib/plugins/google"
 import * as fs from "node:fs"
@@ -54,15 +54,13 @@ export class BooksMedataService {
       infer: true,
     })
 
-    if (!this.configService.getOrThrow("OFFLINE", { infer: true })) {
-      const files = await fs.promises.readdir(TMP_DIR_BOOKS)
+    const files = await fs.promises.readdir(TMP_DIR_BOOKS)
 
-      await Promise.all(
-        files.map((file) => {
-          return fs.promises.unlink(path.join(TMP_DIR_BOOKS, file))
-        }),
-      )
-    }
+    await Promise.all(
+      files.map((file) => {
+        return fs.promises.unlink(path.join(TMP_DIR_BOOKS, file))
+      }),
+    )
 
     const { name: userName } = await getAuthTokenAsync(
       {

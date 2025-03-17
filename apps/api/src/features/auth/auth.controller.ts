@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Post } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "../../types"
+import { EnvironmentVariables } from "../config/types"
 import { getParametersValue } from "../../lib/ssm"
 import { getFirebaseApp } from "../../lib/firebase/app"
 import { App } from "firebase-admin/app"

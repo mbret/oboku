@@ -14,7 +14,7 @@ import { computeMetadata } from "src/lib/collections/computeMetadata"
 import { findOne } from "src/lib/couch/findOne"
 import { atomicUpdate } from "src/lib/couch/dbHelpers"
 import { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "src/types"
+import type { EnvironmentVariables } from "src/features/config/types"
 
 export const processrefreshMetadata = async (
   collection: CollectionDocType,

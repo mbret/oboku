@@ -17,7 +17,7 @@ import { updateCover } from "./updateCover"
 import { getRarArchive } from "../../lib/archives/getRarArchive"
 import { atomicUpdate } from "../../lib/couch/dbHelpers"
 import type { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "../../types"
+import type { EnvironmentVariables } from "../config/types"
 
 const logger = new Logger("retrieveMetadataAndSaveCover")
 

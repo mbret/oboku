@@ -6,7 +6,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config"
 import * as path from "node:path"
 import * as Joi from "joi"
 import { BooksController } from "./features/books/books.controller"
-import { EnvironmentVariables } from "./types"
+import { EnvironmentVariables } from "./features/config/types"
 import * as fs from "node:fs"
 import { AuthController } from "./features/auth/auth.controller"
 import { DataSourcesController } from "./features/datasources/datasources.controller"
@@ -15,10 +15,24 @@ import { CollectionsController } from "./features/collections/collections.contro
 import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
 import { BooksMedataService } from "./features/books/BooksMedataService"
 import { InMemoryTaskQueueService } from "./features/queue/InMemoryTaskQueueService"
-import { AppConfigService } from "./features/config/AppConfigService"
+import { TypeOrmModule } from "@nestjs/typeorm"
+import { SyncReportPostresService } from "./features/postgres/SyncReportPostresService"
+import { SyncReportPostgresEntity } from "./features/postgres/SyncReportPostgresEntity"
+import { PostgresModule } from "./features/postgres/postgres.module"
+import { AppConfigModule } from "./features/config/config.module"
 
 @Module({
   imports: [
+    TypeOrmModule.forRoot({
+      type: "postgres",
+      host: process.env.POSTGRES_HOST,
+      port: 5432,
+      username: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD,
+      database: "oboku",
+      entities: [SyncReportPostgresEntity],
+      synchronize: true,
+    }),
     // SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -43,6 +57,7 @@ import { AppConfigService } from "./features/config/AppConfigService"
            */
           TMP_DIR: "/tmp/oboku",
           TMP_DIR_BOOKS: "/tmp/oboku/books",
+          POSTGRES_MAX_REPORTS_PER_USER: 10,
         }),
       ],
       validationSchema: Joi.object({
@@ -54,16 +69,30 @@ import { AppConfigService } from "./features/config/AppConfigService"
         COVERS_PLACEHOLDER_BUCKET_KEY: Joi.string().required(),
         COUCH_DB_URL: Joi.string().required(),
         CONTACT_TO_ADDRESS: Joi.string().required(),
-        STAGE: Joi.string().valid("prod", "dev").default("prod"),
         AWS_API_URI: Joi.string().required(),
         FIREBASE_CONFIG: Joi.string().required(),
         GOOGLE_BOOK_API_URL: Joi.string().default(
           "https://www.googleapis.com/books/v1",
         ),
-        OFFLINE: Joi.boolean().default(false),
+        POSTGRES_USER: Joi.string().required(),
+        POSTGRES_PASSWORD: Joi.string().required(),
+        POSTGRES_HOST: Joi.string().default("localhost"),
       }),
     }),
     EventEmitterModule.forRoot(),
+    PostgresModule,
+    AppConfigModule,
+  ],
+  providers: [
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: SentryGlobalFilter,
+    // },
+    AppService,
+    SyncReportPostresService,
+    CollectionMetadataService,
+    InMemoryTaskQueueService,
+    BooksMedataService,
   ],
   controllers: [
     AppController,
@@ -72,17 +101,6 @@ import { AppConfigService } from "./features/config/AppConfigService"
     AuthController,
     DataSourcesController,
     CollectionsController,
-  ],
-  providers: [
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: SentryGlobalFilter,
-    // },
-    AppService,
-    CollectionMetadataService,
-    InMemoryTaskQueueService,
-    BooksMedataService,
-    AppConfigService,
   ],
 })
 export class AppModule implements OnModuleInit {

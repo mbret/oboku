@@ -4,6 +4,13 @@ services:
   #     file: docker-compose.yml
   #     service: couchdb
 
+  postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
+    volumes:
+      - ./.data/postgres/data:/var/lib/postgresql/data
+
   api:
     extends:
       file: docker-compose.yml

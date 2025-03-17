@@ -7,13 +7,12 @@ import {
   type BookMetadata,
 } from "@oboku/shared"
 import cheerio from "cheerio"
-import fetch from "node-fetch"
 import type createNano from "nano"
 import type { Metadata } from "src/lib/metadata/types"
-import type { SyncReport } from "src/lib/sync/SyncReport"
 import type { IncomingMessage } from "node:http"
+import { SyncReport } from "../sync/SyncReport"
 
-export { dataSourceHelpers, cheerio, fetch }
+export { dataSourceHelpers, cheerio }
 
 type NameWithMetadata = string
 type ISOString = string

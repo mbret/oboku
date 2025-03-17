@@ -6,9 +6,10 @@ import { createHelpers } from "../plugins/helpers"
 import { atomicUpdate } from "../couch/dbHelpers"
 import { plugins } from "../plugins/plugins"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/types"
+import { EnvironmentVariables } from "src/features/config/types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "src/events"
+import { SyncReportPostresService } from "src/features/postgres/SyncReportPostresService"
 
 export const sync = async ({
   dataSourceId,
@@ -18,6 +19,7 @@ export const sync = async ({
   db,
   config,
   eventEmitter,
+  syncReportPostgresService,
 }: {
   dataSourceId: string
   userName: string
@@ -26,6 +28,7 @@ export const sync = async ({
   db: createNano.DocumentScope<unknown>
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
+  syncReportPostgresService: SyncReportPostresService
 }) => {
   const syncReport = new SyncReport(dataSourceId, userName)
 
@@ -132,6 +135,8 @@ export const sync = async ({
   } finally {
     syncReport.end()
 
-    await syncReport.send(config)
+    const syncReportData = syncReport.prepare()
+
+    await syncReportPostgresService.save(syncReportData)
   }
 }

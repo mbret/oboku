@@ -5,7 +5,7 @@ import type { Context } from "./types"
 import { saveCoverFromExternalLinkToBucket } from "../../lib/books/covers/saveCoverFromExternalLinkToBucket"
 import { isCoverExist } from "../../lib/books/covers/isCoverExist"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "../../types"
+import { EnvironmentVariables } from "../config/types"
 import { saveCoverFromZipArchiveToBucket } from "../../lib/books/covers/saveCoverFromZipArchiveToBucket"
 
 export const updateCover = async ({

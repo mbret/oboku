@@ -5,7 +5,7 @@ import * as unzipper from "unzipper"
 import { parseOpfMetadata } from "../../metadata/opf/parseOpfMetadata"
 import { Logger } from "@nestjs/common"
 import { parseXmlAsJson } from "../parseXmlAsJson"
-import { EnvironmentVariables } from "src/types"
+import { EnvironmentVariables } from "src/features/config/types"
 import { ConfigService } from "@nestjs/config"
 
 const logger = new Logger("getMetadataFromZipArchive")

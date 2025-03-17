@@ -2,7 +2,7 @@ import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
 import { isCoverExist } from "src/lib/books/covers/isCoverExist"
 import { saveCoverFromExternalLinkToBucket } from "src/lib/books/covers/saveCoverFromExternalLinkToBucket"
 import { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "src/types"
+import type { EnvironmentVariables } from "src/features/config/types"
 
 export const saveOrUpdateCover = async (
   prevCollection: Pick<CollectionDocType, "_id" | "metadata">,

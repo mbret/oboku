@@ -3,7 +3,7 @@ import { getGoogleBookMetadata } from "./google/getGoogleBookMetadata"
 import { Logger } from "@nestjs/common"
 import { isAxiosError } from "axios"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/types"
+import { EnvironmentVariables } from "src/features/config/types"
 
 const swallowGoogleError = async <T>(promise: Promise<T>) => {
   try {

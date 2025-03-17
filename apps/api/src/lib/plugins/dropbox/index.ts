@@ -1,7 +1,6 @@
 /**
  * @see https://github.com/dropbox/dropbox-sdk-js/tree/main/examples/javascript/download
  */
-import nodeFetch from "node-fetch"
 import { Dropbox, type files } from "dropbox"
 import { Readable } from "node:stream"
 import {
@@ -24,7 +23,6 @@ export const dataSource: DataSourcePlugin = {
   getMetadata: async ({ id, credentials }) => {
     const dbx = new Dropbox({
       accessToken: credentials.accessToken,
-      fetch: nodeFetch,
     })
     const fileId = extractIdFromResourceId(id)
 
@@ -43,7 +41,6 @@ export const dataSource: DataSourcePlugin = {
   download: async (link, credentials) => {
     const dbx = new Dropbox({
       accessToken: credentials.accessToken,
-      fetch: nodeFetch,
     })
     const fileId = extractIdFromResourceId(link.resourceId)
 
@@ -76,7 +73,6 @@ export const dataSource: DataSourcePlugin = {
 
     const dbx = new Dropbox({
       accessToken: credentials.accessToken,
-      fetch: nodeFetch,
     })
 
     const { folderId } =
