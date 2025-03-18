@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { Observable, Subject, defer, from, throwError } from "rxjs"
-import { finalize, tap, share, takeUntil } from "rxjs/operators"
+import { type Observable, Subject, throwError } from "rxjs"
 
 export class TaskRejectionError extends Error {
   constructor(message: string) {
@@ -265,6 +264,7 @@ export class InMemoryTaskQueueService {
             this.logger.error(
               `Task ${nextTask.id || "unknown"} error: ${error.message}`,
             )
+            this.logger.error(error)
             nextTask.subject.error(error)
 
             // Remove from active queue

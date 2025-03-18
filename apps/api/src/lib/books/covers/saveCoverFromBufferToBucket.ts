@@ -3,7 +3,9 @@ import { ConfigService } from "@nestjs/config"
 import * as sharp from "sharp"
 import { EnvironmentVariables } from "src/features/config/types"
 
-const s3 = new S3Client()
+const s3 = new S3Client({
+  region: "us-east-1",
+})
 
 export const saveCoverFromBufferToBucket = async (
   buffer: Buffer,

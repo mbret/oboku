@@ -15,17 +15,7 @@ import { getCoverPlaceholder } from "../../lib/covers/getCoverPlaceholder"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "../config/types"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
-import {
-  defer,
-  delay,
-  finalize,
-  from,
-  map,
-  mergeMap,
-  of,
-  tap,
-  timer,
-} from "rxjs"
+import { defer, from, map, mergeMap, of } from "rxjs"
 
 @Controller("covers")
 export class CoversController implements OnModuleInit {

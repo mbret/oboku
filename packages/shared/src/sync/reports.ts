@@ -13,7 +13,7 @@ export type ReportEntry = {
   deleted?: boolean
 }
 
-export type SupabaseTableSyncReportsEntry = {
+export type SyncReportPostgresEntityShared = {
   created_at: string
   ended_at: string
   state: "success" | "error"
@@ -22,4 +22,4 @@ export type SupabaseTableSyncReportsEntry = {
   user_name: string
 }
 
-export type SupabaseTableSyncReportsEntries = SupabaseTableSyncReportsEntry[]
+export type SyncReportPostgresEntitiesShared = SyncReportPostgresEntityShared[]
