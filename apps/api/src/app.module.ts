@@ -43,7 +43,7 @@ import { CommunicationPostgresService } from "./features/postgres/CommunicationP
       isGlobal: true,
       // this is mostly used during dev, for production it will be passed
       // as env variables directly to the docker container
-      envFilePath: path.join(__dirname, "../.env"),
+      envFilePath: path.join(__dirname, "../../../.env"),
       cache: true,
       load: [
         () => ({

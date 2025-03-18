@@ -2,7 +2,7 @@ import type {
   BookDocType,
   CollectionDocType,
   ReportEntry,
-  SupabaseTableSyncReportsEntry,
+  SyncReportPostgresEntityShared,
   TagsDocType,
 } from "@oboku/shared"
 
@@ -19,7 +19,7 @@ export class SyncReport {
 
   protected readonly references: Record<string, string> = {}
 
-  protected state: SupabaseTableSyncReportsEntry["state"] = "success"
+  protected state: SyncReportPostgresEntityShared["state"] = "success"
 
   constructor(
     protected datasourceId: string,
