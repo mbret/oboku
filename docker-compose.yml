@@ -21,7 +21,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./.data/postgres/data:/var/lib/postgresql/data
+      - oboku-postgres:/var/lib/postgresql/data
 
   api:
     build:
@@ -47,3 +47,7 @@ services:
       - SENTRY_DSN=${SENTRY_DSN}
       - POSTGRES_USER: ${POSTGRES_USER}
       - POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # will connect through the postgres service name docker bridge network
+      - POSTGRES_HOST: postgres
+volumes:
+  oboku-postgres:

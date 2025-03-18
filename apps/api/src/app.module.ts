@@ -16,10 +16,15 @@ import { CollectionMetadataService } from "./features/collections/CollectionMeta
 import { BooksMedataService } from "./features/books/BooksMedataService"
 import { InMemoryTaskQueueService } from "./features/queue/InMemoryTaskQueueService"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { SyncReportPostresService } from "./features/postgres/SyncReportPostresService"
-import { SyncReportPostgresEntity } from "./features/postgres/SyncReportPostgresEntity"
+import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService"
+import {
+  CommunicationPostgresEntity,
+  SyncReportPostgresEntity,
+} from "./features/postgres/entities"
 import { PostgresModule } from "./features/postgres/postgres.module"
 import { AppConfigModule } from "./features/config/config.module"
+import { CommunicationController } from "./features/communication/communication.controller"
+import { CommunicationPostgresService } from "./features/postgres/CommunicationPostgresService"
 
 @Module({
   imports: [
@@ -30,7 +35,7 @@ import { AppConfigModule } from "./features/config/config.module"
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: "oboku",
-      entities: [SyncReportPostgresEntity],
+      entities: [SyncReportPostgresEntity, CommunicationPostgresEntity],
       synchronize: true,
     }),
     // SentryModule.forRoot(),
@@ -57,7 +62,6 @@ import { AppConfigModule } from "./features/config/config.module"
            */
           TMP_DIR: "/tmp/oboku",
           TMP_DIR_BOOKS: "/tmp/oboku/books",
-          POSTGRES_MAX_REPORTS_PER_USER: 10,
         }),
       ],
       validationSchema: Joi.object({
@@ -89,7 +93,8 @@ import { AppConfigModule } from "./features/config/config.module"
     //   useClass: SentryGlobalFilter,
     // },
     AppService,
-    SyncReportPostresService,
+    SyncReportPostgresService,
+    CommunicationPostgresService,
     CollectionMetadataService,
     InMemoryTaskQueueService,
     BooksMedataService,
@@ -101,6 +106,7 @@ import { AppConfigModule } from "./features/config/config.module"
     AuthController,
     DataSourcesController,
     CollectionsController,
+    CommunicationController,
   ],
 })
 export class AppModule implements OnModuleInit {

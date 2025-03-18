@@ -17,7 +17,7 @@ import { configure } from "../../lib/plugins/google"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { from } from "rxjs"
-import { SyncReportPostresService } from "../postgres/SyncReportPostresService"
+import { SyncReportPostgresService } from "../postgres/SyncReportPostgresService"
 
 const syncLongProgress = async ({
   dataSourceId,
@@ -32,7 +32,7 @@ const syncLongProgress = async ({
   credentials: Record<string, string>
   authorization: string
   eventEmitter: EventEmitter2
-  syncReportPostgresService: SyncReportPostresService
+  syncReportPostgresService: SyncReportPostgresService
 }) => {
   const [client_id = ``, client_secret = ``, jwtPrivateKey = ``] =
     await getParametersValue({
@@ -80,7 +80,7 @@ export class DataSourcesController implements OnModuleInit {
     private readonly taskQueueService: InMemoryTaskQueueService,
     private readonly configService: ConfigService<EnvironmentVariables>,
     private readonly eventEmitter: EventEmitter2,
-    private readonly syncReportPostgresService: SyncReportPostresService,
+    private readonly syncReportPostgresService: SyncReportPostgresService,
   ) {}
 
   onModuleInit() {

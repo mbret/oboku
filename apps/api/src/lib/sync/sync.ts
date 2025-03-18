@@ -9,7 +9,7 @@ import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/features/config/types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "src/events"
-import { SyncReportPostresService } from "src/features/postgres/SyncReportPostresService"
+import { SyncReportPostgresService } from "src/features/postgres/SyncReportPostgresService"
 
 export const sync = async ({
   dataSourceId,
@@ -28,7 +28,7 @@ export const sync = async ({
   db: createNano.DocumentScope<unknown>
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
-  syncReportPostgresService: SyncReportPostresService
+  syncReportPostgresService: SyncReportPostgresService
 }) => {
   const syncReport = new SyncReport(dataSourceId, userName)
 

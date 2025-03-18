@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
-import { SyncReportPostgresEntity } from "./SyncReportPostgresEntity"
 import { ReportEntry } from "@oboku/shared"
 import { AppConfigService } from "../config/AppConfigService"
+import { SyncReportPostgresEntity } from "./entities"
 
 @Injectable()
-export class SyncReportPostresService {
+export class SyncReportPostgresService {
   constructor(
     private readonly appConfig: AppConfigService,
     @InjectRepository(SyncReportPostgresEntity)

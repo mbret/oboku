@@ -23,3 +23,21 @@ export class SyncReportPostgresEntity {
   @Column({ type: "text" })
   state!: string
 }
+
+@Entity({ name: "communication" })
+export class CommunicationPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({
+    type: "timestamp with time zone",
+    default: () => "CURRENT_TIMESTAMP",
+  })
+  created_at!: Date
+
+  @Column({ type: "text", nullable: true })
+  content!: string | null
+
+  @Column({ type: "text", nullable: true })
+  type!: "info" | null
+}
