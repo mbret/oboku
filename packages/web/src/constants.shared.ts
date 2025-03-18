@@ -12,6 +12,6 @@ export const STORAGE_PROFILE_KEY = `profile`
 export const COLLECTION_EMPTY_ID = `oboku_dangling_books`
 export const API_URL = import.meta.env.VITE_API_URL || `https://api.oboku.me`
 export const API_COUCH_URI =
-  import.meta.env.VITE_API_COUCH_URI || `https://lecouch1.xuatz.com`
+  import.meta.env.VITE_API_COUCH_URI || `https://lecouch.xuatz.com`
 export const CLEANUP_DANGLING_LINKS_INTERVAL = 1000 * 60 * 10 // 10mn
 export const SW_COVERS_CACHE_KEY = `covers`
