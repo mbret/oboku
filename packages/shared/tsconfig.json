@@ -18,7 +18,8 @@
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
-    "useUnknownInCatchVariables": true
+    "useUnknownInCatchVariables": true,
+    "isolatedModules": true
   },
   "include": ["src", "../web/src/common/crypto.ts"]
 }

@@ -1,7 +1,7 @@
 import { httpClient } from "../../http/httpClient"
-import type { SupabaseTableSyncReportsEntries } from "@oboku/shared"
-import { API_URL } from "../../constants.web"
+import type { SyncReportPostgresEntitiesShared } from "@oboku/shared"
 import { useQuery } from "@tanstack/react-query"
+import { API_URL } from "../../constants.shared"
 
 export const useSyncReports = () =>
   useQuery({
