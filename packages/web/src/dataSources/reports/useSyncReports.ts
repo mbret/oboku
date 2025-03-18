@@ -7,10 +7,12 @@ export const useSyncReports = () =>
   useQuery({
     queryKey: ["api/datasourceReport"],
     queryFn: async () => {
-      const response = await httpClient.fetch<SupabaseTableSyncReportsEntries>({
-        url: `${API_URL}/sync/reports`,
-        withAuth: true,
-      })
+      const response = await httpClient.fetch<SyncReportPostgresEntitiesShared>(
+        {
+          url: `${API_URL}/sync/reports`,
+          withAuth: true,
+        },
+      )
 
       const entries = response?.data
         .map((report) => {
