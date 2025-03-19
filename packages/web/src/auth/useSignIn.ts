@@ -8,7 +8,6 @@ import { setProfile } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
 import { currentProfileSignal } from "../profile/currentProfile"
 import { CancelError } from "../errors/errors.shared"
-import { API_URL } from "../constants.shared"
 import { useMutation$ } from "reactjrx"
 import { configuration } from "../config/configuration"
 
