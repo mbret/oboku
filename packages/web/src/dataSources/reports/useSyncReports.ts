@@ -9,7 +9,7 @@ export const useSyncReports = () =>
     queryFn: async () => {
       const response = await httpClient.fetch<SyncReportPostgresEntitiesShared>(
         {
-          url: `${API_URL}/sync/reports`,
+          url: `${API_URL}/datasources/sync-reports`,
           withAuth: true,
         },
       )

@@ -3,6 +3,7 @@ import { Alert, AlertTitle, Box, Link, Typography } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import type { ComponentProps } from "react"
 import Markdown from "react-markdown"
+import { API_URL } from "../constants.shared"
 
 type Communication = {
   type: ComponentProps<typeof Alert>["severity"]
@@ -20,11 +21,7 @@ export const CommunicationPane = () => {
     networkMode: "online",
     queryFn: () =>
       httpClient.fetch<Communication[]>({
-        url: `${import.meta.env.VITE_SUPABASE_API_URL}/communication?limit=1&order=created_at.desc`,
-        withAuth: false,
-        headers: {
-          apiKey: import.meta.env.VITE_SUPABASE_API_KEY ?? "",
-        },
+        url: `${API_URL}/communications`,
       }),
   })
 

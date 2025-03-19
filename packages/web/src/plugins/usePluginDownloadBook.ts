@@ -1,4 +1,3 @@
-import { API_URL } from "../constants.web"
 import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 import type { ObokuPlugin } from "./types"
@@ -18,7 +17,6 @@ export const usePluginDownloadBook = () => {
       type: plugin.type,
       downloadBook: plugin.useDownloadBook
         ? plugin.useDownloadBook({
-            apiUri: API_URL ?? "",
             requestPopup: createRequestPopupDialog({ name: plugin.name }),
           })
         : useDownloadBookPlaceholder(),

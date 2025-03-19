@@ -29,7 +29,6 @@ type StreamValue = {
 }
 
 type UseDownloadHook = (options: {
-  apiUri: string
   requestPopup: () => Promise<boolean>
 }) => (params: {
   link: LinkDocType

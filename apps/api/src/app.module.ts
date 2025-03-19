@@ -73,7 +73,6 @@ import { CommunicationPostgresService } from "./features/postgres/CommunicationP
         COVERS_PLACEHOLDER_BUCKET_KEY: Joi.string().required(),
         COUCH_DB_URL: Joi.string().required(),
         CONTACT_TO_ADDRESS: Joi.string().required(),
-        AWS_API_URI: Joi.string().required(),
         FIREBASE_CONFIG: Joi.string().required(),
         GOOGLE_BOOK_API_URL: Joi.string().default(
           "https://www.googleapis.com/books/v1",

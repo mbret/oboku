@@ -7,13 +7,9 @@ import { links } from "@oboku/shared"
 import { Logo } from "../common/Logo"
 import { isCancelError } from "../errors/errors.shared"
 import { ErrorMessage } from "../errors/ErrorMessage"
-import { useMutation$ } from "reactjrx"
 
 export const LoginScreen = () => {
-  const { signIn } = useSignIn()
-  const { mutate, isPending, error } = useMutation$({
-    mutationFn: signIn,
-  })
+  const { mutate, isPending, error } = useSignIn()
   const theme = useTheme()
 
   return (

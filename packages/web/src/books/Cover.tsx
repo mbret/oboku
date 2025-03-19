@@ -5,11 +5,11 @@ import placeholder from "../assets/cover-placeholder.png"
 import { Box, styled } from "@mui/material"
 import { useBook } from "./states"
 import { useBlurredTagIds } from "../tags/helpers"
-import { API_URL } from "../constants.web"
 import { useLocalSettings } from "../settings/states"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
 import { useBookCover } from "./useBookCover"
+import { API_URL } from "../constants.shared"
 
 const useBookCoverState = ({ bookId }: { bookId: string }) => {
   const blurredTags = useBlurredTagIds().data ?? []
