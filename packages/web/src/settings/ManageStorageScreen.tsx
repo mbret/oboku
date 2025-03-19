@@ -25,7 +25,7 @@ import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { difference } from "@oboku/shared"
 import Alert from "@mui/material/Alert"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { useEffect } from "react"
 import { useRemoveCoversInCache } from "../covers/useRemoveCoversInCache"
 import { useDownloadedBooks } from "../download/useDownloadedBooks"
@@ -64,7 +64,7 @@ export const ManageStorageScreen = () => {
       extraDownloadFilesIds.map((id) => removeDownloadFile({ bookId: id })),
     )
       .then(() => refetchDownloadedFilesInfo())
-      .catch(Report.error)
+      .catch(Logger.error)
   }, [refetchDownloadedFilesInfo, extraDownloadFilesIds, removeDownloadFile])
 
   const onItemClick = useCallback(

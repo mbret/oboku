@@ -5,7 +5,7 @@ import {
   createArchiveFromText,
 } from "@prose-reader/streamer"
 import { loadAsync } from "jszip"
-import { Report } from "../../debug/report.shared"
+import { Logger } from "../../debug/logger.shared"
 import type { getBookFile } from "../../download/getBookFile.shared"
 import type { PromiseReturnType } from "../../types"
 import { Archive as LibARchive } from "libarchive.js"
@@ -22,7 +22,7 @@ const loadDataWithJsZip = async (data: Blob | File) => {
   try {
     return await loadAsync(data)
   } catch (e) {
-    Report.error(
+    Logger.error(
       "loadDataWithJsZip: An error occurred while loading file with jszip",
     )
 
@@ -55,7 +55,7 @@ export const getArchiveForZipFile = async (
           name: file.name,
         })
       } catch (e) {
-        Report.error(
+        Logger.error(
           "createArchiveFromJszip: An error occurred while creating archive from jszip",
         )
 
@@ -69,7 +69,7 @@ export const getArchiveForZipFile = async (
 
     throw new StreamerFileNotSupportedError(`FileNotSupportedError`)
   } catch (e) {
-    Report.error(
+    Logger.error(
       "getArchiveForFile: An error occurred while getting archive for file",
     )
 

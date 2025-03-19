@@ -3,7 +3,7 @@ import { switchMap, map } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { observeEmptyCollection } from "./dbHelpers"
 import { libraryStateSignal } from "../library/books/states"
-import { COLLECTION_EMPTY_ID } from "../constants.shared"
+import { configuration } from "../config/configuration"
 
 export const useCollection = ({
   id,
@@ -22,7 +22,7 @@ export const useCollection = ({
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => {
-          if (id === COLLECTION_EMPTY_ID)
+          if (id === configuration.COLLECTION_EMPTY_ID)
             return observeEmptyCollection({
               db,
               includeProtected: isLibraryUnlocked,

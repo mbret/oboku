@@ -1,5 +1,5 @@
 import { DOWNLOAD_PREFIX } from "../constants.shared"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { dexieDb } from "../rxdb/dexie"
 
 export const getBookFile = async (
@@ -8,7 +8,7 @@ export const getBookFile = async (
   name: string
   data: File
 } | null> => {
-  Report.log(`getBookFile`, `${DOWNLOAD_PREFIX}-${bookId}`)
+  Logger.log(`getBookFile`, `${DOWNLOAD_PREFIX}-${bookId}`)
 
   try {
     const data = await dexieDb.downloads.where("id").equals(bookId).first()
@@ -28,7 +28,7 @@ export const getBookFile = async (
 
     return null
   } catch (e) {
-    Report.error(
+    Logger.error(
       "getBookFile: An error occurred while getting item from storage",
     )
 

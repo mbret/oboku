@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react"
 import { Tab, Tabs, IconButton } from "@mui/material"
 import { useNavigate, useLocation, Outlet } from "react-router"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { ROUTES } from "../constants.web"
 import { Sync } from "@mui/icons-material"
 import { useSignalValue } from "reactjrx"
 import { syncSignal } from "../rxdb/replication/states"
 import { triggerReplication } from "../rxdb/replication/triggerReplication"
+import { ROUTES } from "../navigation/routes"
 
 export const LibraryTopTabNavigator = () => {
   const location = useLocation()

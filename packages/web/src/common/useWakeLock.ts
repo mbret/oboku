@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from "react"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import type { PromiseReturnType } from "../types"
 
 export const useWakeLock = () => {
@@ -25,7 +25,7 @@ export const useWakeLock = () => {
           setActive(true)
           wakeLock.addEventListener("release", onRelease)
         } catch (err) {
-          Report.error(err)
+          Logger.error(err)
         }
       }
     })()
@@ -34,7 +34,7 @@ export const useWakeLock = () => {
       mounted = false
       if (wakeLock) {
         wakeLock.removeEventListener("release", onRelease)
-        wakeLock.release().catch(Report.error)
+        wakeLock.release().catch(Logger.error)
       }
     }
   }, [])

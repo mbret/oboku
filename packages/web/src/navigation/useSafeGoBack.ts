@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router"
-import { ROUTES } from "../constants.web"
+import { ROUTES } from "./routes"
 
 export const useSafeGoBack = () => {
   const navigate = useNavigate()

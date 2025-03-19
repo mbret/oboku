@@ -1,8 +1,8 @@
-import { STORAGE_PROFILE_KEY } from "../constants.shared"
 import { signal } from "reactjrx"
+import { configuration } from "../config/configuration"
 
 export const getProfile = () => {
-  return localStorage.getItem(STORAGE_PROFILE_KEY) || undefined
+  return localStorage.getItem(configuration.STORAGE_PROFILE_KEY) || undefined
 }
 
 export const currentProfileSignal = signal<string | undefined>({
@@ -10,9 +10,9 @@ export const currentProfileSignal = signal<string | undefined>({
 })
 
 export const setProfile = (profile: string) => {
-  localStorage.setItem(STORAGE_PROFILE_KEY, profile)
+  localStorage.setItem(configuration.STORAGE_PROFILE_KEY, profile)
 }
 
 export const removeProfile = () => {
-  localStorage.removeItem(STORAGE_PROFILE_KEY)
+  localStorage.removeItem(configuration.STORAGE_PROFILE_KEY)
 }

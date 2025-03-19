@@ -1,7 +1,7 @@
 import type { CollectionDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import type { DeepMutable } from "rxdb/dist/types/types"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { useDatabase } from "../rxdb"
 
 export const useFixCollections = () => {
@@ -61,7 +61,7 @@ export const useFixCollections = () => {
             }),
           )
         } catch (e) {
-          Report.error(e)
+          Logger.error(e)
         }
       }
     },

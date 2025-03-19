@@ -10,6 +10,7 @@ import { currentProfileSignal } from "../profile/currentProfile"
 import { CancelError } from "../errors/errors.shared"
 import { API_URL } from "../constants.shared"
 import { useMutation$ } from "reactjrx"
+import { configuration } from "../config/configuration"
 
 const provider = new GoogleAuthProvider()
 
@@ -43,7 +44,7 @@ export const useSignIn = () => {
               token: string
               nameHex: string
             }>({
-              url: `${API_URL}/auth/signin`,
+              url: `${configuration.API_URL}/auth/signin`,
               body: {
                 token,
               },

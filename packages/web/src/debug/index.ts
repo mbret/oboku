@@ -1,5 +1,5 @@
 import { isDebugEnabled } from "./isDebugEnabled.shared"
-import "./sentry"
+import "./reporting"
 
 if (isDebugEnabled()) {
   // @ts-ignore

@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { switchMap } from "rxjs"
 import { useObserve } from "reactjrx"
@@ -23,7 +23,7 @@ export const useDuplicatedResourceIdLinks = () => {
         },
       ])
 
-    Report.log(
+    Logger.log(
       `Found ${duplicatedDocuments.length} duplicated link resourceIds`,
       duplicatedDocuments,
     )

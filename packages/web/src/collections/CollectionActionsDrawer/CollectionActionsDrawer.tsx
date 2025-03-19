@@ -29,7 +29,7 @@ import { useRefreshCollectionMetadata } from "../useRefreshCollectionMetadata"
 import { useRemoveCollection } from "../useRemoveCollection"
 import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 import { useCollection } from "../useCollection"
-import { COLLECTION_EMPTY_ID } from "../../constants.shared"
+import { configuration } from "../../config/configuration"
 
 export const CollectionActionsDrawer = memo(() => {
   const { openedWith, lastId: collectionId } = useSignalValue(
@@ -138,25 +138,26 @@ export const CollectionActionsDrawer = memo(() => {
             </ListItemIcon>
             <ListItemText primary="Manage books" />
           </ListItemButton>
-          {collection && collection._id !== COLLECTION_EMPTY_ID && (
-            <ListItemButton
-              onClick={() => {
-                refreshCollectionMetadata(collectionId ?? ``)
-              }}
-              disabled={isRefreshingMetadata}
-            >
-              <ListItemIcon>
-                <SyncRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  isRefreshingMetadata
-                    ? "Refreshing metadata..."
-                    : "Refresh metadata"
-                }
-              />
-            </ListItemButton>
-          )}
+          {collection &&
+            collection._id !== configuration.COLLECTION_EMPTY_ID && (
+              <ListItemButton
+                onClick={() => {
+                  refreshCollectionMetadata(collectionId ?? ``)
+                }}
+                disabled={isRefreshingMetadata}
+              >
+                <ListItemIcon>
+                  <SyncRounded />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    isRefreshingMetadata
+                      ? "Refreshing metadata..."
+                      : "Refresh metadata"
+                  }
+                />
+              </ListItemButton>
+            )}
         </List>
         <Divider />
         <List>

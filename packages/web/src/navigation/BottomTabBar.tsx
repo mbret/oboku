@@ -9,7 +9,6 @@ import {
   ExtensionRounded,
 } from "@mui/icons-material"
 import { useNavigate, useLocation } from "react-router"
-import { ROUTES } from "../constants.web"
 import { useNetworkState } from "react-use"
 import { SIGNAL_RESET, useSignalValue } from "reactjrx"
 import {
@@ -17,6 +16,7 @@ import {
   UploadBookDialog,
 } from "../upload/UploadBookDialog"
 import { PLUGIN_FILE_TYPE } from "@oboku/shared"
+import { ROUTES } from "./routes"
 
 export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
   const location = useLocation()

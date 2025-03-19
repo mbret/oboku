@@ -3,7 +3,7 @@ import { useMemo } from "react"
 import { useSignalValue } from "reactjrx"
 import { libraryShelvesFiltersSignal } from "./filters/states"
 import { useCollection } from "../../collections/useCollection"
-import { COLLECTION_EMPTY_ID } from "../../constants.shared"
+import { configuration } from "../../config/configuration"
 
 export const useLibraryShelves = () => {
   const { readingState, showNotInterestedCollections } = useSignalValue(
@@ -15,7 +15,7 @@ export const useLibraryShelves = () => {
     readingState,
   })
   const { data: emptyCollection } = useCollection({
-    id: COLLECTION_EMPTY_ID,
+    id: configuration.COLLECTION_EMPTY_ID,
     isNotInterested: showNotInterestedCollections ? "with" : "none",
   })
 

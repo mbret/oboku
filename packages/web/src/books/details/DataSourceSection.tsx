@@ -9,7 +9,7 @@ import {
 import { MoreVertRounded } from "@mui/icons-material"
 import { memo, useState } from "react"
 import { useDataSourcePlugin } from "../../dataSources/helpers"
-import { Report } from "../../debug/report.shared"
+import { Logger } from "../../debug/logger.shared"
 import { useBook } from "../states"
 import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
 import { createDialog } from "../../common/dialogs/createDialog"
@@ -88,7 +88,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
             setIsSelectItemOpened(false)
 
             if (error) {
-              Report.error(error)
+              Logger.error(error)
             } else {
               if (item) {
                 upsertBookLink({

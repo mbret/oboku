@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@mui/material"
 import { useDropzone } from "react-dropzone"
-import { Report } from "../../debug/report.shared"
+import { Logger } from "../../debug/logger.shared"
 import { READER_ACCEPTED_FILE_TYPES } from "@oboku/shared"
 import type { ObokuPlugin } from "../types"
 import { type DragEventHandler, useRef } from "react"
@@ -31,7 +31,7 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
     try {
       await Promise.all(acceptedFiles.map((file) => addBookFromFile(file)))
     } catch (e) {
-      Report.error(e)
+      Logger.error(e)
     }
   }
 

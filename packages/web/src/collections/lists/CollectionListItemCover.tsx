@@ -2,13 +2,13 @@ import { memo } from "react"
 import { Box, useTheme, Stack, Chip } from "@mui/material"
 import { FolderRounded, StyleRounded } from "@mui/icons-material"
 import { useCollection } from "../useCollection"
-import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 import { CollectionListItemBookCovers } from "./CollectionListItemBookCovers"
 import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { CollectionListItemProgress } from "./CollectionListItemProgress"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
 import { useCollectionCoverUri } from "../useCollectionCoverUri"
 import { StatusChip } from "../series/StatusChip"
+import { configuration } from "../../config/configuration"
 
 export const CollectionListItemCover = memo(({ id }: { id: string }) => {
   const theme = useTheme()
@@ -28,7 +28,7 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
         overflow: "hidden",
         position: "relative",
         alignItems: "center",
-        ...(id === COLLECTION_EMPTY_ID && {
+        ...(id === configuration.COLLECTION_EMPTY_ID && {
           opacity: 0.5,
         }),
       }}
@@ -67,7 +67,7 @@ export const CollectionListItemCover = memo(({ id }: { id: string }) => {
         />
       )}
       <CollectionListItemBookCovers id={id} />
-      {id !== COLLECTION_EMPTY_ID && (
+      {id !== configuration.COLLECTION_EMPTY_ID && (
         <>
           <CollectionListItemProgress progress={readingProgress * 100} />
           <Chip

@@ -3,7 +3,7 @@ import { catchError, combineLatest, from, map, mergeMap, of, tap } from "rxjs"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useLock } from "../common/BlockingBackdrop"
 import { useWithAuthorization } from "../auth/AuthorizeActionDialog"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { createDialog } from "../common/dialogs/createDialog"
 import { CancelError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
@@ -81,7 +81,7 @@ export const useRemoveAllContents = () => {
         catchError((e) => {
           if (e instanceof CancelError) return of(null)
 
-          Report.error(e)
+          Logger.error(e)
 
           createDialog({
             autoStart: true,

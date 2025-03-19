@@ -12,10 +12,10 @@ import {
 } from "@mui/icons-material"
 import { alpha, Box, InputBase, styled, useTheme } from "@mui/material"
 import { useSafeGoBack } from "./useSafeGoBack"
-import { ROUTES } from "../constants.web"
 import { useNavigate } from "react-router"
 import { libraryStateSignal } from "../library/books/states"
 import { useSignalValue } from "reactjrx"
+import { ROUTES } from "./routes"
 
 const SearchInput = styled(InputBase)(({ theme }) => ({
   ".MuiInputBase-input": {

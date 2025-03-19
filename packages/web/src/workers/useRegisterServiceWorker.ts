@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -13,7 +13,7 @@ export const useRegisterServiceWorker = () => {
       firstTime.current = false
       serviceWorkerRegistration.register({
         onSuccess: () => {
-          Report.info(`service worker registered with success!`)
+          Logger.info(`service worker registered with success!`)
         },
         onUpdate: (reg) => reg.waiting && setWaitingWorker(reg.waiting),
         onWaitingServiceWorkerFound: async (reg) => {

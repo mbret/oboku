@@ -18,14 +18,14 @@ import { generatePath, Link, useNavigate, useSearchParams } from "react-router"
 import { useMount } from "react-use"
 import { BookList } from "../books/bookList/BookList"
 import { CollectionList } from "../collections/lists/CollectionList"
-import { ROUTES } from "../constants.web"
-import { SEARCH_MAX_PREVIEW_ITEMS } from "../constants.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useCollectionsForSearch } from "./useCollectionsForSearch"
 import { useSignalValue } from "reactjrx"
 import { useBooksForSearch } from "./useBooksForSearch"
 import { ListActionsToolbar } from "./list/ListActionsToolbar"
 import { searchStateSignal } from "./states"
+import { configuration } from "../config/configuration"
+import { ROUTES } from "../navigation/routes"
 
 const Accordion = styled(MuiAccordion)({
   ":before": {
@@ -100,7 +100,7 @@ export const SearchScreen = () => {
   })
 
   const visibleCollections = useMemo(
-    () => collections.slice(0, SEARCH_MAX_PREVIEW_ITEMS),
+    () => collections.slice(0, configuration.SEARCH_MAX_PREVIEW_ITEMS),
     [collections],
   )
 
@@ -169,11 +169,15 @@ export const SearchScreen = () => {
               {books.length ? (
                 <>
                   <BookList
-                    data={books.slice(0, SEARCH_MAX_PREVIEW_ITEMS)}
+                    data={books.slice(
+                      0,
+                      configuration.SEARCH_MAX_PREVIEW_ITEMS,
+                    )}
                     viewMode="list"
                     static
                   />
-                  {(books.length ?? 0) > SEARCH_MAX_PREVIEW_ITEMS && (
+                  {(books.length ?? 0) >
+                    configuration.SEARCH_MAX_PREVIEW_ITEMS && (
                     <SeeMore size={books.length} search={value} type="book" />
                   )}
                 </>
@@ -210,7 +214,8 @@ export const SearchScreen = () => {
                     navigate(ROUTES.COLLECTION_DETAILS.replace(":id", _id))
                   }}
                 />
-                {(collections.length ?? 0) > SEARCH_MAX_PREVIEW_ITEMS && (
+                {(collections.length ?? 0) >
+                  configuration.SEARCH_MAX_PREVIEW_ITEMS && (
                   <SeeMore
                     size={collections.length}
                     search={value}

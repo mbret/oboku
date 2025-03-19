@@ -14,7 +14,6 @@ import {
 } from "@mui/icons-material"
 import { useNavigate } from "react-router"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
-import { ROUTES } from "../../constants.web"
 import {
   Drawer,
   Divider,
@@ -36,6 +35,7 @@ import { getMetadataFromBook } from "../metadata"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 import { useLink } from "../../links/states"
+import { ROUTES } from "../../navigation/routes"
 
 type SignalState = {
   openedWith: undefined | string

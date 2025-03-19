@@ -33,17 +33,17 @@ import { useStorageUse } from "./useStorageUse"
 import { useSignOut } from "../auth/useSignOut"
 import { libraryStateSignal } from "../library/books/states"
 import packageJson from "../../package.json"
-import { ROUTES } from "../constants.web"
 import { toggleDebug } from "../debug"
 import { useDatabase } from "../rxdb"
 import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { useSignalValue, useUnmountObservable } from "reactjrx"
 import { UnlockContentsDialog } from "../auth/UnlockContentsDialog"
 import { authStateSignal } from "../auth/authState"
 import { useRemoveAllContents } from "./useRemoveAllContents"
 import { createDialog } from "../common/dialogs/createDialog"
+import { ROUTES } from "../navigation/routes"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -283,7 +283,7 @@ const DeleteMyDataDialog: FC<{
       ])
         .pipe(
           catchError((e) => {
-            Report.error(e)
+            Logger.error(e)
 
             return of(undefined)
           }),

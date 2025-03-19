@@ -1,7 +1,7 @@
 import { useMutation$ } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { first, from, of, switchMap } from "rxjs"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 
 export const useUpsertLink = () => {
   return useMutation$({
@@ -30,7 +30,7 @@ export const useUpsertLink = () => {
           ).pipe(
             switchMap((existingLink) => {
               if (existingLink) {
-                Report.info(`Link already exist, skipping creation`)
+                Logger.info(`Link already exist, skipping creation`)
 
                 return of(null)
               }

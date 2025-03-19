@@ -8,7 +8,7 @@ import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { useDatabase } from "../rxdb"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useDataSourceIncrementalPatch } from "./useDataSourceIncrementalPatch"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { isPluginError } from "../errors/errors.shared"
 
 export const useSynchronizeDataSource = () => {
@@ -68,7 +68,7 @@ export const useSynchronizeDataSource = () => {
         catchError((e) => {
           if (isPluginError(e) && e.code === "cancelled") return of(null)
 
-          Report.error(e)
+          Logger.error(e)
 
           return of(null)
         }),

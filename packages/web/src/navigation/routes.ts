@@ -1,10 +1,3 @@
-import { isMobileDetected } from "./common/utils"
-
-export { API_URL } from "./constants.shared"
-export { API_COUCH_URI } from "./constants.shared"
-
-export const IS_MOBILE_DEVICE = isMobileDetected()
-
 export const ROUTES = {
   HOME: "/",
   BOOK_DETAILS: "/book/:id",
@@ -29,6 +22,3 @@ export const ROUTES = {
   SEARCH: "/search",
   PROBLEMS: "/problems",
 } as const
-
-export const READER_NOTIFICATION_TIME_TO_SCREEN = 2000
-export const READER_NOTIFICATION_THROTTLE_TIME = 300

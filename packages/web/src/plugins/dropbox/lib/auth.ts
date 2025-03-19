@@ -1,7 +1,7 @@
 import { DropboxAuth } from "dropbox"
 import { CLIENT_ID } from "../constants"
-import { ROUTES } from "../../../constants.web"
 import { ObokuPluginError } from "../../../errors/errors.shared"
+import { ROUTES } from "../../../navigation/routes"
 
 const defaultWindowOptions = {
   toolbar: "no",

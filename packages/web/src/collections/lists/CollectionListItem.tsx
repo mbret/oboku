@@ -12,11 +12,11 @@ import { LockRounded, MoreVert } from "@mui/icons-material"
 import type { CollectionDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { CollectionListItemCover } from "./CollectionListItemCover"
-import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
 import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { useCollection } from "../useCollection"
 import { useCollectionDisplayTitle } from "../useCollectionDisplayTitle"
+import { configuration } from "../../config/configuration"
 
 const ListItem = styled(MuiListItem)(() => ({
   height: `100%`,
@@ -69,7 +69,7 @@ export const CollectionListItem = memo(
             direction="row"
             alignItems="center"
             onClick={(e) => {
-              if (id !== COLLECTION_EMPTY_ID) {
+              if (id !== configuration.COLLECTION_EMPTY_ID) {
                 e.stopPropagation()
                 openActionDrawer()
               }
@@ -85,7 +85,7 @@ export const CollectionListItem = memo(
               }}
             />
 
-            {id !== COLLECTION_EMPTY_ID && (
+            {id !== configuration.COLLECTION_EMPTY_ID && (
               <IconButton
                 disableFocusRipple
                 disableRipple
@@ -95,7 +95,7 @@ export const CollectionListItem = memo(
                 <MoreVert />
               </IconButton>
             )}
-            {id === COLLECTION_EMPTY_ID && (
+            {id === configuration.COLLECTION_EMPTY_ID && (
               <IconButton
                 disableFocusRipple
                 disableRipple

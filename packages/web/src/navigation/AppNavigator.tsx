@@ -13,7 +13,6 @@ import { BottomTabBar } from "./BottomTabBar"
 import { ProfileScreen } from "../settings/ProfileScreen"
 import { ManageStorageScreen } from "../settings/ManageStorageScreen"
 import { LibraryTopTabNavigator } from "../library/LibraryTopTabNavigator"
-import { ROUTES } from "../constants.web"
 import { BookDetailsScreen } from "../books/details/BookDetailsScreen"
 import { CollectionDetailsScreen } from "../collections/details/CollectionDetailsScreen"
 import { BookActionsDrawer } from "../books/drawer/BookActionsDrawer"
@@ -37,6 +36,7 @@ import { SecurityScreen } from "../settings/SecurityScreen"
 import { PluginsScreen } from "../plugins/PluginsScreen"
 import { PluginScreen } from "../plugins/PluginScreen"
 import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
+import { ROUTES } from "./routes"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>

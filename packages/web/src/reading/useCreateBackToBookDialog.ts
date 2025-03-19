@@ -1,8 +1,8 @@
 import { createDialog } from "../common/dialogs/createDialog"
 import { useNavigate } from "react-router"
-import { ROUTES } from "../constants.web"
 import { map } from "rxjs"
 import { useMutation$ } from "reactjrx"
+import { ROUTES } from "../navigation/routes"
 
 export const useCreateBackToBookDialog = () => {
   const navigate = useNavigate()

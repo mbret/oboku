@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router"
-import { ROUTES } from "../../constants.web"
 import { useDownloadBook } from "../../download/useDownloadBook"
 import { getEnrichedBookState } from "../states"
 import { booksDownloadStateSignal } from "../../download/states"
@@ -8,6 +7,7 @@ import { useDatabase } from "../../rxdb"
 import { useCallback } from "react"
 import { getCollections } from "../../collections/dbHelpers"
 import { getBookById } from "../dbHelpers"
+import { ROUTES } from "../../navigation/routes"
 
 export const useDefaultItemClickHandler = () => {
   const { mutate: downloadFile } = useDownloadBook()

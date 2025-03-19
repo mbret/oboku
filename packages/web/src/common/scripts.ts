@@ -9,7 +9,7 @@ import {
   retry,
   timer,
 } from "rxjs"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { navigatorOnLine$ } from "./network/onLine"
 
 export const retryOnFailure = <O>(stream: Observable<O>) =>
@@ -22,7 +22,7 @@ export const retryOnFailure = <O>(stream: Observable<O>) =>
      */
     retry({
       delay: (error, retryCount) => {
-        Report.error(error)
+        Logger.error(error)
 
         return navigatorOnLine$.pipe(
           first(),

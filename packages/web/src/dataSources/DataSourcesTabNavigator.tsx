@@ -1,8 +1,8 @@
 import { Tab, Tabs, Stack } from "@mui/material"
 import { Outlet, Link } from "react-router"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { ROUTES } from "../constants.web"
 import { useRouteMatch } from "../common/useRouteMatch"
+import { ROUTES } from "../navigation/routes"
 
 export const DataSourcesTabNavigator = () => {
   // You need to provide the routes in descendant order.

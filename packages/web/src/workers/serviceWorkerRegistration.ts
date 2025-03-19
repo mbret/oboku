@@ -1,7 +1,7 @@
 // This optional code is used to register a service worker.
 // register() is not called by default.
 
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { registerCommunication } from "./communication.web"
 import { serviceWorkerReadySignal } from "./states"
 
@@ -66,7 +66,7 @@ export function register(config?: Config) {
         // Add some additional logging to localhost, pointing developers to the
         // service worker/PWA documentation.
         navigator.serviceWorker.ready.then(() => {
-          Report.log(`Service worker ready`)
+          Logger.log(`Service worker ready`)
         })
       } else {
         // Is not localhost. Just register service worker

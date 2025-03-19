@@ -19,7 +19,7 @@ import {
   getMetadataFromRequest,
   hasAnotherMoreRecentCoverForThisRequest,
 } from "./helpers.shared"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { SW_COVERS_CACHE_KEY } from "../constants.shared"
 
 declare const self: ServiceWorkerGlobalScope
@@ -70,7 +70,7 @@ export const registerCoversCacheCleanup = () => {
                        * No current profile, we delete every entries
                        */
                       if (!profile) {
-                        Report.info(
+                        Logger.info(
                           `[sw/covers]`,
                           `No current profile set, deleting all covers in cache`,
                         )
@@ -100,14 +100,14 @@ export const registerCoversCacheCleanup = () => {
                       })
 
                       if (requestsNotForCurrentProfile.length) {
-                        Report.info(
+                        Logger.info(
                           `[sw/covers]`,
                           `Removing ${requestsNotForCurrentProfile.length} covers not related to current profile in cache`,
                         )
                       }
 
                       if (cacheKeysNotInDb.length) {
-                        Report.info(
+                        Logger.info(
                           `[sw/covers]`,
                           `Removing ${cacheKeysNotInDb.length} obsolete covers in cache`,
                         )
@@ -160,16 +160,16 @@ export const registerCoversCacheCleanup = () => {
   interval(5 * 60 * 1000 * 2)
     .pipe(
       tap(() => {
-        Report.info(`[sw/covers]`, `cleanup process started`)
+        Logger.info(`[sw/covers]`, `cleanup process started`)
       }),
       switchMap(() =>
         combineLatest([cleanupForProfile$, cleanupOutdatedCovers$]),
       ),
       tap(() => {
-        Report.info(`[sw/covers]`, `cleanup process success`)
+        Logger.info(`[sw/covers]`, `cleanup process success`)
       }),
       catchError((error) => {
-        Report.info(`[sw/covers]`, `cleanup process failed with error`, error)
+        Logger.info(`[sw/covers]`, `cleanup process failed with error`, error)
 
         console.error(error)
 

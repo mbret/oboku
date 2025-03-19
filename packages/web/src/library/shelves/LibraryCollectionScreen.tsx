@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback, type ComponentProps } from "react"
 import { Button, Stack, Toolbar as MuiToolbar } from "@mui/material"
-import { ROUTES } from "../../constants.web"
 import { useNavigate } from "react-router"
 import { CollectionList } from "../../collections/lists/CollectionList"
 import { signal, useSignalValue } from "reactjrx"
@@ -10,6 +9,7 @@ import { libraryShelvesFiltersSignal } from "./filters/states"
 import type { CollectionDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { AddCollectionDialog } from "./AddCollectionDialog"
+import { ROUTES } from "../../navigation/routes"
 
 type RestoreStateFromState = ComponentProps<
   typeof CollectionList

@@ -1,9 +1,9 @@
 import { getCollectionComputedMetadata } from "../../collections/getCollectionComputedMetadata"
 import { useCollections } from "../../collections/useCollections"
-import { ROUTES } from "../../constants.web"
 import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
 import { useBook } from "../states"
 import { MetadataItemList } from "./MetadataItemList"
+import { ROUTES } from "../../navigation/routes"
 
 export const CollectionsPane = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })

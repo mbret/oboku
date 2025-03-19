@@ -15,6 +15,7 @@ import {
   usePersistSignals,
   useSignalValue,
   QueryClientProvider$,
+  useObserve,
 } from "reactjrx"
 import { signalEntriesToPersist } from "./profile"
 import { queryClient } from "./queries/queryClient"
@@ -28,11 +29,13 @@ import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
 import { RxDbProvider } from "./rxdb/RxDbProvider"
-import { Report } from "./debug/report.shared"
+import { Logger } from "./debug/logger.shared"
 import { RestoreDownloadState } from "./download/RestoreDownloadState"
 import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
 import { QueryClientProvider } from "@tanstack/react-query"
+import { configuration } from "./config/configuration"
+import { first } from "rxjs"
 
 // @todo move to sw
 LibArchive.init({
@@ -64,7 +67,7 @@ export const App = memo(() => {
   return (
     <ErrorBoundary
       onError={(e) => {
-        Report.error(e)
+        Logger.error(e)
       }}
     >
       <StyledEngineProvider injectFirst>
@@ -118,6 +121,12 @@ export const App = memo(() => {
       <BlurFilterReference />
     </ErrorBoundary>
   )
+})
+
+export const AppWithConfig = memo(() => {
+  const config = useObserve(configuration.loaded$)
+
+  return config ? <App /> : null
 })
 
 const Effects = memo(() => {

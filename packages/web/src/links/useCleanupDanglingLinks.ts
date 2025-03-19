@@ -2,9 +2,9 @@ import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { combineLatest, first, from, of, switchMap } from "rxjs"
 import { useEffect } from "react"
 import { isBefore, subMonths } from "date-fns"
-import { Report } from "../debug/report.shared"
-import { CLEANUP_DANGLING_LINKS_INTERVAL } from "../constants.shared"
+import { Logger } from "../debug/logger.shared"
 import { useMutation$ } from "reactjrx"
+import { configuration } from "../config/configuration"
 
 const useRemoveDanglingLinks = () => {
   return useMutation$({
@@ -36,7 +36,7 @@ const useRemoveDanglingLinks = () => {
                 },
               )
 
-              Report.warn(
+              Logger.warn(
                 `Cleaning up dangling links. Found ${danglingLinks.length} dangling links and ${danglingLinksOlderThanMonth.length} older than a month to be deleted.`,
               )
 
@@ -61,7 +61,7 @@ export const useCleanupDanglingLinks = () => {
   useEffect(() => {
     const timer = setInterval(
       removeDanglingLinks,
-      CLEANUP_DANGLING_LINKS_INTERVAL,
+      configuration.CLEANUP_DANGLING_LINKS_INTERVAL,
     )
 
     return () => {

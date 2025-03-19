@@ -10,7 +10,7 @@ import {
 import { type FC, useEffect } from "react"
 import { useLock } from "../common/BlockingBackdrop"
 import { filter, first, fromEvent, tap } from "rxjs"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 
 export const UpdateAvailableDialog: FC<{
   serviceWorker?: ServiceWorker
@@ -21,7 +21,7 @@ export const UpdateAvailableDialog: FC<{
   useEffect(() => {
     if (import.meta.env.MODE === "development" && !!serviceWorker) {
       serviceWorker?.postMessage({ type: "SKIP_WAITING" })
-      Report.warn("service worker updated")
+      Logger.warn("service worker updated")
     }
   }, [serviceWorker])
 

@@ -1,5 +1,5 @@
 import { DownloadState, booksDownloadStateSignal } from "./states"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { getLinkStateAsync } from "../links/states"
 import { bytesToMb } from "../common/utils"
 import { createCbzFromReadableStream } from "./createCbzFromReadableStream"
@@ -191,7 +191,7 @@ export const useDownloadBook = () => {
 
                 return file$.pipe(
                   switchMap(({ data, name }) => {
-                    Report.log(
+                    Logger.log(
                       `Saving ${bookId} into storage for a size of ${bytesToMb(
                         data.size,
                       )} mb`,

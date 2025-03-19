@@ -1,13 +1,13 @@
 import { memo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Typography, useTheme, Button, Box } from "@mui/material"
-import { ROUTES } from "../constants.web"
 import { useNavigate } from "react-router"
 import ContinueReadingAsset from "../assets/continue-reading.svg"
 import { useContinueReadingBooks } from "./helpers"
 import { ContinueReadingSection } from "./ContinueReadingSection"
 import { RecentlyAddedSection } from "./RecentlyAddedSection"
 import { CommunicationPane } from "../communication/CommunicationPane"
+import { ROUTES } from "../navigation/routes"
 
 export const HomeScreen = memo(() => {
   const theme = useTheme()

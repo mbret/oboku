@@ -11,16 +11,16 @@ import type {
 } from "../../common/lists/ListActionsToolbar"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
 import { useCollection } from "../useCollection"
-import { COLLECTION_EMPTY_ID } from "../../constants.shared"
 import { useEffect, useMemo } from "react"
 import { useBooks } from "../../books/states"
 import { useLocalSettings } from "../../settings/states"
-import { Report } from "../../debug/report.shared"
+import { Logger } from "../../debug/logger.shared"
 import { useCollectionComputedMetadata } from "../useCollectionComputedMetadata"
 import { useCollectionCoverUri } from "../useCollectionCoverUri"
 import coverPlaceholder from "../../assets/cover-placeholder.png"
 import { StatusChip } from "../series/StatusChip"
 import { useWindowScroll } from "react-use"
+import { configuration } from "../../config/configuration"
 
 type ScreenParams = {
   id: string
@@ -91,7 +91,7 @@ export const CollectionDetailsScreen = () => {
   const { y } = useWindowScroll()
 
   useEffect(() => {
-    Report.log({
+    Logger.log({
       collection,
       metadata,
     })
@@ -108,7 +108,7 @@ export const CollectionDetailsScreen = () => {
         <TopBarNavigation
           title={metadata.title}
           showBack={true}
-          {...(id !== COLLECTION_EMPTY_ID && {
+          {...(id !== configuration.COLLECTION_EMPTY_ID && {
             onMoreClick: openActionDrawer,
           })}
           color="transparent"

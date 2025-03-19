@@ -10,12 +10,9 @@ import {
   switchMap,
   throttleTime,
 } from "rxjs"
-import {
-  READER_NOTIFICATION_THROTTLE_TIME,
-  READER_NOTIFICATION_TIME_TO_SCREEN,
-} from "../../constants.web"
 import { reader$ } from "../states"
 import { useQuery$ } from "reactjrx"
+import { configuration } from "../../config/configuration"
 
 type Notification = {
   message: string
@@ -41,14 +38,20 @@ const useNotification = () =>
 
           return fontChangeNotification$
         }),
-        throttleTime(READER_NOTIFICATION_THROTTLE_TIME, undefined, {
-          leading: false,
-          trailing: true,
-        }),
+        throttleTime(
+          configuration.READER_NOTIFICATION_THROTTLE_TIME,
+          undefined,
+          {
+            leading: false,
+            trailing: true,
+          },
+        ),
         switchMap((notification) =>
           merge(
             of(notification),
-            of(undefined).pipe(delay(READER_NOTIFICATION_TIME_TO_SCREEN)),
+            of(undefined).pipe(
+              delay(configuration.READER_NOTIFICATION_TIME_TO_SCREEN),
+            ),
           ),
         ),
       ),

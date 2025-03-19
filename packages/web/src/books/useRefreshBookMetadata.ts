@@ -4,7 +4,7 @@ import { httpClient } from "../http/httpClient"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { createDialog } from "../common/dialogs/createDialog"
 import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
 import { isPluginError } from "../errors/errors.shared"
@@ -31,7 +31,7 @@ export const useRefreshBookMetadata = () => {
         .exec()
 
       if (!firstLink) {
-        Report.error(`No link found ${bookId}`)
+        Logger.error(`No link found ${bookId}`)
 
         return
       }
@@ -71,7 +71,7 @@ export const useRefreshBookMetadata = () => {
             ),
           ),
           catchError((e) => {
-            Report.error(e)
+            Logger.error(e)
 
             return of(null)
           }),
@@ -80,7 +80,7 @@ export const useRefreshBookMetadata = () => {
     } catch (e) {
       if (isPluginError(e) && e.code === "cancelled") return
 
-      Report.error(e)
+      Logger.error(e)
     }
   }
 }

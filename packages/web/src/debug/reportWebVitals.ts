@@ -1,10 +1,10 @@
 import { logEvent } from "firebase/analytics"
 import { type Metric, onCLS, onFID, onLCP } from "web-vitals"
 import { analytics } from "./tracking"
-import { Report } from "./report.shared"
+import { Logger } from "./logger.shared"
 
 const onReport = (props: Metric) => {
-  Report.log(props)
+  Logger.log(props)
 
   const { name, delta, id } = props
 

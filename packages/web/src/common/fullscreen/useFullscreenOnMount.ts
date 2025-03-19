@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import screenfull from "screenfull"
-import { Report } from "../../debug/report.shared"
+import { Logger } from "../../debug/logger.shared"
 import {
   EMPTY,
   catchError,
@@ -61,7 +61,7 @@ export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
             return EMPTY
           }
 
-          Report.error(error)
+          Logger.error(error)
 
           return EMPTY
         }),
@@ -74,7 +74,7 @@ export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
   useEffect(() => {
     return () => {
       if (screenfull.isEnabled && screenfull.isFullscreen) {
-        screenfull.exit().catch(Report.error)
+        screenfull.exit().catch(Logger.error)
       }
     }
   }, [])

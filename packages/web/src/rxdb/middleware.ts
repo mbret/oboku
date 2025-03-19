@@ -6,7 +6,7 @@ import type {
   LinkDocType,
   TagsDocType,
 } from "@oboku/shared"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 
 type Database = NonNullable<ReturnType<typeof useDatabase>["db"]>
 
@@ -230,7 +230,7 @@ const updateRelationBetweenLinksAndBooksHook = (db: Database) => {
           links: [data._id],
         })
       } catch (e) {
-        Report.error(e)
+        Logger.error(e)
       }
     }
   }, EXEC_PARALLEL)

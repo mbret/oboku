@@ -10,7 +10,6 @@ import { Typography, Container, Stack, IconButton } from "@mui/material"
 import { useNavigate, useParams } from "react-router"
 import { Alert } from "@mui/material"
 import { useDownloadBook } from "../../download/useDownloadBook"
-import { ROUTES } from "../../constants.web"
 import { useEnrichedBookState } from "../states"
 import { useLink } from "../../links/states"
 import { DataSourceSection } from "./DataSourceSection"
@@ -26,7 +25,8 @@ import { CollectionsPane } from "./CollectionsPane"
 import { useBookActionDrawer } from "../drawer/BookActionsDrawer"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
-import { Report } from "../../debug/report.shared"
+import { Logger } from "../../debug/logger.shared"
+import { ROUTES } from "../../navigation/routes"
 
 type ScreenParams = {
   id: string
@@ -52,7 +52,7 @@ export const BookDetailsScreen = memo(() => {
   })
 
   if (isDebugEnabled()) {
-    Report.info(`BookDetailsScreen`, { book, link })
+    Logger.info(`BookDetailsScreen`, { book, link })
   }
 
   return (

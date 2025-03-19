@@ -8,7 +8,7 @@ import {
 } from "@mui/material"
 import { groupBy } from "@oboku/shared"
 import { Fragment, memo, useMemo } from "react"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { BuildRounded, DeleteForeverRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
@@ -58,7 +58,7 @@ export const ProblemsScreen = memo(() => {
         ]
       })
 
-    Report.log(
+    Logger.log(
       `Found ${duplicatedCollections.length} duplicated resource id`,
       duplicatedCollections,
     )

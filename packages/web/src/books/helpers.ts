@@ -1,7 +1,7 @@
 import { ReadingStateState, sortByTitleComparator } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
-import { Report } from "../debug/report.shared"
+import { Logger } from "../debug/logger.shared"
 import { useMemo } from "react"
 import type { PromiseReturnType } from "../types"
 import { type BookQueryResult, useBooks } from "./states"
@@ -159,7 +159,7 @@ export const useAddBook = () => {
         return { book: newBook, link: linkAdded }
       }
     } catch (e) {
-      Report.error(e)
+      Logger.error(e)
     }
   }
 

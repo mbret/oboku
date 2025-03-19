@@ -6,7 +6,7 @@ import {
   hasTokenAccessAtLeast10mnLeft,
   requestGoogleAccessToken,
 } from "./auth"
-import { Report } from "../../../debug/report.shared"
+import { Logger } from "../../../debug/logger.shared"
 import { useGoogleScripts } from "./scripts"
 import { ObokuPluginError } from "../../../errors/errors.shared"
 
@@ -47,7 +47,7 @@ export const useAccessToken = ({
           }
         }
 
-        Report.info(`google token invalid, requesting new one`)
+        Logger.info(`google token invalid, requesting new one`)
 
         return from(requestPopup()).pipe(
           tap((confirmed) => {
@@ -61,7 +61,7 @@ export const useAccessToken = ({
                 consentShownSignal.setValue(false)
 
                 if (accessToken.error) {
-                  Report.error(`google access token error`, accessToken)
+                  Logger.error(`google access token error`, accessToken)
 
                   throw new Error(accessToken.error)
                 }

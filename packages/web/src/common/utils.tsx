@@ -19,3 +19,5 @@ export const isMobileDetected = () => {
     return false
   }
 }
+
+export const IS_MOBILE_DEVICE = isMobileDetected()

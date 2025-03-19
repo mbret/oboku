@@ -1,6 +1,6 @@
 import { replicateCouchDB } from "rxdb/plugins/replication-couchdb"
-import { API_COUCH_URI } from "../../constants.web"
 import type { RxCollection } from "rxdb"
+import { configuration } from "../../config/configuration"
 
 export const replicateCouchDBCollection = ({
   dbName,
@@ -16,9 +16,9 @@ export const replicateCouchDBCollection = ({
   "pull" | "push" | "url" | "replicationIdentifier" | "collection"
 >) =>
   replicateCouchDB({
-    replicationIdentifier: `${API_COUCH_URI}/${dbName}-${collection.name}-replication`,
+    replicationIdentifier: `${configuration.API_COUCH_URI}/${dbName}-${collection.name}-replication`,
     collection: collection,
-    url: `${API_COUCH_URI}/${dbName}/`,
+    url: `${configuration.API_COUCH_URI}/${dbName}/`,
     live: false,
     waitForLeadership: false,
     ...params,
@@ -36,7 +36,7 @@ export const replicateCouchDBCollection = ({
 
       if (
         typeof url === "string" &&
-        url.startsWith(`${API_COUCH_URI}/${dbName}/_changes`)
+        url.startsWith(`${configuration.API_COUCH_URI}/${dbName}/_changes`)
       ) {
         return fetch(`${url}&filter=_selector`, {
           ...optionsWithAuth,

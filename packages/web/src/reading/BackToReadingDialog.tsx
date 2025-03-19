@@ -1,6 +1,5 @@
 import { memo, useEffect } from "react"
 import { useLocation } from "react-router"
-import { ROUTES } from "../constants.web"
 import {
   hasOpenedReaderAlreadyStateSignal,
   bookBeingReadStateSignal,
@@ -13,6 +12,7 @@ import { from, switchMap } from "rxjs"
 import { ReadingStateState } from "@oboku/shared"
 import { CancelError } from "../errors/errors.shared"
 import { catchCancelError } from "../errors/catchCancelError"
+import { ROUTES } from "../navigation/routes"
 
 const BASE_READER_ROUTE = ROUTES.READER.replace(`/:id`, ``)
 
