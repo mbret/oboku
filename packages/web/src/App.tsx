@@ -35,7 +35,6 @@ import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { configuration } from "./config/configuration"
-import { first } from "rxjs"
 
 // @todo move to sw
 LibArchive.init({
