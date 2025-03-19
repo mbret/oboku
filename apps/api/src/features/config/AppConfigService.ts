@@ -9,4 +9,8 @@ export class AppConfigService {
   get POSTGRES_MAX_REPORTS_PER_USER(): number {
     return 10
   }
+
+  get COUCH_DB_URL(): string {
+    return this.config.getOrThrow("COUCH_DB_URL", { infer: true })
+  }
 }

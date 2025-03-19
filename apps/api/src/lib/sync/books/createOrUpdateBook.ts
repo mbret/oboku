@@ -94,15 +94,20 @@ export const createOrUpdateBook = async ({
         linkForResourceId.dataSourceId &&
         linkForResourceId.dataSourceId !== dataSourceId
       ) {
-        const dataSourceFoundForThisLink = await helpers.findOne("datasource", {
-          selector: { _id: linkForResourceId.dataSourceId },
-        })
+        const differentDataSourceFoundAttachedToBookLink =
+          await helpers.findOne("datasource", {
+            selector: { _id: linkForResourceId.dataSourceId },
+          })
 
         /**
          * If we find a dataSource, we don't need to synchronize this item
          * as it's managed by another dataSource
          */
-        if (dataSourceFoundForThisLink) {
+        if (differentDataSourceFoundAttachedToBookLink) {
+          logger.log(
+            `${item.name} is linked to a different datasource ${dataSourceId}. Skipping sync of book`,
+          )
+
           return
         }
 
@@ -169,7 +174,7 @@ export const createOrUpdateBook = async ({
         syncReport.addBook(bookId)
       }
 
-      if (!bookId) return
+      if (!bookId) throw new Error("Book not found or not created")
 
       const insertedLink = await helpers.create("link", {
         type: dataSourceType,

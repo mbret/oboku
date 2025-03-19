@@ -25,6 +25,7 @@ import { PostgresModule } from "./features/postgres/postgres.module"
 import { AppConfigModule } from "./features/config/config.module"
 import { CommunicationController } from "./features/communication/communication.controller"
 import { CommunicationPostgresService } from "./features/postgres/CommunicationPostgresService"
+import { WebController } from "./features/web/web.controller"
 
 @Module({
   imports: [
@@ -106,6 +107,7 @@ import { CommunicationPostgresService } from "./features/postgres/CommunicationP
     DataSourcesController,
     CollectionsController,
     CommunicationController,
+    WebController,
   ],
 })
 export class AppModule implements OnModuleInit {
