@@ -46,7 +46,7 @@ jobs:
       - name: Noop
         run: echo "Noop"
 
-  deploy-to-prod:
+  deploy-api-prod:
     needs: build-and-test
     if: github.ref == 'refs/heads/master' && needs.build-and-test.outputs.status == 'success'
     runs-on: ubuntu-latest
@@ -68,3 +68,38 @@ jobs:
           target: api
           push: true
           tags: mbret/oboku-api:latest
+
+  bump-web-version:
+    name: 'Bump Version'
+    needs: [build-and-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout source code'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: 'cat package.json'
+        run: cat ./package.json
+      - name: 'Automated Version Bump'
+        id: version-bump
+        uses: 'phips28/gh-action-bump-version@v10.1.1'
+        with:
+          tag-prefix: 'web-'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGEJSON_DIR: 'packages/web'
+      - name: 'cat package.json'
+        run: cat ./package.json
+      - name: 'Output Step'
+        env:
+          NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
+        run: echo "new tag $NEW_TAG"
+
+  deploy-vercel:
+    name: 'Deploy vercel'
+    needs: [bump-web-version]
+    uses: ./.github/workflows/_deploy-web-vercel.yml
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
