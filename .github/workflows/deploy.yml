@@ -87,7 +87,7 @@ jobs:
           tag-prefix: 'web-'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGEJSON_DIR: 'packages/web'
+          PACKAGEJSON_DIR: 'apps/web'
       - name: 'cat package.json'
         run: cat ./package.json
       - name: 'Output Step'
