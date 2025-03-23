@@ -5,6 +5,7 @@ import { AppConfigService } from "../config/AppConfigService"
 import {
   CommunicationPostgresEntity,
   SyncReportPostgresEntity,
+  UserPostgresEntity,
 } from "./entities"
 import { CommunicationPostgresService } from "./CommunicationPostgresService"
 
@@ -13,6 +14,7 @@ import { CommunicationPostgresService } from "./CommunicationPostgresService"
     TypeOrmModule.forFeature([
       SyncReportPostgresEntity,
       CommunicationPostgresEntity,
+      UserPostgresEntity,
     ]),
   ],
   providers: [

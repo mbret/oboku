@@ -41,3 +41,15 @@ export class CommunicationPostgresEntity {
   @Column({ type: "text", nullable: true })
   type!: "info" | null
 }
+
+@Entity({ name: "users" })
+export class UserPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "text" })
+  email!: string
+
+  @Column({ type: "text" })
+  username!: string
+}

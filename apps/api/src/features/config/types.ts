@@ -13,8 +13,8 @@ export interface EnvironmentVariables {
   GOOGLE_BOOK_API_URL: string
   COVERS_BUCKET_NAME: string
   COVERS_PLACEHOLDER_BUCKET_KEY: string
-  FIREBASE_CONFIG: string
   POSTGRES_USER: string
   POSTGRES_PASSWORD: string
   POSTGRES_MAX_REPORTS_PER_USER: number
+  GOOGLE_CLIENT_ID?: string
 }

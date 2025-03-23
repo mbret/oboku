@@ -8,7 +8,6 @@ import * as Joi from "joi"
 import { BooksController } from "./features/books/books.controller"
 import { EnvironmentVariables } from "./features/config/types"
 import * as fs from "node:fs"
-import { AuthController } from "./features/auth/auth.controller"
 import { DataSourcesController } from "./features/datasources/datasources.controller"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { CollectionsController } from "./features/collections/collections.controller"
@@ -20,12 +19,15 @@ import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgre
 import {
   CommunicationPostgresEntity,
   SyncReportPostgresEntity,
+  UserPostgresEntity,
 } from "./features/postgres/entities"
 import { PostgresModule } from "./features/postgres/postgres.module"
 import { AppConfigModule } from "./features/config/config.module"
 import { CommunicationController } from "./features/communication/communication.controller"
 import { CommunicationPostgresService } from "./features/postgres/CommunicationPostgresService"
 import { WebController } from "./features/web/web.controller"
+import { UsersModule } from "./users/users.module"
+import { AuthModule } from "./auth/auth.module"
 
 @Module({
   imports: [
@@ -36,7 +38,11 @@ import { WebController } from "./features/web/web.controller"
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: "oboku",
-      entities: [SyncReportPostgresEntity, CommunicationPostgresEntity],
+      entities: [
+        SyncReportPostgresEntity,
+        CommunicationPostgresEntity,
+        UserPostgresEntity,
+      ],
       synchronize: true,
     }),
     // SentryModule.forRoot(),
@@ -86,6 +92,8 @@ import { WebController } from "./features/web/web.controller"
     EventEmitterModule.forRoot(),
     PostgresModule,
     AppConfigModule,
+    AuthModule,
+    UsersModule,
   ],
   providers: [
     // {
@@ -103,7 +111,6 @@ import { WebController } from "./features/web/web.controller"
     AppController,
     CoversController,
     BooksController,
-    AuthController,
     DataSourcesController,
     CollectionsController,
     CommunicationController,
