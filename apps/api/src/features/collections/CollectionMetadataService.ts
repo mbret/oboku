@@ -6,8 +6,6 @@ import {
   markCollectionAsError,
   markCollectionAsIdle,
 } from "./metadata/collections"
-import { getAuthToken } from "src/lib/auth"
-import { getNanoDbForUser } from "src/lib/couch/dbHelpers"
 import { withConfiguredGoogle } from "src/lib/google/withConfiguredGoogle"
 import {
   onBeforeError,
@@ -18,23 +16,29 @@ import { processrefreshMetadata } from "./metadata/processRefreshMetadata"
 import { parameters$ } from "./metadata/parameters"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/features/config/types"
+import { CouchService } from "src/couch/couch.service"
 
 @Injectable()
 export class CollectionMetadataService {
   private readonly logger = new Logger(CollectionMetadataService.name)
 
-  constructor(private configService: ConfigService<EnvironmentVariables>) {}
+  constructor(
+    private configService: ConfigService<EnvironmentVariables>,
+    private couchService: CouchService,
+  ) {}
 
   refreshMetadata({
     collectionId,
     credentials,
     authorization,
     soft = true,
+    email,
   }: {
     collectionId: string
     credentials: Record<string, string>
     authorization: string
     soft?: boolean
+    email: string
   }) {
     this.logger.log(`invoke for ${collectionId}`)
 
@@ -46,18 +50,11 @@ export class CollectionMetadataService {
     }).pipe(
       switchMapMergeOuter(() => parameters$),
       withConfiguredGoogle,
-      switchMapMergeOuter((params) =>
-        getAuthToken(params.authorization, params.jwtPrivateKey),
-      ),
-      switchMapCombineOuter(({ name: userName, jwtPrivateKey }) =>
+      switchMapCombineOuter(() =>
         from(
-          getNanoDbForUser(
-            userName,
-            jwtPrivateKey,
-            this.configService.getOrThrow("COUCH_DB_URL", {
-              infer: true,
-            }),
-          ),
+          this.couchService.createNanoInstanceForUser({
+            email,
+          }),
         ),
       ),
       switchMap(([params, db]) =>

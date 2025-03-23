@@ -11,6 +11,8 @@ import { BooksMetadataRefreshEvent, Events } from "../../events"
 import { BooksMedataService } from "./BooksMedataService"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { from } from "rxjs"
+import { AuthUser } from "src/auth/auth.guard"
+import { AutUser } from "src/auth/auth.guard"
 
 @Controller("books")
 export class BooksController implements OnModuleInit {
@@ -34,6 +36,7 @@ export class BooksController implements OnModuleInit {
   @Post("metadata/refresh")
   async metadataRefresh(
     @Body() body: { bookId: string },
+    @AutUser() user: AuthUser,
     @Headers() headers: {
       "oboku-credentials"?: string
       authorization?: string
@@ -43,7 +46,10 @@ export class BooksController implements OnModuleInit {
 
     this.taskQueueService.enqueue(
       this.QUEUE_NAME,
-      () => from(this.booksMedataService.refreshMetadata(body, headers)),
+      () =>
+        from(
+          this.booksMedataService.refreshMetadata(body, headers, user.email),
+        ),
       {
         id: body.bookId,
       },
@@ -68,6 +74,7 @@ export class BooksController implements OnModuleInit {
               authorization: event.data.authorization,
               "oboku-credentials": JSON.stringify(event.data.obokuCredentials),
             },
+            event.data.email,
           ),
         ),
       {

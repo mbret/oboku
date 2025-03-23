@@ -10,14 +10,14 @@ import {
 import { ConfigService } from "@nestjs/config"
 import type { EnvironmentVariables } from "../config/types"
 import { getParametersValue } from "../../lib/ssm"
-import { getAuthTokenAsync } from "../../lib/auth"
-import { getNanoDbForUser } from "../../lib/couch/dbHelpers"
 import { sync } from "../../lib/sync/sync"
 import { configure } from "../../lib/plugins/google"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { from } from "rxjs"
 import { SyncReportPostgresService } from "../postgres/SyncReportPostgresService"
+import { CouchService } from "src/couch/couch.service"
+import { AuthUser, AutUser } from "src/auth/auth.guard"
 
 const syncLongProgress = async ({
   dataSourceId,
@@ -26,6 +26,8 @@ const syncLongProgress = async ({
   config,
   eventEmitter,
   syncReportPostgresService,
+  couchService,
+  email,
 }: {
   config: ConfigService<EnvironmentVariables>
   dataSourceId: string
@@ -33,12 +35,13 @@ const syncLongProgress = async ({
   authorization: string
   eventEmitter: EventEmitter2
   syncReportPostgresService: SyncReportPostgresService
+  couchService: CouchService
+  email: string
 }) => {
-  const [client_id = ``, client_secret = ``, jwtPrivateKey = ``] =
-    await getParametersValue({
-      Names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "jwt-private-key"],
-      WithDecryption: true,
-    })
+  const [client_id = ``, client_secret = ``] = await getParametersValue({
+    Names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+    WithDecryption: true,
+  })
 
   // @todo only do once in a service
   configure({
@@ -46,28 +49,16 @@ const syncLongProgress = async ({
     client_secret,
   })
 
-  const { name } = await getAuthTokenAsync(
-    {
-      headers: {
-        authorization,
-      },
-    },
-    jwtPrivateKey,
-  )
-
   await sync({
-    userName: name,
+    userName: email,
     dataSourceId,
-    db: await getNanoDbForUser(
-      name,
-      jwtPrivateKey,
-      config.getOrThrow("COUCH_DB_URL", { infer: true }),
-    ),
+    db: await couchService.createNanoInstanceForUser({ email }),
     credentials,
     authorization,
     config,
     eventEmitter,
     syncReportPostgresService,
+    email,
   })
 }
 
@@ -81,6 +72,7 @@ export class DataSourcesController implements OnModuleInit {
     private readonly configService: ConfigService<EnvironmentVariables>,
     private readonly eventEmitter: EventEmitter2,
     private readonly syncReportPostgresService: SyncReportPostgresService,
+    private readonly couchService: CouchService,
   ) {}
 
   onModuleInit() {
@@ -93,23 +85,9 @@ export class DataSourcesController implements OnModuleInit {
   }
 
   @Get("sync-reports")
-  async signin(@Headers() { authorization }: { authorization: string }) {
-    const [jwtPrivateKey = ``] = await getParametersValue({
-      Names: ["jwt-private-key"],
-      WithDecryption: true,
-    })
-
-    const { name } = await getAuthTokenAsync(
-      {
-        headers: {
-          authorization,
-        },
-      },
-      jwtPrivateKey,
-    )
-
+  async signin(@AutUser() user: AuthUser) {
     return await this.syncReportPostgresService.getAllSyncReportsByUser({
-      userName: name,
+      userName: user.email,
     })
   }
 
@@ -117,6 +95,7 @@ export class DataSourcesController implements OnModuleInit {
   async syncDataSource(
     @Body() { dataSourceId }: { dataSourceId: string },
     @Headers() headers: { authorization: string; "oboku-credentials": string },
+    @AutUser() user: AuthUser,
   ) {
     this.logger.log(`syncDataSource ${dataSourceId}`)
 
@@ -131,6 +110,8 @@ export class DataSourcesController implements OnModuleInit {
             config: this.configService,
             eventEmitter: this.eventEmitter,
             syncReportPostgresService: this.syncReportPostgresService,
+            couchService: this.couchService,
+            email: user.email,
           }),
         ),
       {

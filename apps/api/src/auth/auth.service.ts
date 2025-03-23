@@ -1,28 +1,18 @@
 import { BadRequestException, Injectable } from "@nestjs/common"
 import { UsersService } from "../users/users.service"
-import { JwtService } from "@nestjs/jwt"
 import { OAuth2Client } from "google-auth-library"
 import { AppConfigService } from "src/features/config/AppConfigService"
 import { ObokuErrorCode } from "@oboku/shared"
+import { CouchService } from "src/couch/couch.service"
+import { getOrCreateUserFromEmail } from "src/lib/couch/dbHelpers"
 
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService,
     private usersService: UsersService,
     private appConfigService: AppConfigService,
+    private couchService: CouchService,
   ) {}
-
-  async generateJwt(payload: {
-    sub: string // enail
-    name: string // email
-    "_couchdb.roles": [string]
-  }) {
-    return this.jwtService.sign(payload, {
-      privateKey: this.appConfigService.JWT_PRIVATE_KEY,
-      algorithm: "RS256",
-    })
-  }
 
   async signIn({ token }: { token: string }) {
     const client = new OAuth2Client()
@@ -62,13 +52,33 @@ export class AuthService {
 
     const retrievedUser = !userExists ? await createdUser() : userExists
 
-    return {
-      token: await this.generateJwt({
-        name: retrievedUser.email,
-        sub: retrievedUser.email,
-        "_couchdb.roles": [retrievedUser.email],
-      }),
+    const userAuthToken = await this.couchService.generateUserJWT({
       email: retrievedUser.email,
+    })
+
+    const signedUser = {
+      token: userAuthToken,
+      email: retrievedUser.email,
+    }
+
+    const adminNano = await this.couchService.createAdminNanoInstance()
+
+    const couchUser = await getOrCreateUserFromEmail(
+      adminNano,
+      signedUser.email,
+    )
+
+    if (!couchUser) {
+      throw new Error("Unable to retrieve user")
+    }
+
+    const nameHex = Buffer.from(couchUser.name).toString("hex")
+
+    return {
+      token: signedUser.token,
+      nameHex,
+      dbName: `userdb-${nameHex}`,
+      email: couchUser.email,
     }
   }
 }

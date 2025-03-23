@@ -1,6 +1,5 @@
 import * as createNano from "nano"
 import { type MangoResponse } from "nano"
-import { generateAdminToken, generateToken } from "../auth"
 import {
   type SafeMangoQuery,
   type InsertAbleBookDocType,
@@ -317,57 +316,4 @@ export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {
   }
 
   return await retryable()
-}
-
-export const getNanoDbForUser = async (
-  name: string,
-  privateKey: string,
-  couchDbUrl: string,
-) => {
-  const hexEncodedUserId = Buffer.from(name).toString("hex")
-
-  const db = await getNano({
-    jwtToken: await generateToken(name, privateKey),
-    couchDbUrl,
-  })
-
-  return db.use(`userdb-${hexEncodedUserId}`)
-}
-
-export const getNano = async ({
-  jwtToken,
-  xAccessSecret,
-  couchDbUrl,
-}: { jwtToken?: string; xAccessSecret?: string; couchDbUrl: string }) => {
-  return createNano({
-    url: couchDbUrl,
-    requestDefaults: {
-      headers: {
-        "content-type": "application/json",
-        "x-access-secret": xAccessSecret,
-        accept: "application/json",
-        ...(jwtToken && {
-          Authorization: `Bearer ${jwtToken}`,
-        }),
-      },
-    },
-  })
-}
-
-/**
- * WARNING: be very careful when using nano as admin since you will have full power.
- * As you know with great power comes great responsibilities
- */
-export const getDangerousAdminNano = async ({
-  sub,
-  privateKey,
-  ...rest
-}: {
-  sub?: string
-  privateKey: string
-} & Omit<NonNullable<Parameters<typeof getNano>[0]>, "jwtToken">) => {
-  return getNano({
-    ...rest,
-    jwtToken: await generateAdminToken({ sub, privateKey }),
-  })
 }

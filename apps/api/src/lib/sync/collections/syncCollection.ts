@@ -69,6 +69,7 @@ export const syncCollection = async ({
       obokuCredentials: ctx.credentials,
       authorization: ctx.authorization,
       soft: true,
+      email: ctx.email,
     }),
   )
 }

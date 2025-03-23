@@ -28,6 +28,8 @@ import { CommunicationPostgresService } from "./features/postgres/CommunicationP
 import { WebController } from "./features/web/web.controller"
 import { UsersModule } from "./users/users.module"
 import { AuthModule } from "./auth/auth.module"
+import { CouchModule } from "./couch/couch.module"
+import { CouchService } from "./couch/couch.service"
 
 @Module({
   imports: [
@@ -94,6 +96,7 @@ import { AuthModule } from "./auth/auth.module"
     AppConfigModule,
     AuthModule,
     UsersModule,
+    CouchModule,
   ],
   providers: [
     // {

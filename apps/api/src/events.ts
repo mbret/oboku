@@ -9,6 +9,7 @@ export class BooksMetadataRefreshEvent {
       bookId: string
       obokuCredentials: Record<string, string>
       authorization: string
+      email: string
     },
   ) {}
 }
@@ -20,6 +21,7 @@ export class CollectionMetadataRefreshEvent {
       obokuCredentials: Record<string, string>
       authorization: string
       soft: boolean
+      email: string
     },
   ) {}
 }

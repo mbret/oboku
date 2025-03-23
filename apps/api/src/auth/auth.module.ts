@@ -6,12 +6,14 @@ import { PostgresModule } from "src/features/postgres/postgres.module"
 import { AuthGuard } from "./auth.guard"
 import { APP_GUARD } from "@nestjs/core"
 import { AuthController } from "./auth.controller"
+import { CouchService } from "src/couch/couch.service"
 
 @Module({
   imports: [UsersModule, PostgresModule],
   providers: [
     AuthService,
     JwtService,
+    CouchService,
     /**
      * AuthGuard is used to protect all routes by default
      */

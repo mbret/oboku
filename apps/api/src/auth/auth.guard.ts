@@ -1,5 +1,6 @@
 import {
   CanActivate,
+  createParamDecorator,
   ExecutionContext,
   Injectable,
   SetMetadata,
@@ -12,6 +13,20 @@ import { AppConfigService } from "src/features/config/AppConfigService"
 
 export const IS_PUBLIC_KEY = "isPublic"
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true)
+
+export type TokenPayload = {
+  name: string
+  sub: string
+  "couchdb.roles": string[]
+}
+
+export type AuthUser = TokenPayload & {
+  email: string
+}
+
+export const AutUser = createParamDecorator((_, req) => {
+  return req.switchToHttp().getRequest().user
+})
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -39,14 +54,17 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
+      const payload = await this.jwtService.verifyAsync<TokenPayload>(token, {
         // @todo use public key.
         publicKey: this.appConfigService.JWT_PRIVATE_KEY,
         algorithms: ["RS256"],
       })
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      request.user = payload
+      request.user = {
+        ...payload,
+        email: payload.name,
+      }
     } catch {
       throw new UnauthorizedException()
     }

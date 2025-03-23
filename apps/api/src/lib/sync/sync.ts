@@ -20,6 +20,7 @@ export const sync = async ({
   config,
   eventEmitter,
   syncReportPostgresService,
+  email,
 }: {
   dataSourceId: string
   userName: string
@@ -29,6 +30,7 @@ export const sync = async ({
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
   syncReportPostgresService: SyncReportPostgresService
+  email: string
 }) => {
   const syncReport = new SyncReport(dataSourceId, userName)
 
@@ -50,6 +52,7 @@ export const sync = async ({
         bookId,
         authorization,
         obokuCredentials: credentials,
+        email,
       }),
     )
   }
@@ -86,6 +89,7 @@ export const sync = async ({
       db,
       syncReport,
       userNameHex: nameHex,
+      email,
     }
     const plugin = plugins.find((plugin) => plugin.type === type)
 

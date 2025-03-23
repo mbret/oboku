@@ -5,18 +5,17 @@ import { getParametersValue } from "src/lib/ssm"
 import { configure } from "src/lib/plugins/google"
 import * as fs from "node:fs"
 import * as path from "node:path"
-import {
-  atomicUpdate,
-  findOne,
-  getNanoDbForUser,
-} from "src/lib/couch/dbHelpers"
-import { getAuthTokenAsync } from "src/lib/auth"
+import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
 import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSaveCover"
+import { CouchService } from "src/couch/couch.service"
+import { AuthService } from "src/auth/auth.service"
 
 @Injectable()
 export class BooksMedataService {
   constructor(
     private readonly configService: ConfigService<EnvironmentVariables>,
+    private readonly couchService: CouchService,
+    private readonly authService: AuthService,
   ) {}
 
   refreshMetadata = async (
@@ -25,25 +24,16 @@ export class BooksMedataService {
       "oboku-credentials"?: string
       authorization?: string
     },
+    userEmail: string,
   ) => {
     const { bookId } = body
-    const { authorization } = headers
     const credentials = JSON.parse(headers["oboku-credentials"] ?? "{}")
 
-    const [
-      client_id = ``,
-      client_secret = ``,
-      googleApiKey = ``,
-      jwtPrivateKey = ``,
-    ] = await getParametersValue({
-      Names: [
-        "GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET",
-        "GOOGLE_API_KEY",
-        "jwt-private-key",
-      ],
-      WithDecryption: true,
-    })
+    const [client_id = ``, client_secret = ``, googleApiKey = ``] =
+      await getParametersValue({
+        Names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_API_KEY"],
+        WithDecryption: true,
+      })
 
     configure({
       client_id,
@@ -62,21 +52,11 @@ export class BooksMedataService {
       }),
     )
 
-    const { name: userName } = await getAuthTokenAsync(
-      {
-        headers: {
-          authorization,
-        },
-      },
-      jwtPrivateKey,
-    )
-    const userNameHex = Buffer.from(userName).toString("hex")
+    const userNameHex = Buffer.from(userEmail).toString("hex")
 
-    const db = await getNanoDbForUser(
-      userName,
-      jwtPrivateKey,
-      this.configService.getOrThrow("COUCH_DB_URL", { infer: true }),
-    )
+    const db = await this.couchService.createNanoInstanceForUser({
+      email: userEmail,
+    })
 
     const book = await findOne("book", { selector: { _id: bookId } }, { db })
 
@@ -104,7 +84,7 @@ export class BooksMedataService {
     try {
       data = await retrieveMetadataAndSaveCover(
         {
-          userName,
+          userName: userEmail,
           userNameHex,
           credentials,
           book,
