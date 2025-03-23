@@ -28,6 +28,10 @@ export const coversFetchListener = (event: FetchEvent) => {
             credentials: "omit",
           })
 
+          if (response.status !== 200) {
+            return response
+          }
+
           const clonedResponse = response.clone()
 
           const coverId = getCoverIdFromUrl(url) ?? `-1`
