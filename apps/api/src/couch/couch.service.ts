@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "../features/config/AppConfigService"
 import * as createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
 

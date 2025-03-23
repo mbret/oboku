@@ -3,8 +3,8 @@ import {
   InMemoryTaskQueueService,
   TaskRejectionError,
 } from "./InMemoryTaskQueueService"
-import { defer, firstValueFrom, lastValueFrom, Observable, timer } from "rxjs"
-import { finalize, map, delay } from "rxjs/operators"
+import { defer, firstValueFrom, lastValueFrom, timer } from "rxjs"
+import { finalize, map } from "rxjs/operators"
 
 let service: InMemoryTaskQueueService
 

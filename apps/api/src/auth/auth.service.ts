@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from "@nestjs/common"
 import { UsersService } from "../users/users.service"
 import { OAuth2Client } from "google-auth-library"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "../features/config/AppConfigService"
 import { ObokuErrorCode } from "@oboku/shared"
-import { CouchService } from "src/couch/couch.service"
-import { getOrCreateUserFromEmail } from "src/lib/couch/dbHelpers"
+import { CouchService } from "../couch/couch.service"
+import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
 
 @Injectable()
 export class AuthService {

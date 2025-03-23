@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
-import { UserPostgresEntity } from "src/features/postgres/entities"
+import { UserPostgresEntity } from "../features/postgres/entities"
 import { Repository } from "typeorm"
 
 @Injectable()

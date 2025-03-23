@@ -9,7 +9,7 @@ import {
 import { Reflector } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { Request } from "express"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "../features/config/AppConfigService"
 
 export const IS_PUBLIC_KEY = "isPublic"
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true)

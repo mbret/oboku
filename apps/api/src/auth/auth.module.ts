@@ -2,11 +2,11 @@ import { Module } from "@nestjs/common"
 import { AuthService } from "./auth.service"
 import { UsersModule } from "../users/users.module"
 import { JwtService } from "@nestjs/jwt"
-import { PostgresModule } from "src/features/postgres/postgres.module"
+import { PostgresModule } from "../features/postgres/postgres.module"
 import { AuthGuard } from "./auth.guard"
 import { APP_GUARD } from "@nestjs/core"
 import { AuthController } from "./auth.controller"
-import { CouchService } from "src/couch/couch.service"
+import { CouchService } from "../couch/couch.service"
 
 @Module({
   imports: [UsersModule, PostgresModule],

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/features/config/types"
-import { getParametersValue } from "src/lib/ssm"
 import { configure } from "src/lib/plugins/google"
 import * as fs from "node:fs"
 import * as path from "node:path"
@@ -9,6 +8,7 @@ import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
 import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSaveCover"
 import { CouchService } from "src/couch/couch.service"
 import { AuthService } from "src/auth/auth.service"
+import { getParametersValue } from "src/lib/ssm"
 
 @Injectable()
 export class BooksMedataService {
