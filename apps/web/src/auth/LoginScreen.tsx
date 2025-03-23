@@ -7,6 +7,7 @@ import { links } from "@oboku/shared"
 import { Logo } from "../common/Logo"
 import { isCancelError } from "../errors/errors.shared"
 import { ErrorMessage } from "../errors/ErrorMessage"
+import { configuration } from "../config/configuration"
 
 export const LoginScreen = () => {
   const { mutate, isPending, error } = useSignIn()
@@ -39,14 +40,16 @@ export const LoginScreen = () => {
             </Alert>
           </Box>
         ) : null}
-        <Button
-          onClick={() => mutate()}
-          size="large"
-          startIcon={<Google />}
-          disabled={isPending}
-        >
-          Sign in with Google
-        </Button>
+        {configuration.GOOGLE_SIGNIN_ENABLED && (
+          <Button
+            onClick={() => mutate()}
+            size="large"
+            startIcon={<Google />}
+            disabled={isPending}
+          >
+            Sign in with Google
+          </Button>
+        )}
         <Box mt={2}>
           <Alert severity="info" variant="outlined">
             Want more choices? Please let us know on{" "}

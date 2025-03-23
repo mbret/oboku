@@ -7,8 +7,7 @@ COPY package*.json ./
 COPY packages/shared ./packages/shared
 COPY lerna.json ./
 COPY nx.json ./
-
-RUN npm install
+RUN npm ci
 
 # We will work with the monorepo entirely since
 # we have sub packages that need to be built
@@ -18,7 +17,22 @@ WORKDIR /usr/src/app
 COPY --from=base /usr/src/app .
 COPY apps/api ./apps/api
 # should only install missing packages from API
-RUN npm install
+RUN npm ci
 RUN npx lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
 CMD ["node", "dist/main"]
+
+FROM node:22 AS web-build
+WORKDIR /usr/src/app
+COPY --from=base /usr/src/app .
+COPY apps/web ./apps/web
+RUN npm ci
+RUN npx lerna run build --scope=@oboku/web
+WORKDIR /usr/src/app/apps/web
+
+FROM nginx:alpine AS web
+WORKDIR /usr/src/app
+COPY --from=web-build /usr/src/app/apps/web/dist /usr/share/nginx/html
+CMD ["nginx", "-g", "daemon off;"]
+
+FROM couchdb:latest AS couchdb

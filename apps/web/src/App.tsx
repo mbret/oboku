@@ -1,4 +1,4 @@
-import { memo, Suspense, useState } from "react"
+import { memo, Suspense, useEffect, useState } from "react"
 import { AppNavigator } from "./navigation/AppNavigator"
 import { StyledEngineProvider, Fade, Box } from "@mui/material"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
@@ -35,6 +35,7 @@ import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { configuration } from "./config/configuration"
+import { useLoadGsi } from "./google/gsi"
 
 // @todo move to sw
 LibArchive.init({
@@ -131,6 +132,11 @@ export const AppWithConfig = memo(() => {
 const Effects = memo(() => {
   useCleanupDanglingLinks()
   useRemoveDownloadWhenBookIsNotInterested()
+  const { mutate: loadGsi } = useLoadGsi()
+
+  useEffect(() => {
+    loadGsi()
+  }, [loadGsi])
 
   return null
 })

@@ -7,10 +7,6 @@ import path from "node:path"
 
 export default defineConfig(({ mode }) => ({
   build: {
-    /**
-     * @todo they takes enormous amount of mb.
-     * Migrate to sending it to sentry directly.
-     */
     sourcemap: true,
     minify: mode !== "development",
     emptyOutDir: true,

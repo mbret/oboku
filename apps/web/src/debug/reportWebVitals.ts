@@ -8,6 +8,8 @@ const onReport = (props: Metric) => {
 
   const { name, delta, id } = props
 
+  if (!analytics) return
+
   logEvent(analytics, name, {
     category: `Web Vitals`,
     action: name,

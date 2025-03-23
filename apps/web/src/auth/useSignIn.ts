@@ -1,5 +1,13 @@
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
-import { catchError, finalize, from, of, switchMap, tap } from "rxjs"
+import {
+  finalize,
+  first,
+  from,
+  map,
+  of,
+  switchMap,
+  tap,
+  withLatestFrom,
+} from "rxjs"
 import { lock, unlock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
 import { authStateSignal } from "./authState"
@@ -7,11 +15,8 @@ import { httpClient } from "../http/httpClient"
 import { setProfile } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
 import { currentProfileSignal } from "../profile/currentProfile"
-import { CancelError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
-import { configuration } from "../config/configuration"
-
-const provider = new GoogleAuthProvider()
+import { signInWithGooglePrompt } from "../google/auth"
 
 export const useSignIn = () => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
@@ -20,52 +25,31 @@ export const useSignIn = () => {
     mutationFn: () => {
       lock("authentication")
 
-      /**
-       * @important
-       * This should be at the root of module but there is a bug where events
-       * get added forever.
-       * @see https://github.com/firebase/firebase-js-sdk/issues/8642
-       */
-      const auth = getAuth()
-
-      return from(signInWithPopup(auth, provider)).pipe(
-        catchError((e) => {
-          if (e.code === "auth/popup-closed-by-user") throw new CancelError()
-
-          throw e
-        }),
-        switchMap((authResponse) => authResponse.user.getIdToken()),
-        switchMap((token) =>
-          from(
-            httpClient.post<{
-              dbName: string
-              email: string
-              token: string
-              nameHex: string
-            }>({
-              url: `${configuration.API_URL}/auth/signin`,
-              body: {
-                token,
-              },
-            }),
-          ),
-        ),
-        switchMap(({ data: { dbName, email, token, nameHex } }) =>
-          of(authStateSignal.getValue()).pipe(
-            switchMap((previousAuth) =>
+      return signInWithGooglePrompt().pipe(
+        map((authResponse) => authResponse.credential),
+        switchMap((token) => from(httpClient.signIn(token))),
+        withLatestFrom(authStateSignal.subject),
+        switchMap(
+          ([
+            {
+              data: { dbName, email, token, nameHex },
+            },
+            previousAuth,
+          ]) => {
+            const waitForDbRecreation$ =
               previousAuth?.email !== email
                 ? from(reCreateDb({ overwrite: true }))
-                : of(previousAuth),
-            ),
-            tap(() => {
-              authStateSignal.setValue({ dbName, email, token, nameHex })
+                : of(null)
 
-              setUser({ email, id: nameHex })
-
-              setProfile(nameHex)
-              currentProfileSignal.setValue(nameHex)
-            }),
-          ),
+            return waitForDbRecreation$.pipe(
+              tap(() => {
+                authStateSignal.setValue({ dbName, email, token, nameHex })
+                setUser({ email, id: nameHex })
+                setProfile(nameHex)
+                currentProfileSignal.setValue(nameHex)
+              }),
+            )
+          },
         ),
         finalize(() => {
           unlock("authentication")

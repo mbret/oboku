@@ -3,6 +3,7 @@ import { Logger } from "../debug/logger.shared"
 
 type ServerConfig = {
   API_COUCH_URI?: string
+  GOOGLE_CLIENT_ID?: string
 }
 
 const restoreConfig = () => {
@@ -96,6 +97,14 @@ class Configuration extends BehaviorSubject<{
 
   get CLEANUP_DANGLING_LINKS_INTERVAL() {
     return 1000 * 60 * 10 // 10mn
+  }
+
+  get GOOGLE_CLIENT_ID() {
+    return this.value.config.GOOGLE_CLIENT_ID
+  }
+
+  get GOOGLE_SIGNIN_ENABLED() {
+    return !!this.GOOGLE_CLIENT_ID
   }
 }
 

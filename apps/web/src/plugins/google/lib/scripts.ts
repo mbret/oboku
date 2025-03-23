@@ -1,5 +1,5 @@
 import { catchError, combineLatest } from "rxjs"
-import { gsiOrThrow$ } from "./gsi"
+import { gsiOrThrow$ } from "../../../google/gsi"
 import { gapiOrThrow$, useLoadGapi } from "./gapi"
 import { createDialog } from "../../../common/dialogs/createDialog"
 

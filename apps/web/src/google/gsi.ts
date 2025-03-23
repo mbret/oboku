@@ -1,6 +1,6 @@
 import { signal, useSwitchMutation$ } from "reactjrx"
 import { map } from "rxjs"
-import { loadScript, retryOnFailure } from "../../../common/scripts"
+import { loadScript, retryOnFailure } from "../common/scripts"
 
 const GSI_ID = "oboku-google-gsi-script"
 
@@ -22,6 +22,9 @@ export const gsiOrThrow$ = gsiSignal.subject.pipe(
 
 export const useLoadGsi = () => {
   return useSwitchMutation$({
+    scope: {
+      id: "google-gsi",
+    },
     mutationFn: () =>
       loadScript({
         id: GSI_ID,

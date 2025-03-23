@@ -1,24 +1,8 @@
 services:
-  # couchdb:
-  #   extends:
-  #     file: docker-compose.yml
-  #     service: couchdb
-
-  postgres:
-    extends:
-      file: docker-compose.yml
-      service: postgres
-    volumes:
-      - ./.data/postgres/data:/var/lib/postgresql/data
-
   api:
     extends:
       file: docker-compose.yml
       service: api
-    build:
-      context: ./
-      dockerfile: dockerfile
-      target: api
     environment:
       - NODE_ENV=development
     restart: unless-stopped

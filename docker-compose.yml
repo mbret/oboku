@@ -1,27 +1,33 @@
 services:
-  # couchdb:
-  #   build:
-  #     context: ./apps/couchdb
-  #     dockerfile: dockerfile
-  #   restart: always
-  #   ports:
-  #     - "5984:5984"
-  #   environment:
-  #     - COUCHDB_USER=${COUCHDB_USER}
-  #     - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
-  #   volumes:
-  #       - ./.data/dbdata:/opt/couchdb/data
+  couchdb:
+    image: couchdb:latest
+    restart: always
+    ports:
+      - "5984:5984"
+    environment:
+      - COUCHDB_USER=${COUCHDB_USER}
+      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
+    volumes:
+      - oboku-couchdb:/opt/couchdb/data
+
   postgres:
     image: postgres
     restart: always
-    ports:
-      - '5432:5432'
     environment:
       POSTGRES_DB: oboku
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - oboku-postgres:/var/lib/postgresql/data
+
+  web:
+    build:
+      context: ./
+      dockerfile: dockerfile
+      target: web
+    restart: always
+    ports:
+      - "80:80"
 
   api:
     build:
@@ -40,14 +46,14 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - COUCHDB_USER=${COUCHDB_USER}
       - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
-      - STAGE=${STAGE}
       - CONTACT_TO_ADDRESS=${CONTACT_TO_ADDRESS}
-      - FIREBASE_CONFIG=${FIREBASE_CONFIG}
       - SENTRY_DSN=${SENTRY_DSN}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       # will connect through the postgres service name docker bridge network
       - POSTGRES_HOST=postgres
 
 volumes:
   oboku-postgres:
+  oboku-couchdb:

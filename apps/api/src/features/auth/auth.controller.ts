@@ -4,13 +4,14 @@ import { EnvironmentVariables } from "../config/types"
 import { getParametersValue } from "../../lib/ssm"
 import { getFirebaseApp } from "../../lib/firebase/app"
 import { App } from "firebase-admin/app"
-import { getAuth } from "firebase-admin/auth"
 import { ObokuErrorCode } from "@oboku/shared"
 import { generateToken } from "../../lib/auth"
 import {
   getDangerousAdminNano,
   getOrCreateUserFromEmail,
 } from "../../lib/couch/dbHelpers"
+import { OAuth2Client } from "google-auth-library"
+import { AppConfigService } from "../config/AppConfigService"
 
 @Controller("auth")
 export class AuthController {
@@ -18,6 +19,7 @@ export class AuthController {
 
   constructor(
     private readonly configService: ConfigService<EnvironmentVariables>,
+    private readonly appConfigService: AppConfigService,
   ) {
     this.firebaseApp = getFirebaseApp(
       this.configService.getOrThrow("FIREBASE_CONFIG", { infer: true }),
@@ -31,9 +33,19 @@ export class AuthController {
       WithDecryption: true,
     })
 
-    const { email, email_verified } = await getAuth(
-      this.firebaseApp,
-    ).verifyIdToken(token)
+    const client = new OAuth2Client()
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: this.appConfigService.GOOGLE_CLIENT_ID,
+    })
+
+    const payload = ticket.getPayload()
+
+    if (!payload) {
+      throw new BadRequestException({})
+    }
+
+    const { email, email_verified } = payload
 
     if (!email) {
       throw new BadRequestException({

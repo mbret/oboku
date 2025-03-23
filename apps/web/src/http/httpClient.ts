@@ -1,4 +1,5 @@
 import { authStateSignal } from "../auth/authState"
+import { configuration } from "../config/configuration"
 import { API_URL } from "../constants.shared"
 import { HttpClientError } from "./HttpClientError.shared"
 
@@ -97,6 +98,19 @@ class HttpClient {
       body: { dataSourceId },
       headers: {
         "oboku-credentials": JSON.stringify(credentials),
+      },
+    })
+
+  signIn = (token: string) =>
+    this.post<{
+      dbName: string
+      email: string
+      token: string
+      nameHex: string
+    }>({
+      url: `${configuration.API_URL}/auth/signin`,
+      body: {
+        token,
       },
     })
 

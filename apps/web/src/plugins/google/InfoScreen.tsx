@@ -8,7 +8,7 @@ import {
 } from "@mui/material"
 import { useSignalValue } from "reactjrx"
 import { gapiSignal, useLoadGapi } from "./lib/gapi"
-import { gsiSignal } from "./lib/gsi"
+import { gsiSignal } from "../../google/gsi"
 import { accessTokenSignal, getTokenExpirationDate } from "./lib/auth"
 
 export const InfoScreen = () => {
