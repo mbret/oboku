@@ -9,23 +9,24 @@ import { authStateSignal } from "../../auth/authState"
 import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
 import { useWatchAndFixConflicts } from "./conflicts/useWatchAndFixConflicts"
+import type { RxCouchDBReplicationState } from "rxdb/dist/types/plugins/replication-couchdb"
 
 export const useBackgroundReplication = () => {
   const signOut = useSignOut()
   const { db: database } = useDatabase()
   const { online } = useNetworkState()
   const { token, dbName } = useSignalValue(authStateSignal) ?? {}
-  const { data: bookReplicationState, mutate: replicateBook } =
+  const { data: bookReplicationState, mutateAsync: replicateBook } =
     useReplicateCollection()
-  const { data: tagReplicationState, mutate: replicateTag } =
+  const { data: tagReplicationState, mutateAsync: replicateTag } =
     useReplicateCollection()
-  const { data: collectionReplicationState, mutate: replicateCollection } =
+  const { data: collectionReplicationState, mutateAsync: replicateCollection } =
     useReplicateCollection()
-  const { data: linkReplicationState, mutate: replicateLink } =
+  const { data: linkReplicationState, mutateAsync: replicateLink } =
     useReplicateCollection()
-  const { data: settingsReplicationState, mutate: replicateSettings } =
+  const { data: settingsReplicationState, mutateAsync: replicateSettings } =
     useReplicateCollection()
-  const { data: dataSourceReplicationState, mutate: replicateDatasource } =
+  const { data: dataSourceReplicationState, mutateAsync: replicateDatasource } =
     useReplicateCollection()
 
   const replicationStates = useMemo(
@@ -107,81 +108,56 @@ export const useBackgroundReplication = () => {
     [replicationStates],
   )
 
-  useEffect(
-    () => () => {
-      void online
-
-      settingsReplicationState?.cancel()
-    },
-    [settingsReplicationState, online],
-  )
-
-  useEffect(
-    () => () => {
-      void online
-
-      dataSourceReplicationState?.cancel()
-    },
-    [dataSourceReplicationState, online],
-  )
-
-  useEffect(
-    () => () => {
-      void online
-
-      bookReplicationState?.cancel()
-    },
-    [bookReplicationState, online],
-  )
-
-  useEffect(
-    () => () => {
-      void online
-
-      tagReplicationState?.cancel()
-    },
-    [tagReplicationState, online],
-  )
-
-  useEffect(
-    () => () => {
-      void online
-
-      collectionReplicationState?.cancel()
-    },
-    [collectionReplicationState, online],
-  )
-
   useEffect(() => {
-    if (!token || !online) {
-      linkReplicationState?.cancel()
-    }
-  }, [linkReplicationState, online, token])
-
-  useEffect(() => {
+    let unmounted = false
     if (!database || !token || !dbName || !online) return
 
-    replicateBook({ collection: database?.book, token, dbName, live: true })
-    replicateDatasource({
-      collection: database?.datasource,
-      token,
-      dbName,
-      live: true,
-    })
-    replicateTag({ collection: database?.tag, token, dbName, live: true })
-    replicateLink({ collection: database?.link, token, dbName, live: true })
-    replicateSettings({
-      collection: database?.settings,
-      token,
-      dbName,
-      live: true,
-    })
-    replicateCollection({
-      collection: database?.obokucollection,
-      token,
-      dbName,
-      live: true,
-    })
+    let states: RxCouchDBReplicationState<unknown>[] = []
+    ;(async () => {
+      states = await Promise.all([
+        replicateBook({
+          collection: database.book,
+          token,
+          dbName,
+          live: true,
+        }),
+        replicateDatasource({
+          collection: database.datasource,
+          token,
+          dbName,
+          live: true,
+        }),
+        replicateTag({ collection: database?.tag, token, dbName, live: true }),
+        replicateLink({
+          collection: database.link,
+          token,
+          dbName,
+          live: true,
+        }),
+        replicateSettings({
+          collection: database.settings,
+          token,
+          dbName,
+          live: true,
+        }),
+        replicateCollection({
+          collection: database.obokucollection,
+          token,
+          dbName,
+          live: true,
+        }),
+      ])
+
+      if (unmounted) {
+        states.forEach((state) => state?.cancel())
+      }
+    })()
+
+    return () => {
+      unmounted = true
+
+      states.forEach((state) => state?.cancel())
+    }
   }, [
     database,
     replicateBook,
