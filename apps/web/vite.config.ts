@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
           jszip: ["jszip"],
           dropbox: ["dropbox"],
           xmldoc: ["xmldoc"],
-          firebase: ["firebase/app", "firebase/analytics", "firebase/auth"],
+          firebase: ["firebase/app", "firebase/analytics"],
           rxjs: ["rxjs"],
           datefns: ["date-fns"],
           // used by chakra -> ark
