@@ -1,13 +1,4 @@
-import {
-  finalize,
-  first,
-  from,
-  map,
-  of,
-  switchMap,
-  tap,
-  withLatestFrom,
-} from "rxjs"
+import { finalize, from, map, of, switchMap, tap, withLatestFrom } from "rxjs"
 import { lock, unlock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
 import { authStateSignal } from "./authState"
