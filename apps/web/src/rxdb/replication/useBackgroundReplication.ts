@@ -70,10 +70,16 @@ export const useBackgroundReplication = () => {
               tap((error) => {
                 error.parameters.errors?.forEach((subError) => {
                   if (
+                    // invalid / outdated / wrong token
                     subError.parameters?.args.jsonResponse?.error ===
                       "forbidden" ||
                     subError.parameters?.args.jsonResponse?.error ===
-                      "unauthorized"
+                      "unauthorized" ||
+                    // malformed token
+                    (subError.parameters?.args.jsonResponse?.error ===
+                      "bad_request" &&
+                      subError.parameters.args.jsonResponse?.reason ===
+                        "Malformed token")
                   ) {
                     signOut()
                   }
