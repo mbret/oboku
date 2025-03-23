@@ -3,45 +3,25 @@ import {
   switchMap,
   from,
   tap,
-  ignoreElements,
-  first,
   finalize,
   catchError,
-  merge,
   defer,
   combineLatest,
   retry,
 } from "rxjs"
 import { createSwDatabase } from "../rxdb/db.sw"
-import { profileUpdate$ } from "../workers/messages.sw"
-import type { WEB_OBOKU_PROFILE_REQUEST_MESSAGE_DATA } from "../workers/types"
 import {
   getMetadataFromRequest,
   hasAnotherMoreRecentCoverForThisRequest,
 } from "./helpers.shared"
 import { Logger } from "../debug/logger.shared"
 import { SW_COVERS_CACHE_KEY } from "../constants.shared"
+import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
 
 declare const self: ServiceWorkerGlobalScope
 
 const cache$ = defer(() => from(caches.open(SW_COVERS_CACHE_KEY)))
 const database$ = defer(() => from(createSwDatabase()))
-const requestProfileUpdate$ = defer(() =>
-  from(self.clients.matchAll()).pipe(
-    tap((clients) =>
-      clients.forEach((client) => {
-        client.postMessage({
-          type: "OBOKU_PROFILE_REQUEST_UPDATE",
-        } satisfies WEB_OBOKU_PROFILE_REQUEST_MESSAGE_DATA)
-      }),
-    ),
-    ignoreElements(),
-  ),
-)
-const crrentProfile$ = merge(
-  profileUpdate$.pipe(first()),
-  requestProfileUpdate$,
-)
 
 const clearAllCovers = () => {
   return cache$.pipe(
@@ -64,8 +44,10 @@ export const registerCoversCacheCleanup = () => {
             switchMap((cache) => {
               return from(cache.keys()).pipe(
                 switchMap((cacheKeys) => {
-                  return crrentProfile$.pipe(
-                    switchMap((profile) => {
+                  return serviceWorkerCommunication.askProfile().pipe(
+                    switchMap((replyAskProfileMessage) => {
+                      const profile = replyAskProfileMessage.payload.profile
+
                       /**
                        * No current profile, we delete every entries
                        */

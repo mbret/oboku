@@ -7,23 +7,16 @@ import {
   DialogTitle,
   Link,
 } from "@mui/material"
-import { type FC, useEffect } from "react"
+import type { FC } from "react"
 import { useLock } from "../common/BlockingBackdrop"
-import { filter, first, fromEvent, tap } from "rxjs"
-import { Logger } from "../debug/logger.shared"
+import { WebCommunication } from "./communication/communication.web"
+import { SkipWaitingMessage } from "./communication/types.shared"
 
 export const UpdateAvailableDialog: FC<{
   serviceWorker?: ServiceWorker
 }> = ({ serviceWorker }) => {
   const hasUpdate = !!serviceWorker
   const [lock] = useLock()
-
-  useEffect(() => {
-    if (import.meta.env.MODE === "development" && !!serviceWorker) {
-      serviceWorker?.postMessage({ type: "SKIP_WAITING" })
-      Logger.warn("service worker updated")
-    }
-  }, [serviceWorker])
 
   if (import.meta.env.MODE === "development") return null
 
@@ -46,17 +39,10 @@ export const UpdateAvailableDialog: FC<{
 
             lock()
 
-            fromEvent<MessageEvent>(navigator.serviceWorker, "message")
-              .pipe(
-                filter((event) => event.data === "SKIP_WAITING_READY"),
-                first(),
-                tap(() => {
-                  window.location.reload()
-                }),
-              )
-              .subscribe()
-
-            serviceWorker?.postMessage({ type: "SKIP_WAITING" })
+            WebCommunication.sendMessage(
+              serviceWorker,
+              new SkipWaitingMessage(),
+            )
           }}
           color="primary"
           autoFocus

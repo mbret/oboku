@@ -2,8 +2,7 @@
 // register() is not called by default.
 
 import { Logger } from "../debug/logger.shared"
-import { registerCommunication } from "./communication.web"
-import { serviceWorkerReadySignal } from "./states"
+import { serviceWorkerReadySignal } from "./states.web"
 
 // This lets the app load faster on subsequent visits in production, and gives
 // it offline capabilities. However, it also means that developers (and users)
@@ -33,8 +32,6 @@ type Config = {
     registration: ServiceWorkerRegistration,
   ) => void
 }
-
-registerCommunication()
 
 export function register(config?: Config) {
   if ("serviceWorker" in navigator) {

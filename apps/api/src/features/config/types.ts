@@ -15,6 +15,5 @@ export interface EnvironmentVariables {
   COVERS_PLACEHOLDER_BUCKET_KEY: string
   POSTGRES_USER: string
   POSTGRES_PASSWORD: string
-  POSTGRES_MAX_REPORTS_PER_USER: number
   GOOGLE_CLIENT_ID?: string
 }

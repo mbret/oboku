@@ -13,10 +13,11 @@ import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching"
 import { registerRoute } from "workbox-routing"
 import { StaleWhileRevalidate } from "workbox-strategies"
 import { STREAMER_URL_PREFIX } from "./constants.shared"
-import { messageSubject } from "./workers/messages.sw"
 import { registerCoversCacheCleanup } from "./covers/registerCoversCacheCleanup.sw"
 import { coversFetchListener } from "./covers/coversFetchListener.sw"
 import { swStreamer } from "./reader/streamer/swStreamer.sw"
+import { serviceWorkerCommunication } from "./workers/communication/communication.sw"
+import { SkipWaitingMessage } from "./workers/communication/types.shared"
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -83,16 +84,13 @@ if (import.meta.env.PROD) {
   )
 }
 
-// This allows the web app to trigger skipWaiting via
-// registration.waiting.postMessage({type: 'SKIP_WAITING'})
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting().then(() => {
-      event.source?.postMessage("SKIP_WAITING_READY")
-    })
-  }
+self.addEventListener("message", serviceWorkerCommunication.registerMessage)
 
-  messageSubject.next(event)
+// current sw can update and install itself
+serviceWorkerCommunication.watch(SkipWaitingMessage).subscribe(() => {
+  console.log("skip waiting")
+
+  self.skipWaiting()
 })
 
 registerCoversCacheCleanup()

@@ -1,5 +1,7 @@
+import { firstValueFrom } from "rxjs"
 import { API_URL, SW_COVERS_CACHE_KEY } from "../constants.shared"
 import { getCoverIdFromUrl } from "./helpers.shared"
+import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
 
 export const coversFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)
@@ -18,6 +20,10 @@ export const coversFetchListener = (event: FetchEvent) => {
           return cachedResponse
         }
 
+        const auth = await firstValueFrom(
+          serviceWorkerCommunication.askConfig(),
+        )
+
         /**
          * We want to be able to access the response headers (avoid opaque).
          * So we make sure to have a cors enabled request.
@@ -26,6 +32,9 @@ export const coversFetchListener = (event: FetchEvent) => {
           const response = await fetch(event.request, {
             mode: "cors",
             credentials: "omit",
+            headers: {
+              authorization: `Bearer ${auth.payload.token}`,
+            },
           })
 
           if (response.status !== 200) {
