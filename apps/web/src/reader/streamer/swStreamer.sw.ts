@@ -1,5 +1,5 @@
 import { ServiceWorkerStreamer } from "@prose-reader/streamer"
-import { STREAMER_URL_PREFIX } from "../../constants.shared"
+import { STREAMER_URL_PREFIX } from "../../workers/constants.shared"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { getArchiveForZipFile, isRarFile } from "./archives.shared"
 import {

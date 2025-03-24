@@ -1,4 +1,3 @@
-import { DOWNLOAD_PREFIX } from "../constants.shared"
 import { Logger } from "../debug/logger.shared"
 import { dexieDb } from "../rxdb/dexie"
 
@@ -8,8 +7,6 @@ export const getBookFile = async (
   name: string
   data: File
 } | null> => {
-  Logger.log(`getBookFile`, `${DOWNLOAD_PREFIX}-${bookId}`)
-
   try {
     const data = await dexieDb.downloads.where("id").equals(bookId).first()
 

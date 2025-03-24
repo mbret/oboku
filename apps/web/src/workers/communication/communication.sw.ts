@@ -8,7 +8,9 @@ import {
 } from "rxjs"
 import {
   AskAuthMessage,
+  AskConfigurationMessage,
   AskProfileMessage,
+  ConfigurationChangeMessage,
   ReplyAskProfileMessage,
   ReplyAuthMessage,
   SkipWaitingMessage,
@@ -21,7 +23,10 @@ class IncomingMessageTimeoutError extends Error {}
 
 class ServiceWorkerCommunication {
   private incomingMessageSubject = new Subject<
-    ReplyAuthMessage | ReplyAskProfileMessage | SkipWaitingMessage
+    | ReplyAuthMessage
+    | ReplyAskProfileMessage
+    | SkipWaitingMessage
+    | ConfigurationChangeMessage
   >()
 
   public incomingMessage$ = this.incomingMessageSubject.asObservable()
@@ -33,6 +38,8 @@ class ServiceWorkerCommunication {
         "received message from service worker",
         event.data,
       )
+
+      // @todo make it dynamic
 
       if (event.data.type === ReplyAuthMessage.type) {
         this.incomingMessageSubject.next(
@@ -49,10 +56,18 @@ class ServiceWorkerCommunication {
       if (event.data.type === SkipWaitingMessage.type) {
         this.incomingMessageSubject.next(new SkipWaitingMessage())
       }
+
+      if (event.data.type === ConfigurationChangeMessage.type) {
+        this.incomingMessageSubject.next(
+          new ConfigurationChangeMessage(event.data.payload),
+        )
+      }
     }
   }
 
   private sendMessage(message: unknown) {
+    console.log("sending message", message, self.clients.matchAll())
+
     self.clients.matchAll().then((clients) => {
       clients.forEach((client) => {
         client.postMessage(message)
@@ -77,10 +92,18 @@ class ServiceWorkerCommunication {
     )
   }
 
-  public askConfig() {
+  public askAuth() {
     this.sendMessage(new AskAuthMessage())
 
     return this.waitFor((message) => message instanceof ReplyAuthMessage)
+  }
+
+  public askConfig() {
+    this.sendMessage(new AskConfigurationMessage())
+
+    return this.waitFor(
+      (message) => message instanceof ConfigurationChangeMessage,
+    )
   }
 
   public askProfile() {
@@ -89,9 +112,13 @@ class ServiceWorkerCommunication {
     return this.waitFor((message) => message instanceof ReplyAskProfileMessage)
   }
 
-  public watch(Message: typeof SkipWaitingMessage) {
+  public watch<
+    Reply extends typeof SkipWaitingMessage | typeof ConfigurationChangeMessage,
+  >(Message: Reply) {
     return this.incomingMessage$.pipe(
-      filter((message) => message instanceof Message),
+      filter(
+        (message): message is InstanceType<Reply> => message instanceof Message,
+      ),
     )
   }
 }

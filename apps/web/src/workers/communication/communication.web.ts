@@ -2,17 +2,20 @@ import { EMPTY, fromEvent, merge, Subject, tap } from "rxjs"
 import { getProfile } from "../../profile/currentProfile"
 import {
   AskAuthMessage,
+  AskConfigurationMessage,
   AskProfileMessage,
+  ConfigurationChangeMessage,
   ReplyAskProfileMessage,
   ReplyAuthMessage,
   type SkipWaitingMessage,
 } from "./types.shared"
 import { authStateSignal } from "../../auth/authState"
 import { Logger } from "../../debug/logger.shared"
+import { configuration } from "../../config/configuration"
 
 export class WebCommunication {
   private incomingMessageSubject = new Subject<
-    AskAuthMessage | AskProfileMessage
+    AskAuthMessage | AskProfileMessage | AskConfigurationMessage
   >()
 
   public incomingMessage$ = this.incomingMessageSubject.asObservable()
@@ -62,9 +65,26 @@ export class WebCommunication {
             this.incomingMessageSubject.next(message)
             navigator.serviceWorker.controller?.postMessage(message)
           }
+
+          if (event.data.type === AskConfigurationMessage.type) {
+            const message = new ConfigurationChangeMessage(
+              configuration.value.config,
+            )
+
+            this.incomingMessageSubject.next(message)
+            navigator.serviceWorker.controller?.postMessage(message)
+          }
         }
       }),
     )
+  }
+
+  sendMessage(message: ConfigurationChangeMessage) {
+    if (!("serviceWorker" in navigator)) {
+      return EMPTY
+    }
+
+    navigator.serviceWorker.controller?.postMessage(message)
   }
 
   /**

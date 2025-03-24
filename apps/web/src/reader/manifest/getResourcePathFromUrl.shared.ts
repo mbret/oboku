@@ -1,4 +1,4 @@
-import { STREAMER_URL_PREFIX } from "../../constants.shared"
+import { STREAMER_URL_PREFIX } from "../../workers/constants.shared"
 
 const getEpubNameFromUrl = (url: string) => {
   const { pathname } = new URL(url)

@@ -12,12 +12,16 @@ import { ExpirationPlugin } from "workbox-expiration"
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching"
 import { registerRoute } from "workbox-routing"
 import { StaleWhileRevalidate } from "workbox-strategies"
-import { STREAMER_URL_PREFIX } from "./constants.shared"
+import { STREAMER_URL_PREFIX } from "./workers/constants.shared"
 import { registerCoversCacheCleanup } from "./covers/registerCoversCacheCleanup.sw"
 import { coversFetchListener } from "./covers/coversFetchListener.sw"
 import { swStreamer } from "./reader/streamer/swStreamer.sw"
 import { serviceWorkerCommunication } from "./workers/communication/communication.sw"
-import { SkipWaitingMessage } from "./workers/communication/types.shared"
+import {
+  ConfigurationChangeMessage,
+  SkipWaitingMessage,
+} from "./workers/communication/types.shared"
+import { serviceWorkerConfiguration } from "./config/configuration.sw"
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -90,8 +94,17 @@ self.addEventListener("message", serviceWorkerCommunication.registerMessage)
 serviceWorkerCommunication.watch(SkipWaitingMessage).subscribe(() => {
   console.log("skip waiting")
 
-  self.skipWaiting()
+  self.skipWaiting().then(() => {
+    // fetch fresh config as soom as the worker is ready
+    serviceWorkerCommunication.askConfig()
+  })
 })
+
+serviceWorkerCommunication
+  .watch(ConfigurationChangeMessage)
+  .subscribe((message) => {
+    serviceWorkerConfiguration.update(message.payload)
+  })
 
 registerCoversCacheCleanup()
 

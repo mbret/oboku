@@ -1,15 +1,14 @@
 import { httpClient } from "../../http/httpClient"
 import type { SyncReportPostgresEntitiesShared } from "@oboku/shared"
 import { useQuery } from "@tanstack/react-query"
-import { API_URL } from "../../constants.shared"
-
+import { configuration } from "../../config/configuration"
 export const useSyncReports = () =>
   useQuery({
     queryKey: ["api/datasourceReport"],
     queryFn: async () => {
       const response = await httpClient.fetch<SyncReportPostgresEntitiesShared>(
         {
-          url: `${API_URL}/datasources/sync-reports`,
+          url: `${configuration.API_URL}/datasources/sync-reports`,
           withAuth: true,
         },
       )

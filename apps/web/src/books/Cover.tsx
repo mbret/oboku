@@ -9,7 +9,7 @@ import { useLocalSettings } from "../settings/states"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
 import { useBookCover } from "./useBookCover"
-import { API_URL } from "../constants.shared"
+import { configuration } from "../config/configuration"
 
 const useBookCoverState = ({ bookId }: { bookId: string }) => {
   const blurredTags = useBlurredTagIds().data ?? []
@@ -91,7 +91,7 @@ export const Cover: FC<Props> = memo(
     })
 
     const originalSrc = book
-      ? `${API_URL}/covers/cover-${auth?.nameHex}-${book._id}?${urlParams.toString()}`
+      ? `${configuration.API_URL}/covers/cover-${auth?.nameHex}-${book._id}?${urlParams.toString()}`
       : undefined
 
     urlParams.append("format", "image/jpeg")

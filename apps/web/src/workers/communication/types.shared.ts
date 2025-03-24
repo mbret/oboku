@@ -1,3 +1,5 @@
+import type { SharedConfig } from "../../config/types.shared"
+
 interface Message<Payload extends Record<string, string | undefined>> {
   type: string
   payload: Payload
@@ -17,6 +19,21 @@ export class ReplyAuthMessage implements Message<{ token?: string }> {
   public type = ReplyAuthMessage.type
 
   constructor(public payload: { token?: string }) {}
+}
+
+// biome-ignore lint/complexity/noBannedTypes: <explanation>
+export class AskConfigurationMessage implements Message<{}> {
+  static type = "ASK_CONFIGURATION"
+
+  public type = AskConfigurationMessage.type
+  public payload = {}
+}
+
+export class ConfigurationChangeMessage implements Message<SharedConfig> {
+  static type = "CONFIGURATION_CHANGE"
+
+  public type = ConfigurationChangeMessage.type
+  constructor(public payload: SharedConfig) {}
 }
 
 // biome-ignore lint/complexity/noBannedTypes: <explanation>

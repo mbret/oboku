@@ -1,7 +1,7 @@
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/authState"
 import { useBook } from "./states"
-import { API_URL } from "../constants.shared"
+import { configuration } from "../config/configuration"
 
 export const useBookCover = ({ bookId }: { bookId?: string }) => {
   const auth = useSignalValue(authStateSignal)
@@ -15,13 +15,13 @@ export const useBookCover = ({ bookId }: { bookId?: string }) => {
   })
 
   const originalSrc = bookId
-    ? `${API_URL}/covers/cover-${auth?.nameHex}-${bookId}?${urlParams.toString()}`
+    ? `${configuration.API_URL}/covers/cover-${auth?.nameHex}-${bookId}?${urlParams.toString()}`
     : undefined
 
   urlParams.append("format", "image/jpeg")
 
   const originalJpgSrc = bookId
-    ? `${API_URL}/covers/cover-${auth?.nameHex}-${bookId}?${urlParams.toString()}`
+    ? `${configuration.API_URL}/covers/cover-${auth?.nameHex}-${bookId}?${urlParams.toString()}`
     : undefined
 
   const coverSrc = originalSrc

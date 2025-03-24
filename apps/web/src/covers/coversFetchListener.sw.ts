@@ -1,18 +1,20 @@
 import { firstValueFrom } from "rxjs"
-import { API_URL, SW_COVERS_CACHE_KEY } from "../constants.shared"
 import { getCoverIdFromUrl } from "./helpers.shared"
 import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
+import { serviceWorkerConfiguration } from "../config/configuration.sw"
 
 export const coversFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)
 
   if (
     event.request.destination === "image" &&
-    event.request.url.startsWith(`${API_URL}/covers`)
+    event.request.url.startsWith(`${serviceWorkerConfiguration.API_URL}/covers`)
   ) {
     event.respondWith(
       (async () => {
-        const cache = await caches.open(SW_COVERS_CACHE_KEY)
+        const cache = await caches.open(
+          serviceWorkerConfiguration.SW_COVERS_CACHE_KEY,
+        )
 
         const cachedResponse = await cache.match(event.request)
 
@@ -20,9 +22,7 @@ export const coversFetchListener = (event: FetchEvent) => {
           return cachedResponse
         }
 
-        const auth = await firstValueFrom(
-          serviceWorkerCommunication.askConfig(),
-        )
+        const auth = await firstValueFrom(serviceWorkerCommunication.askAuth())
 
         /**
          * We want to be able to access the response headers (avoid opaque).

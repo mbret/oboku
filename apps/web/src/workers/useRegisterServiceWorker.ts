@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { Logger } from "../debug/logger.shared"
-import { WebCommunication } from "./communication/communication.web"
-import { SkipWaitingMessage } from "./communication/types.shared"
+import {
+  webCommunication,
+  WebCommunication,
+} from "./communication/communication.web"
+import {
+  ConfigurationChangeMessage,
+  SkipWaitingMessage,
+} from "./communication/types.shared"
+import { useSubscribe } from "reactjrx"
+import { configuration } from "../config/configuration"
+import { tap } from "rxjs"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -29,7 +38,7 @@ export const useRegisterServiceWorker = () => {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return
 
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
+    const controllerchange = () => {
       Logger.log("New service worker has taken control of the page")
 
       if (import.meta.env.MODE === "development") return
@@ -40,7 +49,19 @@ export const useRegisterServiceWorker = () => {
        * with the new assets.
        */
       window.location.reload()
-    })
+    }
+
+    navigator.serviceWorker.addEventListener(
+      "controllerchange",
+      controllerchange,
+    )
+
+    return () => {
+      navigator.serviceWorker.removeEventListener(
+        "controllerchange",
+        controllerchange,
+      )
+    }
   }, [])
 
   /**
@@ -51,6 +72,16 @@ export const useRegisterServiceWorker = () => {
       WebCommunication.sendMessage(waitingWorker, new SkipWaitingMessage())
     }
   }, [waitingWorker])
+
+  useSubscribe(
+    () =>
+      configuration.pipe(
+        tap(({ config }) => {
+          webCommunication.sendMessage(new ConfigurationChangeMessage(config))
+        }),
+      ),
+    [],
+  )
 
   return { waitingWorker }
 }

@@ -1,6 +1,5 @@
 import { authStateSignal } from "../auth/authState"
 import { configuration } from "../config/configuration"
-import { API_URL } from "../constants.shared"
 import { HttpClientError } from "./HttpClientError.shared"
 
 type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
@@ -70,7 +69,7 @@ class HttpClient {
     credentials?: { [key: string]: any },
   ) =>
     this.post({
-      url: `${API_URL}/books/metadata/refresh`,
+      url: `${configuration.API_URL}/books/metadata/refresh`,
       body: { bookId },
       headers: {
         "oboku-credentials": JSON.stringify(credentials ?? {}),
@@ -82,7 +81,7 @@ class HttpClient {
     credentials?: { [key: string]: any },
   ) =>
     this.post({
-      url: `${API_URL}/collections/metadata/refresh`,
+      url: `${configuration.API_URL}/collections/metadata/refresh`,
       body: { collectionId },
       headers: {
         "oboku-credentials": JSON.stringify(credentials ?? {}),
@@ -94,7 +93,7 @@ class HttpClient {
     credentials?: { [key: string]: any },
   ) =>
     this.post({
-      url: `${API_URL}/datasources/sync`,
+      url: `${configuration.API_URL}/datasources/sync`,
       body: { dataSourceId },
       headers: {
         "oboku-credentials": JSON.stringify(credentials),

@@ -15,12 +15,14 @@ import {
   hasAnotherMoreRecentCoverForThisRequest,
 } from "./helpers.shared"
 import { Logger } from "../debug/logger.shared"
-import { SW_COVERS_CACHE_KEY } from "../constants.shared"
 import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
+import { serviceWorkerConfiguration } from "../config/configuration.sw"
 
 declare const self: ServiceWorkerGlobalScope
 
-const cache$ = defer(() => from(caches.open(SW_COVERS_CACHE_KEY)))
+const cache$ = defer(() =>
+  from(caches.open(serviceWorkerConfiguration.SW_COVERS_CACHE_KEY)),
+)
 const database$ = defer(() => from(createSwDatabase()))
 
 const clearAllCovers = () => {
