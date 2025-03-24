@@ -101,7 +101,7 @@ class HttpClient {
       },
     })
 
-  signIn = (token: string) =>
+  signIn = (data: { email: string; password: string } | { token: string }) =>
     this.post<{
       dbName: string
       email: string
@@ -109,9 +109,13 @@ class HttpClient {
       nameHex: string
     }>({
       url: `${configuration.API_URL}/auth/signin`,
-      body: {
-        token,
-      },
+      body: data,
+    })
+
+  signUp = (data: { email: string; password: string }) =>
+    this.post({
+      url: `${configuration.API_URL}/auth/signup`,
+      body: data,
     })
 
   download = <T>({

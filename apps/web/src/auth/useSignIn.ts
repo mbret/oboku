@@ -1,4 +1,13 @@
-import { finalize, from, map, of, switchMap, tap, withLatestFrom } from "rxjs"
+import {
+  finalize,
+  from,
+  map,
+  type Observable,
+  of,
+  switchMap,
+  tap,
+  withLatestFrom,
+} from "rxjs"
 import { lock, unlock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
 import { authStateSignal } from "./authState"
@@ -13,12 +22,19 @@ export const useSignIn = () => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
 
   return useMutation$({
-    mutationFn: () => {
+    mutationFn: (data: { email: string; password: string } | undefined) => {
       lock("authentication")
 
-      return signInWithGooglePrompt().pipe(
-        map((authResponse) => authResponse.credential),
-        switchMap((token) => from(httpClient.signIn(token))),
+      const credentials$: Observable<
+        { email: string; password: string } | { token: string }
+      > = data
+        ? of(data)
+        : signInWithGooglePrompt().pipe(
+            map((authResponse) => ({ token: authResponse.credential })),
+          )
+
+      return credentials$.pipe(
+        switchMap((credentials) => from(httpClient.signIn(credentials))),
         withLatestFrom(authStateSignal.subject),
         switchMap(
           ([

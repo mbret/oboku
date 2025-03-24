@@ -37,6 +37,7 @@ import { PluginsScreen } from "../plugins/PluginsScreen"
 import { PluginScreen } from "../plugins/PluginScreen"
 import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
 import { ROUTES } from "./routes"
+import { SignUpScreen } from "../auth/SignUpScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -130,6 +131,7 @@ export const AppNavigator = ({
           ) : (
             <>
               <Route path={ROUTES.LOGIN} element={<LoginScreen />} />
+              <Route path={ROUTES.SIGN_UP} element={<SignUpScreen />} />
               <Route
                 path="*"
                 element={

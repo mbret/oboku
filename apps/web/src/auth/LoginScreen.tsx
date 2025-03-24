@@ -1,67 +1,58 @@
-import { useTheme, Button, Box, Link, Typography, Stack } from "@mui/material"
+import { Button, Box, Stack } from "@mui/material"
 import { Alert } from "@mui/material"
-import { Google } from "@mui/icons-material"
+import { Email, Google, PersonAdd } from "@mui/icons-material"
 import { useSignIn } from "./useSignIn"
 import { OrDivider } from "../common/OrDivider"
-import { links } from "@oboku/shared"
-import { Logo } from "../common/Logo"
 import { isCancelError } from "../errors/errors.shared"
 import { ErrorMessage } from "../errors/ErrorMessage"
 import { configuration } from "../config/configuration"
+import { SignInForm } from "./SignInForm"
+import { Link } from "react-router"
+import { ROUTES } from "../navigation/routes"
+import { AuthPage } from "./AuthPage"
 
 export const LoginScreen = () => {
   const { mutate, isPending, error } = useSignIn()
-  const theme = useTheme()
 
   return (
-    <Stack
-      flex={1}
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-      gap={3}
-      px={2}
-    >
-      <Box
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          flexFlow: "row",
-          paddingBottom: theme.spacing(4),
-        }}
-      >
-        <Logo />
-      </Box>
-      <Stack maxWidth={400}>
-        {error && !isCancelError(error) ? (
-          <Box mb={2}>
-            <Alert severity="warning">
-              <ErrorMessage error={error} />
-            </Alert>
-          </Box>
-        ) : null}
-        {configuration.GOOGLE_SIGNIN_ENABLED && (
-          <Button
-            onClick={() => mutate()}
-            size="large"
-            startIcon={<Google />}
-            disabled={isPending}
-          >
-            Sign in with Google
-          </Button>
-        )}
-        <Box mt={2}>
-          <Alert severity="info" variant="outlined">
-            Want more choices? Please let us know on{" "}
-            <Link href={links.discord}>discord</Link>
+    <AuthPage>
+      {error && !isCancelError(error) ? (
+        <Box mb={2}>
+          <Alert severity="warning">
+            <ErrorMessage error={error} />
           </Alert>
         </Box>
-        <OrDivider title="more" />
-        <Typography textAlign="center">
-          Visit <Link href={links.site}>oboku</Link> for more information or
-          help
-        </Typography>
+      ) : null}
+      <SignInForm
+        onSubmit={(data) => {
+          mutate(data)
+        }}
+      />
+      <Button variant="text" disabled sx={{ textTransform: "none", mt: 1 }}>
+        I forgot my password
+      </Button>
+      <OrDivider title="or" />
+      <Stack gap={1}>
+        <Button
+          onClick={() => mutate(undefined)}
+          size="large"
+          startIcon={<Google />}
+          disabled={!configuration.GOOGLE_SIGNIN_ENABLED || isPending}
+        >
+          Sign in with Google
+        </Button>
+        <Button
+          component={Link}
+          to={ROUTES.SIGN_UP}
+          size="large"
+          startIcon={<PersonAdd />}
+        >
+          Sign up
+        </Button>
+        <Button onClick={() => {}} size="large" startIcon={<Email />} disabled>
+          Sign in with magic link
+        </Button>
       </Stack>
-    </Stack>
+    </AuthPage>
   )
 }

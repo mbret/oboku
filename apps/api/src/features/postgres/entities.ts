@@ -52,4 +52,10 @@ export class UserPostgresEntity {
 
   @Column({ type: "text" })
   username!: string
+
+  @Column({ type: "text", nullable: true })
+  password?: string
+
+  @Column({ type: "boolean", default: false })
+  emailVerified?: boolean
 }
