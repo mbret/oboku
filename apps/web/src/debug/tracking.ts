@@ -1,13 +1,13 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app"
 import { getAnalytics } from "firebase/analytics"
 import { authStateSignal } from "../auth/authState"
 import { setUser } from "@sentry/react"
+import { configuration } from "../config/configuration"
 
 function initializeAnalytics() {
-  const firebaseConfig = JSON.parse(
-    import.meta.env.VITE_FIREBASE_CONFIG ?? "{}",
-  )
+  if (!configuration.VITE_FIREBASE_CONFIG) return undefined
+
+  const firebaseConfig = JSON.parse(configuration.VITE_FIREBASE_CONFIG)
 
   const app = initializeApp(firebaseConfig)
 
