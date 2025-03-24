@@ -11,7 +11,7 @@ import { AuthPage } from "./AuthPage"
 import { useSignUp } from "./useSignUp"
 
 export const SignUpScreen = () => {
-  const { mutate, isPending, error } = useSignUp()
+  const { mutate, error } = useSignUp()
 
   return (
     <AuthPage>
