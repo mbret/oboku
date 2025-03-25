@@ -4,6 +4,7 @@ import { Logger } from "../debug/logger.shared"
 type ServerConfig = {
   API_COUCH_URI?: string
   GOOGLE_CLIENT_ID?: string
+  GOOGLE_API_KEY?: string
 }
 
 const restoreConfig = () => {
@@ -99,12 +100,41 @@ class Configuration extends BehaviorSubject<{
     return 1000 * 60 * 10 // 10mn
   }
 
+  /**
+   * Used for:
+   * - signin with google
+   * - drive picker
+   */
   get GOOGLE_CLIENT_ID() {
     return this.value.config.GOOGLE_CLIENT_ID
   }
 
-  get GOOGLE_SIGNIN_ENABLED() {
+  /**
+   * Used for:
+   * - drive picker
+   */
+  get GOOGLE_APP_ID() {
+    const clientId = this.GOOGLE_CLIENT_ID
+
+    return clientId ? clientId.split("-")[0] : undefined
+  }
+
+  /**
+   * Used for:
+   * - drive picker
+   */
+  get GOOGLE_API_KEY() {
+    return this.value.config.GOOGLE_API_KEY
+  }
+
+  get FEATURE_GOOGLE_SIGN_ENABLED() {
     return !!this.GOOGLE_CLIENT_ID
+  }
+
+  get FEATURE_GOOGLE_DRIVE_ENABLED() {
+    return (
+      !!this.GOOGLE_API_KEY && !!this.GOOGLE_APP_ID && !!this.GOOGLE_CLIENT_ID
+    )
   }
 }
 

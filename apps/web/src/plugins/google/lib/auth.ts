@@ -1,6 +1,6 @@
 import { signal } from "reactjrx"
-import { CLIENT_ID } from "./constants"
 import { addMinutes, addSeconds, isBefore } from "date-fns"
+import { configuration } from "../../../config/configuration"
 
 type GoogleAccessToken = google.accounts.oauth2.TokenResponse & {
   created_at: number
@@ -24,7 +24,7 @@ export const requestGoogleAccessToken = async (
        * @see https://developers.google.com/identity/oauth2/web/reference/js-reference#google.accounts.oauth2.initTokenClient
        */
       const tokenClient = gsi.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
+        client_id: configuration.GOOGLE_CLIENT_ID ?? "",
         /**
          * In case user is using different google account, we
          * want to make sure he uses the right account.

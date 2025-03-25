@@ -86,6 +86,7 @@ import { CouchService } from "./couch/couch.service"
           "https://www.googleapis.com/books/v1",
         ),
         GOOGLE_CLIENT_ID: Joi.string().optional(),
+        GOOGLE_API_KEY: Joi.string().optional(),
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
         POSTGRES_HOST: Joi.string().default("localhost"),

@@ -37,7 +37,7 @@ export const LoginScreen = () => {
           onClick={() => mutate(undefined)}
           size="large"
           startIcon={<Google />}
-          disabled={!configuration.GOOGLE_SIGNIN_ENABLED || isPending}
+          disabled={!configuration.FEATURE_GOOGLE_SIGN_ENABLED || isPending}
         >
           Sign in with Google
         </Button>

@@ -16,4 +16,5 @@ export interface EnvironmentVariables {
   POSTGRES_USER: string
   POSTGRES_PASSWORD: string
   GOOGLE_CLIENT_ID?: string
+  GOOGLE_API_KEY?: string
 }

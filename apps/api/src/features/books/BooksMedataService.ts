@@ -1,6 +1,4 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/features/config/types"
 import { configure } from "src/lib/plugins/google"
 import * as fs from "node:fs"
 import * as path from "node:path"
@@ -9,11 +7,12 @@ import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSav
 import { CouchService } from "src/couch/couch.service"
 import { AuthService } from "src/auth/auth.service"
 import { getParametersValue } from "src/lib/ssm"
+import { AppConfigService } from "../config/AppConfigService"
 
 @Injectable()
 export class BooksMedataService {
   constructor(
-    private readonly configService: ConfigService<EnvironmentVariables>,
+    private readonly appConfigService: AppConfigService,
     private readonly couchService: CouchService,
     private readonly authService: AuthService,
   ) {}
@@ -40,9 +39,12 @@ export class BooksMedataService {
       client_secret,
     })
 
-    const TMP_DIR_BOOKS = this.configService.getOrThrow("TMP_DIR_BOOKS", {
-      infer: true,
-    })
+    const TMP_DIR_BOOKS = this.appConfigService.config.getOrThrow(
+      "TMP_DIR_BOOKS",
+      {
+        infer: true,
+      },
+    )
 
     const files = await fs.promises.readdir(TMP_DIR_BOOKS)
 
@@ -89,10 +91,10 @@ export class BooksMedataService {
           credentials,
           book,
           link,
-          googleApiKey,
+          googleApiKey: this.appConfigService.GOOGLE_API_KEY,
           db,
         },
-        this.configService,
+        this.appConfigService.config,
       )
     } catch (e) {
       await atomicUpdate(db, "book", book._id, (old) => ({

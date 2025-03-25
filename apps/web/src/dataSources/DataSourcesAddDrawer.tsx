@@ -7,6 +7,7 @@ import {
 } from "@mui/material"
 import type { FC } from "react"
 import { plugins } from "../plugins/configure"
+import { isPluginEnabled } from "../plugins/useIsPluginEnabled"
 
 export const DataSourcesAddDrawer: FC<{
   open: boolean
@@ -23,6 +24,7 @@ export const DataSourcesAddDrawer: FC<{
               <ListItemButton
                 onClick={() => onClose(dataSource.type)}
                 key={dataSource.type}
+                disabled={!isPluginEnabled(dataSource)}
               >
                 <ListItemIcon>
                   {dataSource.Icon && <dataSource.Icon />}

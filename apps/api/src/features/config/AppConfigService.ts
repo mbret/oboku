@@ -51,4 +51,8 @@ export class AppConfigService {
   get X_ACCESS_SECRET(): string | undefined {
     return this.xAccessSecret
   }
+
+  get GOOGLE_API_KEY() {
+    return this.config.get("GOOGLE_API_KEY", { infer: true })
+  }
 }

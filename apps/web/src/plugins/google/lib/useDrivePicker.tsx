@@ -1,8 +1,8 @@
-import { DEVELOPER_KEY, APP_ID } from "./constants"
 import { useAccessToken } from "./useAccessToken"
 import { finalize, first, from, switchMap } from "rxjs"
 import { useGoogleScripts } from "./scripts"
 import { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
+import { configuration } from "../../../config/configuration"
 
 export const useDrivePicker = ({
   requestPopup,
@@ -32,8 +32,8 @@ export const useDrivePicker = ({
                       .setSelectFolderEnabled(select === "folder"),
                   )
                   .setOAuthToken(accessToken.access_token)
-                  .setDeveloperKey(DEVELOPER_KEY)
-                  .setAppId(APP_ID)
+                  .setDeveloperKey(configuration.GOOGLE_API_KEY ?? "")
+                  .setAppId(configuration.GOOGLE_APP_ID ?? "")
                   .setCallback((data) => {
                     // type is broken and does not have loaded https://developers.google.com/picker/docs/reference#action
                     if (

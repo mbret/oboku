@@ -12,6 +12,7 @@ export class WebController {
     return {
       API_COUCH_URI: this.appConfigService.COUCH_DB_URL,
       GOOGLE_CLIENT_ID: this.appConfigService.GOOGLE_CLIENT_ID,
+      GOOGLE_API_KEY: this.appConfigService.GOOGLE_API_KEY,
     }
   }
 }

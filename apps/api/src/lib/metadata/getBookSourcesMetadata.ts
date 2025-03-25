@@ -11,6 +11,12 @@ const swallowGoogleError = async <T>(promise: Promise<T>) => {
   } catch (error) {
     if (isAxiosError(error) && error.response?.status === 429) {
       Logger.error("Google API too many request error")
+    } else if (isAxiosError(error)) {
+      Logger.error(
+        "Google API error",
+        error.response?.status,
+        error.response?.data,
+      )
     } else {
       Logger.error(error)
     }
