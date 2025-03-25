@@ -78,7 +78,7 @@ export const useRegisterServiceWorker = () => {
     () =>
       configuration.pipe(
         distinctUntilKeyChanged("config", isShallowEqual),
-        tap((sd) => {
+        tap(() => {
           webCommunication.sendMessage(
             new ConfigurationChangeMessage({
               API_COUCH_URI: configuration.API_COUCH_URI,
