@@ -9,9 +9,7 @@ import {
 } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import type { EnvironmentVariables } from "../config/types"
-import { getParametersValue } from "../../lib/ssm"
 import { sync } from "../../lib/sync/sync"
-import { configure } from "../../lib/plugins/google"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { from } from "rxjs"
@@ -38,17 +36,6 @@ const syncLongProgress = async ({
   couchService: CouchService
   email: string
 }) => {
-  const [client_id = ``, client_secret = ``] = await getParametersValue({
-    Names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
-    WithDecryption: true,
-  })
-
-  // @todo only do once in a service
-  configure({
-    client_id,
-    client_secret,
-  })
-
   await sync({
     userName: email,
     dataSourceId,

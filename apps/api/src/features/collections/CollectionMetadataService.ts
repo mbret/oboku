@@ -6,7 +6,6 @@ import {
   markCollectionAsError,
   markCollectionAsIdle,
 } from "./metadata/collections"
-import { withConfiguredGoogle } from "src/lib/google/withConfiguredGoogle"
 import {
   onBeforeError,
   switchMapCombineOuter,
@@ -49,7 +48,6 @@ export class CollectionMetadataService {
       soft,
     }).pipe(
       switchMapMergeOuter(() => parameters$),
-      withConfiguredGoogle,
       switchMapCombineOuter(() =>
         from(
           this.couchService.createNanoInstanceForUser({

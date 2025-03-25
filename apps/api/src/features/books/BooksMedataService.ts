@@ -1,12 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { configure } from "src/lib/plugins/google"
 import * as fs from "node:fs"
 import * as path from "node:path"
 import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
 import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSaveCover"
 import { CouchService } from "src/couch/couch.service"
 import { AuthService } from "src/auth/auth.service"
-import { getParametersValue } from "src/lib/ssm"
 import { AppConfigService } from "../config/AppConfigService"
 
 @Injectable()
@@ -27,17 +25,6 @@ export class BooksMedataService {
   ) => {
     const { bookId } = body
     const credentials = JSON.parse(headers["oboku-credentials"] ?? "{}")
-
-    const [client_id = ``, client_secret = ``, googleApiKey = ``] =
-      await getParametersValue({
-        Names: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "GOOGLE_API_KEY"],
-        WithDecryption: true,
-      })
-
-    configure({
-      client_id,
-      client_secret,
-    })
 
     const TMP_DIR_BOOKS = this.appConfigService.config.getOrThrow(
       "TMP_DIR_BOOKS",
