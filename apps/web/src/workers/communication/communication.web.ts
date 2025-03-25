@@ -67,9 +67,10 @@ export class WebCommunication {
           }
 
           if (event.data.type === AskConfigurationMessage.type) {
-            const message = new ConfigurationChangeMessage(
-              configuration.value.config,
-            )
+            const message = new ConfigurationChangeMessage({
+              API_COUCH_URI: configuration.API_COUCH_URI,
+              API_URL: configuration.API_URL,
+            })
 
             this.incomingMessageSubject.next(message)
             navigator.serviceWorker.controller?.postMessage(message)

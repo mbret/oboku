@@ -19,7 +19,11 @@ import { Logger } from "../../debug/logger.shared"
 
 declare const self: ServiceWorkerGlobalScope
 
-class IncomingMessageTimeoutError extends Error {}
+class IncomingMessageTimeoutError extends Error {
+  constructor() {
+    super("Incoming message timeout")
+  }
+}
 
 class ServiceWorkerCommunication {
   private incomingMessageSubject = new Subject<
@@ -33,11 +37,7 @@ class ServiceWorkerCommunication {
 
   registerMessage = (event: ExtendableMessageEvent) => {
     if (typeof event.data === "object" && "type" in event.data) {
-      Logger.log(
-        ["communication:sw"],
-        "received message from service worker",
-        event.data,
-      )
+      Logger.log("communication:sw", "received message from client", event.data)
 
       // @todo make it dynamic
 
@@ -66,7 +66,7 @@ class ServiceWorkerCommunication {
   }
 
   private sendMessage(message: unknown) {
-    console.log("sending message", message, self.clients.matchAll())
+    Logger.log("communication:sw", "sending message", message)
 
     self.clients.matchAll().then((clients) => {
       clients.forEach((client) => {

@@ -11,7 +11,8 @@ import {
 } from "./communication/types.shared"
 import { useSubscribe } from "reactjrx"
 import { configuration } from "../config/configuration"
-import { tap } from "rxjs"
+import { distinctUntilKeyChanged, tap } from "rxjs"
+import { isShallowEqual } from "@oboku/shared"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -76,8 +77,14 @@ export const useRegisterServiceWorker = () => {
   useSubscribe(
     () =>
       configuration.pipe(
-        tap(({ config }) => {
-          webCommunication.sendMessage(new ConfigurationChangeMessage(config))
+        distinctUntilKeyChanged("config", isShallowEqual),
+        tap((sd) => {
+          webCommunication.sendMessage(
+            new ConfigurationChangeMessage({
+              API_COUCH_URI: configuration.API_COUCH_URI,
+              API_URL: configuration.API_URL,
+            }),
+          )
         }),
       ),
     [],
