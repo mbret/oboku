@@ -3,7 +3,6 @@
  * @see https://github.com/googleapis/google-api-nodejs-client#authentication-and-authorization
  */
 import { type drive_v3, google } from "googleapis"
-import { getSecrets } from "./configure"
 
 export type File = NonNullable<drive_v3.Schema$FileList["files"]>[number]
 export type DriveLinkData = { modifiedTime?: File["modifiedTime"] }
@@ -15,11 +14,7 @@ export type DriveLinkData = { modifiedTime?: File["modifiedTime"] }
  * @param {function} callback The callback to call with the authorized client.
  */
 export const authorize = async (ctx: { credentials?: any }) => {
-  const { client_id, client_secret } = getSecrets()
-  const oauth2Client = new google.auth.OAuth2({
-    clientId: client_id,
-    clientSecret: client_secret,
-  })
+  const oauth2Client = new google.auth.OAuth2()
 
   oauth2Client.setCredentials(ctx.credentials || {})
 

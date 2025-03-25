@@ -17,4 +17,5 @@ export interface EnvironmentVariables {
   POSTGRES_PASSWORD: string
   GOOGLE_CLIENT_ID?: string
   GOOGLE_API_KEY?: string
+  DROPBOX_CLIENT_ID?: string
 }

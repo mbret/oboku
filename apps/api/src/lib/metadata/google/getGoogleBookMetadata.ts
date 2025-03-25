@@ -22,6 +22,7 @@ export const getGoogleBookMetadata = async (
       : await findByTitle(titleRefined, apiKey, config)
 
   console.log("[google] [getGoogleBookMetadata]", { response })
+
   if (!response.items?.length) {
     titleRefined = refineTitle(metadata.title ?? "", 1)
 

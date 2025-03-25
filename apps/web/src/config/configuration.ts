@@ -5,6 +5,7 @@ type ServerConfig = {
   API_COUCH_URI?: string
   GOOGLE_CLIENT_ID?: string
   GOOGLE_API_KEY?: string
+  DROPBOX_CLIENT_ID?: string
 }
 
 const restoreConfig = () => {
@@ -127,6 +128,10 @@ class Configuration extends BehaviorSubject<{
     return this.value.config.GOOGLE_API_KEY
   }
 
+  get DROPBOX_CLIENT_ID() {
+    return this.value.config.DROPBOX_CLIENT_ID
+  }
+
   get FEATURE_GOOGLE_SIGN_ENABLED() {
     return !!this.GOOGLE_CLIENT_ID
   }
@@ -135,6 +140,10 @@ class Configuration extends BehaviorSubject<{
     return (
       !!this.GOOGLE_API_KEY && !!this.GOOGLE_APP_ID && !!this.GOOGLE_CLIENT_ID
     )
+  }
+
+  get FEATURE_DROPBOX_ENABLED() {
+    return !!this.DROPBOX_CLIENT_ID
   }
 }
 

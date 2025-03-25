@@ -55,4 +55,8 @@ export class AppConfigService {
   get GOOGLE_API_KEY() {
     return this.config.get("GOOGLE_API_KEY", { infer: true })
   }
+
+  get DROPBOX_CLIENT_ID() {
+    return this.config.get("DROPBOX_CLIENT_ID", { infer: true })
+  }
 }

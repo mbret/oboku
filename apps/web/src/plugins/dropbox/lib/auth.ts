@@ -1,14 +1,22 @@
 import { DropboxAuth } from "dropbox"
-import { CLIENT_ID } from "../constants"
 import { ObokuPluginError } from "../../../errors/errors.shared"
 import { ROUTES } from "../../../navigation/routes"
+import { configuration } from "../../../config/configuration"
 
 const defaultWindowOptions = {
   toolbar: "no",
   menubar: "no",
 }
 
-const dropboxAuth = new DropboxAuth({ clientId: CLIENT_ID })
+const dropboxAuth = new DropboxAuth({
+  clientId: configuration.DROPBOX_CLIENT_ID,
+})
+
+configuration.subscribe(() => {
+  if (configuration.DROPBOX_CLIENT_ID) {
+    dropboxAuth.setClientId(configuration.DROPBOX_CLIENT_ID)
+  }
+})
 
 const isAccessTokenStillSufficient = () => {
   const accessTokenExpiresAt: Date | undefined =

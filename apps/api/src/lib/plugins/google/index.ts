@@ -9,15 +9,12 @@ import {
   READER_ACCEPTED_MIME_TYPES,
   isFileSupported,
 } from "@oboku/shared"
-import { configure } from "./configure"
 import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "src/lib/plugins/types"
 import { createThrottler } from "src/lib/utils"
 import { createError } from "../helpers"
-
-export { configure }
 
 export const generateResourceId = (driveId: string) => `drive-${driveId}`
 export const extractIdFromResourceId = (resourceId: string) =>
