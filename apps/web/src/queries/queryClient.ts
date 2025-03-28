@@ -1,11 +1,16 @@
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { CancelError } from "../errors/errors.shared"
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query"
+import { SwitchMutationCancelError } from "reactjrx"
 
 export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onError: (error) => {
-      if (error instanceof CancelError) return
+      if (
+        error instanceof CancelError ||
+        error instanceof SwitchMutationCancelError
+      )
+        return
 
       if (isDebugEnabled() && !import.meta.env.DEV) {
         alert(String(error))

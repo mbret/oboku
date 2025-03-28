@@ -1,4 +1,21 @@
 services:
+  couchdb:
+    extends:
+      file: docker-compose.yml
+      service: couchdb
+
+  postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
+    ports:
+      - "5432:5432"
+
+  web:
+    extends:
+      file: docker-compose.yml
+      service: web
+
   api:
     extends:
       file: docker-compose.yml
@@ -10,3 +27,7 @@ services:
       - ./apps/api:/usr/src/app
       - /usr/src/app/node_modules
     command: npm run start:dev
+
+volumes:
+  oboku-postgres:
+  oboku-couchdb:
