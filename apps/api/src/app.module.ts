@@ -90,6 +90,8 @@ import { CouchService } from "./couch/couch.service"
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
         POSTGRES_HOST: Joi.string().default("localhost"),
+        TMP_X_ACCESS_SECRET: Joi.string().optional(),
+        COMICVINE_API_KEY: Joi.string().optional(),
       }),
     }),
     EventEmitterModule.forRoot(),

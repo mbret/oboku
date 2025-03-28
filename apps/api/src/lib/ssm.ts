@@ -9,11 +9,9 @@ const ssm = new SSMClient({ region: "us-east-1" })
 
 type ParameterName =
   | `jwt-private-key`
-  | `x-access-secret`
   | `GOOGLE_CLIENT_SECRET`
   | `GOOGLE_API_KEY`
   | `GOOGLE_CLIENT_ID`
-  | `COMiCVINE_API_KEY`
 
 export const getParameterValue = (
   options: Omit<GetParameterCommandInput, `Name`> & {

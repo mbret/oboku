@@ -1,19 +1,18 @@
-import { ConfigService } from "@nestjs/config"
 import type { BookMetadata } from "@oboku/shared"
 import type { Extractor } from "node-unrar-js"
 import * as path from "node:path"
-import { EnvironmentVariables } from "src/features/config/types"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 export const getMetadataFromRarArchive = async (
   extractor: Extractor<Uint8Array>,
   contentType: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ): Promise<BookMetadata> => {
   const list = extractor.getFileList()
   const fileHeaders = [...list.fileHeaders]
 
   const firstImageFound = fileHeaders.find((fileHeader) => {
-    const isAllowedImage = config
+    const isAllowedImage = config.config
       .getOrThrow("COVER_ALLOWED_EXT", { infer: true })
       .includes(path.extname(fileHeader.name).toLowerCase())
 

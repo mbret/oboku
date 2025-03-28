@@ -1,15 +1,14 @@
 import axios from "axios"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import { Logger } from "@nestjs/common"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/features/config/types"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 const logger = new Logger("books/covers/saveCoverFromExternalLinkToBucket")
 
 export const saveCoverFromExternalLinkToBucket = async (
   coverKey: string,
   coverUrl: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ) => {
   logger.log(`prepare to save cover ${coverKey}`)
 

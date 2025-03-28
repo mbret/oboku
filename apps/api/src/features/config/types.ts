@@ -17,4 +17,6 @@ export interface EnvironmentVariables {
   GOOGLE_CLIENT_ID?: string
   GOOGLE_API_KEY?: string
   DROPBOX_CLIENT_ID?: string
+  TMP_X_ACCESS_SECRET?: string
+  COMICVINE_API_KEY?: string
 }

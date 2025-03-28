@@ -16,8 +16,7 @@ import { downloadToTmpFolder } from "../../lib/archives/downloadToTmpFolder"
 import { updateCover } from "./updateCover"
 import { getRarArchive } from "../../lib/archives/getRarArchive"
 import { atomicUpdate } from "../../lib/couch/dbHelpers"
-import type { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "../config/types"
+import { AppConfigService } from "../config/AppConfigService"
 
 const logger = new Logger("retrieveMetadataAndSaveCover")
 
@@ -26,7 +25,7 @@ export const retrieveMetadataAndSaveCover = async (
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
   },
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ) => {
   console.log(
     `[retrieveMetadataAndSaveCover]`,
@@ -75,7 +74,7 @@ export const retrieveMetadataAndSaveCover = async (
     const isMaybeExtractAble =
       contentType === undefined ||
       (contentType &&
-        config
+        config.config
           .getOrThrow("METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS", {
             infer: true,
           })
@@ -164,7 +163,7 @@ export const retrieveMetadataAndSaveCover = async (
           metadataList.push(fileMetadata)
         } else if (
           contentType &&
-          config
+          config.config
             .getOrThrow("METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS", {
               infer: true,
             })

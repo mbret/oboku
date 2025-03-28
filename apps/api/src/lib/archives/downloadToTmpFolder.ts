@@ -2,13 +2,12 @@ import type { BookDocType, LinkDocType } from "@oboku/shared"
 import * as path from "node:path"
 import * as fs from "node:fs"
 import { pluginFacade } from "src/lib/plugins/facade"
-import { EnvironmentVariables } from "src/features/config/types"
-import { ConfigService } from "@nestjs/config"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 export const downloadToTmpFolder = (
   book: BookDocType,
   link: LinkDocType,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
   credentials?: any,
 ) =>
   new Promise<{
@@ -33,7 +32,7 @@ export const downloadToTmpFolder = (
         }
 
         const filepath = path.join(
-          config.getOrThrow("TMP_DIR_BOOKS", { infer: true }),
+          config.config.getOrThrow("TMP_DIR_BOOKS", { infer: true }),
           filename,
         )
         const fileWriteStream = fs.createWriteStream(filepath, { flags: "w" })

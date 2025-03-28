@@ -1,7 +1,6 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
-import { ConfigService } from "@nestjs/config"
 import * as sharp from "sharp"
-import { EnvironmentVariables } from "src/features/config/types"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 const s3 = new S3Client({
   region: "us-east-1",
@@ -10,15 +9,15 @@ const s3 = new S3Client({
 export const saveCoverFromBufferToBucket = async (
   buffer: Buffer,
   objectKey: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ) => {
   const resized = await sharp(buffer)
     .resize({
       withoutEnlargement: true,
-      width: config.getOrThrow("COVER_MAXIMUM_SIZE_FOR_STORAGE", {
+      width: config.config.getOrThrow("COVER_MAXIMUM_SIZE_FOR_STORAGE", {
         infer: true,
       }).width,
-      height: config.getOrThrow("COVER_MAXIMUM_SIZE_FOR_STORAGE", {
+      height: config.config.getOrThrow("COVER_MAXIMUM_SIZE_FOR_STORAGE", {
         infer: true,
       }).height,
       fit: "inside",

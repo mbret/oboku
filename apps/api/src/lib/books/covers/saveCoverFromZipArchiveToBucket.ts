@@ -3,8 +3,7 @@ import * as unzipper from "unzipper"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import { Logger } from "@nestjs/common"
 import { asError } from "src/lib/utils"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/features/config/types"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 const logger = new Logger("books/covers/saveCoverFromZipArchiveToBucket")
 
@@ -12,7 +11,7 @@ export const saveCoverFromZipArchiveToBucket = async (
   coverObjectKey: string,
   epubFilepath: string,
   coverPath: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ) => {
   if (coverPath === ``) {
     logger.error(`coverPath is empty string, ignoring process`, coverObjectKey)

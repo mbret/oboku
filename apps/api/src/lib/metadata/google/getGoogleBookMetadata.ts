@@ -6,13 +6,12 @@ import {
   findByTitle,
   findByVolumeId,
 } from "src/lib/google/googleBooksApi"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/features/config/types"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 export const getGoogleBookMetadata = async (
   metadata: Metadata,
   apiKey: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ): Promise<Metadata | undefined> => {
   let titleRefined = metadata.title ?? ""
   let response = metadata.isbn

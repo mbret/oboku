@@ -2,8 +2,7 @@ import type { Metadata } from "./types"
 import { getGoogleBookMetadata } from "./google/getGoogleBookMetadata"
 import { Logger } from "@nestjs/common"
 import { isAxiosError } from "axios"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/features/config/types"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 const swallowGoogleError = async <T>(promise: Promise<T>) => {
   try {
@@ -26,7 +25,7 @@ const swallowGoogleError = async <T>(promise: Promise<T>) => {
 export const getBookSourcesMetadata = async (
   metadata: Metadata,
   { googleApiKey, withGoogle }: { googleApiKey?: string; withGoogle: boolean },
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ): Promise<Metadata[]> => {
   const list = []
 

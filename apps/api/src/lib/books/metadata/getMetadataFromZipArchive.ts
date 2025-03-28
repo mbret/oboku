@@ -5,15 +5,14 @@ import * as unzipper from "unzipper"
 import { parseOpfMetadata } from "../../metadata/opf/parseOpfMetadata"
 import { Logger } from "@nestjs/common"
 import { parseXmlAsJson } from "../parseXmlAsJson"
-import { EnvironmentVariables } from "src/features/config/types"
-import { ConfigService } from "@nestjs/config"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 const logger = new Logger("getMetadataFromZipArchive")
 
 export const getMetadataFromZipArchive = async (
   tmpFilePath: string,
   contentType: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ): Promise<BookMetadata> => {
   let contentLength = 0
   const files: string[] = []
@@ -58,7 +57,7 @@ export const getMetadataFromZipArchive = async (
 
   const firstValidImagePath = files
     .filter((file) =>
-      config
+      config.config
         .getOrThrow("COVER_ALLOWED_EXT", { infer: true })
         .includes(path.extname(file).toLowerCase()),
     )

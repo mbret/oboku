@@ -41,8 +41,13 @@ export class CouchService {
       requestDefaults: {
         headers: {
           "content-type": "application/json",
-          ...(this.appConfigService.X_ACCESS_SECRET && {
-            "x-access-secret": this.appConfigService.X_ACCESS_SECRET,
+          ...(this.appConfigService.config.get("TMP_X_ACCESS_SECRET", {
+            infer: true,
+          }) && {
+            "x-access-secret": this.appConfigService.config.get(
+              "TMP_X_ACCESS_SECRET",
+              { infer: true },
+            ),
           }),
           accept: "application/json",
           ...(jwtToken && {

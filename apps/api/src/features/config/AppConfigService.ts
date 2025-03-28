@@ -6,16 +6,14 @@ import { getParametersValue } from "src/lib/ssm"
 @Injectable()
 export class AppConfigService {
   private jwtPrivateKey?: string
-  private xAccessSecret?: string
 
   constructor(public config: ConfigService<EnvironmentVariables>) {
     if (config.get("AWS_ACCESS_KEY_ID")) {
       getParametersValue({
-        Names: ["jwt-private-key", "x-access-secret"],
+        Names: ["jwt-private-key"],
         WithDecryption: true,
-      }).then(([jwtPrivateKey, xAccessSecret]) => {
+      }).then(([jwtPrivateKey]) => {
         this.jwtPrivateKey = jwtPrivateKey
-        this.xAccessSecret = xAccessSecret
       })
     }
   }
@@ -48,15 +46,15 @@ export class AppConfigService {
     return this.jwtPrivateKey
   }
 
-  get X_ACCESS_SECRET(): string | undefined {
-    return this.xAccessSecret
-  }
-
   get GOOGLE_API_KEY() {
     return this.config.get("GOOGLE_API_KEY", { infer: true })
   }
 
   get DROPBOX_CLIENT_ID() {
     return this.config.get("DROPBOX_CLIENT_ID", { infer: true })
+  }
+
+  get COMICVINE_API_KEY() {
+    return this.config.get("COMICVINE_API_KEY", { infer: true })
   }
 }

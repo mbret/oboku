@@ -13,16 +13,15 @@ import {
 } from "src/lib/utils"
 import { processrefreshMetadata } from "./metadata/processRefreshMetadata"
 import { parameters$ } from "./metadata/parameters"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/features/config/types"
 import { CouchService } from "src/couch/couch.service"
+import { AppConfigService } from "../config/AppConfigService"
 
 @Injectable()
 export class CollectionMetadataService {
   private readonly logger = new Logger(CollectionMetadataService.name)
 
   constructor(
-    private configService: ConfigService<EnvironmentVariables>,
+    private appConfigService: AppConfigService,
     private couchService: CouchService,
   ) {}
 
@@ -72,8 +71,9 @@ export class CollectionMetadataService {
                 {
                   db,
                   ...params,
+                  comicVineApiKey: this.appConfigService.COMICVINE_API_KEY,
                 },
-                this.configService,
+                this.appConfigService,
               ),
             )
           }),

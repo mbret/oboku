@@ -4,9 +4,8 @@ import { saveCoverFromRarArchiveToBucket } from "../../lib/books/covers/saveCove
 import type { Context } from "./types"
 import { saveCoverFromExternalLinkToBucket } from "../../lib/books/covers/saveCoverFromExternalLinkToBucket"
 import { isCoverExist } from "../../lib/books/covers/isCoverExist"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "../config/types"
 import { saveCoverFromZipArchiveToBucket } from "../../lib/books/covers/saveCoverFromZipArchiveToBucket"
+import { AppConfigService } from "../config/AppConfigService"
 
 export const updateCover = async ({
   metadataList,
@@ -21,7 +20,7 @@ export const updateCover = async ({
   metadataList: BookMetadata[]
   archiveExtractor?: Extractor<Uint8Array> | undefined
   tmpFilePath?: string
-  config: ConfigService<EnvironmentVariables>
+  config: AppConfigService
 }) => {
   const currentMetadaForCover = book.metadata?.find(
     (metadata) => metadata.coverLink,

@@ -1,8 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import type { Extractor } from "node-unrar-js"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/features/config/types"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 const logger = new Logger("books/covers/saveCoverFromRarArchiveToBucket")
 
@@ -10,7 +9,7 @@ export const saveCoverFromRarArchiveToBucket = async (
   coverObjectKey: string,
   extractor: Extractor<Uint8Array>,
   fileName: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ) => {
   try {
     logger.log(`prepare to save cover ${coverObjectKey}`)

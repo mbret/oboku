@@ -3,6 +3,7 @@ import type { Item } from "./types"
 import { performWithBackoff } from "../utils"
 import { EnvironmentVariables } from "src/features/config/types"
 import { ConfigService } from "@nestjs/config"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 export type GoogleBooksApiVolumesResponseData = {
   kind: `books#volumes` | `unknown`
@@ -18,9 +19,9 @@ export type GoogleBooksApiVolumeResponseData = Item
 export const findByISBN = async (
   isbn: string,
   apiKey: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ) => {
-  const url = `${config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=isbn:${encodeURIComponent(isbn)}&key=${apiKey}`
+  const url = `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=isbn:${encodeURIComponent(isbn)}&key=${apiKey}`
 
   console.log("[google] [findByISBN]", { url })
 
@@ -44,9 +45,9 @@ export const findByISBN = async (
 export const findByTitle = async (
   name: string,
   apiKey: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ) => {
-  const uri = `${config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=intitle:${encodeURIComponent(name)}&key=${apiKey}`
+  const uri = `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=intitle:${encodeURIComponent(name)}&key=${apiKey}`
 
   console.log("[google] [findByTitle]", { uri })
 
@@ -70,9 +71,9 @@ export const findByTitle = async (
 export const findByVolumeId = async (
   name: string,
   apiKey: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ) => {
-  const uri = `${config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes/${encodeURIComponent(name)}?key=${apiKey}`
+  const uri = `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes/${encodeURIComponent(name)}?key=${apiKey}`
 
   console.log("[google] [findByVolumeId]", { uri })
 
@@ -96,12 +97,12 @@ export const findByVolumeId = async (
 export const findSeriesByTitle = async (
   name: string,
   apiKey: string,
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ) => {
   const response = await performWithBackoff({
     asyncFunction: () =>
       axios.get<GoogleBooksApiVolumesResponseData>(
-        `${config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=intitle:${name}&key=${apiKey}`,
+        `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=intitle:${name}&key=${apiKey}`,
       ),
     retry: (error: unknown) => {
       // we retry on Too many request error

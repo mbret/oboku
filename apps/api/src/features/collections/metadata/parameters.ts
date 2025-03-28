@@ -8,13 +8,12 @@ import { getParametersValue } from "src/lib/ssm"
 export const parameters$ = defer(() =>
   from(
     getParametersValue({
-      Names: ["jwt-private-key", "COMiCVINE_API_KEY"],
+      Names: ["jwt-private-key"],
       WithDecryption: true,
     }),
   ).pipe(
-    map(([jwtPrivateKey = ``, comicVineApiKey = ``]) => ({
+    map(([jwtPrivateKey = ``]) => ({
       jwtPrivateKey,
-      comicVineApiKey,
     })),
   ),
 )

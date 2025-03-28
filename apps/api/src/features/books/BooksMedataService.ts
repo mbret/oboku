@@ -81,7 +81,7 @@ export class BooksMedataService {
           googleApiKey: this.appConfigService.GOOGLE_API_KEY,
           db,
         },
-        this.appConfigService.config,
+        this.appConfigService,
       )
     } catch (e) {
       await atomicUpdate(db, "book", book._id, (old) => ({

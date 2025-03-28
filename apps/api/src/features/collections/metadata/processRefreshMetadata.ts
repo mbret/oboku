@@ -13,8 +13,7 @@ import { Logger } from "@nestjs/common"
 import { computeMetadata } from "src/lib/collections/computeMetadata"
 import { findOne } from "src/lib/couch/findOne"
 import { atomicUpdate } from "src/lib/couch/dbHelpers"
-import { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "src/features/config/types"
+import { AppConfigService } from "src/features/config/AppConfigService"
 
 export const processrefreshMetadata = async (
   collection: CollectionDocType,
@@ -29,9 +28,9 @@ export const processrefreshMetadata = async (
     db: nano.DocumentScope<unknown>
     credentials?: any
     soft?: boolean
-    comicVineApiKey: string
+    comicVineApiKey?: string
   },
-  config: ConfigService<EnvironmentVariables>,
+  config: AppConfigService,
 ) => {
   const { isCollectionAlreadyUpdatedFromLink, linkMetadataInfo } =
     await lastValueFrom(
