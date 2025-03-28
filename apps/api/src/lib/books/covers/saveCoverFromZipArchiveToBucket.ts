@@ -3,7 +3,7 @@ import * as unzipper from "unzipper"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import { Logger } from "@nestjs/common"
 import { asError } from "src/lib/utils"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "src/config/AppConfigService"
 
 const logger = new Logger("books/covers/saveCoverFromZipArchiveToBucket")
 

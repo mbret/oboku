@@ -1,7 +1,7 @@
 import axios from "axios"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import { Logger } from "@nestjs/common"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "src/config/AppConfigService"
 
 const logger = new Logger("books/covers/saveCoverFromExternalLinkToBucket")
 

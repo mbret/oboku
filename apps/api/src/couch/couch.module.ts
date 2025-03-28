@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
 import { CouchService } from "./couch.service"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "src/config/AppConfigService"
 import { JwtService } from "@nestjs/jwt"
 
 @Module({

@@ -6,7 +6,7 @@ import {
   findByTitle,
   findByVolumeId,
 } from "src/lib/google/googleBooksApi"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "src/config/AppConfigService"
 
 export const getGoogleBookMetadata = async (
   metadata: Metadata,

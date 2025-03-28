@@ -1,6 +1,6 @@
 import { GetObjectCommand, type S3Client } from "@aws-sdk/client-s3"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/features/config/types"
+import { EnvironmentVariables } from "src/config/types"
 
 export const getCover = async (
   s3Client: S3Client,

@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { SyncReportPostgresService } from "./SyncReportPostgresService"
-import { AppConfigService } from "../config/AppConfigService"
+import { AppConfigService } from "../../config/AppConfigService"
 import {
   CommunicationPostgresEntity,
   SyncReportPostgresEntity,

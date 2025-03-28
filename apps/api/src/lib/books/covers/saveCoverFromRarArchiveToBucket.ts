@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import type { Extractor } from "node-unrar-js"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "src/config/AppConfigService"
 
 const logger = new Logger("books/covers/saveCoverFromRarArchiveToBucket")
 

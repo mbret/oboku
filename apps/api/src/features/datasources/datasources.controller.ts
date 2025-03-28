@@ -8,7 +8,7 @@ import {
   Post,
 } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import type { EnvironmentVariables } from "../config/types"
+import type { EnvironmentVariables } from "../../config/types"
 import { sync } from "../../lib/sync/sync"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"

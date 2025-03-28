@@ -6,7 +6,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config"
 import * as path from "node:path"
 import * as Joi from "joi"
 import { BooksController } from "./features/books/books.controller"
-import { EnvironmentVariables } from "./features/config/types"
+import { EnvironmentVariables } from "./config/types"
 import * as fs from "node:fs"
 import { DataSourcesController } from "./features/datasources/datasources.controller"
 import { EventEmitterModule } from "@nestjs/event-emitter"
@@ -22,7 +22,7 @@ import {
   UserPostgresEntity,
 } from "./features/postgres/entities"
 import { PostgresModule } from "./features/postgres/postgres.module"
-import { AppConfigModule } from "./features/config/config.module"
+import { AppConfigModule } from "./config/config.module"
 import { CommunicationController } from "./features/communication/communication.controller"
 import { CommunicationPostgresService } from "./features/postgres/CommunicationPostgresService"
 import { WebController } from "./features/web/web.controller"
@@ -94,6 +94,7 @@ import { CouchService } from "./couch/couch.service"
         COMICVINE_API_KEY: Joi.string().optional(),
         JWT_PRIVATE_KEY_FILE: Joi.string().required(),
         JWT_PUBLIC_KEY_FILE: Joi.string().required(),
+        API_DATA_DIR: Joi.string().optional().default("/var/lib/oboku/data"),
       }),
     }),
     EventEmitterModule.forRoot(),

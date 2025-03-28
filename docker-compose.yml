@@ -46,7 +46,9 @@ services:
       - JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key
     volumes:
       - ./secrets:/secrets
+      - oboku-api-data:/var/lib/oboku/data
 
 volumes:
   oboku-postgres:
   oboku-couchdb:
+  oboku-api-data:

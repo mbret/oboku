@@ -5,7 +5,7 @@ import {
 } from "@nestjs/common"
 import { UsersService } from "../users/users.service"
 import { OAuth2Client } from "google-auth-library"
-import { AppConfigService } from "../features/config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService"
 import { ObokuErrorCode } from "@oboku/shared"
 import { CouchService } from "../couch/couch.service"
 import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"

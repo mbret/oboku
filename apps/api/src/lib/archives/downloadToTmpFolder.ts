@@ -2,7 +2,7 @@ import type { BookDocType, LinkDocType } from "@oboku/shared"
 import * as path from "node:path"
 import * as fs from "node:fs"
 import { pluginFacade } from "src/lib/plugins/facade"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "src/config/AppConfigService"
 
 export const downloadToTmpFolder = (
   book: BookDocType,

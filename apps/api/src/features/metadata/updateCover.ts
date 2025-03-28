@@ -5,7 +5,7 @@ import type { Context } from "./types"
 import { saveCoverFromExternalLinkToBucket } from "../../lib/books/covers/saveCoverFromExternalLinkToBucket"
 import { isCoverExist } from "../../lib/books/covers/isCoverExist"
 import { saveCoverFromZipArchiveToBucket } from "../../lib/books/covers/saveCoverFromZipArchiveToBucket"
-import { AppConfigService } from "../config/AppConfigService"
+import { AppConfigService } from "../../config/AppConfigService"
 
 export const updateCover = async ({
   metadataList,

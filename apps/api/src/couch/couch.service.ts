@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common"
-import { AppConfigService } from "../features/config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService"
 import * as createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
-import { SecretsService } from "src/features/config/SecretsService"
+import { SecretsService } from "src/config/SecretsService"
 
 @Injectable()
 export class CouchService {

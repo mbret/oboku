@@ -1,5 +1,5 @@
 import { Controller, Get } from "@nestjs/common"
-import { AppConfigService } from "../config/AppConfigService"
+import { AppConfigService } from "../../config/AppConfigService"
 import { Public } from "src/auth/auth.guard"
 
 @Controller("web")

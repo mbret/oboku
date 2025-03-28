@@ -3,7 +3,7 @@ import "./instrument"
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "./features/config/types"
+import { EnvironmentVariables } from "./config/types"
 import { ValidationPipe } from "@nestjs/common"
 
 async function bootstrap() {

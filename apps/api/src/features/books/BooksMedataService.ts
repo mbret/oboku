@@ -5,7 +5,7 @@ import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
 import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSaveCover"
 import { CouchService } from "src/couch/couch.service"
 import { AuthService } from "src/auth/auth.service"
-import { AppConfigService } from "../config/AppConfigService"
+import { AppConfigService } from "../../config/AppConfigService"
 
 @Injectable()
 export class BooksMedataService {

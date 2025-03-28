@@ -9,7 +9,7 @@ import {
 import { onBeforeError, switchMapCombineOuter } from "src/lib/utils"
 import { processrefreshMetadata } from "./metadata/processRefreshMetadata"
 import { CouchService } from "src/couch/couch.service"
-import { AppConfigService } from "../config/AppConfigService"
+import { AppConfigService } from "../../config/AppConfigService"
 
 @Injectable()
 export class CollectionMetadataService {

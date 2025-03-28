@@ -2,7 +2,7 @@ import type { Metadata } from "./types"
 import { getGoogleBookMetadata } from "./google/getGoogleBookMetadata"
 import { Logger } from "@nestjs/common"
 import { isAxiosError } from "axios"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "src/config/AppConfigService"
 
 const swallowGoogleError = async <T>(promise: Promise<T>) => {
   try {

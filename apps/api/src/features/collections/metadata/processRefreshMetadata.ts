@@ -13,7 +13,7 @@ import { Logger } from "@nestjs/common"
 import { computeMetadata } from "src/lib/collections/computeMetadata"
 import { findOne } from "src/lib/couch/findOne"
 import { atomicUpdate } from "src/lib/couch/dbHelpers"
-import { AppConfigService } from "src/features/config/AppConfigService"
+import { AppConfigService } from "src/config/AppConfigService"
 
 export const processrefreshMetadata = async (
   collection: CollectionDocType,

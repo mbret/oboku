@@ -7,7 +7,7 @@ import { DataSourcePlugin, SynchronizeAbleDataSource } from "../plugins/types"
 import { createTagFromName } from "../couch/dbHelpers"
 import { Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/features/config/types"
+import { EnvironmentVariables } from "src/config/types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 
 const logger = new Logger("sync")
