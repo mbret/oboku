@@ -23,7 +23,7 @@ export const useReCreateDb = () => {
       // soft create
       if (!overwrite && db) return of(null)
 
-      databaseSignal.setValue(undefined)
+      databaseSignal.update(undefined)
 
       const start$ = db ? from(db?.remove()).pipe(map(() => null)) : of(null)
 
@@ -33,7 +33,7 @@ export const useReCreateDb = () => {
       return start$.pipe(
         switchMap(() => from(createDatabase({}))),
         tap((newDb) => {
-          databaseSignal.setValue(newDb)
+          databaseSignal.update(newDb)
         }),
       )
     },

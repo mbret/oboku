@@ -20,50 +20,52 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
       /**
        * timer prevent double mount from dev mode
        */
-      mutationFn: timer(1).pipe(
-        switchMap(() => pick({ select: "file" })),
-        switchMap((data) => {
-          onClose()
+      mutationFn: () =>
+        timer(1).pipe(
+          switchMap(() => pick({ select: "file" })),
+          switchMap((data) => {
+            onClose()
 
-          if (data.action !== "picked") return of(null)
+            if (data.action !== "picked") return of(null)
 
-          const docs = data?.docs || []
+            const docs = data?.docs || []
 
-          return from(
-            Promise.all(
-              docs.map(async (doc) => {
-                return addBook({
-                  book: {
-                    metadata: [
-                      {
-                        type: "link",
-                        title: doc.name,
-                      },
-                    ],
-                  },
-                  link: {
-                    book: null,
-                    data: null,
-                    resourceId: generateResourceId(doc.id),
-                    type: `DRIVE`,
-                    createdAt: new Date().toISOString(),
-                    modifiedAt: null,
-                  },
-                })
-              }),
-            ),
-          )
-        }),
-        map(() => null),
-        catchError((error) => {
-          onClose()
+            return from(
+              Promise.all(
+                docs.map(async (doc) => {
+                  return addBook({
+                    book: {
+                      metadata: [
+                        {
+                          type: "link",
+                          title: doc.name,
+                        },
+                      ],
+                    },
+                    link: {
+                      book: null,
+                      data: null,
+                      resourceId: generateResourceId(doc.id),
+                      type: `DRIVE`,
+                      createdAt: new Date().toISOString(),
+                      modifiedAt: null,
+                    },
+                  })
+                }),
+              ),
+            )
+          }),
+          map(() => null),
+          catchError((error) => {
+            onClose()
 
-          throw error
-        }),
-      ),
+            throw error
+          }),
+        ),
     })
 
     useMount(() => {
+      console.log("FOOO mount")
       mutate()
     })
 

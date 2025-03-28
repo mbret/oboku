@@ -10,5 +10,4 @@ export const authStateSignal = signal<
   | undefined
 >({
   key: "authState",
-  default: undefined,
 })

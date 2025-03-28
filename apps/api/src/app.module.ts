@@ -81,12 +81,12 @@ import { CouchService } from "./couch/couch.service"
         COVERS_BUCKET_NAME: Joi.string().required(),
         COVERS_PLACEHOLDER_BUCKET_KEY: Joi.string().required(),
         COUCH_DB_URL: Joi.string().required(),
-        CONTACT_TO_ADDRESS: Joi.string().required(),
         GOOGLE_BOOK_API_URL: Joi.string().default(
           "https://www.googleapis.com/books/v1",
         ),
         GOOGLE_CLIENT_ID: Joi.string().optional(),
         GOOGLE_API_KEY: Joi.string().optional(),
+        DROPBOX_CLIENT_ID: Joi.string().optional(),
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
         POSTGRES_HOST: Joi.string().default("localhost"),

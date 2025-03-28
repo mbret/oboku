@@ -11,14 +11,15 @@ import type { DeepReadonlyObject } from "rxdb"
 import { AddCollectionDialog } from "./AddCollectionDialog"
 import { ROUTES } from "../../navigation/routes"
 
-type RestoreStateFromState = ComponentProps<
-  typeof CollectionList
->["restoreStateFrom"]
+type RestoreStateFromState =
+  | Parameters<
+      NonNullable<ComponentProps<typeof CollectionList>["onStateChange"]>
+    >[0]
+  | undefined
 
 const libraryCollectionScreenPreviousScrollState =
   signal<RestoreStateFromState>({
-    key: `libraryCollectionScreenPreviousScrollState`,
-    default: undefined,
+    key: "libraryCollectionScreenPreviousScrollState",
   })
 
 export const LibraryCollectionScreen = () => {
@@ -73,7 +74,7 @@ export const LibraryCollectionScreen = () => {
           renderHeader={listRenderHeader}
           onItemClick={onItemClick}
           viewMode={viewMode}
-          onStateChange={libraryCollectionScreenPreviousScrollState.setValue}
+          onStateChange={libraryCollectionScreenPreviousScrollState.update}
           restoreStateFrom={libraryCollectionScreenPreviousScroll}
           restoreScrollId="libraryShelves"
         />

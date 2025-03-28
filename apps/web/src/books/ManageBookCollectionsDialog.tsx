@@ -7,7 +7,6 @@ import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
 const openManageBookCollectionsDialogStateSignal = signal<string | undefined>({
   key: "openManageBookCollectionsDialogState",
-  default: undefined,
 })
 
 export const useManageBookCollectionsDialog = () => {

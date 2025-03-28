@@ -15,7 +15,6 @@ export const collectionActionDrawerChangesState = signal<
   undefined | [string, `delete`]
 >({
   key: `collectionActionDrawerChangesState`,
-  default: undefined,
 })
 
 export const useCollectionActionsDrawer = (

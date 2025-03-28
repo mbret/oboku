@@ -6,9 +6,7 @@ type GoogleAccessToken = google.accounts.oauth2.TokenResponse & {
   created_at: number
 }
 
-export const accessTokenSignal = signal<GoogleAccessToken | undefined>({
-  default: undefined,
-})
+export const accessTokenSignal = signal<GoogleAccessToken | undefined>({})
 
 export const consentShownSignal = signal({
   default: false,

@@ -46,7 +46,7 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
 
           return of(null)
         }),
-        takeUntil(unMount$.current),
+        takeUntil(unMount$),
       )
       .subscribe()
 

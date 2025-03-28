@@ -9,7 +9,6 @@ import { signal, useSignalValue } from "reactjrx"
 export const isManageTagBooksDialogOpenedWithState = signal<string | undefined>(
   {
     key: "isManageTagBooksDialogOpenedWith",
-    default: undefined,
   },
 )
 

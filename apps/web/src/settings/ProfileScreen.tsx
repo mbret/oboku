@@ -290,7 +290,7 @@ const DeleteMyDataDialog: FC<{
           tap(() => {
             onClose()
           }),
-          takeUntil(unMount$.current),
+          takeUntil(unMount$),
         )
         .subscribe()
     }

@@ -11,18 +11,13 @@ import { BlurFilterReference } from "./books/BlurFilterReference"
 import { ErrorBoundary } from "@sentry/react"
 import { ManageBookTagsDialog } from "./books/ManageBookTagsDialog"
 import { ManageTagBooksDialog } from "./tags/ManageTagBooksDialog"
-import {
-  usePersistSignals,
-  useSignalValue,
-  QueryClientProvider$,
-  useObserve,
-} from "reactjrx"
+import { usePersistSignals, QueryClientProvider$, useObserve } from "reactjrx"
 import { signalEntriesToPersist } from "./profile"
 import { queryClient } from "./queries/queryClient"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
-import { profileStorageSignal } from "./profile/storage"
+import { useProfileStorage } from "./profile/storage"
 import { authSignalStorageAdapter } from "./auth/storage"
 import { authStateSignal } from "./auth/authState"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
@@ -48,7 +43,7 @@ export const App = memo(() => {
   const [isPreloadingQueries, setIsPreloadingQueries] = useState(true)
   const [isDownloadsHydrated, setIsDownloadsHydrated] = useState(false)
   const { waitingWorker } = useRegisterServiceWorker()
-  const profileSignalStorageAdapter = useSignalValue(profileStorageSignal)
+  const profileSignalStorageAdapter = useProfileStorage()
 
   const { isHydrated: isProfileHydrated } = usePersistSignals({
     adapter: profileSignalStorageAdapter,

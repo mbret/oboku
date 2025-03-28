@@ -1,14 +1,26 @@
-import { createLocalStorageAdapter, signal } from "reactjrx"
+import { createLocalStorageAdapter, useSignalValue } from "reactjrx"
 import { currentProfileSignal } from "./currentProfile"
+import { useEffect, useState } from "react"
 
-export const profileStorageSignal = signal({
-  get: (get) => {
-    const profile = get(currentProfileSignal)
+export const useProfileStorage = () => {
+  const currentProfile = useSignalValue(currentProfileSignal)
+  const [storage, setStorage] = useState<
+    ReturnType<typeof createLocalStorageAdapter> | undefined
+  >(undefined)
 
-    return !profile
-      ? undefined
-      : createLocalStorageAdapter({
-          key: `profile-${profile}`,
-        })
-  },
-})
+  useEffect(() => {
+    if (currentProfile) {
+      setStorage(
+        createLocalStorageAdapter({
+          key: `profile-${currentProfile}`,
+        }),
+      )
+
+      return () => {
+        setStorage(undefined)
+      }
+    }
+  }, [currentProfile])
+
+  return storage
+}

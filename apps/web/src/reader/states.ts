@@ -12,7 +12,7 @@ export const useReader = () => {
   return useSignalValue(readerSignal)
 }
 
-export const reader$ = readerSignal.subject.pipe(filter(isDefined))
+export const reader$ = readerSignal.pipe(filter(isDefined))
 
 export const isMenuShownStateSignal = signal({
   key: "isMenuShownState",
@@ -25,7 +25,7 @@ export const usePagination = () =>
   useQuery$({
     queryKey: ["pagination"],
     queryFn: () => {
-      return readerSignal.subject.pipe(
+      return readerSignal.pipe(
         filter(isDefined),
         switchMap((reader) => reader.pagination.state$),
       )

@@ -27,9 +27,8 @@ const Effects = memo(({ bookId }: { bookId?: string }) => {
 
   useEffect(
     () => () => {
-      ;[isMenuShownStateSignal, readerSignal].forEach((signal) =>
-        signal.setValue(SIGNAL_RESET),
-      )
+      isMenuShownStateSignal.update(SIGNAL_RESET)
+      readerSignal.update(SIGNAL_RESET)
     },
     [],
   )

@@ -108,7 +108,7 @@ export const GoogleDriveDataSource: FC<{
                         setSelectedFolder({ name, id })
                       }
                     }),
-                    takeUntil(unMount$.current),
+                    takeUntil(unMount$),
                     catchError((error) => {
                       console.error(error)
 

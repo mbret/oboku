@@ -17,9 +17,7 @@ type UploadBookComponentProps = ComponentProps<
   NonNullable<ObokuPlugin[`UploadBookComponent`]>
 >
 
-export const uploadBookDialogOpenedSignal = signal<string | undefined>({
-  default: undefined,
-})
+export const uploadBookDialogOpenedSignal = signal<string | undefined>({})
 
 export const UploadBookDialog = memo(
   ({

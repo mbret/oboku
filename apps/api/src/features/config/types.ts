@@ -9,7 +9,6 @@ export interface EnvironmentVariables {
   NODE_ENV: "development" | "production"
   PORT: number
   COUCH_DB_URL: string
-  CONTACT_TO_ADDRESS: string
   GOOGLE_BOOK_API_URL: string
   COVERS_BUCKET_NAME: string
   COVERS_PLACEHOLDER_BUCKET_KEY: string

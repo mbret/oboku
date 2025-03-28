@@ -7,7 +7,6 @@ import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 
 const openManageBookTagsDialogStateSignal = signal<string | undefined>({
   key: "openManageBookTagsDialogState",
-  default: undefined,
 })
 
 export const useManageBookTagsDialog = () => {
