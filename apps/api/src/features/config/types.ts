@@ -19,4 +19,6 @@ export interface EnvironmentVariables {
   DROPBOX_CLIENT_ID?: string
   TMP_X_ACCESS_SECRET?: string
   COMICVINE_API_KEY?: string
+  JWT_PRIVATE_KEY_FILE: string
+  JWT_PUBLIC_KEY_FILE: string
 }

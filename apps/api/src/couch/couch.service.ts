@@ -2,17 +2,19 @@ import { Injectable } from "@nestjs/common"
 import { AppConfigService } from "../features/config/AppConfigService"
 import * as createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
+import { SecretsService } from "src/features/config/SecretsService"
 
 @Injectable()
 export class CouchService {
   constructor(
     private appConfigService: AppConfigService,
     private jwtService: JwtService,
+    private secretsService: SecretsService,
   ) {}
 
   async generateJWT(payload: Record<string, unknown>) {
     return this.jwtService.sign(payload, {
-      privateKey: this.appConfigService.JWT_PRIVATE_KEY,
+      privateKey: await this.secretsService.getJwtPrivateKey(),
       algorithm: "RS256",
     })
   }

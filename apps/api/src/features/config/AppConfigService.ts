@@ -1,22 +1,10 @@
 import { Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "./types"
-import { getParametersValue } from "src/lib/ssm"
 
 @Injectable()
 export class AppConfigService {
-  private jwtPrivateKey?: string
-
-  constructor(public config: ConfigService<EnvironmentVariables>) {
-    if (config.get("AWS_ACCESS_KEY_ID")) {
-      getParametersValue({
-        Names: ["jwt-private-key"],
-        WithDecryption: true,
-      }).then(([jwtPrivateKey]) => {
-        this.jwtPrivateKey = jwtPrivateKey
-      })
-    }
-  }
+  constructor(public config: ConfigService<EnvironmentVariables>) {}
 
   get POSTGRES_MAX_REPORTS_PER_USER(): number {
     return 10
@@ -38,14 +26,6 @@ export class AppConfigService {
     return "http://localhost:3000/auth/google/callback"
   }
 
-  get JWT_PRIVATE_KEY(): string {
-    if (!this.jwtPrivateKey) {
-      throw new Error("JWT_PRIVATE_KEY is not set")
-    }
-
-    return this.jwtPrivateKey
-  }
-
   get GOOGLE_API_KEY() {
     return this.config.get("GOOGLE_API_KEY", { infer: true })
   }
@@ -56,5 +36,13 @@ export class AppConfigService {
 
   get COMICVINE_API_KEY() {
     return this.config.get("COMICVINE_API_KEY", { infer: true })
+  }
+
+  get JWT_PRIVATE_KEY_FILE() {
+    return this.config.getOrThrow("JWT_PRIVATE_KEY_FILE", { infer: true })
+  }
+
+  get JWT_PUBLIC_KEY_FILE() {
+    return this.config.getOrThrow("JWT_PUBLIC_KEY_FILE", { infer: true })
   }
 }

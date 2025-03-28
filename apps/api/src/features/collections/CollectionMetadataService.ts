@@ -6,13 +6,8 @@ import {
   markCollectionAsError,
   markCollectionAsIdle,
 } from "./metadata/collections"
-import {
-  onBeforeError,
-  switchMapCombineOuter,
-  switchMapMergeOuter,
-} from "src/lib/utils"
+import { onBeforeError, switchMapCombineOuter } from "src/lib/utils"
 import { processrefreshMetadata } from "./metadata/processRefreshMetadata"
-import { parameters$ } from "./metadata/parameters"
 import { CouchService } from "src/couch/couch.service"
 import { AppConfigService } from "../config/AppConfigService"
 
@@ -46,7 +41,6 @@ export class CollectionMetadataService {
       authorization,
       soft,
     }).pipe(
-      switchMapMergeOuter(() => parameters$),
       switchMapCombineOuter(() =>
         from(
           this.couchService.createNanoInstanceForUser({

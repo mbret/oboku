@@ -10,6 +10,7 @@ import { Reflector } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { Request } from "express"
 import { AppConfigService } from "../features/config/AppConfigService"
+import { SecretsService } from "src/features/config/SecretsService"
 
 export const IS_PUBLIC_KEY = "isPublic"
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true)
@@ -34,6 +35,7 @@ export class AuthGuard implements CanActivate {
     private jwtService: JwtService,
     private appConfigService: AppConfigService,
     private reflector: Reflector,
+    private secretsService: SecretsService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -56,16 +58,19 @@ export class AuthGuard implements CanActivate {
     try {
       const payload = await this.jwtService.verifyAsync<TokenPayload>(token, {
         // @todo use public key.
-        publicKey: this.appConfigService.JWT_PRIVATE_KEY,
+        publicKey: await this.secretsService.getJwtPublicKey(),
         algorithms: ["RS256"],
       })
+
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
       request.user = {
         ...payload,
         email: payload.name,
       }
-    } catch {
+    } catch (error) {
+      console.log("error", error)
+
       throw new UnauthorizedException()
     }
 
