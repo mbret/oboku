@@ -21,4 +21,5 @@ export interface EnvironmentVariables {
   COMICVINE_API_KEY?: string
   JWT_PRIVATE_KEY_FILE: string
   JWT_PUBLIC_KEY_FILE: string
+  API_DATA_DIR: string
 }

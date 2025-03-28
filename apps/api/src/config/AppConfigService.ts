@@ -45,4 +45,8 @@ export class AppConfigService {
   get JWT_PUBLIC_KEY_FILE() {
     return this.config.getOrThrow("JWT_PUBLIC_KEY_FILE", { infer: true })
   }
+
+  get DATA_DIR() {
+    return this.config.getOrThrow("API_DATA_DIR", { infer: true })
+  }
 }
