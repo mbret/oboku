@@ -1,7 +1,7 @@
 import { Module, OnModuleInit } from "@nestjs/common"
 import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
-import { CoversController } from "./features/covers/covers.controller"
+import { CoversController } from "./covers/covers.controller"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import * as path from "node:path"
 import * as Joi from "joi"

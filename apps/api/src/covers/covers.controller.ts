@@ -10,12 +10,12 @@ import {
 } from "@nestjs/common"
 import { S3Client } from "@aws-sdk/client-s3"
 import * as sharp from "sharp"
-import { getCover } from "../../lib/covers/getCover"
-import { getCoverPlaceholder } from "../../lib/covers/getCoverPlaceholder"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "../../config/types"
-import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { defer, from, map, mergeMap, of } from "rxjs"
+import { EnvironmentVariables } from "src/config/types"
+import { InMemoryTaskQueueService } from "src/features/queue/InMemoryTaskQueueService"
+import { getCoverPlaceholder } from "src/lib/covers/getCoverPlaceholder"
+import { getCover } from "src/lib/covers/getCover"
 
 @Controller("covers")
 export class CoversController implements OnModuleInit {
