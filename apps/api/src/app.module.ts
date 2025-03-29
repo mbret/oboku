@@ -37,9 +37,9 @@ import { AppConfigService } from "./config/AppConfigService"
       type: "postgres",
       host: process.env.POSTGRES_HOST ?? "postgres",
       port: 5432,
-      username: process.env.POSTGRES_USER,
+      username: process.env.POSTGRES_USER ?? "postgres",
       password: process.env.POSTGRES_PASSWORD,
-      database: "oboku",
+      database: process.env.POSTGRES_DB,
       entities: [
         SyncReportPostgresEntity,
         CommunicationPostgresEntity,
@@ -60,15 +60,18 @@ import { AppConfigService } from "./config/AppConfigService"
         AWS_ACCESS_KEY_ID: Joi.string().optional(),
         AWS_SECRET_ACCESS_KEY: Joi.string().optional(),
         COVERS_BUCKET_NAME: Joi.string().optional().default("oboku-covers"),
-        COUCH_DB_URL: Joi.string().required(),
+        // use default docker service name
+        COUCH_DB_URL: Joi.string().default("couchdb"),
         GOOGLE_BOOK_API_URL: Joi.string().default(
           "https://www.googleapis.com/books/v1",
         ),
         GOOGLE_CLIENT_ID: Joi.string().optional(),
         GOOGLE_API_KEY: Joi.string().optional(),
         DROPBOX_CLIENT_ID: Joi.string().optional(),
-        POSTGRES_USER: Joi.string().required(),
+        POSTGRES_DB: Joi.string().optional(),
+        POSTGRES_USER: Joi.string().optional(),
         POSTGRES_PASSWORD: Joi.string().required(),
+        // use default docker service name
         POSTGRES_HOST: Joi.string().default("postgres"),
         TMP_X_ACCESS_SECRET: Joi.string().optional(),
         COMICVINE_API_KEY: Joi.string().optional(),
