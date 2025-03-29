@@ -1,6 +1,6 @@
 export interface EnvironmentVariables {
-  AWS_ACCESS_KEY_ID: string
-  AWS_SECRET_ACCESS_KEY: string
+  AWS_ACCESS_KEY_ID?: string
+  AWS_SECRET_ACCESS_KEY?: string
   TMP_DIR: string
   TMP_DIR_BOOKS: string
   METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS: string[]
@@ -10,7 +10,7 @@ export interface EnvironmentVariables {
   PORT: number
   COUCH_DB_URL: string
   GOOGLE_BOOK_API_URL: string
-  COVERS_BUCKET_NAME: string
+  COVERS_BUCKET_NAME?: string
   COVERS_PLACEHOLDER_BUCKET_KEY: string
   POSTGRES_USER: string
   POSTGRES_PASSWORD: string

@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "./types"
+import * as path from "node:path"
 
 @Injectable()
 export class AppConfigService {
@@ -48,5 +49,21 @@ export class AppConfigService {
 
   get DATA_DIR() {
     return this.config.getOrThrow("API_DATA_DIR", { infer: true })
+  }
+
+  get COVERS_BUCKET_NAME() {
+    return this.config.get("COVERS_BUCKET_NAME", { infer: true })
+  }
+
+  get AWS_ACCESS_KEY_ID() {
+    return this.config.get("AWS_ACCESS_KEY_ID", { infer: true })
+  }
+
+  get AWS_SECRET_ACCESS_KEY() {
+    return this.config.get("AWS_SECRET_ACCESS_KEY", { infer: true })
+  }
+
+  get ASSETS_DIR() {
+    return path.join(__dirname, "..", "assets")
   }
 }

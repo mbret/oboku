@@ -29,7 +29,7 @@ import { WebController } from "./features/web/web.controller"
 import { UsersModule } from "./users/users.module"
 import { AuthModule } from "./auth/auth.module"
 import { CouchModule } from "./couch/couch.module"
-import { CouchService } from "./couch/couch.service"
+import { CoversModule } from "./covers/covers.module"
 
 @Module({
   imports: [
@@ -76,9 +76,9 @@ import { CouchService } from "./couch/couch.service"
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid("development", "production"),
         PORT: Joi.number().port().default(3000),
-        AWS_ACCESS_KEY_ID: Joi.string().required(),
-        AWS_SECRET_ACCESS_KEY: Joi.string().required(),
-        COVERS_BUCKET_NAME: Joi.string().required(),
+        AWS_ACCESS_KEY_ID: Joi.string().optional(),
+        AWS_SECRET_ACCESS_KEY: Joi.string().optional(),
+        COVERS_BUCKET_NAME: Joi.string().optional(),
         COVERS_PLACEHOLDER_BUCKET_KEY: Joi.string().required(),
         COUCH_DB_URL: Joi.string().required(),
         GOOGLE_BOOK_API_URL: Joi.string().default(
@@ -103,6 +103,7 @@ import { CouchService } from "./couch/couch.service"
     AuthModule,
     UsersModule,
     CouchModule,
+    CoversModule,
   ],
   providers: [
     // {
@@ -118,7 +119,6 @@ import { CouchService } from "./couch/couch.service"
   ],
   controllers: [
     AppController,
-    CoversController,
     BooksController,
     DataSourcesController,
     CollectionsController,

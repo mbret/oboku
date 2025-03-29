@@ -16,7 +16,7 @@ import { downloadToTmpFolder } from "../../lib/archives/downloadToTmpFolder"
 import { updateCover } from "./updateCover"
 import { getRarArchive } from "../../lib/archives/getRarArchive"
 import { atomicUpdate } from "../../lib/couch/dbHelpers"
-import { AppConfigService } from "../../config/AppConfigService"
+import { AppConfigService } from "src/config/AppConfigService"
 
 const logger = new Logger("retrieveMetadataAndSaveCover")
 

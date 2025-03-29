@@ -1,7 +1,7 @@
 import type React from "react"
 import { type FC, memo, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
-import placeholder from "../assets/cover-placeholder.png"
+import placeholder from "../assets/cover-placeholder.jpg"
 import { Box, styled } from "@mui/material"
 import { useBook } from "./states"
 import { useBlurredTagIds } from "../tags/helpers"
