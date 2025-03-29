@@ -1,13 +1,25 @@
 services:
   couchdb:
-    image: couchdb:latest
+    build:
+      context: ./
+      dockerfile: dockerfile
+      target: couchdb
     restart: always
     ports:
       - "5984:5984"
+      # extra binds used for http/1 load balancing
+      - "5985:5984"
+      - "5986:5984"
     env_file:
       - .env
+    environment:
+      - COUCHDB_USER=admin
+      - JWT_PRIVATE_KEY_FILE=/secrets/jwt_private_key.pem
+      - JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key.pem
     volumes:
-      - oboku-couchdb:/opt/couchdb/data
+      - ./secrets:/secrets
+      - oboku-couchdb-data:/opt/couchdb/data
+      - oboku-couchdb-config:/opt/couchdb/etc/local.d
 
   postgres:
     image: postgres
@@ -40,13 +52,14 @@ services:
       - .env
     environment:
       - NODE_ENV=production
-      - JWT_PRIVATE_KEY_FILE=/secrets/jwt_private_key
-      - JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key
+      - JWT_PRIVATE_KEY_FILE=/secrets/jwt_private_key.pem
+      - JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key.pem
     volumes:
       - ./secrets:/secrets
       - oboku-api-data:/var/lib/oboku/data
 
 volumes:
   oboku-postgres:
-  oboku-couchdb:
+  oboku-couchdb-data:
+  oboku-couchdb-config:
   oboku-api-data:

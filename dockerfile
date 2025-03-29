@@ -35,4 +35,7 @@ WORKDIR /usr/src/app
 COPY --from=web-build /usr/src/app/apps/web/dist /usr/share/nginx/html
 CMD ["nginx", "-g", "daemon off;"]
 
-FROM couchdb:latest AS couchdb
+FROM couchdb AS couchdb
+COPY ./apps/couchdb/config/default.ini /opt/couchdb/etc/default.d/oboku.ini
+COPY ./apps/couchdb/update-secrets.sh /usr/local/bin/
+CMD ["/bin/sh", "-c", "/usr/local/bin/update-secrets.sh && exec /opt/couchdb/bin/couchdb"]

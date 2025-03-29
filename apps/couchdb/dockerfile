@@ -1,5 +1,0 @@
-# couchdb/Dockerfile
-FROM couchdb:latest
-
-# Copy base configuration
-COPY ./config/base.ini /opt/couchdb/etc/local.d/local.ini

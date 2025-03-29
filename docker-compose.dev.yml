@@ -30,5 +30,6 @@ services:
 
 volumes:
   oboku-postgres:
-  oboku-couchdb:
+  oboku-couchdb-data:
+  oboku-couchdb-config:
   oboku-api-data:
