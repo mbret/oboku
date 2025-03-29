@@ -16,6 +16,7 @@ import { from } from "rxjs"
 import { SyncReportPostgresService } from "../postgres/SyncReportPostgresService"
 import { CouchService } from "src/couch/couch.service"
 import { AuthUser, AutUser } from "src/auth/auth.guard"
+import { CoversService } from "src/covers/covers.service"
 
 const syncLongProgress = async ({
   dataSourceId,
@@ -26,6 +27,7 @@ const syncLongProgress = async ({
   syncReportPostgresService,
   couchService,
   email,
+  coversService,
 }: {
   config: ConfigService<EnvironmentVariables>
   dataSourceId: string
@@ -35,6 +37,7 @@ const syncLongProgress = async ({
   syncReportPostgresService: SyncReportPostgresService
   couchService: CouchService
   email: string
+  coversService: CoversService
 }) => {
   await sync({
     userName: email,
@@ -46,6 +49,7 @@ const syncLongProgress = async ({
     eventEmitter,
     syncReportPostgresService,
     email,
+    coversService,
   })
 }
 
@@ -60,6 +64,7 @@ export class DataSourcesController implements OnModuleInit {
     private readonly eventEmitter: EventEmitter2,
     private readonly syncReportPostgresService: SyncReportPostgresService,
     private readonly couchService: CouchService,
+    private readonly coversService: CoversService,
   ) {}
 
   onModuleInit() {
@@ -99,6 +104,7 @@ export class DataSourcesController implements OnModuleInit {
             syncReportPostgresService: this.syncReportPostgresService,
             couchService: this.couchService,
             email: user.email,
+            coversService: this.coversService,
           }),
         ),
       {

@@ -4,15 +4,15 @@ import * as path from "node:path"
 import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
 import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSaveCover"
 import { CouchService } from "src/couch/couch.service"
-import { AuthService } from "src/auth/auth.service"
 import { AppConfigService } from "../../config/AppConfigService"
+import { CoversService } from "src/covers/covers.service"
 
 @Injectable()
 export class BooksMedataService {
   constructor(
     private readonly appConfigService: AppConfigService,
     private readonly couchService: CouchService,
-    private readonly authService: AuthService,
+    private readonly coversService: CoversService,
   ) {}
 
   refreshMetadata = async (
@@ -82,6 +82,7 @@ export class BooksMedataService {
           db,
         },
         this.appConfigService,
+        this.coversService,
       )
     } catch (e) {
       await atomicUpdate(db, "book", book._id, (old) => ({

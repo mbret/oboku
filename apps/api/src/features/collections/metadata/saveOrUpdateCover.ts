@@ -1,12 +1,12 @@
 import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
-import { isCoverExist } from "src/lib/books/covers/isCoverExist"
 import { saveCoverFromExternalLinkToBucket } from "src/lib/books/covers/saveCoverFromExternalLinkToBucket"
-import { AppConfigService } from "src/config/AppConfigService"
+import { CoversService } from "src/covers/covers.service"
+import { firstValueFrom } from "rxjs"
 
 export const saveOrUpdateCover = async (
   prevCollection: Pick<CollectionDocType, "_id" | "metadata">,
   currentCollection: Pick<CollectionDocType, "_id" | "metadata">,
-  config: AppConfigService,
+  coversService: CoversService,
 ) => {
   const existingCover = prevCollection.metadata?.find(
     (metadata) => metadata.cover,
@@ -22,7 +22,7 @@ export const saveOrUpdateCover = async (
   if (
     existingCover &&
     cover.uri === existingCover.uri &&
-    (await isCoverExist(coverKey))
+    (await firstValueFrom(coversService.isCoverExist(coverKey)))
   ) {
     console.log(`Already have cover ${coverKey} for ${cover.uri}`)
 
@@ -30,7 +30,7 @@ export const saveOrUpdateCover = async (
   }
 
   try {
-    await saveCoverFromExternalLinkToBucket(coverKey, cover.uri, config)
+    await saveCoverFromExternalLinkToBucket(coverKey, cover.uri, coversService)
 
     console.log(`Successfully saved cover ${cover.uri} at ${coverKey}`)
   } catch (e) {

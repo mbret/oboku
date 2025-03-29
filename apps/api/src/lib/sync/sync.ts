@@ -10,6 +10,7 @@ import { EnvironmentVariables } from "src/config/types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "src/events"
 import { SyncReportPostgresService } from "src/features/postgres/SyncReportPostgresService"
+import { CoversService } from "src/covers/covers.service"
 
 export const sync = async ({
   dataSourceId,
@@ -21,6 +22,7 @@ export const sync = async ({
   eventEmitter,
   syncReportPostgresService,
   email,
+  coversService,
 }: {
   dataSourceId: string
   userName: string
@@ -31,6 +33,7 @@ export const sync = async ({
   eventEmitter: EventEmitter2
   syncReportPostgresService: SyncReportPostgresService
   email: string
+  coversService: CoversService
 }) => {
   const syncReport = new SyncReport(dataSourceId, userName)
 
@@ -108,6 +111,7 @@ export const sync = async ({
         helpers,
         config,
         eventEmitter,
+        coversService,
       )
     }
 

@@ -35,7 +35,7 @@ import { CoversModule } from "./covers/covers.module"
   imports: [
     TypeOrmModule.forRoot({
       type: "postgres",
-      host: process.env.POSTGRES_HOST,
+      host: process.env.POSTGRES_HOST ?? "postgres",
       port: 5432,
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
@@ -65,7 +65,6 @@ import { CoversModule } from "./covers/covers.module"
             "application/x-rar",
           ],
           COVER_ALLOWED_EXT: [".jpg", ".jpeg", ".png"],
-          COVER_MAXIMUM_SIZE_FOR_STORAGE: { width: 400, height: 600 },
           /**
            * Target a tmp folder in the container
            */
@@ -89,7 +88,7 @@ import { CoversModule } from "./covers/covers.module"
         DROPBOX_CLIENT_ID: Joi.string().optional(),
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
-        POSTGRES_HOST: Joi.string().default("localhost"),
+        POSTGRES_HOST: Joi.string().default("postgres"),
         TMP_X_ACCESS_SECRET: Joi.string().optional(),
         COMICVINE_API_KEY: Joi.string().optional(),
         JWT_PRIVATE_KEY_FILE: Joi.string().required(),

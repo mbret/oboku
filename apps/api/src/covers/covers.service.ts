@@ -1,4 +1,9 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import {
+  GetObjectCommand,
+  S3Client,
+  HeadObjectCommand,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3"
 import { Injectable } from "@nestjs/common"
 import { from, of, switchMap } from "rxjs"
 import * as sharp from "sharp"
@@ -58,7 +63,7 @@ export class CoversService {
 
   getCoverPlaceholder = async () => {
     return fs.promises.readFile(
-      path.join(this.appConfig.ASSETS_DIR, "cover-placeholder.png"),
+      path.join(this.appConfig.ASSETS_DIR, "cover-placeholder.jpg"),
     )
   }
 
@@ -74,6 +79,59 @@ export class CoversService {
         return from(this.getCoverPlaceholder())
       }),
     )
+  }
+
+  saveCoverTos3(cover: Uint8Array<ArrayBufferLike>, objectKey: string) {
+    if (!this.s3Client) {
+      throw new Error("No s3 client")
+    }
+
+    return from(
+      this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: "oboku-covers",
+          Body: cover,
+          Key: objectKey,
+        }),
+      ),
+    )
+  }
+
+  saveCover(cover: Uint8Array<ArrayBufferLike>, objectKey: string) {
+    const resized$ = this.resizeCover(cover, {
+      width: this.appConfig.COVER_MAXIMUM_SIZE_FOR_STORAGE.width,
+      height: this.appConfig.COVER_MAXIMUM_SIZE_FOR_STORAGE.height,
+      format: "image/webp",
+    })
+
+    return resized$.pipe(
+      switchMap((resized) => this.saveCoverTos3(resized, objectKey)),
+    )
+  }
+
+  async isCoverExistS3(objectKey: string) {
+    if (!this.s3Client) {
+      throw new Error("No s3 client")
+    }
+
+    try {
+      await this.s3Client.send(
+        new HeadObjectCommand({
+          Bucket: "oboku-covers",
+          Key: objectKey,
+        }),
+      )
+
+      return true
+    } catch (e) {
+      if ((e as any)?.$metadata?.httpStatusCode === 404) return false
+      if ((e as any).code === "NotFound") return false
+      throw e
+    }
+  }
+
+  isCoverExist(objectKey: string) {
+    return from(this.isCoverExistS3(objectKey))
   }
 
   resizeCover(

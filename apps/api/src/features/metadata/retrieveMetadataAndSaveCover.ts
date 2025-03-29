@@ -17,6 +17,7 @@ import { updateCover } from "./updateCover"
 import { getRarArchive } from "../../lib/archives/getRarArchive"
 import { atomicUpdate } from "../../lib/couch/dbHelpers"
 import { AppConfigService } from "src/config/AppConfigService"
+import { CoversService } from "src/covers/covers.service"
 
 const logger = new Logger("retrieveMetadataAndSaveCover")
 
@@ -26,6 +27,7 @@ export const retrieveMetadataAndSaveCover = async (
     db: nano.DocumentScope<unknown>
   },
   config: AppConfigService,
+  coversService: CoversService,
 ) => {
   console.log(
     `[retrieveMetadataAndSaveCover]`,
@@ -192,7 +194,7 @@ export const retrieveMetadataAndSaveCover = async (
       metadataList,
       archiveExtractor,
       tmpFilePath,
-      config,
+      coversService,
     })
 
     console.log(

@@ -15,8 +15,9 @@ import {
   addTagsToBookIfNotExist,
   createBook,
 } from "src/lib/couch/dbHelpers"
-import { isCoverExist } from "src/lib/books/covers/isCoverExist"
 import type { Context } from "../types"
+import { CoversService } from "src/covers/covers.service"
+import { firstValueFrom } from "rxjs"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
@@ -34,11 +35,13 @@ export const createOrUpdateBook = async ({
   helpers,
   parents,
   item,
+  coversService,
 }: {
   ctx: Context
   parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
   item: SynchronizeAbleItem
   helpers: Helpers
+  coversService: CoversService
 }) => {
   const { dataSourceType, dataSourceId, syncReport, db } = ctx
 
@@ -236,7 +239,7 @@ export const createOrUpdateBook = async ({
 
       if (
         metadataAreOlderThanModifiedDate ||
-        !(await isCoverExist(coverObjectKey))
+        !(await firstValueFrom(coversService.isCoverExist(coverObjectKey)))
       ) {
         await helpers
           .refreshBookMetadata({ bookId: existingBook?._id })

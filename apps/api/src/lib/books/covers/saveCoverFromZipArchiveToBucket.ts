@@ -1,9 +1,9 @@
 import * as fs from "node:fs"
 import * as unzipper from "unzipper"
-import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import { Logger } from "@nestjs/common"
 import { asError } from "src/lib/utils"
-import { AppConfigService } from "src/config/AppConfigService"
+import { CoversService } from "src/covers/covers.service"
+import { firstValueFrom } from "rxjs"
 
 const logger = new Logger("books/covers/saveCoverFromZipArchiveToBucket")
 
@@ -11,7 +11,7 @@ export const saveCoverFromZipArchiveToBucket = async (
   coverObjectKey: string,
   epubFilepath: string,
   coverPath: string,
-  config: AppConfigService,
+  coversService: CoversService,
 ) => {
   if (coverPath === ``) {
     logger.error(`coverPath is empty string, ignoring process`, coverObjectKey)
@@ -29,7 +29,9 @@ export const saveCoverFromZipArchiveToBucket = async (
       if (entry.path === coverPath) {
         const entryAsBuffer = (await entry.buffer()) as Buffer
 
-        await saveCoverFromBufferToBucket(entryAsBuffer, coverObjectKey, config)
+        await firstValueFrom(
+          coversService.saveCover(entryAsBuffer, coverObjectKey),
+        )
 
         logger.log(`cover ${coverObjectKey} has been saved/updated`)
       } else {

@@ -1,14 +1,14 @@
 import axios from "axios"
-import { saveCoverFromBufferToBucket } from "./saveCoverFromBufferToBucket"
 import { Logger } from "@nestjs/common"
-import { AppConfigService } from "src/config/AppConfigService"
+import { CoversService } from "src/covers/covers.service"
+import { firstValueFrom } from "rxjs"
 
 const logger = new Logger("books/covers/saveCoverFromExternalLinkToBucket")
 
 export const saveCoverFromExternalLinkToBucket = async (
   coverKey: string,
   coverUrl: string,
-  config: AppConfigService,
+  coversService: CoversService,
 ) => {
   logger.log(`prepare to save cover ${coverKey}`)
 
@@ -18,7 +18,7 @@ export const saveCoverFromExternalLinkToBucket = async (
     })
     const entryAsBuffer = Buffer.from(response.data)
 
-    await saveCoverFromBufferToBucket(entryAsBuffer, coverKey, config)
+    await firstValueFrom(coversService.saveCover(entryAsBuffer, coverKey))
 
     logger.log(`cover ${coverKey} has been saved/updated`)
   } catch (e) {

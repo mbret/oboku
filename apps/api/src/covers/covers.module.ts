@@ -6,7 +6,7 @@ import { CoversService } from "./covers.service"
 
 @Module({
   providers: [InMemoryTaskQueueService, CoversService],
-  exports: [],
+  exports: [CoversService],
   imports: [AppConfigModule],
   controllers: [CoversController],
 })

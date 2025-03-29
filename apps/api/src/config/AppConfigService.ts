@@ -66,4 +66,8 @@ export class AppConfigService {
   get ASSETS_DIR() {
     return path.join(__dirname, "..", "assets")
   }
+
+  get COVER_MAXIMUM_SIZE_FOR_STORAGE() {
+    return { width: 400, height: 600 }
+  }
 }

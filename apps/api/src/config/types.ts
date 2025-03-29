@@ -5,7 +5,6 @@ export interface EnvironmentVariables {
   TMP_DIR_BOOKS: string
   METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS: string[]
   COVER_ALLOWED_EXT: string[]
-  COVER_MAXIMUM_SIZE_FOR_STORAGE: { width: number; height: number }
   NODE_ENV: "development" | "production"
   PORT: number
   COUCH_DB_URL: string

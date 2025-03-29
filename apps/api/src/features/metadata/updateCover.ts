@@ -3,9 +3,9 @@ import type { Extractor } from "node-unrar-js"
 import { saveCoverFromRarArchiveToBucket } from "../../lib/books/covers/saveCoverFromRarArchiveToBucket"
 import type { Context } from "./types"
 import { saveCoverFromExternalLinkToBucket } from "../../lib/books/covers/saveCoverFromExternalLinkToBucket"
-import { isCoverExist } from "../../lib/books/covers/isCoverExist"
 import { saveCoverFromZipArchiveToBucket } from "../../lib/books/covers/saveCoverFromZipArchiveToBucket"
-import { AppConfigService } from "../../config/AppConfigService"
+import { CoversService } from "../../covers/covers.service"
+import { firstValueFrom } from "rxjs"
 
 export const updateCover = async ({
   metadataList,
@@ -13,14 +13,14 @@ export const updateCover = async ({
   book,
   ctx,
   tmpFilePath,
-  config,
+  coversService,
 }: {
   ctx: Context
   book: BookDocType
   metadataList: BookMetadata[]
   archiveExtractor?: Extractor<Uint8Array> | undefined
   tmpFilePath?: string
-  config: AppConfigService
+  coversService: CoversService
 }) => {
   const currentMetadaForCover = book.metadata?.find(
     (metadata) => metadata.coverLink,
@@ -32,7 +32,7 @@ export const updateCover = async ({
     metadataForCover?.type === currentMetadaForCover?.type &&
     metadataForCover?.coverLink &&
     metadataForCover.coverLink === currentMetadaForCover?.coverLink &&
-    (await isCoverExist(coverObjectKey))
+    (await firstValueFrom(coversService.isCoverExist(coverObjectKey)))
   ) {
     console.log(
       `Skipping cover update for ${book._id} since the current and new cover link are equals`,
@@ -50,7 +50,7 @@ export const updateCover = async ({
       coverObjectKey,
       archiveExtractor,
       metadataForCover.coverLink,
-      config,
+      coversService,
     )
 
     return
@@ -65,7 +65,7 @@ export const updateCover = async ({
       coverObjectKey,
       tmpFilePath,
       metadataForCover.coverLink,
-      config,
+      coversService,
     )
 
     return
@@ -80,7 +80,7 @@ export const updateCover = async ({
     await saveCoverFromExternalLinkToBucket(
       objectKey,
       metadataForCover.coverLink,
-      config,
+      coversService,
     )
 
     return

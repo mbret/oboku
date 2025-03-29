@@ -10,6 +10,7 @@ import { onBeforeError, switchMapCombineOuter } from "src/lib/utils"
 import { processrefreshMetadata } from "./metadata/processRefreshMetadata"
 import { CouchService } from "src/couch/couch.service"
 import { AppConfigService } from "../../config/AppConfigService"
+import { CoversService } from "src/covers/covers.service"
 
 @Injectable()
 export class CollectionMetadataService {
@@ -18,6 +19,7 @@ export class CollectionMetadataService {
   constructor(
     private appConfigService: AppConfigService,
     private couchService: CouchService,
+    private coversService: CoversService,
   ) {}
 
   refreshMetadata({
@@ -67,7 +69,7 @@ export class CollectionMetadataService {
                   ...params,
                   comicVineApiKey: this.appConfigService.COMICVINE_API_KEY,
                 },
-                this.appConfigService,
+                this.coversService,
               ),
             )
           }),

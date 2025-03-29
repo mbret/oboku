@@ -9,6 +9,7 @@ import { Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/config/types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
+import { CoversService } from "src/covers/covers.service"
 
 const logger = new Logger("sync")
 
@@ -34,6 +35,7 @@ export const synchronizeFromDataSource = async (
   helpers: ReturnType<typeof createHelpers>,
   config: ConfigService<EnvironmentVariables>,
   eventEmitter: EventEmitter2,
+  coversService: CoversService,
 ) => {
   console.log(
     `dataSourcesSync run for user ${ctx.userName} with dataSource ${ctx.dataSourceId}`,
@@ -57,6 +59,7 @@ export const synchronizeFromDataSource = async (
     parents: [],
     config,
     eventEmitter,
+    coversService,
   })
 }
 
@@ -120,6 +123,7 @@ const syncFolder = async ({
   parents,
   config,
   eventEmitter,
+  coversService,
 }: {
   ctx: Context & { authorization: string }
   helpers: Helpers
@@ -129,6 +133,7 @@ const syncFolder = async ({
   parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
+  coversService: CoversService
 }) => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
   logger.log(`syncFolder ${item.name}: metadata `, metadataForFolder)
@@ -168,6 +173,7 @@ const syncFolder = async ({
           item: subItem,
           helpers,
           parents: [...parents, item],
+          coversService,
         })
       } else if (isFolder(subItem)) {
         await syncFolder({
@@ -179,6 +185,7 @@ const syncFolder = async ({
           parents: [...parents, item],
           config,
           eventEmitter,
+          coversService,
         })
       }
     }),
