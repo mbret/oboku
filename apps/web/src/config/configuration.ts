@@ -2,7 +2,6 @@ import { BehaviorSubject, filter, first } from "rxjs"
 import { Logger } from "../debug/logger.shared"
 
 type ServerConfig = {
-  API_COUCH_URI?: string
   GOOGLE_CLIENT_ID?: string
   GOOGLE_API_KEY?: string
   DROPBOX_CLIENT_ID?: string
@@ -66,11 +65,31 @@ class Configuration extends BehaviorSubject<{
   }
 
   get API_URL() {
-    return import.meta.env.VITE_API_URL || `https://api.oboku.me`
+    return (
+      import.meta.env.VITE_API_URL ||
+      `${window.location.protocol}//${window.location.hostname}:3000`
+    )
   }
 
   get API_COUCH_URI() {
-    return this.value.config.API_COUCH_URI
+    return (
+      import.meta.env.VITE_COUCH_DB_PUBLIC_URL ??
+      `${window.location.protocol}//${window.location.hostname}:5984`
+    )
+  }
+
+  get API_COUCH_URI_2() {
+    return (
+      import.meta.env.VITE_COUCH_DB_PUBLIC_URL_2 ??
+      `${window.location.protocol}//${window.location.hostname}:5985`
+    )
+  }
+
+  get API_COUCH_URI_3() {
+    return (
+      import.meta.env.VITE_COUCH_DB_PUBLIC_URL_3 ??
+      `${window.location.protocol}//${window.location.hostname}:5986`
+    )
   }
 
   get VITE_FIREBASE_CONFIG() {

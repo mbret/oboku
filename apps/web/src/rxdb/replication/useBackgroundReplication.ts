@@ -10,6 +10,7 @@ import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
 import { useWatchAndFixConflicts } from "./conflicts/useWatchAndFixConflicts"
 import type { RxCouchDBReplicationState } from "rxdb/dist/types/plugins/replication-couchdb"
+import { configuration } from "../../config/configuration"
 
 export const useBackgroundReplication = () => {
   const signOut = useSignOut()
@@ -120,31 +121,42 @@ export const useBackgroundReplication = () => {
           token,
           dbName,
           live: true,
+          host: configuration.API_COUCH_URI,
         }),
         replicateDatasource({
           collection: database.datasource,
           token,
           dbName,
           live: true,
+          host: configuration.API_COUCH_URI,
         }),
-        replicateTag({ collection: database?.tag, token, dbName, live: true }),
+        replicateTag({
+          collection: database?.tag,
+          token,
+          dbName,
+          live: true,
+          host: configuration.API_COUCH_URI_2,
+        }),
         replicateLink({
           collection: database.link,
           token,
           dbName,
           live: true,
+          host: configuration.API_COUCH_URI_2,
         }),
         replicateSettings({
           collection: database.settings,
           token,
           dbName,
           live: true,
+          host: configuration.API_COUCH_URI_3,
         }),
         replicateCollection({
           collection: database.obokucollection,
           token,
           dbName,
           live: true,
+          host: configuration.API_COUCH_URI_3,
         }),
       ])
 

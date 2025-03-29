@@ -6,19 +6,23 @@ export const replicateCouchDBCollection = ({
   dbName,
   token,
   collection,
+  host,
   ...params
 }: {
   dbName: string
   token: string
   collection: RxCollection
+  host?: string
 } & Omit<
   Parameters<typeof replicateCouchDB>[0],
   "pull" | "push" | "url" | "replicationIdentifier" | "collection"
->) =>
-  replicateCouchDB({
-    replicationIdentifier: `${configuration.API_COUCH_URI}/${dbName}-${collection.name}-replication`,
+>) => {
+  const uri = host ?? configuration.API_COUCH_URI
+
+  return replicateCouchDB({
+    replicationIdentifier: `${uri}/${dbName}-${collection.name}-replication`,
     collection: collection,
-    url: `${configuration.API_COUCH_URI}/${dbName}/`,
+    url: `${uri}/${dbName}/`,
     live: false,
     waitForLeadership: false,
     ...params,
@@ -36,7 +40,7 @@ export const replicateCouchDBCollection = ({
 
       if (
         typeof url === "string" &&
-        url.startsWith(`${configuration.API_COUCH_URI}/${dbName}/_changes`)
+        url.startsWith(`${uri}/${dbName}/_changes`)
       ) {
         return fetch(`${url}&filter=_selector`, {
           ...optionsWithAuth,
@@ -92,3 +96,4 @@ export const replicateCouchDBCollection = ({
       },
     },
   })
+}

@@ -61,7 +61,7 @@ import { AppConfigService } from "./config/AppConfigService"
         AWS_SECRET_ACCESS_KEY: Joi.string().optional(),
         COVERS_BUCKET_NAME: Joi.string().optional().default("oboku-covers"),
         // use default docker service name
-        COUCH_DB_URL: Joi.string().default("couchdb"),
+        COUCH_DB_URL: Joi.string().default("http://couchdb:5984"),
         GOOGLE_BOOK_API_URL: Joi.string().default(
           "https://www.googleapis.com/books/v1",
         ),

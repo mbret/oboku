@@ -13,9 +13,14 @@ export class CouchService {
   ) {}
 
   async generateJWT(payload: Record<string, unknown>) {
+    // Set expiration to a very distant future date (100 years from now)
+    const farFutureDate =
+      Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365 * 100
+
     return this.jwtService.sign(payload, {
       privateKey: await this.secretsService.getJwtPrivateKey(),
       algorithm: "RS256",
+      expiresIn: farFutureDate,
     })
   }
 
