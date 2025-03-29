@@ -8,7 +8,6 @@ echo "DEBUG: JWT_PUBLIC_KEY_FILE = ${JWT_PUBLIC_KEY_FILE}"
 
 # Define paths
 CONFIG_FILE="/opt/couchdb/etc/local.d/docker.ini"
-# PRIVATE_KEY_FILE="${JWT_PRIVATE_KEY_FILE}"
 PUBLIC_KEY_FILE="${JWT_PUBLIC_KEY_FILE}"
 
 # Check if environment variables are set

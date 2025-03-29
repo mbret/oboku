@@ -38,4 +38,19 @@ CMD ["nginx", "-g", "daemon off;"]
 FROM couchdb AS couchdb
 COPY ./apps/couchdb/config/default.ini /opt/couchdb/etc/default.d/oboku.ini
 COPY ./apps/couchdb/update-secrets.sh /usr/local/bin/
-CMD ["/bin/sh", "-c", "/usr/local/bin/update-secrets.sh && exec /opt/couchdb/bin/couchdb"]
+
+# Create a custom entrypoint wrapper script
+RUN echo '#!/bin/sh\n\
+# Run your custom script first\n\
+if [ -f /usr/local/bin/update-secrets.sh ]; then\n\
+  echo "Running update-secrets.sh..."\n\
+  /usr/local/bin/update-secrets.sh || echo "Warning: update-secrets.sh exited with non-zero status: $?"\n\
+fi\n\
+\n\
+# Then execute the original entrypoint with all arguments\n\
+echo "Starting CouchDB..."\n\
+exec /docker-entrypoint.sh "$@"' > /custom-entrypoint.sh && \
+chmod +x /custom-entrypoint.sh
+
+ENTRYPOINT ["/custom-entrypoint.sh"]
+CMD ["/opt/couchdb/bin/couchdb"]
