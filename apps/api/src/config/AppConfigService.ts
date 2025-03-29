@@ -47,6 +47,24 @@ export class AppConfigService {
     return this.config.getOrThrow("JWT_PUBLIC_KEY_FILE", { infer: true })
   }
 
+  get METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS() {
+    return [
+      "application/x-cbz",
+      "application/epub+zip",
+      "application/zip",
+      "application/x-zip-compressed",
+      "application/x-rar",
+    ]
+  }
+
+  get TMP_DIR() {
+    return "/tmp/oboku"
+  }
+
+  get TMP_DIR_BOOKS() {
+    return path.join(this.TMP_DIR, "books")
+  }
+
   get DATA_DIR() {
     return this.config.getOrThrow("API_DATA_DIR", { infer: true })
   }

@@ -26,18 +26,13 @@ export class BooksMedataService {
     const { bookId } = body
     const credentials = JSON.parse(headers["oboku-credentials"] ?? "{}")
 
-    const TMP_DIR_BOOKS = this.appConfigService.config.getOrThrow(
-      "TMP_DIR_BOOKS",
-      {
-        infer: true,
-      },
-    )
-
-    const files = await fs.promises.readdir(TMP_DIR_BOOKS)
+    const files = await fs.promises.readdir(this.appConfigService.TMP_DIR_BOOKS)
 
     await Promise.all(
       files.map((file) => {
-        return fs.promises.unlink(path.join(TMP_DIR_BOOKS, file))
+        return fs.promises.unlink(
+          path.join(this.appConfigService.TMP_DIR_BOOKS, file),
+        )
       }),
     )
 

@@ -76,11 +76,7 @@ export const retrieveMetadataAndSaveCover = async (
     const isMaybeExtractAble =
       contentType === undefined ||
       (contentType &&
-        config.config
-          .getOrThrow("METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS", {
-            infer: true,
-          })
-          .includes(contentType))
+        config.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType))
 
     const sourcesMetadata = ignoreMetadataSources
       ? []
@@ -165,11 +161,7 @@ export const retrieveMetadataAndSaveCover = async (
           metadataList.push(fileMetadata)
         } else if (
           contentType &&
-          config.config
-            .getOrThrow("METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS", {
-              infer: true,
-            })
-            .includes(contentType)
+          config.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)
         ) {
           const fileMetadata = await getMetadataFromZipArchive(
             tmpFilePath,

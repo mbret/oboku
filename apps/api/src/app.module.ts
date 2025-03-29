@@ -1,7 +1,6 @@
 import { Module, OnModuleInit } from "@nestjs/common"
 import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
-import { CoversController } from "./covers/covers.controller"
 import { ConfigModule, ConfigService } from "@nestjs/config"
 import * as path from "node:path"
 import * as Joi from "joi"
@@ -30,6 +29,7 @@ import { UsersModule } from "./users/users.module"
 import { AuthModule } from "./auth/auth.module"
 import { CouchModule } from "./couch/couch.module"
 import { CoversModule } from "./covers/covers.module"
+import { AppConfigService } from "./config/AppConfigService"
 
 @Module({
   imports: [
@@ -54,23 +54,6 @@ import { CoversModule } from "./covers/covers.module"
       // as env variables directly to the docker container
       envFilePath: path.join(__dirname, "../.env"),
       cache: true,
-      load: [
-        () => ({
-          ...process.env,
-          METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS: [
-            "application/x-cbz",
-            "application/epub+zip",
-            "application/zip",
-            "application/x-zip-compressed",
-            "application/x-rar",
-          ],
-          /**
-           * Target a tmp folder in the container
-           */
-          TMP_DIR: "/tmp/oboku",
-          TMP_DIR_BOOKS: "/tmp/oboku/books",
-        }),
-      ],
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid("development", "production"),
         PORT: Joi.number().port().default(3000),
@@ -128,27 +111,19 @@ import { CoversModule } from "./covers/covers.module"
   ],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private configService: ConfigService<EnvironmentVariables>) {}
+  constructor(private configService: AppConfigService) {}
 
   /**
    * Prepare all tmp folders
    */
   onModuleInit() {
-    const tmpDir = this.configService.getOrThrow("TMP_DIR", {
-      infer: true,
-    })
-
-    if (!fs.existsSync(tmpDir)) {
-      fs.mkdirSync(tmpDir, { recursive: true })
+    if (!fs.existsSync(this.configService.TMP_DIR)) {
+      fs.mkdirSync(this.configService.TMP_DIR, { recursive: true })
     }
 
     // make sure to cleanup on each restart
-    fs.rmSync(tmpDir, { recursive: true, force: true })
+    fs.rmSync(this.configService.TMP_DIR, { recursive: true, force: true })
 
-    const tmpDirBooks = this.configService.getOrThrow("TMP_DIR_BOOKS", {
-      infer: true,
-    })
-
-    fs.mkdirSync(tmpDirBooks, { recursive: true })
+    fs.mkdirSync(this.configService.TMP_DIR_BOOKS, { recursive: true })
   }
 }

@@ -1,9 +1,6 @@
 export interface EnvironmentVariables {
   AWS_ACCESS_KEY_ID?: string
   AWS_SECRET_ACCESS_KEY?: string
-  TMP_DIR: string
-  TMP_DIR_BOOKS: string
-  METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS: string[]
   NODE_ENV: "development" | "production"
   PORT: number
   COUCH_DB_URL: string

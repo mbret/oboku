@@ -31,10 +31,7 @@ export const downloadToTmpFolder = (
           default:
         }
 
-        const filepath = path.join(
-          config.config.getOrThrow("TMP_DIR_BOOKS", { infer: true }),
-          filename,
-        )
+        const filepath = path.join(config.TMP_DIR_BOOKS, filename)
         const fileWriteStream = fs.createWriteStream(filepath, { flags: "w" })
 
         stream
