@@ -64,7 +64,6 @@ import { CoversModule } from "./covers/covers.module"
             "application/x-zip-compressed",
             "application/x-rar",
           ],
-          COVER_ALLOWED_EXT: [".jpg", ".jpeg", ".png"],
           /**
            * Target a tmp folder in the container
            */
@@ -77,8 +76,7 @@ import { CoversModule } from "./covers/covers.module"
         PORT: Joi.number().port().default(3000),
         AWS_ACCESS_KEY_ID: Joi.string().optional(),
         AWS_SECRET_ACCESS_KEY: Joi.string().optional(),
-        COVERS_BUCKET_NAME: Joi.string().optional(),
-        COVERS_PLACEHOLDER_BUCKET_KEY: Joi.string().required(),
+        COVERS_BUCKET_NAME: Joi.string().optional().default("oboku-covers"),
         COUCH_DB_URL: Joi.string().required(),
         GOOGLE_BOOK_API_URL: Joi.string().default(
           "https://www.googleapis.com/books/v1",
@@ -94,6 +92,10 @@ import { CoversModule } from "./covers/covers.module"
         JWT_PRIVATE_KEY_FILE: Joi.string().required(),
         JWT_PUBLIC_KEY_FILE: Joi.string().required(),
         API_DATA_DIR: Joi.string().optional().default("/var/lib/oboku/data"),
+        COVERS_STORAGE_STRATEGY: Joi.string()
+          .valid("fs", "s3")
+          .optional()
+          .default("fs"),
       }),
     }),
     EventEmitterModule.forRoot(),

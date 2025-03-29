@@ -1,7 +1,7 @@
 import type { BookMetadata } from "@oboku/shared"
 import type { Extractor } from "node-unrar-js"
 import * as path from "node:path"
-import { AppConfigService } from "src/config/AppConfigService"
+import type { AppConfigService } from "src/config/AppConfigService"
 
 export const getMetadataFromRarArchive = async (
   extractor: Extractor<Uint8Array>,
@@ -12,9 +12,9 @@ export const getMetadataFromRarArchive = async (
   const fileHeaders = [...list.fileHeaders]
 
   const firstImageFound = fileHeaders.find((fileHeader) => {
-    const isAllowedImage = config.config
-      .getOrThrow("COVER_ALLOWED_EXT", { infer: true })
-      .includes(path.extname(fileHeader.name).toLowerCase())
+    const isAllowedImage = config.COVERS_ALLOWED_EXT.includes(
+      path.extname(fileHeader.name).toLowerCase(),
+    )
 
     return isAllowedImage
   })

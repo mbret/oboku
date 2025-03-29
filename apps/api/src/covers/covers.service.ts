@@ -4,12 +4,14 @@ import {
   HeadObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3"
-import { Injectable } from "@nestjs/common"
-import { from, of, switchMap } from "rxjs"
+import { Injectable, Logger } from "@nestjs/common"
+import { from, map, of, switchMap, tap } from "rxjs"
 import * as sharp from "sharp"
 import { AppConfigService } from "src/config/AppConfigService"
 import * as fs from "node:fs"
 import * as path from "node:path"
+
+const logger = new Logger("CoversService")
 
 @Injectable()
 export class CoversService {
@@ -19,15 +21,18 @@ export class CoversService {
     const AWS_ACCESS_KEY_ID = this.appConfig.AWS_ACCESS_KEY_ID
     const AWS_SECRET_ACCESS_KEY = this.appConfig.AWS_SECRET_ACCESS_KEY
 
-    if (AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY) {
+    if (this.appConfig.COVERS_STORAGE_STRATEGY === "s3") {
       this.s3Client = new S3Client({
         region: `us-east-1`,
         credentials: {
-          accessKeyId: AWS_ACCESS_KEY_ID,
-          secretAccessKey: AWS_SECRET_ACCESS_KEY,
+          accessKeyId: AWS_ACCESS_KEY_ID ?? "",
+          secretAccessKey: AWS_SECRET_ACCESS_KEY ?? "",
         },
       })
     }
+
+    logger.log(`Creating covers directory: ${this.appConfig.COVERS_DIR}`)
+    fs.mkdirSync(this.appConfig.COVERS_DIR, { recursive: true })
   }
 
   getCoverFromS3 = async (objectKey: string) => {
@@ -61,6 +66,24 @@ export class CoversService {
     }
   }
 
+  getCoverFromFs = async (objectKey: string) => {
+    try {
+      return await fs.promises.readFile(
+        path.join(this.appConfig.COVERS_DIR, `${objectKey}.webp`),
+      )
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        error.code === "ENOENT"
+      ) {
+        return null
+      }
+
+      throw error
+    }
+  }
+
   getCoverPlaceholder = async () => {
     return fs.promises.readFile(
       path.join(this.appConfig.ASSETS_DIR, "cover-placeholder.jpg"),
@@ -68,7 +91,11 @@ export class CoversService {
   }
 
   getCover(id: string) {
-    const cover$ = from(this.getCoverFromS3(id))
+    const cover$ = from(
+      this.appConfig.COVERS_STORAGE_STRATEGY === "s3"
+        ? this.getCoverFromS3(id)
+        : this.getCoverFromFs(id),
+    )
 
     return cover$.pipe(
       switchMap((cover) => {
@@ -94,18 +121,42 @@ export class CoversService {
           Key: objectKey,
         }),
       ),
+    ).pipe(map(() => undefined))
+  }
+
+  saveCoverToFs(cover: Uint8Array<ArrayBufferLike>, objectKey: string) {
+    return from(
+      fs.promises.writeFile(
+        path.join(this.appConfig.COVERS_DIR, `${objectKey}.webp`),
+        cover,
+      ),
     )
   }
 
   saveCover(cover: Uint8Array<ArrayBufferLike>, objectKey: string) {
     const resized$ = this.resizeCover(cover, {
-      width: this.appConfig.COVER_MAXIMUM_SIZE_FOR_STORAGE.width,
-      height: this.appConfig.COVER_MAXIMUM_SIZE_FOR_STORAGE.height,
+      width: this.appConfig.COVERS_MAXIMUM_SIZE_FOR_STORAGE.width,
+      height: this.appConfig.COVERS_MAXIMUM_SIZE_FOR_STORAGE.height,
       format: "image/webp",
     })
 
     return resized$.pipe(
-      switchMap((resized) => this.saveCoverTos3(resized, objectKey)),
+      switchMap((resized) => {
+        const save$ =
+          this.appConfig.COVERS_STORAGE_STRATEGY === "s3"
+            ? this.saveCoverTos3(resized, objectKey)
+            : this.saveCoverToFs(resized, objectKey)
+
+        return save$.pipe(
+          tap(() => {
+            const coverSize = Buffer.byteLength(resized)
+
+            logger.debug(
+              `Saved cover ${objectKey} with a size of ${(coverSize / 1024).toFixed(2)} KB`,
+            )
+          }),
+        )
+      }),
     )
   }
 
@@ -130,8 +181,19 @@ export class CoversService {
     }
   }
 
+  async isCoverExistFs(objectKey: string) {
+    return fs.promises
+      .access(path.join(this.appConfig.COVERS_DIR, `${objectKey}.webp`))
+      .then(() => true)
+      .catch(() => false)
+  }
+
   isCoverExist(objectKey: string) {
-    return from(this.isCoverExistS3(objectKey))
+    return from(
+      this.appConfig.COVERS_STORAGE_STRATEGY === "s3"
+        ? this.isCoverExistS3(objectKey)
+        : this.isCoverExistFs(objectKey),
+    )
   }
 
   resizeCover(

@@ -51,10 +51,6 @@ export class AppConfigService {
     return this.config.getOrThrow("API_DATA_DIR", { infer: true })
   }
 
-  get COVERS_BUCKET_NAME() {
-    return this.config.get("COVERS_BUCKET_NAME", { infer: true })
-  }
-
   get AWS_ACCESS_KEY_ID() {
     return this.config.get("AWS_ACCESS_KEY_ID", { infer: true })
   }
@@ -67,7 +63,29 @@ export class AppConfigService {
     return path.join(__dirname, "..", "assets")
   }
 
-  get COVER_MAXIMUM_SIZE_FOR_STORAGE() {
+  /**
+   * ------------------------------------------------------------
+   * COVERS
+   * ------------------------------------------------------------
+   */
+
+  get COVERS_ALLOWED_EXT() {
+    return [".jpg", ".jpeg", ".png"]
+  }
+
+  get COVERS_BUCKET_NAME() {
+    return this.config.get("COVERS_BUCKET_NAME", { infer: true })
+  }
+
+  get COVERS_DIR() {
+    return path.join(this.DATA_DIR, "covers")
+  }
+
+  get COVERS_MAXIMUM_SIZE_FOR_STORAGE() {
     return { width: 400, height: 600 }
+  }
+
+  get COVERS_STORAGE_STRATEGY() {
+    return this.config.getOrThrow("COVERS_STORAGE_STRATEGY", { infer: true })
   }
 }

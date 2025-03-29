@@ -4,13 +4,10 @@ export interface EnvironmentVariables {
   TMP_DIR: string
   TMP_DIR_BOOKS: string
   METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS: string[]
-  COVER_ALLOWED_EXT: string[]
   NODE_ENV: "development" | "production"
   PORT: number
   COUCH_DB_URL: string
   GOOGLE_BOOK_API_URL: string
-  COVERS_BUCKET_NAME?: string
-  COVERS_PLACEHOLDER_BUCKET_KEY: string
   POSTGRES_USER: string
   POSTGRES_PASSWORD: string
   GOOGLE_CLIENT_ID?: string
@@ -21,4 +18,6 @@ export interface EnvironmentVariables {
   JWT_PRIVATE_KEY_FILE: string
   JWT_PUBLIC_KEY_FILE: string
   API_DATA_DIR: string
+  COVERS_BUCKET_NAME?: string
+  COVERS_STORAGE_STRATEGY: "s3" | "fs"
 }

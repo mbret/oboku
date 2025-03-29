@@ -57,9 +57,7 @@ export const getMetadataFromZipArchive = async (
 
   const firstValidImagePath = files
     .filter((file) =>
-      config.config
-        .getOrThrow("COVER_ALLOWED_EXT", { infer: true })
-        .includes(path.extname(file).toLowerCase()),
+      config.COVERS_ALLOWED_EXT.includes(path.extname(file).toLowerCase()),
     )
     .sort()[0]
 
