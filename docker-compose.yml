@@ -1,9 +1,6 @@
 services:
   couchdb:
-    build:
-      context: ./
-      dockerfile: dockerfile
-      target: couchdb
+    image: mbret/oboku-couchdb
     restart: always
     ports:
       - "5984:5984"
@@ -32,19 +29,13 @@ services:
       - oboku-postgres:/var/lib/postgresql/data
 
   web:
-    build:
-      context: ./
-      dockerfile: dockerfile
-      target: web
+    image: mbret/oboku-web
     restart: always
     ports:
       - "80:80"
 
   api:
-    build:
-      context: ./
-      dockerfile: dockerfile
-      target: api
+    image: mbret/oboku-api
     restart: always
     ports:
       - "3000:3000"

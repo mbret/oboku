@@ -3,6 +3,10 @@ services:
     extends:
       file: docker-compose.yml
       service: couchdb
+    build:
+      context: ./
+      dockerfile: dockerfile
+      target: couchdb
 
   postgres:
     extends:
@@ -15,11 +19,19 @@ services:
     extends:
       file: docker-compose.yml
       service: web
+    build:
+      context: ./
+      dockerfile: dockerfile
+      target: web
 
   api:
     extends:
       file: docker-compose.yml
       service: api
+    build:
+      context: ./
+      dockerfile: dockerfile
+      target: api
     environment:
       - NODE_ENV=development
     restart: unless-stopped
