@@ -3,7 +3,10 @@ import { type ObokuPlugin, extractIdFromResourceId } from "../types"
 import { catchError, from, map } from "rxjs"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { CancelError } from "../../errors/errors.shared"
-import { httpClientWeb, isXMLHttpResponseError } from "../../http/httpClient.web"
+import {
+  httpClientWeb,
+  isXMLHttpResponseError,
+} from "../../http/httpClient.web"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
   return ({ link, onDownloadProgress }) => {
