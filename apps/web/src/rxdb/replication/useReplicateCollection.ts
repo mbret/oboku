@@ -2,22 +2,25 @@ import { replicateCouchDBCollection } from "./replicateCouchDBCollection"
 import type { RxCollection } from "rxdb"
 import { Logger } from "../../debug/logger.shared"
 import { distinctUntilChanged, skip } from "rxjs"
-import { useMutation } from "@tanstack/react-query"
+import { useCallback } from "react"
 
 export const useReplicateCollection = <
   Collection extends RxCollection<RxDocumentType>,
   RxDocumentType = any,
 >() => {
-  return useMutation({
-    mutationFn: async ({
+  return useCallback(
+    ({
       collection,
       ...params
     }: { collection: Collection } & Parameters<
       typeof replicateCouchDBCollection
     >[0]) => {
+      const cancelSignal = new AbortController()
+
       const state = replicateCouchDBCollection({
         ...params,
         collection,
+        cancelSignal: cancelSignal.signal,
       })
 
       const id = Date.now()
@@ -53,6 +56,8 @@ export const useReplicateCollection = <
       state.canceled$
         .pipe(skip(1), distinctUntilChanged())
         .subscribe((bool) => {
+          cancelSignal.abort()
+
           Logger.info(`[replication]`, replicationId, `cancelled`, bool)
 
           if (state.isStopped()) {
@@ -71,5 +76,6 @@ export const useReplicateCollection = <
 
       return state
     },
-  })
+    [],
+  )
 }

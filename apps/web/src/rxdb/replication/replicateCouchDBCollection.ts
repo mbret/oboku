@@ -1,18 +1,21 @@
 import { replicateCouchDB } from "rxdb/plugins/replication-couchdb"
 import type { RxCollection } from "rxdb"
 import { configuration } from "../../config/configuration"
+import { authStateSignal } from "../../auth/authState"
 
 export const replicateCouchDBCollection = ({
   dbName,
-  token,
   collection,
   host,
+  autoStart = false,
+  cancelSignal,
   ...params
 }: {
   dbName: string
-  token: string
   collection: RxCollection
   host?: string
+  autoStart?: boolean
+  cancelSignal?: AbortSignal
 } & Omit<
   Parameters<typeof replicateCouchDB>[0],
   "pull" | "push" | "url" | "replicationIdentifier" | "collection"
@@ -25,8 +28,9 @@ export const replicateCouchDBCollection = ({
     url: `${uri}/${dbName}/`,
     live: false,
     waitForLeadership: false,
+    autoStart,
     ...params,
-    fetch: (url, options) => {
+    fetch: async (url, options) => {
       // flat clone the given options to not mutate the input
       const optionsWithAuth = Object.assign({}, options)
       // ensure the headers property exists
@@ -36,25 +40,33 @@ export const replicateCouchDBCollection = ({
 
       // add bearer token to headers
       // @ts-expect-error
-      optionsWithAuth.headers.Authorization = `Bearer ${token}`
+      optionsWithAuth.headers.Authorization = `Bearer ${authStateSignal.value?.token}`
 
       if (
         typeof url === "string" &&
         url.startsWith(`${uri}/${dbName}/_changes`)
       ) {
-        return fetch(`${url}&filter=_selector`, {
+        const response = await fetch(`${url}&filter=_selector`, {
           ...optionsWithAuth,
           method: "post",
           headers: {
             ...optionsWithAuth.headers,
             "Content-Type": "application/json",
           },
+          signal: cancelSignal,
           body: JSON.stringify({ selector: { rx_model: collection.name } }),
         })
+
+        return response
       }
 
       // call the original fetch function with our custom options.
-      return fetch(url, optionsWithAuth)
+      const response = await fetch(url, {
+        ...optionsWithAuth,
+        signal: cancelSignal,
+      })
+
+      return response
     },
     pull: {
       /**

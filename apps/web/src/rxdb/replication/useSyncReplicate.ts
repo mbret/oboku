@@ -1,27 +1,26 @@
 import { authStateSignal } from "../../auth/authState"
-import { from, mergeMap } from "rxjs"
+import { from, mergeMap, of } from "rxjs"
 import type { RxCollection } from "rxdb"
 import { useReplicateCollection } from "./useReplicateCollection"
 import { useMutation$ } from "reactjrx"
 
 export const useSyncReplicate = () => {
-  const { mutateAsync } = useReplicateCollection()
+  const replicateCollection = useReplicateCollection()
+
   return useMutation$({
     mutationFn: (collections: RxCollection[]) => {
       const { token, dbName } = authStateSignal.getValue() ?? {}
 
       if (!dbName || !token) throw new Error("Invalid database")
 
-      const replicationStates = from(
-        Promise.all(
-          collections.map((collection) =>
-            mutateAsync({
-              collection,
-              live: false,
-              dbName,
-              token,
-            }),
-          ),
+      const replicationStates = of(
+        collections.map((collection) =>
+          replicateCollection({
+            collection,
+            live: false,
+            dbName,
+            autoStart: true,
+          }),
         ),
       )
 

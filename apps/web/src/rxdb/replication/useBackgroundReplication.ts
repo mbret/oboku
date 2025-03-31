@@ -1,6 +1,5 @@
-import { useEffect, useMemo } from "react"
-import { combineLatest, merge, NEVER, of, tap } from "rxjs"
-import { useSignOut } from "../../auth/useSignOut"
+import { useEffect, useState } from "react"
+import { combineLatest, of, tap } from "rxjs"
 import { syncSignal } from "./states"
 import { triggerReplication$ } from "./triggerReplication"
 import { useReplicateCollection } from "./useReplicateCollection"
@@ -9,45 +8,23 @@ import { authStateSignal } from "../../auth/authState"
 import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
 import { useWatchAndFixConflicts } from "./conflicts/useWatchAndFixConflicts"
-import type { RxCouchDBReplicationState } from "rxdb/dist/types/plugins/replication-couchdb"
 import { configuration } from "../../config/configuration"
+import type { RxCouchDBReplicationState } from "rxdb/dist/types/plugins/replication-couchdb"
 
 export const useBackgroundReplication = () => {
-  const signOut = useSignOut()
   const { db: database } = useDatabase()
   const { online } = useNetworkState()
   const { token, dbName } = useSignalValue(authStateSignal) ?? {}
-  const { data: bookReplicationState, mutateAsync: replicateBook } =
-    useReplicateCollection()
-  const { data: tagReplicationState, mutateAsync: replicateTag } =
-    useReplicateCollection()
-  const { data: collectionReplicationState, mutateAsync: replicateCollection } =
-    useReplicateCollection()
-  const { data: linkReplicationState, mutateAsync: replicateLink } =
-    useReplicateCollection()
-  const { data: settingsReplicationState, mutateAsync: replicateSettings } =
-    useReplicateCollection()
-  const { data: dataSourceReplicationState, mutateAsync: replicateDatasource } =
-    useReplicateCollection()
+  const replicateBook = useReplicateCollection()
+  const replicateTag = useReplicateCollection()
+  const replicateCollection = useReplicateCollection()
+  const replicateLink = useReplicateCollection()
+  const replicateSettings = useReplicateCollection()
+  const replicateDatasource = useReplicateCollection()
 
-  const replicationStates = useMemo(
-    () => [
-      settingsReplicationState,
-      dataSourceReplicationState,
-      bookReplicationState,
-      tagReplicationState,
-      collectionReplicationState,
-      linkReplicationState,
-    ],
-    [
-      settingsReplicationState,
-      dataSourceReplicationState,
-      bookReplicationState,
-      tagReplicationState,
-      collectionReplicationState,
-      linkReplicationState,
-    ],
-  )
+  const [replicationStates, setReplicationStates] = useState<
+    RxCouchDBReplicationState<unknown>[]
+  >([])
 
   useWatchAndFixConflicts()
 
@@ -63,44 +40,9 @@ export const useBackgroundReplication = () => {
 
   useSubscribe(
     () =>
-      combineLatest(
-        replicationStates.map((replicationState) => {
-          if (!replicationState) return NEVER
-
-          return merge(
-            replicationState.error$.pipe(
-              tap((error) => {
-                error.parameters.errors?.forEach((subError) => {
-                  if (
-                    // invalid / outdated / wrong token
-                    subError.parameters?.args.jsonResponse?.error ===
-                      "forbidden" ||
-                    subError.parameters?.args.jsonResponse?.error ===
-                      "unauthorized" ||
-                    // malformed token
-                    (subError.parameters?.args.jsonResponse?.error ===
-                      "bad_request" &&
-                      subError.parameters.args.jsonResponse?.reason ===
-                        "Malformed token")
-                  ) {
-                    signOut()
-                  }
-                })
-              }),
-            ),
-          )
-        }),
-      ),
-    [replicationStates, signOut],
-  )
-
-  useSubscribe(
-    () =>
-      combineLatest(
-        replicationStates.map((state) => state?.active$ ?? of(false)),
-      ).pipe(
+      combineLatest(replicationStates.map((state) => state.active$)).pipe(
         tap((active) => {
-          syncSignal.setValue((state) => ({
+          syncSignal.update((state) => ({
             ...state,
             active: active.reduce((acc, value) => (value ? acc + 1 : acc), 0),
           }))
@@ -110,65 +52,53 @@ export const useBackgroundReplication = () => {
   )
 
   useEffect(() => {
-    let unmounted = false
-    if (!database || !token || !dbName || !online) return
+    if (!database || !dbName) return
 
-    let states: RxCouchDBReplicationState<unknown>[] = []
-    ;(async () => {
-      states = await Promise.all([
-        replicateBook({
-          collection: database.book,
-          token,
-          dbName,
-          live: true,
-          host: configuration.API_COUCH_URI,
-        }),
-        replicateDatasource({
-          collection: database.datasource,
-          token,
-          dbName,
-          live: true,
-          host: configuration.API_COUCH_URI,
-        }),
-        replicateTag({
-          collection: database?.tag,
-          token,
-          dbName,
-          live: true,
-          host: configuration.API_COUCH_URI_2,
-        }),
-        replicateLink({
-          collection: database.link,
-          token,
-          dbName,
-          live: true,
-          host: configuration.API_COUCH_URI_2,
-        }),
-        replicateSettings({
-          collection: database.settings,
-          token,
-          dbName,
-          live: true,
-          host: configuration.API_COUCH_URI_3,
-        }),
-        replicateCollection({
-          collection: database.obokucollection,
-          token,
-          dbName,
-          live: true,
-          host: configuration.API_COUCH_URI_3,
-        }),
-      ])
+    const states = [
+      replicateBook({
+        collection: database.book,
+        dbName,
+        live: true,
+        host: configuration.API_COUCH_URI,
+      }),
+      replicateDatasource({
+        collection: database.datasource,
+        dbName,
+        live: true,
+        host: configuration.API_COUCH_URI_2,
+      }),
+      replicateTag({
+        collection: database?.tag,
+        dbName,
+        live: true,
+        host: configuration.API_COUCH_URI_2,
+      }),
+      replicateLink({
+        collection: database.link,
+        dbName,
+        live: true,
+        host: configuration.API_COUCH_URI_3,
+      }),
+      replicateSettings({
+        collection: database.settings,
+        dbName,
+        live: true,
+        host: configuration.API_COUCH_URI_3,
+      }),
+      replicateCollection({
+        collection: database.obokucollection,
+        dbName,
+        live: true,
+        host: configuration.API_COUCH_URI,
+      }),
+    ]
 
-      if (unmounted) {
-        states.forEach((state) => state?.cancel())
-      }
-    })()
+    setReplicationStates(states)
 
     return () => {
-      unmounted = true
-
-      states.forEach((state) => state?.cancel())
+      states.forEach((state) => {
+        state.remove()
+      })
     }
   }, [
     database,
@@ -178,8 +108,20 @@ export const useBackgroundReplication = () => {
     replicateLink,
     replicateSettings,
     replicateCollection,
-    token,
     dbName,
-    online,
   ])
+
+  useEffect(() => {
+    if (!online || !token) return
+
+    replicationStates.forEach((state) => {
+      state.start()
+    })
+
+    return () => {
+      replicationStates.forEach((state) => {
+        state.pause()
+      })
+    }
+  }, [online, token, replicationStates])
 }
