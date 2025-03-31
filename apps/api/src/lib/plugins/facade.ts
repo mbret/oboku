@@ -17,7 +17,7 @@ export const pluginFacade = {
       return await plugin.getMetadata({
         id: link.resourceId,
         credentials,
-        data: link.data,
+        data: link.data ?? {},
       })
     }
 

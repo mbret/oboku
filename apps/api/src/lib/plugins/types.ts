@@ -66,7 +66,11 @@ type Helpers = {
 
 export type DataSourcePlugin = {
   type: string
-  getMetadata: (data: { credentials?: any; id: string; data?: any }) => Promise<
+  getMetadata: (data: {
+    credentials?: any
+    id: string
+    data?: Record<string, unknown>
+  }) => Promise<
     | {
         name?: string
         modifiedAt?: string

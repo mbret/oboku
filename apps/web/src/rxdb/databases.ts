@@ -33,7 +33,6 @@ import {
   type SettingsCollection,
   settingsSchema,
 } from "./collections/settings"
-import { conflictHandler } from "./replication/conflictHandler"
 import { RxDBCleanupPlugin } from "rxdb/plugins/cleanup"
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
 
@@ -125,25 +124,21 @@ export const createDatabase = async (
       methods: bookDocMethods,
       statics: bookCollectionMethods,
       migrationStrategies: bookSchemaMigrationStrategies,
-      conflictHandler,
     },
     link,
     tag,
     settings: {
       schema: settingsSchema,
-      conflictHandler,
     },
     obokucollection: {
       schema: collectionSchema,
       statics: collectionCollectionMethods,
       migrationStrategies: collectionMigrationStrategies,
-      conflictHandler,
     },
     datasource: {
       schema: dataSourceSchema,
       statics: dataSourceCollectionMethods,
       migrationStrategies: dataSourceMigrationStrategies,
-      conflictHandler,
     },
   })
 

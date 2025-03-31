@@ -30,7 +30,7 @@ export type LinkDocType = CommonBase & {
    * Extra data field that can be used by any datasource to store
    * any form of data. Needs to be serialized as a string
    */
-  data: string | null | Record<string, unknown>
+  data: null | Record<string, unknown>
   book: string | null
   rx_model: "link"
   contentLength?: number | null

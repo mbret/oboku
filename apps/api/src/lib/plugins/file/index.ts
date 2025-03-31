@@ -7,10 +7,10 @@ export const plugin: DataSourcePlugin = {
     const { filename = "" } = data ?? {}
 
     return {
-      name: filename,
+      name: filename as string,
       canDownload: false,
       bookMetadata: {
-        title: filename,
+        title: filename as string,
       },
     }
   },

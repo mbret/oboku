@@ -7,7 +7,6 @@ import type {
 } from "rxdb"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
-import { conflictHandler } from "../replication/conflictHandler"
 
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
 type DocMethods = {}
@@ -59,5 +58,4 @@ export const tag = {
   methods: docMethods,
   statics: collectionMethods,
   migrationStrategies: migrationStrategies,
-  conflictHandler,
 }

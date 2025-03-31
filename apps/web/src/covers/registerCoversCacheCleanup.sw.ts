@@ -113,7 +113,7 @@ export const registerCoversCacheCleanup = () => {
           ),
         ),
         finalize(() => {
-          db.destroy().catch(console.error)
+          db.remove().catch(console.error)
         }),
       ),
     ),

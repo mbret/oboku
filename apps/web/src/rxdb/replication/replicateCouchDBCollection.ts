@@ -77,6 +77,16 @@ export const replicateCouchDBCollection = ({
           }
         }
 
+        if ("rx_model" in docData && docData.rx_model === "link") {
+          if ("data" in docData && typeof docData.data === "string") {
+            try {
+              docData.data = JSON.parse(docData.data)
+            } catch (error) {
+              docData.data = {}
+            }
+          }
+        }
+
         return docData
       },
     },

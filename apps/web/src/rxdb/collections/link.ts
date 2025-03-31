@@ -2,7 +2,6 @@ import type { LinkDocType } from "@oboku/shared"
 import type { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
-import { conflictHandler } from "../replication/conflictHandler"
 
 export type LinkCollection = RxCollection<
   LinkDocType,
@@ -28,7 +27,7 @@ const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev` | `rxdbMeta`>> = {
   primaryKey: `_id`,
   properties: {
     _id: { type: `string`, maxLength: 100 },
-    data: { type: ["string", "object", "null"] },
+    data: { type: ["object", "null"] },
     resourceId: { type: "string" },
     dataSourceId: { type: "string" },
     type: { type: "string" },
@@ -56,5 +55,4 @@ export const link = {
   statics: linkCollectionMethods,
   methods: linkDocMethods,
   migrationStrategies: linkSchemaMigrationStrategies,
-  conflictHandler,
 }

@@ -183,7 +183,7 @@ export const createOrUpdateBook = async ({
         type: dataSourceType,
         resourceId: item.resourceId,
         book: bookId,
-        data: JSON.stringify({}),
+        data: {},
         createdAt: new Date().toISOString(),
         modifiedAt: null,
         dataSourceId,
