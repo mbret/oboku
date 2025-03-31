@@ -67,7 +67,7 @@ export const createDatabase = async (
 
   const db = await createRxDatabase<MyDatabaseCollections>({
     ...params,
-    name: "oboku-35",
+    name: "oboku-36",
     // NOTICE: Schema validation can be CPU expensive and increases your build size.
     // You should always use a schema validation plugin in development mode.
     // For most use cases, you should not use a validation plugin in production.
