@@ -59,3 +59,24 @@ export class UserPostgresEntity {
   @Column({ type: "boolean", default: false })
   emailVerified?: boolean
 }
+
+// @Entity({ name: "refresh_tokens" })
+// export class RefreshTokenPostgresEntity {
+//   @PrimaryGeneratedColumn("uuid")
+//   id!: string
+
+//   @Column({
+//     type: "timestamp with time zone",
+//     default: () => "CURRENT_TIMESTAMP",
+//   })
+//   created_at!: Date
+
+//   @Column({ type: "timestamp with time zone" })
+//   expires_at!: Date
+
+//   @Column({ type: "text" })
+//   user_email!: string
+
+//   @Column({ type: "boolean", default: false })
+//   revoked!: boolean
+// }

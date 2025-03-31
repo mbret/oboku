@@ -1,4 +1,4 @@
-import { httpClient } from "../http/httpClient"
+import { httpClientApi } from "../http/httpClientApi.web"
 import { Alert, AlertTitle, Box, Link, Typography } from "@mui/material"
 import { useQuery } from "@tanstack/react-query"
 import type { ComponentProps } from "react"
@@ -18,10 +18,11 @@ export const CommunicationPane = () => {
     staleTime: oneDayInMs,
     gcTime: oneDayInMs / 2,
     networkMode: "online",
-    queryFn: () =>
-      httpClient.fetch<Communication[]>({
-        url: `${configuration.API_URL}/communications`,
-      }),
+    queryFn: () => {
+      return httpClientApi.fetch<Communication[]>(
+        `${configuration.API_URL}/communications`,
+      )
+    },
   })
 
   const latestNews = data?.data[0]

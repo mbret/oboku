@@ -6,15 +6,16 @@ import { useCallback } from "react"
 
 export const useReplicateCollection = <
   Collection extends RxCollection<RxDocumentType>,
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   RxDocumentType = any,
 >() => {
   return useCallback(
     ({
       collection,
       ...params
-    }: { collection: Collection } & Parameters<
-      typeof replicateCouchDBCollection
-    >[0]) => {
+    }: { collection: Collection } & Omit<Parameters<
+    typeof replicateCouchDBCollection
+  >[0], "cancelSignal">) => {
       const cancelSignal = new AbortController()
 
       const state = replicateCouchDBCollection({

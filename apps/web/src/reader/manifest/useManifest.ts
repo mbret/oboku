@@ -5,6 +5,7 @@ import { serviceWorkerReadySignal } from "../../workers/states.web"
 import { useQuery } from "@tanstack/react-query"
 import { useDatabase } from "../../rxdb"
 import { getMetadataFromBook } from "../../books/metadata"
+import { httpClient } from "../../http/httpClient.shared"
 
 const getManifestBaseUrl = (origin: string, epubFileName: string) => {
   return `${origin}/${STREAMER_URL_PREFIX}/${epubFileName}/`
@@ -16,9 +17,15 @@ export const useManifest = (bookId: string | undefined) => {
   return useQuery({
     queryKey: ["reader/streamer/manifest", { bookId }],
     queryFn: async () => {
-      const swStreamerResponse = serviceWorkerReadySignal.getValue()
-        ? await fetch(`${window.location.origin}/streamer/${bookId}/manifest`)
-        : undefined
+      const { response: swStreamerResponse } =
+        serviceWorkerReadySignal.getValue()
+          ? await httpClient.fetch(
+              `${window.location.origin}/streamer/${bookId}/manifest`,
+              {
+                validateStatus: () => true,
+              },
+            )
+          : { response: undefined }
 
       const enrichManifest = async (_manifest: Manifest) => {
         const book = await db?.book.findOne(bookId).exec()

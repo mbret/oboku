@@ -17,10 +17,12 @@ export class CouchService {
     const farFutureDate =
       Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365 * 100
 
-    return this.jwtService.sign(payload, {
+    return this.jwtService.signAsync(payload, {
       privateKey: await this.secretsService.getJwtPrivateKey(),
       algorithm: "RS256",
+      // @todo
       expiresIn: farFutureDate,
+      // expiresIn: "10s",
     })
   }
 

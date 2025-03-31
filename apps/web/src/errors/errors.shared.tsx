@@ -1,4 +1,4 @@
-import { HttpClientError } from "../http/HttpClientError.shared"
+import { HttpClientError } from "../http/httpClient.shared"
 
 type HttpApiError = {
   response: {
@@ -57,10 +57,10 @@ export const isApiError = (error: unknown): error is HttpApiError => {
   return (
     error instanceof HttpClientError &&
     !!error.response &&
-    typeof error.response?.data === "object" &&
+    typeof error.response.data === "object" &&
     error.response.data !== null &&
     "errors" in error.response.data &&
-    Array.isArray(error.response?.data.errors)
+    Array.isArray(error.response.data.errors)
   )
 }
 

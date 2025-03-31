@@ -33,7 +33,6 @@ export const AutUser = createParamDecorator((_, req) => {
 export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
-    private appConfigService: AppConfigService,
     private reflector: Reflector,
     private secretsService: SecretsService,
   ) {}

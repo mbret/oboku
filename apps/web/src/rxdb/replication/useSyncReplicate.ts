@@ -9,9 +9,9 @@ export const useSyncReplicate = () => {
 
   return useMutation$({
     mutationFn: (collections: RxCollection[]) => {
-      const { token, dbName } = authStateSignal.getValue() ?? {}
+      const { dbName } = authStateSignal.getValue() ?? {}
 
-      if (!dbName || !token) throw new Error("Invalid database")
+      if (!dbName) throw new Error("Invalid database")
 
       const replicationStates = of(
         collections.map((collection) =>

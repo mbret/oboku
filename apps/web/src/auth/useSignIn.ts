@@ -11,7 +11,7 @@ import {
 import { lock, unlock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
 import { authStateSignal } from "./authState"
-import { httpClient } from "../http/httpClient"
+import { httpClientApi } from "../http/httpClientApi.web"
 import { setProfile } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
 import { currentProfileSignal } from "../profile/currentProfile"
@@ -34,12 +34,12 @@ export const useSignIn = () => {
           )
 
       return credentials$.pipe(
-        switchMap((credentials) => from(httpClient.signIn(credentials))),
+        switchMap((credentials) => from(httpClientApi.signIn(credentials))),
         withLatestFrom(authStateSignal.subject),
         switchMap(
           ([
             {
-              data: { dbName, email, token, nameHex },
+              data: { dbName, email, accessToken, refreshToken, nameHex },
             },
             previousAuth,
           ]) => {
@@ -50,10 +50,16 @@ export const useSignIn = () => {
 
             return waitForDbRecreation$.pipe(
               tap(() => {
-                authStateSignal.setValue({ dbName, email, token, nameHex })
+                authStateSignal.update({
+                  dbName,
+                  email,
+                  accessToken,
+                  refreshToken,
+                  nameHex,
+                })
                 setUser({ email, id: nameHex })
                 setProfile(nameHex)
-                currentProfileSignal.setValue(nameHex)
+                currentProfileSignal.update(nameHex)
               }),
             )
           },

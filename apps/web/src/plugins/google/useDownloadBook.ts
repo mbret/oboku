@@ -2,9 +2,9 @@ import { extractIdFromResourceId } from "./lib/resources"
 import { isDriveResponseError } from "./lib/types"
 import { useAccessToken } from "./lib/useAccessToken"
 import type { ObokuPlugin } from "../types"
-import { httpClient } from "../../http/httpClient"
 import { catchError, from, mergeMap, of } from "rxjs"
 import { useGoogleScripts } from "./lib/scripts"
+import { httpClientWeb } from "../../http/httpClient.web"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   requestPopup,
@@ -29,7 +29,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
             ).pipe(
               mergeMap((info) => {
                 return from(
-                  httpClient.download<Blob>({
+                  httpClientWeb.download<Blob>({
                     /**
                      * @important
                      * The api key in the url does not appears to be needed since we have oauth.

@@ -14,14 +14,14 @@ import type { RxCouchDBReplicationState } from "rxdb/dist/types/plugins/replicat
 export const useBackgroundReplication = () => {
   const { db: database } = useDatabase()
   const { online } = useNetworkState()
-  const { token, dbName } = useSignalValue(authStateSignal) ?? {}
+  const { accessToken: token, dbName } = useSignalValue(authStateSignal) ?? {}
   const replicateBook = useReplicateCollection()
   const replicateTag = useReplicateCollection()
   const replicateCollection = useReplicateCollection()
   const replicateLink = useReplicateCollection()
   const replicateSettings = useReplicateCollection()
   const replicateDatasource = useReplicateCollection()
-
+  const isAuthenticated = !!token
   const [replicationStates, setReplicationStates] = useState<
     RxCouchDBReplicationState<unknown>[]
   >([])
@@ -32,7 +32,9 @@ export const useBackgroundReplication = () => {
     () =>
       triggerReplication$.pipe(
         tap(() => {
-          replicationStates.forEach((state) => state?.reSync())
+          replicationStates.forEach((state) => {
+            state?.reSync()
+          })
         }),
       ),
     [replicationStates],
@@ -112,7 +114,7 @@ export const useBackgroundReplication = () => {
   ])
 
   useEffect(() => {
-    if (!online || !token) return
+    if (!online || !isAuthenticated) return
 
     replicationStates.forEach((state) => {
       state.start()
@@ -123,5 +125,5 @@ export const useBackgroundReplication = () => {
         state.pause()
       })
     }
-  }, [online, token, replicationStates])
+  }, [online, isAuthenticated, replicationStates])
 }

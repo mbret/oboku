@@ -1,7 +1,6 @@
-import { firstValueFrom } from "rxjs"
 import { getCoverIdFromUrl } from "./helpers.shared"
-import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
 import { serviceWorkerConfiguration } from "../config/configuration.sw"
+import { httpClient, HttpClientError } from "../http/httpClient.shared"
 
 export const coversFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)
@@ -22,19 +21,16 @@ export const coversFetchListener = (event: FetchEvent) => {
           return cachedResponse
         }
 
-        const auth = await firstValueFrom(serviceWorkerCommunication.askAuth())
-
         /**
          * We want to be able to access the response headers (avoid opaque).
          * So we make sure to have a cors enabled request.
          */
         try {
-          const response = await fetch(event.request, {
+          const { response } = await httpClient.fetch(event.request, {
+            unwrap: false,
             mode: "cors",
             credentials: "omit",
-            headers: {
-              authorization: `Bearer ${auth.payload.token}`,
-            },
+            validateStatus: () => true,
           })
 
           if (response.status !== 200) {
@@ -65,7 +61,9 @@ export const coversFetchListener = (event: FetchEvent) => {
           return new Response(null, {
             status: 502, // or whatever status code is appropriate
             statusText:
-              error instanceof Error ? error.message : "Network error",
+              error instanceof HttpClientError
+                ? error.message
+                : "Network error",
           })
         }
       })(),

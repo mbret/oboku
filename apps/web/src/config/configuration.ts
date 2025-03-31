@@ -1,5 +1,6 @@
 import { BehaviorSubject, filter, first } from "rxjs"
 import { Logger } from "../debug/logger.shared"
+import { httpClientApi } from "../http/httpClientApi.web"
 
 type ServerConfig = {
   GOOGLE_CLIENT_ID?: string
@@ -54,14 +55,15 @@ class Configuration extends BehaviorSubject<{
   }
 
   fetchConfig = async (): Promise<ServerConfig | undefined> => {
-    const res = await fetch(`${this.API_URL}/web/config`)
-    const data = await res.json()
+    try {
+      const { data } = await httpClientApi.fetch<ServerConfig>(
+        `${this.API_URL}/web/config`,
+      )
 
-    if (res.status === 200) {
       return data
+    } catch (error) {
+      Logger.error("Failed to fetch config", error)
     }
-
-    Logger.error("Failed to fetch config", res)
   }
 
   get API_URL() {

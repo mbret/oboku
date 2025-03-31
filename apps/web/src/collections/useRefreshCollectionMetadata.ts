@@ -2,7 +2,7 @@ import { catchError, from, map, of, switchMap } from "rxjs"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useUpdateCollection } from "./useUpdateCollection"
-import { httpClient } from "../http/httpClient"
+import { httpClientApi } from "../http/httpClientApi.web"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getCollectionById } from "./dbHelpers"
@@ -44,7 +44,7 @@ export const useRefreshCollectionMetadata = () => {
                     switchMap(() => from(sync([db.obokucollection]))),
                     switchMap(() =>
                       from(
-                        httpClient.refreshCollectionMetadata(
+                        httpClientApi.refreshCollectionMetadata(
                           collectionId,
                           pluginMetadata,
                         ),

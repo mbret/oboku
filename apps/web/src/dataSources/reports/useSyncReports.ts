@@ -1,4 +1,4 @@
-import { httpClient } from "../../http/httpClient"
+import { httpClientApi } from "../../http/httpClientApi.web"
 import type { SyncReportPostgresEntitiesShared } from "@oboku/shared"
 import { useQuery } from "@tanstack/react-query"
 import { configuration } from "../../config/configuration"
@@ -6,14 +6,12 @@ export const useSyncReports = () =>
   useQuery({
     queryKey: ["api/datasourceReport"],
     queryFn: async () => {
-      const response = await httpClient.fetch<SyncReportPostgresEntitiesShared>(
-        {
-          url: `${configuration.API_URL}/datasources/sync-reports`,
-          withAuth: true,
-        },
-      )
+      const { data } =
+        await httpClientApi.fetch<SyncReportPostgresEntitiesShared>(
+          `${configuration.API_URL}/datasources/sync-reports`,
+        )
 
-      const entries = response?.data
+      const entries = data
         .map((report) => {
           return report.report.reduce(
             (acc, { rx_model, added, deleted, updated, fetchedMetadata }) => {

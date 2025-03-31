@@ -51,7 +51,7 @@ export const AppNavigator = ({
   isProfileHydrated: boolean
 }) => {
   const auth = useSignalValue(authStateSignal)
-  const isAuthenticated = !!auth?.token
+  const isAuthenticated = !!auth?.accessToken
 
   return (
     <BrowserRouter>

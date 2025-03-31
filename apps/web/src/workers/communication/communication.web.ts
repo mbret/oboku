@@ -49,9 +49,7 @@ export class WebCommunication {
           )
 
           if (event.data.type === AskAuthMessage.type) {
-            const message = new ReplyAuthMessage({
-              token: authStateSignal.getValue()?.token,
-            })
+            const message = new ReplyAuthMessage({ ...authStateSignal.value })
 
             this.incomingMessageSubject.next(message)
             navigator.serviceWorker.controller?.postMessage(message)

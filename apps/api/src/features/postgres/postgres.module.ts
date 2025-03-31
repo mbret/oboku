@@ -4,10 +4,13 @@ import { SyncReportPostgresService } from "./SyncReportPostgresService"
 import { AppConfigService } from "../../config/AppConfigService"
 import {
   CommunicationPostgresEntity,
+  // RefreshTokenPostgresEntity,
   SyncReportPostgresEntity,
   UserPostgresEntity,
 } from "./entities"
 import { CommunicationPostgresService } from "./CommunicationPostgresService"
+import { RefreshTokensService } from "./refreshTokens.service"
+import { JwtService } from "@nestjs/jwt"
 
 @Module({
   imports: [
@@ -15,13 +18,16 @@ import { CommunicationPostgresService } from "./CommunicationPostgresService"
       SyncReportPostgresEntity,
       CommunicationPostgresEntity,
       UserPostgresEntity,
+      // RefreshTokenPostgresEntity,
     ]),
   ],
   providers: [
     SyncReportPostgresService,
     AppConfigService,
     CommunicationPostgresService,
+    RefreshTokensService,
+    JwtService,
   ],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, RefreshTokensService],
 })
 export class PostgresModule {}

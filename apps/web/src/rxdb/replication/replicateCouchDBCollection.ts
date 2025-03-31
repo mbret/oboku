@@ -1,7 +1,7 @@
 import { replicateCouchDB } from "rxdb/plugins/replication-couchdb"
 import type { RxCollection } from "rxdb"
 import { configuration } from "../../config/configuration"
-import { authStateSignal } from "../../auth/authState"
+import { httpCouchClient } from "../../http/httpClientCouch.web"
 
 export const replicateCouchDBCollection = ({
   dbName,
@@ -15,7 +15,7 @@ export const replicateCouchDBCollection = ({
   collection: RxCollection
   host?: string
   autoStart?: boolean
-  cancelSignal?: AbortSignal
+  cancelSignal: AbortSignal
 } & Omit<
   Parameters<typeof replicateCouchDB>[0],
   "pull" | "push" | "url" | "replicationIdentifier" | "collection"
@@ -38,32 +38,35 @@ export const replicateCouchDBCollection = ({
         optionsWithAuth.headers = {}
       }
 
-      // add bearer token to headers
-      // @ts-expect-error
-      optionsWithAuth.headers.Authorization = `Bearer ${authStateSignal.value?.token}`
-
       if (
         typeof url === "string" &&
         url.startsWith(`${uri}/${dbName}/_changes`)
       ) {
-        const response = await fetch(`${url}&filter=_selector`, {
-          ...optionsWithAuth,
-          method: "post",
-          headers: {
-            ...optionsWithAuth.headers,
-            "Content-Type": "application/json",
+        const { response } = await httpCouchClient.fetch(
+          `${url}&filter=_selector`,
+          {
+            ...optionsWithAuth,
+            method: "post",
+            headers: {
+              ...optionsWithAuth.headers,
+              "Content-Type": "application/json",
+            },
+            unwrap: false,
+            signal: cancelSignal,
+            validateStatus: () => true,
+            body: JSON.stringify({ selector: { rx_model: collection.name } }),
           },
-          signal: cancelSignal,
-          body: JSON.stringify({ selector: { rx_model: collection.name } }),
-        })
+        )
 
         return response
       }
 
       // call the original fetch function with our custom options.
-      const response = await fetch(url, {
+      const { response } = await httpCouchClient.fetch(url, {
         ...optionsWithAuth,
         signal: cancelSignal,
+        unwrap: false,
+        validateStatus: () => true,
       })
 
       return response

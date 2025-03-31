@@ -7,7 +7,7 @@ import { currentProfileSignal } from "../profile/currentProfile"
 
 export const useSignOut = () => {
   return useCallback(() => {
-    authStateSignal.setValue(SIGNAL_RESET)
+    authStateSignal.update(SIGNAL_RESET)
 
     setUser(null)
 

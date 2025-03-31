@@ -3,7 +3,7 @@ import { useNetworkState } from "react-use"
 import { useMutation$, isDefined } from "reactjrx"
 import { from, filter, switchMap, catchError, map, of } from "rxjs"
 import { createDialog } from "../common/dialogs/createDialog"
-import { httpClient } from "../http/httpClient"
+import { httpClientApi } from "../http/httpClientApi.web"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { useDatabase } from "../rxdb"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
@@ -46,7 +46,7 @@ export const useSynchronizeDataSource = () => {
             }),
           ).pipe(
             switchMap(() => from(sync([database.datasource]))),
-            switchMap(() => from(httpClient.syncDataSource(_id, data.data))),
+            switchMap(() => from(httpClientApi.syncDataSource(_id, data.data))),
             catchError((e) =>
               from(
                 atomicUpdateDataSource({

@@ -1,6 +1,6 @@
 import { useNetworkState } from "react-use"
 import { from, switchMap, catchError, map, of } from "rxjs"
-import { httpClient } from "../http/httpClient"
+import { httpClientApi } from "../http/httpClientApi.web"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
@@ -53,7 +53,7 @@ export const useRefreshBookMetadata = () => {
         .pipe(
           switchMap(() => from(sync([database.link, database.book]))),
           switchMap(() =>
-            from(httpClient.refreshBookMetadata(bookId, pluginMetadata)),
+            from(httpClientApi.refreshBookMetadata(bookId, pluginMetadata)),
           ),
           catchError((e) =>
             from(

@@ -27,6 +27,7 @@
     "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/schedule": "^5.0.1",
     "@nestjs/typeorm": "^11.0.0",
     "@oboku/shared": "^0.8.0",
     "@sentry/aws-serverless": "^9.5.0",

@@ -13,12 +13,16 @@ export class AskAuthMessage implements Message<{}> {
   public payload = {}
 }
 
-export class ReplyAuthMessage implements Message<{ token?: string }> {
+export class ReplyAuthMessage
+  implements Message<{ accessToken?: string; refreshToken?: string }>
+{
   static type = "REPLY_AUTH"
 
   public type = ReplyAuthMessage.type
 
-  constructor(public payload: { token?: string }) {}
+  constructor(
+    public payload: { accessToken?: string; refreshToken?: string },
+  ) {}
 }
 
 // biome-ignore lint/complexity/noBannedTypes: <explanation>

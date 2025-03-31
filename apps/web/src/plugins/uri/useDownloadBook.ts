@@ -1,9 +1,9 @@
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { type ObokuPlugin, extractIdFromResourceId } from "../types"
-import { httpClient, isXMLHttpResponseError } from "../../http/httpClient"
 import { catchError, from, map } from "rxjs"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { CancelError } from "../../errors/errors.shared"
+import { httpClientWeb, isXMLHttpResponseError } from "../../http/httpClient.web"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
   return ({ link, onDownloadProgress }) => {
@@ -15,7 +15,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = () => {
       downloadLink.substring(downloadLink.lastIndexOf("/") + 1) || "unknown"
 
     return from(
-      httpClient.download<Blob>({
+      httpClientWeb.download<Blob>({
         responseType: "blob",
         mode: "cors",
         url: downloadLink,

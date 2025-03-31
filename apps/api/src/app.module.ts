@@ -1,11 +1,10 @@
 import { Module, OnModuleInit } from "@nestjs/common"
 import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
-import { ConfigModule, ConfigService } from "@nestjs/config"
+import { ConfigModule } from "@nestjs/config"
 import * as path from "node:path"
 import * as Joi from "joi"
 import { BooksController } from "./features/books/books.controller"
-import { EnvironmentVariables } from "./config/types"
 import * as fs from "node:fs"
 import { DataSourcesController } from "./features/datasources/datasources.controller"
 import { EventEmitterModule } from "@nestjs/event-emitter"
@@ -15,11 +14,6 @@ import { BooksMedataService } from "./features/books/BooksMedataService"
 import { InMemoryTaskQueueService } from "./features/queue/InMemoryTaskQueueService"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService"
-import {
-  CommunicationPostgresEntity,
-  SyncReportPostgresEntity,
-  UserPostgresEntity,
-} from "./features/postgres/entities"
 import { PostgresModule } from "./features/postgres/postgres.module"
 import { AppConfigModule } from "./config/config.module"
 import { CommunicationController } from "./features/communication/communication.controller"
@@ -30,6 +24,7 @@ import { AuthModule } from "./auth/auth.module"
 import { CouchModule } from "./couch/couch.module"
 import { CoversModule } from "./covers/covers.module"
 import { AppConfigService } from "./config/AppConfigService"
+import { ScheduleModule } from "@nestjs/schedule"
 
 @Module({
   imports: [
@@ -40,11 +35,7 @@ import { AppConfigService } from "./config/AppConfigService"
       username: process.env.POSTGRES_USER ?? "postgres",
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [
-        SyncReportPostgresEntity,
-        CommunicationPostgresEntity,
-        UserPostgresEntity,
-      ],
+      autoLoadEntities: true,
       synchronize: true,
     }),
     // SentryModule.forRoot(),
@@ -84,6 +75,7 @@ import { AppConfigService } from "./config/AppConfigService"
           .default("fs"),
       }),
     }),
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     PostgresModule,
     AppConfigModule,

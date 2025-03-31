@@ -18,8 +18,7 @@ import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
 import { useProfileStorage } from "./profile/storage"
-import { authSignalStorageAdapter } from "./auth/storage"
-import { authStateSignal } from "./auth/authState"
+import { usePersistAuthState } from "./auth/authState"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
@@ -31,13 +30,12 @@ import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDo
 import { QueryClientProvider } from "@tanstack/react-query"
 import { configuration } from "./config/configuration"
 import { useLoadGsi } from "./google/gsi"
+import { AuthGuard } from "./auth/AuthGuard"
 
 // @todo move to sw
 LibArchive.init({
   workerUrl: "/libarchive.js.worker-bundle.js",
 })
-
-const authSignalEntries = [{ signal: authStateSignal, version: 0 }]
 
 export const App = memo(() => {
   const [isPreloadingQueries, setIsPreloadingQueries] = useState(true)
@@ -50,10 +48,7 @@ export const App = memo(() => {
     entries: signalEntriesToPersist,
   })
 
-  const { isHydrated: isAuthHydrated } = usePersistSignals({
-    adapter: authSignalStorageAdapter,
-    entries: authSignalEntries,
-  })
+  const { isHydrated: isAuthHydrated } = usePersistAuthState()
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
   const isAppReady =
@@ -82,6 +77,7 @@ export const App = memo(() => {
                       },
                       <Fade in={isAppReady}>
                         <Box height="100%">
+                          <AuthGuard />
                           <AppNavigator isProfileHydrated={isProfileHydrated} />
                           <ManageBookCollectionsDialog />
                           <ManageBookTagsDialog />

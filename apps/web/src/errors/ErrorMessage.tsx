@@ -1,12 +1,9 @@
 import { ObokuErrorCode } from "@oboku/shared"
 import { isApiError } from "./errors.shared"
-import { HttpClientError } from "../http/HttpClientError.shared"
+import { HttpClientError } from "../http/httpClient.shared"
 
 export const ErrorMessage = ({ error }: { error: unknown }) => {
-  if (
-    error instanceof HttpClientError &&
-    error.response.original.status === 401
-  ) {
+  if (error instanceof HttpClientError && error.response?.status === 401) {
     return "Invalid credentials"
   }
 
