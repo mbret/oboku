@@ -85,7 +85,7 @@ export const SearchScreen = () => {
   const value = useSignalValue(searchStateSignal)
   const { data: collections = [] } = useCollectionsForSearch(value)
   const { data: books = [] } = useBooksForSearch(value)
-  const inputRef = useRef<HTMLElement>()
+  const inputRef = useRef<HTMLElement>(undefined)
   const navigate = useNavigate()
   const [bookExpanded, setBookExpanded] = useState(true)
   const [collectionsExpanded, setCollectionsExpanded] = useState(true)

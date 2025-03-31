@@ -9,23 +9,23 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
     "next": "^15.0.3",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.10.6",
-    "@mui/icons-material": "^6.1.6",
-    "@mui/lab": "^6.0.0-beta.8",
-    "@mui/material": "^6.0.0",
-    "@mui/material-nextjs": "^6.0.1",
-    "@mui/styles": "^6.0.0",
+    "@mui/icons-material": "^7.0.1",
+    "@mui/lab": "^7.0.0-beta.10",
+    "@mui/material": "^7.0.1",
+    "@mui/material-nextjs": "^7.0.0",
     "@oboku/shared": "0.8.0",
-    "remark-gfm": "^4.0.0"
+    "remark-gfm": "^4.0.0",
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "typescript": "^5.5.4",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.1",
     "eslint": "^8.57.0",
     "eslint-config-next": "^15.0.3"
   }

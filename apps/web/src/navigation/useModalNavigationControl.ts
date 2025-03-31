@@ -17,7 +17,7 @@ export const useModalNavigationControl = (
 ) => {
   const navigate = useNavigate()
   const [currentHash, setCurrentHash] = useState<string | undefined>(undefined)
-  const closeCb = useRef<() => void>()
+  const closeCb = useRef<() => void>(undefined)
   const { state } = useLocation()
   const modalHash: string | undefined = state?.__oboku_modal
   const [synced, setSynced] = useState(false)

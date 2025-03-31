@@ -99,6 +99,7 @@ export const HomeContent = () => {
                   color="primary"
                   href={links.app}
                   target="_blank"
+                  suppressHydrationWarning
                 >
                   Get started
                 </Button>

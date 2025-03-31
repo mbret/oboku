@@ -7,6 +7,7 @@ import {
   type Ref,
   useEffect,
   useState,
+  ReactElement,
 } from "react"
 import { Box, Stack } from "@mui/material"
 import {
@@ -48,7 +49,7 @@ export const VirtuosoList = memo(
     horizontalDirection,
     ...rest
   }: {
-    renderHeader?: () => React.ReactNode | JSX.Element
+    renderHeader?: () => React.ReactNode | ReactElement
     style?: React.CSSProperties
     data?: string[]
     itemsPerRow?: number

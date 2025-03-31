@@ -1,5 +1,5 @@
 import type React from "react"
-import { memo, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { memo, ReactElement, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Box, Stack } from "@mui/material"
 
@@ -12,8 +12,8 @@ export const VirtualizedList = memo(
     style,
   }: {
     data: string[]
-    renderHeader?: (() => JSX.Element) | (() => React.ReactNode)
-    rowRenderer: (index: number, id: string) => JSX.Element
+    renderHeader?: (() => ReactElement) | (() => React.ReactNode)
+    rowRenderer: (index: number, id: string) => ReactElement
     itemsPerRow: number
     style?: React.CSSProperties
   }) => {

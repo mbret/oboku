@@ -1,6 +1,7 @@
 import { getCoverIdFromUrl } from "./helpers.shared"
 import { serviceWorkerConfiguration } from "../config/configuration.sw"
 import { httpClient, HttpClientError } from "../http/httpClient.shared"
+import { httpClientApi } from "../http/httpClientApi.sw"
 
 export const coversFetchListener = (event: FetchEvent) => {
   const url = new URL(event.request.url)
@@ -26,7 +27,7 @@ export const coversFetchListener = (event: FetchEvent) => {
          * So we make sure to have a cors enabled request.
          */
         try {
-          const { response } = await httpClient.fetch(event.request, {
+          const { response } = await httpClientApi.fetch(event.request, {
             unwrap: false,
             mode: "cors",
             credentials: "omit",

@@ -4,6 +4,7 @@ import type {
   DOMAttributes,
   FC,
   FunctionComponent,
+  ReactElement,
   ReactNode,
 } from "react"
 import type { Button } from "@mui/material"
@@ -113,7 +114,7 @@ export type ObokuPlugin = {
     ) => void
   }>
   Provider?: FunctionComponent<{ children: ReactNode }>
-  InfoScreen?: () => JSX.Element
+  InfoScreen?: () => ReactElement
   useRefreshMetadata?: UseRefreshMetadataHook
   useSynchronize?: UseSynchronizeHook
   useDownloadBook?: UseDownloadHook

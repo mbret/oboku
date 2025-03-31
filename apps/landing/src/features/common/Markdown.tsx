@@ -1,5 +1,5 @@
 import styled from "@emotion/styled"
-import { Link, Typography } from "@mui/material"
+import { Box, Link, Typography } from "@mui/material"
 import React, { type ComponentProps } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -39,12 +39,10 @@ const components: ComponentProps<typeof ReactMarkdown>["components"] = {
 
 export const Markdown = ({ children }: { children: string }) => {
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      className="markdown"
-      components={components}
-    >
-      {children}
-    </ReactMarkdown>
+    <Box className="markdown">
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+        {children}
+      </ReactMarkdown>
+    </Box>
   )
 }

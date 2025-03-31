@@ -2,9 +2,9 @@ import { firstValueFrom } from "rxjs"
 import { HttpClient } from "./httpClient.shared"
 import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
 
-const httpApiClient = new HttpClient()
+export const httpClientApi = new HttpClient()
 
-httpApiClient.useRequestInterceptor(async (config) => {
+httpClientApi.useRequestInterceptor(async (config) => {
   const auth = await firstValueFrom(serviceWorkerCommunication.askAuth())
 
   if (auth.payload.accessToken) {

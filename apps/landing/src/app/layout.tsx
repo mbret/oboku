@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Inter, Roboto } from "next/font/google"
 import "./globals.css"
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter"
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter"
 import { CssBaseline, Stack, ThemeProvider } from "@mui/material"
 import { theme } from "../theme"
 import AppBar from "../features/home/AppBar"
