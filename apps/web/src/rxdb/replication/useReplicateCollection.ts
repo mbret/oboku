@@ -13,9 +13,10 @@ export const useReplicateCollection = <
     ({
       collection,
       ...params
-    }: { collection: Collection } & Omit<Parameters<
-    typeof replicateCouchDBCollection
-  >[0], "cancelSignal">) => {
+    }: { collection: Collection } & Omit<
+      Parameters<typeof replicateCouchDBCollection>[0],
+      "cancelSignal"
+    >) => {
       const cancelSignal = new AbortController()
 
       const state = replicateCouchDBCollection({
