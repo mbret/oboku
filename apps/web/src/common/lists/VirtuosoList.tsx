@@ -8,6 +8,7 @@ import {
   useEffect,
   useState,
   type ReactElement,
+  ComponentProps,
 } from "react"
 import { Box, Stack } from "@mui/material"
 import {
@@ -35,6 +36,8 @@ const restoreScrollSignal = signal<
   key: "restoreScrollSignal",
   default: {},
 })
+
+type SharedProps = ComponentProps<typeof Virtuoso> & ComponentProps<typeof VirtuosoGrid>
 
 export const VirtuosoList = memo(
   ({
@@ -69,7 +72,7 @@ export const VirtuosoList = memo(
       | { type: "list"; state: StateSnapshot }
       | { type: "grid"; state: GridStateSnapshot }
     useWindowScroll?: boolean
-  }) => {
+  } & Pick<SharedProps, "scrollerRef">) => {
     const virtuosoRef = useRef<VirtuosoHandle>(null)
     const virtuosoGridRef = useRef<VirtuosoGridHandle>(null)
     const [isReadyToBeShown, setIsReadyToBeShown] = useState(false)

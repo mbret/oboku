@@ -3,7 +3,7 @@ import { readerSettingsStateSignal } from "../reader/settings/states"
 import { bookBeingReadStateSignal } from "../reading/states"
 import { localSettingsSignal } from "../settings/states"
 import { libraryShelvesFiltersSignal } from "../library/shelves/filters/states"
-import { collectionDetailsScreenListControlsStateSignal } from "../pages/collections/CollectionDetailsScreen"
+import { collectionDetailsScreenListControlsStateSignal } from "../pages/collections/CollectionDetailsScreen/CollectionDetailsScreen"
 import { searchListActionsToolbarSignal } from "../search/list/states"
 import type { SignalPersistenceConfig } from "reactjrx"
 
