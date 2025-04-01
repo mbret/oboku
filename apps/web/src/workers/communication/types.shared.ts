@@ -1,6 +1,7 @@
+import type { AuthSession } from "../../auth/types"
 import type { SharedConfig } from "../../config/types.shared"
 
-interface Message<Payload extends Record<string, string | undefined>> {
+interface Message<Payload extends Record<string, string | undefined> | null> {
   type: string
   payload: Payload
 }
@@ -13,15 +14,15 @@ export class AskAuthMessage implements Message<{}> {
   public payload = {}
 }
 
-export class ReplyAuthMessage
-  implements Message<{ accessToken?: string; refreshToken?: string }>
+export class NotifyAuthMessage
+  implements Message<AuthSession | null>
 {
-  static type = "REPLY_AUTH"
+  static type = "NotifyAuthMessage"
 
-  public type = ReplyAuthMessage.type
+  public type = NotifyAuthMessage.type
 
   constructor(
-    public payload: { accessToken?: string; refreshToken?: string },
+    public payload: AuthSession | null,
   ) {}
 }
 

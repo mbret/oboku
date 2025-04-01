@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { authStateSignal } from "./authState"
+import { authStateSignal } from "./states.web"
 import { SIGNAL_RESET } from "reactjrx"
 import { removeProfile } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"

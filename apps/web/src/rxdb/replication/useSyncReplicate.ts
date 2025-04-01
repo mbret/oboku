@@ -1,4 +1,4 @@
-import { authStateSignal } from "../../auth/authState"
+import { authStateSignal } from "../../auth/states.web"
 import { from, mergeMap, of } from "rxjs"
 import type { RxCollection } from "rxdb"
 import { useReplicateCollection } from "./useReplicateCollection"

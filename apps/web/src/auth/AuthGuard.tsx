@@ -1,7 +1,7 @@
 import { memo, useEffect } from "react"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useSignOut } from "./useSignOut"
-import { authStateSignal } from "./authState"
+import { authStateSignal } from "./states.web"
 import { type FetchConfig, HttpClientError } from "../http/httpClient.shared"
 import { httpCouchClient } from "../http/httpClientCouch.web"
 

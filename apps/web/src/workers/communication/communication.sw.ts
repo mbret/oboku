@@ -12,7 +12,7 @@ import {
   AskProfileMessage,
   ConfigurationChangeMessage,
   ReplyAskProfileMessage,
-  ReplyAuthMessage,
+  NotifyAuthMessage,
   SkipWaitingMessage,
 } from "./types.shared"
 import { Logger } from "../../debug/logger.shared"
@@ -27,7 +27,7 @@ class IncomingMessageTimeoutError extends Error {
 
 class ServiceWorkerCommunication {
   private incomingMessageSubject = new Subject<
-    | ReplyAuthMessage
+    | NotifyAuthMessage
     | ReplyAskProfileMessage
     | SkipWaitingMessage
     | ConfigurationChangeMessage
@@ -41,9 +41,9 @@ class ServiceWorkerCommunication {
 
       // @todo make it dynamic
 
-      if (event.data.type === ReplyAuthMessage.type) {
+      if (event.data.type === NotifyAuthMessage.type) {
         this.incomingMessageSubject.next(
-          new ReplyAuthMessage(event.data.payload),
+          new NotifyAuthMessage(event.data.payload),
         )
       }
 
@@ -95,7 +95,7 @@ class ServiceWorkerCommunication {
   public askAuth() {
     this.sendMessage(new AskAuthMessage())
 
-    return this.waitFor((message) => message instanceof ReplyAuthMessage)
+    return this.waitFor((message) => message instanceof NotifyAuthMessage)
   }
 
   public askConfig() {
@@ -113,7 +113,10 @@ class ServiceWorkerCommunication {
   }
 
   public watch<
-    Reply extends typeof SkipWaitingMessage | typeof ConfigurationChangeMessage,
+    Reply extends
+      | typeof SkipWaitingMessage
+      | typeof ConfigurationChangeMessage
+      | typeof NotifyAuthMessage,
   >(Message: Reply) {
     return this.incomingMessage$.pipe(
       filter(
