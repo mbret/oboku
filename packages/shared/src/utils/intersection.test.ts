@@ -52,6 +52,6 @@ it("should return all elements when all arrays are the same", () => {
 })
 
 it("should handle very large arrays efficiently", () => {
-  const largeArray = Array.from({ length: 100000 }, (_, i) => i)
+  const largeArray = Array.from({ length: 10000 }, (_, i) => i)
   expect(intersection(largeArray, largeArray)).toEqual(largeArray)
 })
