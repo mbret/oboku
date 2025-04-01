@@ -9,13 +9,31 @@ export function intersection<T>(
     return []
   }
 
-  // Start with the first array's unique values
-  const [firstArray, ...restArrays] = filteredArrays
-  const uniqueValues = new Set(firstArray)
+  const [first, ...rest] = filteredArrays
+  const seen = new Set<T>()
+  const result: T[] = []
 
-  // Iterate through each element of the first array
-  return Array.from(uniqueValues).filter((item) =>
-    // Check if the item is included in all other arrays
-    restArrays.every((arr) => arr.includes(item)),
-  )
+  // Iterate through the first array maintaining order
+  for (let i = 0; i < (first?.length ?? 0); i++) {
+    const value = first?.[i]
+    
+    // Skip if we've already processed this value
+    if (seen.has(value as T)) continue
+
+    // Check if value exists in all other arrays
+    let isCommon = true
+    for (let j = 0; j < rest.length; j++) {
+      if (!rest[j]?.includes(value as T)) {
+        isCommon = false
+        break
+      }
+    }
+
+    if (isCommon) {
+      seen.add(value as T)
+      result.push(value as T)
+    }
+  }
+
+  return result
 }
