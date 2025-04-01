@@ -2,7 +2,7 @@ import { memo, useEffect } from "react"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useSignOut } from "./useSignOut"
 import { authStateSignal } from "./authState"
-import { FetchConfig, HttpClientError } from "../http/httpClient.shared"
+import { type FetchConfig, HttpClientError } from "../http/httpClient.shared"
 import { httpCouchClient } from "../http/httpClientCouch.web"
 
 const injectToken = async (config: FetchConfig) => {

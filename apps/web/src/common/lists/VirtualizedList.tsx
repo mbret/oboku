@@ -1,7 +1,7 @@
 import type React from "react"
 import {
   memo,
-  ReactElement,
+  type ReactElement,
   useEffect,
   useLayoutEffect,
   useRef,
