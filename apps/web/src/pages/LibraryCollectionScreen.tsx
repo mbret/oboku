@@ -1,15 +1,15 @@
 import { useState, useMemo, useCallback, type ComponentProps } from "react"
 import { Button, Stack, Toolbar as MuiToolbar } from "@mui/material"
 import { useNavigate } from "react-router"
-import { CollectionList } from "../../collections/lists/CollectionList"
+import { CollectionList } from "../collections/lists/CollectionList"
 import { signal, useSignalValue } from "reactjrx"
-import { useLibraryShelves } from "./useLibraryShelves"
-import { Toolbar } from "./Toolbar"
-import { libraryShelvesFiltersSignal } from "./filters/states"
+import { useLibraryShelves } from "../library/shelves/useLibraryShelves"
+import { Toolbar } from "../library/shelves/Toolbar"
+import { libraryShelvesFiltersSignal } from "../library/shelves/filters/states"
 import type { CollectionDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
-import { AddCollectionDialog } from "./AddCollectionDialog"
-import { ROUTES } from "../../navigation/routes"
+import { AddCollectionDialog } from "../library/shelves/AddCollectionDialog"
+import { ROUTES } from "../navigation/routes"
 
 type RestoreStateFromState =
   | Parameters<

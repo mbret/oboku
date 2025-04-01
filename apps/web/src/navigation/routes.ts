@@ -1,7 +1,7 @@
 export const ROUTES = {
   HOME: "/",
   BOOK_DETAILS: "/book/:id",
-  COLLECTION_DETAILS: "/collection/:id",
+  COLLECTION_DETAILS: "/collections/:id",
   PROFILE: "/profile",
   SECURITY: "/profile/security",
   SETTINGS: "/profile/settings",

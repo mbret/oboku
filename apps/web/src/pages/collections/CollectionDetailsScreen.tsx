@@ -9,16 +9,16 @@ import type {
   ListActionSorting,
   ListActionViewMode,
 } from "../../common/lists/ListActionsToolbar"
-import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
-import { useCollection } from "../useCollection"
+import { useCollectionActionsDrawer } from "../../collections/CollectionActionsDrawer/useCollectionActionsDrawer"
+import { useCollection } from "../../collections/useCollection"
 import { useEffect, useMemo } from "react"
 import { useBooks } from "../../books/states"
 import { useLocalSettings } from "../../settings/states"
 import { Logger } from "../../debug/logger.shared"
-import { useCollectionComputedMetadata } from "../useCollectionComputedMetadata"
-import { useCollectionCoverUri } from "../useCollectionCoverUri"
+import { useCollectionComputedMetadata } from "../../collections/useCollectionComputedMetadata"
+import { useCollectionCoverUri } from "../../collections/useCollectionCoverUri"
 import coverPlaceholder from "../../assets/cover-placeholder.jpg"
-import { StatusChip } from "../series/StatusChip"
+import { StatusChip } from "../../collections/series/StatusChip"
 import { useWindowScroll } from "react-use"
 import { configuration } from "../../config/configuration"
 
