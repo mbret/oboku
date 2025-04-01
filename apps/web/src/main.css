@@ -1,0 +1,19 @@
+html,
+body,
+#root {
+  height: 100%;
+  /* height: 100%; */
+  /* Disables pull-to-refresh but allows overscroll glow effects. */
+  overscroll-behavior-y: contain;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* fix https://stackoverflow.com/questions/75428722/a-horizontal-scrollbar-appears-after-logging-in-with-google-one-tap-on-mobile-de */
+#g_a11y_announcement {
+  top: 0 !important;
+}

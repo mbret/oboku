@@ -6,53 +6,39 @@
   "author": "Maxime Bret <bret.maxime@gmail.com>",
   "license": "MIT",
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
+    "docker:dev": "docker compose -f docker-compose.dev.yml up -d --build",
     "start:web": "lerna run start --scope=@oboku/web",
     "start:landing": "lerna run dev --scope=@oboku/landing",
-    "start:api": "lerna run api:start",
+    "start:api": "lerna run start:dev --scope=@oboku/api",
     "build": "lerna run build",
     "build:web": "lerna run build --scope=@oboku/web",
-    "build:api": "lerna run build --scope=@oboku/api",
+    "build:api": "lerna run build --scope=@oboku/api-legacy",
     "build:landing": "lerna run build --scope=@oboku/landing",
     "test": "lerna run test",
     "tsc": "lerna run tsc",
     "format": "npx @biomejs/biome format --write .",
-    "lint": "npx @biomejs/biome check . && lerna run lint",
-    "postinstall": "npx ts-node scripts/installSharp.ts --project scripts/tsconfig.json --platform darwin"
+    "lint": "npx @biomejs/biome check ."
   },
   "devDependencies": {
     "@rollup/plugin-replace": "^6.0.1",
-    "@types/node": "^20",
-    "@types/react-dom": "^18.0.11",
-    "@typescript-eslint/eslint-plugin": "^7.0.2",
-    "@typescript-eslint/parser": "^7.0.2",
-    "esbuild": "^0.20.2",
-    "eslint": "^8.57.0",
-    "eslint-plugin-react": "^7.32.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
+    "@types/node": "^22.13.14",
     "lerna": "^8.1.4",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
     "rollup-plugin-analyzer": "^4.0.0",
     "typescript": "^5.5.4",
-    "vercel": "^39.1.0",
-    "vitest": "^2.0.5",
+    "vercel": "^41.4.1",
+    "vitest": "^3.1.1",
     "webpack-node-externals": "^3.0.0"
   },
   "dependencies": {
-    "@aws-sdk/client-lambda": "^3.689.0",
     "@aws-sdk/client-s3": "^3.689.0",
-    "@aws-sdk/client-sqs": "^3.689.0",
     "@aws-sdk/client-ssm": "^3.687.0",
-    "@emotion/cache": "^11.11.0",
-    "arg": "^5.0.2",
-    "npm-force-resolutions": "^0.0.10",
-    "pino": "^9.1.0",
-    "sharp": "^0.33.5"
+    "@emotion/cache": "^11.11.0"
   }
 }

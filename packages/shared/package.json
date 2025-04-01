@@ -2,17 +2,26 @@
   "name": "@oboku/shared",
   "version": "0.8.0",
   "type": "module",
-  "types": "./src/index.ts",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
+  "types": "./dist/index.ts",
+  "main": "./dist/index.ts",
+  "module": "./dist/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.umd.cjs"
+    }
   },
   "license": "MIT",
-  "files": ["/src"],
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "start": "vite build --watch --mode development",
-    "build": "tsc",
+    "build": "tsc && vite build",
     "test": "vitest run"
+  },
+  "devDependencies": {
+    "vite": "^6.2.2",
+    "vite-plugin-dts": "^4.0.3"
   }
 }

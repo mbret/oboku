@@ -1,0 +1,16 @@
+node_modules
+dist
+*.log
+*.md
+.git
+.data
+.nx
+.vscode
+.idea
+.DS_Store
+.env
+.env.local
+.env.*
+**/.env
+**/.env.*
+/secrets

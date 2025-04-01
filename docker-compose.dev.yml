@@ -1,0 +1,47 @@
+services:
+  couchdb:
+    extends:
+      file: docker-compose.yml
+      service: couchdb
+    build:
+      context: ./
+      dockerfile: dockerfile
+      target: couchdb
+
+  postgres:
+    extends:
+      file: docker-compose.yml
+      service: postgres
+    ports:
+      - "5432:5432"
+
+  web:
+    extends:
+      file: docker-compose.yml
+      service: web
+    build:
+      context: ./
+      dockerfile: dockerfile
+      target: web
+
+  api:
+    extends:
+      file: docker-compose.yml
+      service: api
+    build:
+      context: ./
+      dockerfile: dockerfile
+      target: api
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    volumes:
+      - ./apps/api:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run start:dev
+
+volumes:
+  oboku-postgres:
+  oboku-couchdb-data:
+  oboku-couchdb-config:
+  oboku-api-data:
