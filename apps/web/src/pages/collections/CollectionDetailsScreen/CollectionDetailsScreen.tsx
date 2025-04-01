@@ -1,5 +1,5 @@
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
-import {  Stack } from "@mui/material"
+import { Stack } from "@mui/material"
 import { useNavigate, useParams } from "react-router"
 import { BookListWithControls } from "../../../books/bookList/BookListWithControls"
 import { signal, useSignalValue } from "reactjrx"
@@ -60,8 +60,12 @@ export const CollectionDetailsScreen = () => {
       }
     },
   )
-  const [scrollerRef, setScrollerRef] = useState<HTMLElement | Window | null>(null)
-  const [staticContainer, setStaticContainer] = useState<HTMLElement | null>(null)
+  const [scrollerRef, setScrollerRef] = useState<HTMLElement | Window | null>(
+    null,
+  )
+  const [staticContainer, setStaticContainer] = useState<HTMLElement | null>(
+    null,
+  )
   const [y, setY] = useRafState(0)
 
   useEffect(() => {
@@ -120,11 +124,7 @@ export const CollectionDetailsScreen = () => {
 
   return (
     <>
-      {!!staticContainer &&
-        createPortal(
-          staticContent,
-          staticContainer,
-        )}
+      {!!staticContainer && createPortal(staticContent, staticContainer)}
       <Stack flex={1}>
         <Stack flex={1} height="100%" overflow="hidden">
           {visibleBookIds.length === 0 && staticContent}
