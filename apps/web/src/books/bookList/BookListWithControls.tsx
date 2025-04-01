@@ -4,7 +4,6 @@ import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { useBookIdsSortedBy } from "../helpers"
 import { BookList } from "./BookList"
 import { Stack } from "@mui/material"
-import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
 const style = {
   height: "100%",
