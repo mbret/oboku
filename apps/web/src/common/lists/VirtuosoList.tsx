@@ -8,7 +8,7 @@ import {
   useEffect,
   useState,
   type ReactElement,
-  ComponentProps,
+  type ComponentProps,
 } from "react"
 import { Box, Stack } from "@mui/material"
 import {
@@ -37,7 +37,8 @@ const restoreScrollSignal = signal<
   default: {},
 })
 
-type SharedProps = ComponentProps<typeof Virtuoso> & ComponentProps<typeof VirtuosoGrid>
+type SharedProps = ComponentProps<typeof Virtuoso> &
+  ComponentProps<typeof VirtuosoGrid>
 
 export const VirtuosoList = memo(
   ({
