@@ -6,7 +6,6 @@ import { useCallback } from "react"
 
 export const useReplicateCollection = <
   Collection extends RxCollection<RxDocumentType>,
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   RxDocumentType = any,
 >() => {
   return useCallback(

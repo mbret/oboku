@@ -18,14 +18,6 @@ import { AppHighlightSection } from "./AppHighlightSection"
 import { LastWords } from "./LastWords"
 import Image from "next/image"
 
-const ButtonsContainer = ({ children }: { children: ReactNode }) => {
-  return (
-    <Box display="flex" gap={2} flexDirection="column" width="100%">
-      {children}
-    </Box>
-  )
-}
-
 const HighlightImage = styled(Image)`
   max-width: 300px;
   height: auto;
@@ -55,18 +47,9 @@ export const HomeContent = () => {
       >
         <Box component="header" mb={2}>
           <Typography variant="h2" component="h1">
-            {/* <span style={{ color: theme.palette.primary.main }}>o</span>
-            boku */}
             oboku
           </Typography>
         </Box>
-        {/* <img
-          style={{
-            width: 200
-          }}
-          src={landingLogoAsset}
-          alt="logo"
-        /> */}
         <div
           style={{
             textAlign: "center",
@@ -92,18 +75,24 @@ export const HomeContent = () => {
             alignItems="center"
           >
             <Box width="100%" maxWidth={300}>
-              <ButtonsContainer>
+              <Box display="flex" gap={2} flexDirection="column" width="100%">
                 <Button
                   variant="contained"
                   size="large"
-                  color="primary"
                   href={links.app}
                   target="_blank"
-                  suppressHydrationWarning
                 >
-                  Get started
+                  Start using oboku
                 </Button>
-              </ButtonsContainer>
+                <Button
+                  // variant="outlined"
+                  size="large"
+                  href="https://docs.oboku.me/self-hosting/installation"
+                  target="_blank"
+                >
+                  or Self host
+                </Button>
+              </Box>
             </Box>
           </Box>
         </div>

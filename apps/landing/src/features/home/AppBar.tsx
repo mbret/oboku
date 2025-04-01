@@ -97,7 +97,17 @@ export default function AppBar() {
             backgroundColor: "white",
           }}
         >
-          <Toolbar>
+          <Toolbar sx={{ justifyContent: "space-between" }}>
+            <IconButton
+              sx={{ mr: 2, display: { xs: "flex", sm: "none" } }}
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              onClick={toggleDrawer(true)}
+            >
+              <MenuIcon />
+            </IconButton>
             <MuiLink
               href="/"
               variant="h6"
@@ -111,6 +121,26 @@ export default function AppBar() {
             <Button
               sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
               color="inherit"
+              startIcon={<GitHub />}
+              href={links.github}
+              target="_blank"
+            >
+              github
+            </Button>
+            <Button
+              sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
+              color="inherit"
+              // variant="contained"
+              startIcon={<AutoStoriesRounded />}
+              href={links.documentation}
+              target="_blank"
+            >
+              documentation
+            </Button>
+            <Button
+              sx={{ display: { xs: "none", sm: "flex" } }}
+              color="inherit"
+              size="small"
               variant="contained"
               startIcon={<PhoneIphoneRounded />}
               href={links.app}
@@ -118,25 +148,6 @@ export default function AppBar() {
             >
               app
             </Button>
-            <Button
-              sx={{ display: { xs: "none", sm: "flex" } }}
-              color="inherit"
-              variant="contained"
-              startIcon={<AutoStoriesRounded />}
-              href={links.documentation}
-              target="_blank"
-            >
-              documentation
-            </Button>
-            <IconButton
-              sx={{ display: { xs: "flex", sm: "none" } }}
-              size="large"
-              edge="end"
-              aria-label="menu"
-              onClick={toggleDrawer(true)}
-            >
-              <MenuIcon />
-            </IconButton>
           </Toolbar>
         </MuiAppBar>
       </Box>

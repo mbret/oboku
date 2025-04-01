@@ -25,9 +25,7 @@ export const theme = createTheme({
         disableElevation: true,
       },
       styleOverrides: {
-        root: {
-          textTransform: "capitalize",
-        },
+        root: {},
       },
     },
   },
