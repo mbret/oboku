@@ -106,7 +106,7 @@ serviceWorkerCommunication
     serviceWorkerConfiguration.update(message.payload)
   })
 
-// registerCoversCacheCleanup()
+registerCoversCacheCleanup()
 
 self.addEventListener(`fetch`, (event) => {
   const isHandledByCovers = coversFetchListener(event)
