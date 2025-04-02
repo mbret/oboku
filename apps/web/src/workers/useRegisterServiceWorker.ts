@@ -96,9 +96,7 @@ export const useRegisterServiceWorker = () => {
     () =>
       authStateSignal.pipe(
         tap((auth) => {
-          webCommunication.sendMessage(
-            new NotifyAuthMessage(auth),
-          )
+          webCommunication.sendMessage(new NotifyAuthMessage(auth))
         }),
       ),
     [],

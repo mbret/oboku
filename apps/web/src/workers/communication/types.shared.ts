@@ -14,16 +14,12 @@ export class AskAuthMessage implements Message<{}> {
   public payload = {}
 }
 
-export class NotifyAuthMessage
-  implements Message<AuthSession | null>
-{
+export class NotifyAuthMessage implements Message<AuthSession | null> {
   static type = "NotifyAuthMessage"
 
   public type = NotifyAuthMessage.type
 
-  constructor(
-    public payload: AuthSession | null,
-  ) {}
+  constructor(public payload: AuthSession | null) {}
 }
 
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
