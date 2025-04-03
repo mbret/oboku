@@ -86,7 +86,7 @@ import { AdminModule } from "./admin/admin.module"
     UsersModule,
     CouchModule,
     CoversModule,
-    AdminModule
+    AdminModule,
   ],
   providers: [
     // {

@@ -9,11 +9,11 @@ interface iUser extends nano.MaybeDocument {
 }
 
 export interface UserCouchEntity {
-  password_scheme: string,
-  pbkdf2_prf: string,
-  salt: string,
-  iterations: number,
-  derived_key: string,
+  password_scheme: string
+  pbkdf2_prf: string
+  salt: string
+  iterations: number
+  derived_key: string
   email: string
   roles: string[]
   type: "user"
