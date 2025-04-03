@@ -1,11 +1,12 @@
 import { useMutation } from "@tanstack/react-query"
 import { authState } from "./states";
+import { config } from "@/config";
 
 export const useMigrate = () => {
   return useMutation({
     mutationFn: async () =>
       {
-        await fetch("http://localhost:3000/admin/migrate", {
+        await fetch(`${config.apiUrl}/admin/migrate`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
