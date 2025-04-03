@@ -6,9 +6,9 @@ import { isCancelError } from "../errors/errors.shared"
 import { ErrorMessage } from "../errors/ErrorMessage"
 import { Link } from "react-router"
 import { ROUTES } from "../navigation/routes"
-import { SignUpForm } from "./SignUpForm"
-import { AuthPage } from "./AuthPage"
-import { useSignUp } from "./useSignUp"
+import { SignUpForm } from "../auth/SignUpForm"
+import { AuthPage } from "../auth/AuthPage"
+import { useSignUp } from "../auth/useSignUp"
 
 export const SignUpScreen = () => {
   const { mutate, error } = useSignUp()

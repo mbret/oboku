@@ -7,12 +7,14 @@ import {
 } from "./communication/communication.web"
 import {
   ConfigurationChangeMessage,
+  NotifyAuthMessage,
   SkipWaitingMessage,
 } from "./communication/types.shared"
 import { useSubscribe } from "reactjrx"
 import { configuration } from "../config/configuration"
 import { distinctUntilKeyChanged, tap } from "rxjs"
 import { isShallowEqual } from "@oboku/shared"
+import { authStateSignal } from "../auth/states.web"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -85,6 +87,16 @@ export const useRegisterServiceWorker = () => {
               API_URL: configuration.API_URL,
             }),
           )
+        }),
+      ),
+    [],
+  )
+
+  useSubscribe(
+    () =>
+      authStateSignal.pipe(
+        tap((auth) => {
+          webCommunication.sendMessage(new NotifyAuthMessage(auth))
         }),
       ),
     [],

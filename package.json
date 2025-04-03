@@ -17,6 +17,7 @@
     "start:web": "lerna run start --scope=@oboku/web",
     "start:landing": "lerna run dev --scope=@oboku/landing",
     "start:api": "lerna run start:dev --scope=@oboku/api",
+    "start:admin": "lerna run start --scope=@oboku/admin",
     "build": "lerna run build",
     "build:web": "lerna run build --scope=@oboku/web",
     "build:api": "lerna run build --scope=@oboku/api-legacy",

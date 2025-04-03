@@ -1,4 +1,4 @@
-import { EMPTY, fromEvent, merge, Subject, tap } from "rxjs"
+import { EMPTY, fromEvent, merge, tap } from "rxjs"
 import { getProfile } from "../../profile/currentProfile"
 import {
   AskAuthMessage,
@@ -6,20 +6,14 @@ import {
   AskProfileMessage,
   ConfigurationChangeMessage,
   ReplyAskProfileMessage,
-  ReplyAuthMessage,
+  NotifyAuthMessage,
   type SkipWaitingMessage,
 } from "./types.shared"
-import { authStateSignal } from "../../auth/authState"
+import { authStateSignal } from "../../auth/states.web"
 import { Logger } from "../../debug/logger.shared"
 import { configuration } from "../../config/configuration"
 
 export class WebCommunication {
-  private incomingMessageSubject = new Subject<
-    AskAuthMessage | AskProfileMessage | AskConfigurationMessage
-  >()
-
-  public incomingMessage$ = this.incomingMessageSubject.asObservable()
-
   constructor() {
     const listenIncomingMessages$ = this.listenIncomingMessages()
 
@@ -49,9 +43,8 @@ export class WebCommunication {
           )
 
           if (event.data.type === AskAuthMessage.type) {
-            const message = new ReplyAuthMessage({ ...authStateSignal.value })
+            const message = new NotifyAuthMessage(authStateSignal.value)
 
-            this.incomingMessageSubject.next(message)
             navigator.serviceWorker.controller?.postMessage(message)
           }
 
@@ -60,7 +53,6 @@ export class WebCommunication {
               profile: getProfile(),
             })
 
-            this.incomingMessageSubject.next(message)
             navigator.serviceWorker.controller?.postMessage(message)
           }
 
@@ -70,7 +62,6 @@ export class WebCommunication {
               API_URL: configuration.API_URL,
             })
 
-            this.incomingMessageSubject.next(message)
             navigator.serviceWorker.controller?.postMessage(message)
           }
         }
@@ -78,7 +69,7 @@ export class WebCommunication {
     )
   }
 
-  sendMessage(message: ConfigurationChangeMessage) {
+  sendMessage(message: ConfigurationChangeMessage | NotifyAuthMessage) {
     if (!("serviceWorker" in navigator)) {
       return EMPTY
     }

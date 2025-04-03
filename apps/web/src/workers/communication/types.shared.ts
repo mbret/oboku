@@ -1,6 +1,7 @@
+import type { AuthSession } from "../../auth/types"
 import type { SharedConfig } from "../../config/types.shared"
 
-interface Message<Payload extends Record<string, string | undefined>> {
+interface Message<Payload extends Record<string, string | undefined> | null> {
   type: string
   payload: Payload
 }
@@ -13,16 +14,12 @@ export class AskAuthMessage implements Message<{}> {
   public payload = {}
 }
 
-export class ReplyAuthMessage
-  implements Message<{ accessToken?: string; refreshToken?: string }>
-{
-  static type = "REPLY_AUTH"
+export class NotifyAuthMessage implements Message<AuthSession | null> {
+  static type = "NotifyAuthMessage"
 
-  public type = ReplyAuthMessage.type
+  public type = NotifyAuthMessage.type
 
-  constructor(
-    public payload: { accessToken?: string; refreshToken?: string },
-  ) {}
+  constructor(public payload: AuthSession | null) {}
 }
 
 // biome-ignore lint/complexity/noBannedTypes: <explanation>

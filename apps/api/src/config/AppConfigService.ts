@@ -106,4 +106,12 @@ export class AppConfigService {
   get COVERS_STORAGE_STRATEGY() {
     return this.config.getOrThrow("COVERS_STORAGE_STRATEGY", { infer: true })
   }
+
+  get ADMIN_LOGIN() {
+    return this.config.get("ADMIN_LOGIN", { infer: true })
+  }
+
+  get ADMIN_PASSWORD() {
+    return this.config.get("ADMIN_PASSWORD", { infer: true })
+  }
 }

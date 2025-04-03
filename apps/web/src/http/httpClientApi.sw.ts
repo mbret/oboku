@@ -1,18 +1,17 @@
-import { firstValueFrom } from "rxjs"
 import { HttpClient } from "./httpClient.shared"
-import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
+import { authState } from "../auth/states.sw"
 
 export const httpClientApi = new HttpClient()
 
 httpClientApi.useRequestInterceptor(async (config) => {
-  const auth = await firstValueFrom(serviceWorkerCommunication.askAuth())
+  const auth = authState.value
 
-  if (auth.payload.accessToken) {
+  if (auth?.accessToken) {
     return {
       ...config,
       headers: {
         ...config.headers,
-        Authorization: `Bearer ${auth.payload.accessToken}`,
+        Authorization: `Bearer ${auth.accessToken}`,
       },
     }
   }

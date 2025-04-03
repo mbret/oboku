@@ -1,6 +1,6 @@
 import { getCoverIdFromUrl } from "./helpers.shared"
 import { serviceWorkerConfiguration } from "../config/configuration.sw"
-import { httpClient, HttpClientError } from "../http/httpClient.shared"
+import { HttpClientError } from "../http/httpClient.shared"
 import { httpClientApi } from "../http/httpClientApi.sw"
 
 export const coversFetchListener = (event: FetchEvent) => {

@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app"
 import { getAnalytics } from "firebase/analytics"
-import { authStateSignal } from "../auth/authState"
+import { authStateSignal } from "../auth/states.web"
 import { setUser } from "@sentry/react"
 import { configuration } from "../config/configuration"
 

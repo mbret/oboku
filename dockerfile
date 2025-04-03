@@ -22,6 +22,19 @@ RUN npx lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
 CMD ["node", "dist/main"]
 
+FROM node:22 AS admin-build
+WORKDIR /usr/src/app
+COPY --from=base /usr/src/app .
+COPY apps/admin ./apps/admin
+RUN npm ci
+RUN npx lerna run build --scope=@oboku/admin
+WORKDIR /usr/src/app/apps/admin
+
+FROM nginx:alpine AS admin
+WORKDIR /usr/src/app
+COPY --from=admin-build /usr/src/app/apps/admin/dist /usr/share/nginx/html
+CMD ["nginx", "-g", "daemon off;"]
+
 FROM node:22 AS web-build
 WORKDIR /usr/src/app
 COPY --from=base /usr/src/app .

@@ -10,7 +10,7 @@ import {
 } from "rxjs"
 import { lock, unlock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
-import { authStateSignal } from "./authState"
+import { authStateSignal } from "./states.web"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { setProfile } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"

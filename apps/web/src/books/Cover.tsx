@@ -7,7 +7,7 @@ import { useBook } from "./states"
 import { useBlurredTagIds } from "../tags/helpers"
 import { useLocalSettings } from "../settings/states"
 import { useSignalValue } from "reactjrx"
-import { authStateSignal } from "../auth/authState"
+import { authStateSignal } from "../auth/states.web"
 import { useBookCover } from "./useBookCover"
 import { configuration } from "../config/configuration"
 

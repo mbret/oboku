@@ -1,15 +1,15 @@
 import { Button, Box, Stack } from "@mui/material"
 import { Alert } from "@mui/material"
 import { Email, Google, PersonAdd } from "@mui/icons-material"
-import { useSignIn } from "./useSignIn"
+import { useSignIn } from "../auth/useSignIn"
 import { OrDivider } from "../common/OrDivider"
 import { isCancelError } from "../errors/errors.shared"
 import { ErrorMessage } from "../errors/ErrorMessage"
 import { configuration } from "../config/configuration"
-import { SignInForm } from "./SignInForm"
+import { SignInForm } from "../auth/SignInForm"
 import { Link } from "react-router"
 import { ROUTES } from "../navigation/routes"
-import { AuthPage } from "./AuthPage"
+import { AuthPage } from "../auth/AuthPage"
 
 export const LoginScreen = () => {
   const { mutate, isPending, error } = useSignIn()
