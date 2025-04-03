@@ -1,9 +1,11 @@
 {
   "files.watcherExclude": {
-    "**/dist/**": true
+    "**/dist/**": true,
+    "**/routeTree.gen.ts": true
   },
   "search.exclude": {
-    "**/dist": true
+    "**/dist": true,
+    "**/routeTree.gen.ts": true
   },
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
@@ -21,5 +23,8 @@
   },
   "[dockercompose]": {
     "editor.defaultFormatter": "ms-azuretools.vscode-docker"
+  },
+  "files.readonlyInclude": {
+    "**/routeTree.gen.ts": true
   }
 }

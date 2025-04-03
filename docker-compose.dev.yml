@@ -24,6 +24,15 @@ services:
       dockerfile: dockerfile
       target: web
 
+  admin:
+    extends:
+      file: docker-compose.yml
+      service: admin
+    build:
+      context: ./
+      dockerfile: dockerfile
+      target: admin
+
   api:
     extends:
       file: docker-compose.yml
@@ -37,7 +46,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./apps/api:/usr/src/app
-      - /usr/src/app/node_modules
     command: npm run start:dev
 
 volumes:
