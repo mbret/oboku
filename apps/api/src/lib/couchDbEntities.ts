@@ -8,6 +8,18 @@ interface iUser extends nano.MaybeDocument {
   name: string
 }
 
+export interface UserCouchEntity {
+  password_scheme: string,
+  pbkdf2_prf: string,
+  salt: string,
+  iterations: number,
+  derived_key: string,
+  email: string
+  roles: string[]
+  type: "user"
+  name: string
+}
+
 export class User implements iUser {
   _rev: string | undefined
   roles: string[] = []

@@ -17,4 +17,6 @@ export interface EnvironmentVariables {
   API_DATA_DIR: string
   COVERS_BUCKET_NAME?: string
   COVERS_STORAGE_STRATEGY: "s3" | "fs"
+  ADMIN_LOGIN?: string
+  ADMIN_PASSWORD?: string
 }

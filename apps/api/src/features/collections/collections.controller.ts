@@ -11,7 +11,7 @@ import { CollectionMetadataRefreshEvent, Events } from "../../events"
 import { CollectionMetadataService } from "./CollectionMetadataService"
 import { IsBoolean, IsString, IsOptional } from "class-validator"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
-import { AuthUser, AutUser } from "src/auth/auth.guard"
+import { WithAuthUser, AuthUser } from "src/auth/auth.guard"
 
 class PostMetadataRefreshDto {
   @IsString()
@@ -44,7 +44,7 @@ export class CollectionsController implements OnModuleInit {
   @Post("metadata/refresh")
   async metadataRefresh(
     @Body() body: PostMetadataRefreshDto,
-    @AutUser() user: AuthUser,
+    @WithAuthUser() user: AuthUser,
     @Headers() headers: {
       "oboku-credentials"?: string
       authorization?: string

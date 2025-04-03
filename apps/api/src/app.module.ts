@@ -25,6 +25,7 @@ import { CouchModule } from "./couch/couch.module"
 import { CoversModule } from "./covers/covers.module"
 import { AppConfigService } from "./config/AppConfigService"
 import { ScheduleModule } from "@nestjs/schedule"
+import { AdminModule } from "./admin/admin.module"
 
 @Module({
   imports: [
@@ -73,6 +74,8 @@ import { ScheduleModule } from "@nestjs/schedule"
           .valid("fs", "s3")
           .optional()
           .default("fs"),
+        ADMIN_LOGIN: Joi.string().optional(),
+        ADMIN_PASSWORD: Joi.string().optional(),
       }),
     }),
     ScheduleModule.forRoot(),
@@ -83,6 +86,7 @@ import { ScheduleModule } from "@nestjs/schedule"
     UsersModule,
     CouchModule,
     CoversModule,
+    AdminModule
   ],
   providers: [
     // {

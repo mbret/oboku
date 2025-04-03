@@ -15,7 +15,7 @@ import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { from } from "rxjs"
 import { SyncReportPostgresService } from "../postgres/SyncReportPostgresService"
 import { CouchService } from "src/couch/couch.service"
-import { AuthUser, AutUser } from "src/auth/auth.guard"
+import { AuthUser, WithAuthUser } from "src/auth/auth.guard"
 import { CoversService } from "src/covers/covers.service"
 
 const syncLongProgress = async ({
@@ -77,7 +77,7 @@ export class DataSourcesController implements OnModuleInit {
   }
 
   @Get("sync-reports")
-  async signin(@AutUser() user: AuthUser) {
+  async signin(@WithAuthUser() user: AuthUser) {
     return await this.syncReportPostgresService.getAllSyncReportsByUser({
       userName: user.email,
     })
@@ -87,7 +87,7 @@ export class DataSourcesController implements OnModuleInit {
   async syncDataSource(
     @Body() { dataSourceId }: { dataSourceId: string },
     @Headers() headers: { authorization: string; "oboku-credentials": string },
-    @AutUser() user: AuthUser,
+    @WithAuthUser() user: AuthUser,
   ) {
     this.logger.log(`syncDataSource ${dataSourceId}`)
 

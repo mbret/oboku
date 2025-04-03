@@ -18,6 +18,7 @@ export const Public = () => SetMetadata(IS_PUBLIC_KEY, true)
 export type TokenPayload = {
   name: string
   sub: string
+  role?: string
   "couchdb.roles": string[]
 }
 
@@ -25,7 +26,7 @@ export type AuthUser = TokenPayload & {
   email: string
 }
 
-export const AutUser = createParamDecorator((_, req) => {
+export const WithAuthUser = createParamDecorator((_, req) => {
   return req.switchToHttp().getRequest().user
 })
 
