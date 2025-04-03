@@ -6,10 +6,10 @@ import { RouterProvider, createRouter } from "@tanstack/react-router"
 import { routeTree } from "./routeTree.gen"
 
 import "./styles.css"
-import '@mantine/core/styles.css'
+import "@mantine/core/styles.css"
 import reportWebVitals from "./reportWebVitals.ts"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { MantineProvider } from '@mantine/core';
+import { MantineProvider } from "@mantine/core"
 
 // Create a new router instance
 const router = createRouter({
@@ -28,7 +28,7 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient()
 
 // Render the app
 const rootElement = document.getElementById("app")

@@ -6,7 +6,12 @@ import { CouchMigrationService } from "./migration.service"
 
 @Module({
   imports: [],
-  providers: [CouchService, AppConfigService, JwtService, CouchMigrationService],
+  providers: [
+    CouchService,
+    AppConfigService,
+    JwtService,
+    CouchMigrationService,
+  ],
   exports: [CouchService],
 })
 export class CouchModule {}

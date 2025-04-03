@@ -8,7 +8,12 @@ import { CouchMigrationService } from "src/couch/migration.service"
 
 @Module({
   imports: [CouchModule],
-  providers: [AppConfigService, JwtService, SecretsService, CouchMigrationService],
+  providers: [
+    AppConfigService,
+    JwtService,
+    SecretsService,
+    CouchMigrationService,
+  ],
   controllers: [AdminController],
   exports: [],
 })
