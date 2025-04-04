@@ -18,7 +18,7 @@ import {
   ImageRounded,
   StorageRounded,
 } from "@mui/icons-material"
-import { useStorageUse } from "./useStorageUse"
+import { useStorageUse } from "../settings/useStorageUse"
 import { BookList } from "../books/bookList/BookList"
 import { bookActionDrawerSignal } from "../books/drawer/BookActionsDrawer"
 import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
@@ -30,7 +30,7 @@ import { useEffect } from "react"
 import { useRemoveCoversInCache } from "../covers/useRemoveCoversInCache"
 import { useDownloadedBooks } from "../download/useDownloadedBooks"
 import { useBooks } from "../books/states"
-import { useRemoveAllDownloads } from "./useRemoveAllDownloads"
+import { useRemoveAllDownloads } from "../settings/useRemoveAllDownloads"
 
 export const ManageStorageScreen = () => {
   const books = useDownloadedBooks()

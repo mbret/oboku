@@ -29,7 +29,7 @@ import {
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
-import { useStorageUse } from "./useStorageUse"
+import { useStorageUse } from "../settings/useStorageUse"
 import { useSignOut } from "../auth/useSignOut"
 import { libraryStateSignal } from "../library/books/states"
 import packageJson from "../../package.json"
@@ -41,7 +41,7 @@ import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { useSignalValue, useUnmountObservable } from "reactjrx"
 import { UnlockContentsDialog } from "../auth/UnlockContentsDialog"
 import { authStateSignal } from "../auth/states.web"
-import { useRemoveAllContents } from "./useRemoveAllContents"
+import { useRemoveAllContents } from "../settings/useRemoveAllContents"
 import { createDialog } from "../common/dialogs/createDialog"
 import { ROUTES } from "../navigation/routes"
 

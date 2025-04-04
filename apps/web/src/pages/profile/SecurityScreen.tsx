@@ -1,5 +1,5 @@
 import { memo, useState } from "react"
-import { TopBarNavigation } from "../navigation/TopBarNavigation"
+import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   alpha,
   Box,
@@ -8,10 +8,10 @@ import {
   ListItemText,
   ListSubheader,
 } from "@mui/material"
-import { authorizeAction } from "../auth/AuthorizeActionDialog"
-import { theme } from "../theme/theme"
-import { useSettings, useUpdateSettings } from "./helpers"
-import { SetupContentsPasswordDialog } from "../auth/SetupContentsPasswordDialog"
+import { authorizeAction } from "../../auth/AuthorizeActionDialog"
+import { theme } from "../../theme/theme"
+import { useSettings, useUpdateSettings } from "../../settings/helpers"
+import { SetupContentsPasswordDialog } from "../../auth/SetupContentsPasswordDialog"
 
 export const SecurityScreen = memo(() => {
   const { data: accountSettings } = useSettings()
