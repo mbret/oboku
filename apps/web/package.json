@@ -1,6 +1,6 @@
 {
   "name": "@oboku/web",
-  "version": "0.162.0",
+  "version": "0.163.0",
   "private": true,
   "dependencies": {
     "@chakra-ui/react": "^3.5.1",
