@@ -25,6 +25,9 @@ export class CouchMigrationService {
 
     logger.log(`Migrating ${userDbs.length} user databases`)
 
+    let linkChanged = 0
+    const userChanged = new Set<string>()
+
     for (const userDbName of userDbs) {
       const userDbInstance = db.use(userDbName)
 
@@ -49,8 +52,12 @@ export class CouchMigrationService {
           }
 
           await userDbInstance.insert(link)
+          linkChanged++
+          userChanged.add(userDbName)
         }
       }
     }
+
+    logger.log(`Migrated ${linkChanged} links in ${userChanged.size} users`)
   }
 }
