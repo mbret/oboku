@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { CouchService } from "./couch.service"
 import { UserCouchEntity } from "src/lib/couchDbEntities"
+import { Cron } from "@nestjs/schedule"
 
 const logger = new Logger("MigrationService")
 
@@ -16,6 +17,7 @@ export class CouchMigrationService {
       selector: {
         type: "user",
       },
+      limit: 99999
     })
 
     const users = result.docs
@@ -37,6 +39,7 @@ export class CouchMigrationService {
         selector: {
           rx_model: "link",
         },
+        limit: 99999,
       })
 
       logger.log(`Found ${result.docs.length} links in ${userDbName}`)
