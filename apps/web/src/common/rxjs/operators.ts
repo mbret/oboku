@@ -1,4 +1,4 @@
-import { catchError, type Observable, retry } from "rxjs"
+import { catchError, ignoreElements, type Observable, retry, tap } from "rxjs"
 import { Logger } from "../../debug/logger.shared"
 
 export const retryAndLogError =
@@ -11,4 +11,14 @@ export const retryAndLogError =
         throw error
       }),
       retry(),
+    )
+
+export const rethrow =
+  <S>(error: unknown) =>
+  (stream: Observable<S>) =>
+    stream.pipe(
+      tap(() => {
+        throw error
+      }),
+      ignoreElements(),
     )
