@@ -9,7 +9,7 @@ import {
   ListItemText,
   ListSubheader,
 } from "@mui/material"
-import { localSettingsSignal, useLocalSettings } from "./states"
+import { localSettingsSignal, useLocalSettings } from "../settings/states"
 import { ListItemSwitch } from "../common/ListItemSwitch"
 
 type LocalSettings = ReturnType<typeof useLocalSettings>
