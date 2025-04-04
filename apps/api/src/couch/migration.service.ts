@@ -17,7 +17,7 @@ export class CouchMigrationService {
       selector: {
         type: "user",
       },
-      limit: 99999
+      limit: 99999,
     })
 
     const users = result.docs
