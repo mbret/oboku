@@ -1,4 +1,11 @@
-import { catchError, ignoreElements, type Observable, retry, tap } from "rxjs"
+import {
+  catchError,
+  ignoreElements,
+  map,
+  type Observable,
+  retry,
+  tap,
+} from "rxjs"
 import { Logger } from "../../debug/logger.shared"
 
 export const retryAndLogError =
@@ -22,3 +29,16 @@ export const rethrow =
       }),
       ignoreElements(),
     )
+
+export const throwIfNotDefined = <S>(
+  stream: Observable<S>,
+): Observable<NonNullable<S>> =>
+  stream.pipe(
+    map((value) => {
+      if (value === undefined || value === null) {
+        throw new Error("Value is undefined or null")
+      }
+
+      return value
+    }),
+  )

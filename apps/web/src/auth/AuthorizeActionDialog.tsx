@@ -8,7 +8,6 @@ import {
   TextField,
 } from "@mui/material"
 import { useEffect } from "react"
-import { useValidateAppPassword } from "../settings/helpers"
 import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { signal, useSignalValue } from "reactjrx"
@@ -16,6 +15,7 @@ import { type Observable, from, map, mergeMap, of } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getSettings } from "../settings/dbHelpers"
 import { CancelError } from "../errors/errors.shared"
+import { validateMasterKey } from "../secrets/useValidateMasterKey"
 
 const FORM_ID = "LockActionBehindUserPasswordDialog"
 
@@ -28,7 +28,7 @@ const actionSignal = signal<
 >({})
 
 export const authorizeAction = (action: () => void, onCancel?: () => void) =>
-  actionSignal.setValue({
+  actionSignal.update({
     action,
     onCancel,
   })
@@ -40,7 +40,7 @@ export function useWithAuthorization() {
         getLatestDatabase().pipe(
           mergeMap((db) => getSettings(db)),
           mergeMap((settings) =>
-            settings?.contentPassword
+            settings?.masterEncryptionKey
               ? from(
                   new Promise<void>((resolve, reject) =>
                     authorizeAction(resolve, () => reject(new CancelError())),
@@ -64,7 +64,7 @@ export const AuthorizeActionDialog = () => {
   })
 
   const { mutate: validatePassword, reset: resetValidatePasswordMutation } =
-    useValidateAppPassword({
+    validateMasterKey({
       onSuccess: () => {
         onClose()
         action?.()
@@ -77,7 +77,7 @@ export const AuthorizeActionDialog = () => {
     })
 
   const onClose = () => {
-    actionSignal.setValue(undefined)
+    actionSignal.update(undefined)
   }
 
   const _onCancel = () => {

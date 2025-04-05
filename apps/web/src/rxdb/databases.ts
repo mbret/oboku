@@ -1,5 +1,4 @@
-import { addRxPlugin, createRxDatabase } from "rxdb"
-import type { PromiseReturnType } from "../types"
+import { addRxPlugin, createRxDatabase, type RxDatabase } from "rxdb"
 import {
   type CollectionCollection,
   collectionCollectionMethods,
@@ -32,9 +31,12 @@ import {
   initializeSettings,
   type SettingsCollection,
   settingsSchema,
+  settingsSchemaMigrationStrategies,
 } from "./collections/settings"
 import { RxDBCleanupPlugin } from "rxdb/plugins/cleanup"
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
+import { catchError, from, map, switchMap } from "rxjs"
+import { rethrow } from "../common/rxjs/operators"
 
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBQueryBuilderPlugin)
@@ -58,16 +60,15 @@ type MyDatabaseCollections = {
   datasource: DataSourceCollection
 }
 
-export type Database = NonNullable<PromiseReturnType<typeof createDatabase>>
+export type Database = RxDatabase<MyDatabaseCollections, any, any, unknown>
 
-export const createDatabase = async (
+export const createDatabase = (
   params: Partial<Parameters<typeof createRxDatabase>[0]> = {},
 ) => {
   const storage = getRxStorageDexie()
-
-  const db = await createRxDatabase<MyDatabaseCollections>({
+  const databasePromise = createRxDatabase<MyDatabaseCollections>({
     ...params,
-    name: "oboku-36",
+    name: "oboku-38",
     // NOTICE: Schema validation can be CPU expensive and increases your build size.
     // You should always use a schema validation plugin in development mode.
     // For most use cases, you should not use a validation plugin in production.
@@ -118,33 +119,48 @@ export const createDatabase = async (
     },
   })
 
-  await db.addCollections({
-    book: {
-      schema: bookSchema,
-      methods: bookDocMethods,
-      statics: bookCollectionMethods,
-      migrationStrategies: bookSchemaMigrationStrategies,
-    },
-    link,
-    tag,
-    settings: {
-      schema: settingsSchema,
-    },
-    obokucollection: {
-      schema: collectionSchema,
-      statics: collectionCollectionMethods,
-      migrationStrategies: collectionMigrationStrategies,
-    },
-    datasource: {
-      schema: dataSourceSchema,
-      statics: dataSourceCollectionMethods,
-      migrationStrategies: dataSourceMigrationStrategies,
-    },
-  })
+  const database$ = from(databasePromise)
 
-  await initializeSettings(db)
+  return database$.pipe(
+    switchMap((db) => {
+      const addCollections$ = from(
+        db.addCollections({
+          book: {
+            schema: bookSchema,
+            methods: bookDocMethods,
+            statics: bookCollectionMethods,
+            migrationStrategies: bookSchemaMigrationStrategies,
+          },
+          link,
+          tag,
+          settings: {
+            schema: settingsSchema,
+            migrationStrategies: settingsSchemaMigrationStrategies,
+          },
+          obokucollection: {
+            schema: collectionSchema,
+            statics: collectionCollectionMethods,
+            migrationStrategies: collectionMigrationStrategies,
+          },
+          datasource: {
+            schema: dataSourceSchema,
+            statics: dataSourceCollectionMethods,
+            migrationStrategies: dataSourceMigrationStrategies,
+          },
+        }),
+      )
 
-  applyHooks(db)
+      return addCollections$.pipe(
+        switchMap(() => {
+          applyHooks(db)
 
-  return db
+          return from(initializeSettings(db))
+        }),
+        map(() => db),
+        catchError((error) => {
+          return from(db.close()).pipe(rethrow(error))
+        }),
+      )
+    }),
+  )
 }

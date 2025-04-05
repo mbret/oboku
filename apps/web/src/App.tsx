@@ -31,6 +31,7 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { configuration } from "./config/configuration"
 import { useLoadGsi } from "./google/gsi"
 import { AuthGuard } from "./auth/AuthGuard"
+import { NotificationsProvider } from "./notifications/NotificationsProvider"
 
 // @todo move to sw
 LibArchive.init({
@@ -102,6 +103,7 @@ export const App = memo(() => {
                       setIsDownloadsHydrated(true)
                     }}
                   />
+                  <NotificationsProvider />
                   <RxDbProvider />
                 </DialogProvider>
               </Suspense>

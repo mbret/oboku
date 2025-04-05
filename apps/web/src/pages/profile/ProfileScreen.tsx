@@ -9,7 +9,7 @@ import {
   SettingsRounded,
   StorageRounded,
 } from "@mui/icons-material"
-import { TopBarNavigation } from "../navigation/TopBarNavigation"
+import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   Button,
   Dialog,
@@ -29,26 +29,24 @@ import {
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
-import { useStorageUse } from "../settings/useStorageUse"
-import { useSignOut } from "../auth/useSignOut"
-import { libraryStateSignal } from "../library/books/states"
-import packageJson from "../../package.json"
-import { toggleDebug } from "../debug"
-import { useDatabase } from "../rxdb"
+import { useStorageUse } from "../../settings/useStorageUse"
+import { useSignOut } from "../../auth/useSignOut"
+import { libraryStateSignal } from "../../library/books/states"
+import packageJson from "../../../package.json"
+import { toggleDebug } from "../../debug"
+import { useDatabase } from "../../rxdb"
 import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
-import { Logger } from "../debug/logger.shared"
-import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
+import { Logger } from "../../debug/logger.shared"
+import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useSignalValue, useUnmountObservable } from "reactjrx"
-import { UnlockContentsDialog } from "../auth/UnlockContentsDialog"
-import { authStateSignal } from "../auth/states.web"
-import { useRemoveAllContents } from "../settings/useRemoveAllContents"
-import { createDialog } from "../common/dialogs/createDialog"
-import { ROUTES } from "../navigation/routes"
+import { authStateSignal } from "../../auth/states.web"
+import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
+import { createDialog } from "../../common/dialogs/createDialog"
+import { ROUTES } from "../../navigation/routes"
+import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
-  const [isUnlockContentsDialogOpened, setIsUnlockContentsDialogOpened] =
-    useState(false)
   const [isDeleteMyDataDialogOpened, setIsDeleteMyDataDialogOpened] =
     useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([])
@@ -76,12 +74,17 @@ export const ProfileScreen = () => {
         <ListItemButton
           onClick={() => {
             if (library.isLibraryUnlocked) {
-              libraryStateSignal.setValue((state) => ({
+              libraryStateSignal.update((state) => ({
                 ...state,
                 isLibraryUnlocked: false,
               }))
             } else {
-              setIsUnlockContentsDialogOpened(true)
+              authorizeAction(() => {
+                libraryStateSignal.update((state) => ({
+                  ...state,
+                  isLibraryUnlocked: true,
+                }))
+              })
             }
           }}
         >
@@ -229,11 +232,6 @@ export const ProfileScreen = () => {
           <ListItemText primary="Delete my account" />
         </ListItemButton>
       </List>
-
-      <UnlockContentsDialog
-        open={isUnlockContentsDialogOpened}
-        onClose={() => setIsUnlockContentsDialogOpened(false)}
-      />
       <DeleteMyDataDialog
         open={isDeleteMyDataDialogOpened}
         onClose={() => setIsDeleteMyDataDialogOpened(false)}

@@ -29,3 +29,5 @@ yarn-error.log*
 
 .env
 tsconfig.tsbuildinfo
+
+!src/secrets

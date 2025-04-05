@@ -8,10 +8,10 @@ import {
   ListItemText,
   ListSubheader,
 } from "@mui/material"
-import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 import { theme } from "../../theme/theme"
-import { useSettings, useUpdateSettings } from "../../settings/helpers"
-import { SetupContentsPasswordDialog } from "../../auth/SetupContentsPasswordDialog"
+import { useSettings } from "../../settings/helpers"
+import { SetupMasterPasswordDialog } from "../../secrets/SetupMasterPasswordDialog"
+import { useRemoveMasterKey } from "../../secrets/useRemoveMasterKey"
 
 export const SecurityScreen = memo(() => {
   const { data: accountSettings } = useSettings()
@@ -19,34 +19,26 @@ export const SecurityScreen = memo(() => {
     isEditContentPasswordDialogOpened,
     setIsEditContentPasswordDialogOpened,
   ] = useState(false)
-  const { mutate: updateSettings } = useUpdateSettings()
+  const { mutate: removeMasterKey } = useRemoveMasterKey()
 
   return (
     <>
-      <Box display="flex" flex={1} overflow="scroll" flexDirection="column">
+      <Box display="flex" flex={1} overflow="auto" flexDirection="column">
         <TopBarNavigation title={"Security"} />
         <List>
           <ListItemButton
             onClick={() => {
-              if (accountSettings?.contentPassword) {
-                authorizeAction(() =>
-                  setIsEditContentPasswordDialogOpened(true),
-                )
-              } else {
-                setIsEditContentPasswordDialogOpened(true)
-              }
+              setIsEditContentPasswordDialogOpened(true)
             }}
           >
             <ListItemText
               primary={
-                accountSettings?.contentPassword
-                  ? "Change app password"
-                  : "Initialize app password (Recommended)"
+                accountSettings?.masterEncryptionKey
+                  ? "Change Master Password"
+                  : "Initialize my Master Password"
               }
               secondary={
-                accountSettings?.contentPassword
-                  ? "Used to authorize sensitive actions"
-                  : "When set, it will be used to authorize sensitive actions"
+                "This password is used to authorize sensitive actions, register secrets, etc."
               }
             />
           </ListItemButton>
@@ -62,22 +54,21 @@ export const SecurityScreen = memo(() => {
           }
           style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
         >
-          {!!accountSettings?.contentPassword && (
+          {!!accountSettings?.masterEncryptionKey && (
             <ListItemButton
               onClick={() => {
-                authorizeAction(() => {
-                  updateSettings({
-                    contentPassword: null,
-                  })
-                })
+                removeMasterKey()
               }}
             >
-              <ListItemText primary="Remove app password" />
+              <ListItemText
+                primary="Remove Master Password"
+                secondary="Last resort if you really lost your password"
+              />
             </ListItemButton>
           )}
         </List>
       </Box>
-      <SetupContentsPasswordDialog
+      <SetupMasterPasswordDialog
         open={isEditContentPasswordDialogOpened}
         onClose={() => setIsEditContentPasswordDialogOpened(false)}
       />

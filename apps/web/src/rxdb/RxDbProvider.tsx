@@ -25,13 +25,13 @@ export const useReCreateDb = () => {
 
       databaseSignal.update(undefined)
 
-      const start$ = db ? from(db?.remove()).pipe(map(() => null)) : of(null)
+      const start$ = db ? from(db.remove()).pipe(map(() => null)) : of(null)
 
       // at this point we expect useDatabase to be rendered
       // again with undefined database. So that nothing should interact with
       // the db while it's being recreated
       return start$.pipe(
-        switchMap(() => from(createDatabase({}))),
+        switchMap(() => createDatabase({})),
         tap((newDb) => {
           databaseSignal.update(newDb)
         }),
