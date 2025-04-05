@@ -69,8 +69,7 @@ export const TagActionsDrawer: FC<{
           </ListItemButton>
           <ListItemButton
             onClick={() =>
-              openWith &&
-              editTag({ _id: openWith, isBlurEnabled: !tag?.isBlurEnabled })
+              openWith && editTag({ _id: openWith, isBlurEnabled: !tag?.isBlurEnabled })
             }
           >
             <ListItemIcon>
@@ -98,8 +97,8 @@ export const TagActionsDrawer: FC<{
         <List>
           <ListItemButton
             onClick={() => {
-              onClose()
               openWith && removeTag({ _id: openWith })
+              onClose()
             }}
           >
             <ListItemIcon>
