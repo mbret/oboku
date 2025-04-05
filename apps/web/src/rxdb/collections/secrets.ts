@@ -68,7 +68,11 @@ const statics: CollectionMethods = {
 
     return removed$
   },
-  incrementalPatchDocument: function (this: SecretCollection, id: string, patch: Partial<RxdbSecretDocType>) {
+  incrementalPatchDocument: function (
+    this: SecretCollection,
+    id: string,
+    patch: Partial<RxdbSecretDocType>,
+  ) {
     const patched$ = from(this.findOne(id).exec()).pipe(
       throwIfNotDefined,
       switchMap((doc) => from(doc.incrementalPatch(patch))),
