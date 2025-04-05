@@ -65,7 +65,6 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
     })
 
     useMount(() => {
-      console.log("FOOO mount")
       mutate()
     })
 

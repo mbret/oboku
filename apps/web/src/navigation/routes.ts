@@ -4,6 +4,7 @@ export const ROUTES = {
   COLLECTION_DETAILS: "/collections/:id",
   PROFILE: "/profile",
   SECURITY: "/profile/security",
+  SECRETS: "/profile/secrets",
   SETTINGS: "/profile/settings",
   STATISTICS: "/profile/statistics",
   PLUGINS: "/plugins",

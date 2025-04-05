@@ -37,6 +37,7 @@ import { RxDBCleanupPlugin } from "rxdb/plugins/cleanup"
 import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
 import { catchError, from, map, switchMap } from "rxjs"
 import { rethrow } from "../common/rxjs/operators"
+import { secretCollection, type SecretCollection } from "./collections/secrets"
 
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBQueryBuilderPlugin)
@@ -58,6 +59,7 @@ type MyDatabaseCollections = {
   settings: SettingsCollection
   obokucollection: CollectionCollection
   datasource: DataSourceCollection
+  secret: SecretCollection
 }
 
 export type Database = RxDatabase<MyDatabaseCollections, any, any, unknown>
@@ -68,7 +70,7 @@ export const createDatabase = (
   const storage = getRxStorageDexie()
   const databasePromise = createRxDatabase<MyDatabaseCollections>({
     ...params,
-    name: "oboku-38",
+    name: "oboku-42",
     // NOTICE: Schema validation can be CPU expensive and increases your build size.
     // You should always use a schema validation plugin in development mode.
     // For most use cases, you should not use a validation plugin in production.
@@ -147,6 +149,7 @@ export const createDatabase = (
             statics: dataSourceCollectionMethods,
             migrationStrategies: dataSourceMigrationStrategies,
           },
+          secret: secretCollection,
         }),
       )
 

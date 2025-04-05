@@ -38,6 +38,7 @@ import { PluginScreen } from "../plugins/PluginScreen"
 import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
 import { ROUTES } from "./routes"
 import { SignUpScreen } from "../pages/SignUpScreen"
+import { SecretsScreen } from "../pages/profile/SecretsScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -91,6 +92,7 @@ export const AppNavigator = ({
               />
               <Route path="plugins/:type" element={<PluginScreen />} />
               <Route path={`${ROUTES.SECURITY}`} element={<SecurityScreen />} />
+              <Route path={`${ROUTES.SECRETS}`} element={<SecretsScreen />} />
               <Route path={`${ROUTES.SETTINGS}`} element={<SettingsScreen />} />
               <Route
                 path={`${ROUTES.STATISTICS}`}

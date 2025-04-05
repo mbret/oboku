@@ -76,6 +76,17 @@ export type TagsDocType = CommonBase & {
   createdAt: string
 }
 
+export type SecretDocType = CommonBase & {
+  name: string
+  rx_model: "secret"
+  modifiedAt: string | null
+  createdAt: string
+  value?: {
+    iv: string
+    data: string
+  } | null
+}
+
 export type CollectionDocType = CommonBase & {
   books: string[]
   linkType?: string

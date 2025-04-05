@@ -25,10 +25,13 @@ type Inputs = {
 }
 
 const actionSignal = signal<
-  { action: () => void; onCancel?: () => void } | undefined
+  { action: (masterKey: string) => void; onCancel?: () => void } | undefined
 >({})
 
-export const authorizeAction = (action: () => void, onCancel?: () => void) =>
+export const authorizeAction = (
+  action: (masterKey: string) => void,
+  onCancel?: () => void,
+) =>
   actionSignal.update({
     action,
     onCancel,
@@ -43,7 +46,7 @@ export function useWithAuthorization() {
           mergeMap((settings) =>
             settings?.masterEncryptionKey
               ? from(
-                  new Promise<void>((resolve, reject) =>
+                  new Promise<string>((resolve, reject) =>
                     authorizeAction(resolve, () => reject(new CancelError())),
                   ),
                 ).pipe(map(() => data))
@@ -67,9 +70,9 @@ export const AuthorizeActionDialog = () => {
   const hasNotSetPassword = !settings.data?.masterEncryptionKey
   const { mutate: validatePassword, reset: resetValidatePasswordMutation } =
     validateMasterKey({
-      onSuccess: () => {
+      onSuccess: (masterKey) => {
         onClose()
-        action?.()
+        action?.(masterKey)
       },
       onError: () => {
         setError("password", {

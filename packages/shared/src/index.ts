@@ -6,6 +6,7 @@ export const design = {
 
 export const links = {
   documentation: `https://docs.oboku.me`,
+  documentationSecrets: `https://docs.oboku.me/secrets`,
   app: `https://app.oboku.me`,
   site: `https://oboku.me`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,
@@ -61,9 +62,7 @@ export { ObokuErrorCode, ObokuSharedError } from "./errors"
 
 export * from "./plugins/file"
 export * from "./metadata"
-
 export * from "./sync/reports"
-
 export * from "./utils/objects"
 export * from "./utils/difference"
 export * from "./utils/truncate"

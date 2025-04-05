@@ -1,4 +1,4 @@
-import { catchError, defaultIfEmpty, map } from "rxjs"
+import { catchError, map } from "rxjs"
 import { from } from "rxjs"
 import { useMutation$ } from "reactjrx"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
@@ -8,7 +8,7 @@ import { throwIfNotDefined } from "../common/rxjs/operators"
 import { decryptMasterKey } from "./masterKeyUtils"
 
 export const validateMasterKey = (options: {
-  onSuccess: () => void
+  onSuccess: (masterKey: string) => void
   onError: () => void
 }) => {
   return useMutation$({
@@ -28,7 +28,6 @@ export const validateMasterKey = (options: {
             catchError(() => {
               throw new Error("Invalid password")
             }),
-            defaultIfEmpty(null),
           ),
         ),
       )

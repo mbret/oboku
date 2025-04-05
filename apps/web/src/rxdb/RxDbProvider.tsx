@@ -7,7 +7,7 @@ const databaseSignal = signal<Database | undefined>({
   key: "databaseState",
 })
 
-export const latestDatabase$ = databaseSignal.subject.pipe(filter(isDefined))
+export const latestDatabase$ = databaseSignal.pipe(filter(isDefined))
 
 export const getLatestDatabase = () => latestDatabase$.pipe(first())
 

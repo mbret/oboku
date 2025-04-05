@@ -32,6 +32,7 @@ import { configuration } from "./config/configuration"
 import { useLoadGsi } from "./google/gsi"
 import { AuthGuard } from "./auth/AuthGuard"
 import { NotificationsProvider } from "./notifications/NotificationsProvider"
+import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 
 // @todo move to sw
 LibArchive.init({
@@ -84,6 +85,7 @@ export const App = memo(() => {
                           <ManageBookTagsDialog />
                           <ManageTagBooksDialog />
                           <AuthorizeActionDialog />
+                          <SetupSecretDialog />
                           <UpdateAvailableDialog
                             serviceWorker={waitingWorker}
                           />

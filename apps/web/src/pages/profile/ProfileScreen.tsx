@@ -2,6 +2,7 @@ import { type FC, useCallback, useEffect, useState } from "react"
 import {
   BarChartRounded,
   GavelRounded,
+  KeyRounded,
   LaunchRounded,
   LockOpenRounded,
   LockRounded,
@@ -110,6 +111,16 @@ export const ProfileScreen = () => {
             <SecurityRounded />
           </ListItemIcon>
           <ListItemText primary="Security" />
+        </ListItemButton>
+        <ListItemButton
+          onClick={() => {
+            navigate(ROUTES.SECRETS)
+          }}
+        >
+          <ListItemIcon>
+            <KeyRounded />
+          </ListItemIcon>
+          <ListItemText primary="Secrets" />
         </ListItemButton>
         <ListItemButton
           onClick={() => {

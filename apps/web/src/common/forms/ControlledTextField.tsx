@@ -29,7 +29,11 @@ export const ControlledTextField = <
             {...textFieldProps}
             inputRef={ref}
             error={fieldState.invalid}
-            helperText={errorToHelperText(fieldState.error)}
+            helperText={
+              fieldState.invalid
+                ? errorToHelperText(fieldState.error)
+                : textFieldProps.helperText
+            }
           />
         )
       }}
