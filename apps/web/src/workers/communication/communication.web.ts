@@ -36,6 +36,11 @@ export class WebCommunication {
           event.data &&
           "type" in event.data
         ) {
+          const serviceWorker =
+            event instanceof MessageEvent
+              ? event.source
+              : navigator.serviceWorker.controller
+
           Logger.log(
             ["communication:web"],
             "received message from service worker",
@@ -45,7 +50,7 @@ export class WebCommunication {
           if (event.data.type === AskAuthMessage.type) {
             const message = new NotifyAuthMessage(authStateSignal.value)
 
-            navigator.serviceWorker.controller?.postMessage(message)
+            serviceWorker?.postMessage(message)
           }
 
           if (event.data.type === AskProfileMessage.type) {
@@ -53,7 +58,7 @@ export class WebCommunication {
               profile: getProfile(),
             })
 
-            navigator.serviceWorker.controller?.postMessage(message)
+            serviceWorker?.postMessage(message)
           }
 
           if (event.data.type === AskConfigurationMessage.type) {
@@ -62,7 +67,7 @@ export class WebCommunication {
               API_URL: configuration.API_URL,
             })
 
-            navigator.serviceWorker.controller?.postMessage(message)
+            serviceWorker?.postMessage(message)
           }
         }
       }),
