@@ -44,6 +44,7 @@
     "rxdb": "^16.8.1",
     "rxjs": "^7.5.7",
     "screenfull": "^6.0.2",
+    "webdav": "^5.8.0",
     "workbox-background-sync": "^7.3.0",
     "workbox-broadcast-update": "^7.3.0",
     "workbox-cacheable-response": "^7.3.0",

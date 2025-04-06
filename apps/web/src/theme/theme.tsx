@@ -123,6 +123,13 @@ export const theme = createTheme({
         underline: "hover",
       },
     },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          minWidth: 250,
+        },
+      },
+    },
   },
   custom: {
     maxWidthCenteredContent: 320,

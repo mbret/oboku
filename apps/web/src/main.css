@@ -2,6 +2,7 @@ html,
 body,
 #root {
   height: 100%;
+  margin: 0;
   /* height: 100%; */
   /* Disables pull-to-refresh but allows overscroll glow effects. */
   overscroll-behavior-y: contain;
