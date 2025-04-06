@@ -61,7 +61,7 @@ export const sync = async ({
   }
 
   const nameHex = Buffer.from(userName).toString("hex")
-  const helpers = createHelpers(dataSourceId, refreshBookMetadata, db)
+  const helpers = createHelpers(refreshBookMetadata, db)
 
   try {
     const dataSource = await helpers.findOne("datasource", {

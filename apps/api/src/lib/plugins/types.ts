@@ -5,6 +5,7 @@ import {
   type DocType,
   type ModelOf,
   type BookMetadata,
+  DataSourceDocType,
 } from "@oboku/shared"
 import cheerio from "cheerio"
 import type createNano from "nano"
@@ -32,7 +33,6 @@ export type SynchronizeAbleDataSource = {
 
 type Helpers = {
   refreshBookMetadata: (opts: { bookId: string }) => Promise<any>
-  getDataSourceData: <Data>() => Promise<Partial<Data>>
   findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
     model: M,
     query: SafeMangoQuery<D>,
@@ -94,6 +94,7 @@ export type DataSourcePlugin = {
       credentials?: any
       dataSourceType: string
       syncReport: SyncReport
+      db: createNano.DocumentScope<unknown>
     },
     helper: Helpers,
   ) => Promise<SynchronizeAbleDataSource>

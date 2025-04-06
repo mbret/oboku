@@ -12,7 +12,7 @@ import type {
   SynchronizeAbleDataSource,
 } from "src/lib/plugins/types"
 import { createThrottler } from "src/lib/utils"
-import { createError } from "../helpers"
+import { createError, getDataSourceData } from "../helpers"
 
 const extractIdFromResourceId = (resourceId: string) =>
   resourceId.replace(`dropbox-`, ``)
@@ -68,7 +68,7 @@ export const dataSource: DataSourcePlugin = {
       stream,
     }
   },
-  sync: async ({ credentials }, helpers) => {
+  sync: async ({ credentials, dataSourceId, db }) => {
     const throttle = createThrottler(50)
 
     const dbx = new Dropbox({
@@ -76,7 +76,10 @@ export const dataSource: DataSourcePlugin = {
     })
 
     const { folderId } =
-      await helpers.getDataSourceData<DropboxDataSourceData>()
+      (await getDataSourceData<"dropbox">({
+        db,
+        dataSourceId: dataSourceId,
+      })) ?? {}
 
     if (!folderId) {
       throw createError("unknown")

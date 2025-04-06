@@ -7,6 +7,7 @@ export const design = {
 export const links = {
   documentation: `https://docs.oboku.me`,
   documentationSecrets: `https://docs.oboku.me/secrets`,
+  documentationWebDAV: `https://docs.oboku.me/guides/webdav`,
   app: `https://app.oboku.me`,
   site: `https://oboku.me`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,

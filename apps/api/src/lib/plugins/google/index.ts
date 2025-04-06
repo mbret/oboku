@@ -14,7 +14,7 @@ import type {
   SynchronizeAbleDataSource,
 } from "src/lib/plugins/types"
 import { createThrottler } from "src/lib/utils"
-import { createError } from "../helpers"
+import { createError, getDataSourceData } from "../helpers"
 
 export const generateResourceId = (driveId: string) => `drive-${driveId}`
 export const extractIdFromResourceId = (resourceId: string) =>
@@ -104,7 +104,10 @@ export const dataSource: DataSourcePlugin = {
     })
 
     const { folderId } =
-      await helpers.getDataSourceData<GoogleDriveDataSourceData>()
+      (await getDataSourceData<"DRIVE">({
+        db: ctx.db,
+        dataSourceId: ctx.dataSourceId,
+      })) ?? {}
 
     if (!folderId) {
       throw createError("unknown")

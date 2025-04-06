@@ -31,7 +31,7 @@ const syncLongProgress = async ({
 }: {
   config: ConfigService<EnvironmentVariables>
   dataSourceId: string
-  credentials: Record<string, string>
+  credentials: Record<string, unknown>
   authorization: string
   eventEmitter: EventEmitter2
   syncReportPostgresService: SyncReportPostgresService
@@ -85,8 +85,11 @@ export class DataSourcesController implements OnModuleInit {
 
   @Post("sync")
   async syncDataSource(
-    @Body() { dataSourceId }: { dataSourceId: string },
-    @Headers() headers: { authorization: string; "oboku-credentials": string },
+    @Body() {
+      dataSourceId,
+      data,
+    }: { dataSourceId: string; data?: Record<string, unknown> },
+    @Headers() headers: { authorization: string },
     @WithAuthUser() user: AuthUser,
   ) {
     this.logger.log(`syncDataSource ${dataSourceId}`)
@@ -97,7 +100,7 @@ export class DataSourcesController implements OnModuleInit {
         from(
           syncLongProgress({
             dataSourceId,
-            credentials: JSON.parse(headers["oboku-credentials"] ?? "{}"),
+            credentials: data ?? {},
             authorization: headers.authorization,
             config: this.configService,
             eventEmitter: this.eventEmitter,

@@ -163,7 +163,7 @@ export const createBook = async (
 export const addTagsToBookIfNotExist = async (
   db: createNano.DocumentScope<unknown>,
   bookId: string,
-  tagIds: string[],
+  tagIds: readonly string[],
 ) => {
   if (tagIds.length === 0) return [null, null] as const
 

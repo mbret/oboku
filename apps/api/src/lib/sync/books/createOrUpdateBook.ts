@@ -1,8 +1,4 @@
-import {
-  type BookDocType,
-  type GoogleDriveDataSourceData,
-  directives,
-} from "@oboku/shared"
+import { type BookDocType, directives } from "@oboku/shared"
 import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
@@ -16,8 +12,9 @@ import {
   createBook,
 } from "src/lib/couch/dbHelpers"
 import type { Context } from "../types"
-import { CoversService } from "src/covers/covers.service"
+import type { CoversService } from "src/covers/covers.service"
 import { firstValueFrom } from "rxjs"
+import { getDataSourceData } from "src/lib/plugins/helpers"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
@@ -271,7 +268,10 @@ export const createOrUpdateBook = async ({
 
       // Finally we update the tags to the book if needed
       const { applyTags } =
-        await helpers.getDataSourceData<GoogleDriveDataSourceData>()
+        (await getDataSourceData({
+          db,
+          dataSourceId: dataSourceId,
+        })) ?? {}
 
       const [bookUpdated, tagsUpdated] = await addTagsToBookIfNotExist(
         db,

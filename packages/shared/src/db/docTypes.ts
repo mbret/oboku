@@ -38,18 +38,61 @@ export type LinkDocType = CommonBase & {
   createdAt: string
 }
 
-export type DataSourceDocType = CommonBase & {
-  type: string
+type BaseDataSourceDocType = CommonBase & {
   lastSyncedAt: number | null
   syncStatus: null | "fetching"
   lastSyncErrorCode?: string | null
-  credentials?: any
-  data: string
   rx_model: "datasource"
   modifiedAt: string | null
   createdAt: string
   isProtected?: boolean
+  credentials?: Record<string, unknown> | null
 }
+
+export type FileDataSourceDocType = BaseDataSourceDocType & {
+  type: "file"
+  data_v2?: undefined
+}
+
+export type URIDataSourceDocType = BaseDataSourceDocType & {
+  type: "URI"
+  data_v2?: undefined
+}
+
+export type GoogleDriveDataSourceDocType = BaseDataSourceDocType & {
+  type: "DRIVE"
+  data_v2?: {
+    applyTags?: ReadonlyArray<string>
+    folderId: string
+    folderName?: string
+  }
+}
+
+export type DropboxDataSourceDocType = BaseDataSourceDocType & {
+  type: "dropbox"
+  data_v2?: {
+    folderId: string
+    folderName: string
+    applyTags?: ReadonlyArray<string>
+  }
+}
+
+export type WebDAVDataSourceDocType = BaseDataSourceDocType & {
+  type: "webdav"
+  data_v2?: {
+    url?: string
+    username?: string
+    passwordAsSecretId?: string
+    applyTags?: ReadonlyArray<string>
+  }
+}
+
+export type DataSourceDocType =
+  | GoogleDriveDataSourceDocType
+  | DropboxDataSourceDocType
+  | WebDAVDataSourceDocType
+  | FileDataSourceDocType
+  | URIDataSourceDocType
 
 export type InsertAbleBookDocType = Omit<BookDocType, "_id" | "_rev">
 

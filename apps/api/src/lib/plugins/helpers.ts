@@ -12,35 +12,17 @@ import {
   ObokuSharedError,
   type DocType,
   type ModelOf,
+  type DataSourceDocType,
+  getDataFromDataSource,
 } from "@oboku/shared"
 
 export const createHelpers = (
-  dataSourceId: string,
   refreshBookMetadata: ({ bookId }: { bookId: string }) => Promise<any>,
   db: createNano.DocumentScope<unknown>,
 ) => {
   const helpers = {
     refreshBookMetadata: (opts: { bookId: string }) =>
       refreshBookMetadata(opts).catch(console.error),
-    getDataSourceData: async <Data>(): Promise<Partial<Data>> => {
-      const dataSource = await findOne(
-        "datasource",
-        {
-          selector: { _id: dataSourceId },
-        },
-        { db },
-      )
-      let data = {}
-      try {
-        if (dataSource?.data) {
-          data = JSON.parse(dataSource?.data)
-        }
-      } catch (e) {
-        console.error(e)
-      }
-
-      return data
-    },
     findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
       model: M,
       query: SafeMangoQuery<D>,
@@ -86,4 +68,29 @@ export const createError = (
         previousError,
       )
   }
+}
+
+export const getDataSourceData = async <T extends DataSourceDocType["type"]>({
+  db,
+  dataSourceId,
+}: {
+  db: createNano.DocumentScope<unknown>
+  dataSourceId: string
+}): Promise<Extract<DataSourceDocType, { type: T }>["data_v2"]> => {
+  const dataSource = await findOne(
+    "datasource",
+    {
+      selector: { _id: dataSourceId },
+    },
+    { db },
+  )
+
+  if (!dataSource) {
+    throw new Error("DataSource not found")
+  }
+
+  const data = getDataFromDataSource(dataSource as DataSourceDocType)
+
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  return data as any
 }
