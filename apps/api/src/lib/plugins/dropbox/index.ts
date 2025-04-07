@@ -5,6 +5,7 @@ import { Dropbox, type files } from "dropbox"
 import { Readable } from "node:stream"
 import {
   type DropboxDataSourceData,
+  DropboxDataSourceDocType,
   READER_ACCEPTED_EXTENSIONS,
 } from "@oboku/shared"
 import type {
@@ -68,11 +69,14 @@ export const dataSource: DataSourcePlugin = {
       stream,
     }
   },
-  sync: async ({ credentials, dataSourceId, db }) => {
+  sync: async ({ data, dataSourceId, db }) => {
     const throttle = createThrottler(50)
 
     const dbx = new Dropbox({
-      accessToken: credentials.accessToken,
+      accessToken:
+        data && "accessToken" in data && typeof data.accessToken === "string"
+          ? data.accessToken
+          : undefined,
     })
 
     const { folderId } =

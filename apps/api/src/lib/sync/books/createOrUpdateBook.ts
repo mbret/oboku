@@ -101,7 +101,7 @@ export const createOrUpdateBook = async ({
 
         /**
          * If we find a dataSource, we don't need to synchronize this item
-         * as it's managed by another dataSource
+         * it's managed by another dataSource
          */
         if (differentDataSourceFoundAttachedToBookLink) {
           logger.log(

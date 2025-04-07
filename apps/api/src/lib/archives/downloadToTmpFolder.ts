@@ -1,6 +1,6 @@
 import type { BookDocType, LinkDocType } from "@oboku/shared"
-import * as path from "node:path"
-import * as fs from "node:fs"
+import path from "node:path"
+import fs from "node:fs"
 import { pluginFacade } from "src/lib/plugins/facade"
 import { AppConfigService } from "src/config/AppConfigService"
 

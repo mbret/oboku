@@ -1,5 +1,5 @@
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
-import { combineLatest, first, from, mergeMap, of } from "rxjs"
+import { combineLatest, defaultIfEmpty, first, from, mergeMap, of } from "rxjs"
 import { withDialog } from "../common/dialogs/withDialog"
 import { getLinksForDataSource } from "../links/dbHelpers"
 import { useRemoveBook } from "../books/helpers"
@@ -66,6 +66,7 @@ export const useRemoveDataSource = () => {
           ),
         ),
         withUnknownErrorDialog(),
+        defaultIfEmpty(null),
       ),
   })
 }

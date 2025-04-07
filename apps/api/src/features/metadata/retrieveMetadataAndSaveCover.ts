@@ -1,5 +1,5 @@
-import * as fs from "node:fs"
-import * as path from "node:path"
+import fs from "node:fs"
+import path from "node:path"
 import { type BookMetadata, directives } from "@oboku/shared"
 import type nano from "nano"
 import type { Extractor } from "node-unrar-js"

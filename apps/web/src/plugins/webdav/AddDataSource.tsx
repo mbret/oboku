@@ -5,6 +5,7 @@ import {
   AlertTitle,
   Button,
   Container,
+  InputAdornment,
   Link,
   Stack,
 } from "@mui/material"
@@ -24,6 +25,7 @@ type FormData = {
   url: string
   username: string
   passwordAsSecretId: string
+  directory: string
 }
 
 const FORM_ID = "webdav-add-data-source"
@@ -42,6 +44,7 @@ export const AddDataSource = memo(
         url: "",
         username: "",
         passwordAsSecretId: "",
+        directory: "",
       },
     })
     const data = watch()
@@ -59,6 +62,7 @@ export const AddDataSource = memo(
         url: data.url,
         username: data.username,
         password: secret ?? "",
+        directory: `/${data.directory}`,
       },
       enabled: isValid && !!secret,
     })
@@ -68,7 +72,7 @@ export const AddDataSource = memo(
         return from(
           addDataSource({
             type: "webdav",
-            data_v2: data,
+            data_v2: { ...data, directory: `/${data.directory}` },
           }),
         )
       },
@@ -84,7 +88,7 @@ export const AddDataSource = memo(
         </Alert>
         <Container maxWidth="md">
           <Stack
-            gap={1}
+            gap={2}
             mt={2}
             alignSelf="stretch"
             component="form"
@@ -104,6 +108,20 @@ export const AddDataSource = memo(
                 },
               }}
               fullWidth
+            />
+            <ControlledTextField
+              name="directory"
+              label="Directory"
+              control={control}
+              rules={{ required: true }}
+              fullWidth
+              slotProps={
+                {
+                  input: {
+                    startAdornment: <InputAdornment position="start">/</InputAdornment>
+                  }
+                }
+              }
             />
             <ControlledTextField
               name="username"

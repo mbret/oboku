@@ -26,7 +26,7 @@ export const processrefreshMetadata = async (
   }: {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
-    credentials?: any
+    credentials?: Record<string, unknown>
     soft?: boolean
     comicVineApiKey?: string
   },

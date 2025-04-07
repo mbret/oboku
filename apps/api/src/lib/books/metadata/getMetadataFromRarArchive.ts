@@ -1,6 +1,6 @@
 import type { BookMetadata } from "@oboku/shared"
 import type { Extractor } from "node-unrar-js"
-import * as path from "node:path"
+import path from "node:path"
 import type { AppConfigService } from "src/config/AppConfigService"
 
 export const getMetadataFromRarArchive = async (

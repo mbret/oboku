@@ -1,5 +1,5 @@
-import * as fs from "node:fs"
-import * as unzipper from "unzipper"
+import fs from "node:fs"
+import unzipper from "unzipper"
 import type { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
 import {
   catchError,

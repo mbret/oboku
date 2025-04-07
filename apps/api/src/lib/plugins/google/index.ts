@@ -94,10 +94,13 @@ export const dataSource: DataSourcePlugin = {
       },
     }
   },
-  sync: async (ctx, helpers) => {
+  sync: async (ctx) => {
     const throttle = createThrottler(50)
 
-    const auth = await authorize(ctx)
+    const auth = await authorize({
+      credentials: ctx.data,
+    })
+
     const drive = google.drive({
       version: "v3",
       auth,

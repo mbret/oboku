@@ -15,7 +15,7 @@ import { CoversService } from "src/covers/covers.service"
 export const sync = async ({
   dataSourceId,
   userName,
-  credentials,
+  data,
   authorization,
   db,
   config,
@@ -26,7 +26,7 @@ export const sync = async ({
 }: {
   dataSourceId: string
   userName: string
-  credentials?: any
+  data?: Record<string, unknown>
   authorization: string
   db: createNano.DocumentScope<unknown>
   config: ConfigService<EnvironmentVariables>
@@ -54,7 +54,7 @@ export const sync = async ({
       new BooksMetadataRefreshEvent({
         bookId,
         authorization,
-        obokuCredentials: credentials,
+        obokuCredentials: data,
         email,
       }),
     )
@@ -86,7 +86,7 @@ export const sync = async ({
     const ctx = {
       dataSourceId,
       userName,
-      credentials,
+      data,
       dataSourceType: type,
       authorization,
       db,

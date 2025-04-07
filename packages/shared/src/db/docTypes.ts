@@ -83,6 +83,7 @@ export type WebDAVDataSourceDocType = BaseDataSourceDocType & {
     url?: string
     username?: string
     passwordAsSecretId?: string
+    directory?: string
     applyTags?: ReadonlyArray<string>
   }
 }

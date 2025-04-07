@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import * as fs from "node:fs"
-import * as path from "node:path"
+import fs from "node:fs"
+import path from "node:path"
 import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
 import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSaveCover"
 import { CouchService } from "src/couch/couch.service"

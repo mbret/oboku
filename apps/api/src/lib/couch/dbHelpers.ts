@@ -1,4 +1,4 @@
-import * as createNano from "nano"
+import createNano from "nano"
 import { type MangoResponse } from "nano"
 import {
   type SafeMangoQuery,

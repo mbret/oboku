@@ -6,10 +6,10 @@ import {
 } from "@aws-sdk/client-s3"
 import { Injectable, Logger } from "@nestjs/common"
 import { from, map, of, switchMap, tap } from "rxjs"
-import * as sharp from "sharp"
+import sharp from "sharp"
 import { AppConfigService } from "src/config/AppConfigService"
-import * as fs from "node:fs"
-import * as path from "node:path"
+import fs from "node:fs"
+import path from "node:path"
 
 const logger = new Logger("CoversService")
 

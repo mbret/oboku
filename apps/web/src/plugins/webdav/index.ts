@@ -3,6 +3,7 @@ import type { ObokuPlugin } from "../types"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { AddDataSource } from "./AddDataSource"
 import { useSynchronize } from "./useSynchronize"
+import { useSyncSourceInfo } from "./useSyncSourceInfo"
 
 const plugin: ObokuPlugin<"webdav"> = {
   type: TYPE,
@@ -13,6 +14,7 @@ const plugin: ObokuPlugin<"webdav"> = {
   description: "Manage books from WebDAV",
   AddDataSource,
   useSynchronize,
+  useSyncSourceInfo,
 }
 
 export default plugin

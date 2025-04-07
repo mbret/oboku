@@ -66,7 +66,7 @@ export const syncCollection = async ({
     Events.COLLECTION_METADATA_REFRESH,
     new CollectionMetadataRefreshEvent({
       collectionId,
-      obokuCredentials: ctx.credentials,
+      obokuCredentials: ctx.data,
       authorization: ctx.authorization,
       soft: true,
       email: ctx.email,

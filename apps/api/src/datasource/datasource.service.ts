@@ -19,12 +19,12 @@ export class DataSourceService {
 
   syncLongProgress = ({
     dataSourceId,
-    credentials,
+    data,
     authorization,
     email,
   }: {
     dataSourceId: string
-    credentials: Record<string, unknown>
+    data: Record<string, unknown>
     authorization: string
     email: string
   }) => {
@@ -37,7 +37,7 @@ export class DataSourceService {
             userName: email,
             dataSourceId,
             db,
-            credentials,
+            data,
             authorization,
             config: this.appConfig.config,
             eventEmitter: this.eventEmitter,

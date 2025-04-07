@@ -45,12 +45,14 @@
     "json-schema-to-ts": "^3.1.1",
     "nano": "^10.1.4",
     "node-unrar-js": "^2.0.2",
+    "node-domexception": "^2.0.1",
     "pg": "^8.14.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sharp": "^0.33.5",
     "typeorm": "^0.3.21",
-    "unzipper": "^0.12.3"
+    "unzipper": "^0.12.3",
+    "webdav": "^5.8.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",

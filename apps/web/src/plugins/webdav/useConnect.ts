@@ -8,7 +8,7 @@ export const useConnect = ({
   data,
   enabled = true,
 }: {
-  data: { url: string; username: string; password: string }
+  data: { url: string; username: string; password: string; directory: string }
   enabled?: boolean
 }) => {
   return useQuery({
@@ -23,7 +23,7 @@ export const useConnect = ({
       })
 
       try {
-        await client.getDirectoryContents("/")
+        await client.getDirectoryContents(data.directory)
       } catch (error) {
         return false
       }

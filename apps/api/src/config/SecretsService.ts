@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { AppConfigService } from "./AppConfigService"
-import * as fs from "node:fs"
+import fs from "node:fs"
 
 @Injectable()
 export class SecretsService {

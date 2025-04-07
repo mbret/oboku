@@ -7,7 +7,7 @@ export class BooksMetadataRefreshEvent {
   constructor(
     public data: {
       bookId: string
-      obokuCredentials: Record<string, string>
+      obokuCredentials?: Record<string, unknown>
       authorization: string
       email: string
     },
@@ -18,7 +18,7 @@ export class CollectionMetadataRefreshEvent {
   constructor(
     public data: {
       collectionId: string
-      obokuCredentials: Record<string, string>
+      obokuCredentials?: Record<string, unknown>
       authorization: string
       soft: boolean
       email: string

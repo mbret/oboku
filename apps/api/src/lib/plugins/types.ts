@@ -18,8 +18,17 @@ export { dataSourceHelpers, cheerio }
 type NameWithMetadata = string
 type ISOString = string
 
-type SynchronizeAbleItem = {
+export type SynchronizeAbleItem = {
   type: `file` | `folder`
+  /**
+   * @important
+   * Unique identifier for this item which would not clash with other items that would
+   * not point to the same resource.
+   *
+   * @example
+   * dropbox:1234567890
+   * webdav:{base64-url}/media/Books/my-book.epub
+   */
   resourceId: string
   name: NameWithMetadata
   items?: SynchronizeAbleItem[]
@@ -91,7 +100,7 @@ export type DataSourcePlugin = {
     options: {
       userName: string
       dataSourceId: string
-      credentials?: any
+      data: Record<string, unknown> | undefined
       dataSourceType: string
       syncReport: SyncReport
       db: createNano.DocumentScope<unknown>
