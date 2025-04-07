@@ -6,7 +6,7 @@ import * as path from "node:path"
 import * as Joi from "joi"
 import { BooksController } from "./features/books/books.controller"
 import * as fs from "node:fs"
-import { DataSourcesController } from "./datasources/datasources.controller"
+import { DataSourcesController } from "./datasource/datasource.controller"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { CollectionsController } from "./features/collections/collections.controller"
 import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
@@ -26,6 +26,7 @@ import { CoversModule } from "./covers/covers.module"
 import { AppConfigService } from "./config/AppConfigService"
 import { ScheduleModule } from "@nestjs/schedule"
 import { AdminModule } from "./admin/admin.module"
+import { DataSourceModule } from "./datasource/datasource.module"
 
 @Module({
   imports: [
@@ -87,6 +88,7 @@ import { AdminModule } from "./admin/admin.module"
     CouchModule,
     CoversModule,
     AdminModule,
+    DataSourceModule
   ],
   providers: [
     // {
@@ -103,7 +105,6 @@ import { AdminModule } from "./admin/admin.module"
   controllers: [
     AppController,
     BooksController,
-    DataSourcesController,
     CollectionsController,
     CommunicationController,
     WebController,

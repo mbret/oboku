@@ -28,6 +28,6 @@ import { JwtService } from "@nestjs/jwt"
     RefreshTokensService,
     JwtService,
   ],
-  exports: [TypeOrmModule, RefreshTokensService],
+  exports: [TypeOrmModule, RefreshTokensService, SyncReportPostgresService],
 })
 export class PostgresModule {}
