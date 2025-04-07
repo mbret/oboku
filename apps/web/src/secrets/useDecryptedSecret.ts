@@ -6,7 +6,8 @@ import { decryptSecret } from "./secretsUtils"
 export const useDecryptedSecret = ({
   id,
   masterKey,
-}: { id?: string; masterKey?: string }) => {
+  enabled = true,
+}: { id?: string; masterKey?: string; enabled?: boolean }) => {
   const { data: secret } = useSecret(id)
   const uuid = useMemo(
     () => (masterKey ? crypto.randomUUID() : undefined),
@@ -15,7 +16,7 @@ export const useDecryptedSecret = ({
 
   return useQuery({
     queryKey: ["secret/decrypted", { id, uuid }],
-    enabled: !!secret && !!masterKey,
+    enabled: enabled && !!secret && !!masterKey,
     retry: false,
     queryFn: async () => {
       if (!secret?.value) throw new Error("Secret not found")

@@ -24,15 +24,9 @@ class HttpApiClient extends HttpClientWeb {
       },
     })
 
-  syncDataSource = (
-    dataSourceId: string,
-    credentials?: { [key: string]: any },
-  ) =>
+  syncDataSource = (dataSourceId: string, data?: Record<string, unknown>) =>
     this.post(`${configuration.API_URL}/datasources/sync`, {
-      body: { dataSourceId },
-      headers: {
-        "oboku-credentials": JSON.stringify(credentials),
-      },
+      body: { dataSourceId, data },
     })
 
   signIn = (data: { email: string; password: string } | { token: string }) =>

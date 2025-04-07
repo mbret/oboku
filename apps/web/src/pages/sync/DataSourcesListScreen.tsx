@@ -13,26 +13,25 @@ import {
   ListItemButton,
 } from "@mui/material"
 import { Alert } from "@mui/material"
-import { DataSourcesAddDrawer } from "./DataSourcesAddDrawer"
-import { DataSourcesActionsDrawer } from "./DataSourcesActionsDrawer"
+import { DataSourcesAddDrawer } from "../../dataSources/DataSourcesAddDrawer"
+import { DataSourcesActionsDrawer } from "../../dataSources/DataSourcesActionsDrawer"
 import { Error as ErrorIcon, LockRounded } from "@mui/icons-material"
 import type { DataSourceDocType } from "@oboku/shared"
-import { plugins as dataSourcePlugins } from "../plugins/configure"
-import { AddDataSource } from "./AddDataSource"
+import { plugins as dataSourcePlugins } from "../../plugins/configure"
 import { ObokuErrorCode } from "@oboku/shared"
-import { useDataSources } from "./useDataSources"
-import type { ObokuPlugin } from "../plugins/types"
+import { useDataSources } from "../../dataSources/useDataSources"
+import { useNavigate } from "react-router"
+import { ROUTES } from "../../navigation/routes"
+import type { DeepReadonly } from "rxdb"
 
 export const DataSourcesListScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
-  const [isAddDataSourceOpenedWith, setIsAddDataSourceOpenedWith] = useState<
-    ObokuPlugin | undefined
-  >(undefined)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<
     string | undefined
   >(undefined)
   const { data: syncSources } = useDataSources()
   const theme = useTheme()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -128,8 +127,11 @@ export const DataSourcesListScreen = () => {
           const dataSource = dataSourcePlugins.find(
             (dataSource) => type === dataSource.type,
           )
+
           if (dataSource) {
-            setIsAddDataSourceOpenedWith(dataSource)
+            navigate(
+              ROUTES.SYNC_NEW_DATASOURCES.replace(":id", dataSource.type),
+            )
           }
         }}
       />
@@ -139,23 +141,19 @@ export const DataSourcesListScreen = () => {
           onClose={() => setIsActionsDrawerOpenWith(undefined)}
         />
       )}
-      {isAddDataSourceOpenedWith && (
-        <AddDataSource
-          onClose={() => setIsAddDataSourceOpenedWith(undefined)}
-          openWith={isAddDataSourceOpenedWith}
-        />
-      )}
     </>
   )
 }
 
-const SyncSourceLabel = ({ syncSource }: { syncSource: DataSourceDocType }) => {
-  const dataSource = dataSourcePlugins.find(
+const SyncSourceLabel = ({
+  syncSource,
+}: { syncSource: DeepReadonly<DataSourceDocType> }) => {
+  const obokuPlugin = dataSourcePlugins.find(
     (dataSource) => dataSource.type === syncSource.type,
   )
 
-  const { name = dataSource?.name } =
-    dataSource?.useSyncSourceInfo?.(syncSource) || {}
+  const { name = obokuPlugin?.name } =
+    obokuPlugin?.useSyncSourceInfo?.(syncSource as any) || {}
 
   return <Typography noWrap>{name}</Typography>
 }

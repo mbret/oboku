@@ -16,7 +16,7 @@ import { LibraryTopTabNavigator } from "../library/LibraryTopTabNavigator"
 import { BookDetailsScreen } from "../books/details/BookDetailsScreen"
 import { CollectionDetailsScreen } from "../pages/collections/CollectionDetailsScreen/CollectionDetailsScreen"
 import { BookActionsDrawer } from "../books/drawer/BookActionsDrawer"
-import { DataSourcesListScreen } from "../dataSources/DataSourcesListScreen"
+import { DataSourcesListScreen } from "../pages/sync/DataSourcesListScreen"
 import { SearchScreen } from "../pages/SearchScreen"
 import { AuthCallbackScreen } from "../pages/AuthCallbackScreen"
 import { SettingsScreen } from "../pages/SettingsScreen"
@@ -39,6 +39,7 @@ import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/
 import { ROUTES } from "./routes"
 import { SignUpScreen } from "../pages/SignUpScreen"
 import { SecretsScreen } from "../pages/profile/SecretsScreen"
+import { NewDataSourceScreen } from "../pages/sync/NewDataSourceScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -98,6 +99,10 @@ export const AppNavigator = ({
                 path={`${ROUTES.STATISTICS}`}
                 element={<StatisticsScreen />}
               />
+              <Route
+                path={ROUTES.SYNC_NEW_DATASOURCES}
+                element={<NewDataSourceScreen />}
+              />
               <Route path="*" element={<BottomTabBarRouteWrapper />}>
                 <Route index element={<HomeScreen />} />
                 <Route path="profile" element={<ProfileScreen />} />
@@ -122,9 +127,10 @@ export const AppNavigator = ({
                     path="reports"
                     element={<DataSourcesReportsScreen />}
                   />
+
                   <Route
                     path="*"
-                    element={<Navigate to={ROUTES.DATASOURCES_LIST} replace />}
+                    element={<Navigate to={ROUTES.SYNC_DATASOURCES} replace />}
                   />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />

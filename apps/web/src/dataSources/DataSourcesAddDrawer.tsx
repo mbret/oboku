@@ -29,7 +29,7 @@ export const DataSourcesAddDrawer: FC<{
                 <ListItemIcon>
                   {dataSource.Icon && <dataSource.Icon />}
                 </ListItemIcon>
-                <ListItemText primary={`From ${dataSource.name}`} />
+                <ListItemText primary={`${dataSource.name}`} />
               </ListItemButton>
             ))}
           </List>

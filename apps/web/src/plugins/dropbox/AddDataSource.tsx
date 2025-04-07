@@ -1,14 +1,11 @@
 import {
-  Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
+  Stack,
   Typography,
 } from "@mui/material"
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
@@ -24,7 +21,7 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
     [key: string]: true | undefined
   }>({})
   const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
-  const addDataSource = useCreateDataSource()
+  const { mutate: addDataSource } = useCreateDataSource()
   const [selectedFolder, setSelectedFolder] = useState<
     Dropbox.ChooserFile | undefined
   >(undefined)
@@ -45,87 +42,72 @@ export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
 
   return (
     <>
-      <Dialog onClose={onClose} open fullScreen>
-        <DialogTitle>Dropbox datasource</DialogTitle>
-        <DialogContent
-          style={{ padding: 0, display: "flex", flexFlow: "column" }}
-        >
-          <List>
-            <ListItem onClick={() => setIsTagSelectionOpen(true)}>
-              <ListItemIcon>
-                <LocalOfferRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Apply tags"
-                secondary={Object.keys(selectedTags)
-                  .map((id) => tags.find((tag) => tag?._id === id)?.name)
-                  .join(" ")}
-              />
-            </ListItem>
-            <ListItem>
-              <Typography noWrap>
-                Selected: {selectedFolder?.name || "None"}
-              </Typography>
-            </ListItem>
-            {currentFolder?.id !== "root" && (
-              <ListItem>
-                <Button
-                  style={{
-                    flex: 1,
-                  }}
-                  startIcon={<ArrowBackIosRounded style={{}} />}
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => {
-                    setFolderChain((value) => value.slice(0, value.length - 1))
-                  }}
-                >
-                  Go back
-                </Button>
-              </ListItem>
-            )}
-          </List>
-          <Box
-            flex={1}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-          >
+      <List>
+        <ListItemButton onClick={() => setIsTagSelectionOpen(true)}>
+          <ListItemIcon>
+            <LocalOfferRounded />
+          </ListItemIcon>
+          <ListItemText
+            primary="Apply tags"
+            secondary={Object.keys(selectedTags)
+              .map((id) => tags.find((tag) => tag?._id === id)?.name)
+              .join(" ")}
+          />
+        </ListItemButton>
+        <ListItem>
+          <Typography noWrap>
+            Selected: {selectedFolder?.name || "None"}
+          </Typography>
+        </ListItem>
+        {currentFolder?.id !== "root" && (
+          <ListItem>
             <Button
+              style={{
+                flex: 1,
+              }}
+              startIcon={<ArrowBackIosRounded style={{}} />}
+              variant="outlined"
               color="primary"
-              variant="contained"
-              onClick={() => setShowPicker(true)}
+              onClick={() => {
+                setFolderChain((value) => value.slice(0, value.length - 1))
+              }}
             >
-              Choose a folder
+              Go back
             </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose} color="primary">
-            Cancel
-          </Button>
-          <Button
-            color="primary"
-            disabled={!selectedFolder}
-            onClick={() => {
-              onClose()
-              if (selectedFolder) {
-                const customData: DropboxDataSourceData = {
-                  applyTags: Object.keys(selectedTags),
-                  folderId: selectedFolder.id,
-                  folderName: selectedFolder.name,
-                }
-                addDataSource({
-                  type: `dropbox`,
-                  data: JSON.stringify(customData),
-                })
+          </ListItem>
+        )}
+      </List>
+      <Stack px={2} gap={1} maxWidth="sm">
+        <Button
+          color="primary"
+          variant="contained"
+          fullWidth
+          onClick={() => setShowPicker(true)}
+        >
+          Choose a folder
+        </Button>
+        <Button
+          color="primary"
+          disabled={!selectedFolder}
+          onClick={() => {
+            onClose()
+            if (selectedFolder) {
+              const customData: DropboxDataSourceData = {
+                applyTags: Object.keys(selectedTags),
+                folderId: selectedFolder.id,
+                folderName: selectedFolder.name,
               }
-            }}
-          >
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
+
+              addDataSource({
+                type: `dropbox`,
+                data_v2: customData,
+              })
+            }
+          }}
+        >
+          Confirm
+        </Button>
+      </Stack>
       <TagsSelectionDialog
         data={tagIds}
         open={isTagSelectionOpen}

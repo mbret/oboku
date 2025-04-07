@@ -17,6 +17,7 @@ import { getSettings } from "../settings/dbHelpers"
 import { CancelError } from "../errors/errors.shared"
 import { validateMasterKey } from "../secrets/useValidateMasterKey"
 import { useSettings } from "../settings/helpers"
+import { CancelButton } from "../common/forms/CancelButton"
 
 const FORM_ID = "LockActionBehindUserPasswordDialog"
 
@@ -37,6 +38,14 @@ export const authorizeAction = (
     onCancel,
   })
 
+export const authorizeActionObservable = () => {
+  return from(
+    new Promise<string>((resolve, reject) =>
+      authorizeAction(resolve, () => reject(new CancelError())),
+    ),
+  )
+}
+
 export function useWithAuthorization() {
   return function withAuthorization<T>(stream: Observable<T>) {
     return stream.pipe(
@@ -45,11 +54,7 @@ export function useWithAuthorization() {
           mergeMap((db) => getSettings(db)),
           mergeMap((settings) =>
             settings?.masterEncryptionKey
-              ? from(
-                  new Promise<string>((resolve, reject) =>
-                    authorizeAction(resolve, () => reject(new CancelError())),
-                  ),
-                ).pipe(map(() => data))
+              ? authorizeActionObservable().pipe(map(() => data))
               : of(data),
           ),
         ),
@@ -151,9 +156,7 @@ export const AuthorizeActionDialog = () => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={_onCancel} color="primary">
-          ok
-        </Button>
+        <CancelButton onClick={_onCancel} />
         {!hasNotSetPassword && (
           <Button color="primary" type="submit" form={FORM_ID}>
             Authorize

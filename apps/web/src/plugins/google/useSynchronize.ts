@@ -1,8 +1,8 @@
 import { useAccessToken } from "./lib/useAccessToken"
-import type { ObokuPlugin } from "../types"
+import type { UseSynchronizeHook } from "../types"
 import { firstValueFrom } from "rxjs"
 
-export const useSynchronize: ObokuPlugin[`useSynchronize`] = ({
+export const useSynchronize: UseSynchronizeHook<"DRIVE"> = ({
   requestPopup,
 }) => {
   const { requestToken } = useAccessToken({ requestPopup })
@@ -14,6 +14,10 @@ export const useSynchronize: ObokuPlugin[`useSynchronize`] = ({
       }),
     )
 
-    return { data: token }
+    return {
+      data: {
+        ...token,
+      },
+    }
   }
 }

@@ -26,7 +26,9 @@ export type DataSourceCollection = RxCollection<
 >
 
 export const dataSourceSchema: RxJsonSchema<
-  Omit<DataSourceDocType, "rx_model" | "_rev" | `rxdbMeta`>
+  Omit<DataSourceDocType, "rx_model" | "_rev" | `rxdbMeta`> & {
+    data?: string
+  }
 > = {
   title: "dataSourceSchema",
   version: 0,
@@ -39,6 +41,7 @@ export const dataSourceSchema: RxJsonSchema<
     syncStatus: { type: ["string", "null"] },
     lastSyncErrorCode: { type: ["string", "null"] },
     data: { type: "string" },
+    data_v2: { type: "object" },
     credentials: { type: ["object", "null"] },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },

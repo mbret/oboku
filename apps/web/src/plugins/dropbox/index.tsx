@@ -16,7 +16,7 @@ const DropboxIcon = () => (
   </SvgIcon>
 )
 
-export const plugin: ObokuPlugin = {
+export const plugin: ObokuPlugin<"dropbox"> = {
   uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   type: `dropbox`,
   name: "Dropbox",

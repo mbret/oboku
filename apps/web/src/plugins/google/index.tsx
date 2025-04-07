@@ -24,7 +24,7 @@ const GoogleDriveIcon = () => (
   </SvgIcon>
 )
 
-export const plugin: ObokuPlugin = {
+export const plugin: ObokuPlugin<"DRIVE"> = {
   uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   type: `DRIVE`,
   name: "Google Drive",

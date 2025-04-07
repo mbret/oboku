@@ -74,6 +74,7 @@ export const LibraryTagsScreen = () => {
         renderHeader={listRenderHeader}
         onItemClick={(tag) => {
           const action = () => setIsTagActionsDrawerOpenedWith(tag?._id)
+
           if (tag?.isProtected) {
             authorizeAction(action)
           } else {

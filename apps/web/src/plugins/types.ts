@@ -9,6 +9,7 @@ import type {
 } from "react"
 import type { Button } from "@mui/material"
 import type { Observable } from "rxjs"
+import { DeepReadonly } from "rxdb"
 
 type PostLink = Pick<LinkDocType, "resourceId" | "type">
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
@@ -52,10 +53,12 @@ type UseRefreshMetadataHook = (options: {
   data?: object
 }>
 
-type UseSynchronizeHook = (options: {
+export type UseSynchronizeHook<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = (options: {
   requestPopup: () => Promise<boolean>
-}) => () => Promise<{
-  data?: object
+}) => (dataSource: Extract<DataSourceDocType, { type: T }>) => Promise<{
+  data?: Record<string, unknown>
 }>
 
 type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
@@ -71,18 +74,22 @@ type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
     }
 >
 
-type UseSyncSourceInfo = (dataSource: DataSourceDocType) => {
+export type UseSyncSourceInfo<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = (dataSource: DeepReadonly<Extract<DataSourceDocType, { type: T }>>) => {
   name?: string
 }
 
-export type ObokuPlugin = {
+export type ObokuPlugin<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = {
   uniqueResourceIdentifier: string
   name: string
   canSynchronize?: boolean
   /**
    * Unique ID for the plugin
    */
-  type: string
+  type: T
   description?: string
   sensitive?: boolean
   Icon?: FunctionComponent<Record<string, never>>
@@ -116,10 +123,10 @@ export type ObokuPlugin = {
   Provider?: FunctionComponent<{ children: ReactNode }>
   InfoScreen?: () => ReactElement
   useRefreshMetadata?: UseRefreshMetadataHook
-  useSynchronize?: UseSynchronizeHook
+  useSynchronize?: UseSynchronizeHook<T>
   useDownloadBook?: UseDownloadHook
   useRemoveBook?: UseRemoveBook | undefined
-  useSyncSourceInfo?: UseSyncSourceInfo
+  useSyncSourceInfo?: UseSyncSourceInfo<T>
 }
 
 export const extractIdFromResourceId = (

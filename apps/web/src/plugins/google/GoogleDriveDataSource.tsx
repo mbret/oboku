@@ -1,14 +1,10 @@
 import {
-  Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
+  Stack,
   Typography,
 } from "@mui/material"
 import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
@@ -29,7 +25,7 @@ export const GoogleDriveDataSource: FC<{
     [key: string]: true | undefined
   }>({})
   const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
-  const addDataSource = useCreateDataSource()
+  const { mutate: addDataSource } = useCreateDataSource()
   const [selectedFolder, setSelectedFolder] = useState<
     { name: string; id: string } | undefined
   >(undefined)
@@ -44,125 +40,109 @@ export const GoogleDriveDataSource: FC<{
 
   return (
     <>
-      <Dialog onClose={onClose} open fullScreen>
-        <DialogTitle>Google Drive datasource</DialogTitle>
-        <DialogContent
-          style={{ padding: 0, display: "flex", flexFlow: "column" }}
-        >
-          <List>
-            <ListItem onClick={() => setIsTagSelectionOpen(true)}>
-              <ListItemIcon>
-                <LocalOfferRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Apply tags"
-                secondary={Object.keys(selectedTags)
-                  .map((id) => tags?.find((tag) => tag?._id === id)?.name)
-                  .join(" ")}
-              />
-            </ListItem>
-            <ListItem>
-              <Typography noWrap>
-                Selected: {selectedFolder?.name || "None"}
-              </Typography>
-            </ListItem>
-            {currentFolder?.id !== "root" && (
-              <ListItem>
-                <Button
-                  style={{
-                    flex: 1,
-                  }}
-                  startIcon={<ArrowBackIosRounded style={{}} />}
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => {
-                    setFolderChain((value) => value.slice(0, value.length - 1))
-                  }}
-                >
-                  Go back
-                </Button>
-              </ListItem>
-            )}
-          </List>
-          <Box
-            flex={1}
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-          >
+      <List>
+        <ListItem onClick={() => setIsTagSelectionOpen(true)}>
+          <ListItemIcon>
+            <LocalOfferRounded />
+          </ListItemIcon>
+          <ListItemText
+            primary="Apply tags"
+            secondary={Object.keys(selectedTags)
+              .map((id) => tags?.find((tag) => tag?._id === id)?.name)
+              .join(" ")}
+          />
+        </ListItem>
+        <ListItem>
+          <Typography noWrap>
+            Selected: {selectedFolder?.name || "None"}
+          </Typography>
+        </ListItem>
+        {currentFolder?.id !== "root" && (
+          <ListItem>
             <Button
+              style={{
+                flex: 1,
+              }}
+              startIcon={<ArrowBackIosRounded style={{}} />}
+              variant="outlined"
               color="primary"
-              variant="contained"
               onClick={() => {
-                pick({ select: "folder" })
-                  .pipe(
-                    tap((data) => {
-                      const doc = data.docs?.[0]
-                      const { name, id } = doc ?? {}
-
-                      if (
-                        data.action === google.picker.Action.PICKED &&
-                        name &&
-                        id
-                      ) {
-                        setSelectedFolder({ name, id })
-                      }
-                    }),
-                    takeUntil(unMount$),
-                    catchError((error) => {
-                      console.error(error)
-
-                      return of(null)
-                    }),
-                  )
-                  .subscribe()
+                setFolderChain((value) => value.slice(0, value.length - 1))
               }}
             >
-              Choose a folder
+              Go back
             </Button>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose} color="primary">
-            Cancel
-          </Button>
-          <Button
-            color="primary"
-            disabled={!selectedFolder}
-            onClick={() => {
-              onClose()
-              if (selectedFolder) {
-                const customData: GoogleDriveDataSourceData = {
-                  applyTags: Object.keys(selectedTags),
-                  folderId: selectedFolder.id,
-                  folderName: selectedFolder.name,
-                }
-                addDataSource({
-                  type: `DRIVE`,
-                  data: JSON.stringify(customData),
-                })
+          </ListItem>
+        )}
+      </List>
+      <Stack px={2} gap={1} maxWidth="sm">
+        <Button
+          color="primary"
+          variant="contained"
+          onClick={() => {
+            pick({ select: "folder" })
+              .pipe(
+                tap((data) => {
+                  const doc = data.docs?.[0]
+                  const { name, id } = doc ?? {}
+
+                  if (
+                    data.action === google.picker.Action.PICKED &&
+                    name &&
+                    id
+                  ) {
+                    setSelectedFolder({ name, id })
+                  }
+                }),
+                takeUntil(unMount$),
+                catchError((error) => {
+                  console.error(error)
+
+                  return of(null)
+                }),
+              )
+              .subscribe()
+          }}
+        >
+          Choose a folder
+        </Button>
+        <Button
+          color="primary"
+          disabled={!selectedFolder}
+          onClick={() => {
+            onClose()
+            if (selectedFolder) {
+              const customData: GoogleDriveDataSourceData = {
+                applyTags: Object.keys(selectedTags),
+                folderId: selectedFolder.id,
+                folderName: selectedFolder.name,
               }
-            }}
-          >
-            Confirm
-          </Button>
-        </DialogActions>
-        <TagsSelectionDialog
-          open={isTagSelectionOpen}
-          onClose={() => setIsTagSelectionOpen(false)}
-          title="Choose tags to apply automatically"
-          data={tagIds}
-          hasBackNavigation
-          selected={(id) => !!selectedTags[id]}
-          onItemClick={({ id }) => {
-            if (selectedTags[id]) {
-              setSelectedTags(({ [id]: removed, ...rest }) => rest)
-            } else {
-              setSelectedTags((value) => ({ ...value, [id]: true }))
+
+              addDataSource({
+                type: `DRIVE`,
+                data_v2: customData,
+              })
             }
           }}
-        />
-      </Dialog>
+        >
+          Confirm
+        </Button>
+      </Stack>
+      <TagsSelectionDialog
+        open={isTagSelectionOpen}
+        onClose={() => setIsTagSelectionOpen(false)}
+        title="Choose tags to apply automatically"
+        data={tagIds}
+        hasBackNavigation
+        selected={(id) => !!selectedTags[id]}
+        onItemClick={({ id }) => {
+          if (selectedTags[id]) {
+            setSelectedTags(({ [id]: removed, ...rest }) => rest)
+          } else {
+            setSelectedTags((value) => ({ ...value, [id]: true }))
+          }
+        }}
+      />
     </>
   )
 }

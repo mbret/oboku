@@ -4,7 +4,7 @@ import { UploadBook } from "./UploadBook"
 import { PLUGIN_FILE_TYPE } from "@oboku/shared"
 import { ObokuPluginError } from "../../errors/errors.shared"
 
-export const plugin: ObokuPlugin = {
+export const plugin: ObokuPlugin<"file"> = {
   uniqueResourceIdentifier: "file",
   type: PLUGIN_FILE_TYPE,
   name: "file",

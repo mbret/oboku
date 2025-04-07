@@ -5,6 +5,7 @@ import {
   DialogActions,
   Button,
   Alert,
+  Stack,
 } from "@mui/material"
 import { useEffect, memo, useState } from "react"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
@@ -156,11 +157,13 @@ export const SetupSecretDialog = memo(() => {
         {isAddingNewSecret ? `Add a new secret` : `Update secret`}
       </DialogTitle>
       <DialogContent>
-        <form
+        <Stack
+          component="form"
           noValidate
           autoComplete="off"
           id={FORM_ID}
           onSubmit={handleSubmit((value) => submit(value))}
+          gap={2}
         >
           <PreventAutocompleteFields />
           <ControlledTextField
@@ -170,7 +173,7 @@ export const SetupSecretDialog = memo(() => {
             label="Name"
             type="text"
             fullWidth
-            margin="normal"
+            sx={{ mt: 1 }}
           />
           <ControlledTextField
             name="value"
@@ -181,7 +184,6 @@ export const SetupSecretDialog = memo(() => {
             {...(!masterKey && { disabled: true })}
             type="password"
             fullWidth
-            margin="normal"
             helperText={
               isAddingNewSecret
                 ? ""
@@ -193,7 +195,7 @@ export const SetupSecretDialog = memo(() => {
               <ErrorMessage error={errors.root.message} />
             </Alert>
           )}
-        </form>
+        </Stack>
       </DialogContent>
       <DialogActions>
         <CancelButton onClick={onInnerClose} />

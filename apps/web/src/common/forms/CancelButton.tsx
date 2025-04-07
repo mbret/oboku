@@ -3,7 +3,7 @@ import type { ComponentProps } from "react"
 
 export const CancelButton = (props: ComponentProps<typeof Button>) => {
   return (
-    <Button variant="outlined" {...props}>
+    <Button variant="text" {...props}>
       Cancel
     </Button>
   )

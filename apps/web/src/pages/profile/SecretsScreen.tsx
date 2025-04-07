@@ -4,6 +4,7 @@ import {
   Alert,
   Box,
   Button,
+  Container,
   Link,
   List,
   ListItemButton,
@@ -14,12 +15,12 @@ import {
 import { useSettings } from "../../settings/helpers"
 import { links } from "@oboku/shared"
 import { setupSecretDialogSignal } from "../../secrets/SetupSecretDialog"
-import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 import { useSecrets } from "../../secrets/useSecrets"
 import { useDecryptedSecret } from "../../secrets/useDecryptedSecret"
 import { useSecret } from "../../secrets/useSecret"
 import { KeyRounded } from "@mui/icons-material"
 import { SecretActionDrawer } from "../../secrets/SecretActionDrawer"
+import { useUnlockMasterKey } from "../../secrets/useUnlockMasterKey"
 
 const SecretListItem = memo(
   ({
@@ -52,7 +53,7 @@ const SecretListItem = memo(
 export const SecretsScreen = memo(() => {
   const { data: accountSettings } = useSettings()
   const { data: secrets } = useSecrets()
-  const [masterKey, setMasterKey] = useState<string | undefined>(undefined)
+  const { masterKey, unlockMasterKey } = useUnlockMasterKey()
   const hasMasterPassword = !!accountSettings?.masterEncryptionKey
   const [drawerOpenWith, setDrawerOpenWith] = useState<string | undefined>(
     undefined,
@@ -71,30 +72,28 @@ export const SecretsScreen = memo(() => {
             You need to initialize your Master Password to use secrets
           </Alert>
         )}
-        <Stack px={2} maxWidth="sm" mt={2} gap={1} mb={1}>
-          <Button
-            disabled={!hasMasterPassword || !!masterKey}
-            onClick={() => {
-              authorizeAction((masterKey) => {
-                setMasterKey(masterKey)
-              })
-            }}
-          >
-            {masterKey ? "Unlocked" : "Unlock"}
-          </Button>
-          <Button
-            disabled={!hasMasterPassword || !masterKey}
-            onClick={() => {
-              setupSecretDialogSignal.update({
-                openWith: true,
-                masterKey: masterKey ?? "",
-              })
-            }}
-            variant="contained"
-          >
-            Add a secret
-          </Button>
-        </Stack>
+        <Container maxWidth="sm">
+          <Stack gap={1} mb={1} mt={2}>
+            <Button
+              disabled={!hasMasterPassword || !!masterKey}
+              onClick={unlockMasterKey}
+            >
+              {masterKey ? "Unlocked" : "Unlock"}
+            </Button>
+            <Button
+              disabled={!hasMasterPassword || !masterKey}
+              onClick={() => {
+                setupSecretDialogSignal.update({
+                  openWith: true,
+                  masterKey: masterKey ?? "",
+                })
+              }}
+              variant="contained"
+            >
+              Add a secret
+            </Button>
+          </Stack>
+        </Container>
         <List>
           {secrets?.map((secret) => (
             <SecretListItem
