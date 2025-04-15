@@ -30,6 +30,7 @@ import { link, type LinkCollection } from "./collections/link"
 import {
   initializeSettings,
   type SettingsCollection,
+  settingsCollectionMethods,
   settingsSchema,
   settingsSchemaMigrationStrategies,
 } from "./collections/settings"
@@ -70,7 +71,7 @@ export const createDatabase = (
   const storage = getRxStorageDexie()
   const databasePromise = createRxDatabase<MyDatabaseCollections>({
     ...params,
-    name: "oboku-43",
+    name: "oboku-45",
     // NOTICE: Schema validation can be CPU expensive and increases your build size.
     // You should always use a schema validation plugin in development mode.
     // For most use cases, you should not use a validation plugin in production.
@@ -138,6 +139,7 @@ export const createDatabase = (
           settings: {
             schema: settingsSchema,
             migrationStrategies: settingsSchemaMigrationStrategies,
+            statics: settingsCollectionMethods,
           },
           obokucollection: {
             schema: collectionSchema,

@@ -9,6 +9,8 @@ export const ROUTES = {
   STATISTICS: "/profile/statistics",
   PLUGINS: "/plugins",
   PLUGINS_TYPE: "/plugins/:type",
+  PLUGINS_WEBDAV_CONNECTORS_NEW: "/plugins/webdav/connectors/new",
+  PLUGINS_WEBDAV_CONNECTORS_EDIT: "/plugins/webdav/connectors/:id",
   SYNC: "/sync",
   SYNC_DATASOURCES: "/sync/datasources",
   SYNC_NEW_DATASOURCES: "/sync/new-datasources/:id",

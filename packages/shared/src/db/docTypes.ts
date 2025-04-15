@@ -133,7 +133,7 @@ export type SecretDocType = CommonBase & {
 
 export type CollectionDocType = CommonBase & {
   books: string[]
-  linkType?: string
+  linkType?: DataSourceDocType['type']
   linkResourceId?: string
   rx_model: "obokucollection"
   modifiedAt: string | null
