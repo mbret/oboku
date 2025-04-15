@@ -10,7 +10,7 @@ export const plugin: ObokuPlugin<"file"> = {
   name: "file",
   UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
-  description: "Manage books from your device (local)",
+  description: "Manage contents from your device (local)",
   useDownloadBook: () => () => {
     throw new ObokuPluginError({
       code: "unknown",

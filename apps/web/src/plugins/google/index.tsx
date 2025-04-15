@@ -40,5 +40,5 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   useSynchronize,
   Provider,
   InfoScreen,
-  description: "Manage books and collections from Google Drive",
+  description: "Manage contents from Google Drive",
 }

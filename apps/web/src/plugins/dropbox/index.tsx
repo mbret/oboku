@@ -28,5 +28,5 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   useRefreshMetadata,
   useSynchronize,
   canSynchronize: true,
-  description: "Manage books and collections from Dropbox",
+  description: "Manage contents from Dropbox",
 }

@@ -49,7 +49,7 @@ type UseDownloadHook = (options: {
 
 type UseRefreshMetadataHook = (options: {
   requestPopup: () => Promise<boolean>
-}) => (data: { linkType: string }) => Promise<{
+}) => (data: { linkType: string; }) => Promise<{
   data?: object
 }>
 

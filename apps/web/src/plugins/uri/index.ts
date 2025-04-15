@@ -12,7 +12,7 @@ const plugin: ObokuPlugin<"URI"> = {
   Icon: HttpRounded,
   UploadBookComponent,
   useDownloadBook,
-  description: "Manage books from URI / URL",
+  description: "Manage contents from URI / URL",
 }
 
 export default plugin
