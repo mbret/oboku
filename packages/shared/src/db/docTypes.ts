@@ -1,4 +1,5 @@
 import type { CollectionMetadata } from "../metadata"
+import type { WebdavLinkData } from "../plugins/webdav"
 import type { BookDocType } from "./books"
 import type { CouchDBMeta } from "./couchdb"
 import type { RxDbMeta } from "./rxdb"
@@ -10,7 +11,7 @@ export type LinkDocType = CommonBase & {
    * unique type.
    * This is used to lookup plugin configurations
    */
-  type: string
+  type: DataSourceDocType["type"]
   /**
    * Is used as unique identifier for the datasource specifically.
    * This can be used to detect if an item already exist for a datasource
@@ -28,9 +29,9 @@ export type LinkDocType = CommonBase & {
   dataSourceId?: string
   /**
    * Extra data field that can be used by any datasource to store
-   * any form of data. Needs to be serialized as a string
+   * any form of data.
    */
-  data: null | Record<string, unknown>
+  data: null | WebdavLinkData
   book: string | null
   rx_model: "link"
   contentLength?: number | null
@@ -131,8 +132,9 @@ export type SecretDocType = CommonBase & {
 
 export type CollectionDocType = CommonBase & {
   books: string[]
-  linkType?: DataSourceDocType['type']
+  linkType?: DataSourceDocType["type"]
   linkResourceId?: string
+  linkData?: WebdavLinkData
   rx_model: "obokucollection"
   modifiedAt: string | null
   /**

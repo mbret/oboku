@@ -41,6 +41,7 @@ export const collectionSchema: RxJsonSchema<
     type: { type: ["string", "null"] },
     linkType: { type: "string" },
     linkResourceId: { type: "string" },
+    linkData: { type: "object" },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
     lastMetadataUpdatedAt: { type: ["string"] },

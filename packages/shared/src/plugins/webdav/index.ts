@@ -6,8 +6,20 @@ export const webdavSyncDataSchema = z.object({
   url: z.string(),
 })
 
+export const webdavLinkDataSchema = z.object({
+  connectorId: z.string().optional(),
+})
+
+// Extract TypeScript types from Zod schemas
+export type WebdavSyncData = z.infer<typeof webdavSyncDataSchema>
+export type WebdavLinkData = z.infer<typeof webdavLinkDataSchema>
+
 export const getWebdavSyncData = (data: Record<string, unknown>) => {
   return webdavSyncDataSchema.parse(data)
+}
+
+export const getWebDavLinkData = (data: Record<string, unknown>) => {
+  return webdavLinkDataSchema.parse(data)
 }
 
 export const generateWebdavResourceId = (data: {
