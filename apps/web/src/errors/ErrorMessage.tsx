@@ -11,15 +11,30 @@ export const errorToMessage = (error: unknown) => {
     return "Invalid credentials"
   }
 
-  return (
-    (isApiError(error) &&
+  if (
+    isApiError(error) &&
     error.response?.data.errors[0]?.code ===
       ObokuErrorCode.ERROR_SIGNIN_NO_EMAIL
-      ? "Please make your email address accessible with this provider"
-      : isApiError(error) &&
-          error.response?.data.errors[0]?.code ===
-            ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED
-        ? "Please verify your email with this provider before continuing"
-        : undefined) ?? "Something went wrong. Could you try again?"
-  )
+  ) {
+    return "Please make your email address accessible with this provider"
+  }
+
+  if (
+    isApiError(error) &&
+    error.response?.data.errors[0]?.code ===
+      ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED
+  ) {
+    return "Please verify your email with this provider before continuing"
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message
+  }
+
+  return "Something went wrong"
 }
