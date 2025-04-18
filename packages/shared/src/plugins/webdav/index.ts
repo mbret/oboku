@@ -36,14 +36,14 @@ export const explodeWebdavResourceId = (resourceId: string) => {
   const encodedFilename = withoutPrefix.substring(lastColonIndex + 1);
   const filename = decodeURIComponent(encodedFilename);
   
-  // Extract directory from filename
+  // Extract directory and basename from filename
   const lastSlashIndex = filename.lastIndexOf("/");
-  let directory = lastSlashIndex !== -1 ? filename.substring(0, lastSlashIndex) : "/";
-  // Normalize directory to always start with "/"
-  if (directory !== "/" && !directory.startsWith("/")) {
-    directory = `/${directory}`;
-  }
-  const basename = lastSlashIndex !== -1 ? filename.substring(lastSlashIndex + 1) : filename;
+  const directory = lastSlashIndex !== -1 
+    ? `/${filename.substring(0, lastSlashIndex)}` 
+    : "/";
+  const basename = lastSlashIndex !== -1 
+    ? filename.substring(lastSlashIndex + 1) 
+    : filename;
   
   return { url, filename, directory, basename };
 }
