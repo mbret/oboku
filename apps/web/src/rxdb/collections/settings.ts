@@ -27,6 +27,7 @@ type SettingsCollectionMethods = {
     id: string,
     json: Partial<NonNullable<SettingsDocType["webdavConnectors"]>[number]>,
   ) => Promise<SettingsDocType>
+  getWebdavConnector: (id: string) => Promise<NonNullable<SettingsDocType["webdavConnectors"]>[number] | null>
 }
 
 export type SettingsCollection = RxCollection<
@@ -136,6 +137,19 @@ export const settingsCollectionMethods: SettingsCollectionMethods = {
         }),
       }
     })
+  },
+  getWebdavConnector: async function (this: SettingsCollection, id) {
+    const settings = await this.findOne("settings").exec()
+
+    if (!settings) {
+      throw new Error("Settings not found")
+    }
+
+    const connector = settings.webdavConnectors?.find(
+      (connector) => connector.id === id,
+    )
+
+    return connector ?? null
   },
 }
 

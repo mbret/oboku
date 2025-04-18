@@ -1,13 +1,20 @@
-import { dataSourceHelpers } from "@oboku/shared"
 import type { UseSyncSourceInfo } from "../types"
+import { useConnector } from "./connectors/useConnector"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"webdav"> = (syncSource) => {
-  const data = dataSourceHelpers.getDataFromDataSource<"webdav">(syncSource)
+  const {data: connector} = useConnector(syncSource.data_v2?.connectorId)
+  const directory = syncSource.data_v2?.directory ?? "/"
 
-  const url = new URL(data?.url ?? "")
+  if (!connector) {
+    return {
+      name: `webdav://?`,
+    }
+  }
+
+  const url = new URL(connector?.url ?? "")
   const cleanUrl = url.hostname
 
   return {
-    name: `webdav://${data?.username}@${cleanUrl}${data?.directory ?? "/"}`,
+    name: `webdav://${connector?.username}@${cleanUrl}${directory}`,
   }
 }

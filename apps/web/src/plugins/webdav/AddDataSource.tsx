@@ -2,7 +2,6 @@ import { type ComponentProps, memo } from "react"
 import type { ObokuPlugin } from "../types"
 import {
   Alert,
-  AlertTitle,
   Button,
   Container,
   InputAdornment,
@@ -11,20 +10,19 @@ import {
 } from "@mui/material"
 import { useForm } from "react-hook-form"
 import { ControlledTextField } from "../../common/forms/ControlledTextField"
-import { useConnect } from "./useConnect"
 import { links } from "@oboku/shared"
-import { ControlledSecretSelect } from "../../common/forms/ControlledSecretSelect"
 import { useUnlockMasterKey } from "../../secrets/useUnlockMasterKey"
-import { useDecryptedSecret } from "../../secrets/useDecryptedSecret"
 import { ErrorMessage } from "../../errors/ErrorMessage"
 import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
+import { useConnectors } from "./connectors/useConnectors"
+import { ControlledSelect } from "../../common/forms/ControlledSelect"
+import { LinkRounded } from "@mui/icons-material"
+import { TestConnection } from "./connectors/TestConnection"
 
 type FormData = {
-  url: string
-  username: string
-  passwordAsSecretId: string
+  connectorId: string
   directory: string
 }
 
@@ -41,31 +39,12 @@ export const AddDataSource = memo(
     } = useForm<FormData>({
       mode: "onChange",
       defaultValues: {
-        url: "",
-        username: "",
-        passwordAsSecretId: "",
+        connectorId: "",
         directory: "",
       },
     })
     const data = watch()
-    const { data: secret } = useDecryptedSecret({
-      id: data.passwordAsSecretId,
-      masterKey,
-      enabled: isValid,
-    })
-    const {
-      status: testingStatus,
-      isFetching,
-      data: testingData,
-    } = useConnect({
-      data: {
-        url: data.url,
-        username: data.username,
-        password: secret ?? "",
-        directory: `/${data.directory}`,
-      },
-      enabled: isValid && !!secret,
-    })
+    const { data: connectors } = useConnectors()
     const { mutateAsync: addDataSource } = useCreateDataSource()
     const { mutate: submit } = useMutation$({
       mutationFn: (_data: FormData) => {
@@ -96,73 +75,48 @@ export const AddDataSource = memo(
             id={FORM_ID}
           >
             <ControlledTextField
-              name="url"
-              label="URL"
-              control={control}
-              rules={{
-                required: true,
-                pattern: {
-                  value:
-                    /^(https?:\/\/)?([\w-]+\.)+[\w-]+(:\d{1,5})?(\/[\w- .\/?%&=]*)?$/,
-                  message: "Invalid URL",
-                },
-              }}
-              fullWidth
-            />
-            <ControlledTextField
               name="directory"
               label="Directory"
               control={control}
-              rules={{ required: true }}
+              rules={{ required: false }}
               fullWidth
-              slotProps={
-                {
-                  input: {
-                    startAdornment: <InputAdornment position="start">/</InputAdornment>
-                  }
-                }
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">/</InputAdornment>
+                  ),
+                },
+              }}
+            />
+            <ControlledSelect
+              options={
+                connectors?.map((connector) => ({
+                  label: `${connector.url}@${connector.username}`,
+                  value: connector.id,
+                  id: connector.id,
+                })) ?? []
               }
-            />
-            <ControlledTextField
-              name="username"
-              label="Username"
-              control={control}
-              rules={{ required: true }}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <LinkRounded />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              helperText="Select a connector to use"
+              name="connectorId"
               fullWidth
-            />
-            <ControlledSecretSelect
-              name="passwordAsSecretId"
-              label="Password"
-              control={control}
               rules={{ required: true }}
-              fullWidth
+              control={control}
             />
             {!!errors.root && (
               <Alert severity="error">
                 <ErrorMessage error={errors.root.message} />
               </Alert>
             )}
-            <Alert
-              severity={
-                testingStatus === "pending" || isFetching
-                  ? "info"
-                  : testingData === false
-                    ? "error"
-                    : "success"
-              }
-              sx={{ alignSelf: "stretch" }}
-            >
-              <AlertTitle>Test connection</AlertTitle>
-              {isFetching
-                ? "Testing connection..."
-                : testingStatus === "pending"
-                  ? masterKey
-                    ? "Waiting for valid credentials..."
-                    : "Please unlock your secrets first"
-                  : testingStatus === "success" && testingData === false
-                    ? "Unable to connect"
-                    : "Connection successful"}
-            </Alert>
+            <TestConnection connectorId={data.connectorId} directory={data.directory} />
           </Stack>
           <Stack gap={1} mt={4}>
             <Button disabled={!!masterKey} onClick={unlockMasterKey}>

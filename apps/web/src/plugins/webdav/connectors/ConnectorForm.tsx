@@ -1,19 +1,10 @@
 import { memo } from "react"
-import {
-  Alert,
-  AlertTitle,
-  Button,
-  Container,
-  Link,
-  Stack,
-} from "@mui/material"
+import { Alert, Button, Container, Link, Stack } from "@mui/material"
 import { useForm } from "react-hook-form"
 import { links } from "@oboku/shared"
 import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { useUnlockMasterKey } from "../../../secrets/useUnlockMasterKey"
-import { useDecryptedSecret } from "../../../secrets/useDecryptedSecret"
-import { useConnect } from "../useConnect"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import { ControlledSecretSelect } from "../../../common/forms/ControlledSecretSelect"
 import { ErrorMessage } from "../../../errors/ErrorMessage"
@@ -21,6 +12,7 @@ import { useAddConnector } from "./useAddConnector"
 import { useNotifications } from "../../../notifications/useNofitications"
 import { useConnector } from "./useConnector"
 import { useUpdateConnector } from "./useUpdateConnector"
+import { TestConnection } from "./TestConnection"
 
 type FormData = {
   url: string
@@ -31,7 +23,15 @@ type FormData = {
 const FORM_ID = "webdav-add-data-source"
 
 export const ConnectorForm = memo(
-  ({ onSubmitSuccess, children, connectorId }: { onSubmitSuccess: () => void; children?: React.ReactNode, connectorId?: string }) => {
+  ({
+    onSubmitSuccess,
+    children,
+    connectorId,
+  }: {
+    onSubmitSuccess: () => void
+    children?: React.ReactNode
+    connectorId?: string
+  }) => {
     const { masterKey, unlockMasterKey } = useUnlockMasterKey()
     const { data: connector } = useConnector(connectorId)
     const isEditing = !!connectorId
@@ -55,24 +55,6 @@ export const ConnectorForm = memo(
     })
     const { notify } = useNotifications()
     const data = watch()
-    const { data: secret } = useDecryptedSecret({
-      id: data.passwordAsSecretId,
-      masterKey,
-      enabled: isValid,
-    })
-    const {
-      status: testingStatus,
-      isFetching,
-      data: testingData,
-    } = useConnect({
-      data: {
-        url: data.url,
-        username: data.username,
-        password: secret ?? "",
-        directory: "/",
-      },
-      enabled: isValid && !!secret,
-    })
     const { mutateAsync: addConnector } = useAddConnector()
     const { mutateAsync: updateConnector } = useUpdateConnector()
     const { mutate: submit } = useMutation$({
@@ -138,27 +120,7 @@ export const ConnectorForm = memo(
                 <ErrorMessage error={errors.root.message} />
               </Alert>
             )}
-            <Alert
-              severity={
-                testingStatus === "pending" || isFetching
-                  ? "info"
-                  : testingData === false
-                    ? "error"
-                    : "success"
-              }
-              sx={{ alignSelf: "stretch" }}
-            >
-              <AlertTitle>Test connection</AlertTitle>
-              {isFetching
-                ? "Testing connection..."
-                : testingStatus === "pending"
-                  ? masterKey
-                    ? "Waiting for valid credentials..."
-                    : "Please unlock your secrets first"
-                  : testingStatus === "success" && testingData === false
-                    ? "Unable to connect"
-                    : "Connection successful"}
-            </Alert>
+            <TestConnection connectorId={connectorId}  />
           </Stack>
           <Stack gap={1} mt={4}>
             <Button disabled={!!masterKey} onClick={unlockMasterKey}>

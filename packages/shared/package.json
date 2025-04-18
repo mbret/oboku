@@ -21,6 +21,9 @@
     "build": "tsc && vite build",
     "test": "vitest run"
   },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
   "devDependencies": {
     "vite": "^6.2.2",
     "vite-plugin-dts": "^4.0.3"

@@ -10,6 +10,7 @@ import type {
 import type { Button } from "@mui/material"
 import type { Observable } from "rxjs"
 import { DeepReadonly } from "rxdb"
+import { UseMutationResult } from "@tanstack/react-query"
 
 type PostLink = Pick<LinkDocType, "resourceId" | "type">
 // biome-ignore lint/complexity/noBannedTypes: <explanation>
@@ -49,7 +50,7 @@ type UseDownloadHook = (options: {
 
 type UseRefreshMetadataHook = (options: {
   requestPopup: () => Promise<boolean>
-}) => (data: { linkType: string; }) => Promise<{
+}) => (data: { linkType: string }) => Promise<{
   data?: object
 }>
 
@@ -57,9 +58,13 @@ export type UseSynchronizeHook<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = (options: {
   requestPopup: () => Promise<boolean>
-}) => (dataSource: Extract<DataSourceDocType, { type: T }>) => Promise<{
-  data?: Record<string, unknown>
-}>
+}) => UseMutationResult<
+  {
+    data: Record<string, unknown>
+  },
+  Error | null,
+  Extract<DataSourceDocType, { type: T }>
+>
 
 type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
   link: LinkDocType,

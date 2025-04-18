@@ -38,7 +38,7 @@ export const usePluginSynchronize = () => {
         throw new Error("this datasource cannot synchronize")
       }
 
-      return await found.synchronize(dataSource as any)
+      return await found.synchronize.mutateAsync(dataSource as any)
     }
 
     throw new Error("no datasource found for this link")

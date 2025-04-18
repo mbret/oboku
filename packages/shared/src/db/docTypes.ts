@@ -80,9 +80,7 @@ export type DropboxDataSourceDocType = BaseDataSourceDocType & {
 export type WebDAVDataSourceDocType = BaseDataSourceDocType & {
   type: "webdav"
   data_v2?: {
-    url?: string
-    username?: string
-    passwordAsSecretId?: string
+    connectorId?: string
     directory?: string
     applyTags?: ReadonlyArray<string>
   }
