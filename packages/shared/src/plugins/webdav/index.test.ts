@@ -46,6 +46,8 @@ describe("WebDAV Plugin", () => {
       expect(result).toEqual({
         url: "webdav.example.com",
         filename: "document.pdf",
+        directory: "/",
+        basename: "document.pdf",
       })
     })
 
@@ -57,6 +59,8 @@ describe("WebDAV Plugin", () => {
       expect(result).toEqual({
         url: "webdav.example.com",
         filename: "my document with spaces.pdf",
+        directory: "/",
+        basename: "my document with spaces.pdf",
       })
     })
 
@@ -68,6 +72,20 @@ describe("WebDAV Plugin", () => {
       expect(result).toEqual({
         url: "webdav.example.com",
         filename: "file/with/path:and:colons.pdf",
+        directory: "/file/with",
+        basename: "path:and:colons.pdf",
+      })
+    })
+
+    it("should normalize directory to always start with /", () => {
+      const resourceId = "webdav://webdav.example.com:folder/subfolder/document.pdf"
+
+      const result = explodeWebdavResourceId(resourceId)
+      expect(result).toEqual({
+        url: "webdav.example.com",
+        filename: "folder/subfolder/document.pdf",
+        directory: "/folder/subfolder",
+        basename: "document.pdf",
       })
     })
 
@@ -78,6 +96,8 @@ describe("WebDAV Plugin", () => {
       expect(result).toEqual({
         url: "[2001:db8::1]:8080",
         filename: "document.pdf",
+        directory: "/",
+        basename: "document.pdf",
       })
     })
 
@@ -110,6 +130,23 @@ describe("WebDAV Plugin", () => {
 
       expect(extracted.url).toBe("webdav.example.com")
       expect(extracted.filename).toBe(originalData.filename)
+      expect(extracted.directory).toBe("/")
+      expect(extracted.basename).toBe(originalData.filename)
+    })
+
+    it("should correctly extract directory and basename from path", () => {
+      const originalData = {
+        url: "https://webdav.example.com",
+        filename: "folder/subfolder/document.pdf",
+      }
+
+      const resourceId = generateWebdavResourceId(originalData)
+      const extracted = explodeWebdavResourceId(resourceId)
+
+      expect(extracted.url).toBe("webdav.example.com")
+      expect(extracted.filename).toBe(originalData.filename)
+      expect(extracted.directory).toBe("/folder/subfolder")
+      expect(extracted.basename).toBe("document.pdf")
     })
   })
 })
