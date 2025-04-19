@@ -10,7 +10,7 @@ import { onResourceError } from "./onResourceError.shared"
 import { onManifestSuccess } from "./onManifestSuccess.shared"
 
 export const swStreamer = new ServiceWorkerStreamer({
-  cleanArchiveAfter: 5 * 60 * 1000,
+  cleanArchiveAfter: 5 * 60 * 1000, // 5mn
   getUriInfo: (event) => {
     const url = new URL(event.request.url)
     const shouldIntercept = url.pathname.startsWith(`/${STREAMER_URL_PREFIX}`)
