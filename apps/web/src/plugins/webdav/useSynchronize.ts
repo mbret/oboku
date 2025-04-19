@@ -1,14 +1,11 @@
 import type { WebDAVDataSourceDocType } from "@oboku/shared"
 import type { UseSynchronizeHook } from "../types"
-import { from, map, switchMap } from "rxjs"
-import { decryptSecret } from "../../secrets/secretsUtils"
-import { getLatestDatabase } from "../../rxdb/RxDbProvider"
-import { useRequestMasterKey } from "../../secrets/useRequestMasterKey"
+import { from } from "rxjs"
 import { useMutation$ } from "reactjrx"
-import { throwIfNotDefined } from "../../common/rxjs/operators"
+import { useExtractConnectorData } from "./connectors/useExtractConnectorData"
 
 export const useSynchronize: UseSynchronizeHook<"webdav"> = () => {
-  const { mutateAsync: requestMasterKey } = useRequestMasterKey()
+  const { mutateAsync: extractConnectorData } = useExtractConnectorData()
 
   return useMutation$({
     mutationFn: (dataSource: WebDAVDataSourceDocType) => {
@@ -18,39 +15,7 @@ export const useSynchronize: UseSynchronizeHook<"webdav"> = () => {
         throw new Error("No connector id")
       }
 
-      return getLatestDatabase().pipe(
-        switchMap((database) =>
-          from(database.settings.getWebdavConnector(connectorId)).pipe(
-            throwIfNotDefined,
-            switchMap((connector) =>
-              from(requestMasterKey()).pipe(
-                switchMap((masterKey) =>
-                  from(
-                    database.secret
-                      .findOne({
-                        selector: { _id: connector.passwordAsSecretId },
-                      })
-                      .exec(),
-                  ).pipe(
-                    map((secret) => secret?.value),
-                    throwIfNotDefined,
-                    switchMap((secret) =>
-                      from(decryptSecret(secret, masterKey)),
-                    ),
-                  ),
-                ),
-                map((password) => ({
-                  data: {
-                    password,
-                    url: connector.url,
-                    username: connector.username,
-                  },
-                })),
-              ),
-            ),
-          ),
-        ),
-      )
+      return from(extractConnectorData({ connectorId }))
     },
   })
 }

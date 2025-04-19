@@ -1,13 +1,13 @@
 import type { ObokuPlugin } from "../types"
-import { of } from "rxjs"
-import { useRequestMasterKey } from "../../secrets/useRequestMasterKey"
+import { from } from "rxjs"
 import { useMutation$ } from "reactjrx"
 import { type DataSourceDocType, getWebDavLinkData } from "@oboku/shared"
+import { useExtractConnectorData } from "./connectors/useExtractConnectorData"
 
 export const useRefreshMetadata: ObokuPlugin<"webdav">[`useRefreshMetadata`] =
   () => {
-    const { mutateAsync: requestMasterKey } = useRequestMasterKey()
-
+    const { mutateAsync: extractConnectorData } = useExtractConnectorData()
+    
     return useMutation$({
       mutationFn: ({
         linkData,
@@ -21,7 +21,7 @@ export const useRefreshMetadata: ObokuPlugin<"webdav">[`useRefreshMetadata`] =
           throw new Error("You need to setup a webdav connector first")
         }
 
-        return of({ data: {} })
+        return from(extractConnectorData({ connectorId }))
       },
     })
   }

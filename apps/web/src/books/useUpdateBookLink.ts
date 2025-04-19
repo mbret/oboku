@@ -1,6 +1,7 @@
 import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { useUpsertLink } from "../links/useUpsertLink"
+import type { DataSourceDocType } from "@oboku/shared"
 
 export const useUpsertBookLink = ({ onSuccess }: { onSuccess: () => void }) => {
   const { mutateAsync: upsertLink } = useUpsertLink()
@@ -14,7 +15,7 @@ export const useUpsertBookLink = ({ onSuccess }: { onSuccess: () => void }) => {
     }: {
       bookId: string
       linkResourceId: string
-      linkType: string
+      linkType: DataSourceDocType["type"]
     }) => {
       /**
        * All it's needed is a new link and its link to the book.
