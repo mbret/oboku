@@ -4,10 +4,7 @@
  */
 import { authorize } from "./helpers"
 import { type drive_v3, google } from "googleapis"
-import {
-  READER_ACCEPTED_MIME_TYPES,
-  isFileSupported,
-} from "@oboku/shared"
+import { READER_ACCEPTED_MIME_TYPES, isFileSupported } from "@oboku/shared"
 import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
@@ -72,7 +69,7 @@ export const dataSource: DataSourcePlugin = {
       bookMetadata: {
         size: metadata.size || undefined,
         contentType: metadata.mimeType || undefined,
-      }
+      },
     }
   },
   download: async (link, credentials) => {
