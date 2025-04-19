@@ -72,7 +72,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
                   textOverflow: "ellipsis",
                 },
               }}
-              secondary={linkInfo.label}
+              secondary={linkInfo?.label}
             />
             <Stack width={50} alignItems="center" flexShrink={0}>
               <MoreVertRounded />
