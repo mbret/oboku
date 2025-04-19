@@ -72,10 +72,6 @@ export const dataSource: DataSourcePlugin = {
     })
 
     return {
-      metadata: {
-        name: "",
-        size: results.size.toString(),
-      },
       stream,
     }
   },

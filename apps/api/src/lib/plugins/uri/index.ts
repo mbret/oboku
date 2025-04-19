@@ -34,7 +34,6 @@ export const dataSource: DataSourcePlugin = {
     })
 
     return {
-      metadata: (await dataSource.getFileMetadata({ link })) ?? {},
       // @todo request is deprecated, switch to something else
       // @see https://github.com/request/request/issues/3143
       stream: response.data as IncomingMessage,

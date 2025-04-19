@@ -5,7 +5,6 @@
 import { authorize } from "./helpers"
 import { type drive_v3, google } from "googleapis"
 import {
-  type GoogleDriveDataSourceData,
   READER_ACCEPTED_MIME_TYPES,
   isFileSupported,
 } from "@oboku/shared"
@@ -70,6 +69,10 @@ export const dataSource: DataSourcePlugin = {
       contentType: metadata.mimeType || undefined,
       modifiedAt: metadata.modifiedTime || undefined,
       canDownload: true,
+      bookMetadata: {
+        size: metadata.size || undefined,
+        contentType: metadata.mimeType || undefined,
+      }
     }
   },
   download: async (link, credentials) => {
@@ -104,16 +107,6 @@ export const dataSource: DataSourcePlugin = {
 
     return {
       stream: response.data,
-      metadata: {
-        ...(metadata.size && {
-          size: metadata.size,
-        }),
-        name: "",
-        ...(metadata.name && {
-          name: metadata.name,
-        }),
-        contentType: response.headers["content-type"],
-      },
     }
   },
   sync: async (ctx) => {

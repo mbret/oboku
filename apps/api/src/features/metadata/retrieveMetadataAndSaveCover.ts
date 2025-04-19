@@ -95,7 +95,7 @@ export const retrieveMetadataAndSaveCover = async (
 
     const metadataList = [linkMetadata, ...sourcesMetadata]
 
-    const { filepath: tmpFilePath, metadata: downloadMetadata } =
+    const { filepath: tmpFilePath } =
       canDownload && isMaybeExtractAble
         ? await downloadToTmpFolder(ctx.book, ctx.link, config, ctx.data).catch(
             (error) => {
@@ -112,7 +112,7 @@ export const retrieveMetadataAndSaveCover = async (
               }
             },
           )
-        : { filepath: undefined, metadata: {} }
+        : { filepath: undefined }
 
     let fileContentLength = 0
 
@@ -122,7 +122,6 @@ export const retrieveMetadataAndSaveCover = async (
     }
 
     fileToUnlink = tmpFilePath
-    contentType = downloadMetadata.contentType || contentType
 
     console.log(
       `[retrieveMetadataAndSaveCover]`,

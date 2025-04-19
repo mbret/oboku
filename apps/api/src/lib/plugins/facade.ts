@@ -40,11 +40,11 @@ export const pluginFacade = {
 
     throw new Error(`No dataSource found for action`)
   },
-  download: async (link: LinkDocType, credentials?: any) => {
+  download: async (link: LinkDocType, data?: any) => {
     const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
 
     if (plugin?.download) {
-      return plugin.download(link, credentials)
+      return plugin.download(link, data)
     }
 
     throw new Error(`No dataSource found for action`)

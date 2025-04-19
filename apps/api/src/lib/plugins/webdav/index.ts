@@ -50,7 +50,6 @@ export const dataSource: DataSourcePlugin = {
   },
   getFolderMetadata: async ({ link, data }) => {
     const syncData = getWebdavSyncData(data ?? {})
-
     const webdav = await getWebdavModule()
     const client = webdav.createClient(syncData.url, {
       username: syncData.username,
@@ -62,13 +61,6 @@ export const dataSource: DataSourcePlugin = {
       details: true,
     })
 
-    console.log({
-      link,
-      data,
-      filename,
-      response,
-    })
-
     if ("data" in response) {
       return {
         name: response.data.basename,
@@ -78,8 +70,18 @@ export const dataSource: DataSourcePlugin = {
 
     throw new Error("Folder not found")
   },
-  download: async (link, credentials) => {
-    throw new Error("not implemented")
+  download: async (link, data) => {
+    const syncData = getWebdavSyncData(data ?? {})
+    const webdav = await getWebdavModule()
+    const client = webdav.createClient(syncData.url, {
+      username: syncData.username,
+      password: syncData.password,
+    })
+    const { filename } = explodeWebdavResourceId(link.resourceId)
+
+    return {
+      stream: client.createReadStream(filename),
+    }
   },
   sync: async ({ data, dataSourceId, db }) => {
     const { connectorId, directory: rootDirectory = "/" } =

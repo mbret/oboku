@@ -103,7 +103,6 @@ export type DataSourcePlugin = {
     data?: Record<string, unknown>,
   ) => Promise<{
     stream: NodeJS.ReadableStream | IncomingMessage
-    metadata: Omit<Metadata, "type"> & { contentType?: string }
   }>
   sync?: (
     options: {
