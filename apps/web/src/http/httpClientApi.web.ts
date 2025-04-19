@@ -4,24 +4,18 @@ import { HttpClientWeb } from "./httpClient.web"
 class HttpApiClient extends HttpClientWeb {
   refreshBookMetadata = (
     bookId: string,
-    credentials?: { [key: string]: any },
+    data?: Record<string, unknown>,
   ) =>
     this.post(`${configuration.API_URL}/books/metadata/refresh`, {
-      body: { bookId },
-      headers: {
-        "oboku-credentials": JSON.stringify(credentials ?? {}),
-      },
+      body: { bookId, data },
     })
 
   refreshCollectionMetadata = (
     collectionId: string,
-    credentials?: { [key: string]: any },
+    data?: Record<string, unknown>,
   ) =>
     this.post(`${configuration.API_URL}/collections/metadata/refresh`, {
-      body: { collectionId },
-      headers: {
-        "oboku-credentials": JSON.stringify(credentials ?? {}),
-      },
+      body: { collectionId, data },
     })
 
   syncDataSource = (dataSourceId: string, data?: Record<string, unknown>) =>

@@ -3,6 +3,7 @@ import {
   notificationsSubject,
   type AppNotification,
 } from "./NotificationsProvider"
+import { errorToMessage } from "../errors/ErrorMessage"
 
 export const useNotifications = () => {
   const notify = useCallback(
@@ -20,5 +21,13 @@ export const useNotifications = () => {
     [],
   )
 
-  return { notify }
+  const notifyError = useCallback((error: unknown) => {
+    notify({
+      title: "Error",
+      description: errorToMessage(error),
+      severity: "error",
+    })
+  }, [notify])
+  
+  return { notify, notifyError }
 }

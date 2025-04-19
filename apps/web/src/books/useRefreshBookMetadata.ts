@@ -8,6 +8,7 @@ import { Logger } from "../debug/logger.shared"
 import { createDialog } from "../common/dialogs/createDialog"
 import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
 import { isPluginError } from "../errors/errors.shared"
+import { useNotifications } from "../notifications/useNofitications"
 
 export const useRefreshBookMetadata = () => {
   const { db: database } = useDatabase()
@@ -15,6 +16,7 @@ export const useRefreshBookMetadata = () => {
   const network = useNetworkState()
   const { mutateAsync: sync } = useSyncReplicate()
   const refreshPluginMetadata = usePluginRefreshMetadata()
+  const { notifyError } = useNotifications()
 
   return async (bookId: string) => {
     try {
@@ -38,6 +40,7 @@ export const useRefreshBookMetadata = () => {
 
       const { data: pluginMetadata } = await refreshPluginMetadata({
         linkType: firstLink.type,
+        linkData: firstLink.data ?? {},
       })
 
       if (!database) return
@@ -53,7 +56,9 @@ export const useRefreshBookMetadata = () => {
         .pipe(
           switchMap(() => from(sync([database.link, database.book]))),
           switchMap(() =>
-            from(httpClientApi.refreshBookMetadata(bookId, pluginMetadata)),
+            from(
+              httpClientApi.refreshBookMetadata(bookId, pluginMetadata ?? {}),
+            ),
           ),
           catchError((e) =>
             from(
@@ -71,6 +76,8 @@ export const useRefreshBookMetadata = () => {
             ),
           ),
           catchError((e) => {
+            notifyError(e)
+
             Logger.error(e)
 
             return of(null)
@@ -79,6 +86,8 @@ export const useRefreshBookMetadata = () => {
         .subscribe()
     } catch (e) {
       if (isPluginError(e) && e.code === "cancelled") return
+
+      notifyError(e)
 
       Logger.error(e)
     }

@@ -5,7 +5,7 @@ import { from } from "rxjs"
 
 const useDownloadBookPlaceholder = () => {
   return () => {
-    throw new Error("this datasource cannot download")
+    throw new Error("This book cannot be downloaded")
   }
 }
 

@@ -29,6 +29,7 @@ import { CancelError, isPluginError } from "../errors/errors.shared"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { dexieDb } from "../rxdb/dexie"
 import { useMutation$ } from "reactjrx"
+import { useNotifications } from "../notifications/useNofitications"
 
 class NoLinkFound extends Error {}
 
@@ -47,6 +48,7 @@ const setDownloadData = (
 
 export const useDownloadBook = () => {
   const { downloadPluginBook } = usePluginDownloadBook()
+  const { notifyError } = useNotifications()
 
   return useMutation$({
     mutationFn: ({
@@ -230,13 +232,9 @@ export const useDownloadBook = () => {
           )
             return EMPTY
 
-          if (isPluginError(error)) {
-            createDialog({
-              autoStart: true,
-              title: "Unable to download",
-              content: error.message,
-            })
+          notifyError(error)
 
+          if (isPluginError(error)) {
             if (error.severity === "user") return EMPTY
           }
 

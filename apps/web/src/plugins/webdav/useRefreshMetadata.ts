@@ -1,21 +1,27 @@
-import { useCallback } from "react"
 import type { ObokuPlugin } from "../types"
-import { firstValueFrom } from "rxjs"
+import { of } from "rxjs"
 import { useRequestMasterKey } from "../../secrets/useRequestMasterKey"
 import { useMutation$ } from "reactjrx"
+import { type DataSourceDocType, getWebDavLinkData } from "@oboku/shared"
 
-export const useRefreshMetadata: ObokuPlugin<"webdav">[`useRefreshMetadata`] = ({
-  requestPopup,
-}) => {
-  const { mutateAsync: requestMasterKey } = useRequestMasterKey()
+export const useRefreshMetadata: ObokuPlugin<"webdav">[`useRefreshMetadata`] =
+  () => {
+    const { mutateAsync: requestMasterKey } = useRequestMasterKey()
 
-  return useMutation$({
-    mutationFn: async (asd) => {
-      const passwordAsSecretId = dataSource.data_v2?.passwordAsSecretId
+    return useMutation$({
+      mutationFn: ({
+        linkData,
+      }: {
+        linkType: DataSourceDocType["type"]
+        linkData: Record<string, unknown>
+      }) => {
+        const { connectorId } = getWebDavLinkData(linkData)
 
-      if (!passwordAsSecretId) {
-        throw new Error("No password as secret id")
-      }
-    },
-  })
-}
+        if (!connectorId) {
+          throw new Error("You need to setup a webdav connector first")
+        }
+
+        return of({ data: {} })
+      },
+    })
+  }

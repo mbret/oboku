@@ -8,12 +8,14 @@ import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getCollectionById } from "./dbHelpers"
 import { isPluginError, OfflineError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
+import { useNotifications } from "../notifications/useNofitications"
 
 export const useRefreshCollectionMetadata = () => {
   const { mutateAsync: updateCollection } = useUpdateCollection()
   const { mutateAsync: sync } = useSyncReplicate()
   const getRefreshMetadataPluginData = usePluginRefreshMetadata()
   const withNetwork = useWithNetwork()
+  const { notifyError } = useNotifications()
 
   return useMutation$({
     mutationFn: (collectionId: string) =>
@@ -28,7 +30,8 @@ export const useRefreshCollectionMetadata = () => {
 
               const pluginData$ = from(
                 getRefreshMetadataPluginData({
-                  linkType: collection.linkType ?? "",
+                  linkType: collection.linkType ?? "file",
+                  linkData: collection.linkData ?? {},
                 }),
               )
 
@@ -74,6 +77,8 @@ export const useRefreshCollectionMetadata = () => {
             e instanceof OfflineError
           )
             return of(null)
+
+          notifyError(e)
 
           throw e
         }),
