@@ -74,13 +74,13 @@ export const AppHighlightSection = () => {
         >
           <KeyCardPoint
             title="Anything"
-            description="Support zip (.cbz, .epub), rar (.cbr) and many more formats to
+            description="Support zip (.cbz, .epub), rar (.cbr), .pdf and many more formats to
                 come!"
             imageSrc={image1}
           />
           <KeyCardPoint
             title="Anywhere"
-            description="As simple as a web app! If you have a browser, you have oboku"
+            description="Oboku is a web app! If you have a browser, you have oboku. We also provide an Android app."
             imageSrc={image2}
           />
           <KeyCardPoint
@@ -90,7 +90,7 @@ export const AppHighlightSection = () => {
           />
           <KeyCardPoint
             title="Your books"
-            description="Synchronize your own books and make your library in a few taps. We support Google Drive, Dropbox and will support many more"
+            description="Synchronize your own books and make your library in a few taps. We support Google Drive, Dropbox, Synology, WebDAV and will support many more"
             imageSrc={image4}
           />
           <KeyCardPoint
