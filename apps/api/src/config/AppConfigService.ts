@@ -50,6 +50,7 @@ export class AppConfigService {
   get METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS() {
     return [
       "application/x-cbz",
+      "application/x-cbr",
       "application/epub+zip",
       "application/zip",
       "application/x-zip-compressed",

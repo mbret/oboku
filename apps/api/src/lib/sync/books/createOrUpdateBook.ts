@@ -180,7 +180,7 @@ export const createOrUpdateBook = async ({
         type: dataSourceType,
         resourceId: item.resourceId,
         book: bookId,
-        data: {},
+        data: item.linkData ?? null,
         createdAt: new Date().toISOString(),
         modifiedAt: null,
         dataSourceId,

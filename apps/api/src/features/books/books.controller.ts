@@ -35,23 +35,26 @@ export class BooksController implements OnModuleInit {
 
   @Post("metadata/refresh")
   async metadataRefresh(
-    @Body() body: { bookId: string },
+    @Body() {
+      bookId,
+      data,
+    }: { bookId: string; data?: Record<string, unknown> },
     @WithAuthUser() user: AuthUser,
-    @Headers() headers: {
-      "oboku-credentials"?: string
-      authorization?: string
-    },
   ) {
-    this.logger.log("metadataRefresh", body.bookId)
+    this.logger.log("metadataRefresh", bookId)
 
     this.taskQueueService.enqueue(
       this.QUEUE_NAME,
       () =>
         from(
-          this.booksMedataService.refreshMetadata(body, headers, user.email),
+          this.booksMedataService.refreshMetadata(
+            { bookId },
+            data ?? {},
+            user.email,
+          ),
         ),
       {
-        id: body.bookId,
+        id: bookId,
       },
     )
 
@@ -70,10 +73,7 @@ export class BooksController implements OnModuleInit {
             {
               bookId: event.data.bookId,
             },
-            {
-              authorization: event.data.authorization,
-              "oboku-credentials": JSON.stringify(event.data.obokuCredentials),
-            },
+            event.data.data ?? {},
             event.data.email,
           ),
         ),

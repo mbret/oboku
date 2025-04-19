@@ -1,4 +1,5 @@
 import type { CollectionMetadata } from "../metadata"
+import type { FileLinkData } from "../plugins/file"
 import type { WebdavLinkData } from "../plugins/webdav"
 import type { BookDocType } from "./books"
 import type { CouchDBMeta } from "./couchdb"
@@ -31,7 +32,7 @@ export type LinkDocType = CommonBase & {
    * Extra data field that can be used by any datasource to store
    * any form of data.
    */
-  data: null | WebdavLinkData
+  data: null | WebdavLinkData | FileLinkData
   book: string | null
   rx_model: "link"
   contentLength?: number | null

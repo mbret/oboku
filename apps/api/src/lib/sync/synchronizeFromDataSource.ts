@@ -125,7 +125,7 @@ const syncFolder = async ({
   eventEmitter,
   coversService,
 }: {
-  ctx: Context & { authorization: string }
+  ctx: Context
   helpers: Helpers
   lvl: number
   hasCollectionAsParent: boolean

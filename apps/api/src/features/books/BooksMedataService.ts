@@ -17,15 +17,10 @@ export class BooksMedataService {
 
   refreshMetadata = async (
     body: { bookId: string },
-    headers: {
-      "oboku-credentials"?: string
-      authorization?: string
-    },
+    data: Record<string, unknown>,
     userEmail: string,
   ) => {
     const { bookId } = body
-    const credentials = JSON.parse(headers["oboku-credentials"] ?? "{}")
-
     const files = await fs.promises.readdir(this.appConfigService.TMP_DIR_BOOKS)
 
     await Promise.all(
@@ -63,14 +58,14 @@ export class BooksMedataService {
 
     if (!link) throw new Error(`Unable to find link ${firstLinkId}`)
 
-    let data: Awaited<ReturnType<typeof retrieveMetadataAndSaveCover>>
+    let _data: Awaited<ReturnType<typeof retrieveMetadataAndSaveCover>>
 
     try {
-      data = await retrieveMetadataAndSaveCover(
+      _data = await retrieveMetadataAndSaveCover(
         {
           userName: userEmail,
           userNameHex,
-          credentials,
+          data,
           book,
           link,
           googleApiKey: this.appConfigService.GOOGLE_API_KEY,
@@ -92,7 +87,7 @@ export class BooksMedataService {
     await Promise.all([
       atomicUpdate(db, "link", link._id, (old) => ({
         ...old,
-        contentLength: data.link.contentLength,
+        contentLength: _data.link.contentLength,
       })),
     ])
 

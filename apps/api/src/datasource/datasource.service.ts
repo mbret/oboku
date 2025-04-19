@@ -20,12 +20,10 @@ export class DataSourceService {
   syncLongProgress = ({
     dataSourceId,
     data,
-    authorization,
     email,
   }: {
     dataSourceId: string
     data: Record<string, unknown>
-    authorization: string
     email: string
   }) => {
     const db$ = from(this.couchService.createNanoInstanceForUser({ email }))
@@ -38,7 +36,6 @@ export class DataSourceService {
             dataSourceId,
             db,
             data,
-            authorization,
             config: this.appConfig.config,
             eventEmitter: this.eventEmitter,
             syncReportPostgresService: this.syncReportPostgresService,

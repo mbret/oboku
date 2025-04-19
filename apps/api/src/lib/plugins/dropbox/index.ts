@@ -4,8 +4,6 @@
 import { Dropbox, type files } from "dropbox"
 import { Readable } from "node:stream"
 import {
-  type DropboxDataSourceData,
-  DropboxDataSourceDocType,
   READER_ACCEPTED_EXTENSIONS,
 } from "@oboku/shared"
 import type {
@@ -21,11 +19,25 @@ const generateResourceId = (id: string) => `dropbox-${id}`
 
 export const dataSource: DataSourcePlugin = {
   type: `dropbox`,
-  getMetadata: async ({ id, credentials }) => {
+  getFolderMetadata: async ({ link, data }) => {
     const dbx = new Dropbox({
-      accessToken: credentials.accessToken,
+      accessToken: `${data?.accessToken}`,
     })
-    const fileId = extractIdFromResourceId(id)
+    const fileId = extractIdFromResourceId(link.resourceId)
+
+    const response = await dbx.filesGetMetadata({
+      path: `${fileId}`,
+    })
+
+    return {
+      name: response.result.name,
+    }
+  },
+  getFileMetadata: async ({ link, data }) => {
+    const dbx = new Dropbox({
+      accessToken: `${data?.accessToken}`,
+    })
+    const fileId = extractIdFromResourceId(link.resourceId)
 
     const response = await dbx.filesGetMetadata({
       path: `${fileId}`,
@@ -39,9 +51,9 @@ export const dataSource: DataSourcePlugin = {
   /**
    * @see https://www.dropbox.com/developers/documentation/http/documentation#files-download
    */
-  download: async (link, credentials) => {
+  download: async (link, data) => {
     const dbx = new Dropbox({
-      accessToken: credentials.accessToken,
+      accessToken: `${data?.accessToken}`,
     })
     const fileId = extractIdFromResourceId(link.resourceId)
 

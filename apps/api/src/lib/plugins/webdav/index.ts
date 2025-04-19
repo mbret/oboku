@@ -3,11 +3,15 @@
  */
 import type {
   DataSourcePlugin,
-  SynchronizeAbleDataSource,
   SynchronizeAbleItem,
 } from "src/lib/plugins/types"
-import { WebDAVDataSourceDocType } from "@oboku/shared"
-import { FileStat, type createClient } from "webdav"
+import {
+  explodeWebdavResourceId,
+  generateWebdavResourceId,
+  getWebdavSyncData,
+  WebDAVDataSourceDocType,
+} from "@oboku/shared"
+import { type createClient } from "webdav"
 import { getDataSourceData } from "../helpers"
 
 // @important needs "node-domexception" which did not seem to be installed by default
@@ -19,41 +23,87 @@ async function getWebdavModule(): Promise<{
 
 export const dataSource: DataSourcePlugin = {
   type: "webdav" satisfies WebDAVDataSourceDocType["type"],
-  getMetadata: async ({ id, credentials }) => {
-    throw new Error("not implemented")
+  getFileMetadata: async ({ link, data }) => {
+    const syncData = getWebdavSyncData(data ?? {})
+
+    const webdav = await getWebdavModule()
+    const client = webdav.createClient(syncData.url, {
+      username: syncData.username,
+      password: syncData.password,
+    })
+    const { filename } = explodeWebdavResourceId(link.resourceId)
+
+    const response = await client.stat(filename, {
+      details: true,
+    })
+
+    if ("data" in response) {
+      return {
+        canDownload: true,
+        contentType: response.data.mime,
+        name: response.data.basename,
+        modifiedAt: response.data.lastmod,
+      }
+    }
+
+    throw new Error("File not found")
+  },
+  getFolderMetadata: async ({ link, data }) => {
+    const syncData = getWebdavSyncData(data ?? {})
+
+    const webdav = await getWebdavModule()
+    const client = webdav.createClient(syncData.url, {
+      username: syncData.username,
+      password: syncData.password,
+    })
+    const { filename } = explodeWebdavResourceId(link.resourceId)
+
+    const response = await client.stat(filename, {
+      details: true,
+    })
+
+    console.log({
+      link,
+      data,
+      filename,
+      response,
+    })
+
+    if ("data" in response) {
+      return {
+        name: response.data.basename,
+        modifiedAt: response.data.lastmod,
+      }
+    }
+
+    throw new Error("Folder not found")
   },
   download: async (link, credentials) => {
     throw new Error("not implemented")
   },
   sync: async ({ data, dataSourceId, db }) => {
-    const password =
-      data && "password" in data && typeof data.password === "string"
-        ? data.password
-        : undefined
+    const { connectorId, directory: rootDirectory = "/" } =
+      (await getDataSourceData<"webdav">({
+        db,
+        dataSourceId,
+      })) ?? {}
 
-    if (!password) {
-      throw new Error("password is required")
-    }
+    const syncData = getWebdavSyncData(data ?? {})
 
-    const dataSourceData = await getDataSourceData<"webdav">({
-      db,
-      dataSourceId,
-    })
-
-    if (!dataSourceData || !dataSourceData.url || !dataSourceData.username) {
-      throw new Error("datasource not found")
+    if (!connectorId || !syncData.url || !syncData.username) {
+      throw new Error("datasource not found or invalid")
     }
 
     const webdav = await getWebdavModule()
 
-    const client = webdav.createClient(dataSourceData.url, {
-      username: dataSourceData.username,
-      password,
+    const client = webdav.createClient(syncData.url, {
+      username: syncData.username,
+      password: syncData.password,
     })
 
-    const rootDirectory = dataSourceData.directory ?? "/"
-
-    const reduceItems = async (directory: string): Promise<SynchronizeAbleItem[]> => {
+    const reduceItems = async (
+      directory: string,
+    ): Promise<SynchronizeAbleItem[]> => {
       const files = await client.getDirectoryContents(directory)
 
       if (!Array.isArray(files)) {
@@ -69,7 +119,13 @@ export const dataSource: DataSourcePlugin = {
                 type: file.type,
                 modifiedAt: file.lastmod,
                 name: file.basename,
-                resourceId: `webdav/${encodeURIComponent(dataSourceData.url ?? "")}/${dataSourceData.username}${file.filename}`,
+                linkData: {
+                  connectorId,
+                },
+                resourceId: generateWebdavResourceId({
+                  filename: file.filename,
+                  url: syncData.url,
+                }),
               } satisfies SynchronizeAbleItem,
             ]
           }
@@ -80,7 +136,13 @@ export const dataSource: DataSourcePlugin = {
               type: "folder",
               modifiedAt: file.lastmod,
               name: file.basename,
-              resourceId: `webdav://${dataSourceData.username}@${dataSourceData.url ?? ""}${file.filename}`,
+              linkData: {
+                connectorId,
+              },
+              resourceId: generateWebdavResourceId({
+                filename: file.filename,
+                url: syncData.url,
+              }),
               items: await reduceItems(file.filename),
             } satisfies SynchronizeAbleItem,
           ]

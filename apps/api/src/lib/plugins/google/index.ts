@@ -26,8 +26,8 @@ const isFolder = (
 
 export const dataSource: DataSourcePlugin = {
   type: `DRIVE`,
-  getMetadata: async ({ id, credentials }) => {
-    const auth = await authorize({ credentials })
+  getFolderMetadata: async ({ link, data }) => {
+    const auth = await authorize({ credentials: data })
     const drive = google.drive({
       version: "v3",
       auth,
@@ -36,7 +36,29 @@ export const dataSource: DataSourcePlugin = {
     const metadata = (
       await drive.files.get(
         {
-          fileId: extractIdFromResourceId(id),
+          fileId: extractIdFromResourceId(link.resourceId),
+          fields: "size, name, modifiedTime",
+        },
+        { responseType: "json" },
+      )
+    ).data
+
+    return {
+      name: metadata.name ?? "",
+      modifiedAt: metadata.modifiedTime || undefined,
+    }
+  },
+  getFileMetadata: async ({ link, data }) => {
+    const auth = await authorize({ credentials: data })
+    const drive = google.drive({
+      version: "v3",
+      auth,
+    })
+
+    const metadata = (
+      await drive.files.get(
+        {
+          fileId: extractIdFromResourceId(link.resourceId),
           fields: "size, name, mimeType, modifiedTime",
         },
         { responseType: "json" },

@@ -3,7 +3,7 @@ import type { BookDocType, LinkDocType } from "@oboku/shared"
 export type Context = {
   userName: string
   userNameHex: string
-  credentials?: any
+  data?: Record<string, unknown>
   book: BookDocType
   link: LinkDocType
 }

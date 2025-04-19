@@ -45,7 +45,6 @@ export class DataSourcesController implements OnModuleInit {
       dataSourceId,
       data,
     }: { dataSourceId: string; data?: Record<string, unknown> },
-    @Headers() headers: { authorization: string },
     @WithAuthUser() user: AuthUser,
   ) {
     this.logger.log(`syncDataSource ${dataSourceId}`)
@@ -56,7 +55,6 @@ export class DataSourcesController implements OnModuleInit {
         this.datasourceService.syncLongProgress({
           dataSourceId,
           data: data ?? {},
-          authorization: headers.authorization,
           email: user.email,
         }),
       {

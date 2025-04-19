@@ -16,7 +16,6 @@ export const sync = async ({
   dataSourceId,
   userName,
   data,
-  authorization,
   db,
   config,
   eventEmitter,
@@ -27,7 +26,6 @@ export const sync = async ({
   dataSourceId: string
   userName: string
   data?: Record<string, unknown>
-  authorization: string
   db: createNano.DocumentScope<unknown>
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
@@ -53,8 +51,7 @@ export const sync = async ({
       Events.BOOKS_METADATA_REFRESH,
       new BooksMetadataRefreshEvent({
         bookId,
-        authorization,
-        obokuCredentials: data,
+        data,
         email,
       }),
     )
@@ -88,7 +85,6 @@ export const sync = async ({
       userName,
       data,
       dataSourceType: type,
-      authorization,
       db,
       syncReport,
       userNameHex: nameHex,

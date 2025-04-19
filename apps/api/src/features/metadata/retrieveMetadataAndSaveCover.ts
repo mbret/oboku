@@ -51,9 +51,9 @@ export const retrieveMetadataAndSaveCover = async (
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
     const { canDownload = false, ...linkResourceMetadata } =
-      (await pluginFacade.getMetadata({
+      (await pluginFacade.getFileMetadata({
         link: ctx.link,
-        credentials: ctx.credentials,
+        data: ctx.data,
       })) ?? {}
 
     const { isbn, ignoreMetadataFile, ignoreMetadataSources, googleVolumeId } =
@@ -101,7 +101,7 @@ export const retrieveMetadataAndSaveCover = async (
             ctx.book,
             ctx.link,
             config,
-            ctx.credentials,
+            ctx.data,
           ).catch((error) => {
             /**
              * We have several reason for failing download but the most common one
