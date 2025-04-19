@@ -120,7 +120,7 @@ export const ConnectorForm = memo(
                 <ErrorMessage error={errors.root.message} />
               </Alert>
             )}
-            <TestConnection connectorId={connectorId}  />
+            <TestConnection connectorId={connectorId} />
           </Stack>
           <Stack gap={1} mt={4}>
             <Button disabled={!!masterKey} onClick={unlockMasterKey}>

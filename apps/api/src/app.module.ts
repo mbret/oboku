@@ -88,7 +88,7 @@ import { DataSourceModule } from "./datasource/datasource.module"
     CouchModule,
     CoversModule,
     AdminModule,
-    DataSourceModule
+    DataSourceModule,
   ],
   providers: [
     // {

@@ -2,10 +2,7 @@ import { configuration } from "../config/configuration"
 import { HttpClientWeb } from "./httpClient.web"
 
 class HttpApiClient extends HttpClientWeb {
-  refreshBookMetadata = (
-    bookId: string,
-    data?: Record<string, unknown>,
-  ) =>
+  refreshBookMetadata = (bookId: string, data?: Record<string, unknown>) =>
     this.post(`${configuration.API_URL}/books/metadata/refresh`, {
       body: { bookId, data },
     })

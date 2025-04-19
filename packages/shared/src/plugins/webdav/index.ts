@@ -32,30 +32,28 @@ export const generateWebdavResourceId = (data: {
 export const explodeWebdavResourceId = (resourceId: string) => {
   // Check if the resource ID has the expected format
   if (!resourceId.startsWith("webdav://")) {
-    throw new Error(`Invalid resource ID format: ${resourceId}`);
+    throw new Error(`Invalid resource ID format: ${resourceId}`)
   }
-  
+
   // Remove the "webdav://" prefix
-  const withoutPrefix = resourceId.substring("webdav://".length);
-  
+  const withoutPrefix = resourceId.substring("webdav://".length)
+
   // Find the last colon which separates hostname from filename
-  const lastColonIndex = withoutPrefix.lastIndexOf(":");
+  const lastColonIndex = withoutPrefix.lastIndexOf(":")
   if (lastColonIndex === -1) {
-    throw new Error(`Invalid resource ID format: ${resourceId}`);
+    throw new Error(`Invalid resource ID format: ${resourceId}`)
   }
-  
-  const url = withoutPrefix.substring(0, lastColonIndex);
-  const encodedFilename = withoutPrefix.substring(lastColonIndex + 1);
-  const filename = decodeURIComponent(encodedFilename);
-  
+
+  const url = withoutPrefix.substring(0, lastColonIndex)
+  const encodedFilename = withoutPrefix.substring(lastColonIndex + 1)
+  const filename = decodeURIComponent(encodedFilename)
+
   // Extract directory and basename from filename
-  const lastSlashIndex = filename.lastIndexOf("/");
-  const directory = lastSlashIndex !== -1 
-    ? `/${filename.substring(0, lastSlashIndex)}` 
-    : "/";
-  const basename = lastSlashIndex !== -1 
-    ? filename.substring(lastSlashIndex + 1) 
-    : filename;
-  
-  return { url, filename, directory, basename };
+  const lastSlashIndex = filename.lastIndexOf("/")
+  const directory =
+    lastSlashIndex !== -1 ? `/${filename.substring(0, lastSlashIndex)}` : "/"
+  const basename =
+    lastSlashIndex !== -1 ? filename.substring(lastSlashIndex + 1) : filename
+
+  return { url, filename, directory, basename }
 }

@@ -10,6 +10,6 @@ export const useRefreshMetadata: ObokuPlugin[`useRefreshMetadata`] = ({
       const auth = await authUser({ requestPopup })
 
       return { data: auth }
-    }
+    },
   })
 }

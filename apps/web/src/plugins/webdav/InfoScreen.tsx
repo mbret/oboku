@@ -67,7 +67,12 @@ export const InfoScreen = () => {
               key={connector.id}
               id={connector.id}
               onClick={() => {
-                navigate(ROUTES.PLUGINS_WEBDAV_CONNECTORS_EDIT.replace(":id", connector.id))
+                navigate(
+                  ROUTES.PLUGINS_WEBDAV_CONNECTORS_EDIT.replace(
+                    ":id",
+                    connector.id,
+                  ),
+                )
               }}
             />
           ))}

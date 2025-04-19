@@ -116,7 +116,10 @@ export const AddDataSource = memo(
                 <ErrorMessage error={errors.root.message} />
               </Alert>
             )}
-            <TestConnection connectorId={data.connectorId} directory={data.directory} />
+            <TestConnection
+              connectorId={data.connectorId}
+              directory={data.directory}
+            />
           </Stack>
           <Stack gap={1} mt={4}>
             <Button disabled={!!masterKey} onClick={unlockMasterKey}>

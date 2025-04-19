@@ -8,12 +8,12 @@ export const useSynchronize: UseSynchronizeHook<"dropbox"> = ({
   return useMutation({
     mutationFn: async () => {
       const auth = await authUser({ requestPopup })
-  
+
       return {
         data: {
           ...auth,
         },
       }
-    }
+    },
   })
 }

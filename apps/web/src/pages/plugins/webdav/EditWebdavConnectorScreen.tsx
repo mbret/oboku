@@ -32,12 +32,15 @@ export const EditWebdavConnectorScreen = memo(() => {
             )
 
             if (confirm) {
-              deleteConnector({ id }, {
-                onSuccess: () => {
-                  notify("actionSuccess")
-                  goBack(ROUTES.PLUGINS.replace(":plugin", "webdav"))
+              deleteConnector(
+                { id },
+                {
+                  onSuccess: () => {
+                    notify("actionSuccess")
+                    goBack(ROUTES.PLUGINS.replace(":plugin", "webdav"))
+                  },
                 },
-              })
+              )
             }
           }}
         >

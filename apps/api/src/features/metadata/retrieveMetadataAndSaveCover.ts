@@ -97,24 +97,21 @@ export const retrieveMetadataAndSaveCover = async (
 
     const { filepath: tmpFilePath, metadata: downloadMetadata } =
       canDownload && isMaybeExtractAble
-        ? await downloadToTmpFolder(
-            ctx.book,
-            ctx.link,
-            config,
-            ctx.data,
-          ).catch((error) => {
-            /**
-             * We have several reason for failing download but the most common one
-             * is no more space left. We have about 500mb of space. In case of failure
-             * we don't fail the entire process, we just keep the file metadata
-             */
-            logger.error(error)
+        ? await downloadToTmpFolder(ctx.book, ctx.link, config, ctx.data).catch(
+            (error) => {
+              /**
+               * We have several reason for failing download but the most common one
+               * is no more space left. We have about 500mb of space. In case of failure
+               * we don't fail the entire process, we just keep the file metadata
+               */
+              logger.error(error)
 
-            return {
-              filepath: undefined,
-              metadata: { contentType: undefined },
-            }
-          })
+              return {
+                filepath: undefined,
+                metadata: { contentType: undefined },
+              }
+            },
+          )
         : { filepath: undefined, metadata: {} }
 
     let fileContentLength = 0

@@ -5,6 +5,8 @@ export const useConnector = (id?: string) => {
 
   return {
     ...rest,
-    data: id ? settings?.webdavConnectors?.find((connector) => connector.id === id) : undefined,
+    data: id
+      ? settings?.webdavConnectors?.find((connector) => connector.id === id)
+      : undefined,
   }
 }

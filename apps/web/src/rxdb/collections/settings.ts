@@ -27,7 +27,9 @@ type SettingsCollectionMethods = {
     id: string,
     json: Partial<NonNullable<SettingsDocType["webdavConnectors"]>[number]>,
   ) => Promise<SettingsDocType>
-  getWebdavConnector: (id: string) => Promise<NonNullable<SettingsDocType["webdavConnectors"]>[number] | null>
+  getWebdavConnector: (
+    id: string,
+  ) => Promise<NonNullable<SettingsDocType["webdavConnectors"]>[number] | null>
 }
 
 export type SettingsCollection = RxCollection<

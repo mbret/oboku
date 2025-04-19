@@ -15,12 +15,12 @@ export const useSynchronize: UseSynchronizeHook<"DRIVE"> = ({
           scope: ["https://www.googleapis.com/auth/drive.readonly"],
         }),
       )
-  
+
       return {
         data: {
           ...token,
         },
       }
-    }
+    },
   })
 }

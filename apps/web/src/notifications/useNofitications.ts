@@ -21,13 +21,16 @@ export const useNotifications = () => {
     [],
   )
 
-  const notifyError = useCallback((error: unknown) => {
-    notify({
-      title: "Error",
-      description: errorToMessage(error),
-      severity: "error",
-    })
-  }, [notify])
-  
+  const notifyError = useCallback(
+    (error: unknown) => {
+      notify({
+        title: "Error",
+        description: errorToMessage(error),
+        severity: "error",
+      })
+    },
+    [notify],
+  )
+
   return { notify, notifyError }
 }

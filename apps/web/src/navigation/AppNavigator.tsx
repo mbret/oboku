@@ -94,8 +94,14 @@ export const AppNavigator = ({
                 element={<ManageStorageScreen />}
               />
               <Route path="plugins/:type" element={<PluginScreen />} />
-              <Route path={ROUTES.PLUGINS_WEBDAV_CONNECTORS_NEW} element={<AddWebdavConnectorScreen />} />
-              <Route path={ROUTES.PLUGINS_WEBDAV_CONNECTORS_EDIT} element={<EditWebdavConnectorScreen />} />
+              <Route
+                path={ROUTES.PLUGINS_WEBDAV_CONNECTORS_NEW}
+                element={<AddWebdavConnectorScreen />}
+              />
+              <Route
+                path={ROUTES.PLUGINS_WEBDAV_CONNECTORS_EDIT}
+                element={<EditWebdavConnectorScreen />}
+              />
               <Route path={`${ROUTES.SECURITY}`} element={<SecurityScreen />} />
               <Route path={`${ROUTES.SECRETS}`} element={<SecretsScreen />} />
               <Route path={`${ROUTES.SETTINGS}`} element={<SettingsScreen />} />

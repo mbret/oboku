@@ -3,9 +3,7 @@
  */
 import { Dropbox, type files } from "dropbox"
 import { Readable } from "node:stream"
-import {
-  READER_ACCEPTED_EXTENSIONS,
-} from "@oboku/shared"
+import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
 import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,

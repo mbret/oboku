@@ -78,7 +78,8 @@ describe("WebDAV Plugin", () => {
     })
 
     it("should normalize directory to always start with /", () => {
-      const resourceId = "webdav://webdav.example.com:folder/subfolder/document.pdf"
+      const resourceId =
+        "webdav://webdav.example.com:folder/subfolder/document.pdf"
 
       const result = explodeWebdavResourceId(resourceId)
       expect(result).toEqual({
