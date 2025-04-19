@@ -61,7 +61,6 @@ export * from "./sorting"
 
 export { ObokuErrorCode, ObokuSharedError } from "./errors"
 
-export * from "./plugins/file"
 export * from "./metadata"
 export * from "./sync/reports"
 export * from "./utils/objects"
@@ -74,3 +73,4 @@ export * from "./collections"
 export * from "./contentType"
 export * from "./plugins/webdav"
 export * from "./plugins/file"
+export * from "./plugins/dropbox"

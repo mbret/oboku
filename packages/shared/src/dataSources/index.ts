@@ -1,15 +1,10 @@
 import type {
   DataSourceDocType,
-  DropboxDataSourceDocType,
   GoogleDriveDataSourceDocType,
 } from "../db/docTypes"
 
 export type GoogleDriveDataSourceData = NonNullable<
   GoogleDriveDataSourceDocType["data_v2"]
->
-
-export type DropboxDataSourceData = NonNullable<
-  DropboxDataSourceDocType["data_v2"]
 >
 
 export const generateResourceId = (
