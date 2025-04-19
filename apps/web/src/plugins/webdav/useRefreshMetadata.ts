@@ -7,7 +7,7 @@ import { useExtractConnectorData } from "./connectors/useExtractConnectorData"
 export const useRefreshMetadata: ObokuPlugin<"webdav">[`useRefreshMetadata`] =
   () => {
     const { mutateAsync: extractConnectorData } = useExtractConnectorData()
-    
+
     return useMutation$({
       mutationFn: ({
         linkData,

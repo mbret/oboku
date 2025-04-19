@@ -6,6 +6,7 @@ import { useSynchronize } from "./useSynchronize"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { InfoScreen } from "./InfoScreen"
 import { useRefreshMetadata } from "./useRefreshMetadata"
+import { useDownloadBook } from "./useDownloadBook"
 
 const plugin: ObokuPlugin<"webdav"> = {
   type: TYPE,
@@ -19,6 +20,7 @@ const plugin: ObokuPlugin<"webdav"> = {
   useSyncSourceInfo,
   useRefreshMetadata,
   InfoScreen,
+  useDownloadBook,
 }
 
 export default plugin

@@ -45,15 +45,14 @@ export const useRemoveAllContents = () => {
               withAuthorization,
               map(() => lock()),
               mergeMap((unlock) =>
-                from(
-                  Promise.all([
-                    database.book.find().remove(),
-                    database.obokucollection.find().remove(),
-                    database.link.find().remove(),
-                    database.tag.find().remove(),
-                    database.datasource.find().remove(),
-                  ]),
-                ).pipe(
+                of(null).pipe(
+                  mergeMap(() => from(database.book.find().remove())),
+                  mergeMap(() =>
+                    from(database.obokucollection.find().remove()),
+                  ),
+                  mergeMap(() => from(database.link.find().remove())),
+                  mergeMap(() => from(database.tag.find().remove())),
+                  mergeMap(() => from(database.datasource.find().remove())),
                   mergeMap(() =>
                     from(
                       sync([

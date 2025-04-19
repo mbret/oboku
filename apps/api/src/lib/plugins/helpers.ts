@@ -91,6 +91,5 @@ export const getDataSourceData = async <T extends DataSourceDocType["type"]>({
 
   const data = getDataFromDataSource(dataSource as DataSourceDocType)
 
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   return data as any
 }

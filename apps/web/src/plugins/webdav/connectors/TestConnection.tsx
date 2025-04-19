@@ -1,7 +1,7 @@
 import { memo } from "react"
 import { Alert, AlertTitle } from "@mui/material"
 import { useDecryptedSecret } from "../../../secrets/useDecryptedSecret"
-import { useConnect } from "../useConnect"
+import { useConnect } from "./useConnect"
 import { useConnector } from "./useConnector"
 import { useUnlockedMasterKey } from "../../../secrets/useUnlockMasterKey"
 
