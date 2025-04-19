@@ -16,10 +16,12 @@ import { createDialog } from "../../common/dialogs/createDialog"
 import { useUpsertBookLink } from "../useUpdateBookLink"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useLink } from "../../links/states"
+import { useLinkInfo } from "../../plugins/useLinkInfo"
 
 export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
+  const { data: linkInfo } = useLinkInfo(bookId)
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
   const [isSelectItemOpened, setIsSelectItemOpened] = useState(false)
   const createRequestPopupDialog = useCreateRequestPopupDialog()
@@ -39,7 +41,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
               px: [null, 3],
             }}
           >
-            Provider
+            Source
           </ListSubheader>
         }
       >
@@ -70,7 +72,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
                   textOverflow: "ellipsis",
                 },
               }}
-              secondary={`This book is attached to ${dataSourcePlugin.name}. Click to edit the link`}
+              secondary={linkInfo.label}
             />
             <Stack width={50} alignItems="center" flexShrink={0}>
               <MoreVertRounded />

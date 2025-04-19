@@ -89,6 +89,14 @@ export type UseSyncSourceInfo<
   name?: string
 }
 
+export type UseLinkInfo = (data: { resourceId?: string; enabled: boolean }) => {
+  data:
+    | {
+        label?: string
+      }
+    | undefined
+}
+
 export type ObokuPlugin<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = {
