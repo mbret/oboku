@@ -28,18 +28,18 @@
     "lint": "npx @biomejs/biome check ."
   },
   "devDependencies": {
-    "@rollup/plugin-replace": "^6.0.1",
-    "@types/node": "^22.13.14",
-    "lerna": "^8.1.4",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@types/node": "^22.14.1",
+    "lerna": "^8.2.2",
     "rollup-plugin-analyzer": "^4.0.0",
-    "typescript": "^5.5.4",
-    "vercel": "^41.4.1",
+    "typescript": "^5.8.3",
+    "vercel": "^41.6.1",
     "vitest": "^3.1.1",
     "webpack-node-externals": "^3.0.0"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.689.0",
-    "@aws-sdk/client-ssm": "^3.687.0",
-    "@emotion/cache": "^11.11.0"
+    "@aws-sdk/client-s3": "^3.787.0",
+    "@aws-sdk/client-ssm": "^3.787.0",
+    "@emotion/cache": "^11.14.0"
   }
 }
