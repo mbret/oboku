@@ -5,6 +5,7 @@ import type { ObokuPlugin } from "../types"
 import { catchError, from, mergeMap, of } from "rxjs"
 import { useGoogleScripts } from "./lib/scripts"
 import { httpClientWeb } from "../../http/httpClient.web"
+import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   requestPopup,
@@ -69,11 +70,11 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
               catchError((e) => {
                 if (isDriveResponseError(e)) {
                   if (e.status === 404) {
-                    return of({
-                      isError: true,
-                      reason: `notFound`,
-                      error: e,
-                    } as const)
+                    throw new ObokuSharedError(
+                      ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND,
+                      e,
+                      "user",
+                    )
                   }
                 }
 

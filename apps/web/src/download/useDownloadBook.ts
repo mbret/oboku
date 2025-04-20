@@ -25,7 +25,7 @@ import {
   tap,
   throttleTime,
 } from "rxjs"
-import { CancelError, isPluginError } from "../errors/errors.shared"
+import {  isPluginError } from "../errors/errors.shared"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { dexieDb } from "../rxdb/dexie"
 import { useMutation$ } from "reactjrx"
@@ -133,33 +133,6 @@ export const useDownloadBook = () => {
                     onDownloadProgress,
                   }).pipe(
                     switchMap((downloadResponse) => {
-                      if (
-                        "isError" in downloadResponse &&
-                        downloadResponse.reason === "notFound"
-                      ) {
-                        // @todo shorten this description and redirect to the documentation
-                        createDialog({
-                          autoStart: true,
-                          preset: `UNKNOWN_ERROR`,
-                          title: `Unable to download`,
-                          content: `
-                            oboku could not find the book from the linked data source. 
-                            This can happens if you removed the book from the data source or if you replaced it with another file.
-                            Make sure the book is on your data source and try to fix the link for this book in the details screen to target the file. 
-                            Attention, if you add the book on your data source and synchronize again, oboku will duplicate the book.
-                          `,
-                        })
-
-                        throw new CancelError()
-                      }
-
-                      if ("isError" in downloadResponse) {
-                        throw (
-                          downloadResponse.error ||
-                          new Error(downloadResponse.reason)
-                        )
-                      }
-
                       const data$ =
                         downloadResponse.data instanceof Blob
                           ? of(downloadResponse.data)

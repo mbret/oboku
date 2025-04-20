@@ -1,4 +1,4 @@
-import { ObokuErrorCode } from "@oboku/shared"
+import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { isApiError } from "./errors.shared"
 import { HttpClientError } from "../http/httpClient.shared"
 
@@ -25,6 +25,15 @@ export const errorToMessage = (error: unknown) => {
       ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED
   ) {
     return "Please verify your email with this provider before continuing"
+  }
+
+  if (error instanceof ObokuSharedError) {
+    switch (error.code) {
+      case ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND:
+        return "The resource does not seem to exist. Please, verify the link and try again."
+      default:
+        return `Something went wrong. Error code: ${error.code}`
+    }
   }
 
   if (

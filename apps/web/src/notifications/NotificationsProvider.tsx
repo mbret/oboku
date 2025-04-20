@@ -17,7 +17,7 @@ export const NotificationsProvider = memo(() => {
     () =>
       notificationsSubject.pipe(
         concatMap((notification) => {
-          const duration = notification.duration ?? 3000
+          const duration = notification.duration ?? 4000
 
           return merge(of(notification), timer(duration).pipe(map(() => null)))
         }),
@@ -29,7 +29,7 @@ export const NotificationsProvider = memo(() => {
 
   if (hasSeverity) {
     return (
-      <Snackbar open={!!notification} message={notification?.title}>
+      <Snackbar open={!!notification} message={notification?.title} >
         <Alert severity={notification.severity ?? "info"}>
           {notification.description}
         </Alert>

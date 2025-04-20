@@ -36,17 +36,10 @@ type UseDownloadHook = (options: {
 }) => (params: {
   link: LinkDocType
   onDownloadProgress: (progress: number) => void
-}) => Observable<
-  | {
-      data: Blob | File | ReadableStream<StreamValue>
-      name?: string
-    }
-  | {
-      isError: true
-      error?: any
-      reason: `unknown` | `cancelled` | `popupBlocked` | `notFound`
-    }
->
+}) => Observable<{
+  data: Blob | File | ReadableStream<StreamValue>
+  name?: string
+}>
 
 type UseRefreshMetadataHook = (options: {
   requestPopup: () => Promise<boolean>
