@@ -25,7 +25,7 @@ import {
   tap,
   throttleTime,
 } from "rxjs"
-import { isPluginError } from "../errors/errors.shared"
+import { CancelError, isPluginError } from "../errors/errors.shared"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { dexieDb } from "../rxdb/dexie"
 import { useMutation$ } from "reactjrx"
@@ -201,7 +201,8 @@ export const useDownloadBook = () => {
 
           if (
             error instanceof NoLinkFound ||
-            (isPluginError(error) && error.code === "cancelled")
+            (isPluginError(error) && error.code === "cancelled") ||
+            error instanceof CancelError
           )
             return EMPTY
 
