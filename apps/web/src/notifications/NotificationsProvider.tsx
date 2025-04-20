@@ -29,7 +29,7 @@ export const NotificationsProvider = memo(() => {
 
   if (hasSeverity) {
     return (
-      <Snackbar open={!!notification} message={notification?.title} >
+      <Snackbar open={!!notification} message={notification?.title}>
         <Alert severity={notification.severity ?? "info"}>
           {notification.description}
         </Alert>

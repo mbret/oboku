@@ -25,7 +25,7 @@ import {
   tap,
   throttleTime,
 } from "rxjs"
-import {  isPluginError } from "../errors/errors.shared"
+import { isPluginError } from "../errors/errors.shared"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { dexieDb } from "../rxdb/dexie"
 import { useMutation$ } from "reactjrx"
