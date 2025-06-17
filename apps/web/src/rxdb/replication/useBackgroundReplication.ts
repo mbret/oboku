@@ -92,13 +92,13 @@ export const useBackgroundReplication = () => {
         collection: database.obokucollection,
         dbName,
         live: true,
-        host: configuration.API_COUCH_URI,
+        host: configuration.API_COUCH_URI_4,
       }),
       replicateSecret({
         collection: database.secret,
         dbName,
         live: true,
-        host: configuration.API_COUCH_URI,
+        host: configuration.API_COUCH_URI_4,
       }),
     ]
 

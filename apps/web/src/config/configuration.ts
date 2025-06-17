@@ -94,6 +94,13 @@ class Configuration extends BehaviorSubject<{
     )
   }
 
+  get API_COUCH_URI_4() {
+    return (
+      import.meta.env.VITE_COUCH_DB_PUBLIC_URL_4 ??
+      `${window.location.protocol}//${window.location.hostname}:5987`
+    )
+  }
+
   get VITE_FIREBASE_CONFIG() {
     return import.meta.env.VITE_FIREBASE_CONFIG
   }

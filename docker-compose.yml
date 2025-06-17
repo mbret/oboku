@@ -7,6 +7,7 @@ services:
       # extra binds used for http/1 load balancing
       - "5985:5984"
       - "5986:5984"
+      - "5987:5984"
     env_file:
       - .env
     environment:
