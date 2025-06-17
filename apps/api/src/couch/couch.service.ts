@@ -26,9 +26,7 @@ export class CouchService {
     })
   }
 
-  async generateUserJWT(payload: {
-    email: string
-  }) {
+  async generateUserJWT(payload: { email: string }) {
     return this.generateJWT({
       name: payload.email,
       sub: payload.email,

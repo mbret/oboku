@@ -26,10 +26,8 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
   const readerState = useObserve(() => reader?.state$, [reader])
   const readerContainerRef = useRef<HTMLDivElement>(null)
-  const {
-    data: { isUsingWebStreamer, manifest } = {},
-    error: manifestError,
-  } = useManifest(bookId)
+  const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
+    useManifest(bookId)
   const isBookError = !!manifestError
 
   if (isBookError) {

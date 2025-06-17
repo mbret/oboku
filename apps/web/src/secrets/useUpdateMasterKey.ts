@@ -11,7 +11,10 @@ export const useUpdateMasterKey = () => {
     mutationFn: ({
       newPassword,
       oldPassword,
-    }: { newPassword: string; oldPassword: string }) => {
+    }: {
+      newPassword: string
+      oldPassword: string
+    }) => {
       return latestDatabase$.pipe(
         switchMap((db) =>
           getSettingsDocument(db).pipe(

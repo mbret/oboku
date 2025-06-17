@@ -53,9 +53,7 @@ type UseRefreshMetadataHook = (options: {
 
 export type UseSynchronizeHook<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = (options: {
-  requestPopup: () => Promise<boolean>
-}) => UseMutationResult<
+> = (options: { requestPopup: () => Promise<boolean> }) => UseMutationResult<
   {
     data: Record<string, unknown>
   },

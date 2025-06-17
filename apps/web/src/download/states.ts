@@ -50,11 +50,7 @@ const mapBookDownloadState = ({
   }
 }
 
-export const getBookDownloadsState = ({
-  bookId,
-}: {
-  bookId: string
-}) => {
+export const getBookDownloadsState = ({ bookId }: { bookId: string }) => {
   const bookDownloadState = booksDownloadStateSignal.getValue()
 
   return mapBookDownloadState({ bookId, bookDownloadState })

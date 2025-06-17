@@ -136,11 +136,7 @@ export class AuthService {
     throw new UnauthorizedException()
   }
 
-  async generateTokens({
-    email,
-  }: {
-    email: string
-  }) {
+  async generateTokens({ email }: { email: string }) {
     const refreshTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     // const refreshTokenEntity = await this.refreshTokensService.save({
     //   user_email: email,

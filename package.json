@@ -28,12 +28,13 @@
     "lint": "npx @biomejs/biome check ."
   },
   "devDependencies": {
+    "@biomejs/biome": "2.0.0",
     "@rollup/plugin-replace": "^6.0.2",
     "@types/node": "^22.14.1",
     "lerna": "^8.2.2",
     "rollup-plugin-analyzer": "^4.0.0",
     "typescript": "^5.8.3",
-    "vercel": "^41.6.1",
+    "vercel": "^43.2.0",
     "vitest": "^3.1.1",
     "webpack-node-externals": "^3.0.0"
   },

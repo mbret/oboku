@@ -10,7 +10,9 @@ type Inputs = {
 
 export const SignInForm = ({
   onSubmit,
-}: { onSubmit: (data: Inputs) => void }) => {
+}: {
+  onSubmit: (data: Inputs) => void
+}) => {
   const { control, handleSubmit } = useForm<Inputs>({
     defaultValues: {
       email: "",

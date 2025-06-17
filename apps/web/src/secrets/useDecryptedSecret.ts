@@ -7,7 +7,11 @@ export const useDecryptedSecret = ({
   id,
   masterKey,
   enabled = true,
-}: { id?: string; masterKey?: string; enabled?: boolean }) => {
+}: {
+  id?: string
+  masterKey?: string
+  enabled?: boolean
+}) => {
   const { data: secret } = useSecret(id)
   const uuid = useMemo(
     () => (masterKey ? crypto.randomUUID() : undefined),

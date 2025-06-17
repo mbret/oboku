@@ -53,7 +53,11 @@ export const SecretActionDrawer = memo(
     openWidth,
     onClose,
     masterKey,
-  }: { openWidth?: string; onClose?: () => void; masterKey?: string }) => {
+  }: {
+    openWidth?: string
+    onClose?: () => void
+    masterKey?: string
+  }) => {
     const { notify } = useNotifications()
     const { mutate: removeSecret } = useRemoveSecret({
       onSuccess: () => {

@@ -27,7 +27,11 @@ const SecretListItem = memo(
     id,
     masterKey,
     onClick,
-  }: { id: string; masterKey?: string; onClick: () => void }) => {
+  }: {
+    id: string
+    masterKey?: string
+    onClick: () => void
+  }) => {
     const { data: secret } = useSecret(id)
     const { data: decryptedSecret, isPending } = useDecryptedSecret({
       id,

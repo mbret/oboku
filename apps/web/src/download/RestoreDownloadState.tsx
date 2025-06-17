@@ -4,11 +4,7 @@ import { booksDownloadStateSignal, DownloadState } from "./states"
 import { dexieDb } from "../rxdb/dexie"
 import { useMutation$ } from "reactjrx"
 
-const useRestoreDownloadState = ({
-  onSuccess,
-}: {
-  onSuccess: () => void
-}) => {
+const useRestoreDownloadState = ({ onSuccess }: { onSuccess: () => void }) => {
   return useMutation$({
     onSuccess,
     mutationFn: () =>

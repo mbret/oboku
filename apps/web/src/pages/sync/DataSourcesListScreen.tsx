@@ -147,7 +147,9 @@ export const DataSourcesListScreen = () => {
 
 const SyncSourceLabel = ({
   syncSource,
-}: { syncSource: DeepReadonly<DataSourceDocType> }) => {
+}: {
+  syncSource: DeepReadonly<DataSourceDocType>
+}) => {
   const obokuPlugin = dataSourcePlugins.find(
     (dataSource) => dataSource.type === syncSource.type,
   )
