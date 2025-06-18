@@ -40,7 +40,7 @@ export type CollectionMetadata = {
   authors?: string[]
   description?: string
   numberOfIssues?: number
-  // biome-ignore lint/complexity/noBannedTypes: <explanation>
+  // biome-ignore lint/complexity/noBannedTypes: TODO
   firstIssue?: {}
   startYear?: number
   publisherName?: string

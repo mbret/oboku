@@ -6,7 +6,7 @@ interface Message<Payload extends Record<string, string | undefined> | null> {
   payload: Payload
 }
 
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: TODO
 export class AskAuthMessage implements Message<{}> {
   static type = "ASK_AUTH"
 
@@ -22,7 +22,7 @@ export class NotifyAuthMessage implements Message<AuthSession | null> {
   constructor(public payload: AuthSession | null) {}
 }
 
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: TODO
 export class AskConfigurationMessage implements Message<{}> {
   static type = "ASK_CONFIGURATION"
 
@@ -37,7 +37,7 @@ export class ConfigurationChangeMessage implements Message<SharedConfig> {
   constructor(public payload: SharedConfig) {}
 }
 
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: TODO
 export class AskProfileMessage implements Message<{}> {
   static type = "ASK_PROFILE"
 
@@ -59,7 +59,7 @@ export class ReplyAskProfileMessage
  * Message to skip waiting for the service worker to be updated.
  * The service worker receiving this can decide to install itself.
  */
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: TODO
 export class SkipWaitingMessage implements Message<{}> {
   static type = "SKIP_WAITING"
 

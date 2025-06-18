@@ -18,8 +18,7 @@ export const waitForRandomTime = (min: number, max: number) =>
 export const detectMimeTypeFromContent = async (
   filepath: string,
 ): Promise<(typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined> => {
-  let mimeType: (typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined =
-    undefined
+  let mimeType: (typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined
   try {
     await fs
       .createReadStream(filepath)
@@ -33,6 +32,7 @@ export const detectMimeTypeFromContent = async (
       })
       .promise()
   } catch (e) {
+    console.error(e)
     console.log(
       `Error when trying to detectMimeTypeFromContent with ${filepath}`,
     )

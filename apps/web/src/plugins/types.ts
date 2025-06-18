@@ -13,7 +13,7 @@ import type { DeepReadonly } from "rxdb"
 import type { UseMutationResult } from "@tanstack/react-query"
 
 type PostLink = Pick<LinkDocType, "resourceId" | "type">
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: TODO
 type PostBook = {}
 
 type Item = {

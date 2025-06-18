@@ -10,7 +10,7 @@ import { getReplicationProperties } from "../replication/getReplicationPropertie
 import { from, type Observable, switchMap } from "rxjs"
 import { throwIfNotDefined } from "../../common/rxjs/operators"
 
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: TODO
 type DocMethods = {}
 
 export type RxdbSecretDocType = Omit<

@@ -13,7 +13,7 @@ type Database = NonNullable<ReturnType<typeof useDatabase>["db"]>
 const EXEC_PARALLEL = true
 
 export const applyHooks = (db: Database) => {
-  db.book.postSave(async (data, d) => {
+  db.book.postSave(async (data) => {
     const tagsFromWhichToRemoveBook = await db.tag
       .find({
         selector: {

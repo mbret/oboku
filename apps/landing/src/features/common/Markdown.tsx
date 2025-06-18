@@ -1,6 +1,6 @@
 import styled from "@emotion/styled"
 import { Box, Link, Typography } from "@mui/material"
-import React, { type ComponentProps } from "react"
+import type { ComponentProps } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 

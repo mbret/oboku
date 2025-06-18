@@ -24,7 +24,7 @@ export const useConnect = ({
 
       try {
         await client.getDirectoryContents(data.directory)
-      } catch (error) {
+      } catch (_error) {
         return false
       }
 

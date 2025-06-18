@@ -28,18 +28,18 @@ export const extractDirectivesFromName = (
   let isNotACollection = false
   let tags: string[] = []
   let isIgnored = false
-  let direction: "rtl" | "ltr" | undefined = undefined
-  let year: string | undefined = undefined
-  let isbn: string | undefined = undefined
-  let series: boolean | undefined = undefined
+  let direction: "rtl" | "ltr" | undefined
+  let year: string | undefined
+  let isbn: string | undefined
+  let series: boolean | undefined
   let ignoreMetadataFile = false
   let ignoreMetadataSources = false
-  let metadataTitle: string | undefined = undefined
+  let metadataTitle: string | undefined
   let isWebtoon = false
-  let googleVolumeId: string | undefined = undefined
+  let googleVolumeId: string | undefined
 
   const directives = resourceId
-    .match(/(\[oboku\~[^\]]*\])+/gi)
+    .match(/(\[oboku~[^\]]*\])+/gi)
     ?.map((str) => str.replace(/\[oboku~/, "").replace(/\]/, ""))
 
   directives?.forEach((directive) => {
@@ -52,7 +52,7 @@ export const extractDirectivesFromName = (
     }
 
     if (directive.startsWith("google-volume-id~")) {
-      const value = directive.replace(/google-volume-id\~/, "")
+      const value = directive.replace(/google-volume-id~/, "")
       googleVolumeId = value
     }
 
@@ -65,7 +65,7 @@ export const extractDirectivesFromName = (
     }
 
     if (directive.startsWith("metadata-title~")) {
-      const value = directive.replace(/metadata-title\~/, "")
+      const value = directive.replace(/metadata-title~/, "")
       metadataTitle = value
     }
 
@@ -78,24 +78,25 @@ export const extractDirectivesFromName = (
     }
 
     if (directive.startsWith("year~")) {
-      const value = directive.replace(/year\~/, "")
+      const value = directive.replace(/year~/, "")
       year = value
     }
 
     if (directive.startsWith("direction~")) {
-      const value = directive.replace(/direction\~/, "")
+      const value = directive.replace(/direction~/, "")
       if (value === "ltr" || value === "rtl") {
         direction = value
       }
     }
 
     if (directive.startsWith("isbn~")) {
-      const value = directive.replace(/isbn\~/, "")
+      const value = directive.replace(/isbn~/, "")
       isbn = value
     }
 
     if (directive.startsWith("tags~")) {
       const newTags: string[] | undefined = directive
+        // biome-ignore lint/complexity/noUselessEscapeInRegex: TODO
         .replace(/tags\~/, "")
         .split(",")
       tags = [...tags, ...(newTags || [])]

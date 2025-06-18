@@ -47,7 +47,7 @@ export const addNewCollection = async ({
       syncAt: new Date().toISOString(),
       type: directiveValues.series ? ("series" as const) : ("shelve" as const),
       rxdbMeta: {
-        lwt: new Date().getTime(),
+        lwt: Date.now(),
       },
       metadata: [linkMetadata],
     }

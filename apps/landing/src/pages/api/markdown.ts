@@ -11,9 +11,12 @@ import { extractParams } from "../../utils/extractParams"
 const DEFAULT_LOCALE = "en"
 
 const loadFile = async (dir: string, locale: string) => {
+  void locale
+
   const file = await fs.readFile(`${dir}.md`, "utf8")
 
   const withEnv = file.replaceAll(
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: TODO
     "${NEXT_PUBLIC_TRADEMARK}",
     process.env.NEXT_PUBLIC_TRADEMARK ?? "",
   )
@@ -25,7 +28,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const { locale, path: filePath } = extractParams(req.query, {
+  const { path: filePath } = extractParams(req.query, {
     locale: "string",
     path: "string",
   })

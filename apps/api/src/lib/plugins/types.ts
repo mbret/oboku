@@ -8,7 +8,6 @@ import {
   DataSourceDocType,
 } from "@oboku/shared"
 import type createNano from "nano"
-import type { Metadata } from "src/lib/metadata/types"
 import type { IncomingMessage } from "node:http"
 import { SyncReport } from "../sync/SyncReport"
 

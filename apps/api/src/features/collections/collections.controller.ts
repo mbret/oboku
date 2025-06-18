@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Headers,
-  Logger,
-  OnModuleInit,
-  Post,
-} from "@nestjs/common"
+import { Body, Controller, Logger, OnModuleInit, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
 import { CollectionMetadataRefreshEvent, Events } from "../../events"
 import { CollectionMetadataService } from "./CollectionMetadataService"

@@ -1,14 +1,12 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable } from "@nestjs/common"
 // import { InjectRepository } from "@nestjs/typeorm"
 // import { Repository } from "typeorm"
 // import { RefreshTokenPostgresEntity } from "./entities"
 import { Cron } from "@nestjs/schedule"
 
-const logger = new Logger("RefreshTokensService")
-
 @Injectable()
 export class RefreshTokensService {
-  // biome-ignore lint/complexity/noUselessConstructor: <explanation>
+  // biome-ignore lint/complexity/noUselessConstructor: TODO
   constructor(
     // @InjectRepository(RefreshTokenPostgresEntity)
     // private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
@@ -38,10 +36,12 @@ export class RefreshTokensService {
   }
 
   async findById(id: string) {
+    void id
     // return this.refreshTokenRepository.findOne({ where: { id } })
   }
 
   async deleteById(id: string) {
+    void id
     // await this.refreshTokenRepository.delete(id)
   }
 

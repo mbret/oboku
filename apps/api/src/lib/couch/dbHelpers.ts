@@ -140,7 +140,7 @@ export const createBook = async (
 ) => {
   const insertData: InsertAbleBookDocType = {
     collections: [],
-    createdAt: new Date().getTime(),
+    createdAt: Date.now(),
     lastMetadataUpdatedAt: null,
     lastMetadataUpdateError: null,
     metadataUpdateStatus: null,
@@ -153,7 +153,7 @@ export const createBook = async (
     tags: [],
     modifiedAt: null,
     isAttachedToDataSource: false,
-    rxdbMeta: { lwt: new Date().getTime() },
+    rxdbMeta: { lwt: Date.now() },
     ...data,
   }
 
@@ -226,7 +226,7 @@ export const getOrCreateTagFromName = (
       createdAt: new Date().toISOString(),
       modifiedAt: null,
       rxdbMeta: {
-        lwt: new Date().getTime(),
+        lwt: Date.now(),
       },
     })
 
@@ -261,7 +261,7 @@ export const createTagFromName = (
       createdAt: new Date().toISOString(),
       modifiedAt: null,
       rxdbMeta: {
-        lwt: new Date().getTime(),
+        lwt: Date.now(),
       },
     })
 

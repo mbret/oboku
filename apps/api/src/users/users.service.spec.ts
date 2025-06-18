@@ -1,5 +1,4 @@
 // import { Test, TestingModule } from "@nestjs/testing"
-import { UsersService } from "./users.service"
 // import { PostgresModule } from "src/features/postgres/postgres.module"
 // import { AppConfigModule } from "src/features/config/config.module"
 // import { TypeOrmModule } from "@nestjs/typeorm"

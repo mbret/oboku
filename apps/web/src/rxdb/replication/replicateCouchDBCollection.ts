@@ -87,7 +87,6 @@ export const replicateCouchDBCollection = ({
         if ("rx_model" in docData && docData.rx_model === "tag") {
           // old property not used anymore
           if ("isHidden" in docData) {
-            // biome-ignore lint/performance/noDelete: <explanation>
             delete docData.isHidden
           }
         }
@@ -96,7 +95,7 @@ export const replicateCouchDBCollection = ({
           if ("data" in docData && typeof docData.data === "string") {
             try {
               docData.data = JSON.parse(docData.data)
-            } catch (error) {
+            } catch (_error) {
               docData.data = {}
             }
           }

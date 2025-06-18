@@ -13,7 +13,6 @@ import {
 import image2 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
 import image1 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
 import { links } from "@oboku/shared"
-import type { ReactNode } from "react"
 import { AppHighlightSection } from "./AppHighlightSection"
 import { LastWords } from "./LastWords"
 import Image from "next/image"

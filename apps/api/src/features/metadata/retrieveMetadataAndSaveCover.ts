@@ -134,7 +134,7 @@ export const retrieveMetadataAndSaveCover = async (
     )
 
     const isRarArchive = contentType === "application/x-rar"
-    let archiveExtractor: Extractor<Uint8Array> | undefined = undefined
+    let archiveExtractor: Extractor<Uint8Array> | undefined
 
     if (typeof tmpFilePath === "string" && tmpFilePath) {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
@@ -195,7 +195,7 @@ export const retrieveMetadataAndSaveCover = async (
       return {
         ...old,
         metadata: metadataList,
-        lastMetadataUpdatedAt: new Date().getTime(),
+        lastMetadataUpdatedAt: Date.now(),
         metadataUpdateStatus: null,
         lastMetadataUpdateError: null,
       }

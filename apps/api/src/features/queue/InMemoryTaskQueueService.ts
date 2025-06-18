@@ -35,7 +35,7 @@ export interface QueueOptions {
   sequentialTasksWithSameId?: boolean
 }
 
-export interface TaskOptions<T> {
+export interface TaskOptions {
   /**
    * Unique identifier for the task, used for deduplication
    * If not provided, the task will never be deduplicated
@@ -96,7 +96,7 @@ export class InMemoryTaskQueueService {
   enqueue<R>(
     queueName: string,
     taskFactory: () => Observable<R>,
-    options: TaskOptions<any> = {},
+    options: TaskOptions = {},
   ): Observable<R> {
     const queue = this.queues.get(queueName)
 
@@ -105,7 +105,7 @@ export class InMemoryTaskQueueService {
     }
 
     const { id } = options
-    const { options: queueOptions, active, pending } = queue
+    const { options: queueOptions, pending } = queue
 
     // Create a subject that will emit the task result
     const subject = new Subject<R>()

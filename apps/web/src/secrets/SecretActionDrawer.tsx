@@ -82,46 +82,44 @@ export const SecretActionDrawer = memo(
         open={opened}
         onClose={() => closeModalWithNavigation()}
       >
-        <>
-          <List>
-            <ListItemButton
-              onClick={() => {
-                closeModalWithNavigation(() => {
-                  setupSecretDialogSignal.update({
-                    openWith: openWidth ?? "-1",
-                    masterKey,
-                  })
+        <List>
+          <ListItemButton
+            onClick={() => {
+              closeModalWithNavigation(() => {
+                setupSecretDialogSignal.update({
+                  openWith: openWidth ?? "-1",
+                  masterKey,
                 })
-              }}
-            >
-              <ListItemIcon>
-                <EditRounded />
-              </ListItemIcon>
-              <ListItemText primary="Update" />
-            </ListItemButton>
-          </List>
-          <Divider />
-          <List>
-            <ListItemButton
-              onClick={() => {
-                const confirmed = confirm(
-                  "Are you sure you want to remove this secret?",
-                )
+              })
+            }}
+          >
+            <ListItemIcon>
+              <EditRounded />
+            </ListItemIcon>
+            <ListItemText primary="Update" />
+          </ListItemButton>
+        </List>
+        <Divider />
+        <List>
+          <ListItemButton
+            onClick={() => {
+              const confirmed = confirm(
+                "Are you sure you want to remove this secret?",
+              )
 
-                if (confirmed) {
-                  closeModalWithNavigation(() => {
-                    openWidth && removeSecret(openWidth)
-                  })
-                }
-              }}
-            >
-              <ListItemIcon>
-                <DeleteForeverRounded />
-              </ListItemIcon>
-              <ListItemText primary="Remove" />
-            </ListItemButton>
-          </List>
-        </>
+              if (confirmed) {
+                closeModalWithNavigation(() => {
+                  openWidth && removeSecret(openWidth)
+                })
+              }
+            }}
+          >
+            <ListItemIcon>
+              <DeleteForeverRounded />
+            </ListItemIcon>
+            <ListItemText primary="Remove" />
+          </ListItemButton>
+        </List>
       </Drawer>
     )
   },

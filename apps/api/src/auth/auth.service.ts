@@ -1,8 +1,6 @@
 import {
   BadRequestException,
-  Get,
   Injectable,
-  Req,
   UnauthorizedException,
 } from "@nestjs/common"
 import { UsersService } from "../users/users.service"
@@ -210,12 +208,16 @@ export class AuthService {
   }
 
   async refreshToken(grant_type: "refresh_token", refreshToken: string) {
+    void grant_type
+
     try {
-      const { id, sub } =
-        await this.jwtService.verifyAsync<RefreshTokenPayload>(refreshToken, {
+      const { sub } = await this.jwtService.verifyAsync<RefreshTokenPayload>(
+        refreshToken,
+        {
           secret: await this.secretService.getJwtPrivateKey(),
           algorithms: ["RS256"],
-        })
+        },
+      )
 
       // await this.refreshTokensService.deleteById(id)
 

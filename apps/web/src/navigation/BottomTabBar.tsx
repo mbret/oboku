@@ -65,7 +65,7 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
       <OfflineIcon />
       <BottomNavigation
         value={normalizedPath}
-        onChange={(event, newValue) => {
+        onChange={(_event, newValue) => {
           navigate(newValue)
         }}
       >

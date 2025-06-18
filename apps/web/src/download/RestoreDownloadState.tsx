@@ -10,7 +10,7 @@ const useRestoreDownloadState = ({ onSuccess }: { onSuccess: () => void }) => {
     mutationFn: () =>
       from(dexieDb.downloads.toArray()).pipe(
         switchMap((items) => {
-          const state = items.reduce((acc, { id: bookId, name, data }) => {
+          const state = items.reduce((acc, { id: bookId, data }) => {
             return {
               ...acc,
               [bookId]: {

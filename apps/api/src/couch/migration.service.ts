@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { CouchService } from "./couch.service"
 import { UserCouchEntity } from "src/lib/couchDbEntities"
-import { Cron } from "@nestjs/schedule"
 
 const logger = new Logger("MigrationService")
 
@@ -51,6 +50,7 @@ export class CouchMigrationService {
           try {
             link.data = JSON.parse(link.data)
           } catch (error) {
+            console.error(error)
             link.data = {}
           }
 

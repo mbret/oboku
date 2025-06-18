@@ -29,7 +29,7 @@ export const getDataFromDataSource = <T extends DataSourceDocType["type"]>(
   ) {
     try {
       return JSON.parse(dataSource.data)
-    } catch (e) {
+    } catch (_e) {
       return undefined
     }
   } else if (dataSource.data_v2) {

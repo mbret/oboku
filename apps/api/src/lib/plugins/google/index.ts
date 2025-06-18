@@ -84,16 +84,6 @@ export const dataSource: DataSourcePlugin = {
       auth,
     })
 
-    const metadata = (
-      await drive.files.get(
-        {
-          fileId: extractIdFromResourceId(link.resourceId),
-          fields: "size, name",
-        },
-        { responseType: "json" },
-      )
-    ).data
-
     const response = await drive.files.get(
       {
         fileId: extractIdFromResourceId(link.resourceId),

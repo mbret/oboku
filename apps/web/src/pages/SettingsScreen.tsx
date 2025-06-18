@@ -223,7 +223,7 @@ const MultipleChoiceDrawer = <Choice extends { value: string; label: string }>({
         {choices.map(({ value, label }) => (
           <ListItemButton
             key={value}
-            onClick={(e) => {
+            onClick={(_e) => {
               onChoiceSelect(value)
             }}
           >

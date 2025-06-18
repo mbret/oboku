@@ -79,7 +79,7 @@ export const sync = async ({
     // we create the date now on purpose so that if something change on the datasource
     // during the process (which can take time), user will not be misled to believe its
     // latest changes have been synced
-    const lastSyncedAt = new Date().getTime()
+    const lastSyncedAt = Date.now()
     const ctx = {
       dataSourceId,
       userName,

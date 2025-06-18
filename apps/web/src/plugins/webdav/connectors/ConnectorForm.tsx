@@ -95,7 +95,7 @@ export const ConnectorForm = memo(
                 required: true,
                 pattern: {
                   value:
-                    /^(https?:\/\/)?([\w-]+\.)+[\w-]+(:\d{1,5})?(\/[\w- .\/?%&=]*)?$/,
+                    /^(https?:\/\/)?([\w-]+\.)+[\w-]+(:\d{1,5})?(\/[\w- ./?%&=]*)?$/,
                   message: "Invalid URL",
                 },
               }}

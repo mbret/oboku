@@ -3,7 +3,7 @@ import { latestDatabase$ } from "./RxDbProvider"
 
 export const useDocumentIncrementalPatch = <T>() => {
   return useMutation$({
-    mutationFn: (patch: T) => {
+    mutationFn: (_patch: T) => {
       return latestDatabase$.pipe()
     },
   })

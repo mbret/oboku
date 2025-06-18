@@ -49,7 +49,7 @@ export const VirtualizedList = memo(
       estimateSize: () => 200,
     })
 
-    const getColumnWidth = (index: number) =>
+    const getColumnWidth = (_index: number) =>
       (parentRef.current?.clientWidth ?? 0) / columnCount
 
     const items = rowVirtualizer.getVirtualItems()

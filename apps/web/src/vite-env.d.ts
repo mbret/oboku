@@ -14,7 +14,6 @@ interface ImportMetaEnv {
   readonly SENTRY_DSN?: string
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: override
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }

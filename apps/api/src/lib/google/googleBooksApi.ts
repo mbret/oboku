@@ -1,8 +1,6 @@
 import axios, { isAxiosError } from "axios"
 import type { Item } from "./types"
 import { performWithBackoff } from "../utils"
-import { EnvironmentVariables } from "src/config/types"
-import { ConfigService } from "@nestjs/config"
 import { AppConfigService } from "src/config/AppConfigService"
 
 export type GoogleBooksApiVolumesResponseData = {

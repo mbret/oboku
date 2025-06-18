@@ -72,7 +72,7 @@ export const AuthGuard = memo(() => {
           if (refreshToken) {
             try {
               return refreshTokenAndRetry(error.response.config, refreshToken)
-            } catch (e) {
+            } catch (_e) {
               throw error
             }
           } else {
@@ -92,7 +92,7 @@ export const AuthGuard = memo(() => {
           if (refreshToken) {
             try {
               return refreshTokenAndRetry(response.config, refreshToken)
-            } catch (e) {
+            } catch (_e) {
               return response
             }
           } else {

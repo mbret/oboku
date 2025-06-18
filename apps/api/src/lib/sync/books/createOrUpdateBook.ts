@@ -185,7 +185,7 @@ export const createOrUpdateBook = async ({
         modifiedAt: null,
         dataSourceId,
         rxdbMeta: {
-          lwt: new Date().getTime(),
+          lwt: Date.now(),
         },
       })
 

@@ -40,7 +40,7 @@ if (import.meta.env.PROD) {
 // Set up App Shell-style routing, so that all navigation requests
 // are fulfilled with your index.html shell. Learn more at
 // https://developers.google.com/web/fundamentals/architecture/app-shell
-const fileExtensionRegexp = /\/[^\/?]+\.[^\/]+$/
+const fileExtensionRegexp = /\/[^/?]+\.[^/]+$/
 
 if (import.meta.env.PROD) {
   registerRoute(
