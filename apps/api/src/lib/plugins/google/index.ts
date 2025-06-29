@@ -205,7 +205,9 @@ export const dataSource: DataSourcePlugin = {
       if ((e as any)?.code === 401) {
         throw createError("unauthorized", e as Error)
       }
+
       const errors = (e as any)?.response?.data?.error?.errors
+
       if (errors && Array.isArray(errors)) {
         errors.forEach((error: any) => {
           if (error?.reason === "rateLimitExceeded") {
