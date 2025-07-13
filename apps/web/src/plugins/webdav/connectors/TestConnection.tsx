@@ -61,7 +61,7 @@ export const TestConnection = memo(
               ? "Waiting for valid credentials..."
               : "Please unlock your secrets first"
             : testingStatus === "success" && testingData === false
-              ? "Unable to connect"
+              ? `Unable to connect to ${debouncedUrl}${debouncedDirectory}@${debouncedUsername}:*****`
               : "Connection successful"}
       </Alert>
     )
