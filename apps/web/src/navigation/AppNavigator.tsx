@@ -41,7 +41,7 @@ import { SignUpScreen } from "../pages/SignUpScreen"
 import { SecretsScreen } from "../pages/profile/SecretsScreen"
 import { NewDataSourceScreen } from "../pages/sync/NewDataSourceScreen"
 import { AddWebdavConnectorScreen } from "../pages/plugins/webdav/AddWebdavConnectorScreen"
-import { EditWebdavConnectorScreen } from "../pages/plugins/webdav/EditWebdavConnectorScreen"
+import { EditWebDavConnectorScreen } from "../pages/plugins/webdav/EditWebdavConnectorScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -100,7 +100,7 @@ export const AppNavigator = ({
               />
               <Route
                 path={ROUTES.PLUGINS_WEBDAV_CONNECTORS_EDIT}
-                element={<EditWebdavConnectorScreen />}
+                element={<EditWebDavConnectorScreen />}
               />
               <Route path={`${ROUTES.SECURITY}`} element={<SecurityScreen />} />
               <Route path={`${ROUTES.SECRETS}`} element={<SecretsScreen />} />

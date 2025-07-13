@@ -6,11 +6,6 @@ if (isDebugEnabled()) {
   window.__PROSE_READER_DEBUG = true
 }
 
-if (!isDebugEnabled()) {
-  console.log = () => {}
-  console.warn = () => {}
-}
-
 export const toggleDebug = () => {
   if (isDebugEnabled()) {
     localStorage.setItem("oboku_debug_enabled", "false")

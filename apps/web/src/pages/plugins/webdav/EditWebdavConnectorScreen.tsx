@@ -8,7 +8,7 @@ import { useDeleteConnector } from "../../../plugins/webdav/connectors/useDelete
 import { useParams } from "react-router"
 import { useNotifications } from "../../../notifications/useNofitications"
 
-export const EditWebdavConnectorScreen = memo(() => {
+export const EditWebDavConnectorScreen = memo(() => {
   const { goBack } = useSafeGoBack()
   const { mutate: deleteConnector } = useDeleteConnector()
   const { notify } = useNotifications()

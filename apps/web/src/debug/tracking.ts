@@ -15,7 +15,7 @@ function initializeAnalytics() {
 }
 
 function registerUsersOnSentrySession() {
-  authStateSignal.subject.subscribe((auth) => {
+  authStateSignal.subscribe((auth) => {
     if (auth) {
       setUser({
         email: auth.email,
