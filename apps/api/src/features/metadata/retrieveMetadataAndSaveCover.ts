@@ -42,8 +42,7 @@ export const retrieveMetadataAndSaveCover = async (
 
     console.log(
       `[retrieveMetadataAndSaveCover]`,
-      `processing ${ctx.book._id} with link of type ${ctx.link.type}`,
-      { link: ctx.link },
+      `processing ${ctx.book._id} with link of type ${ctx.link.type} with id ${ctx.link._id}`,
     )
 
     const bookIsProtected = await isBookProtected(ctx.db, ctx.book)
@@ -125,9 +124,8 @@ export const retrieveMetadataAndSaveCover = async (
 
     console.log(
       `[retrieveMetadataAndSaveCover]`,
-      `syncMetadata processing ${ctx.book._id}`,
+      `syncMetadata processing for ${ctx.book._id}`,
       {
-        linkMetadata,
         contentType,
         tmpFilePath,
       },

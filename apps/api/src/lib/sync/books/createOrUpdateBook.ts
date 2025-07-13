@@ -3,23 +3,25 @@ import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "src/lib/plugins/types"
-import { Logger } from "@nestjs/common"
 import { updateTagsForBook } from "./updateTagsForBook"
 import { synchronizeBookWithParentCollections } from "./synchronizeBookWithParentCollections"
 import {
   addLinkToBookIfNotExist,
   addTagsToBookIfNotExist,
+  atomicUpdate,
   createBook,
+  find,
+  findOne,
 } from "src/lib/couch/dbHelpers"
 import type { Context } from "../types"
 import type { CoversService } from "src/covers/covers.service"
 import { firstValueFrom } from "rxjs"
 import { getDataSourceData } from "src/lib/plugins/helpers"
+import { cleanAndMergeBookLinks } from "./cleanAndMergeBookLinks"
+import { logger } from "./logger"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
-
-const logger = new Logger("sync.books")
 
 function isFolder(
   item: SynchronizeAbleDataSource | SynchronizeAbleItem,
@@ -60,15 +62,20 @@ export const createOrUpdateBook = async ({
       isFolder(parent),
     ) as SynchronizeAbleItem[]
 
-    const linkForResourceId = await helpers.findOne("link", {
+    const linksForResourceId = await find(ctx.db, "link", {
       selector: { resourceId: item.resourceId },
     })
 
-    if (!linkForResourceId) {
+    if (!linksForResourceId.length) {
       logger.log(
         `No link found for ${item.name} with resourceId ${item.resourceId}`,
       )
     }
+
+    const linkForResourceId = await cleanAndMergeBookLinks(
+      ctx.db,
+      linksForResourceId,
+    )
 
     let existingBook: BookDocType | null = null
 
@@ -144,7 +151,9 @@ export const createOrUpdateBook = async ({
         selector: { _id: linkForResourceId.book },
       })
 
-      if (existingBook) {
+      if (!existingBook) {
+        logger.log(`Phantom book found for link ${linkForResourceId._id}`)
+      } else {
         if (!existingBook.isAttachedToDataSource) {
           logger.log(
             `createOrUpdateBook "${item.name}": isAttachedToDataSource is false and therefore will be migrated as true`,
@@ -158,7 +167,6 @@ export const createOrUpdateBook = async ({
 
           syncReport.updateBook(existingBook._id)
         }
-        // Logger.info(`createOrUpdateBook "${item.name}": existingBook`, existingBook._id)
       }
     }
 
@@ -188,25 +196,47 @@ export const createOrUpdateBook = async ({
 
       if (!bookId) throw new Error("Book not found or not created")
 
-      const insertedLink = await helpers.create("link", {
-        type: dataSourceType,
-        resourceId: item.resourceId,
-        book: bookId,
-        data: item.linkData ?? null,
-        createdAt: new Date().toISOString(),
-        modifiedAt: null,
-        dataSourceId,
-        rxdbMeta: {
-          lwt: Date.now(),
-        },
-      })
+      if (linkForResourceId) {
+        logger.log(
+          `Update link book reference for ${item.name} with resourceId ${item.resourceId} to a valid book id`,
+        )
 
-      syncReport.addLink(insertedLink.id)
+        await atomicUpdate(ctx.db, "link", linkForResourceId._id, (old) => ({
+          ...old,
+          book: bookId,
+        }))
+      } else {
+        const newlyCreatedLink = await helpers.create("link", {
+          type: dataSourceType,
+          resourceId: item.resourceId,
+          book: bookId,
+          data: item.linkData ?? null,
+          createdAt: new Date().toISOString(),
+          modifiedAt: null,
+          dataSourceId,
+          rxdbMeta: {
+            lwt: Date.now(),
+          },
+        })
+
+        syncReport.addLink(newlyCreatedLink.id)
+      }
+
+      const bookLink = await findOne(
+        "link",
+        {
+          selector: { book: bookId },
+        },
+        {
+          db: ctx.db,
+          throwOnNotFound: true,
+        },
+      )
 
       const addedLinkResponse = await addLinkToBookIfNotExist(
         db,
         bookId,
-        insertedLink.id,
+        bookLink._id,
       )
 
       if (addedLinkResponse) {
