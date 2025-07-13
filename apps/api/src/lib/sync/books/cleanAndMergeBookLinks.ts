@@ -1,7 +1,7 @@
 import { LinkDocType } from "@oboku/shared"
-import type nano from "nano"
 import { exists } from "src/lib/couch/exists"
 import { logger } from "./logger"
+import { Context } from "../types"
 
 /**
  * When synchronizing a book, we take the chance to delete dangling links.
@@ -13,7 +13,7 @@ import { logger } from "./logger"
  * - A user delete a book but the link remains -> phantom book. During sync we will find a link but not a book.
  */
 export const cleanAndMergeBookLinks = async (
-  db: nano.DocumentScope<unknown>,
+  ctx: Context,
   links: LinkDocType[],
 ) => {
   const { toDelete, toKeep } = await links.reduce(
@@ -25,7 +25,7 @@ export const cleanAndMergeBookLinks = async (
       const hasAlreadyValidLink = acc.toKeep
 
       if (!hasAlreadyValidLink && link.book) {
-        const bookExists = await exists(db, link.book)
+        const bookExists = await exists(ctx.db, link.book)
 
         if (bookExists) {
           return {
@@ -48,7 +48,11 @@ export const cleanAndMergeBookLinks = async (
       `Deleting ${toDelete.length} links for resourceId ${toDelete[0]?.resourceId}`,
     )
 
-    await db.bulk({
+    toDelete.forEach((link) => {
+      ctx.syncReport.deleteLink(link.resourceId)
+    })
+
+    await ctx.db.bulk({
       docs: toDelete.map((id) => ({
         _id: id,
         _deleted: true,

@@ -73,7 +73,7 @@ export const createOrUpdateBook = async ({
     }
 
     const linkForResourceId = await cleanAndMergeBookLinks(
-      ctx.db,
+      ctx,
       linksForResourceId,
     )
 
@@ -205,6 +205,8 @@ export const createOrUpdateBook = async ({
           ...old,
           book: bookId,
         }))
+
+        syncReport.updateLink(linkForResourceId._id)
       } else {
         const newlyCreatedLink = await helpers.create("link", {
           type: dataSourceType,
