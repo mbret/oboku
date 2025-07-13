@@ -75,6 +75,8 @@ export const getMetadataFromBook = (
     } satisfies Return
   }, {} as Return)
 
+  console.log(reducedMetadata)
+
   return {
     ...reducedMetadata,
     title: directives.removeDirectiveFromString(reducedMetadata.title ?? ""),
