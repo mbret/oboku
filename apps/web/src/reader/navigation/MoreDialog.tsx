@@ -38,7 +38,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
   const [value, setValue] = React.useState("toc")
   const reader = useSignalValue(readerSignal)
   const { data: pagination } = usePagination()
-  const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
+  const { manifest } = useObserve(() => reader?.context, [reader]) || {}
   const { title, nav } = manifest ?? {}
   const chapterInfo = pagination?.beginChapterInfo
   const [currentPage] = useCurrentPages({ bookId }) || 0

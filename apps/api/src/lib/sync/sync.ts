@@ -98,7 +98,10 @@ export const sync = async ({
 
     const synchronizeAbleDataSource = await plugin?.sync(ctx, helpers)
 
-    console.log(`Execute sync process with ${plugin?.type} plugin`)
+    console.log(
+      `Execute sync process with ${plugin?.type} plugin`,
+      synchronizeAbleDataSource,
+    )
 
     if (synchronizeAbleDataSource) {
       await synchronizeFromDataSource(
