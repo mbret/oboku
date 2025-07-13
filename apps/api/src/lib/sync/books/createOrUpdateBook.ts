@@ -64,6 +64,14 @@ export const createOrUpdateBook = async ({
       selector: { resourceId: item.resourceId },
     })
 
+    if (!linkForResourceId) {
+      logger.log(
+        `No link found for ${item.name} with resourceId ${item.resourceId}`,
+      )
+    }
+
+    let existingBook: BookDocType | null = null
+
     if (linkForResourceId) {
       /**
        * We have a matching link for this item but it's not attached to dataSource.
@@ -125,7 +133,11 @@ export const createOrUpdateBook = async ({
       }
     }
 
-    let existingBook: BookDocType | null = null
+    if (linkForResourceId && !linkForResourceId.book) {
+      logger.log(
+        `Link found for ${item.name} with resourceId ${item.resourceId} but no book attached`,
+      )
+    }
 
     if (linkForResourceId?.book) {
       existingBook = await helpers.findOne("book", {
