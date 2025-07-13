@@ -53,8 +53,8 @@ export const cleanAndMergeBookLinks = async (
     })
 
     await ctx.db.bulk({
-      docs: toDelete.map((id) => ({
-        _id: id,
+      docs: toDelete.map(({ _id }) => ({
+        _id,
         _deleted: true,
       })),
     })
