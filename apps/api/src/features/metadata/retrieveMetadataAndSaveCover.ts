@@ -38,7 +38,7 @@ export const retrieveMetadataAndSaveCover = async (
   let fileToUnlink: string | undefined
 
   try {
-    bookNameForDebug = reduceMetadata(ctx.book.metadata).title || ""
+    bookNameForDebug = reduceMetadata(ctx.book.metadata).title?.toString() || ""
 
     console.log(
       `[retrieveMetadataAndSaveCover]`,
@@ -84,7 +84,7 @@ export const retrieveMetadataAndSaveCover = async (
           {
             ...linkMetadata,
             // some plugins returns filename and not title
-            title: path.parse(linkMetadata.title ?? "").name,
+            title: path.parse(linkMetadata.title?.toString() ?? "").name,
           },
           {
             googleApiKey: ctx.googleApiKey,

@@ -1,5 +1,5 @@
 export type BookMetadata = {
-  title?: string
+  title?: string | number
   authors?: string[]
   description?: string
   formatType?: ("book" | "comics" | "manga" | "audio")[]

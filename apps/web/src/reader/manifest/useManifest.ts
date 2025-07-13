@@ -33,7 +33,7 @@ export const useManifest = (bookId: string | undefined) => {
 
         return {
           ..._manifest,
-          title: metadata.title ?? _manifest.title,
+          title: metadata.title?.toString() ?? _manifest.title,
         } satisfies Manifest
       }
 

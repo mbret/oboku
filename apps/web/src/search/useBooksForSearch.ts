@@ -33,15 +33,16 @@ export const useBooksForSearch = (search: string) => {
 
             if (!title) return false
 
-            const indexOfFirstMatch = title?.search(searchRegex) || 0
+            const indexOfFirstMatch =
+              title?.toString()?.search(searchRegex) || 0
 
             return indexOfFirstMatch >= 0
           })
         })
         .sort((a, b) =>
           sortByTitleComparator(
-            getMetadataFromBook(a).title || "",
-            getMetadataFromBook(b).title || "",
+            getMetadataFromBook(a).title?.toString() ?? "",
+            getMetadataFromBook(b).title?.toString() ?? "",
           ),
         )
         .map((item) => item._id),

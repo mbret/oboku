@@ -64,7 +64,7 @@ export class SyncReport {
   }
 
   protected getBookLabel(item: Partial<BookDocType>) {
-    return item.metadata?.find(({ type }) => type === "link")?.title
+    return item.metadata?.find(({ type }) => type === "link")?.title?.toString()
   }
 
   protected getCollectionLabel(item: Partial<CollectionDocType>) {
