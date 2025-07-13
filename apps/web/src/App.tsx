@@ -71,9 +71,9 @@ export const App = memo(() => {
                   {!isHydratingProfile &&
                     isAuthHydrated &&
                     plugins.reduce(
-                      (Comp, { Provider }) => {
+                      (Comp, { Provider }, index) => {
                         if (Provider) {
-                          return <Provider>{Comp}</Provider>
+                          return <Provider key={index}>{Comp}</Provider>
                         }
                         return Comp
                       },

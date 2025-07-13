@@ -41,43 +41,38 @@ export const InfoScreen = () => {
   const navigate = useNavigate()
 
   return (
-    <>
-      <Box display="flex" flex={1} overflow="auto" flexDirection="column">
-        <Alert severity="info" variant="standard">
-          Learn more about connectors{" "}
-          <MuiLink href={links.documentationWebDAV}>here</MuiLink>
-        </Alert>
-        <Container maxWidth="sm">
-          <Stack gap={1} mb={1} mt={2}>
-            <Button
-              component={Link}
-              to={ROUTES.PLUGINS_WEBDAV_CONNECTORS_NEW.replace(
-                ":type",
-                "webdav",
-              )}
-              variant="contained"
-            >
-              Add a connector
-            </Button>
-          </Stack>
-        </Container>
-        <List>
-          {connectors?.map((connector) => (
-            <ConnectorListItem
-              key={connector.id}
-              id={connector.id}
-              onClick={() => {
-                navigate(
-                  ROUTES.PLUGINS_WEBDAV_CONNECTORS_EDIT.replace(
-                    ":id",
-                    connector.id,
-                  ),
-                )
-              }}
-            />
-          ))}
-        </List>
-      </Box>
-    </>
+    <Box display="flex" flex={1} overflow="auto" flexDirection="column">
+      <Alert severity="info" variant="standard">
+        Learn more about connectors{" "}
+        <MuiLink href={links.documentationWebDAV}>here</MuiLink>
+      </Alert>
+      <Container maxWidth="sm">
+        <Stack gap={1} mb={1} mt={2}>
+          <Button
+            component={Link}
+            to={ROUTES.PLUGINS_WEBDAV_CONNECTORS_NEW.replace(":type", "webdav")}
+            variant="contained"
+          >
+            Add a connector
+          </Button>
+        </Stack>
+      </Container>
+      <List>
+        {connectors?.map((connector) => (
+          <ConnectorListItem
+            key={connector.id}
+            id={connector.id}
+            onClick={() => {
+              navigate(
+                ROUTES.PLUGINS_WEBDAV_CONNECTORS_EDIT.replace(
+                  ":id",
+                  connector.id,
+                ),
+              )
+            }}
+          />
+        ))}
+      </List>
+    </Box>
   )
 }

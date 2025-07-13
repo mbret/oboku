@@ -31,63 +31,61 @@ export const DataSourcesActionsDrawer: FC<{
   const { mutate: modifyDataSource } = useDataSourceIncrementalModify()
 
   return (
-    <>
-      <Drawer anchor="bottom" open={true} onClose={onClose}>
-        <List>
-          <ListItemButton
-            onClick={() => {
-              syncDataSource(openWith)
-              onClose()
-            }}
-          >
-            <ListItemIcon>
-              <SyncRounded />
-            </ListItemIcon>
-            <ListItemText primary="Synchronize" />
-          </ListItemButton>
-        </List>
+    <Drawer anchor="bottom" open={true} onClose={onClose}>
+      <List>
         <ListItemButton
           onClick={() => {
-            const datasourceWillBeHidden =
-              !dataSource?.isProtected && !library.isLibraryUnlocked
-
-            if (datasourceWillBeHidden) {
-              onClose()
-            }
-
-            modifyDataSource({
-              id: openWith,
-              mutationFunction: (old) => ({
-                ...old,
-                isProtected: !old.isProtected,
-              }),
-            })
+            syncDataSource(openWith)
+            onClose()
           }}
         >
           <ListItemIcon>
-            {!dataSource?.isProtected && <RadioButtonUncheckedOutlined />}
-            {dataSource?.isProtected && <CheckCircleRounded />}
+            <SyncRounded />
           </ListItemIcon>
-          <ListItemText
-            primary="Mark as protected"
-            secondary="This will lock and hide books behind it. Use unlock features to display them"
-          />
+          <ListItemText primary="Synchronize" />
         </ListItemButton>
-        <Divider />
-        <List>
-          <ListItemButton
-            onClick={() => {
-              onClose()
-              removeDataSource({ id: openWith })
-            }}
-          >
-            <ListItemIcon>
-              <DeleteForeverRounded />
-            </ListItemIcon>
-            <ListItemText primary="Remove the data source" />
-          </ListItemButton>
-        </List>
-      </Drawer>
-    </>
+      </List>
+      <ListItemButton
+        onClick={() => {
+          const datasourceWillBeHidden =
+            !dataSource?.isProtected && !library.isLibraryUnlocked
+
+          if (datasourceWillBeHidden) {
+            onClose()
+          }
+
+          modifyDataSource({
+            id: openWith,
+            mutationFunction: (old) => ({
+              ...old,
+              isProtected: !old.isProtected,
+            }),
+          })
+        }}
+      >
+        <ListItemIcon>
+          {!dataSource?.isProtected && <RadioButtonUncheckedOutlined />}
+          {dataSource?.isProtected && <CheckCircleRounded />}
+        </ListItemIcon>
+        <ListItemText
+          primary="Mark as protected"
+          secondary="This will lock and hide books behind it. Use unlock features to display them"
+        />
+      </ListItemButton>
+      <Divider />
+      <List>
+        <ListItemButton
+          onClick={() => {
+            onClose()
+            removeDataSource({ id: openWith })
+          }}
+        >
+          <ListItemIcon>
+            <DeleteForeverRounded />
+          </ListItemIcon>
+          <ListItemText primary="Remove the data source" />
+        </ListItemButton>
+      </List>
+    </Drawer>
   )
 })

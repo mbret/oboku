@@ -18,6 +18,7 @@ export const usePluginSynchronize = () => {
   >([])
 
   getPluginFn.current = plugins.map((plugin) => {
+    // biome-ignore lint/correctness/useHookAtTopLevel: Expected
     const hookRan = plugin.useSynchronize?.({
       requestPopup: createRequestPopupDialog({ name: plugin.name }),
     })

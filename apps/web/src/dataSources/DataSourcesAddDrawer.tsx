@@ -16,25 +16,23 @@ export const DataSourcesAddDrawer: FC<{
   const dataSourcesPlugins = plugins.filter((plugin) => plugin.canSynchronize)
 
   return (
-    <>
-      <Drawer anchor="bottom" open={open} onClose={() => onClose()}>
-        <div role="presentation">
-          <List>
-            {dataSourcesPlugins.map((dataSource) => (
-              <ListItemButton
-                onClick={() => onClose(dataSource.type)}
-                key={dataSource.type}
-                disabled={!isPluginEnabled(dataSource)}
-              >
-                <ListItemIcon>
-                  {dataSource.Icon && <dataSource.Icon />}
-                </ListItemIcon>
-                <ListItemText primary={`${dataSource.name}`} />
-              </ListItemButton>
-            ))}
-          </List>
-        </div>
-      </Drawer>
-    </>
+    <Drawer anchor="bottom" open={open} onClose={() => onClose()}>
+      <div role="presentation">
+        <List>
+          {dataSourcesPlugins.map((dataSource) => (
+            <ListItemButton
+              onClick={() => onClose(dataSource.type)}
+              key={dataSource.type}
+              disabled={!isPluginEnabled(dataSource)}
+            >
+              <ListItemIcon>
+                {dataSource.Icon && <dataSource.Icon />}
+              </ListItemIcon>
+              <ListItemText primary={`${dataSource.name}`} />
+            </ListItemButton>
+          ))}
+        </List>
+      </div>
+    </Drawer>
   )
 }

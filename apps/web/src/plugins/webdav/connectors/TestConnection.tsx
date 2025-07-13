@@ -35,29 +35,27 @@ export const TestConnection = memo(
     })
 
     return (
-      <>
-        <Alert
-          severity={
-            testingStatus === "pending" || isFetching
-              ? "info"
-              : testingData === false
-                ? "error"
-                : "success"
-          }
-          sx={{ alignSelf: "stretch" }}
-        >
-          <AlertTitle>Test connection</AlertTitle>
-          {isFetching
-            ? "Testing connection..."
-            : testingStatus === "pending"
-              ? unlockedMasterKey
-                ? "Waiting for valid credentials..."
-                : "Please unlock your secrets first"
-              : testingStatus === "success" && testingData === false
-                ? "Unable to connect"
-                : "Connection successful"}
-        </Alert>
-      </>
+      <Alert
+        severity={
+          testingStatus === "pending" || isFetching
+            ? "info"
+            : testingData === false
+              ? "error"
+              : "success"
+        }
+        sx={{ alignSelf: "stretch" }}
+      >
+        <AlertTitle>Test connection</AlertTitle>
+        {isFetching
+          ? "Testing connection..."
+          : testingStatus === "pending"
+            ? unlockedMasterKey
+              ? "Waiting for valid credentials..."
+              : "Please unlock your secrets first"
+            : testingStatus === "success" && testingData === false
+              ? "Unable to connect"
+              : "Connection successful"}
+      </Alert>
     )
   },
 )

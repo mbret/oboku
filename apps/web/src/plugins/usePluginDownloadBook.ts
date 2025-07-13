@@ -16,10 +16,12 @@ export const usePluginDownloadBook = () => {
     return {
       type: plugin.type,
       downloadBook: plugin.useDownloadBook
-        ? plugin.useDownloadBook({
+        ? // biome-ignore lint/correctness/useHookAtTopLevel: Expected
+          plugin.useDownloadBook({
             requestPopup: createRequestPopupDialog({ name: plugin.name }),
           })
-        : useDownloadBookPlaceholder(),
+        : // biome-ignore lint/correctness/useHookAtTopLevel: Expected
+          useDownloadBookPlaceholder(),
     }
   })
 

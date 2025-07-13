@@ -55,11 +55,14 @@ export const AuthGuard = memo(() => {
 
   useEffect(() => {
     const deregisterTokenInjectorToApi =
+      // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
       httpClientApi.useRequestInterceptor(injectToken)
 
     const deregisterTokenInjectorToCouch =
+      // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
       httpCouchClient.useRequestInterceptor(injectToken)
 
+    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
     const deregisterAutoSignOut = httpClientApi.useResponseInterceptor(
       async (response) => response,
       async (error: HttpClientError) => {
@@ -84,6 +87,7 @@ export const AuthGuard = memo(() => {
       },
     )
 
+    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
     const deregisterAutoSignOutCouch = httpCouchClient.useResponseInterceptor(
       async (response) => {
         if (response?.status === 401) {

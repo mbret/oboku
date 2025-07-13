@@ -32,101 +32,97 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
   ]
 
   return (
-    <>
-      <List
-        dense
-        subheader={
-          <ListSubheader
+    <List
+      dense
+      subheader={
+        <ListSubheader
+          sx={{
+            px: [null, 3],
+          }}
+        >
+          Metadata Sources
+        </ListSubheader>
+      }
+      disablePadding
+    >
+      {types.map((type) => {
+        const metadata = book?.metadata?.find((item) => item.type === type)
+
+        const numberOfProperties = metadata
+          ? Object.keys(metadata).filter(
+              (key) => metadata[key as keyof typeof metadata] !== undefined,
+            ).length
+          : 0
+
+        return (
+          <ListItemButton
+            key={type}
             sx={{
               px: [null, 3],
             }}
           >
-            Metadata Sources
-          </ListSubheader>
-        }
-        disablePadding
-      >
-        {types.map((type) => {
-          const metadata = book?.metadata?.find((item) => item.type === type)
-
-          const numberOfProperties = metadata
-            ? Object.keys(metadata).filter(
-                (key) => metadata[key as keyof typeof metadata] !== undefined,
-              ).length
-            : 0
-
-          return (
-            <ListItemButton
-              key={type}
-              sx={{
-                px: [null, 3],
+            <ListItemIcon>
+              {type === "file" && <PlagiarismOutlined />}
+              {type === "link" && <InsertLinkOutlined />}
+              {type === "user" && <PersonOutlineOutlined />}
+              {type === "googleBookApi" && <Google />}
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography>
+                  {type === "file"
+                    ? "File"
+                    : type === "googleBookApi"
+                      ? "Google Book API"
+                      : type === "user"
+                        ? "User"
+                        : "Link"}
+                  {type === "link" && (
+                    <Typography component="span" variant="body2" ml={1}>
+                      ({plugin?.name})
+                    </Typography>
+                  )}
+                </Typography>
+              }
+              secondaryTypographyProps={{
+                component: "div",
               }}
-            >
-              <ListItemIcon>
-                {type === "file" && <PlagiarismOutlined />}
-                {type === "link" && <InsertLinkOutlined />}
-                {type === "user" && <PersonOutlineOutlined />}
-                {type === "googleBookApi" && <Google />}
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography>
-                    {type === "file"
-                      ? "File"
-                      : type === "googleBookApi"
-                        ? "Google Book API"
-                        : type === "user"
-                          ? "User"
-                          : "Link"}
-                    {type === "link" && (
-                      <Typography component="span" variant="body2" ml={1}>
-                        ({plugin?.name})
+              secondary={
+                !numberOfProperties ? (
+                  <>
+                    {type === "user" && (
+                      <Typography variant="body2" color="warning.main">
+                        No information entered yet
                       </Typography>
                     )}
-                  </Typography>
-                }
-                secondaryTypographyProps={{
-                  component: "div",
-                }}
-                secondary={
-                  !numberOfProperties ? (
-                    <>
-                      {type === "user" && (
-                        <Typography variant="body2" color="warning.main">
-                          No information entered yet
-                        </Typography>
-                      )}
-                      {type !== "user" && (
-                        <Typography variant="body2" color="warning.main">
-                          No data yet
-                        </Typography>
-                      )}
-                    </>
-                  ) : (
-                    <Stack>
-                      <Typography variant="body2">
-                        {numberOfProperties} properties
-                        {type === "file"
-                          ? " gathered from the file itself"
-                          : ""}
+                    {type !== "user" && (
+                      <Typography variant="body2" color="warning.main">
+                        No data yet
                       </Typography>
-                      <Typography variant="caption">
-                        {type === "file" && metadata?.contentType
-                          ? `${metadata.contentType}, `
-                          : ""}
-                        {metadata?.title ? `${metadata.title}, ` : ""}...
-                      </Typography>
-                    </Stack>
-                  )
-                }
-              />
-              <Stack width={50} alignItems="center" flexShrink={0}>
-                <MoreVertRounded />
-              </Stack>
-            </ListItemButton>
-          )
-        })}
-      </List>
-    </>
+                    )}
+                  </>
+                ) : (
+                  <Stack>
+                    <Typography variant="body2">
+                      {numberOfProperties} properties
+                      {type === "file" ? " gathered from the file itself" : ""}
+                    </Typography>
+                    <Typography variant="caption">
+                      {type === "file" && metadata?.contentType
+                        ? `${metadata.contentType}, `
+                        : ""}
+                      {metadata?.title ? `${metadata.title}, ` : ""}...
+                    </Typography>
+                  </Stack>
+                )
+              }
+            />
+            <Stack width={50} alignItems="center" flexShrink={0}>
+              <MoreVertRounded />
+            </Stack>
+          </ListItemButton>
+        )
+      })}
+    </List>
   )
 }

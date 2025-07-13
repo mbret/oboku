@@ -10,14 +10,9 @@ export const PluginScreen = memo(() => {
   const plugin = plugins.find((plugin) => plugin.type === type)
 
   return (
-    <>
-      <Stack flex={1} overflow="auto">
-        <TopBarNavigation
-          title={capitalize(plugin?.name ?? "plugin")}
-          showBack
-        />
-        {!!plugin?.InfoScreen && <plugin.InfoScreen />}
-      </Stack>
-    </>
+    <Stack flex={1} overflow="auto">
+      <TopBarNavigation title={capitalize(plugin?.name ?? "plugin")} showBack />
+      {!!plugin?.InfoScreen && <plugin.InfoScreen />}
+    </Stack>
   )
 })

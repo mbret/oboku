@@ -21,6 +21,7 @@ export const usePluginRefreshMetadata = () => {
 
   getPluginFn.current = plugins.map((plugin) => ({
     type: plugin.type,
+    // biome-ignore lint/correctness/useHookAtTopLevel: Expected
     refreshMetadata: plugin.useRefreshMetadata?.({
       requestPopup: createRequestPopupDialog({ name: plugin.name }),
     }),
