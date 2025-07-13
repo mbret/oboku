@@ -28,7 +28,7 @@
     "lint": "npx @biomejs/biome check ."
   },
   "devDependencies": {
-    "@biomejs/biome": "2.0.0",
+    "@biomejs/biome": "^2.1.1",
     "@rollup/plugin-replace": "^6.0.2",
     "@types/node": "^22.14.1",
     "lerna": "^8.2.2",
