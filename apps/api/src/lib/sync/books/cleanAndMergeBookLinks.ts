@@ -2,6 +2,7 @@ import { LinkDocType } from "@oboku/shared"
 import { exists } from "src/lib/couch/exists"
 import { logger } from "./logger"
 import { Context } from "../types"
+import { bulkDelete } from "src/lib/couch/bulkDelete"
 
 /**
  * When synchronizing a book, we take the chance to delete dangling links.
@@ -52,12 +53,7 @@ export const cleanAndMergeBookLinks = async (
       ctx.syncReport.deleteLink(link.resourceId)
     })
 
-    await ctx.db.bulk({
-      docs: toDelete.map(({ _id }) => ({
-        _id,
-        _deleted: true,
-      })),
-    })
+    await bulkDelete(ctx.db, toDelete)
   }
 
   return toKeep
