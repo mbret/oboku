@@ -1,9 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { AuthType, createClient } from "webdav"
 
-fetch("", {
-  credentials: "include",
-})
 export const useConnect = ({
   data,
   enabled = true,

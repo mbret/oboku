@@ -20,6 +20,7 @@ import { useConnectors } from "./connectors/useConnectors"
 import { ControlledSelect } from "../../common/forms/ControlledSelect"
 import { LinkRounded } from "@mui/icons-material"
 import { TestConnection } from "./connectors/TestConnection"
+import { useConnector } from "./connectors/useConnector"
 
 type FormData = {
   connectorId: string
@@ -57,6 +58,7 @@ export const AddDataSource = memo(
       },
       onSuccess: onClose,
     })
+    const { data: connector } = useConnector(data.connectorId)
 
     return (
       <>
@@ -117,7 +119,9 @@ export const AddDataSource = memo(
               </Alert>
             )}
             <TestConnection
-              connectorId={data.connectorId}
+              url={connector?.url}
+              username={connector?.username}
+              passwordAsSecretId={connector?.passwordAsSecretId}
               directory={data.directory}
             />
           </Stack>

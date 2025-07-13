@@ -2,23 +2,31 @@ import { memo } from "react"
 import { Alert, AlertTitle } from "@mui/material"
 import { useDecryptedSecret } from "../../../secrets/useDecryptedSecret"
 import { useConnect } from "./useConnect"
-import { useConnector } from "./useConnector"
 import { useUnlockedMasterKey } from "../../../secrets/useUnlockMasterKey"
+import { useDebouncedValue } from "../../../common/useDebouncedValue"
 
 export const TestConnection = memo(
   ({
-    connectorId,
     directory = "/",
+    username,
+    passwordAsSecretId,
+    url,
   }: {
-    connectorId?: string
     directory?: string
+    username?: string
+    passwordAsSecretId?: string
+    url?: string
   }) => {
+    const {
+      url: debouncedUrl,
+      username: debouncedUsername,
+      directory: debouncedDirectory,
+    } = useDebouncedValue({ url, username, directory }, 500)
     const unlockedMasterKey = useUnlockedMasterKey()
-    const { data: connector } = useConnector(connectorId)
     const { data: secret } = useDecryptedSecret({
-      id: connector?.passwordAsSecretId,
+      id: passwordAsSecretId,
       masterKey: unlockedMasterKey,
-      enabled: !!connector && !!unlockedMasterKey,
+      enabled: !!passwordAsSecretId && !!unlockedMasterKey,
     })
     const {
       status: testingStatus,
@@ -26,12 +34,12 @@ export const TestConnection = memo(
       data: testingData,
     } = useConnect({
       data: {
-        url: connector?.url ?? "",
-        username: connector?.username ?? "",
+        url: debouncedUrl ?? "",
+        username: debouncedUsername ?? "",
         password: secret ?? "",
-        directory,
+        directory: debouncedDirectory ?? "",
       },
-      enabled: !!connector && !!secret,
+      enabled: !!debouncedUrl && !!debouncedUsername && !!secret,
     })
 
     return (
