@@ -1,5 +1,14 @@
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
-import { catchError, combineLatest, from, map, mergeMap, of, tap } from "rxjs"
+import {
+  catchError,
+  combineLatest,
+  delay,
+  from,
+  map,
+  mergeMap,
+  of,
+  tap,
+} from "rxjs"
 import { useLock } from "../common/BlockingBackdrop"
 import { useWithAuthorization } from "../auth/AuthorizeActionDialog"
 import { Logger } from "../debug/logger.shared"
@@ -70,6 +79,7 @@ export const useRemoveAllContents = () => {
                   // mergeMap(() =>
                   //   from(database.datasource.find().incrementalRemove()),
                   // ),
+                  delay(3000), // make sure sync get enough time to finish
                   catchError((e) => {
                     unlock()
 
