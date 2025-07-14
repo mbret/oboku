@@ -1,6 +1,5 @@
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { catchError, combineLatest, from, map, mergeMap, of, tap } from "rxjs"
-import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useLock } from "../common/BlockingBackdrop"
 import { useWithAuthorization } from "../auth/AuthorizeActionDialog"
 import { Logger } from "../debug/logger.shared"
@@ -9,7 +8,7 @@ import { CancelError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
 
 export const useRemoveAllContents = () => {
-  const { mutateAsync: sync } = useSyncReplicate()
+  // const { mutateAsync: sync } = useSyncReplicate()
   const [lock] = useLock()
   const withAuthorization = useWithAuthorization()
 
