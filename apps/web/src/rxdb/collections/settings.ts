@@ -1,5 +1,5 @@
 import type { MigrationStrategies, RxCollection, RxJsonSchema } from "rxdb"
-import type { Database } from "../databases"
+import type { Database } from "../databases.shared"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
