@@ -112,7 +112,7 @@ export const applyHooks = (db: Database) => {
      * When a book is removed, detach it from all tags
      * that contains its reference
      */
-    await db.tag
+    const tagsContainingBook = await db.tag
       .find({
         selector: {
           books: {
@@ -120,11 +120,17 @@ export const applyHooks = (db: Database) => {
           },
         },
       })
-      .update({
-        $pullAll: {
-          books: [data._id],
-        },
-      } satisfies UpdateQuery<TagsDocType>)
+      .exec()
+
+    await Promise.all(
+      tagsContainingBook.map(async (tag) => {
+        await tag.incrementalUpdate({
+          $pullAll: {
+            books: [data._id],
+          },
+        } satisfies UpdateQuery<TagsDocType>)
+      }),
+    )
 
     // detach all collections to this book
     const collectionsContainingBook = await db.obokucollection
@@ -197,7 +203,7 @@ export const applyHooks = (db: Database) => {
 
   db.obokucollection.postRemove(async (data) => {
     // remove any book that were attached to this collection
-    await db.book
+    const booksWithCollectionAttached = await db.book
       .find({
         selector: {
           collections: {
@@ -205,11 +211,17 @@ export const applyHooks = (db: Database) => {
           },
         },
       })
-      .update({
-        $pullAll: {
-          collections: [data._id],
-        },
-      } satisfies UpdateQuery<BookDocType>)
+      .exec()
+
+    await Promise.all(
+      booksWithCollectionAttached.map(async (book) =>
+        book.incrementalUpdate({
+          $pullAll: {
+            collections: [data._id],
+          },
+        } satisfies UpdateQuery<BookDocType>),
+      ),
+    )
   }, true)
 
   updateRelationBetweenLinksAndBooksHook(db)

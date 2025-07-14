@@ -126,6 +126,9 @@ export const createDatabase = (
 
   return database$.pipe(
     switchMap((db) => {
+      // @ts-expect-error
+      window.db = db
+
       const addCollections$ = from(
         db.addCollections({
           book: {

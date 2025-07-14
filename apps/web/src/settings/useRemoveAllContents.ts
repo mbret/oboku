@@ -46,13 +46,19 @@ export const useRemoveAllContents = () => {
               map(() => lock()),
               mergeMap((unlock) =>
                 of(null).pipe(
-                  mergeMap(() => from(database.book.find().remove())),
                   mergeMap(() =>
-                    from(database.obokucollection.find().remove()),
+                    from(database.book.find().incrementalRemove()),
                   ),
-                  mergeMap(() => from(database.link.find().remove())),
-                  mergeMap(() => from(database.tag.find().remove())),
-                  mergeMap(() => from(database.datasource.find().remove())),
+                  mergeMap(() =>
+                    from(database.obokucollection.find().incrementalRemove()),
+                  ),
+                  mergeMap(() =>
+                    from(database.link.find().incrementalRemove()),
+                  ),
+                  mergeMap(() => from(database.tag.find().incrementalRemove())),
+                  mergeMap(() =>
+                    from(database.datasource.find().incrementalRemove()),
+                  ),
                   mergeMap(() =>
                     from(
                       sync([
