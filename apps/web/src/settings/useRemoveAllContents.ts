@@ -46,30 +46,31 @@ export const useRemoveAllContents = () => {
               map(() => lock()),
               mergeMap((unlock) =>
                 of(null).pipe(
-                  mergeMap(() =>
-                    from(database.book.find().incrementalRemove()),
-                  ),
-                  mergeMap(() =>
-                    from(database.obokucollection.find().incrementalRemove()),
-                  ),
-                  mergeMap(() =>
-                    from(database.link.find().incrementalRemove()),
-                  ),
-                  mergeMap(() => from(database.tag.find().incrementalRemove())),
-                  mergeMap(() =>
-                    from(database.datasource.find().incrementalRemove()),
-                  ),
-                  mergeMap(() =>
-                    from(
-                      sync([
-                        database.book,
-                        database.obokucollection,
-                        database.link,
-                        database.tag,
-                        database.datasource,
-                      ]),
-                    ),
-                  ),
+                  mergeMap(() => {
+                    Logger.info("Removing books")
+
+                    return from(database.book.find().incrementalRemove())
+                  }),
+                  mergeMap(() => {
+                    Logger.info("Removing collections")
+
+                    return from(
+                      database.obokucollection.find().incrementalRemove(),
+                    )
+                  }),
+                  mergeMap(() => {
+                    Logger.info("Removing links")
+
+                    return from(database.link.find().incrementalRemove())
+                  }),
+                  mergeMap(() => {
+                    Logger.info("Removing tags")
+
+                    return from(database.tag.find().incrementalRemove())
+                  }),
+                  // mergeMap(() =>
+                  //   from(database.datasource.find().incrementalRemove()),
+                  // ),
                   catchError((e) => {
                     unlock()
 

@@ -10,8 +10,6 @@ import { Logger } from "../debug/logger.shared"
 
 type Database = NonNullable<ReturnType<typeof useDatabase>["db"]>
 
-const EXEC_PARALLEL = true
-
 export const applyHooks = (db: Database) => {
   db.book.postSave(async (data) => {
     const tagsFromWhichToRemoveBook = await db.tag
@@ -29,7 +27,7 @@ export const applyHooks = (db: Database) => {
 
     // Remove the book from all collections that are not anymore in this book
     // but that also still reference the book
-    await db.obokucollection
+    const collectionsToRemoveBooksFrom = await db.obokucollection
       .find({
         selector: {
           books: {
@@ -40,15 +38,21 @@ export const applyHooks = (db: Database) => {
           },
         },
       })
-      .update({
-        $pullAll: {
-          books: [data._id],
-        },
-      } satisfies UpdateQuery<CollectionDocType>)
+      .exec()
+
+    await Promise.all(
+      collectionsToRemoveBooksFrom.map(async (collection) => {
+        await collection.incrementalUpdate({
+          $pullAll: {
+            books: [data._id],
+          },
+        } satisfies UpdateQuery<CollectionDocType>)
+      }),
+    )
 
     // add the book to any collections that are in this book
     // but does not reference it yet
-    await db.obokucollection
+    const collectionsToAddBooksTo = await db.obokucollection
       .find({
         selector: {
           // if at least one of the books is data._id it will work.
@@ -61,16 +65,22 @@ export const applyHooks = (db: Database) => {
           },
         },
       })
-      .update({
-        $push: {
-          books: data._id,
-        },
-      } satisfies UpdateQuery<CollectionDocType>)
+      .exec()
+
+    await Promise.all(
+      collectionsToAddBooksTo.map(async (collection) => {
+        await collection.incrementalUpdate({
+          $push: {
+            books: data._id,
+          },
+        } satisfies UpdateQuery<CollectionDocType>)
+      }),
+    )
 
     // @todo bulk
     await Promise.all(
       tagsFromWhichToRemoveBook.map(async (tag) => {
-        await tag.update({
+        await tag.incrementalUpdate({
           $pullAll: {
             books: [data._id],
           },
@@ -98,14 +108,14 @@ export const applyHooks = (db: Database) => {
     // @todo bulk
     await Promise.all(
       tagsFromWhichToAddBook.map(async (tag) => {
-        await tag.update({
+        await tag.incrementalUpdate({
           $push: {
             books: data._id,
           },
         })
       }),
     )
-  }, true)
+  }, false)
 
   db.book.postRemove(async (data) => {
     /**
@@ -156,8 +166,8 @@ export const applyHooks = (db: Database) => {
     /**
      * Remove any link attached to that book
      */
-    await db.link.find({ selector: { book: data._id } }).remove()
-  }, true)
+    await db.link.find({ selector: { book: data._id } }).incrementalRemove()
+  }, false)
 
   db.book.postInsert(async (data) => {
     /**
@@ -176,7 +186,7 @@ export const applyHooks = (db: Database) => {
           book: data._id,
         },
       } satisfies UpdateQuery<LinkDocType>)
-  }, true)
+  }, false)
 
   db.tag.postRemove(async (data) => {
     const booksFromWhichToRemoveTag = await db.book
@@ -192,14 +202,14 @@ export const applyHooks = (db: Database) => {
     // @todo bulk
     await Promise.all(
       booksFromWhichToRemoveTag.map(async (book) => {
-        await book.update({
+        await book.incrementalUpdate({
           $pullAll: {
             tags: [data._id],
           },
         })
       }),
     )
-  }, true)
+  }, false)
 
   db.obokucollection.postRemove(async (data) => {
     // remove any book that were attached to this collection
@@ -222,7 +232,7 @@ export const applyHooks = (db: Database) => {
         } satisfies UpdateQuery<BookDocType>),
       ),
     )
-  }, true)
+  }, false)
 
   updateRelationBetweenLinksAndBooksHook(db)
 }
@@ -251,5 +261,5 @@ const updateRelationBetweenLinksAndBooksHook = (db: Database) => {
         Logger.error(e)
       }
     }
-  }, EXEC_PARALLEL)
+  }, false)
 }
