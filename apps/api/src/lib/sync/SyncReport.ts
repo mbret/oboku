@@ -73,7 +73,7 @@ export class SyncReport {
     return typeof title === "string" ? title : title?.en
   }
 
-  upsetReference(id: string | undefined, label: string) {
+  upsertReference(id: string | undefined, label: string) {
     if (!id) return this
 
     this.references[id] = label
@@ -88,10 +88,14 @@ export class SyncReport {
     if (!item.updated && !item.deleted) {
       item.added = true
     }
+
+    if (label !== undefined) {
+      this.upsertReference(id, label)
+    }
   }
 
-  addBook(id: string) {
-    this.addItem("book", { id })
+  addBook(id: string, label?: string) {
+    this.addItem("book", { id, label })
   }
 
   updateBook(bookId: string) {

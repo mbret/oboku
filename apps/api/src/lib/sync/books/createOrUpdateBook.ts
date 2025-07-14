@@ -170,7 +170,7 @@ export const createOrUpdateBook = async ({
       }
     }
 
-    syncReport.upsetReference(existingBook?._id, item.name)
+    syncReport.upsertReference(existingBook?._id, item.name)
 
     if (!linkForResourceId || !existingBook) {
       let bookId = existingBook?._id
@@ -191,7 +191,7 @@ export const createOrUpdateBook = async ({
         })
         bookId = insertedBook.id
 
-        syncReport.addBook(bookId)
+        syncReport.addBook(bookId, item.name)
       }
 
       if (!bookId) throw new Error("Book not found or not created")
