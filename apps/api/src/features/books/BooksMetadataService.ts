@@ -1,6 +1,4 @@
 import { Injectable, Logger } from "@nestjs/common"
-import fs from "node:fs"
-import path from "node:path"
 import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
 import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSaveCover"
 import { CouchService } from "src/couch/couch.service"
@@ -8,28 +6,19 @@ import { AppConfigService } from "../../config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
 
 @Injectable()
-export class BooksMedataService {
+export class BooksMetadataService {
   constructor(
     private readonly appConfigService: AppConfigService,
     private readonly couchService: CouchService,
     private readonly coversService: CoversService,
   ) {}
 
-  refreshMetadata = async (
+  public refreshMetadata = async (
     body: { bookId: string },
     data: Record<string, unknown>,
     userEmail: string,
   ) => {
     const { bookId } = body
-    const files = await fs.promises.readdir(this.appConfigService.TMP_DIR_BOOKS)
-
-    await Promise.all(
-      files.map((file) => {
-        return fs.promises.unlink(
-          path.join(this.appConfigService.TMP_DIR_BOOKS, file),
-        )
-      }),
-    )
 
     const userNameHex = Buffer.from(userEmail).toString("hex")
 
@@ -84,12 +73,10 @@ export class BooksMedataService {
       throw e
     }
 
-    await Promise.all([
-      atomicUpdate(db, "link", link._id, (old) => ({
-        ...old,
-        contentLength: _data.link.contentLength,
-      })),
-    ])
+    await atomicUpdate(db, "link", link._id, (old) => ({
+      ...old,
+      contentLength: _data.link.contentLength,
+    }))
 
     Logger.log(`lambda executed with success for ${book._id}`)
   }
