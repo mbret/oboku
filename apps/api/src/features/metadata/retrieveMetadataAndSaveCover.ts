@@ -150,7 +150,7 @@ export const retrieveMetadataAndSaveCover = async (
             config,
           )
 
-          console.log(`file metadata for book ${ctx.book._id}`, fileMetadata)
+          logger.log(`Pushing file metadata for book ${ctx.book._id}`)
 
           metadataList.push(fileMetadata)
         } else if (
@@ -163,7 +163,7 @@ export const retrieveMetadataAndSaveCover = async (
             config,
           )
 
-          console.log(`file metadata for book ${ctx.book._id}`, fileMetadata)
+          logger.log(`Pushing file metadata for book ${ctx.book._id}`)
 
           metadataList.push(fileMetadata)
         } else {
@@ -185,8 +185,7 @@ export const retrieveMetadataAndSaveCover = async (
 
     console.log(
       `[retrieveMetadataAndSaveCover]`,
-      `prepare to update ${ctx.book._id} with`,
-      { metadataList },
+      `prepare to update ${ctx.book._id} with new metadata`,
     )
 
     await atomicUpdate(ctx.db, "book", ctx.book._id, (old) => {

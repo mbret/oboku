@@ -33,65 +33,57 @@ export const useRemoveAllContents = () => {
             from(db.datasource.count().exec()),
           ]),
         ),
-        mergeMap(
-          ([
-            database,
-            bookCount,
-            collectionCount,
-            tagCount,
-            dataSourceCount,
-          ]) => {
-            const confirmed$ = createDialog({
-              title: "Account reset",
-              content: `This action will remove all of your content. Here is a breakdown of everything that will be removed:\n 
-            ${bookCount} books, ${collectionCount} collections, ${tagCount} tags and ${dataSourceCount} data sources. \n\nThis operation can take a long time and you NEED to be connected to internet`,
-              canEscape: true,
-              cancellable: true,
-            }).$
+        mergeMap(([database, bookCount, collectionCount, tagCount]) => {
+          const confirmed$ = createDialog({
+            title: "Account reset",
+            content: `This action will remove all of your content (except data sources). Here is a breakdown of everything that will be removed:\n 
+            ${bookCount} books, ${collectionCount} collections, ${tagCount} tags. \n\nThis operation can take a long time and you NEED to be connected to internet`,
+            canEscape: true,
+            cancellable: true,
+          }).$
 
-            return confirmed$.pipe(
-              withAuthorization,
-              map(() => lock()),
-              mergeMap((unlock) =>
-                of(null).pipe(
-                  mergeMap(() => {
-                    Logger.info("Removing books")
+          return confirmed$.pipe(
+            withAuthorization,
+            map(() => lock()),
+            mergeMap((unlock) =>
+              of(null).pipe(
+                mergeMap(() => {
+                  Logger.info("Removing books")
 
-                    return from(database.book.find().incrementalRemove())
-                  }),
-                  mergeMap(() => {
-                    Logger.info("Removing collections")
+                  return from(database.book.find().incrementalRemove())
+                }),
+                mergeMap(() => {
+                  Logger.info("Removing collections")
 
-                    return from(
-                      database.obokucollection.find().incrementalRemove(),
-                    )
-                  }),
-                  mergeMap(() => {
-                    Logger.info("Removing links")
+                  return from(
+                    database.obokucollection.find().incrementalRemove(),
+                  )
+                }),
+                mergeMap(() => {
+                  Logger.info("Removing links")
 
-                    return from(database.link.find().incrementalRemove())
-                  }),
-                  mergeMap(() => {
-                    Logger.info("Removing tags")
+                  return from(database.link.find().incrementalRemove())
+                }),
+                mergeMap(() => {
+                  Logger.info("Removing tags")
 
-                    return from(database.tag.find().incrementalRemove())
-                  }),
-                  // mergeMap(() =>
-                  //   from(database.datasource.find().incrementalRemove()),
-                  // ),
-                  delay(3000), // make sure sync get enough time to finish
-                  catchError((e) => {
-                    unlock()
+                  return from(database.tag.find().incrementalRemove())
+                }),
+                // mergeMap(() =>
+                //   from(database.datasource.find().incrementalRemove()),
+                // ),
+                delay(3000), // make sure sync get enough time to finish
+                catchError((e) => {
+                  unlock()
 
-                    throw e
-                  }),
-                ),
+                  throw e
+                }),
               ),
-            )
-          },
-        ),
+            ),
+          )
+        }),
         tap(() => {
-          window.location.reload()
+          // window.location.reload()
         }),
         catchError((e) => {
           if (e instanceof CancelError) return of(null)
