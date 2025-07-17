@@ -127,42 +127,38 @@ export const useDownloadBook = () => {
                   progressSubject.next(Math.round(progress * 100))
                 }
 
-                const downloadFile$ = defer(() =>
-                  downloadPluginBook({
-                    link,
-                    onDownloadProgress,
-                  }).pipe(
-                    switchMap((downloadResponse) => {
-                      const data$ =
-                        downloadResponse.data instanceof Blob
-                          ? of(downloadResponse.data)
-                          : // when the plugin returns a stream we will create the archive ourselves based on the nature
-                            // of the stream.
-                            from(
-                              createCbzFromReadableStream(
-                                downloadResponse.data,
-                                {
-                                  onData: ({ progress }) =>
-                                    onDownloadProgress(progress),
-                                },
-                              ),
-                            )
-
-                      return data$.pipe(
-                        map((data) => ({
-                          data,
-                          name:
-                            downloadResponse.name ??
-                            generateFilenameFromBlob(data, bookId),
-                        })),
-                      )
-                    }),
-                  ),
-                )
-
                 const file$ = file
                   ? of({ data: file, name: file.name })
-                  : downloadFile$
+                  : downloadPluginBook({
+                      link,
+                      onDownloadProgress,
+                    }).pipe(
+                      switchMap((downloadResponse) => {
+                        const data$ =
+                          downloadResponse.data instanceof Blob
+                            ? of(downloadResponse.data)
+                            : // when the plugin returns a stream we will create the archive ourselves based on the nature
+                              // of the stream.
+                              from(
+                                createCbzFromReadableStream(
+                                  downloadResponse.data,
+                                  {
+                                    onData: ({ progress }) =>
+                                      onDownloadProgress(progress),
+                                  },
+                                ),
+                              )
+
+                        return data$.pipe(
+                          map((data) => ({
+                            data,
+                            name:
+                              downloadResponse.name ??
+                              generateFilenameFromBlob(data, bookId),
+                          })),
+                        )
+                      }),
+                    )
 
                 return file$.pipe(
                   switchMap(({ data, name }) => {
