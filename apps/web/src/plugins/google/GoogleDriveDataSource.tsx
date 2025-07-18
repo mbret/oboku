@@ -35,7 +35,10 @@ export const GoogleDriveDataSource: FC<{
   const currentFolder = folderChain[folderChain.length - 1]
   const { data: tags } = useTags()
   const { data: tagIds = [] } = useTagIds()
-  const { pick } = useDrivePicker({ requestPopup })
+  const { pick } = useDrivePicker({
+    requestPopup,
+    scope: ["https://www.googleapis.com/auth/drive.readonly"],
+  })
   const unMount$ = useUnmountObservable()
 
   return (
@@ -80,7 +83,7 @@ export const GoogleDriveDataSource: FC<{
           color="primary"
           variant="contained"
           onClick={() => {
-            pick({ select: "folder" })
+            pick({ select: "folder", multiSelect: false })
               .pipe(
                 tap((data) => {
                   const doc = data.docs?.[0]
