@@ -155,7 +155,7 @@ const SyncSourceLabel = ({
   )
 
   const { name = obokuPlugin?.name } =
-    obokuPlugin?.useSyncSourceInfo?.(syncSource as any) || {}
+    obokuPlugin?.useSyncSourceInfo?.(syncSource) || {}
 
   return <Typography noWrap>{name}</Typography>
 }

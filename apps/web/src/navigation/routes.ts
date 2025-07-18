@@ -15,6 +15,7 @@ export const ROUTES = {
   SYNC_DATASOURCES: "/sync/datasources",
   SYNC_NEW_DATASOURCES: "/sync/new-datasources/:id",
   SYNC_REPORTS: "/sync/reports",
+  DATASOURCE_DETAILS: "/sync/datasources/:id",
   LIBRARY_ROOT: "/library",
   LIBRARY_BOOKS: "/library/books",
   LIBRARY_COLLECTIONS: "/library/collections",

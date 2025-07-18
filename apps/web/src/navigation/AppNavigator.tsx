@@ -42,6 +42,7 @@ import { SecretsScreen } from "../pages/profile/SecretsScreen"
 import { NewDataSourceScreen } from "../pages/sync/NewDataSourceScreen"
 import { AddWebdavConnectorScreen } from "../pages/plugins/webdav/AddWebdavConnectorScreen"
 import { EditWebDavConnectorScreen } from "../pages/plugins/webdav/EditWebDavConnectorScreen"
+import { DataSourceDetailsScreen } from "../pages/sync/DataSourceDetailsScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -112,6 +113,10 @@ export const AppNavigator = ({
               <Route
                 path={ROUTES.SYNC_NEW_DATASOURCES}
                 element={<NewDataSourceScreen />}
+              />
+              <Route
+                path={ROUTES.DATASOURCE_DETAILS}
+                element={<DataSourceDetailsScreen />}
               />
               <Route path="*" element={<BottomTabBarRouteWrapper />}>
                 <Route index element={<HomeScreen />} />

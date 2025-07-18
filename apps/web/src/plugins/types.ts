@@ -80,7 +80,11 @@ type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
 
 export type UseSyncSourceInfo<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = (dataSource: DeepReadonly<Extract<DataSourceDocType, { type: T }>>) => {
+> = (
+  dataSource?:
+    | DeepReadonly<Extract<DataSourceDocType, { type: T }>>
+    | undefined,
+) => {
   name?: string
 }
 
@@ -124,6 +128,7 @@ export type ObokuPlugin<
     onClose: () => void
     requestPopup: () => Promise<boolean>
   }>
+  DataSourceDetails?: FunctionComponent
   SelectItemComponent?: FunctionComponent<{
     open: boolean
     requestPopup: () => Promise<boolean>

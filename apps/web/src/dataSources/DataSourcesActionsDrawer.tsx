@@ -12,6 +12,7 @@ import {
   DeleteForeverRounded,
   RadioButtonUncheckedOutlined,
   CheckCircleRounded,
+  InfoOutlineRounded,
 } from "@mui/icons-material"
 import { useDataSource } from "./useDataSource"
 import { useSignalValue } from "reactjrx"
@@ -19,6 +20,8 @@ import { libraryStateSignal } from "../library/books/states"
 import { useRemoveDataSource } from "./useRemoveDataSource"
 import { useDataSourceIncrementalModify } from "./useDataSourceIncrementalModify"
 import { useSynchronizeDataSource } from "./useSynchronizeDataSource"
+import { Link } from "react-router"
+import { ROUTES } from "../navigation/routes"
 
 export const DataSourcesActionsDrawer: FC<{
   openWith: string
@@ -34,6 +37,18 @@ export const DataSourcesActionsDrawer: FC<{
     <Drawer anchor="bottom" open={true} onClose={onClose}>
       <List>
         <ListItemButton
+          component={Link}
+          to={ROUTES.DATASOURCE_DETAILS.replace(":id", openWith)}
+          onClick={() => {
+            onClose()
+          }}
+        >
+          <ListItemIcon>
+            <InfoOutlineRounded />
+          </ListItemIcon>
+          <ListItemText primary="Details" />
+        </ListItemButton>
+        <ListItemButton
           onClick={() => {
             syncDataSource(openWith)
             onClose()
@@ -44,36 +59,34 @@ export const DataSourcesActionsDrawer: FC<{
           </ListItemIcon>
           <ListItemText primary="Synchronize" />
         </ListItemButton>
-      </List>
-      <ListItemButton
-        onClick={() => {
-          const datasourceWillBeHidden =
-            !dataSource?.isProtected && !library.isLibraryUnlocked
+        <ListItemButton
+          onClick={() => {
+            const datasourceWillBeHidden =
+              !dataSource?.isProtected && !library.isLibraryUnlocked
 
-          if (datasourceWillBeHidden) {
-            onClose()
-          }
+            if (datasourceWillBeHidden) {
+              onClose()
+            }
 
-          modifyDataSource({
-            id: openWith,
-            mutationFunction: (old) => ({
-              ...old,
-              isProtected: !old.isProtected,
-            }),
-          })
-        }}
-      >
-        <ListItemIcon>
-          {!dataSource?.isProtected && <RadioButtonUncheckedOutlined />}
-          {dataSource?.isProtected && <CheckCircleRounded />}
-        </ListItemIcon>
-        <ListItemText
-          primary="Mark as protected"
-          secondary="This will lock and hide books behind it. Use unlock features to display them"
-        />
-      </ListItemButton>
-      <Divider />
-      <List>
+            modifyDataSource({
+              id: openWith,
+              mutationFunction: (old) => ({
+                ...old,
+                isProtected: !old.isProtected,
+              }),
+            })
+          }}
+        >
+          <ListItemIcon>
+            {!dataSource?.isProtected && <RadioButtonUncheckedOutlined />}
+            {dataSource?.isProtected && <CheckCircleRounded />}
+          </ListItemIcon>
+          <ListItemText
+            primary="Mark as protected"
+            secondary="This will lock and hide books behind it. Use unlock features to display them"
+          />
+        </ListItemButton>
+        <Divider />
         <ListItemButton
           onClick={() => {
             onClose()
