@@ -11,7 +11,6 @@ import {
   catchError,
   combineLatest,
   defaultIfEmpty,
-  defer,
   EMPTY,
   finalize,
   first,

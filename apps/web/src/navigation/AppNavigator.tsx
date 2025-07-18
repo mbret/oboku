@@ -41,7 +41,7 @@ import { SignUpScreen } from "../pages/SignUpScreen"
 import { SecretsScreen } from "../pages/profile/SecretsScreen"
 import { NewDataSourceScreen } from "../pages/sync/NewDataSourceScreen"
 import { AddWebdavConnectorScreen } from "../pages/plugins/webdav/AddWebdavConnectorScreen"
-import { EditWebDavConnectorScreen } from "../pages/plugins/webdav/EditWebdavConnectorScreen"
+import { EditWebDavConnectorScreen } from "../pages/plugins/webdav/EditWebDavConnectorScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>

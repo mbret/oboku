@@ -1,12 +1,4 @@
-import {
-  catchError,
-  defaultIfEmpty,
-  EMPTY,
-  from,
-  map,
-  of,
-  switchMap,
-} from "rxjs"
+import { catchError, defaultIfEmpty, EMPTY, from, map, switchMap } from "rxjs"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useUpdateCollection } from "./useUpdateCollection"
