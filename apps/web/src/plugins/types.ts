@@ -48,7 +48,11 @@ type UseRefreshMetadataHook = (options: {
     data: Record<string, unknown>
   },
   Error | null,
-  { linkType: DataSourceDocType["type"]; linkData: Record<string, unknown> }
+  {
+    linkType: DataSourceDocType["type"]
+    linkData: Record<string, unknown>
+    linkResourceId?: string
+  }
 >
 
 export type UseSynchronizeHook<

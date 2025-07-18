@@ -31,9 +31,11 @@ export const usePluginRefreshMetadata = () => {
     async ({
       linkType,
       linkData,
+      linkResourceId,
     }: {
       linkType: DataSourceDocType["type"]
       linkData: Record<string, unknown>
+      linkResourceId?: string
     }): Promise<{ data?: Record<string, unknown> }> => {
       const found = getPluginFn.current.find(
         (plugin) => plugin.type === linkType,
@@ -47,6 +49,7 @@ export const usePluginRefreshMetadata = () => {
         return await found.refreshMetadata.mutateAsync({
           linkType,
           linkData,
+          linkResourceId,
         })
       }
 

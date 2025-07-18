@@ -1,5 +1,5 @@
 import { useNetworkState } from "react-use"
-import { from, switchMap, catchError, map, of } from "rxjs"
+import { from, switchMap, catchError, map, of, EMPTY } from "rxjs"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
@@ -7,7 +7,7 @@ import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { Logger } from "../debug/logger.shared"
 import { createDialog } from "../common/dialogs/createDialog"
 import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
-import { isPluginError } from "../errors/errors.shared"
+import { CancelError, isPluginError } from "../errors/errors.shared"
 import { useNotifications } from "../notifications/useNofitications"
 
 export const useRefreshBookMetadata = () => {
@@ -41,6 +41,7 @@ export const useRefreshBookMetadata = () => {
       const { data: pluginMetadata } = await refreshPluginMetadata({
         linkType: firstLink.type,
         linkData: firstLink.data ?? {},
+        linkResourceId: firstLink.resourceId,
       })
 
       if (!database) return
@@ -76,6 +77,8 @@ export const useRefreshBookMetadata = () => {
             ),
           ),
           catchError((e) => {
+            if (e instanceof CancelError) return EMPTY
+
             notifyError(e)
 
             Logger.error(e)

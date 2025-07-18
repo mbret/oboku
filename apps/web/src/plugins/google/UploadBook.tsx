@@ -22,11 +22,11 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
        */
       mutationFn: () =>
         timer(1).pipe(
-          switchMap(() => pick({ select: "file" })),
+          switchMap(() => pick({ select: "file", multiSelect: true })),
           switchMap((data) => {
             onClose()
 
-            if (data.action !== "picked") return of(null)
+            if (data.action !== google.picker.Action.PICKED) return of(null)
 
             const docs = data?.docs || []
 

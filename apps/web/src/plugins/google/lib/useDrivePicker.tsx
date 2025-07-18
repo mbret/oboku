@@ -1,12 +1,12 @@
 import { useAccessToken } from "./useAccessToken"
-import { finalize, first, from, switchMap } from "rxjs"
+import { finalize, from, switchMap } from "rxjs"
 import { useGoogleScripts } from "./scripts"
 import { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
 import { configuration } from "../../../config/configuration"
 
 export const useDrivePicker = ({
   requestPopup,
-  scope = ["https://www.googleapis.com/auth/drive.readonly"],
+  scope = ["https://www.googleapis.com/auth/drive.file"],
 }: {
   requestPopup: () => Promise<boolean>
   scope?: string[]
@@ -17,12 +17,13 @@ export const useDrivePicker = ({
   const pick = ({
     select,
     fileIds,
+    multiSelect = true,
   }: {
-    select: "file" | "folder"
+    select?: "file" | "folder"
     fileIds?: string[]
+    multiSelect?: boolean
   }) =>
     getGoogleScripts().pipe(
-      first(),
       switchMap(([gsi]) => {
         return requestToken({
           scope,
@@ -35,15 +36,18 @@ export const useDrivePicker = ({
                 const docView = new google.picker.DocsView()
                   .setIncludeFolders(true)
                   .setMimeTypes(READER_ACCEPTED_MIME_TYPES.join(","))
-                  .setSelectFolderEnabled(select === "folder")
+                  .setMode(gsi.picker.DocsViewMode.LIST)
+
+                if (select === "folder" || !select) {
+                  docView.setSelectFolderEnabled(true)
+                }
 
                 if (fileIds?.length) {
                   docView.setFileIds(fileIds.join(","))
                 }
 
-                picker = new gsi.picker.PickerBuilder()
+                const pickerBuilder = new gsi.picker.PickerBuilder()
                   .addView(docView)
-                  .enableFeature(gsi.picker.Feature.MULTISELECT_ENABLED)
                   .setOAuthToken(accessToken.access_token)
                   .setDeveloperKey(configuration.GOOGLE_API_KEY ?? "")
                   .setAppId(configuration.GOOGLE_APP_ID ?? "")
@@ -56,7 +60,14 @@ export const useDrivePicker = ({
                       resolve(data)
                     }
                   })
-                  .build()
+
+                if (multiSelect) {
+                  pickerBuilder.enableFeature(
+                    gsi.picker.Feature.MULTISELECT_ENABLED,
+                  )
+                }
+
+                picker = pickerBuilder.build()
 
                 picker.setVisible(true)
               }),

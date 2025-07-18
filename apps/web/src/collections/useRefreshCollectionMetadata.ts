@@ -1,4 +1,12 @@
-import { catchError, from, map, of, switchMap } from "rxjs"
+import {
+  catchError,
+  defaultIfEmpty,
+  EMPTY,
+  from,
+  map,
+  of,
+  switchMap,
+} from "rxjs"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useUpdateCollection } from "./useUpdateCollection"
@@ -6,7 +14,11 @@ import { httpClientApi } from "../http/httpClientApi.web"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getCollectionById } from "./dbHelpers"
-import { isPluginError, OfflineError } from "../errors/errors.shared"
+import {
+  CancelError,
+  isPluginError,
+  OfflineError,
+} from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
 import { useNotifications } from "../notifications/useNofitications"
 
@@ -32,6 +44,7 @@ export const useRefreshCollectionMetadata = () => {
                 getRefreshMetadataPluginData({
                   linkType: collection.linkType ?? "file",
                   linkData: collection.linkData ?? {},
+                  linkResourceId: collection.linkResourceId,
                 }),
               )
 
@@ -73,15 +86,17 @@ export const useRefreshCollectionMetadata = () => {
         }),
         catchError((e) => {
           if (
+            e instanceof CancelError ||
             (isPluginError(e) && e.code === "cancelled") ||
             e instanceof OfflineError
           )
-            return of(null)
+            return EMPTY
 
           notifyError(e)
 
           throw e
         }),
+        defaultIfEmpty(null),
       ),
   })
 }

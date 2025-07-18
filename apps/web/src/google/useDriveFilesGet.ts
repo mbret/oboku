@@ -10,7 +10,9 @@ export const useDriveFilesGet = () => {
   return useCallback(
     (params: Params) =>
       getGoogleScripts().pipe(
-        switchMap(([, gapi]) => from(gapi.client.drive.files.get(params))),
+        switchMap(([, gapi]) => {
+          return from(gapi.client.drive.files.get(params))
+        }),
       ),
     [getGoogleScripts],
   )

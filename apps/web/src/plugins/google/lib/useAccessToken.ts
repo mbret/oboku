@@ -1,4 +1,4 @@
-import { catchError, first, from, mergeMap, of, tap } from "rxjs"
+import { catchError, from, mergeMap, of, tap } from "rxjs"
 import {
   accessTokenSignal,
   consentShownSignal,
@@ -28,7 +28,6 @@ export const useAccessToken = ({
 
   const requestToken = ({ scope }: { scope: string[] }) =>
     getGoogleScripts().pipe(
-      first(),
       mergeMap(([gsi]) => {
         const firstScope = scope[0]
         const accessToken = accessTokenSignal.getValue()

@@ -1,65 +1,28 @@
 import { extractIdFromResourceId } from "./lib/resources"
 import { isDriveResponseError } from "./lib/types"
 import type { ObokuPlugin } from "../types"
-import {
-  catchError,
-  combineLatestWith,
-  from,
-  map,
-  mergeMap,
-  of,
-  switchMap,
-  tap,
-} from "rxjs"
+import { catchError, from, map, mergeMap, switchMap } from "rxjs"
 import { useGoogleScripts } from "./lib/scripts"
 import { httpClientWeb } from "../../http/httpClient.web"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
-import { useDrivePicker } from "./lib/useDrivePicker"
-import { CancelError } from "../../errors/errors.shared"
 import { useDriveFilesGet } from "../../google/useDriveFilesGet"
+import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   requestPopup,
 }) => {
   const { getGoogleScripts } = useGoogleScripts()
-  const getDriveFile = useDriveFilesGet()
-  const { pick } = useDrivePicker({
-    scope: ["https://www.googleapis.com/auth/drive.file"],
+  const requestFilesAccess = useRequestFilesAccess({
     requestPopup,
   })
+  const getDriveFile = useDriveFilesGet()
 
   return ({ link, onDownloadProgress }) => {
     const fileId = extractIdFromResourceId(link.resourceId)
 
-    const canDownload$ = getDriveFile({
-      fileId,
-      fields: "capabilities",
-    }).pipe(
-      map((response) => response.result.capabilities?.canDownload),
-      catchError(() => of(false)),
-    )
-
-    return canDownload$.pipe(
-      switchMap((canDownload) => {
-        const grantPermission$ = pick({
-          fileIds: [fileId],
-          select: "file",
-        }).pipe(
-          tap((pickerResult) => {
-            if (pickerResult.action === "CANCEL") {
-              throw new CancelError()
-            }
-
-            if (pickerResult.action === "ERROR") {
-              throw new ObokuSharedError(ObokuErrorCode.UNKNOWN)
-            }
-          }),
-        )
-
-        return canDownload ? of(null) : grantPermission$
-      }),
-      combineLatestWith(getGoogleScripts()),
-      switchMap(([, [, gapi]]) =>
+    return requestFilesAccess([fileId]).pipe(
+      switchMap(() => getGoogleScripts()),
+      switchMap(([, gapi]) =>
         getDriveFile({
           fileId,
           fields: "name,size",

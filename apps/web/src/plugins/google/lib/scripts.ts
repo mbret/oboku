@@ -1,4 +1,4 @@
-import { catchError, combineLatest } from "rxjs"
+import { catchError, combineLatest, first } from "rxjs"
 import { gsiOrThrow$ } from "../../../google/gsi"
 import { gapiOrThrow$, useLoadGapi } from "./gapi"
 import { createDialog } from "../../../common/dialogs/createDialog"
@@ -22,6 +22,7 @@ export const useGoogleScripts = () => {
 
           throw error
         }),
+        first(),
       ),
     [loadGapi],
   )

@@ -1,4 +1,4 @@
-import type { DataSourceDocType } from "@oboku/shared"
+import type { DataSourceDocType, LinkDocType } from "@oboku/shared"
 import type { Database } from "../rxdb"
 
 export const getLinksForDataSource = (
@@ -9,7 +9,7 @@ export const getLinksForDataSource = (
     .find({
       selector: {
         dataSourceId: dataSource._id,
-      },
+      } satisfies Partial<LinkDocType>,
     })
     .exec()
 }
