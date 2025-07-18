@@ -22,7 +22,7 @@ export const StatusChip = memo(
             <Typography variant="caption" lineHeight="inherit" color="inherit">
               {capitalize(status ?? "unknown")}
             </Typography>
-            {rating !== undefined && (
+            {typeof rating === "number" && (
               <Stack direction="row" alignItems="center">
                 <StarRounded fontSize="small" color="warning" />
                 <Typography

@@ -44,7 +44,7 @@ export type CollectionMetadata = {
   firstIssue?: {}
   startYear?: number
   publisherName?: string
-  rating?: number
+  rating?: number | null
   cover?: {
     uri: string
     createdAt?: string
