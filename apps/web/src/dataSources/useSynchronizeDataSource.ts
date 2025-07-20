@@ -42,6 +42,7 @@ export const useSynchronizeDataSource = () => {
               id: _id,
               patch: {
                 syncStatus: "fetching",
+                lastSyncErrorCode: null,
               },
             }),
           ).pipe(

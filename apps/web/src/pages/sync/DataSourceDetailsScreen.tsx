@@ -1,4 +1,4 @@
-import { Box, Button, Container, Stack } from "@mui/material"
+import { Alert, Box, Button, Container, Stack, Typography } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { useParams } from "react-router"
@@ -12,6 +12,7 @@ import { useMutation } from "@tanstack/react-query"
 import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 import type { DataSourceFormData } from "../../plugins/types"
 import type { BaseDataSourceDocType } from "@oboku/shared"
+import { useSynchronizeDataSource } from "../../dataSources/useSynchronizeDataSource"
 
 export const DataSourceDetailsScreen = memo(() => {
   const { id } = useParams<{ id: string }>()
@@ -24,6 +25,7 @@ export const DataSourceDetailsScreen = memo(() => {
   const label = useDataSourceLabel(dataSource)
   const DetailsComponent = obokuPlugin?.DataSourceDetails ?? (() => null)
   const { notify } = useNotifications()
+  const { mutate: syncDataSource } = useSynchronizeDataSource()
   const { control, handleSubmit } = useForm<DataSourceFormData>({
     mode: "onChange",
     defaultValues: {
@@ -71,6 +73,15 @@ export const DataSourceDetailsScreen = memo(() => {
           flexDirection="column"
           gap={2}
         >
+          <Alert severity={dataSource?.lastSyncErrorCode ? "error" : "info"}>
+            {/* <Typography variant="body2"> */}
+            {dataSource?.syncStatus === "fetching"
+              ? "Synchronizing"
+              : dataSource?.lastSyncErrorCode
+                ? `Last sync did not succeed`
+                : `Last synced on ${new Date(dataSource?.lastSyncedAt ?? 0).toLocaleString()}`}
+            {/* </Typography> */}
+          </Alert>
           <ControlledTextField
             name="name"
             label="Name"
@@ -81,13 +92,20 @@ export const DataSourceDetailsScreen = memo(() => {
             fullWidth
           />
           <DetailsComponent control={control} />
-          <Stack>
+          <Stack gap={1}>
             <Button
               variant="contained"
               type="submit"
               disabled={!isDataSourceLoaded}
             >
               Save
+            </Button>
+            <Button
+              variant="outlined"
+              type="button"
+              onClick={() => id && syncDataSource(id)}
+            >
+              Synchronize
             </Button>
           </Stack>
         </Stack>
