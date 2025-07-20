@@ -17,7 +17,7 @@ export const useRemoveDataSource = () => {
         withDialog({
           title: "Remove books?",
           content:
-            "Do you want to delete the books together with the data source?",
+            "Do you want to delete all the contents attached to this data source (books, collections, etc.)?",
           cancellable: true,
           actions: [
             {

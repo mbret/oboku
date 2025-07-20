@@ -1,4 +1,12 @@
-import { Alert, Box, Button, Container, Stack, Typography } from "@mui/material"
+import {
+  Alert,
+  Box,
+  Button,
+  Container,
+  Divider,
+  Stack,
+  Typography,
+} from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { useParams } from "react-router"
@@ -13,6 +21,7 @@ import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 import type { DataSourceFormData } from "../../plugins/types"
 import type { BaseDataSourceDocType } from "@oboku/shared"
 import { useSynchronizeDataSource } from "../../dataSources/useSynchronizeDataSource"
+import { useRemoveDataSource } from "../../dataSources/useRemoveDataSource"
 
 export const DataSourceDetailsScreen = memo(() => {
   const { id } = useParams<{ id: string }>()
@@ -26,6 +35,7 @@ export const DataSourceDetailsScreen = memo(() => {
   const DetailsComponent = obokuPlugin?.DataSourceDetails ?? (() => null)
   const { notify } = useNotifications()
   const { mutate: syncDataSource } = useSynchronizeDataSource()
+  const { mutate: removeDataSource } = useRemoveDataSource()
   const { control, handleSubmit } = useForm<DataSourceFormData>({
     mode: "onChange",
     defaultValues: {
@@ -106,6 +116,15 @@ export const DataSourceDetailsScreen = memo(() => {
               onClick={() => id && syncDataSource(id)}
             >
               Synchronize
+            </Button>
+            <Divider />
+            <Button
+              variant="outlined"
+              type="button"
+              color="error"
+              onClick={() => id && removeDataSource({ id })}
+            >
+              Delete
             </Button>
           </Stack>
         </Stack>
