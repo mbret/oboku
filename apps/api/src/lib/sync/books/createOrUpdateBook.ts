@@ -37,7 +37,7 @@ export const createOrUpdateBook = async ({
   coversService,
 }: {
   ctx: Context
-  parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
+  parents: SynchronizeAbleItem[]
   item: SynchronizeAbleItem
   helpers: Helpers
   coversService: CoversService

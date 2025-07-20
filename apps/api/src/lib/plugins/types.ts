@@ -41,7 +41,6 @@ export type SynchronizeAbleItem = {
 }
 
 export type SynchronizeAbleDataSource = {
-  name: string
   items: SynchronizeAbleItem[]
 }
 

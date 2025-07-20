@@ -41,32 +41,33 @@ export const synchronizeFromDataSource = async (
     `dataSourcesSync run for user ${ctx.userName} with dataSource ${ctx.dataSourceId}`,
   )
 
-  await syncTags({
-    ctx,
-    helpers,
-    item: synchronizeAble,
-    hasCollectionAsParent: false,
-    lvl: 0,
-    parents: [],
-  })
+  for (const item of synchronizeAble.items) {
+    await syncTags({
+      ctx,
+      helpers,
+      item,
+      hasCollectionAsParent: false,
+      lvl: 0,
+      parents: [],
+    })
+  }
 
-  await syncFolder({
-    ctx,
-    helpers,
-    item: synchronizeAble,
-    hasCollectionAsParent: false,
-    lvl: 0,
-    parents: [],
-    config,
-    eventEmitter,
-    coversService,
-  })
+  for (const item of synchronizeAble.items) {
+    await syncFolder({
+      ctx,
+      helpers,
+      item,
+      hasCollectionAsParent: false,
+      lvl: 0,
+      parents: [],
+      config,
+      eventEmitter,
+      coversService,
+    })
+  }
 }
 
-const getItemTags = (
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem,
-  helpers: Helpers,
-): string[] => {
+const getItemTags = (item: SynchronizeAbleItem, helpers: Helpers): string[] => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
 
   const subTagsAsMap = (item.items || []).map((subItem) => {
@@ -92,8 +93,8 @@ const syncTags = async ({
   helpers: Helpers
   lvl: number
   hasCollectionAsParent: boolean
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem
-  parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
+  item: SynchronizeAbleItem
+  parents: SynchronizeAbleItem[]
 }) => {
   console.log(`syncTags for item ${item.name} and lvl ${lvl}`)
 
@@ -129,8 +130,8 @@ const syncFolder = async ({
   helpers: Helpers
   lvl: number
   hasCollectionAsParent: boolean
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem
-  parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
+  item: SynchronizeAbleItem
+  parents: SynchronizeAbleItem[]
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
   coversService: CoversService
