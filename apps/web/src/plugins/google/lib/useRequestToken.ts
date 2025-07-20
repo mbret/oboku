@@ -5,7 +5,7 @@ import {
   hasGrantedPermissions,
   hasTokenAccessAtLeast10mnLeft,
   requestGoogleAccessToken,
-} from "./auth"
+} from "../../../google/auth"
 import { Logger } from "../../../debug/logger.shared"
 import { useGoogleScripts } from "./scripts"
 import { ObokuPluginError } from "../../../errors/errors.shared"
@@ -19,7 +19,7 @@ const isPopupClosedError = (error: unknown) => {
   )
 }
 
-export const useAccessToken = ({
+export const useRequestToken = ({
   requestPopup,
 }: {
   requestPopup: () => Promise<boolean>

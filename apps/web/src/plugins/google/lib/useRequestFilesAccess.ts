@@ -4,12 +4,15 @@ import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { useDrivePicker } from "./useDrivePicker"
 import { CancelError } from "../../../errors/errors.shared"
 import { useHasFilesAccess } from "./useHasFilesAccess"
+import { useQueryClient } from "@tanstack/react-query"
+import { getUseDriveFileQueryKey } from "../../../google/useDriveFile"
 
 export const useRequestFilesAccess = ({
   requestPopup,
 }: {
   requestPopup: () => Promise<boolean>
 }) => {
+  const queryClient = useQueryClient()
   const hasFilesAccess = useHasFilesAccess()
   const { pick } = useDrivePicker({
     scope: ["https://www.googleapis.com/auth/drive.file"],
@@ -17,8 +20,8 @@ export const useRequestFilesAccess = ({
   })
 
   return useCallback(
-    (fileIds: string[]) =>
-      hasFilesAccess(fileIds).pipe(
+    (_gapi: typeof gapi, fileIds: readonly string[]) =>
+      hasFilesAccess(_gapi, fileIds).pipe(
         switchMap((hasFilesAccess) => {
           if (hasFilesAccess) {
             return of(null)
@@ -37,10 +40,19 @@ export const useRequestFilesAccess = ({
               if (pickerResult.action === google.picker.Action.ERROR) {
                 throw new ObokuSharedError(ObokuErrorCode.UNKNOWN)
               }
+
+              pickerResult.docs?.forEach((doc) => {
+                queryClient.invalidateQueries({
+                  queryKey: getUseDriveFileQueryKey({
+                    id: doc.id,
+                  }),
+                  exact: false,
+                })
+              })
             }),
           )
         }),
       ),
-    [pick, hasFilesAccess],
+    [pick, hasFilesAccess, queryClient],
   )
 }

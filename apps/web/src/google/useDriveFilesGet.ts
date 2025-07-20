@@ -1,19 +1,42 @@
-import { useGoogleScripts } from "../plugins/google/lib/scripts"
-import { from, switchMap } from "rxjs"
+import { from } from "rxjs"
 import { useCallback } from "react"
 
 type Params = NonNullable<Parameters<typeof gapi.client.drive.files.get>[0]>
 
-export const useDriveFilesGet = () => {
-  const { getGoogleScripts } = useGoogleScripts()
+export type DriveFileGetResponse = Awaited<
+  ReturnType<typeof gapi.client.drive.files.get>
+>
 
+type DriveResponseError = {
+  body?: string
+  // biome-ignore lint/complexity/noBannedTypes: TODO
+  headers?: {}
+  result?: {
+    error?: {
+      code?: number
+      message?: string
+      errors?: []
+    }
+  }
+  status?: number
+  statusText?: string | null
+}
+
+export const isDriveResponseError = (
+  response: unknown,
+): response is DriveResponseError => {
+  return (
+    !!response &&
+    typeof response === "object" &&
+    "status" in response &&
+    typeof response.status === "number"
+  )
+}
+
+export const useDriveFilesGet = () => {
   return useCallback(
-    (params: Params) =>
-      getGoogleScripts().pipe(
-        switchMap(([, gapi]) => {
-          return from(gapi.client.drive.files.get(params))
-        }),
-      ),
-    [getGoogleScripts],
+    (_gapi: typeof gapi, params: Params) =>
+      from(_gapi.client.drive.files.get(params)),
+    [],
   )
 }

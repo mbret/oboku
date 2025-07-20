@@ -1,5 +1,13 @@
-import { signal, useSwitchMutation$ } from "reactjrx"
-import { catchError, combineLatest, defer, from, map, mergeMap } from "rxjs"
+import { signal, useSignalValue, useSwitchMutation$ } from "reactjrx"
+import {
+  catchError,
+  combineLatest,
+  defer,
+  from,
+  map,
+  mergeMap,
+  tap,
+} from "rxjs"
 import { GapiNotAvailableError } from "./errors"
 import { loadScript, retryOnFailure } from "../../../common/scripts"
 
@@ -22,8 +30,10 @@ export const gapiSignal = signal<
   },
 })
 
-export const gapiOrThrow$ = gapiSignal.subject.pipe(
-  map(({ gapi }) => {
+export const gapi$ = gapiSignal.pipe(map(({ gapi }) => gapi))
+
+export const gapiOrThrow$ = gapi$.pipe(
+  map((gapi) => {
     if (!gapi) {
       throw new GapiNotAvailableError()
     }
@@ -31,6 +41,10 @@ export const gapiOrThrow$ = gapiSignal.subject.pipe(
     return gapi
   }),
 )
+
+export const useGapi = () => {
+  return useSignalValue(gapiSignal).gapi
+}
 
 const loadGapiClient = () =>
   defer(() =>

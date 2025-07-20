@@ -1,4 +1,4 @@
-import { useAccessToken } from "./useAccessToken"
+import { useRequestToken } from "./useRequestToken"
 import { finalize, from, switchMap } from "rxjs"
 import { useGoogleScripts } from "./scripts"
 import { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
@@ -11,7 +11,7 @@ export const useDrivePicker = ({
   requestPopup: () => Promise<boolean>
   scope?: string[]
 }) => {
-  const { requestToken } = useAccessToken({ requestPopup })
+  const { requestToken } = useRequestToken({ requestPopup })
   const { getGoogleScripts } = useGoogleScripts()
 
   const pick = ({
@@ -20,7 +20,7 @@ export const useDrivePicker = ({
     multiSelect = true,
   }: {
     select?: "file" | "folder"
-    fileIds?: string[]
+    fileIds?: readonly string[]
     multiSelect?: boolean
   }) =>
     getGoogleScripts().pipe(

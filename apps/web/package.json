@@ -11,6 +11,7 @@
     "@mui/lab": "^7.0.0-beta.10",
     "@mui/material": "^7.0.1",
     "@mui/utils": "^7.0.0",
+    "@mui/x-tree-view": "^8.8.0",
     "@oboku/shared": "0.8.0",
     "@prose-reader/core": "^1.204.0",
     "@prose-reader/enhancer-gallery": "^1.204.0",

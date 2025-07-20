@@ -40,7 +40,7 @@ export type LinkDocType = CommonBase & {
   createdAt: string
 }
 
-type BaseDataSourceDocType = CommonBase & {
+export type BaseDataSourceDocType = CommonBase & {
   lastSyncedAt: number | null
   syncStatus: null | "fetching"
   lastSyncErrorCode?: string | null
@@ -49,6 +49,8 @@ type BaseDataSourceDocType = CommonBase & {
   createdAt: string
   isProtected?: boolean
   credentials?: Record<string, unknown> | null
+  name?: string | null
+  data_v2?: Record<string, unknown>
 }
 
 export type FileDataSourceDocType = BaseDataSourceDocType & {
@@ -61,16 +63,25 @@ export type URIDataSourceDocType = BaseDataSourceDocType & {
   data_v2?: undefined
 }
 
-export type GoogleDriveDataSourceDocType = BaseDataSourceDocType & {
+export type GoogleDriveDataSourceDocType = Omit<
+  BaseDataSourceDocType,
+  "data_v2"
+> & {
   type: "DRIVE"
   data_v2?: {
     applyTags?: ReadonlyArray<string>
-    folderId: string
+    // @deprecated
+    folderId?: string
+    // @deprecated
     folderName?: string
+    items?: ReadonlyArray<string>
   }
 }
 
-export type DropboxDataSourceDocType = BaseDataSourceDocType & {
+export type DropboxDataSourceDocType = Omit<
+  BaseDataSourceDocType,
+  "data_v2"
+> & {
   type: "dropbox"
   data_v2?: {
     folderId: string
@@ -79,7 +90,7 @@ export type DropboxDataSourceDocType = BaseDataSourceDocType & {
   }
 }
 
-export type WebDAVDataSourceDocType = BaseDataSourceDocType & {
+export type WebDAVDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
   type: "webdav"
   data_v2?: {
     connectorId?: string

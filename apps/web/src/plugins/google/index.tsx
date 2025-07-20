@@ -2,13 +2,11 @@
 /// <reference types="@types/gapi.client.drive-v3" />
 /// <reference types="@types/google.accounts" />
 /// <reference types="@types/google.picker" />
-import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
+import { PLUGIN_NAME, UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import GoogleDriveAsset from "../../assets/google-drive.svg?react"
 import { SvgIcon } from "@mui/material"
 import { UploadBook } from "./UploadBook"
-
 import { useDownloadBook } from "./useDownloadBook"
-import { useRemoveBook } from "./useRemoveBook"
 import { GoogleDriveDataSource as AddDataSource } from "./GoogleDriveDataSource"
 import { SelectItem as SelectItemComponent } from "./SelectItem"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
@@ -17,6 +15,7 @@ import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../types"
 import { InfoScreen } from "./InfoScreen"
+import { DataSourceDetails } from "./DataSourceDetails"
 
 const GoogleDriveIcon = () => (
   <SvgIcon>
@@ -27,13 +26,13 @@ const GoogleDriveIcon = () => (
 export const plugin: ObokuPlugin<"DRIVE"> = {
   uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   type: `DRIVE`,
-  name: "Google Drive",
+  name: PLUGIN_NAME,
   Icon: GoogleDriveIcon,
   UploadBookComponent: UploadBook,
   canSynchronize: true,
   useDownloadBook,
-  useRemoveBook,
   AddDataSource,
+  DataSourceDetails,
   SelectItemComponent,
   useSyncSourceInfo,
   useRefreshMetadata,

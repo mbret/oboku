@@ -70,7 +70,7 @@ export const createDatabase = (
 ) => {
   const storage = getRxStorageDexie()
   const databasePromise = createRxDatabase<MyDatabaseCollections>({
-    name: "oboku-46",
+    name: "oboku-47",
     // NOTICE: Schema validation can be CPU expensive and increases your build size.
     // You should always use a schema validation plugin in development mode.
     // For most use cases, you should not use a validation plugin in production.

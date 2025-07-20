@@ -23,6 +23,7 @@ import { useDataSources } from "../../dataSources/useDataSources"
 import { useNavigate } from "react-router"
 import { ROUTES } from "../../navigation/routes"
 import type { DeepReadonly } from "rxdb"
+import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 
 export const DataSourcesListScreen = () => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
@@ -150,12 +151,7 @@ const SyncSourceLabel = ({
 }: {
   syncSource: DeepReadonly<DataSourceDocType>
 }) => {
-  const obokuPlugin = dataSourcePlugins.find(
-    (dataSource) => dataSource.type === syncSource.type,
-  )
+  const label = useDataSourceLabel(syncSource)
 
-  const { name = obokuPlugin?.name } =
-    obokuPlugin?.useSyncSourceInfo?.(syncSource) || {}
-
-  return <Typography noWrap>{name}</Typography>
+  return <Typography noWrap>{label}</Typography>
 }

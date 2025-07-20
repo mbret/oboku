@@ -1,14 +1,16 @@
-import { useAccessToken } from "./lib/useAccessToken"
+import { useRequestToken } from "./lib/useRequestToken"
 import type { ObokuPlugin } from "../types"
-import { firstValueFrom, map, switchMap } from "rxjs"
+import { combineLatest, firstValueFrom, map, switchMap } from "rxjs"
 import { useMutation } from "@tanstack/react-query"
 import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
 import { extractIdFromResourceId } from "./lib/resources"
+import { useGoogleScripts } from "./lib/scripts"
 
 export const useRefreshMetadata: ObokuPlugin[`useRefreshMetadata`] = ({
   requestPopup,
 }) => {
-  const { requestToken } = useAccessToken({ requestPopup })
+  const { getGoogleScripts } = useGoogleScripts()
+  const { requestToken } = useRequestToken({ requestPopup })
   const requestFilesAccess = useRequestFilesAccess({
     requestPopup,
   })
@@ -26,9 +28,9 @@ export const useRefreshMetadata: ObokuPlugin[`useRefreshMetadata`] = ({
       })
 
       const token = await firstValueFrom(
-        token$.pipe(
-          switchMap((token) =>
-            requestFilesAccess([fileId]).pipe(map(() => token)),
+        combineLatest([token$, getGoogleScripts()]).pipe(
+          switchMap(([token, [, gapi]]) =>
+            requestFilesAccess(gapi, [fileId]).pipe(map(() => token)),
           ),
         ),
       )
