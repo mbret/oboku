@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { memo, useState } from "react"
 import {
   Link,
   Button,
@@ -11,21 +11,27 @@ import {
   useTheme,
   Box,
   ListItemButton,
+  IconButton,
+  Stack,
 } from "@mui/material"
 import { Alert } from "@mui/material"
 import { DataSourcesAddDrawer } from "../../dataSources/DataSourcesAddDrawer"
-import { DataSourcesActionsDrawer } from "../../dataSources/DataSourcesActionsDrawer"
-import { Error as ErrorIcon, LockRounded } from "@mui/icons-material"
+import { DataSourceActionsDrawer } from "../../dataSources/DataSourceActionsDrawer"
+import {
+  Error as ErrorIcon,
+  LockRounded,
+  MoreVertOutlined,
+} from "@mui/icons-material"
 import type { DataSourceDocType } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "../../plugins/configure"
 import { ObokuErrorCode } from "@oboku/shared"
 import { useDataSources } from "../../dataSources/useDataSources"
-import { useNavigate } from "react-router"
+import { useNavigate, Link as RouterLink } from "react-router"
 import { ROUTES } from "../../navigation/routes"
 import type { DeepReadonly } from "rxdb"
 import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 
-export const DataSourcesListScreen = () => {
+export const DataSourcesListScreen = memo(() => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<
     string | undefined
@@ -72,7 +78,8 @@ export const DataSourcesListScreen = () => {
             return (
               <ListItemButton
                 key={syncSource._id}
-                onClick={() => setIsActionsDrawerOpenWith(syncSource._id)}
+                component={RouterLink}
+                to={ROUTES.DATASOURCE_DETAILS.replace(":id", syncSource._id)}
               >
                 {dataSource && (
                   <ListItemIcon>
@@ -115,7 +122,20 @@ export const DataSourcesListScreen = () => {
                     )
                   }
                 />
-                {syncSource?.isProtected && <LockRounded color="primary" />}
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  {syncSource?.isProtected && <LockRounded color="disabled" />}
+                  <IconButton
+                    edge="end"
+                    disableTouchRipple
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setIsActionsDrawerOpenWith(syncSource._id)
+                    }}
+                  >
+                    <MoreVertOutlined />
+                  </IconButton>
+                </Stack>
               </ListItemButton>
             )
           })}
@@ -136,15 +156,13 @@ export const DataSourcesListScreen = () => {
           }
         }}
       />
-      {isActionsDrawerOpenWith && (
-        <DataSourcesActionsDrawer
-          openWith={isActionsDrawerOpenWith}
-          onClose={() => setIsActionsDrawerOpenWith(undefined)}
-        />
-      )}
+      <DataSourceActionsDrawer
+        openWith={isActionsDrawerOpenWith}
+        onClose={() => setIsActionsDrawerOpenWith(undefined)}
+      />
     </>
   )
-}
+})
 
 const SyncSourceLabel = ({
   syncSource,
