@@ -9,6 +9,7 @@ export const replicateCouchDBCollection = ({
   host,
   autoStart = false,
   cancelSignal,
+  suffix,
   ...params
 }: {
   dbName: string
@@ -16,6 +17,7 @@ export const replicateCouchDBCollection = ({
   host?: string
   autoStart?: boolean
   cancelSignal: AbortSignal
+  suffix?: string
 } & Omit<
   Parameters<typeof replicateCouchDB>[0],
   "pull" | "push" | "url" | "replicationIdentifier" | "collection"
@@ -23,7 +25,7 @@ export const replicateCouchDBCollection = ({
   const uri = host ?? configuration.API_COUCH_URI
 
   return replicateCouchDB({
-    replicationIdentifier: `${uri}/${dbName}-${collection.name}-replication`,
+    replicationIdentifier: `${uri}/${dbName}-${collection.name}${suffix ? `-${suffix}` : ""}-replication`,
     collection: collection,
     url: `${uri}/${dbName}/`,
     live: false,
