@@ -13,11 +13,9 @@ import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 import type { DataSourceFormData } from "../../plugins/types"
 import type {
   BaseDataSourceDocType,
-  DropboxDataSourceData,
   DropboxDataSourceDocType,
   GoogleDriveDataSourceData,
   WebDAVDataSourceDocType,
-  WebdavSyncData,
 } from "@oboku/shared"
 import { useSynchronizeDataSource } from "../../dataSources/useSynchronizeDataSource"
 import { useRemoveDataSource } from "../../dataSources/useRemoveDataSource"
