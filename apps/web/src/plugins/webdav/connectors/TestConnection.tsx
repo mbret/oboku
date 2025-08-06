@@ -1,13 +1,16 @@
 import { memo } from "react"
-import { Alert, AlertTitle } from "@mui/material"
+import { Alert, AlertTitle, Button } from "@mui/material"
 import { useDecryptedSecret } from "../../../secrets/useDecryptedSecret"
 import { useConnect } from "./useConnect"
-import { useUnlockedMasterKey } from "../../../secrets/useUnlockMasterKey"
+import {
+  useUnlockedMasterKey,
+  useUnlockMasterKey,
+} from "../../../secrets/useUnlockMasterKey"
 import { useDebouncedValue } from "../../../common/useDebouncedValue"
 
 export const TestConnection = memo(
   ({
-    directory = "/",
+    directory,
     username,
     passwordAsSecretId,
     url,
@@ -17,6 +20,7 @@ export const TestConnection = memo(
     passwordAsSecretId?: string
     url?: string
   }) => {
+    const { masterKey, unlockMasterKey } = useUnlockMasterKey()
     const {
       url: debouncedUrl,
       username: debouncedUsername,
@@ -37,7 +41,7 @@ export const TestConnection = memo(
         url: debouncedUrl ?? "",
         username: debouncedUsername ?? "",
         password: secret ?? "",
-        directory: debouncedDirectory ?? "",
+        directory: `/${debouncedDirectory ?? ""}`,
       },
       enabled: !!debouncedUrl && !!debouncedUsername && !!secret,
     })
@@ -52,6 +56,13 @@ export const TestConnection = memo(
               : "success"
         }
         sx={{ alignSelf: "stretch" }}
+        action={
+          masterKey ? undefined : (
+            <Button onClick={unlockMasterKey} sx={{ alignSelf: "center" }}>
+              Unlock
+            </Button>
+          )
+        }
       >
         <AlertTitle>Test connection</AlertTitle>
         {isFetching

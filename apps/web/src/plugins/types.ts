@@ -11,7 +11,7 @@ import type { Button } from "@mui/material"
 import type { Observable } from "rxjs"
 import type { DeepReadonly, DeepReadonlyArray } from "rxdb"
 import type { UseMutationResult } from "@tanstack/react-query"
-import type { Control } from "react-hook-form"
+import type { Control, UseFormWatch } from "react-hook-form"
 
 type PostLink = Pick<LinkDocType, "resourceId" | "type">
 // biome-ignore lint/complexity/noBannedTypes: TODO
@@ -133,9 +133,11 @@ export type ObokuPlugin<
   >
   AddDataSource?: FunctionComponent<{
     control: Control<DataSourceFormData, any, DataSourceFormData>
+    watch: UseFormWatch<DataSourceFormData>
   }>
   DataSourceDetails?: FunctionComponent<{
     control: Control<DataSourceFormData, any, DataSourceFormData>
+    watch: UseFormWatch<DataSourceFormData>
   }>
   SelectItemComponent?: FunctionComponent<{
     open: boolean

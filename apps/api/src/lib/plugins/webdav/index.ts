@@ -84,11 +84,13 @@ export const dataSource: DataSourcePlugin = {
     }
   },
   sync: async ({ data, dataSourceId, db }) => {
-    const { connectorId, directory: rootDirectory = "/" } =
+    const { connectorId, directory } =
       (await getDataSourceData<"webdav">({
         db,
         dataSourceId,
       })) ?? {}
+
+    const rootDirectory = `/${directory ?? ""}`
 
     const syncData = getWebdavSyncData(data ?? {})
 

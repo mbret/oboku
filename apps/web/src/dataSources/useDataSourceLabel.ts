@@ -3,6 +3,10 @@ import type { DataSourceDocType } from "@oboku/shared"
 import { plugins } from "../plugins/configure"
 import { useDataSource } from "./useDataSource"
 
+/**
+ * By priority
+ * `name` -> `plugin.infer` -> `plugin.name`
+ */
 export const useDataSourceLabel = (
   dataSource?: DeepReadonly<DataSourceDocType>,
 ) => {
@@ -18,7 +22,7 @@ export const useDataSourceLabel = (
     )
 
     if (plugin.type === dataSource?.type) {
-      return data?.name ?? acc
+      return acc || data?.name
     }
 
     return acc

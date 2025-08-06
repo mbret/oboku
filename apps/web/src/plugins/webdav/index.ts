@@ -7,6 +7,7 @@ import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { InfoScreen } from "./InfoScreen"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useDownloadBook } from "./useDownloadBook"
+import { DataSourceDetails } from "./DataSourceDetails"
 
 const plugin: ObokuPlugin<"webdav"> = {
   type: TYPE,
@@ -16,6 +17,7 @@ const plugin: ObokuPlugin<"webdav"> = {
   Icon: StorageRounded,
   description: "Manage contents from WebDAV",
   AddDataSource,
+  DataSourceDetails,
   useSynchronize,
   useSyncSourceInfo,
   useRefreshMetadata,

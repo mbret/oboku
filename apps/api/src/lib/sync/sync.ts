@@ -71,8 +71,6 @@ export const sync = async ({
 
     if (!dataSource) throw new Error("Data source not found")
 
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
     const { type } = dataSource
 
     // we create the date now on purpose so that if something change on the datasource

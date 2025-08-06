@@ -36,12 +36,19 @@ export const DataSourceDetailsScreen = memo(() => {
     defaultValues: {
       name: "",
       tags: [],
-      data: {},
+      data: {
+        connectorId: "",
+        directory: "",
+      },
     },
     values: {
       tags: dataSource?.tags ?? [],
       name: dataSource?.name ?? "",
-      data: dataSource?.data_v2 ?? {},
+      data: {
+        connectorId: "",
+        directory: "",
+        ...(dataSource?.data_v2 ?? {}),
+      },
     },
   })
   const { mutate: submit } = useMutation({
@@ -115,7 +122,7 @@ export const DataSourceDetailsScreen = memo(() => {
             control={control}
             helperText="Applied to all items during synchronization"
           />
-          <DetailsComponent control={control} />
+          <DetailsComponent control={control} watch={watch.bind(control)} />
           <Stack gap={1}>
             <Button
               variant="contained"

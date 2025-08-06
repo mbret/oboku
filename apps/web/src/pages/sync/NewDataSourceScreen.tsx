@@ -1,17 +1,8 @@
-import {
-  Box,
-  Container,
-  Button,
-  C,
-  Dividerontainer,
-  Stack,
-  Divider,
-} from "@mui/material"
+import { Box, Container, Button, Stack, Divider, Alert } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import { Navigate, useNavigate, useParams } from "react-router"
+import { Navigate, useParams } from "react-router"
 import { plugins } from "../../dataSources"
-import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
 import { ROUTES } from "../../navigation/routes"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { useForm } from "react-hook-form"
@@ -22,23 +13,30 @@ import { useTags } from "../../tags/helpers"
 import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 import { useMutation } from "@tanstack/react-query"
 import { useNotifications } from "../../notifications/useNofitications"
+import { ErrorMessage } from "../../errors/ErrorMessage"
 
 export const NewDataSourceScreen = memo(() => {
   const { id } = useParams<{ id: string }>()
-  const createRequestPopup = useCreateRequestPopupDialog()
-  const navigate = useNavigate()
   const { goBack } = useSafeGoBack()
   const { data: tags } = useTags()
   const plugin = plugins.find((p) => p.type.toLowerCase() === id?.toLowerCase())
   const PluginAddDataSource = plugin?.AddDataSource ?? (() => null)
   const { mutate: createDataSource } = useCreateDataSource()
   const { notify, notifyError } = useNotifications()
-  const { control, handleSubmit, watch } = useForm<DataSourceFormData>({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<DataSourceFormData>({
     mode: "onChange",
     defaultValues: {
       name: "",
       tags: [],
-      data: {},
+      data: {
+        connectorId: "",
+        directory: "",
+      },
     },
   })
   const { mutate: submit } = useMutation({
@@ -104,7 +102,13 @@ export const NewDataSourceScreen = memo(() => {
             control={control}
             helperText="Applied to all items during synchronization"
           />
-          <PluginAddDataSource control={control} />
+          <PluginAddDataSource control={control} watch={watch.bind(control)} />
+          {!!errors.root && (
+            <Alert severity="error">
+              <ErrorMessage error={errors.root.message} />
+            </Alert>
+          )}
+          <Divider />
           <Stack gap={1}>
             <Button variant="contained" type="submit">
               Confirm
