@@ -152,7 +152,7 @@ export const Cover: FC<Props> = memo(
             onLoad={() => {
               setIsLoading(false)
             }}
-            onError={(e) => {
+            onError={() => {
               isMounted() && setHasError(true)
             }}
             {...rest}

@@ -1,5 +1,5 @@
-import * as fs from "node:fs"
-import * as unzipper from "unzipper"
+import fs from "node:fs"
+import unzipper from "unzipper"
 import type { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
 import {
   catchError,
@@ -18,8 +18,7 @@ export const waitForRandomTime = (min: number, max: number) =>
 export const detectMimeTypeFromContent = async (
   filepath: string,
 ): Promise<(typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined> => {
-  let mimeType: (typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined =
-    undefined
+  let mimeType: (typeof READER_ACCEPTED_MIME_TYPES)[number] | undefined
   try {
     await fs
       .createReadStream(filepath)
@@ -33,6 +32,7 @@ export const detectMimeTypeFromContent = async (
       })
       .promise()
   } catch (e) {
+    console.error(e)
     console.log(
       `Error when trying to detectMimeTypeFromContent with ${filepath}`,
     )
@@ -139,3 +139,16 @@ export const switchMapCombineOuter = <T, R>(
   switchMap((outer: T) =>
     project(outer).pipe(map<R, [T, R]>((inner) => [outer, inner])),
   )
+
+export const formatDuration = (milliseconds: number): string => {
+  const seconds = Math.floor(milliseconds / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+
+  const parts = []
+  if (hours > 0) parts.push(`${hours}h`)
+  if (minutes % 60 > 0) parts.push(`${minutes % 60}m`)
+  if (seconds % 60 > 0) parts.push(`${seconds % 60}s`)
+
+  return parts.length > 0 ? parts.join(" ") : "0s"
+}

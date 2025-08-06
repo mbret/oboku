@@ -2,9 +2,10 @@ import { map, switchMap } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { useQuery$ } from "reactjrx"
 
-export const useDataSource = (id: string) =>
+export const useDataSource = (id?: string) =>
   useQuery$({
-    queryKey: ["rxdb", "dataSource", id],
+    queryKey: ["rxdb", "dataSource", id ?? "-1"],
+    enabled: !!id,
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap((db) => {

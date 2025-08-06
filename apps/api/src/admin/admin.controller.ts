@@ -44,7 +44,7 @@ export class AdminController {
           expiresIn: "15m",
           privateKey: await this.secretsService.getJwtPrivateKey(),
         },
-      )
+      ),
     }
   }
 

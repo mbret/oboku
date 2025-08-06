@@ -4,13 +4,13 @@ import { UploadBook } from "./UploadBook"
 import { PLUGIN_FILE_TYPE } from "@oboku/shared"
 import { ObokuPluginError } from "../../errors/errors.shared"
 
-export const plugin: ObokuPlugin = {
+export const plugin: ObokuPlugin<"file"> = {
   uniqueResourceIdentifier: "file",
   type: PLUGIN_FILE_TYPE,
   name: "file",
   UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
-  description: "Manage books from your device (local)",
+  description: "Manage contents from your device (local)",
   useDownloadBook: () => () => {
     throw new ObokuPluginError({
       code: "unknown",

@@ -5,8 +5,7 @@ import { useSignalValue } from "reactjrx"
 import { searchListActionsToolbarSignal } from "./list/states"
 import { useCollections } from "../collections/useCollections"
 
-export const REGEXP_SPECIAL_CHAR =
-  /[\!\#\$\%\^\&\*\)\(\+\=\.\<\>\{\}\[\]\:\;\'\"\|\~\`\_\-]/g
+export const REGEXP_SPECIAL_CHAR = /[!#$%^&*)(+=.<>{}[\]:;'"|~`_-]/g
 
 export const useCollectionsForSearch = (search: string) => {
   const { notInterestedContents } = useSignalValue(
@@ -22,8 +21,13 @@ export const useCollectionsForSearch = (search: string) => {
         ?.filter((item) => {
           const name = getCollectionComputedMetadata(item).title ?? ""
 
+          const searchRegexWithoutSpecialCharacters = search.replace(
+            REGEXP_SPECIAL_CHAR,
+            `\\$&`,
+          )
+
           const searchRegex = new RegExp(
-            search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
+            searchRegexWithoutSpecialCharacters,
             "i",
           )
 

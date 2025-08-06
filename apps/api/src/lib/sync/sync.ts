@@ -11,12 +11,15 @@ import { EventEmitter2 } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "src/events"
 import { SyncReportPostgresService } from "src/features/postgres/SyncReportPostgresService"
 import { CoversService } from "src/covers/covers.service"
+import {
+  SynchronizeAbleDataSource,
+  SynchronizeAbleItem,
+} from "../plugins/types"
 
 export const sync = async ({
   dataSourceId,
   userName,
-  credentials,
-  authorization,
+  data,
   db,
   config,
   eventEmitter,
@@ -26,8 +29,7 @@ export const sync = async ({
 }: {
   dataSourceId: string
   userName: string
-  credentials?: any
-  authorization: string
+  data?: Record<string, unknown>
   db: createNano.DocumentScope<unknown>
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
@@ -53,15 +55,14 @@ export const sync = async ({
       Events.BOOKS_METADATA_REFRESH,
       new BooksMetadataRefreshEvent({
         bookId,
-        authorization,
-        obokuCredentials: credentials,
+        data,
         email,
       }),
     )
   }
 
   const nameHex = Buffer.from(userName).toString("hex")
-  const helpers = createHelpers(dataSourceId, refreshBookMetadata, db)
+  const helpers = createHelpers(refreshBookMetadata, db)
 
   try {
     const dataSource = await helpers.findOne("datasource", {
@@ -70,25 +71,17 @@ export const sync = async ({
 
     if (!dataSource) throw new Error("Data source not found")
 
-    if (dataSource.syncStatus !== "fetching") {
-      await atomicUpdate(db, "datasource", dataSource._id, (old) => ({
-        ...old,
-        syncStatus: "fetching" as const,
-      }))
-    }
-
     const { type } = dataSource
 
     // we create the date now on purpose so that if something change on the datasource
     // during the process (which can take time), user will not be misled to believe its
     // latest changes have been synced
-    const lastSyncedAt = new Date().getTime()
+    const lastSyncedAt = Date.now()
     const ctx = {
       dataSourceId,
       userName,
-      credentials,
+      data,
       dataSourceType: type,
-      authorization,
       db,
       syncReport,
       userNameHex: nameHex,
@@ -100,20 +93,31 @@ export const sync = async ({
       throw new Error("plugin does not support sync")
     }
 
-    const synchronizeAbleDataSource = await plugin?.sync(ctx, helpers)
+    const applyTags = <T extends SynchronizeAbleItem>(item: T): T => ({
+      ...item,
+      tags: dataSource.tags,
+      items: item.items?.map(applyTags),
+    })
 
-    console.log(`Execute sync process with ${plugin?.type} plugin`)
-
-    if (synchronizeAbleDataSource) {
-      await synchronizeFromDataSource(
-        synchronizeAbleDataSource,
-        ctx,
-        helpers,
-        config,
-        eventEmitter,
-        coversService,
-      )
+    const synchronizeAbleDataSource = await plugin.sync(ctx, helpers)
+    const synchronizeAbleDataSourceWithTags: SynchronizeAbleDataSource = {
+      ...synchronizeAbleDataSource,
+      items: synchronizeAbleDataSource.items.map(applyTags),
     }
+
+    console.log(
+      `Execute sync process with ${plugin?.type} plugin`,
+      synchronizeAbleDataSourceWithTags,
+    )
+
+    await synchronizeFromDataSource(
+      synchronizeAbleDataSourceWithTags,
+      ctx,
+      helpers,
+      config,
+      eventEmitter,
+      coversService,
+    )
 
     console.log(`Update datasource with sync success flag`)
 

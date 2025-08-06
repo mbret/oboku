@@ -19,7 +19,8 @@
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
     "useUnknownInCatchVariables": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "skipLibCheck": true
   },
-  "include": ["src", "../web/src/common/crypto.ts"]
+  "include": ["src"]
 }

@@ -56,9 +56,5 @@ export const UploadBook: FC<{
     choose()
   })
 
-  return (
-    <>
-      <BlockingScreen />
-    </>
-  )
+  return <BlockingScreen />
 })

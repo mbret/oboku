@@ -1,14 +1,7 @@
-import {
-  Body,
-  Controller,
-  Headers,
-  Logger,
-  OnModuleInit,
-  Post,
-} from "@nestjs/common"
+import { Body, Controller, Logger, OnModuleInit, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "../../events"
-import { BooksMedataService } from "./BooksMedataService"
+import { BooksMetadataService } from "./BooksMetadataService"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { from } from "rxjs"
 import { AuthUser } from "src/auth/auth.guard"
@@ -17,16 +10,16 @@ import { WithAuthUser } from "src/auth/auth.guard"
 @Controller("books")
 export class BooksController implements OnModuleInit {
   private logger = new Logger(BooksController.name)
-  private QUEUE_NAME = "books.metadata.refresh"
+  private BOOKS_METADATA_REFRESH_QUEUE = "books.metadata.refresh"
 
   constructor(
-    private booksMedataService: BooksMedataService,
+    private booksMetadataService: BooksMetadataService,
     private readonly taskQueueService: InMemoryTaskQueueService,
   ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
-      name: this.QUEUE_NAME,
+      name: this.BOOKS_METADATA_REFRESH_QUEUE,
       maxConcurrent: 3,
       deduplicate: true,
       sequentialTasksWithSameId: true,
@@ -35,23 +28,26 @@ export class BooksController implements OnModuleInit {
 
   @Post("metadata/refresh")
   async metadataRefresh(
-    @Body() body: { bookId: string },
+    @Body() {
+      bookId,
+      data,
+    }: { bookId: string; data?: Record<string, unknown> },
     @WithAuthUser() user: AuthUser,
-    @Headers() headers: {
-      "oboku-credentials"?: string
-      authorization?: string
-    },
   ) {
-    this.logger.log("metadataRefresh", body.bookId)
+    this.logger.log("metadataRefresh", bookId)
 
     this.taskQueueService.enqueue(
-      this.QUEUE_NAME,
+      this.BOOKS_METADATA_REFRESH_QUEUE,
       () =>
         from(
-          this.booksMedataService.refreshMetadata(body, headers, user.email),
+          this.booksMetadataService.refreshMetadata(
+            { bookId },
+            data ?? {},
+            user.email,
+          ),
         ),
       {
-        id: body.bookId,
+        id: bookId,
       },
     )
 
@@ -63,17 +59,14 @@ export class BooksController implements OnModuleInit {
     this.logger.log("handleBooksMetadataRefresh", event.data.bookId)
 
     this.taskQueueService.enqueue(
-      this.QUEUE_NAME,
+      this.BOOKS_METADATA_REFRESH_QUEUE,
       () =>
         from(
-          this.booksMedataService.refreshMetadata(
+          this.booksMetadataService.refreshMetadata(
             {
               bookId: event.data.bookId,
             },
-            {
-              authorization: event.data.authorization,
-              "oboku-credentials": JSON.stringify(event.data.obokuCredentials),
-            },
+            event.data.data ?? {},
             event.data.email,
           ),
         ),

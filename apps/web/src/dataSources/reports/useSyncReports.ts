@@ -39,7 +39,10 @@ export const useSyncReports = () =>
 
               return {
                 ...acc,
-                [rx_model]: updateWith(acc[rx_model]),
+                [rx_model]: {
+                  ...acc[rx_model],
+                  ...updateWith(acc[rx_model]),
+                },
               }
             },
             {

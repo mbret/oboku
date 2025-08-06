@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
-// biome-ignore lint/correctness/noEmptyPattern: <explanation>
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/correctness/noEmptyPattern: TODO
+// biome-ignore lint/complexity/noBannedTypes: TODO
 export async function generateMetadata({}: {}): Promise<Metadata> {
   return {
     title: `oboku | Terms and conditions`,

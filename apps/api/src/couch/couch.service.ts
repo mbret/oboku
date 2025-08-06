@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { AppConfigService } from "../config/AppConfigService"
-import * as createNano from "nano"
+import createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
 import { SecretsService } from "src/config/SecretsService"
 
@@ -26,9 +26,7 @@ export class CouchService {
     })
   }
 
-  async generateUserJWT(payload: {
-    email: string
-  }) {
+  async generateUserJWT(payload: { email: string }) {
     return this.generateJWT({
       name: payload.email,
       sub: payload.email,

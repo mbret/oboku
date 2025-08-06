@@ -101,7 +101,7 @@ export const useCollections = ({
                     /**
                      * @important
                      *
-                     * Fitler out collections containing protected books
+                     * Filter out collections containing protected books
                      */
                     .filter((collection) => {
                       if (

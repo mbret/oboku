@@ -1,32 +1,35 @@
 import { extractIdFromResourceId } from "./lib/resources"
-import { isDriveResponseError } from "./lib/types"
-import { useAccessToken } from "./lib/useAccessToken"
 import type { ObokuPlugin } from "../types"
-import { catchError, from, mergeMap, of } from "rxjs"
+import { catchError, from, map, mergeMap, switchMap } from "rxjs"
 import { useGoogleScripts } from "./lib/scripts"
 import { httpClientWeb } from "../../http/httpClient.web"
+import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
+import {
+  isDriveResponseError,
+  useDriveFilesGet,
+} from "../../google/useDriveFilesGet"
+import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
 
 export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   requestPopup,
 }) => {
-  const { requestToken } = useAccessToken({ requestPopup })
   const { getGoogleScripts } = useGoogleScripts()
+  const requestFilesAccess = useRequestFilesAccess({
+    requestPopup,
+  })
+  const getDriveFile = useDriveFilesGet()
 
   return ({ link, onDownloadProgress }) => {
-    return requestToken({
-      scope: ["https://www.googleapis.com/auth/drive.readonly"],
-    }).pipe(
-      mergeMap(() => {
-        return getGoogleScripts().pipe(
-          mergeMap(([, gapi]) => {
-            const fileId = extractIdFromResourceId(link.resourceId)
+    const fileId = extractIdFromResourceId(link.resourceId)
 
-            return from(
-              gapi.client.drive.files.get({
-                fileId,
-                fields: "name,size",
-              }),
-            ).pipe(
+    return getGoogleScripts().pipe(
+      switchMap(([, gapi]) => {
+        return requestFilesAccess(gapi, [fileId]).pipe(
+          switchMap(() =>
+            getDriveFile(gapi, {
+              fileId,
+              fields: "name,size",
+            }).pipe(
               mergeMap((info) => {
                 return from(
                   httpClientWeb.download<Blob>({
@@ -58,28 +61,26 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
                     },
                   }),
                 ).pipe(
-                  mergeMap((mediaResponse) => {
-                    return of({
-                      data: mediaResponse.data,
-                      name: info.result.name || "",
-                    })
-                  }),
+                  map((mediaResponse) => ({
+                    data: mediaResponse.data,
+                    name: info.result.name || "",
+                  })),
                 )
               }),
-              catchError((e) => {
-                if (isDriveResponseError(e)) {
-                  if (e.status === 404) {
-                    return of({
-                      isError: true,
-                      reason: `notFound`,
-                      error: e,
-                    } as const)
-                  }
-                }
+            ),
+          ),
+          catchError((e) => {
+            if (isDriveResponseError(e)) {
+              if (e.status === 404) {
+                throw new ObokuSharedError(
+                  ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND,
+                  e,
+                  "user",
+                )
+              }
+            }
 
-                throw e
-              }),
-            )
+            throw e
           }),
         )
       }),

@@ -7,7 +7,7 @@ interface ChromeStorageEstimate extends StorageEstimate {
   }
 }
 
-export const useStorageUse = (deps: DependencyList | undefined) => {
+export const useStorageUse = (deps: DependencyList) => {
   const [storageQuota, setStorageQuota] = useState<number | undefined>(
     undefined,
   )
@@ -25,6 +25,7 @@ export const useStorageUse = (deps: DependencyList | undefined) => {
       estimate.quota && setStorageQuota(estimate.quota)
       estimateIndexedDBUsage && setIndexedDBUsage(estimateIndexedDBUsage)
     })
+    // biome-ignore lint/correctness/useExhaustiveDependencies: It is
   }, deps)
 
   const coversWightInMb = ((coversSize?.weight ?? 0) / 1e6).toFixed(2)

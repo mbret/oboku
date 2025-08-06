@@ -10,13 +10,13 @@ export const DataSourcesTabNavigator = () => {
   // users, users/new, users/edit.
   // Then the order should be ['users/add', 'users/edit', 'users'].
   const routeMatch = useRouteMatch([
-    ROUTES.DATASOURCES,
-    ROUTES.DATASOURCES_LIST,
-    ROUTES.DATASOURCES_REPORTS,
+    ROUTES.SYNC,
+    ROUTES.SYNC_DATASOURCES,
+    ROUTES.SYNC_REPORTS,
   ])
   const currentTab =
-    routeMatch?.pattern?.path === ROUTES.DATASOURCES
-      ? ROUTES.DATASOURCES_LIST
+    routeMatch?.pattern?.path === ROUTES.SYNC
+      ? ROUTES.SYNC_DATASOURCES
       : routeMatch?.pattern?.path
 
   return (
@@ -25,14 +25,14 @@ export const DataSourcesTabNavigator = () => {
       <Tabs value={currentTab}>
         <Tab
           label="Data sources"
-          value={ROUTES.DATASOURCES_LIST}
-          to={ROUTES.DATASOURCES_LIST}
+          value={ROUTES.SYNC_DATASOURCES}
+          to={ROUTES.SYNC_DATASOURCES}
           component={Link}
         />
         <Tab
           label="Reports"
-          value={ROUTES.DATASOURCES_REPORTS}
-          to={ROUTES.DATASOURCES_REPORTS}
+          value={ROUTES.SYNC_REPORTS}
+          to={ROUTES.SYNC_REPORTS}
           component={Link}
         />
       </Tabs>

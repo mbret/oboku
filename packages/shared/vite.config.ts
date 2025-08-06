@@ -7,6 +7,7 @@ export default defineConfig(({ mode }) => ({
       entry: "./src/index.ts",
       name: "oboku-shared",
       fileName: `index`,
+      formats: ["es", "cjs"],
     },
     emptyOutDir: mode !== "development",
     sourcemap: true,
@@ -14,6 +15,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     dts({
       entryRoot: "src",
+      rollupTypes: true,
     }),
   ],
 }))

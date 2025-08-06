@@ -1,4 +1,4 @@
-import { catchError, from, map, of, switchMap } from "rxjs"
+import { catchError, defaultIfEmpty, EMPTY, from, map, switchMap } from "rxjs"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useUpdateCollection } from "./useUpdateCollection"
@@ -6,14 +6,20 @@ import { httpClientApi } from "../http/httpClientApi.web"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getCollectionById } from "./dbHelpers"
-import { isPluginError, OfflineError } from "../errors/errors.shared"
+import {
+  CancelError,
+  isPluginError,
+  OfflineError,
+} from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
+import { useNotifications } from "../notifications/useNofitications"
 
 export const useRefreshCollectionMetadata = () => {
   const { mutateAsync: updateCollection } = useUpdateCollection()
   const { mutateAsync: sync } = useSyncReplicate()
   const getRefreshMetadataPluginData = usePluginRefreshMetadata()
   const withNetwork = useWithNetwork()
+  const { notifyError } = useNotifications()
 
   return useMutation$({
     mutationFn: (collectionId: string) =>
@@ -28,7 +34,9 @@ export const useRefreshCollectionMetadata = () => {
 
               const pluginData$ = from(
                 getRefreshMetadataPluginData({
-                  linkType: collection.linkType ?? "",
+                  linkType: collection.linkType ?? "file",
+                  linkData: collection.linkData ?? {},
+                  linkResourceId: collection.linkResourceId,
                 }),
               )
 
@@ -70,13 +78,17 @@ export const useRefreshCollectionMetadata = () => {
         }),
         catchError((e) => {
           if (
+            e instanceof CancelError ||
             (isPluginError(e) && e.code === "cancelled") ||
             e instanceof OfflineError
           )
-            return of(null)
+            return EMPTY
+
+          notifyError(e)
 
           throw e
         }),
+        defaultIfEmpty(null),
       ),
   })
 }

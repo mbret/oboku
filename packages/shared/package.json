@@ -7,8 +7,9 @@
   "module": "./dist/index.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.umd.cjs"
+      "require": "./dist/index.cjs"
     }
   },
   "license": "MIT",
@@ -20,8 +21,11 @@
     "build": "tsc && vite build",
     "test": "vitest run"
   },
+  "dependencies": {
+    "zod": "^4.0.5"
+  },
   "devDependencies": {
-    "vite": "^6.2.2",
+    "vite": "^7",
     "vite-plugin-dts": "^4.0.3"
   }
 }

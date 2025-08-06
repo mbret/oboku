@@ -42,13 +42,14 @@ export const useSynchronizeDataSource = () => {
               id: _id,
               patch: {
                 syncStatus: "fetching",
+                lastSyncErrorCode: null,
               },
             }),
           ).pipe(
             switchMap(() => from(sync([database.datasource]))),
             switchMap(() => from(httpClientApi.syncDataSource(_id, data.data))),
-            catchError((e) =>
-              from(
+            catchError((e) => {
+              return from(
                 atomicUpdateDataSource({
                   id: _id,
                   patch: {
@@ -61,8 +62,8 @@ export const useSynchronizeDataSource = () => {
                 map((_) => {
                   throw e
                 }),
-              ),
-            ),
+              )
+            }),
           )
         }),
         catchError((e) => {

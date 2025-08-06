@@ -17,37 +17,33 @@ export const UploadBookDrawer: FC<{
   const { showSensitiveDataSources } = useLocalSettings()
 
   return (
-    <>
-      <Drawer
-        anchor="bottom"
-        open={open}
-        onClose={() => onClose()}
-        transitionDuration={0}
-      >
-        <div role="presentation">
-          <List>
-            {dataSourcePlugins
-              .filter(
-                ({ UploadBookComponent, sensitive }) =>
-                  !!UploadBookComponent &&
-                  (showSensitiveDataSources ? true : sensitive !== true),
-              )
-              .map((dataSource) => (
-                <ListItemButton
-                  onClick={() => onClose(dataSource.type)}
-                  key={dataSource.type}
-                >
-                  <ListItemIcon>
-                    {dataSource.Icon && <dataSource.Icon />}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={`From ${capitalize(dataSource.name)}`}
-                  />
-                </ListItemButton>
-              ))}
-          </List>
-        </div>
-      </Drawer>
-    </>
+    <Drawer
+      anchor="bottom"
+      open={open}
+      onClose={() => onClose()}
+      transitionDuration={0}
+    >
+      <div role="presentation">
+        <List>
+          {dataSourcePlugins
+            .filter(
+              ({ UploadBookComponent, sensitive }) =>
+                !!UploadBookComponent &&
+                (showSensitiveDataSources ? true : sensitive !== true),
+            )
+            .map((dataSource) => (
+              <ListItemButton
+                onClick={() => onClose(dataSource.type)}
+                key={dataSource.type}
+              >
+                <ListItemIcon>
+                  {dataSource.Icon && <dataSource.Icon />}
+                </ListItemIcon>
+                <ListItemText primary={`From ${capitalize(dataSource.name)}`} />
+              </ListItemButton>
+            ))}
+        </List>
+      </div>
+    </Drawer>
   )
 }

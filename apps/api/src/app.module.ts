@@ -1,16 +1,14 @@
-import { Module, OnModuleInit } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
 import { ConfigModule } from "@nestjs/config"
-import * as path from "node:path"
-import * as Joi from "joi"
+import path from "node:path"
+import Joi from "joi"
 import { BooksController } from "./features/books/books.controller"
-import * as fs from "node:fs"
-import { DataSourcesController } from "./features/datasources/datasources.controller"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { CollectionsController } from "./features/collections/collections.controller"
 import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
-import { BooksMedataService } from "./features/books/BooksMedataService"
+import { BooksMetadataService } from "./features/books/BooksMetadataService"
 import { InMemoryTaskQueueService } from "./features/queue/InMemoryTaskQueueService"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService"
@@ -23,9 +21,10 @@ import { UsersModule } from "./users/users.module"
 import { AuthModule } from "./auth/auth.module"
 import { CouchModule } from "./couch/couch.module"
 import { CoversModule } from "./covers/covers.module"
-import { AppConfigService } from "./config/AppConfigService"
 import { ScheduleModule } from "@nestjs/schedule"
 import { AdminModule } from "./admin/admin.module"
+import { DataSourceModule } from "./datasource/datasource.module"
+import { StorageModule } from "./storage/storage.module"
 
 @Module({
   imports: [
@@ -82,11 +81,13 @@ import { AdminModule } from "./admin/admin.module"
     EventEmitterModule.forRoot(),
     PostgresModule,
     AppConfigModule,
+    StorageModule,
     AuthModule,
     UsersModule,
     CouchModule,
     CoversModule,
-    AdminModule
+    AdminModule,
+    DataSourceModule,
   ],
   providers: [
     // {
@@ -98,31 +99,14 @@ import { AdminModule } from "./admin/admin.module"
     CommunicationPostgresService,
     CollectionMetadataService,
     InMemoryTaskQueueService,
-    BooksMedataService,
+    BooksMetadataService,
   ],
   controllers: [
     AppController,
     BooksController,
-    DataSourcesController,
     CollectionsController,
     CommunicationController,
     WebController,
   ],
 })
-export class AppModule implements OnModuleInit {
-  constructor(private configService: AppConfigService) {}
-
-  /**
-   * Prepare all tmp folders
-   */
-  onModuleInit() {
-    if (!fs.existsSync(this.configService.TMP_DIR)) {
-      fs.mkdirSync(this.configService.TMP_DIR, { recursive: true })
-    }
-
-    // make sure to cleanup on each restart
-    fs.rmSync(this.configService.TMP_DIR, { recursive: true, force: true })
-
-    fs.mkdirSync(this.configService.TMP_DIR_BOOKS, { recursive: true })
-  }
-}
+export class AppModule {}

@@ -11,7 +11,8 @@ export const usePluginRemoveBook = () => {
   // it will trigger all hooks
   const preparedHooks = plugins.map((plugin) => ({
     type: plugin.type,
-    useRemoveBook: plugin.useRemoveBook?.({
+    // biome-ignore lint/correctness/useHookAtTopLevel: Expected
+    removeBook: plugin.useRemoveBook?.({
       requestPopup: createRequestPopupDialog({ name: plugin.name }),
     }),
   }))
@@ -35,13 +36,13 @@ export const usePluginRemoveBook = () => {
         (plugin) => plugin.type === link.type,
       )
 
-      if (!found || !found.useRemoveBook) {
+      if (!found || !found.removeBook) {
         throw new Error(
           "no datasource found for this link or useRemoveBook is undefined",
         )
       }
 
-      const res = await found.useRemoveBook(link)
+      const res = await found.removeBook(link)
 
       return res
     },

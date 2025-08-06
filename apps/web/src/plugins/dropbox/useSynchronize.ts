@@ -1,13 +1,19 @@
-import { useCallback } from "react"
 import { authUser } from "./lib/auth"
-import type { ObokuPlugin } from "../types"
+import type { UseSynchronizeHook } from "../types"
+import { useMutation } from "@tanstack/react-query"
 
-export const useSynchronize: ObokuPlugin[`useSynchronize`] = ({
+export const useSynchronize: UseSynchronizeHook<"dropbox"> = ({
   requestPopup,
 }) => {
-  return useCallback(async () => {
-    const auth = await authUser({ requestPopup })
+  return useMutation({
+    mutationFn: async () => {
+      const auth = await authUser({ requestPopup })
 
-    return { data: auth }
-  }, [requestPopup])
+      return {
+        data: {
+          ...auth,
+        },
+      }
+    },
+  })
 }

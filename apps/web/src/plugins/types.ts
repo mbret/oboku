@@ -9,9 +9,12 @@ import type {
 } from "react"
 import type { Button } from "@mui/material"
 import type { Observable } from "rxjs"
+import type { DeepReadonly, DeepReadonlyArray } from "rxdb"
+import type { UseMutationResult } from "@tanstack/react-query"
+import type { Control, UseFormWatch } from "react-hook-form"
 
 type PostLink = Pick<LinkDocType, "resourceId" | "type">
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: TODO
 type PostBook = {}
 
 type Item = {
@@ -34,29 +37,34 @@ type UseDownloadHook = (options: {
 }) => (params: {
   link: LinkDocType
   onDownloadProgress: (progress: number) => void
-}) => Observable<
-  | {
-      data: Blob | File | ReadableStream<StreamValue>
-      name?: string
-    }
-  | {
-      isError: true
-      error?: any
-      reason: `unknown` | `cancelled` | `popupBlocked` | `notFound`
-    }
->
+}) => Observable<{
+  data: Blob | File | ReadableStream<StreamValue>
+  name?: string
+}>
 
 type UseRefreshMetadataHook = (options: {
   requestPopup: () => Promise<boolean>
-}) => (data: { linkType: string }) => Promise<{
-  data?: object
-}>
+}) => UseMutationResult<
+  {
+    data: Record<string, unknown>
+  },
+  Error | null,
+  {
+    linkType: DataSourceDocType["type"]
+    linkData: Record<string, unknown>
+    linkResourceId?: string
+  }
+>
 
-type UseSynchronizeHook = (options: {
-  requestPopup: () => Promise<boolean>
-}) => () => Promise<{
-  data?: object
-}>
+export type UseSynchronizeHook<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = (options: { requestPopup: () => Promise<boolean> }) => UseMutationResult<
+  {
+    data: Record<string, unknown>
+  },
+  Error | null,
+  Extract<DataSourceDocType, { type: T }>
+>
 
 type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
   link: LinkDocType,
@@ -71,18 +79,40 @@ type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
     }
 >
 
-type UseSyncSourceInfo = (dataSource: DataSourceDocType) => {
+export type UseSyncSourceInfo<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = (
+  dataSource?:
+    | DeepReadonly<Extract<DataSourceDocType, { type: T }>>
+    | undefined,
+) => {
   name?: string
 }
 
-export type ObokuPlugin = {
+export type UseLinkInfo = (data: { resourceId?: string; enabled: boolean }) => {
+  data:
+    | {
+        label?: string
+      }
+    | undefined
+}
+
+export type DataSourceFormData = {
+  name: string
+  tags: DeepReadonlyArray<string>
+  data: Record<string, unknown>
+}
+
+export type ObokuPlugin<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = {
   uniqueResourceIdentifier: string
   name: string
   canSynchronize?: boolean
   /**
    * Unique ID for the plugin
    */
-  type: string
+  type: T
   description?: string
   sensitive?: boolean
   Icon?: FunctionComponent<Record<string, never>>
@@ -102,8 +132,12 @@ export type ObokuPlugin = {
     } & Pick<DOMAttributes<any>, "onDragLeave">
   >
   AddDataSource?: FunctionComponent<{
-    onClose: () => void
-    requestPopup: () => Promise<boolean>
+    control: Control<DataSourceFormData, any, DataSourceFormData>
+    watch: UseFormWatch<DataSourceFormData>
+  }>
+  DataSourceDetails?: FunctionComponent<{
+    control: Control<DataSourceFormData, any, DataSourceFormData>
+    watch: UseFormWatch<DataSourceFormData>
   }>
   SelectItemComponent?: FunctionComponent<{
     open: boolean
@@ -116,10 +150,10 @@ export type ObokuPlugin = {
   Provider?: FunctionComponent<{ children: ReactNode }>
   InfoScreen?: () => ReactElement
   useRefreshMetadata?: UseRefreshMetadataHook
-  useSynchronize?: UseSynchronizeHook
+  useSynchronize?: UseSynchronizeHook<T>
   useDownloadBook?: UseDownloadHook
   useRemoveBook?: UseRemoveBook | undefined
-  useSyncSourceInfo?: UseSyncSourceInfo
+  useSyncSourceInfo?: UseSyncSourceInfo<T>
 }
 
 export const extractIdFromResourceId = (

@@ -30,8 +30,8 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
   // @todo do as datasource tab navigator
   const normalizedPath = location.pathname.startsWith(ROUTES.LIBRARY_ROOT)
     ? ROUTES.LIBRARY_BOOKS
-    : location.pathname.startsWith(ROUTES.DATASOURCES)
-      ? ROUTES.DATASOURCES
+    : location.pathname.startsWith(ROUTES.SYNC)
+      ? ROUTES.SYNC
       : location.pathname
 
   const onDragOver = useCallback(() => {
@@ -65,7 +65,7 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
       <OfflineIcon />
       <BottomNavigation
         value={normalizedPath}
-        onChange={(event, newValue) => {
+        onChange={(_event, newValue) => {
           navigate(newValue)
         }}
       >
@@ -76,7 +76,7 @@ export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
         />
         <BottomNavigationAction
           icon={<CloudSyncRounded />}
-          value={ROUTES.DATASOURCES}
+          value={ROUTES.SYNC}
         />
         <BottomNavigationAction
           icon={<ExtensionRounded />}

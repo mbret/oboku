@@ -1,7 +1,7 @@
-import { createDatabase as createWebDatabase } from "./databases"
+import { createDatabase as createWebDatabase } from "./databases.shared"
 
 export const createSwDatabase = () => {
   return createWebDatabase({
-    multiInstance: true,
+    // multiInstance: true,
   })
 }

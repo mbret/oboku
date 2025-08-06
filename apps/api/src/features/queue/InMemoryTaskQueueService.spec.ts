@@ -297,7 +297,7 @@ describe("sequential tasks with same ID", () => {
     const executionOrder: string[] = []
 
     // Create a task that records when it starts and completes
-    const createTask = (id: string, taskId: string, duration: number) => {
+    const createTask = (id: string, _taskId: string, duration: number) => {
       return () =>
         defer(() => {
           executionOrder.push(`${id}-start`)

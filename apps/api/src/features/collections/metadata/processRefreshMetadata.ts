@@ -20,13 +20,13 @@ export const processrefreshMetadata = async (
   {
     googleApiKey,
     db,
-    credentials,
+    data,
     soft,
     comicVineApiKey,
   }: {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
-    credentials?: any
+    data?: Record<string, unknown>
     soft?: boolean
     comicVineApiKey?: string
   },
@@ -40,13 +40,13 @@ export const processrefreshMetadata = async (
         switchMap(() =>
           collection.linkResourceId && collection.linkType
             ? from(
-                pluginFacade.getMetadata({
+                pluginFacade.getFolderMetadata({
                   link: {
                     resourceId: collection.linkResourceId,
                     type: collection.linkType,
                     data: null,
                   },
-                  credentials,
+                  data,
                 }),
               )
             : of(undefined),

@@ -1,5 +1,5 @@
 import { memo, useEffect } from "react"
-import { type Database, createDatabase } from "./databases"
+import { type Database, createDatabase } from "./databases.shared"
 import { isDefined, signal, useMutation$, useSignalValue } from "reactjrx"
 import { filter, first, from, map, of, switchMap, tap } from "rxjs"
 
@@ -7,7 +7,7 @@ const databaseSignal = signal<Database | undefined>({
   key: "databaseState",
 })
 
-export const latestDatabase$ = databaseSignal.subject.pipe(filter(isDefined))
+export const latestDatabase$ = databaseSignal.pipe(filter(isDefined))
 
 export const getLatestDatabase = () => latestDatabase$.pipe(first())
 
@@ -25,13 +25,13 @@ export const useReCreateDb = () => {
 
       databaseSignal.update(undefined)
 
-      const start$ = db ? from(db?.remove()).pipe(map(() => null)) : of(null)
+      const start$ = db ? from(db.remove()).pipe(map(() => null)) : of(null)
 
       // at this point we expect useDatabase to be rendered
       // again with undefined database. So that nothing should interact with
       // the db while it's being recreated
       return start$.pipe(
-        switchMap(() => from(createDatabase({}))),
+        switchMap(() => createDatabase({})),
         tap((newDb) => {
           databaseSignal.update(newDb)
         }),

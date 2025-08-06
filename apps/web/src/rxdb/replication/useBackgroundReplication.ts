@@ -21,6 +21,7 @@ export const useBackgroundReplication = () => {
   const replicateLink = useReplicateCollection()
   const replicateSettings = useReplicateCollection()
   const replicateDatasource = useReplicateCollection()
+  const replicateSecret = useReplicateCollection()
   const isAuthenticated = !!token
   const [replicationStates, setReplicationStates] = useState<
     RxCouchDBReplicationState<unknown>[]
@@ -91,7 +92,13 @@ export const useBackgroundReplication = () => {
         collection: database.obokucollection,
         dbName,
         live: true,
-        host: configuration.API_COUCH_URI,
+        host: configuration.API_COUCH_URI_4,
+      }),
+      replicateSecret({
+        collection: database.secret,
+        dbName,
+        live: true,
+        host: configuration.API_COUCH_URI_4,
       }),
     ]
 
@@ -110,6 +117,7 @@ export const useBackgroundReplication = () => {
     replicateLink,
     replicateSettings,
     replicateCollection,
+    replicateSecret,
     dbName,
   ])
 

@@ -20,6 +20,12 @@ export const useSyncReplicate = () => {
             live: false,
             dbName,
             autoStart: true,
+            /**
+             * @important
+             * This is important to have a unique suffix to get a unique replication identifier and
+             * prevent sync conflict with background ones.
+             */
+            suffix: `sync-one-shot-${self.crypto.randomUUID()}`,
           }),
         ),
       )

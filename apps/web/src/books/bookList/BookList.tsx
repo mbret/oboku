@@ -9,31 +9,33 @@ import { BookListCompactItem } from "./BookListCompactItem"
 import { useListItemHeight } from "./useListItemHeight"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
-const ItemListContainer = ({
-  children,
-  isLast,
-  borders = false,
-  ...rest
-}: {
-  children: ReactNode
-  isLast: boolean
-  borders?: boolean
-} & BoxProps) => (
-  <Box
-    style={{
-      flex: 1,
-      alignItems: "center",
-      display: "flex",
-    }}
-    {...(!isLast &&
-      borders && {
-        borderBottom: "1px solid",
-        borderColor: "grey.200",
-      })}
-    {...rest}
-  >
-    {children}
-  </Box>
+const ItemListContainer = memo(
+  ({
+    children,
+    isLast,
+    borders = false,
+    ...rest
+  }: {
+    children: ReactNode
+    isLast: boolean
+    borders?: boolean
+  } & BoxProps) => (
+    <Box
+      style={{
+        flex: 1,
+        alignItems: "center",
+        display: "flex",
+      }}
+      {...(!isLast &&
+        borders && {
+          borderBottom: "1px solid",
+          borderColor: "grey.200",
+        })}
+      {...rest}
+    >
+      {children}
+    </Box>
+  ),
 )
 
 export const BookList = memo(

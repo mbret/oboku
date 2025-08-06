@@ -1,5 +1,5 @@
 export type BookMetadata = {
-  title?: string
+  title?: string | number
   authors?: string[]
   description?: string
   formatType?: ("book" | "comics" | "manga" | "audio")[]
@@ -40,11 +40,11 @@ export type CollectionMetadata = {
   authors?: string[]
   description?: string
   numberOfIssues?: number
-  // biome-ignore lint/complexity/noBannedTypes: <explanation>
+  // biome-ignore lint/complexity/noBannedTypes: TODO
   firstIssue?: {}
   startYear?: number
   publisherName?: string
-  rating?: number
+  rating?: number | null
   cover?: {
     uri: string
     createdAt?: string

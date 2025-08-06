@@ -31,6 +31,8 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { configuration } from "./config/configuration"
 import { useLoadGsi } from "./google/gsi"
 import { AuthGuard } from "./auth/AuthGuard"
+import { NotificationsProvider } from "./notifications/NotificationsProvider"
+import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 
 // @todo move to sw
 LibArchive.init({
@@ -69,9 +71,9 @@ export const App = memo(() => {
                   {!isHydratingProfile &&
                     isAuthHydrated &&
                     plugins.reduce(
-                      (Comp, { Provider }) => {
+                      (Comp, { Provider }, index) => {
                         if (Provider) {
-                          return <Provider>{Comp}</Provider>
+                          return <Provider key={index}>{Comp}</Provider>
                         }
                         return Comp
                       },
@@ -83,6 +85,7 @@ export const App = memo(() => {
                           <ManageBookTagsDialog />
                           <ManageTagBooksDialog />
                           <AuthorizeActionDialog />
+                          <SetupSecretDialog />
                           <UpdateAvailableDialog
                             serviceWorker={waitingWorker}
                           />
@@ -102,6 +105,7 @@ export const App = memo(() => {
                       setIsDownloadsHydrated(true)
                     }}
                   />
+                  <NotificationsProvider />
                   <RxDbProvider />
                 </DialogProvider>
               </Suspense>

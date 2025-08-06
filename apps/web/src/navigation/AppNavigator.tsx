@@ -10,34 +10,39 @@ import { HomeScreen } from "../pages/HomeScreen"
 import { LoginScreen } from "../pages/LoginScreen"
 import { ReaderScreen } from "../reader/ReaderScreen"
 import { BottomTabBar } from "./BottomTabBar"
-import { ProfileScreen } from "../settings/ProfileScreen"
-import { ManageStorageScreen } from "../settings/ManageStorageScreen"
+import { ProfileScreen } from "../pages/profile/ProfileScreen"
+import { ManageStorageScreen } from "../pages/ManageStorageScreen"
 import { LibraryTopTabNavigator } from "../library/LibraryTopTabNavigator"
 import { BookDetailsScreen } from "../books/details/BookDetailsScreen"
 import { CollectionDetailsScreen } from "../pages/collections/CollectionDetailsScreen/CollectionDetailsScreen"
 import { BookActionsDrawer } from "../books/drawer/BookActionsDrawer"
-import { DataSourcesListScreen } from "../dataSources/DataSourcesListScreen"
+import { DataSourcesListScreen } from "../pages/sync/DataSourcesListScreen"
 import { SearchScreen } from "../pages/SearchScreen"
 import { AuthCallbackScreen } from "../pages/AuthCallbackScreen"
-import { SettingsScreen } from "../settings/SettingsScreen"
-import { StatisticsScreen } from "../settings/StatisticsScreen"
+import { SettingsScreen } from "../pages/SettingsScreen"
+import { StatisticsScreen } from "../pages/StatisticsScreen"
 import { BackToReadingDialog } from "../reading/BackToReadingDialog"
 import { ProblemsScreen } from "../problems/ProblemsScreen"
 import { LibraryBooksScreen } from "../library/books/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../pages/LibraryCollectionScreen"
-import { LibraryTagsScreen } from "../library/tags/LibraryTagsScreen"
+import { LibraryTagsScreen } from "../pages/library/LibraryTagsScreen"
 import { memo, useEffect, useRef } from "react"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/states.web"
 import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
 import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
-import { SecurityScreen } from "../settings/SecurityScreen"
+import { SecurityScreen } from "../pages/profile/SecurityScreen"
 import { PluginsScreen } from "../plugins/PluginsScreen"
 import { PluginScreen } from "../plugins/PluginScreen"
 import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
 import { ROUTES } from "./routes"
 import { SignUpScreen } from "../pages/SignUpScreen"
+import { SecretsScreen } from "../pages/profile/SecretsScreen"
+import { NewDataSourceScreen } from "../pages/sync/NewDataSourceScreen"
+import { AddWebdavConnectorScreen } from "../pages/plugins/webdav/AddWebdavConnectorScreen"
+import { EditWebDavConnectorScreen } from "../pages/plugins/webdav/EditWebdavConnectorScreen"
+import { DataSourceDetailsScreen } from "../pages/sync/DataSourceDetailsScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -90,11 +95,28 @@ export const AppNavigator = ({
                 element={<ManageStorageScreen />}
               />
               <Route path="plugins/:type" element={<PluginScreen />} />
+              <Route
+                path={ROUTES.PLUGINS_WEBDAV_CONNECTORS_NEW}
+                element={<AddWebdavConnectorScreen />}
+              />
+              <Route
+                path={ROUTES.PLUGINS_WEBDAV_CONNECTORS_EDIT}
+                element={<EditWebDavConnectorScreen />}
+              />
               <Route path={`${ROUTES.SECURITY}`} element={<SecurityScreen />} />
+              <Route path={`${ROUTES.SECRETS}`} element={<SecretsScreen />} />
               <Route path={`${ROUTES.SETTINGS}`} element={<SettingsScreen />} />
               <Route
                 path={`${ROUTES.STATISTICS}`}
                 element={<StatisticsScreen />}
+              />
+              <Route
+                path={ROUTES.SYNC_NEW_DATASOURCES}
+                element={<NewDataSourceScreen />}
+              />
+              <Route
+                path={ROUTES.DATASOURCE_DETAILS}
+                element={<DataSourceDetailsScreen />}
               />
               <Route path="*" element={<BottomTabBarRouteWrapper />}>
                 <Route index element={<HomeScreen />} />
@@ -120,9 +142,10 @@ export const AppNavigator = ({
                     path="reports"
                     element={<DataSourcesReportsScreen />}
                   />
+
                   <Route
                     path="*"
-                    element={<Navigate to={ROUTES.DATASOURCES_LIST} replace />}
+                    element={<Navigate to={ROUTES.SYNC_DATASOURCES} replace />}
                   />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />

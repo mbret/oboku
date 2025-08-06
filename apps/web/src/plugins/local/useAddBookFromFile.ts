@@ -1,6 +1,6 @@
 import { useAddBook } from "../../books/helpers"
 import { useDownloadBook } from "../../download/useDownloadBook"
-import { PLUGIN_FILE_TYPE, type PLUGIN_FILE_DATA } from "@oboku/shared"
+import { PLUGIN_FILE_TYPE, type FileLinkData } from "@oboku/shared"
 import { useMutation } from "@tanstack/react-query"
 
 export const useAddBookFromFile = () => {
@@ -15,7 +15,7 @@ export const useAddBookFromFile = () => {
             book: null,
             data: {
               filename: file.name,
-            } satisfies PLUGIN_FILE_DATA,
+            } satisfies FileLinkData,
             resourceId: "file",
             type: PLUGIN_FILE_TYPE,
             createdAt: new Date().toISOString(),

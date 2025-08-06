@@ -3,7 +3,7 @@ import { getReplicationProperties } from "../replication/getReplicationPropertie
 import type { CollectionDocType } from "@oboku/shared"
 import { generateId } from "./utils"
 
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: TODO
 type CollectionDocMethods = {}
 
 type CollectionDocument = RxDocument<CollectionDocType, CollectionDocMethods>
@@ -41,6 +41,7 @@ export const collectionSchema: RxJsonSchema<
     type: { type: ["string", "null"] },
     linkType: { type: "string" },
     linkResourceId: { type: "string" },
+    linkData: { type: "object" },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
     lastMetadataUpdatedAt: { type: ["string"] },

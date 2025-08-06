@@ -24,14 +24,12 @@ export class CollectionMetadataService {
 
   refreshMetadata({
     collectionId,
-    credentials,
-    authorization,
+    data,
     soft = true,
     email,
   }: {
     collectionId: string
-    credentials: Record<string, string>
-    authorization: string
+    data?: Record<string, unknown>
     soft?: boolean
     email: string
   }) {
@@ -39,8 +37,7 @@ export class CollectionMetadataService {
 
     return of({
       collectionId,
-      credentials,
-      authorization,
+      data,
       soft,
     }).pipe(
       switchMapCombineOuter(() =>

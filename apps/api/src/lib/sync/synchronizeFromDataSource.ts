@@ -41,32 +41,33 @@ export const synchronizeFromDataSource = async (
     `dataSourcesSync run for user ${ctx.userName} with dataSource ${ctx.dataSourceId}`,
   )
 
-  await syncTags({
-    ctx,
-    helpers,
-    item: synchronizeAble,
-    hasCollectionAsParent: false,
-    lvl: 0,
-    parents: [],
-  })
+  for (const item of synchronizeAble.items) {
+    await syncTags({
+      ctx,
+      helpers,
+      item,
+      hasCollectionAsParent: false,
+      lvl: 0,
+      parents: [],
+    })
+  }
 
-  await syncFolder({
-    ctx,
-    helpers,
-    item: synchronizeAble,
-    hasCollectionAsParent: false,
-    lvl: 0,
-    parents: [],
-    config,
-    eventEmitter,
-    coversService,
-  })
+  for (const item of synchronizeAble.items) {
+    await syncItem({
+      ctx,
+      helpers,
+      item,
+      hasCollectionAsParent: false,
+      lvl: 0,
+      parents: [],
+      config,
+      eventEmitter,
+      coversService,
+    })
+  }
 }
 
-const getItemTags = (
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem,
-  helpers: Helpers,
-): string[] => {
+const getItemTags = (item: SynchronizeAbleItem, helpers: Helpers): string[] => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
 
   const subTagsAsMap = (item.items || []).map((subItem) => {
@@ -92,8 +93,8 @@ const syncTags = async ({
   helpers: Helpers
   lvl: number
   hasCollectionAsParent: boolean
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem
-  parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
+  item: SynchronizeAbleItem
+  parents: SynchronizeAbleItem[]
 }) => {
   console.log(`syncTags for item ${item.name} and lvl ${lvl}`)
 
@@ -114,7 +115,7 @@ const syncTags = async ({
   )
 }
 
-const syncFolder = async ({
+const syncItem = async ({
   ctx,
   helpers,
   hasCollectionAsParent,
@@ -125,18 +126,18 @@ const syncFolder = async ({
   eventEmitter,
   coversService,
 }: {
-  ctx: Context & { authorization: string }
+  ctx: Context
   helpers: Helpers
   lvl: number
   hasCollectionAsParent: boolean
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem
-  parents: (SynchronizeAbleItem | SynchronizeAbleDataSource)[]
+  item: SynchronizeAbleItem
+  parents: SynchronizeAbleItem[]
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
   coversService: CoversService
 }) => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
-  logger.log(`syncFolder ${item.name}: metadata `, metadataForFolder)
+  logger.log(`syncItem ${item.name}: metadata `, metadataForFolder)
 
   const isCollection =
     isFolder(item) &&
@@ -145,7 +146,7 @@ const syncFolder = async ({
     !metadataForFolder.isNotACollection
 
   if (metadataForFolder.isIgnored) {
-    logger.log(`syncFolder ${item.name}: ignored!`)
+    logger.log(`syncItem ${item.name}: ignored!`)
     return
   }
 
@@ -161,35 +162,47 @@ const syncFolder = async ({
     await syncCollection({ ctx, item, helpers, eventEmitter })
   }
 
+  if (isFolder(item)) {
+    await Promise.all(
+      (item.items || []).map(async (subItem) => {
+        if (isFile(subItem)) {
+          await createOrUpdateBook({
+            ctx,
+            item: subItem,
+            helpers,
+            parents: [...parents, item],
+            coversService,
+          })
+        } else if (isFolder(subItem)) {
+          await syncItem({
+            ctx,
+            helpers,
+            lvl: lvl + 1,
+            hasCollectionAsParent: isCollection,
+            item: subItem,
+            parents: [...parents, item],
+            config,
+            eventEmitter,
+            coversService,
+          })
+        }
+      }),
+    )
+  }
+
+  if (isFile(item)) {
+    await createOrUpdateBook({
+      ctx,
+      item,
+      helpers,
+      parents: [...parents, item],
+      coversService,
+    })
+  }
+
   console.log(
-    `[syncFolder] ${item.name}: with items ${item.items?.length || 0} items`,
+    `[syncItem] ${item.name}: with items ${item.items?.length || 0} items`,
   )
 
-  await Promise.all(
-    (item.items || []).map(async (subItem) => {
-      if (isFile(subItem)) {
-        await createOrUpdateBook({
-          ctx,
-          item: subItem,
-          helpers,
-          parents: [...parents, item],
-          coversService,
-        })
-      } else if (isFolder(subItem)) {
-        await syncFolder({
-          ctx,
-          helpers,
-          lvl: lvl + 1,
-          hasCollectionAsParent: isCollection,
-          item: subItem,
-          parents: [...parents, item],
-          config,
-          eventEmitter,
-          coversService,
-        })
-      }
-    }),
-  )
-
-  console.log(`[syncFolder] ${item.name} DONE!`)
+  console.log(`[syncItem] ${item.name} DONE!`)
 }

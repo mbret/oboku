@@ -11,7 +11,6 @@ import {
   catchError,
   combineLatest,
   defaultIfEmpty,
-  defer,
   EMPTY,
   finalize,
   first,
@@ -29,6 +28,7 @@ import { CancelError, isPluginError } from "../errors/errors.shared"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { dexieDb } from "../rxdb/dexie"
 import { useMutation$ } from "reactjrx"
+import { useNotifications } from "../notifications/useNofitications"
 
 class NoLinkFound extends Error {}
 
@@ -47,6 +47,7 @@ const setDownloadData = (
 
 export const useDownloadBook = () => {
   const { downloadPluginBook } = usePluginDownloadBook()
+  const { notifyError } = useNotifications()
 
   return useMutation$({
     mutationFn: ({
@@ -125,69 +126,38 @@ export const useDownloadBook = () => {
                   progressSubject.next(Math.round(progress * 100))
                 }
 
-                const downloadFile$ = defer(() =>
-                  downloadPluginBook({
-                    link,
-                    onDownloadProgress,
-                  }).pipe(
-                    switchMap((downloadResponse) => {
-                      if (
-                        "isError" in downloadResponse &&
-                        downloadResponse.reason === "notFound"
-                      ) {
-                        // @todo shorten this description and redirect to the documentation
-                        createDialog({
-                          autoStart: true,
-                          preset: `UNKNOWN_ERROR`,
-                          title: `Unable to download`,
-                          content: `
-                            oboku could not find the book from the linked data source. 
-                            This can happens if you removed the book from the data source or if you replaced it with another file.
-                            Make sure the book is on your data source and try to fix the link for this book in the details screen to target the file. 
-                            Attention, if you add the book on your data source and synchronize again, oboku will duplicate the book.
-                          `,
-                        })
-
-                        throw new CancelError()
-                      }
-
-                      if ("isError" in downloadResponse) {
-                        throw (
-                          downloadResponse.error ||
-                          new Error(downloadResponse.reason)
-                        )
-                      }
-
-                      const data$ =
-                        downloadResponse.data instanceof Blob
-                          ? of(downloadResponse.data)
-                          : // when the plugin returns a stream we will create the archive ourselves based on the nature
-                            // of the stream.
-                            from(
-                              createCbzFromReadableStream(
-                                downloadResponse.data,
-                                {
-                                  onData: ({ progress }) =>
-                                    onDownloadProgress(progress),
-                                },
-                              ),
-                            )
-
-                      return data$.pipe(
-                        map((data) => ({
-                          data,
-                          name:
-                            downloadResponse.name ??
-                            generateFilenameFromBlob(data, bookId),
-                        })),
-                      )
-                    }),
-                  ),
-                )
-
                 const file$ = file
                   ? of({ data: file, name: file.name })
-                  : downloadFile$
+                  : downloadPluginBook({
+                      link,
+                      onDownloadProgress,
+                    }).pipe(
+                      switchMap((downloadResponse) => {
+                        const data$ =
+                          downloadResponse.data instanceof Blob
+                            ? of(downloadResponse.data)
+                            : // when the plugin returns a stream we will create the archive ourselves based on the nature
+                              // of the stream.
+                              from(
+                                createCbzFromReadableStream(
+                                  downloadResponse.data,
+                                  {
+                                    onData: ({ progress }) =>
+                                      onDownloadProgress(progress),
+                                  },
+                                ),
+                              )
+
+                        return data$.pipe(
+                          map((data) => ({
+                            data,
+                            name:
+                              downloadResponse.name ??
+                              generateFilenameFromBlob(data, bookId),
+                          })),
+                        )
+                      }),
+                    )
 
                 return file$.pipe(
                   switchMap(({ data, name }) => {
@@ -226,17 +196,14 @@ export const useDownloadBook = () => {
 
           if (
             error instanceof NoLinkFound ||
-            (isPluginError(error) && error.code === "cancelled")
+            (isPluginError(error) && error.code === "cancelled") ||
+            error instanceof CancelError
           )
             return EMPTY
 
-          if (isPluginError(error)) {
-            createDialog({
-              autoStart: true,
-              title: "Unable to download",
-              content: error.message,
-            })
+          notifyError(error)
 
+          if (isPluginError(error)) {
             if (error.severity === "user") return EMPTY
           }
 

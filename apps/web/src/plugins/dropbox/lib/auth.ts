@@ -21,7 +21,7 @@ configuration.subscribe(() => {
 const isAccessTokenStillSufficient = () => {
   const accessTokenExpiresAt: Date | undefined =
     dropboxAuth.getAccessTokenExpiresAt()
-  const currentTime = new Date().getTime()
+  const currentTime = Date.now()
   const hours =
     Math.abs((accessTokenExpiresAt?.getTime() || 0) - currentTime) / 36e5
 

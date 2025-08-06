@@ -12,7 +12,7 @@ import type {
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: TODO
 type BookDocMethods = {}
 
 type BookDocument = RxDocument<BookDocType, BookDocMethods>

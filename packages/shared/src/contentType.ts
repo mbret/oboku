@@ -10,6 +10,7 @@ export const READER_ACCEPTED_FILE_TYPES = {
   "application/epub+zip": [".epub", ".zip"],
   "application/x-cbr": [".cbr"],
   "application/x-rar": [".cbr"],
+  "application/pdf": [".pdf"],
 }
 
 export const READER_ACCEPTED_MIME_TYPES = Object.keys(

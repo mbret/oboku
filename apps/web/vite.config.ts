@@ -74,7 +74,7 @@ export default defineConfig(({ mode }) => ({
           "**/*.{js.map}",
         ],
         // sources map are really massive, they will be optimized when served by server
-        maximumFileSizeToCacheInBytes: 18e6, // 17 MB limit
+        maximumFileSizeToCacheInBytes: 19e6, // 17 MB limit
       },
       srcDir: "src",
       filename: "service-worker.ts",

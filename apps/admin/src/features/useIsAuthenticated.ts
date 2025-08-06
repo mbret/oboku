@@ -1,4 +1,4 @@
-import {  useSignalValue } from "reactjrx"
+import { useSignalValue } from "reactjrx"
 import { authState } from "./states"
 
 export const useIsAuthenticated = () => {

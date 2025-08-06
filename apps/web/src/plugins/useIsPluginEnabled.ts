@@ -1,9 +1,9 @@
 import { configuration } from "../config/configuration"
-import type { ObokuPlugin } from "./types"
 import { plugin as googlePlugin } from "./google"
 import { plugin as dropboxPlugin } from "./dropbox"
+import type { Plugin } from "./configure"
 
-export const isPluginEnabled = (plugin: ObokuPlugin) => {
+export const isPluginEnabled = (plugin: Plugin) => {
   switch (plugin.type) {
     case googlePlugin.type:
       return configuration.FEATURE_GOOGLE_DRIVE_ENABLED
@@ -14,6 +14,6 @@ export const isPluginEnabled = (plugin: ObokuPlugin) => {
   }
 }
 
-export const useIsPluginEnabled = (plugin: ObokuPlugin) => {
+export const useIsPluginEnabled = (plugin: Plugin) => {
   return isPluginEnabled(plugin)
 }

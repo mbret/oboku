@@ -9,6 +9,7 @@ export const replicateCouchDBCollection = ({
   host,
   autoStart = false,
   cancelSignal,
+  suffix,
   ...params
 }: {
   dbName: string
@@ -16,6 +17,7 @@ export const replicateCouchDBCollection = ({
   host?: string
   autoStart?: boolean
   cancelSignal: AbortSignal
+  suffix?: string
 } & Omit<
   Parameters<typeof replicateCouchDB>[0],
   "pull" | "push" | "url" | "replicationIdentifier" | "collection"
@@ -23,7 +25,7 @@ export const replicateCouchDBCollection = ({
   const uri = host ?? configuration.API_COUCH_URI
 
   return replicateCouchDB({
-    replicationIdentifier: `${uri}/${dbName}-${collection.name}-replication`,
+    replicationIdentifier: `${uri}/${dbName}-${collection.name}${suffix ? `-${suffix}` : ""}-replication`,
     collection: collection,
     url: `${uri}/${dbName}/`,
     live: false,
@@ -87,7 +89,6 @@ export const replicateCouchDBCollection = ({
         if ("rx_model" in docData && docData.rx_model === "tag") {
           // old property not used anymore
           if ("isHidden" in docData) {
-            // biome-ignore lint/performance/noDelete: <explanation>
             delete docData.isHidden
           }
         }
@@ -96,7 +97,7 @@ export const replicateCouchDBCollection = ({
           if ("data" in docData && typeof docData.data === "string") {
             try {
               docData.data = JSON.parse(docData.data)
-            } catch (error) {
+            } catch (_error) {
               docData.data = {}
             }
           }

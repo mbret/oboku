@@ -33,10 +33,10 @@ describe(`Given has series info`, () => {
         ...getDefaultData(),
         items: [
           {
-            // biome-ignore lint/style/noNonNullAssertion: <explanation>
+            // biome-ignore lint/style/noNonNullAssertion: TODO
             ...(getDefaultData().items ?? [])[0]!,
             volumeInfo: {
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              // biome-ignore lint/style/noNonNullAssertion: TODO
               ...getDefaultData().items?.[0]?.volumeInfo!,
               title: "My title Vol. 1",
               seriesInfo: {
@@ -57,10 +57,10 @@ describe(`Given has series info`, () => {
         ...getDefaultData(),
         items: [
           {
-            // biome-ignore lint/style/noNonNullAssertion: <explanation>
+            // biome-ignore lint/style/noNonNullAssertion: TODO
             ...getDefaultData().items?.[0]!,
             volumeInfo: {
-              // biome-ignore lint/style/noNonNullAssertion: <explanation>
+              // biome-ignore lint/style/noNonNullAssertion: TODO
               ...getDefaultData().items?.[0]?.volumeInfo!,
               title: "My title",
               seriesInfo: {
@@ -82,10 +82,10 @@ describe(`Given no series info`, () => {
       ...getDefaultData(),
       items: [
         {
-          // biome-ignore lint/style/noNonNullAssertion: <explanation>
+          // biome-ignore lint/style/noNonNullAssertion: TODO
           ...getDefaultData().items?.[0]!,
           volumeInfo: {
-            // biome-ignore lint/style/noNonNullAssertion: <explanation>
+            // biome-ignore lint/style/noNonNullAssertion: TODO
             ...getDefaultData().items?.[0]?.volumeInfo!,
             title: "My title",
             seriesInfo: undefined,

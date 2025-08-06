@@ -11,20 +11,22 @@ export const useReplicateCollection = <
   return useCallback(
     ({
       collection,
+      suffix,
       ...params
-    }: { collection: Collection } & Omit<
+    }: { collection: Collection; suffix?: string } & Omit<
       Parameters<typeof replicateCouchDBCollection>[0],
       "cancelSignal"
     >) => {
       const cancelSignal = new AbortController()
+      const id = `${Date.now()}-${suffix ?? ""}`
 
       const state = replicateCouchDBCollection({
         ...params,
         collection,
         cancelSignal: cancelSignal.signal,
+        suffix,
       })
 
-      const id = Date.now()
       const replicationId = `${collection.name}:${id}`
 
       Logger.info(`[replication]`, replicationId, `created`)
@@ -38,6 +40,10 @@ export const useReplicateCollection = <
       state.sent$.subscribe((doc) =>
         Logger.info(`[replication]`, replicationId, `push`, doc._id, doc),
       )
+
+      state.remoteEvents$.subscribe((event) => {
+        Logger.info(`[replication]`, replicationId, `remoteEvent`, event)
+      })
 
       // emits all errors that happen when running the push- & pull-handlers.
       state.error$.subscribe((error) => {

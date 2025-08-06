@@ -1,5 +1,5 @@
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
-import { combineLatest, first, from, mergeMap, of } from "rxjs"
+import { combineLatest, defaultIfEmpty, first, from, mergeMap, of } from "rxjs"
 import { withDialog } from "../common/dialogs/withDialog"
 import { getLinksForDataSource } from "../links/dbHelpers"
 import { useRemoveBook } from "../books/helpers"
@@ -17,7 +17,7 @@ export const useRemoveDataSource = () => {
         withDialog({
           title: "Remove books?",
           content:
-            "Do you want to delete the books together with the data source?",
+            "Do you want to delete all the contents attached to this data source (books, collections, etc.)?",
           cancellable: true,
           actions: [
             {
@@ -66,6 +66,7 @@ export const useRemoveDataSource = () => {
           ),
         ),
         withUnknownErrorDialog(),
+        defaultIfEmpty(null),
       ),
   })
 }

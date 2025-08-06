@@ -9,8 +9,11 @@ import { localSettingsSignal } from "../settings/states"
 import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
 import { webStreamer } from "./streamer/webStreamer"
 import { from } from "rxjs"
+import { refitEnhancer } from "@prose-reader/enhancer-refit"
 
-export const createAppReader = galleryEnhancer(gesturesEnhancer(createReader))
+export const createAppReader = refitEnhancer(
+  galleryEnhancer(gesturesEnhancer(createReader)),
+)
 
 export const useCreateReader = ({
   isUsingWebStreamer,

@@ -79,11 +79,13 @@ export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
       ? ([metadata["dc:subject"]] as string[])
       : null
 
+  const title: string | number =
+    typeof metadata["dc:title"] === "object"
+      ? metadata["dc:title"]["#text"]
+      : metadata.title || metadata["dc:title"]
+
   return {
-    title:
-      typeof metadata["dc:title"] === "object"
-        ? metadata["dc:title"]["#text"]
-        : metadata.title || metadata["dc:title"],
+    title,
     publisher:
       typeof metadata["dc:publisher"] === "string"
         ? metadata["dc:publisher"]

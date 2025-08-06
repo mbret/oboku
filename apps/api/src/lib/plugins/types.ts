@@ -5,34 +5,48 @@ import {
   type DocType,
   type ModelOf,
   type BookMetadata,
+  DataSourceDocType,
 } from "@oboku/shared"
-import cheerio from "cheerio"
 import type createNano from "nano"
-import type { Metadata } from "src/lib/metadata/types"
 import type { IncomingMessage } from "node:http"
 import { SyncReport } from "../sync/SyncReport"
 
-export { dataSourceHelpers, cheerio }
+export { dataSourceHelpers }
 
 type NameWithMetadata = string
 type ISOString = string
 
-type SynchronizeAbleItem = {
+export type SynchronizeAbleItem = {
   type: `file` | `folder`
+  /**
+   * @important
+   * Unique identifier for this item which would not clash with other items that would
+   * not point to the same resource.
+   *
+   * @example
+   * dropbox:1234567890
+   * webdav:{base64-url}/media/Books/my-book.epub
+   */
   resourceId: string
+  /**
+   * @important
+   * Can be used to store additional data to the link so that it can be used
+   * later. For example webdav data source can attach their same connectorId so
+   * that by default the item will be using the same connector in its link
+   */
+  linkData?: Record<string, unknown>
   name: NameWithMetadata
   items?: SynchronizeAbleItem[]
   modifiedAt: ISOString
+  tags?: string[]
 }
 
 export type SynchronizeAbleDataSource = {
-  name: string
   items: SynchronizeAbleItem[]
 }
 
 type Helpers = {
   refreshBookMetadata: (opts: { bookId: string }) => Promise<any>
-  getDataSourceData: <Data>() => Promise<Partial<Data>>
   findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
     model: M,
     query: SafeMangoQuery<D>,
@@ -66,34 +80,37 @@ type Helpers = {
 
 export type DataSourcePlugin = {
   type: string
-  getMetadata: (data: {
-    credentials?: any
-    id: string
+  getFolderMetadata: (data: {
     data?: Record<string, unknown>
-  }) => Promise<
-    | {
-        name?: string
-        modifiedAt?: string
-        canDownload?: boolean
-        contentType?: string
-        bookMetadata?: Partial<Omit<BookMetadata, "type">>
-      }
-    | undefined
-  >
+    link: Pick<LinkDocType, "type" | "resourceId" | "data">
+  }) => Promise<{
+    name?: string
+    modifiedAt?: string
+  }>
+  getFileMetadata: (data: {
+    data?: Record<string, unknown>
+    link: Pick<LinkDocType, "type" | "resourceId" | "data">
+  }) => Promise<{
+    name?: string
+    modifiedAt?: string
+    canDownload?: boolean
+    contentType?: string
+    bookMetadata?: Partial<Omit<BookMetadata, "type">>
+  }>
   download?: (
     link: LinkDocType,
-    credentials?: any,
+    data?: Record<string, unknown>,
   ) => Promise<{
     stream: NodeJS.ReadableStream | IncomingMessage
-    metadata: Omit<Metadata, "type"> & { contentType?: string }
   }>
   sync?: (
     options: {
       userName: string
       dataSourceId: string
-      credentials?: any
-      dataSourceType: string
+      data: Record<string, unknown> | undefined
+      dataSourceType: DataSourceDocType["type"]
       syncReport: SyncReport
+      db: createNano.DocumentScope<unknown>
     },
     helper: Helpers,
   ) => Promise<SynchronizeAbleDataSource>

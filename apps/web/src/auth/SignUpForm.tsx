@@ -11,7 +11,9 @@ type Inputs = {
 
 export const SignUpForm = ({
   onSubmit,
-}: { onSubmit: (data: Inputs) => void }) => {
+}: {
+  onSubmit: (data: Inputs) => void
+}) => {
   const { control, handleSubmit, getValues } = useForm<Inputs>({
     defaultValues: {
       email: "",

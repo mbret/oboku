@@ -4,30 +4,47 @@ import { plugins } from "./plugins"
 const urlPlugin = plugins.find(({ type }) => type === `URI`)
 
 export const pluginFacade = {
-  getMetadata: async ({
-    credentials,
+  getFolderMetadata: async ({
+    data,
     link,
   }: {
     link: Pick<LinkDocType, "type" | "resourceId" | "data">
-    credentials?: any
+    data?: Record<string, unknown>
   }) => {
     const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
 
     if (plugin) {
-      return await plugin.getMetadata({
-        id: link.resourceId,
-        credentials,
-        data: link.data ?? {},
+      return await plugin.getFolderMetadata({
+        data,
+        link,
       })
     }
 
     throw new Error(`No dataSource found for action`)
   },
-  download: async (link: LinkDocType, credentials?: any) => {
+  getFileMetadata: async ({
+    data,
+    link,
+  }: {
+    link: Pick<LinkDocType, "type" | "resourceId" | "data">
+    data?: Record<string, unknown>
+  }) => {
+    const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
+
+    if (plugin) {
+      return await plugin.getFileMetadata({
+        data,
+        link,
+      })
+    }
+
+    throw new Error(`No dataSource found for action`)
+  },
+  download: async (link: LinkDocType, data?: any) => {
     const plugin = plugins.find(({ type }) => type === link.type) || urlPlugin
 
     if (plugin?.download) {
-      return plugin.download(link, credentials)
+      return plugin.download(link, data)
     }
 
     throw new Error(`No dataSource found for action`)

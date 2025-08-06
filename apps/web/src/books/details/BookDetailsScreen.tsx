@@ -16,7 +16,7 @@ import { DataSourceSection } from "./DataSourceSection"
 import { booksDownloadStateSignal } from "../../download/states"
 import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
 import { useSignalValue } from "reactjrx"
-import { useMedataFromBook } from "../metadata"
+import { useMetadataFromBook } from "../metadata"
 import { MetadataSourcePane } from "./MetadataSourcePane"
 import { CoverPane } from "./CoverPane"
 import { MetadataPane } from "./MetadataPane"
@@ -44,7 +44,7 @@ export const BookDetailsScreen = memo(() => {
     tags: useTagsByIds().data,
   })
   const { data: link } = useLink({ id: book?.links[0] })
-  const metadata = useMedataFromBook(book)
+  const metadata = useMetadataFromBook(book)
   const openBookActionDrawer = useBookActionDrawer({
     onDeleteBook: () => {
       goBack()

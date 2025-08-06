@@ -5,7 +5,7 @@ import { from } from "rxjs"
 
 const useDownloadBookPlaceholder = () => {
   return () => {
-    throw new Error("this datasource cannot download")
+    throw new Error("This book cannot be downloaded")
   }
 }
 
@@ -16,10 +16,12 @@ export const usePluginDownloadBook = () => {
     return {
       type: plugin.type,
       downloadBook: plugin.useDownloadBook
-        ? plugin.useDownloadBook({
+        ? // biome-ignore lint/correctness/useHookAtTopLevel: Expected
+          plugin.useDownloadBook({
             requestPopup: createRequestPopupDialog({ name: plugin.name }),
           })
-        : useDownloadBookPlaceholder(),
+        : // biome-ignore lint/correctness/useHookAtTopLevel: Expected
+          useDownloadBookPlaceholder(),
     }
   })
 

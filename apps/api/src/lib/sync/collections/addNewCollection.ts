@@ -3,7 +3,7 @@ import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "src/lib/plugins/types"
-import { directives } from "@oboku/shared"
+import { CollectionDocType, directives } from "@oboku/shared"
 import type { Context } from "../types"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
@@ -12,7 +12,7 @@ type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 const logger = new Logger("sync/addNewCollection")
 
 export const addNewCollection = async ({
-  item: { name, resourceId: linkResourceId },
+  item: { name, resourceId: linkResourceId, linkData },
   helpers,
   ctx,
 }: {
@@ -36,19 +36,21 @@ export const addNewCollection = async ({
    * Note that there could be another collection with same name. But since it
    * does not come from the same datasource it should still be treated as different
    */
-  const collectionToAdd = {
-    linkResourceId,
-    linkType: ctx.dataSourceType,
-    books: [],
-    createdAt: new Date().toISOString(),
-    modifiedAt: null,
-    syncAt: new Date().toISOString(),
-    type: directiveValues.series ? ("series" as const) : ("shelve" as const),
-    rxdbMeta: {
-      lwt: new Date().getTime(),
-    },
-    metadata: [linkMetadata],
-  }
+  const collectionToAdd: Omit<CollectionDocType, "_id" | "_rev" | "rx_model"> =
+    {
+      linkResourceId,
+      linkType: ctx.dataSourceType,
+      linkData,
+      books: [],
+      createdAt: new Date().toISOString(),
+      modifiedAt: null,
+      syncAt: new Date().toISOString(),
+      type: directiveValues.series ? ("series" as const) : ("shelve" as const),
+      rxdbMeta: {
+        lwt: Date.now(),
+      },
+      metadata: [linkMetadata],
+    }
 
   const created = await helpers.create("obokucollection", collectionToAdd)
 

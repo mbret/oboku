@@ -9,7 +9,7 @@ export type LinkCollection = RxCollection<
   LinkCollectionMethods
 >
 
-// biome-ignore lint/complexity/noBannedTypes: <explanation>
+// biome-ignore lint/complexity/noBannedTypes: TODO
 type LinkDocMethods = {}
 
 type LinkDocument = RxDocument<LinkDocType, LinkDocMethods>

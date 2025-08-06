@@ -1,19 +1,26 @@
-import { useAccessToken } from "./lib/useAccessToken"
-import type { ObokuPlugin } from "../types"
+import { useRequestToken } from "./lib/useRequestToken"
+import type { UseSynchronizeHook } from "../types"
 import { firstValueFrom } from "rxjs"
+import { useMutation } from "@tanstack/react-query"
 
-export const useSynchronize: ObokuPlugin[`useSynchronize`] = ({
+export const useSynchronize: UseSynchronizeHook<"DRIVE"> = ({
   requestPopup,
 }) => {
-  const { requestToken } = useAccessToken({ requestPopup })
+  const { requestToken } = useRequestToken({ requestPopup })
 
-  return async () => {
-    const token = await firstValueFrom(
-      requestToken({
-        scope: ["https://www.googleapis.com/auth/drive.readonly"],
-      }),
-    )
+  return useMutation({
+    mutationFn: async () => {
+      const token = await firstValueFrom(
+        requestToken({
+          scope: ["https://www.googleapis.com/auth/drive.file"],
+        }),
+      )
 
-    return { data: token }
-  }
+      return {
+        data: {
+          ...token,
+        },
+      }
+    },
+  })
 }

@@ -1,5 +1,5 @@
 import { atomicUpdate } from "src/lib/couch/dbHelpers"
-import type { CollectionDocType } from "@oboku/shared/src/db/docTypes"
+import type { CollectionDocType } from "@oboku/shared"
 import type nano from "nano"
 import { from } from "rxjs"
 

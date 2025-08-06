@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_COUCH_DB_PUBLIC_URL?: string
   readonly VITE_COUCH_DB_PUBLIC_URL_2?: string
   readonly VITE_COUCH_DB_PUBLIC_URL_3?: string
+  readonly VITE_COUCH_DB_PUBLIC_URL_4?: string
   readonly SENTRY_DSN?: string
 }
 

@@ -48,7 +48,10 @@ export const BackToReadingDialog = memo(
                 const { title } = getMetadataFromBook(book.toJSON())
 
                 return from(
-                  createBackToBookDialog({ bookId: bookBeingReadId, title }),
+                  createBackToBookDialog({
+                    bookId: bookBeingReadId,
+                    title: title?.toString() ?? "",
+                  }),
                 )
               }),
             )

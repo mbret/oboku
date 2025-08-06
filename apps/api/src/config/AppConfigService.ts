@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "./types"
-import * as path from "node:path"
+import path from "node:path"
 
 @Injectable()
 export class AppConfigService {
@@ -50,6 +50,7 @@ export class AppConfigService {
   get METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS() {
     return [
       "application/x-cbz",
+      "application/x-cbr",
       "application/epub+zip",
       "application/zip",
       "application/x-zip-compressed",

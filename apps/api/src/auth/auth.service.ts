@@ -1,8 +1,6 @@
 import {
   BadRequestException,
-  Get,
   Injectable,
-  Req,
   UnauthorizedException,
 } from "@nestjs/common"
 import { UsersService } from "../users/users.service"
@@ -11,7 +9,7 @@ import { AppConfigService } from "../config/AppConfigService"
 import { ObokuErrorCode } from "@oboku/shared"
 import { CouchService } from "../couch/couch.service"
 import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
-import * as bcrypt from "bcrypt"
+import bcrypt from "bcrypt"
 import { JwtService, TokenExpiredError } from "@nestjs/jwt"
 import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
 import { SecretsService } from "src/config/SecretsService"
@@ -136,11 +134,7 @@ export class AuthService {
     throw new UnauthorizedException()
   }
 
-  async generateTokens({
-    email,
-  }: {
-    email: string
-  }) {
+  async generateTokens({ email }: { email: string }) {
     const refreshTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     // const refreshTokenEntity = await this.refreshTokensService.save({
     //   user_email: email,
@@ -214,12 +208,16 @@ export class AuthService {
   }
 
   async refreshToken(grant_type: "refresh_token", refreshToken: string) {
+    void grant_type
+
     try {
-      const { id, sub } =
-        await this.jwtService.verifyAsync<RefreshTokenPayload>(refreshToken, {
+      const { sub } = await this.jwtService.verifyAsync<RefreshTokenPayload>(
+        refreshToken,
+        {
           secret: await this.secretService.getJwtPrivateKey(),
           algorithms: ["RS256"],
-        })
+        },
+      )
 
       // await this.refreshTokensService.deleteById(id)
 

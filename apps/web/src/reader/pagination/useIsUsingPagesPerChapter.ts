@@ -10,7 +10,7 @@ export const useIsUsingPagesPerChapter = ({ bookId }: { bookId?: string }) => {
     (metadata) => metadata.type === "link",
   )
   const { isWebtoon } = directives.extractDirectivesFromName(
-    linkMetadata?.title ?? ``,
+    linkMetadata?.title?.toString() ?? ``,
   )
   const { renditionLayout } = reader?.context.manifest ?? {}
 

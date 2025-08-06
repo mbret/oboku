@@ -13,7 +13,7 @@ export const getGoogleBookMetadata = async (
   apiKey: string,
   config: AppConfigService,
 ): Promise<Metadata | undefined> => {
-  let titleRefined = metadata.title ?? ""
+  let titleRefined = metadata.title?.toString() ?? ""
   let response = metadata.isbn
     ? await findByISBN(metadata.isbn, apiKey, config)
     : metadata.googleVolumeId
@@ -23,7 +23,7 @@ export const getGoogleBookMetadata = async (
   console.log("[google] [getGoogleBookMetadata]", { response })
 
   if (!response.items?.length) {
-    titleRefined = refineTitle(metadata.title ?? "", 1)
+    titleRefined = refineTitle(metadata.title?.toString() ?? "", 1)
 
     console.log(
       `[getGoogleBookMetadata]`,
@@ -33,7 +33,7 @@ export const getGoogleBookMetadata = async (
     response = await findByTitle(titleRefined, apiKey, config)
 
     if (!response.items?.length) {
-      titleRefined = refineTitle(metadata.title ?? "", 2)
+      titleRefined = refineTitle(metadata.title?.toString() ?? "", 2)
 
       console.log(
         `[getGoogleBookMetadata]`,
@@ -44,7 +44,7 @@ export const getGoogleBookMetadata = async (
     }
 
     if (!response.items?.length) {
-      titleRefined = refineTitle(metadata.title ?? "", 3)
+      titleRefined = refineTitle(metadata.title?.toString() ?? "", 3)
 
       console.log(
         `[getGoogleBookMetadata]`,
@@ -55,7 +55,7 @@ export const getGoogleBookMetadata = async (
     }
 
     if (!response.items?.length) {
-      titleRefined = refineTitle(metadata.title ?? "", 4)
+      titleRefined = refineTitle(metadata.title?.toString() ?? "", 4)
 
       console.log(
         `[getGoogleBookMetadata]`,
@@ -66,7 +66,7 @@ export const getGoogleBookMetadata = async (
     }
 
     if (!response.items?.length) {
-      titleRefined = refineTitle(metadata.title ?? "", 5)
+      titleRefined = refineTitle(metadata.title?.toString() ?? "", 5)
 
       console.log(
         `[getGoogleBookMetadata]`,

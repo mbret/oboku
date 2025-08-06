@@ -1,4 +1,6 @@
 import type { CollectionMetadata } from "../metadata"
+import type { FileLinkData } from "../plugins/file"
+import type { WebdavLinkData } from "../plugins/webdav"
 import type { BookDocType } from "./books"
 import type { CouchDBMeta } from "./couchdb"
 import type { RxDbMeta } from "./rxdb"
@@ -10,7 +12,7 @@ export type LinkDocType = CommonBase & {
    * unique type.
    * This is used to lookup plugin configurations
    */
-  type: string
+  type: DataSourceDocType["type"]
   /**
    * Is used as unique identifier for the datasource specifically.
    * This can be used to detect if an item already exist for a datasource
@@ -28,9 +30,9 @@ export type LinkDocType = CommonBase & {
   dataSourceId?: string
   /**
    * Extra data field that can be used by any datasource to store
-   * any form of data. Needs to be serialized as a string
+   * any form of data.
    */
-  data: null | Record<string, unknown>
+  data: null | WebdavLinkData | FileLinkData
   book: string | null
   rx_model: "link"
   contentLength?: number | null
@@ -38,18 +40,70 @@ export type LinkDocType = CommonBase & {
   createdAt: string
 }
 
-export type DataSourceDocType = CommonBase & {
-  type: string
+export type BaseDataSourceDocType = CommonBase & {
   lastSyncedAt: number | null
   syncStatus: null | "fetching"
   lastSyncErrorCode?: string | null
-  credentials?: any
-  data: string
   rx_model: "datasource"
   modifiedAt: string | null
   createdAt: string
   isProtected?: boolean
+  credentials?: Record<string, unknown> | null
+  name?: string | null
+  data_v2?: Record<string, unknown>
+  /**
+   * Selection of tags to apply to all books in this datasource
+   * @important
+   * The tag reference may be invalid eventually.
+   */
+  tags?: string[]
 }
+
+export type FileDataSourceDocType = BaseDataSourceDocType & {
+  type: "file"
+  data_v2?: undefined
+}
+
+export type URIDataSourceDocType = BaseDataSourceDocType & {
+  type: "URI"
+  data_v2?: undefined
+}
+
+export type GoogleDriveDataSourceDocType = Omit<
+  BaseDataSourceDocType,
+  "data_v2"
+> & {
+  type: "DRIVE"
+  data_v2?: {
+    items?: ReadonlyArray<string>
+  }
+}
+
+export type DropboxDataSourceDocType = Omit<
+  BaseDataSourceDocType,
+  "data_v2"
+> & {
+  type: "dropbox"
+  data_v2?: {
+    folderId?: string
+    folderName?: string
+  }
+}
+
+export type WebDAVDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
+  type: "webdav"
+  data_v2?: {
+    connectorId?: string
+    directory?: string
+  }
+}
+
+export type DataSourceDocType =
+  | GoogleDriveDataSourceDocType
+  | DropboxDataSourceDocType
+  | WebDAVDataSourceDocType
+  | FileDataSourceDocType
+  | URIDataSourceDocType
 
 export type InsertAbleBookDocType = Omit<BookDocType, "_id" | "_rev">
 
@@ -76,10 +130,22 @@ export type TagsDocType = CommonBase & {
   createdAt: string
 }
 
+export type SecretDocType = CommonBase & {
+  name: string
+  rx_model: "secret"
+  modifiedAt: string | null
+  createdAt: string
+  value?: {
+    iv: string
+    data: string
+  } | null
+}
+
 export type CollectionDocType = CommonBase & {
   books: string[]
-  linkType?: string
+  linkType?: DataSourceDocType["type"]
   linkResourceId?: string
+  linkData?: WebdavLinkData
   rx_model: "obokucollection"
   modifiedAt: string | null
   /**

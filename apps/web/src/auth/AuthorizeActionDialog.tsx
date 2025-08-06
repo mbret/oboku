@@ -8,7 +8,6 @@ import {
   TextField,
 } from "@mui/material"
 import { useEffect } from "react"
-import { useValidateAppPassword } from "../settings/helpers"
 import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { signal, useSignalValue } from "reactjrx"
@@ -16,6 +15,9 @@ import { type Observable, from, map, mergeMap, of } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getSettings } from "../settings/dbHelpers"
 import { CancelError } from "../errors/errors.shared"
+import { validateMasterKey } from "../secrets/useValidateMasterKey"
+import { useSettings } from "../settings/helpers"
+import { CancelButton } from "../common/forms/CancelButton"
 
 const FORM_ID = "LockActionBehindUserPasswordDialog"
 
@@ -24,14 +26,25 @@ type Inputs = {
 }
 
 const actionSignal = signal<
-  { action: () => void; onCancel?: () => void } | undefined
+  { action: (masterKey: string) => void; onCancel?: () => void } | undefined
 >({})
 
-export const authorizeAction = (action: () => void, onCancel?: () => void) =>
-  actionSignal.setValue({
+export const authorizeAction = (
+  action: (masterKey: string) => void,
+  onCancel?: () => void,
+) =>
+  actionSignal.update({
     action,
     onCancel,
   })
+
+export const authorizeActionObservable = () => {
+  return from(
+    new Promise<string>((resolve, reject) =>
+      authorizeAction(resolve, () => reject(new CancelError())),
+    ),
+  )
+}
 
 export function useWithAuthorization() {
   return function withAuthorization<T>(stream: Observable<T>) {
@@ -40,12 +53,8 @@ export function useWithAuthorization() {
         getLatestDatabase().pipe(
           mergeMap((db) => getSettings(db)),
           mergeMap((settings) =>
-            settings?.contentPassword
-              ? from(
-                  new Promise<void>((resolve, reject) =>
-                    authorizeAction(resolve, () => reject(new CancelError())),
-                  ),
-                ).pipe(map(() => data))
+            settings?.masterEncryptionKey
+              ? authorizeActionObservable().pipe(map(() => data))
               : of(data),
           ),
         ),
@@ -62,12 +71,13 @@ export const AuthorizeActionDialog = () => {
       password: "",
     },
   })
-
+  const settings = useSettings()
+  const hasNotSetPassword = !settings.data?.masterEncryptionKey
   const { mutate: validatePassword, reset: resetValidatePasswordMutation } =
-    useValidateAppPassword({
-      onSuccess: () => {
+    validateMasterKey({
+      onSuccess: (masterKey) => {
         onClose()
-        action?.()
+        action?.(masterKey)
       },
       onError: () => {
         setError("password", {
@@ -77,7 +87,7 @@ export const AuthorizeActionDialog = () => {
     })
 
   const onClose = () => {
-    actionSignal.setValue(undefined)
+    actionSignal.update(undefined)
   }
 
   const _onCancel = () => {
@@ -103,48 +113,55 @@ export const AuthorizeActionDialog = () => {
       }}
       open={open}
     >
-      <DialogTitle>Authorization required</DialogTitle>
+      <DialogTitle>
+        {hasNotSetPassword
+          ? "Master Password required"
+          : "Authorization required"}
+      </DialogTitle>
       <DialogContent>
         <DialogContentText>
-          This action requires explicit authorization. Please enter your app
-          password to continue.
+          {hasNotSetPassword
+            ? "To continue with this action, please initialize your Master Password first"
+            : "This action requires explicit authorization. Please enter your Master Password to continue."}
         </DialogContentText>
-        <form
-          noValidate
-          id={FORM_ID}
-          onSubmit={handleSubmit((data) => {
-            validatePassword(data.password)
-          })}
-        >
-          <Controller
-            name="password"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { ref, ...rest }, fieldState }) => {
-              return (
-                <TextField
-                  {...rest}
-                  label="Password"
-                  type="password"
-                  fullWidth
-                  margin="normal"
-                  inputRef={ref}
-                  autoComplete="current-password"
-                  error={fieldState.invalid}
-                  helperText={errorToHelperText(fieldState.error)}
-                />
-              )
-            }}
-          />
-        </form>
+        {!hasNotSetPassword && (
+          <form
+            noValidate
+            id={FORM_ID}
+            onSubmit={handleSubmit((data) => {
+              validatePassword(data.password)
+            })}
+          >
+            <Controller
+              name="password"
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { ref, ...rest }, fieldState }) => {
+                return (
+                  <TextField
+                    {...rest}
+                    label="Password"
+                    type="password"
+                    fullWidth
+                    margin="normal"
+                    inputRef={ref}
+                    autoComplete="current-password"
+                    error={fieldState.invalid}
+                    helperText={errorToHelperText(fieldState.error)}
+                  />
+                )
+              }}
+            />
+          </form>
+        )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={_onCancel} color="primary">
-          Cancel
-        </Button>
-        <Button color="primary" type="submit" form={FORM_ID}>
-          Authorize
-        </Button>
+        <CancelButton onClick={_onCancel} />
+        {!hasNotSetPassword && (
+          <Button color="primary" type="submit" form={FORM_ID}>
+            Authorize
+          </Button>
+        )}
       </DialogActions>
     </Dialog>
   )

@@ -98,11 +98,9 @@ export const useTag = (id?: string) => {
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap((db) => {
-          return db.tag.findOne(id).$.pipe(
-            map((result) => {
-              return result?.toJSON()
-            }),
-          )
+          return db.tag
+            .findOne(id)
+            .$.pipe(map((result) => result?.toJSON() ?? null))
         }),
       ),
   })

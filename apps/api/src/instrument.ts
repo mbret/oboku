@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nestjs"
+import Sentry from "@sentry/nestjs"
 import { nodeProfilingIntegration } from "@sentry/profiling-node"
 
 // Ensure to call this before requiring any other modules!

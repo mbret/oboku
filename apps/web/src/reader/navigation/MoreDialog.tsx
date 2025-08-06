@@ -38,7 +38,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
   const [value, setValue] = React.useState("toc")
   const reader = useSignalValue(readerSignal)
   const { data: pagination } = usePagination()
-  const { manifest } = useObserve(() => reader?.context.state$, [reader]) || {}
+  const { manifest } = useObserve(() => reader?.context, [reader]) || {}
   const { title, nav } = manifest ?? {}
   const chapterInfo = pagination?.beginChapterInfo
   const [currentPage] = useCurrentPages({ bookId }) || 0
@@ -50,7 +50,7 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
     currentSubChapter = currentSubChapter?.subChapter
   }
 
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+  const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue)
   }
 

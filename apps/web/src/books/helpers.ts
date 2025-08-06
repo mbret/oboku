@@ -211,8 +211,8 @@ const sortBooksBy = (
     case "alpha": {
       return books.sort((a, b) =>
         sortByTitleComparator(
-          getMetadataFromBook(a).title || "",
-          getMetadataFromBook(b).title || "",
+          getMetadataFromBook(a).title?.toString() ?? "",
+          getMetadataFromBook(b).title?.toString() ?? "",
         ),
       )
     }

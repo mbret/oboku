@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, memo } from "react"
 import { BookList } from "../../books/bookList/BookList"
 import {
   Button,
@@ -22,7 +22,7 @@ import { Toolbar } from "./Toolbar"
 import { useResetFilters } from "./filters/useResetFilters"
 import { uploadBookDialogOpenedSignal } from "../../upload/UploadBookDialog"
 
-export const LibraryBooksScreen = () => {
+export const LibraryBooksScreen = memo(() => {
   const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const isUploadBookDrawerOpened = useSignalValue(
@@ -30,8 +30,8 @@ export const LibraryBooksScreen = () => {
   )
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const library = useSignalValue(libraryStateSignal)
-  let numberOfFiltersApplied = 0
   const resetFilters = useResetFilters()
+  let numberOfFiltersApplied = 0
 
   if ((library.tags.length || 0) > 0) numberOfFiltersApplied++
   if ((library.readingStates.length || 0) > 0) numberOfFiltersApplied++
@@ -131,7 +131,7 @@ export const LibraryBooksScreen = () => {
               height: "100%",
             }}
             renderHeader={bookListRenderHeader}
-            restoreScrollId="libraryBookList"
+            restoreScrollId="libraryBookListRestoreScrollId"
           />
         )}
         <SortByDialog
@@ -156,4 +156,4 @@ export const LibraryBooksScreen = () => {
       </Stack>
     </div>
   )
-}
+})

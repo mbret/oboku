@@ -29,33 +29,29 @@ export const FiltersDrawer: FC<{
   }
 
   return (
-    <>
-      <Drawer anchor="bottom" open={open} onClose={onClose}>
-        <div role="presentation">
-          <List>
-            <ListItemButton
-              onClick={() =>
-                searchListActionsToolbarSignal.setValue((state) => ({
-                  ...state,
-                  notInterestedContents:
-                    state.notInterestedContents === "none"
-                      ? "with"
-                      : state.notInterestedContents === "with"
-                        ? "only"
-                        : "none",
-                }))
-              }
-            >
-              <ListItemText
-                primary="Show not interested contents"
-                secondary={getNotInterestedLabelFromValue(
-                  notInterestedContents,
-                )}
-              />
-            </ListItemButton>
-          </List>
-        </div>
-      </Drawer>
-    </>
+    <Drawer anchor="bottom" open={open} onClose={onClose}>
+      <div role="presentation">
+        <List>
+          <ListItemButton
+            onClick={() =>
+              searchListActionsToolbarSignal.setValue((state) => ({
+                ...state,
+                notInterestedContents:
+                  state.notInterestedContents === "none"
+                    ? "with"
+                    : state.notInterestedContents === "with"
+                      ? "only"
+                      : "none",
+              }))
+            }
+          >
+            <ListItemText
+              primary="Show not interested contents"
+              secondary={getNotInterestedLabelFromValue(notInterestedContents)}
+            />
+          </ListItemButton>
+        </List>
+      </div>
+    </Drawer>
   )
 })

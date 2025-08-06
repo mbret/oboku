@@ -6,6 +6,8 @@ export const design = {
 
 export const links = {
   documentation: `https://docs.oboku.me`,
+  documentationSecrets: `https://docs.oboku.me/secrets`,
+  documentationWebDAV: `https://docs.oboku.me/guides/webdav`,
   app: `https://app.oboku.me`,
   site: `https://oboku.me`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,
@@ -59,11 +61,8 @@ export * from "./sorting"
 
 export { ObokuErrorCode, ObokuSharedError } from "./errors"
 
-export * from "./plugins/file"
 export * from "./metadata"
-
 export * from "./sync/reports"
-
 export * from "./utils/objects"
 export * from "./utils/difference"
 export * from "./utils/truncate"
@@ -72,3 +71,6 @@ export * from "./utils/groupBy"
 export * from "./utils/mergeWith"
 export * from "./collections"
 export * from "./contentType"
+export * from "./plugins/webdav"
+export * from "./plugins/file"
+export * from "./plugins/dropbox"

@@ -4,7 +4,7 @@ import { useDownloadBook } from "./useDownloadBook"
 import type { ObokuPlugin } from "../types"
 import { UploadBookComponent } from "./UploadBookComponent"
 
-const plugin: ObokuPlugin = {
+const plugin: ObokuPlugin<"URI"> = {
   type: TYPE,
   name: "uri",
   canSynchronize: false,
@@ -12,7 +12,7 @@ const plugin: ObokuPlugin = {
   Icon: HttpRounded,
   UploadBookComponent,
   useDownloadBook,
-  description: "Manage books from URI / URL",
+  description: "Manage contents from URI / URL",
 }
 
 export default plugin

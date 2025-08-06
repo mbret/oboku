@@ -1,4 +1,4 @@
-import * as fs from "node:fs"
+import fs from "node:fs"
 import { createExtractorFromData } from "node-unrar-js"
 
 const wasmBinary = fs.readFileSync(

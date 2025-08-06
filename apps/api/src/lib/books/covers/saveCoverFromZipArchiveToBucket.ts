@@ -1,5 +1,5 @@
-import * as fs from "node:fs"
-import * as unzipper from "unzipper"
+import fs from "node:fs"
+import unzipper from "unzipper"
 import { Logger } from "@nestjs/common"
 import { asError } from "src/lib/utils"
 import { CoversService } from "src/covers/covers.service"

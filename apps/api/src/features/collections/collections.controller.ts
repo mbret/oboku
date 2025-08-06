@@ -1,15 +1,8 @@
-import {
-  Body,
-  Controller,
-  Headers,
-  Logger,
-  OnModuleInit,
-  Post,
-} from "@nestjs/common"
+import { Body, Controller, Logger, OnModuleInit, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
 import { CollectionMetadataRefreshEvent, Events } from "../../events"
 import { CollectionMetadataService } from "./CollectionMetadataService"
-import { IsBoolean, IsString, IsOptional } from "class-validator"
+import { IsBoolean, IsString, IsOptional, IsObject } from "class-validator"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { WithAuthUser, AuthUser } from "src/auth/auth.guard"
 
@@ -20,6 +13,10 @@ class PostMetadataRefreshDto {
   @IsBoolean()
   @IsOptional()
   soft?: boolean
+
+  @IsObject()
+  @IsOptional()
+  data?: Record<string, unknown>
 }
 
 @Controller("collections")
@@ -43,27 +40,22 @@ export class CollectionsController implements OnModuleInit {
 
   @Post("metadata/refresh")
   async metadataRefresh(
-    @Body() body: PostMetadataRefreshDto,
+    @Body() { collectionId, data, soft }: PostMetadataRefreshDto,
     @WithAuthUser() user: AuthUser,
-    @Headers() headers: {
-      "oboku-credentials"?: string
-      authorization?: string
-    },
   ) {
-    this.logger.log(`metadataRefresh ${body.collectionId}`)
+    this.logger.log(`metadataRefresh ${collectionId}`)
 
     this.taskQueueService.enqueue(
       this.QUEUE_NAME,
       () =>
         this.collectionMetadataService.refreshMetadata({
-          collectionId: body.collectionId,
-          credentials: JSON.parse(headers["oboku-credentials"] ?? "{}"),
-          authorization: headers.authorization ?? "",
-          soft: body.soft,
+          collectionId: collectionId,
+          data: data ?? {},
+          soft,
           email: user.email,
         }),
       {
-        id: body.collectionId,
+        id: collectionId,
       },
     )
 
@@ -79,8 +71,7 @@ export class CollectionsController implements OnModuleInit {
       () =>
         this.collectionMetadataService.refreshMetadata({
           collectionId: event.data.collectionId,
-          credentials: event.data.obokuCredentials,
-          authorization: event.data.authorization,
+          data: event.data.data,
           soft: event.data.soft,
           email: event.data.email,
         }),

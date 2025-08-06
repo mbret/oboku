@@ -9,7 +9,7 @@ import {
 import { useSignalValue } from "reactjrx"
 import { gapiSignal, useLoadGapi } from "./lib/gapi"
 import { gsiSignal } from "../../google/gsi"
-import { accessTokenSignal, getTokenExpirationDate } from "./lib/auth"
+import { accessTokenSignal, getTokenExpirationDate } from "../../google/auth"
 
 export const InfoScreen = () => {
   const gapi = useSignalValue(gapiSignal)

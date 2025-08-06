@@ -16,6 +16,7 @@ export class CouchMigrationService {
       selector: {
         type: "user",
       },
+      limit: 99999,
     })
 
     const users = result.docs
@@ -24,6 +25,9 @@ export class CouchMigrationService {
     )
 
     logger.log(`Migrating ${userDbs.length} user databases`)
+
+    let linkChanged = 0
+    const userChanged = new Set<string>()
 
     for (const userDbName of userDbs) {
       const userDbInstance = db.use(userDbName)
@@ -34,6 +38,7 @@ export class CouchMigrationService {
         selector: {
           rx_model: "link",
         },
+        limit: 99999,
       })
 
       logger.log(`Found ${result.docs.length} links in ${userDbName}`)
@@ -45,12 +50,17 @@ export class CouchMigrationService {
           try {
             link.data = JSON.parse(link.data)
           } catch (error) {
+            console.error(error)
             link.data = {}
           }
 
           await userDbInstance.insert(link)
+          linkChanged++
+          userChanged.add(userDbName)
         }
       }
     }
+
+    logger.log(`Migrated ${linkChanged} links in ${userChanged.size} users`)
   }
 }

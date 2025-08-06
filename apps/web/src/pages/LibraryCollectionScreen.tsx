@@ -1,8 +1,8 @@
-import { useState, useMemo, useCallback, type ComponentProps } from "react"
+import { useState, useMemo, useCallback, memo } from "react"
 import { Button, Stack, Toolbar as MuiToolbar } from "@mui/material"
 import { useNavigate } from "react-router"
 import { CollectionList } from "../collections/lists/CollectionList"
-import { signal, useSignalValue } from "reactjrx"
+import { useSignalValue } from "reactjrx"
 import { useLibraryShelves } from "../library/shelves/useLibraryShelves"
 import { Toolbar } from "../library/shelves/Toolbar"
 import { libraryShelvesFiltersSignal } from "../library/shelves/filters/states"
@@ -11,24 +11,10 @@ import type { DeepReadonlyObject } from "rxdb"
 import { AddCollectionDialog } from "../library/shelves/AddCollectionDialog"
 import { ROUTES } from "../navigation/routes"
 
-type RestoreStateFromState =
-  | Parameters<
-      NonNullable<ComponentProps<typeof CollectionList>["onStateChange"]>
-    >[0]
-  | undefined
-
-const libraryCollectionScreenPreviousScrollState =
-  signal<RestoreStateFromState>({
-    key: "libraryCollectionScreenPreviousScrollState",
-  })
-
-export const LibraryCollectionScreen = () => {
+export const LibraryCollectionScreen = memo(() => {
   const navigate = useNavigate()
   const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] =
     useState(false)
-  const libraryCollectionScreenPreviousScroll = useSignalValue(
-    libraryCollectionScreenPreviousScrollState,
-  )
   const { viewMode } = useSignalValue(
     libraryShelvesFiltersSignal,
     ({ viewMode }) => ({ viewMode }),
@@ -74,9 +60,7 @@ export const LibraryCollectionScreen = () => {
           renderHeader={listRenderHeader}
           onItemClick={onItemClick}
           viewMode={viewMode}
-          onStateChange={libraryCollectionScreenPreviousScrollState.update}
-          restoreStateFrom={libraryCollectionScreenPreviousScroll}
-          restoreScrollId="libraryShelves"
+          restoreScrollId="LibraryCollectionScreen"
         />
       )}
       <AddCollectionDialog
@@ -85,4 +69,4 @@ export const LibraryCollectionScreen = () => {
       />
     </Stack>
   )
-}
+})

@@ -77,11 +77,13 @@ export const getMetadataFromBook = (
 
   return {
     ...reducedMetadata,
-    title: directives.removeDirectiveFromString(reducedMetadata.title ?? ""),
+    title: directives.removeDirectiveFromString(
+      reducedMetadata.title?.toString() ?? "",
+    ),
   }
 }
 
-export const useMedataFromBook = (
+export const useMetadataFromBook = (
   book?: DeepReadonlyObject<BookDocType & Partial<DeprecatedBookDocType>>,
 ) => {
   const { metadata, title, creator } = book ?? {}

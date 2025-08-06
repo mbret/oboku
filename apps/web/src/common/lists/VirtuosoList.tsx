@@ -5,40 +5,35 @@ import {
   forwardRef,
   useMemo,
   type Ref,
-  useEffect,
-  useState,
   type ReactElement,
   type ComponentProps,
+  useImperativeHandle,
+  useCallback,
+  useEffect,
 } from "react"
 import { Box, Stack } from "@mui/material"
 import {
   type ContextProp,
   type GridItemProps,
   type GridListProps,
-  type GridStateSnapshot,
-  type StateSnapshot,
+  type StateCallback,
   Virtuoso,
   VirtuosoGrid,
   type VirtuosoGridHandle,
   type VirtuosoHandle,
 } from "react-virtuoso"
-import { signal, useSignalValue } from "reactjrx"
+import { useLiveRef } from "reactjrx"
+import { useRestoreVirtuosoScroll } from "./useRestoreVirtuosoScroll"
 
 type Context = { size: number }
 
-const restoreScrollSignal = signal<
-  Record<
-    string,
-    | { type: "list"; state: StateSnapshot }
-    | { type: "grid"; state: GridStateSnapshot }
-  >
->({
-  key: "restoreScrollSignal",
-  default: {},
-})
-
 type SharedProps = ComponentProps<typeof Virtuoso> &
   ComponentProps<typeof VirtuosoGrid>
+
+export type VirtuosoGridListHandle = {
+  scrollTo: VirtuosoGridHandle["scrollTo"]
+  isGrid: boolean
+}
 
 export const VirtuosoList = memo(
   ({
@@ -47,10 +42,10 @@ export const VirtuosoList = memo(
     style,
     data = [],
     rowRenderer,
-    onStateChange,
-    restoreStateFrom,
     restoreScrollId,
     horizontalDirection,
+    ref,
+    onScroll,
     ...rest
   }: {
     renderHeader?: () => React.ReactNode | ReactElement
@@ -64,32 +59,38 @@ export const VirtuosoList = memo(
       context: Context,
     ) => React.ReactNode
     horizontalDirection?: boolean
-    onStateChange?: (
-      state:
-        | { type: "list"; state: StateSnapshot }
-        | { type: "grid"; state: GridStateSnapshot },
-    ) => void
-    restoreStateFrom?:
-      | { type: "list"; state: StateSnapshot }
-      | { type: "grid"; state: GridStateSnapshot }
+    onScroll?: (event: React.UIEvent<HTMLDivElement, UIEvent>) => void
     useWindowScroll?: boolean
+    ref?: React.RefObject<VirtuosoGridListHandle | null>
   } & Pick<SharedProps, "scrollerRef">) => {
     const virtuosoRef = useRef<VirtuosoHandle>(null)
     const virtuosoGridRef = useRef<VirtuosoGridHandle>(null)
-    const [isReadyToBeShown, setIsReadyToBeShown] = useState(false)
-    const restoreScrollState = useSignalValue(restoreScrollSignal, (state) =>
-      restoreScrollId ? state[restoreScrollId] : undefined,
-    )
-    const restoreStateFromFirstValue = useRef(restoreScrollState)
+    const _ref = useRef<VirtuosoGridListHandle>(null)
+    const finalRef = ref ?? _ref
+    const {
+      restoreScrollState,
+      saveScrollState,
+      restoreStateFromFirstValue,
+      isRestored,
+      resetScrollState,
+    } = useRestoreVirtuosoScroll({
+      restoreScrollId,
+      virtuosoRef: finalRef,
+    })
+    const onScrollRef = useLiveRef(onScroll)
 
     const GridListComponent = useMemo(
       () =>
-        forwardRef<any, GridListProps & ContextProp<Context>>(
-          ({ children, ...props }, ref) => (
-            <Stack ref={ref as any} flexWrap="wrap" direction="row" {...props}>
-              {children}
-            </Stack>
-          ),
+        forwardRef<HTMLDivElement, GridListProps & ContextProp<Context>>(
+          ({ children, ...props }, ref) => {
+            let _ref = ref
+
+            return (
+              <Stack ref={_ref} flexWrap="wrap" direction="row" {...props}>
+                {children}
+              </Stack>
+            )
+          },
         ),
       [],
     )
@@ -118,106 +119,102 @@ export const VirtuosoList = memo(
       [itemsPerRow],
     )
 
-    useEffect(() => {
-      setTimeout(() => {
-        if (restoreStateFromFirstValue.current?.type === "grid") {
-          virtuosoGridRef.current?.scrollTo({
-            behavior: "instant",
-            left: 0,
-            top: restoreStateFromFirstValue.current.state.scrollTop,
-          })
-        }
-        setIsReadyToBeShown(true)
-      }, 30)
-    }, [])
-
     const size = data.length
     const context = useMemo(() => ({ size }), [size])
+    const isGrid = itemsPerRow > 1
+    const isGridRef = useLiveRef(isGrid)
+    const gridStyle = useMemo(
+      (): React.CSSProperties => ({
+        ...style,
+        scrollbarWidth: "initial",
+      }),
+      [style],
+    )
+    const gridComponents = useMemo(
+      () => ({
+        Header: renderHeader,
+        Item: GridItem,
+        List: GridListComponent,
+      }),
+      [renderHeader, GridItem, GridListComponent],
+    )
+    const listComponents = useMemo(
+      () => ({
+        Header: renderHeader,
+      }),
+      [renderHeader],
+    )
+
+    const _onScroll = useCallback(
+      (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
+        saveScrollState(event)
+        onScrollRef.current?.(event)
+      },
+      [saveScrollState, onScrollRef],
+    )
+
+    const onReadyStateChanged = useCallback(
+      (ready: boolean) => {
+        if (ready && !isRestored) {
+          restoreScrollState()
+        }
+      },
+      [restoreScrollState, isRestored],
+    )
+
+    useImperativeHandle(finalRef, () => ({
+      scrollTo: (location: ScrollToOptions) => {
+        if (isGridRef.current) {
+          virtuosoGridRef.current?.scrollTo(location)
+        } else {
+          virtuosoRef.current?.scrollTo(location)
+        }
+      },
+      getState: (stateCb: StateCallback) =>
+        virtuosoRef.current?.getState(stateCb),
+      get isGrid() {
+        return isGridRef.current
+      },
+    }))
+
+    useEffect(
+      function resetScrollStateOnTypeChange() {
+        void isGrid
+
+        resetScrollState()
+      },
+      [isGrid, resetScrollState],
+    )
 
     return (
       <>
-        {itemsPerRow > 1 ? (
+        {isGrid ? (
           <VirtuosoGrid<string, Context>
             ref={virtuosoGridRef}
-            style={{
-              ...style,
-              visibility: isReadyToBeShown ? undefined : "hidden",
-              scrollbarWidth: "initial",
-            }}
+            style={gridStyle}
             totalCount={data.length}
-            components={{
-              Header: renderHeader,
-              Item: GridItem,
-              List: GridListComponent,
-            }}
+            components={gridComponents}
             data={data}
             itemContent={rowRenderer}
             context={context}
-            onScroll={(event) => {
-              if (restoreScrollId !== undefined) {
-                restoreScrollSignal.setValue((state) => ({
-                  ...state,
-                  [restoreScrollId]: {
-                    state: {
-                      gap: { column: 0, row: 0 },
-                      item: { height: 0, width: 0 },
-                      viewport: { height: 0, width: 0 },
-                      scrollTop: (event.target as HTMLDivElement).scrollTop,
-                    },
-                    type: "grid",
-                  },
-                }))
-              }
-            }}
-            // stateChanged={(state) => {
-            //   onStateChange?.({
-            //     state,
-            //     type: "grid"
-            //   })
-            // }}
-            // {...(restoreStateFromFirstValue.current?.type === "grid" && {
-            //   restoreStateFrom: restoreStateFromFirstValue.current.state
-            // })}
+            readyStateChanged={onReadyStateChanged}
+            onScroll={_onScroll}
             {...rest}
           />
         ) : (
           <Virtuoso
             ref={virtuosoRef}
-            style={{
-              ...style,
-              visibility: isReadyToBeShown ? undefined : "hidden",
-            }}
+            style={style}
             totalCount={data.length}
-            components={{
-              Header: renderHeader,
-            }}
+            components={listComponents}
             context={context}
             data={data}
             horizontalDirection={horizontalDirection}
             itemContent={rowRenderer}
-            // {...(restoreStateFromFirstValue.current?.type === "list" && {
-            //   restoreStateFrom: restoreStateFromFirstValue.current.state
-            // })}
-            {...(restoreStateFromFirstValue.current?.type === "list" && {
-              initialScrollTop:
-                restoreStateFromFirstValue.current.state.scrollTop,
+            onScroll={_onScroll}
+            {...(restoreStateFromFirstValue?.type === "list" && {
+              initialScrollTop: restoreStateFromFirstValue.state.scrollTop,
             })}
-            onScroll={(event) => {
-              virtuosoRef.current?.getState((state) => {
-                if (restoreScrollId !== undefined) {
-                  restoreScrollSignal.setValue((state) => ({
-                    ...state,
-                    [restoreScrollId]: {
-                      state: {
-                        ranges: [],
-                        scrollTop: (event.target as HTMLDivElement).scrollTop,
-                      },
-                      type: "list",
-                    },
-                  }))
-                }
-              })
-            }}
             {...rest}
           />
         )}

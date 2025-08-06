@@ -3,16 +3,13 @@
  */
 import { Dropbox, type files } from "dropbox"
 import { Readable } from "node:stream"
-import {
-  type DropboxDataSourceData,
-  READER_ACCEPTED_EXTENSIONS,
-} from "@oboku/shared"
+import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
 import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "src/lib/plugins/types"
 import { createThrottler } from "src/lib/utils"
-import { createError } from "../helpers"
+import { createError, getDataSourceData } from "../helpers"
 
 const extractIdFromResourceId = (resourceId: string) =>
   resourceId.replace(`dropbox-`, ``)
@@ -20,11 +17,25 @@ const generateResourceId = (id: string) => `dropbox-${id}`
 
 export const dataSource: DataSourcePlugin = {
   type: `dropbox`,
-  getMetadata: async ({ id, credentials }) => {
+  getFolderMetadata: async ({ link, data }) => {
     const dbx = new Dropbox({
-      accessToken: credentials.accessToken,
+      accessToken: `${data?.accessToken}`,
     })
-    const fileId = extractIdFromResourceId(id)
+    const fileId = extractIdFromResourceId(link.resourceId)
+
+    const response = await dbx.filesGetMetadata({
+      path: `${fileId}`,
+    })
+
+    return {
+      name: response.result.name,
+    }
+  },
+  getFileMetadata: async ({ link, data }) => {
+    const dbx = new Dropbox({
+      accessToken: `${data?.accessToken}`,
+    })
+    const fileId = extractIdFromResourceId(link.resourceId)
 
     const response = await dbx.filesGetMetadata({
       path: `${fileId}`,
@@ -38,9 +49,9 @@ export const dataSource: DataSourcePlugin = {
   /**
    * @see https://www.dropbox.com/developers/documentation/http/documentation#files-download
    */
-  download: async (link, credentials) => {
+  download: async (link, data) => {
     const dbx = new Dropbox({
-      accessToken: credentials.accessToken,
+      accessToken: `${data?.accessToken}`,
     })
     const fileId = extractIdFromResourceId(link.resourceId)
 
@@ -61,22 +72,24 @@ export const dataSource: DataSourcePlugin = {
     })
 
     return {
-      metadata: {
-        name: "",
-        size: results.size.toString(),
-      },
       stream,
     }
   },
-  sync: async ({ credentials }, helpers) => {
+  sync: async ({ data, dataSourceId, db }) => {
     const throttle = createThrottler(50)
 
     const dbx = new Dropbox({
-      accessToken: credentials.accessToken,
+      accessToken:
+        data && "accessToken" in data && typeof data.accessToken === "string"
+          ? data.accessToken
+          : undefined,
     })
 
     const { folderId } =
-      await helpers.getDataSourceData<DropboxDataSourceData>()
+      (await getDataSourceData<"dropbox">({
+        db,
+        dataSourceId: dataSourceId,
+      })) ?? {}
 
     if (!folderId) {
       throw createError("unknown")

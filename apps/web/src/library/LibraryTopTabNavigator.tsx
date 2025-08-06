@@ -58,7 +58,7 @@ export const LibraryTopTabNavigator = () => {
       <Tabs
         value={location.pathname}
         indicatorColor="primary"
-        onChange={(e, value) => {
+        onChange={(_e, value) => {
           navigate(value, { replace: true })
         }}
       >

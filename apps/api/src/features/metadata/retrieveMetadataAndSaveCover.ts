@@ -1,5 +1,5 @@
-import * as fs from "node:fs"
-import * as path from "node:path"
+import fs from "node:fs"
+import path from "node:path"
 import { type BookMetadata, directives } from "@oboku/shared"
 import type nano from "nano"
 import type { Extractor } from "node-unrar-js"
@@ -38,12 +38,11 @@ export const retrieveMetadataAndSaveCover = async (
   let fileToUnlink: string | undefined
 
   try {
-    bookNameForDebug = reduceMetadata(ctx.book.metadata).title || ""
+    bookNameForDebug = reduceMetadata(ctx.book.metadata).title?.toString() || ""
 
     console.log(
       `[retrieveMetadataAndSaveCover]`,
-      `processing ${ctx.book._id} with link of type ${ctx.link.type}`,
-      { link: ctx.link },
+      `processing ${ctx.book._id} with link of type ${ctx.link.type} with id ${ctx.link._id}`,
     )
 
     const bookIsProtected = await isBookProtected(ctx.db, ctx.book)
@@ -51,9 +50,9 @@ export const retrieveMetadataAndSaveCover = async (
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
     const { canDownload = false, ...linkResourceMetadata } =
-      (await pluginFacade.getMetadata({
+      (await pluginFacade.getFileMetadata({
         link: ctx.link,
-        credentials: ctx.credentials,
+        data: ctx.data,
       })) ?? {}
 
     const { isbn, ignoreMetadataFile, ignoreMetadataSources, googleVolumeId } =
@@ -84,7 +83,7 @@ export const retrieveMetadataAndSaveCover = async (
           {
             ...linkMetadata,
             // some plugins returns filename and not title
-            title: path.parse(linkMetadata.title ?? "").name,
+            title: path.parse(linkMetadata.title?.toString() ?? "").name,
           },
           {
             googleApiKey: ctx.googleApiKey,
@@ -95,27 +94,24 @@ export const retrieveMetadataAndSaveCover = async (
 
     const metadataList = [linkMetadata, ...sourcesMetadata]
 
-    const { filepath: tmpFilePath, metadata: downloadMetadata } =
+    const { filepath: tmpFilePath } =
       canDownload && isMaybeExtractAble
-        ? await downloadToTmpFolder(
-            ctx.book,
-            ctx.link,
-            config,
-            ctx.credentials,
-          ).catch((error) => {
-            /**
-             * We have several reason for failing download but the most common one
-             * is no more space left. We have about 500mb of space. In case of failure
-             * we don't fail the entire process, we just keep the file metadata
-             */
-            logger.error(error)
+        ? await downloadToTmpFolder(ctx.book, ctx.link, config, ctx.data).catch(
+            (error) => {
+              /**
+               * We have several reason for failing download but the most common one
+               * is no more space left. We have about 500mb of space. In case of failure
+               * we don't fail the entire process, we just keep the file metadata
+               */
+              logger.error(error)
 
-            return {
-              filepath: undefined,
-              metadata: { contentType: undefined },
-            }
-          })
-        : { filepath: undefined, metadata: {} }
+              return {
+                filepath: undefined,
+                metadata: { contentType: undefined },
+              }
+            },
+          )
+        : { filepath: undefined }
 
     let fileContentLength = 0
 
@@ -125,20 +121,18 @@ export const retrieveMetadataAndSaveCover = async (
     }
 
     fileToUnlink = tmpFilePath
-    contentType = downloadMetadata.contentType || contentType
 
     console.log(
       `[retrieveMetadataAndSaveCover]`,
-      `syncMetadata processing ${ctx.book._id}`,
+      `syncMetadata processing for ${ctx.book._id}`,
       {
-        linkMetadata,
         contentType,
         tmpFilePath,
       },
     )
 
     const isRarArchive = contentType === "application/x-rar"
-    let archiveExtractor: Extractor<Uint8Array> | undefined = undefined
+    let archiveExtractor: Extractor<Uint8Array> | undefined
 
     if (typeof tmpFilePath === "string" && tmpFilePath) {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
@@ -156,7 +150,7 @@ export const retrieveMetadataAndSaveCover = async (
             config,
           )
 
-          console.log(`file metadata for book ${ctx.book._id}`, fileMetadata)
+          logger.log(`Pushing file metadata for book ${ctx.book._id}`)
 
           metadataList.push(fileMetadata)
         } else if (
@@ -169,7 +163,7 @@ export const retrieveMetadataAndSaveCover = async (
             config,
           )
 
-          console.log(`file metadata for book ${ctx.book._id}`, fileMetadata)
+          logger.log(`Pushing file metadata for book ${ctx.book._id}`)
 
           metadataList.push(fileMetadata)
         } else {
@@ -191,15 +185,14 @@ export const retrieveMetadataAndSaveCover = async (
 
     console.log(
       `[retrieveMetadataAndSaveCover]`,
-      `prepare to update ${ctx.book._id} with`,
-      { metadataList },
+      `prepare to update ${ctx.book._id} with new metadata`,
     )
 
     await atomicUpdate(ctx.db, "book", ctx.book._id, (old) => {
       return {
         ...old,
         metadata: metadataList,
-        lastMetadataUpdatedAt: new Date().getTime(),
+        lastMetadataUpdatedAt: Date.now(),
         metadataUpdateStatus: null,
         lastMetadataUpdateError: null,
       }
