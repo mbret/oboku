@@ -1,13 +1,5 @@
 import { signal, useSignalValue, useSwitchMutation$ } from "reactjrx"
-import {
-  catchError,
-  combineLatest,
-  defer,
-  from,
-  map,
-  mergeMap,
-  tap,
-} from "rxjs"
+import { catchError, combineLatest, defer, from, map, mergeMap } from "rxjs"
 import { GapiNotAvailableError } from "./errors"
 import { loadScript, retryOnFailure } from "../../../common/scripts"
 

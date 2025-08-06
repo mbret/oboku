@@ -6,7 +6,6 @@ import { useController, type Control, type UseFormWatch } from "react-hook-form"
 
 export const AddDataSource = ({
   control,
-  watch,
 }: {
   control: Control<DataSourceFormData, any, DataSourceFormData>
   watch: UseFormWatch<DataSourceFormData>
