@@ -81,12 +81,16 @@ export const VirtuosoList = memo(
 
     const GridListComponent = useMemo(
       () =>
-        forwardRef<any, GridListProps & ContextProp<Context>>(
-          ({ children, ...props }, ref) => (
-            <Stack ref={ref as any} flexWrap="wrap" direction="row" {...props}>
-              {children}
-            </Stack>
-          ),
+        forwardRef<HTMLDivElement, GridListProps & ContextProp<Context>>(
+          ({ children, ...props }, ref) => {
+            let _ref = ref
+
+            return (
+              <Stack ref={_ref} flexWrap="wrap" direction="row" {...props}>
+                {children}
+              </Stack>
+            )
+          },
         ),
       [],
     )
