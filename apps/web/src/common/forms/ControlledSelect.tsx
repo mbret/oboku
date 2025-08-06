@@ -5,12 +5,9 @@ import {
   MenuItem,
   Select,
   type SelectProps,
-  TextField,
-  type TextFieldProps,
 } from "@mui/material"
 import type { ComponentProps } from "react"
 import { Controller, type FieldPath, type FieldValues } from "react-hook-form"
-import { errorToHelperText } from "./errorToHelperText"
 
 export const ControlledSelect = <
   TFieldValues extends FieldValues = FieldValues,
