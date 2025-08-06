@@ -38,6 +38,7 @@ export type SynchronizeAbleItem = {
   name: NameWithMetadata
   items?: SynchronizeAbleItem[]
   modifiedAt: ISOString
+  tags?: string[]
 }
 
 export type SynchronizeAbleDataSource = {

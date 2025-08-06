@@ -11,6 +11,10 @@ import { EventEmitter2 } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "src/events"
 import { SyncReportPostgresService } from "src/features/postgres/SyncReportPostgresService"
 import { CoversService } from "src/covers/covers.service"
+import {
+  SynchronizeAbleDataSource,
+  SynchronizeAbleItem,
+} from "../plugins/types"
 
 export const sync = async ({
   dataSourceId,
@@ -67,12 +71,7 @@ export const sync = async ({
 
     if (!dataSource) throw new Error("Data source not found")
 
-    if (dataSource.syncStatus !== "fetching") {
-      await atomicUpdate(db, "datasource", dataSource._id, (old) => ({
-        ...old,
-        syncStatus: "fetching" as const,
-      }))
-    }
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     const { type } = dataSource
 
@@ -96,23 +95,31 @@ export const sync = async ({
       throw new Error("plugin does not support sync")
     }
 
-    const synchronizeAbleDataSource = await plugin?.sync(ctx, helpers)
+    const applyTags = <T extends SynchronizeAbleItem>(item: T): T => ({
+      ...item,
+      tags: dataSource.tags,
+      items: item.items?.map(applyTags),
+    })
+
+    const synchronizeAbleDataSource = await plugin.sync(ctx, helpers)
+    const synchronizeAbleDataSourceWithTags: SynchronizeAbleDataSource = {
+      ...synchronizeAbleDataSource,
+      items: synchronizeAbleDataSource.items.map(applyTags),
+    }
 
     console.log(
       `Execute sync process with ${plugin?.type} plugin`,
-      synchronizeAbleDataSource,
+      synchronizeAbleDataSourceWithTags,
     )
 
-    if (synchronizeAbleDataSource) {
-      await synchronizeFromDataSource(
-        synchronizeAbleDataSource,
-        ctx,
-        helpers,
-        config,
-        eventEmitter,
-        coversService,
-      )
-    }
+    await synchronizeFromDataSource(
+      synchronizeAbleDataSourceWithTags,
+      ctx,
+      helpers,
+      config,
+      eventEmitter,
+      coversService,
+    )
 
     console.log(`Update datasource with sync success flag`)
 

@@ -16,7 +16,6 @@ import {
 import type { Context } from "../types"
 import type { CoversService } from "src/covers/covers.service"
 import { firstValueFrom } from "rxjs"
-import { getDataSourceData } from "src/lib/plugins/helpers"
 import { cleanAndMergeBookLinks } from "./cleanAndMergeBookLinks"
 import { logger } from "./logger"
 
@@ -311,11 +310,7 @@ export const createOrUpdateBook = async ({
       )
 
       // Finally we update the tags to the book if needed
-      const { applyTags } =
-        (await getDataSourceData({
-          db,
-          dataSourceId: dataSourceId,
-        })) ?? {}
+      const applyTags = item.tags ?? []
 
       const [bookUpdated, tagsUpdated] = await addTagsToBookIfNotExist(
         db,
