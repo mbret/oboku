@@ -85,8 +85,8 @@ export type DropboxDataSourceDocType = Omit<
 > & {
   type: "dropbox"
   data_v2?: {
-    folderId: string
-    folderName: string
+    folderId?: string
+    folderName?: string
   }
 }
 

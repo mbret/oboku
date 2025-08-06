@@ -1,128 +1,48 @@
-import {
-  Button,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Stack,
-  Typography,
-} from "@mui/material"
-import { ArrowBackIosRounded, LocalOfferRounded } from "@mui/icons-material"
-import { type ComponentProps, type FC, useState } from "react"
-import type { DropboxDataSourceData } from "@oboku/shared"
-import { useTagIds, useTags } from "../../tags/helpers"
+import { Button, Stack, Typography } from "@mui/material"
+import { type ComponentProps, useState } from "react"
 import { Picker } from "./Picker"
-import { TagsSelectionDialog } from "../../tags/TagsSelectionDialog"
-import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
+import type { DataSourceFormData } from "../types"
+import { useController, type Control, type UseFormWatch } from "react-hook-form"
 
-export const AddDataSource: FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [selectedTags, setSelectedTags] = useState<{
-    [key: string]: true | undefined
-  }>({})
-  const [isTagSelectionOpen, setIsTagSelectionOpen] = useState(false)
-  const { mutate: addDataSource } = useCreateDataSource()
-  const [selectedFolder, setSelectedFolder] = useState<
-    Dropbox.ChooserFile | undefined
-  >(undefined)
-  const [folderChain, setFolderChain] = useState<
-    readonly Dropbox.ChooserFile[]
-  >([{ name: "", id: "root", isDir: true, link: "", bytes: 0, icon: "" }])
-  const currentFolder = folderChain[folderChain.length - 1]
-  const { data: tags = [] } = useTags()
-  const { data: tagIds = [] } = useTagIds()
+export const AddDataSource = ({
+  control,
+  watch,
+}: {
+  control: Control<DataSourceFormData, any, DataSourceFormData>
+  watch: UseFormWatch<DataSourceFormData>
+}) => {
+  const {
+    field: { onChange, value },
+  } = useController({
+    control,
+    rules: { required: false },
+    name: "data.folderId",
+  })
+  const folderId = value as string | undefined
   const [showPicker, setShowPicker] = useState(false)
 
   const onPick: ComponentProps<typeof Picker>["onClose"] = (files) => {
     setShowPicker(false)
+
     if (files && files.length > 0) {
-      setSelectedFolder(files[0])
+      const id = files[0]?.id
+
+      onChange(id)
     }
   }
 
   return (
     <>
-      <List>
-        <ListItemButton onClick={() => setIsTagSelectionOpen(true)}>
-          <ListItemIcon>
-            <LocalOfferRounded />
-          </ListItemIcon>
-          <ListItemText
-            primary="Apply tags"
-            secondary={Object.keys(selectedTags)
-              .map((id) => tags.find((tag) => tag?._id === id)?.name)
-              .join(" ")}
-          />
-        </ListItemButton>
-        <ListItem>
-          <Typography noWrap>
-            Selected: {selectedFolder?.name || "None"}
-          </Typography>
-        </ListItem>
-        {currentFolder?.id !== "root" && (
-          <ListItem>
-            <Button
-              style={{
-                flex: 1,
-              }}
-              startIcon={<ArrowBackIosRounded style={{}} />}
-              variant="outlined"
-              color="primary"
-              onClick={() => {
-                setFolderChain((value) => value.slice(0, value.length - 1))
-              }}
-            >
-              Go back
-            </Button>
-          </ListItem>
-        )}
-      </List>
-      <Stack px={2} gap={1} maxWidth="sm">
+      <Stack gap={1}>
         <Button
-          color="primary"
-          variant="contained"
+          variant="outlined"
           fullWidth
           onClick={() => setShowPicker(true)}
         >
           Choose a folder
         </Button>
-        <Button
-          color="primary"
-          disabled={!selectedFolder}
-          onClick={() => {
-            onClose()
-            if (selectedFolder) {
-              const customData: DropboxDataSourceData = {
-                applyTags: Object.keys(selectedTags),
-                folderId: selectedFolder.id,
-                folderName: selectedFolder.name,
-              }
-
-              addDataSource({
-                type: `dropbox`,
-                data_v2: customData,
-              })
-            }
-          }}
-        >
-          Confirm
-        </Button>
+        <Typography noWrap>Selected: {folderId || "None"}</Typography>
       </Stack>
-      <TagsSelectionDialog
-        data={tagIds}
-        open={isTagSelectionOpen}
-        hasBackNavigation
-        onClose={() => setIsTagSelectionOpen(false)}
-        title="Choose tags to apply automatically"
-        selected={(id) => !!selectedTags[id]}
-        onItemClick={({ id }) => {
-          if (selectedTags[id]) {
-            setSelectedTags(({ [id]: removed, ...rest }) => rest)
-          } else {
-            setSelectedTags((value) => ({ ...value, [id]: true }))
-          }
-        }}
-      />
       {showPicker && (
         <Picker onClose={onPick} select="folder" multiselect={false} />
       )}

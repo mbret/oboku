@@ -11,7 +11,14 @@ import { useDataSourceIncrementalModify } from "../../dataSources/useDataSourceI
 import { useMutation } from "@tanstack/react-query"
 import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 import type { DataSourceFormData } from "../../plugins/types"
-import type { BaseDataSourceDocType } from "@oboku/shared"
+import type {
+  BaseDataSourceDocType,
+  DropboxDataSourceData,
+  DropboxDataSourceDocType,
+  GoogleDriveDataSourceData,
+  WebDAVDataSourceDocType,
+  WebdavSyncData,
+} from "@oboku/shared"
 import { useSynchronizeDataSource } from "../../dataSources/useSynchronizeDataSource"
 import { useRemoveDataSource } from "../../dataSources/useRemoveDataSource"
 import { useTags } from "../../tags/helpers"
@@ -39,6 +46,7 @@ export const DataSourceDetailsScreen = memo(() => {
       data: {
         connectorId: "",
         directory: "",
+        folderId: "",
       },
     },
     values: {
@@ -47,6 +55,7 @@ export const DataSourceDetailsScreen = memo(() => {
       data: {
         connectorId: "",
         directory: "",
+        folderId: "",
         ...(dataSource?.data_v2 ?? {}),
       },
     },
@@ -56,11 +65,26 @@ export const DataSourceDetailsScreen = memo(() => {
       await modifyDataSource({
         id: dataSource?._id ?? "",
         mutationFunction: (doc) => {
+          const dropboxData: DropboxDataSourceDocType["data_v2"] = {
+            folderId: _data.data.folderId as string,
+          }
+          const googleData: GoogleDriveDataSourceData = {
+            items: _data.data.items as readonly string[] | undefined,
+          }
+          const webdavData: WebDAVDataSourceDocType["data_v2"] = {
+            directory: _data.data.directory as string | undefined,
+            connectorId: _data.data.connectorId as string | undefined,
+          }
+
           const newData = {
             ...doc,
             name: _data.name,
             tags: [..._data.tags],
-            data_v2: _data.data as Record<string, unknown> | undefined,
+            data_v2: {
+              ...(obokuPlugin?.type === "dropbox" ? dropboxData : {}),
+              ...(obokuPlugin?.type === "DRIVE" ? googleData : {}),
+              ...(obokuPlugin?.type === "webdav" ? webdavData : {}),
+            },
           } satisfies BaseDataSourceDocType
 
           return {
