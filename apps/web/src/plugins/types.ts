@@ -9,7 +9,7 @@ import type {
 } from "react"
 import type { Button } from "@mui/material"
 import type { Observable } from "rxjs"
-import type { DeepReadonly } from "rxdb"
+import type { DeepReadonly, DeepReadonlyArray } from "rxdb"
 import type { UseMutationResult } from "@tanstack/react-query"
 import type { Control } from "react-hook-form"
 
@@ -99,6 +99,7 @@ export type UseLinkInfo = (data: { resourceId?: string; enabled: boolean }) => {
 
 export type DataSourceFormData = {
   name: string
+  tags: DeepReadonlyArray<string>
   data: Record<string, unknown>
 }
 
@@ -131,8 +132,7 @@ export type ObokuPlugin<
     } & Pick<DOMAttributes<any>, "onDragLeave">
   >
   AddDataSource?: FunctionComponent<{
-    onClose: () => void
-    requestPopup: () => Promise<boolean>
+    control: Control<DataSourceFormData, any, DataSourceFormData>
   }>
   DataSourceDetails?: FunctionComponent<{
     control: Control<DataSourceFormData, any, DataSourceFormData>

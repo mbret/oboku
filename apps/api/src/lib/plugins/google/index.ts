@@ -6,10 +6,7 @@ import { authorize } from "./helpers"
 import { google } from "googleapis"
 import type { DataSourcePlugin } from "src/lib/plugins/types"
 import { getDataSourceData } from "../helpers"
-import {
-  getSynchronizeAbleDataSourceFromFolderId,
-  getSynchronizeAbleDataSourceFromItems,
-} from "./sync"
+import { getSynchronizeAbleDataSourceFromItems } from "./sync"
 
 export const generateResourceId = (driveId: string) => `drive-${driveId}`
 export const extractIdFromResourceId = (resourceId: string) =>
@@ -92,7 +89,7 @@ export const dataSource: DataSourcePlugin = {
     }
   },
   sync: async (ctx) => {
-    const { folderId, items = [] } =
+    const { items = [] } =
       (await getDataSourceData<"DRIVE">({
         db: ctx.db,
         dataSourceId: ctx.dataSourceId,
@@ -106,13 +103,6 @@ export const dataSource: DataSourcePlugin = {
       version: "v3",
       auth,
     })
-
-    if (folderId) {
-      return getSynchronizeAbleDataSourceFromFolderId({
-        folderId,
-        drive,
-      })
-    }
 
     return getSynchronizeAbleDataSourceFromItems({
       items,

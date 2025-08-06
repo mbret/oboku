@@ -15,7 +15,6 @@ export const useCreateDriveFileQuery = () => {
   const gapi = useGapi()
   const accessToken = useAccessToken()
 
-  console.log({ accessToken })
   return useCallback(
     (
       id?: string,
@@ -37,6 +36,8 @@ export const useCreateDriveFileQuery = () => {
         return firstValueFrom(
           getFile(gapi, {
             fileId: id ?? "",
+            supportsAllDrives: true,
+            supportsTeamDrives: true,
             fields: "id, size, name, kind, parents, mimeType, modifiedTime",
           }),
         )

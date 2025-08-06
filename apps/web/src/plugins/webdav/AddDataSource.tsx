@@ -17,7 +17,7 @@ import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { useConnectors } from "./connectors/useConnectors"
-import { ControlledSelect } from "../../common/forms/ControlledSelect"
+import { ControlledTextFieldSelect } from "../../common/forms/ControlledTextFieldSelect"
 import { LinkRounded } from "@mui/icons-material"
 import { TestConnection } from "./connectors/TestConnection"
 import { useConnector } from "./connectors/useConnector"
@@ -90,7 +90,7 @@ export const AddDataSource = memo(
                 },
               }}
             />
-            <ControlledSelect
+            <ControlledTextFieldSelect
               options={
                 connectors?.map((connector) => ({
                   label: `${connector.url}@${connector.username}`,

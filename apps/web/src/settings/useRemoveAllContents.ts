@@ -17,7 +17,6 @@ import { CancelError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
 
 export const useRemoveAllContents = () => {
-  // const { mutateAsync: sync } = useSyncReplicate()
   const [lock] = useLock()
   const withAuthorization = useWithAuthorization()
 
@@ -69,9 +68,6 @@ export const useRemoveAllContents = () => {
 
                   return from(database.tag.find().incrementalRemove())
                 }),
-                // mergeMap(() =>
-                //   from(database.datasource.find().incrementalRemove()),
-                // ),
                 delay(3000), // make sure sync get enough time to finish
                 catchError((e) => {
                   unlock()
@@ -83,7 +79,7 @@ export const useRemoveAllContents = () => {
           )
         }),
         tap(() => {
-          // window.location.reload()
+          window.location.reload()
         }),
         catchError((e) => {
           if (e instanceof CancelError) return of(null)

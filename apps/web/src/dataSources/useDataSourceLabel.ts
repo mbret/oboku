@@ -7,8 +7,11 @@ export const useDataSourceLabel = (
   dataSource?: DeepReadonly<DataSourceDocType>,
 ) => {
   const { data } = useDataSource(dataSource?._id)
+  const pluginForDataSource = plugins.find(
+    (plugin) => plugin.type === dataSource?.type,
+  )
 
-  return plugins.reduce((acc, plugin) => {
+  const label = plugins.reduce((acc, plugin) => {
     // biome-ignore lint/correctness/useHookAtTopLevel: Expected
     const data = plugin.useSyncSourceInfo?.(
       dataSource?.type === plugin.type ? dataSource : undefined,
@@ -19,5 +22,7 @@ export const useDataSourceLabel = (
     }
 
     return acc
-  }, data?.name ?? "")
+  }, data?.name)
+
+  return label || pluginForDataSource?.name
 }

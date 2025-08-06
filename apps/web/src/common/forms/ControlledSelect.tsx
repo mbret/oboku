@@ -1,4 +1,13 @@
-import { MenuItem, TextField, type TextFieldProps } from "@mui/material"
+import {
+  FormControl,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
+  type SelectProps,
+  TextField,
+  type TextFieldProps,
+} from "@mui/material"
 import type { ComponentProps } from "react"
 import { Controller, type FieldPath, type FieldValues } from "react-hook-form"
 import { errorToHelperText } from "./errorToHelperText"
@@ -13,39 +22,53 @@ export const ControlledSelect = <
   rules,
   id,
   options,
+  helperText,
   ...selectProps
 }: Omit<
   ComponentProps<typeof Controller<TFieldValues, TName, TTransformedValues>>,
   "render"
 > &
-  TextFieldProps & {
+  SelectProps<string> & {
     options: { label: string; value: string; id: string }[]
+    helperText?: string
   }) => {
   return (
     <Controller
       control={control}
       name={name}
       rules={rules}
-      render={({ field: { ref, ...rest }, fieldState }) => {
+      render={({ field: { ref, value, ...rest }, fieldState }) => {
+        const valueAsArray = Array.isArray(value) ? value : [value]
+        const valuesNotInOptions = valueAsArray.filter(
+          (v) => !options.some((o) => o.id === v),
+        )
+        const optionsWithMissingValues = [
+          ...options,
+          ...valuesNotInOptions.map((v) => ({
+            label: v,
+            value: v,
+            id: v,
+          })),
+        ]
+
         return (
-          <TextField
-            {...rest}
-            {...selectProps}
-            select
-            inputRef={ref}
-            error={fieldState.invalid}
-            helperText={
-              fieldState.invalid
-                ? errorToHelperText(fieldState.error)
-                : selectProps.helperText
-            }
-          >
-            {options.map((option) => (
-              <MenuItem key={option.id} value={option.value}>
-                {option.label}
-              </MenuItem>
-            ))}
-          </TextField>
+          <FormControl>
+            <InputLabel>{selectProps.label}</InputLabel>
+            <Select
+              {...rest}
+              {...selectProps}
+              value={value}
+              inputRef={ref}
+              error={fieldState.invalid}
+            >
+              {optionsWithMissingValues.map((option) => (
+                <MenuItem key={option.id} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
+            {!!helperText && <FormHelperText>{helperText}</FormHelperText>}
+          </FormControl>
         )
       }}
     />

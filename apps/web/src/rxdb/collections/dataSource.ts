@@ -47,6 +47,7 @@ export const dataSourceSchema: RxJsonSchema<
     modifiedAt: { type: ["string", "null"] },
     isProtected: { type: ["boolean"], final: false },
     name: { type: ["string", "null"] },
+    tags: { type: ["array", "null"] },
     ...getReplicationProperties(`datasource`),
   },
   required: [],

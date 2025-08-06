@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react"
 import type { FieldPath, FieldValues } from "react-hook-form"
-import { ControlledSelect } from "./ControlledSelect"
+import { ControlledTextFieldSelect } from "./ControlledTextFieldSelect"
 import { useSecrets } from "../../secrets/useSecrets"
 import { KeyRounded } from "@mui/icons-material"
 import { InputAdornment } from "@mui/material"
@@ -13,14 +13,14 @@ export const ControlledSecretSelect = <
   ...rest
 }: Omit<
   ComponentProps<
-    typeof ControlledSelect<TFieldValues, TName, TTransformedValues>
+    typeof ControlledTextFieldSelect<TFieldValues, TName, TTransformedValues>
   >,
   "options"
 >) => {
   const { data: secrets = [] } = useSecrets()
 
   return (
-    <ControlledSelect
+    <ControlledTextFieldSelect
       options={secrets?.map((secret) => ({
         label: secret.name,
         value: secret._id,

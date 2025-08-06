@@ -51,6 +51,12 @@ export type BaseDataSourceDocType = CommonBase & {
   credentials?: Record<string, unknown> | null
   name?: string | null
   data_v2?: Record<string, unknown>
+  /**
+   * Selection of tags to apply to all books in this datasource
+   * @important
+   * The tag reference may be invalid eventually.
+   */
+  tags?: string[]
 }
 
 export type FileDataSourceDocType = BaseDataSourceDocType & {
@@ -69,11 +75,6 @@ export type GoogleDriveDataSourceDocType = Omit<
 > & {
   type: "DRIVE"
   data_v2?: {
-    applyTags?: ReadonlyArray<string>
-    // @deprecated
-    folderId?: string
-    // @deprecated
-    folderName?: string
     items?: ReadonlyArray<string>
   }
 }
@@ -86,7 +87,6 @@ export type DropboxDataSourceDocType = Omit<
   data_v2?: {
     folderId: string
     folderName: string
-    applyTags?: ReadonlyArray<string>
   }
 }
 
@@ -95,7 +95,6 @@ export type WebDAVDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
   data_v2?: {
     connectorId?: string
     directory?: string
-    applyTags?: ReadonlyArray<string>
   }
 }
 

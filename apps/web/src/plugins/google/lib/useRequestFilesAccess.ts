@@ -1,11 +1,12 @@
 import { useCallback } from "react"
 import { of, switchMap, tap } from "rxjs"
-import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
+import { difference, ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { useDrivePicker } from "./useDrivePicker"
 import { CancelError } from "../../../errors/errors.shared"
 import { useHasFilesAccess } from "./useHasFilesAccess"
 import { useQueryClient } from "@tanstack/react-query"
 import { getUseDriveFileQueryKey } from "../../../google/useDriveFile"
+import { isDefined } from "reactjrx"
 
 export const useRequestFilesAccess = ({
   requestPopup,
@@ -22,13 +23,19 @@ export const useRequestFilesAccess = ({
   return useCallback(
     (_gapi: typeof gapi, fileIds: readonly string[]) =>
       hasFilesAccess(_gapi, fileIds).pipe(
-        switchMap((hasFilesAccess) => {
-          if (hasFilesAccess) {
+        switchMap((hasAccess) => {
+          const hasAccessFileIds = hasAccess.map((file) => file.result.id)
+          const nonAccessedFileIds = difference(
+            fileIds,
+            hasAccessFileIds,
+          ).filter(isDefined)
+
+          if (nonAccessedFileIds.length === 0) {
             return of(null)
           }
 
           const files$ = pick({
-            fileIds: fileIds,
+            fileIds: nonAccessedFileIds,
           })
 
           return files$.pipe(

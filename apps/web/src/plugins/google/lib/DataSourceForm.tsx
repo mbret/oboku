@@ -1,71 +1,23 @@
-import { Button, Stack, Typography } from "@mui/material"
+import { Alert, Button, IconButton, Stack, Typography } from "@mui/material"
 import { useDrivePicker } from "./useDrivePicker"
 import { catchError, of, switchMap, takeUntil, tap } from "rxjs"
 import { isDefined, useMutation$, useUnmountObservable } from "reactjrx"
-import { type TreeItem, type TreeNode, TreeView } from "./TreeView"
+import { type TreeItem, TreeView } from "./tree/TreeView"
 import { useRequestPopupDialog } from "../../useRequestPopupDialog"
 import { PLUGIN_NAME } from "./constants"
 import { useQueries } from "@tanstack/react-query"
 import { useCreateDriveFileQuery } from "../../../google/useDriveFile"
-import {
-  isDriveResponseError,
-  type DriveFileGetResponse,
-} from "../../../google/useDriveFilesGet"
+import { isDriveResponseError } from "../../../google/useDriveFilesGet"
 import { type Control, useController } from "react-hook-form"
 import type { DataSourceFormData } from "../../types"
 import type { GoogleDriveDataSourceDocType } from "@oboku/shared"
-import { CheckRounded, InfoOutlineRounded } from "@mui/icons-material"
 import { useRequestFilesAccess } from "./useRequestFilesAccess"
 import { useGoogleScripts } from "./scripts"
-
-const isFolder = (file: NonNullable<DriveFileGetResponse["result"]>) =>
-  file.mimeType === "application/vnd.google-apps.folder"
-
-function buildTree(items: TreeItem[]): TreeNode[] {
-  // Create a map for quick lookup of items by id
-  const itemMap = new Map<string, TreeNode>()
-
-  // Initialize all items as tree nodes with empty children arrays
-  items.forEach((item) => {
-    itemMap.set(item.id, {
-      ...item,
-      children: [],
-    })
-  })
-
-  const roots: TreeNode[] = []
-
-  // Build the tree structure by connecting parents and children
-  items.forEach((item) => {
-    const node = itemMap.get(item.id)
-
-    if (!node) return
-
-    if (!item.parentId || item.parentId === "root") {
-      // This is a root level item
-      roots.push(node)
-    } else {
-      // This has a parent, add it to parent's children
-      const parent = itemMap.get(item.parentId)
-      if (parent) {
-        parent.children.push(node)
-      } else {
-        // Parent not found in the list, treat as root
-        roots.push(node)
-      }
-    }
-  })
-
-  return roots
-}
-
-const useTreeViewItems = (items: readonly string[]) => {
-  const createQuery = useCreateDriveFileQuery()
-
-  return useQueries({
-    queries: items.map((id) => createQuery(id)),
-  })
-}
+import { isFolder } from "./utils"
+import { DeleteRounded } from "@mui/icons-material"
+import { useMemo, useState } from "react"
+import { buildTree } from "./tree/buildTree"
+import { useConfirmation } from "../../../common/useConfirmation"
 
 export const DataSourceForm = ({
   control,
@@ -75,8 +27,6 @@ export const DataSourceForm = ({
   const { getGoogleScripts } = useGoogleScripts()
   const {
     field: { onChange, value },
-    fieldState: { invalid, isTouched, isDirty },
-    formState: { touchedFields, dirtyFields },
   } = useController({
     control,
     rules: { required: false },
@@ -85,6 +35,7 @@ export const DataSourceForm = ({
   const { items = [] } =
     (value as GoogleDriveDataSourceDocType["data_v2"]) ?? {}
   const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
+  const confirmation = useConfirmation()
   const requestFilesAccess = useRequestFilesAccess({ requestPopup })
   const { mutate: requestFilesAccessMutation } = useMutation$({
     mutationFn: () =>
@@ -92,33 +43,38 @@ export const DataSourceForm = ({
         switchMap(([, gapi]) => requestFilesAccess(gapi, items)),
       ),
   })
+  const createQuery = useCreateDriveFileQuery()
   const { pick } = useDrivePicker({
     requestPopup,
   })
-  const queries = useTreeViewItems(items)
-  const driveFiles = queries
-    .map((query) => query.data?.result)
-    .filter(isDefined)
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const queries = useQueries({
+    queries: items.map((id) => createQuery(id)),
+  })
   const hasMissingPermissions = queries.some(
     (query) => isDriveResponseError(query.error) && query.error.status === 404,
   )
-  const treeViewItems = buildTree(
-    driveFiles.map(
-      (file): TreeItem => ({
-        id: file?.id ?? "",
-        type: isFolder(file) ? "folder" : "file",
-        parentId: file?.parents?.[0] ?? "",
-        label: file?.name ?? "",
-      }),
-    ),
-  )
+  const treeViewItems = useMemo(() => {
+    const driveFiles = queries
+      .map((query) => query.data?.result)
+      .filter(isDefined)
+      .map(
+        (file): TreeItem => ({
+          id: file?.id ?? "",
+          type: isFolder(file) ? "folder" : "file",
+          parentId: file?.parents?.[0] ?? "",
+          label: file?.name ?? "",
+          fileType: file?.mimeType,
+        }),
+      )
+
+    return buildTree(driveFiles)
+  }, [queries])
   const unMount$ = useUnmountObservable()
 
-  console.log({ hasMissingPermissions, queries, items, treeViewItems })
-
   return (
-    <Stack gap={2} pb={2} overflow="auto" border="1px solid red">
-      <Stack px={2} gap={1} maxWidth="sm">
+    <Stack gap={2} pb={2} overflow="auto">
+      <Stack gap={1}>
         <Button
           onClick={() => {
             pick({ select: "folder", multiSelect: true })
@@ -165,25 +121,71 @@ export const DataSourceForm = ({
         >
           Add folders/files
         </Button>
-        <Button
-          variant="text"
-          startIcon={
-            hasMissingPermissions ? <InfoOutlineRounded /> : <CheckRounded />
-          }
-          onClick={() => {
-            requestFilesAccessMutation()
-          }}
-          disabled={!hasMissingPermissions}
-        >
-          {hasMissingPermissions
-            ? `Grant access to see the tree`
-            : `Access granted`}
-        </Button>
-        <Typography variant="caption">
-          {items.length} item(s) selected
+        <Typography variant="caption" align="center">
+          You have {items.length} item(s) registered
         </Typography>
+        {items.length > 0 && hasMissingPermissions && (
+          <Alert
+            severity="warning"
+            action={
+              <Button
+                size="small"
+                sx={{ alignSelf: "center" }}
+                onClick={() => {
+                  requestFilesAccessMutation()
+                }}
+              >
+                Grant
+              </Button>
+            }
+          >
+            We are missing permissions for some of the files. Please grant
+            access to see the entire tree.
+          </Alert>
+        )}
       </Stack>
-      <TreeView items={treeViewItems} />
+      <Stack gap={1}>
+        <Stack
+          direction="row"
+          gap={1}
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Typography variant="caption">
+            selected item(s): {selectedItems.length}
+          </Typography>
+          <IconButton
+            disabled={selectedItems.length === 0}
+            onClick={() => {
+              const confirmed = confirmation()
+
+              if (!confirmed) {
+                return
+              }
+
+              setSelectedItems([])
+
+              onChange({
+                target: {
+                  value: {
+                    items: items.filter(
+                      (item) => !selectedItems.includes(item),
+                    ),
+                  },
+                },
+              })
+            }}
+          >
+            <DeleteRounded />
+          </IconButton>
+        </Stack>
+        <TreeView
+          items={treeViewItems}
+          selectedItems={selectedItems}
+          checkboxSelection
+          onSelectedItemsChange={(_, items) => setSelectedItems(items)}
+        />
+      </Stack>
     </Stack>
   )
 }

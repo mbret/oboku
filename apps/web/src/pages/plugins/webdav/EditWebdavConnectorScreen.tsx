@@ -7,11 +7,13 @@ import { Button } from "@mui/material"
 import { useDeleteConnector } from "../../../plugins/webdav/connectors/useDeleteConnector"
 import { useParams } from "react-router"
 import { useNotifications } from "../../../notifications/useNofitications"
+import { useConfirmation } from "../../../common/useConfirmation"
 
 export const EditWebDavConnectorScreen = memo(() => {
   const { goBack } = useSafeGoBack()
   const { mutate: deleteConnector } = useDeleteConnector()
   const { notify } = useNotifications()
+  const confirmation = useConfirmation()
   const { id = "-1" } = useParams()
 
   return (
@@ -27,9 +29,7 @@ export const EditWebDavConnectorScreen = memo(() => {
           variant="contained"
           color="error"
           onClick={() => {
-            const confirm = window.confirm(
-              "Are you sure you want to delete this connector?",
-            )
+            const confirm = confirmation()
 
             if (confirm) {
               deleteConnector(
