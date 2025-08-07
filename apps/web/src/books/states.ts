@@ -54,7 +54,7 @@ export const useBooks = ({
         switchMap((db) =>
           observeBooks({
             db,
-            includeProtected,
+            protected: includeProtected ? "with" : "none",
             ids,
             isNotInterested,
             queryObj,

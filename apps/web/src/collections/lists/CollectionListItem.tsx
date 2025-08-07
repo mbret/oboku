@@ -1,12 +1,14 @@
 import { memo } from "react"
 import {
   IconButton,
-  ListItem as MuiListItem,
   ListItemButton as MuiListItemButton,
   ListItemText,
   styled,
-  type ListItemProps,
   Stack,
+  type BoxProps,
+  ListItem,
+  Box,
+  type ListItemProps,
 } from "@mui/material"
 import { LockRounded, MoreVert } from "@mui/icons-material"
 import type { CollectionDocType } from "@oboku/shared"
@@ -18,12 +20,6 @@ import { useCollection } from "../useCollection"
 import { useCollectionDisplayTitle } from "../useCollectionDisplayTitle"
 import { configuration } from "../../config/configuration"
 
-const ListItem = styled(MuiListItem)(() => ({
-  height: `100%`,
-  flexFlow: "column",
-  position: "relative",
-}))
-
 const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
   padding: theme.spacing(2),
 }))
@@ -32,12 +28,12 @@ export const CollectionListItem = memo(
   ({
     id,
     onItemClick,
-    viewMode,
+    showType,
     ...rest
   }: {
     id: string
     onItemClick?: (tag: DeepReadonlyObject<CollectionDocType>) => void
-    viewMode?: "container" | "text"
+    showType?: boolean
   } & ListItemProps) => {
     const { data: item } = useCollection({
       id,
@@ -49,7 +45,9 @@ export const CollectionListItem = memo(
     return (
       <ListItem
         onClick={() => item && onItemClick && onItemClick(item)}
+        component="div"
         disablePadding
+        dense
         {...rest}
       >
         <ListItemButton
@@ -58,12 +56,9 @@ export const CollectionListItem = memo(
             display: "flex",
             flexDirection: "column",
             alignSelf: "stretch",
-            py: 2,
-            px: 2,
-            borderRadius: 1,
           }}
         >
-          <CollectionListItemCover id={id} />
+          <CollectionListItemCover id={id} showType={showType} />
           <Stack
             width="100%"
             direction="row"

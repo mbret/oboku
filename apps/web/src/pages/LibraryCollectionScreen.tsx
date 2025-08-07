@@ -50,7 +50,15 @@ export const LibraryCollectionScreen = memo(() => {
 
   return (
     <Stack flex={1} overflow="hidden">
-      <Toolbar />
+      <Toolbar
+        viewMode={viewMode}
+        onViewModeChange={(viewMode) => {
+          libraryShelvesFiltersSignal.update((state) => ({
+            ...state,
+            viewMode,
+          }))
+        }}
+      />
       {!!collections && (
         <CollectionList
           style={{

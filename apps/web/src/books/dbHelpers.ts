@@ -5,7 +5,7 @@ import type {
   MangoQueryNoLimit,
 } from "rxdb/dist/types/types"
 import type { Database } from "../rxdb"
-import { map, of, switchMap } from "rxjs"
+import { combineLatest, map } from "rxjs"
 import { intersection } from "@oboku/shared"
 
 export const getBookById = async ({
@@ -41,13 +41,13 @@ export const observeBooks = ({
   queryObj = {},
   isNotInterested,
   ids,
-  includeProtected,
+  protected: _protected,
 }: {
   db: Database
   queryObj?: MangoQuery<BookDocType>
   isNotInterested?: "none" | "with" | "only"
   ids?: DeepReadonlyArray<string>
-  includeProtected: boolean
+  protected: "only" | "with" | "none"
 }) => {
   const finalQueryObj: MangoQuery<BookDocType> = {
     ...queryObj,
@@ -71,30 +71,29 @@ export const observeBooks = ({
     },
   }
 
-  const protectedTags = db.tag.find({
+  const protectedTags$ = db.tag.find({
     selector: {
       isProtected: {
         $eq: true,
       },
     },
-  })
+  }).$
 
   const books$ = db.book.find(finalQueryObj).$
 
-  return books$.pipe(
-    switchMap((books) => {
-      if (includeProtected) return of(books)
+  return combineLatest([books$, protectedTags$]).pipe(
+    map(([books, protectedTags]) => {
+      if (_protected === "with") return books
 
-      return protectedTags.$.pipe(
-        map((protectedTags) => {
-          const protectedTagIds = protectedTags.map(({ _id }) => _id)
+      const protectedTagIds = protectedTags.map(({ _id }) => _id)
 
-          return books?.filter(
-            (book) =>
-              intersection(protectedTagIds, book?.tags || []).length === 0,
-          )
-        }),
-      )
-    }),
+      return books?.filter((book) => {
+        const tagsInCommon = intersection(protectedTagIds, book?.tags || [])
+
+        if (_protected === "only") return tagsInCommon.length >= 1
+
+        return tagsInCommon.length === 0
+      })
+    }) ?? [],
   )
 }

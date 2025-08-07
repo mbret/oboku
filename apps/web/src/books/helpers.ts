@@ -16,6 +16,10 @@ import {
   OfflineError,
 } from "../errors/errors.shared"
 import { useMutation } from "@tanstack/react-query"
+import { useMutation$ } from "reactjrx"
+import { defaultIfEmpty, from, merge } from "rxjs"
+import { useCollectionIncrementalUpdate } from "../collections/useCollectionIncrementalUpdate"
+import { useIncrementalBookUpdate } from "./useIncrementalBookUpdate"
 
 export const useRemoveBook = () => {
   const { mutateAsync: removeDownload } = useRemoveDownloadFile()
@@ -83,36 +87,72 @@ export const useAddTagToBook = () => {
 }
 
 export const useAddCollectionToBook = () => {
-  const { db } = useDatabase()
+  const { mutateAsync: updateBook } = useIncrementalBookUpdate()
+  const { mutateAsync: updateCollection } = useCollectionIncrementalUpdate()
 
-  return useMutation({
-    mutationFn: async ({
+  return useMutation$({
+    mutationFn: ({
       _id,
       collectionId,
     }: {
       _id: string
       collectionId: string
-    }) =>
-      db?.book
-        .findOne({ selector: { _id } })
-        .update({ $push: { collections: collectionId } }),
+    }) => {
+      const updateBook$ = from(
+        updateBook({
+          doc: _id,
+          updateObj: {
+            $addToSet: { collections: collectionId },
+          },
+        }),
+      )
+
+      const updateCollection$ = from(
+        updateCollection({
+          doc: collectionId,
+          updateObj: {
+            $addToSet: { books: _id },
+          },
+        }),
+      )
+
+      return merge(updateBook$, updateCollection$).pipe(defaultIfEmpty(null))
+    },
   })
 }
 
 export const useRemoveCollectionFromBook = () => {
-  const { db } = useDatabase()
+  const { mutateAsync: updateBook } = useIncrementalBookUpdate()
+  const { mutateAsync: updateCollection } = useCollectionIncrementalUpdate()
 
-  return useMutation({
-    mutationFn: async ({
+  return useMutation$({
+    mutationFn: ({
       _id,
       collectionId,
     }: {
       _id: string
       collectionId: string
-    }) =>
-      db?.book
-        .findOne({ selector: { _id } })
-        .update({ $pullAll: { collections: [collectionId] } }),
+    }) => {
+      const updateBook$ = from(
+        updateBook({
+          doc: _id,
+          updateObj: {
+            $pullAll: { collections: [collectionId] },
+          },
+        }),
+      )
+
+      const updateCollection$ = from(
+        updateCollection({
+          doc: collectionId,
+          updateObj: {
+            $pullAll: { books: [_id] },
+          },
+        }),
+      )
+
+      return merge(updateBook$, updateCollection$).pipe(defaultIfEmpty(null))
+    },
   })
 }
 

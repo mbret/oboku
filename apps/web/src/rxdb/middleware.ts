@@ -25,58 +25,6 @@ export const applyHooks = (db: Database) => {
       })
       .exec()
 
-    // Remove the book from all collections that are not anymore in this book
-    // but that also still reference the book
-    const collectionsToRemoveBooksFrom = await db.obokucollection
-      .find({
-        selector: {
-          books: {
-            $in: [data._id],
-          },
-          _id: {
-            $nin: data.collections,
-          },
-        },
-      })
-      .exec()
-
-    await Promise.all(
-      collectionsToRemoveBooksFrom.map(async (collection) => {
-        await collection.incrementalUpdate({
-          $pullAll: {
-            books: [data._id],
-          },
-        } satisfies UpdateQuery<CollectionDocType>)
-      }),
-    )
-
-    // add the book to any collections that are in this book
-    // but does not reference it yet
-    const collectionsToAddBooksTo = await db.obokucollection
-      .find({
-        selector: {
-          // if at least one of the books is data._id it will work.
-          // be careful with $nin
-          books: {
-            $nin: [data._id],
-          },
-          _id: {
-            $in: data.collections,
-          },
-        },
-      })
-      .exec()
-
-    await Promise.all(
-      collectionsToAddBooksTo.map(async (collection) => {
-        await collection.incrementalUpdate({
-          $push: {
-            books: data._id,
-          },
-        } satisfies UpdateQuery<CollectionDocType>)
-      }),
-    )
-
     // @todo bulk
     await Promise.all(
       tagsFromWhichToRemoveBook.map(async (tag) => {
@@ -222,7 +170,6 @@ export const applyHooks = (db: Database) => {
         },
       })
       .exec()
-
     await Promise.all(
       booksWithCollectionAttached.map(async (book) =>
         book.incrementalUpdate({

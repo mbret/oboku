@@ -35,7 +35,7 @@ export const observeEmptyCollection = ({
       },
     },
     isNotInterested,
-    includeProtected,
+    protected: includeProtected ? "with" : "none",
   }).pipe(
     map((books) => {
       const collection: CollectionDocType = {

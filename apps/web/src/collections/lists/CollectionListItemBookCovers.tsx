@@ -10,7 +10,7 @@ export const CollectionListItemBookCovers = memo(({ id }: { id: string }) => {
   })
 
   return (
-    <Stack position="relative" direction="row" justifyContent="center">
+    <Stack position="absolute" direction="row">
       {item?.books?.slice(0, 3).map((bookItem, i) => {
         const length = item?.books?.length || 0
         const coverHeight = 200 * (length < 3 ? 0.6 : 0.5)

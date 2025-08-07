@@ -1,7 +1,7 @@
 import { catchError, defaultIfEmpty, EMPTY, from, map, switchMap } from "rxjs"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
-import { useUpdateCollection } from "./useUpdateCollection"
+import { useCollectionIncrementalModify } from "./useCollectionIncrementalModify"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
@@ -15,7 +15,7 @@ import { useMutation$ } from "reactjrx"
 import { useNotifications } from "../notifications/useNofitications"
 
 export const useRefreshCollectionMetadata = () => {
-  const { mutateAsync: updateCollection } = useUpdateCollection()
+  const { mutateAsync: updateCollection } = useCollectionIncrementalModify()
   const { mutateAsync: sync } = useSyncReplicate()
   const getRefreshMetadataPluginData = usePluginRefreshMetadata()
   const withNetwork = useWithNetwork()
