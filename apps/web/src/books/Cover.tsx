@@ -2,7 +2,7 @@ import type React from "react"
 import { type FC, memo, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
 import placeholder from "../assets/cover-placeholder.jpg"
-import { Box, styled } from "@mui/material"
+import { Box, type BoxProps, styled } from "@mui/material"
 import { useBook } from "./states"
 import { useBlurredTagIds } from "../tags/helpers"
 import { useLocalSettings } from "../settings/states"
@@ -51,16 +51,7 @@ const CoverImg = styled(`img`)<{
   }),
 }))
 
-type Props = {
-  bookId: string
-  style?: React.CSSProperties
-  fullWidth?: boolean
-  withShadow?: boolean
-  rounded?: boolean
-  blurIfNeeded?: boolean
-}
-
-export const Cover: FC<Props> = memo(
+export const Cover = memo(
   ({
     bookId,
     style,
@@ -68,8 +59,16 @@ export const Cover: FC<Props> = memo(
     withShadow = false,
     rounded = true,
     blurIfNeeded = true,
+    sx,
     ...rest
-  }) => {
+  }: {
+    bookId: string
+    style?: React.CSSProperties
+    fullWidth?: boolean
+    withShadow?: boolean
+    rounded?: boolean
+    blurIfNeeded?: boolean
+  } & Pick<BoxProps, "sx">) => {
     const auth = useSignalValue(authStateSignal)
     const isMounted = useMountedState()
     const book = useBookCoverState({
@@ -104,13 +103,7 @@ export const Cover: FC<Props> = memo(
     }, [originalSrc])
 
     return (
-      <Box
-        sx={{
-          width: "100%",
-          height: "100%",
-        }}
-        style={style}
-      >
+      <Box width="100%" height="100%" style={style} sx={sx}>
         {isLoading && (
           <CoverImg
             alt="img"

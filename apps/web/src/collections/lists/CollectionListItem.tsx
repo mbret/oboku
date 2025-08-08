@@ -5,9 +5,7 @@ import {
   ListItemText,
   styled,
   Stack,
-  type BoxProps,
   ListItem,
-  Box,
   type ListItemProps,
 } from "@mui/material"
 import { LockRounded, MoreVert } from "@mui/icons-material"
