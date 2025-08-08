@@ -1,5 +1,5 @@
 import type React from "react"
-import { type FC, memo, useEffect, useState } from "react"
+import { memo, useEffect, useState } from "react"
 import { useMountedState } from "react-use"
 import placeholder from "../assets/cover-placeholder.jpg"
 import { Box, type BoxProps, styled } from "@mui/material"
