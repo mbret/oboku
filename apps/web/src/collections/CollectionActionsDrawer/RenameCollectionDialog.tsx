@@ -8,7 +8,7 @@ import {
 } from "@mui/material"
 import { useEffect, useState, type FC } from "react"
 import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
-import { useUpdateCollection } from "../useUpdateCollection"
+import { useCollectionIncrementalModify } from "../useCollectionIncrementalModify"
 import { useCollection } from "../useCollection"
 
 export const RenameCollectionDialog: FC<{
@@ -19,7 +19,7 @@ export const RenameCollectionDialog: FC<{
   const { data: collection } = useCollection({
     id: openWith,
   })
-  const { mutate: editCollection } = useUpdateCollection()
+  const { mutate: editCollection } = useCollectionIncrementalModify()
 
   const onInnerClose = () => {
     setName("")

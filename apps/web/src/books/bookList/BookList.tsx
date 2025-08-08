@@ -91,8 +91,16 @@ export const BookList = memo(
           <BookListGridItem
             bookId={item}
             style={{
-              height: viewMode === "horizontal" ? "100%" : computedItemHeight,
-              width: viewMode === "horizontal" ? computedItemWidth : "100%",
+              ...(viewMode === "horizontal" && {
+                height: "100%",
+                aspectRatio: `${adjustedRatioWhichConsiderBottom}`,
+                width: "auto",
+                overflow: "hidden",
+              }),
+              ...(viewMode !== "horizontal" && {
+                height: computedItemHeight,
+                width: "100%",
+              }),
             }}
           />
         ) : viewMode === "list" ? (
@@ -118,13 +126,13 @@ export const BookList = memo(
         )
       },
       [
+        adjustedRatioWhichConsiderBottom,
         viewMode,
         itemHeight,
         itemMargin,
         onItemClick,
         withBookActions,
         computedItemHeight,
-        computedItemWidth,
       ],
     )
 

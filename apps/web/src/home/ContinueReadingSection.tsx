@@ -1,6 +1,6 @@
 import { memo } from "react"
 import { Typography, Box } from "@mui/material"
-import { useContinueReadingBooks } from "./helpers"
+import { useContinueReadingBooks } from "./useContinueReadingBooks"
 import { HomeBookList } from "./HomeBookList"
 
 export const ContinueReadingSection = memo(() => {

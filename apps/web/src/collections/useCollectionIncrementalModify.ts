@@ -2,7 +2,7 @@ import type { CollectionDocType } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
 import { useMutation } from "@tanstack/react-query"
 
-export const useUpdateCollection = () => {
+export const useCollectionIncrementalModify = () => {
   const { db } = useDatabase()
 
   return useMutation({

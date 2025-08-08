@@ -5,6 +5,7 @@ import {
   IconButton,
   Button,
   Badge,
+  Box,
 } from "@mui/material"
 import {
   AppsRounded,
@@ -78,45 +79,46 @@ export const ListActionsToolbar = memo(
           }}
           {...rest}
         >
-          {!!onFilterClick && (
-            <IconButton
-              edge="start"
-              onClick={() => onFilterClick?.()}
-              size="large"
-              color="primary"
-            >
-              {numberOfFiltersApplied > 0 ? (
-                <Badge badgeContent={numberOfFiltersApplied}>
-                  <TuneRounded />
-                </Badge>
-              ) : (
-                <TuneRounded />
-              )}
-            </IconButton>
-          )}
-          {!!sorting && (
-            <div
-              style={{
-                flexGrow: 1,
-                justifyContent: "flex-start",
-                flexFlow: "row",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="text"
-                onClick={() => setIsSortingDialogOpened(true)}
-                startIcon={<SortRounded />}
+          <Box flexGrow={1}>
+            {!!onFilterClick && (
+              <IconButton
+                edge="start"
+                onClick={() => onFilterClick?.()}
+                size="large"
+                color="primary"
               >
-                {sorting === "activity"
-                  ? "Recent activity"
-                  : sorting === "alpha"
-                    ? "A > Z"
-                    : "Date added"}
-              </Button>
-            </div>
-          )}
+                {numberOfFiltersApplied > 0 ? (
+                  <Badge badgeContent={numberOfFiltersApplied}>
+                    <TuneRounded />
+                  </Badge>
+                ) : (
+                  <TuneRounded />
+                )}
+              </IconButton>
+            )}
+            {!!sorting && (
+              <div
+                style={{
+                  justifyContent: "flex-start",
+                  flexFlow: "row",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                <Button
+                  variant="text"
+                  onClick={() => setIsSortingDialogOpened(true)}
+                  startIcon={<SortRounded />}
+                >
+                  {sorting === "activity"
+                    ? "Recent activity"
+                    : sorting === "alpha"
+                      ? "A > Z"
+                      : "Date added"}
+                </Button>
+              </div>
+            )}
+          </Box>
           {!!viewMode && (
             <ViewModeIconButton
               viewMode={viewMode}

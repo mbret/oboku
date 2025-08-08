@@ -6,12 +6,14 @@ import {
 import { useLocalSettings } from "../settings/states"
 import { useQuery$, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { map, switchMap } from "rxjs"
+import { combineLatest, map, switchMap } from "rxjs"
 import type { MangoQuery } from "rxdb"
 import type { DeepReadonlyArray } from "rxdb/dist/types/types"
 import { libraryStateSignal } from "../library/books/states"
 import { intersection } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
+
+type CollectionReadingState = "ongoing" | "finished" | "unread" | undefined
 
 export const useCollections = ({
   queryObj,
@@ -31,7 +33,7 @@ export const useCollections = ({
    * `only`: will return collections containing only not interested books
    */
   isNotInterested?: "with" | "none" | "only" | undefined
-  readingState?: "ongoing" | "finished" | "any"
+  readingState?: CollectionReadingState | "any"
   ids?: DeepReadonlyArray<string>
   includeProtected?: boolean
 } = {}) => {
@@ -58,20 +60,27 @@ export const useCollections = ({
     ],
     queryFn: () => {
       return latestDatabase$.pipe(
-        switchMap((db) =>
+        switchMap((db) => {
+          const protectedBooks$ = observeBooks({
+            db,
+            protected: "only",
+          })
+
+          const visibleBooks$ = observeBooks({
+            db,
+            protected: includeProtected ? "with" : "none",
+          })
+
           /**
            * @important
            *
            * We need to get all the books since we use them
            * to check whether it's safe or not later
            */
-          observeBooks({
-            db,
-            includeProtected,
-          }).pipe(
-            switchMap((books) => {
-              const visibleBooks = books.map(({ _id }) => _id)
-              const notInterestedBookIds = books
+          return combineLatest([protectedBooks$, visibleBooks$]).pipe(
+            switchMap(([protectedBooks, visibleBooks]) => {
+              const protectedBookIds = protectedBooks.map(({ _id }) => _id)
+              const notInterestedBookIds = visibleBooks
                 .filter(({ isNotInterested }) => !!isNotInterested)
                 .map(({ _id }) => _id)
 
@@ -112,19 +121,13 @@ export const useCollections = ({
                       )
                         return true
 
-                      /**
-                       * If we have a book that is not in the list of protected books
-                       * we can assume it's unsafe
-                       */
-                      const extraBooksFromCollection = difference(
-                        collection.books,
-                        visibleBooks,
-                      )
+                      const hasProtectedBook =
+                        intersection(collection.books, protectedBookIds)
+                          .length > 0
 
-                      const hasSuspiciousExtraBook =
-                        extraBooksFromCollection.length > 0
+                      if (hasProtectedBook) return false
 
-                      return !hasSuspiciousExtraBook
+                      return true
                     })
                     /**
                      * @important
@@ -159,30 +162,37 @@ export const useCollections = ({
                      * Filter collection by reading state
                      */
                     .filter((collection) => {
-                      const booksFromCollection = books.filter((book) =>
+                      const booksFromCollection = visibleBooks.filter((book) =>
                         collection.books.includes(book._id),
                       )
 
-                      if (
-                        readingState === "finished" &&
-                        (booksFromCollection.some(
-                          (book) =>
-                            book.readingStateCurrentState !==
-                            ReadingStateState.Finished,
-                        ) ||
-                          booksFromCollection.length === 0)
-                      ) {
-                        return false
-                      }
+                      const collectionReadingState =
+                        booksFromCollection.reduce<
+                          CollectionReadingState | undefined
+                        >((acc, book) => {
+                          const bookState = book.readingStateCurrentState
+
+                          if (acc === "ongoing") return "ongoing"
+                          if (bookState === ReadingStateState.Reading)
+                            return "ongoing"
+                          if (bookState === ReadingStateState.Finished) {
+                            return acc === "unread" ? "ongoing" : "finished"
+                          }
+                          if (bookState === ReadingStateState.NotStarted) {
+                            // If previous state was finished, now it's ongoing (mixed states)
+                            return acc === "finished" ? "ongoing" : "unread"
+                          }
+
+                          return acc
+                        }, undefined) ?? "unread"
 
                       if (
-                        readingState === "ongoing" &&
-                        booksFromCollection.length > 0 &&
-                        booksFromCollection.every(
-                          (book) =>
-                            book.readingStateCurrentState ===
-                            ReadingStateState.Finished,
-                        )
+                        (readingState === "ongoing" &&
+                          collectionReadingState !== "ongoing") ||
+                        (readingState === "finished" &&
+                          collectionReadingState !== "finished") ||
+                        (readingState === "unread" &&
+                          collectionReadingState !== "unread")
                       ) {
                         return false
                       }
@@ -193,8 +203,8 @@ export const useCollections = ({
                 ),
               )
             }),
-          ),
-        ),
+          )
+        }),
       )
     },
     ...options,

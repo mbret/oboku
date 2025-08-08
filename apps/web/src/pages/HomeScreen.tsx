@@ -3,11 +3,12 @@ import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Typography, useTheme, Button, Box } from "@mui/material"
 import { useNavigate } from "react-router"
 import ContinueReadingAsset from "../assets/continue-reading.svg"
-import { useContinueReadingBooks } from "../home/helpers"
+import { useContinueReadingBooks } from "../home/useContinueReadingBooks"
 import { ContinueReadingSection } from "../home/ContinueReadingSection"
 import { RecentlyAddedSection } from "../home/RecentlyAddedSection"
 import { CommunicationPane } from "../communication/CommunicationPane"
 import { ROUTES } from "../navigation/routes"
+import { ContinueCollectionsSection } from "../home/ContinueCollectionsSection"
 
 export const HomeScreen = memo(() => {
   const theme = useTheme()
@@ -65,6 +66,7 @@ export const HomeScreen = memo(() => {
         )}
         <ContinueReadingSection />
         <RecentlyAddedSection />
+        <ContinueCollectionsSection />
       </Box>
     </Box>
   )

@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { Stack, useTheme } from "@mui/material"
+import { Box, useTheme } from "@mui/material"
 import { Cover } from "../../books/Cover"
 import { useCollection } from "../useCollection"
 
@@ -8,14 +8,28 @@ export const CollectionListItemBookCovers = memo(({ id }: { id: string }) => {
   const { data: item } = useCollection({
     id,
   })
+  const items = item?.books?.slice(0, 3)
+  const size = items?.length || 0
 
   return (
-    <Stack position="relative" direction="row" justifyContent="center">
-      {item?.books?.slice(0, 3).map((bookItem, i) => {
-        const length = item?.books?.length || 0
-        const coverHeight = 200 * (length < 3 ? 0.6 : 0.5)
-
+    <Box
+      position="absolute"
+      display="flex"
+      flexDirection="row"
+      width="90%"
+      height="70%"
+      sx={{
+        containerType: "size",
+      }}
+    >
+      {items?.map((bookItem, i) => {
         if (!bookItem) return null
+
+        const coverWidth = `100cqh * ${theme.custom.coverAverageRatio}`
+        const availableSpace = `(100cqw - ${coverWidth})` // Space after placing last cover
+        const idealSpacing = `${availableSpace} / max(1, ${size - 1})` // Ideal spacing between covers
+        const maxSpacing = `calc(${coverWidth} + 12px)` // Maximum spacing = cover width (side by side)
+        const reCenterTranslate = `translateX(calc((100cqw - ${coverWidth} - (${size - 1}) * min(${idealSpacing}, ${maxSpacing})) / 2))`
 
         return (
           <Cover
@@ -23,18 +37,20 @@ export const CollectionListItemBookCovers = memo(({ id }: { id: string }) => {
             bookId={bookItem}
             withShadow
             style={{
-              height: coverHeight,
-              width: coverHeight * theme.custom.coverAverageRatio,
-              ...(length > 2 &&
-                i === 1 && {
-                  marginTop: -10,
-                }),
-              marginRight: 5,
-              marginLeft: 5,
+              position: "absolute",
+              height: "100%",
+            }}
+            sx={{
+              "@container (min-width: 0)": {
+                width: `calc(${coverWidth})`,
+                // adjust the cover so they expand / overlap when needed
+                left: `calc(${i} * max(0px, min(${idealSpacing}, ${maxSpacing})))`,
+                transform: `${reCenterTranslate}${i === 1 ? " scale(1.1)" : ""}`,
+              },
             }}
           />
         )
       })}
-    </Stack>
+    </Box>
   )
 })

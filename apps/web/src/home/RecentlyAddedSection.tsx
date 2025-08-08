@@ -1,7 +1,7 @@
 import { memo } from "react"
 import { Typography, Box } from "@mui/material"
-import { useRecentlyAddedBooks } from "./helpers"
 import { HomeBookList } from "./HomeBookList"
+import { useRecentlyAddedBooks } from "./useRecentlyAddedBooks"
 
 export const RecentlyAddedSection = memo(() => {
   const recentlyAddedBooks = useRecentlyAddedBooks()

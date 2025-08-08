@@ -1,5 +1,5 @@
-import { useCallback, type FC, memo, type ComponentProps, useMemo } from "react"
-import { List, Stack } from "@mui/material"
+import { useCallback, memo, type ComponentProps } from "react"
+import { List, Stack, useTheme } from "@mui/material"
 import { CollectionListItem } from "./CollectionListItem"
 import type { CollectionDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
@@ -7,72 +7,80 @@ import { useWindowSize } from "react-use"
 import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
-export const CollectionList: FC<
-  {
+export const CollectionList = memo(
+  ({
+    viewMode,
+    data,
+    onItemClick,
+    static: isStatic,
+    slotProps,
+    ...rest
+  }: {
     onItemClick?: (item: DeepReadonlyObject<CollectionDocType>) => void
     viewMode?: ListActionViewMode
-    itemMode?: ComponentProps<typeof CollectionListItem>["viewMode"]
     static?: boolean
-  } & ComponentProps<typeof VirtuosoList>
-> = memo(({ itemMode, ...props }) => {
-  const { viewMode, data, onItemClick, static: isStatic, ...rest } = props
-  const windowSize = useWindowSize()
-  const dynamicNumberOfItems = Math.max(Math.floor(windowSize.width / 350), 1)
-  const itemsPerRow =
-    viewMode === "grid"
-      ? dynamicNumberOfItems > 0
-        ? dynamicNumberOfItems
-        : dynamicNumberOfItems
-      : 1
+    slotProps?: {
+      listItem?: Omit<
+        ComponentProps<typeof CollectionListItem>,
+        "id" | "onItemClick"
+      >
+    }
+  } & ComponentProps<typeof VirtuosoList>) => {
+    const { listItem: listItemProps } = slotProps ?? {}
+    const windowSize = useWindowSize()
+    const theme = useTheme()
+    const coverRatio = theme.custom.coverAverageRatio
+    const dynamicNumberOfItems = Math.max(Math.floor(windowSize.width / 350), 1)
+    const itemsPerRow =
+      viewMode === "grid"
+        ? dynamicNumberOfItems > 0
+          ? dynamicNumberOfItems
+          : dynamicNumberOfItems
+        : 1
+    const itemHeight = 250
 
-  const itemHeight = 250
-
-  const itemStyle = useMemo(
-    () => ({
-      height: itemHeight,
-    }),
-    [],
-  )
-
-  const rowRenderer = useCallback(
-    (_: number, item: string) => (
-      <CollectionListItem
-        id={item}
-        onItemClick={onItemClick}
-        viewMode={itemMode}
-        style={itemStyle}
-      />
-    ),
-    [onItemClick, itemMode, itemStyle],
-  )
-
-  if (isStatic) {
-    return (
-      <List disablePadding>
-        {data?.map((item, index) => (
-          <Stack height={itemHeight} key={item}>
-            {rowRenderer(index, item)}
-          </Stack>
-        ))}
-      </List>
+    const rowRenderer = useCallback(
+      (_: number, item: string) => (
+        <CollectionListItem
+          id={item}
+          onItemClick={onItemClick}
+          style={{
+            ...(viewMode === "horizontal"
+              ? {
+                  height: "100%",
+                  aspectRatio: coverRatio,
+                  overflow: "hidden",
+                }
+              : {
+                  height: itemHeight,
+                }),
+          }}
+          {...listItemProps}
+        />
+      ),
+      [onItemClick, viewMode, coverRatio, listItemProps],
     )
-  }
 
-  return (
-    <VirtuosoList
-      data={data}
-      itemsPerRow={itemsPerRow}
-      rowRenderer={rowRenderer}
-      {...rest}
-    />
-  )
+    if (isStatic) {
+      return (
+        <List disablePadding>
+          {data?.map((item, index) => (
+            <Stack height={itemHeight} key={item}>
+              {rowRenderer(index, item)}
+            </Stack>
+          ))}
+        </List>
+      )
+    }
 
-  // return (
-  //   <VirtualizedList
-  //     data={data}
-  //     itemsPerRow={itemsPerRow}
-  //     rowRenderer={rowRenderer}
-  //     {...rest}
-  //   />
-  // )
-})
+    return (
+      <VirtuosoList
+        data={data}
+        itemsPerRow={itemsPerRow}
+        rowRenderer={rowRenderer}
+        horizontalDirection={viewMode === "horizontal"}
+        {...rest}
+      />
+    )
+  },
+)
