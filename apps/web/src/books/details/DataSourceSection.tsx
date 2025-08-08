@@ -35,22 +35,12 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
       <List
         disablePadding
         dense
-        subheader={
-          <ListSubheader
-            sx={{
-              px: [null, 3],
-            }}
-          >
-            Source
-          </ListSubheader>
-        }
+        subheader={<ListSubheader disableGutters>Source</ListSubheader>}
       >
         {!!link && !!dataSourcePlugin && (
           <ListItemButton
             key={link?._id}
-            sx={{
-              px: [null, 3],
-            }}
+            disableGutters
             onClick={() => {
               if (!dataSourcePlugin?.SelectItemComponent) {
                 createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })

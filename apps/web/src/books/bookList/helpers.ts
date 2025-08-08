@@ -1,11 +1,8 @@
 import { useNavigate } from "react-router"
 import { useDownloadBook } from "../../download/useDownloadBook"
-import { getEnrichedBookState } from "../states"
-import { booksDownloadStateSignal } from "../../download/states"
-import { getProtectedTags, getTagsByIds } from "../../tags/helpers"
+import { getBookDownloadsState } from "../../download/states"
 import { useDatabase } from "../../rxdb"
 import { useCallback } from "react"
-import { getCollections } from "../../collections/dbHelpers"
 import { getBookById } from "../dbHelpers"
 import { ROUTES } from "../../navigation/routes"
 
@@ -18,26 +15,15 @@ export const useDefaultItemClickHandler = () => {
     async (id: string) => {
       if (!db) return
 
-      const normalizedCollections = await getCollections(db)
-      const normalizedLinks = (await db.collections.link.find().exec()).map(
-        (link) => link.toJSON(),
-      )
       const book = await getBookById({ database: db, id })
+      const downloadState = getBookDownloadsState({ bookId: id })
 
-      const item = getEnrichedBookState({
-        bookId: id,
-        normalizedBookDownloadsState: booksDownloadStateSignal.getValue(),
-        protectedTagIds: db ? await getProtectedTags(db) : [],
-        tags: db ? await getTagsByIds(db) : {},
-        normalizedLinks,
-        normalizedCollections,
-        book,
-      })
+      if (!book) return
 
-      if (item?.downloadState === "none") {
-        item?._id && downloadFile(item)
-      } else if (item?.downloadState === "downloaded") {
-        navigate(ROUTES.READER.replace(":id", item?._id))
+      if (downloadState?.downloadState === "none") {
+        book?._id && downloadFile(book)
+      } else if (downloadState?.downloadState === "downloaded") {
+        navigate(ROUTES.READER.replace(":id", book?._id))
       }
     },
     [db, downloadFile, navigate],
