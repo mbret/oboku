@@ -16,7 +16,7 @@ export const CollectionListItemBookCovers = memo(({ id }: { id: string }) => {
       position="absolute"
       display="flex"
       flexDirection="row"
-      width="90%"
+      width="80%"
       height="70%"
       sx={{
         containerType: "size",

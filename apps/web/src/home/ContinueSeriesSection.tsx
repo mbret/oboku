@@ -1,10 +1,10 @@
 import { memo, useMemo } from "react"
 import { Typography, Box } from "@mui/material"
-import { useContinueCollections } from "./useContinueCollections"
+import { useContinueSeries } from "./useContinueSeries"
 import { CollectionList } from "./CollectionList"
 
 export const ContinueCollectionsSection = memo(() => {
-  const { data: collections } = useContinueCollections()
+  const { data: collections } = useContinueSeries()
   const collectionIds = useMemo(
     () => collections?.map(({ _id }) => _id),
     [collections],
@@ -15,7 +15,7 @@ export const ContinueCollectionsSection = memo(() => {
   return (
     <Box>
       <Typography variant="h6" component="h1" padding={1} paddingTop={2}>
-        Continue your collections
+        Continue your series
       </Typography>
       <CollectionList data={collectionIds} />
     </Box>
