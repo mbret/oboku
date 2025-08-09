@@ -1,7 +1,7 @@
 import { Alert, Box, Button, Container, Divider, Stack } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import { useParams } from "react-router"
+import { data, useParams } from "react-router"
 import { plugins } from "../../dataSources"
 import { useDataSource } from "../../dataSources/useDataSource"
 import { useForm } from "react-hook-form"
@@ -21,6 +21,8 @@ import { useSynchronizeDataSource } from "../../dataSources/useSynchronizeDataSo
 import { useRemoveDataSource } from "../../dataSources/useRemoveDataSource"
 import { useTags } from "../../tags/helpers"
 import { ControlledSelect } from "../../common/forms/ControlledSelect"
+import { NotFoundPage } from "../../common/NotFoundPage"
+import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 
 export const DataSourceDetailsScreen = memo(() => {
   const { id } = useParams<{ id: string }>()
@@ -30,6 +32,7 @@ export const DataSourceDetailsScreen = memo(() => {
   )
   const { data: tags } = useTags()
   const isDataSourceLoaded = !!dataSource
+  const { goBack } = useSafeGoBack()
   const { mutateAsync: modifyDataSource } = useDataSourceIncrementalModify()
   const label = useDataSourceLabel(dataSource)
   const DetailsComponent = obokuPlugin?.DataSourceDetails ?? (() => null)
@@ -100,6 +103,8 @@ export const DataSourceDetailsScreen = memo(() => {
     },
   })
 
+  if (dataSource === null) return <NotFoundPage />
+
   return (
     <Box display="flex" flex={1} overflow="auto" flexDirection="column">
       <TopBarNavigation title={`${label}`} />
@@ -165,7 +170,15 @@ export const DataSourceDetailsScreen = memo(() => {
               variant="outlined"
               type="button"
               color="error"
-              onClick={() => id && removeDataSource({ id })}
+              onClick={() =>
+                id &&
+                removeDataSource(
+                  { id },
+                  {
+                    onSuccess: () => goBack(),
+                  },
+                )
+              }
             >
               Delete
             </Button>

@@ -8,7 +8,7 @@ import { useDataSource } from "./useDataSource"
  * `name` -> `plugin.infer` -> `plugin.name`
  */
 export const useDataSourceLabel = (
-  dataSource?: DeepReadonly<DataSourceDocType>,
+  dataSource?: DeepReadonly<DataSourceDocType> | null,
 ) => {
   const { data } = useDataSource(dataSource?._id)
   const pluginForDataSource = plugins.find(
