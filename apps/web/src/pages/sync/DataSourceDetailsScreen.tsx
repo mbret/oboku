@@ -1,7 +1,7 @@
 import { Alert, Box, Button, Container, Divider, Stack } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import { data, useParams } from "react-router"
+import { useParams } from "react-router"
 import { plugins } from "../../dataSources"
 import { useDataSource } from "../../dataSources/useDataSource"
 import { useForm } from "react-hook-form"
