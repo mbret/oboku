@@ -24,6 +24,7 @@ export const extractDirectivesFromName = (
   isWebtoon: boolean
   metadataTitle?: string | undefined
   googleVolumeId?: string | undefined
+  metadataSourceOnly?: string | undefined
 } => {
   let isNotACollection = false
   let tags: string[] = []
@@ -37,6 +38,7 @@ export const extractDirectivesFromName = (
   let metadataTitle: string | undefined
   let isWebtoon = false
   let googleVolumeId: string | undefined
+  let metadataSourceOnly: string | undefined
 
   const directives = resourceId
     .match(/(\[oboku~[^\]]*\])+/gi)
@@ -67,6 +69,14 @@ export const extractDirectivesFromName = (
     if (directive.startsWith("metadata-title~")) {
       const value = directive.replace(/metadata-title~/, "")
       metadataTitle = value
+    }
+
+    if (directive.startsWith("metadata-source-")) {
+      // Extract the pattern metadata-source-{foo}-only
+      const match = directive.match(/^metadata-source-(.+)-only$/)
+      if (match) {
+        metadataSourceOnly = match[1] // This captures the dynamic 'foo' part
+      }
     }
 
     if (directive === "ignore") {
@@ -116,6 +126,7 @@ export const extractDirectivesFromName = (
     isWebtoon,
     metadataTitle,
     googleVolumeId,
+    metadataSourceOnly,
   }
 }
 
