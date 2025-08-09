@@ -35,18 +35,18 @@ export class CollectionMetadataService {
   }) {
     this.logger.log(`invoke for ${collectionId}`)
 
+    const db$ = from(
+      this.couchService.createNanoInstanceForUser({
+        email,
+      }),
+    )
+
     return of({
       collectionId,
       data,
       soft,
     }).pipe(
-      switchMapCombineOuter(() =>
-        from(
-          this.couchService.createNanoInstanceForUser({
-            email,
-          }),
-        ),
-      ),
+      switchMapCombineOuter(() => db$),
       switchMap(([params, db]) =>
         from(
           findOne(

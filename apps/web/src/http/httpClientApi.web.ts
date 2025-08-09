@@ -12,7 +12,7 @@ class HttpApiClient extends HttpClientWeb {
     data?: Record<string, unknown>,
   ) =>
     this.post(`${configuration.API_URL}/collections/metadata/refresh`, {
-      body: { collectionId, data },
+      body: { collectionId, data, soft: false },
     })
 
   syncDataSource = (dataSourceId: string, data?: Record<string, unknown>) =>
