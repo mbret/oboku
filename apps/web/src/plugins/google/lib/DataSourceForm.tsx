@@ -152,7 +152,7 @@ export const DataSourceForm = ({
           justifyContent="space-between"
         >
           <Typography variant="caption">
-            selected item(s): {selectedItems.length}
+            Item(s) actions: {selectedItems.length}
           </Typography>
           <IconButton
             disabled={selectedItems.length === 0}

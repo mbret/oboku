@@ -6,7 +6,6 @@ import { createDialog } from "../common/dialogs/createDialog"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { useDatabase } from "../rxdb"
-import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useDataSourceIncrementalPatch } from "./useDataSourceIncrementalPatch"
 import { Logger } from "../debug/logger.shared"
 import { isPluginError } from "../errors/errors.shared"
@@ -17,7 +16,6 @@ export const useSynchronizeDataSource = () => {
     useDataSourceIncrementalPatch()
   const synchronizeDataSource = usePluginSynchronize()
   const network = useNetworkState()
-  const { mutateAsync: sync } = useSyncReplicate()
 
   return useMutation$({
     mutationFn: (_id: string) => {
@@ -46,7 +44,6 @@ export const useSynchronizeDataSource = () => {
               },
             }),
           ).pipe(
-            switchMap(() => from(sync([database.datasource]))),
             switchMap(() => from(httpClientApi.syncDataSource(_id, data.data))),
             catchError((e) => {
               return from(

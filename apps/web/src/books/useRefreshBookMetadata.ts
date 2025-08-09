@@ -3,7 +3,6 @@ import { from, switchMap, catchError, map, of, EMPTY } from "rxjs"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
-import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { Logger } from "../debug/logger.shared"
 import { createDialog } from "../common/dialogs/createDialog"
 import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
@@ -14,7 +13,6 @@ export const useRefreshBookMetadata = () => {
   const { db: database } = useDatabase()
   const { mutateAsync: incrementalPatchBook } = useIncrementalBookPatch()
   const network = useNetworkState()
-  const { mutateAsync: sync } = useSyncReplicate()
   const refreshPluginMetadata = usePluginRefreshMetadata()
   const { notifyError } = useNotifications()
 
@@ -55,7 +53,6 @@ export const useRefreshBookMetadata = () => {
         }),
       )
         .pipe(
-          switchMap(() => from(sync([database.link, database.book]))),
           switchMap(() =>
             from(
               httpClientApi.refreshBookMetadata(bookId, pluginMetadata ?? {}),
