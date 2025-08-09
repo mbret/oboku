@@ -1,4 +1,4 @@
-import { Box, Stack, Typography, useTheme } from "@mui/material"
+import { Box, Chip, Stack, Typography, useTheme } from "@mui/material"
 import { memo } from "react"
 import { useCollectionCoverUri } from "../../../collections/useCollectionCoverUri"
 import { useLocalSettings } from "../../../settings/states"
@@ -102,6 +102,14 @@ export const Header = memo(({ id }: { id: string }) => {
           >
             {`${collection?.books?.length || 0} book(s)`}
           </Typography>
+          {collection?.type === "series" && (
+            <Stack direction="row" gap={1} alignItems="center">
+              <Typography variant="body2">Publisher:</Typography>
+              {metadata.publisherName && (
+                <Chip size="small" label={metadata.publisherName} />
+              )}
+            </Stack>
+          )}
           {collection?.type === "series" && (
             <StatusChip
               rating={metadata.rating}
