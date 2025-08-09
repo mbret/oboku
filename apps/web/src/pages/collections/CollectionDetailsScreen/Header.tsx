@@ -110,15 +110,22 @@ export const Header = memo(({ id }: { id: string }) => {
               )}
             </Stack>
           )}
-          {collection?.type === "series" && (
-            <StatusChip
-              rating={metadata.rating}
-              status={metadata.status}
-              sx={{
-                bgcolor: "transparent",
-              }}
-            />
-          )}
+          <Stack direction="row" gap={1} alignItems="center">
+            {!!metadata.startYear && (
+              <Typography variant="caption" fontWeight="bold">
+                {metadata.startYear}
+              </Typography>
+            )}
+            {collection?.type === "series" && (
+              <StatusChip
+                rating={metadata.rating}
+                status={metadata.status}
+                sx={{
+                  bgcolor: "transparent",
+                }}
+              />
+            )}
+          </Stack>
         </Stack>
       </Stack>
     </Stack>
