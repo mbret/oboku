@@ -45,7 +45,8 @@ export const findByTitle = async (
   apiKey: string,
   config: AppConfigService,
 ) => {
-  const uri = `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=intitle:${encodeURIComponent(name)}&key=${apiKey}`
+  const cleanedName = encodeURIComponent(name)
+  const uri = `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=intitle:${cleanedName}&key=${apiKey}`
 
   console.log("[google] [findByTitle]", { uri })
 
