@@ -31,7 +31,7 @@
     "@nestjs/typeorm": "^11.0.0",
     "@oboku/shared": "^0.8.0",
     "@sentry/aws-serverless": "^9.5.0",
-    "@sentry/nestjs": "^9.5.0",
+    "@sentry/nestjs": "^10.8.0",
     "@sentry/profiling-node": "^9.5.0",
     "aws-lambda": "^1.0.7",
     "bcrypt": "^6.0.0",
