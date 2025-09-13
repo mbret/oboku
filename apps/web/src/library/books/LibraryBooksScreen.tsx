@@ -90,21 +90,17 @@ export const LibraryBooksScreen = memo(() => {
             style={{
               display: "flex",
               flexDirection: "column",
-              alignItems: "center",
               flex: 1,
             }}
           >
-            <MuiToolbar style={{ width: "100%", boxSizing: "border-box" }}>
-              {addBookButton}
-            </MuiToolbar>
-            <div
+            {listHeader}
+            <Stack
               style={{
-                display: "flex",
                 flex: 1,
                 justifyContent: "center",
-                flexFlow: "column",
                 alignItems: "center",
                 textAlign: "center",
+                alignSelf: "center",
                 width: "80%",
                 maxWidth: theme.custom.maxWidthCenteredContent,
               }}
@@ -122,7 +118,7 @@ export const LibraryBooksScreen = memo(() => {
                 It looks like your library is empty for the moment. Maybe it's
                 time to add a new book
               </Typography>
-            </div>
+            </Stack>
           </div>
         )}
         {books.length > 0 && (
