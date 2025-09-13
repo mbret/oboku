@@ -36,11 +36,11 @@ export const useCreateReader = ({
       setIsCreated(true)
 
       const instance = createAppReader({
-        ...(localSettingsSignal.getValue().useOptimizedTheme && {
+        ...(localSettingsSignal.getValue().themeMode === "e-ink" && {
           pageTurnAnimation: "none",
         }),
         gestures: {
-          ...(localSettingsSignal.getValue().useOptimizedTheme && {
+          ...(localSettingsSignal.getValue().themeMode === "e-ink" && {
             panNavigation: "swipe",
           }),
         },
@@ -59,7 +59,7 @@ export const useCreateReader = ({
         }),
       })
 
-      // @ts-ignore
+      // @ts-expect-error
       window.reader = instance
 
       readerSignal.setValue(instance)

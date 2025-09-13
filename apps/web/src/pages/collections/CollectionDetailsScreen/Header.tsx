@@ -10,7 +10,8 @@ import { useCollectionComputedMetadata } from "../../../collections/useCollectio
 
 export const Header = memo(({ id }: { id: string }) => {
   const theme = useTheme()
-  const { useOptimizedTheme } = useLocalSettings()
+  const { themeMode } = useLocalSettings()
+  const useOptimizedTheme = themeMode === "e-ink"
   const { data: collection } = useCollection({
     id,
   })

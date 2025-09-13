@@ -33,6 +33,8 @@ import { useLoadGsi } from "./google/gsi"
 import { AuthGuard } from "./auth/AuthGuard"
 import { NotificationsProvider } from "./notifications/NotificationsProvider"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
+import { localSettingsSignal } from "./settings/states"
+import { DebugMenu } from "./debug/DebugMenu"
 
 // @todo move to sw
 LibArchive.init({
@@ -55,6 +57,8 @@ export const App = memo(() => {
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
   const isAppReady =
     isDownloadsHydrated && isAuthHydrated && !isPreloadingQueries
+
+  console.log({ isProfileHydrated }, localSettingsSignal)
 
   return (
     <ErrorBoundary
@@ -109,6 +113,7 @@ export const App = memo(() => {
                   <RxDbProvider />
                 </DialogProvider>
               </Suspense>
+              {import.meta.env.DEV && <DebugMenu />}
             </QueryClientProvider$>
           </QueryClientProvider>
         </ThemeProvider>

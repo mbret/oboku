@@ -1,7 +1,6 @@
-import { type ComponentProps, memo, useState } from "react"
+import { type ComponentProps, memo, useId, useState } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
-  Box,
   Drawer,
   List,
   ListItem,
@@ -11,6 +10,8 @@ import {
 } from "@mui/material"
 import { localSettingsSignal, useLocalSettings } from "../settings/states"
 import { ListItemSwitch } from "../common/ListItemSwitch"
+import { Page } from "../common/Page"
+import { themeOptions } from "../theme/themeOptions"
 
 type LocalSettings = ReturnType<typeof useLocalSettings>
 
@@ -36,10 +37,14 @@ export const SettingsScreen = memo(() => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isShowCollectionDrawerOpened, setIsShowCollectionDrawerOpened] =
     useState(false)
+  const [isThemeDrawerOpened, setIsThemeDrawerOpened] = useState(false)
+  const sensitiveDataSourcesId = useId()
+  const hideDirectivesFromCollectionNameId = useId()
+  const unBlurWhenProtectedVisibleId = useId()
 
   return (
     <>
-      <Box display="flex" flex={1} flexDirection="column">
+      <Page>
         <TopBarNavigation title={"Settings"} />
         <List>
           <ListSubheader disableSticky>General</ListSubheader>
@@ -57,7 +62,7 @@ export const SettingsScreen = memo(() => {
               }))
             }}
             checked={localSettings.hideDirectivesFromCollectionName}
-            id="settings-screen-setting-hideDirectivesFromCollectionName"
+            id={hideDirectivesFromCollectionNameId}
           />
         </List>
         <List>
@@ -74,7 +79,7 @@ export const SettingsScreen = memo(() => {
               }))
             }}
             checked={localSettings.showSensitiveDataSources}
-            id="settings-screen-setting-showSensitiveDataSources"
+            id={sensitiveDataSourcesId}
           />
           <ListItemButton
             onClick={() => {
@@ -100,7 +105,7 @@ export const SettingsScreen = memo(() => {
               }))
             }}
             checked={localSettings.unBlurWhenProtectedVisible}
-            id="settings-screen-setting-unBlurWhenProtectedVisible"
+            id={unBlurWhenProtectedVisibleId}
           />
         </List>
         <List subheader={<ListSubheader disableSticky>Reading</ListSubheader>}>
@@ -117,27 +122,23 @@ export const SettingsScreen = memo(() => {
             />
           </ListItemButton>
         </List>
-        <List
-          subheader={
-            <ListSubheader disableSticky>
-              eReader devices (e-ink screens)
-            </ListSubheader>
-          }
-        >
-          <ListItemSwitch
-            primary="Optimized theme"
-            secondary="Will use a more adapted app design (black & white, more contrast, ...)"
+        <List subheader={<ListSubheader disableSticky>Theme</ListSubheader>}>
+          <ListItemButton
             onClick={() => {
-              localSettingsSignal.setValue((old) => ({
-                ...old,
-                useOptimizedTheme: !old.useOptimizedTheme,
-              }))
+              setIsThemeDrawerOpened(true)
             }}
-            checked={localSettings.useOptimizedTheme}
-            id="settings-screen-setting-useOptimizedTheme"
-          />
+          >
+            <ListItemText
+              primary="Color mode"
+              secondary={
+                themeOptions.find(
+                  (option) => option.value === localSettings.themeMode,
+                )?.label
+              }
+            />
+          </ListItemButton>
         </List>
-      </Box>
+      </Page>
       <Drawer
         open={isDrawerOpened}
         onClose={() => setIsDrawerOpened(false)}
@@ -181,6 +182,20 @@ export const SettingsScreen = memo(() => {
             fullScreenModes,
           ) as LocalSettings["readingFullScreenSwitchMode"][]
         ).map((key) => ({ value: key, label: fullScreenModes[key] }))}
+      />
+      <MultipleChoiceDrawer
+        open={isThemeDrawerOpened}
+        onClose={() => setIsThemeDrawerOpened(false)}
+        onChoiceSelect={(value) => {
+          localSettingsSignal.update((old) => ({
+            ...old,
+            themeMode: value,
+          }))
+          setIsThemeDrawerOpened(false)
+        }}
+        selected={localSettings.themeMode}
+        anchor="bottom"
+        choices={themeOptions}
       />
       <MultipleChoiceDrawer
         open={isShowCollectionDrawerOpened}

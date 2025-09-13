@@ -45,6 +45,7 @@ import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { ROUTES } from "../../navigation/routes"
 import { authorizeAction } from "../../auth/AuthorizeActionDialog"
+import { Page } from "../../common/Page"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -58,14 +59,7 @@ export const ProfileScreen = () => {
   const { mutate: removeAllContents } = useRemoveAllContents()
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        overflow: "auto",
-        flexDirection: "column",
-      }}
-    >
+    <Page bottomGutter={false}>
       <TopBarNavigation title={"Profile"} showBack={false} />
       <List>
         <ListSubheader disableSticky>Account</ListSubheader>
@@ -247,7 +241,7 @@ export const ProfileScreen = () => {
         open={isDeleteMyDataDialogOpened}
         onClose={() => setIsDeleteMyDataDialogOpened(false)}
       />
-    </div>
+    </Page>
   )
 }
 

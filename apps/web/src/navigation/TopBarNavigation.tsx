@@ -57,11 +57,17 @@ export const TopBarNavigation: FC<
       ({ isLibraryUnlocked }) => isLibraryUnlocked,
     )
     const theme = useTheme()
+    const paletteMode = theme.palette.mode
     const { goBack } = useSafeGoBack()
     const navigate = useNavigate()
 
     return (
-      <AppBar position={position} elevation={0} color={color} {...rest}>
+      <AppBar
+        position={position}
+        {...(paletteMode === "light" && { elevation: 0 })}
+        color={color}
+        {...rest}
+      >
         <Toolbar>
           {showBack && (
             <IconButton
