@@ -56,7 +56,8 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
                     },
                     responseType: "blob",
                     onDownloadProgress: (event) => {
-                      const totalSize = parseInt(info.result.size || "1") || 1
+                      const totalSize =
+                        parseInt(info.result.size || "1", 10) || 1
                       onDownloadProgress(event.loaded / totalSize)
                     },
                   }),

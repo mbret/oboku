@@ -15,7 +15,8 @@ export const useCoversCacheInformation = () =>
             map((keys) => {
               const weight = keys.reduce((acc, key) => {
                 return (
-                  acc + parseInt(key.headers.get("Oboku-Sw-Cover-Size") || "0")
+                  acc +
+                  parseInt(key.headers.get("Oboku-Sw-Cover-Size") || "0", 10)
                 )
               }, 0)
 
