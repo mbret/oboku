@@ -7,13 +7,11 @@ import {
 } from "react"
 import { Box, type BoxProps, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
-import { BookListGridItem } from "./BookListGridItem"
 import type { LibrarySorting } from "../../library/books/states"
-import { BookListListItem } from "./BookListListItem"
 import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
-import { BookListCompactItem } from "./BookListCompactItem"
 import { useListItemHeight } from "./useListItemHeight"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
+import { BookCard } from "../BookCard/BookCard"
 
 const ItemListContainer = memo(
   ({
@@ -91,8 +89,9 @@ export const BookList = memo(
         const isLast = index === size - 1
 
         return viewMode === "grid" || viewMode === "horizontal" ? (
-          <BookListGridItem
+          <BookCard
             bookId={item}
+            mode="vertical"
             style={{
               ...(viewMode === "horizontal" && {
                 height: "100%",
@@ -108,21 +107,23 @@ export const BookList = memo(
           />
         ) : viewMode === "list" ? (
           <ItemListContainer isLast={isLast} height={itemHeight}>
-            <BookListListItem
+            <BookCard
+              mode="horizontal"
               bookId={item}
-              itemHeight={(itemHeight || 0) - itemMargin}
+              height={(itemHeight || 0) - itemMargin}
               onItemClick={onItemClick}
-              withDrawerActions={withBookActions}
+              enableActions={withBookActions}
               pl={1}
             />
           </ItemListContainer>
         ) : (
           <ItemListContainer isLast={isLast} borders height={itemHeight}>
-            <BookListCompactItem
+            <BookCard
+              mode="compact"
               bookId={item}
-              itemHeight={(itemHeight || 0) - itemMargin}
+              height={(itemHeight || 0) - itemMargin}
               onItemClick={onItemClick}
-              withDrawerActions={withBookActions}
+              enableActions={withBookActions}
               pl={1}
             />
           </ItemListContainer>

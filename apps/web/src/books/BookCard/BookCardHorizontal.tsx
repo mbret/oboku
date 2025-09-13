@@ -7,7 +7,7 @@ import {
   useTheme,
 } from "@mui/material"
 import { type FC, memo } from "react"
-import { useDefaultItemClickHandler } from "./helpers"
+import { useDefaultItemClickHandler } from "../bookList/helpers"
 import { useBook, useIsBookProtected } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import {
@@ -23,11 +23,11 @@ import {
   ThumbDownOutlined,
 } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
-import { BookListCoverContainer } from "./BookListCoverContainer"
+import { BookListCoverContainer } from "../bookList/BookListCoverContainer"
 import { getMetadataFromBook } from "../metadata"
 import { useBookDownloadState } from "../../download/states"
 
-export const BookListListItem: FC<
+export const BookCardHorizontal: FC<
   {
     bookId: string
     onItemClick?: (id: string) => void
