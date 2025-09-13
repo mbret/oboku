@@ -6,6 +6,7 @@ import {
   useTheme,
   Stack,
   Toolbar as MuiToolbar,
+  Box,
 } from "@mui/material"
 import { LibraryFiltersDrawer } from "../LibraryFiltersDrawer"
 import EmptyLibraryAsset from "../../assets/empty-library.svg"
@@ -56,7 +57,11 @@ export const LibraryBooksScreen = memo(() => {
   )
 
   const listHeader = useMemo(
-    () => <MuiToolbar>{addBookButton}</MuiToolbar>,
+    () => (
+      <Box p={2} pt={1}>
+        {addBookButton}
+      </Box>
+    ),
     [addBookButton],
   )
 
@@ -65,10 +70,8 @@ export const LibraryBooksScreen = memo(() => {
   useEffect(() => () => isUploadBookDrawerOpenedStateSignal.setValue(false), [])
 
   return (
-    <div
+    <Stack
       style={{
-        display: "flex",
-        flexDirection: "column",
         flex: 1,
         overflow: "hidden",
       }}
@@ -154,6 +157,6 @@ export const LibraryBooksScreen = memo(() => {
           }}
         />
       </Stack>
-    </div>
+    </Stack>
   )
 })

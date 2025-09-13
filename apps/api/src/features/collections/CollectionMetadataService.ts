@@ -7,7 +7,7 @@ import {
   markCollectionAsIdle,
 } from "./metadata/collections"
 import { onBeforeError, switchMapCombineOuter } from "src/lib/utils"
-import { processrefreshMetadata } from "./metadata/processRefreshMetadata"
+import { processRefreshMetadata } from "./metadata/processRefreshMetadata"
 import { CouchService } from "src/couch/couch.service"
 import { AppConfigService } from "../../config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
@@ -59,7 +59,7 @@ export class CollectionMetadataService {
         ).pipe(
           mergeMap((collection) => {
             return from(
-              processrefreshMetadata(
+              processRefreshMetadata(
                 collection,
                 {
                   db,

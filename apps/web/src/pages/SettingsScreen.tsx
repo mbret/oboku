@@ -122,7 +122,7 @@ export const SettingsScreen = memo(() => {
             />
           </ListItemButton>
         </List>
-        <List subheader={<ListSubheader disableSticky>Theme</ListSubheader>}>
+        <List subheader={<ListSubheader disableSticky>Theming</ListSubheader>}>
           <ListItemButton
             onClick={() => {
               setIsThemeDrawerOpened(true)

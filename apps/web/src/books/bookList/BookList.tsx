@@ -1,4 +1,10 @@
-import { useCallback, memo, type ReactNode, type ComponentProps } from "react"
+import {
+  useCallback,
+  memo,
+  type ReactNode,
+  type ComponentProps,
+  useMemo,
+} from "react"
 import { Box, type BoxProps, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import { BookListGridItem } from "./BookListGridItem"
@@ -39,28 +45,25 @@ const ItemListContainer = memo(
 )
 
 export const BookList = memo(
-  (
-    props: {
-      viewMode?: ListActionViewMode
-      sorting?: LibrarySorting
-      itemWidth?: number
-      density?: "dense" | "large"
-      onItemClick?: (id: string) => void
-      withBookActions?: boolean
-      static?: boolean
-    } & ComponentProps<typeof VirtuosoList>,
-  ) => {
-    const {
-      viewMode = "grid",
-      density = "large",
-      style,
-      data,
-      itemWidth,
-      onItemClick,
-      withBookActions,
-      static: isStatic,
-      ...rest
-    } = props
+  ({
+    viewMode = "grid",
+    density = "large",
+    style,
+    data,
+    itemWidth,
+    onItemClick,
+    withBookActions,
+    static: isStatic,
+    ...rest
+  }: {
+    viewMode?: ListActionViewMode
+    sorting?: LibrarySorting
+    itemWidth?: number
+    density?: "dense" | "large"
+    onItemClick?: (id: string) => void
+    withBookActions?: boolean
+    static?: boolean
+  } & ComponentProps<typeof VirtuosoList>) => {
     const windowSize = useWindowSize()
     const theme = useTheme()
     const dynamicNumberOfItems = Math.round(windowSize.width / 200)
@@ -136,6 +139,14 @@ export const BookList = memo(
       ],
     )
 
+    const listElementStyle = useMemo(
+      () => ({
+        paddingLeft: viewMode !== "compact" ? theme.spacing(1) : 0,
+        paddingRight: viewMode !== "compact" ? theme.spacing(1) : 0,
+      }),
+      [viewMode, theme],
+    )
+
     if (isStatic) {
       return (
         <Box
@@ -160,6 +171,7 @@ export const BookList = memo(
         rowRenderer={rowRenderer}
         itemsPerRow={itemsPerRow}
         horizontalDirection={viewMode === "horizontal"}
+        listElementStyle={listElementStyle}
         {...rest}
       />
     )

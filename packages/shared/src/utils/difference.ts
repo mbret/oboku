@@ -16,9 +16,9 @@ export function difference<T>(
   const finalArray: T[] = []
 
   for (let i = 0; i < array.length; i++) {
-    // @ts-ignore
+    // @ts-expect-error
     if (!valuesSet.includes(array[i])) {
-      // @ts-ignore
+      // @ts-expect-error
       finalArray.push(array[i])
     }
   }

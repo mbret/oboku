@@ -15,10 +15,9 @@ import { findOne } from "src/lib/couch/findOne"
 import { atomicUpdate } from "src/lib/couch/dbHelpers"
 import { CoversService } from "src/covers/covers.service"
 
-export const processrefreshMetadata = async (
+export const processRefreshMetadata = async (
   collection: CollectionDocType,
   {
-    googleApiKey,
     db,
     data,
     soft,

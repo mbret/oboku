@@ -10,12 +10,12 @@
     "includes": [
       "**",
       "!**/.nx",
-      "!**/.test/**",
-      "!**/dist/**",
-      "!**/.next/**",
-      "!**/.esbuild/**",
-      "!**/web/public/**",
-      "!**/playwright-report/**",
+      "!**/.test",
+      "!**/dist",
+      "!**/.next",
+      "!**/.esbuild",
+      "!**/web/public",
+      "!**/playwright-report",
       "!apps/web/stream-shim.js",
       "!package.json"
     ]
