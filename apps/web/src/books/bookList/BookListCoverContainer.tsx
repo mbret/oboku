@@ -1,6 +1,6 @@
 import type React from "react"
 import { type FC, memo } from "react"
-import { Box, type BoxProps, Chip } from "@mui/material"
+import { Box, Card, type CardProps, Chip } from "@mui/material"
 import {
   CheckOutlined,
   CloudDownloadRounded,
@@ -25,7 +25,7 @@ export const BookListCoverContainer: FC<
     withDownloadStatus?: boolean
     withBadges: boolean
     size?: "small" | "large" | "medium"
-  } & BoxProps
+  } & CardProps
 > = memo(
   ({
     bookId,
@@ -42,7 +42,7 @@ export const BookListCoverContainer: FC<
     const { data: isBookProtected } = useIsBookProtected(item)
 
     return (
-      <Box
+      <Card
         sx={{
           position: "relative",
           display: "flex",
@@ -171,7 +171,7 @@ export const BookListCoverContainer: FC<
               }}
             />
           )}
-      </Box>
+      </Card>
     )
   },
 )

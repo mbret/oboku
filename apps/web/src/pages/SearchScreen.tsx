@@ -152,7 +152,6 @@ export const SearchScreen = () => {
           <AccordionSummary
             expandIcon={<ExpandMore />}
             aria-controls="panel1a-content"
-            id="panel1a-header"
           >
             <Typography>Books ({books.length ?? 0})</Typography>
           </AccordionSummary>

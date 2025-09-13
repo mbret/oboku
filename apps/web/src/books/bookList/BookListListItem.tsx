@@ -83,13 +83,13 @@ export const BookListListItem: FC<
             bookId={bookId}
             style={{
               position: "relative",
+              marginRight: theme.spacing(1),
               display: "flex",
               flex: `0 0 ${coverWidth}px`,
               minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
             }}
             withBadges={false}
             withReadingProgressStatus={false}
-            mr={1}
           />
         )}
         <Stack

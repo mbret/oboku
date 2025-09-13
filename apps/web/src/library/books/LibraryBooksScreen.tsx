@@ -1,13 +1,6 @@
 import { useState, useMemo, useEffect, memo } from "react"
 import { BookList } from "../../books/bookList/BookList"
-import {
-  Button,
-  Typography,
-  useTheme,
-  Stack,
-  Toolbar as MuiToolbar,
-  Box,
-} from "@mui/material"
+import { Button, Typography, useTheme, Stack, Box } from "@mui/material"
 import { LibraryFiltersDrawer } from "../LibraryFiltersDrawer"
 import EmptyLibraryAsset from "../../assets/empty-library.svg"
 import {

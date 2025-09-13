@@ -27,7 +27,6 @@ export const AddCollectionDialog: FC<{
       <DialogContent>
         <TextField
           autoFocus
-          id="name"
           label="Name"
           type="text"
           fullWidth

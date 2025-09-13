@@ -1,4 +1,4 @@
-import { type FC, useEffect, useState } from "react"
+import { type FC, useEffect, useId, useState } from "react"
 import { type SelectProps, useTheme } from "@mui/material"
 import Input from "@mui/material/Input"
 import InputLabel from "@mui/material/InputLabel"
@@ -14,7 +14,7 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
   const { data: tags = [] } = useTagIds()
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const theme = useTheme()
-
+  const tagLabelId = useId()
   const onChange: NonNullable<SelectProps[`onChange`]> = (event) => {
     setSelectedTags(event.target.value as string[])
   }
@@ -51,14 +51,13 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
         width: `100%`,
       }}
     >
-      <InputLabel id="tags-selector-multiple-label">Tags</InputLabel>
+      <InputLabel id={tagLabelId}>Tags</InputLabel>
       <Select
-        labelId="tags-selector-multiple-label"
-        id="tags-selector-multiple"
+        labelId={tagLabelId}
         multiple
         value={selectedTags}
         onChange={onChange}
-        input={<Input id="select-multiple-chip" />}
+        input={<Input />}
         renderValue={renderValue as any}
       >
         {tags.map((id) => (

@@ -31,7 +31,7 @@ export const unlock = (options: ObservedValueOf<typeof unlockSubject>) =>
 export const useLock = () => {
   const unlock = useCallback((key: Key) => {
     lockState.setValue((old) => {
-      const index = old.findIndex((k) => k === key)
+      const index = old.indexOf(key)
 
       return [...old.slice(0, index), ...old.slice(index + 1)]
     })
