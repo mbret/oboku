@@ -20,10 +20,6 @@ const ContainerBox = styled(Box)<{
   ...((mode === "horizontal" || mode === "compact") && {
     paddingLeft: theme.spacing(2),
   }),
-  ...(mode === "compact" && {
-    paddingTop: theme.spacing(0.5),
-    paddingBottom: theme.spacing(0.5),
-  }),
 }))
 
 export const BookCard = ({

@@ -88,7 +88,9 @@ export const BookList = memo(
             {...commonProps}
             mode="horizontal"
             height={itemHeight || 0}
-            pb={isLast ? 2 : 1}
+            sx={{
+              pb: isLast ? 2 : 1,
+            }}
           />
         ) : (
           /**
@@ -98,9 +100,13 @@ export const BookList = memo(
           <BookCard
             {...commonProps}
             mode="compact"
-            borderBottom="1px solid"
-            borderColor="grey.200"
-            pb={isLast ? 2 : 1}
+            sx={{
+              ...(!isLast && {
+                borderBottom: "1px solid",
+                borderColor: "grey.200",
+              }),
+              pb: isLast ? 2 : 1,
+            }}
           />
         )
       },
