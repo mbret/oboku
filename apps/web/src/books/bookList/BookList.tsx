@@ -1,46 +1,11 @@
-import {
-  useCallback,
-  memo,
-  type ReactNode,
-  type ComponentProps,
-  useMemo,
-} from "react"
-import { Box, type BoxProps, useTheme } from "@mui/material"
+import { useCallback, memo, type ComponentProps, useMemo } from "react"
+import { Box, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
 import type { LibrarySorting } from "../../library/books/states"
 import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 import { useListItemHeight } from "./useListItemHeight"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
 import { BookCard } from "../BookCard/BookCard"
-
-const ItemListContainer = memo(
-  ({
-    children,
-    isLast,
-    borders = false,
-    ...rest
-  }: {
-    children: ReactNode
-    isLast: boolean
-    borders?: boolean
-  } & BoxProps) => (
-    <Box
-      style={{
-        flex: 1,
-        alignItems: "center",
-        display: "flex",
-      }}
-      {...(!isLast &&
-        borders && {
-          borderBottom: "1px solid",
-          borderColor: "grey.200",
-        })}
-      {...rest}
-    >
-      {children}
-    </Box>
-  ),
-)
 
 export const BookList = memo(
   ({
@@ -73,7 +38,7 @@ export const BookList = memo(
         : 1
     const adjustedRatioWhichConsiderBottom =
       theme.custom.coverAverageRatio - 0.1
-    const { itemHeight, itemMargin } = useListItemHeight({
+    const { itemHeight } = useListItemHeight({
       density,
       viewMode,
     })
@@ -88,9 +53,18 @@ export const BookList = memo(
       (index: number, item: string, { size }: { size: number }) => {
         const isLast = index === size - 1
 
+        const commonProps = {
+          bookId: item,
+          onItemClick,
+          enableActions: withBookActions,
+        }
+
         return viewMode === "grid" || viewMode === "horizontal" ? (
+          /**
+           * For vertical mode, we still want to limit the height
+           */
           <BookCard
-            bookId={item}
+            {...commonProps}
             mode="vertical"
             style={{
               ...(viewMode === "horizontal" && {
@@ -104,36 +78,36 @@ export const BookList = memo(
                 width: "100%",
               }),
             }}
+            p={1}
           />
         ) : viewMode === "list" ? (
-          <ItemListContainer isLast={isLast} height={itemHeight}>
-            <BookCard
-              mode="horizontal"
-              bookId={item}
-              height={(itemHeight || 0) - itemMargin}
-              onItemClick={onItemClick}
-              enableActions={withBookActions}
-              pl={1}
-            />
-          </ItemListContainer>
+          /**
+           * For horizontal mode, we still want to limit the height
+           */
+          <BookCard
+            {...commonProps}
+            mode="horizontal"
+            height={itemHeight || 0}
+            pb={isLast ? 2 : 1}
+          />
         ) : (
-          <ItemListContainer isLast={isLast} borders height={itemHeight}>
-            <BookCard
-              mode="compact"
-              bookId={item}
-              height={(itemHeight || 0) - itemMargin}
-              onItemClick={onItemClick}
-              enableActions={withBookActions}
-              pl={1}
-            />
-          </ItemListContainer>
+          /**
+           * Compact mode leverage auto height of the BookCard.
+           * Feature from virtuoso.
+           */
+          <BookCard
+            {...commonProps}
+            mode="compact"
+            borderBottom="1px solid"
+            borderColor="grey.200"
+            pb={isLast ? 2 : 1}
+          />
         )
       },
       [
         adjustedRatioWhichConsiderBottom,
         viewMode,
         itemHeight,
-        itemMargin,
         onItemClick,
         withBookActions,
         computedItemHeight,
@@ -142,8 +116,8 @@ export const BookList = memo(
 
     const listElementStyle = useMemo(
       () => ({
-        paddingLeft: viewMode !== "compact" ? theme.spacing(1) : 0,
-        paddingRight: viewMode !== "compact" ? theme.spacing(1) : 0,
+        paddingLeft: viewMode === "grid" ? theme.spacing(1) : 0,
+        paddingRight: viewMode === "grid" ? theme.spacing(1) : 0,
       }),
       [viewMode, theme],
     )

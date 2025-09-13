@@ -33,7 +33,6 @@ export const BookCardHorizontal: FC<
     onItemClick?: (id: string) => void
     isSelected?: (id: string) => boolean
     size?: "small" | "large"
-    itemHeight?: number
     withDrawerActions?: boolean
     withCover?: boolean
     withAuthors?: boolean
@@ -44,7 +43,6 @@ export const BookCardHorizontal: FC<
     bookId,
     onItemClick,
     size = "large",
-    itemHeight,
     withDrawerActions = true,
     withCover = true,
     withAuthors = true,
@@ -54,30 +52,23 @@ export const BookCardHorizontal: FC<
     const { data: book } = useBook({
       id: bookId,
     })
-    const onDefaultItemClick = useDefaultItemClickHandler()
     const theme = useTheme()
-    const computedHeight = itemHeight || (size === "small" ? 50 : 100)
-    const coverWidth = computedHeight * theme.custom.coverAverageRatio
+    // const computedHeight = itemHeight || (size === "small" ? 50 : 100)
+    // const coverWidth = computedHeight * theme.custom.coverAverageRatio
     const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected } = useIsBookProtected(book)
-
     const metadata = getMetadataFromBook(book)
 
     return (
-      <Box
-        onClick={() => {
-          if (onItemClick) return onItemClick(bookId)
-          return onDefaultItemClick(bookId)
-        }}
-        style={{
-          display: "flex",
-          overflow: "hidden",
-          height: computedHeight,
-          cursor: "pointer",
-          flexGrow: 1,
-        }}
-        {...rest}
-      >
+      // <Box
+      //   style={{
+      //     overflow: "hidden",
+      //     height: computedHeight,
+      //     flexGrow: 1,
+      //   }}
+      //   {...rest}
+      // >
+      <>
         {withCover && (
           <BookListCoverContainer
             bookId={bookId}
@@ -85,7 +76,7 @@ export const BookCardHorizontal: FC<
               position: "relative",
               marginRight: theme.spacing(1),
               display: "flex",
-              flex: `0 0 ${coverWidth}px`,
+              // flex: `0 0 ${coverWidth}px`,
               minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
             }}
             withBadges={false}
@@ -211,7 +202,8 @@ export const BookCardHorizontal: FC<
             <MoreVert />
           </Stack>
         )}
-      </Box>
+      </>
+      // </Box>
     )
   },
 )

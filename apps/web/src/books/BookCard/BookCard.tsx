@@ -1,44 +1,95 @@
-import type { BoxProps } from "@mui/material"
+import { Box, styled, type BoxProps } from "@mui/material"
 import { BookCardHorizontal } from "./BookCardHorizontal"
 import { BookCardVertical } from "./BookCardVertical"
+import { useDefaultItemClickHandler } from "../bookList/helpers"
+
+const ContainerBox = styled(Box)<{
+  size: "small" | "large"
+  mode: "vertical" | "horizontal" | "compact"
+}>(({ theme, mode }) => ({
+  cursor: "pointer",
+  position: "relative",
+  display: "flex",
+  flexDirection: mode === "vertical" ? "column" : "row",
+  flexGrow: 1,
+  "-webkit-tap-highlight-color": "transparent",
+  overflow: "hidden",
+  ...((mode === "horizontal" || mode === "compact") && {
+    padding: theme.spacing(1),
+  }),
+  ...((mode === "horizontal" || mode === "compact") && {
+    paddingLeft: theme.spacing(2),
+  }),
+  ...(mode === "compact" && {
+    paddingTop: theme.spacing(0.5),
+    paddingBottom: theme.spacing(0.5),
+  }),
+}))
 
 export const BookCard = ({
   mode,
   bookId,
   enableActions = true,
-  height,
+  onItemClick,
+  size = "large",
   ...rest
 }: {
   mode: "vertical" | "horizontal" | "compact"
   bookId: string
   enableActions?: boolean
-  height?: number
   onItemClick?: (id: string) => void
-} & Pick<BoxProps, "pl" | "style">) => {
+  size?: "small" | "large"
+} & BoxProps) => {
+  const onDefaultItemClick = useDefaultItemClickHandler()
+
+  const onCardClick = () => {
+    if (onItemClick) return onItemClick(bookId)
+    return onDefaultItemClick(bookId)
+  }
+
   if (mode === "horizontal") {
     return (
-      <BookCardHorizontal
-        bookId={bookId}
-        withDrawerActions={enableActions}
-        itemHeight={height}
+      <ContainerBox
+        onClick={onCardClick}
+        size={size}
+        mode={mode}
+        data-book-card-container={bookId}
         {...rest}
-      />
+      >
+        <BookCardHorizontal bookId={bookId} withDrawerActions={enableActions} />
+      </ContainerBox>
     )
   }
 
   if (mode === "compact") {
     return (
-      <BookCardHorizontal
-        withCover={false}
-        withAuthors={false}
-        withDownloadIcons
-        bookId={bookId}
-        itemHeight={height}
-        withDrawerActions={enableActions}
+      <ContainerBox
+        onClick={onCardClick}
+        size={size}
+        mode={mode}
+        data-book-card-container={bookId}
         {...rest}
-      />
+      >
+        <BookCardHorizontal
+          withCover={false}
+          withAuthors={false}
+          withDownloadIcons
+          bookId={bookId}
+          withDrawerActions={enableActions}
+        />
+      </ContainerBox>
     )
   }
 
-  return <BookCardVertical bookId={bookId} {...rest} />
+  return (
+    <ContainerBox
+      onClick={onCardClick}
+      size={size}
+      mode={mode}
+      data-book-card-container={bookId}
+      {...rest}
+    >
+      <BookCardVertical bookId={bookId} />
+    </ContainerBox>
+  )
 }
