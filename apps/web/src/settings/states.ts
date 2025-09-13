@@ -22,7 +22,7 @@ export const localSettingsSignal = signal<{
   hideDirectivesFromCollectionName: boolean
   showCollectionWithProtectedContent: "unlocked" | "hasNormalContent"
   showSensitiveDataSources: boolean
-  themeMode: Mode | "e-ink"
+  themeMode?: Mode | "e-ink"
 }>({
   key: "localSettingsState",
   default: localSettingsStateDefaultValues,

@@ -193,7 +193,7 @@ export const SettingsScreen = memo(() => {
           }))
           setIsThemeDrawerOpened(false)
         }}
-        selected={localSettings.themeMode}
+        selected={localSettings.themeMode ?? "system"}
         anchor="bottom"
         choices={themeOptions}
       />

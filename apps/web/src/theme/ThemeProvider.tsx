@@ -16,7 +16,7 @@ import { defaultSystem, einkSystem } from "./chakra"
  */
 const ColorModeSwitcher = () => {
   const { setMode } = useColorScheme()
-  const { themeMode } = useLocalSettings()
+  const { themeMode = "system" } = useLocalSettings()
 
   useEffect(() => {
     setMode(themeMode === "e-ink" ? "system" : themeMode)
