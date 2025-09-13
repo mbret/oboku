@@ -29,36 +29,6 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
     useManifest(bookId)
   const isBookError = !!manifestError
-
-  if (isBookError) {
-    return <BookError bookId={bookId} manifestError={manifestError} />
-  }
-
-  return (
-    <>
-      <Box position="relative" height="100%" width="100%" overflow="hidden">
-        <Box
-          position="relative"
-          height="100%"
-          width="100%"
-          ref={readerContainerRef}
-        />
-        {readerState !== "ready" && <BookLoading />}
-        <Interface bookId={bookId} />
-      </Box>
-      <Effects
-        bookId={bookId}
-        isUsingWebStreamer={isUsingWebStreamer}
-        manifest={manifest}
-        containerElement={readerContainerRef.current}
-      />
-    </>
-  )
-})
-
-const Interface = memo(({ bookId }: { bookId: string }) => {
-  const reader = useSignalValue(readerSignal)
-  const readerState = useObserve(() => reader?.state$, [reader])
   const readerSettings = useReaderSettingsState()
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const { goBack } = useSafeGoBack()
@@ -70,35 +40,51 @@ const Interface = memo(({ bookId }: { bookId: string }) => {
     },
   })
 
+  if (isBookError) {
+    return <BookError bookId={bookId} manifestError={manifestError} />
+  }
+
   return (
     <>
-      {readerState === "ready" && (
-        <>
-          <ReactReaderProvider
-            reader={reader}
-            quickMenuOpen={isMenuShow}
-            onQuickMenuOpenChange={(isOpen) => {
-              isMenuShownStateSignal.setValue(isOpen)
-            }}
-          >
-            <ReactReader
-              onItemClick={(item) => {
-                if (item === "more") {
-                  toggleMoreDialog()
-                }
-                if (item === "back") {
-                  mutate()
-                }
-              }}
-              enableFloatingTime={readerSettings.floatingTime === "bottom"}
-              enableFloatingProgress={
-                readerSettings.floatingProgress === "bottom"
+      <Box position="relative" height="100%" width="100%" overflow="hidden">
+        {readerState !== "ready" && <BookLoading />}
+        <ReactReaderProvider
+          reader={reader}
+          quickMenuOpen={isMenuShow}
+          onQuickMenuOpenChange={(isOpen) => {
+            isMenuShownStateSignal.setValue(isOpen)
+          }}
+        >
+          <ReactReader
+            onItemClick={(item) => {
+              if (item === "more") {
+                toggleMoreDialog()
               }
+              if (item === "back") {
+                mutate()
+              }
+            }}
+            enableFloatingTime={readerSettings.floatingTime === "bottom"}
+            enableFloatingProgress={
+              readerSettings.floatingProgress === "bottom"
+            }
+          >
+            <Box
+              position="relative"
+              height="100%"
+              width="100%"
+              ref={readerContainerRef}
             />
-          </ReactReaderProvider>
-          <Notification />
-        </>
-      )}
+          </ReactReader>
+        </ReactReaderProvider>
+        <Notification />
+      </Box>
+      <Effects
+        bookId={bookId}
+        isUsingWebStreamer={isUsingWebStreamer}
+        manifest={manifest}
+        containerElement={readerContainerRef.current}
+      />
     </>
   )
 })
