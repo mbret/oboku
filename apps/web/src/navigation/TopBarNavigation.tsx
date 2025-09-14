@@ -123,7 +123,7 @@ export const TopBarNavigation: FC<
                   <Search />
                 </Box>
                 <SearchInput
-                  placeholder="Searchs"
+                  placeholder="Search"
                   readOnly
                   sx={{
                     color: "inherit",
