@@ -1,9 +1,10 @@
 import type React from "react"
-import { memo, useMemo, type ComponentProps } from "react"
+import { memo, useCallback, useMemo, type ComponentProps } from "react"
 import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { useBookIdsSortedBy } from "../helpers"
 import { BookList } from "./BookList"
 import { Stack } from "@mui/material"
+import { useLiveRef } from "reactjrx"
 
 const style = {
   height: "100%",
@@ -31,31 +32,34 @@ export const BookListWithControls = memo(
   > &
     ComponentProps<typeof BookList>) => {
     const sortedData = useBookIdsSortedBy(data, sorting)
+    const onViewModeChangeRef = useLiveRef(onViewModeChange)
+    const onSortingChangeRef = useLiveRef(onSortingChange)
 
-    const _renderHeader = useMemo(
-      () => () => {
-        return (
-          <>
-            {renderHeader?.()}
-            <ListActionsToolbar
-              viewMode={viewMode ?? "grid"}
-              onViewModeChange={onViewModeChange}
-              sorting={sorting ?? "alpha"}
-              onSortingChange={onSortingChange}
-              {...ListActionsToolbarProps}
-            />
-          </>
-        )
-      },
-      [
-        renderHeader,
-        ListActionsToolbarProps,
-        viewMode,
-        sorting,
-        onViewModeChange,
-        onSortingChange,
-      ],
-    )
+    const _renderHeader = useCallback(() => {
+      return (
+        <>
+          {renderHeader?.()}
+          <ListActionsToolbar
+            viewMode={viewMode ?? "grid"}
+            onViewModeChange={(...params) =>
+              onViewModeChangeRef.current?.(...params)
+            }
+            sorting={sorting ?? "alpha"}
+            onSortingChange={(...params) =>
+              onSortingChangeRef.current?.(...params)
+            }
+            {...ListActionsToolbarProps}
+          />
+        </>
+      )
+    }, [
+      renderHeader,
+      ListActionsToolbarProps,
+      viewMode,
+      sorting,
+      onViewModeChangeRef,
+      onSortingChangeRef,
+    ])
 
     return (
       <Stack flex={1}>

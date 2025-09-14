@@ -61,8 +61,7 @@ export const Header = memo(({ id }: { id: string }) => {
           height="100%"
           width="100%"
           sx={{
-            background:
-              "linear-gradient(to bottom,rgb(255 255 255 / 0.7) 10%, rgb(255 255 255 / 1) 100%)",
+            background: `linear-gradient(to bottom, color-mix(in srgb, ${theme.palette.background.default} 70%, transparent) 10%, ${theme.palette.background.default} 100%)`,
           }}
         />
       )}
