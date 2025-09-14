@@ -99,7 +99,6 @@ export const CollectionListItemCover = memo(
                 rating={metadata.rating}
                 status={metadata.status}
                 sx={{
-                  bgcolor: "white",
                   position: "absolute",
                   right: 0,
                   bottom: 0,

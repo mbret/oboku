@@ -23,7 +23,7 @@ import { ReadingProgress } from "./bookList/ReadingProgress"
 import { DownloadState, useBookDownloadState } from "../download/states"
 import { ButtonAsIcon } from "../common/ButtonAsIcon"
 
-const CoverIconBadge = memo(
+export const CoverIconBadge = memo(
   ({ children, ...rest }: { children: ReactNode } & BoxProps) => {
     const theme = useTheme()
 
