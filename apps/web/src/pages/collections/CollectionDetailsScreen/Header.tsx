@@ -118,13 +118,7 @@ export const Header = memo(({ id }: { id: string }) => {
               </Typography>
             )}
             {collection?.type === "series" && (
-              <StatusChip
-                rating={metadata.rating}
-                status={metadata.status}
-                sx={{
-                  bgcolor: "transparent",
-                }}
-              />
+              <StatusChip rating={metadata.rating} status={metadata.status} />
             )}
           </Stack>
         </Stack>
