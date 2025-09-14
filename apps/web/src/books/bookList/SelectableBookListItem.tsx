@@ -50,10 +50,7 @@ export const SelectableBookListItem = memo(
         <BookCoverCard
           bookId={bookId}
           style={{
-            position: "relative",
-            display: "flex",
             flex: `0 0 ${coverWidth}`,
-            minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
           }}
           withBadges={false}
           withReadingProgressStatus={false}

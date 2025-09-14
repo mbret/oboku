@@ -66,16 +66,19 @@ export const BookCoverCard: FC<
     const { data: item } = useBook({ id: bookId })
     const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected } = useIsBookProtected(item)
+    const theme = useTheme()
 
     return (
       <Card
         sx={{
+          aspectRatio: theme.custom.coverAverageRatio,
           position: "relative",
           display: "flex",
           minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
         }}
         style={style}
         className={className}
+        elevation={0}
         {...rest}
       >
         {item && <Cover bookId={item?._id} />}
@@ -168,7 +171,7 @@ export const BookCoverCard: FC<
                   transform: "translate(-50%, -50%)",
                 }}
               >
-                <CloudDownloadRounded />
+                <CloudDownloadRounded fontSize={size} />
               </ButtonAsIcon>
             )}
           {withDownloadStatus &&

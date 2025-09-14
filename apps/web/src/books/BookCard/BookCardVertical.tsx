@@ -17,11 +17,9 @@ export const BookCardVertical = memo(({ bookId }: { bookId: string }) => {
       <BookCoverCard
         bookId={bookId}
         style={{
-          position: "relative",
-          display: "flex",
+          // overwrite aspect ratio and force to take all the available space
+          // aspect ratio is set to the broader card.
           flex: 1,
-          // marginTop: theme.spacing(1),
-          minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
         }}
         size="medium"
         withBadges
