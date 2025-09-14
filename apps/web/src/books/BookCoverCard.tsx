@@ -1,6 +1,13 @@
 import type React from "react"
-import { type FC, memo } from "react"
-import { Box, Card, type CardProps, Chip } from "@mui/material"
+import { type FC, memo, type ReactNode } from "react"
+import {
+  Box,
+  type BoxProps,
+  Card,
+  type CardProps,
+  Chip,
+  useTheme,
+} from "@mui/material"
 import {
   CheckOutlined,
   CloudDownloadRounded,
@@ -9,14 +16,33 @@ import {
   NoEncryptionOutlined,
   ThumbDownOutlined,
 } from "@mui/icons-material"
-import { Cover } from "../Cover"
-import { useBook, useIsBookProtected } from "../states"
+import { Cover } from "./Cover"
+import { useBook, useIsBookProtected } from "./states"
 import { ReadingStateState } from "@oboku/shared"
-import { ReadingProgress } from "./ReadingProgress"
-import { DownloadState, useBookDownloadState } from "../../download/states"
-import { CoverIconBadge } from "./CoverIconBadge"
+import { ReadingProgress } from "./bookList/ReadingProgress"
+import { DownloadState, useBookDownloadState } from "../download/states"
+import { ButtonAsIcon } from "../common/ButtonAsIcon"
 
-export const BookListCoverContainer: FC<
+const CoverIconBadge = memo(
+  ({ children, ...rest }: { children: ReactNode } & BoxProps) => {
+    const theme = useTheme()
+
+    return (
+      <Box
+        display="flex"
+        padding={0.3}
+        borderRadius="50%"
+        bgcolor={theme.alpha(theme.palette.common.white, 0.7)}
+        border={`1px solid ${theme.alpha(theme.palette.primary.main, 0.7)}`}
+        {...rest}
+      >
+        {children}
+      </Box>
+    )
+  },
+)
+
+export const BookCoverCard: FC<
   {
     bookId: string
     className?: string
@@ -92,12 +118,12 @@ export const BookListCoverContainer: FC<
               <Box gap={1} flexDirection="row" display="flex">
                 {isBookProtected && (
                   <CoverIconBadge>
-                    <NoEncryptionOutlined fontSize={size} />
+                    <NoEncryptionOutlined color="primary" fontSize={size} />
                   </CoverIconBadge>
                 )}
                 {item?.isNotInterested && (
                   <CoverIconBadge>
-                    <ThumbDownOutlined fontSize={size} />
+                    <ThumbDownOutlined color="primary" fontSize={size} />
                   </CoverIconBadge>
                 )}
               </Box>
@@ -105,7 +131,7 @@ export const BookListCoverContainer: FC<
                 item?.readingStateCurrentState ===
                   ReadingStateState.Finished && (
                   <CoverIconBadge alignSelf="flex-end" justifySelf="flex-end">
-                    <CheckOutlined fontSize={size} />
+                    <CheckOutlined fontSize={size} color="primary" />
                   </CoverIconBadge>
                 )}
             </Box>
@@ -130,18 +156,20 @@ export const BookListCoverContainer: FC<
                 label="metadata"
               />
             )}
+
           {withDownloadStatus &&
             bookDownloadState?.downloadState === DownloadState.None && (
-              <CoverIconBadge
-                position="absolute"
-                left="50%"
-                top="50%"
+              <ButtonAsIcon
+                variant="contained"
                 style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: "50%",
                   transform: "translate(-50%, -50%)",
                 }}
               >
-                <CloudDownloadRounded color="action" fontSize={size} />
-              </CoverIconBadge>
+                <CloudDownloadRounded />
+              </ButtonAsIcon>
             )}
           {withDownloadStatus &&
             bookDownloadState?.downloadState === DownloadState.Downloading && (

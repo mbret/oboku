@@ -3,7 +3,7 @@ import { Box, Typography } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 import { useBook } from "../states"
-import { BookListCoverContainer } from "../bookList/BookListCoverContainer"
+import { BookCoverCard } from "../BookCoverCard"
 import { getMetadataFromBook } from "../metadata"
 
 export const BookCardVertical = memo(({ bookId }: { bookId: string }) => {
@@ -14,7 +14,7 @@ export const BookCardVertical = memo(({ bookId }: { bookId: string }) => {
 
   return (
     <>
-      <BookListCoverContainer
+      <BookCoverCard
         bookId={bookId}
         style={{
           position: "relative",

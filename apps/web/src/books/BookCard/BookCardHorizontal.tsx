@@ -23,7 +23,7 @@ import {
   ThumbDownOutlined,
 } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
-import { BookListCoverContainer } from "../bookList/BookListCoverContainer"
+import { BookCoverCard } from "../BookCoverCard"
 import { getMetadataFromBook } from "../metadata"
 import { useBookDownloadState } from "../../download/states"
 
@@ -70,7 +70,7 @@ export const BookCardHorizontal: FC<
       // >
       <>
         {withCover && (
-          <BookListCoverContainer
+          <BookCoverCard
             bookId={bookId}
             style={{
               position: "relative",

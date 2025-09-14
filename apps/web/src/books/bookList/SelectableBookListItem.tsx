@@ -2,7 +2,7 @@ import { Box, Typography, useTheme } from "@mui/material"
 import type React from "react"
 import { memo } from "react"
 import { useBook } from "../states"
-import { BookListCoverContainer } from "./BookListCoverContainer"
+import { BookCoverCard } from "../BookCoverCard"
 import { Checkbox } from "../../common/Checkbox"
 import { getMetadataFromBook } from "../metadata"
 
@@ -47,7 +47,7 @@ export const SelectableBookListItem = memo(
         px={padding}
         py={padding / 2}
       >
-        <BookListCoverContainer
+        <BookCoverCard
           bookId={bookId}
           style={{
             position: "relative",
