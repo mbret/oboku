@@ -1,5 +1,5 @@
 import type React from "react"
-import { memo, useCallback, useMemo, type ComponentProps } from "react"
+import { memo, useCallback, type ComponentProps } from "react"
 import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
 import { useBookIdsSortedBy } from "../helpers"
 import { BookList } from "./BookList"
