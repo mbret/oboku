@@ -22,7 +22,9 @@ export default defineConfig(({ mode }) => ({
           xmldoc: ["xmldoc"],
           firebase: ["firebase/app", "firebase/analytics"],
           prosereader: ["@prose-reader/core"],
+          prosereadershared: ["@prose-reader/shared"],
           rxjs: ["rxjs"],
+          rxjsoperators: ["rxjs/operators"],
           datefns: ["date-fns"],
           // used by chakra -> ark
           zod: ["zod"],
