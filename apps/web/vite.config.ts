@@ -18,10 +18,13 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           jszip: ["jszip"],
+          webdav: ["webdav"],
           dropbox: ["dropbox"],
           xmldoc: ["xmldoc"],
           firebase: ["firebase/app", "firebase/analytics"],
+          prosereader: ["@prose-reader/core"],
           rxjs: ["rxjs"],
+          screenfull: ["screenfull"],
           datefns: ["date-fns"],
           // used by chakra -> ark
           zod: ["zod"],
@@ -74,7 +77,7 @@ export default defineConfig(({ mode }) => ({
           "**/*.{js.map}",
         ],
         // sources map are really massive, they will be optimized when served by server
-        maximumFileSizeToCacheInBytes: 19e6, // 17 MB limit
+        maximumFileSizeToCacheInBytes: 19e6, // 19 MB limit
       },
       srcDir: "src",
       filename: "service-worker.ts",
