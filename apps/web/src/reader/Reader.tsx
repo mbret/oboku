@@ -18,7 +18,6 @@ import { ReactReader } from "@prose-reader/react-reader"
 import { useShowRemoveBookOnExitDialog } from "./navigation/useShowRemoveBookOnExitDialog"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { useMoreDialog } from "./navigation/MoreDialog"
-import { useSettings } from "../settings/useSettings"
 import { localSettingsSignal } from "../settings/useLocalSettings"
 import { useSettingsFormValues } from "./settings/useSettingsFormValues"
 
@@ -36,7 +35,6 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
       readerFloatingTime,
     }),
   )
-  const { data: settings, isSuccess } = useSettings()
   const { globalFontScale, updateGlobalFontScale } = useSettingsFormValues()
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const { goBack } = useSafeGoBack()
@@ -63,8 +61,6 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
     },
     [toggleMoreDialog, mutate],
   )
-
-  console.log(`settings`, isSuccess, settings)
 
   if (isBookError) {
     return <BookError bookId={bookId} manifestError={manifestError} />
