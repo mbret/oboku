@@ -18,13 +18,11 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: {
           jszip: ["jszip"],
-          webdav: ["webdav"],
           dropbox: ["dropbox"],
           xmldoc: ["xmldoc"],
           firebase: ["firebase/app", "firebase/analytics"],
           prosereader: ["@prose-reader/core"],
           rxjs: ["rxjs"],
-          screenfull: ["screenfull"],
           datefns: ["date-fns"],
           // used by chakra -> ark
           zod: ["zod"],
