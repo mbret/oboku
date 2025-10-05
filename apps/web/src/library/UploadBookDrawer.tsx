@@ -8,7 +8,7 @@ import {
   capitalize,
 } from "@mui/material"
 import { plugins as dataSourcePlugins } from "../dataSources"
-import { useLocalSettings } from "../settings/states"
+import { useLocalSettings } from "../settings/useLocalSettings"
 
 export const UploadBookDrawer: FC<{
   open: boolean

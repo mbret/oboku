@@ -5,7 +5,7 @@ import {
 } from "@mui/material"
 import { eInkTheme, theme } from "./theme"
 import { type ReactNode, memo, useEffect } from "react"
-import { useLocalSettings } from "../settings/states"
+import { useLocalSettings } from "../settings/useLocalSettings"
 import { ChakraProvider } from "@chakra-ui/react"
 import { ThemeProvider as NextThemes } from "next-themes"
 import { defaultSystem, einkSystem } from "./chakra"

@@ -1,4 +1,4 @@
-import { useLocalSettings } from "../../settings/states"
+import { useLocalSettings } from "../../settings/useLocalSettings"
 import { useFullscreenOnMount } from "../../common/fullscreen/useFullscreenOnMount"
 import { IS_MOBILE_DEVICE } from "../../common/utils"
 

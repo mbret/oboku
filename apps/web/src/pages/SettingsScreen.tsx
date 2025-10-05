@@ -8,7 +8,10 @@ import {
   ListItemText,
   ListSubheader,
 } from "@mui/material"
-import { localSettingsSignal, useLocalSettings } from "../settings/states"
+import {
+  localSettingsSignal,
+  useLocalSettings,
+} from "../settings/useLocalSettings"
 import { ListItemSwitch } from "../common/ListItemSwitch"
 import { Page } from "../common/Page"
 import { themeOptions } from "../theme/themeOptions"

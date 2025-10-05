@@ -31,7 +31,7 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { configuration } from "./config/configuration"
 import { useLoadGsi } from "./google/gsi"
 import { AuthGuard } from "./auth/AuthGuard"
-import { NotificationsProvider } from "./notifications/NotificationsProvider"
+import { Notifications } from "./notifications/Notifications"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
 
@@ -78,7 +78,7 @@ export const App = memo(() => {
                         }
                         return Comp
                       },
-                      <Fade in={isAppReady}>
+                      <Fade in={isAppReady} timeout={500}>
                         <Box height="100%">
                           <AuthGuard />
                           <AppNavigator isProfileHydrated={isProfileHydrated} />
@@ -106,7 +106,7 @@ export const App = memo(() => {
                       setIsDownloadsHydrated(true)
                     }}
                   />
-                  <NotificationsProvider />
+                  <Notifications />
                   <RxDbProvider />
                 </DialogProvider>
               </Suspense>

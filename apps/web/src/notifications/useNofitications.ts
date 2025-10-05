@@ -1,8 +1,5 @@
 import { useCallback } from "react"
-import {
-  notificationsSubject,
-  type AppNotification,
-} from "./NotificationsProvider"
+import { notificationsSubject, type AppNotification } from "./Notifications"
 import { errorToMessage } from "../errors/ErrorMessage"
 
 export const useNotifications = () => {

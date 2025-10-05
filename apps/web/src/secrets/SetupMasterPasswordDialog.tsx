@@ -7,7 +7,7 @@ import {
   Alert,
 } from "@mui/material"
 import { useEffect, memo } from "react"
-import { useSettings } from "../settings/helpers"
+import { useSettings } from "../settings/useSettings"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
 import { useForm } from "react-hook-form"
 import { useUpdateMasterKey } from "./useUpdateMasterKey"

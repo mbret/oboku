@@ -1,7 +1,7 @@
 import { Box, Chip, Stack, Typography, useTheme } from "@mui/material"
 import { memo } from "react"
 import { useCollectionCoverUri } from "../../../collections/useCollectionCoverUri"
-import { useLocalSettings } from "../../../settings/states"
+import { useLocalSettings } from "../../../settings/useLocalSettings"
 import { useCollection } from "../../../collections/useCollection"
 import coverPlaceholder from "../../../assets/cover-placeholder.jpg"
 import CollectionBgSvg from "../../../assets/series-bg.svg"

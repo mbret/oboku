@@ -1,4 +1,4 @@
-import { useSettings } from "../../../settings/helpers"
+import { useSettings } from "../../../settings/useSettings"
 
 export const useConnectors = () => {
   const { data: settings } = useSettings()

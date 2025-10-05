@@ -12,7 +12,7 @@ export type AppNotification = {
 
 export const notificationsSubject = new Subject<AppNotification>()
 
-export const NotificationsProvider = memo(() => {
+export const Notifications = memo(() => {
   const notification = useObserve(
     () =>
       notificationsSubject.pipe(

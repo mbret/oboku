@@ -2,14 +2,11 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
-import { memo, useRef } from "react"
+import { type ComponentProps, memo, useCallback, useRef } from "react"
 import { isMenuShownStateSignal, readerSignal } from "./states"
 import { useGestureHandler } from "./gestures/useGestureHandler"
 import { BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
-import { usePersistReaderInstanceSettings } from "./settings/usePersistReaderSettings"
-import { Notification } from "./notifications/Notification"
-import { useReaderSettingsState } from "./settings/states"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useManifest } from "./manifest/useManifest"
 import { useCreateReader } from "./useCreateReader"
@@ -17,10 +14,13 @@ import { BookError } from "./BookError"
 import { Box } from "@mui/material"
 import { useLoadReader } from "./useLoadReader"
 import type { Manifest } from "@prose-reader/shared"
-import { ReactReaderProvider, ReactReader } from "@prose-reader/react-reader"
+import { ReactReader } from "@prose-reader/react-reader"
 import { useShowRemoveBookOnExitDialog } from "./navigation/useShowRemoveBookOnExitDialog"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { useMoreDialog } from "./navigation/MoreDialog"
+import { useSettings } from "../settings/useSettings"
+import { localSettingsSignal } from "../settings/useLocalSettings"
+import { useSettingsFormValues } from "./settings/useSettingsFormValues"
 
 export const Reader = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
@@ -29,7 +29,15 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
     useManifest(bookId)
   const isBookError = !!manifestError
-  const readerSettings = useReaderSettingsState()
+  const localSettings = useSignalValue(
+    localSettingsSignal,
+    ({ readerFloatingProgress, readerFloatingTime }) => ({
+      readerFloatingProgress,
+      readerFloatingTime,
+    }),
+  )
+  const { data: settings, isSuccess } = useSettings()
+  const { globalFontScale, updateGlobalFontScale } = useSettingsFormValues()
   const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const { goBack } = useSafeGoBack()
   const { toggleMoreDialog } = useMoreDialog()
@@ -40,6 +48,24 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
     },
   })
 
+  const onItemClick = useCallback(
+    (
+      item: Parameters<
+        NonNullable<ComponentProps<typeof ReactReader>["onItemClick"]>
+      >[0],
+    ) => {
+      if (item === "more") {
+        toggleMoreDialog()
+      }
+      if (item === "back") {
+        mutate()
+      }
+    },
+    [toggleMoreDialog, mutate],
+  )
+
+  console.log(`settings`, isSuccess, settings)
+
   if (isBookError) {
     return <BookError bookId={bookId} manifestError={manifestError} />
   }
@@ -48,36 +74,27 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
     <>
       <Box position="relative" height="100%" width="100%" overflow="hidden">
         {readerState !== "ready" && <BookLoading />}
-        <ReactReaderProvider
+        <ReactReader
+          onItemClick={onItemClick}
+          enableFloatingTime={localSettings.readerFloatingTime === "bottom"}
           reader={reader}
           quickMenuOpen={isMenuShow}
-          onQuickMenuOpenChange={(isOpen) => {
-            isMenuShownStateSignal.setValue(isOpen)
+          onQuickMenuOpenChange={isMenuShownStateSignal.update}
+          fontSize={globalFontScale ?? undefined}
+          onFontSizeChange={(_scope, fontSize) => {
+            updateGlobalFontScale(fontSize)
           }}
+          enableFloatingProgress={
+            localSettings.readerFloatingProgress === "bottom"
+          }
         >
-          <ReactReader
-            onItemClick={(item) => {
-              if (item === "more") {
-                toggleMoreDialog()
-              }
-              if (item === "back") {
-                mutate()
-              }
-            }}
-            enableFloatingTime={readerSettings.floatingTime === "bottom"}
-            enableFloatingProgress={
-              readerSettings.floatingProgress === "bottom"
-            }
-          >
-            <Box
-              position="relative"
-              height="100%"
-              width="100%"
-              ref={readerContainerRef}
-            />
-          </ReactReader>
-        </ReactReaderProvider>
-        <Notification />
+          <Box
+            position="relative"
+            height="100%"
+            width="100%"
+            ref={readerContainerRef}
+          />
+        </ReactReader>
       </Box>
       <Effects
         bookId={bookId}
@@ -110,7 +127,6 @@ const Effects = memo(
 
     useGestureHandler()
     useSyncBookProgress(bookId)
-    usePersistReaderInstanceSettings()
 
     return null
   },

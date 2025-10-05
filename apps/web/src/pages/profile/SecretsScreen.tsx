@@ -12,7 +12,7 @@ import {
   ListItemText,
   Stack,
 } from "@mui/material"
-import { useSettings } from "../../settings/helpers"
+import { useSettings } from "../../settings/useSettings"
 import { links } from "@oboku/shared"
 import { setupSecretDialogSignal } from "../../secrets/SetupSecretDialog"
 import { useSecrets } from "../../secrets/useSecrets"

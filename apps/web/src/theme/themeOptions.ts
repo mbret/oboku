@@ -1,5 +1,5 @@
 import type { SignalValue } from "reactjrx"
-import type { localSettingsSignal } from "../settings/states"
+import type { localSettingsSignal } from "../settings/useLocalSettings"
 
 export const themeOptions = [
   { value: "light", label: "Light" },

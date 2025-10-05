@@ -1,6 +1,6 @@
 import { Button, Menu, MenuItem } from "@mui/material"
 import { useState } from "react"
-import { localSettingsSignal } from "../settings/states"
+import { localSettingsSignal } from "../settings/useLocalSettings"
 
 export const DebugMenu = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
