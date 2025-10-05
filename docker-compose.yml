@@ -20,7 +20,7 @@ services:
       - oboku-couchdb-config:/opt/couchdb/etc/local.d
 
   postgres:
-    image: postgres
+    image: postgres:17
     restart: always
     env_file:
       - .env
