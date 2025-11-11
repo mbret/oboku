@@ -41,7 +41,7 @@
     "googleapis": "^166.0.0",
     "joi": "^18.0.0",
     "json-schema-to-ts": "^3.1.1",
-    "nano": "^10.1.4",
+    "nano": "^11.0.3",
     "node-unrar-js": "^2.0.2",
     "node-domexception": "^2.0.1",
     "pg": "^8.14.0",
