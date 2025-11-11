@@ -26,13 +26,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.className} ${roboto.className}`}>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
-      <body className={`${inter.className} ${roboto.className}`}>
-        <CssBaseline />
+      <body>
         <AppRouterCacheProvider>
+          <CssBaseline />
           <ThemeProvider theme={theme}>
             <Stack>
               <AppBar />

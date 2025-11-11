@@ -9,9 +9,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "react": "^19.0.1",
-    "react-dom": "^19.0.1",
-    "next": "^15.0.3",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "next": "16.0.1",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.10.6",
     "@mui/icons-material": "^7.0.1",
@@ -24,9 +24,9 @@
   },
   "devDependencies": {
     "typescript": "^5.9.2",
-    "@types/react": "^19.0.1",
-    "@types/react-dom": "^19.0.1",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
     "eslint": "^9",
-    "eslint-config-next": "^15.0.3"
+    "eslint-config-next": "16.0.1"
   }
 }
