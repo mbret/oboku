@@ -27,7 +27,7 @@
     "date-fns": "^4.1.0",
     "dexie": "^4.0.10",
     "dropbox": "^10.34.0",
-    "firebase": "^11.10.0",
+    "firebase": "^12.5.0",
     "gesturx": "^1.8.2",
     "jszip": "^3.10.0",
     "libarchive.js": "^2.0.2",
