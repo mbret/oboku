@@ -2,13 +2,11 @@ name: Build, test and deploy
 
 on:
   push:
-    branches: [develop, master]
+    branches: [master]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    outputs:
-      status: ${{ steps.build-status.outputs.status }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,25 +28,8 @@ jobs:
         run: |
           npm run build
 
-      - name: Get branch name
-        id: branch-name
-        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
-
-      - name: Save build status
-        id: build-status
-        run: echo "status=success" >> $GITHUB_OUTPUT
-
-  deploy-to-dev:
-    needs: build-and-test
-    if: github.ref == 'refs/heads/develop' && needs.build-and-test.outputs.status == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Noop
-        run: echo "Noop"
-
   deploy-api-docker:
     needs: build-and-test
-    if: github.ref == 'refs/heads/master' && needs.build-and-test.outputs.status == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -71,7 +52,6 @@ jobs:
 
   deploy-couchdb-docker:
     needs: build-and-test
-    if: github.ref == 'refs/heads/master' && needs.build-and-test.outputs.status == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -94,7 +74,6 @@ jobs:
 
   deploy-web-docker:
     needs: build-and-test
-    if: github.ref == 'refs/heads/master' && needs.build-and-test.outputs.status == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -117,7 +96,6 @@ jobs:
 
   deploy-admin-docker:
     needs: build-and-test
-    if: github.ref == 'refs/heads/master' && needs.build-and-test.outputs.status == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -137,7 +115,7 @@ jobs:
           target: admin
           push: true
           tags: mbret/oboku-admin:latest
-          
+
   bump-web-version:
     name: 'Bump Version'
     needs: [build-and-test]
@@ -164,11 +142,26 @@ jobs:
           NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
         run: echo "new tag $NEW_TAG"
 
-  deploy-vercel:
-    name: 'Deploy vercel'
+  deploy-web-vercel:
+    name: 'Deploy web vercel'
     needs: [bump-web-version]
-    uses: ./.github/workflows/_deploy-web-vercel.yml
+    uses: ./.github/workflows/_deploy-vercel.yml
+    with:
+      app_directory: 'apps/web'
+      deployment_name: 'web production'
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  deploy-landing-vercel:
+    name: 'Deploy landing vercel'
+    needs: [build-and-test]
+    uses: ./.github/workflows/_deploy-vercel.yml
+    with:
+      app_directory: 'apps/landing'
+      deployment_name: 'landing production'
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_LANDING_PROJECT_ID }}
