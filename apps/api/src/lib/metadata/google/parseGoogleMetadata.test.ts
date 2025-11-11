@@ -37,6 +37,7 @@ describe(`Given has series info`, () => {
             ...(getDefaultData().items ?? [])[0]!,
             volumeInfo: {
               // biome-ignore lint/style/noNonNullAssertion: TODO
+              // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: OKAY
               ...getDefaultData().items?.[0]?.volumeInfo!,
               title: "My title Vol. 1",
               seriesInfo: {
@@ -58,9 +59,11 @@ describe(`Given has series info`, () => {
         items: [
           {
             // biome-ignore lint/style/noNonNullAssertion: TODO
+            // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: OKAY
             ...getDefaultData().items?.[0]!,
             volumeInfo: {
               // biome-ignore lint/style/noNonNullAssertion: TODO
+              // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: OKAY
               ...getDefaultData().items?.[0]?.volumeInfo!,
               title: "My title",
               seriesInfo: {
@@ -83,9 +86,11 @@ describe(`Given no series info`, () => {
       items: [
         {
           // biome-ignore lint/style/noNonNullAssertion: TODO
+          // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: OKAY
           ...getDefaultData().items?.[0]!,
           volumeInfo: {
             // biome-ignore lint/style/noNonNullAssertion: TODO
+            // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: OKAY
             ...getDefaultData().items?.[0]?.volumeInfo!,
             title: "My title",
             seriesInfo: undefined,
