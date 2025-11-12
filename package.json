@@ -33,7 +33,7 @@
     "@rollup/plugin-replace": "^6.0.2",
     "@types/node": "^22.14.1",
     "husky": "^9.1.7",
-    "lerna": "^8.2.2",
+    "lerna": "^9.0.0",
     "lint-staged": "^16.1.5",
     "rollup-plugin-analyzer": "^4.0.0",
     "typescript": "^5.9.2",
