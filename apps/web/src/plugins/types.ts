@@ -131,7 +131,7 @@ export type ObokuPlugin<
       title: string
     } & Pick<DOMAttributes<any>, "onDragLeave">
   >
-  AddDataSource?: FunctionComponent<{
+  DataSourceForm?: FunctionComponent<{
     control: Control<DataSourceFormData, any, DataSourceFormData>
     watch: UseFormWatch<DataSourceFormData>
   }>

@@ -7,7 +7,7 @@ import GoogleDriveAsset from "../../assets/google-drive.svg?react"
 import { SvgIcon } from "@mui/material"
 import { UploadBook } from "./UploadBook"
 import { useDownloadBook } from "./useDownloadBook"
-import { DataSourceNew as AddDataSource } from "./DataSourceNew"
+import { DataSourceNew as DataSourceForm } from "./DataSourceNew"
 import { SelectItem as SelectItemComponent } from "./SelectItem"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { Provider } from "./Provider"
@@ -31,7 +31,7 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   UploadBookComponent: UploadBook,
   canSynchronize: true,
   useDownloadBook,
-  AddDataSource,
+  DataSourceForm,
   DataSourceDetails,
   SelectItemComponent,
   useSyncSourceInfo,

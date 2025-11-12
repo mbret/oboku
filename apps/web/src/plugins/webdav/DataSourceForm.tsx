@@ -10,7 +10,7 @@ import { LinkRounded } from "@mui/icons-material"
 import { TestConnection } from "./connectors/TestConnection"
 import { useConnector } from "./connectors/useConnector"
 
-export const AddDataSource = memo(
+export const DataSourceForm = memo(
   ({
     control,
     watch,

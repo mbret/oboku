@@ -1,7 +1,7 @@
 /// <reference types="@types/dropbox-chooser" />
 import { UploadBook } from "./UploadBook"
 import { SvgIcon } from "@mui/material"
-import { AddDataSource } from "./AddDataSource"
+import { DataSourceForm } from "./DataSourceForm"
 import { useDownloadBook } from "./useDownloadBook"
 import DropboxIconAsset from "../../assets/dropbox.svg?react"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
@@ -23,7 +23,7 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   Icon: DropboxIcon,
   UploadBookComponent: UploadBook,
   DataSourceDetails,
-  AddDataSource,
+  DataSourceForm,
   useDownloadBook,
   useRemoveBook: undefined,
   useRefreshMetadata,
