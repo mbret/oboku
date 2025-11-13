@@ -1,6 +1,6 @@
 import { catchError, from, mergeMap, of, tap } from "rxjs"
 import {
-  accessTokenSignal,
+  googleAccessTokenSignal,
   consentShownSignal,
   hasGrantedPermissions,
   hasTokenAccessAtLeast10mnLeft,
@@ -30,7 +30,7 @@ export const useRequestToken = ({
     getGoogleScripts().pipe(
       mergeMap(([gsi]) => {
         const firstScope = scope[0]
-        const accessToken = accessTokenSignal.getValue()
+        const accessToken = googleAccessTokenSignal.getValue()
 
         /**
          * We return current token if it has at least 10mn left
@@ -74,7 +74,7 @@ export const useRequestToken = ({
                   created_at: Date.now(),
                 }
 
-                accessTokenSignal.setValue(googleAccessToken)
+                googleAccessTokenSignal.setValue(googleAccessToken)
 
                 return of(googleAccessToken)
               }),

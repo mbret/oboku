@@ -10,6 +10,7 @@ import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../types"
 import { DataSourceDetails } from "./DataSourceDetails"
 import { InfoScreen } from "./InfoScreen"
+import { useSignOut } from "./useSignOut"
 
 const DropboxIcon = () => (
   <SvgIcon>
@@ -31,5 +32,6 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   useSynchronize,
   canSynchronize: true,
   InfoScreen,
+  useSignOut,
   description: "Manage contents from Dropbox",
 }

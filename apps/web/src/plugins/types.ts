@@ -154,6 +154,7 @@ export type ObokuPlugin<
   useDownloadBook?: UseDownloadHook
   useRemoveBook?: UseRemoveBook | undefined
   useSyncSourceInfo?: UseSyncSourceInfo<T>
+  useSignOut?: () => (() => void) | undefined
 }
 
 export const extractIdFromResourceId = (
