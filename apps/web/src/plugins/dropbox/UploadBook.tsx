@@ -53,7 +53,7 @@ export const UploadBook: FC<{
   })
 
   useMountOnce(() => {
-    choose()
+    choose({ select: "file" })
   })
 
   return <BlockingScreen />
