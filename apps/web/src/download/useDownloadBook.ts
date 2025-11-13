@@ -12,7 +12,7 @@ import {
   combineLatest,
   defaultIfEmpty,
   EMPTY,
-  finalize,
+  filter,
   first,
   from,
   ignoreElements,
@@ -32,6 +32,8 @@ import { useNotifications } from "../notifications/useNofitications"
 
 class NoLinkFound extends Error {}
 
+const cancelBookDownloadSubject = new Subject<string>()
+
 const setDownloadData = (
   bookId: string,
   data: ReturnType<typeof booksDownloadStateSignal.getValue>[number],
@@ -43,6 +45,12 @@ const setDownloadData = (
       ...data,
     },
   }))
+}
+
+export const useCancelBookDownload = () => {
+  return (bookId: string) => {
+    cancelBookDownloadSubject.next(bookId)
+  }
 }
 
 export const useDownloadBook = () => {
@@ -58,6 +66,9 @@ export const useDownloadBook = () => {
       file?: File
     }) => {
       const progressSubject = new Subject<number>()
+      const downloadCancelled$ = cancelBookDownloadSubject.pipe(
+        filter((id) => id === bookId),
+      )
 
       const updateProgress$ = progressSubject.pipe(
         throttleTime(500, animationFrameScheduler, {
@@ -110,16 +121,16 @@ export const useDownloadBook = () => {
 
           return merge(
             updateProgress$,
+            downloadCancelled$.pipe(
+              tap(() => {
+                throw new CancelError()
+              }),
+            ),
             combineLatest([link$, fileExist$]).pipe(
               switchMap(([link, fileExist]) => {
                 // for some reason if the file exist we do not download it again
                 if (fileExist) {
-                  setDownloadData(bookId, {
-                    downloadProgress: 100,
-                    downloadState: DownloadState.Downloaded,
-                  })
-
-                  return EMPTY
+                  return of(null)
                 }
 
                 const onDownloadProgress = (progress: number) => {
@@ -159,7 +170,7 @@ export const useDownloadBook = () => {
                       }),
                     )
 
-                return file$.pipe(
+                const saveToDb$ = file$.pipe(
                   switchMap(({ data, name }) => {
                     Logger.log(
                       `Saving ${bookId} into storage for a size of ${bytesToMb(
@@ -175,19 +186,18 @@ export const useDownloadBook = () => {
                       }),
                     )
                   }),
-                  tap(() => {
-                    setDownloadData(bookId, {
-                      downloadProgress: 100,
-                      downloadState: DownloadState.Downloaded,
-                    })
-                  }),
                 )
-              }),
-              finalize(() => {
-                progressSubject.complete()
+
+                return saveToDb$
               }),
             ),
           )
+        }),
+        tap(() => {
+          setDownloadData(bookId, {
+            downloadProgress: 100,
+            downloadState: DownloadState.Downloaded,
+          })
         }),
         catchError((error) => {
           setDownloadData(bookId, {

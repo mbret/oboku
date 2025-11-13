@@ -1,6 +1,6 @@
 import JSZip from "jszip"
 
-type StreamValue = {
+export type StreamValue = {
   baseUri: string
   response: Response
   progress: number

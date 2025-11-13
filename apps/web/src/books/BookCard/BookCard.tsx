@@ -1,7 +1,7 @@
 import { Box, styled, type BoxProps } from "@mui/material"
 import { BookCardHorizontal } from "./BookCardHorizontal"
 import { BookCardVertical } from "./BookCardVertical"
-import { useDefaultItemClickHandler } from "../bookList/helpers"
+import { useDefaultBookCardClickHandler } from "./useDefaultBookCardClickHandler"
 
 const ContainerBox = styled(Box)<{
   size: "small" | "large"
@@ -36,7 +36,7 @@ export const BookCard = ({
   onItemClick?: (id: string) => void
   size?: "small" | "large"
 } & BoxProps) => {
-  const onDefaultItemClick = useDefaultItemClickHandler()
+  const onDefaultItemClick = useDefaultBookCardClickHandler()
 
   const onCardClick = () => {
     if (onItemClick) return onItemClick(bookId)

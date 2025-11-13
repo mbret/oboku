@@ -9,7 +9,10 @@ import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Typography, Container, Stack, IconButton } from "@mui/material"
 import { useNavigate, useParams } from "react-router"
 import { Alert } from "@mui/material"
-import { useDownloadBook } from "../../download/useDownloadBook"
+import {
+  useCancelBookDownload,
+  useDownloadBook,
+} from "../../download/useDownloadBook"
 import { useBook } from "../states"
 import { useLink } from "../../links/states"
 import { DataSourceSection } from "./DataSourceSection"
@@ -35,6 +38,7 @@ type ScreenParams = {
 export const BookDetailsScreen = memo(() => {
   const navigate = useNavigate()
   const { mutate: downloadFile } = useDownloadBook()
+  const cancelDownload = useCancelBookDownload()
   const { goBack } = useSafeGoBack()
   const { id = `-1` } = useParams<ScreenParams>()
   const { data: book } = useBook({ id })
@@ -118,7 +122,7 @@ export const BookDetailsScreen = memo(() => {
               }}
               variant="outlined"
               color="primary"
-              disabled
+              onClick={() => book?._id && cancelDownload(book._id)}
             >
               Downloading...
             </Button>

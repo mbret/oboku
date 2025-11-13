@@ -1,13 +1,17 @@
 import { useNavigate } from "react-router"
-import { useDownloadBook } from "../../download/useDownloadBook"
+import {
+  useCancelBookDownload,
+  useDownloadBook,
+} from "../../download/useDownloadBook"
 import { getBookDownloadsState } from "../../download/states"
 import { useDatabase } from "../../rxdb"
 import { useCallback } from "react"
 import { getBookById } from "../dbHelpers"
 import { ROUTES } from "../../navigation/routes"
 
-export const useDefaultItemClickHandler = () => {
+export const useDefaultBookCardClickHandler = () => {
   const { mutate: downloadFile } = useDownloadBook()
+  const cancelDownload = useCancelBookDownload()
   const navigate = useNavigate()
   const { db } = useDatabase()
 
@@ -20,12 +24,18 @@ export const useDefaultItemClickHandler = () => {
 
       if (!book) return
 
+      if (downloadState?.downloadState === "downloading") {
+        cancelDownload(id)
+
+        return
+      }
+
       if (downloadState?.downloadState === "none") {
         book?._id && downloadFile(book)
       } else if (downloadState?.downloadState === "downloaded") {
         navigate(ROUTES.READER.replace(":id", book?._id))
       }
     },
-    [db, downloadFile, navigate],
+    [db, downloadFile, navigate, cancelDownload],
   )
 }
