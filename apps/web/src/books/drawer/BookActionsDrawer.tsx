@@ -36,6 +36,7 @@ import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 import { useLink } from "../../links/states"
 import { ROUTES } from "../../navigation/routes"
+import { useMarkBookAsFinished, useMarkBookAsUnread } from "../useMarkBookAs"
 
 type SignalState = {
   openedWith: undefined | string
@@ -86,6 +87,8 @@ export const BookActionsDrawer = memo(() => {
   const { mutate: removeDownloadFile } = useRemoveDownloadFile()
   const refreshBookMetadata = useRefreshBookMetadata()
   const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
+  const markBookAsUnread = useMarkBookAsUnread()
+  const markBookAsFinished = useMarkBookAsFinished()
   const opened = !!bookId
   const theme = useTheme()
 
@@ -178,16 +181,7 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemButton
                   onClick={() => {
                     handleClose()
-                    incrementalBookPatch({
-                      doc: book._id,
-                      patch: {
-                        readingStateCurrentState: ReadingStateState.NotStarted,
-                        readingStateCurrentBookmarkProgressPercent: 0,
-                        readingStateCurrentBookmarkProgressUpdatedAt:
-                          new Date().toISOString(),
-                        readingStateCurrentBookmarkLocation: null,
-                      },
-                    })
+                    markBookAsUnread(book._id)
                   }}
                 >
                   <ListItemIcon>
@@ -201,16 +195,7 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemButton
                   onClick={() => {
                     handleClose()
-                    incrementalBookPatch({
-                      doc: book._id,
-                      patch: {
-                        readingStateCurrentState: ReadingStateState.Finished,
-                        readingStateCurrentBookmarkProgressPercent: 1,
-                        readingStateCurrentBookmarkProgressUpdatedAt:
-                          new Date().toISOString(),
-                        readingStateCurrentBookmarkLocation: null,
-                      },
-                    })
+                    markBookAsFinished(book._id)
                   }}
                 >
                   <ListItemIcon>

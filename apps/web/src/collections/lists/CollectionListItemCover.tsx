@@ -77,7 +77,9 @@ export const CollectionListItemCover = memo(
         <CollectionListItemBookCovers id={id} />
         {id !== configuration.COLLECTION_EMPTY_ID && (
           <>
-            <CollectionListItemProgress progress={readingProgress * 100} />
+            <CollectionListItemProgress
+              progress={(readingProgress ?? 0) * 100}
+            />
             {showType && (
               <Chip
                 label={item?.type === "series" ? "Series" : "Collection"}
