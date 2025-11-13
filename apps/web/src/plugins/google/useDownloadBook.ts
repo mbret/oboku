@@ -19,7 +19,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
   })
   const getDriveFile = useDriveFilesGet()
 
-  return ({ link, onDownloadProgress }) => {
+  return ({ link, onDownloadProgress, signal }) => {
     const fileId = extractIdFromResourceId(link.resourceId)
 
     return getGoogleScripts().pipe(
@@ -33,6 +33,7 @@ export const useDownloadBook: ObokuPlugin[`useDownloadBook`] = ({
               mergeMap((info) => {
                 return from(
                   httpClientWeb.download<Blob>({
+                    signal,
                     /**
                      * @important
                      * The api key in the url does not appears to be needed since we have oauth.

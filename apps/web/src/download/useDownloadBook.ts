@@ -119,10 +119,14 @@ export const useDownloadBook = () => {
             }),
           )
 
+          const downloadAbortController = new AbortController()
+
           return merge(
             updateProgress$,
             downloadCancelled$.pipe(
               tap(() => {
+                downloadAbortController.abort()
+
                 throw new CancelError()
               }),
             ),
@@ -142,6 +146,7 @@ export const useDownloadBook = () => {
                   : downloadPluginBook({
                       link,
                       onDownloadProgress,
+                      signal: downloadAbortController.signal,
                     }).pipe(
                       switchMap((downloadResponse) => {
                         const data$ =

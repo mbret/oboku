@@ -37,6 +37,7 @@ type UseDownloadHook = (options: {
 }) => (params: {
   link: LinkDocType
   onDownloadProgress: (progress: number) => void
+  signal: AbortSignal
 }) => Observable<{
   data: Blob | File | ReadableStream<StreamValue>
   name?: string
