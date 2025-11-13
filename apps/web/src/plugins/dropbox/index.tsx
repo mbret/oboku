@@ -9,6 +9,7 @@ import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../types"
 import { DataSourceDetails } from "./DataSourceDetails"
+import { InfoScreen } from "./InfoScreen"
 
 const DropboxIcon = () => (
   <SvgIcon>
@@ -29,5 +30,6 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   useRefreshMetadata,
   useSynchronize,
   canSynchronize: true,
+  InfoScreen,
   description: "Manage contents from Dropbox",
 }
