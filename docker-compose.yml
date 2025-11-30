@@ -32,6 +32,8 @@ services:
   web:
     image: mbret/oboku-web
     restart: always
+    env_file:
+      - .env
     ports:
       - "80:80"
 
