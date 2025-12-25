@@ -3,8 +3,7 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
 import { type ComponentProps, memo, useCallback, useRef } from "react"
-import { isMenuShownStateSignal, readerSignal } from "./states"
-import { useGestureHandler } from "./gestures/useGestureHandler"
+import { readerSignal } from "./states"
 import { BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
 import { useObserve, useSignalValue } from "reactjrx"
@@ -36,7 +35,6 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
     }),
   )
   const { globalFontScale, updateGlobalFontScale } = useSettingsFormValues()
-  const isMenuShow = useSignalValue(isMenuShownStateSignal)
   const { goBack } = useSafeGoBack()
   const { toggleMoreDialog } = useMoreDialog()
   const { mutate } = useShowRemoveBookOnExitDialog({
@@ -74,8 +72,6 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
           onItemClick={onItemClick}
           enableFloatingTime={localSettings.readerFloatingTime === "bottom"}
           reader={reader}
-          quickMenuOpen={isMenuShow}
-          onQuickMenuOpenChange={isMenuShownStateSignal.update}
           fontSize={globalFontScale ?? undefined}
           onFontSizeChange={(_scope, fontSize) => {
             updateGlobalFontScale(fontSize)
@@ -121,7 +117,6 @@ const Effects = memo(
       manifest,
     })
 
-    useGestureHandler()
     useSyncBookProgress(bookId)
 
     return null
