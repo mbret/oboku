@@ -3,6 +3,7 @@ import { SIGNAL_RESET, useSignalValue } from "reactjrx"
 import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
 import { createReader } from "@prose-reader/core"
 import { galleryEnhancer } from "@prose-reader/enhancer-gallery"
+import { searchEnhancer } from "@prose-reader/enhancer-search"
 import { readerSignal } from "./states"
 import { localSettingsSignal } from "../settings/useLocalSettings"
 import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
@@ -11,7 +12,7 @@ import { from } from "rxjs"
 import { refitEnhancer } from "@prose-reader/enhancer-refit"
 
 export const createAppReader = refitEnhancer(
-  galleryEnhancer(gesturesEnhancer(createReader)),
+  galleryEnhancer(gesturesEnhancer(searchEnhancer(createReader))),
 )
 
 export const useCreateReader = ({
