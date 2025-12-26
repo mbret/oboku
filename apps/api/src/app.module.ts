@@ -66,8 +66,10 @@ import { StorageModule } from "./storage/storage.module"
         POSTGRES_HOST: Joi.string().default("postgres"),
         TMP_X_ACCESS_SECRET: Joi.string().optional(),
         COMICVINE_API_KEY: Joi.string().optional(),
-        JWT_PRIVATE_KEY_FILE: Joi.string().required(),
-        JWT_PUBLIC_KEY_FILE: Joi.string().required(),
+        JWT_PRIVATE_KEY_FILE: Joi.string().optional(),
+        JWT_PRIVATE_KEY: Joi.string().optional(),
+        JWT_PUBLIC_KEY_FILE: Joi.string().optional(),
+        JWT_PUBLIC_KEY: Joi.string().optional(),
         API_DATA_DIR: Joi.string().optional().default("/var/lib/oboku/data"),
         COVERS_STORAGE_STRATEGY: Joi.string()
           .valid("fs", "s3")
@@ -75,7 +77,9 @@ import { StorageModule } from "./storage/storage.module"
           .default("fs"),
         ADMIN_LOGIN: Joi.string().optional(),
         ADMIN_PASSWORD: Joi.string().optional(),
-      }),
+      })
+        .or("JWT_PRIVATE_KEY_FILE", "JWT_PRIVATE_KEY")
+        .or("JWT_PUBLIC_KEY_FILE", "JWT_PUBLIC_KEY"),
     }),
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
