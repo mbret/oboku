@@ -27,27 +27,27 @@ const ColorModeSwitcher = () => {
 
 const ChakraThemeProvider = memo(({ children }: { children: ReactNode }) => {
   const { themeMode } = useLocalSettings()
-  const { mode } = useColorScheme()
+  const { colorScheme } = useColorScheme()
 
   /* Chakra seems to be very well scoped so it's okay to wrap it on app level even if it's used 
       only by the reader. We may as well use chakra components here and there when needed */
   return (
-    <NextThemes
-      attribute="class"
-      // for now we use light mode on oboku so we need to force it
-      // as well here otherwise it would create inconsistency
-      {...(mode === "dark" && { forcedTheme: "dark" })}
-      {...((mode === "light" || themeMode === "e-ink") && {
-        forcedTheme: "light",
-      })}
-      // otherwise system
-    >
-      <ChakraProvider
-        value={themeMode === "e-ink" ? einkSystem : defaultSystem}
+    <ChakraProvider value={themeMode === "e-ink" ? einkSystem : defaultSystem}>
+      <NextThemes
+        attribute="class"
+        disableTransitionOnChange
+        // {...(prefersDarkColorScheme() && { forcedTheme: "dark" })}
+        // for now we use light mode on oboku so we need to force it
+        // as well here otherwise it would create inconsistency
+        {...(colorScheme === "dark" && { forcedTheme: "dark" })}
+        {...((colorScheme === "light" || themeMode === "e-ink") && {
+          forcedTheme: "light",
+          // otherwise system
+        })}
       >
         {children}
-      </ChakraProvider>
-    </NextThemes>
+      </NextThemes>
+    </ChakraProvider>
   )
 })
 
