@@ -40,7 +40,7 @@ LibArchive.init({
   workerUrl: "/libarchive.js.worker-bundle.js",
 })
 
-export const App = memo(() => {
+const App = memo(() => {
   const [isPreloadingQueries, setIsPreloadingQueries] = useState(true)
   const [isDownloadsHydrated, setIsDownloadsHydrated] = useState(false)
   const { waitingWorker } = useRegisterServiceWorker()
@@ -58,6 +58,52 @@ export const App = memo(() => {
     isDownloadsHydrated && isAuthHydrated && !isPreloadingQueries
 
   return (
+    <DialogProvider>
+      {!isHydratingProfile &&
+        isAuthHydrated &&
+        plugins.reduce(
+          (Comp, { Provider }, index) => {
+            if (Provider) {
+              return <Provider key={index}>{Comp}</Provider>
+            }
+            return Comp
+          },
+          <Fade in={isAppReady} timeout={500}>
+            <Box height="100%">
+              <AuthGuard />
+              <AppNavigator isProfileHydrated={isProfileHydrated} />
+              <ManageBookCollectionsDialog />
+              <ManageBookTagsDialog />
+              <ManageTagBooksDialog />
+              <AuthorizeActionDialog />
+              <SetupSecretDialog />
+              <UpdateAvailableDialog serviceWorker={waitingWorker} />
+              <BackgroundReplication />
+              <BlockingBackdrop />
+              <Effects />
+            </Box>
+          </Fade>,
+        )}
+      <PreloadQueries
+        onReady={() => {
+          setIsPreloadingQueries(false)
+        }}
+      />
+      <RestoreDownloadState
+        onReady={() => {
+          setIsDownloadsHydrated(true)
+        }}
+      />
+      <Notifications />
+      <RxDbProvider />
+    </DialogProvider>
+  )
+})
+
+export const AppWithConfig = memo(() => {
+  const { data: config } = useObserve(configuration.loaded$)
+
+  return (
     <ErrorBoundary
       onError={(e) => {
         Logger.error(e)
@@ -65,65 +111,19 @@ export const App = memo(() => {
     >
       <StyledEngineProvider injectFirst>
         <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
-            <QueryClientProvider$>
-              <Suspense fallback={<SplashScreen show />}>
-                <DialogProvider>
-                  {!isHydratingProfile &&
-                    isAuthHydrated &&
-                    plugins.reduce(
-                      (Comp, { Provider }, index) => {
-                        if (Provider) {
-                          return <Provider key={index}>{Comp}</Provider>
-                        }
-                        return Comp
-                      },
-                      <Fade in={isAppReady} timeout={500}>
-                        <Box height="100%">
-                          <AuthGuard />
-                          <AppNavigator isProfileHydrated={isProfileHydrated} />
-                          <ManageBookCollectionsDialog />
-                          <ManageBookTagsDialog />
-                          <ManageTagBooksDialog />
-                          <AuthorizeActionDialog />
-                          <SetupSecretDialog />
-                          <UpdateAvailableDialog
-                            serviceWorker={waitingWorker}
-                          />
-                          <BackgroundReplication />
-                          <BlockingBackdrop />
-                          <Effects />
-                        </Box>
-                      </Fade>,
-                    )}
-                  <PreloadQueries
-                    onReady={() => {
-                      setIsPreloadingQueries(false)
-                    }}
-                  />
-                  <RestoreDownloadState
-                    onReady={() => {
-                      setIsDownloadsHydrated(true)
-                    }}
-                  />
-                  <Notifications />
-                  <RxDbProvider />
-                </DialogProvider>
-              </Suspense>
-              {import.meta.env.DEV && <DebugMenu />}
-            </QueryClientProvider$>
-          </QueryClientProvider>
+          <QueryClientProvider$>
+            <Suspense fallback={<SplashScreen show />}>
+              <QueryClientProvider client={queryClient}>
+                {config ? <App /> : null}
+              </QueryClientProvider>
+            </Suspense>
+            {import.meta.env.DEV && <DebugMenu />}
+          </QueryClientProvider$>
         </ThemeProvider>
       </StyledEngineProvider>
       <BlurFilterReference />
     </ErrorBoundary>
   )
-})
-
-export const AppWithConfig = memo(() => {
-  const { data: config } = useObserve(configuration.loaded$)
-
-  return config ? <App /> : null
 })
 
 const Effects = memo(() => {
