@@ -121,7 +121,7 @@ export const App = memo(() => {
 })
 
 export const AppWithConfig = memo(() => {
-  const config = useObserve(configuration.loaded$)
+  const { data: config } = useObserve(configuration.loaded$)
 
   return config ? <App /> : null
 })
