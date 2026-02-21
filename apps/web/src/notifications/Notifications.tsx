@@ -13,7 +13,7 @@ export type AppNotification = {
 export const notificationsSubject = new Subject<AppNotification>()
 
 export const Notifications = memo(() => {
-  const notification = useObserve(
+  const { data: notification } = useObserve(
     () =>
       notificationsSubject.pipe(
         concatMap((notification) => {

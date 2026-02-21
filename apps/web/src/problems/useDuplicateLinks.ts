@@ -6,7 +6,7 @@ import { useObserve } from "reactjrx"
 import { groupBy } from "@oboku/shared"
 
 export const useDuplicatedResourceIdLinks = () => {
-  const links = useObserve(
+  const { data: links } = useObserve(
     () => latestDatabase$.pipe(switchMap((db) => db?.link.find().$)),
     [],
   )

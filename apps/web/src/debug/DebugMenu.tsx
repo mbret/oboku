@@ -42,7 +42,7 @@ export const DebugMenu = () => {
           onClick={() => {
             localSettingsSignal.update((state) => ({
               ...state,
-              themeMode: "light",
+              themeMode: "light" as const,
             }))
           }}
         >
@@ -52,7 +52,7 @@ export const DebugMenu = () => {
           onClick={() => {
             localSettingsSignal.update((state) => ({
               ...state,
-              themeMode: "dark",
+              themeMode: "dark" as const,
             }))
           }}
         >
@@ -62,7 +62,7 @@ export const DebugMenu = () => {
           onClick={() => {
             localSettingsSignal.update((state) => ({
               ...state,
-              themeMode: "e-ink",
+              themeMode: "e-ink" as const,
             }))
           }}
         >
@@ -72,7 +72,7 @@ export const DebugMenu = () => {
           onClick={() => {
             localSettingsSignal.update((state) => ({
               ...state,
-              themeMode: "system",
+              themeMode: "system" as const,
             }))
           }}
         >

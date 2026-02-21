@@ -22,7 +22,7 @@ import { useSettingsFormValues } from "./settings/useSettingsFormValues"
 
 export const Reader = memo(({ bookId }: { bookId: string }) => {
   const reader = useSignalValue(readerSignal)
-  const readerState = useObserve(() => reader?.state$, [reader])
+  const { data: readerState } = useObserve(() => reader?.state$, [reader])
   const readerContainerRef = useRef<HTMLDivElement>(null)
   const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
     useManifest(bookId)

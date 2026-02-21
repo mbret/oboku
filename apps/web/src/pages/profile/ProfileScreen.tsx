@@ -36,10 +36,10 @@ import { libraryStateSignal } from "../../library/books/states"
 import packageJson from "../../../package.json"
 import { toggleDebug } from "../../debug"
 import { useDatabase } from "../../rxdb"
-import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
+import { catchError, forkJoin, from, of, switchMap, tap } from "rxjs"
 import { Logger } from "../../debug/logger.shared"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
-import { useSignalValue, useUnmountObservable } from "reactjrx"
+import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../../auth/states.web"
 import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
 import { createDialog } from "../../common/dialogs/createDialog"
@@ -253,7 +253,6 @@ const DeleteMyDataDialog: FC<{
   const [isBookChecked, setIsBookChecked] = useState(false)
   const [isCollectionChecked, setIsCollectionChecked] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const unMount$ = useUnmountObservable()
   const { db } = useDatabase()
 
   const onSubmit = useCallback(async () => {
@@ -293,11 +292,10 @@ const DeleteMyDataDialog: FC<{
           tap(() => {
             onClose()
           }),
-          takeUntil(unMount$),
         )
         .subscribe()
     }
-  }, [onClose, db, unMount$, isTagChecked, isBookChecked, isCollectionChecked])
+  }, [onClose, db, isTagChecked, isBookChecked, isCollectionChecked])
 
   useEffect(() => {
     void open

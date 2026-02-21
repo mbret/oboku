@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { combineLatest, tap } from "rxjs"
 import { syncSignal } from "./states"
 import { triggerReplication$ } from "./triggerReplication"
@@ -29,7 +29,7 @@ export const useBackgroundReplication = () => {
 
   useWatchAndFixConflicts()
 
-  useSubscribe(
+  const triggerReplication = useCallback(
     () =>
       triggerReplication$.pipe(
         tap(() => {
@@ -41,7 +41,9 @@ export const useBackgroundReplication = () => {
     [replicationStates],
   )
 
-  useSubscribe(
+  useSubscribe(triggerReplication)
+
+  const updateSyncSignal = useCallback(
     () =>
       combineLatest(replicationStates.map((state) => state.active$)).pipe(
         tap((active) => {
@@ -53,6 +55,8 @@ export const useBackgroundReplication = () => {
       ),
     [replicationStates],
   )
+
+  useSubscribe(updateSyncSignal)
 
   useEffect(() => {
     if (!database || !dbName) return
