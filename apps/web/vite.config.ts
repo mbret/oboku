@@ -78,7 +78,7 @@ export default defineConfig(({ mode }) => ({
           "**/*.js.map",
           "**/*.css.map",
         ],
-        maximumFileSizeToCacheInBytes: 2 * 1024 * 1024, // 2 MiB; large assets (e.g. maps) excluded via globIgnores
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB; large assets (e.g. maps) excluded via globIgnores
       },
       srcDir: "src",
       filename: "service-worker.ts",
