@@ -49,7 +49,9 @@ export const SettingsList = () => {
             localSettingsSignal.update((state) => ({
               ...state,
               readerFloatingTime:
-                state.readerFloatingTime === "bottom" ? undefined : "bottom",
+                state.readerFloatingTime === "bottom"
+                  ? undefined
+                  : ("bottom" as const),
             }))
           }}
         >
@@ -78,7 +80,7 @@ export const SettingsList = () => {
               readerFloatingProgress:
                 state.readerFloatingProgress === "bottom"
                   ? undefined
-                  : "bottom",
+                  : ("bottom" as const),
             }))
           }}
         >

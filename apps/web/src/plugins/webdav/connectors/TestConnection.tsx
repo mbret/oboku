@@ -26,7 +26,7 @@ export const TestConnection = memo(
       username: debouncedUsername,
       directory: debouncedDirectory,
     } = useDebouncedValue({ url, username, directory }, 500)
-    const unlockedMasterKey = useUnlockedMasterKey()
+    const { data: unlockedMasterKey } = useUnlockedMasterKey()
     const { data: secret } = useDecryptedSecret({
       id: passwordAsSecretId,
       masterKey: unlockedMasterKey,

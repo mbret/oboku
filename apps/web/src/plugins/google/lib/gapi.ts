@@ -83,7 +83,7 @@ export const useLoadGapi = () => {
         src: "https://apis.google.com/js/api.js",
       }).pipe(
         catchError((error) => {
-          gapiSignal.setValue((state) => ({
+          gapiSignal.update((state) => ({
             ...state,
             error: "Error while loading script",
           }))

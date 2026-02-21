@@ -5,10 +5,12 @@ import { useIsUsingPagesPerChapter } from "./useIsUsingPagesPerChapter"
 export const useCurrentPages = ({ bookId }: { bookId?: string }) => {
   const reader = useSignalValue(readerSignal)
   const {
-    beginPageIndexInSpineItem,
-    endPageIndexInSpineItem,
-    beginAbsolutePageIndex,
-    endAbsolutePageIndex,
+    data: {
+      beginPageIndexInSpineItem,
+      endPageIndexInSpineItem,
+      beginAbsolutePageIndex,
+      endAbsolutePageIndex,
+    } = {},
   } = useObserve(() => reader?.pagination.state$, [reader]) ?? {}
   const isUsingPagesPerChapter = useIsUsingPagesPerChapter({ bookId })
 
