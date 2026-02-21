@@ -3,7 +3,7 @@ import {
   difference,
   ReadingStateState,
 } from "@oboku/shared"
-import { useLocalSettings } from "../settings/states"
+import { useLocalSettings } from "../settings/useLocalSettings"
 import { useQuery$, useSignalValue } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { combineLatest, map, switchMap } from "rxjs"

@@ -1,7 +1,7 @@
 import { Alert, Button, IconButton, Stack, Typography } from "@mui/material"
 import { useDrivePicker } from "./useDrivePicker"
 import { catchError, of, switchMap, takeUntil, tap } from "rxjs"
-import { isDefined, useMutation$, useUnmountObservable } from "reactjrx"
+import { isDefined, useMutation$ } from "reactjrx"
 import { type TreeItem, TreeView } from "./tree/TreeView"
 import { useRequestPopupDialog } from "../../useRequestPopupDialog"
 import { PLUGIN_NAME } from "./constants"
@@ -18,6 +18,7 @@ import { DeleteRounded } from "@mui/icons-material"
 import { useMemo, useState } from "react"
 import { buildTree } from "./tree/buildTree"
 import { useConfirmation } from "../../../common/useConfirmation"
+import { useUnmountSubject } from "../../../common/rxjs/useUnmountSubject"
 
 export const DataSourceForm = ({
   control,
@@ -37,6 +38,7 @@ export const DataSourceForm = ({
   const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
   const confirmation = useConfirmation()
   const requestFilesAccess = useRequestFilesAccess({ requestPopup })
+  const unmountSubject = useUnmountSubject()
   const { mutate: requestFilesAccessMutation } = useMutation$({
     mutationFn: () =>
       getGoogleScripts().pipe(
@@ -70,7 +72,6 @@ export const DataSourceForm = ({
 
     return buildTree(driveFiles)
   }, [queries])
-  const unMount$ = useUnmountObservable()
 
   return (
     <Stack gap={2} pb={2} overflow="auto">
@@ -109,7 +110,7 @@ export const DataSourceForm = ({
                     })
                   }
                 }),
-                takeUntil(unMount$),
+                takeUntil(unmountSubject),
                 catchError((error) => {
                   console.error(error)
 
@@ -152,7 +153,7 @@ export const DataSourceForm = ({
           justifyContent="space-between"
         >
           <Typography variant="caption">
-            selected item(s): {selectedItems.length}
+            Item(s) actions: {selectedItems.length}
           </Typography>
           <IconButton
             disabled={selectedItems.length === 0}

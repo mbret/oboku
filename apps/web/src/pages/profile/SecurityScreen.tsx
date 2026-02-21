@@ -9,7 +9,7 @@ import {
   ListSubheader,
 } from "@mui/material"
 import { theme } from "../../theme/theme"
-import { useSettings } from "../../settings/helpers"
+import { useSettings } from "../../settings/useSettings"
 import { SetupMasterPasswordDialog } from "../../secrets/SetupMasterPasswordDialog"
 import { useRemoveMasterKey } from "../../secrets/useRemoveMasterKey"
 

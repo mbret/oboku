@@ -1,4 +1,4 @@
-import { memo, useEffect } from "react"
+import { memo, useEffect, useEffectEvent } from "react"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useSignOut } from "./useSignOut"
 import { authStateSignal } from "./states.web"
@@ -52,6 +52,7 @@ const refreshTokenAndRetry = async (
 
 export const AuthGuard = memo(() => {
   const signOut = useSignOut()
+  const signOutEffect = useEffectEvent(signOut)
 
   useEffect(() => {
     const deregisterTokenInjectorToApi =
@@ -100,7 +101,7 @@ export const AuthGuard = memo(() => {
               return response
             }
           } else {
-            signOut()
+            signOutEffect()
           }
         }
 

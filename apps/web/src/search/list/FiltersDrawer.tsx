@@ -34,14 +34,14 @@ export const FiltersDrawer: FC<{
         <List>
           <ListItemButton
             onClick={() =>
-              searchListActionsToolbarSignal.setValue((state) => ({
+              searchListActionsToolbarSignal.update((state) => ({
                 ...state,
                 notInterestedContents:
                   state.notInterestedContents === "none"
-                    ? "with"
+                    ? ("with" as const)
                     : state.notInterestedContents === "with"
-                      ? "only"
-                      : "none",
+                      ? ("only" as const)
+                      : ("none" as const),
               }))
             }
           >

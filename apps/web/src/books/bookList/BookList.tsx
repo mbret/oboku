@@ -1,66 +1,32 @@
-import { useCallback, memo, type ReactNode, type ComponentProps } from "react"
-import { Box, type BoxProps, useTheme } from "@mui/material"
+import { useCallback, memo, type ComponentProps, useMemo } from "react"
+import { Box, useTheme } from "@mui/material"
 import { useWindowSize } from "react-use"
-import { BookListGridItem } from "./BookListGridItem"
 import type { LibrarySorting } from "../../library/books/states"
-import { BookListListItem } from "./BookListListItem"
 import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
-import { BookListCompactItem } from "./BookListCompactItem"
 import { useListItemHeight } from "./useListItemHeight"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
-
-const ItemListContainer = memo(
-  ({
-    children,
-    isLast,
-    borders = false,
-    ...rest
-  }: {
-    children: ReactNode
-    isLast: boolean
-    borders?: boolean
-  } & BoxProps) => (
-    <Box
-      style={{
-        flex: 1,
-        alignItems: "center",
-        display: "flex",
-      }}
-      {...(!isLast &&
-        borders && {
-          borderBottom: "1px solid",
-          borderColor: "grey.200",
-        })}
-      {...rest}
-    >
-      {children}
-    </Box>
-  ),
-)
+import { BookCard } from "../BookCard/BookCard"
 
 export const BookList = memo(
-  (
-    props: {
-      viewMode?: ListActionViewMode
-      sorting?: LibrarySorting
-      itemWidth?: number
-      density?: "dense" | "large"
-      onItemClick?: (id: string) => void
-      withBookActions?: boolean
-      static?: boolean
-    } & ComponentProps<typeof VirtuosoList>,
-  ) => {
-    const {
-      viewMode = "grid",
-      density = "large",
-      style,
-      data,
-      itemWidth,
-      onItemClick,
-      withBookActions,
-      static: isStatic,
-      ...rest
-    } = props
+  ({
+    viewMode = "grid",
+    density = "large",
+    style,
+    data,
+    itemWidth,
+    onItemClick,
+    withBookActions,
+    static: isStatic,
+    ...rest
+  }: {
+    viewMode?: ListActionViewMode
+    sorting?: LibrarySorting
+    itemWidth?: number
+    density?: "dense" | "large"
+    onItemClick?: (id: string) => void
+    withBookActions?: boolean
+    static?: boolean
+  } & ComponentProps<typeof VirtuosoList>) => {
     const windowSize = useWindowSize()
     const theme = useTheme()
     const dynamicNumberOfItems = Math.round(windowSize.width / 200)
@@ -72,7 +38,7 @@ export const BookList = memo(
         : 1
     const adjustedRatioWhichConsiderBottom =
       theme.custom.coverAverageRatio - 0.1
-    const { itemHeight, itemMargin } = useListItemHeight({
+    const { itemHeight } = useListItemHeight({
       density,
       viewMode,
     })
@@ -87,9 +53,19 @@ export const BookList = memo(
       (index: number, item: string, { size }: { size: number }) => {
         const isLast = index === size - 1
 
+        const commonProps = {
+          bookId: item,
+          onItemClick,
+          enableActions: withBookActions,
+        }
+
         return viewMode === "grid" || viewMode === "horizontal" ? (
-          <BookListGridItem
-            bookId={item}
+          /**
+           * For vertical mode, we still want to limit the height
+           */
+          <BookCard
+            {...commonProps}
+            mode="vertical"
             style={{
               ...(viewMode === "horizontal" && {
                 height: "100%",
@@ -102,38 +78,54 @@ export const BookList = memo(
                 width: "100%",
               }),
             }}
+            p={1}
           />
         ) : viewMode === "list" ? (
-          <ItemListContainer isLast={isLast} height={itemHeight}>
-            <BookListListItem
-              bookId={item}
-              itemHeight={(itemHeight || 0) - itemMargin}
-              onItemClick={onItemClick}
-              withDrawerActions={withBookActions}
-              pl={1}
-            />
-          </ItemListContainer>
+          /**
+           * For horizontal mode, we still want to limit the height
+           */
+          <BookCard
+            {...commonProps}
+            mode="horizontal"
+            height={itemHeight || 0}
+            sx={{
+              pb: isLast ? 2 : 1,
+            }}
+          />
         ) : (
-          <ItemListContainer isLast={isLast} borders height={itemHeight}>
-            <BookListCompactItem
-              bookId={item}
-              itemHeight={(itemHeight || 0) - itemMargin}
-              onItemClick={onItemClick}
-              withDrawerActions={withBookActions}
-              pl={1}
-            />
-          </ItemListContainer>
+          /**
+           * Compact mode leverage auto height of the BookCard.
+           * Feature from virtuoso.
+           */
+          <BookCard
+            {...commonProps}
+            mode="compact"
+            sx={{
+              ...(!isLast && {
+                borderBottom: "1px solid",
+                borderColor: "grey.200",
+              }),
+              pb: isLast ? 2 : 1,
+            }}
+          />
         )
       },
       [
         adjustedRatioWhichConsiderBottom,
         viewMode,
         itemHeight,
-        itemMargin,
         onItemClick,
         withBookActions,
         computedItemHeight,
       ],
+    )
+
+    const listElementStyle = useMemo(
+      () => ({
+        paddingLeft: viewMode === "grid" ? theme.spacing(1) : 0,
+        paddingRight: viewMode === "grid" ? theme.spacing(1) : 0,
+      }),
+      [viewMode, theme],
     )
 
     if (isStatic) {
@@ -160,6 +152,7 @@ export const BookList = memo(
         rowRenderer={rowRenderer}
         itemsPerRow={itemsPerRow}
         horizontalDirection={viewMode === "horizontal"}
+        listElementStyle={listElementStyle}
         {...rest}
       />
     )

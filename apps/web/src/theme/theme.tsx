@@ -21,15 +21,32 @@ declare module "@mui/material/styles" {
 }
 
 export const theme = createTheme({
-  palette: {
-    mode: `light`,
-    primary: {
-      light: `#E7835B`,
-      main: "#e16432", // #e16432
-      dark: `#9D4623`,
+  colorSchemes: {
+    dark: {
+      palette: {
+        primary: {
+          light: `#E7835B`,
+          main: "#e16432", // #e16432
+          dark: `#9D4623`,
+        },
+      },
+    },
+    light: {
+      palette: {
+        primary: {
+          light: `#E7835B`,
+          main: "#e16432", // #e16432
+          dark: `#9D4623`,
+        },
+      },
     },
   },
   components: {
+    // MuiAppBar: {
+    //   defaultProps: ({}) => ({
+    //     elevation: 0,
+    //   }),
+    // },
     MuiTabs: {
       styleOverrides: {
         root: ({ theme }) => ({
@@ -147,7 +164,15 @@ export const eInkTheme = createTheme(
       // So we have `transition: none;` everywhere
       create: () => "none",
     },
+    colorSchemes: {
+      light: true,
+      /**
+       * In e-ink mode we want to force light mode as color scheme.
+       */
+      dark: false,
+    },
     palette: {
+      mode: "light",
       text: {
         primary: "#000000",
         secondary: "#000000",

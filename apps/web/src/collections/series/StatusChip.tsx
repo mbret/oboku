@@ -17,6 +17,8 @@ export const StatusChip = memo(
   }: Pick<CollectionMetadata, "status" | "rating"> & ChipProps) => {
     return (
       <Chip
+        variant="filled"
+        color="primary"
         label={
           <Stack direction="row" alignItems="center" gap={1}>
             <Typography variant="caption" lineHeight="inherit" color="inherit">
@@ -44,7 +46,7 @@ export const StatusChip = memo(
                 ? "success"
                 : status === "completed"
                   ? "info"
-                  : "warning"
+                  : "disabled"
             }
           />
         }

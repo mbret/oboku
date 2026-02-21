@@ -9,14 +9,14 @@ import {
   type ListItemProps,
 } from "@mui/material"
 import { LockRounded, MoreVert } from "@mui/icons-material"
-import type { CollectionDocType } from "@oboku/shared"
-import type { DeepReadonlyObject } from "rxdb"
 import { CollectionListItemCover } from "./CollectionListItemCover"
 import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollectionActionsDrawer"
 import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { useCollection } from "../useCollection"
 import { useCollectionDisplayTitle } from "../useCollectionDisplayTitle"
 import { configuration } from "../../config/configuration"
+import { useNavigate } from "react-router"
+import { ROUTES } from "../../navigation/routes"
 
 const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -25,24 +25,27 @@ const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
 export const CollectionListItem = memo(
   ({
     id,
-    onItemClick,
     showType,
     ...rest
   }: {
     id: string
-    onItemClick?: (tag: DeepReadonlyObject<CollectionDocType>) => void
     showType?: boolean
   } & ListItemProps) => {
     const { data: item } = useCollection({
       id,
     })
+    const navigate = useNavigate()
     const metadata = getCollectionComputedMetadata(item)
     const { open: openActionDrawer } = useCollectionActionsDrawer(id)
     const title = useCollectionDisplayTitle(metadata.title)
 
     return (
       <ListItem
-        onClick={() => item && onItemClick && onItemClick(item)}
+        onClick={() => {
+          if (item) {
+            navigate(ROUTES.COLLECTION_DETAILS.replace(":id", item._id))
+          }
+        }}
         component="div"
         disablePadding
         dense

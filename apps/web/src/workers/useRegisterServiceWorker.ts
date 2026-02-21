@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { Logger } from "../debug/logger.shared"
 import {
@@ -76,7 +76,7 @@ export const useRegisterServiceWorker = () => {
     }
   }, [waitingWorker])
 
-  useSubscribe(
+  const sendConfigurationChangeMessage = useCallback(
     () =>
       configuration.pipe(
         distinctUntilKeyChanged("config", isShallowEqual),
@@ -91,8 +91,9 @@ export const useRegisterServiceWorker = () => {
       ),
     [],
   )
+  useSubscribe(sendConfigurationChangeMessage)
 
-  useSubscribe(
+  const sendNotifyAuthMessage = useCallback(
     () =>
       authStateSignal.pipe(
         tap((auth) => {
@@ -101,6 +102,8 @@ export const useRegisterServiceWorker = () => {
       ),
     [],
   )
+
+  useSubscribe(sendNotifyAuthMessage)
 
   return { waitingWorker }
 }

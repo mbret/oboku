@@ -76,7 +76,6 @@ export const UploadBookComponent: ObokuPlugin["UploadBookComponent"] = ({
         </DialogContentText>
         <TextField
           autoFocus
-          id="bookUrl"
           label="Your file url"
           type="text"
           fullWidth

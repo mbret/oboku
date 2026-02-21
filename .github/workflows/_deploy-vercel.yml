@@ -2,6 +2,16 @@ name: deploy-vercel
 
 on:
   workflow_call:
+    inputs:
+      app_directory:
+        description: 'Directory of the app to deploy (e.g., apps/web, apps/landing)'
+        required: true
+        type: string
+      deployment_name:
+        description: 'Name for the deployment job'
+        required: false
+        type: string
+        default: 'production'
     secrets:
       VERCEL_TOKEN:
         required: true
@@ -12,7 +22,7 @@ on:
 
 jobs:
   deploy-production:
-    name: "Deploy production"
+    name: 'Deploy ${{ inputs.deployment_name }}'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +33,16 @@ jobs:
         run: npm ci
       - name: Pull Vercel Environment Information
         run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       - name: Build Project Artifacts
         run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       - name: Deploy Project Artifacts to Vercel
         run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

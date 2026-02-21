@@ -36,15 +36,16 @@ import { libraryStateSignal } from "../../library/books/states"
 import packageJson from "../../../package.json"
 import { toggleDebug } from "../../debug"
 import { useDatabase } from "../../rxdb"
-import { catchError, forkJoin, from, of, switchMap, takeUntil, tap } from "rxjs"
+import { catchError, forkJoin, from, of, switchMap, tap } from "rxjs"
 import { Logger } from "../../debug/logger.shared"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
-import { useSignalValue, useUnmountObservable } from "reactjrx"
+import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../../auth/states.web"
 import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { ROUTES } from "../../navigation/routes"
 import { authorizeAction } from "../../auth/AuthorizeActionDialog"
+import { Page } from "../../common/Page"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -58,14 +59,7 @@ export const ProfileScreen = () => {
   const { mutate: removeAllContents } = useRemoveAllContents()
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flex: 1,
-        overflow: "auto",
-        flexDirection: "column",
-      }}
-    >
+    <Page bottomGutter={false}>
       <TopBarNavigation title={"Profile"} showBack={false} />
       <List>
         <ListSubheader disableSticky>Account</ListSubheader>
@@ -247,7 +241,7 @@ export const ProfileScreen = () => {
         open={isDeleteMyDataDialogOpened}
         onClose={() => setIsDeleteMyDataDialogOpened(false)}
       />
-    </div>
+    </Page>
   )
 }
 
@@ -259,7 +253,6 @@ const DeleteMyDataDialog: FC<{
   const [isBookChecked, setIsBookChecked] = useState(false)
   const [isCollectionChecked, setIsCollectionChecked] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const unMount$ = useUnmountObservable()
   const { db } = useDatabase()
 
   const onSubmit = useCallback(async () => {
@@ -299,11 +292,10 @@ const DeleteMyDataDialog: FC<{
           tap(() => {
             onClose()
           }),
-          takeUntil(unMount$),
         )
         .subscribe()
     }
-  }, [onClose, db, unMount$, isTagChecked, isBookChecked, isCollectionChecked])
+  }, [onClose, db, isTagChecked, isBookChecked, isCollectionChecked])
 
   useEffect(() => {
     void open

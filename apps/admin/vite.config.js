@@ -10,6 +10,9 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
   },
+  build: {
+    minify: false,
+  },
   resolve: {
     alias: {
       "@": resolve(__dirname, "./src"),

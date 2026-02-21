@@ -1,4 +1,3 @@
-import type { LinkDocType } from "@oboku/shared"
 import { plugins } from "../plugins/configure"
 import { useQuery$ } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
@@ -37,27 +36,6 @@ export const useLink = ({ id }: { id?: string }) => {
   })
 }
 
-const mapLinkTtoState = ({ link }: { link?: LinkDocType | null }) => {
-  if (!link) return undefined
-
-  const linkPlugin = plugins.find((plugin) => plugin.type === link.type)
-
-  return {
-    ...link,
-    isSynchronizable: !!linkPlugin?.canSynchronize,
-    isRemovableFromDataSource: isRemovableFromDataSource({ link }),
-  }
-}
-
-export const getLinkState = (
-  links: ReturnType<typeof useLinks>["data"],
-  linkId: string,
-) => {
-  const link = links?.find((link) => link?._id === linkId)
-
-  return mapLinkTtoState({ link })
-}
-
 export const getLinkStateAsync = async ({
   db,
   linkId,
@@ -73,5 +51,15 @@ export const getLinkStateAsync = async ({
     })
     .exec()
 
-  return mapLinkTtoState({ link: link?.toJSON() })
+  const jsonLink = link?.toJSON()
+
+  if (!jsonLink) return undefined
+
+  const linkPlugin = plugins.find((plugin) => plugin.type === jsonLink.type)
+
+  return {
+    ...jsonLink,
+    isSynchronizable: !!linkPlugin?.canSynchronize,
+    isRemovableFromDataSource: isRemovableFromDataSource({ link: jsonLink }),
+  }
 }

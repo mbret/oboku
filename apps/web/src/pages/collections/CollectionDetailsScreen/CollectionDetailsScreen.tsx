@@ -109,6 +109,7 @@ export const CollectionDetailsScreen = () => {
         onMoreClick: openActionDrawer,
       })}
       color="transparent"
+      elevation={0}
       sx={{
         bgcolor: `rgba(255, 255, 255, ${Math.min(1, y / 70)})`,
         borderBottom: `1px solid rgba(0, 0, 0, ${Math.min(1, y / 400)})`,

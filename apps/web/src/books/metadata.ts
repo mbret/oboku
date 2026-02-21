@@ -84,7 +84,9 @@ export const getMetadataFromBook = (
 }
 
 export const useMetadataFromBook = (
-  book?: DeepReadonlyObject<BookDocType & Partial<DeprecatedBookDocType>>,
+  book?: DeepReadonlyObject<
+    BookDocType & Partial<DeprecatedBookDocType>
+  > | null,
 ) => {
   const { metadata, title, creator } = book ?? {}
 

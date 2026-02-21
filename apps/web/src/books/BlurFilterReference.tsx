@@ -1,15 +1,17 @@
 // needs to be global
 import { GlobalStyles } from "@mui/material"
-import { memo } from "react"
+import { memo, useId } from "react"
 
 export const BlurFilterReference = memo(() => {
+  const blurFilterReferenceId = useId()
+
   return (
     <>
       <GlobalStyles
         styles={{
           ".blurFilter": {
-            webkitFilter: `url("#blurFilterReference")`,
-            filter: `url("#blurFilterReference")`,
+            webkitFilter: `url("#${blurFilterReferenceId}")`,
+            filter: `url("#${blurFilterReferenceId}")`,
           },
         }}
       />
@@ -27,7 +29,7 @@ export const BlurFilterReference = memo(() => {
         }}
       >
         <title>Blur filter reference</title>
-        <filter id="blurFilterReference">
+        <filter id={blurFilterReferenceId}>
           <feGaussianBlur stdDeviation="5" />
           <feColorMatrix
             type="matrix"

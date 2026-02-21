@@ -46,7 +46,6 @@ export const RenameCollectionDialog: FC<{
       <DialogContent>
         <TextField
           autoFocus
-          id="name"
           label="Name"
           type="text"
           margin="normal"

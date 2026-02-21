@@ -45,22 +45,20 @@ export class CouchService {
   createNanoInstance = ({ jwtToken }: { jwtToken?: string }) => {
     return createNano({
       url: this.appConfigService.COUCH_DB_URL,
-      requestDefaults: {
-        headers: {
-          "content-type": "application/json",
-          ...(this.appConfigService.config.get("TMP_X_ACCESS_SECRET", {
-            infer: true,
-          }) && {
-            "x-access-secret": this.appConfigService.config.get(
-              "TMP_X_ACCESS_SECRET",
-              { infer: true },
-            ),
-          }),
-          accept: "application/json",
-          ...(jwtToken && {
-            Authorization: `Bearer ${jwtToken}`,
-          }),
-        },
+      headers: {
+        "content-type": "application/json",
+        ...(this.appConfigService.config.get("TMP_X_ACCESS_SECRET", {
+          infer: true,
+        }) && {
+          "x-access-secret": this.appConfigService.config.get(
+            "TMP_X_ACCESS_SECRET",
+            { infer: true },
+          ),
+        }),
+        accept: "application/json",
+        ...(jwtToken && {
+          Authorization: `Bearer ${jwtToken}`,
+        }),
       },
     })
   }

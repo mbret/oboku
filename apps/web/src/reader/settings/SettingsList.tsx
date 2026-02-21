@@ -7,10 +7,17 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material"
-import { setReaderSettingsState, useReaderSettingsState } from "./states"
+import { localSettingsSignal } from "../../settings/useLocalSettings"
+import { useSignalValue } from "reactjrx"
 
 export const SettingsList = () => {
-  const readerSettings = useReaderSettingsState()
+  const readerSettings = useSignalValue(
+    localSettingsSignal,
+    ({ readerFloatingProgress, readerFloatingTime }) => ({
+      readerFloatingProgress,
+      readerFloatingTime,
+    }),
+  )
 
   return (
     <List>
@@ -32,17 +39,19 @@ export const SettingsList = () => {
         secondaryAction={
           <Checkbox
             edge="end"
-            checked={readerSettings.floatingTime === "bottom"}
+            checked={readerSettings.readerFloatingTime === "bottom"}
             disableRipple
           />
         }
       >
         <ListItemButton
           onClick={() => {
-            setReaderSettingsState((state) => ({
+            localSettingsSignal.update((state) => ({
               ...state,
-              floatingTime:
-                state.floatingTime === "bottom" ? undefined : "bottom",
+              readerFloatingTime:
+                state.readerFloatingTime === "bottom"
+                  ? undefined
+                  : ("bottom" as const),
             }))
           }}
         >
@@ -59,17 +68,19 @@ export const SettingsList = () => {
         secondaryAction={
           <Checkbox
             edge="end"
-            checked={readerSettings.floatingProgress === "bottom"}
+            checked={readerSettings.readerFloatingProgress === "bottom"}
             disableRipple
           />
         }
       >
         <ListItemButton
           onClick={() => {
-            setReaderSettingsState((state) => ({
+            localSettingsSignal.update((state) => ({
               ...state,
-              floatingProgress:
-                state.floatingProgress === "bottom" ? undefined : "bottom",
+              readerFloatingProgress:
+                state.readerFloatingProgress === "bottom"
+                  ? undefined
+                  : ("bottom" as const),
             }))
           }}
         >

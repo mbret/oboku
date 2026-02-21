@@ -1,6 +1,5 @@
 import { catchError, defaultIfEmpty, EMPTY, from, map, switchMap } from "rxjs"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
-import { useSyncReplicate } from "../rxdb/replication/useSyncReplicate"
 import { useCollectionIncrementalModify } from "./useCollectionIncrementalModify"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useWithNetwork } from "../common/network/useWithNetwork"
@@ -16,7 +15,6 @@ import { useNotifications } from "../notifications/useNofitications"
 
 export const useRefreshCollectionMetadata = () => {
   const { mutateAsync: updateCollection } = useCollectionIncrementalModify()
-  const { mutateAsync: sync } = useSyncReplicate()
   const getRefreshMetadataPluginData = usePluginRefreshMetadata()
   const withNetwork = useWithNetwork()
   const { notifyError } = useNotifications()
@@ -49,7 +47,6 @@ export const useRefreshCollectionMetadata = () => {
                       lastMetadataStartedAt: new Date().toISOString(),
                     }),
                   ).pipe(
-                    switchMap(() => from(sync([db.obokucollection]))),
                     switchMap(() =>
                       from(
                         httpClientApi.refreshCollectionMetadata(

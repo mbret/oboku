@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import screenfull from "screenfull"
 import { Logger } from "../../debug/logger.shared"
 import {
@@ -25,7 +25,7 @@ const isPermissionCheckFailedError = (error: unknown): error is TypeError =>
     error.message === "Fullscreen request denied")
 
 export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
-  useSubscribe(() => {
+  const fullscreenOnMount = useCallback(() => {
     if (enabled && screenfull.isEnabled && !screenfull.isFullscreen) {
       return defer(() => {
         return from(screenfull.request(undefined, { navigationUI: "hide" }))
@@ -70,6 +70,8 @@ export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
 
     return EMPTY
   }, [enabled])
+
+  useSubscribe(fullscreenOnMount)
 
   useEffect(() => {
     return () => {

@@ -13,7 +13,9 @@ export interface EnvironmentVariables {
   TMP_X_ACCESS_SECRET?: string
   COMICVINE_API_KEY?: string
   JWT_PRIVATE_KEY_FILE: string
-  JWT_PUBLIC_KEY_FILE: string
+  JWT_PRIVATE_KEY?: string
+  JWT_PUBLIC_KEY_FILE?: string
+  JWT_PUBLIC_KEY?: string
   API_DATA_DIR: string
   COVERS_BUCKET_NAME?: string
   COVERS_STORAGE_STRATEGY: "s3" | "fs"

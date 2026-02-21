@@ -1,7 +1,5 @@
 import { defineConfig } from "@chakra-ui/react"
-
 import { defaultConfig } from "@chakra-ui/react"
-
 import { createSystem } from "@chakra-ui/react"
 
 export const defaultSystem = createSystem(defaultConfig)

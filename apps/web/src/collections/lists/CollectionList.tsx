@@ -1,8 +1,6 @@
 import { useCallback, memo, type ComponentProps } from "react"
 import { List, Stack, useTheme } from "@mui/material"
 import { CollectionListItem } from "./CollectionListItem"
-import type { CollectionDocType } from "@oboku/shared"
-import type { DeepReadonlyObject } from "rxdb"
 import { useWindowSize } from "react-use"
 import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
@@ -11,12 +9,10 @@ export const CollectionList = memo(
   ({
     viewMode,
     data,
-    onItemClick,
     static: isStatic,
     slotProps,
     ...rest
   }: {
-    onItemClick?: (item: DeepReadonlyObject<CollectionDocType>) => void
     viewMode?: ListActionViewMode
     static?: boolean
     slotProps?: {
@@ -43,7 +39,6 @@ export const CollectionList = memo(
       (_: number, item: string) => (
         <CollectionListItem
           id={item}
-          onItemClick={onItemClick}
           style={{
             ...(viewMode === "horizontal"
               ? {
@@ -58,7 +53,7 @@ export const CollectionList = memo(
           {...listItemProps}
         />
       ),
-      [onItemClick, viewMode, coverRatio, listItemProps],
+      [viewMode, coverRatio, listItemProps],
     )
 
     if (isStatic) {

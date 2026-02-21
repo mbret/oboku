@@ -14,6 +14,7 @@ import {
   ThumbDownOutlined,
   ThumbUpOutlined,
   SyncRounded,
+  CheckRounded,
 } from "@mui/icons-material"
 import { useSignalValue } from "reactjrx"
 import {
@@ -30,6 +31,9 @@ import { useRemoveCollection } from "../useRemoveCollection"
 import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 import { useCollection } from "../useCollection"
 import { configuration } from "../../config/configuration"
+// import { useRefreshBookMetadata } from "../../books/useRefreshBookMetadata"
+import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
+import { useMarkBookAsFinished } from "../../books/useMarkBookAs"
 
 export const CollectionActionsDrawer = memo(() => {
   const { openedWith, lastId: collectionId } = useSignalValue(
@@ -42,9 +46,11 @@ export const CollectionActionsDrawer = memo(() => {
   const { mutate: removeCollection } = useRemoveCollection()
   const [isManageBookDialogOpened, setIsManageBookDialogOpened] =
     useState(false)
+  // const refreshBookMetadata = useRefreshBookMetadata()
   const { mutate: refreshCollectionMetadata } = useRefreshCollectionMetadata()
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
   const { mutate: updateCollectionBooks } = useUpdateCollectionBooks()
+  const markBookAsFinished = useMarkBookAsFinished()
   const { closeModalWithNavigation } = useModalNavigationControl(
     {
       onExit: () => {
@@ -60,6 +66,13 @@ export const CollectionActionsDrawer = memo(() => {
     openedWith,
   )
   const { data: collection } = useCollection({ id: collectionId })
+  const collectionReadingProgress = useCollectionReadingProgress({
+    id: collectionId,
+  })
+  const isCollectionFinished =
+    collectionReadingProgress !== undefined
+      ? collectionReadingProgress >= 1
+      : undefined
 
   const onRemoveCollection = (id: string) => {
     closeModalWithNavigation()
@@ -92,6 +105,55 @@ export const CollectionActionsDrawer = memo(() => {
             </ListItemIcon>
             <ListItemText primary="Rename" />
           </ListItemButton>
+
+          <ListItemButton
+            onClick={() => {
+              setIsManageBookDialogOpened(true)
+            }}
+          >
+            <ListItemIcon>
+              <LibraryAddRounded />
+            </ListItemIcon>
+            <ListItemText primary="Manage books" />
+          </ListItemButton>
+          {collection &&
+            collection._id !== configuration.COLLECTION_EMPTY_ID && (
+              <ListItemButton
+                onClick={() => {
+                  refreshCollectionMetadata(collectionId ?? ``)
+                }}
+                disabled={isRefreshingMetadata}
+              >
+                <ListItemIcon>
+                  <SyncRounded />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    isRefreshingMetadata
+                      ? "Refreshing metadata..."
+                      : "Refresh metadata"
+                  }
+                />
+              </ListItemButton>
+            )}
+        </List>
+        <Divider />
+        <List>
+          {isCollectionFinished !== undefined && !isCollectionFinished && (
+            <ListItemButton
+              onClick={() => {
+                closeModalWithNavigation()
+                collection?.books.forEach((id) => {
+                  markBookAsFinished(id)
+                })
+              }}
+            >
+              <ListItemIcon>
+                <CheckRounded />
+              </ListItemIcon>
+              <ListItemText primary="Mark all books as finished" />
+            </ListItemButton>
+          )}
           <ListItemButton
             onClick={() => {
               closeModalWithNavigation()
@@ -128,36 +190,19 @@ export const CollectionActionsDrawer = memo(() => {
             </ListItemIcon>
             <ListItemText primary="Mark all books as interested" />
           </ListItemButton>
-          <ListItemButton
+          {/* <ListItemButton
             onClick={() => {
-              setIsManageBookDialogOpened(true)
+              closeModalWithNavigation()
+              collection?.books.forEach((id) => {
+                refreshBookMetadata(id)
+              })
             }}
           >
             <ListItemIcon>
-              <LibraryAddRounded />
+              <SyncRounded />
             </ListItemIcon>
-            <ListItemText primary="Manage books" />
-          </ListItemButton>
-          {collection &&
-            collection._id !== configuration.COLLECTION_EMPTY_ID && (
-              <ListItemButton
-                onClick={() => {
-                  refreshCollectionMetadata(collectionId ?? ``)
-                }}
-                disabled={isRefreshingMetadata}
-              >
-                <ListItemIcon>
-                  <SyncRounded />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    isRefreshingMetadata
-                      ? "Refreshing metadata..."
-                      : "Refresh metadata"
-                  }
-                />
-              </ListItemButton>
-            )}
+            <ListItemText primary="Refresh all books metadata" />
+          </ListItemButton> */}
         </List>
         <Divider />
         <List>

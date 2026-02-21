@@ -1,13 +1,5 @@
-import {
-  Box,
-  type BoxProps,
-  Chip,
-  Stack,
-  Typography,
-  useTheme,
-} from "@mui/material"
+import { Box, Chip, Stack, Typography, useTheme } from "@mui/material"
 import { type FC, memo } from "react"
-import { useDefaultItemClickHandler } from "./helpers"
 import { useBook, useIsBookProtected } from "../states"
 import { ReadingStateState } from "@oboku/shared"
 import {
@@ -23,73 +15,45 @@ import {
   ThumbDownOutlined,
 } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
-import { BookListCoverContainer } from "./BookListCoverContainer"
+import { BookCoverCard } from "../BookCoverCard"
 import { getMetadataFromBook } from "../metadata"
 import { useBookDownloadState } from "../../download/states"
 
-export const BookListListItem: FC<
-  {
-    bookId: string
-    onItemClick?: (id: string) => void
-    isSelected?: (id: string) => boolean
-    size?: "small" | "large"
-    itemHeight?: number
-    withDrawerActions?: boolean
-    withCover?: boolean
-    withAuthors?: boolean
-    withDownloadIcons?: boolean
-  } & BoxProps
-> = memo(
+export const BookCardHorizontal: FC<{
+  bookId: string
+  isSelected?: (id: string) => boolean
+  size?: "small" | "large"
+  withDrawerActions?: boolean
+  withCover?: boolean
+  withAuthors?: boolean
+  withDownloadIcons?: boolean
+}> = memo(
   ({
     bookId,
-    onItemClick,
     size = "large",
-    itemHeight,
     withDrawerActions = true,
     withCover = true,
     withAuthors = true,
     withDownloadIcons = false,
-    ...rest
   }) => {
     const { data: book } = useBook({
       id: bookId,
     })
-    const onDefaultItemClick = useDefaultItemClickHandler()
     const theme = useTheme()
-    const computedHeight = itemHeight || (size === "small" ? 50 : 100)
-    const coverWidth = computedHeight * theme.custom.coverAverageRatio
     const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected } = useIsBookProtected(book)
-
     const metadata = getMetadataFromBook(book)
 
     return (
-      <Box
-        onClick={() => {
-          if (onItemClick) return onItemClick(bookId)
-          return onDefaultItemClick(bookId)
-        }}
-        style={{
-          display: "flex",
-          overflow: "hidden",
-          height: computedHeight,
-          cursor: "pointer",
-          flexGrow: 1,
-        }}
-        {...rest}
-      >
+      <>
         {withCover && (
-          <BookListCoverContainer
+          <BookCoverCard
             bookId={bookId}
             style={{
-              position: "relative",
-              display: "flex",
-              flex: `0 0 ${coverWidth}px`,
-              minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
+              marginRight: theme.spacing(1),
             }}
             withBadges={false}
             withReadingProgressStatus={false}
-            mr={1}
           />
         )}
         <Stack
@@ -211,7 +175,7 @@ export const BookListListItem: FC<
             <MoreVert />
           </Stack>
         )}
-      </Box>
+      </>
     )
   },
 )

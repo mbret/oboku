@@ -1,7 +1,7 @@
-import { Box, Stack, Typography, useTheme } from "@mui/material"
+import { Box, Chip, Stack, Typography, useTheme } from "@mui/material"
 import { memo } from "react"
 import { useCollectionCoverUri } from "../../../collections/useCollectionCoverUri"
-import { useLocalSettings } from "../../../settings/states"
+import { useLocalSettings } from "../../../settings/useLocalSettings"
 import { useCollection } from "../../../collections/useCollection"
 import coverPlaceholder from "../../../assets/cover-placeholder.jpg"
 import CollectionBgSvg from "../../../assets/series-bg.svg"
@@ -10,7 +10,8 @@ import { useCollectionComputedMetadata } from "../../../collections/useCollectio
 
 export const Header = memo(({ id }: { id: string }) => {
   const theme = useTheme()
-  const { useOptimizedTheme } = useLocalSettings()
+  const { themeMode } = useLocalSettings()
+  const useOptimizedTheme = themeMode === "e-ink"
   const { data: collection } = useCollection({
     id,
   })
@@ -60,8 +61,7 @@ export const Header = memo(({ id }: { id: string }) => {
           height="100%"
           width="100%"
           sx={{
-            background:
-              "linear-gradient(to bottom,rgb(255 255 255 / 0.7) 10%, rgb(255 255 255 / 1) 100%)",
+            background: `linear-gradient(to bottom, color-mix(in srgb, ${theme.palette.background.default} 70%, transparent) 10%, ${theme.palette.background.default} 100%)`,
           }}
         />
       )}
@@ -103,14 +103,23 @@ export const Header = memo(({ id }: { id: string }) => {
             {`${collection?.books?.length || 0} book(s)`}
           </Typography>
           {collection?.type === "series" && (
-            <StatusChip
-              rating={metadata.rating}
-              status={metadata.status}
-              sx={{
-                bgcolor: "transparent",
-              }}
-            />
+            <Stack direction="row" gap={1} alignItems="center">
+              <Typography variant="body2">Publisher:</Typography>
+              {metadata.publisherName && (
+                <Chip size="small" label={metadata.publisherName} />
+              )}
+            </Stack>
           )}
+          <Stack direction="row" gap={1} alignItems="center">
+            {!!metadata.startYear && (
+              <Typography variant="caption" fontWeight="bold">
+                {metadata.startYear}
+              </Typography>
+            )}
+            {collection?.type === "series" && (
+              <StatusChip rating={metadata.rating} status={metadata.status} />
+            )}
+          </Stack>
         </Stack>
       </Stack>
     </Stack>

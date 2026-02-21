@@ -22,13 +22,16 @@ const swallowGoogleError = async <T>(promise: Promise<T>) => {
 export const fetchMetadata = async (
   metadata: { title: string; year?: string },
   {
-    withGoogle,
+    sources,
     comicVineApiKey,
-  }: { googleApiKey?: string; withGoogle: boolean; comicVineApiKey?: string },
+  }: {
+    comicVineApiKey: undefined | string
+    sources: CollectionMetadata["type"][]
+  },
 ): Promise<CollectionMetadata[]> => {
   const list = []
 
-  if (withGoogle) {
+  if (sources.includes("googleBookApi")) {
     const google = await swallowGoogleError(getGoogleSeriesMetadata())
 
     if (google) {
@@ -36,16 +39,28 @@ export const fetchMetadata = async (
     }
   }
 
-  const [biblioreads, comicvine, mangaupdates, mangadex] = await Promise.all([
-    getSeriesMetadata(metadata),
-    !comicVineApiKey
+  const biblioreadsPromise = sources.includes("biblioreads")
+    ? getSeriesMetadata(metadata)
+    : Promise.resolve(undefined)
+  const comicVinePromise =
+    !comicVineApiKey || !sources.includes("comicvine")
       ? Promise.resolve(undefined)
       : getComicVineSeriesMetadata({
           ...metadata,
           comicVineApiKey,
-        }),
-    getMangaUpdatesSeriesMetadata(metadata),
-    getMangadexSeriesMetadata(metadata),
+        })
+  const mangaupdatesPromise = sources.includes("mangaupdates")
+    ? getMangaUpdatesSeriesMetadata(metadata)
+    : Promise.resolve(undefined)
+  const mangadexPromise = sources.includes("mangadex")
+    ? getMangadexSeriesMetadata(metadata)
+    : Promise.resolve(undefined)
+
+  const [biblioreads, comicvine, mangaupdates, mangadex] = await Promise.all([
+    biblioreadsPromise,
+    comicVinePromise,
+    mangaupdatesPromise,
+    mangadexPromise,
   ])
 
   if (biblioreads) {

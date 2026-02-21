@@ -40,11 +40,19 @@ export class AppConfigService {
   }
 
   get JWT_PRIVATE_KEY_FILE() {
-    return this.config.getOrThrow("JWT_PRIVATE_KEY_FILE", { infer: true })
+    return this.config.get("JWT_PRIVATE_KEY_FILE", { infer: true })
+  }
+
+  get JWT_PRIVATE_KEY() {
+    return this.config.get("JWT_PRIVATE_KEY", { infer: true })
   }
 
   get JWT_PUBLIC_KEY_FILE() {
-    return this.config.getOrThrow("JWT_PUBLIC_KEY_FILE", { infer: true })
+    return this.config.get("JWT_PUBLIC_KEY_FILE", { infer: true })
+  }
+
+  get JWT_PUBLIC_KEY() {
+    return this.config.get("JWT_PUBLIC_KEY", { infer: true })
   }
 
   get METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS() {

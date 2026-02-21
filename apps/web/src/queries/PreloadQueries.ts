@@ -1,5 +1,5 @@
 import { memo, useEffect, useState } from "react"
-import { useSettings } from "../settings/helpers"
+import { useSettings } from "../settings/useSettings"
 import { useLiveRef } from "reactjrx"
 import { useLibraryBooks } from "../library/books/useLibraryBooks"
 import { useLibraryShelves } from "../library/shelves/useLibraryShelves"

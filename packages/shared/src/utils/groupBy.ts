@@ -23,10 +23,8 @@ export function groupBy<T>(
   for (const item of collection) {
     const key = getKey(item) // Generate the key using the iteratee or property name
     if (result[key]) {
-      // @ts-ignore
       result[key].push(item) // Add item to the existing key array
     } else {
-      // @ts-ignore
       result[key] = [item] // Initialize the key with a new array containing the item
     }
   }

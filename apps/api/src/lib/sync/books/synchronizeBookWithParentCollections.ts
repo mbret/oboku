@@ -62,11 +62,15 @@ export const synchronizeBookWithParentCollections = async (
       )
 
       await Promise.all(
-        collectionsThatHaveNotThisBookAsReferenceYet.map((collection) => {
-          helpers.atomicUpdate("obokucollection", collection._id, (old) => ({
-            ...old,
-            books: [...old.books.filter((id) => id !== book._id), book._id],
-          }))
+        collectionsThatHaveNotThisBookAsReferenceYet.map(async (collection) => {
+          await helpers.atomicUpdate(
+            "obokucollection",
+            collection._id,
+            (old) => ({
+              ...old,
+              books: [...old.books.filter((id) => id !== book._id), book._id],
+            }),
+          )
 
           context.syncReport.addBooksToCollection({
             collection,

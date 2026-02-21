@@ -14,7 +14,7 @@ import {
 } from "@mui/material"
 import type React from "react"
 import { useCallback, useMemo, useRef, useState } from "react"
-import { generatePath, Link, useNavigate, useSearchParams } from "react-router"
+import { generatePath, Link, useSearchParams } from "react-router"
 import { useMount } from "react-use"
 import { BookList } from "../books/bookList/BookList"
 import { CollectionList } from "../collections/lists/CollectionList"
@@ -25,7 +25,6 @@ import { useBooksForSearch } from "../search/useBooksForSearch"
 import { ListActionsToolbar } from "../search/list/ListActionsToolbar"
 import { searchStateSignal } from "../search/states"
 import { configuration } from "../config/configuration"
-import { ROUTES } from "../navigation/routes"
 
 const Accordion = styled(MuiAccordion)({
   ":before": {
@@ -86,7 +85,6 @@ export const SearchScreen = () => {
   const { data: collections = [] } = useCollectionsForSearch(value)
   const { data: books = [] } = useBooksForSearch(value)
   const inputRef = useRef<HTMLElement>(undefined)
-  const navigate = useNavigate()
   const [bookExpanded, setBookExpanded] = useState(true)
   const [collectionsExpanded, setCollectionsExpanded] = useState(true)
 
@@ -154,7 +152,6 @@ export const SearchScreen = () => {
           <AccordionSummary
             expandIcon={<ExpandMore />}
             aria-controls="panel1a-content"
-            id="panel1a-header"
           >
             <Typography>Books ({books.length ?? 0})</Typography>
           </AccordionSummary>
@@ -210,9 +207,6 @@ export const SearchScreen = () => {
                   data={visibleCollections}
                   viewMode="list"
                   static
-                  onItemClick={({ _id }) => {
-                    navigate(ROUTES.COLLECTION_DETAILS.replace(":id", _id))
-                  }}
                 />
                 {(collections.length ?? 0) >
                   configuration.SEARCH_MAX_PREVIEW_ITEMS && (

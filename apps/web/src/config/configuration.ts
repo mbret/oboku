@@ -105,14 +105,6 @@ class Configuration extends BehaviorSubject<{
     return import.meta.env.VITE_FIREBASE_CONFIG
   }
 
-  get READER_NOTIFICATION_TIME_TO_SCREEN() {
-    return 2000
-  }
-
-  get READER_NOTIFICATION_THROTTLE_TIME() {
-    return 300
-  }
-
   get SEARCH_MAX_PREVIEW_ITEMS() {
     return 8
   }

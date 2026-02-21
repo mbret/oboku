@@ -37,6 +37,7 @@ type UseDownloadHook = (options: {
 }) => (params: {
   link: LinkDocType
   onDownloadProgress: (progress: number) => void
+  signal: AbortSignal
 }) => Observable<{
   data: Blob | File | ReadableStream<StreamValue>
   name?: string
@@ -131,7 +132,7 @@ export type ObokuPlugin<
       title: string
     } & Pick<DOMAttributes<any>, "onDragLeave">
   >
-  AddDataSource?: FunctionComponent<{
+  DataSourceForm?: FunctionComponent<{
     control: Control<DataSourceFormData, any, DataSourceFormData>
     watch: UseFormWatch<DataSourceFormData>
   }>
@@ -154,6 +155,7 @@ export type ObokuPlugin<
   useDownloadBook?: UseDownloadHook
   useRemoveBook?: UseRemoveBook | undefined
   useSyncSourceInfo?: UseSyncSourceInfo<T>
+  useSignOut?: () => (() => void) | undefined
 }
 
 export const extractIdFromResourceId = (

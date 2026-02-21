@@ -96,10 +96,12 @@ export const LibraryFiltersDrawer: FC<{
             </ListItemButton>
             <ListItemButton
               onClick={() =>
-                libraryStateSignal.setValue((state) => ({
+                libraryStateSignal.update((state) => ({
                   ...state,
                   isNotInterested:
-                    library.isNotInterested === "only" ? "hide" : "only",
+                    library.isNotInterested === "only"
+                      ? ("hide" as const)
+                      : ("only" as const),
                 }))
               }
             >

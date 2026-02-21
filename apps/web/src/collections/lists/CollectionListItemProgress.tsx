@@ -1,5 +1,6 @@
-import { CheckCircleOutlineRounded } from "@mui/icons-material"
+import { CheckOutlined } from "@mui/icons-material"
 import { Box } from "@mui/material"
+import { CoverIconBadge } from "../../books/BookCoverCard"
 
 export const CollectionListItemProgress = ({
   progress,
@@ -22,14 +23,9 @@ export const CollectionListItemProgress = ({
         }}
       />
       {isFinished && (
-        <CheckCircleOutlineRounded
-          sx={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            m: 1,
-          }}
-        />
+        <CoverIconBadge position="absolute" top={0} right={0} m={1}>
+          <CheckOutlined color="primary" />
+        </CoverIconBadge>
       )}
     </>
   )

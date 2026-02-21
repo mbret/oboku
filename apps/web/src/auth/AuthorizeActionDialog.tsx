@@ -16,7 +16,7 @@ import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getSettings } from "../settings/dbHelpers"
 import { CancelError } from "../errors/errors.shared"
 import { validateMasterKey } from "../secrets/useValidateMasterKey"
-import { useSettings } from "../settings/helpers"
+import { useSettings } from "../settings/useSettings"
 import { CancelButton } from "../common/forms/CancelButton"
 
 const FORM_ID = "LockActionBehindUserPasswordDialog"

@@ -13,11 +13,13 @@ export const useWakeLock = () => {
     let wakeLock: PromiseReturnType<typeof navigator.wakeLock.request> | null =
       null
     let mounted = true
+
     const onRelease = () => {
       if (mounted) {
         setActive(false)
       }
     }
+
     ;(async () => {
       if ("wakeLock" in navigator) {
         try {

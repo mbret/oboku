@@ -24,12 +24,7 @@ export const Toolbar = ({
   const library = useSignalValue(libraryStateSignal)
 
   return (
-    <MuiToolbar
-      sx={(theme) => ({
-        borderBottom: `1px solid ${theme.palette.grey[200]}`,
-        boxSizing: "border-box",
-      })}
-    >
+    <MuiToolbar>
       <IconButton
         edge="start"
         onClick={onFilterClick}

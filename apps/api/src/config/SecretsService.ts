@@ -15,10 +15,18 @@ export class SecretsService {
     }
 
     try {
-      this.jwtPrivateKey = await fs.promises.readFile(
-        this.appConfig.JWT_PRIVATE_KEY_FILE,
-        "utf8",
-      )
+      if (this.appConfig.JWT_PRIVATE_KEY) {
+        this.jwtPrivateKey = atob(this.appConfig.JWT_PRIVATE_KEY)
+      } else if (this.appConfig.JWT_PRIVATE_KEY_FILE) {
+        this.jwtPrivateKey = await fs.promises.readFile(
+          this.appConfig.JWT_PRIVATE_KEY_FILE,
+          "utf8",
+        )
+      } else {
+        throw new Error(
+          "Neither JWT_PRIVATE_KEY nor JWT_PRIVATE_KEY_FILE is defined",
+        )
+      }
 
       return this.jwtPrivateKey
     } catch (error) {
@@ -34,15 +42,23 @@ export class SecretsService {
     }
 
     try {
-      this.jwtPublicKey = await fs.promises.readFile(
-        this.appConfig.JWT_PUBLIC_KEY_FILE,
-        "utf8",
-      )
+      if (this.appConfig.JWT_PUBLIC_KEY) {
+        this.jwtPublicKey = atob(this.appConfig.JWT_PUBLIC_KEY)
+      } else if (this.appConfig.JWT_PUBLIC_KEY_FILE) {
+        this.jwtPublicKey = await fs.promises.readFile(
+          this.appConfig.JWT_PUBLIC_KEY_FILE,
+          "utf8",
+        )
+      } else {
+        throw new Error(
+          "Neither JWT_PUBLIC_KEY nor JWT_PUBLIC_KEY_FILE is defined",
+        )
+      }
 
       return this.jwtPublicKey
     } catch (error) {
       throw new Error(
-        `Failed to read JWT public key file: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to read JWT public key: ${error instanceof Error ? error.message : "Unknown error"}`,
       )
     }
   }

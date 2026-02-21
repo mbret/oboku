@@ -1,51 +1,25 @@
-import { type ComponentProps, type FC, memo } from "react"
-import { Box, Typography, styled } from "@mui/material"
+import { memo } from "react"
+import { Box, Typography } from "@mui/material"
 import { MoreVert } from "@mui/icons-material"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 import { useBook } from "../states"
-import { useDefaultItemClickHandler } from "./helpers"
-import { BookListCoverContainer } from "./BookListCoverContainer"
+import { BookCoverCard } from "../BookCoverCard"
 import { getMetadataFromBook } from "../metadata"
 
-const ContainerBox = styled(Box)`
-  cursor: pointer;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: ${({ theme }) => theme.spacing(1)};
-  -webkit-tap-highlight-color: transparent;
-`
-
-export const BookListGridItem: FC<
-  {
-    bookId: string
-    onItemClick?: (id: string) => void
-  } & ComponentProps<typeof ContainerBox>
-> = memo(({ bookId, onItemClick, ...rest }) => {
+export const BookCardVertical = memo(({ bookId }: { bookId: string }) => {
   const { data: item } = useBook({
     id: bookId,
   })
-  const onDefaultItemClick = useDefaultItemClickHandler()
-
   const metadata = getMetadataFromBook(item)
 
   return (
-    <ContainerBox
-      key={item?._id}
-      onClick={() => {
-        if (onItemClick) return onItemClick(bookId)
-        return onDefaultItemClick(bookId)
-      }}
-      {...rest}
-    >
-      <BookListCoverContainer
+    <>
+      <BookCoverCard
         bookId={bookId}
         style={{
-          position: "relative",
-          display: "flex",
+          // overwrite aspect ratio and force to take all the available space
+          // aspect ratio is set to the broader card.
           flex: 1,
-          // marginTop: theme.spacing(1),
-          minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
         }}
         size="medium"
         withBadges
@@ -87,6 +61,6 @@ export const BookListGridItem: FC<
           }}
         />
       </Box>
-    </ContainerBox>
+    </>
   )
 })

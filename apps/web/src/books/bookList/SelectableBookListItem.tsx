@@ -1,12 +1,9 @@
 import { Box, Typography, useTheme } from "@mui/material"
 import type React from "react"
 import { memo } from "react"
-import { useEnrichedBookState } from "../states"
-import { BookListCoverContainer } from "./BookListCoverContainer"
+import { useBook } from "../states"
+import { BookCoverCard } from "../BookCoverCard"
 import { Checkbox } from "../../common/Checkbox"
-import { booksDownloadStateSignal } from "../../download/states"
-import { useProtectedTagIds, useTagsByIds } from "../../tags/helpers"
-import { useSignalValue } from "reactjrx"
 import { getMetadataFromBook } from "../metadata"
 
 export const SelectableBookListItem = memo(
@@ -27,12 +24,7 @@ export const SelectableBookListItem = memo(
     selected: boolean
     padding?: number
   }) => {
-    const book = useEnrichedBookState({
-      bookId,
-      normalizedBookDownloadsState: useSignalValue(booksDownloadStateSignal),
-      protectedTagIds: useProtectedTagIds().data,
-      tags: useTagsByIds().data,
-    })
+    const { data: book } = useBook({ id: bookId })
     const theme = useTheme()
     const computedHeight = itemHeight
     const coverWidth = `calc((${computedHeight}px - ${theme.spacing(padding / 2)} * 2) *
@@ -55,13 +47,10 @@ export const SelectableBookListItem = memo(
         px={padding}
         py={padding / 2}
       >
-        <BookListCoverContainer
+        <BookCoverCard
           bookId={bookId}
           style={{
-            position: "relative",
-            display: "flex",
             flex: `0 0 ${coverWidth}`,
-            minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
           }}
           withBadges={false}
           withReadingProgressStatus={false}

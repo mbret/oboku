@@ -20,7 +20,7 @@ export const NewDataSourceScreen = memo(() => {
   const { goBack } = useSafeGoBack()
   const { data: tags } = useTags()
   const plugin = plugins.find((p) => p.type.toLowerCase() === id?.toLowerCase())
-  const PluginAddDataSource = plugin?.AddDataSource ?? (() => null)
+  const PluginAddDataSource = plugin?.DataSourceForm ?? (() => null)
   const { mutate: createDataSource } = useCreateDataSource()
   const { notify, notifyError } = useNotifications()
   const {

@@ -1,5 +1,5 @@
 import { useSignalValue } from "reactjrx"
-import { localSettingsSignal } from "../settings/states"
+import { localSettingsSignal } from "../settings/useLocalSettings"
 import { directives } from "@oboku/shared"
 
 export const useCollectionDisplayTitle = (title?: string) => {

@@ -12,6 +12,7 @@ import {
   throttle,
 } from "rxjs"
 import { isShallowEqual, mapKeysTo } from "@prose-reader/core"
+import { useCallback } from "react"
 
 export const useSyncBookProgress = (bookId: string) => {
   const { db } = useDatabase()
@@ -61,7 +62,7 @@ export const useSyncBookProgress = (bookId: string) => {
       }).pipe(defaultIfEmpty(null)),
   })
 
-  useSubscribe(() => {
+  const syncBookProgress = useCallback(() => {
     if (!reader) return EMPTY
 
     return reader.pagination.state$.pipe(
@@ -72,4 +73,6 @@ export const useSyncBookProgress = (bookId: string) => {
       }),
     )
   }, [mutateAsync, reader, bookId])
+
+  useSubscribe(syncBookProgress)
 }

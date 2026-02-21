@@ -1,16 +1,23 @@
 /* google Picker overwrite to have it fullscreen and mobile friendly */
 .picker-dialog {
+  /* biome-ignore lint/complexity/noImportantStyles: Expected */
   z-index: 3000 !important;
   height: 100%;
   width: 100%;
 }
 .picker-dialog {
+  /* biome-ignore lint/complexity/noImportantStyles: Expected */
   height: 100% !important;
+  /* biome-ignore lint/complexity/noImportantStyles: Expected */
   width: 100% !important;
+  /* biome-ignore lint/complexity/noImportantStyles: Expected */
   left: 0 !important;
 }
 .picker-dialog-content {
+  /* biome-ignore lint/complexity/noImportantStyles: Expected */
   height: 100% !important;
+  /* biome-ignore lint/complexity/noImportantStyles: Expected */
   width: 100% !important;
+  /* biome-ignore lint/complexity/noImportantStyles: Expected */
   left: 0 !important;
 }

@@ -2,7 +2,6 @@ import { isDebugEnabled } from "./isDebugEnabled.shared"
 import "./reporting"
 
 if (isDebugEnabled()) {
-  // @ts-ignore
   window.__PROSE_READER_DEBUG = true
 }
 

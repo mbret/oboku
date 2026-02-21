@@ -1,4 +1,4 @@
-import { Module, OnModuleInit } from "@nestjs/common"
+import { Logger, Module, OnModuleInit } from "@nestjs/common"
 import { AppConfigService } from "src/config/AppConfigService"
 import { StorageService } from "./storage.service"
 import fs from "node:fs"
@@ -9,6 +9,8 @@ import fs from "node:fs"
   exports: [],
 })
 export class StorageModule implements OnModuleInit {
+  private logger = new Logger(StorageService.name)
+
   constructor(private configService: AppConfigService) {}
 
   /**
@@ -21,6 +23,10 @@ export class StorageModule implements OnModuleInit {
 
     // make sure to cleanup on each restart
     fs.rmSync(this.configService.TMP_DIR, { recursive: true, force: true })
+
+    this.logger.log(
+      `Creating TMP_DIR_BOOKS folder ${this.configService.TMP_DIR_BOOKS}`,
+    )
 
     fs.mkdirSync(this.configService.TMP_DIR_BOOKS, { recursive: true })
   }

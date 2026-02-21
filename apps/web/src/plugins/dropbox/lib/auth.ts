@@ -2,25 +2,25 @@ import { DropboxAuth } from "dropbox"
 import { ObokuPluginError } from "../../../errors/errors.shared"
 import { ROUTES } from "../../../navigation/routes"
 import { configuration } from "../../../config/configuration"
+import { signal } from "reactjrx"
 
 const defaultWindowOptions = {
   toolbar: "no",
   menubar: "no",
 }
 
-const dropboxAuth = new DropboxAuth({
-  clientId: configuration.DROPBOX_CLIENT_ID,
-})
+export const dropboxAuthSignal = signal<DropboxAuth | undefined>({})
 
 configuration.subscribe(() => {
   if (configuration.DROPBOX_CLIENT_ID) {
-    dropboxAuth.setClientId(configuration.DROPBOX_CLIENT_ID)
+    dropboxAuthSignal.getValue()?.setClientId(configuration.DROPBOX_CLIENT_ID)
   }
 })
 
 const isAccessTokenStillSufficient = () => {
-  const accessTokenExpiresAt: Date | undefined =
-    dropboxAuth.getAccessTokenExpiresAt()
+  const accessTokenExpiresAt: Date | undefined = dropboxAuthSignal
+    .getValue()
+    ?.getAccessTokenExpiresAt()
   const currentTime = Date.now()
   const hours =
     Math.abs((accessTokenExpiresAt?.getTime() || 0) - currentTime) / 36e5
@@ -48,6 +48,14 @@ export const authUser = ({
       let timedOut = false
       let listenToPopupCloseInterval: ReturnType<typeof setInterval>
       let listenToPopupTimeoutTimeout: ReturnType<typeof setTimeout>
+
+      const dropboxAuth =
+        dropboxAuthSignal.getValue() ??
+        new DropboxAuth({
+          clientId: configuration.DROPBOX_CLIENT_ID,
+        })
+
+      dropboxAuthSignal.update(dropboxAuth)
 
       // when there is at least an hour left of authentication, the server should be able
       // to handle it without for even long sync. Otherwise we should ask user credentials again

@@ -29,7 +29,7 @@ export const isShallowEqual = <T = any, R = any>(
     customEqual?: <T>(a: T, b: T) => boolean
   },
 ): boolean => {
-  // @ts-ignore
+  // @ts-expect-error
   if (objectA === objectB) {
     return true
   }
@@ -54,7 +54,7 @@ export const isShallowEqual = <T = any, R = any>(
 
   for (let i = 0; i < keysA.length; i++) {
     const key = keysA[i] || ``
-    // @ts-ignore
+    // @ts-expect-error
     if (!hasOwn.call(objectB, key) || !isEqual(objectA[key], objectB[key])) {
       return false
     }

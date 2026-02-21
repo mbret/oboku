@@ -15,10 +15,9 @@ import { findOne } from "src/lib/couch/findOne"
 import { atomicUpdate } from "src/lib/couch/dbHelpers"
 import { CoversService } from "src/covers/covers.service"
 
-export const processrefreshMetadata = async (
+export const processRefreshMetadata = async (
   collection: CollectionDocType,
   {
-    googleApiKey,
     db,
     data,
     soft,
@@ -98,6 +97,8 @@ export const processrefreshMetadata = async (
     linkMetadataInfo?.name ?? "",
   )
 
+  console.log(linkMetadataInfo?.name, directivesFromLink)
+
   // for nwo we can only make a series through directives
   const collectionType = directivesFromLink.series ? "series" : "shelve"
 
@@ -110,11 +111,21 @@ export const processrefreshMetadata = async (
 
   const year = directivesFromLink.year ?? userStartYear
 
-  const externalMetadatas =
+  const metadataSourceOnly = directivesFromLink.metadataSourceOnly as
+    | CollectionMetadata["type"]
+    | undefined
+  const medatadataSources: CollectionMetadata["type"][] = metadataSourceOnly
+    ? [metadataSourceOnly]
+    : ["googleBookApi", "biblioreads", "comicvine", "mangaupdates", "mangadex"]
+
+  const externalMetadata =
     collectionType === "series"
       ? await fetchMetadata(
           { title, year: year ? String(year) : undefined },
-          { withGoogle: true, googleApiKey, comicVineApiKey },
+          {
+            comicVineApiKey,
+            sources: medatadataSources,
+          },
         )
       : []
 
@@ -137,7 +148,7 @@ export const processrefreshMetadata = async (
 
   const userMetadata =
     currentCollection.metadata?.filter((entry) => entry.type === "user") ?? []
-  const metadata = [...userMetadata, ...externalMetadatas, linkMetadata]
+  const metadata = [...userMetadata, ...externalMetadata, linkMetadata]
 
   // cannot be done in // since metadata status will trigger cover refresh
   await saveOrUpdateCover(

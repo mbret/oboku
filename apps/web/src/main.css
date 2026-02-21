@@ -16,5 +16,6 @@ body,
 
 /* fix https://stackoverflow.com/questions/75428722/a-horizontal-scrollbar-appears-after-logging-in-with-google-one-tap-on-mobile-de */
 #g_a11y_announcement {
+  /* biome-ignore lint/complexity/noImportantStyles: Expected */
   top: 0 !important;
 }

@@ -59,9 +59,7 @@ it("should handle non-object values correctly", () => {
 })
 
 it("should handle deep merging with undefined values", () => {
-  // @ts-ignore
   const obj = { a: undefined, b: 2 }
-  // @ts-ignore
   const source = { a: 3, b: undefined }
   const result = mergeWith(obj, source, () => undefined)
   expect(result).toEqual({ a: 3, b: 2 })

@@ -32,7 +32,12 @@ WORKDIR /usr/src/app/apps/admin
 
 FROM nginx:alpine AS admin
 WORKDIR /usr/src/app
+# Copy the runtime injection script into the container
+COPY apps/admin/env.sh /docker-entrypoint.d/env.sh
+RUN dos2unix /docker-entrypoint.d/env.sh
+RUN chmod +x /docker-entrypoint.d/env.sh
 COPY --from=admin-build /usr/src/app/apps/admin/dist /usr/share/nginx/html
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
 
 FROM node:22 AS web-build

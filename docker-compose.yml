@@ -20,7 +20,7 @@ services:
       - oboku-couchdb-config:/opt/couchdb/etc/local.d
 
   postgres:
-    image: postgres
+    image: postgres:17
     restart: always
     env_file:
       - .env
@@ -32,6 +32,8 @@ services:
   web:
     image: mbret/oboku-web
     restart: always
+    env_file:
+      - .env
     ports:
       - "80:80"
 
@@ -40,6 +42,10 @@ services:
     restart: always
     ports:
       - "3003:80"
+    environment:
+      - ASSET_DIR=/usr/share/nginx/html
+      - APP_PREFIX=VITE_
+      - VITE_API_URL=http://localhost:3000
 
   api:
     image: mbret/oboku-api

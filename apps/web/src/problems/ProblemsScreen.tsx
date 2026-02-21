@@ -33,7 +33,7 @@ export const ProblemsScreen = memo(() => {
   const { booksWithDanglingCollections, booksWithDanglingLinks } =
     useFixableBooks()
   const { mutate: repair } = useRepair()
-  const collections = useObserve(
+  const { data: collections } = useObserve(
     () => latestDatabase$.pipe(switchMap((db) => db.obokucollection.find().$)),
     [],
   )

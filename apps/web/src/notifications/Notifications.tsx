@@ -12,8 +12,8 @@ export type AppNotification = {
 
 export const notificationsSubject = new Subject<AppNotification>()
 
-export const NotificationsProvider = memo(() => {
-  const notification = useObserve(
+export const Notifications = memo(() => {
+  const { data: notification } = useObserve(
     () =>
       notificationsSubject.pipe(
         concatMap((notification) => {

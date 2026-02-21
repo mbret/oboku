@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react"
-import { SIGNAL_RESET, useLiveRef, useSignalValue } from "reactjrx"
+import { SIGNAL_RESET, useSignalValue } from "reactjrx"
 import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
 import { createReader } from "@prose-reader/core"
 import { galleryEnhancer } from "@prose-reader/enhancer-gallery"
+import { searchEnhancer } from "@prose-reader/enhancer-search"
 import { readerSignal } from "./states"
-import { useReaderSettingsState } from "./settings/states"
-import { localSettingsSignal } from "../settings/states"
+import { localSettingsSignal } from "../settings/useLocalSettings"
 import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
 import { webStreamer } from "./streamer/webStreamer"
 import { from } from "rxjs"
 import { refitEnhancer } from "@prose-reader/enhancer-refit"
 
 export const createAppReader = refitEnhancer(
-  galleryEnhancer(gesturesEnhancer(createReader)),
+  galleryEnhancer(gesturesEnhancer(searchEnhancer(createReader))),
 )
 
 export const useCreateReader = ({
@@ -23,8 +23,6 @@ export const useCreateReader = ({
   bookId: string
 }) => {
   const [isCreated, setIsCreated] = useState(false)
-  const readerSettings = useReaderSettingsState()
-  const readerSettingsLiveRef = useLiveRef(readerSettings)
   const reader = useSignalValue(readerSignal)
 
   useEffect(() => {
@@ -36,15 +34,14 @@ export const useCreateReader = ({
       setIsCreated(true)
 
       const instance = createAppReader({
-        ...(localSettingsSignal.getValue().useOptimizedTheme && {
+        ...(localSettingsSignal.getValue().themeMode === "e-ink" && {
           pageTurnAnimation: "none",
         }),
         gestures: {
-          ...(localSettingsSignal.getValue().useOptimizedTheme && {
+          ...(localSettingsSignal.getValue().themeMode === "e-ink" && {
             panNavigation: "swipe",
           }),
         },
-        fontScale: readerSettingsLiveRef.current?.fontScale ?? 1,
         ...(isUsingWebStreamer && {
           getResource: (item) => {
             const resourcePath = getResourcePathFromUrl(item.href)
@@ -59,19 +56,19 @@ export const useCreateReader = ({
         }),
       })
 
-      // @ts-ignore
+      // @ts-expect-error
       window.reader = instance
 
-      readerSignal.setValue(instance)
+      readerSignal.update(instance)
     }
-  }, [isUsingWebStreamer, isCreated, readerSettingsLiveRef, bookId])
+  }, [isUsingWebStreamer, isCreated, bookId])
 
   useEffect(() => {
     if (reader) {
       return () => {
         reader.destroy()
 
-        readerSignal.setValue(SIGNAL_RESET)
+        readerSignal.update(SIGNAL_RESET)
       }
     }
   }, [reader])

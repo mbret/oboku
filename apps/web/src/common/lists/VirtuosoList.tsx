@@ -16,6 +16,7 @@ import {
   type ContextProp,
   type GridItemProps,
   type GridListProps,
+  type ListProps,
   type StateCallback,
   Virtuoso,
   VirtuosoGrid,
@@ -40,6 +41,7 @@ export const VirtuosoList = memo(
     renderHeader,
     itemsPerRow = 1,
     style,
+    listElementStyle,
     data = [],
     rowRenderer,
     restoreScrollId,
@@ -50,6 +52,7 @@ export const VirtuosoList = memo(
   }: {
     renderHeader?: () => React.ReactNode | ReactElement
     style?: React.CSSProperties
+    listElementStyle?: React.CSSProperties
     data?: string[]
     itemsPerRow?: number
     restoreScrollId?: string
@@ -82,17 +85,23 @@ export const VirtuosoList = memo(
     const GridListComponent = useMemo(
       () =>
         forwardRef<HTMLDivElement, GridListProps & ContextProp<Context>>(
-          ({ children, ...props }, ref) => {
-            let _ref = ref
+          ({ children, style, ...props }, ref) => {
+            const _ref = ref
 
             return (
-              <Stack ref={_ref} flexWrap="wrap" direction="row" {...props}>
+              <Stack
+                ref={_ref}
+                flexWrap="wrap"
+                direction="row"
+                style={{ ...style, ...listElementStyle }}
+                {...props}
+              >
                 {children}
               </Stack>
             )
           },
         ),
-      [],
+      [listElementStyle],
     )
 
     const GridItem = useMemo(
@@ -138,11 +147,21 @@ export const VirtuosoList = memo(
       }),
       [renderHeader, GridItem, GridListComponent],
     )
+
+    const ListComponent = useMemo(
+      () =>
+        ({ style, ...props }: ListProps & ContextProp<Context>) => {
+          return <Box style={{ ...style, ...listElementStyle }} {...props} />
+        },
+      [listElementStyle],
+    )
+
     const listComponents = useMemo(
       () => ({
         Header: renderHeader,
+        List: ListComponent,
       }),
-      [renderHeader],
+      [renderHeader, ListComponent],
     )
 
     const _onScroll = useCallback(

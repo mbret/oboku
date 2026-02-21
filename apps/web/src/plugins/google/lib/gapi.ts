@@ -2,6 +2,7 @@ import { signal, useSignalValue, useSwitchMutation$ } from "reactjrx"
 import { catchError, combineLatest, defer, from, map, mergeMap } from "rxjs"
 import { GapiNotAvailableError } from "./errors"
 import { loadScript, retryOnFailure } from "../../../common/scripts"
+import { configuration } from "../../../config/configuration"
 
 const ID = "oboku-google-api-script"
 
@@ -66,7 +67,7 @@ const initClient = () =>
   defer(() =>
     from(
       window.gapi.client.init({
-        apiKey: "AIzaSyBgTV-RQecG_TFwilsdUJXqKmeXEiNSWUg",
+        apiKey: configuration.GOOGLE_API_KEY,
         discoveryDocs: [
           "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
         ],
@@ -83,7 +84,7 @@ export const useLoadGapi = () => {
         src: "https://apis.google.com/js/api.js",
       }).pipe(
         catchError((error) => {
-          gapiSignal.setValue((state) => ({
+          gapiSignal.update((state) => ({
             ...state,
             error: "Error while loading script",
           }))

@@ -1,24 +1,60 @@
 #!/bin/bash
+
+# ==============================================================================
+# CouchDB JWT Configuration Script
+# ==============================================================================
+#
+# WHAT:
+# This script configures CouchDB to support JWT (JSON Web Token) authentication.
+# It injects the RSA public key into the CouchDB configuration file.
+#
+# WHY:
+# To enable CouchDB to validate JWT tokens signed by the backend application.
+# This allows for stateless authentication where CouchDB trusts tokens issued
+# by the API service, granting access based on token claims.
+#
+# HOW:
+# 1. Checks for public key in environment variables:
+#    - JWT_PUBLIC_KEY (base64 encoded content)
+#    - OR JWT_PUBLIC_KEY_FILE (path to file)
+# 2. Ensures the CouchDB local configuration file exists.
+# 3. Reads the public key and escapes newlines for INI compatibility.
+# 4. Appends the [jwt_keys] section with the formatted public key to
+#    /opt/couchdb/etc/local.d/docker.ini if not already present.
+#
+# ==============================================================================
+
 set -e
 
 
 # Debug: Print environment variables to check if they're available
 echo "DEBUG: JWT_PRIVATE_KEY_FILE = ${JWT_PRIVATE_KEY_FILE}"
 echo "DEBUG: JWT_PUBLIC_KEY_FILE = ${JWT_PUBLIC_KEY_FILE}"
+if [ -n "$JWT_PUBLIC_KEY" ]; then echo "DEBUG: JWT_PUBLIC_KEY is set"; else echo "DEBUG: JWT_PUBLIC_KEY is not set"; fi
+if [ -n "$JWT_PRIVATE_KEY" ]; then echo "DEBUG: JWT_PRIVATE_KEY is set"; else echo "DEBUG: JWT_PRIVATE_KEY is not set"; fi
 
 # Define paths
 CONFIG_FILE="/opt/couchdb/etc/local.d/docker.ini"
-PUBLIC_KEY_FILE="${JWT_PUBLIC_KEY_FILE}"
 
-# Check if environment variables are set
-if [ -z "$PUBLIC_KEY_FILE" ]; then
-  echo "ERROR: JWT key file environment variables not set. Please define JWT_PRIVATE_KEY_FILE and JWT_PUBLIC_KEY_FILE."
+# Determine source of the public key
+if [ -n "$JWT_PUBLIC_KEY" ]; then
+  echo "Using JWT_PUBLIC_KEY from environment variable (base64)..."
+  # Create a temporary file to store the decoded key
+  PUBLIC_KEY_FILE="/tmp/jwt_public_key.pem"
+  # Decode base64 to file
+  echo "$JWT_PUBLIC_KEY" | base64 -d > "$PUBLIC_KEY_FILE"
+elif [ -n "$JWT_PUBLIC_KEY_FILE" ]; then
+  echo "Using JWT_PUBLIC_KEY_FILE from path: $JWT_PUBLIC_KEY_FILE"
+  PUBLIC_KEY_FILE="$JWT_PUBLIC_KEY_FILE"
+else
+  echo "ERROR: Neither JWT_PUBLIC_KEY (base64) nor JWT_PUBLIC_KEY_FILE (path) environment variables are set."
+  echo "Please define one of them to configure CouchDB JWT authentication."
   exit 1
 fi
 
-# Check if the key files exist
+# Check if the key files exist (validates both file path provided or temp file creation)
 if [ ! -f "$PUBLIC_KEY_FILE" ]; then
-  echo "ERROR: JWT key files not found. Please check the paths in environment variables."
+  echo "ERROR: JWT public key file not found at $PUBLIC_KEY_FILE."
   exit 1
 fi
 

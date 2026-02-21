@@ -16,6 +16,10 @@ export type SettingsDocType = {
     username: string
     passwordAsSecretId: string
   }[]
+  readerGlobalFontScale?: number | null
+  readerMobileFontScale?: number | null
+  readerTabletFontScale?: number | null
+  readerDesktopFontScale?: number | null
 }
 
 type SettingsCollectionMethods = {
@@ -74,6 +78,10 @@ export const settingsSchema: RxJsonSchema<
         required: ["url", "username", "passwordAsSecretId"],
       },
     },
+    readerGlobalFontScale: { type: ["number", "null"] },
+    readerMobileFontScale: { type: ["number", "null"] },
+    readerTabletFontScale: { type: ["number", "null"] },
+    readerDesktopFontScale: { type: ["number", "null"] },
     ...getReplicationProperties(`settings`),
   },
 }

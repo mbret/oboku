@@ -1,20 +1,25 @@
 import {
   Button,
   capitalize,
+  IconButton,
   List,
   ListItem,
   ListItemText,
   Stack,
 } from "@mui/material"
-import { useSignalValue } from "reactjrx"
+import { SIGNAL_RESET, useSignalValue } from "reactjrx"
 import { gapiSignal, useLoadGapi } from "./lib/gapi"
 import { gsiSignal } from "../../google/gsi"
-import { accessTokenSignal, getTokenExpirationDate } from "../../google/auth"
+import {
+  googleAccessTokenSignal,
+  getTokenExpirationDate,
+} from "../../google/auth"
+import { DeleteRounded } from "@mui/icons-material"
 
 export const InfoScreen = () => {
   const gapi = useSignalValue(gapiSignal)
   const gsi = useSignalValue(gsiSignal)
-  const accessToken = useSignalValue(accessTokenSignal)
+  const accessToken = useSignalValue(googleAccessTokenSignal)
   const { mutate } = useLoadGapi()
 
   const createdAtDate = accessToken
@@ -36,13 +41,27 @@ export const InfoScreen = () => {
             secondary={`${capitalize(gsi.state)}.`}
           />
         </ListItem>
-        <ListItem>
+        <ListItem
+          secondaryAction={
+            !accessToken ? undefined : (
+              <IconButton
+                edge="end"
+                aria-label="delete"
+                onClick={() => {
+                  googleAccessTokenSignal.update(SIGNAL_RESET)
+                }}
+              >
+                <DeleteRounded />
+              </IconButton>
+            )
+          }
+        >
           <ListItemText
             primary="Auth token"
             secondary={
               createdAtDate && accessToken
                 ? `Created at ${createdAtDate.toLocaleString()} and expires at ${getTokenExpirationDate(accessToken).toLocaleString()}`
-                : "Not yet created"
+                : "No access token active"
             }
           />
         </ListItem>

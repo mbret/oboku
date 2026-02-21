@@ -47,7 +47,6 @@ export const synchronizeFromDataSource = async (
       helpers,
       item,
       hasCollectionAsParent: false,
-      lvl: 0,
       parents: [],
     })
   }
@@ -58,7 +57,6 @@ export const synchronizeFromDataSource = async (
       helpers,
       item,
       hasCollectionAsParent: false,
-      lvl: 0,
       parents: [],
       config,
       eventEmitter,
@@ -86,17 +84,15 @@ const getItemTags = (item: SynchronizeAbleItem, helpers: Helpers): string[] => {
 const syncTags = async ({
   helpers,
   item,
-  lvl,
   ctx,
 }: {
   ctx: Context
   helpers: Helpers
-  lvl: number
   hasCollectionAsParent: boolean
   item: SynchronizeAbleItem
   parents: SynchronizeAbleItem[]
 }) => {
-  console.log(`syncTags for item ${item.name} and lvl ${lvl}`)
+  console.log(`syncTags for item ${item.name}`)
 
   const tagNames = Array.from(new Set(getItemTags(item, helpers)))
 
@@ -120,7 +116,6 @@ const syncItem = async ({
   helpers,
   hasCollectionAsParent,
   item,
-  lvl,
   parents,
   config,
   eventEmitter,
@@ -128,7 +123,6 @@ const syncItem = async ({
 }: {
   ctx: Context
   helpers: Helpers
-  lvl: number
   hasCollectionAsParent: boolean
   item: SynchronizeAbleItem
   parents: SynchronizeAbleItem[]
@@ -137,12 +131,11 @@ const syncItem = async ({
   coversService: CoversService
 }) => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
-  logger.log(`syncItem ${item.name}: metadata `, metadataForFolder)
+  logger.log(`syncItem ${item.name}: metadata `)
 
   const isCollection =
     isFolder(item) &&
     !hasCollectionAsParent &&
-    lvl > 0 &&
     !metadataForFolder.isNotACollection
 
   if (metadataForFolder.isIgnored) {
@@ -177,7 +170,6 @@ const syncItem = async ({
           await syncItem({
             ctx,
             helpers,
-            lvl: lvl + 1,
             hasCollectionAsParent: isCollection,
             item: subItem,
             parents: [...parents, item],

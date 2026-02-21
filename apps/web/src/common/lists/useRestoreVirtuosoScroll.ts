@@ -60,7 +60,7 @@ export const useRestoreVirtuosoScroll = ({
                 viewport: { height: 0, width: 0 },
                 scrollTop: (scrollEvent.target as HTMLDivElement).scrollTop,
               },
-              type: "grid",
+              type: "grid" as const,
             },
           }))
         } else {
@@ -72,7 +72,7 @@ export const useRestoreVirtuosoScroll = ({
                 scrollTop: (scrollEvent.target as HTMLDivElement).scrollTop,
                 scrollLeft: (scrollEvent.target as HTMLDivElement).scrollLeft,
               },
-              type: "list",
+              type: "list" as const,
             },
           }))
         }

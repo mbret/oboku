@@ -34,15 +34,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
   return (
     <List
       dense
-      subheader={
-        <ListSubheader
-          sx={{
-            px: [null, 3],
-          }}
-        >
-          Metadata Sources
-        </ListSubheader>
-      }
+      subheader={<ListSubheader disableGutters>Metadata Sources</ListSubheader>}
       disablePadding
     >
       {types.map((type) => {
@@ -55,12 +47,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
           : 0
 
         return (
-          <ListItemButton
-            key={type}
-            sx={{
-              px: [null, 3],
-            }}
-          >
+          <ListItemButton key={type} disableGutters>
             <ListItemIcon>
               {type === "file" && <PlagiarismOutlined />}
               {type === "link" && <InsertLinkOutlined />}
