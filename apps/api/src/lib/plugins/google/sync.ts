@@ -89,8 +89,6 @@ export const getSynchronizeAbleDataSourceFromItems = async ({
   const files = await Promise.all(items.map(getFileMetadata))
   const tree = buildTree(files)
 
-  console.log(files, tree)
-
   const asSynchronizeAbleItem = (file: TreeNode): SynchronizeAbleItem => {
     if (isFolder(file)) {
       return {
