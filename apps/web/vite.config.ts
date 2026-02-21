@@ -7,6 +7,7 @@ import path from "node:path"
 
 export default defineConfig(({ mode }) => ({
   build: {
+    // Keep source maps in production for error logging (stack traces). Excluded from PWA precache via globIgnores.
     sourcemap: true,
     minify: mode !== "development",
     emptyOutDir: true,
@@ -73,11 +74,11 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*"],
         globIgnores: [
           "**/node_modules/**/*",
-          // sourcemap will be uploaded on reporting service directly
-          "**/*.{js.map}",
+          // Exclude source maps from precache (not needed offline; main bundle map is ~21 MB)
+          "**/*.js.map",
+          "**/*.css.map",
         ],
-        // sources map are really massive, they will be optimized when served by server
-        maximumFileSizeToCacheInBytes: 20e6, // 19 MB limit
+        maximumFileSizeToCacheInBytes: 2 * 1024 * 1024, // 2 MiB; large assets (e.g. maps) excluded via globIgnores
       },
       srcDir: "src",
       filename: "service-worker.ts",
