@@ -131,7 +131,7 @@ const syncItem = async ({
   coversService: CoversService
 }) => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
-  logger.log(`syncItem ${item.name}: metadata `, metadataForFolder)
+  logger.log(`syncItem ${item.name}: metadata `)
 
   const isCollection =
     isFolder(item) &&
