@@ -9,6 +9,7 @@ import {
   EMPTY,
   from,
   noop,
+  skip,
   throttle,
 } from "rxjs"
 import { isShallowEqual, mapKeysTo } from "@prose-reader/core"
@@ -66,6 +67,8 @@ export const useSyncBookProgress = (bookId: string) => {
     if (!reader) return EMPTY
 
     return reader.pagination.state$.pipe(
+      // skip initial state
+      skip(1),
       mapKeysTo(["beginCfi", "percentageEstimateOfBook"]),
       distinctUntilChanged(isShallowEqual),
       throttle((data) => from(mutateAsync({ bookId, ...data }).catch(noop)), {
