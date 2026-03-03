@@ -53,7 +53,7 @@ WORKDIR /usr/src/app
 COPY --from=web-build /usr/src/app/apps/web/dist /usr/share/nginx/html
 CMD ["nginx", "-g", "daemon off;"]
 
-FROM couchdb AS couchdb
+FROM couchdb:3.5.1 AS couchdb
 COPY ./apps/couchdb/config/default.ini /opt/couchdb/etc/default.d/oboku.ini
 COPY ./apps/couchdb/update-secrets.sh /usr/local/bin/
 
@@ -62,7 +62,7 @@ RUN echo '#!/bin/sh\n\
 # Run your custom script first\n\
 if [ -f /usr/local/bin/update-secrets.sh ]; then\n\
   echo "Running update-secrets.sh..."\n\
-  /usr/local/bin/update-secrets.sh || echo "Warning: update-secrets.sh exited with non-zero status: $?"\n\
+  /usr/local/bin/update-secrets.sh || { status=$?; echo "ERROR: update-secrets.sh exited with non-zero status: ${status}"; exit "${status}"; }\n\
 fi\n\
 \n\
 # Then execute the original entrypoint with all arguments\n\
