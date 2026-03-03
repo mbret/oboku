@@ -37,7 +37,7 @@
     "lint-staged": "^16.1.5",
     "rollup-plugin-analyzer": "^4.0.0",
     "typescript": "^5.9.2",
-    "vercel": "^48.2.0",
+    "vercel": "^50.25.6",
     "vitest": "^4.0.8",
     "webpack-node-externals": "^3.0.0"
   },
