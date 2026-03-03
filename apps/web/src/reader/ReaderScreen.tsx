@@ -6,17 +6,17 @@ import { Reader } from "./Reader"
 import { MoreDialog } from "./navigation/MoreDialog"
 import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
 import { isMenuShownStateSignal, readerSignal } from "./states"
-import { SIGNAL_RESET } from "reactjrx"
+import { SIGNAL_RESET, SignalContextProvider } from "reactjrx"
 
 export const ReaderScreen = memo(() => {
   const { bookId } = useParams<{ bookId?: string }>()
 
   return (
-    <>
+    <SignalContextProvider>
       {bookId && <Reader bookId={bookId} />}
       <MoreDialog bookId={bookId} />
       <Effects bookId={bookId} />
-    </>
+    </SignalContextProvider>
   )
 })
 

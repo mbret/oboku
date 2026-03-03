@@ -11,29 +11,36 @@ import {
 } from "@mui/material"
 import { TabContext, TabList, TabPanel } from "@mui/lab"
 import { FiberManualRecordRounded } from "@mui/icons-material"
-import React, { memo, useCallback } from "react"
+import React, { memo } from "react"
 import { DialogTopBar } from "../../navigation/DialogTopBar"
 import { usePagination, readerSignal } from "../states"
 import { SettingsList } from "../settings/SettingsList"
-import { signal, useObserve, useSignalValue } from "reactjrx"
+import {
+  useObserve,
+  useSetSignal,
+  useSignalValue,
+  virtualSignal,
+} from "reactjrx"
 import { useCurrentPages } from "../pagination/useCurrentPages"
 
-const isContentsDialogOpenedStateSignal = signal<boolean>({
+const isContentsDialogOpenedStateSignal = virtualSignal<boolean>({
   key: "isContentsDialogOpenedState",
   default: false,
 })
 
-export const useMoreDialog = () => ({
-  toggleMoreDialog: useCallback(() => {
-    isContentsDialogOpenedStateSignal.setValue((val) => !val)
-  }, []),
-})
+export const useMoreDialog = () => {
+  const update = useSetSignal(isContentsDialogOpenedStateSignal)
+
+  return {
+    toggle: () => update((val) => !val),
+  }
+}
 
 export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
   const isContentsDialogOpened = useSignalValue(
     isContentsDialogOpenedStateSignal,
   )
-  const { toggleMoreDialog } = useMoreDialog()
+  const { toggle: toggleMoreDialog } = useMoreDialog()
   const theme = useTheme()
   const [value, setValue] = React.useState("toc")
   const reader = useSignalValue(readerSignal)

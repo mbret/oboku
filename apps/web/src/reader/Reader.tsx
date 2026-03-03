@@ -36,7 +36,7 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   )
   const { globalFontScale, updateGlobalFontScale } = useSettingsFormValues()
   const { goBack } = useSafeGoBack()
-  const { toggleMoreDialog } = useMoreDialog()
+  const { toggle: toggleMoreDialog } = useMoreDialog()
   const { mutate } = useShowRemoveBookOnExitDialog({
     bookId,
     onSettled: () => {
