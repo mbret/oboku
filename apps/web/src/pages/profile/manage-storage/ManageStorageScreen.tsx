@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react"
-import { TopBarNavigation } from "../navigation/TopBarNavigation"
+import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
 import {
   ListItem,
   List,
@@ -18,19 +18,19 @@ import {
   ImageRounded,
   StorageRounded,
 } from "@mui/icons-material"
-import { useStorageUse } from "../settings/useStorageUse"
-import { BookList } from "../books/bookList/BookList"
-import { bookActionDrawerSignal } from "../books/drawer/BookActionsDrawer"
-import { useDownloadedFilesInfo } from "../download/useDownloadedFilesInfo"
-import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
+import { useStorageUse } from "../../../settings/useStorageUse"
+import { BookList } from "../../../books/bookList/BookList"
+import { bookActionDrawerSignal } from "../../../books/drawer/BookActionsDrawer"
+import { useDownloadedFilesInfo } from "../../../download/useDownloadedFilesInfo"
+import { useRemoveDownloadFile } from "../../../download/useRemoveDownloadFile"
 import { difference } from "@oboku/shared"
 import Alert from "@mui/material/Alert"
-import { Logger } from "../debug/logger.shared"
+import { Logger } from "../../../debug/logger.shared"
 import { useEffect } from "react"
-import { useRemoveCoversInCache } from "../covers/useRemoveCoversInCache"
-import { useDownloadedBooks } from "../download/useDownloadedBooks"
-import { useBooks } from "../books/states"
-import { useRemoveAllDownloads } from "../settings/useRemoveAllDownloads"
+import { useRemoveCoversInCache } from "../../../covers/useRemoveCoversInCache"
+import { useDownloadedBooks } from "../../../download/useDownloadedBooks"
+import { useBooks } from "../../../books/states"
+import { useRemoveAllDownloads } from "../../../settings/useRemoveAllDownloads"
 
 export const ManageStorageScreen = () => {
   const books = useDownloadedBooks()
@@ -40,8 +40,14 @@ export const ManageStorageScreen = () => {
     () => visibleBooks?.map((item) => item._id) ?? [],
     [visibleBooks],
   )
-  const { quotaUsed, quotaInGb, usedInMb, covers, coversWightInMb } =
-    useStorageUse([books])
+  const {
+    quotaUsed,
+    quotaInGb,
+    usedInMb,
+    covers,
+    coversWightInMb,
+    refreshStorageEstimate,
+  } = useStorageUse()
   const { mutate: removeCoversInCache } = useRemoveCoversInCache()
   const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
   const { data: downloadedBooks = [], refetch: refetchDownloadedFilesInfo } =
@@ -78,8 +84,10 @@ export const ManageStorageScreen = () => {
 
   useEffect(() => {
     void books
+
+    refreshStorageEstimate()
     refetchDownloadedFilesInfo()
-  }, [books, refetchDownloadedFilesInfo])
+  }, [books, refreshStorageEstimate, refetchDownloadedFilesInfo])
 
   return (
     <>
@@ -106,7 +114,6 @@ export const ManageStorageScreen = () => {
                 >{`${usedInMb} MB used of ${quotaInGb} GB (${(
                   quotaUsed * 100
                 ).toFixed(2)}%)`}</Typography>
-                {/* <Typography variant="body2" color="textSecondary"><b>{bytesToMb(bookSize)} MB used by books</b></Typography> */}
               </div>
             }
           />
