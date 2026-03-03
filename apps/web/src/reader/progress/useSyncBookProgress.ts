@@ -1,81 +1,124 @@
 import { useReader } from "../states"
 import { ReadingStateState } from "@oboku/shared"
-import { useDatabase } from "../../rxdb"
-import { useMutation$, useSubscribe } from "reactjrx"
+import { useSubscribe } from "reactjrx"
 import {
-  defaultIfEmpty,
-  defer,
+  auditTime,
+  catchError,
+  concatMap,
   distinctUntilChanged,
   EMPTY,
+  filter,
   from,
-  noop,
+  map,
+  merge,
+  share,
   skip,
-  throttle,
 } from "rxjs"
 import { isShallowEqual, mapKeysTo } from "@prose-reader/core"
 import { useCallback } from "react"
+import { useIncrementalBookModify } from "../../books"
+
+const SYNC_BOOK_PROGRESS_INTERVAL_MS = 1000
+
+const normalizeProgress = (progress: number | undefined) => {
+  if (typeof progress !== "number") {
+    return undefined
+  }
+
+  return Number(progress.toFixed(4))
+}
 
 export const useSyncBookProgress = (bookId: string) => {
-  const { db } = useDatabase()
   const reader = useReader()
-
-  const { mutateAsync } = useMutation$({
-    mutationFn: (params: {
-      bookId: string
-      beginCfi: string | undefined
-      percentageEstimateOfBook: number | undefined
-    }) =>
-      defer(() => {
-        const updateBook = async () => {
-          if (!db) return
-
-          const book = await db?.book
-            .findOne({ selector: { _id: params.bookId } })
-            .exec()
-
-          await book?.incrementalModify((old) => {
-            return {
-              ...old,
-              // cfi will be undefined at the beginning until pagination stabilize
-              ...(params.beginCfi && {
-                readingStateCurrentBookmarkLocation: params.beginCfi || null,
-              }),
-              readingStateCurrentBookmarkProgressUpdatedAt:
-                new Date().toISOString(),
-              ...(old.readingStateCurrentState !==
-                ReadingStateState.Finished && {
-                readingStateCurrentState: ReadingStateState.Reading,
-                ...(params.percentageEstimateOfBook === 1 && {
-                  readingStateCurrentState: ReadingStateState.Finished,
-                }),
-              }),
-              ...(typeof params.percentageEstimateOfBook === "number" && {
-                readingStateCurrentBookmarkProgressPercent:
-                  params.percentageEstimateOfBook,
-              }),
-            }
-          })
-
-          return undefined
-        }
-
-        return from(updateBook())
-      }).pipe(defaultIfEmpty(null)),
-  })
+  const { mutateAsync: incrementalBookModify } = useIncrementalBookModify()
 
   const syncBookProgress = useCallback(() => {
     if (!reader) return EMPTY
 
-    return reader.pagination.state$.pipe(
+    const bookProgress$ = reader.pagination.state$.pipe(
       // skip initial state
       skip(1),
       mapKeysTo(["beginCfi", "percentageEstimateOfBook"]),
+      map((value) => ({
+        ...value,
+        percentageEstimateOfBook: normalizeProgress(
+          value.percentageEstimateOfBook,
+        ),
+      })),
       distinctUntilChanged(isShallowEqual),
-      throttle((data) => from(mutateAsync({ bookId, ...data }).catch(noop)), {
-        trailing: true,
+      share(),
+    )
+
+    const syncOnInterval$ = bookProgress$.pipe(
+      filter((data) => data.percentageEstimateOfBook !== 1),
+      auditTime(SYNC_BOOK_PROGRESS_INTERVAL_MS),
+    )
+
+    const syncWhenFinished$ = bookProgress$.pipe(
+      filter((data) => data.percentageEstimateOfBook === 1),
+    )
+
+    return merge(syncOnInterval$, syncWhenFinished$).pipe(
+      concatMap((params) => {
+        const promise = incrementalBookModify({
+          doc: bookId,
+          mutationFn: (old) => {
+            const hasBookmarkLocation = Boolean(params.beginCfi)
+            const hasProgress =
+              typeof params.percentageEstimateOfBook === "number"
+            const nextReadingState =
+              old.readingStateCurrentState === ReadingStateState.Finished
+                ? ReadingStateState.Finished
+                : params.percentageEstimateOfBook === 1
+                  ? ReadingStateState.Finished
+                  : ReadingStateState.Reading
+
+            const didBookmarkLocationChange =
+              hasBookmarkLocation &&
+              old.readingStateCurrentBookmarkLocation !== params.beginCfi
+            const didProgressChange =
+              hasProgress &&
+              old.readingStateCurrentBookmarkProgressPercent !==
+                params.percentageEstimateOfBook
+            const didReadingStateChange =
+              old.readingStateCurrentState !== nextReadingState
+
+            if (
+              !didBookmarkLocationChange &&
+              !didProgressChange &&
+              !didReadingStateChange
+            ) {
+              return old
+            }
+
+            return {
+              ...old,
+              // cfi will be undefined at the beginning until pagination stabilize
+              ...(didBookmarkLocationChange && {
+                readingStateCurrentBookmarkLocation: params.beginCfi || null,
+              }),
+              readingStateCurrentBookmarkProgressUpdatedAt:
+                new Date().toISOString(),
+              ...(didReadingStateChange && {
+                readingStateCurrentState: nextReadingState,
+              }),
+              ...(didProgressChange && {
+                readingStateCurrentBookmarkProgressPercent:
+                  params.percentageEstimateOfBook,
+              }),
+            }
+          },
+        })
+
+        return from(promise)
+      }),
+      catchError((error) => {
+        console.error(error)
+
+        return EMPTY
       }),
     )
-  }, [mutateAsync, reader, bookId])
+  }, [incrementalBookModify, reader, bookId])
 
   useSubscribe(syncBookProgress)
 }
