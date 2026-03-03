@@ -117,7 +117,6 @@ const Effects = memo(
       containerElement,
       manifest,
     })
-
     useSyncBookProgress(bookId)
 
     return null

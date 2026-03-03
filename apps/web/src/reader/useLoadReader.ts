@@ -15,7 +15,14 @@ export const useLoadReader = ({
 }) => {
   const reader = useSignalValue(readerSignal)
   const isBookLoadedRef = useRef(false)
-  const { data: book } = useBook({ id: bookId })
+  const { data: book } = useBook({
+    id: bookId,
+    enabled: (query) => {
+      const hasNoResultYet = query.state.data === undefined
+
+      return hasNoResultYet
+    },
+  })
 
   useEffect(() => {
     if (

@@ -42,11 +42,13 @@ export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
   )
   const { toggle: toggleMoreDialog } = useMoreDialog()
 
-  if (!isContentsDialogOpened) {
-    return null
-  }
-
-  return <MoreDialogInner bookId={bookId} toggleMoreDialog={toggleMoreDialog} />
+  return (
+    <Dialog onClose={toggleMoreDialog} open={isContentsDialogOpened} fullScreen>
+      {isContentsDialogOpened && (
+        <MoreDialogInner bookId={bookId} toggleMoreDialog={toggleMoreDialog} />
+      )}
+    </Dialog>
+  )
 })
 
 const MoreDialogInner = memo(
@@ -124,38 +126,34 @@ const MoreDialogInner = memo(
 
     return (
       <TabContext value={value}>
-        <Dialog onClose={toggleMoreDialog} open fullScreen>
-          <DialogTopBar title={title} onClose={toggleMoreDialog} />
-          <TabList
-            style={{
-              border: `1px solid ${theme.palette.primary.light}`,
-              borderTop: "none",
-              borderLeft: "none",
-              borderRight: "none",
-            }}
-            onChange={handleChange}
-            indicatorColor="primary"
-          >
-            <Tab label="Chapters" value="toc" />
-            <Tab label="Settings" value="settings" />
-          </TabList>
-          <DialogContent
-            style={{
-              padding: 0,
-            }}
-          >
-            <TabPanel value="toc" sx={{ padding: 0 }}>
-              <List component="nav">
-                {toc.map((tocItem, index) =>
-                  buildTocForItem(tocItem, index, 0),
-                )}
-              </List>
-            </TabPanel>
-            <TabPanel value="settings" sx={{ padding: 0 }}>
-              <SettingsList />
-            </TabPanel>
-          </DialogContent>
-        </Dialog>
+        <DialogTopBar title={title} onClose={toggleMoreDialog} />
+        <TabList
+          style={{
+            border: `1px solid ${theme.palette.primary.light}`,
+            borderTop: "none",
+            borderLeft: "none",
+            borderRight: "none",
+          }}
+          onChange={handleChange}
+          indicatorColor="primary"
+        >
+          <Tab label="Chapters" value="toc" />
+          <Tab label="Settings" value="settings" />
+        </TabList>
+        <DialogContent
+          style={{
+            padding: 0,
+          }}
+        >
+          <TabPanel value="toc" sx={{ padding: 0 }}>
+            <List component="nav">
+              {toc.map((tocItem, index) => buildTocForItem(tocItem, index, 0))}
+            </List>
+          </TabPanel>
+          <TabPanel value="settings" sx={{ padding: 0 }}>
+            <SettingsList />
+          </TabPanel>
+        </DialogContent>
       </TabContext>
     )
   },

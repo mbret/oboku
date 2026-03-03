@@ -10,7 +10,7 @@ import type { DeepReadonlyObject, MangoQuery } from "rxdb"
 import type { DeepReadonlyArray } from "rxdb/dist/types/types"
 import { observeBook, observeBooks } from "./dbHelpers"
 import { libraryStateSignal } from "../library/books/states"
-import type { UseQueryOptions } from "@tanstack/react-query"
+import { skipToken, type UseQueryOptions } from "@tanstack/react-query"
 
 type UseBooksOptions = UseQueryOptions<
   DeepReadonlyObject<BookDocType>[],
@@ -65,27 +65,36 @@ export const useBooks = ({
 
 export const useBook = ({
   id,
-  enabled = true,
+  ...rest
 }: {
   id?: string
-  enabled?: boolean
-}) => {
+} & Omit<
+  UseQueryOptions<
+    DeepReadonlyObject<BookDocType> | null,
+    unknown,
+    DeepReadonlyObject<BookDocType> | null
+  >,
+  "queryKey" | "queryFn"
+>) => {
   return useQuery$({
     queryKey: [`rxdb/bookJSON`, { id }],
-    enabled: enabled && !!id,
-    queryFn: () => {
-      return latestDatabase$.pipe(
-        switchMap((db) =>
-          observeBook({
-            db,
-            queryObj: id,
-          }),
-        ),
-        map((value) => {
-          return value?.toJSON() ?? null
-        }),
-      )
-    },
+    queryFn:
+      id === undefined
+        ? skipToken
+        : () => {
+            return latestDatabase$.pipe(
+              switchMap((db) =>
+                observeBook({
+                  db,
+                  queryObj: id,
+                }),
+              ),
+              map((value) => {
+                return value?.toJSON() ?? null
+              }),
+            )
+          },
+    ...rest,
   })
 }
 
