@@ -1,10 +1,13 @@
 import { authorizeActionObservable } from "../auth/AuthorizeActionDialog"
-import { useMutation$ } from "reactjrx"
+import { useMutation$, type UseMutation$Options } from "reactjrx"
 
-export const useRequestMasterKey = () => {
+export const useRequestMasterKey = (
+  options?: Omit<UseMutation$Options<string>, "mutationFn">,
+) => {
   return useMutation$({
     mutationFn: () => {
       return authorizeActionObservable()
     },
+    ...options,
   })
 }

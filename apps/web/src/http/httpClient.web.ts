@@ -1,10 +1,35 @@
+import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { HttpClient } from "./httpClient.shared"
+import { CancelError } from "../errors/errors.shared"
 
 type XMLHttpResponseError = {
   status: number
   statusText: string
   __xmlerror: true
 }
+
+const parseXmlHttpResponseHeaders = (headers: string) =>
+  headers
+    .trim()
+    .split(/[\r\n]+/)
+    .reduce<Record<string, string>>((acc, line) => {
+      const separatorIndex = line.indexOf(":")
+
+      if (separatorIndex === -1) {
+        return acc
+      }
+
+      const key = line.slice(0, separatorIndex).trim().toLowerCase()
+      const value = line.slice(separatorIndex + 1).trim()
+
+      if (!key) {
+        return acc
+      }
+
+      acc[key] = value
+
+      return acc
+    }, {})
 
 export const isXMLHttpResponseError = (
   error: unknown,
@@ -16,6 +41,7 @@ export const isXMLHttpResponseError = (
 
 export class HttpClientWeb extends HttpClient {
   download = <T>({
+    signal,
     url,
     responseType,
     onDownloadProgress,
@@ -25,51 +51,71 @@ export class HttpClientWeb extends HttpClient {
     responseType: XMLHttpRequestResponseType
     onDownloadProgress: (event: ProgressEvent<EventTarget>) => void
   } & Parameters<typeof fetch>[1]) => {
-    return new Promise<{ data: T; status: number; statusText: string }>(
-      (resolve, reject) => {
-        const xhr = new XMLHttpRequest()
+    return new Promise<{
+      data: T
+      headers: Record<string, string>
+      status: number
+      statusText: string
+    }>((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      const handleAbort = () => {
+        xhr.abort()
+      }
 
-        xhr.open("GET", url)
+      xhr.open("GET", url)
 
-        xhr.responseType = responseType
+      xhr.responseType = responseType
 
-        Object.keys(headers).forEach((key) => {
-          // @ts-expect-error
-          xhr.setRequestHeader(key, headers[key])
-        })
+      Object.keys(headers).forEach((key) => {
+        // @ts-expect-error
+        xhr.setRequestHeader(key, headers[key])
+      })
 
-        xhr.send()
+      signal?.addEventListener("abort", handleAbort, {
+        once: true,
+      })
 
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            const data = xhr.response
-            resolve({ data, status: xhr.status, statusText: xhr.statusText })
-          } else {
-            reject({
-              status: xhr.status,
-              statusText: xhr.statusText,
-              __xmlerror: true,
-            } satisfies XMLHttpResponseError)
-          }
-        }
+      xhr.send()
 
-        xhr.onprogress = onDownloadProgress
+      xhr.onload = () => {
+        signal?.removeEventListener("abort", handleAbort)
 
-        xhr.onerror = () => {
-          // handle non-HTTP error (e.g. network down)
-          /**
-           * Failing with status 0 and text `` after downloading a couple of mb
-           * may indicate a low storage device. It can be detected to display
-           * related error message
-           */
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const data = xhr.response
+          resolve({
+            data,
+            headers: parseXmlHttpResponseHeaders(xhr.getAllResponseHeaders()),
+            status: xhr.status,
+            statusText: xhr.statusText,
+          })
+        } else {
           reject({
             status: xhr.status,
             statusText: xhr.statusText,
             __xmlerror: true,
           } satisfies XMLHttpResponseError)
         }
-      },
-    )
+      }
+
+      xhr.onprogress = onDownloadProgress
+
+      xhr.onerror = () => {
+        signal?.removeEventListener("abort", handleAbort)
+
+        reject(
+          new ObokuSharedError(
+            ObokuErrorCode.ERROR_RESOURCE_NOT_REACHABLE,
+            undefined,
+            "user",
+          ),
+        )
+      }
+
+      xhr.onabort = () => {
+        signal?.removeEventListener("abort", handleAbort)
+        reject(new CancelError())
+      }
+    })
   }
 }
 

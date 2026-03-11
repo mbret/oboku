@@ -1,4 +1,10 @@
-import type { BookDocType, LinkDocType } from "@oboku/shared"
+import type createNano from "nano"
+import type {
+  BookDocType,
+  LinkDocType,
+  DataSourceType,
+  ProviderApiCredentials,
+} from "@oboku/shared"
 import path from "node:path"
 import fs from "node:fs"
 import { pluginFacade } from "src/lib/plugins/facade"
@@ -8,13 +14,14 @@ export const downloadToTmpFolder = (
   book: BookDocType,
   link: LinkDocType,
   config: AppConfigService,
-  credentials?: any,
+  credentials?: ProviderApiCredentials<DataSourceType>,
+  db?: createNano.DocumentScope<unknown>,
 ) =>
   new Promise<{
     filepath: string
   }>((resolve, reject) => {
     pluginFacade
-      .download(link, credentials)
+      .download({ link, providerCredentials: credentials, db })
       .then(({ stream }) => {
         const filename = `${book._id}`
         const filepath = path.join(config.TMP_DIR_BOOKS, filename)

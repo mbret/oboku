@@ -89,7 +89,9 @@ export const getSynchronizeAbleDataSourceFromItems = async ({
   const files = await Promise.all(items.map(getFileMetadata))
   const tree = buildTree(files)
 
-  const asSynchronizeAbleItem = (file: TreeNode): SynchronizeAbleItem => {
+  const asSynchronizeAbleItem = (
+    file: TreeNode,
+  ): SynchronizeAbleItem<"DRIVE"> => {
     if (isFolder(file)) {
       return {
         type: "folder",
@@ -97,7 +99,7 @@ export const getSynchronizeAbleDataSourceFromItems = async ({
         items: file.children.map(asSynchronizeAbleItem),
         name: file.name || "",
         modifiedAt: file.modifiedTime || new Date().toISOString(),
-      }
+      } satisfies SynchronizeAbleItem<"DRIVE">
     }
 
     return {

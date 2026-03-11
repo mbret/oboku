@@ -44,16 +44,21 @@ export async function findOne<
   D extends ModelOf<M>,
 >(rxModel: M, query: SafeMangoQuery<D>, options: FindOneOptions) {
   const { fields, ...restQuery } = query
-  const fieldsWithRequiredFields = fields
-  if (Array.isArray(fieldsWithRequiredFields)) {
-    fieldsWithRequiredFields.push(`rx_model`)
-  }
+  const fieldsForFind =
+    fields === undefined
+      ? undefined
+      : [...fields].concat(
+          (fields as readonly string[]).includes("rx_model")
+            ? []
+            : ["rx_model"],
+        )
 
   const response = await retryFn(() =>
     options.db.find({
       ...restQuery,
-      fields: fields as string[],
-      selector: { rx_model: rxModel, ...(query?.selector as any) },
+      fields:
+        fieldsForFind === undefined ? undefined : (fieldsForFind as string[]),
+      selector: { rx_model: rxModel, ...query?.selector },
       limit: 1,
     }),
   )

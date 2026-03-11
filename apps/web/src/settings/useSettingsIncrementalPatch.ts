@@ -1,7 +1,7 @@
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, mergeMap, of } from "rxjs"
 import { useMutation$ } from "reactjrx"
-import type { SettingsDocType } from "../rxdb/collections/settings"
+import type { SettingsDocType } from "@oboku/shared"
 import { getSettingsDocument } from "./dbHelpers"
 
 export const useSettingsIncrementalPatch = () =>

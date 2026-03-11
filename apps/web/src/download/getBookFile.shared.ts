@@ -3,23 +3,18 @@ import { dexieDb } from "../rxdb/dexie"
 
 export const getBookFile = async (
   bookId: string,
-): Promise<{
-  name: string
-  data: File
-} | null> => {
+): Promise<{ data: File } | null> => {
   try {
-    const data = await dexieDb.downloads.where("id").equals(bookId).first()
+    const row = await dexieDb.downloads.where("id").equals(bookId).first()
 
-    const file = data?.data
+    const file = row?.data
 
-    if (data && file) {
+    if (row && file) {
       return {
-        ...data,
-        data: !(file instanceof File)
-          ? new File([file], data.name, {
-              type: file.type,
-            })
-          : file,
+        data:
+          file instanceof File
+            ? file
+            : new File([file], bookId, { type: file.type }),
       }
     }
 
@@ -28,6 +23,7 @@ export const getBookFile = async (
     Logger.error(
       "getBookFile: An error occurred while getting item from storage",
     )
+    console.error(e)
 
     throw e
   }

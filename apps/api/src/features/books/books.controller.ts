@@ -6,6 +6,7 @@ import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { from } from "rxjs"
 import { AuthUser } from "src/auth/auth.guard"
 import { WithAuthUser } from "src/auth/auth.guard"
+import { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
 
 @Controller("books")
 export class BooksController implements OnModuleInit {
@@ -30,8 +31,11 @@ export class BooksController implements OnModuleInit {
   async metadataRefresh(
     @Body() {
       bookId,
-      data,
-    }: { bookId: string; data?: Record<string, unknown> },
+      providerCredentials,
+    }: {
+      bookId: string
+      providerCredentials: ProviderApiCredentials<DataSourceType>
+    },
     @WithAuthUser() user: AuthUser,
   ) {
     this.logger.log("metadataRefresh", bookId)
@@ -42,7 +46,7 @@ export class BooksController implements OnModuleInit {
         from(
           this.booksMetadataService.refreshMetadata(
             { bookId },
-            data ?? {},
+            providerCredentials,
             user.email,
           ),
         ),
@@ -66,7 +70,7 @@ export class BooksController implements OnModuleInit {
             {
               bookId: event.data.bookId,
             },
-            event.data.data ?? {},
+            event.data.providerCredentials,
             event.data.email,
           ),
         ),

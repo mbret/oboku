@@ -31,15 +31,17 @@ export const UploadBookComponent: ObokuPlugin["UploadBookComponent"] = ({
 
   const handleConfirm = () => {
     setBookUrl("")
-    onClose({
-      book: {
-        title: filename,
+    onClose([
+      {
+        book: {
+          title: filename,
+        },
+        link: {
+          resourceId: generateResourceId(UNIQUE_RESOURCE_IDENTIFIER, bookUrl),
+          type: TYPE,
+        },
       },
-      link: {
-        resourceId: generateResourceId(UNIQUE_RESOURCE_IDENTIFIER, bookUrl),
-        type: TYPE,
-      },
-    })
+    ])
   }
 
   return (

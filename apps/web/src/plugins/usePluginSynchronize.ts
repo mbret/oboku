@@ -1,49 +1,66 @@
-import type { DataSourceDocType } from "@oboku/shared"
-import { useCallback, useRef } from "react"
-import { type Plugin, plugins } from "./configure"
+import type { DataSourceDocType, ProviderApiCredentials } from "@oboku/shared"
+import { useCallback } from "react"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
+import { getPluginFromType } from "./getPluginFromType"
+
+function assertNever(value: never): never {
+  throw new Error(`Unexpected dataSource type: ${String(value)}`)
+}
 
 export const usePluginSynchronize = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
 
-  // It's important to use array for plugins and be careful of the order since
-  // it will trigger all hooks
-  type UseHook = ReturnType<NonNullable<Plugin["useSynchronize"]>> | undefined
-
-  const getPluginFn = useRef<
-    {
-      type: Plugin["type"]
-      synchronize: UseHook
-    }[]
-  >([])
-
-  getPluginFn.current = plugins.map((plugin) => {
-    // biome-ignore lint/correctness/useHookAtTopLevel: Expected
-    const hookRan = plugin.useSynchronize?.({
-      requestPopup: createRequestPopupDialog({ name: plugin.name }),
-    })
-
-    return {
-      type: plugin.type,
-      synchronize: hookRan,
-    }
-  })
-
-  const execute = async (dataSource: DataSourceDocType) => {
-    const found = getPluginFn.current.find(
-      (plugin) => plugin.type === dataSource.type,
-    )
-
-    if (found) {
-      if (!found.synchronize) {
-        throw new Error("this datasource cannot synchronize")
-      }
-
-      return await found.synchronize.mutateAsync(dataSource as any)
-    }
-
-    throw new Error("no datasource found for this link")
+  const { mutateAsync: webdavSynchronize } = getPluginFromType(
+    "webdav",
+  )?.useSynchronize?.({
+    requestPopup: createRequestPopupDialog({ name: "webdav" }),
+  }) ?? {
+    mutateAsync: async () => {
+      throw new Error("WebDAV plugin not found")
+    },
   }
 
-  return useCallback(execute, [])
+  const { mutateAsync: dropboxSynchronize } = getPluginFromType(
+    "dropbox",
+  )?.useSynchronize?.({
+    requestPopup: createRequestPopupDialog({ name: "dropbox" }),
+  }) ?? {
+    mutateAsync: async () => {
+      throw new Error("Dropbox plugin not found")
+    },
+  }
+
+  const { mutateAsync: driveSynchronize } = getPluginFromType(
+    "DRIVE",
+  )?.useSynchronize?.({
+    requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
+  }) ?? {
+    mutateAsync: async () => {
+      throw new Error("Drive plugin not found")
+    },
+  }
+
+  return useCallback(
+    async (
+      dataSource: DataSourceDocType,
+    ): Promise<{
+      providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
+    }> => {
+      switch (dataSource.type) {
+        case "webdav":
+          return await webdavSynchronize(dataSource)
+        case "dropbox":
+          return await dropboxSynchronize(dataSource)
+        case "DRIVE":
+          return await driveSynchronize(dataSource)
+        case "synology-drive":
+        case "file":
+        case "URI":
+          throw new Error("this datasource cannot synchronize")
+        default:
+          return assertNever(dataSource)
+      }
+    },
+    [webdavSynchronize, dropboxSynchronize, driveSynchronize],
+  )
 }

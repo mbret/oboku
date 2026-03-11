@@ -43,6 +43,10 @@ import { NewDataSourceScreen } from "../pages/sync/NewDataSourceScreen"
 import { AddWebdavConnectorScreen } from "../pages/plugins/webdav/AddWebdavConnectorScreen"
 import { EditWebDavConnectorScreen } from "../pages/plugins/webdav/EditWebdavConnectorScreen"
 import { DataSourceDetailsScreen } from "../pages/sync/DataSourceDetailsScreen"
+import { AddSynologyDriveConnectorScreen } from "../pages/plugins/synology-drive/AddConnectorScreen"
+import { EditSynologyDriveConnectorScreen } from "../pages/plugins/synology-drive/EditConnectorScreen"
+import { PluginDownloadFlowHost } from "../download/flow/PluginDownloadFlowHost"
+import { plugins } from "../dataSources"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -58,8 +62,8 @@ export const AppNavigator = ({
   const auth = useSignalValue(authStateSignal)
   const isAuthenticated = !!auth?.accessToken
 
-  return (
-    <BrowserRouter>
+  const content = (
+    <>
       <div
         style={{
           flexShrink: 0,
@@ -102,6 +106,14 @@ export const AppNavigator = ({
               <Route
                 path={ROUTES.PLUGINS_WEBDAV_CONNECTORS_EDIT}
                 element={<EditWebDavConnectorScreen />}
+              />
+              <Route
+                path={ROUTES.PLUGINS_SYNOLOGY_DRIVE_CONNECTORS_NEW}
+                element={<AddSynologyDriveConnectorScreen />}
+              />
+              <Route
+                path={ROUTES.PLUGINS_SYNOLOGY_DRIVE_CONNECTORS_EDIT}
+                element={<EditSynologyDriveConnectorScreen />}
               />
               <Route path={`${ROUTES.SECURITY}`} element={<SecurityScreen />} />
               <Route path={`${ROUTES.SECRETS}`} element={<SecretsScreen />} />
@@ -172,8 +184,20 @@ export const AppNavigator = ({
       </div>
       <BookActionsDrawer />
       <CollectionActionsDrawer />
+      <PluginDownloadFlowHost />
       <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
       <TrackHistoryCanGoBack />
+    </>
+  )
+
+  return (
+    <BrowserRouter>
+      {plugins.reduce((Comp, { Provider }, index) => {
+        if (Provider) {
+          return <Provider key={index}>{Comp}</Provider>
+        }
+        return Comp
+      }, content)}
     </BrowserRouter>
   )
 }

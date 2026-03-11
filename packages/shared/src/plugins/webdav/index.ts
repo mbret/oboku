@@ -1,59 +1,69 @@
 import { z } from "zod"
 
-export const webdavSyncDataSchema = z.object({
-  password: z.string(),
-  username: z.string(),
-  url: z.string(),
-})
-
 export const webdavLinkDataSchema = z.object({
   connectorId: z.string().optional(),
 })
 
-// Extract TypeScript types from Zod schemas
-export type WebdavSyncData = z.infer<typeof webdavSyncDataSchema>
+/**
+ * API credentials for WebDAV: only the secret (password). URL and username
+ * come from the connector (settings), resolved by the API using link/data_v2 connectorId.
+ */
+export type WebdavApiCredentials = {
+  password: string
+}
 export type WebdavLinkData = z.infer<typeof webdavLinkDataSchema>
 
-export const getWebdavSyncData = (data: Record<string, unknown>) => {
-  return webdavSyncDataSchema.parse(data)
+export function isWebdavLinkData(data: unknown): data is WebdavLinkData {
+  return webdavLinkDataSchema.safeParse(data).success
 }
 
 export const getWebDavLinkData = (data: Record<string, unknown>) => {
   return webdavLinkDataSchema.parse(data)
 }
 
-export const generateWebdavResourceId = (data: {
-  url: string
-  filename: string
-}) => {
-  return `webdav://${new URL(data.url ?? "").hostname}:${encodeURIComponent(data.filename)}`
+/**
+ * Normalizes a WebDAV server URL for "same server" matching: strips trailing
+ * slashes from pathname and removes query and hash so connectors that differ
+ * only by those are treated as the same server.
+ *
+ * @example
+ * normalizeWebdavBaseUrl("https://webdav.example.com/dav/?foo=bar#hash")
+ * // => "https://webdav.example.com/dav"
+ */
+export const normalizeWebdavBaseUrl = (baseUrl: string) => {
+  const url = new URL(baseUrl)
+
+  url.pathname = url.pathname.replace(/\/+$/, "")
+  url.search = ""
+  url.hash = ""
+
+  return url.toString().replace(/\/+$/, "")
+}
+
+const WEBDAV_DUMMY_HOST = "_"
+
+export const generateWebdavResourceId = (data: { filename: string }) => {
+  return `webdav://${WEBDAV_DUMMY_HOST}:${encodeURIComponent(data.filename)}`
 }
 
 export const explodeWebdavResourceId = (resourceId: string) => {
-  // Check if the resource ID has the expected format
   if (!resourceId.startsWith("webdav://")) {
     throw new Error(`Invalid resource ID format: ${resourceId}`)
   }
 
-  // Remove the "webdav://" prefix
   const withoutPrefix = resourceId.substring("webdav://".length)
-
-  // Find the last colon which separates hostname from filename
   const lastColonIndex = withoutPrefix.lastIndexOf(":")
   if (lastColonIndex === -1) {
     throw new Error(`Invalid resource ID format: ${resourceId}`)
   }
-
-  const url = withoutPrefix.substring(0, lastColonIndex)
   const encodedFilename = withoutPrefix.substring(lastColonIndex + 1)
   const filename = decodeURIComponent(encodedFilename)
 
-  // Extract directory and basename from filename
   const lastSlashIndex = filename.lastIndexOf("/")
   const directory =
     lastSlashIndex !== -1 ? `/${filename.substring(0, lastSlashIndex)}` : "/"
   const basename =
     lastSlashIndex !== -1 ? filename.substring(lastSlashIndex + 1) : filename
 
-  return { url, filename, directory, basename }
+  return { filename, directory, basename }
 }

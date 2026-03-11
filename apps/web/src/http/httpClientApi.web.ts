@@ -2,22 +2,28 @@ import { configuration } from "../config/configuration"
 import { HttpClientWeb } from "./httpClient.web"
 
 class HttpApiClient extends HttpClientWeb {
-  refreshBookMetadata = (bookId: string, data?: Record<string, unknown>) =>
+  refreshBookMetadata = (params: {
+    bookId: string
+    providerCredentials?: Record<string, unknown>
+  }) =>
     this.post(`${configuration.API_URL}/books/metadata/refresh`, {
-      body: { bookId, data },
+      body: params,
     })
 
-  refreshCollectionMetadata = (
-    collectionId: string,
-    data?: Record<string, unknown>,
-  ) =>
+  refreshCollectionMetadata = (params: {
+    collectionId: string
+    providerCredentials?: Record<string, unknown>
+  }) =>
     this.post(`${configuration.API_URL}/collections/metadata/refresh`, {
-      body: { collectionId, data, soft: false },
+      body: { ...params, soft: false },
     })
 
-  syncDataSource = (dataSourceId: string, data?: Record<string, unknown>) =>
+  syncDataSource = (params: {
+    dataSourceId: string
+    providerCredentials?: Record<string, unknown>
+  }) =>
     this.post(`${configuration.API_URL}/datasources/sync`, {
-      body: { dataSourceId, data },
+      body: params,
     })
 
   signIn = (data: { email: string; password: string } | { token: string }) =>

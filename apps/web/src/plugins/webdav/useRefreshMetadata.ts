@@ -1,27 +1,35 @@
 import type { ObokuPlugin } from "../types"
-import { from } from "rxjs"
-import { useMutation$ } from "reactjrx"
-import { type DataSourceDocType, getWebDavLinkData } from "@oboku/shared"
-import { useExtractConnectorData } from "./connectors/useExtractConnectorData"
+import { useMutation } from "@tanstack/react-query"
+import { firstValueFrom, from } from "rxjs"
+import { map } from "rxjs"
+import { useExtractConnectorData } from "../../connectors/useExtractConnectorData"
 
 export const useRefreshMetadata: ObokuPlugin<"webdav">[`useRefreshMetadata`] =
   () => {
-    const { mutateAsync: extractConnectorData } = useExtractConnectorData()
+    const { mutateAsync: extractConnectorData } = useExtractConnectorData({
+      type: "webdav",
+    })
 
-    return useMutation$({
-      mutationFn: ({
-        linkData,
-      }: {
-        linkType: DataSourceDocType["type"]
-        linkData: Record<string, unknown>
-      }) => {
-        const { connectorId } = getWebDavLinkData(linkData)
+    return useMutation({
+      mutationFn: ({ linkData }) => {
+        const connectorId =
+          linkData && typeof linkData === "object" && "connectorId" in linkData
+            ? linkData.connectorId
+            : undefined
 
         if (!connectorId) {
           throw new Error("You need to setup a webdav connector first")
         }
 
-        return from(extractConnectorData({ connectorId }))
+        return firstValueFrom(
+          from(extractConnectorData({ connectorId })).pipe(
+            map((res) => ({
+              providerCredentials: {
+                password: res.data.password,
+              },
+            })),
+          ),
+        )
       },
     })
   }

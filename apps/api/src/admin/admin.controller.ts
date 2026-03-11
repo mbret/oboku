@@ -56,4 +56,13 @@ export class AdminController {
 
     await this.couchMigrationService.migrate()
   }
+
+  @Post("migrate-webdav-connectors")
+  async migrateWebdavConnectors(@WithAuthUser() user: AuthUser) {
+    if (user.role !== "admin") {
+      throw new UnauthorizedException()
+    }
+
+    return this.couchMigrationService.migrateWebdavConnectorsToConnectors()
+  }
 }

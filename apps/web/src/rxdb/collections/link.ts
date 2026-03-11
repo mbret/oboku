@@ -20,7 +20,15 @@ type LinkCollectionMethods = {
   ) => Promise<LinkDocument>
 }
 
-const linkSchema: RxJsonSchema<Omit<LinkDocType, `_rev` | `rxdbMeta`>> = {
+const linkSchema: RxJsonSchema<
+  Omit<
+    LinkDocType & {
+      // Legacy
+      dataSourceId?: string
+    },
+    `_rev` | `rxdbMeta`
+  >
+> = {
   title: "link",
   version: 0,
   type: "object",

@@ -63,6 +63,24 @@ export const SecretsScreen = memo(() => {
     undefined,
   )
 
+  const handleAddSecret = () => {
+    if (masterKey) {
+      setupSecretDialogSignal.update({
+        openWith: true,
+        masterKey,
+      })
+    } else {
+      unlockMasterKey(undefined, {
+        onSuccess: (key) => {
+          setupSecretDialogSignal.update({
+            openWith: true,
+            masterKey: key,
+          })
+        },
+      })
+    }
+  }
+
   return (
     <>
       <Box display="flex" flex={1} overflow="auto" flexDirection="column">
@@ -85,13 +103,8 @@ export const SecretsScreen = memo(() => {
               {masterKey ? "Unlocked" : "Unlock"}
             </Button>
             <Button
-              disabled={!hasMasterPassword || !masterKey}
-              onClick={() => {
-                setupSecretDialogSignal.update({
-                  openWith: true,
-                  masterKey: masterKey ?? "",
-                })
-              }}
+              disabled={!hasMasterPassword}
+              onClick={handleAddSecret}
               variant="contained"
             >
               Add a secret

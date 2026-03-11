@@ -1,8 +1,12 @@
 import { SdStorageRounded } from "@mui/icons-material"
 import type { ObokuPlugin } from "../types"
 import { UploadBook } from "./UploadBook"
-import { PLUGIN_FILE_TYPE } from "@oboku/shared"
-import { ObokuPluginError } from "../../errors/errors.shared"
+import {
+  ObokuErrorCode,
+  ObokuSharedError,
+  PLUGIN_FILE_TYPE,
+} from "@oboku/shared"
+import { memo, useEffect } from "react"
 
 export const plugin: ObokuPlugin<"file"> = {
   uniqueResourceIdentifier: "file",
@@ -11,12 +15,15 @@ export const plugin: ObokuPlugin<"file"> = {
   UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
   description: "Manage contents from your device (local)",
-  useDownloadBook: () => () => {
-    throw new ObokuPluginError({
-      code: "unknown",
-      severity: "user",
-      message:
-        "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book using a cloud provider.",
-    })
-  },
+  DownloadBookComponent: memo(({ onError }) => {
+    useEffect(() => {
+      onError(
+        new ObokuSharedError(
+          ObokuErrorCode.ERROR_DATASOURCE_DOWNLOAD_DIFFERENT_DEVICE,
+        ),
+      )
+    }, [onError])
+
+    return null
+  }),
 }

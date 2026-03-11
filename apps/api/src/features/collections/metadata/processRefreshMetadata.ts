@@ -1,7 +1,9 @@
 import {
   type CollectionDocType,
   type CollectionMetadata,
+  DataSourceType,
   directives,
+  ProviderApiCredentials,
 } from "@oboku/shared"
 import { fetchMetadata } from "./fetchMetadata"
 import type nano from "nano"
@@ -19,13 +21,13 @@ export const processRefreshMetadata = async (
   collection: CollectionDocType,
   {
     db,
-    data,
+    providerCredentials,
     soft,
     comicVineApiKey,
   }: {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
-    data?: Record<string, unknown>
+    providerCredentials: ProviderApiCredentials<DataSourceType>
     soft?: boolean
     comicVineApiKey?: string
   },
@@ -43,9 +45,10 @@ export const processRefreshMetadata = async (
                   link: {
                     resourceId: collection.linkResourceId,
                     type: collection.linkType,
-                    data: null,
+                    data: collection.linkData ?? null,
                   },
-                  data,
+                  providerCredentials,
+                  db,
                 }),
               )
             : of(undefined),

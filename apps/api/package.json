@@ -30,6 +30,7 @@
     "@nestjs/schedule": "^6.0.0",
     "@nestjs/typeorm": "^11.0.0",
     "@oboku/shared": "^0.8.0",
+    "@oboku/synology": "^0.1.0",
     "@sentry/nestjs": "^10.25.0",
     "@sentry/profiling-node": "^10.25.0",
     "aws-lambda": "^1.0.7",

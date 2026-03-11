@@ -10,6 +10,7 @@ import { InMemoryTaskQueueService } from "../features/queue/InMemoryTaskQueueSer
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
 import { AuthUser, WithAuthUser } from "src/auth/auth.guard"
 import { DataSourceService } from "./datasource.service"
+import { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
 
 @Controller("datasources")
 export class DataSourcesController implements OnModuleInit {
@@ -42,8 +43,11 @@ export class DataSourcesController implements OnModuleInit {
   async syncDataSource(
     @Body() {
       dataSourceId,
-      data,
-    }: { dataSourceId: string; data?: Record<string, unknown> },
+      providerCredentials,
+    }: {
+      dataSourceId: string
+      providerCredentials: ProviderApiCredentials<DataSourceType>
+    },
     @WithAuthUser() user: AuthUser,
   ) {
     this.logger.log(`syncDataSource ${dataSourceId}`)
@@ -53,7 +57,7 @@ export class DataSourcesController implements OnModuleInit {
       () =>
         this.datasourceService.syncLongProgress({
           dataSourceId,
-          data: data ?? {},
+          providerCredentials: providerCredentials,
           email: user.email,
         }),
       {

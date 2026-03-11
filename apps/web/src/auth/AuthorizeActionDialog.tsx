@@ -10,12 +10,12 @@ import {
 import { useEffect } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
-import { signal, useSignalValue } from "reactjrx"
+import { signal, useMutation$, useSignalValue } from "reactjrx"
 import { type Observable, from, map, mergeMap, of } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getSettings } from "../settings/dbHelpers"
 import { CancelError } from "../errors/errors.shared"
-import { validateMasterKey } from "../secrets/useValidateMasterKey"
+import { validateMasterKeyFn } from "../secrets/useValidateMasterKey"
 import { useSettings } from "../settings/useSettings"
 import { CancelButton } from "../common/forms/CancelButton"
 
@@ -23,6 +23,17 @@ const FORM_ID = "LockActionBehindUserPasswordDialog"
 
 type Inputs = {
   password: string
+  authorizeFor5Min: boolean
+}
+
+const TEMP_AUTH_DURATION_MINUTES = 5
+const TEMP_AUTH_DURATION_MS = TEMP_AUTH_DURATION_MINUTES * 60 * 1000
+
+let temporaryMasterKey: { key: string; expiresAt: number } | undefined
+
+/** Clears the temporary master key (e.g. on sign-out). */
+export const clearTemporaryMasterKey = () => {
+  temporaryMasterKey = undefined
 }
 
 const actionSignal = signal<
@@ -32,13 +43,23 @@ const actionSignal = signal<
 export const authorizeAction = (
   action: (masterKey: string) => void,
   onCancel?: () => void,
-) =>
+) => {
+  const temp = temporaryMasterKey
+  if (temp && temp.expiresAt > Date.now()) {
+    action(temp.key)
+    return
+  }
   actionSignal.update({
     action,
     onCancel,
   })
+}
 
 export const authorizeActionObservable = () => {
+  const temp = temporaryMasterKey
+  if (temp && temp.expiresAt > Date.now()) {
+    return of(temp.key)
+  }
   return from(
     new Promise<string>((resolve, reject) =>
       authorizeAction(resolve, () => reject(new CancelError())),
@@ -66,16 +87,26 @@ export function useWithAuthorization() {
 export const AuthorizeActionDialog = () => {
   const { action, onCancel = () => {} } = useSignalValue(actionSignal) ?? {}
   const open = !!action
-  const { control, handleSubmit, setFocus, setError, reset } = useForm<Inputs>({
-    defaultValues: {
-      password: "",
-    },
-  })
+  const { control, handleSubmit, setFocus, setError, setValue, reset } =
+    useForm<Inputs>({
+      defaultValues: {
+        password: "",
+        authorizeFor5Min: true, // default so Enter (no button click) triggers "Authorize for 5mn"
+      },
+    })
   const settings = useSettings()
   const hasNotSetPassword = !settings.data?.masterEncryptionKey
-  const { mutate: validatePassword, reset: resetValidatePasswordMutation } =
-    validateMasterKey({
-      onSuccess: (masterKey) => {
+  const { mutate: submitAuthorization, reset: resetSubmitMutation } =
+    useMutation$({
+      mutationFn: (input: { password: string; authorizeFor5Min: boolean }) =>
+        validateMasterKeyFn(input.password),
+      onSuccess: (masterKey, variables) => {
+        if (variables.authorizeFor5Min) {
+          temporaryMasterKey = {
+            key: masterKey,
+            expiresAt: Date.now() + TEMP_AUTH_DURATION_MS,
+          }
+        }
         onClose()
         action?.(masterKey)
       },
@@ -97,14 +128,14 @@ export const AuthorizeActionDialog = () => {
 
   useEffect(() => {
     reset()
-    resetValidatePasswordMutation()
+    resetSubmitMutation()
 
     if (open) {
       setTimeout(() => {
         setFocus("password")
       })
     }
-  }, [open, resetValidatePasswordMutation, reset, setFocus])
+  }, [open, resetSubmitMutation, reset, setFocus])
 
   return (
     <Dialog
@@ -129,7 +160,10 @@ export const AuthorizeActionDialog = () => {
             noValidate
             id={FORM_ID}
             onSubmit={handleSubmit((data) => {
-              validatePassword(data.password)
+              submitAuthorization({
+                password: data.password,
+                authorizeFor5Min: data.authorizeFor5Min,
+              })
             })}
           >
             <Controller
@@ -158,9 +192,28 @@ export const AuthorizeActionDialog = () => {
       <DialogActions>
         <CancelButton onClick={_onCancel} />
         {!hasNotSetPassword && (
-          <Button color="primary" type="submit" form={FORM_ID}>
-            Authorize
-          </Button>
+          <>
+            {/* Primary first in DOM so Enter triggers "Authorize for 5mn"; order for visual placement */}
+            <Button
+              color="primary"
+              variant="contained"
+              type="submit"
+              form={FORM_ID}
+              onClick={() => setValue("authorizeFor5Min", true)}
+              sx={{ order: 2 }}
+            >
+              Authorize for {TEMP_AUTH_DURATION_MINUTES}mn
+            </Button>
+            <Button
+              variant="outlined"
+              type="submit"
+              form={FORM_ID}
+              onClick={() => setValue("authorizeFor5Min", false)}
+              sx={{ order: 1 }}
+            >
+              Authorize once
+            </Button>
+          </>
         )}
       </DialogActions>
     </Dialog>

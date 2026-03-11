@@ -52,7 +52,8 @@ export const retrieveMetadataAndSaveCover = async (
     const { canDownload = false, ...linkResourceMetadata } =
       (await pluginFacade.getFileMetadata({
         link: ctx.link,
-        data: ctx.data,
+        providerCredentials: ctx.providerCredentials,
+        db: ctx.db,
       })) ?? {}
 
     const { isbn, ignoreMetadataFile, ignoreMetadataSources, googleVolumeId } =
@@ -96,21 +97,25 @@ export const retrieveMetadataAndSaveCover = async (
 
     const { filepath: tmpFilePath } =
       canDownload && isMaybeExtractAble
-        ? await downloadToTmpFolder(ctx.book, ctx.link, config, ctx.data).catch(
-            (error) => {
-              /**
-               * We have several reason for failing download but the most common one
-               * is no more space left. We have about 500mb of space. In case of failure
-               * we don't fail the entire process, we just keep the file metadata
-               */
-              logger.error(error)
+        ? await downloadToTmpFolder(
+            ctx.book,
+            ctx.link,
+            config,
+            ctx.providerCredentials,
+            ctx.db,
+          ).catch((error) => {
+            /**
+             * We have several reason for failing download but the most common one
+             * is no more space left. We have about 500mb of space. In case of failure
+             * we don't fail the entire process, we just keep the file metadata
+             */
+            logger.error(error)
 
-              return {
-                filepath: undefined,
-                metadata: { contentType: undefined },
-              }
-            },
-          )
+            return {
+              filepath: undefined,
+              metadata: { contentType: undefined },
+            }
+          })
         : { filepath: undefined }
 
     let fileContentLength = 0

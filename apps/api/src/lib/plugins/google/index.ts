@@ -5,6 +5,7 @@
 import { authorize } from "./helpers"
 import { google } from "googleapis"
 import type { DataSourcePlugin } from "src/lib/plugins/types"
+import { find } from "src/lib/couch/dbHelpers"
 import { getDataSourceData } from "../helpers"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync"
 
@@ -12,10 +13,42 @@ export const generateResourceId = (driveId: string) => `drive-${driveId}`
 export const extractIdFromResourceId = (resourceId: string) =>
   resourceId.replace(`drive-`, ``)
 
-export const dataSource: DataSourcePlugin = {
-  type: `DRIVE`,
-  getFolderMetadata: async ({ link, data }) => {
-    const auth = await authorize({ credentials: data })
+const DRIVE_TYPE = "DRIVE"
+
+export const dataSource: DataSourcePlugin<"DRIVE"> = {
+  type: DRIVE_TYPE,
+  getLinkCandidatesForItem: async (item, ctx) => {
+    const links = await find(ctx.db, "link", {
+      selector: { type: DRIVE_TYPE, resourceId: item.resourceId },
+    })
+    return {
+      links: links.map((link) => ({
+        ...link,
+        /**
+         * In principle, if the user is syncing a resource ID he will
+         * always have valid credentials for this ID.
+         */
+        isUsingSameProviderCredentials: true,
+      })),
+    }
+  },
+  getCollectionCandidatesForItem: async (item, ctx) => {
+    const collections = await find(ctx.db, "obokucollection", {
+      selector: {
+        linkType: DRIVE_TYPE,
+        linkResourceId: item.resourceId,
+      },
+    })
+    return {
+      collections: collections.map((c) => ({
+        ...c,
+        /** Same as links: when syncing this resource, credentials apply. */
+        isUsingSameProviderCredentials: true,
+      })),
+    }
+  },
+  getFolderMetadata: async ({ link, providerCredentials }) => {
+    const auth = await authorize({ credentials: providerCredentials })
     const drive = google.drive({
       version: "v3",
       auth,
@@ -36,8 +69,8 @@ export const dataSource: DataSourcePlugin = {
       modifiedAt: metadata.modifiedTime || undefined,
     }
   },
-  getFileMetadata: async ({ link, data }) => {
-    const auth = await authorize({ credentials: data })
+  getFileMetadata: async ({ link, providerCredentials }) => {
+    const auth = await authorize({ credentials: providerCredentials })
     const drive = google.drive({
       version: "v3",
       auth,
@@ -64,12 +97,11 @@ export const dataSource: DataSourcePlugin = {
       },
     }
   },
-  download: async (link, credentials) => {
+  download: async (link, providerCredentials) => {
     if (!link.resourceId) {
       throw new Error("Invalid google drive file uri")
     }
-
-    const auth = await authorize({ credentials })
+    const auth = await authorize({ credentials: providerCredentials })
 
     const drive = google.drive({
       version: "v3",
@@ -96,7 +128,7 @@ export const dataSource: DataSourcePlugin = {
       })) ?? {}
 
     const auth = await authorize({
-      credentials: ctx.data,
+      credentials: ctx.providerCredentials,
     })
 
     const drive = google.drive({

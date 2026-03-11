@@ -33,27 +33,32 @@ export const ProblemsScreen = memo(() => {
   const { booksWithDanglingCollections, booksWithDanglingLinks } =
     useFixableBooks()
   const { mutate: repair } = useRepair()
-  const { data: collections } = useObserve(
+  const { data: collections = [] } = useObserve(
     () => latestDatabase$.pipe(switchMap((db) => db.obokucollection.find().$)),
     [],
   )
 
   const duplicatedCollections = useMemo(() => {
-    const collectionsByResourceId = groupBy(collections, "linkResourceId")
-    const linkResourceIds = Object.keys(collectionsByResourceId)
-    const duplicatedCollections = linkResourceIds
-      .filter(
-        (resourceId) => (collectionsByResourceId[resourceId]?.length ?? 0) > 1,
-      )
-      .map((resourceId) => {
-        const _collections = collectionsByResourceId[resourceId] ?? []
+    const collectionKey = (c: (typeof collections)[0]) => {
+      const linkResourceId = c.linkResourceId ?? ""
+      const linkType = c.linkType ?? ""
+      const connectorId =
+        (c.linkData as { connectorId?: string } | null)?.connectorId ?? ""
+      return `${linkType}\0${linkResourceId}\0${connectorId}`
+    }
+    const collectionsByKey = groupBy(collections, collectionKey)
+    const keys = Object.keys(collectionsByKey)
+    const duplicatedCollections = keys
+      .filter((key) => (collectionsByKey[key]?.length ?? 0) > 1)
+      .map((key) => {
+        const _collections = collectionsByKey[key] ?? []
         const collection = _collections[0]
 
         return [
-          resourceId,
+          key,
           {
             name: getCollectionComputedMetadata(collection?.toJSON())?.title,
-            number: collectionsByResourceId[resourceId]?.length,
+            number: collectionsByKey[key]?.length,
           },
         ]
       })

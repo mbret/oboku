@@ -1,7 +1,7 @@
 import { type BookDocType, directives } from "@oboku/shared"
-import type {
-  DataSourcePlugin,
-  SynchronizeAbleDataSource,
+import {
+  type DataSourcePlugin,
+  type SynchronizeAbleDataSource,
 } from "src/lib/plugins/types"
 import { updateTagsForBook } from "./updateTagsForBook"
 import { synchronizeBookWithParentCollections } from "./synchronizeBookWithParentCollections"
@@ -10,17 +10,27 @@ import {
   addTagsToBookIfNotExist,
   atomicUpdate,
   createBook,
-  find,
   findOne,
 } from "src/lib/couch/dbHelpers"
 import type { Context } from "../types"
 import type { CoversService } from "src/covers/covers.service"
 import { firstValueFrom } from "rxjs"
-import { cleanAndMergeBookLinks } from "./cleanAndMergeBookLinks"
+import { deleteDanglingLinks } from "./deleteDanglingLinks"
 import { logger } from "./logger"
+import type { LinkCandidate } from "src/lib/plugins/types"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
+
+/**
+ * Picks the best link for the current sync from candidates that have a valid
+ * book. Prefers the one using the same connector/credentials as the datasource
+ * so metadata refresh can run.
+ */
+function getBestLinkCandidate(links: LinkCandidate[]): LinkCandidate | null {
+  if (links.length === 0) return null
+  return links.find((l) => l.isUsingSameProviderCredentials) ?? links[0] ?? null
+}
 
 function isFolder(
   item: SynchronizeAbleDataSource | SynchronizeAbleItem,
@@ -41,7 +51,7 @@ export const createOrUpdateBook = async ({
   helpers: Helpers
   coversService: CoversService
 }) => {
-  const { dataSourceType, dataSourceId, syncReport, db } = ctx
+  const { dataSourceType, syncReport, db } = ctx
 
   try {
     console.log(
@@ -61,97 +71,38 @@ export const createOrUpdateBook = async ({
       isFolder(parent),
     ) as SynchronizeAbleItem[]
 
-    const linksForResourceId = await find(ctx.db, "link", {
-      selector: { resourceId: item.resourceId },
-    })
+    const { links: linkCandidates } = await ctx.plugin.getLinkCandidatesForItem(
+      item,
+      ctx,
+    )
 
-    if (!linksForResourceId.length) {
+    const remainingLinks =
+      linkCandidates.length > 0
+        ? await deleteDanglingLinks(ctx, linkCandidates)
+        : []
+    const linkMatchingItem = getBestLinkCandidate(remainingLinks)
+
+    if (!linkMatchingItem) {
       logger.log(
         `No link found for ${item.name} with resourceId ${item.resourceId}`,
       )
     }
 
-    const linkForResourceId = await cleanAndMergeBookLinks(
-      ctx,
-      linksForResourceId,
-    )
-
     let existingBook: BookDocType | null = null
 
-    if (linkForResourceId) {
-      /**
-       * We have a matching link for this item but it's not attached to dataSource.
-       * We update it
-       */
-      if (!linkForResourceId.dataSourceId) {
-        logger.log(
-          `${item.name} has a link not yet attached to any dataSource, updating it with current dataSource ${dataSourceId}`,
-        )
-
-        await helpers.atomicUpdate("link", linkForResourceId._id, (old) => ({
-          ...old,
-          dataSourceId,
-          modifiedAt: new Date().toISOString(),
-        }))
-
-        syncReport.updateLink(linkForResourceId._id)
-      }
-
-      /**
-       * We have a matching link for this item but it's attached to a different
-       * dataSource. We will check if the dataSource actually exist, if not we
-       * will attach it to this one. This help repair broken link.
-       * This scenario can happen when the user delete a dataSource without deleting
-       * the books associated with it.
-       */
-      if (
-        linkForResourceId.dataSourceId &&
-        linkForResourceId.dataSourceId !== dataSourceId
-      ) {
-        const differentDataSourceFoundAttachedToBookLink =
-          await helpers.findOne("datasource", {
-            selector: { _id: linkForResourceId.dataSourceId },
-          })
-
-        /**
-         * If we find a dataSource, we don't need to synchronize this item
-         * it's managed by another dataSource
-         */
-        if (differentDataSourceFoundAttachedToBookLink) {
-          logger.log(
-            `${item.name} is linked to a different datasource ${dataSourceId}. Skipping sync of book`,
-          )
-
-          return
-        }
-
-        logger.log(
-          `${item.name} has a link attached to a non existing dataSource, updating it with current dataSource ${dataSourceId}`,
-        )
-
-        await helpers.atomicUpdate("link", linkForResourceId._id, (old) => ({
-          ...old,
-          dataSourceId,
-          modifiedAt: new Date().toISOString(),
-        }))
-
-        syncReport.updateLink(linkForResourceId._id)
-      }
-    }
-
-    if (linkForResourceId && !linkForResourceId.book) {
+    if (linkMatchingItem && !linkMatchingItem.book) {
       logger.log(
         `Link found for ${item.name} with resourceId ${item.resourceId} but no book attached`,
       )
     }
 
-    if (linkForResourceId?.book) {
+    if (linkMatchingItem?.book) {
       existingBook = await helpers.findOne("book", {
-        selector: { _id: linkForResourceId.book },
+        selector: { _id: linkMatchingItem.book },
       })
 
       if (!existingBook) {
-        logger.log(`Phantom book found for link ${linkForResourceId._id}`)
+        logger.log(`Phantom book found for link ${linkMatchingItem._id}`)
       } else {
         if (!existingBook.isAttachedToDataSource) {
           logger.log(
@@ -171,7 +122,7 @@ export const createOrUpdateBook = async ({
 
     syncReport.upsertReference(existingBook?._id, item.name)
 
-    if (!linkForResourceId || !existingBook) {
+    if (!linkMatchingItem || !existingBook) {
       let bookId = existingBook?._id
 
       if (!bookId) {
@@ -195,17 +146,17 @@ export const createOrUpdateBook = async ({
 
       if (!bookId) throw new Error("Book not found or not created")
 
-      if (linkForResourceId) {
+      if (linkMatchingItem) {
         logger.log(
           `Update link book reference for ${item.name} with resourceId ${item.resourceId} to a valid book id`,
         )
 
-        await atomicUpdate(ctx.db, "link", linkForResourceId._id, (old) => ({
+        await atomicUpdate(ctx.db, "link", linkMatchingItem._id, (old) => ({
           ...old,
           book: bookId,
         }))
 
-        syncReport.updateLink(linkForResourceId._id)
+        syncReport.updateLink(linkMatchingItem._id)
       } else {
         const newlyCreatedLink = await helpers.create("link", {
           type: dataSourceType,
@@ -214,7 +165,6 @@ export const createOrUpdateBook = async ({
           data: item.linkData ?? null,
           createdAt: new Date().toISOString(),
           modifiedAt: null,
-          dataSourceId,
           rxdbMeta: {
             lwt: Date.now(),
           },
@@ -259,9 +209,20 @@ export const createOrUpdateBook = async ({
       )
 
       /**
-       * Because it's a new book, we start a metadata refresh
+       * Because it's a new book, we start a metadata refresh. When we matched an
+       * existing link, only refresh if it uses the same connector/credentials as
+       * the current datasource; when we created a new link we can always refresh.
        */
-      await helpers.refreshBookMetadata({ bookId: bookId }).catch(logger.error)
+      const canRefreshMetadata = linkMatchingItem
+        ? linkMatchingItem.isUsingSameProviderCredentials
+        : true
+      if (canRefreshMetadata) {
+        await helpers
+          .refreshBookMetadata({ bookId: bookId })
+          .catch(logger.error)
+      } else {
+        syncReport.bookHasDifferentLink(bookId)
+      }
     } else {
       /**
        * We already have a link that exist for this datasource with this book.
@@ -276,11 +237,16 @@ export const createOrUpdateBook = async ({
         lastMetadataUpdatedAt < new Date(item.modifiedAt || 0)
 
       const coverObjectKey = `cover-${ctx.userNameHex}-${existingBook._id}`
+      const coverExists = await firstValueFrom(
+        coversService.isCoverExist(coverObjectKey),
+      )
+      const metadataRefreshNeeded =
+        metadataAreOlderThanModifiedDate || !coverExists
 
-      if (
-        metadataAreOlderThanModifiedDate ||
-        !(await firstValueFrom(coversService.isCoverExist(coverObjectKey)))
-      ) {
+      const shouldRefreshMetadata =
+        linkMatchingItem.isUsingSameProviderCredentials && metadataRefreshNeeded
+
+      if (shouldRefreshMetadata) {
         await helpers
           .refreshBookMetadata({ bookId: existingBook?._id })
           .catch(logger.error)
@@ -288,11 +254,16 @@ export const createOrUpdateBook = async ({
         console.log(
           `[sync.books] [createOrUpdateBook]`,
           `book ${
-            linkForResourceId.book
+            linkMatchingItem.book
           } has changed in metadata, refresh triggered ${lastMetadataUpdatedAt} ${new Date(
             item.modifiedAt || 0,
           )}`,
         )
+      } else if (
+        metadataRefreshNeeded &&
+        !linkMatchingItem.isUsingSameProviderCredentials
+      ) {
+        syncReport.bookHasDifferentLink(existingBook._id)
       }
 
       await synchronizeBookWithParentCollections(

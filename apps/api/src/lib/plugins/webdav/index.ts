@@ -1,14 +1,20 @@
 /**
  * @see https://github.com/dropbox/dropbox-sdk-js/tree/main/examples/javascript/download
  */
-import type {
-  DataSourcePlugin,
-  SynchronizeAbleItem,
+import {
+  type DataSourcePlugin,
+  type SynchronizeAbleItem,
 } from "src/lib/plugins/types"
+import { find } from "src/lib/couch/dbHelpers"
+import {
+  getConnectorById,
+  getConnectorIdsWithSameServer,
+} from "../../connectors/connectorHelpers"
 import {
   explodeWebdavResourceId,
   generateWebdavResourceId,
-  getWebdavSyncData,
+  isCollectionOfType,
+  normalizeWebdavBaseUrl,
   WebDAVDataSourceDocType,
 } from "@oboku/shared"
 import { type createClient } from "webdav"
@@ -21,15 +27,119 @@ async function getWebdavModule(): Promise<{
   return await import("webdav")
 }
 
-export const dataSource: DataSourcePlugin = {
-  type: "webdav" satisfies WebDAVDataSourceDocType["type"],
-  getFileMetadata: async ({ link, data }) => {
-    const syncData = getWebdavSyncData(data ?? {})
+const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
 
+export const dataSource: DataSourcePlugin<"webdav"> = {
+  type: WEBDAV_TYPE,
+  /**
+   * Finds link candidates by resourceId and by "same WebDAV server": we include links whose
+   * connector points to the same server URL (normalized). So if the user added the same server
+   * as multiple connectors, we still match the item to any of those links.
+   */
+  getLinkCandidatesForItem: async (item, ctx) => {
+    const connectorId = item.linkData.connectorId
+    if (!connectorId) {
+      return { links: [] }
+    }
+    const connectorIdsWithSameUrl = await getConnectorIdsWithSameServer(
+      ctx.db,
+      {
+        connectorId,
+        connectorType: "webdav",
+        normalizeUrl: normalizeWebdavBaseUrl,
+      },
+    )
+    if (!connectorIdsWithSameUrl) {
+      return { links: [] }
+    }
+    const links = await find(ctx.db, "link", {
+      selector: {
+        type: WEBDAV_TYPE,
+        resourceId: item.resourceId,
+        data: { connectorId: { $in: connectorIdsWithSameUrl } },
+      },
+    })
+    const datasourceData = ctx.dataSource
+
+    const datasourceConnectorId =
+      datasourceData.type === "webdav"
+        ? datasourceData.data_v2?.connectorId
+        : null
+
+    return {
+      links: links.map((link) => {
+        const linkConnectorId =
+          link.type === "webdav" ? link.data?.connectorId : null
+
+        return {
+          ...link,
+          isUsingSameProviderCredentials:
+            linkConnectorId === datasourceConnectorId,
+        }
+      }),
+    }
+  },
+  /**
+   * Finds collection candidates by resourceId and by "same WebDAV server": we
+   * include collections whose linkData.connectorId points to the same server
+   * URL (normalized), matching getLinkCandidatesForItem behavior.
+   */
+  getCollectionCandidatesForItem: async (item, ctx) => {
+    const connectorId = item.linkData.connectorId
+    if (!connectorId) {
+      return { collections: [] }
+    }
+    const connectorIdsWithSameUrl = await getConnectorIdsWithSameServer(
+      ctx.db,
+      {
+        connectorId,
+        connectorType: "webdav",
+        normalizeUrl: normalizeWebdavBaseUrl,
+      },
+    )
+    if (!connectorIdsWithSameUrl) {
+      return { collections: [] }
+    }
+    const collections = await find(ctx.db, "obokucollection", {
+      selector: {
+        linkType: WEBDAV_TYPE,
+        linkResourceId: item.resourceId,
+        linkData: { connectorId: { $in: connectorIdsWithSameUrl } },
+      },
+    })
+    const datasourceData = ctx.dataSource
+    const datasourceConnectorId =
+      datasourceData.type === "webdav"
+        ? datasourceData.data_v2?.connectorId
+        : undefined
+    return {
+      collections: collections.map((c) => {
+        const collectionConnectorId = isCollectionOfType(c, WEBDAV_TYPE)
+          ? (c.linkData?.connectorId ?? null)
+          : null
+        return {
+          ...c,
+          isUsingSameProviderCredentials:
+            collectionConnectorId === datasourceConnectorId,
+        }
+      }),
+    }
+  },
+  getFileMetadata: async ({ link, providerCredentials, db }) => {
+    const connectorId = link.data?.connectorId
+    if (!connectorId || !providerCredentials || !db) {
+      throw new Error(
+        "WebDAV credentials (password) and connector are required",
+      )
+    }
+    const connector = await getConnectorById(db, connectorId, "webdav")
+    if (!connector) {
+      throw new Error("WebDAV connector not found")
+    }
     const webdav = await getWebdavModule()
-    const client = webdav.createClient(syncData.url, {
-      username: syncData.username,
-      password: syncData.password,
+    const client = webdav.createClient(connector.url, {
+      username: connector.username,
+      password: providerCredentials.password,
     })
     const { filename } = explodeWebdavResourceId(link.resourceId)
 
@@ -48,12 +158,21 @@ export const dataSource: DataSourcePlugin = {
 
     throw new Error("File not found")
   },
-  getFolderMetadata: async ({ link, data }) => {
-    const syncData = getWebdavSyncData(data ?? {})
+  getFolderMetadata: async ({ link, providerCredentials, db }) => {
+    const connectorId = link.data?.connectorId
+    if (!connectorId || !providerCredentials || !db) {
+      throw new Error(
+        "WebDAV credentials (password) and connector are required",
+      )
+    }
+    const connector = await getConnectorById(db, connectorId, "webdav")
+    if (!connector) {
+      throw new Error("WebDAV connector not found")
+    }
     const webdav = await getWebdavModule()
-    const client = webdav.createClient(syncData.url, {
-      username: syncData.username,
-      password: syncData.password,
+    const client = webdav.createClient(connector.url, {
+      username: connector.username,
+      password: providerCredentials.password,
     })
     const { filename } = explodeWebdavResourceId(link.resourceId)
 
@@ -70,12 +189,21 @@ export const dataSource: DataSourcePlugin = {
 
     throw new Error("Folder not found")
   },
-  download: async (link, data) => {
-    const syncData = getWebdavSyncData(data ?? {})
+  download: async (link, providerCredentials, db) => {
+    const connectorId = link.data?.connectorId
+    if (!connectorId || !providerCredentials || !db) {
+      throw new Error(
+        "WebDAV credentials (password) and connector are required",
+      )
+    }
+    const connector = await getConnectorById(db, connectorId, "webdav")
+    if (!connector) {
+      throw new Error("WebDAV connector not found")
+    }
     const webdav = await getWebdavModule()
-    const client = webdav.createClient(syncData.url, {
-      username: syncData.username,
-      password: syncData.password,
+    const client = webdav.createClient(connector.url, {
+      username: connector.username,
+      password: providerCredentials.password,
     })
     const { filename } = explodeWebdavResourceId(link.resourceId)
 
@@ -83,7 +211,8 @@ export const dataSource: DataSourcePlugin = {
       stream: client.createReadStream(filename),
     }
   },
-  sync: async ({ data, dataSourceId, db }) => {
+  sync: async (options) => {
+    const { providerCredentials, dataSourceId, db } = options
     const { connectorId, directory } =
       (await getDataSourceData<"webdav">({
         db,
@@ -92,22 +221,25 @@ export const dataSource: DataSourcePlugin = {
 
     const rootDirectory = `/${directory ?? ""}`
 
-    const syncData = getWebdavSyncData(data ?? {})
-
-    if (!connectorId || !syncData.url || !syncData.username) {
+    if (!connectorId || !providerCredentials?.password) {
       throw new Error("datasource not found or invalid")
+    }
+
+    const connector = await getConnectorById(db, connectorId, "webdav")
+    if (!connector) {
+      throw new Error("WebDAV connector not found")
     }
 
     const webdav = await getWebdavModule()
 
-    const client = webdav.createClient(syncData.url, {
-      username: syncData.username,
-      password: syncData.password,
+    const client = webdav.createClient(connector.url, {
+      username: connector.username,
+      password: providerCredentials.password,
     })
 
     const reduceItems = async (
       directory: string,
-    ): Promise<SynchronizeAbleItem[]> => {
+    ): Promise<SynchronizeAbleItem<"webdav">[]> => {
       const files = await client.getDirectoryContents(directory)
 
       if (!Array.isArray(files)) {
@@ -115,7 +247,7 @@ export const dataSource: DataSourcePlugin = {
       }
 
       return await files.reduce(
-        async (acc: Promise<SynchronizeAbleItem[]>, file) => {
+        async (acc: Promise<SynchronizeAbleItem<"webdav">[]>, file) => {
           if (file.type === "file") {
             return [
               ...(await acc),
@@ -123,14 +255,11 @@ export const dataSource: DataSourcePlugin = {
                 type: file.type,
                 modifiedAt: file.lastmod,
                 name: file.basename,
-                linkData: {
-                  connectorId,
-                },
+                linkData: { connectorId },
                 resourceId: generateWebdavResourceId({
                   filename: file.filename,
-                  url: syncData.url,
                 }),
-              } satisfies SynchronizeAbleItem,
+              } satisfies SynchronizeAbleItem<"webdav">,
             ]
           }
 
@@ -140,15 +269,12 @@ export const dataSource: DataSourcePlugin = {
               type: "folder",
               modifiedAt: file.lastmod,
               name: file.basename,
-              linkData: {
-                connectorId,
-              },
+              linkData: { connectorId },
               resourceId: generateWebdavResourceId({
                 filename: file.filename,
-                url: syncData.url,
               }),
               items: await reduceItems(file.filename),
-            } satisfies SynchronizeAbleItem,
+            } satisfies SynchronizeAbleItem<"webdav">,
           ]
         },
         Promise.resolve([]),

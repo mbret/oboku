@@ -3,7 +3,6 @@ import { AppNavigator } from "./navigation/AppNavigator"
 import { StyledEngineProvider, Fade, Box } from "@mui/material"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
-import { plugins } from "./plugins/configure"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./queries/PreloadQueries"
 import { SplashScreen } from "./common/SplashScreen"
@@ -59,31 +58,23 @@ const App = memo(() => {
 
   return (
     <DialogProvider>
-      {!isHydratingProfile &&
-        isAuthHydrated &&
-        plugins.reduce(
-          (Comp, { Provider }, index) => {
-            if (Provider) {
-              return <Provider key={index}>{Comp}</Provider>
-            }
-            return Comp
-          },
-          <Fade in={isAppReady} timeout={500}>
-            <Box height="100%">
-              <AuthGuard />
-              <AppNavigator isProfileHydrated={isProfileHydrated} />
-              <ManageBookCollectionsDialog />
-              <ManageBookTagsDialog />
-              <ManageTagBooksDialog />
-              <AuthorizeActionDialog />
-              <SetupSecretDialog />
-              <UpdateAvailableDialog serviceWorker={waitingWorker} />
-              <BackgroundReplication />
-              <BlockingBackdrop />
-              <Effects />
-            </Box>
-          </Fade>,
-        )}
+      {!isHydratingProfile && isAuthHydrated && (
+        <Fade in={isAppReady} timeout={500}>
+          <Box height="100%">
+            <AuthGuard />
+            <AppNavigator isProfileHydrated={isProfileHydrated} />
+            <ManageBookCollectionsDialog />
+            <ManageBookTagsDialog />
+            <ManageTagBooksDialog />
+            <AuthorizeActionDialog />
+            <SetupSecretDialog />
+            <UpdateAvailableDialog serviceWorker={waitingWorker} />
+            <BackgroundReplication />
+            <BlockingBackdrop />
+            <Effects />
+          </Box>
+        </Fade>
+      )}
       <PreloadQueries
         onReady={() => {
           setIsPreloadingQueries(false)

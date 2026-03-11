@@ -3,7 +3,7 @@ import type { Context } from "../types"
 import { addNewCollection } from "./addNewCollection"
 import { updateCollection } from "./updateCollection"
 import {
-  DataSourcePlugin,
+  type DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "src/lib/plugins/types"
 import { Logger } from "@nestjs/common"
@@ -26,49 +26,66 @@ export const syncCollection = async ({
   helpers: Helpers
   eventEmitter: EventEmitter2
 }) => {
-  const { resourceId: linkResourceId } = item
-
   /**
-   * Try to get existing collection by same resource id
-   * If there is one and the name is different we update it
+   * Try to get existing collection by same resource id and link data.
+   * Prefer the one that uses the current datasource's credentials so metadata
+   * refresh can run correctly.
    */
-  const collectionFromResourceId = await helpers.findOne("obokucollection", {
-    selector: { linkResourceId },
-  })
+  const { collections } = await ctx.plugin.getCollectionCandidatesForItem(
+    item,
+    ctx,
+  )
+  const bestCandidate =
+    collections.find((c) => c.isUsingSameProviderCredentials) ?? collections[0]
 
-  if (collectionFromResourceId) {
+  if (bestCandidate) {
     logger.log(
-      `Found an existing collection for ${collectionFromResourceId._id}. Created at ${collectionFromResourceId.createdAt} and last synced at ${collectionFromResourceId.syncAt}`,
+      `Found an existing collection for ${bestCandidate._id}. Created at ${bestCandidate.createdAt} and last synced at ${bestCandidate.syncAt}`,
     )
 
     await updateCollection({
-      collection: collectionFromResourceId,
+      collection: bestCandidate,
       ctx,
       helpers,
       item,
     })
   }
 
-  const collectionId =
-    collectionFromResourceId?._id ??
-    (await addNewCollection({
+  let collectionId = bestCandidate?._id
+
+  if (!collectionId) {
+    collectionId = await addNewCollection({
       ctx,
-      helpers,
-      item,
-    }))
+      name: item.name,
+      linkResourceId: item.resourceId,
+      linkData: item.linkData,
+      linkType: ctx.dataSourceType,
+    })
+  }
 
   await repairCollectionBooks({
     collectionId,
     ctx,
   })
 
-  eventEmitter.emit(
-    Events.COLLECTION_METADATA_REFRESH,
-    new CollectionMetadataRefreshEvent({
-      collectionId,
-      data: ctx.data,
-      soft: true,
-      email: ctx.email,
-    }),
-  )
+  /**
+   * Only trigger metadata refresh when the collection uses the same
+   * connector/credentials as the current datasource; otherwise record it in the
+   * report like we do for books.
+   */
+  const usesSameCredentials =
+    !bestCandidate || bestCandidate.isUsingSameProviderCredentials
+  if (usesSameCredentials) {
+    eventEmitter.emit(
+      Events.COLLECTION_METADATA_REFRESH,
+      new CollectionMetadataRefreshEvent({
+        collectionId,
+        providerCredentials: ctx.providerCredentials,
+        soft: true,
+        email: ctx.email,
+      }),
+    )
+  } else {
+    ctx.syncReport.collectionHasDifferentLink(collectionId)
+  }
 }

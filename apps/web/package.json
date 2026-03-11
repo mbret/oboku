@@ -13,6 +13,7 @@
     "@mui/utils": "^7.0.0",
     "@mui/x-tree-view": "^8.8.0",
     "@oboku/shared": "0.8.0",
+    "@oboku/synology": "0.1.0",
     "@prose-reader/core": "^1.274.0",
     "@prose-reader/enhancer-gallery": "^1.277.0",
     "@prose-reader/enhancer-gestures": "^1.277.0",
