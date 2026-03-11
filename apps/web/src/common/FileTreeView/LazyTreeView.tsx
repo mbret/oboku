@@ -80,6 +80,8 @@ function findNode(items: TreeNode[], nodeId: string): TreeNode | undefined {
 export type LazyTreeViewProps = {
   /** Initial root-level items (e.g. from first listing). */
   initialItems: TreeNode[]
+  /** Branches to expand when the tree is initialized/reset. */
+  initialExpandedItems?: string[]
   /** Load children for a folder. Returned nodes are merged into the tree. */
   onLoadChildren: (nodeId: string) => Promise<TreeNode[]>
   /** Called whenever the tree is updated (so parent can collect selected nodes). */
@@ -91,6 +93,7 @@ export type LazyTreeViewProps = {
     event: SyntheticEvent | null,
     itemIds: string[],
   ) => void
+  isItemSelectionDisabled?: (item: TreeNode) => boolean
 }
 
 /**
@@ -100,10 +103,12 @@ export type LazyTreeViewProps = {
  */
 export const LazyTreeView = ({
   initialItems,
+  initialExpandedItems = [],
   onLoadChildren,
   onTreeChange,
   selectedItems = [],
   onSelectedItemsChange,
+  isItemSelectionDisabled: isItemSelectionDisabledProp,
 }: LazyTreeViewProps) => {
   const [tree, setTree] = useState<TreeNode[]>(() =>
     ensureFolderExpandable(initialItems),
@@ -111,11 +116,25 @@ export const LazyTreeView = ({
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const expandedRef = useRef<string[]>([])
   const treeRef = useRef<TreeNode[]>(ensureFolderExpandable(initialItems))
+  const onTreeChangeRef = useRef(onTreeChange)
+
+  useEffect(() => {
+    onTreeChangeRef.current = onTreeChange
+  }, [onTreeChange])
+
+  useEffect(() => {
+    const nextTree = ensureFolderExpandable(initialItems)
+
+    setTree(nextTree)
+    setExpandedItems(initialExpandedItems)
+    expandedRef.current = initialExpandedItems
+    treeRef.current = nextTree
+  }, [initialExpandedItems, initialItems])
 
   useEffect(() => {
     treeRef.current = tree
-    onTreeChange?.(tree)
-  }, [tree, onTreeChange])
+    onTreeChangeRef.current?.(tree)
+  }, [tree])
 
   const loadChildrenIfNeeded = useCallback(
     async (nodeId: string) => {
@@ -157,14 +176,23 @@ export const LazyTreeView = ({
     [loadChildrenIfNeeded],
   )
 
-  const isItemSelectionDisabled = useMemo(
-    () => (item: TreeNode) =>
+  useEffect(() => {
+    expandedItems.forEach((itemId) => {
+      void loadChildrenIfNeeded(itemId)
+    })
+  }, [expandedItems, loadChildrenIfNeeded])
+
+  const isItemSelectionDisabled = useMemo(() => {
+    if (isItemSelectionDisabledProp) {
+      return isItemSelectionDisabledProp
+    }
+
+    return (item: TreeNode) =>
       isPlaceholderId(item.id) ||
       item.type === "folder" ||
       (item.type === "file" &&
-        !isFileSupported({ name: item.label, mimeType: item.fileType })),
-    [],
-  )
+        !isFileSupported({ name: item.label, mimeType: item.fileType }))
+  }, [isItemSelectionDisabledProp])
 
   return (
     <TreeView

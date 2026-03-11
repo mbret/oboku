@@ -12,7 +12,7 @@ import {
 } from "../../connectors/connectorHelpers"
 import {
   downloadSynologyDriveStream,
-  getSynchronizeAbleDataSourceFromFolder,
+  getSynchronizeAbleDataSourceFromItems,
   getSynologyDriveItemMetadata,
   getSynologyDriveSession,
 } from "./client"
@@ -201,13 +201,13 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
     })
   },
   sync: async ({ dataSourceId, db, providerCredentials }) => {
-    const { connectorId, folderId } =
+    const { connectorId, items = [] } =
       (await getDataSourceData<"synology-drive">({
         dataSourceId,
         db,
       })) ?? {}
 
-    if (!connectorId || !folderId || !providerCredentials) {
+    if (!connectorId || items.length === 0 || !providerCredentials) {
       throw new Error("datasource not found or invalid")
     }
 
@@ -221,9 +221,9 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       providerCredentials,
     })
 
-    return getSynchronizeAbleDataSourceFromFolder({
+    return getSynchronizeAbleDataSourceFromItems({
       connectorId,
-      folderId,
+      items,
       session,
     })
   },

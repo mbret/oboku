@@ -347,39 +347,31 @@ const toSynchronizeAbleItem = async ({
   }
 }
 
-export const getSynchronizeAbleDataSourceFromFolder = async ({
+export const getSynchronizeAbleDataSourceFromItems = async ({
   connectorId,
-  folderId,
+  items,
   session,
 }: {
   connectorId: string
-  folderId: string
+  items: readonly string[]
   session: SynologyDriveSession
 }) => {
-  const [folderMetadata, items] = await Promise.all([
-    getSynologyDriveItemMetadata({
-      fileId: folderId,
-      session,
-    }),
-    listFolderItems({
-      path: `id:${folderId}`,
-      session,
-    }),
-  ])
-
-  if (folderMetadata.type !== "folder") {
-    throw new Error("synology_drive_datasource_invalid_folder")
-  }
+  const uniqueItems = Array.from(new Set(items))
 
   const synchronizeAbleItems = (
     await Promise.all(
-      items.map((item) =>
-        toSynchronizeAbleItem({
+      uniqueItems.map(async (fileId) => {
+        const item = await getSynologyDriveItem({
+          fileId,
+          session,
+        })
+
+        return await toSynchronizeAbleItem({
           connectorId,
           item,
           session,
-        }),
-      ),
+        })
+      }),
     )
   ).filter(
     (item): item is SynchronizeAbleItem<"synology-drive"> => item !== null,
@@ -387,6 +379,5 @@ export const getSynchronizeAbleDataSourceFromFolder = async ({
 
   return {
     items: synchronizeAbleItems,
-    name: folderMetadata.name,
   }
 }

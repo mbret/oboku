@@ -5,6 +5,7 @@ import { useExtractConnectorData } from "../../../connectors/useExtractConnector
 
 type SynologyDriveRequest = {
   connectorId: string
+  forceRefresh?: boolean
 }
 
 export const synologyDriveSessionSignal = signal<
@@ -31,7 +32,11 @@ export const useRequestSynologyDriveSession = () => {
     async (request: SynologyDriveRequest) => {
       const existingSession = synologyDriveSessionSignal.getValue()
 
-      if (existingSession && matchesSessionRequest(existingSession, request)) {
+      if (
+        existingSession &&
+        matchesSessionRequest(existingSession, request) &&
+        !request.forceRefresh
+      ) {
         return existingSession
       }
 

@@ -1,10 +1,12 @@
 import {
   buildApiUrls,
+  buildSynologyDriveGetItemParams,
   buildSynologyDriveListFolderParams,
   buildSynologyDriveListTeamFoldersParams,
   buildSynologyDriveLoginParams,
   buildSynologyDriveRootBrowseItems,
   mapSynologyDriveItemToBrowseItem,
+  parseSynologyDriveGetItemPayload,
   parseSynologyDriveListItemsPayload,
   parseSynologyDriveLoginPayload,
   type SynologyDriveBrowseNodeId,
@@ -91,6 +93,25 @@ const listTeamFolders = async (session: SynologyDriveSession) =>
     parse: (payload) =>
       parseSynologyDriveListItemsPayload(payload).map(
         mapSynologyDriveItemToBrowseItem,
+      ),
+  })
+
+export const getSynologyDriveBrowseItem = async ({
+  fileId,
+  session,
+}: {
+  fileId: string
+  session: SynologyDriveSession
+}) =>
+  requestJson({
+    baseUrl: session.auth.baseUrl,
+    params: buildSynologyDriveGetItemParams({
+      fileId,
+      session,
+    }),
+    parse: (payload) =>
+      mapSynologyDriveItemToBrowseItem(
+        parseSynologyDriveGetItemPayload(payload),
       ),
   })
 

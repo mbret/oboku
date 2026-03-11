@@ -125,13 +125,13 @@ export type WebDAVDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
   data_v2?: WebdavLinkData & { directory?: string }
 }
 
-/** Synology Drive datasource data: same link credentials (SynologyDriveLinkData) plus optional folderId. */
+/** Synology Drive datasource data: same link credentials (SynologyDriveLinkData) plus selected file/folder ids. */
 export type SynologyDriveDataSourceDocType = Omit<
   BaseDataSourceDocType,
   "data_v2"
 > & {
   type: "synology-drive"
-  data_v2?: SynologyDriveLinkData & { folderId?: string }
+  data_v2?: SynologyDriveLinkData & { items?: ReadonlyArray<string> }
 }
 
 export type DataSourceDocType =

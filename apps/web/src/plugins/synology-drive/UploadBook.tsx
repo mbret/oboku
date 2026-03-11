@@ -2,7 +2,7 @@ import { Dialog, DialogTitle } from "@mui/material"
 import { memo, useState } from "react"
 import type { ObokuPlugin } from "../types"
 import { ConnectorSelectionStep } from "./upload/ConnectorSelectionStep"
-import { FileBrowseStep } from "./upload/FileBrowseStep"
+import { UploadFileBrowseStep } from "./upload/UploadFileBrowseStep"
 
 export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
   ({ onClose, title }) => {
@@ -14,7 +14,7 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
       <Dialog fullScreen onClose={() => onClose()} open>
         <DialogTitle>{title}</DialogTitle>
         {authResult ? (
-          <FileBrowseStep
+          <UploadFileBrowseStep
             authResult={authResult}
             onAccountChange={() => setAuthResult(undefined)}
             onClose={onClose}

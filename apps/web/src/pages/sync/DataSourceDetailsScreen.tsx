@@ -48,7 +48,7 @@ export const DataSourceDetailsScreen = memo(() => {
       data: {
         connectorId: "",
         directory: "",
-        folderId: "",
+        items: [],
       },
     },
     values: {
@@ -57,7 +57,7 @@ export const DataSourceDetailsScreen = memo(() => {
       data: {
         connectorId: "",
         directory: "",
-        folderId: "",
+        items: [],
         ...(dataSource?.data_v2 ?? {}),
       },
     },
@@ -79,7 +79,7 @@ export const DataSourceDetailsScreen = memo(() => {
           }
           const synologyDriveData: SynologyDriveDataSourceDocType["data_v2"] = {
             connectorId: _data.data.connectorId as string | undefined,
-            folderId: _data.data.folderId as string | undefined,
+            items: _data.data.items as readonly string[] | undefined,
           }
 
           const newData = {
