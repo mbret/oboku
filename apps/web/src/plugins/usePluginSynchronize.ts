@@ -30,6 +30,16 @@ export const usePluginSynchronize = () => {
     },
   }
 
+  const { mutateAsync: synologyDriveSynchronize } = getPluginFromType(
+    "synology-drive",
+  )?.useSynchronize?.({
+    requestPopup: createRequestPopupDialog({ name: "synology-drive" }),
+  }) ?? {
+    mutateAsync: async () => {
+      throw new Error("Synology Drive plugin not found")
+    },
+  }
+
   const { mutateAsync: driveSynchronize } = getPluginFromType(
     "DRIVE",
   )?.useSynchronize?.({
@@ -51,9 +61,10 @@ export const usePluginSynchronize = () => {
           return await webdavSynchronize(dataSource)
         case "dropbox":
           return await dropboxSynchronize(dataSource)
+        case "synology-drive":
+          return await synologyDriveSynchronize(dataSource)
         case "DRIVE":
           return await driveSynchronize(dataSource)
-        case "synology-drive":
         case "file":
         case "URI":
           throw new Error("this datasource cannot synchronize")
@@ -61,6 +72,11 @@ export const usePluginSynchronize = () => {
           return assertNever(dataSource)
       }
     },
-    [webdavSynchronize, dropboxSynchronize, driveSynchronize],
+    [
+      webdavSynchronize,
+      dropboxSynchronize,
+      synologyDriveSynchronize,
+      driveSynchronize,
+    ],
   )
 }

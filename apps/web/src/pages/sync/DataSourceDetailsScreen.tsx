@@ -15,6 +15,7 @@ import type {
   BaseDataSourceDocType,
   DropboxDataSourceDocType,
   GoogleDriveDataSourceData,
+  SynologyDriveDataSourceDocType,
   WebDAVDataSourceDocType,
 } from "@oboku/shared"
 import { useSynchronizeDataSource } from "../../dataSources/useSynchronizeDataSource"
@@ -76,6 +77,10 @@ export const DataSourceDetailsScreen = memo(() => {
             directory: _data.data.directory as string | undefined,
             connectorId: _data.data.connectorId as string | undefined,
           }
+          const synologyDriveData: SynologyDriveDataSourceDocType["data_v2"] = {
+            connectorId: _data.data.connectorId as string | undefined,
+            folderId: _data.data.folderId as string | undefined,
+          }
 
           const newData = {
             ...doc,
@@ -85,6 +90,9 @@ export const DataSourceDetailsScreen = memo(() => {
               ...(obokuPlugin?.type === "dropbox" ? dropboxData : {}),
               ...(obokuPlugin?.type === "DRIVE" ? googleData : {}),
               ...(obokuPlugin?.type === "webdav" ? webdavData : {}),
+              ...(obokuPlugin?.type === "synology-drive"
+                ? synologyDriveData
+                : {}),
             },
           } satisfies BaseDataSourceDocType
 
