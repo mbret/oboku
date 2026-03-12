@@ -2,7 +2,15 @@ import { createFileRoute } from "@tanstack/react-router"
 import "../App.css"
 import { useLogin } from "../features/useLogin"
 import { useForm } from "@mantine/form"
-import { Box, Button, Group, Paper, Text, TextInput } from "@mantine/core"
+import {
+  Box,
+  Button,
+  Group,
+  Paper,
+  PasswordInput,
+  Text,
+  TextInput,
+} from "@mantine/core"
 import { useIsAuthenticated } from "@/features/useIsAuthenticated"
 import { useMigrate } from "@/features/useMigrate"
 import { useMigrateWebdavConnectors } from "@/features/useMigrateWebdavConnectors"
@@ -44,24 +52,33 @@ function App() {
 
   return (
     <div className="App">
-      <form onSubmit={form.onSubmit((values) => login(values))}>
-        <Box maw={340} mx="auto">
-          <TextInput
-            label="First name"
-            placeholder="First name"
-            key={form.key("login")}
-            {...form.getInputProps("login")}
-          />
-          <TextInput
-            label="Password"
-            placeholder="Password"
-            mt="md"
-            key={form.key("password")}
-            {...form.getInputProps("password")}
-          />
-          <Button type="submit">login</Button>
-        </Box>
-      </form>
+      {!isAuthenticated ? (
+        <form onSubmit={form.onSubmit((values) => login(values))}>
+          <Box maw={340} mx="auto">
+            <TextInput
+              label="First name"
+              placeholder="First name"
+              key={form.key("login")}
+              {...form.getInputProps("login")}
+            />
+            <PasswordInput
+              label="Password"
+              placeholder="Password"
+              mt="md"
+              key={form.key("password")}
+              {...form.getInputProps("password")}
+            />
+            <Button type="submit">login</Button>
+          </Box>
+        </form>
+      ) : (
+        <Paper withBorder p="md" maw={340} mx="auto">
+          <Text fw={500}>Admin session active</Text>
+          <Text size="sm" c="dimmed">
+            You are signed in. Migration actions are available below.
+          </Text>
+        </Paper>
+      )}
 
       {isAuthenticated && (
         <Box mt="md" maw={340} mx="auto">
