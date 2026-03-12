@@ -3,10 +3,7 @@ import { useCallback } from "react"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 import type { UseRefreshMetadataRequest } from "./types"
 import { getPluginFromType } from "./getPluginFromType"
-
-function assertNever(value: never): never {
-  throw new Error(`Unexpected linkType: ${String(value)}`)
-}
+import { assertNever } from "@oboku/shared"
 
 const getRequiredPlugin = (type: UseRefreshMetadataRequest["linkType"]) => {
   const plugin = getPluginFromType(type)

@@ -17,7 +17,7 @@ class PostMetadataRefreshDto {
   soft?: boolean
 
   @IsObject()
-  providerCredentials: ProviderApiCredentials<DataSourceType>
+  providerCredentials!: ProviderApiCredentials<DataSourceType>
 }
 
 @Controller("collections")

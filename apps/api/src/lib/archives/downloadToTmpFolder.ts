@@ -14,7 +14,7 @@ export const downloadToTmpFolder = (
   book: BookDocType,
   link: LinkDocType,
   config: AppConfigService,
-  credentials?: ProviderApiCredentials<DataSourceType>,
+  credentials: ProviderApiCredentials<DataSourceType>,
   db?: createNano.DocumentScope<unknown>,
 ) =>
   new Promise<{
