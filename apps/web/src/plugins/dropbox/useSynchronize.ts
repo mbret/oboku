@@ -10,8 +10,12 @@ export const useSynchronize: UseSynchronizeHook<"dropbox"> = ({
       const auth = await authUser({ requestPopup })
 
       return {
-        data: {
-          ...auth,
+        providerCredentials: {
+          accessToken: auth.getAccessToken(),
+          accessTokenExpiresAt: auth.getAccessTokenExpiresAt().toISOString(),
+          clientId: auth.getClientId(),
+          codeVerifier: auth.getCodeVerifier(),
+          refreshToken: auth.getRefreshToken(),
         },
       }
     },

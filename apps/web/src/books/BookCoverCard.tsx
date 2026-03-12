@@ -6,6 +6,7 @@ import {
   Card,
   type CardProps,
   Chip,
+  Typography,
   useTheme,
 } from "@mui/material"
 import {
@@ -19,7 +20,8 @@ import {
 import { Cover } from "./Cover"
 import { useBook, useIsBookProtected } from "./states"
 import { ReadingStateState } from "@oboku/shared"
-import { ReadingProgress } from "./bookList/ReadingProgress"
+import { useLink } from "../links/states"
+import { usePlugin } from "../plugins/usePlugin"
 import { DownloadState, useBookDownloadState } from "../download/states"
 import { ButtonAsIcon } from "../common/ButtonAsIcon"
 
@@ -47,9 +49,9 @@ export const BookCoverCard: FC<
     bookId: string
     className?: string
     style?: React.CSSProperties
-    withReadingProgressStatus?: boolean
     withDownloadStatus?: boolean
     withBadges: boolean
+    showBottomBar?: boolean
     size?: "small" | "large" | "medium"
   } & CardProps
 > = memo(
@@ -58,15 +60,22 @@ export const BookCoverCard: FC<
     className,
     style,
     withDownloadStatus = true,
-    withReadingProgressStatus = true,
     withBadges,
+    showBottomBar = false,
     size = "small",
     ...rest
   }) => {
     const { data: item } = useBook({ id: bookId })
+    const { data: link } = useLink({ id: item?.links?.[0] })
+    const linkPlugin = usePlugin(link?.type)
     const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected } = useIsBookProtected(item)
     const theme = useTheme()
+    const hasBottomBar =
+      showBottomBar &&
+      (!!linkPlugin?.Icon ||
+        item?.readingStateCurrentState === ReadingStateState.Finished ||
+        item?.readingStateCurrentState === ReadingStateState.Reading)
 
     return (
       <Card
@@ -130,13 +139,6 @@ export const BookCoverCard: FC<
                   </CoverIconBadge>
                 )}
               </Box>
-              {withReadingProgressStatus &&
-                item?.readingStateCurrentState ===
-                  ReadingStateState.Finished && (
-                  <CoverIconBadge alignSelf="flex-end" justifySelf="flex-end">
-                    <CheckOutlined fontSize={size} color="primary" />
-                  </CoverIconBadge>
-                )}
             </Box>
           )}
           {withBadges && item?.metadataUpdateStatus === "fetching" && (
@@ -188,20 +190,50 @@ export const BookCoverCard: FC<
               </Box>
             )}
         </Box>
-        {withReadingProgressStatus &&
-          item?.readingStateCurrentState === ReadingStateState.Reading && (
-            <ReadingProgress
-              progress={
-                (item?.readingStateCurrentBookmarkProgressPercent || 0) * 100
-              }
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: "50%",
-                transform: "translateX(-50%)",
-              }}
-            />
-          )}
+        {hasBottomBar && (
+          <Box
+            position="absolute"
+            bottom={0}
+            left={0}
+            right={0}
+            minHeight={theme.spacing(4)}
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            p={0.5}
+            boxSizing="border-box"
+            bgcolor={
+              theme.palette.mode === "dark"
+                ? theme.alpha(theme.palette.common.black, 0.5)
+                : theme.alpha(theme.palette.common.white, 0.5)
+            }
+            sx={{
+              lineHeight: 0,
+              backdropFilter: "blur(8px)",
+            }}
+          >
+            <Box display="flex" alignItems="center">
+              {linkPlugin?.Icon && (
+                <linkPlugin.Icon fontSize="medium" sx={{ display: "block" }} />
+              )}
+            </Box>
+            <Box display="flex" alignItems="center">
+              {item?.readingStateCurrentState === ReadingStateState.Reading && (
+                <Typography variant="body2" fontWeight="bold">
+                  {Math.floor(
+                    (item?.readingStateCurrentBookmarkProgressPercent || 0) *
+                      100,
+                  ) || 1}
+                  %
+                </Typography>
+              )}
+              {item?.readingStateCurrentState ===
+                ReadingStateState.Finished && (
+                <CheckOutlined fontSize="medium" />
+              )}
+            </Box>
+          </Box>
+        )}
       </Card>
     )
   },

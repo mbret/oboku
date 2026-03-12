@@ -1,20 +1,11 @@
 import { memo } from "react"
-import { useSafeGoBack } from "../../../navigation/useSafeGoBack"
-import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
-import { ROUTES } from "../../../navigation/routes"
+import { AddConnectorScreen as GenericAddConnectorScreen } from "../../../connectors/AddConnectorScreen"
 import { ConnectorForm } from "../../../plugins/webdav/connectors/ConnectorForm"
 
-export const AddWebdavConnectorScreen = memo(() => {
-  const { goBack } = useSafeGoBack()
-
-  return (
-    <>
-      <TopBarNavigation title={`WebDAV: New connector`} />
-      <ConnectorForm
-        onSubmitSuccess={() => {
-          goBack(ROUTES.PLUGINS.replace(":plugin", "webdav"))
-        }}
-      />
-    </>
-  )
-})
+export const AddWebdavConnectorScreen = memo(() => (
+  <GenericAddConnectorScreen connectorType="webdav">
+    {({ onSubmitSuccess }) => (
+      <ConnectorForm onSubmitSuccess={onSubmitSuccess} />
+    )}
+  </GenericAddConnectorScreen>
+))

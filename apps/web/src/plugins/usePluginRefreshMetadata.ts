@@ -1,60 +1,91 @@
-import { useCallback, useRef } from "react"
-import { plugins } from "./configure"
+import type { DataSourceDocType, ProviderApiCredentials } from "@oboku/shared"
+import { useCallback } from "react"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
-import type { ObokuPlugin } from "./types"
-import type { DataSourceDocType } from "@oboku/shared"
+import type { UseRefreshMetadataRequest } from "./types"
+import { getPluginFromType } from "./getPluginFromType"
+import { assertNever } from "@oboku/shared"
+
+const getRequiredPlugin = (type: UseRefreshMetadataRequest["linkType"]) => {
+  const plugin = getPluginFromType(type)
+
+  if (!plugin) {
+    throw new Error(`Plugin ${type} not found`)
+  }
+
+  return plugin
+}
 
 export const usePluginRefreshMetadata = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
 
-  // It's important to use array for plugins and be careful of the order since
-  // it will trigger all hooks
-  type UseRefreshMetadata =
-    | ReturnType<NonNullable<ObokuPlugin[`useRefreshMetadata`]>>
-    | undefined
+  const { mutateAsync: webdavRefreshMetadata } = getRequiredPlugin(
+    "webdav",
+  ).useRefreshMetadata({
+    requestPopup: createRequestPopupDialog({ name: "webdav" }),
+  })
 
-  const getPluginFn = useRef<
-    (Pick<(typeof plugins)[number], "type"> & {
-      refreshMetadata: UseRefreshMetadata
-    })[]
-  >([])
+  const { mutateAsync: synologyDriveRefreshMetadata } = getRequiredPlugin(
+    "synology-drive",
+  ).useRefreshMetadata({
+    requestPopup: createRequestPopupDialog({ name: "synology-drive" }),
+  })
 
-  getPluginFn.current = plugins.map((plugin) => ({
-    type: plugin.type,
-    // biome-ignore lint/correctness/useHookAtTopLevel: Expected
-    refreshMetadata: plugin.useRefreshMetadata?.({
-      requestPopup: createRequestPopupDialog({ name: plugin.name }),
-    }),
-  }))
+  const { mutateAsync: dropboxRefreshMetadata } = getRequiredPlugin(
+    "dropbox",
+  ).useRefreshMetadata({
+    requestPopup: createRequestPopupDialog({ name: "dropbox" }),
+  })
+
+  const { mutateAsync: driveRefreshMetadata } = getRequiredPlugin(
+    "DRIVE",
+  ).useRefreshMetadata({
+    requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
+  })
+
+  const { mutateAsync: fileRefreshMetadata } = getRequiredPlugin(
+    "file",
+  ).useRefreshMetadata({
+    requestPopup: createRequestPopupDialog({ name: "file" }),
+  })
+
+  const { mutateAsync: uriRefreshMetadata } = getRequiredPlugin(
+    "URI",
+  ).useRefreshMetadata({
+    requestPopup: createRequestPopupDialog({ name: "URI" }),
+  })
 
   return useCallback(
-    async ({
-      linkType,
-      linkData,
-      linkResourceId,
-    }: {
-      linkType: DataSourceDocType["type"]
-      linkData: Record<string, unknown>
-      linkResourceId?: string
-    }): Promise<{ data?: Record<string, unknown> }> => {
-      const found = getPluginFn.current.find(
-        (plugin) => plugin.type === linkType,
-      )
+    async (
+      params: UseRefreshMetadataRequest,
+    ): Promise<{
+      providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
+    }> => {
+      const linkType = params.linkType
 
-      if (found) {
-        if (!found.refreshMetadata) {
-          return {}
-        }
-
-        return await found.refreshMetadata.mutateAsync({
-          linkType,
-          linkData,
-          linkResourceId,
-        })
+      switch (linkType) {
+        case "webdav":
+          return await webdavRefreshMetadata(params)
+        case "synology-drive":
+          return await synologyDriveRefreshMetadata(params)
+        case "dropbox":
+          return await dropboxRefreshMetadata(params)
+        case "DRIVE":
+          return await driveRefreshMetadata(params)
+        case "file":
+          return await fileRefreshMetadata(params)
+        case "URI":
+          return await uriRefreshMetadata(params)
+        default:
+          return assertNever(linkType)
       }
-
-      return {}
     },
-    [],
+    [
+      webdavRefreshMetadata,
+      synologyDriveRefreshMetadata,
+      dropboxRefreshMetadata,
+      driveRefreshMetadata,
+      fileRefreshMetadata,
+      uriRefreshMetadata,
+    ],
   )
 }

@@ -2,38 +2,24 @@ import type { MigrationStrategies, RxCollection, RxJsonSchema } from "rxdb"
 import type { Database } from "../databases.shared"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
-
-export type SettingsDocType = {
-  _id: "settings"
-  masterEncryptionKey?: {
-    salt: string
-    iv: string
-    data: string
-  } | null
-  webdavConnectors?: {
-    id: string
-    url: string
-    username: string
-    passwordAsSecretId: string
-  }[]
-  readerGlobalFontScale?: number | null
-  readerMobileFontScale?: number | null
-  readerTabletFontScale?: number | null
-  readerDesktopFontScale?: number | null
-}
+import type {
+  SettingsConnectorDocType,
+  SettingsConnectorType,
+  SettingsDocType,
+  SynologyDriveConnectorDocType,
+  WebdavConnectorDocType,
+} from "@oboku/shared"
 
 type SettingsCollectionMethods = {
-  postWebdavConnector: (
-    json: Omit<NonNullable<SettingsDocType["webdavConnectors"]>[number], "id">,
+  postConnector: (
+    json: Omit<SettingsConnectorDocType, "id">,
   ) => Promise<SettingsDocType>
-  deleteWebdavConnector: (id: string) => Promise<SettingsDocType>
-  patchWebdavConnector: (
+  deleteConnector: (id: string) => Promise<SettingsDocType>
+  patchConnector: (
     id: string,
-    json: Partial<NonNullable<SettingsDocType["webdavConnectors"]>[number]>,
+    json: Partial<Omit<SettingsConnectorDocType, "id">>,
   ) => Promise<SettingsDocType>
-  getWebdavConnector: (
-    id: string,
-  ) => Promise<NonNullable<SettingsDocType["webdavConnectors"]>[number] | null>
+  getConnector: (id: string) => Promise<SettingsConnectorDocType | null>
 }
 
 export type SettingsCollection = RxCollection<
@@ -64,6 +50,25 @@ export const settingsSchema: RxJsonSchema<
       },
       required: ["salt", "iv", "data"],
     },
+    connectors: {
+      type: "array",
+      uniqueItems: true,
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          type: {
+            type: "string",
+            enum: ["webdav", "synology-drive"],
+          },
+          url: { type: "string" },
+          username: { type: "string" },
+          passwordAsSecretId: { type: "string" },
+          allowSelfSigned: { type: "boolean" },
+        },
+        required: ["id", "type", "username", "passwordAsSecretId"],
+      },
+    },
     webdavConnectors: {
       type: "array",
       uniqueItems: true,
@@ -86,10 +91,16 @@ export const settingsSchema: RxJsonSchema<
   },
 }
 
+export const isConnectorOfType = <T extends SettingsConnectorType>(
+  connector: SettingsConnectorDocType,
+  type: T,
+): connector is Extract<SettingsConnectorDocType, { type: T }> =>
+  connector.type === type
+
 export const settingsSchemaMigrationStrategies: MigrationStrategies = {}
 
 export const settingsCollectionMethods: SettingsCollectionMethods = {
-  postWebdavConnector: async function (this: SettingsCollection, json) {
+  postConnector: async function (this: SettingsCollection, json) {
     const settings = await this.findOne("settings").exec()
 
     if (!settings) {
@@ -97,65 +108,69 @@ export const settingsCollectionMethods: SettingsCollectionMethods = {
     }
 
     return settings.incrementalModify((doc) => {
-      if (!doc.webdavConnectors) {
-        doc.webdavConnectors = []
+      if (!doc.connectors) {
+        doc.connectors = []
       }
 
-      doc.webdavConnectors?.push({
+      doc.connectors?.push({
         id: generateId(),
         ...json,
+      } as SettingsConnectorDocType)
+
+      return doc
+    })
+  },
+  deleteConnector: async function (this: SettingsCollection, id) {
+    const settings = await this.findOne("settings").exec()
+
+    if (!settings) {
+      throw new Error("Settings not found")
+    }
+
+    return settings.incrementalModify((doc) => {
+      return {
+        ...doc,
+        connectors: doc.connectors?.filter((connector) => connector.id !== id),
+      }
+    })
+  },
+  patchConnector: async function (this: SettingsCollection, id, json) {
+    const settings = await this.findOne("settings").exec()
+
+    if (!settings) {
+      throw new Error("Settings not found")
+    }
+
+    return settings.incrementalModify((doc) => {
+      doc.connectors = doc.connectors?.map((connector) => {
+        if (connector.id !== id) {
+          return connector
+        }
+
+        if (connector.type === "webdav") {
+          return {
+            ...connector,
+            ...json,
+          } as WebdavConnectorDocType
+        }
+
+        return {
+          ...connector,
+          ...json,
+        } as SynologyDriveConnectorDocType
       })
 
       return doc
     })
   },
-  deleteWebdavConnector: async function (this: SettingsCollection, id) {
+  getConnector: async function (this: SettingsCollection, id) {
     const settings = await this.findOne("settings").exec()
 
     if (!settings) {
       throw new Error("Settings not found")
     }
 
-    return settings.incrementalModify((doc) => {
-      return {
-        ...doc,
-        webdavConnectors: doc.webdavConnectors?.filter(
-          (connector) => connector.id !== id,
-        ),
-      }
-    })
-  },
-  patchWebdavConnector: async function (this: SettingsCollection, id, json) {
-    const settings = await this.findOne("settings").exec()
-
-    if (!settings) {
-      throw new Error("Settings not found")
-    }
-
-    return settings.incrementalModify((doc) => {
-      return {
-        ...doc,
-        webdavConnectors: doc.webdavConnectors?.map((connector) => {
-          if (connector.id === id) {
-            return {
-              ...connector,
-              ...json,
-            }
-          }
-
-          return connector
-        }),
-      }
-    })
-  },
-  getWebdavConnector: async function (this: SettingsCollection, id) {
-    const settings = await this.findOne("settings").exec()
-
-    if (!settings) {
-      throw new Error("Settings not found")
-    }
-
-    const connector = settings.webdavConnectors?.find(
+    const connector = settings.connectors?.find(
       (connector) => connector.id === id,
     )
 
@@ -170,5 +185,7 @@ export const initializeSettings = async (db: Database) => {
     await db.settings.insert({
       _id: "settings",
     })
+
+    return
   }
 }

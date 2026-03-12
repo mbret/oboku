@@ -10,24 +10,25 @@ import { ChakraProvider } from "@chakra-ui/react"
 import { ThemeProvider as NextThemes } from "next-themes"
 import { defaultSystem, einkSystem } from "./chakra"
 
-/**
- * - Automatically update the color mode when user changes preferences.
- * - Automatically restore the user color mode once he log in.
- */
 const ColorModeSwitcher = () => {
-  const { setMode } = useColorScheme()
+  const { mode, setMode } = useColorScheme()
   const { themeMode = "system" } = useLocalSettings()
+  const nextMode = themeMode === "e-ink" ? "light" : themeMode
 
   useEffect(() => {
-    setMode(themeMode === "e-ink" ? "system" : themeMode)
-  }, [setMode, themeMode])
+    if (mode !== nextMode) {
+      setMode(nextMode)
+    }
+  }, [mode, nextMode, setMode])
 
   return null
 }
 
 const ChakraThemeProvider = memo(({ children }: { children: ReactNode }) => {
-  const { themeMode } = useLocalSettings()
-  const { colorScheme } = useColorScheme()
+  const { themeMode = "system" } = useLocalSettings()
+  const isSystemTheme = themeMode === "system"
+  const forcedTheme =
+    themeMode === "e-ink" ? "light" : isSystemTheme ? undefined : themeMode
 
   /* Chakra seems to be very well scoped so it's okay to wrap it on app level even if it's used 
       only by the reader. We may as well use chakra components here and there when needed */
@@ -36,14 +37,8 @@ const ChakraThemeProvider = memo(({ children }: { children: ReactNode }) => {
       <NextThemes
         attribute="class"
         disableTransitionOnChange
-        // {...(prefersDarkColorScheme() && { forcedTheme: "dark" })}
-        // for now we use light mode on oboku so we need to force it
-        // as well here otherwise it would create inconsistency
-        {...(colorScheme === "dark" && { forcedTheme: "dark" })}
-        {...((colorScheme === "light" || themeMode === "e-ink") && {
-          forcedTheme: "light",
-          // otherwise system
-        })}
+        enableSystem={isSystemTheme}
+        {...(forcedTheme && { forcedTheme })}
       >
         {children}
       </NextThemes>
@@ -52,15 +47,20 @@ const ChakraThemeProvider = memo(({ children }: { children: ReactNode }) => {
 })
 
 export const ThemeProvider = memo(({ children }: { children: ReactNode }) => {
-  const { themeMode } = useLocalSettings()
+  const { themeMode = "system" } = useLocalSettings()
+  const muiMode =
+    themeMode === "system"
+      ? "system"
+      : themeMode === "e-ink"
+        ? "light"
+        : themeMode
 
   return (
     <MuiThemeProvider
       theme={themeMode === "e-ink" ? eInkTheme : theme}
-      /**
-       * This will use the last saved mode or fallback to system.
-       */
-      defaultMode="system"
+      noSsr
+      defaultMode={muiMode}
+      storageManager={null}
     >
       <CssBaseline />
       <ColorModeSwitcher />

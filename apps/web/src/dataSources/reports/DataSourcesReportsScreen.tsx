@@ -48,6 +48,13 @@ export const DataSourcesReportsScreen = memo(() => {
                 </Box>
               </Stack>
               <Stack mt={1} gap={1} pl={1}>
+                {entry.report.has_different_provider_credentials && (
+                  <Alert severity="info">
+                    Some books or collections were synced but could not have
+                    their metadata refreshed because they use a different link
+                    or connector than this datasource.
+                  </Alert>
+                )}
                 <ReportSummary entry={entry} />
 
                 {!!entry.report.report.length && (
@@ -131,6 +138,20 @@ export const DataSourcesReportsScreen = memo(() => {
                                   </Typography>
                                 </Box>
                               )}
+                            {rx_model === `book` &&
+                              reportEntry.hasDifferentProviderCredentials && (
+                                <Box>
+                                  {icon}{" "}
+                                  <Typography
+                                    variant="caption"
+                                    component="span"
+                                  >
+                                    Book <b>{label ?? id}</b> uses a different
+                                    link or connector than this datasource.
+                                    Metadata refresh skipped.
+                                  </Typography>
+                                </Box>
+                              )}
                             {rx_model === `obokucollection` &&
                               !!linkedToBooks?.length && (
                                 <Box>
@@ -164,6 +185,20 @@ export const DataSourcesReportsScreen = memo(() => {
                                         ({ id, label }) => `"${label ?? id}"`,
                                       )
                                       .join(`, `)}
+                                  </Typography>
+                                </Box>
+                              )}
+                            {rx_model === `obokucollection` &&
+                              reportEntry.hasDifferentProviderCredentials && (
+                                <Box>
+                                  {icon}{" "}
+                                  <Typography
+                                    variant="caption"
+                                    component="span"
+                                  >
+                                    Collection <b>{label ?? id}</b> uses a
+                                    different link or connector than this
+                                    datasource. Metadata refresh skipped.
                                   </Typography>
                                 </Box>
                               )}

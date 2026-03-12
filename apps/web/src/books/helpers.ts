@@ -3,18 +3,13 @@ import { useDatabase } from "../rxdb"
 import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Logger } from "../debug/logger.shared"
 import { useMemo } from "react"
-import type { PromiseReturnType } from "../types"
 import { type BookQueryResult, useBooks } from "./states"
 import { useNetworkState } from "react-use"
 import { usePluginRemoveBook } from "../plugins/usePluginRemoveBook"
 import { getMetadataFromBook } from "./metadata"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
 import { useLock } from "../common/BlockingBackdrop"
-import {
-  CancelError,
-  isPluginError,
-  OfflineError,
-} from "../errors/errors.shared"
+import { OfflineError } from "../errors/errors.shared"
 import { useMutation } from "@tanstack/react-query"
 import { useMutation$ } from "reactjrx"
 import { defaultIfEmpty, from, merge } from "rxjs"
@@ -41,15 +36,7 @@ export const useRemoveBook = () => {
           throw new OfflineError()
         }
 
-        try {
-          await removeBookFromDataSource(id)
-        } catch (e) {
-          if (isPluginError(e) && e.code === "cancelled") {
-            throw new CancelError()
-          }
-
-          throw e
-        }
+        await removeBookFromDataSource(id)
       }
 
       const unlock = lock()
@@ -160,21 +147,22 @@ export const useAddBook = () => {
   const { db: database } = useDatabase()
   const refreshMetadata = useRefreshBookMetadata()
 
-  type Return = {
-    book: PromiseReturnType<NonNullable<typeof database>["book"]["post"]>
-    link: PromiseReturnType<NonNullable<typeof database>["link"]["safeInsert"]>
-  }
-
   const addBook = async ({
     book,
     link,
+    skipMetadataRefresh = false,
   }: {
     book?: Partial<Parameters<NonNullable<typeof database>["book"]["post"]>[0]>
     link: Parameters<NonNullable<typeof database>["link"]["safeInsert"]>[0]
-  }): Promise<Return | undefined> => {
+    skipMetadataRefresh?: boolean
+  }) => {
     try {
       if (database) {
-        const linkAdded = await database.link.safeInsert(link)
+        const linkToInsert = {
+          ...link,
+          data: link.type === "URI" ? (link.data ?? {}) : (link.data ?? null),
+        }
+        const linkAdded = await database.link.safeInsert(linkToInsert)
 
         const { tags, ...rest } = book || {}
         const newBook = await database.book.post({
@@ -194,7 +182,9 @@ export const useAddBook = () => {
           ...rest,
         })
 
-        refreshMetadata(newBook._id)
+        if (!skipMetadataRefresh) {
+          refreshMetadata(newBook._id)
+        }
 
         return { book: newBook, link: linkAdded }
       }

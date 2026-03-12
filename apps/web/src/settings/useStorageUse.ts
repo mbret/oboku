@@ -1,37 +1,15 @@
-import { type DependencyList, useEffect, useState } from "react"
 import { useCoversCacheInformation } from "../covers/useCoversCacheInformation"
+import { useStorageEstimate } from "../common/useStorageEstimate"
 
-interface ChromeStorageEstimate extends StorageEstimate {
-  usageDetails?: {
-    indexedDB: number
-  }
-}
-
-export const useStorageUse = (deps: DependencyList) => {
-  const [storageQuota, setStorageQuota] = useState<number | undefined>(
-    undefined,
-  )
-  const [indexedDBUsage, setIndexedDBUsage] = useState<number | undefined>(
-    undefined,
-  )
-
+export const useStorageUse = (
+  params: Parameters<typeof useStorageEstimate>[0] = {},
+) => {
+  const { quota, usage, refreshStorageEstimate } = useStorageEstimate(params)
   const { data: coversSize } = useCoversCacheInformation()
-
-  useEffect(() => {
-    // not available in all browsers
-    navigator.storage?.estimate().then((estimate) => {
-      const estimateIndexedDBUsage = (estimate as ChromeStorageEstimate)
-        ?.usageDetails?.indexedDB
-      estimate.quota && setStorageQuota(estimate.quota)
-      estimateIndexedDBUsage && setIndexedDBUsage(estimateIndexedDBUsage)
-    })
-    // biome-ignore lint/correctness/useExhaustiveDependencies: It is
-  }, deps)
-
   const coversWightInMb = ((coversSize?.weight ?? 0) / 1e6).toFixed(2)
-  const quotaUsed = (indexedDBUsage || 0) / (storageQuota || 1)
-  const usedInMb = ((indexedDBUsage || 1) / 1e6).toFixed(2)
-  const quotaInGb = ((storageQuota || 1) / 1e9).toFixed(2)
+  const quotaUsed = usage / (quota || 1)
+  const usedInMb = (usage / 1e6).toFixed(2)
+  const quotaInGb = (quota / 1e9).toFixed(2)
 
   return {
     quotaUsed,
@@ -39,5 +17,6 @@ export const useStorageUse = (deps: DependencyList) => {
     quotaInGb,
     coversWightInMb,
     covers: coversSize?.size,
+    refreshStorageEstimate,
   }
 }

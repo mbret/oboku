@@ -4,13 +4,14 @@ import { synchronizeFromDataSource } from "./synchronizeFromDataSource"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { createHelpers } from "../plugins/helpers"
 import { atomicUpdate } from "../couch/dbHelpers"
-import { plugins } from "../plugins/plugins"
+import { getPlugin } from "../plugins/plugins"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/config/types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "src/events"
 import { SyncReportPostgresService } from "src/features/postgres/SyncReportPostgresService"
 import { CoversService } from "src/covers/covers.service"
+import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
 import {
   SynchronizeAbleDataSource,
   SynchronizeAbleItem,
@@ -19,7 +20,7 @@ import {
 export const sync = async ({
   dataSourceId,
   userName,
-  data,
+  providerCredentials,
   db,
   config,
   eventEmitter,
@@ -29,7 +30,7 @@ export const sync = async ({
 }: {
   dataSourceId: string
   userName: string
-  data?: Record<string, unknown>
+  providerCredentials: ProviderApiCredentials<DataSourceType>
   db: createNano.DocumentScope<unknown>
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
@@ -55,7 +56,7 @@ export const sync = async ({
       Events.BOOKS_METADATA_REFRESH,
       new BooksMetadataRefreshEvent({
         bookId,
-        data,
+        providerCredentials,
         email,
       }),
     )
@@ -77,20 +78,26 @@ export const sync = async ({
     // during the process (which can take time), user will not be misled to believe its
     // latest changes have been synced
     const lastSyncedAt = Date.now()
-    const ctx = {
-      dataSourceId,
-      userName,
-      data,
-      dataSourceType: type,
-      db,
-      syncReport,
-      userNameHex: nameHex,
-      email,
-    }
-    const plugin = plugins.find((plugin) => plugin.type === type)
-
+    const plugin = getPlugin(type)
     if (!plugin?.sync) {
       throw new Error("plugin does not support sync")
+    }
+
+    const syncOptions = {
+      dataSourceId,
+      userName,
+      providerCredentials,
+      dataSourceType: type,
+      dataSource,
+      db,
+      syncReport,
+    }
+
+    const ctx = {
+      ...syncOptions,
+      userNameHex: nameHex,
+      email,
+      plugin,
     }
 
     const applyTags = <T extends SynchronizeAbleItem>(item: T): T => ({
@@ -99,7 +106,7 @@ export const sync = async ({
       items: item.items?.map(applyTags),
     })
 
-    const synchronizeAbleDataSource = await plugin.sync(ctx, helpers)
+    const synchronizeAbleDataSource = await plugin.sync(syncOptions, helpers)
     const synchronizeAbleDataSourceWithTags: SynchronizeAbleDataSource = {
       ...synchronizeAbleDataSource,
       items: synchronizeAbleDataSource.items.map(applyTags),

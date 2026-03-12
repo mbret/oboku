@@ -23,7 +23,15 @@ export const useManageBookTagsDialog = () => {
 
 export const ManageBookTagsDialog = () => {
   const bookId = useSignalValue(openManageBookTagsDialogStateSignal)
-  const open = !!bookId
+
+  if (typeof bookId !== "string") {
+    return null
+  }
+
+  return <ManageBookTagsDialogInner bookId={bookId} />
+}
+
+const ManageBookTagsDialogInner = ({ bookId }: { bookId: string }) => {
   const { data: tags = [] } = useTagIds()
   const { data: book } = useBook({
     id: bookId,
@@ -44,9 +52,9 @@ export const ManageBookTagsDialog = () => {
   const onItemClick = useCallback(
     ({ id: tagId, selected }: { id: string; selected: boolean }) => {
       if (selected) {
-        bookId && removeFromBook({ _id: bookId, tagId })
+        removeFromBook({ _id: bookId, tagId })
       } else {
-        bookId && addTagToBook({ _id: bookId, tagId })
+        addTagToBook({ _id: bookId, tagId })
       }
     },
     [removeFromBook, addTagToBook, bookId],
@@ -55,7 +63,7 @@ export const ManageBookTagsDialog = () => {
   return (
     <TagsSelectionDialog
       title="Manage tags"
-      open={open}
+      open
       onClose={onClose}
       data={tags}
       selected={selected}

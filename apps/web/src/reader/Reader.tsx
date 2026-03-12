@@ -36,7 +36,7 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   )
   const { globalFontScale, updateGlobalFontScale } = useSettingsFormValues()
   const { goBack } = useSafeGoBack()
-  const { toggleMoreDialog } = useMoreDialog()
+  const { toggle: toggleMoreDialog } = useMoreDialog()
   const { mutate } = useShowRemoveBookOnExitDialog({
     bookId,
     onSettled: () => {
@@ -67,7 +67,6 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   return (
     <>
       <Box position="relative" height="100%" width="100%" overflow="hidden">
-        {readerState !== "ready" && <BookLoading />}
         <ReactReader
           onItemClick={onItemClick}
           enableFloatingTime={localSettings.readerFloatingTime === "bottom"}
@@ -88,6 +87,8 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
           />
         </ReactReader>
       </Box>
+      {/* Need to be after reader container so it shows on top and hide loading */}
+      {readerState !== "ready" && <BookLoading />}
       <Effects
         bookId={bookId}
         isUsingWebStreamer={isUsingWebStreamer}
@@ -116,7 +117,6 @@ const Effects = memo(
       containerElement,
       manifest,
     })
-
     useSyncBookProgress(bookId)
 
     return null

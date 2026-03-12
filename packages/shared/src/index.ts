@@ -6,8 +6,8 @@ export const design = {
 
 export const links = {
   documentation: `https://docs.oboku.me`,
+  documentationConnectors: `https://docs.oboku.me/guides/connectors`,
   documentationSecrets: `https://docs.oboku.me/secrets`,
-  documentationWebDAV: `https://docs.oboku.me/guides/webdav`,
   app: `https://app.oboku.me`,
   site: `https://oboku.me`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,
@@ -63,6 +63,7 @@ export { ObokuErrorCode, ObokuSharedError } from "./errors"
 
 export * from "./metadata"
 export * from "./sync/reports"
+export * from "./sync/types"
 export * from "./utils/objects"
 export * from "./utils/difference"
 export * from "./utils/truncate"
@@ -74,4 +75,8 @@ export * from "./contentType"
 export * from "./plugins/webdav"
 export * from "./plugins/file"
 export * from "./plugins/dropbox"
+export * from "./plugins/synologyDrive"
+export * from "./plugins/uri"
+export * from "./plugins/credentials"
+export * from "./utils/assertNever"
 export * from "./db/mongo"

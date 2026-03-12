@@ -9,10 +9,7 @@ import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Typography, Container, Stack, IconButton } from "@mui/material"
 import { useNavigate, useParams } from "react-router"
 import { Alert } from "@mui/material"
-import {
-  useCancelBookDownload,
-  useDownloadBook,
-} from "../../download/useDownloadBook"
+import { useCancelBookDownload, useDownloadBook } from "../../download"
 import { useBook } from "../states"
 import { useLink } from "../../links/states"
 import { DataSourceSection } from "./DataSourceSection"

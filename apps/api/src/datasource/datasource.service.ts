@@ -1,3 +1,4 @@
+import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
 import { Injectable } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { from, switchMap } from "rxjs"
@@ -19,11 +20,11 @@ export class DataSourceService {
 
   syncLongProgress = ({
     dataSourceId,
-    data,
+    providerCredentials,
     email,
   }: {
     dataSourceId: string
-    data: Record<string, unknown>
+    providerCredentials: ProviderApiCredentials<DataSourceType>
     email: string
   }) => {
     const db$ = from(this.couchService.createNanoInstanceForUser({ email }))
@@ -35,7 +36,7 @@ export class DataSourceService {
             userName: email,
             dataSourceId,
             db,
-            data,
+            providerCredentials,
             config: this.appConfig.config,
             eventEmitter: this.eventEmitter,
             syncReportPostgresService: this.syncReportPostgresService,

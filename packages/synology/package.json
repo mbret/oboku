@@ -1,0 +1,31 @@
+{
+  "name": "@oboku/synology",
+  "version": "0.1.0",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "license": "MIT",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "start": "vite build --watch --mode development",
+    "build": "tsc && vite build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.0.5"
+  },
+  "devDependencies": {
+    "vite": "^7",
+    "vite-plugin-dts": "^4.0.3"
+  }
+}

@@ -17,7 +17,7 @@ export const useSynchronize: UseSynchronizeHook<"DRIVE"> = ({
       )
 
       return {
-        data: {
+        providerCredentials: {
           ...token,
         },
       }

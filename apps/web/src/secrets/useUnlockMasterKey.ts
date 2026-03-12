@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect } from "react"
 import { useRequestMasterKey } from "./useRequestMasterKey"
 import { BehaviorSubject } from "rxjs"
 import { useObserve } from "reactjrx"
+import type { MutateOptions } from "@tanstack/react-query"
 
 // const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000
 
@@ -10,15 +11,18 @@ const unlockedMasterKeySubject = new BehaviorSubject<string | undefined>(
 )
 
 export const useUnlockMasterKey = () => {
-  const { mutate: requestMasterKey } = useRequestMasterKey()
-  const [masterKey, setMasterKey] = useState<string | undefined>(undefined)
+  const {
+    mutate: requestMasterKey,
+    data: masterKey,
+    reset: resetMasterKey,
+  } = useRequestMasterKey()
 
   useEffect(() => {
     return () => {
-      setMasterKey(undefined)
+      resetMasterKey()
       unlockedMasterKeySubject.next(undefined)
     }
-  }, [])
+  }, [resetMasterKey])
 
   //   useEffect(() => {
   //     if (masterKey) {
@@ -32,19 +36,26 @@ export const useUnlockMasterKey = () => {
   //     }
   //   }, [masterKey])
 
-  const unlockMasterKey = useCallback(() => {
-    requestMasterKey(undefined, {
-      onSuccess: (masterKey) => {
-        setMasterKey(masterKey)
-        unlockedMasterKeySubject.next(masterKey)
-      },
-    })
-  }, [requestMasterKey])
+  const unlockMasterKey = useCallback(
+    (
+      _variables?: unknown,
+      options?: MutateOptions<string, Error, void, unknown>,
+    ) => {
+      requestMasterKey(undefined, {
+        ...options,
+        onSuccess: (masterKey, ...rest) => {
+          unlockedMasterKeySubject.next(masterKey)
+          options?.onSuccess?.(masterKey, ...rest)
+        },
+      })
+    },
+    [requestMasterKey],
+  )
 
   const clearMasterKey = useCallback(() => {
-    setMasterKey(undefined)
+    resetMasterKey()
     unlockedMasterKeySubject.next(undefined)
-  }, [])
+  }, [resetMasterKey])
 
   return { masterKey, unlockMasterKey, clearMasterKey }
 }

@@ -36,7 +36,7 @@ export const NewDataSourceScreen = memo(() => {
       data: {
         connectorId: "",
         directory: "",
-        folderId: "",
+        items: [],
       },
     },
   })

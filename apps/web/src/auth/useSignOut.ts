@@ -1,3 +1,4 @@
+import { clearTemporaryMasterKey } from "./AuthorizeActionDialog"
 import { authStateSignal } from "./states.web"
 import { SIGNAL_RESET } from "reactjrx"
 import { removeProfile } from "../profile/currentProfile"
@@ -11,6 +12,7 @@ export const useSignOut = () => {
   const pluginSignOutFns = plugins.map((plugin) => plugin.useSignOut?.())
 
   return () => {
+    clearTemporaryMasterKey()
     authStateSignal.update(SIGNAL_RESET)
     googleAccessTokenSignal.update(SIGNAL_RESET)
 

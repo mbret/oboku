@@ -6,7 +6,7 @@ import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
 import { createDialog } from "../common/dialogs/createDialog"
 import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
-import { CancelError, isPluginError } from "../errors/errors.shared"
+import { CancelError } from "../errors/errors.shared"
 import { useNotifications } from "../notifications/useNofitications"
 
 export const useRefreshBookMetadata = () => {
@@ -36,7 +36,8 @@ export const useRefreshBookMetadata = () => {
         return
       }
 
-      const { data: pluginMetadata } = await refreshPluginMetadata({
+      const { providerCredentials } = await refreshPluginMetadata({
+        linkId: firstLink._id,
         linkType: firstLink.type,
         linkData: firstLink.data ?? {},
         linkResourceId: firstLink.resourceId,
@@ -55,7 +56,10 @@ export const useRefreshBookMetadata = () => {
         .pipe(
           switchMap(() =>
             from(
-              httpClientApi.refreshBookMetadata(bookId, pluginMetadata ?? {}),
+              httpClientApi.refreshBookMetadata({
+                bookId,
+                providerCredentials: providerCredentials,
+              }),
             ),
           ),
           catchError((e) =>
@@ -85,7 +89,7 @@ export const useRefreshBookMetadata = () => {
         )
         .subscribe()
     } catch (e) {
-      if (isPluginError(e) && e.code === "cancelled") return
+      if (e instanceof CancelError) return
 
       notifyError(e)
 

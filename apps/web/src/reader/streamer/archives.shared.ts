@@ -30,17 +30,24 @@ const loadDataWithJsZip = async (data: Blob | File) => {
   }
 }
 
+const RAR_MIME_TYPES = [
+  "application/x-rar-compressed",
+  "application/vnd.rar",
+  "application/x-rar",
+]
+
 export const isRarFile = (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>,
-) => {
-  return file.data.name.endsWith(".rar") || file.data.name.endsWith(".cbr")
-}
+) =>
+  RAR_MIME_TYPES.includes(file.data.type) ||
+  file.data.name.endsWith(".rar") ||
+  file.data.name.endsWith(".cbr")
 
 export const getArchiveForZipFile = async (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>,
 ): Promise<Archive> => {
   try {
-    const normalizedName = file.name.toLowerCase()
+    const normalizedName = file.data.name.toLowerCase()
 
     if (
       normalizedName.endsWith(`.epub`) ||
@@ -52,12 +59,13 @@ export const getArchiveForZipFile = async (
       try {
         return createArchiveFromJszip(jszip, {
           orderByAlpha: true,
-          name: file.name,
+          name: file.data.name,
         })
       } catch (e) {
         Logger.error(
           "createArchiveFromJszip: An error occurred while creating archive from jszip",
         )
+        console.error(e)
 
         throw e
       }
@@ -72,6 +80,7 @@ export const getArchiveForZipFile = async (
     Logger.error(
       "getArchiveForFile: An error occurred while getting archive for file",
     )
+    console.error(e)
 
     throw e
   }
@@ -89,6 +98,6 @@ export const getArchiveForRarFile = async (
 
   return createArchiveFromLibArchive(archive, {
     orderByAlpha: true,
-    name: file.name,
+    name: file.data.name,
   })
 }

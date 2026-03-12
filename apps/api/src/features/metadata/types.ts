@@ -1,9 +1,14 @@
-import type { BookDocType, LinkDocType } from "@oboku/shared"
+import type {
+  BookDocType,
+  DataSourceType,
+  LinkDocType,
+  ProviderApiCredentials,
+} from "@oboku/shared"
 
 export type Context = {
   userName: string
   userNameHex: string
-  data?: Record<string, unknown>
+  providerCredentials: ProviderApiCredentials<DataSourceType>
   book: BookDocType
   link: LinkDocType
 }

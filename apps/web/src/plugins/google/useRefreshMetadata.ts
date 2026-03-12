@@ -6,7 +6,7 @@ import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
 import { extractIdFromResourceId } from "./lib/resources"
 import { useGoogleScripts } from "./lib/scripts"
 
-export const useRefreshMetadata: ObokuPlugin[`useRefreshMetadata`] = ({
+export const useRefreshMetadata: ObokuPlugin<"DRIVE">[`useRefreshMetadata`] = ({
   requestPopup,
 }) => {
   const { getGoogleScripts } = useGoogleScripts()
@@ -36,7 +36,7 @@ export const useRefreshMetadata: ObokuPlugin[`useRefreshMetadata`] = ({
       )
 
       return {
-        data: {
+        providerCredentials: {
           access_token: token.access_token,
           created_at: token.created_at,
           token_type: token.token_type,

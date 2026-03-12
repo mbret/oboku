@@ -22,7 +22,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "zod": "^4.0.5"
+    "@oboku/synology": "0.1.0",
+    "zod": "^4.0.5",
+    "dropbox": "^10.34.0"
   },
   "devDependencies": {
     "vite": "^7",

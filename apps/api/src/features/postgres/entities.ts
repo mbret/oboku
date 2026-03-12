@@ -22,6 +22,9 @@ export class SyncReportPostgresEntity {
 
   @Column({ type: "text" })
   state!: string
+
+  @Column({ type: "boolean", nullable: true })
+  has_different_provider_credentials!: boolean | null
 }
 
 @Entity({ name: "communication" })

@@ -6,8 +6,9 @@ import { Readable } from "node:stream"
 import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
 import type {
   DataSourcePlugin,
-  SynchronizeAbleDataSource,
+  SynchronizeAbleItem,
 } from "src/lib/plugins/types"
+import { find } from "src/lib/couch/dbHelpers"
 import { createThrottler } from "src/lib/utils"
 import { createError, getDataSourceData } from "../helpers"
 
@@ -15,11 +16,44 @@ const extractIdFromResourceId = (resourceId: string) =>
   resourceId.replace(`dropbox-`, ``)
 const generateResourceId = (id: string) => `dropbox-${id}`
 
-export const dataSource: DataSourcePlugin = {
-  type: `dropbox`,
-  getFolderMetadata: async ({ link, data }) => {
+const DROPBOX_TYPE = "dropbox"
+
+export const dataSource: DataSourcePlugin<"dropbox"> = {
+  type: DROPBOX_TYPE,
+  getLinkCandidatesForItem: async (item, ctx) => {
+    const links = await find(ctx.db, "link", {
+      selector: { type: DROPBOX_TYPE, resourceId: item.resourceId },
+    })
+    return {
+      links: links.map((link) => ({
+        ...link,
+        /**
+         * In principle, if the user is syncing a resource ID he will
+         * always have valid credentials for this ID.
+         */
+        isUsingSameProviderCredentials: true,
+      })),
+    }
+  },
+  getCollectionCandidatesForItem: async (item, ctx) => {
+    const collections = await find(ctx.db, "obokucollection", {
+      selector: {
+        linkType: DROPBOX_TYPE,
+        linkResourceId: item.resourceId,
+      },
+    })
+    return {
+      collections: collections.map((c) => ({
+        ...c,
+        /** Same as links: when syncing this resource, credentials apply. */
+        isUsingSameProviderCredentials: true,
+      })),
+    }
+  },
+  getFolderMetadata: async ({ link, providerCredentials }) => {
+    const token = providerCredentials.accessToken
     const dbx = new Dropbox({
-      accessToken: `${data?.accessToken}`,
+      accessToken: `${token ?? ""}`,
     })
     const fileId = extractIdFromResourceId(link.resourceId)
 
@@ -31,9 +65,10 @@ export const dataSource: DataSourcePlugin = {
       name: response.result.name,
     }
   },
-  getFileMetadata: async ({ link, data }) => {
+  getFileMetadata: async ({ link, providerCredentials }) => {
+    const token = providerCredentials.accessToken
     const dbx = new Dropbox({
-      accessToken: `${data?.accessToken}`,
+      accessToken: `${token ?? ""}`,
     })
     const fileId = extractIdFromResourceId(link.resourceId)
 
@@ -49,9 +84,10 @@ export const dataSource: DataSourcePlugin = {
   /**
    * @see https://www.dropbox.com/developers/documentation/http/documentation#files-download
    */
-  download: async (link, data) => {
+  download: async (link, providerCredentials) => {
+    const token = providerCredentials.accessToken
     const dbx = new Dropbox({
-      accessToken: `${data?.accessToken}`,
+      accessToken: `${token ?? ""}`,
     })
     const fileId = extractIdFromResourceId(link.resourceId)
 
@@ -75,14 +111,12 @@ export const dataSource: DataSourcePlugin = {
       stream,
     }
   },
-  sync: async ({ data, dataSourceId, db }) => {
+  sync: async ({ providerCredentials, dataSourceId, db }) => {
     const throttle = createThrottler(50)
 
+    const token = providerCredentials.accessToken
     const dbx = new Dropbox({
-      accessToken:
-        data && "accessToken" in data && typeof data.accessToken === "string"
-          ? data.accessToken
-          : undefined,
+      accessToken: token ?? undefined,
     })
 
     const { folderId } =
@@ -96,7 +130,7 @@ export const dataSource: DataSourcePlugin = {
     }
 
     const getContentsFromFolder = throttle(
-      async (id: string): Promise<SynchronizeAbleDataSource["items"]> => {
+      async (id: string): Promise<SynchronizeAbleItem<"dropbox">[]> => {
         type Res = Awaited<
           ReturnType<typeof dbx.filesListFolder>
         >["result"]["entries"]
@@ -140,34 +174,30 @@ export const dataSource: DataSourcePlugin = {
         const results = await getNextRes()
 
         return Promise.all(
-          results.map(
-            async (
-              item,
-            ): Promise<SynchronizeAbleDataSource["items"][number]> => {
-              if (item[".tag"] === "file") {
-                return {
-                  type: "file",
-                  resourceId: generateResourceId(
-                    (item as files.FileMetadataReference).id,
-                  ),
-                  name: item.name,
-                  modifiedAt: item.server_modified,
-                }
-              }
-
+          results.map(async (item): Promise<SynchronizeAbleItem<"dropbox">> => {
+            if (item[".tag"] === "file") {
               return {
-                type: "folder",
+                type: "file",
                 resourceId: generateResourceId(
-                  (item as files.FolderMetadataReference).id,
-                ),
-                items: await getContentsFromFolder(
-                  (item as files.FolderMetadataReference).id,
+                  (item as files.FileMetadataReference).id,
                 ),
                 name: item.name,
-                modifiedAt: new Date().toISOString(),
+                modifiedAt: item.server_modified,
               }
-            },
-          ),
+            }
+
+            return {
+              type: "folder",
+              resourceId: generateResourceId(
+                (item as files.FolderMetadataReference).id,
+              ),
+              items: await getContentsFromFolder(
+                (item as files.FolderMetadataReference).id,
+              ),
+              name: item.name,
+              modifiedAt: new Date().toISOString(),
+            }
+          }),
         )
       },
     )

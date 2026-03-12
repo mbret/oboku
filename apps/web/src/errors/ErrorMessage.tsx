@@ -1,9 +1,33 @@
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
-import { isApiError } from "./errors.shared"
+import {
+  ERROR_LINK_INVALID_MESSAGE,
+  ERROR_NO_LINK_MESSAGE,
+  isApiError,
+} from "./errors.shared"
 import { HttpClientError } from "../http/httpClient.shared"
 
 export const ErrorMessage = ({ error }: { error: unknown }) => {
   return <>{errorToMessage(error)}</>
+}
+
+const ERROR_RESOURCE_NOT_REACHABLE_MESSAGE =
+  "Resource is not reachable. Make sure it is accessible and allows external access (CORS)."
+
+const fromObokuErrorCode = (error: ObokuErrorCode) => {
+  switch (error) {
+    case ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND:
+      return "The resource does not seem to exist. Please, verify the link and try again."
+    case ObokuErrorCode.ERROR_LINK_INVALID:
+      return ERROR_LINK_INVALID_MESSAGE
+    case ObokuErrorCode.ERROR_NO_LINK:
+      return ERROR_NO_LINK_MESSAGE
+    case ObokuErrorCode.ERROR_RESOURCE_NOT_REACHABLE:
+      return ERROR_RESOURCE_NOT_REACHABLE_MESSAGE
+    case ObokuErrorCode.ERROR_DATASOURCE_DOWNLOAD_DIFFERENT_DEVICE:
+      return "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book using a cloud provider."
+    default:
+      return `Something went wrong. Error code: ${error}`
+  }
 }
 
 export const errorToMessage = (error: unknown) => {
@@ -27,13 +51,15 @@ export const errorToMessage = (error: unknown) => {
     return "Please verify your email with this provider before continuing"
   }
 
+  if (
+    typeof error === "string" &&
+    Object.values(ObokuErrorCode).includes(error as ObokuErrorCode)
+  ) {
+    return fromObokuErrorCode(error as ObokuErrorCode)
+  }
+
   if (error instanceof ObokuSharedError) {
-    switch (error.code) {
-      case ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND:
-        return "The resource does not seem to exist. Please, verify the link and try again."
-      default:
-        return `Something went wrong. Error code: ${error.code}`
-    }
+    return fromObokuErrorCode(error.code)
   }
 
   if (

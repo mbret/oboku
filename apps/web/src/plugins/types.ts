@@ -1,21 +1,41 @@
-import type { DataSourceDocType, LinkDocType } from "@oboku/shared"
+import type {
+  BookMetadata,
+  DataSourceDocType,
+  LinkDataForProvider,
+  LinkDocType,
+  ProviderApiCredentials,
+} from "@oboku/shared"
 import type {
   ComponentProps,
+  ComponentType,
   DOMAttributes,
   FC,
   FunctionComponent,
   ReactElement,
   ReactNode,
 } from "react"
-import type { Button } from "@mui/material"
-import type { Observable } from "rxjs"
+import type { Button, SvgIconProps } from "@mui/material"
 import type { DeepReadonly, DeepReadonlyArray } from "rxdb"
 import type { UseMutationResult } from "@tanstack/react-query"
 import type { Control, UseFormWatch } from "react-hook-form"
 
-type PostLink = Pick<LinkDocType, "resourceId" | "type">
-// biome-ignore lint/complexity/noBannedTypes: TODO
-type PostBook = {}
+/** Link fields that upload payloads can provide (dialog fills book, normalizes data, createdAt, modifiedAt) */
+type PostLink = Pick<LinkDocType, "resourceId" | "type"> & {
+  data?: LinkDocType["data"]
+}
+
+/** Minimal book fields that upload payloads can provide (dialog merges with tags, etc.) */
+type PostBook = {
+  metadata?: Array<Pick<BookMetadata, "type" | "title">>
+  title?: string
+}
+
+export type UploadBookToAddPayload = {
+  book: PostBook
+  link: PostLink
+  /** When set (e.g. local file upload), dialog will trigger download after add */
+  file?: File
+}
 
 type Item = {
   resourceId: string
@@ -26,42 +46,54 @@ type SelectionError = {
   originalError?: any
 }
 
-type StreamValue = {
+export type StreamValue = {
   baseUri: string
   response: Response
   progress: number
 }
 
-type UseDownloadHook = (options: {
-  requestPopup: () => Promise<boolean>
-}) => (params: {
+export type DownloadBookResult = {
+  data: Blob | File | ReadableStream<StreamValue>
+}
+
+export type DownloadBookComponentProps = {
   link: LinkDocType
   onDownloadProgress: (progress: number) => void
+  onError: (error: unknown) => void
+  onResolve: (result: DownloadBookResult) => void
   signal: AbortSignal
-}) => Observable<{
-  data: Blob | File | ReadableStream<StreamValue>
-  name?: string
-}>
+}
 
-type UseRefreshMetadataHook = (options: {
-  requestPopup: () => Promise<boolean>
-}) => UseMutationResult<
+/** Mutation variables for useRefreshMetadata; linkData may be {} when link.data is null. */
+export type UseRefreshMetadataVariables<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = {
+  linkId?: string
+  linkType: T
+  linkData: LinkDataForProvider<T> | Record<string, never>
+  linkResourceId?: string
+}
+
+/** Params for usePluginRefreshMetadata(); discriminated union on linkType. */
+export type UseRefreshMetadataRequest = UseRefreshMetadataVariables<
+  DataSourceDocType["type"]
+>
+
+export type UseRefreshMetadataHook<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = (options: { requestPopup: () => Promise<boolean> }) => UseMutationResult<
   {
-    data: Record<string, unknown>
+    providerCredentials: ProviderApiCredentials<T>
   },
   Error | null,
-  {
-    linkType: DataSourceDocType["type"]
-    linkData: Record<string, unknown>
-    linkResourceId?: string
-  }
+  UseRefreshMetadataVariables<T>
 >
 
 export type UseSynchronizeHook<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = (options: { requestPopup: () => Promise<boolean> }) => UseMutationResult<
   {
-    data: Record<string, unknown>
+    providerCredentials: ProviderApiCredentials<T>
   },
   Error | null,
   Extract<DataSourceDocType, { type: T }>
@@ -71,7 +103,7 @@ type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
   link: LinkDocType,
 ) => Promise<
   | {
-      data: Record<string, unknown>
+      providerCredentials: ProviderApiCredentials<LinkDocType["type"]>
     }
   | {
       isError: true
@@ -116,10 +148,10 @@ export type ObokuPlugin<
   type: T
   description?: string
   sensitive?: boolean
-  Icon?: FunctionComponent<Record<string, never>>
+  Icon?: ComponentType<SvgIconProps>
   UploadBookComponent?: FunctionComponent<
     {
-      onClose: (bookToAdd?: { book: PostBook; link: PostLink }) => void
+      onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload>) => void
       requestPopup: () => Promise<boolean>
       TagsSelector: FC<{
         onChange: (tags: string[]) => void
@@ -148,11 +180,11 @@ export type ObokuPlugin<
       item?: Item | undefined,
     ) => void
   }>
+  DownloadBookComponent: FunctionComponent<DownloadBookComponentProps>
   Provider?: FunctionComponent<{ children: ReactNode }>
   InfoScreen?: () => ReactElement
-  useRefreshMetadata?: UseRefreshMetadataHook
+  useRefreshMetadata: UseRefreshMetadataHook<T>
   useSynchronize?: UseSynchronizeHook<T>
-  useDownloadBook?: UseDownloadHook
   useRemoveBook?: UseRemoveBook | undefined
   useSyncSourceInfo?: UseSyncSourceInfo<T>
   useSignOut?: () => (() => void) | undefined

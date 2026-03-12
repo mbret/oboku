@@ -18,6 +18,8 @@ import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"
 import { BookCoverCard } from "../BookCoverCard"
 import { getMetadataFromBook } from "../metadata"
 import { useBookDownloadState } from "../../download/states"
+import { useLink } from "../../links/states"
+import { usePlugin } from "../../plugins/usePlugin"
 
 export const BookCardHorizontal: FC<{
   bookId: string
@@ -39,6 +41,8 @@ export const BookCardHorizontal: FC<{
     const { data: book } = useBook({
       id: bookId,
     })
+    const { data: link } = useLink({ id: book?.links?.[0] })
+    const linkPlugin = usePlugin(link?.type)
     const theme = useTheme()
     const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected } = useIsBookProtected(book)
@@ -53,7 +57,6 @@ export const BookCardHorizontal: FC<{
               marginRight: theme.spacing(1),
             }}
             withBadges={false}
-            withReadingProgressStatus={false}
           />
         )}
         <Stack
@@ -87,7 +90,10 @@ export const BookCardHorizontal: FC<{
               alignItems: "flex-end",
             }}
           >
-            <Box display="flex" flexDirection="row" gap={1}>
+            <Box display="flex" flexDirection="row" alignItems="center" gap={1}>
+              {linkPlugin?.Icon && (
+                <linkPlugin.Icon fontSize="small" sx={{ display: "block" }} />
+              )}
               {withDownloadIcons &&
                 (bookDownloadState?.isDownloading ? (
                   <DownloadingRounded color="action" />
@@ -99,26 +105,23 @@ export const BookCardHorizontal: FC<{
               {isBookProtected && <NoEncryptionRounded color="action" />}
               {book?.isNotInterested && <ThumbDownOutlined color="action" />}
               {book?.readingStateCurrentState ===
-                ReadingStateState.Finished && (
-                <div style={{ display: "flex", flexDirection: "row" }}>
-                  <DoneRounded style={{}} color="action" />
-                </div>
-              )}
+                ReadingStateState.Finished && <DoneRounded color="action" />}
               {book?.readingStateCurrentState === ReadingStateState.Reading && (
-                <div style={{ display: "flex", flexDirection: "row" }}>
+                <Box
+                  display="flex"
+                  flexDirection="row"
+                  alignItems="center"
+                  gap={0.5}
+                >
                   <MenuBookRounded color="action" />
-                  <Typography
-                    style={{
-                      marginLeft: theme.spacing(0.5),
-                    }}
-                  >
+                  <Typography variant="body2">
                     {Math.floor(
                       (book?.readingStateCurrentBookmarkProgressPercent || 0) *
                         100,
                     ) || 1}
                     %
                   </Typography>
-                </div>
+                </Box>
               )}
             </Box>
             <div style={{ display: "flex", flexDirection: "row" }}>

@@ -11,6 +11,8 @@ import { processRefreshMetadata } from "./metadata/processRefreshMetadata"
 import { CouchService } from "src/couch/couch.service"
 import { AppConfigService } from "../../config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
+import { ProviderApiCredentials } from "@oboku/shared"
+import { DataSourceType } from "@oboku/shared"
 
 @Injectable()
 export class CollectionMetadataService {
@@ -24,12 +26,12 @@ export class CollectionMetadataService {
 
   refreshMetadata({
     collectionId,
-    data,
+    providerCredentials,
     soft = true,
     email,
   }: {
     collectionId: string
-    data?: Record<string, unknown>
+    providerCredentials: ProviderApiCredentials<DataSourceType>
     soft?: boolean
     email: string
   }) {
@@ -43,7 +45,7 @@ export class CollectionMetadataService {
 
     return of({
       collectionId,
-      data,
+      providerCredentials,
       soft,
     }).pipe(
       switchMapCombineOuter(() => db$),

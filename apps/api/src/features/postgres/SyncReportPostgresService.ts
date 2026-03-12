@@ -20,6 +20,7 @@ export class SyncReportPostgresService {
     report: ReportEntry[]
     datasource_id: string
     user_name: string
+    has_different_provider_credentials?: boolean
   }): Promise<SyncReportPostgresEntity> {
     const entity = this.repository.create(data)
 

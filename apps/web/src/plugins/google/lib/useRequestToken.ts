@@ -8,7 +8,7 @@ import {
 } from "../../../google/auth"
 import { Logger } from "../../../debug/logger.shared"
 import { useGoogleScripts } from "./scripts"
-import { ObokuPluginError } from "../../../errors/errors.shared"
+import { CancelError } from "../../../errors/errors.shared"
 
 const isPopupClosedError = (error: unknown) => {
   return (
@@ -50,7 +50,7 @@ export const useRequestToken = ({
 
         return from(requestPopup()).pipe(
           tap((confirmed) => {
-            if (!confirmed) throw new ObokuPluginError({ code: "cancelled" })
+            if (!confirmed) throw new CancelError()
           }),
           mergeMap(() => {
             consentShownSignal.setValue(true)
@@ -86,7 +86,7 @@ export const useRequestToken = ({
         consentShownSignal.setValue(false)
 
         if (isPopupClosedError(e)) {
-          throw new ObokuPluginError({ code: "cancelled" })
+          throw new CancelError()
         }
 
         throw e

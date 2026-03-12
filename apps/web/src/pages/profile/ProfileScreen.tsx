@@ -51,7 +51,7 @@ export const ProfileScreen = () => {
   const navigate = useNavigate()
   const [isDeleteMyDataDialogOpened, setIsDeleteMyDataDialogOpened] =
     useState(false)
-  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse([])
+  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse({ intervalMs: 5000 })
   const auth = useSignalValue(authStateSignal)
   const library = useSignalValue(libraryStateSignal)
   const signOut = useSignOut()

@@ -16,6 +16,7 @@ export const BookCardVertical = memo(({ bookId }: { bookId: string }) => {
     <>
       <BookCoverCard
         bookId={bookId}
+        showBottomBar
         style={{
           // overwrite aspect ratio and force to take all the available space
           // aspect ratio is set to the broader card.

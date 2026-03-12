@@ -1,5 +1,5 @@
 import { DropboxAuth } from "dropbox"
-import { ObokuPluginError } from "../../../errors/errors.shared"
+import { CancelError } from "../../../errors/errors.shared"
 import { ROUTES } from "../../../navigation/routes"
 import { configuration } from "../../../config/configuration"
 import { signal } from "reactjrx"
@@ -82,7 +82,7 @@ export const authUser = ({
 
         const confirmed = await requestPopup()
 
-        if (!confirmed) throw new ObokuPluginError({ code: "cancelled" })
+        if (!confirmed) throw new CancelError()
 
         const _oauthWindow = window.open(
           authUrl.toString(),
@@ -156,7 +156,7 @@ export const authUser = ({
           if (_oauthWindow?.closed) {
             cleanup()
 
-            reject(new ObokuPluginError({ code: "cancelled" }))
+            reject(new CancelError())
           }
         }, 1000)
       } catch (e) {
