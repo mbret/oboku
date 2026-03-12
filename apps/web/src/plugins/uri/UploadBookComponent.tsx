@@ -1,11 +1,13 @@
 import { useState } from "react"
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControlLabel,
   Stack,
   TextField,
   Typography,
@@ -24,6 +26,7 @@ export const UploadBookComponent: ObokuPlugin["UploadBookComponent"] = ({
   title,
 }) => {
   const [bookUrl, setBookUrl] = useState("")
+  const [allowSelfSigned, setAllowSelfSigned] = useState(false)
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down("md"))
   const isValid = bookUrlSchema.safeParse(bookUrl).success
@@ -31,12 +34,14 @@ export const UploadBookComponent: ObokuPlugin["UploadBookComponent"] = ({
 
   const handleConfirm = () => {
     setBookUrl("")
+    setAllowSelfSigned(false)
     onClose([
       {
         book: {
           title: filename,
         },
         link: {
+          data: allowSelfSigned ? { allowSelfSigned: true } : {},
           resourceId: generateResourceId(UNIQUE_RESOURCE_IDENTIFIER, bookUrl),
           type: TYPE,
         },
@@ -84,6 +89,15 @@ export const UploadBookComponent: ObokuPlugin["UploadBookComponent"] = ({
           value={bookUrl}
           margin="normal"
           onChange={(e) => setBookUrl(e.target.value)}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={allowSelfSigned}
+              onChange={(_, checked) => setAllowSelfSigned(checked)}
+            />
+          }
+          label="Allow self-signed certificate for API requests"
         />
       </DialogContent>
       <DialogActions>

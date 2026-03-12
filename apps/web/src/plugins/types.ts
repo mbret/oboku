@@ -19,7 +19,7 @@ import type { DeepReadonly, DeepReadonlyArray } from "rxdb"
 import type { UseMutationResult } from "@tanstack/react-query"
 import type { Control, UseFormWatch } from "react-hook-form"
 
-/** Link fields that upload payloads can provide (dialog fills book, data default null, createdAt, modifiedAt) */
+/** Link fields that upload payloads can provide (dialog fills book, normalizes data, createdAt, modifiedAt) */
 type PostLink = Pick<LinkDocType, "resourceId" | "type"> & {
   data?: LinkDocType["data"]
 }

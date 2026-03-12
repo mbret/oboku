@@ -1,13 +1,18 @@
 import type { CollectionMetadata } from "../metadata"
 import type { FileLinkData } from "../plugins/file"
 import type { SynologyDriveLinkData } from "../plugins/synologyDrive"
+import type { UriLinkData } from "../plugins/uri"
 import type { WebdavLinkData } from "../plugins/webdav"
 import type { BookDocType } from "./books"
 /** Union of all plugin-specific link payloads (stored on link.data and sync item.linkData). */
 import type { CouchDBMeta } from "./couchdb"
 import type { RxDbMeta } from "./rxdb"
 
-export type LinkData = WebdavLinkData | FileLinkData | SynologyDriveLinkData
+export type LinkData =
+  | WebdavLinkData
+  | FileLinkData
+  | SynologyDriveLinkData
+  | UriLinkData
 
 type CommonBase = CouchDBMeta & RxDbMeta
 
@@ -21,9 +26,11 @@ export type LinkDataForProvider<T extends DataSourceDocType["type"]> =
     ? WebdavLinkData
     : T extends "synology-drive"
       ? SynologyDriveLinkData
-      : T extends "file"
-        ? FileLinkData
-        : undefined
+      : T extends "URI"
+        ? UriLinkData
+        : T extends "file"
+          ? FileLinkData
+          : undefined
 
 /**
  * Link document for a specific provider; `data` is correctly typed as that provider's
@@ -95,7 +102,7 @@ export type FileDataSourceDocType = BaseDataSourceDocType & {
 
 export type URIDataSourceDocType = BaseDataSourceDocType & {
   type: "URI"
-  data_v2?: undefined
+  data_v2?: UriLinkData
 }
 
 export type GoogleDriveDataSourceDocType = Omit<
@@ -217,6 +224,7 @@ export type WebdavConnectorDocType = {
   url: string
   username: string
   passwordAsSecretId: string
+  allowSelfSigned?: boolean
   type: "webdav"
 }
 
@@ -226,6 +234,7 @@ export type SynologyDriveConnectorDocType = {
   url: string
   username: string
   passwordAsSecretId: string
+  allowSelfSigned?: boolean
 }
 
 export type SettingsConnectorDocType =

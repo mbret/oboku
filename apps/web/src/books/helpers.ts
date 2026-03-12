@@ -158,7 +158,11 @@ export const useAddBook = () => {
   }) => {
     try {
       if (database) {
-        const linkAdded = await database.link.safeInsert(link)
+        const linkToInsert = {
+          ...link,
+          data: link.type === "URI" ? (link.data ?? {}) : (link.data ?? null),
+        }
+        const linkAdded = await database.link.safeInsert(linkToInsert)
 
         const { tags, ...rest } = book || {}
         const newBook = await database.book.post({

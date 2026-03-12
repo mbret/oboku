@@ -32,6 +32,7 @@ const requestJson = async <T>({
 }) => {
   const urls = buildApiUrls(baseUrl, endpoint)
   let lastResponse: Response | undefined
+  let lastError: Error | undefined
 
   for (const url of urls) {
     url.search = params.toString()
@@ -57,13 +58,18 @@ const requestJson = async <T>({
       }
     } catch (error) {
       if (error instanceof Error && error.name === "TypeError") {
-        throw new Error(
+        lastError = new Error(
           "The browser could not reach your Synology NAS directly. Check the NAS URL, HTTPS certificate trust, and CORS configuration.",
         )
+        continue
       }
 
       throw error
     }
+  }
+
+  if (lastError) {
+    throw lastError
   }
 
   throw new Error(

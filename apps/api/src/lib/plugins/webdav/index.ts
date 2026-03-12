@@ -13,12 +13,14 @@ import {
 import {
   explodeWebdavResourceId,
   generateWebdavResourceId,
+  isFileSupported,
   isCollectionOfType,
   normalizeWebdavBaseUrl,
   WebDAVDataSourceDocType,
 } from "@oboku/shared"
 import { type createClient } from "webdav"
 import { getDataSourceData } from "../helpers"
+import { getHttpsAgent } from "../../http/httpsAgent"
 
 // @important needs "node-domexception" which did not seem to be installed by default
 async function getWebdavModule(): Promise<{
@@ -28,6 +30,21 @@ async function getWebdavModule(): Promise<{
 }
 
 const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
+
+const createWebdavClient = async (connector: {
+  allowSelfSigned?: boolean
+  password: string
+  url: string
+  username: string
+}) => {
+  const webdav = await getWebdavModule()
+
+  return webdav.createClient(connector.url, {
+    username: connector.username,
+    password: connector.password,
+    httpsAgent: getHttpsAgent(connector.allowSelfSigned),
+  })
+}
 
 export const dataSource: DataSourcePlugin<"webdav"> = {
   type: WEBDAV_TYPE,
@@ -136,9 +153,8 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
     if (!connector) {
       throw new Error("WebDAV connector not found")
     }
-    const webdav = await getWebdavModule()
-    const client = webdav.createClient(connector.url, {
-      username: connector.username,
+    const client = await createWebdavClient({
+      ...connector,
       password: providerCredentials.password,
     })
     const { filename } = explodeWebdavResourceId(link.resourceId)
@@ -169,9 +185,8 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
     if (!connector) {
       throw new Error("WebDAV connector not found")
     }
-    const webdav = await getWebdavModule()
-    const client = webdav.createClient(connector.url, {
-      username: connector.username,
+    const client = await createWebdavClient({
+      ...connector,
       password: providerCredentials.password,
     })
     const { filename } = explodeWebdavResourceId(link.resourceId)
@@ -200,9 +215,8 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
     if (!connector) {
       throw new Error("WebDAV connector not found")
     }
-    const webdav = await getWebdavModule()
-    const client = webdav.createClient(connector.url, {
-      username: connector.username,
+    const client = await createWebdavClient({
+      ...connector,
       password: providerCredentials.password,
     })
     const { filename } = explodeWebdavResourceId(link.resourceId)
@@ -229,11 +243,8 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
     if (!connector) {
       throw new Error("WebDAV connector not found")
     }
-
-    const webdav = await getWebdavModule()
-
-    const client = webdav.createClient(connector.url, {
-      username: connector.username,
+    const client = await createWebdavClient({
+      ...connector,
       password: providerCredentials.password,
     })
 
@@ -249,6 +260,15 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
       return await files.reduce(
         async (acc: Promise<SynchronizeAbleItem<"webdav">[]>, file) => {
           if (file.type === "file") {
+            if (
+              !isFileSupported({
+                mimeType: file.mime,
+                name: file.basename,
+              })
+            ) {
+              return await acc
+            }
+
             return [
               ...(await acc),
               {
@@ -263,6 +283,12 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
             ]
           }
 
+          const childItems = await reduceItems(file.filename)
+
+          if (childItems.length === 0) {
+            return await acc
+          }
+
           return [
             ...(await acc),
             {
@@ -273,7 +299,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
               resourceId: generateWebdavResourceId({
                 filename: file.filename,
               }),
-              items: await reduceItems(file.filename),
+              items: childItems,
             } satisfies SynchronizeAbleItem<"webdav">,
           ]
         },

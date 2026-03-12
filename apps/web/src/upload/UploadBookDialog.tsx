@@ -47,8 +47,11 @@ export const UploadBookDialog = memo(
                 book: null,
                 createdAt: new Date().toISOString(),
                 modifiedAt: null,
-                data: bookToAdd.link.data ?? null,
                 ...bookToAdd.link,
+                data:
+                  bookToAdd.link.type === "URI"
+                    ? (bookToAdd.link.data ?? {})
+                    : (bookToAdd.link.data ?? null),
               },
             })
 

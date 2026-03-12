@@ -1,6 +1,14 @@
 import { memo, type ReactNode } from "react"
-import { Alert, Button, Container, Stack } from "@mui/material"
-import { useForm } from "react-hook-form"
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Container,
+  FormControlLabel,
+  Stack,
+  Typography,
+} from "@mui/material"
+import { Controller, useForm } from "react-hook-form"
 import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { ControlledSecretSelect } from "../common/forms/ControlledSecretSelect"
@@ -33,6 +41,7 @@ export type FormData = {
   urlValue: string
   username: string
   passwordAsSecretId: string
+  allowSelfSigned: boolean
 }
 
 export type ConnectorFormConfig = {
@@ -76,11 +85,13 @@ export const ConnectorForm = memo(
         urlValue: "",
         username: "",
         passwordAsSecretId: "",
+        allowSelfSigned: false,
       },
       values: {
         urlValue: getConnectorUrl(connector),
         username: connector?.username ?? "",
         passwordAsSecretId: connector?.passwordAsSecretId ?? "",
+        allowSelfSigned: connector?.allowSelfSigned ?? false,
       },
     })
     const { notify } = useNotifications()
@@ -97,6 +108,7 @@ export const ConnectorForm = memo(
           url: data.urlValue,
           username: data.username,
           passwordAsSecretId: data.passwordAsSecretId,
+          allowSelfSigned: data.allowSelfSigned,
         }
         if (isEditing && connectorId) {
           return from(updateConnector({ id: connectorId, ...payload }))
@@ -141,6 +153,28 @@ export const ConnectorForm = memo(
               label={passwordFieldLabel}
               name="passwordAsSecretId"
               rules={{ required: true }}
+            />
+            <Controller
+              control={control}
+              name="allowSelfSigned"
+              render={({ field }) => (
+                <Stack gap={0.5}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={!!field.value}
+                        onChange={(_, checked) => field.onChange(checked)}
+                      />
+                    }
+                    label="Allow self-signed certificate"
+                  />
+                  <Typography color="text.secondary" variant="caption">
+                    Used by API sync, metadata, and download requests. Browser
+                    connection tests may still require trusting the certificate
+                    in your browser.
+                  </Typography>
+                </Stack>
+              )}
             />
             {!!errors.root && (
               <Alert severity="error">

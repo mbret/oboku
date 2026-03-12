@@ -1,9 +1,8 @@
 import type { DataSourcePlugin } from "src/lib/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import axios from "axios"
-import type { IncomingMessage } from "node:http"
-
-export type UriLinkData = { uri?: string }
+import { getUriLinkData } from "@oboku/shared"
+import { getHttpsAgent } from "../../http/httpsAgent"
 
 const UNIQUE_RESOURCE_ID = `oboku-link`
 const URI_TYPE = "URI"
@@ -55,15 +54,15 @@ export const dataSource: DataSourcePlugin<"URI"> = {
   },
   download: async (link) => {
     const downloadLink = extractIdFromResourceId(link.resourceId)
+    const { allowSelfSigned } = getUriLinkData(link.data ?? {})
 
     const response = await axios.get(downloadLink, {
       responseType: "stream",
+      httpsAgent: getHttpsAgent(allowSelfSigned),
     })
 
     return {
-      // @todo request is deprecated, switch to something else
-      // @see https://github.com/request/request/issues/3143
-      stream: response.data as IncomingMessage,
+      stream: response.data,
     }
   },
   sync: async () => ({ items: [], name: "" }),

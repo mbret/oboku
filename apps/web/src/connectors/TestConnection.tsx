@@ -70,6 +70,7 @@ export type ConnectionParams = {
   url: string
   username: string
   password: string
+  allowSelfSigned?: boolean
 }
 
 /** Input data: url, username, secret id, + optional extra (e.g. directory). */

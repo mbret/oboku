@@ -1,4 +1,4 @@
-import { generateSynologyDriveResourceId } from "@oboku/shared"
+import { generateSynologyDriveResourceId, isFileSupported } from "@oboku/shared"
 import {
   buildApiUrls,
   buildSynologyDriveGetItemParams,
@@ -22,37 +22,102 @@ import {
   type SynologyDriveSession,
   type SynologyDriveSessionAuth,
 } from "@oboku/synology"
-import { Readable } from "node:stream"
-import type { ReadableStream as NodeReadableStream } from "node:stream/web"
+import axios, { AxiosResponse } from "axios"
+import type { Readable } from "node:stream"
+import { text as readText } from "node:stream/consumers"
 import type { SynchronizeAbleItem } from "src/lib/plugins/types"
+import { getHttpsAgent } from "../../http/httpsAgent"
+
+type SynologyDriveRequestSession = SynologyDriveSession & {
+  allowSelfSigned?: boolean
+}
+
+const SYNOLOGY_DRIVE_SYNC_CONCURRENCY = 2
+
+const isAxiosNetworkError = (error: unknown) =>
+  axios.isAxiosError(error) && !error.response
+
+const mapWithConcurrency = async <TInput, TOutput>(
+  items: readonly TInput[],
+  mapper: (item: TInput) => Promise<TOutput>,
+  concurrency: number,
+) => {
+  const results: TOutput[] = []
+  let index = 0
+
+  const worker = async () => {
+    while (index < items.length) {
+      const currentIndex = index
+      index += 1
+      results[currentIndex] = await mapper(items[currentIndex] as TInput)
+    }
+  }
+
+  const workerCount = Math.min(concurrency, items.length)
+
+  await Promise.all(
+    Array.from({ length: workerCount }, async () => {
+      await worker()
+    }),
+  )
+
+  return results
+}
+
+const isSupportedSynologyDriveItem = (item: SynologyDriveItem) => {
+  const metadata = mapSynologyDriveItemToMetadata(item)
+
+  return isFileSupported({
+    mimeType: metadata.contentType,
+    name: metadata.name,
+  })
+}
 
 const requestJson = async <T>({
+  allowSelfSigned,
   baseUrl,
   endpoint = "entry.cgi",
   params,
   parse,
 }: {
+  allowSelfSigned?: boolean
   baseUrl: string
   endpoint?: "auth.cgi" | "entry.cgi"
   params: URLSearchParams
   parse: (payload: unknown) => T
 }) => {
   const urls = buildApiUrls(baseUrl, endpoint)
-  let lastResponse: Response | undefined
+  let lastStatus: number | undefined
+  let lastError: Error | undefined
 
   for (const url of urls) {
     url.search = params.toString()
 
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-      },
-    })
+    let response: AxiosResponse<unknown>
 
-    lastResponse = response
+    try {
+      response = await axios.get(url.toString(), {
+        headers: {
+          Accept: "application/json",
+        },
+        httpsAgent: getHttpsAgent(allowSelfSigned),
+        validateStatus: () => true,
+      })
+    } catch (error) {
+      if (isAxiosNetworkError(error)) {
+        lastError = new Error(
+          `Synology Drive request failed for ${url.origin}: ${axios.isAxiosError(error) ? error.message : "network error"}`,
+        )
+        continue
+      }
 
-    if (response.ok) {
-      return parse(await response.json())
+      throw error
+    }
+
+    lastStatus = response.status
+
+    if (response.status >= 200 && response.status < 300) {
+      return parse(response.data)
     }
 
     if (response.status !== 404) {
@@ -62,8 +127,12 @@ const requestJson = async <T>({
     }
   }
 
+  if (lastError) {
+    throw lastError
+  }
+
   throw new Error(
-    `Synology Drive request failed with status ${lastResponse?.status ?? "unknown"}`,
+    `Synology Drive request failed with status ${lastStatus ?? "unknown"}`,
   )
 }
 
@@ -78,8 +147,10 @@ const toSessionAuth = (
 
 export const signInSynologyDrive = async (
   auth: SynologyDriveSessionAuth,
-): Promise<SynologyDriveSession> => {
+  options?: { allowSelfSigned?: boolean },
+): Promise<SynologyDriveRequestSession> => {
   const { sid } = await requestJson({
+    allowSelfSigned: options?.allowSelfSigned,
     baseUrl: auth.baseUrl,
     endpoint: "auth.cgi",
     params: buildSynologyDriveLoginParams(auth),
@@ -87,6 +158,7 @@ export const signInSynologyDrive = async (
   })
 
   return {
+    allowSelfSigned: options?.allowSelfSigned,
     auth,
     sid,
   }
@@ -96,18 +168,22 @@ export const getSynologyDriveSession = async ({
   connector,
   providerCredentials,
 }: {
-  connector: { url: string; username: string }
+  connector: { allowSelfSigned?: boolean; url: string; username: string }
   providerCredentials: SynologyDriveApiCredentials
-}) => signInSynologyDrive(toSessionAuth(providerCredentials, connector))
+}) =>
+  signInSynologyDrive(toSessionAuth(providerCredentials, connector), {
+    allowSelfSigned: connector.allowSelfSigned,
+  })
 
 const listFolderItems = async ({
   path,
   session,
 }: {
   path: string
-  session: SynologyDriveSession
+  session: SynologyDriveRequestSession
 }) =>
   requestJson({
+    allowSelfSigned: session.allowSelfSigned,
     baseUrl: session.auth.baseUrl,
     params: buildSynologyDriveListFolderParams({
       path,
@@ -119,9 +195,10 @@ const listFolderItems = async ({
 const listTeamFolderItems = async ({
   session,
 }: {
-  session: SynologyDriveSession
+  session: SynologyDriveRequestSession
 }) =>
   requestJson({
+    allowSelfSigned: session.allowSelfSigned,
     baseUrl: session.auth.baseUrl,
     params: buildSynologyDriveListTeamFoldersParams({
       session,
@@ -134,7 +211,7 @@ export const browseSynologyDrive = async ({
   session,
 }: {
   nodeId?: SynologyDriveBrowseNodeId
-  session: SynologyDriveSession
+  session: SynologyDriveRequestSession
 }) => {
   if (!nodeId) {
     const teamFolders = await listTeamFolderItems({
@@ -188,9 +265,10 @@ const getSynologyDriveItem = async ({
   session,
 }: {
   fileId: string
-  session: SynologyDriveSession
+  session: SynologyDriveRequestSession
 }) =>
   requestJson({
+    allowSelfSigned: session.allowSelfSigned,
     baseUrl: session.auth.baseUrl,
     params: buildSynologyDriveGetItemParams({
       fileId,
@@ -204,7 +282,7 @@ export const getSynologyDriveItemMetadata = async ({
   session,
 }: {
   fileId: string
-  session: SynologyDriveSession
+  session: SynologyDriveRequestSession
 }) =>
   mapSynologyDriveItemToMetadata(
     await getSynologyDriveItem({
@@ -216,13 +294,13 @@ export const getSynologyDriveItemMetadata = async ({
 const isJsonContentType = (contentType: string | null | undefined) =>
   !!contentType && contentType.toLowerCase().includes("json")
 
-const throwDownloadError = async (response: Response) => {
-  const payload = parseSynologyDriveDownloadErrorPayload(await response.json())
+const throwDownloadError = (payload: unknown) => {
+  const parsedPayload = parseSynologyDriveDownloadErrorPayload(payload)
 
-  if (payload.success === false) {
+  if (parsedPayload.success === false) {
     throw new Error(
-      payload.error?.code
-        ? `synology_drive_download_failed:${payload.error.code}`
+      parsedPayload.error?.code
+        ? `synology_drive_download_failed:${parsedPayload.error.code}`
         : "synology_drive_download_failed",
     )
   }
@@ -235,25 +313,42 @@ export const downloadSynologyDriveStream = async ({
   session,
 }: {
   fileId: string
-  session: SynologyDriveSession
+  session: SynologyDriveRequestSession
 }) => {
   const urls = getSynologyDriveDownloadUrls({
     fileId,
     session,
   })
 
-  let lastResponse: Response | undefined
+  let lastStatus: number | undefined
+  let lastError: Error | undefined
 
   for (const url of urls) {
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/octet-stream",
-      },
-    })
+    let response: AxiosResponse<Readable>
 
-    lastResponse = response
+    try {
+      response = await axios.get<Readable>(url.toString(), {
+        headers: {
+          Accept: "application/octet-stream",
+        },
+        httpsAgent: getHttpsAgent(session.allowSelfSigned),
+        responseType: "stream",
+        validateStatus: () => true,
+      })
+    } catch (error) {
+      if (isAxiosNetworkError(error)) {
+        lastError = new Error(
+          `Synology Drive download failed for ${new URL(url).origin}: ${axios.isAxiosError(error) ? error.message : "network error"}`,
+        )
+        continue
+      }
 
-    if (!response.ok) {
+      throw error
+    }
+
+    lastStatus = response.status
+
+    if (response.status < 200 || response.status >= 300) {
       if (response.status === 404) {
         continue
       }
@@ -263,23 +358,26 @@ export const downloadSynologyDriveStream = async ({
       )
     }
 
-    if (isJsonContentType(response.headers.get("content-type"))) {
-      await throwDownloadError(response)
-    }
+    const contentTypeHeader = response.headers["content-type"]
+    const contentType = Array.isArray(contentTypeHeader)
+      ? contentTypeHeader[0]
+      : contentTypeHeader
 
-    if (!response.body) {
-      throw new Error("synology_drive_download_empty_response")
+    if (isJsonContentType(contentType)) {
+      throwDownloadError(JSON.parse(await readText(response.data)))
     }
 
     return {
-      // Node's fetch body is runtime-compatible with Readable.fromWeb, but the
-      // DOM and node stream typings do not line up cleanly.
-      stream: Readable.fromWeb(response.body as NodeReadableStream),
+      stream: response.data,
     }
   }
 
+  if (lastError) {
+    throw lastError
+  }
+
   throw new Error(
-    `Synology Drive download failed with status ${lastResponse?.status ?? "unknown"}`,
+    `Synology Drive download failed with status ${lastStatus ?? "unknown"}`,
   )
 }
 
@@ -290,7 +388,7 @@ const toSynchronizeAbleItem = async ({
 }: {
   connectorId: string
   item: SynologyDriveItem
-  session: SynologyDriveSession
+  session: SynologyDriveRequestSession
 }): Promise<SynchronizeAbleItem<"synology-drive"> | null> => {
   const fileId = getSynologyDriveItemFileId(item)
 
@@ -302,6 +400,10 @@ const toSynchronizeAbleItem = async ({
   const modifiedAt = metadata.modifiedAt ?? new Date().toISOString()
 
   if (getSynologyDriveItemType(item) === "file") {
+    if (!isSupportedSynologyDriveItem(item)) {
+      return null
+    }
+
     return {
       linkData: {
         connectorId,
@@ -320,18 +422,23 @@ const toSynchronizeAbleItem = async ({
     session,
   })
   const childItems = (
-    await Promise.all(
-      children.map((child) =>
+    await mapWithConcurrency(
+      children,
+      async (child) =>
         toSynchronizeAbleItem({
           connectorId,
           item: child,
           session,
         }),
-      ),
+      SYNOLOGY_DRIVE_SYNC_CONCURRENCY,
     )
   ).filter(
     (child): child is SynchronizeAbleItem<"synology-drive"> => child !== null,
   )
+
+  if (childItems.length === 0) {
+    return null
+  }
 
   return {
     items: childItems,
@@ -354,13 +461,14 @@ export const getSynchronizeAbleDataSourceFromItems = async ({
 }: {
   connectorId: string
   items: readonly string[]
-  session: SynologyDriveSession
+  session: SynologyDriveRequestSession
 }) => {
   const uniqueItems = Array.from(new Set(items))
 
   const synchronizeAbleItems = (
-    await Promise.all(
-      uniqueItems.map(async (fileId) => {
+    await mapWithConcurrency(
+      uniqueItems,
+      async (fileId) => {
         const item = await getSynologyDriveItem({
           fileId,
           session,
@@ -371,7 +479,8 @@ export const getSynchronizeAbleDataSourceFromItems = async ({
           item,
           session,
         })
-      }),
+      },
+      SYNOLOGY_DRIVE_SYNC_CONCURRENCY,
     )
   ).filter(
     (item): item is SynchronizeAbleItem<"synology-drive"> => item !== null,

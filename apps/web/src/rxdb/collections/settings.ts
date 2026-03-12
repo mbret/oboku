@@ -64,6 +64,7 @@ export const settingsSchema: RxJsonSchema<
           url: { type: "string" },
           username: { type: "string" },
           passwordAsSecretId: { type: "string" },
+          allowSelfSigned: { type: "boolean" },
         },
         required: ["id", "type", "username", "passwordAsSecretId"],
       },

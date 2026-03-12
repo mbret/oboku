@@ -133,7 +133,11 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       throw new Error("Synology Drive connector not found")
     }
     const session = await getSynologyDriveSession({
-      connector: { url: connector.url, username: connector.username },
+      connector: {
+        allowSelfSigned: connector.allowSelfSigned,
+        url: connector.url,
+        username: connector.username,
+      },
       providerCredentials,
     })
     const { fileId } = explodeSynologyDriveResourceId(link.resourceId)
@@ -164,7 +168,11 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       throw new Error("Synology Drive connector not found")
     }
     const session = await getSynologyDriveSession({
-      connector: { url: connector.url, username: connector.username },
+      connector: {
+        allowSelfSigned: connector.allowSelfSigned,
+        url: connector.url,
+        username: connector.username,
+      },
       providerCredentials,
     })
     const { fileId } = explodeSynologyDriveResourceId(link.resourceId)
@@ -190,7 +198,11 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       throw new Error("Synology Drive connector not found")
     }
     const session = await getSynologyDriveSession({
-      connector: { url: connector.url, username: connector.username },
+      connector: {
+        allowSelfSigned: connector.allowSelfSigned,
+        url: connector.url,
+        username: connector.username,
+      },
       providerCredentials,
     })
     const { fileId } = explodeSynologyDriveResourceId(link.resourceId)
@@ -217,7 +229,11 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
     }
 
     const session = await getSynologyDriveSession({
-      connector: { url: connector.url, username: connector.username },
+      connector: {
+        allowSelfSigned: connector.allowSelfSigned,
+        url: connector.url,
+        username: connector.username,
+      },
       providerCredentials,
     })
 
