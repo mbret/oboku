@@ -65,4 +65,13 @@ export class AdminController {
 
     return this.couchMigrationService.migrateWebdavConnectorsToConnectors()
   }
+
+  @Post("migrate-webdav-resource-ids")
+  async migrateWebdavResourceIds(@WithAuthUser() user: AuthUser) {
+    if (user.role !== "admin") {
+      throw new UnauthorizedException()
+    }
+
+    return this.couchMigrationService.migrateWebdavResourceIds()
+  }
 }

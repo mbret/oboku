@@ -15,31 +15,31 @@ describe("WebDAV Plugin", () => {
   })
 
   describe("generateWebdavResourceId", () => {
-    it("should generate resource ID with dummy host (host:path format)", () => {
+    it("should generate resource ID without dummy host", () => {
       const result = generateWebdavResourceId({
         filename: "document.pdf",
       })
-      expect(result).toBe("webdav://_:document.pdf")
+      expect(result).toBe("webdav://document.pdf")
     })
 
     it("should encode special characters in filename", () => {
       const result = generateWebdavResourceId({
         filename: "my document with spaces.pdf",
       })
-      expect(result).toBe("webdav://_:my%20document%20with%20spaces.pdf")
+      expect(result).toBe("webdav://my%20document%20with%20spaces.pdf")
     })
 
     it("should handle filenames with path and special characters", () => {
       const result = generateWebdavResourceId({
         filename: "file/with/path:and:colons.pdf",
       })
-      expect(result).toBe("webdav://_:file%2Fwith%2Fpath%3Aand%3Acolons.pdf")
+      expect(result).toBe("webdav://file%2Fwith%2Fpath%3Aand%3Acolons.pdf")
     })
   })
 
   describe("explodeWebdavResourceId", () => {
-    it("should extract filename from resource ID (new format with dummy host)", () => {
-      const resourceId = "webdav://_:document.pdf"
+    it("should extract filename from canonical resource ID format", () => {
+      const resourceId = "webdav://document.pdf"
 
       const result = explodeWebdavResourceId(resourceId)
       expect(result).toEqual({
@@ -61,7 +61,7 @@ describe("WebDAV Plugin", () => {
     })
 
     it("should decode encoded filenames", () => {
-      const resourceId = "webdav://_:my%20document%20with%20spaces.pdf"
+      const resourceId = "webdav://my%20document%20with%20spaces.pdf"
 
       const result = explodeWebdavResourceId(resourceId)
       expect(result).toEqual({
@@ -72,7 +72,7 @@ describe("WebDAV Plugin", () => {
     })
 
     it("should handle filenames with path and special characters", () => {
-      const resourceId = "webdav://_:file%2Fwith%2Fpath%3Aand%3Acolons.pdf"
+      const resourceId = "webdav://file%2Fwith%2Fpath%3Aand%3Acolons.pdf"
 
       const result = explodeWebdavResourceId(resourceId)
       expect(result).toEqual({
@@ -83,7 +83,7 @@ describe("WebDAV Plugin", () => {
     })
 
     it("should normalize directory to always start with /", () => {
-      const resourceId = "webdav://_:folder/subfolder/document.pdf"
+      const resourceId = "webdav://folder%2Fsubfolder%2Fdocument.pdf"
 
       const result = explodeWebdavResourceId(resourceId)
       expect(result).toEqual({
@@ -112,10 +112,12 @@ describe("WebDAV Plugin", () => {
       )
     })
 
-    it("should throw when host:path separator is missing", () => {
-      expect(() => explodeWebdavResourceId("webdav://document.pdf")).toThrow(
-        "Invalid resource ID format",
-      )
+    it("should still parse legacy host-based format", () => {
+      expect(explodeWebdavResourceId("webdav://_:document.pdf")).toEqual({
+        filename: "document.pdf",
+        directory: "/",
+        basename: "document.pdf",
+      })
     })
   })
 

@@ -6,6 +6,7 @@ import { Box, Button, Group, Paper, Text, TextInput } from "@mantine/core"
 import { useIsAuthenticated } from "@/features/useIsAuthenticated"
 import { useMigrate } from "@/features/useMigrate"
 import { useMigrateWebdavConnectors } from "@/features/useMigrateWebdavConnectors"
+import { useMigrateWebdavResourceIds } from "@/features/useMigrateWebdavResourceIds"
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -28,6 +29,12 @@ function App() {
     isPending: isWebdavMigrationPending,
     error: webdavMigrationError,
   } = useMigrateWebdavConnectors()
+  const {
+    mutate: migrateWebdavResourceIds,
+    data: webdavResourceIdMigrationResult,
+    isPending: isWebdavResourceIdMigrationPending,
+    error: webdavResourceIdMigrationError,
+  } = useMigrateWebdavResourceIds()
 
   return (
     <div className="App">
@@ -61,6 +68,13 @@ function App() {
             >
               migrate webdav → connectors
             </Button>
+            <Button
+              onClick={() => migrateWebdavResourceIds()}
+              variant="light"
+              loading={isWebdavResourceIdMigrationPending}
+            >
+              migrate webdav resource ids
+            </Button>
           </Group>
           <Paper withBorder p="md" mt="md">
             <Text size="sm" fw={500} mb="xs">
@@ -86,6 +100,38 @@ function App() {
             {!webdavMigrationResult &&
               !isWebdavMigrationPending &&
               !webdavMigrationError && (
+                <Text size="sm" c="dimmed">
+                  No migration run yet
+                </Text>
+              )}
+          </Paper>
+          <Paper withBorder p="md" mt="md">
+            <Text size="sm" fw={500} mb="xs">
+              Webdav resource ID migration
+            </Text>
+            {isWebdavResourceIdMigrationPending && (
+              <Text size="sm" c="dimmed">
+                Running…
+              </Text>
+            )}
+            {webdavResourceIdMigrationError && (
+              <Text size="sm" c="red">
+                Error: {webdavResourceIdMigrationError.message}
+              </Text>
+            )}
+            {webdavResourceIdMigrationResult &&
+              !isWebdavResourceIdMigrationPending && (
+                <Text size="sm" c="dimmed">
+                  Last run: {webdavResourceIdMigrationResult.usersMigrated} user
+                  (s) migrated, {webdavResourceIdMigrationResult.linksUpdated}{" "}
+                  link(s) updated,{" "}
+                  {webdavResourceIdMigrationResult.collectionsUpdated}{" "}
+                  collection(s) updated
+                </Text>
+              )}
+            {!webdavResourceIdMigrationResult &&
+              !isWebdavResourceIdMigrationPending &&
+              !webdavResourceIdMigrationError && (
                 <Text size="sm" c="dimmed">
                   No migration run yet
                 </Text>

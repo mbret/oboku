@@ -6,7 +6,7 @@ export type SynologyDriveLinkData = {
 }
 
 export const generateSynologyDriveResourceId = (data: { fileId: string }) => {
-  return data.fileId
+  return `synology-drive://${encodeURIComponent(data.fileId)}`
 }
 
 export const explodeSynologyDriveResourceId = (resourceId: string) => {

@@ -40,10 +40,8 @@ export const normalizeWebdavBaseUrl = (baseUrl: string) => {
   return url.toString().replace(/\/+$/, "")
 }
 
-const WEBDAV_DUMMY_HOST = "_"
-
 export const generateWebdavResourceId = (data: { filename: string }) => {
-  return `webdav://${WEBDAV_DUMMY_HOST}:${encodeURIComponent(data.filename)}`
+  return `webdav://${encodeURIComponent(data.filename)}`
 }
 
 export const explodeWebdavResourceId = (resourceId: string) => {
@@ -52,11 +50,9 @@ export const explodeWebdavResourceId = (resourceId: string) => {
   }
 
   const withoutPrefix = resourceId.substring("webdav://".length)
-  const lastColonIndex = withoutPrefix.lastIndexOf(":")
-  if (lastColonIndex === -1) {
-    throw new Error(`Invalid resource ID format: ${resourceId}`)
-  }
-  const encodedFilename = withoutPrefix.substring(lastColonIndex + 1)
+  const encodedFilename = withoutPrefix.includes(":")
+    ? withoutPrefix.substring(withoutPrefix.lastIndexOf(":") + 1)
+    : withoutPrefix
   const filename = decodeURIComponent(encodedFilename)
 
   const lastSlashIndex = filename.lastIndexOf("/")

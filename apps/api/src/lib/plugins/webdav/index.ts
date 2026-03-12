@@ -55,9 +55,11 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
    */
   getLinkCandidatesForItem: async (item, ctx) => {
     const connectorId = item.linkData.connectorId
+
     if (!connectorId) {
       return { links: [] }
     }
+
     const connectorIdsWithSameUrl = await getConnectorIdsWithSameServer(
       ctx.db,
       {
@@ -66,9 +68,11 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
         normalizeUrl: normalizeWebdavBaseUrl,
       },
     )
+
     if (!connectorIdsWithSameUrl) {
       return { links: [] }
     }
+
     const links = await find(ctx.db, "link", {
       selector: {
         type: WEBDAV_TYPE,
