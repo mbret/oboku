@@ -2,31 +2,34 @@ import { memo } from "react"
 import type { DataSourceFormData } from "../types"
 import { Alert, InputAdornment, Link } from "@mui/material"
 import type { Control, UseFormWatch } from "react-hook-form"
+import { Controller } from "react-hook-form"
 import { ControlledTextField } from "../../common/forms/ControlledTextField"
+import { errorToHelperText } from "../../common/forms/errorToHelperText"
 import { links, type WebDAVDataSourceDocType } from "@oboku/shared"
-import { useConnectors } from "./connectors/useConnectors"
-import { ControlledTextFieldSelect } from "../../common/forms/ControlledTextFieldSelect"
-import { LinkRounded } from "@mui/icons-material"
-import { TestConnection } from "./connectors/TestConnection"
-import { useConnector } from "./connectors/useConnector"
+import { ConnectorSelector } from "../../connectors/ConnectorSelector"
+import { TestConnection } from "../../connectors/TestConnection"
+import { useConnector } from "../../connectors/useConnector"
+import { testConnection } from "./connectors/ConnectorForm"
 
 export const DataSourceForm = memo(
   ({
     control,
     watch,
   }: {
-    control: Control<DataSourceFormData, any, DataSourceFormData>
+    control: Control<DataSourceFormData, unknown, DataSourceFormData>
     watch: UseFormWatch<DataSourceFormData>
   }) => {
     const data = watch("data") as WebDAVDataSourceDocType["data_v2"]
-    const { data: connectors } = useConnectors()
-    const { data: connector } = useConnector(data?.connectorId)
+    const { data: connector } = useConnector({
+      id: data?.connectorId,
+      type: "webdav",
+    })
 
     return (
       <>
         <Alert severity="warning">
           Connecting to WebDAV server involves several requirements, make sure
-          to <Link href={links.documentationWebDAV}>read this</Link> before
+          to <Link href={links.documentationConnectors}>read this</Link> before
           proceeding.
         </Alert>
         <ControlledTextField
@@ -43,34 +46,33 @@ export const DataSourceForm = memo(
             },
           }}
         />
-        <ControlledTextFieldSelect
-          options={
-            connectors?.map((connector) => ({
-              label: `${connector.url}@${connector.username}`,
-              value: connector.id,
-              id: connector.id,
-            })) ?? []
-          }
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <LinkRounded />
-                </InputAdornment>
-              ),
-            },
-          }}
-          helperText="Select a connector to use"
-          name="data.connectorId"
-          fullWidth
-          rules={{ required: true }}
+        <Controller
           control={control}
+          name="data.connectorId"
+          rules={{ required: true }}
+          render={({ field, fieldState }) => (
+            <ConnectorSelector
+              {...field}
+              connectorType="webdav"
+              showManagementButtons={false}
+              helperText={
+                fieldState.invalid
+                  ? errorToHelperText(fieldState.error)
+                  : undefined
+              }
+              error={fieldState.invalid}
+            />
+          )}
         />
         <TestConnection
-          url={connector?.url}
-          username={connector?.username}
-          passwordAsSecretId={connector?.passwordAsSecretId}
-          directory={data?.directory}
+          connectionData={{
+            url: connector?.url ?? "",
+            username: connector?.username ?? "",
+            passwordAsSecretId: connector?.passwordAsSecretId ?? "",
+            directory: data?.directory,
+          }}
+          connectorType="webdav"
+          testConnection={testConnection}
         />
       </>
     )

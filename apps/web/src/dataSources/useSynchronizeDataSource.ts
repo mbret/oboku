@@ -8,7 +8,7 @@ import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { useDatabase } from "../rxdb"
 import { useDataSourceIncrementalPatch } from "./useDataSourceIncrementalPatch"
 import { Logger } from "../debug/logger.shared"
-import { isPluginError } from "../errors/errors.shared"
+import { isCancelError } from "../errors/errors.shared"
 
 export const useSynchronizeDataSource = () => {
   const { db: database } = useDatabase()
@@ -44,7 +44,14 @@ export const useSynchronizeDataSource = () => {
               },
             }),
           ).pipe(
-            switchMap(() => from(httpClientApi.syncDataSource(_id, data.data))),
+            switchMap(() =>
+              from(
+                httpClientApi.syncDataSource({
+                  dataSourceId: _id,
+                  providerCredentials: data.providerCredentials,
+                }),
+              ),
+            ),
             catchError((e) => {
               return from(
                 atomicUpdateDataSource({
@@ -64,7 +71,7 @@ export const useSynchronizeDataSource = () => {
           )
         }),
         catchError((e) => {
-          if (isPluginError(e) && e.code === "cancelled") return of(null)
+          if (isCancelError(e)) return of(null)
 
           Logger.error(e)
 

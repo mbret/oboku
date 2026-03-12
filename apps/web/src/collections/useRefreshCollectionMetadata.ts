@@ -5,11 +5,7 @@ import { httpClientApi } from "../http/httpClientApi.web"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getCollectionById } from "./dbHelpers"
-import {
-  CancelError,
-  isPluginError,
-  OfflineError,
-} from "../errors/errors.shared"
+import { CancelError, OfflineError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
 import { useNotifications } from "../notifications/useNofitications"
 
@@ -39,7 +35,7 @@ export const useRefreshCollectionMetadata = () => {
               )
 
               return pluginData$.pipe(
-                switchMap(({ data: pluginMetadata }) => {
+                switchMap(({ providerCredentials }) => {
                   return from(
                     updateCollection({
                       _id: collectionId,
@@ -49,10 +45,10 @@ export const useRefreshCollectionMetadata = () => {
                   ).pipe(
                     switchMap(() =>
                       from(
-                        httpClientApi.refreshCollectionMetadata(
+                        httpClientApi.refreshCollectionMetadata({
                           collectionId,
-                          pluginMetadata,
-                        ),
+                          providerCredentials,
+                        }),
                       ),
                     ),
                     catchError((error) => {
@@ -74,11 +70,7 @@ export const useRefreshCollectionMetadata = () => {
           )
         }),
         catchError((e) => {
-          if (
-            e instanceof CancelError ||
-            (isPluginError(e) && e.code === "cancelled") ||
-            e instanceof OfflineError
-          )
+          if (e instanceof CancelError || e instanceof OfflineError)
             return EMPTY
 
           notifyError(e)

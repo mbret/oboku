@@ -21,6 +21,8 @@ export class SyncReport {
 
   protected state: SyncReportPostgresEntityShared["state"] = "success"
 
+  protected hasDifferentProviderCredentials = false
+
   constructor(
     protected datasourceId: string,
     protected userName: string,
@@ -318,6 +320,24 @@ export class SyncReport {
     item.fetchedMetadata = true
   }
 
+  /** Record that at least one book was synced but could not be refreshed (link uses different connector/credentials). */
+  bookHasDifferentLink(bookId: string) {
+    this.hasDifferentProviderCredentials = true
+    const item = this.getOrCreateEntry("book", { id: bookId })
+
+    item.hasDifferentProviderCredentials = true
+  }
+
+  /** Record that at least one collection was synced but could not be refreshed (link uses different connector/credentials). */
+  collectionHasDifferentLink(collectionId: string) {
+    this.hasDifferentProviderCredentials = true
+    const item = this.getOrCreateEntry("obokucollection", {
+      id: collectionId,
+    })
+
+    item.hasDifferentProviderCredentials = true
+  }
+
   prepare() {
     return {
       created_at: this.report.created_at,
@@ -329,6 +349,7 @@ export class SyncReport {
       datasource_id: this.datasourceId,
       user_name: this.userName,
       state: this.state,
+      has_different_provider_credentials: this.hasDifferentProviderCredentials,
     }
   }
 }

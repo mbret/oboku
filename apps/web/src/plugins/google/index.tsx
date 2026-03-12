@@ -6,7 +6,6 @@ import { PLUGIN_NAME, UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import GoogleDriveAsset from "../../assets/google-drive.svg?react"
 import { SvgIcon } from "@mui/material"
 import { UploadBook } from "./UploadBook"
-import { useDownloadBook } from "./useDownloadBook"
 import { DataSourceNew as DataSourceForm } from "./DataSourceNew"
 import { SelectItem as SelectItemComponent } from "./SelectItem"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
@@ -16,9 +15,10 @@ import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../types"
 import { InfoScreen } from "./InfoScreen"
 import { DataSourceDetails } from "./DataSourceDetails"
+import { DownloadBook } from "./DownloadBook"
 
-const GoogleDriveIcon = () => (
-  <SvgIcon>
+const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
+  <SvgIcon {...props}>
     <GoogleDriveAsset />
   </SvgIcon>
 )
@@ -30,7 +30,7 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   Icon: GoogleDriveIcon,
   UploadBookComponent: UploadBook,
   canSynchronize: true,
-  useDownloadBook,
+  DownloadBookComponent: DownloadBook,
   DataSourceForm,
   DataSourceDetails,
   SelectItemComponent,

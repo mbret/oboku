@@ -5,6 +5,8 @@ import { CollectionMetadataService } from "./CollectionMetadataService"
 import { IsBoolean, IsString, IsOptional, IsObject } from "class-validator"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { WithAuthUser, AuthUser } from "src/auth/auth.guard"
+import { DataSourceType } from "@oboku/shared"
+import { ProviderApiCredentials } from "@oboku/shared"
 
 class PostMetadataRefreshDto {
   @IsString()
@@ -15,8 +17,7 @@ class PostMetadataRefreshDto {
   soft?: boolean
 
   @IsObject()
-  @IsOptional()
-  data?: Record<string, unknown>
+  providerCredentials!: ProviderApiCredentials<DataSourceType>
 }
 
 @Controller("collections")
@@ -40,7 +41,7 @@ export class CollectionsController implements OnModuleInit {
 
   @Post("metadata/refresh")
   async metadataRefresh(
-    @Body() { collectionId, data, soft }: PostMetadataRefreshDto,
+    @Body() { collectionId, providerCredentials, soft }: PostMetadataRefreshDto,
     @WithAuthUser() user: AuthUser,
   ) {
     this.logger.log(`metadataRefresh ${collectionId}`)
@@ -50,7 +51,7 @@ export class CollectionsController implements OnModuleInit {
       () =>
         this.collectionMetadataService.refreshMetadata({
           collectionId: collectionId,
-          data: data ?? {},
+          providerCredentials: providerCredentials,
           soft,
           email: user.email,
         }),
@@ -71,7 +72,7 @@ export class CollectionsController implements OnModuleInit {
       () =>
         this.collectionMetadataService.refreshMetadata({
           collectionId: event.data.collectionId,
-          data: event.data.data,
+          providerCredentials: event.data.providerCredentials,
           soft: event.data.soft,
           email: event.data.email,
         }),

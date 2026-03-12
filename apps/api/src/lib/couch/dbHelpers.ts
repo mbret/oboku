@@ -7,6 +7,7 @@ import {
   type DocType,
   type ModelOf,
   type DataSourceDocType,
+  type SettingsDocType,
   isShallowEqual,
 } from "@oboku/shared"
 import { User } from "../couchDbEntities"
@@ -116,6 +117,18 @@ export const findAllDataSources = async (
   }) as Promise<MangoResponse<DataSourceDocType>>
 }
 
+/** Fetches the singleton settings document. Returns null if missing or on error. */
+export const getSettings = async (
+  db: createNano.DocumentScope<unknown>,
+): Promise<SettingsDocType | null> => {
+  try {
+    const doc = await retryFn(() => db.get("settings"))
+    return doc as SettingsDocType
+  } catch {
+    return null
+  }
+}
+
 export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
   db: createNano.DocumentScope<unknown>,
   rxModel: M,
@@ -125,8 +138,9 @@ export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
   const response = await retryFn(() =>
     db.find({
       ...restQuery,
-      fields: fields as string[],
-      selector: { rx_model: rxModel, ...(query?.selector as any) },
+      // nano's find() expects fields?: string[]; SafeMangoQuery uses (keyof D)[], which is string keys for our doc types
+      fields: fields === undefined ? undefined : ([...fields] as string[]),
+      selector: { rx_model: rxModel, ...query?.selector },
     }),
   )
 

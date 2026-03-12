@@ -8,16 +8,17 @@ import {
   of,
   switchMap,
 } from "rxjs"
-import { useRequestPopupDialog } from "../../useRequestPopupDialog"
-import { PLUGIN_NAME } from "./constants"
 import { useRequestToken } from "./useRequestToken"
 import { isDefined } from "reactjrx"
 
 /**
  * @returns list of files with access
  */
-export const useHasFilesAccess = () => {
-  const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
+export const useHasFilesAccess = ({
+  requestPopup,
+}: {
+  requestPopup: () => Promise<boolean>
+}) => {
   const { requestToken } = useRequestToken({ requestPopup })
   const getDriveFile = useDriveFilesGet()
 

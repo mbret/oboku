@@ -1,44 +1,80 @@
 import type { CollectionMetadata } from "../metadata"
 import type { FileLinkData } from "../plugins/file"
+import type { SynologyDriveLinkData } from "../plugins/synologyDrive"
+import type { UriLinkData } from "../plugins/uri"
 import type { WebdavLinkData } from "../plugins/webdav"
 import type { BookDocType } from "./books"
+/** Union of all plugin-specific link payloads (stored on link.data and sync item.linkData). */
 import type { CouchDBMeta } from "./couchdb"
 import type { RxDbMeta } from "./rxdb"
 
+export type LinkData =
+  | WebdavLinkData
+  | FileLinkData
+  | SynologyDriveLinkData
+  | UriLinkData
+
 type CommonBase = CouchDBMeta & RxDbMeta
 
-export type LinkDocType = CommonBase & {
-  /**
-   * unique type.
-   * This is used to lookup plugin configurations
-   */
-  type: DataSourceDocType["type"]
-  /**
-   * Is used as unique identifier for the datasource specifically.
-   * This can be used to detect if an item already exist for a datasource
-   * during synchronization for example.
-   * A good example is for example to use the google file/folder id as resource id.
-   * This way a quick lookup is possible to detect if the file/folder already exist.
-   * Datasources can use this field the way they want as long as they use the unique identifier helper
-   * function to generate/extract it.
-   */
-  resourceId: string
-  /**
-   * Direct match to datasource id from database. This is to
-   * retrieve which link is linked to datasource
-   */
-  dataSourceId?: string
-  /**
-   * Extra data field that can be used by any datasource to store
-   * any form of data.
-   */
-  data: null | WebdavLinkData | FileLinkData
-  book: string | null
-  rx_model: "link"
-  contentLength?: number | null
-  modifiedAt: string | null
-  createdAt: string
-}
+/**
+ * Link data shape for a given provider. Same credentials shape used for link.data,
+ * collection.linkData, sync items, and when calling plugin getFileMetadata/getFolderMetadata.
+ * Providers without link data (e.g. dropbox, DRIVE) get undefined.
+ */
+export type LinkDataForProvider<T extends DataSourceDocType["type"]> =
+  T extends "webdav"
+    ? WebdavLinkData
+    : T extends "synology-drive"
+      ? SynologyDriveLinkData
+      : T extends "URI"
+        ? UriLinkData
+        : T extends "file"
+          ? FileLinkData
+          : undefined
+
+/**
+ * Link document for a specific provider; `data` is correctly typed as that provider's
+ * link credentials (LinkDataForProvider<T>). Use to type refresh book, refresh collection,
+ * and sync flows when the provider is known.
+ */
+export type LinkDocTypeForProvider<T extends DataSourceDocType["type"]> =
+  CommonBase & {
+    type: T
+    /**
+     * Identifier of the resource within the plugin (e.g. file path, file id).
+     * Uniqueness for sync, reattach and duplicate detection is (type + resourceId + data).
+     */
+    resourceId: string
+    /**
+     * Provider-specific link credentials (e.g. connectorId for WebDAV/Synology).
+     * Same shape as collection.linkData and sync item linkData; required to connect with provider.
+     */
+    data: LinkDataForProvider<T> | null
+    book: string | null
+    rx_model: "link"
+    contentLength?: number | null
+    modifiedAt: string | null
+    createdAt: string
+  }
+
+/** Link document; discriminated union so narrowing link.type narrows link.data per provider. */
+export type LinkDocType =
+  | LinkDocTypeForProvider<"webdav">
+  | LinkDocTypeForProvider<"synology-drive">
+  | LinkDocTypeForProvider<"file">
+  | LinkDocTypeForProvider<"DRIVE">
+  | LinkDocTypeForProvider<"dropbox">
+  | LinkDocTypeForProvider<"URI">
+
+/**
+ * Minimal link shape passed to plugin getFileMetadata/getFolderMetadata and used when
+ * refreshing book or collection. Carries the same provider-specific credentials (data)
+ * whether the source is a link, a collection, or a datasource.
+ */
+export type LinkWithCredentials<T extends DataSourceDocType["type"]> = Pick<
+  LinkDocTypeForProvider<T>,
+  "type" | "resourceId" | "data"
+>
 
 export type BaseDataSourceDocType = CommonBase & {
   lastSyncedAt: number | null
@@ -66,7 +102,7 @@ export type FileDataSourceDocType = BaseDataSourceDocType & {
 
 export type URIDataSourceDocType = BaseDataSourceDocType & {
   type: "URI"
-  data_v2?: undefined
+  data_v2?: UriLinkData
 }
 
 export type GoogleDriveDataSourceDocType = Omit<
@@ -90,20 +126,40 @@ export type DropboxDataSourceDocType = Omit<
   }
 }
 
+/** WebDAV datasource data: same link credentials (WebdavLinkData) plus optional directory. */
 export type WebDAVDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
   type: "webdav"
-  data_v2?: {
-    connectorId?: string
-    directory?: string
-  }
+  data_v2?: WebdavLinkData & { directory?: string }
+}
+
+/** Synology Drive datasource data: same link credentials (SynologyDriveLinkData) plus selected file/folder ids. */
+export type SynologyDriveDataSourceDocType = Omit<
+  BaseDataSourceDocType,
+  "data_v2"
+> & {
+  type: "synology-drive"
+  data_v2?: SynologyDriveLinkData & { items?: ReadonlyArray<string> }
 }
 
 export type DataSourceDocType =
   | GoogleDriveDataSourceDocType
   | DropboxDataSourceDocType
   | WebDAVDataSourceDocType
+  | SynologyDriveDataSourceDocType
   | FileDataSourceDocType
   | URIDataSourceDocType
+
+/** Data source / provider type (e.g. "webdav", "file", "dropbox"). */
+export type DataSourceType = DataSourceDocType["type"]
+
+/**
+ * Datasource data_v2 shape for a given provider. Same credentials concept as
+ * LinkDataForProvider where applicable (e.g. webdav data_v2 extends WebdavLinkData).
+ */
+export type DataSourceDataForProvider<T extends DataSourceType> = Extract<
+  DataSourceDocType,
+  { type: T }
+>["data_v2"]
 
 export type InsertAbleBookDocType = Omit<BookDocType, "_id" | "_rev">
 
@@ -141,25 +197,86 @@ export type SecretDocType = CommonBase & {
   } | null
 }
 
-export type CollectionDocType = CommonBase & {
-  books: string[]
-  linkType?: DataSourceDocType["type"]
-  linkResourceId?: string
-  linkData?: WebdavLinkData
-  rx_model: "obokucollection"
-  modifiedAt: string | null
+export type CollectionDocType<T extends DataSourceType = DataSourceType> =
+  CommonBase & {
+    books: string[]
+    linkType?: T
+    linkResourceId?: string
+    linkData?: LinkDataForProvider<T>
+    rx_model: "obokucollection"
+    modifiedAt: string | null
+    /**
+     * Is used to avoid updating an item if the sync item
+     * is not changed
+     */
+    syncAt?: string | null
+    createdAt: string
+    lastMetadataUpdatedAt?: string
+    lastMetadataStartedAt?: string
+    metadataUpdateStatus?: "fetching" | "idle"
+    lastMetadataUpdateError?: null | string
+    type?: "series" | "shelve"
+    metadata?: CollectionMetadata[]
+  }
+
+export type WebdavConnectorDocType = {
+  id: string
+  url: string
+  username: string
+  passwordAsSecretId: string
+  allowSelfSigned?: boolean
+  type: "webdav"
+}
+
+export type SynologyDriveConnectorDocType = {
+  id: string
+  type: "synology-drive"
+  url: string
+  username: string
+  passwordAsSecretId: string
+  allowSelfSigned?: boolean
+}
+
+export type SettingsConnectorDocType =
+  | WebdavConnectorDocType
+  | SynologyDriveConnectorDocType
+
+export type SettingsConnectorType = SettingsConnectorDocType["type"]
+
+export type SettingsConnectorInput<
+  T extends SettingsConnectorType = SettingsConnectorType,
+> = Omit<Extract<SettingsConnectorDocType, { type: T }>, "id" | "type">
+
+export type SettingsConnectorUpdate<
+  T extends SettingsConnectorType = SettingsConnectorType,
+> = Omit<Extract<SettingsConnectorDocType, { type: T }>, "type">
+
+export type SettingsResolvedConnectorData<
+  T extends SettingsConnectorType = SettingsConnectorType,
+> = Omit<
+  Extract<SettingsConnectorDocType, { type: T }>,
+  "passwordAsSecretId"
+> & {
+  password: string
+}
+
+export type SettingsDocType = {
+  _id: "settings"
+  masterEncryptionKey?: {
+    salt: string
+    iv: string
+    data: string
+  } | null
+  connectors?: SettingsConnectorDocType[]
   /**
-   * Is used to avoid updating an item if the sync item
-   * is not changed
+   * @deprecated
+   * Use connectors instead.
    */
-  syncAt?: string | null
-  createdAt: string
-  lastMetadataUpdatedAt?: string
-  lastMetadataStartedAt?: string
-  metadataUpdateStatus?: "fetching" | "idle"
-  lastMetadataUpdateError?: null | string
-  type?: "series" | "shelve"
-  metadata?: CollectionMetadata[]
+  webdavConnectors?: unknown[]
+  readerGlobalFontScale?: number | null
+  readerMobileFontScale?: number | null
+  readerTabletFontScale?: number | null
+  readerDesktopFontScale?: number | null
 }
 
 export function isTag(
@@ -192,6 +309,17 @@ export function isCollection(
   return (document as CollectionDocType).rx_model === "obokucollection"
 }
 
+/**
+ * Type guard: narrows collection to CollectionDocType<T> when linkType matches.
+ * Use to read provider-specific linkData (e.g. connectorId) with correct typing.
+ */
+export function isCollectionOfType<T extends DataSourceType>(
+  c: { linkType?: string },
+  linkType: T,
+): c is CollectionDocType<T> {
+  return c.linkType === linkType
+}
+
 type MangoSelectorOperator<T> = {
   $nin?: any[]
   $in?: any[]
@@ -201,58 +329,38 @@ type MangoSelectorOperator<T> = {
   }
 }
 
+/** Selector value for a primitive or array field: equality or operator ($in, $ne, etc.). */
+type PrimitiveOrArraySelectorValue<T> = T | MangoSelectorOperator<T>
+
+/**
+ * Recursive selector type using nested JSON objects (CouchDB Mango supports both
+ * nested objects and dot notation; nested is type-safe and mirrors the document shape).
+ * - For object fields: value is a nested selector (same shape as the subdocument).
+ * - For primitives/arrays: value is the field type or MangoSelectorOperator<...>.
+ */
+type SafeMangoSelector<RxDocType> = {
+  [K in keyof RxDocType]?: NonNullable<RxDocType[K]> extends infer V
+    ? V extends readonly unknown[]
+      ? PrimitiveOrArraySelectorValue<RxDocType[K]>
+      : V extends object
+        ? SafeMangoSelector<V>
+        : PrimitiveOrArraySelectorValue<RxDocType[K]>
+    : never
+}
+
 interface MangoQuery<RxDocType> {
-  // JSON object describing criteria used to select documents.
-  // selector?: MangoSelector;
+  // JSON object describing criteria used to select documents (use nested objects for subfields, e.g. data: { connectorId: { $in: [...] } }).
   selector?:
+    | SafeMangoSelector<RxDocType>
     | {
-        [key in keyof RxDocType]?:
-          | RxDocType[key]
-          | MangoSelectorOperator<RxDocType[key]>
-      }
-    | {
-        $or: {
-          [key in keyof RxDocType]?:
-            | RxDocType[key]
-            | MangoQuerySelector<RxDocType[key]>
-        }[]
+        $or: SafeMangoSelector<RxDocType>[]
       }
 
   // Maximum number of results returned. Default is 25.
   limit?: number
 
-  // Skip the first 'n' results, where 'n' is the value specified.
-  // skip?: number;
-
-  // JSON array following sort syntax.
-  // sort?: SortOrder[];
-
-  // JSON array specifying which fields of each object should be returned. If it is omitted,
-  // the entire object is returned.
   // http://docs.couchdb.org/en/latest/api/database/find.html#filtering-fields
   fields?: (keyof RxDocType)[]
-
-  // Instruct a query to use a specific index.
-  // Specified either as "<design_document>" or ["<design_document>", "<index_name>"].
-  // use_index?: string | [string, string];
-
-  // Read quorum needed for the result. This defaults to 1.
-  // r?: number;
-
-  // A string that enables you to specify which page of results you require. Used for paging through result sets.
-  // bookmark?: string;
-
-  // Whether to update the index prior to returning the result. Default is true.
-  // update?: boolean;
-
-  // Whether or not the view results should be returned from a “stable” set of shards.
-  // stable?: boolean;
-
-  // Combination of update = false and stable = true options.Possible options: "ok", false (default).
-  // stale?: 'ok' | false;
-
-  // Include execution statistics in the query response. Optional, default: false.
-  // execution_stats?: boolean;
 }
 
 export type MangoQuerySelector<T> = T

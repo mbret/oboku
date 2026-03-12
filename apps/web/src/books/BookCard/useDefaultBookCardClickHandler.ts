@@ -1,8 +1,5 @@
 import { useNavigate } from "react-router"
-import {
-  useCancelBookDownload,
-  useDownloadBook,
-} from "../../download/useDownloadBook"
+import { useCancelBookDownload, useDownloadBook } from "../../download"
 import { getBookDownloadsState } from "../../download/states"
 import { useDatabase } from "../../rxdb"
 import { useCallback } from "react"

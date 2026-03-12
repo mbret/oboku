@@ -5,11 +5,12 @@ import {
   useCallback,
 } from "react"
 import { useAddBook } from "../books/helpers"
+import { useDownloadBook } from "../download/useDownloadBook"
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { TagsSelector } from "../tags/TagsSelector"
 import { ButtonDialog } from "../common/ButtonDialog"
 import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
-import type { ObokuPlugin } from "../plugins/types"
+import type { ObokuPlugin, UploadBookToAddPayload } from "../plugins/types"
 import { signal } from "reactjrx"
 import { capitalize } from "@mui/material"
 
@@ -29,29 +30,44 @@ export const UploadBookDialog = memo(
     onClose: () => void
   } & DOMAttributes<any>) => {
     const [addBook] = useAddBook()
+    const { mutateAsync: downloadFile } = useDownloadBook()
     const dataSource = useDataSourcePlugin(openWith)
     const createRequestPopup = useCreateRequestPopupDialog()
 
     const onClose: UploadBookComponentProps[`onClose`] = useCallback(
-      (bookToAdd) => {
-        if (dataSource && bookToAdd) {
-          addBook({
-            book: {
-              ...bookToAdd.book,
-              tags: [],
-            },
-            link: {
-              book: null,
-              data: null,
-              createdAt: new Date().toISOString(),
-              modifiedAt: null,
-              ...bookToAdd.link,
-            },
-          })
+      async (booksToAdd?: ReadonlyArray<UploadBookToAddPayload>) => {
+        if (dataSource && booksToAdd?.length) {
+          for (const bookToAdd of booksToAdd) {
+            const result = await addBook({
+              book: {
+                ...bookToAdd.book,
+                tags: [],
+              },
+              link: {
+                book: null,
+                createdAt: new Date().toISOString(),
+                modifiedAt: null,
+                ...bookToAdd.link,
+                data:
+                  bookToAdd.link.type === "URI"
+                    ? (bookToAdd.link.data ?? {})
+                    : (bookToAdd.link.data ?? null),
+              },
+            })
+
+            if (bookToAdd.file && result?.book) {
+              const json = result.book.toJSON()
+              await downloadFile({
+                _id: json._id,
+                links: json.links,
+                file: bookToAdd.file,
+              })
+            }
+          }
         }
         onFinalClose()
       },
-      [onFinalClose, addBook, dataSource],
+      [onFinalClose, addBook, downloadFile, dataSource],
     )
 
     if (!dataSource) return null

@@ -1,24 +1,27 @@
 import { Logger } from "@nestjs/common"
-import type {
-  DataSourcePlugin,
-  SynchronizeAbleDataSource,
-} from "src/lib/plugins/types"
-import { CollectionDocType, directives } from "@oboku/shared"
+import {
+  CollectionDocType,
+  DataSourceType,
+  directives,
+  LinkDataForProvider,
+} from "@oboku/shared"
 import type { Context } from "../types"
-
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
-type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
+import { insert } from "src/lib/couch/dbHelpers"
 
 const logger = new Logger("sync/addNewCollection")
 
-export const addNewCollection = async ({
-  item: { name, resourceId: linkResourceId, linkData },
-  helpers,
+export const addNewCollection = async <T extends DataSourceType>({
+  name,
+  linkResourceId,
+  linkData,
+  linkType,
   ctx,
 }: {
   ctx: Context
-  item: SynchronizeAbleItem
-  helpers: Helpers
+  name: string
+  linkResourceId: string
+  linkData: LinkDataForProvider<T>
+  linkType: T
 }) => {
   const directiveValues = directives.extractDirectivesFromName(name)
 
@@ -36,23 +39,25 @@ export const addNewCollection = async ({
    * Note that there could be another collection with same name. But since it
    * does not come from the same datasource it should still be treated as different
    */
-  const collectionToAdd: Omit<CollectionDocType, "_id" | "_rev" | "rx_model"> =
-    {
-      linkResourceId,
-      linkType: ctx.dataSourceType,
-      linkData,
-      books: [],
-      createdAt: new Date().toISOString(),
-      modifiedAt: null,
-      syncAt: new Date().toISOString(),
-      type: directiveValues.series ? ("series" as const) : ("shelve" as const),
-      rxdbMeta: {
-        lwt: Date.now(),
-      },
-      metadata: [linkMetadata],
-    }
+  const collectionToAdd: Omit<
+    CollectionDocType<T>,
+    "_id" | "_rev" | "rx_model"
+  > = {
+    linkResourceId,
+    linkType,
+    linkData,
+    books: [],
+    createdAt: new Date().toISOString(),
+    modifiedAt: null,
+    syncAt: new Date().toISOString(),
+    type: directiveValues.series ? ("series" as const) : ("shelve" as const),
+    rxdbMeta: {
+      lwt: Date.now(),
+    },
+    metadata: [linkMetadata],
+  }
 
-  const created = await helpers.create("obokucollection", collectionToAdd)
+  const created = await insert(ctx.db, "obokucollection", collectionToAdd)
 
   ctx.syncReport.addCollection({ _id: created.id, ...collectionToAdd })
 

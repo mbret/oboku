@@ -10,29 +10,35 @@ import {
   Typography,
 } from "@mui/material"
 import { useDropzone } from "react-dropzone"
-import { Logger } from "../../debug/logger.shared"
-import { READER_ACCEPTED_FILE_TYPES } from "@oboku/shared"
-import type { ObokuPlugin } from "../types"
+import {
+  type FileLinkData,
+  PLUGIN_FILE_TYPE,
+  READER_ACCEPTED_FILE_TYPES,
+} from "@oboku/shared"
+import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
 import { type DragEventHandler, useRef } from "react"
-import { useAddBookFromFile } from "./useAddBookFromFile"
 
 export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
   openFrom?: string
 } = ({ onClose, onDragLeave }) => {
-  const { mutate: addBookFromFile } = useAddBookFromFile()
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     accept: READER_ACCEPTED_FILE_TYPES,
   })
   const dialogRef = useRef<HTMLDivElement>(null)
 
-  const handleConfirm = async () => {
-    onClose()
-
-    try {
-      await Promise.all(acceptedFiles.map((file) => addBookFromFile(file)))
-    } catch (e) {
-      Logger.error(e)
-    }
+  const handleConfirm = () => {
+    const payloads: UploadBookToAddPayload[] = acceptedFiles.map((file) => ({
+      book: {
+        metadata: [{ type: "link", title: file.name }],
+      },
+      link: {
+        data: { filename: file.name } satisfies FileLinkData,
+        resourceId: "file",
+        type: PLUGIN_FILE_TYPE,
+      },
+      file,
+    }))
+    onClose(payloads)
   }
 
   const _onDragLeave: DragEventHandler<HTMLDivElement> = (e) => {

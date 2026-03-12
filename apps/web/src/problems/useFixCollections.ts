@@ -1,4 +1,4 @@
-import type { CollectionDocType } from "@oboku/shared"
+import type { CollectionDocType, DataSourceDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import type { DeepMutable } from "rxdb/dist/types/types"
 import { Logger } from "../debug/logger.shared"
@@ -20,9 +20,26 @@ export const useFixCollections = () => {
       if (yes && database) {
         try {
           await Promise.all(
-            data.map(async ([resourceId]) => {
+            data.map(async ([key]) => {
+              const selector = key.includes("\0")
+                ? (() => {
+                    const [
+                      linkType = "",
+                      linkResourceId = "",
+                      connectorId = "",
+                    ] = key.split("\0")
+
+                    return {
+                      linkType: linkType as DataSourceDocType["type"],
+                      linkResourceId: linkResourceId || key,
+                      ...(connectorId !== "" && {
+                        "linkData.connectorId": connectorId,
+                      }),
+                    }
+                  })()
+                : { linkResourceId: key ?? `-1` }
               const docsWithSameResourceId = await database?.obokucollection
-                .find({ selector: { linkResourceId: resourceId ?? `-1` } })
+                .find({ selector })
                 .exec()
 
               const collectionsAsJson = docsWithSameResourceId.map(

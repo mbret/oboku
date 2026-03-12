@@ -53,7 +53,6 @@ export const SelectableBookListItem = memo(
             flex: `0 0 ${coverWidth}`,
           }}
           withBadges={false}
-          withReadingProgressStatus={false}
           withDownloadStatus={false}
         />
         <div

@@ -38,7 +38,7 @@ export const useUpsertLink = () => {
 
               return from(
                 db.link.safeInsert({
-                  data: null,
+                  data: type === "URI" ? {} : null,
                   resourceId,
                   type,
                   book: bookId,

@@ -14,7 +14,9 @@ export const useRequestFilesAccess = ({
   requestPopup: () => Promise<boolean>
 }) => {
   const queryClient = useQueryClient()
-  const hasFilesAccess = useHasFilesAccess()
+  const hasFilesAccess = useHasFilesAccess({
+    requestPopup,
+  })
   const { pick } = useDrivePicker({
     scope: ["https://www.googleapis.com/auth/drive.file"],
     requestPopup,
