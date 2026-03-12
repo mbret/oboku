@@ -1,20 +1,29 @@
 import {
-  browseSynologyDriveItems,
+  type SynologyDriveApiCredentials,
+  browseSynologyDriveItems as browseSynologyDriveItemsShared,
   buildApiUrls,
-  buildSynologyDriveGetItemParams,
+  buildSynologyDriveGetItemParams as buildSynologyDriveGetItemParamsShared,
   buildSynologyDriveLoginParams,
+  getSynologyDriveDownloadUrls as getSynologyDriveDownloadUrlsShared,
   mapSynologyDriveItemToBrowseItem,
   parseSynologyDriveGetItemPayload,
   parseSynologyDriveListPagePayload,
   parseSynologyDriveLoginPayload,
   type SynologyDriveBrowseNodeId,
   type SynologyDriveSession as SharedSynologyDriveSession,
-  type SynologyDriveSessionAuth,
+  type SynologyDriveSessionAuth as SharedSynologyDriveSessionAuth,
 } from "@oboku/synology"
 
-export type SynologyDriveSession = SharedSynologyDriveSession & {
+type SynologyDriveStoredSessionAuth = Omit<
+  SharedSynologyDriveSessionAuth,
+  keyof SynologyDriveApiCredentials
+>
+
+export type SynologyDriveSession = Omit<SharedSynologyDriveSession, "auth"> & {
+  auth: SynologyDriveStoredSessionAuth
   connectorId?: string
   createdAt?: string
+  passwordAsSecretId?: string
 }
 
 export class SynologyDriveAuthenticationError extends Error {
@@ -28,6 +37,17 @@ export const isSynologyDriveAuthenticationError = (
   error: unknown,
 ): error is SynologyDriveAuthenticationError =>
   error instanceof SynologyDriveAuthenticationError
+
+const toSharedSynologyDriveSession = (
+  session: SynologyDriveSession,
+): SharedSynologyDriveSession => ({
+  // The shared helpers only use baseUrl + sid after login; keep password redacted.
+  auth: {
+    ...session.auth,
+    password: "",
+  },
+  sid: session.sid,
+})
 
 const requestJson = async <T>({
   baseUrl,
@@ -100,9 +120,9 @@ export const getSynologyDriveBrowseItem = async ({
 }) =>
   requestJson({
     baseUrl: session.auth.baseUrl,
-    params: buildSynologyDriveGetItemParams({
+    params: buildSynologyDriveGetItemParamsShared({
       fileId,
-      session,
+      session: toSharedSynologyDriveSession(session),
     }),
     parse: (payload) =>
       mapSynologyDriveItemToBrowseItem(
@@ -110,8 +130,20 @@ export const getSynologyDriveBrowseItem = async ({
       ),
   })
 
+export const getSynologyDriveDownloadUrls = ({
+  fileId,
+  session,
+}: {
+  fileId: string
+  session: SynologyDriveSession
+}) =>
+  getSynologyDriveDownloadUrlsShared({
+    fileId,
+    session: toSharedSynologyDriveSession(session),
+  })
+
 export const signInSynologyDrive = async (
-  auth: SynologyDriveSessionAuth,
+  auth: SharedSynologyDriveSessionAuth,
 ): Promise<SynologyDriveSession> => {
   const { sid } = await requestJson({
     baseUrl: auth.baseUrl,
@@ -121,7 +153,10 @@ export const signInSynologyDrive = async (
   })
 
   return {
-    auth,
+    auth: {
+      baseUrl: auth.baseUrl,
+      username: auth.username,
+    },
     sid,
   }
 }
@@ -133,7 +168,7 @@ export const browseSynologyDrive = async ({
   nodeId?: SynologyDriveBrowseNodeId
   session: SynologyDriveSession
 }) => ({
-  items: await browseSynologyDriveItems({
+  items: await browseSynologyDriveItemsShared({
     nodeId,
     requestPage: (params: URLSearchParams) =>
       requestJson({
@@ -141,6 +176,6 @@ export const browseSynologyDrive = async ({
         params,
         parse: parseSynologyDriveListPagePayload,
       }),
-    session,
+    session: toSharedSynologyDriveSession(session),
   }),
 })

@@ -1,10 +1,12 @@
 import { useMutation } from "@tanstack/react-query"
 import type { ObokuPlugin } from "../types"
-import { useRequestSynologyDriveSession } from "./auth/auth"
+import { useExtractConnectorData } from "../../connectors/useExtractConnectorData"
 
 export const useRefreshMetadata: ObokuPlugin<"synology-drive">[`useRefreshMetadata`] =
   () => {
-    const requestSynologyDriveSession = useRequestSynologyDriveSession()
+    const { mutateAsync: extractConnectorData } = useExtractConnectorData({
+      type: "synology-drive",
+    })
 
     return useMutation({
       mutationFn: async ({ linkData }) => {
@@ -14,12 +16,10 @@ export const useRefreshMetadata: ObokuPlugin<"synology-drive">[`useRefreshMetada
           throw new Error("No connector id")
         }
 
-        const session = await requestSynologyDriveSession({
-          connectorId,
-        })
+        const result = await extractConnectorData({ connectorId })
 
         return {
-          providerCredentials: session.auth,
+          providerCredentials: { password: result.data.password },
         }
       },
     })

@@ -1,9 +1,11 @@
-import { getSynologyDriveDownloadUrls } from "@oboku/synology"
 import {
   httpClientWeb,
   isXMLHttpResponseError,
 } from "../../../http/httpClient.web"
-import type { SynologyDriveSession } from "../client"
+import {
+  getSynologyDriveDownloadUrls,
+  type SynologyDriveSession,
+} from "../client"
 
 const isJsonContentType = (contentType: string | null | undefined) =>
   !!contentType && contentType.toLowerCase().includes("json")

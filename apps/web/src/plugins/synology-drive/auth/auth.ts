@@ -26,13 +26,13 @@ const matchesSessionRequest = (
 const matchesSessionConnectorData = (
   session: SynologyDriveSession,
   connectorData: {
-    password: string
+    passwordAsSecretId: string
     url: string
     username: string
   },
 ) =>
   session.auth.baseUrl === connectorData.url &&
-  session.auth.password === connectorData.password &&
+  session.passwordAsSecretId === connectorData.passwordAsSecretId &&
   session.auth.username === connectorData.username
 
 export const isSynologyDriveSessionExpired = (
@@ -87,6 +87,7 @@ export const useRequestSynologyDriveSession = () => {
           ...session,
           connectorId: request.connectorId,
           createdAt: new Date().toISOString(),
+          passwordAsSecretId: data.passwordAsSecretId,
         }
 
         synologyDriveSessionSignal.setValue(sessionWithConnector)
