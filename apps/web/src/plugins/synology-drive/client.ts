@@ -1,13 +1,11 @@
 import {
+  browseSynologyDriveItems,
   buildApiUrls,
   buildSynologyDriveGetItemParams,
-  buildSynologyDriveListFolderParams,
-  buildSynologyDriveListTeamFoldersParams,
   buildSynologyDriveLoginParams,
-  buildSynologyDriveRootBrowseItems,
   mapSynologyDriveItemToBrowseItem,
   parseSynologyDriveGetItemPayload,
-  parseSynologyDriveListItemsPayload,
+  parseSynologyDriveListPagePayload,
   parseSynologyDriveLoginPayload,
   type SynologyDriveBrowseNodeId,
   type SynologyDriveSession as SharedSynologyDriveSession,
@@ -77,31 +75,6 @@ const requestJson = async <T>({
   )
 }
 
-const listFolder = async (session: SynologyDriveSession, path: string) =>
-  requestJson({
-    baseUrl: session.auth.baseUrl,
-    params: buildSynologyDriveListFolderParams({
-      path,
-      session,
-    }),
-    parse: (payload) =>
-      parseSynologyDriveListItemsPayload(payload).map(
-        mapSynologyDriveItemToBrowseItem,
-      ),
-  })
-
-const listTeamFolders = async (session: SynologyDriveSession) =>
-  requestJson({
-    baseUrl: session.auth.baseUrl,
-    params: buildSynologyDriveListTeamFoldersParams({
-      session,
-    }),
-    parse: (payload) =>
-      parseSynologyDriveListItemsPayload(payload).map(
-        mapSynologyDriveItemToBrowseItem,
-      ),
-  })
-
 export const getSynologyDriveBrowseItem = async ({
   fileId,
   session,
@@ -143,36 +116,15 @@ export const browseSynologyDrive = async ({
 }: {
   nodeId?: SynologyDriveBrowseNodeId
   session: SynologyDriveSession
-}) => {
-  if (!nodeId) {
-    const teamFolders = await listTeamFolders(session).catch(() => [])
-
-    return {
-      items: buildSynologyDriveRootBrowseItems({
-        hasTeamFolders: teamFolders.length > 0,
+}) => ({
+  items: await browseSynologyDriveItems({
+    nodeId,
+    requestPage: (params: URLSearchParams) =>
+      requestJson({
+        baseUrl: session.auth.baseUrl,
+        params,
+        parse: parseSynologyDriveListPagePayload,
       }),
-    }
-  }
-
-  if (nodeId === "root:my-drive") {
-    return {
-      items: await listFolder(session, "/mydrive/"),
-    }
-  }
-
-  if (nodeId === "root:team-folders") {
-    return {
-      items: await listTeamFolders(session),
-    }
-  }
-
-  if (nodeId.startsWith("folder:")) {
-    return {
-      items: await listFolder(session, `id:${nodeId.replace("folder:", "")}`),
-    }
-  }
-
-  return {
-    items: [],
-  }
-}
+    session,
+  }),
+})

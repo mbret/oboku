@@ -24,6 +24,15 @@ export type SynologyDriveBrowseItem = {
   type: "file" | "folder"
 }
 
+export type SynologyDriveListPage = {
+  items: SynologyDriveItem[]
+  total?: number
+}
+
+type SynologyDriveListPageRequest = (
+  params: URLSearchParams,
+) => Promise<SynologyDriveListPage>
+
 export const normalizeSynologyDriveBaseUrl = (baseUrl: string) => {
   const url = new URL(baseUrl)
 
@@ -44,6 +53,7 @@ export const SYNOLOGY_DRIVE_FILES_LIST_VERSION = "2"
 export const SYNOLOGY_DRIVE_FILES_GET_VERSION = "3"
 export const SYNOLOGY_DRIVE_FILES_DOWNLOAD_VERSION = "2"
 export const SYNOLOGY_DRIVE_TEAM_FOLDERS_VERSION = "1"
+export const SYNOLOGY_DRIVE_LIST_PAGE_LIMIT = 1000
 
 const synologyDriveNumberLikeSchema = z.union([z.number(), z.string()])
 
@@ -182,17 +192,21 @@ const withSessionParams = (
   })
 
 export const buildSynologyDriveListFolderParams = ({
+  limit = SYNOLOGY_DRIVE_LIST_PAGE_LIMIT,
+  offset = 0,
   path,
   session,
 }: {
+  limit?: number
+  offset?: number
   path: string
   session: SynologyDriveSession
 }) =>
   withSessionParams(session, {
     api: "SYNO.SynologyDrive.Files",
-    limit: "1000",
+    limit: `${limit}`,
     method: "list",
-    offset: "0",
+    offset: `${offset}`,
     path,
     sort_by: "name",
     sort_direction: "ASC",
@@ -200,15 +214,19 @@ export const buildSynologyDriveListFolderParams = ({
   })
 
 export const buildSynologyDriveListTeamFoldersParams = ({
+  limit = SYNOLOGY_DRIVE_LIST_PAGE_LIMIT,
+  offset = 0,
   session,
 }: {
+  limit?: number
+  offset?: number
   session: SynologyDriveSession
 }) =>
   withSessionParams(session, {
     api: "SYNO.SynologyDrive.TeamFolders",
-    limit: "1000",
+    limit: `${limit}`,
     method: "list",
-    offset: "0",
+    offset: `${offset}`,
     sort_by: "name",
     sort_direction: "ASC",
     version: SYNOLOGY_DRIVE_TEAM_FOLDERS_VERSION,
@@ -265,13 +283,151 @@ export const getSynologyDriveDownloadUrls = ({
 export const parseSynologyDriveLoginPayload = (payload: unknown) =>
   parseSynologyDriveResponseData(payload, synologyDriveLoginDataSchema)
 
-export const parseSynologyDriveListItemsPayload = (payload: unknown) => {
+export const parseSynologyDriveListPagePayload = (
+  payload: unknown,
+): SynologyDriveListPage => {
   const data = parseSynologyDriveResponseData(
     payload,
     synologyDriveListDataSchema,
   )
 
-  return data.items ?? data.list ?? []
+  return {
+    items: data.items ?? data.list ?? [],
+    ...(data.total !== undefined ? { total: data.total } : {}),
+  }
+}
+
+export const parseSynologyDriveListItemsPayload = (payload: unknown) =>
+  parseSynologyDriveListPagePayload(payload).items
+
+export const listAllSynologyDriveItems = async ({
+  buildParams,
+  requestPage,
+  session,
+}: {
+  buildParams: (pagination: {
+    limit: number
+    offset: number
+    session: SynologyDriveSession
+  }) => URLSearchParams
+  requestPage: SynologyDriveListPageRequest
+  session: SynologyDriveSession
+}) => {
+  const items: SynologyDriveItem[] = []
+  let offset = 0
+
+  while (true) {
+    const page = await requestPage(
+      buildParams({
+        limit: SYNOLOGY_DRIVE_LIST_PAGE_LIMIT,
+        offset,
+        session,
+      }),
+    )
+
+    items.push(...page.items)
+
+    if (page.items.length < SYNOLOGY_DRIVE_LIST_PAGE_LIMIT) {
+      return items
+    }
+
+    if (page.total !== undefined && offset + page.items.length >= page.total) {
+      return items
+    }
+
+    offset += page.items.length
+  }
+}
+
+export const listAllSynologyDriveFolderItems = async ({
+  path,
+  requestPage,
+  session,
+}: {
+  path: string
+  requestPage: SynologyDriveListPageRequest
+  session: SynologyDriveSession
+}) =>
+  listAllSynologyDriveItems({
+    buildParams: ({ limit, offset, session }) =>
+      buildSynologyDriveListFolderParams({
+        limit,
+        offset,
+        path,
+        session,
+      }),
+    requestPage,
+    session,
+  })
+
+export const listAllSynologyDriveTeamFolderItems = async ({
+  requestPage,
+  session,
+}: {
+  requestPage: SynologyDriveListPageRequest
+  session: SynologyDriveSession
+}) =>
+  listAllSynologyDriveItems({
+    buildParams: ({ limit, offset, session }) =>
+      buildSynologyDriveListTeamFoldersParams({
+        limit,
+        offset,
+        session,
+      }),
+    requestPage,
+    session,
+  })
+
+export const browseSynologyDriveItems = async ({
+  nodeId,
+  requestPage,
+  session,
+}: {
+  nodeId?: SynologyDriveBrowseNodeId
+  requestPage: SynologyDriveListPageRequest
+  session: SynologyDriveSession
+}): Promise<SynologyDriveBrowseItem[]> => {
+  if (!nodeId) {
+    const teamFolders = await listAllSynologyDriveTeamFolderItems({
+      requestPage,
+      session,
+    }).catch(() => [])
+
+    return buildSynologyDriveRootBrowseItems({
+      hasTeamFolders: teamFolders.length > 0,
+    })
+  }
+
+  if (nodeId === "root:my-drive") {
+    return (
+      await listAllSynologyDriveFolderItems({
+        path: "/mydrive/",
+        requestPage,
+        session,
+      })
+    ).map(mapSynologyDriveItemToBrowseItem)
+  }
+
+  if (nodeId === "root:team-folders") {
+    return (
+      await listAllSynologyDriveTeamFolderItems({
+        requestPage,
+        session,
+      })
+    ).map(mapSynologyDriveItemToBrowseItem)
+  }
+
+  if (nodeId.startsWith("folder:")) {
+    return (
+      await listAllSynologyDriveFolderItems({
+        path: `id:${nodeId.replace("folder:", "")}`,
+        requestPage,
+        session,
+      })
+    ).map(mapSynologyDriveItemToBrowseItem)
+  }
+
+  return []
 }
 
 export const parseSynologyDriveGetItemPayload = (payload: unknown) => {

@@ -1,21 +1,19 @@
 import { generateSynologyDriveResourceId, isFileSupported } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
 import {
+  browseSynologyDriveItems,
   buildApiUrls,
   buildSynologyDriveGetItemParams,
-  buildSynologyDriveListFolderParams,
-  buildSynologyDriveListTeamFoldersParams,
   buildSynologyDriveLoginParams,
-  buildSynologyDriveRootBrowseItems,
   getSynologyDriveDownloadUrls,
   getSynologyDriveItemFileId,
   getSynologyDriveItemName,
   getSynologyDriveItemType,
-  mapSynologyDriveItemToBrowseItem,
+  listAllSynologyDriveFolderItems,
   mapSynologyDriveItemToMetadata,
   parseSynologyDriveDownloadErrorPayload,
   parseSynologyDriveGetItemPayload,
-  parseSynologyDriveListItemsPayload,
+  parseSynologyDriveListPagePayload,
   parseSynologyDriveLoginPayload,
   type SynologyDriveApiCredentials,
   type SynologyDriveBrowseNodeId,
@@ -206,28 +204,16 @@ const listFolderItems = async ({
   path: string
   session: SynologyDriveRequestSession
 }) =>
-  requestJson({
-    allowSelfSigned: session.allowSelfSigned,
-    baseUrl: session.auth.baseUrl,
-    params: buildSynologyDriveListFolderParams({
-      path,
-      session,
-    }),
-    parse: parseSynologyDriveListItemsPayload,
-  })
-
-const listTeamFolderItems = async ({
-  session,
-}: {
-  session: SynologyDriveRequestSession
-}) =>
-  requestJson({
-    allowSelfSigned: session.allowSelfSigned,
-    baseUrl: session.auth.baseUrl,
-    params: buildSynologyDriveListTeamFoldersParams({
-      session,
-    }),
-    parse: parseSynologyDriveListItemsPayload,
+  listAllSynologyDriveFolderItems({
+    path,
+    requestPage: (params) =>
+      requestJson({
+        allowSelfSigned: session.allowSelfSigned,
+        baseUrl: session.auth.baseUrl,
+        params,
+        parse: parseSynologyDriveListPagePayload,
+      }),
+    session,
   })
 
 export const browseSynologyDrive = async ({
@@ -236,53 +222,19 @@ export const browseSynologyDrive = async ({
 }: {
   nodeId?: SynologyDriveBrowseNodeId
   session: SynologyDriveRequestSession
-}) => {
-  if (!nodeId) {
-    const teamFolders = await listTeamFolderItems({
-      session,
-    }).catch(() => [])
-
-    return {
-      items: buildSynologyDriveRootBrowseItems({
-        hasTeamFolders: teamFolders.length > 0,
+}) => ({
+  items: await browseSynologyDriveItems({
+    nodeId,
+    requestPage: (params) =>
+      requestJson({
+        allowSelfSigned: session.allowSelfSigned,
+        baseUrl: session.auth.baseUrl,
+        params,
+        parse: parseSynologyDriveListPagePayload,
       }),
-    }
-  }
-
-  if (nodeId === "root:my-drive") {
-    return {
-      items: (
-        await listFolderItems({
-          path: "/mydrive/",
-          session,
-        })
-      ).map(mapSynologyDriveItemToBrowseItem),
-    }
-  }
-
-  if (nodeId === "root:team-folders") {
-    return {
-      items: (await listTeamFolderItems({ session })).map(
-        mapSynologyDriveItemToBrowseItem,
-      ),
-    }
-  }
-
-  if (nodeId.startsWith("folder:")) {
-    return {
-      items: (
-        await listFolderItems({
-          path: `id:${nodeId.replace("folder:", "")}`,
-          session,
-        })
-      ).map(mapSynologyDriveItemToBrowseItem),
-    }
-  }
-
-  return {
-    items: [],
-  }
-}
+    session,
+  }),
+})
 
 const getSynologyDriveItem = async ({
   fileId,
