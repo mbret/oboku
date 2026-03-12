@@ -37,6 +37,12 @@ const linkSchema: RxJsonSchema<
     _id: { type: `string`, maxLength: 100 },
     data: { type: ["object", "null"] },
     resourceId: { type: "string" },
+    /**
+     * @important This is here for legacy purposes and to no break database.
+     * This is not used anymore and should not be used in the future.
+     * Conceptually, data sources only sync items. They don't own anything. An item
+     * could be synced from various data sources.
+     */
     dataSourceId: { type: "string" },
     type: { type: "string" },
     book: { type: ["string", "null"] },
