@@ -4,13 +4,9 @@ import {
   PLUGIN_SYNOLOGY_DRIVE_TYPE,
 } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
-import { normalizeSynologyDriveBaseUrl } from "@oboku/synology"
 import type { DataSourcePlugin } from "src/lib/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
-import {
-  getConnectorById,
-  getConnectorIdsWithSameServer,
-} from "../../connectors/connectorHelpers"
+import { getConnectorById } from "../../connectors/connectorHelpers"
 import {
   downloadSynologyDriveStream,
   getSynchronizeAbleDataSourceFromItems,
@@ -24,25 +20,26 @@ const logger = new Logger("SynologyDrivePlugin")
 export const dataSource: DataSourcePlugin<"synology-drive"> = {
   type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
   /**
-   * Finds link candidates by resourceId and by "same Synology Drive server": we include links
-   * whose connector points to the same base URL (normalized). So if the user added the same
-   * server as multiple connectors, we still match the item to any of those links.
+   * Finds persisted link candidates using the exact stored link identity.
+   *
+   * Why this is intentionally strict:
+   * - A datasource is only a sync scope, not an ownership boundary.
+   * - The same Synology Drive item may be reachable through multiple
+   *   datasources/connectors with different valid credentials.
+   * - We should not collapse or reuse those paths just because they target the
+   *   same normalized server.
+   *
+   * Matching rule:
+   * - same provider type
+   * - same resourceId
+   * - same connectorId
+   *
+   * This keeps sync non-destructive. "Same normalized server" is broader than
+   * the persisted identity we want to preserve.
    */
   getLinkCandidatesForItem: async (item, ctx) => {
     const connectorId = item.linkData.connectorId
     if (!connectorId) {
-      return { links: [] }
-    }
-    const connectorIdsWithSameUrl = await getConnectorIdsWithSameServer(
-      ctx.db,
-      {
-        connectorId,
-        connectorType: "synology-drive",
-        normalizeUrl: normalizeSynologyDriveBaseUrl,
-      },
-    )
-
-    if (!connectorIdsWithSameUrl) {
       return { links: [] }
     }
 
@@ -50,7 +47,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       selector: {
         type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
         resourceId: item.resourceId,
-        data: { connectorId: { $in: connectorIdsWithSameUrl } },
+        data: { connectorId },
       },
     })
 
@@ -75,31 +72,20 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
     }
   },
   /**
-   * Finds collection candidates by resourceId and by "same Synology Drive
-   * server": we include collections whose linkData.connectorId points to the
-   * same base URL (normalized), matching getLinkCandidatesForItem behavior.
+   * Same identity rule as getLinkCandidatesForItem: collections are only
+   * considered the same persisted resource when both resourceId and connectorId
+   * match exactly.
    */
   getCollectionCandidatesForItem: async (item, ctx) => {
     const connectorId = item.linkData.connectorId
     if (!connectorId) {
       return { collections: [] }
     }
-    const connectorIdsWithSameUrl = await getConnectorIdsWithSameServer(
-      ctx.db,
-      {
-        connectorId,
-        connectorType: "synology-drive",
-        normalizeUrl: normalizeSynologyDriveBaseUrl,
-      },
-    )
-    if (!connectorIdsWithSameUrl) {
-      return { collections: [] }
-    }
     const collections = await find(ctx.db, "obokucollection", {
       selector: {
         linkType: PLUGIN_SYNOLOGY_DRIVE_TYPE,
         linkResourceId: item.resourceId,
-        linkData: { connectorId: { $in: connectorIdsWithSameUrl } },
+        linkData: { connectorId },
       },
     })
     const datasourceData = ctx.dataSource

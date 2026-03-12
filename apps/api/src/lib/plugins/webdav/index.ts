@@ -6,16 +6,12 @@ import {
   type SynchronizeAbleItem,
 } from "src/lib/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
-import {
-  getConnectorById,
-  getConnectorIdsWithSameServer,
-} from "../../connectors/connectorHelpers"
+import { getConnectorById } from "../../connectors/connectorHelpers"
 import {
   explodeWebdavResourceId,
   generateWebdavResourceId,
   isFileSupported,
   isCollectionOfType,
-  normalizeWebdavBaseUrl,
   WebDAVDataSourceDocType,
 } from "@oboku/shared"
 import { type createClient } from "webdav"
@@ -49,9 +45,24 @@ const createWebdavClient = async (connector: {
 export const dataSource: DataSourcePlugin<"webdav"> = {
   type: WEBDAV_TYPE,
   /**
-   * Finds link candidates by resourceId and by "same WebDAV server": we include links whose
-   * connector points to the same server URL (normalized). So if the user added the same server
-   * as multiple connectors, we still match the item to any of those links.
+   * Finds persisted link candidates using the exact stored link identity.
+   *
+   * Why this is intentionally strict:
+   * - A datasource does not own content; it only syncs what it can see.
+   * - The same WebDAV resource may legitimately be reachable through multiple
+   *   datasources or connectors with different valid credentials.
+   * - We must therefore avoid destructive merges across "same server"
+   *   connectors, even when their normalized URL matches.
+   *
+   * Matching rule:
+   * - same provider type
+   * - same resourceId
+   * - same connectorId
+   *
+   * In other words, "same normalized server" is not enough to treat two links
+   * as the same persisted identity. That broader notion may be useful for other
+   * convenience flows, but sync candidate reuse must stay exact and
+   * non-destructive.
    */
   getLinkCandidatesForItem: async (item, ctx) => {
     const connectorId = item.linkData.connectorId
@@ -60,24 +71,11 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
       return { links: [] }
     }
 
-    const connectorIdsWithSameUrl = await getConnectorIdsWithSameServer(
-      ctx.db,
-      {
-        connectorId,
-        connectorType: "webdav",
-        normalizeUrl: normalizeWebdavBaseUrl,
-      },
-    )
-
-    if (!connectorIdsWithSameUrl) {
-      return { links: [] }
-    }
-
     const links = await find(ctx.db, "link", {
       selector: {
         type: WEBDAV_TYPE,
         resourceId: item.resourceId,
-        data: { connectorId: { $in: connectorIdsWithSameUrl } },
+        data: { connectorId },
       },
     })
     const datasourceData = ctx.dataSource
@@ -101,31 +99,20 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
     }
   },
   /**
-   * Finds collection candidates by resourceId and by "same WebDAV server": we
-   * include collections whose linkData.connectorId points to the same server
-   * URL (normalized), matching getLinkCandidatesForItem behavior.
+   * Same identity rule as getLinkCandidatesForItem: collections are only
+   * considered the same persisted resource when both resourceId and connectorId
+   * match exactly.
    */
   getCollectionCandidatesForItem: async (item, ctx) => {
     const connectorId = item.linkData.connectorId
     if (!connectorId) {
       return { collections: [] }
     }
-    const connectorIdsWithSameUrl = await getConnectorIdsWithSameServer(
-      ctx.db,
-      {
-        connectorId,
-        connectorType: "webdav",
-        normalizeUrl: normalizeWebdavBaseUrl,
-      },
-    )
-    if (!connectorIdsWithSameUrl) {
-      return { collections: [] }
-    }
     const collections = await find(ctx.db, "obokucollection", {
       selector: {
         linkType: WEBDAV_TYPE,
         linkResourceId: item.resourceId,
-        linkData: { connectorId: { $in: connectorIdsWithSameUrl } },
+        linkData: { connectorId },
       },
     })
     const datasourceData = ctx.dataSource
