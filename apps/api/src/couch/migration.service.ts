@@ -1,8 +1,4 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-  explodeWebdavResourceId,
-  generateWebdavResourceId,
-} from "@oboku/shared"
 import { CouchService } from "./couch.service"
 import { UserCouchEntity } from "src/lib/couchDbEntities"
 
@@ -47,14 +43,55 @@ type CollectionDoc = {
   [key: string]: unknown
 }
 
-const toCanonicalWebdavResourceId = (resourceId: string) => {
-  try {
-    const { filename } = explodeWebdavResourceId(resourceId)
+/**
+ * Snapshot parser for the legacy WebDAV resource-id formats this migration is
+ * responsible for rewriting.
+ *
+ * This intentionally does not rely on shared runtime helpers because a data
+ * migration should keep working the same way in the future, even if normal app
+ * parsing logic evolves again.
+ *
+ * Accepted inputs:
+ * - `webdav://{encoded filename}` (current canonical format)
+ * - `webdav://_:{encoded filename}` (dummy-host legacy format)
+ * - `webdav://host:{encoded filename}` (host-based legacy format)
+ */
+const extractFilenameFromWebdavResourceIdForMigration = (
+  resourceId: string,
+) => {
+  if (!resourceId.startsWith("webdav://")) {
+    return null
+  }
 
-    return generateWebdavResourceId({ filename })
+  const withoutPrefix = resourceId.substring("webdav://".length)
+  const encodedFilename = withoutPrefix.includes(":")
+    ? withoutPrefix.substring(withoutPrefix.lastIndexOf(":") + 1)
+    : withoutPrefix
+
+  try {
+    return decodeURIComponent(encodedFilename)
   } catch {
     return null
   }
+}
+
+/**
+ * Snapshot canonical formatter for the WebDAV ids produced by this migration.
+ *
+ * Target format:
+ * - `webdav://{encoded filename}`
+ */
+const generateCanonicalWebdavResourceIdForMigration = (filename: string) =>
+  `webdav://${encodeURIComponent(filename)}`
+
+const toCanonicalWebdavResourceId = (resourceId: string) => {
+  const filename = extractFilenameFromWebdavResourceIdForMigration(resourceId)
+
+  if (!filename) {
+    return null
+  }
+
+  return generateCanonicalWebdavResourceIdForMigration(filename)
 }
 
 @Injectable()

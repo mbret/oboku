@@ -50,16 +50,13 @@ export const explodeWebdavResourceId = (resourceId: string) => {
   }
 
   const withoutPrefix = resourceId.substring("webdav://".length)
-  const encodedFilename = withoutPrefix.includes(":")
-    ? withoutPrefix.substring(withoutPrefix.lastIndexOf(":") + 1)
-    : withoutPrefix
+
+  if (!withoutPrefix || withoutPrefix.includes(":")) {
+    throw new Error(`Invalid resource ID format: ${resourceId}`)
+  }
+
+  const encodedFilename = withoutPrefix
   const filename = decodeURIComponent(encodedFilename)
 
-  const lastSlashIndex = filename.lastIndexOf("/")
-  const directory =
-    lastSlashIndex !== -1 ? `/${filename.substring(0, lastSlashIndex)}` : "/"
-  const basename =
-    lastSlashIndex !== -1 ? filename.substring(lastSlashIndex + 1) : filename
-
-  return { filename, directory, basename }
+  return { filename }
 }
