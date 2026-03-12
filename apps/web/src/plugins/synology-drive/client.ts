@@ -65,6 +65,21 @@ const requestJson = async <T>({
   let lastError: Error | undefined
 
   for (const url of urls) {
+    /**
+     * We intentionally serialize Synology params into the URL for the browser
+     * flow because the shared helpers model the request shape we have validated
+     * against target NAS instances.
+     *
+     * This includes:
+     * - `passwd` during login
+     * - `_sid` on authenticated follow-up requests
+     *
+     * This is not ideal from a secrecy perspective, but we should not switch
+     * transport shape speculatively. If we later confirm a body-based or
+     * header-based contract for these Synology Drive endpoints, this is one of
+     * the places that should be updated together with
+     * `packages/synology/src/client.ts`.
+     */
     url.search = params.toString()
 
     try {

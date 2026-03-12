@@ -165,6 +165,28 @@ export const buildApiUrls = (
 export const buildSynologyDriveLoginParams = (
   auth: SynologyDriveSessionAuth,
 ) => {
+  /**
+   * Synology Drive login currently sends credentials as query parameters.
+   *
+   * Why this is intentional:
+   * - The browser flow talks directly to the NAS, not to our API.
+   * - For `SYNO.API.Auth`, we only rely on the URL-parameter form that we have
+   *   observed working against target NAS instances.
+   * - We do not currently have a verified contract showing that the same
+   *   endpoint accepts credentials in a POST body for the Synology Drive flow.
+   *
+   * Why we keep it centralized here:
+   * - This makes the transport choice explicit and easy to revisit.
+   * - If we later validate a safer body-based contract on real NAS targets, we
+   *   should change this helper in one place instead of having multiple ad hoc
+   *   request shapes across the app.
+   *
+   * Security note:
+   * - Query parameters are less desirable because they can appear in browser
+   *   tooling, proxy logs, or NAS logs.
+   * - Until we have a verified alternative, compatibility with the NAS login
+   *   endpoint takes priority here.
+   */
   const params = new URLSearchParams({
     account: auth.username,
     api: "SYNO.API.Auth",
@@ -186,6 +208,16 @@ const withSessionParams = (
   session: SynologyDriveSession,
   params: Record<string, string>,
 ) =>
+  /**
+   * Synology Drive follow-up requests currently keep `_sid` in query params for
+   * the same reason as login: this is the contract shape we have validated for
+   * the direct-to-NAS browser flow.
+   *
+   * Do not silently move `_sid` into headers or request bodies unless that
+   * behavior has been confirmed against real Synology Drive endpoints.
+   * If a safer transport is validated later, update this helper so all request
+   * builders move together.
+   */
   new URLSearchParams({
     ...params,
     _sid: session.sid,
