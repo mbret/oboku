@@ -6,6 +6,7 @@ import type { TreeNode } from "./types"
 
 /** Id suffix for placeholder child added so MUI shows expand arrow on empty folders */
 const PLACEHOLDER_SUFFIX = "__placeholder"
+const EMPTY_ITEM_IDS: string[] = []
 
 function isPlaceholderId(id: string): boolean {
   return id.endsWith(PLACEHOLDER_SUFFIX)
@@ -103,10 +104,10 @@ export type LazyTreeViewProps = {
  */
 export const LazyTreeView = ({
   initialItems,
-  initialExpandedItems = [],
+  initialExpandedItems = EMPTY_ITEM_IDS,
   onLoadChildren,
   onTreeChange,
-  selectedItems = [],
+  selectedItems = EMPTY_ITEM_IDS,
   onSelectedItemsChange,
   isItemSelectionDisabled: isItemSelectionDisabledProp,
 }: LazyTreeViewProps) => {

@@ -37,6 +37,9 @@ export const DataSourceForm = memo(
     const [session, setSession] = useState<SynologyDriveSession | undefined>(
       undefined,
     )
+    const [selectionPrefetchItemIds, setSelectionPrefetchItemIds] = useState<
+      string[]
+    >([])
     const [connectError, setConnectError] = useState<Error | undefined>(
       undefined,
     )
@@ -86,7 +89,7 @@ export const DataSourceForm = memo(
       treeItems,
     } = useSelectionTreeData({
       connectorId,
-      selectedItemIds,
+      prefetchedSelectedItemIds: selectionPrefetchItemIds,
       session,
     })
 
@@ -94,6 +97,7 @@ export const DataSourceForm = memo(
       value: Parameters<NonNullable<typeof connectorField.onChange>>[0],
     ) => {
       setSession(undefined)
+      setSelectionPrefetchItemIds([])
       setConnectError(undefined)
       itemsField.onChange([])
       setTree([])
@@ -109,6 +113,7 @@ export const DataSourceForm = memo(
       setConnectError(undefined)
 
       try {
+        setSelectionPrefetchItemIds(selectedItemIds)
         const nextSession = await requestSynologyDriveSession({
           connectorId,
           forceRefresh: !!session,
@@ -117,6 +122,7 @@ export const DataSourceForm = memo(
         setSession(nextSession)
       } catch (error) {
         setSession(undefined)
+        setSelectionPrefetchItemIds([])
         if (!isCancelError(error)) {
           setConnectError(
             error instanceof Error ? error : new Error(String(error)),

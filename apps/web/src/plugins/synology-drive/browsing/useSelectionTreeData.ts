@@ -18,11 +18,11 @@ import { useLoadChildren } from "./useLoadChildren"
 
 export const useSelectionTreeData = ({
   connectorId,
-  selectedItemIds,
+  prefetchedSelectedItemIds,
   session,
 }: {
   connectorId: string
-  selectedItemIds: string[]
+  prefetchedSelectedItemIds: string[]
   session: SynologyDriveSession | undefined
 }) => {
   const rootItemsQuery = useQuery({
@@ -56,7 +56,7 @@ export const useSelectionTreeData = ({
       "datasource-selected-items-tree",
       connectorId,
       session?.sid,
-      ...selectedItemIds,
+      ...prefetchedSelectedItemIds,
     ],
     queryFn: async () => {
       if (!session) {
@@ -89,7 +89,7 @@ export const useSelectionTreeData = ({
       }
 
       const selectedItems = await Promise.all(
-        selectedItemIds.map((fileId) =>
+        prefetchedSelectedItemIds.map((fileId) =>
           getSynologyDriveBrowseItem({
             fileId,
             session,
@@ -132,7 +132,10 @@ export const useSelectionTreeData = ({
         tree: nextTree,
       }
     },
-    enabled: !!session && initialItems.length > 0 && selectedItemIds.length > 0,
+    enabled:
+      !!session &&
+      initialItems.length > 0 &&
+      prefetchedSelectedItemIds.length > 0,
     retry: false,
   })
 
@@ -142,15 +145,8 @@ export const useSelectionTreeData = ({
   })
 
   const treeItems = useMemo(
-    () =>
-      prefetchedSelectionTreeQuery.data?.tree && selectedItemIds.length > 0
-        ? prefetchedSelectionTreeQuery.data.tree
-        : initialItems,
-    [
-      initialItems,
-      prefetchedSelectionTreeQuery.data?.tree,
-      selectedItemIds.length,
-    ],
+    () => prefetchedSelectionTreeQuery.data?.tree ?? initialItems,
+    [initialItems, prefetchedSelectionTreeQuery.data?.tree],
   )
 
   const initialExpandedItems = useMemo(
@@ -162,7 +158,7 @@ export const useSelectionTreeData = ({
     !!session && (rootItemsQuery.isPending || rootItemsQuery.isFetching)
   const isSelectedItemsPrefetchLoading =
     !!session &&
-    selectedItemIds.length > 0 &&
+    prefetchedSelectedItemIds.length > 0 &&
     prefetchedSelectionTreeQuery.isPending
   const treeError =
     rootItemsQuery.error instanceof Error
