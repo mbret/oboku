@@ -3,6 +3,7 @@ import {
   isCollectionOfType,
   PLUGIN_SYNOLOGY_DRIVE_TYPE,
 } from "@oboku/shared"
+import { Logger } from "@nestjs/common"
 import { normalizeSynologyDriveBaseUrl } from "@oboku/synology"
 import type { DataSourcePlugin } from "src/lib/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
@@ -17,6 +18,8 @@ import {
   getSynologyDriveSession,
 } from "./client"
 import { getDataSourceData } from "../helpers"
+
+const logger = new Logger("SynologyDrivePlugin")
 
 export const dataSource: DataSourcePlugin<"synology-drive"> = {
   type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
@@ -223,6 +226,10 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       throw new Error("datasource not found or invalid")
     }
 
+    logger.log(
+      `Starting Synology Drive sync for datasource ${dataSourceId} with ${items.length} selected item(s)`,
+    )
+
     const connector = await getConnectorById(db, connectorId, "synology-drive")
     if (!connector) {
       throw new Error("Synology Drive connector not found")
@@ -236,6 +243,8 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       },
       providerCredentials,
     })
+
+    logger.log("Synology Drive session created")
 
     return getSynchronizeAbleDataSourceFromItems({
       connectorId,

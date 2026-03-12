@@ -1,4 +1,5 @@
 import { generateSynologyDriveResourceId, isFileSupported } from "@oboku/shared"
+import { Logger } from "@nestjs/common"
 import {
   buildApiUrls,
   buildSynologyDriveGetItemParams,
@@ -32,6 +33,7 @@ type SynologyDriveRequestSession = SynologyDriveSession & {
   allowSelfSigned?: boolean
 }
 
+const logger = new Logger("SynologyDriveClient")
 const SYNOLOGY_DRIVE_SYNC_CONCURRENCY = 2
 
 const isAxiosNetworkError = (error: unknown) =>
@@ -63,6 +65,28 @@ const mapWithConcurrency = async <TInput, TOutput>(
 
   return results
 }
+
+const countSynchronizeAbleItems = (
+  items: SynchronizeAbleItem<"synology-drive">[],
+): { files: number; folders: number } =>
+  items.reduce(
+    (acc, item) => {
+      if (item.type === "file") {
+        return {
+          files: acc.files + 1,
+          folders: acc.folders,
+        }
+      }
+
+      const childCounts = countSynchronizeAbleItems(item.items ?? [])
+
+      return {
+        files: acc.files + childCounts.files,
+        folders: acc.folders + 1 + childCounts.folders,
+      }
+    },
+    { files: 0, folders: 0 },
+  )
 
 const isSupportedSynologyDriveItem = (item: SynologyDriveItem) => {
   const metadata = mapSynologyDriveItemToMetadata(item)
@@ -465,6 +489,10 @@ export const getSynchronizeAbleDataSourceFromItems = async ({
 }) => {
   const uniqueItems = Array.from(new Set(items))
 
+  logger.log(
+    `Starting Synology Drive browsing for ${uniqueItems.length} selected item(s)`,
+  )
+
   const synchronizeAbleItems = (
     await mapWithConcurrency(
       uniqueItems,
@@ -484,6 +512,12 @@ export const getSynchronizeAbleDataSourceFromItems = async ({
     )
   ).filter(
     (item): item is SynchronizeAbleItem<"synology-drive"> => item !== null,
+  )
+
+  const counts = countSynchronizeAbleItems(synchronizeAbleItems)
+
+  logger.log(
+    `Retrieved ${counts.files} file(s) and ${counts.folders} folder(s) from Synology Drive`,
   )
 
   return {
