@@ -5,10 +5,15 @@ import {
   type UploadConnectorSelectionStepProps,
 } from "../../../upload/UploadConnectorSelectionStep"
 import {
+  clearSynologyDriveSession,
   synologyDriveSessionSignal,
   useRequestSynologyDriveSession,
 } from "../auth/auth"
-import { browseSynologyDrive, type SynologyDriveSession } from "../client"
+import {
+  browseSynologyDrive,
+  isSynologyDriveAuthenticationError,
+  type SynologyDriveSession,
+} from "../client"
 
 export type SynologyAuthResult = {
   connectorId: string
@@ -24,19 +29,44 @@ export const ConnectorSelectionStep = memo(
     >,
   ) => {
     const requestSynologyDriveSession = useRequestSynologyDriveSession()
+    const authenticate = async (connectorId: string) => {
+      const session = await requestSynologyDriveSession({ connectorId })
+
+      try {
+        const response = await browseSynologyDrive({ session })
+
+        return {
+          connectorId,
+          items: response.items,
+          session,
+        }
+      } catch (error) {
+        if (!isSynologyDriveAuthenticationError(error)) {
+          throw error
+        }
+
+        clearSynologyDriveSession()
+
+        const refreshedSession = await requestSynologyDriveSession({
+          connectorId,
+          forceRefresh: true,
+        })
+        const response = await browseSynologyDrive({
+          session: refreshedSession,
+        })
+
+        return {
+          connectorId,
+          items: response.items,
+          session: refreshedSession,
+        }
+      }
+    }
 
     return (
       <UploadConnectorSelectionStep<SynologyAuthResult>
         {...props}
-        authenticate={async (connectorId) => {
-          const session = await requestSynologyDriveSession({ connectorId })
-          const response = await browseSynologyDrive({ session })
-          return {
-            connectorId,
-            items: response.items,
-            session,
-          }
-        }}
+        authenticate={authenticate}
         initialConnectorId={synologyDriveSessionSignal.getValue()?.connectorId}
       />
     )

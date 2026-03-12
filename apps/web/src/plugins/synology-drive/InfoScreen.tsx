@@ -12,9 +12,12 @@ import { useSignalValue } from "reactjrx"
 import { ConnectorInfoScreen } from "../../connectors/ConnectorInfoScreen"
 import { useConnector } from "../../connectors/useConnector"
 import {
+  SYNOLOGY_DRIVE_SESSION_MAX_AGE_MS,
   clearSynologyDriveSession,
   synologyDriveSessionSignal,
 } from "./auth/auth"
+
+const SESSION_MAX_AGE_MINUTES = SYNOLOGY_DRIVE_SESSION_MAX_AGE_MS / (60 * 1000)
 
 const CurrentSessionSection = () => {
   const session = useSignalValue(synologyDriveSessionSignal)
@@ -61,8 +64,8 @@ const CurrentSessionSection = () => {
               Created at: {createdAt}
             </Typography>
             <Typography component="span" variant="body2" display="block">
-              Expiration: Not provided by NAS (session valid until cleared or
-              app refresh)
+              Expiration: Refreshed after {SESSION_MAX_AGE_MINUTES} minutes or
+              sooner if the NAS rejects the session
             </Typography>
           </Stack>
         }

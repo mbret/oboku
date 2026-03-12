@@ -14,6 +14,10 @@ export const synologyDriveSessionSignal = signal<
   default: undefined,
 })
 
+// Synology does not expose session expiry to the browser client, so we refresh
+// cached SIDs conservatively before they can linger indefinitely.
+export const SYNOLOGY_DRIVE_SESSION_MAX_AGE_MS = 15 * 60 * 1000
+
 const matchesSessionRequest = (
   session: SynologyDriveSession,
   request: SynologyDriveRequest,
@@ -30,6 +34,22 @@ const matchesSessionConnectorData = (
   session.auth.baseUrl === connectorData.url &&
   session.auth.password === connectorData.password &&
   session.auth.username === connectorData.username
+
+export const isSynologyDriveSessionExpired = (
+  session: SynologyDriveSession,
+) => {
+  if (!session.createdAt) {
+    return true
+  }
+
+  const createdAtTime = new Date(session.createdAt).getTime()
+
+  if (Number.isNaN(createdAtTime)) {
+    return true
+  }
+
+  return Date.now() - createdAtTime >= SYNOLOGY_DRIVE_SESSION_MAX_AGE_MS
+}
 
 export const clearSynologyDriveSession = () => {
   synologyDriveSessionSignal.setValue(undefined)
@@ -51,6 +71,7 @@ export const useRequestSynologyDriveSession = () => {
         existingSession &&
         matchesSessionRequest(existingSession, request) &&
         matchesSessionConnectorData(existingSession, data) &&
+        !isSynologyDriveSessionExpired(existingSession) &&
         !request.forceRefresh
       ) {
         return existingSession

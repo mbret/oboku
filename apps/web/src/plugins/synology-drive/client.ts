@@ -17,6 +17,18 @@ export type SynologyDriveSession = SharedSynologyDriveSession & {
   createdAt?: string
 }
 
+export class SynologyDriveAuthenticationError extends Error {
+  constructor(public readonly status: number) {
+    super(`Synology Drive request failed with status ${status}`)
+    this.name = "SynologyDriveAuthenticationError"
+  }
+}
+
+export const isSynologyDriveAuthenticationError = (
+  error: unknown,
+): error is SynologyDriveAuthenticationError =>
+  error instanceof SynologyDriveAuthenticationError
+
 const requestJson = async <T>({
   baseUrl,
   endpoint = "entry.cgi",
@@ -47,6 +59,10 @@ const requestJson = async <T>({
 
       if (response.ok) {
         return parse(await response.json())
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        throw new SynologyDriveAuthenticationError(response.status)
       }
 
       if (response.status !== 404) {
