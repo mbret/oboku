@@ -19,6 +19,18 @@ const matchesSessionRequest = (
   request: SynologyDriveRequest,
 ) => !!request.connectorId && session.connectorId === request.connectorId
 
+const matchesSessionConnectorData = (
+  session: SynologyDriveSession,
+  connectorData: {
+    password: string
+    url: string
+    username: string
+  },
+) =>
+  session.auth.baseUrl === connectorData.url &&
+  session.auth.password === connectorData.password &&
+  session.auth.username === connectorData.username
+
 export const clearSynologyDriveSession = () => {
   synologyDriveSessionSignal.setValue(undefined)
 }
@@ -31,20 +43,20 @@ export const useRequestSynologyDriveSession = () => {
   return useCallback(
     async (request: SynologyDriveRequest) => {
       const existingSession = synologyDriveSessionSignal.getValue()
+      const { data } = await extractConnectorData({
+        connectorId: request.connectorId,
+      })
 
       if (
         existingSession &&
         matchesSessionRequest(existingSession, request) &&
+        matchesSessionConnectorData(existingSession, data) &&
         !request.forceRefresh
       ) {
         return existingSession
       }
 
-      const signInWithConnector = async (connectorId: string) => {
-        const { data } = await extractConnectorData({
-          connectorId,
-        })
-
+      const signInWithConnector = async () => {
         const session = await signInSynologyDrive({
           baseUrl: data.url,
           password: data.password,
@@ -52,7 +64,7 @@ export const useRequestSynologyDriveSession = () => {
         })
         const sessionWithConnector = {
           ...session,
-          connectorId,
+          connectorId: request.connectorId,
           createdAt: new Date().toISOString(),
         }
 
@@ -62,7 +74,7 @@ export const useRequestSynologyDriveSession = () => {
       }
 
       try {
-        return await signInWithConnector(request.connectorId)
+        return await signInWithConnector()
       } catch (error) {
         clearSynologyDriveSession()
 
