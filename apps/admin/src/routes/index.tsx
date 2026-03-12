@@ -12,6 +12,12 @@ export const Route = createFileRoute("/")({
   component: App,
 })
 
+const DANGEROUS_ACTION_CONFIRMATION_MESSAGE =
+  "Don't run this unless you know exactly what you're doing.\n\nThis can permanently damage your database."
+
+const confirmDangerousAction = () =>
+  window.confirm(DANGEROUS_ACTION_CONFIRMATION_MESSAGE)
+
 function App() {
   const form = useForm({
     mode: "uncontrolled",
@@ -60,16 +66,38 @@ function App() {
       {isAuthenticated && (
         <Box mt="md" maw={340} mx="auto">
           <Group gap="sm">
-            <Button onClick={() => migrate()}>migrate db</Button>
             <Button
-              onClick={() => migrateWebdavConnectors()}
+              onClick={() => {
+                if (!confirmDangerousAction()) {
+                  return
+                }
+
+                migrate()
+              }}
+            >
+              migrate db
+            </Button>
+            <Button
+              onClick={() => {
+                if (!confirmDangerousAction()) {
+                  return
+                }
+
+                migrateWebdavConnectors()
+              }}
               variant="light"
               loading={isWebdavMigrationPending}
             >
               migrate webdav → connectors
             </Button>
             <Button
-              onClick={() => migrateWebdavResourceIds()}
+              onClick={() => {
+                if (!confirmDangerousAction()) {
+                  return
+                }
+
+                migrateWebdavResourceIds()
+              }}
               variant="light"
               loading={isWebdavResourceIdMigrationPending}
             >
