@@ -8,68 +8,54 @@ function assertNever(value: never): never {
   throw new Error(`Unexpected linkType: ${String(value)}`)
 }
 
+const getRequiredPlugin = (type: UseRefreshMetadataRequest["linkType"]) => {
+  const plugin = getPluginFromType(type)
+
+  if (!plugin) {
+    throw new Error(`Plugin ${type} not found`)
+  }
+
+  return plugin
+}
+
 export const usePluginRefreshMetadata = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
 
-  const { mutateAsync: webdavRefreshMetadata } = getPluginFromType(
+  const { mutateAsync: webdavRefreshMetadata } = getRequiredPlugin(
     "webdav",
-  )?.useRefreshMetadata?.({
+  ).useRefreshMetadata({
     requestPopup: createRequestPopupDialog({ name: "webdav" }),
-  }) ?? {
-    mutateAsync: async () => {
-      throw new Error("WebDAV plugin not found")
-    },
-  }
+  })
 
-  const { mutateAsync: synologyDriveRefreshMetadata } = getPluginFromType(
+  const { mutateAsync: synologyDriveRefreshMetadata } = getRequiredPlugin(
     "synology-drive",
-  )?.useRefreshMetadata?.({
+  ).useRefreshMetadata({
     requestPopup: createRequestPopupDialog({ name: "synology-drive" }),
-  }) ?? {
-    mutateAsync: async () => {
-      throw new Error("Synology Drive plugin not found")
-    },
-  }
+  })
 
-  const { mutateAsync: dropboxRefreshMetadata } = getPluginFromType(
+  const { mutateAsync: dropboxRefreshMetadata } = getRequiredPlugin(
     "dropbox",
-  )?.useRefreshMetadata?.({
+  ).useRefreshMetadata({
     requestPopup: createRequestPopupDialog({ name: "dropbox" }),
-  }) ?? {
-    mutateAsync: async () => {
-      throw new Error("Dropbox plugin not found")
-    },
-  }
+  })
 
-  const { mutateAsync: driveRefreshMetadata } = getPluginFromType(
+  const { mutateAsync: driveRefreshMetadata } = getRequiredPlugin(
     "DRIVE",
-  )?.useRefreshMetadata?.({
+  ).useRefreshMetadata({
     requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
-  }) ?? {
-    mutateAsync: async () => {
-      throw new Error("Drive plugin not found")
-    },
-  }
+  })
 
-  const { mutateAsync: fileRefreshMetadata } = getPluginFromType(
+  const { mutateAsync: fileRefreshMetadata } = getRequiredPlugin(
     "file",
-  )?.useRefreshMetadata?.({
+  ).useRefreshMetadata({
     requestPopup: createRequestPopupDialog({ name: "file" }),
-  }) ?? {
-    mutateAsync: async () => {
-      throw new Error("File plugin not found")
-    },
-  }
+  })
 
-  const { mutateAsync: uriRefreshMetadata } = getPluginFromType(
+  const { mutateAsync: uriRefreshMetadata } = getRequiredPlugin(
     "URI",
-  )?.useRefreshMetadata?.({
+  ).useRefreshMetadata({
     requestPopup: createRequestPopupDialog({ name: "URI" }),
-  }) ?? {
-    mutateAsync: async () => {
-      throw new Error("URI plugin not found")
-    },
-  }
+  })
 
   return useCallback(
     async (

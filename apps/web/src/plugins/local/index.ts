@@ -7,6 +7,7 @@ import {
   PLUGIN_FILE_TYPE,
 } from "@oboku/shared"
 import { memo, useEffect } from "react"
+import { useRefreshMetadata } from "./useRefreshMetadata"
 
 export const plugin: ObokuPlugin<"file"> = {
   uniqueResourceIdentifier: "file",
@@ -15,6 +16,7 @@ export const plugin: ObokuPlugin<"file"> = {
   UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
   description: "Manage contents from your device (local)",
+  useRefreshMetadata,
   DownloadBookComponent: memo(({ onError }) => {
     useEffect(() => {
       onError(

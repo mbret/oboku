@@ -183,7 +183,7 @@ export type ObokuPlugin<
   DownloadBookComponent: FunctionComponent<DownloadBookComponentProps>
   Provider?: FunctionComponent<{ children: ReactNode }>
   InfoScreen?: () => ReactElement
-  useRefreshMetadata?: UseRefreshMetadataHook<T>
+  useRefreshMetadata: UseRefreshMetadataHook<T>
   useSynchronize?: UseSynchronizeHook<T>
   useRemoveBook?: UseRemoveBook | undefined
   useSyncSourceInfo?: UseSyncSourceInfo<T>
