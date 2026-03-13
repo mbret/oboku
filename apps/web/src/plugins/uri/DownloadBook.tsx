@@ -12,6 +12,8 @@ import {
   type Observable,
 } from "rxjs"
 import { useMutation$ } from "reactjrx"
+import {} from "@oboku/shared"
+import { resolveDownloadFileName } from "@oboku/shared"
 import {
   type DownloadBookComponentProps,
   extractIdFromResourceId,
@@ -66,9 +68,17 @@ export const DownloadBook = memo(
             },
           }),
         ).pipe(
-          map((mediaResponse) => ({
-            data: mediaResponse.data,
-          })),
+          map((mediaResponse) => {
+            return {
+              data: mediaResponse.data,
+              fileName:
+                resolveDownloadFileName({
+                  contentDisposition:
+                    mediaResponse.headers["content-disposition"],
+                  url: downloadLink,
+                }) || bookIdFromUrl(downloadLink),
+            }
+          }),
           takeUntil(merge(userCancelWithFlag$, lifecycleCancelWithFlag$)),
           throwIfEmpty(() =>
             cancelReason === "lifecycle"
@@ -103,3 +113,11 @@ export const DownloadBook = memo(
     return null
   },
 )
+
+const bookIdFromUrl = (url: string) => {
+  try {
+    return new URL(url).pathname.split("/").filter(Boolean).pop() || url
+  } catch {
+    return url
+  }
+}

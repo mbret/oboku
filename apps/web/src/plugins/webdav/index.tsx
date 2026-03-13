@@ -1,4 +1,5 @@
 import type { ObokuPlugin } from "../types"
+import { UnsupportedMethodError } from "../../errors/errors.shared"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
@@ -8,6 +9,7 @@ import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DataSourceDetails } from "./DataSourceDetails"
 import { DownloadBook } from "./DownloadBook"
 import { UploadBook } from "./UploadBook"
+import { useLinkInfo } from "./useLinkInfo"
 import { SvgIcon } from "@mui/material"
 import WebDAVIconAsset from "../../assets/webdav-icon.svg?react"
 
@@ -17,9 +19,16 @@ const WebDAVIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
+const useRemoveBook: ObokuPlugin<"webdav">["useRemoveBook"] = () => {
+  return async () => {
+    throw new UnsupportedMethodError("This data source cannot remove books")
+  }
+}
+
 const plugin: ObokuPlugin<"webdav"> = {
   type: TYPE,
   name: "WebDAV",
+  canRemoveBook: false,
   canSynchronize: true,
   uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   Icon: WebDAVIcon,
@@ -29,7 +38,10 @@ const plugin: ObokuPlugin<"webdav"> = {
   UploadBookComponent: UploadBook,
   useSynchronize,
   useSyncSourceInfo,
+  useLinkInfo,
   useRefreshMetadata,
+  useRemoveBook,
+  useSignOut: () => () => {},
   InfoScreen,
   DownloadBookComponent: DownloadBook,
 }

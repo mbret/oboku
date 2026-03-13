@@ -93,7 +93,7 @@ export const DownloadBook = memo(
                     ).pipe(
                       map((mediaResponse) => ({
                         data: mediaResponse.data,
-                        name: info.result.name || "",
+                        fileName: info.result.name || fileId,
                       })),
                     ),
                   ),

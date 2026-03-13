@@ -21,9 +21,9 @@ import { Cover } from "./Cover"
 import { useBook, useIsBookProtected } from "./states"
 import { ReadingStateState } from "@oboku/shared"
 import { useLink } from "../links/states"
-import { usePlugin } from "../plugins/usePlugin"
 import { DownloadState, useBookDownloadState } from "../download/states"
 import { ButtonAsIcon } from "../common/ButtonAsIcon"
+import { pluginsByType } from "src/plugins/configure"
 
 export const CoverIconBadge = memo(
   ({ children, ...rest }: { children: ReactNode } & BoxProps) => {
@@ -67,7 +67,7 @@ export const BookCoverCard: FC<
   }) => {
     const { data: item } = useBook({ id: bookId })
     const { data: link } = useLink({ id: item?.links?.[0] })
-    const linkPlugin = usePlugin(link?.type)
+    const linkPlugin = link?.type ? pluginsByType[link?.type] : undefined
     const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected } = useIsBookProtected(item)
     const theme = useTheme()

@@ -19,7 +19,7 @@ import { BookCoverCard } from "../BookCoverCard"
 import { getMetadataFromBook } from "../metadata"
 import { useBookDownloadState } from "../../download/states"
 import { useLink } from "../../links/states"
-import { usePlugin } from "../../plugins/usePlugin"
+import { pluginsByType } from "src/plugins/configure"
 
 export const BookCardHorizontal: FC<{
   bookId: string
@@ -42,7 +42,7 @@ export const BookCardHorizontal: FC<{
       id: bookId,
     })
     const { data: link } = useLink({ id: book?.links?.[0] })
-    const linkPlugin = usePlugin(link?.type)
+    const linkPlugin = link?.type ? pluginsByType[link?.type] : undefined
     const theme = useTheme()
     const bookDownloadState = useBookDownloadState(bookId)
     const { data: isBookProtected } = useIsBookProtected(book)

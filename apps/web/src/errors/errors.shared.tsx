@@ -12,6 +12,12 @@ export class CancelError extends Error {
   }
 }
 
+export class UnsupportedMethodError extends Error {
+  constructor(message?: string) {
+    super(message ?? "UnsupportedMethodError")
+  }
+}
+
 /** Usually used with lifecycle such as unmount on mutations$ */
 export class LifecycleCancelError extends CancelError {
   constructor() {

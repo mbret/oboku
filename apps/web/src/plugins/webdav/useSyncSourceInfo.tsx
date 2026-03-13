@@ -1,12 +1,26 @@
 import type { UseSyncSourceInfo } from "../types"
 import { useConnector } from "../../connectors/useConnector"
 
-export const useSyncSourceInfo: UseSyncSourceInfo<"webdav"> = (syncSource) => {
+export const useSyncSourceInfo: UseSyncSourceInfo<"webdav"> = ({
+  dataSource,
+  enabled,
+}) => {
+  const webdavDataSource =
+    enabled && dataSource?.type === "webdav" ? dataSource : undefined
+
   const { data: connector } = useConnector({
-    id: syncSource?.data_v2?.connectorId,
+    id: webdavDataSource?.data_v2?.connectorId,
+    enabled,
     type: "webdav",
   })
-  const directory = syncSource?.data_v2?.directory ?? "/"
+
+  if (!webdavDataSource) {
+    return {
+      name: undefined,
+    }
+  }
+
+  const directory = webdavDataSource.data_v2?.directory ?? "/"
 
   if (!connector) {
     return {

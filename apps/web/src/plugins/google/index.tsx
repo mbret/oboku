@@ -2,6 +2,7 @@
 /// <reference types="@types/gapi.client.drive-v3" />
 /// <reference types="@types/google.accounts" />
 /// <reference types="@types/google.picker" />
+import { UnsupportedMethodError } from "../../errors/errors.shared"
 import { PLUGIN_NAME, UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import GoogleDriveAsset from "../../assets/google-drive.svg?react"
 import { SvgIcon } from "@mui/material"
@@ -16,6 +17,7 @@ import type { ObokuPlugin } from "../types"
 import { InfoScreen } from "./InfoScreen"
 import { DataSourceDetails } from "./DataSourceDetails"
 import { DownloadBook } from "./DownloadBook"
+import { useLinkInfo } from "./useLinkInfo"
 
 const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -23,10 +25,17 @@ const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
+const useRemoveBook: ObokuPlugin<"DRIVE">["useRemoveBook"] = () => {
+  return async () => {
+    throw new UnsupportedMethodError("This data source cannot remove books")
+  }
+}
+
 export const plugin: ObokuPlugin<"DRIVE"> = {
   uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   type: `DRIVE`,
   name: PLUGIN_NAME,
+  canRemoveBook: false,
   Icon: GoogleDriveIcon,
   UploadBookComponent: UploadBook,
   canSynchronize: true,
@@ -35,8 +44,11 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   DataSourceDetails,
   SelectItemComponent,
   useSyncSourceInfo,
+  useLinkInfo,
   useRefreshMetadata,
   useSynchronize,
+  useRemoveBook,
+  useSignOut: () => () => {},
   Provider,
   InfoScreen,
   description: "Manage contents from Google Drive",

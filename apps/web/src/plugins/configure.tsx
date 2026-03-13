@@ -3,20 +3,17 @@ import { plugin as google } from "./google"
 import { plugin as file } from "./local"
 import { plugin as synologyDrive } from "./synology-drive"
 import uri from "./uri"
-import type { ObokuPlugin } from "./types"
 import webdav from "./webdav"
 
-export type Plugin = ObokuPlugin<
-  "dropbox" | "DRIVE" | "webdav" | "file" | "URI" | "synology-drive"
->
+export const pluginsByType = {
+  DRIVE: google,
+  URI: uri,
+  dropbox,
+  file,
+  "synology-drive": synologyDrive,
+  webdav,
+}
 
-const plugins: Plugin[] = []
+export type Plugin = (typeof pluginsByType)[keyof typeof pluginsByType]
 
-plugins.push(file as Plugin)
-plugins.push(dropbox as Plugin)
-plugins.push(google as Plugin)
-plugins.push(synologyDrive as Plugin)
-plugins.push(uri as Plugin)
-plugins.push(webdav as Plugin)
-
-export { plugins }
+export const plugins = Object.values(pluginsByType)

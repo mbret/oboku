@@ -1,25 +1,31 @@
-import { useCallback, useRef } from "react"
+import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
-import { plugins } from "./configure"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
+import { pluginsByType } from "./configure"
 
 export const usePluginRemoveBook = () => {
   const { db } = useDatabase()
   const createRequestPopupDialog = useCreateRequestPopupDialog()
-
-  // It's important to use array for plugins and be careful of the order since
-  // it will trigger all hooks
-  const preparedHooks = plugins.map((plugin) => ({
-    type: plugin.type,
-    // biome-ignore lint/correctness/useHookAtTopLevel: Expected
-    removeBook: plugin.useRemoveBook?.({
-      requestPopup: createRequestPopupDialog({ name: plugin.name }),
-    }),
-  }))
-
-  const getPluginFn = useRef<typeof preparedHooks>([])
-
-  getPluginFn.current = preparedHooks
+  const removeBookFromWebdav = pluginsByType.webdav.useRemoveBook({
+    requestPopup: createRequestPopupDialog({ name: "webdav" }),
+  })
+  const removeBookFromDropbox = pluginsByType.dropbox.useRemoveBook({
+    requestPopup: createRequestPopupDialog({ name: "dropbox" }),
+  })
+  const removeBookFromSynologyDrive = pluginsByType[
+    "synology-drive"
+  ].useRemoveBook({
+    requestPopup: createRequestPopupDialog({ name: "synology-drive" }),
+  })
+  const removeBookFromDrive = pluginsByType.DRIVE.useRemoveBook({
+    requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
+  })
+  const removeBookFromFile = pluginsByType.file.useRemoveBook({
+    requestPopup: createRequestPopupDialog({ name: "file" }),
+  })
+  const removeBookFromUri = pluginsByType.URI.useRemoveBook({
+    requestPopup: createRequestPopupDialog({ name: "URI" }),
+  })
 
   return useCallback(
     async (bookId: string) => {
@@ -32,20 +38,29 @@ export const usePluginRemoveBook = () => {
         throw new Error("Link not found")
       }
 
-      const found = getPluginFn.current.find(
-        (plugin) => plugin.type === link.type,
-      )
-
-      if (!found || !found.removeBook) {
-        throw new Error(
-          "no datasource found for this link or useRemoveBook is undefined",
-        )
+      switch (link.type) {
+        case "webdav":
+          return removeBookFromWebdav(link)
+        case "synology-drive":
+          return removeBookFromSynologyDrive(link)
+        case "dropbox":
+          return removeBookFromDropbox(link)
+        case "DRIVE":
+          return removeBookFromDrive(link)
+        case "file":
+          return removeBookFromFile(link)
+        case "URI":
+          return removeBookFromUri(link)
       }
-
-      const res = await found.removeBook(link)
-
-      return res
     },
-    [db],
+    [
+      db,
+      removeBookFromDrive,
+      removeBookFromDropbox,
+      removeBookFromFile,
+      removeBookFromSynologyDrive,
+      removeBookFromUri,
+      removeBookFromWebdav,
+    ],
   )
 }

@@ -53,7 +53,8 @@ export type StreamValue = {
 }
 
 export type DownloadBookResult = {
-  data: Blob | File | ReadableStream<StreamValue>
+  data: File | Blob | ReadableStream<StreamValue>
+  fileName: string
 }
 
 export type DownloadBookComponentProps = {
@@ -113,12 +114,12 @@ type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
 >
 
 export type UseSyncSourceInfo<
+  // biome-ignore lint/correctness/noUnusedVariables: Kept for easier maintenance
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = (
-  dataSource?:
-    | DeepReadonly<Extract<DataSourceDocType, { type: T }>>
-    | undefined,
-) => {
+> = (data: {
+  enabled: boolean
+  dataSource?: DeepReadonly<DataSourceDocType> | undefined
+}) => {
   name?: string
 }
 
@@ -142,6 +143,7 @@ export type ObokuPlugin<
   uniqueResourceIdentifier: string
   name: string
   canSynchronize?: boolean
+  canRemoveBook: boolean
   /**
    * Unique ID for the plugin
    */
@@ -184,10 +186,11 @@ export type ObokuPlugin<
   Provider?: FunctionComponent<{ children: ReactNode }>
   InfoScreen?: () => ReactElement
   useRefreshMetadata: UseRefreshMetadataHook<T>
-  useSynchronize?: UseSynchronizeHook<T>
-  useRemoveBook?: UseRemoveBook | undefined
-  useSyncSourceInfo?: UseSyncSourceInfo<T>
-  useSignOut?: () => (() => void) | undefined
+  useSynchronize: UseSynchronizeHook<T>
+  useRemoveBook: UseRemoveBook
+  useLinkInfo: UseLinkInfo
+  useSyncSourceInfo: UseSyncSourceInfo<T>
+  useSignOut: () => () => void
 }
 
 export const extractIdFromResourceId = (

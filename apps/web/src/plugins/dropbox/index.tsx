@@ -1,6 +1,7 @@
 /// <reference types="@types/dropbox-chooser" />
 import { UploadBook } from "./UploadBook"
 import { SvgIcon } from "@mui/material"
+import { UnsupportedMethodError } from "../../errors/errors.shared"
 import { DataSourceForm } from "./DataSourceForm"
 import DropboxIconAsset from "../../assets/dropbox.svg?react"
 import { PLUGIN_NAME, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
@@ -11,6 +12,8 @@ import { DataSourceDetails } from "./DataSourceDetails"
 import { InfoScreen } from "./InfoScreen"
 import { useSignOut } from "./useSignOut"
 import { DownloadBook } from "./DownloadBook"
+import { useLinkInfo } from "./useLinkInfo"
+import { useSyncSourceInfo } from "./useSyncSourceInfo"
 
 const DropboxIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -18,16 +21,25 @@ const DropboxIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
+const useRemoveBook: ObokuPlugin<"dropbox">["useRemoveBook"] = () => {
+  return async () => {
+    throw new UnsupportedMethodError("This data source cannot remove books")
+  }
+}
+
 export const plugin: ObokuPlugin<"dropbox"> = {
   uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   type: `dropbox`,
   name: PLUGIN_NAME,
+  canRemoveBook: false,
   Icon: DropboxIcon,
   UploadBookComponent: UploadBook,
   DataSourceDetails,
   DataSourceForm,
   DownloadBookComponent: DownloadBook,
-  useRemoveBook: undefined,
+  useRemoveBook,
+  useLinkInfo,
+  useSyncSourceInfo,
   useRefreshMetadata,
   useSynchronize,
   canSynchronize: true,

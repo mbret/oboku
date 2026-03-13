@@ -3,6 +3,7 @@ import {
   isXMLHttpResponseError,
 } from "../../../http/httpClient.web"
 import {
+  getSynologyDriveBrowseItem,
   getSynologyDriveDownloadUrls,
   type SynologyDriveSession,
 } from "../client"
@@ -58,7 +59,9 @@ const downloadBlobFromUrl = async ({
     await extractDownloadError(response.data)
   }
 
-  return response.data
+  return {
+    data: response.data,
+  }
 }
 
 export const downloadSynologyDriveBlob = async ({
@@ -76,16 +79,28 @@ export const downloadSynologyDriveBlob = async ({
     fileId,
     session,
   })
+  const fileName =
+    (
+      await getSynologyDriveBrowseItem({
+        fileId,
+        session,
+      })
+    ).name.trim() || fileId
 
   let lastError: unknown
 
   for (const url of urls) {
     try {
-      return await downloadBlobFromUrl({
+      const result = await downloadBlobFromUrl({
         onDownloadProgress,
         signal,
         url,
       })
+
+      return {
+        ...result,
+        fileName,
+      }
     } catch (error) {
       lastError = error
 
