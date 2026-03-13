@@ -19,7 +19,7 @@ import { BookCoverCard } from "../BookCoverCard"
 import { getMetadataFromBook } from "../metadata"
 import { useBookDownloadState } from "../../download/states"
 import { useLink } from "../../links/states"
-import { pluginsByType } from "src/plugins/configure"
+import { pluginsByType } from "../../plugins/configure"
 
 export const BookCardHorizontal: FC<{
   bookId: string

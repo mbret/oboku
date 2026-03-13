@@ -18,7 +18,7 @@ import type { FC } from "react"
 import { useBook } from "../states"
 import type { BookMetadata } from "@oboku/shared"
 import { useLink } from "../../links/states"
-import { pluginsByType } from "src/plugins/configure"
+import { pluginsByType } from "../../plugins/configure"
 
 export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
   const { data: book } = useBook({ id: bookId })
