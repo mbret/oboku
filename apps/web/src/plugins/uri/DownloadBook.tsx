@@ -12,7 +12,6 @@ import {
   type Observable,
 } from "rxjs"
 import { useMutation$ } from "reactjrx"
-import {} from "@oboku/shared"
 import { resolveDownloadFileName } from "@oboku/shared"
 import {
   type DownloadBookComponentProps,
