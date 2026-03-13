@@ -1,6 +1,19 @@
 import { Logger } from "../debug/logger.shared"
 import { dexieDb } from "../rxdb/dexie"
 
+export const restoreCachedBookFile = ({
+  file,
+  filename,
+}: {
+  file: Blob | File
+  filename: string
+}) =>
+  file instanceof File
+    ? file
+    : new File([file], filename.trim(), {
+        type: file.type,
+      })
+
 export const getBookFile = async (
   bookId: string,
 ): Promise<{ data: File } | null> => {
@@ -11,10 +24,10 @@ export const getBookFile = async (
 
     if (row && file) {
       return {
-        data:
-          file instanceof File
-            ? file
-            : new File([file], bookId, { type: file.type }),
+        data: restoreCachedBookFile({
+          file,
+          filename: row.filename || bookId,
+        }),
       }
     }
 

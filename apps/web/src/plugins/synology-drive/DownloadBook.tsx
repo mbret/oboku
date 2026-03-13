@@ -72,14 +72,12 @@ export const DownloadBook = memo(
           }),
         ).pipe(
           mergeMap(async (session: SynologyDriveSession) => {
-            const data = await downloadSynologyDriveBlob({
+            return await downloadSynologyDriveBlob({
               fileId,
               onDownloadProgress,
               session,
               signal: abortController.signal,
             })
-
-            return { data }
           }),
           takeUntil(merge(userCancelWithFlag$, lifecycleCancelWithFlag$)),
           throwIfEmpty(() =>

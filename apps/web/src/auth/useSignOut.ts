@@ -4,12 +4,11 @@ import { SIGNAL_RESET } from "reactjrx"
 import { removeProfile } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
 import { currentProfileSignal } from "../profile/currentProfile"
-import { plugins } from "../plugins/configure"
 import { googleAccessTokenSignal } from "../google/auth"
+import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
 
 export const useSignOut = () => {
-  // biome-ignore lint/correctness/useHookAtTopLevel: Expected
-  const pluginSignOutFns = plugins.map((plugin) => plugin.useSignOut?.())
+  const signOutPlugins = usePluginsSignOut()
 
   return () => {
     clearTemporaryMasterKey()
@@ -21,8 +20,6 @@ export const useSignOut = () => {
     removeProfile()
     currentProfileSignal.setValue(SIGNAL_RESET)
 
-    pluginSignOutFns.forEach((pluginSignOutFn) => {
-      pluginSignOutFn?.()
-    })
+    signOutPlugins()
   }
 }

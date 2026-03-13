@@ -14,19 +14,12 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install
-        run: |
-          npm ci
-
       - name: Check
         run: |
           npm ci
           npm run lint
-          npm run test
-
-      - name: Build
-        run: |
           npm run build
+          npm run test
 
   deploy-api-docker:
     needs: build-and-test

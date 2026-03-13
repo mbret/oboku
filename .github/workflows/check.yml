@@ -5,7 +5,7 @@ on:
     branches-ignore:
       - 'master'
   pull_request:
-    branches-ignore:
+    branches:
       - 'master'
 
 jobs:
@@ -22,3 +22,4 @@ jobs:
           npm ci
           npm run lint
           npm run build
+          npm run test

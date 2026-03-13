@@ -1,82 +1,67 @@
-import type { DataSourceDocType, ProviderApiCredentials } from "@oboku/shared"
+import {
+  assertNever,
+  type DataSourceDocType,
+  type ProviderApiCredentials,
+} from "@oboku/shared"
 import { useCallback } from "react"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
-import { getPluginFromType } from "./getPluginFromType"
+import { pluginsByType } from "./configure"
 
-function assertNever(value: never): never {
-  throw new Error(`Unexpected dataSource type: ${String(value)}`)
+type SynchronizeResult = {
+  providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
 }
 
 export const usePluginSynchronize = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
-
-  const { mutateAsync: webdavSynchronize } = getPluginFromType(
-    "webdav",
-  )?.useSynchronize?.({
-    requestPopup: createRequestPopupDialog({ name: "webdav" }),
-  }) ?? {
-    mutateAsync: async () => {
-      throw new Error("WebDAV plugin not found")
-    },
-  }
-
-  const { mutateAsync: dropboxSynchronize } = getPluginFromType(
-    "dropbox",
-  )?.useSynchronize?.({
-    requestPopup: createRequestPopupDialog({ name: "dropbox" }),
-  }) ?? {
-    mutateAsync: async () => {
-      throw new Error("Dropbox plugin not found")
-    },
-  }
-
-  const { mutateAsync: synologyDriveSynchronize } = getPluginFromType(
-    "synology-drive",
-  )?.useSynchronize?.({
+  const { mutateAsync: synchronizeWebdav } =
+    pluginsByType.webdav.useSynchronize({
+      requestPopup: createRequestPopupDialog({ name: "webdav" }),
+    })
+  const { mutateAsync: synchronizeDropbox } =
+    pluginsByType.dropbox.useSynchronize({
+      requestPopup: createRequestPopupDialog({ name: "dropbox" }),
+    })
+  const { mutateAsync: synchronizeSynologyDrive } = pluginsByType[
+    "synology-drive"
+  ].useSynchronize({
     requestPopup: createRequestPopupDialog({ name: "synology-drive" }),
-  }) ?? {
-    mutateAsync: async () => {
-      throw new Error("Synology Drive plugin not found")
-    },
-  }
-
-  const { mutateAsync: driveSynchronize } = getPluginFromType(
-    "DRIVE",
-  )?.useSynchronize?.({
+  })
+  const { mutateAsync: synchronizeDrive } = pluginsByType.DRIVE.useSynchronize({
     requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
-  }) ?? {
-    mutateAsync: async () => {
-      throw new Error("Drive plugin not found")
-    },
-  }
+  })
+  const { mutateAsync: synchronizeFile } = pluginsByType.file.useSynchronize({
+    requestPopup: createRequestPopupDialog({ name: "file" }),
+  })
+  const { mutateAsync: synchronizeUri } = pluginsByType.URI.useSynchronize({
+    requestPopup: createRequestPopupDialog({ name: "URI" }),
+  })
 
   return useCallback(
-    async (
-      dataSource: DataSourceDocType,
-    ): Promise<{
-      providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
-    }> => {
+    async (dataSource: DataSourceDocType): Promise<SynchronizeResult> => {
       switch (dataSource.type) {
         case "webdav":
-          return await webdavSynchronize(dataSource)
+          return synchronizeWebdav(dataSource)
         case "dropbox":
-          return await dropboxSynchronize(dataSource)
+          return synchronizeDropbox(dataSource)
         case "synology-drive":
-          return await synologyDriveSynchronize(dataSource)
+          return synchronizeSynologyDrive(dataSource)
         case "DRIVE":
-          return await driveSynchronize(dataSource)
+          return synchronizeDrive(dataSource)
         case "file":
+          return synchronizeFile(dataSource)
         case "URI":
-          throw new Error("this datasource cannot synchronize")
+          return synchronizeUri(dataSource)
         default:
           return assertNever(dataSource)
       }
     },
     [
-      webdavSynchronize,
-      dropboxSynchronize,
-      synologyDriveSynchronize,
-      driveSynchronize,
+      synchronizeDrive,
+      synchronizeDropbox,
+      synchronizeFile,
+      synchronizeSynologyDrive,
+      synchronizeUri,
+      synchronizeWebdav,
     ],
   )
 }

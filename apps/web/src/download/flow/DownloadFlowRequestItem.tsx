@@ -103,12 +103,24 @@ export const DownloadFlowRequestItem = memo(
 
     const persistDownloadResult = useCallback(
       async (result: DownloadBookResult) => {
+        const sourceData = result.data
+        const filename = result.fileName.trim()
+
+        if (!filename) {
+          throw new Error("Downloaded file is missing a filename.")
+        }
+
         const data =
-          result.data instanceof Blob
-            ? result.data
-            : await createCbzFromReadableStream(result.data, {
+          sourceData instanceof Blob
+            ? sourceData
+            : await createCbzFromReadableStream(sourceData, {
                 onData: ({ progress }) => setProgress(progress),
               })
+
+        const cachedData =
+          data instanceof File
+            ? data
+            : new File([data], filename, { type: data.type })
 
         Logger.log(
           `Saving ${bookId} into storage for a size of ${bytesToMb(data.size)} mb`,
@@ -116,7 +128,8 @@ export const DownloadFlowRequestItem = memo(
 
         await dexieDb.downloads.add({
           id: bookId,
-          data,
+          data: cachedData,
+          filename,
         })
       },
       [bookId, setProgress],
@@ -171,6 +184,7 @@ export const DownloadFlowRequestItem = memo(
             try {
               await persistDownloadResult({
                 data: file,
+                fileName: file.name,
               })
               settle({ success: true })
             } catch (error) {

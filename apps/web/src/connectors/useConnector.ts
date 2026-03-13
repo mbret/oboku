@@ -5,11 +5,13 @@ import { useSettings } from "../settings/useSettings"
 export const useConnector = <T extends SettingsConnectorDocType["type"]>({
   id,
   type,
+  enabled = true,
 }: {
   id?: string
   type: T
+  enabled?: boolean
 }) => {
-  const { data: settings, ...rest } = useSettings()
+  const { data: settings, ...rest } = useSettings({ enabled })
 
   return {
     ...rest,

@@ -1,10 +1,10 @@
 FROM node:22 AS base
 WORKDIR /usr/src/app
-# @todo use upcoming exclude option to filter out stuff we dont need
+# @todo use upcoming exclude option to filter out stuff we don't need
 # ideally we want to at least strip `apps` so that sub target build
 # their own scope.
 COPY package*.json ./
-COPY packages/shared ./packages/shared
+COPY packages ./packages
 COPY lerna.json ./
 COPY nx.json ./
 RUN npm ci

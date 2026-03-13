@@ -18,12 +18,12 @@ import type { FC } from "react"
 import { useBook } from "../states"
 import type { BookMetadata } from "@oboku/shared"
 import { useLink } from "../../links/states"
-import { getPluginFromType } from "../../plugins/getPluginFromType"
+import { pluginsByType } from "../../plugins/configure"
 
 export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
-  const plugin = getPluginFromType(link?.type)
+  const plugin = link?.type ? pluginsByType[link?.type] : undefined
   const types: BookMetadata["type"][] = [
     "user",
     "file",

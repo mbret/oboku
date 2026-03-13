@@ -67,7 +67,7 @@ export const DownloadBook = memo(
 
             return {
               data: response.result.fileBlob,
-              name: response.result.name,
+              fileName: response.result.name,
             }
           }),
           takeUntil(merge(userCancelWithFlag$, lifecycleCancelWithFlag$)),
