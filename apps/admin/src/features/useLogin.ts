@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
-import { authState } from "./states"
+import { authState, persistAccessToken } from "./states"
 import { config } from "@/config"
 
 export const useLogin = () => {
@@ -15,6 +15,7 @@ export const useLogin = () => {
 
       const data = await response.json()
 
+      persistAccessToken(data.access_token)
       authState.update({
         access_token: data.access_token,
       })

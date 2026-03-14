@@ -1,9 +1,16 @@
-import { Body, Controller, Post, UnauthorizedException } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UnauthorizedException,
+} from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import { AuthUser, Public, WithAuthUser } from "src/auth/auth.guard"
 import { AppConfigService } from "src/config/AppConfigService"
 import { SecretsService } from "src/config/SecretsService"
 import { CouchMigrationService } from "src/couch/migration.service"
+import { AdminCoversService } from "./admin-covers.service"
 
 @Controller("admin")
 export class AdminController {
@@ -12,7 +19,14 @@ export class AdminController {
     private readonly secretsService: SecretsService,
     private readonly appConfig: AppConfigService,
     private readonly couchMigrationService: CouchMigrationService,
+    private readonly adminCoversService: AdminCoversService,
   ) {}
+
+  private ensureAdmin(user: AuthUser) {
+    if (user.role !== "admin") {
+      throw new UnauthorizedException()
+    }
+  }
 
   @Public()
   @Post("signin")
@@ -50,28 +64,36 @@ export class AdminController {
 
   @Post("migrate")
   async migrate(@WithAuthUser() user: AuthUser) {
-    if (user.role !== "admin") {
-      throw new UnauthorizedException()
-    }
+    this.ensureAdmin(user)
 
     await this.couchMigrationService.migrate()
   }
 
   @Post("migrate-webdav-connectors")
   async migrateWebdavConnectors(@WithAuthUser() user: AuthUser) {
-    if (user.role !== "admin") {
-      throw new UnauthorizedException()
-    }
+    this.ensureAdmin(user)
 
     return this.couchMigrationService.migrateWebdavConnectorsToConnectors()
   }
 
   @Post("migrate-webdav-resource-ids")
   async migrateWebdavResourceIds(@WithAuthUser() user: AuthUser) {
-    if (user.role !== "admin") {
-      throw new UnauthorizedException()
-    }
+    this.ensureAdmin(user)
 
     return this.couchMigrationService.migrateWebdavResourceIds()
+  }
+
+  @Get("covers")
+  async getCoversCleanupStats(@WithAuthUser() user: AuthUser) {
+    this.ensureAdmin(user)
+
+    return this.adminCoversService.getCleanupStats()
+  }
+
+  @Post("covers/delete-all")
+  async deleteAllCovers(@WithAuthUser() user: AuthUser) {
+    this.ensureAdmin(user)
+
+    return this.adminCoversService.deleteAllCovers()
   }
 }

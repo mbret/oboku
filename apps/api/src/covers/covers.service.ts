@@ -1,8 +1,8 @@
 import {
   GetObjectCommand,
-  S3Client,
   HeadObjectCommand,
   PutObjectCommand,
+  S3Client,
 } from "@aws-sdk/client-s3"
 import { Injectable, Logger } from "@nestjs/common"
 import { from, map, of, switchMap, tap } from "rxjs"
@@ -12,6 +12,13 @@ import fs from "node:fs"
 import path from "node:path"
 
 const logger = new Logger("CoversService")
+const MANAGED_COVER_PREFIXES = ["cover-", "collection-"] as const
+
+export type StoredCover = {
+  key: string
+  sizeInBytes: number
+  lastModifiedAt: string | null
+}
 
 @Injectable()
 export class CoversService {
@@ -116,7 +123,7 @@ export class CoversService {
     return from(
       this.s3Client.send(
         new PutObjectCommand({
-          Bucket: "oboku-covers",
+          Bucket: this.appConfig.COVERS_BUCKET_NAME ?? "",
           Body: cover,
           Key: objectKey,
         }),
@@ -168,7 +175,7 @@ export class CoversService {
     try {
       await this.s3Client.send(
         new HeadObjectCommand({
-          Bucket: "oboku-covers",
+          Bucket: this.appConfig.COVERS_BUCKET_NAME ?? "",
           Key: objectKey,
         }),
       )
@@ -194,6 +201,92 @@ export class CoversService {
         ? this.isCoverExistS3(objectKey)
         : this.isCoverExistFs(objectKey),
     )
+  }
+
+  private isManagedCoverFileName(fileName: string) {
+    return (
+      fileName.endsWith(".webp") &&
+      MANAGED_COVER_PREFIXES.some((prefix) => fileName.startsWith(prefix))
+    )
+  }
+
+  private async listStoredCoversFromFs(): Promise<StoredCover[]> {
+    const entries = await fs.promises.readdir(this.appConfig.COVERS_DIR, {
+      withFileTypes: true,
+    })
+
+    const covers = await Promise.all(
+      entries
+        .filter(
+          (entry) => entry.isFile() && this.isManagedCoverFileName(entry.name),
+        )
+        .map(async (entry) => {
+          const fullPath = path.join(this.appConfig.COVERS_DIR, entry.name)
+          const stats = await fs.promises.stat(fullPath)
+
+          return {
+            key: entry.name.replace(/\.webp$/u, ""),
+            sizeInBytes: stats.size,
+            lastModifiedAt: stats.mtime.toISOString(),
+          }
+        }),
+    )
+
+    return covers
+  }
+
+  async listStoredCovers(): Promise<StoredCover[]> {
+    if (this.appConfig.COVERS_STORAGE_STRATEGY !== "fs") {
+      throw new Error("Listing stored covers is only supported for fs storage")
+    }
+
+    return this.listStoredCoversFromFs()
+  }
+
+  getStorageLocation() {
+    if (this.appConfig.COVERS_STORAGE_STRATEGY === "s3") {
+      return `s3://${this.appConfig.COVERS_BUCKET_NAME ?? ""}`
+    }
+
+    return this.appConfig.COVERS_DIR
+  }
+
+  private async deleteCoversFromFs(keys: string[]) {
+    const deletedKeys: string[] = []
+    const failedKeys: Array<{ key: string; message: string }> = []
+
+    for (const key of keys) {
+      try {
+        await fs.promises.unlink(
+          path.join(this.appConfig.COVERS_DIR, `${key}.webp`),
+        )
+        deletedKeys.push(key)
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "ENOENT"
+        ) {
+          deletedKeys.push(key)
+          continue
+        }
+
+        failedKeys.push({
+          key,
+          message: error instanceof Error ? error.message : "Unknown error",
+        })
+      }
+    }
+
+    return { deletedKeys, failedKeys }
+  }
+
+  async deleteCovers(keys: string[]) {
+    if (this.appConfig.COVERS_STORAGE_STRATEGY !== "fs") {
+      throw new Error("Deleting covers is only supported for fs storage")
+    }
+
+    return this.deleteCoversFromFs(keys)
   }
 
   resizeCover(
