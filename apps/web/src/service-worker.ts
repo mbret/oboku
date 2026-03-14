@@ -24,6 +24,7 @@ import {
 } from "./workers/communication/types.shared"
 import { serviceWorkerConfiguration } from "./config/configuration.sw"
 import { authState } from "./auth/states.sw"
+import { cleanupOldRxdbDatabases } from "./rxdb/cleanupOldRxdbDatabases.sw"
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -114,6 +115,7 @@ serviceWorkerCommunication.watch(NotifyAuthMessage).subscribe((message) => {
 })
 
 registerCoversCacheCleanup()
+cleanupOldRxdbDatabases()
 
 self.addEventListener(`fetch`, (event) => {
   const isHandledByCovers = coversFetchListener(event)

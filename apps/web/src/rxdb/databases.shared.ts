@@ -39,6 +39,7 @@ import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
 import { catchError, from, map, switchMap } from "rxjs"
 import { rethrow } from "../common/rxjs/operators"
 import { secretCollection, type SecretCollection } from "./collections/secrets"
+import { RXDB_DATABASE_NAME } from "./constants.shared"
 
 // theses plugins does not get automatically added when building for production
 addRxPlugin(RxDBQueryBuilderPlugin)
@@ -70,7 +71,7 @@ export const createDatabase = (
 ) => {
   const storage = getRxStorageDexie()
   const databasePromise = createRxDatabase<MyDatabaseCollections>({
-    name: "oboku-51",
+    name: RXDB_DATABASE_NAME,
     // NOTICE: Schema validation can be CPU expensive and increases your build size.
     // You should always use a schema validation plugin in development mode.
     // For most use cases, you should not use a validation plugin in production.
