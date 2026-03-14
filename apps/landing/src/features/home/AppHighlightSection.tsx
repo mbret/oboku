@@ -59,11 +59,11 @@ export const AppHighlightSection = () => {
           Why use oboku?
         </Typography>
         <Typography>
-          Oboku is a web app for syncing your own ebooks from various cloud
-          storage to let you manage and read your library. It supports offline
-          mode, multiple formats (.epub, .cbz, ...) and any devices which has
-          access to a web browser offering a seamless way to organize and access
-          your digital library.
+          Oboku is a web app for syncing your own ebooks from various providers
+          (server, Google Drive, Dropbox, Synology, etc.). It supports offline
+          mode, multiple formats (.epub, .cbz, ...) and any devices with a web
+          browser, offering a seamless way to organize and access your digital
+          library.
         </Typography>
         <Box
           mt={4}
@@ -89,7 +89,7 @@ export const AppHighlightSection = () => {
           />
           <KeyCardPoint
             title="Your books"
-            description="Synchronize your own books and make your library in a few taps. We support Google Drive, Dropbox, Synology, WebDAV and will support many more"
+            description="Synchronize your own books and make your library in a few taps. We support Google Drive, Dropbox, Synology, WebDAV and many more"
             imageSrc={image4}
           />
           <KeyCardPoint
