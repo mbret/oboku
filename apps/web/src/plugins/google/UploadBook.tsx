@@ -2,10 +2,11 @@ import { useDrivePicker } from "./lib/useDrivePicker"
 import { useDataSourceHelpers } from "../../dataSources/helpers"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { map, switchMap, timer } from "rxjs"
-import { useMount } from "react-use"
 import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
-import { memo } from "react"
-import { useSwitchMutation$ } from "reactjrx"
+import { memo, useEffect } from "react"
+import { SwitchMutationCancelError, useSwitchMutation$ } from "reactjrx"
+import { Logger } from "../../debug/logger.shared"
+import { CancelError } from "../../errors/errors.shared"
 
 export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
   ({ onClose, requestPopup }) => {
@@ -41,15 +42,21 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
         onClose(data ?? [])
       },
       onError: (error) => {
-        console.error(error)
+        if (error instanceof SwitchMutationCancelError) {
+          return
+        }
+
+        if (!(error instanceof CancelError)) {
+          Logger.error(error)
+        }
 
         onClose()
       },
     })
 
-    useMount(() => {
+    useEffect(() => {
       mutate()
-    })
+    }, [mutate])
 
     return null
   },
