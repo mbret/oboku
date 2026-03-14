@@ -17,12 +17,7 @@ export const UploadBookDrawer: FC<{
   const { showSensitiveDataSources } = useLocalSettings()
 
   return (
-    <Drawer
-      anchor="bottom"
-      open={open}
-      onClose={() => onClose()}
-      transitionDuration={0}
-    >
+    <Drawer anchor="bottom" open={open} onClose={() => onClose()}>
       <div role="presentation">
         <List>
           {dataSourcePlugins
