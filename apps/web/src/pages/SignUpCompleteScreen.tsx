@@ -1,5 +1,5 @@
-import { Alert, Box, Button, Stack } from "@mui/material"
-import { Home, Login } from "@mui/icons-material"
+import { Box, Button, Stack } from "@mui/material"
+import { Login } from "@mui/icons-material"
 import { Link, useSearchParams } from "react-router"
 import { AuthPage } from "../auth/AuthPage"
 import { CompleteSignUpForm } from "../auth/CompleteSignUpForm"
@@ -10,6 +10,7 @@ import { ROUTES } from "../navigation/routes"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/states.web"
+import { SignOutBeforeContinuePage } from "src/auth/SignOutBeforeContinuePage"
 
 export const SignUpCompleteScreen = () => {
   const [searchParams] = useSearchParams()
@@ -18,16 +19,12 @@ export const SignUpCompleteScreen = () => {
   const isAuthenticated = !!auth?.accessToken
   const { mutate, error } = useCompleteSignUp()
 
+  if (isAuthenticated) {
+    return <SignOutBeforeContinuePage />
+  }
+
   return (
     <AuthPage>
-      {isAuthenticated ? (
-        <Box mb={2}>
-          <Alert severity="warning">
-            You are already signed in. Sign out first if you want to complete
-            this sign up.
-          </Alert>
-        </Box>
-      ) : null}
       {!token ? (
         <Box mb={2}>
           <ErrorAlert
