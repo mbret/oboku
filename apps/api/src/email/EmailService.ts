@@ -22,24 +22,11 @@ export class EmailService {
     const resolvedAppPublicUrl =
       appPublicUrl ?? this.appConfigService.APP_PUBLIC_URL
 
-    if (!resolvedAppPublicUrl) {
-      throw new InternalServerErrorException("App public url is not configured")
-    }
-
     return `${resolvedAppPublicUrl}/signup/complete?token=${encodeURIComponent(token)}`
   }
 
-  async sendSignUpLink({
-    appPublicUrl,
-    email,
-    token,
-  }: {
-    appPublicUrl?: string
-    email: string
-    token: string
-  }) {
+  async sendSignUpLink({ email, token }: { email: string; token: string }) {
     const verificationUrl = this.getSignUpLink({
-      appPublicUrl,
       token,
     })
 

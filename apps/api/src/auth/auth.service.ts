@@ -251,13 +251,7 @@ export class AuthService {
     }
   }
 
-  async requestSignUp({
-    email,
-    appPublicUrl,
-  }: {
-    email: string
-    appPublicUrl?: string
-  }) {
+  async requestSignUp({ email }: { email: string }) {
     const user = await this.usersService.findUserByEmail(email)
 
     if (typeof user?.password === "string") {
@@ -270,7 +264,6 @@ export class AuthService {
 
     try {
       await this.emailService.sendSignUpLink({
-        appPublicUrl,
         email,
         token,
       })

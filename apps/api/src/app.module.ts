@@ -77,7 +77,7 @@ import { StorageModule } from "./storage/storage.module"
           .default("fs"),
         ADMIN_LOGIN: Joi.string().optional(),
         ADMIN_PASSWORD: Joi.string().optional(),
-        APP_PUBLIC_URL: Joi.string().uri().optional(),
+        APP_PUBLIC_URL: Joi.string().uri().required(),
         EMAIL_SMTP_HOST: Joi.string().optional(),
         EMAIL_SMTP_PORT: Joi.number().port().optional(),
         EMAIL_SMTP_USER: Joi.string().optional(),

@@ -1,9 +1,7 @@
-import { Body, Controller, Post, Query, Req } from "@nestjs/common"
+import { Body, Controller, Post, Query } from "@nestjs/common"
 import { AuthService } from "./auth.service"
 import { Public } from "./auth.guard"
 import { IsEmail, IsNotEmpty, MinLength } from "class-validator"
-import type { Request } from "express"
-import { getAppPublicUrlFromRequest } from "../lib/http/getAppPublicUrlFromRequest"
 
 export class RequestSignUpDto {
   @IsEmail()
@@ -34,10 +32,9 @@ export class AuthController {
 
   @Public()
   @Post("signup")
-  async signup(@Body() body: RequestSignUpDto, @Req() request: Request) {
+  async signup(@Body() body: RequestSignUpDto) {
     await this.authService.requestSignUp({
       email: body.email,
-      appPublicUrl: getAppPublicUrlFromRequest(request),
     })
 
     return {}

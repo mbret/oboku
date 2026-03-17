@@ -134,7 +134,7 @@ export class AppConfigService {
   }
 
   get APP_PUBLIC_URL() {
-    return this.config.get("APP_PUBLIC_URL", { infer: true })
+    return this.config.getOrThrow("APP_PUBLIC_URL", { infer: true })
   }
 
   get EMAIL_SMTP_HOST() {
