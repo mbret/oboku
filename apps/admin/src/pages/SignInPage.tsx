@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Divider,
   Paper,
   PasswordInput,
   Stack,
