@@ -15,6 +15,17 @@ services:
     ports:
       - "5432:5432"
 
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@oboku.dev
+      PGADMIN_DEFAULT_PASSWORD: password
+    ports:
+      - "5050:80"
+    volumes:
+      - oboku-pgadmin:/var/lib/pgadmin
+
   web:
     extends:
       file: docker-compose.yml
@@ -50,6 +61,7 @@ services:
 
 volumes:
   oboku-postgres:
+  oboku-pgadmin:
   oboku-couchdb-data:
   oboku-couchdb-config:
   oboku-api-data:

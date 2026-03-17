@@ -56,6 +56,7 @@ services:
       - .env
     environment:
       - NODE_ENV=production
+      - APP_PUBLIC_URL=${APP_PUBLIC_URL:-http://localhost}
       - JWT_PRIVATE_KEY_FILE=/secrets/jwt_private_key.pem
       - JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key.pem
     volumes:

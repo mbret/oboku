@@ -4,11 +4,15 @@ import {
   Link as MuiLink,
   Typography,
   Stack,
+  type StackProps,
 } from "@mui/material"
 import { links } from "@oboku/shared"
 import { Logo } from "../common/Logo"
 
-export const AuthPage = ({ children }: { children: React.ReactNode }) => {
+export const AuthPage = ({
+  children,
+  ...props
+}: { children: React.ReactNode } & StackProps) => {
   const theme = useTheme()
 
   return (
@@ -19,6 +23,7 @@ export const AuthPage = ({ children }: { children: React.ReactNode }) => {
       alignItems="center"
       gap={3}
       px={2}
+      {...props}
     >
       <Box
         style={{

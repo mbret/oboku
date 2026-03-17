@@ -21,4 +21,10 @@ export interface EnvironmentVariables {
   COVERS_STORAGE_STRATEGY: "s3" | "fs"
   ADMIN_LOGIN?: string
   ADMIN_PASSWORD?: string
+  APP_PUBLIC_URL: string
+  EMAIL_SMTP_HOST?: string
+  EMAIL_SMTP_PORT?: number
+  EMAIL_SMTP_USER?: string
+  EMAIL_SMTP_PASSWORD?: string
+  EMAIL_FROM?: string
 }

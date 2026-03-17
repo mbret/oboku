@@ -1,66 +1,47 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import "../App.css"
-import { useLogin } from "../features/useLogin"
-import { useForm } from "@mantine/form"
 import {
   AppShell,
   Box,
   Burger,
-  Button,
   Group,
   NavLink,
-  PasswordInput,
   Stack,
   Text,
-  TextInput,
 } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
 import { useIsAuthenticated } from "@/features/useIsAuthenticated"
 import { AdminMigrationSection } from "@/features/admin/AdminMigrationSection"
 import { AdminCoversSection } from "@/features/admin/AdminCoversSection"
+import { AdminSignUpLinksSection } from "@/features/admin/AdminSignUpLinksSection"
+import { authState } from "@/features/states"
+import { authenticatedFetch } from "@/features/authenticatedFetch"
+import { config } from "@/config"
+import { SignInPage } from "../pages/SignInPage"
 
 export const Route = createFileRoute("/")({
   component: App,
 })
 
 function App() {
-  const [activeSection, setActiveSection] = useState<"migration" | "covers">(
-    "migration",
-  )
+  const [activeSection, setActiveSection] = useState<
+    "migration" | "covers" | "signup-links"
+  >("migration")
   const [opened, { toggle, close }] = useDisclosure(false)
-  const form = useForm({
-    mode: "uncontrolled",
-    initialValues: {
-      login: "",
-      password: "",
-    },
-  })
-  const { mutate: login } = useLogin()
   const isAuthenticated = useIsAuthenticated()
+
+  useEffect(function checkSessionOnLoad() {
+    if (!authState.value.access_token) {
+      return
+    }
+
+    void authenticatedFetch(`${config.apiUrl}/admin/session`).catch(() => {})
+  }, [])
 
   return (
     <div className="App">
-      {!isAuthenticated ? (
-        <form onSubmit={form.onSubmit((values) => login(values))}>
-          <Box maw={340} mx="auto">
-            <TextInput
-              label="First name"
-              placeholder="First name"
-              key={form.key("login")}
-              {...form.getInputProps("login")}
-            />
-            <PasswordInput
-              label="Password"
-              placeholder="Password"
-              mt="md"
-              key={form.key("password")}
-              {...form.getInputProps("password")}
-            />
-            <Button type="submit">login</Button>
-          </Box>
-        </form>
-      ) : null}
+      {!isAuthenticated ? <SignInPage /> : null}
 
       {isAuthenticated && (
         <AppShell
@@ -113,6 +94,15 @@ function App() {
                   close()
                 }}
               />
+              <NavLink
+                label="Sign up links"
+                description="Generate manual sign up links"
+                active={activeSection === "signup-links"}
+                onClick={() => {
+                  setActiveSection("signup-links")
+                  close()
+                }}
+              />
             </Stack>
           </AppShell.Navbar>
 
@@ -120,6 +110,7 @@ function App() {
             <Box maw={960}>
               {activeSection === "migration" && <AdminMigrationSection />}
               {activeSection === "covers" && <AdminCoversSection />}
+              {activeSection === "signup-links" && <AdminSignUpLinksSection />}
             </Box>
           </AppShell.Main>
         </AppShell>

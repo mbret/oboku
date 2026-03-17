@@ -3,14 +3,14 @@ import { lock, unlock } from "../common/BlockingBackdrop"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useMutation$ } from "reactjrx"
 
-export const useSignUp = () => {
+export const useRequestMagicLink = () => {
   return useMutation$({
     mutationFn: (data: { email: string }) => {
-      lock("signup")
+      lock("magic-link-request")
 
-      return from(httpClientApi.signUp(data)).pipe(
+      return from(httpClientApi.requestMagicLink(data)).pipe(
         finalize(() => {
-          unlock("signup")
+          unlock("magic-link-request")
         }),
       )
     },

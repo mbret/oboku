@@ -21,4 +21,8 @@ export class UsersService {
 
     return newUser
   }
+
+  async saveUser(user: UserPostgresEntity) {
+    return this.userRepository.save(user)
+  }
 }

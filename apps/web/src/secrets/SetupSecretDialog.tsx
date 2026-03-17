@@ -4,13 +4,12 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Alert,
   Stack,
 } from "@mui/material"
 import { useEffect, memo, useState } from "react"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
 import { useForm } from "react-hook-form"
-import { ErrorMessage, errorToMessage } from "../errors/ErrorMessage"
+import { ErrorAlert, errorToMessage } from "../errors/ErrorMessage"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
 import { useNotifications } from "../notifications/useNofitications"
 import { signal, SIGNAL_RESET, useMutation$, useSignalValue } from "reactjrx"
@@ -190,11 +189,7 @@ export const SetupSecretDialog = memo(() => {
                 : "Will be changed only if you provide a new value"
             }
           />
-          {!!errors.root && (
-            <Alert severity="error">
-              <ErrorMessage error={errors.root.message} />
-            </Alert>
-          )}
+          {!!errors.root && <ErrorAlert error={errors.root.message} />}
         </Stack>
       </DialogContent>
       <DialogActions>

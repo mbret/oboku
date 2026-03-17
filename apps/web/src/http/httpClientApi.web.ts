@@ -2,6 +2,20 @@ import { configuration } from "../config/configuration"
 import { HttpClientWeb } from "./httpClient.web"
 
 class HttpApiClient extends HttpClientWeb {
+  authWithMagicLink = (data: { token: string }) =>
+    this.post<
+      {
+        dbName: string
+        email: string
+        accessToken: string
+        refreshToken: string
+        nameHex: string
+      },
+      typeof data
+    >(`${configuration.API_URL}/auth/magic-link/complete`, {
+      body: data,
+    })
+
   refreshBookMetadata = (params: {
     bookId: string
     providerCredentials?: Record<string, unknown>
@@ -40,10 +54,26 @@ class HttpApiClient extends HttpClientWeb {
       body: data,
     })
 
-  signUp = (data: { email: string; password: string }) =>
+  signUp = (data: { email: string }) =>
     this.post<unknown, typeof data>(`${configuration.API_URL}/auth/signup`, {
       body: data,
     })
+
+  completeSignUp = (data: { token: string; password: string }) =>
+    this.post<{ email: string }, typeof data>(
+      `${configuration.API_URL}/auth/signup/complete`,
+      {
+        body: data,
+      },
+    )
+
+  requestMagicLink = (data: { email: string }) =>
+    this.post<unknown, typeof data>(
+      `${configuration.API_URL}/auth/magic-link`,
+      {
+        body: data,
+      },
+    )
 
   refreshToken = ({
     refreshToken,
