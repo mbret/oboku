@@ -8,6 +8,11 @@ export class RequestSignUpDto {
   email!: string
 }
 
+export class RequestMagicLinkDto {
+  @IsEmail()
+  email!: string
+}
+
 export class CompleteSignUpDto {
   @IsNotEmpty()
   token!: string
@@ -15,6 +20,11 @@ export class CompleteSignUpDto {
   @IsNotEmpty()
   @MinLength(8)
   password!: string
+}
+
+export class CompleteMagicLinkDto {
+  @IsNotEmpty()
+  token!: string
 }
 
 @Controller("auth")
@@ -44,6 +54,22 @@ export class AuthController {
   @Post("signup/complete")
   async completeSignup(@Body() body: CompleteSignUpDto) {
     return this.authService.completeSignUp(body)
+  }
+
+  @Public()
+  @Post("magic-link")
+  async requestMagicLink(@Body() body: RequestMagicLinkDto) {
+    await this.authService.requestMagicLink({
+      email: body.email,
+    })
+
+    return {}
+  }
+
+  @Public()
+  @Post("magic-link/complete")
+  async completeMagicLink(@Body() body: CompleteMagicLinkDto) {
+    return this.authService.completeMagicLink(body)
   }
 
   @Public()

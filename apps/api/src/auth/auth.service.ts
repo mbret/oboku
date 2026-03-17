@@ -29,6 +29,11 @@ type SignUpTokenPayload = {
   type: "signup"
 }
 
+type MagicLinkTokenPayload = {
+  sub: string
+  type: "magic-link"
+}
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name)
@@ -140,11 +145,14 @@ export class AuthService {
     /**
      * we found a user with a password that matches, so we compare them
      */
-    if (
-      typeof userWithEmail?.password === "string" &&
-      userWithEmail.emailVerified
-    ) {
+    if (typeof userWithEmail?.password === "string") {
       if (await this.comparePassword(password, userWithEmail.password)) {
+        if (!userWithEmail.emailVerified) {
+          throw new BadRequestException({
+            errors: [{ code: ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED }],
+          })
+        }
+
         return userWithEmail
       }
     }
@@ -175,20 +183,10 @@ export class AuthService {
     }
   }
 
-  async signIn(
-    params: { token: string } | { email: string; password: string },
-  ) {
-    const retrievedUser =
-      "token" in params
-        ? await this.signInWithGoogle(params.token)
-        : await this.signinWithEmail(params.email, params.password)
-
+  private async completeSignInForEmail(email: string) {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
-    const couchUser = await getOrCreateUserFromEmail(
-      adminNano,
-      retrievedUser.email,
-    )
+    const couchUser = await getOrCreateUserFromEmail(adminNano, email)
 
     if (!couchUser) {
       throw new Error("Unable to retrieve user")
@@ -209,6 +207,17 @@ export class AuthService {
     }
   }
 
+  async signIn(
+    params: { token: string } | { email: string; password: string },
+  ) {
+    const retrievedUser =
+      "token" in params
+        ? await this.signInWithGoogle(params.token)
+        : await this.signinWithEmail(params.email, params.password)
+
+    return this.completeSignInForEmail(retrievedUser.email)
+  }
+
   async generateSignUpToken(email: string) {
     return this.jwtService.signAsync(
       {
@@ -218,6 +227,20 @@ export class AuthService {
       {
         algorithm: "RS256",
         expiresIn: "1h",
+        privateKey: await this.secretService.getJwtPrivateKey(),
+      },
+    )
+  }
+
+  async generateMagicLinkToken(email: string) {
+    return this.jwtService.signAsync(
+      {
+        sub: email,
+        type: "magic-link",
+      } satisfies MagicLinkTokenPayload,
+      {
+        algorithm: "RS256",
+        expiresIn: "15m",
         privateKey: await this.secretService.getJwtPrivateKey(),
       },
     )
@@ -251,6 +274,34 @@ export class AuthService {
     }
   }
 
+  async verifyMagicLinkToken(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync<MagicLinkTokenPayload>(
+        token,
+        {
+          secret: await this.secretService.getJwtPrivateKey(),
+          algorithms: ["RS256"],
+        },
+      )
+
+      if (payload.type !== "magic-link" || !payload.sub) {
+        throw new BadRequestException({
+          errors: [{ code: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID }],
+        })
+      }
+
+      return payload.sub
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+
+      throw new BadRequestException({
+        errors: [{ code: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID }],
+      })
+    }
+  }
+
   async requestSignUp({ email }: { email: string }) {
     const user = await this.usersService.findUserByEmail(email)
 
@@ -275,6 +326,56 @@ export class AuthService {
       }
 
       throw new InternalServerErrorException("Unable to send sign up email")
+    }
+  }
+
+  /**
+   * @important
+   *
+   * This magic-link flow is intentionally narrow and exists only to recover
+   * legacy local accounts that already have a password but have not yet proven
+   * mailbox ownership to Oboku.
+   *
+   * Allowed:
+   * - existing local account
+   * - password already set
+   * - emailVerified is false
+   *
+   * Not allowed:
+   * - brand new account creation
+   * - verified local accounts as a default passwordless alternative
+   * - provider-only accounts without a local password
+   *
+   * Rationale:
+   * - We need a safe bridge for older accounts created before local email
+   *   verification became mandatory.
+   * - We do not want inbox possession to silently become a permanent bypass for
+   *   every password-based account.
+   * - Redeeming this link upgrades the local account exactly once by setting
+   *   emailVerified to true, after which normal password sign-in should be used.
+   */
+  async requestMagicLink({ email }: { email: string }) {
+    const user = await this.usersService.findUserByEmail(email)
+
+    if (typeof user?.password !== "string" || user.emailVerified === true) {
+      return
+    }
+
+    const token = await this.generateMagicLinkToken(email)
+
+    try {
+      await this.emailService.sendMagicLink({
+        email,
+        token,
+      })
+    } catch (error) {
+      this.logger.error(error)
+
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+
+      throw new InternalServerErrorException("Unable to send magic link email")
     }
   }
 
@@ -326,6 +427,26 @@ export class AuthService {
     }
 
     return { email }
+  }
+
+  async completeMagicLink({ token }: { token: string }) {
+    const email = await this.verifyMagicLinkToken(token)
+    const user = await this.usersService.findUserByEmail(email)
+
+    if (
+      !user ||
+      typeof user.password !== "string" ||
+      user.emailVerified === true
+    ) {
+      throw new BadRequestException({
+        errors: [{ code: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID }],
+      })
+    }
+
+    user.emailVerified = true
+    await this.usersService.saveUser(user)
+
+    return this.completeSignInForEmail(email)
   }
 
   async refreshToken(grant_type: "refresh_token", refreshToken: string) {

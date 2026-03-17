@@ -48,6 +48,7 @@ import { EditSynologyDriveConnectorScreen } from "../pages/plugins/synology-driv
 import { PluginDownloadFlowHost } from "../download/flow/PluginDownloadFlowHost"
 import { plugins } from "../dataSources"
 import { SignUpCompleteScreen } from "../pages/SignUpCompleteScreen"
+import { MagicLinkCompleteScreen } from "../pages/MagicLinkCompleteScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -167,6 +168,10 @@ export const AppNavigator = ({
           ) : (
             <>
               <Route path={ROUTES.LOGIN} element={<LoginScreen />} />
+              <Route
+                path={ROUTES.LOGIN_MAGIC_LINK}
+                element={<MagicLinkCompleteScreen />}
+              />
               <Route path={ROUTES.SIGN_UP} element={<SignUpScreen />} />
               <Route
                 path={ROUTES.SIGN_UP_COMPLETE}

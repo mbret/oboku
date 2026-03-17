@@ -40,6 +40,10 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "This sign up link is missing a token. Please request a new one."
     case ObokuErrorCode.ERROR_ACCOUNT_ALREADY_EXISTS:
       return "An account already exists for this email. Please sign in instead."
+    case ObokuErrorCode.ERROR_MAGIC_LINK_INVALID:
+      return "This magic link is invalid, expired, or no longer applicable to this account."
+    case ObokuErrorCode.ERROR_MAGIC_LINK_MISSING_TOKEN:
+      return "This magic link is missing a token. Please request a new one."
     case ObokuErrorCode.ERROR_DATASOURCE_DOWNLOAD_DIFFERENT_DEVICE:
       return "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book using a cloud provider."
     default:
@@ -65,7 +69,7 @@ export const errorToMessage = (error: unknown) => {
     error.response?.data.errors[0]?.code ===
       ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED
   ) {
-    return "Please verify your email with this provider before continuing"
+    return "Your local account needs email verification before password sign-in. Use the magic link below to verify this account once."
   }
 
   if (

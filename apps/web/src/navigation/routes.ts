@@ -26,6 +26,7 @@ export const ROUTES = {
   LIBRARY_SERIES: "/library/series",
   LIBRARY_TAGS: "/library/tags",
   LOGIN: "/login",
+  LOGIN_MAGIC_LINK: "/login/magic-link",
   SIGN_UP: "/signup",
   SIGN_UP_COMPLETE: "/signup/complete",
   AUTH_CALLBACK: "/auth_callback",
