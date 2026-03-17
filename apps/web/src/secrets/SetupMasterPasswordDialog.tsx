@@ -4,14 +4,13 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Alert,
 } from "@mui/material"
 import { useEffect, memo } from "react"
 import { useSettings } from "../settings/useSettings"
 import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFields"
 import { useForm } from "react-hook-form"
 import { useUpdateMasterKey } from "./useUpdateMasterKey"
-import { ErrorMessage, errorToMessage } from "../errors/ErrorMessage"
+import { ErrorAlert, errorToMessage } from "../errors/ErrorMessage"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
 import { useNotifications } from "../notifications/useNofitications"
 
@@ -109,11 +108,7 @@ export const SetupMasterPasswordDialog = memo(
               fullWidth
               margin="normal"
             />
-            {!!errors.root && (
-              <Alert severity="error">
-                <ErrorMessage error={errors.root.message} />
-              </Alert>
-            )}
+            {!!errors.root && <ErrorAlert error={errors.root.message} />}
           </form>
         </DialogContent>
         <DialogActions>

@@ -7,9 +7,10 @@ import { AuthGuard } from "./auth.guard"
 import { APP_GUARD } from "@nestjs/core"
 import { AuthController } from "./auth.controller"
 import { CouchService } from "../couch/couch.service"
+import { EmailModule } from "../email/email.module"
 
 @Module({
-  imports: [UsersModule, PostgresModule],
+  imports: [UsersModule, PostgresModule, EmailModule],
   providers: [
     AuthService,
     JwtService,

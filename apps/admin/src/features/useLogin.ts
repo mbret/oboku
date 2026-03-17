@@ -13,7 +13,19 @@ export const useLogin = () => {
         },
       })
 
+      if (!response.ok) {
+        throw new Error(
+          response.status === 401
+            ? "Invalid login or password"
+            : "Unable to sign in",
+        )
+      }
+
       const data = await response.json()
+
+      if (!data.access_token) {
+        throw new Error("Unable to sign in")
+      }
 
       persistAccessToken(data.access_token)
       authState.update({

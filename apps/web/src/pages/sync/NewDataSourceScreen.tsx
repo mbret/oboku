@@ -1,4 +1,4 @@
-import { Box, Container, Button, Stack, Divider, Alert } from "@mui/material"
+import { Box, Container, Button, Stack, Divider } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Navigate, useParams } from "react-router"
@@ -13,7 +13,7 @@ import { useTags } from "../../tags/helpers"
 import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 import { useMutation } from "@tanstack/react-query"
 import { useNotifications } from "../../notifications/useNofitications"
-import { ErrorMessage } from "../../errors/ErrorMessage"
+import { ErrorAlert } from "../../errors/ErrorMessage"
 
 export const NewDataSourceScreen = memo(() => {
   const { id } = useParams<{ id: string }>()
@@ -104,11 +104,7 @@ export const NewDataSourceScreen = memo(() => {
             helperText="Applied to all items during synchronization"
           />
           <PluginAddDataSource control={control} watch={watch.bind(control)} />
-          {!!errors.root && (
-            <Alert severity="error">
-              <ErrorMessage error={errors.root.message} />
-            </Alert>
-          )}
+          {!!errors.root && <ErrorAlert error={errors.root} />}
           <Divider />
           <Stack gap={1}>
             <Button variant="contained" type="submit">

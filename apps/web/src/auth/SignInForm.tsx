@@ -1,32 +1,26 @@
 import { Button, Stack, TextField } from "@mui/material"
-import { Controller, useForm } from "react-hook-form"
+import {
+  Controller,
+  type Control,
+  type UseFormHandleSubmit,
+} from "react-hook-form"
 import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { Login } from "@mui/icons-material"
 
-type Inputs = {
+export type SignInFormInputs = {
   email: string
   password: string
 }
 
 export const SignInForm = ({
+  control,
   onSubmit,
 }: {
-  onSubmit: (data: Inputs) => void
+  control: Control<SignInFormInputs>
+  onSubmit: ReturnType<UseFormHandleSubmit<SignInFormInputs>>
 }) => {
-  const { control, handleSubmit } = useForm<Inputs>({
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  })
-
   return (
-    <Stack
-      component="form"
-      noValidate
-      gap={1}
-      onSubmit={handleSubmit(onSubmit)}
-    >
+    <Stack component="form" noValidate gap={1} onSubmit={onSubmit}>
       <Controller
         name="email"
         control={control}

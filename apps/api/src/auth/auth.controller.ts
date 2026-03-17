@@ -3,13 +3,28 @@ import { AuthService } from "./auth.service"
 import { Public } from "./auth.guard"
 import { IsEmail, IsNotEmpty, MinLength } from "class-validator"
 
-export class SignUpDto {
+export class RequestSignUpDto {
   @IsEmail()
   email!: string
+}
+
+export class RequestMagicLinkDto {
+  @IsEmail()
+  email!: string
+}
+
+export class CompleteSignUpDto {
+  @IsNotEmpty()
+  token!: string
 
   @IsNotEmpty()
   @MinLength(8)
   password!: string
+}
+
+export class CompleteMagicLinkDto {
+  @IsNotEmpty()
+  token!: string
 }
 
 @Controller("auth")
@@ -27,10 +42,34 @@ export class AuthController {
 
   @Public()
   @Post("signup")
-  async signup(@Body() body: SignUpDto) {
-    await this.authService.signUp(body)
+  async signup(@Body() body: RequestSignUpDto) {
+    await this.authService.requestSignUp({
+      email: body.email,
+    })
 
     return {}
+  }
+
+  @Public()
+  @Post("signup/complete")
+  async completeSignup(@Body() body: CompleteSignUpDto) {
+    return this.authService.completeSignUp(body)
+  }
+
+  @Public()
+  @Post("magic-link")
+  async requestMagicLink(@Body() body: RequestMagicLinkDto) {
+    await this.authService.requestMagicLink({
+      email: body.email,
+    })
+
+    return {}
+  }
+
+  @Public()
+  @Post("magic-link/complete")
+  async completeMagicLink(@Body() body: CompleteMagicLinkDto) {
+    return this.authService.completeMagicLink(body)
   }
 
   @Public()

@@ -128,4 +128,32 @@ export class AppConfigService {
   get ADMIN_PASSWORD() {
     return this.config.get("ADMIN_PASSWORD", { infer: true })
   }
+
+  get NODE_ENV() {
+    return this.config.getOrThrow("NODE_ENV", { infer: true })
+  }
+
+  get APP_PUBLIC_URL() {
+    return this.config.getOrThrow("APP_PUBLIC_URL", { infer: true })
+  }
+
+  get EMAIL_SMTP_HOST() {
+    return this.config.get("EMAIL_SMTP_HOST", { infer: true })
+  }
+
+  get EMAIL_SMTP_PORT() {
+    return this.config.get("EMAIL_SMTP_PORT", { infer: true }) ?? 587
+  }
+
+  get EMAIL_SMTP_USER() {
+    return this.config.get("EMAIL_SMTP_USER", { infer: true })
+  }
+
+  get EMAIL_SMTP_PASSWORD() {
+    return this.config.get("EMAIL_SMTP_PASSWORD", { infer: true })
+  }
+
+  get EMAIL_FROM() {
+    return this.config.get("EMAIL_FROM", { infer: true })
+  }
 }

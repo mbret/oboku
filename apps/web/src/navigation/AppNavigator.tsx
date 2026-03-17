@@ -47,6 +47,8 @@ import { AddSynologyDriveConnectorScreen } from "../pages/plugins/synology-drive
 import { EditSynologyDriveConnectorScreen } from "../pages/plugins/synology-drive/EditConnectorScreen"
 import { PluginDownloadFlowHost } from "../download/flow/PluginDownloadFlowHost"
 import { plugins } from "../dataSources"
+import { SignUpCompleteScreen } from "../pages/SignUpCompleteScreen"
+import { MagicLinkCompleteScreen } from "../pages/MagicLinkCompleteScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -75,6 +77,14 @@ export const AppNavigator = ({
       >
         <Routes>
           <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallbackScreen />} />
+          <Route
+            path={ROUTES.LOGIN_MAGIC_LINK}
+            element={<MagicLinkCompleteScreen />}
+          />
+          <Route
+            path={ROUTES.SIGN_UP_COMPLETE}
+            element={<SignUpCompleteScreen />}
+          />
           {isAuthenticated ? (
             <>
               <Route path="/reader/:bookId" element={<ReaderScreen />} />
@@ -169,14 +179,7 @@ export const AppNavigator = ({
               <Route path={ROUTES.SIGN_UP} element={<SignUpScreen />} />
               <Route
                 path="*"
-                element={
-                  <Navigate
-                    to={{
-                      pathname: ROUTES.LOGIN,
-                    }}
-                    replace
-                  />
-                }
+                element={<Navigate to={ROUTES.LOGIN} replace />}
               />
             </>
           )}

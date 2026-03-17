@@ -7,9 +7,10 @@ import { CouchModule } from "src/couch/couch.module"
 import { CouchMigrationService } from "src/couch/migration.service"
 import { CoversModule } from "src/covers/covers.module"
 import { AdminCoversService } from "./admin-covers.service"
+import { AuthModule } from "src/auth/auth.module"
 
 @Module({
-  imports: [CouchModule, CoversModule],
+  imports: [AuthModule, CouchModule, CoversModule],
   providers: [
     AppConfigService,
     JwtService,

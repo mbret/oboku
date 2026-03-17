@@ -1,6 +1,5 @@
 import { memo, type ReactNode } from "react"
 import {
-  Alert,
   Button,
   Checkbox,
   Container,
@@ -13,7 +12,6 @@ import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { ControlledSecretSelect } from "../common/forms/ControlledSecretSelect"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
-import { ErrorMessage } from "../errors/ErrorMessage"
 import { useNotifications } from "../notifications/useNofitications"
 import type {
   SettingsConnectorDocType,
@@ -23,6 +21,7 @@ import { TestConnection, type TestConnectionFn } from "./TestConnection"
 import { useAddConnector } from "./useAddConnector"
 import { useConnector } from "./useConnector"
 import { useUpdateConnector } from "./useUpdateConnector"
+import { ErrorAlert } from "../errors/ErrorMessage"
 
 const FORM_ID = "connector-form"
 
@@ -176,11 +175,7 @@ export const ConnectorForm = memo(
                 </Stack>
               )}
             />
-            {!!errors.root && (
-              <Alert severity="error">
-                <ErrorMessage error={errors.root.message} />
-              </Alert>
-            )}
+            {!!errors.root && <ErrorAlert error={errors.root.message} />}
             {testConnection && (
               <TestConnection
                 connectionData={{ ...data, url: data.urlValue }}
