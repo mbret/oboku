@@ -1,6 +1,6 @@
 import { Box, Button, Stack } from "@mui/material"
 import { Login } from "@mui/icons-material"
-import { Link, useSearchParams } from "react-router"
+import { Link, Navigate, useSearchParams } from "react-router"
 import { AuthPage } from "../auth/AuthPage"
 import { CompleteSignUpForm } from "../auth/CompleteSignUpForm"
 import { useCompleteSignUp } from "../auth/useCompleteSignUp"
@@ -17,7 +17,11 @@ export const SignUpCompleteScreen = () => {
   const token = searchParams.get("token")
   const auth = useSignalValue(authStateSignal)
   const isAuthenticated = !!auth?.accessToken
-  const { mutate, error } = useCompleteSignUp()
+  const { mutateAsync, error, status } = useCompleteSignUp()
+
+  if (status === "success" && isAuthenticated) {
+    return <Navigate to={ROUTES.HOME} replace />
+  }
 
   if (isAuthenticated) {
     return <SignOutBeforeContinuePage />
@@ -45,8 +49,8 @@ export const SignUpCompleteScreen = () => {
       ) : null}
       {token ? (
         <CompleteSignUpForm
-          onSubmit={(data) => {
-            mutate({
+          onSubmit={async (data) => {
+            await mutateAsync({
               token,
               password: data.password,
             })

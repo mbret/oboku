@@ -1,6 +1,6 @@
 import { Alert, Box, Button, Stack } from "@mui/material"
 import { Login } from "@mui/icons-material"
-import { Link, useSearchParams } from "react-router"
+import { Link, Navigate, useSearchParams } from "react-router"
 import { AuthPage } from "../auth/AuthPage"
 import { useCompleteMagicLink } from "../auth/useCompleteMagicLink"
 import { isCancelError } from "../errors/errors.shared"
@@ -16,7 +16,11 @@ export const MagicLinkCompleteScreen = () => {
   const token = searchParams.get("token")
   const auth = useSignalValue(authStateSignal)
   const isAuthenticated = !!auth?.accessToken
-  const { mutate, error, isPending } = useCompleteMagicLink()
+  const { mutate, error, isPending, status } = useCompleteMagicLink()
+
+  if (status === "success" && isAuthenticated) {
+    return <Navigate to={ROUTES.HOME} replace />
+  }
 
   if (isAuthenticated) {
     return <SignOutBeforeContinuePage />
