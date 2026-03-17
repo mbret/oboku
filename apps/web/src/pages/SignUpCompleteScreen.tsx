@@ -10,7 +10,7 @@ import { ROUTES } from "../navigation/routes"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/states.web"
-import { SignOutBeforeContinuePage } from "src/auth/SignOutBeforeContinuePage"
+import { SignOutBeforeContinuePage } from "../auth/SignOutBeforeContinuePage"
 
 export const SignUpCompleteScreen = () => {
   const [searchParams] = useSearchParams()

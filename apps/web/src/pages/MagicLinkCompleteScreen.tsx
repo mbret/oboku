@@ -1,7 +1,6 @@
 import { Alert, Box, Button, Stack } from "@mui/material"
 import { Login } from "@mui/icons-material"
 import { Link, useSearchParams } from "react-router"
-import { useEffect } from "react"
 import { AuthPage } from "../auth/AuthPage"
 import { useCompleteMagicLink } from "../auth/useCompleteMagicLink"
 import { isCancelError } from "../errors/errors.shared"
@@ -10,7 +9,7 @@ import { ROUTES } from "../navigation/routes"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/states.web"
-import { SignOutBeforeContinuePage } from "src/auth/SignOutBeforeContinuePage"
+import { SignOutBeforeContinuePage } from "../auth/SignOutBeforeContinuePage"
 
 export const MagicLinkCompleteScreen = () => {
   const [searchParams] = useSearchParams()
@@ -18,14 +17,6 @@ export const MagicLinkCompleteScreen = () => {
   const auth = useSignalValue(authStateSignal)
   const isAuthenticated = !!auth?.accessToken
   const { mutate, error, isPending } = useCompleteMagicLink()
-
-  useEffect(() => {
-    if (!token || isAuthenticated) {
-      return
-    }
-
-    mutate({ token })
-  }, [isAuthenticated, mutate, token])
 
   if (isAuthenticated) {
     return <SignOutBeforeContinuePage />
@@ -56,11 +47,23 @@ export const MagicLinkCompleteScreen = () => {
           <Alert severity="info">
             {isPending
               ? "Verifying your email and signing you in..."
-              : "Magic link accepted."}
+              : "Continue to verify your email and sign in."}
           </Alert>
         </Box>
       ) : null}
       <Stack gap={1} mt={3}>
+        {token ? (
+          <Button
+            variant="contained"
+            size="large"
+            disabled={isPending}
+            onClick={() => {
+              mutate({ token })
+            }}
+          >
+            Continue with magic link
+          </Button>
+        ) : null}
         <Button
           component={Link}
           to={ROUTES.LOGIN}
