@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from "@nestjs/common"
 import { UsersService } from "../users/users.service"
@@ -13,6 +15,7 @@ import bcrypt from "bcrypt"
 import { JwtService, TokenExpiredError } from "@nestjs/jwt"
 import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
 import { SecretsService } from "src/config/SecretsService"
+import { EmailService } from "../email/EmailService"
 
 type RefreshTokenPayload = {
   sub: string
@@ -21,8 +24,15 @@ type RefreshTokenPayload = {
   expires_at: Date
 }
 
+type SignUpTokenPayload = {
+  sub: string
+  type: "signup"
+}
+
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name)
+
   constructor(
     private usersService: UsersService,
     private appConfigService: AppConfigService,
@@ -30,6 +40,7 @@ export class AuthService {
     private jwtService: JwtService,
     private refreshTokensService: RefreshTokensService,
     private secretService: SecretsService,
+    private emailService: EmailService,
   ) {}
 
   async generateRefreshToken(payload: {
@@ -66,9 +77,12 @@ export class AuthService {
   /**
    * @important
    *
-   * Signin with google authorize you even if you have a password set.
-   * This is only if your email is verified. In this case we assume any user
-   * with your email belongs to you.
+   * Google sign-in is trusted for the current session only when Google returns
+   * a verified email for this login attempt.
+   *
+   * Provider sign-in must not persist local email/password authority in the
+   * merged user row. Local password access is only upgraded by Oboku's own
+   * email verification flow.
    */
   async signInWithGoogle(token: string) {
     const client = new OAuth2Client()
@@ -117,6 +131,7 @@ export class AuthService {
    * The only way to signin with email and password is to:
    * - exist
    * - have password set
+   * - have a locally verified email ownership
    * - validate compare
    */
   async signinWithEmail(email: string, password: string) {
@@ -125,7 +140,10 @@ export class AuthService {
     /**
      * we found a user with a password that matches, so we compare them
      */
-    if (typeof userWithEmail?.password === "string") {
+    if (
+      typeof userWithEmail?.password === "string" &&
+      userWithEmail.emailVerified
+    ) {
       if (await this.comparePassword(password, userWithEmail.password)) {
         return userWithEmail
       }
@@ -191,20 +209,130 @@ export class AuthService {
     }
   }
 
-  async signUp({ email, password }: { email: string; password: string }) {
+  async generateSignUpToken(email: string) {
+    return this.jwtService.signAsync(
+      {
+        sub: email,
+        type: "signup",
+      } satisfies SignUpTokenPayload,
+      {
+        algorithm: "RS256",
+        expiresIn: "1h",
+        privateKey: await this.secretService.getJwtPrivateKey(),
+      },
+    )
+  }
+
+  async verifySignUpToken(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync<SignUpTokenPayload>(
+        token,
+        {
+          secret: await this.secretService.getJwtPrivateKey(),
+          algorithms: ["RS256"],
+        },
+      )
+
+      if (payload.type !== "signup" || !payload.sub) {
+        throw new BadRequestException({
+          errors: [{ code: ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID }],
+        })
+      }
+
+      return payload.sub
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+
+      throw new BadRequestException({
+        errors: [{ code: ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID }],
+      })
+    }
+  }
+
+  async requestSignUp({
+    email,
+    appPublicUrl,
+  }: {
+    email: string
+    appPublicUrl?: string
+  }) {
     const user = await this.usersService.findUserByEmail(email)
 
-    if (user) {
-      throw new BadRequestException({})
+    if (typeof user?.password === "string") {
+      throw new BadRequestException({
+        errors: [{ code: ObokuErrorCode.ERROR_ACCOUNT_ALREADY_EXISTS }],
+      })
+    }
+
+    const token = await this.generateSignUpToken(email)
+
+    try {
+      await this.emailService.sendSignUpLink({
+        appPublicUrl,
+        email,
+        token,
+      })
+    } catch (error) {
+      this.logger.error(error)
+
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+
+      throw new InternalServerErrorException("Unable to send sign up email")
+    }
+  }
+
+  async generateSignUpLink({
+    email,
+    appPublicUrl,
+  }: {
+    email: string
+    appPublicUrl?: string
+  }) {
+    const token = await this.generateSignUpToken(email)
+
+    return this.emailService.getSignUpLink({
+      appPublicUrl,
+      token,
+    })
+  }
+
+  async completeSignUp({
+    token,
+    password,
+  }: {
+    token: string
+    password: string
+  }) {
+    const email = await this.verifySignUpToken(token)
+    const user = await this.usersService.findUserByEmail(email)
+
+    if (typeof user?.password === "string") {
+      throw new BadRequestException({
+        errors: [{ code: ObokuErrorCode.ERROR_ACCOUNT_ALREADY_EXISTS }],
+      })
     }
 
     const hashedPassword = await this.hashPassword(password)
 
-    await this.usersService.registerUser({
-      email,
-      password: hashedPassword,
-      username: email,
-    })
+    if (user) {
+      user.password = hashedPassword
+      user.emailVerified = true
+
+      await this.usersService.saveUser(user)
+    } else {
+      await this.usersService.registerUser({
+        email,
+        emailVerified: true,
+        password: hashedPassword,
+        username: email,
+      })
+    }
+
+    return { email }
   }
 
   async refreshToken(grant_type: "refresh_token", refreshToken: string) {

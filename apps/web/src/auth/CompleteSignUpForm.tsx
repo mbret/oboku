@@ -4,17 +4,19 @@ import { errorToHelperText } from "../common/forms/errorToHelperText"
 import { PersonAdd } from "@mui/icons-material"
 
 type Inputs = {
-  email: string
+  password: string
+  confirmPassword: string
 }
 
-export const SignUpForm = ({
+export const CompleteSignUpForm = ({
   onSubmit,
 }: {
   onSubmit: (data: Inputs) => void
 }) => {
-  const { control, handleSubmit } = useForm<Inputs>({
+  const { control, handleSubmit, getValues } = useForm<Inputs>({
     defaultValues: {
-      email: "",
+      password: "",
+      confirmPassword: "",
     },
   })
 
@@ -26,24 +28,41 @@ export const SignUpForm = ({
       onSubmit={handleSubmit(onSubmit)}
     >
       <Controller
-        name="email"
+        name="password"
+        control={control}
+        rules={{ required: true, minLength: 8 }}
+        render={({ field: { ref, ...rest }, fieldState }) => {
+          return (
+            <TextField
+              {...rest}
+              label="Password"
+              type="password"
+              fullWidth
+              inputRef={ref}
+              autoComplete="new-password"
+              error={fieldState.invalid}
+              helperText={errorToHelperText(fieldState.error)}
+            />
+          )
+        }}
+      />
+      <Controller
+        name="confirmPassword"
         control={control}
         rules={{
           required: true,
-          pattern: {
-            value: /\S+@\S+\.\S+/,
-            message: "Invalid email format",
-          },
+          validate: (value) =>
+            value === getValues("password") || "Passwords must match",
         }}
         render={({ field: { ref, ...rest }, fieldState }) => {
           return (
             <TextField
               {...rest}
-              label="Email"
-              type="email"
+              label="Confirm password"
+              type="password"
               fullWidth
               inputRef={ref}
-              autoComplete="email"
+              autoComplete="new-password"
               error={fieldState.invalid}
               helperText={errorToHelperText(fieldState.error)}
             />
@@ -56,7 +75,7 @@ export const SignUpForm = ({
         variant="contained"
         startIcon={<PersonAdd />}
       >
-        Send sign up link
+        Complete sign up
       </Button>
     </Stack>
   )

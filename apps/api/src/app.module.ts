@@ -77,6 +77,12 @@ import { StorageModule } from "./storage/storage.module"
           .default("fs"),
         ADMIN_LOGIN: Joi.string().optional(),
         ADMIN_PASSWORD: Joi.string().optional(),
+        APP_PUBLIC_URL: Joi.string().uri().optional(),
+        EMAIL_SMTP_HOST: Joi.string().optional(),
+        EMAIL_SMTP_PORT: Joi.number().port().optional(),
+        EMAIL_SMTP_USER: Joi.string().optional(),
+        EMAIL_SMTP_PASSWORD: Joi.string().optional(),
+        EMAIL_FROM: Joi.string().email().optional(),
       })
         .or("JWT_PRIVATE_KEY_FILE", "JWT_PRIVATE_KEY")
         .or("JWT_PUBLIC_KEY_FILE", "JWT_PUBLIC_KEY"),

@@ -23,6 +23,10 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return ERROR_NO_LINK_MESSAGE
     case ObokuErrorCode.ERROR_RESOURCE_NOT_REACHABLE:
       return ERROR_RESOURCE_NOT_REACHABLE_MESSAGE
+    case ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID:
+      return "This sign up link is invalid or expired. Please request a new one."
+    case ObokuErrorCode.ERROR_ACCOUNT_ALREADY_EXISTS:
+      return "An account already exists for this email. Please sign in instead."
     case ObokuErrorCode.ERROR_DATASOURCE_DOWNLOAD_DIFFERENT_DEVICE:
       return "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book using a cloud provider."
     default:

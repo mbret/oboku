@@ -1,13 +1,4 @@
-import {
-  finalize,
-  from,
-  map,
-  type Observable,
-  of,
-  switchMap,
-  tap,
-  withLatestFrom,
-} from "rxjs"
+import { finalize, from, map, type Observable, of, switchMap, tap } from "rxjs"
 import { lock, unlock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
 import { authStateSignal } from "./states.web"
@@ -35,14 +26,9 @@ export const useSignIn = () => {
 
       return credentials$.pipe(
         switchMap((credentials) => from(httpClientApi.signIn(credentials))),
-        withLatestFrom(authStateSignal.subject),
         switchMap(
-          ([
-            {
-              data: { dbName, email, accessToken, refreshToken, nameHex },
-            },
-            previousAuth,
-          ]) => {
+          ({ data: { dbName, email, accessToken, refreshToken, nameHex } }) => {
+            const previousAuth = authStateSignal.value
             const waitForDbRecreation$ =
               previousAuth?.email !== email
                 ? from(reCreateDb({ overwrite: true }))

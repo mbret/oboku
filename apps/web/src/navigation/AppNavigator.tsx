@@ -47,6 +47,7 @@ import { AddSynologyDriveConnectorScreen } from "../pages/plugins/synology-drive
 import { EditSynologyDriveConnectorScreen } from "../pages/plugins/synology-drive/EditConnectorScreen"
 import { PluginDownloadFlowHost } from "../download/flow/PluginDownloadFlowHost"
 import { plugins } from "../dataSources"
+import { SignUpCompleteScreen } from "../pages/SignUpCompleteScreen"
 
 const BottomTabBarRouteWrapper = () => (
   <BottomTabBar>
@@ -168,15 +169,12 @@ export const AppNavigator = ({
               <Route path={ROUTES.LOGIN} element={<LoginScreen />} />
               <Route path={ROUTES.SIGN_UP} element={<SignUpScreen />} />
               <Route
+                path={ROUTES.SIGN_UP_COMPLETE}
+                element={<SignUpCompleteScreen />}
+              />
+              <Route
                 path="*"
-                element={
-                  <Navigate
-                    to={{
-                      pathname: ROUTES.LOGIN,
-                    }}
-                    replace
-                  />
-                }
+                element={<Navigate to={ROUTES.LOGIN} replace />}
               />
             </>
           )}

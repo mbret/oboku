@@ -40,10 +40,18 @@ class HttpApiClient extends HttpClientWeb {
       body: data,
     })
 
-  signUp = (data: { email: string; password: string }) =>
+  signUp = (data: { email: string }) =>
     this.post<unknown, typeof data>(`${configuration.API_URL}/auth/signup`, {
       body: data,
     })
+
+  completeSignUp = (data: { token: string; password: string }) =>
+    this.post<{ email: string }, typeof data>(
+      `${configuration.API_URL}/auth/signup/complete`,
+      {
+        body: data,
+      },
+    )
 
   refreshToken = ({
     refreshToken,

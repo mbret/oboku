@@ -11,10 +11,17 @@ import { AuthPage } from "../auth/AuthPage"
 import { useSignUp } from "../auth/useSignUp"
 
 export const SignUpScreen = () => {
-  const { mutate, error } = useSignUp()
+  const { mutate, error, status } = useSignUp()
 
   return (
     <AuthPage>
+      {status === "success" ? (
+        <Box mb={2}>
+          <Alert severity="success">
+            Check your inbox for a link to finish creating your account.
+          </Alert>
+        </Box>
+      ) : null}
       {error && !isCancelError(error) ? (
         <Box mb={2}>
           <Alert severity="warning">
