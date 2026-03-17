@@ -5,8 +5,9 @@ import { AuthPage } from "../auth/AuthPage"
 import { CompleteSignUpForm } from "../auth/CompleteSignUpForm"
 import { useCompleteSignUp } from "../auth/useCompleteSignUp"
 import { isCancelError } from "../errors/errors.shared"
-import { ErrorMessage } from "../errors/ErrorMessage"
+import { ErrorAlert } from "../errors/ErrorMessage"
 import { ROUTES } from "../navigation/routes"
+import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 
 export const SignUpCompleteScreen = () => {
   const [searchParams] = useSearchParams()
@@ -17,16 +18,20 @@ export const SignUpCompleteScreen = () => {
     <AuthPage>
       {!token ? (
         <Box mb={2}>
-          <Alert severity="warning">
-            This sign up link is missing a token. Please request a new one.
-          </Alert>
+          <ErrorAlert
+            error={
+              new ObokuSharedError(
+                ObokuErrorCode.ERROR_SIGNUP_LINK_MISSING_TOKEN,
+                undefined,
+                "user",
+              )
+            }
+          />
         </Box>
       ) : null}
       {error && !isCancelError(error) ? (
         <Box mb={2}>
-          <Alert severity="warning">
-            <ErrorMessage error={error} />
-          </Alert>
+          <ErrorAlert error={error} />
         </Box>
       ) : null}
       {token ? (

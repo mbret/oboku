@@ -1,10 +1,8 @@
 import { Button, Box, Stack } from "@mui/material"
-import { Alert } from "@mui/material"
 import { Email, Google, PersonAdd } from "@mui/icons-material"
 import { useSignIn } from "../auth/useSignIn"
 import { OrDivider } from "../common/OrDivider"
 import { isCancelError } from "../errors/errors.shared"
-import { ErrorMessage } from "../errors/ErrorMessage"
 import { configuration } from "../config/configuration"
 import { SignInForm } from "../auth/SignInForm"
 import { Link } from "react-router"
@@ -18,9 +16,7 @@ export const LoginScreen = () => {
     <AuthPage>
       {error && !isCancelError(error) ? (
         <Box mb={2}>
-          <Alert severity="warning">
-            <ErrorMessage error={error} />
-          </Alert>
+          <ErrorAlert error={error} />
         </Box>
       ) : null}
       <SignInForm

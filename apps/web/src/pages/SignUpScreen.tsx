@@ -3,7 +3,7 @@ import { Alert } from "@mui/material"
 import { Login } from "@mui/icons-material"
 import { OrDivider } from "../common/OrDivider"
 import { isCancelError } from "../errors/errors.shared"
-import { ErrorMessage } from "../errors/ErrorMessage"
+import { ErrorAlert } from "../errors/ErrorMessage"
 import { Link } from "react-router"
 import { ROUTES } from "../navigation/routes"
 import { SignUpForm } from "../auth/SignUpForm"
@@ -24,9 +24,7 @@ export const SignUpScreen = () => {
       ) : null}
       {error && !isCancelError(error) ? (
         <Box mb={2}>
-          <Alert severity="warning">
-            <ErrorMessage error={error} />
-          </Alert>
+          <ErrorAlert error={error} />
         </Box>
       ) : null}
       <SignUpForm onSubmit={mutate} />

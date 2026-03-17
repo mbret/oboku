@@ -5,9 +5,20 @@ import {
   isApiError,
 } from "./errors.shared"
 import { HttpClientError } from "../http/httpClient.shared"
+import { Alert } from "@mui/material"
 
 export const ErrorMessage = ({ error }: { error: unknown }) => {
   return <>{errorToMessage(error)}</>
+}
+
+export const ErrorAlert = ({ error }: { error: unknown }) => {
+  const severity = error instanceof ObokuSharedError ? error.severity : "error"
+
+  return (
+    <Alert severity={severity === "user" ? "warning" : "error"}>
+      {errorToMessage(error)}
+    </Alert>
+  )
 }
 
 const ERROR_RESOURCE_NOT_REACHABLE_MESSAGE =
@@ -25,6 +36,8 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return ERROR_RESOURCE_NOT_REACHABLE_MESSAGE
     case ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID:
       return "This sign up link is invalid or expired. Please request a new one."
+    case ObokuErrorCode.ERROR_SIGNUP_LINK_MISSING_TOKEN:
+      return "This sign up link is missing a token. Please request a new one."
     case ObokuErrorCode.ERROR_ACCOUNT_ALREADY_EXISTS:
       return "An account already exists for this email. Please sign in instead."
     case ObokuErrorCode.ERROR_DATASOURCE_DOWNLOAD_DIFFERENT_DEVICE:

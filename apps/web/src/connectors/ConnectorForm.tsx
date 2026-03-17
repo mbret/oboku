@@ -176,11 +176,7 @@ export const ConnectorForm = memo(
                 </Stack>
               )}
             />
-            {!!errors.root && (
-              <Alert severity="error">
-                <ErrorMessage error={errors.root.message} />
-              </Alert>
-            )}
+            {!!errors.root && <ErrorAlert error={errors.root.message} />}
             {testConnection && (
               <TestConnection
                 connectionData={{ ...data, url: data.urlValue }}
