@@ -1,5 +1,5 @@
 import { Alert, Box, Button, Stack } from "@mui/material"
-import { Login } from "@mui/icons-material"
+import { Home, Login } from "@mui/icons-material"
 import { Link, useSearchParams } from "react-router"
 import { useEffect } from "react"
 import { AuthPage } from "../auth/AuthPage"
@@ -8,19 +8,44 @@ import { isCancelError } from "../errors/errors.shared"
 import { ErrorAlert } from "../errors/ErrorMessage"
 import { ROUTES } from "../navigation/routes"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
+import { useSignalValue } from "reactjrx"
+import { authStateSignal } from "../auth/states.web"
 
 export const MagicLinkCompleteScreen = () => {
   const [searchParams] = useSearchParams()
   const token = searchParams.get("token")
+  const auth = useSignalValue(authStateSignal)
+  const isAuthenticated = !!auth?.accessToken
   const { mutate, error, isPending } = useCompleteMagicLink()
 
   useEffect(() => {
-    if (!token) {
+    if (!token || isAuthenticated) {
       return
     }
 
     mutate({ token })
-  }, [mutate, token])
+  }, [isAuthenticated, mutate, token])
+
+  if (isAuthenticated) {
+    return (
+      <AuthPage>
+        <Stack gap={2}>
+          <Alert severity="warning">
+            You are already signed in. Sign out first if you want to use this
+            magic link.
+          </Alert>
+          <Button
+            component={Link}
+            to={ROUTES.HOME}
+            size="large"
+            startIcon={<Home />}
+          >
+            Home
+          </Button>
+        </Stack>
+      </AuthPage>
+    )
+  }
 
   return (
     <AuthPage>

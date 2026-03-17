@@ -77,6 +77,14 @@ export const AppNavigator = ({
       >
         <Routes>
           <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallbackScreen />} />
+          <Route
+            path={ROUTES.LOGIN_MAGIC_LINK}
+            element={<MagicLinkCompleteScreen />}
+          />
+          <Route
+            path={ROUTES.SIGN_UP_COMPLETE}
+            element={<SignUpCompleteScreen />}
+          />
           {isAuthenticated ? (
             <>
               <Route path="/reader/:bookId" element={<ReaderScreen />} />
@@ -168,15 +176,7 @@ export const AppNavigator = ({
           ) : (
             <>
               <Route path={ROUTES.LOGIN} element={<LoginScreen />} />
-              <Route
-                path={ROUTES.LOGIN_MAGIC_LINK}
-                element={<MagicLinkCompleteScreen />}
-              />
               <Route path={ROUTES.SIGN_UP} element={<SignUpScreen />} />
-              <Route
-                path={ROUTES.SIGN_UP_COMPLETE}
-                element={<SignUpCompleteScreen />}
-              />
               <Route
                 path="*"
                 element={<Navigate to={ROUTES.LOGIN} replace />}
