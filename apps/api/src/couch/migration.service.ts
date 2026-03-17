@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { CouchService } from "./couch.service"
-import { UserCouchEntity } from "src/lib/couchDbEntities"
+import { listUserDatabases } from "src/lib/couch/listUserDatabases"
 
 const logger = new Logger("MigrationService")
 
@@ -98,36 +98,6 @@ const toCanonicalWebdavResourceId = (resourceId: string) => {
 export class CouchMigrationService {
   constructor(private readonly couchService: CouchService) {}
 
-  /**
-   * Shared helper used by all admin migrations.
-   *
-   * What it does:
-   * - Connects to CouchDB with admin privileges.
-   * - Reads the `_users` database.
-   * - Builds the physical per-user database names (`userdb-<hex email>`).
-   *
-   * Why it exists:
-   * - Every migration in this service is "run once per user database".
-   * - Centralizing this avoids re-implementing the same user-db discovery logic
-   *   in each migration and keeps the migration methods focused on the actual
-   *   document rewrite they perform.
-   */
-  private async listUserDatabaseNames() {
-    const db = await this.couchService.createAdminNanoInstance()
-    const usersDb = db.use<UserCouchEntity>("_users")
-    const result = await usersDb.find({
-      selector: { type: "user" },
-      limit: 99999,
-    })
-
-    return {
-      db,
-      userDbs: result.docs.map(
-        (user) => `userdb-${Buffer.from(user.name).toString("hex")}`,
-      ),
-    }
-  }
-
   async migrateWebdavConnectorsToConnectors(): Promise<{
     usersMigrated: number
     connectorsCreated: number
@@ -170,7 +140,8 @@ export class CouchMigrationService {
      * - Re-running will not duplicate connectors already copied into
      *   `settings.connectors`.
      */
-    const { db, userDbs } = await this.listUserDatabaseNames()
+    const db = await this.couchService.createAdminNanoInstance()
+    const userDbs = await listUserDatabases(db)
 
     logger.log(
       `Migrating webdavConnectors to connectors for ${userDbs.length} user databases`,
@@ -179,7 +150,7 @@ export class CouchMigrationService {
     let usersMigrated = 0
     let connectorsCreated = 0
 
-    for (const userDbName of userDbs) {
+    for (const { dbName: userDbName } of userDbs) {
       const userDbInstance = db.use<SettingsDoc>(userDbName)
 
       // Step 2: Load the user's settings document (skip if missing)
@@ -305,7 +276,8 @@ export class CouchMigrationService {
      * - After all relevant environments have been migrated, the old-format
      *   handling can be removed with much lower risk.
      */
-    const { db, userDbs } = await this.listUserDatabaseNames()
+    const db = await this.couchService.createAdminNanoInstance()
+    const userDbs = await listUserDatabases(db)
 
     logger.log(
       `Migrating legacy WebDAV resource IDs for ${userDbs.length} user databases`,
@@ -315,7 +287,7 @@ export class CouchMigrationService {
     let linksUpdated = 0
     let collectionsUpdated = 0
 
-    for (const userDbName of userDbs) {
+    for (const { dbName: userDbName } of userDbs) {
       const userDbInstance = db.use<LinkDoc | CollectionDoc>(userDbName)
       let userChanged = false
 
@@ -419,14 +391,15 @@ export class CouchMigrationService {
      * - Safe to run more than once.
      * - Documents already using object-shaped `data` are ignored.
      */
-    const { db, userDbs } = await this.listUserDatabaseNames()
+    const db = await this.couchService.createAdminNanoInstance()
+    const userDbs = await listUserDatabases(db)
 
     logger.log(`Migrating ${userDbs.length} user databases`)
 
     let linkChanged = 0
     const userChanged = new Set<string>()
 
-    for (const userDbName of userDbs) {
+    for (const { dbName: userDbName } of userDbs) {
       const userDbInstance = db.use(userDbName)
 
       logger.log(`Migrating ${userDbName} links.data`)

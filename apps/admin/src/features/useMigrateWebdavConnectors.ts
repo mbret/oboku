@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
-import { authState } from "./states"
 import { config } from "@/config"
+import { authenticatedFetch } from "./authenticatedFetch"
 
 export type WebdavMigrationResult = {
   usersMigrated: number
@@ -10,13 +10,12 @@ export type WebdavMigrationResult = {
 export const useMigrateWebdavConnectors = () => {
   return useMutation({
     mutationFn: async (): Promise<WebdavMigrationResult> => {
-      const res = await fetch(
+      const res = await authenticatedFetch(
         `${config.apiUrl}/admin/migrate-webdav-connectors`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${authState.value.access_token}`,
           },
         },
       )

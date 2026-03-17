@@ -5,6 +5,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter"
 import { CssBaseline, Stack, ThemeProvider } from "@mui/material"
 import { theme } from "../theme"
 import AppBar from "../features/home/AppBar"
+import { landingSubtitle } from "../features/home/content"
 import { Footer } from "../features/home/Footer"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -16,8 +17,7 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   title: "oboku | Your digital library",
-  description:
-    "Your books, your cloud! Access, read and sync your personal library from your cloud, NAS, etc. Anytime, anywhere.",
+  description: landingSubtitle,
 }
 
 export default function RootLayout({

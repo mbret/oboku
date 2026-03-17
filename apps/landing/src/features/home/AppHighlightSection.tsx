@@ -2,7 +2,6 @@ import {
   Box,
   Card,
   CardContent,
-  Chip,
   Container,
   Stack,
   Typography,
@@ -49,21 +48,11 @@ export const AppHighlightSection = () => {
   return (
     <Container>
       <Stack gap={2}>
-        <Chip
-          label="Key features"
-          sx={{
-            alignSelf: "flex-start",
-          }}
-        />
         <Typography variant="h4" component="h2">
-          Why use oboku?
+          Key features
         </Typography>
         <Typography>
-          Oboku is a web app for syncing your own ebooks from various cloud
-          storage to let you manage and read your library. It supports offline
-          mode, multiple formats (.epub, .cbz, ...) and any devices which has
-          access to a web browser offering a seamless way to organize and access
-          your digital library.
+          Non exhaustive list of interesting features you may be interested in.
         </Typography>
         <Box
           mt={4}
@@ -89,7 +78,7 @@ export const AppHighlightSection = () => {
           />
           <KeyCardPoint
             title="Your books"
-            description="Synchronize your own books and make your library in a few taps. We support Google Drive, Dropbox, Synology, WebDAV and will support many more"
+            description="Synchronize your own books and make your library in a few taps. We support Google Drive, Dropbox, Synology, WebDAV and many more"
             imageSrc={image4}
           />
           <KeyCardPoint
