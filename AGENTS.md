@@ -23,6 +23,7 @@ When implementing changes in this codebase, prioritize consistency and consolida
 - New features should follow established naming, folder structure, API shape, and UI conventions already used in neighboring code.
 - Keep behavior and architecture aligned with existing patterns unless there is a clear technical reason not to.
 - If divergence is necessary, keep it minimal and document the reason in the PR/commit notes.
+- Prefer using existing mutation/query status and returned data to drive UI state before introducing extra local component state. When a hook already exposes the success, error, pending, or data needed for rendering or navigation, derive from that first.
 
 ### Refactoring and cleanup expectations
 
