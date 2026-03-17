@@ -302,7 +302,7 @@ export class AuthService {
     }
   }
 
-  async requestSignUp({ email }: { email: string }) {
+  private async assertCanRequestSignUp(email: string) {
     const user = await this.usersService.findUserByEmail(email)
 
     if (typeof user?.password === "string") {
@@ -310,6 +310,10 @@ export class AuthService {
         errors: [{ code: ObokuErrorCode.ERROR_ACCOUNT_ALREADY_EXISTS }],
       })
     }
+  }
+
+  async requestSignUp({ email }: { email: string }) {
+    await this.assertCanRequestSignUp(email)
 
     const token = await this.generateSignUpToken(email)
 
@@ -386,6 +390,8 @@ export class AuthService {
     email: string
     appPublicUrl?: string
   }) {
+    await this.assertCanRequestSignUp(email)
+
     const token = await this.generateSignUpToken(email)
 
     return this.emailService.getSignUpLink({
