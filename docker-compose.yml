@@ -11,9 +11,9 @@ services:
     env_file:
       - .env
     environment:
-      - COUCHDB_USER=admin
-      - JWT_PRIVATE_KEY_FILE=/secrets/jwt_private_key.pem
-      - JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key.pem
+      COUCHDB_USER: ${COUCHDB_USER:-admin}
+      JWT_PRIVATE_KEY_FILE: ${JWT_PRIVATE_KEY_FILE:-/secrets/jwt_private_key.pem}
+      JWT_PUBLIC_KEY_FILE: ${JWT_PUBLIC_KEY_FILE:-/secrets/jwt_public_key.pem}
     volumes:
       - ./secrets:/secrets:ro
       - oboku-couchdb-data:/opt/couchdb/data
@@ -25,7 +25,7 @@ services:
     env_file:
       - .env
     environment:
-      POSTGRES_DB: oboku
+      POSTGRES_DB: ${POSTGRES_DB:-oboku}
     volumes:
       - oboku-postgres:/var/lib/postgresql/data
 
@@ -43,8 +43,9 @@ services:
     ports:
       - "3003:80"
     environment:
-      - ASSET_DIR=/usr/share/nginx/html
-      - APP_PREFIX=VITE_
+      ASSET_DIR: ${ASSET_DIR:-/usr/share/nginx/html}
+      APP_PREFIX: ${APP_PREFIX:-VITE_}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
 
   api:
     image: mbret/oboku-api
@@ -54,10 +55,10 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=production
-      - APP_PUBLIC_URL=${APP_PUBLIC_URL:-http://localhost}
-      - JWT_PRIVATE_KEY_FILE=/secrets/jwt_private_key.pem
-      - JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key.pem
+      NODE_ENV: ${NODE_ENV:-production}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost}
+      JWT_PRIVATE_KEY_FILE: ${JWT_PRIVATE_KEY_FILE:-/secrets/jwt_private_key.pem}
+      JWT_PUBLIC_KEY_FILE: ${JWT_PUBLIC_KEY_FILE:-/secrets/jwt_public_key.pem}
     volumes:
       - ./secrets:/secrets:ro
       - oboku-api-data:/var/lib/oboku/data
