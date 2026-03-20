@@ -45,7 +45,6 @@ services:
     environment:
       - ASSET_DIR=/usr/share/nginx/html
       - APP_PREFIX=VITE_
-      - VITE_API_URL=http://localhost:3000
 
   api:
     image: mbret/oboku-api
