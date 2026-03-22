@@ -78,6 +78,14 @@ export class AppConfigService {
     return this.config.getOrThrow("API_DATA_DIR", { infer: true })
   }
 
+  get CONFIG_DIR() {
+    return this.config.getOrThrow("API_CONFIG_DIR", { infer: true })
+  }
+
+  get CONFIG_FILE() {
+    return path.join(this.CONFIG_DIR, "config.json")
+  }
+
   get AWS_ACCESS_KEY_ID() {
     return this.config.get("AWS_ACCESS_KEY_ID", { infer: true })
   }
