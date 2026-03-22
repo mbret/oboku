@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
+  Patch,
   Post,
   UnauthorizedException,
 } from "@nestjs/common"
@@ -9,10 +12,18 @@ import { JwtService } from "@nestjs/jwt"
 import { AuthUser, Public, WithAuthUser } from "src/auth/auth.guard"
 import { AuthService } from "src/auth/auth.service"
 import { AppConfigService } from "src/config/AppConfigService"
+import { InstanceConfigService } from "src/config/instance/instance-config.service"
 import { SecretsService } from "src/config/SecretsService"
 import { CouchMigrationService } from "src/couch/migration.service"
 import { AdminCoversService } from "./admin-covers.service"
-import { IsEmail, IsOptional, IsUrl } from "class-validator"
+import {
+  IsBoolean,
+  IsEmail,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MinLength,
+} from "class-validator"
 
 class GenerateSignUpLinkDto {
   @IsEmail()
@@ -26,12 +37,43 @@ class GenerateSignUpLinkDto {
   appPublicUrl?: string
 }
 
+class CreateServerSourceDto {
+  @IsString()
+  @MinLength(1)
+  name!: string
+
+  @IsString()
+  @MinLength(1)
+  path!: string
+
+  @IsBoolean()
+  @IsOptional()
+  enabled?: boolean
+}
+
+class UpdateServerSourceDto {
+  @IsString()
+  @MinLength(1)
+  @IsOptional()
+  name?: string
+
+  @IsString()
+  @MinLength(1)
+  @IsOptional()
+  path?: string
+
+  @IsBoolean()
+  @IsOptional()
+  enabled?: boolean
+}
+
 @Controller("admin")
 export class AdminController {
   constructor(
     private readonly jwtService: JwtService,
     private readonly secretsService: SecretsService,
     private readonly appConfig: AppConfigService,
+    private readonly instanceConfigService: InstanceConfigService,
     private readonly couchMigrationService: CouchMigrationService,
     private readonly adminCoversService: AdminCoversService,
     private readonly authService: AuthService,
@@ -122,6 +164,46 @@ export class AdminController {
     return {
       signUpLink: await this.authService.generateSignUpLink(body),
     }
+  }
+
+  @Get("server-sources")
+  async listServerSources(@WithAuthUser() user: AuthUser) {
+    this.ensureAdmin(user)
+
+    return this.instanceConfigService.getServerSources()
+  }
+
+  @Post("server-sources")
+  async createServerSource(
+    @WithAuthUser() user: AuthUser,
+    @Body() body: CreateServerSourceDto,
+  ) {
+    this.ensureAdmin(user)
+
+    return this.instanceConfigService.createServerSource(body)
+  }
+
+  @Patch("server-sources/:id")
+  async updateServerSource(
+    @WithAuthUser() user: AuthUser,
+    @Param("id") id: string,
+    @Body() body: UpdateServerSourceDto,
+  ) {
+    this.ensureAdmin(user)
+
+    return this.instanceConfigService.updateServerSource(id, body)
+  }
+
+  @Delete("server-sources/:id")
+  async deleteServerSource(
+    @WithAuthUser() user: AuthUser,
+    @Param("id") id: string,
+  ) {
+    this.ensureAdmin(user)
+
+    await this.instanceConfigService.deleteServerSource(id)
+
+    return { ok: true }
   }
 
   @Get("session")

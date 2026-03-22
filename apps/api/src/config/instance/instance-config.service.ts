@@ -2,7 +2,11 @@ import { Inject, Injectable, OnModuleInit } from "@nestjs/common"
 import fs from "node:fs"
 import path from "node:path"
 import Joi from "joi"
-import { AppConfigService } from "./AppConfigService"
+import { AppConfigService } from "../AppConfigService"
+import {
+  PublicServerSource,
+  ServerSourcesService,
+} from "./server-sources.service"
 
 export type ServerSourceConfig = {
   id: string
@@ -55,6 +59,7 @@ export class InstanceConfigService implements OnModuleInit {
       AppConfigService,
       "CONFIG_DIR" | "CONFIG_FILE"
     >,
+    private readonly serverSourcesService: ServerSourcesService,
   ) {}
 
   async onModuleInit() {
@@ -68,14 +73,95 @@ export class InstanceConfigService implements OnModuleInit {
   }
 
   async updateConfig(
-    updater: (config: InstanceConfig) => InstanceConfig,
+    updater: (
+      config: InstanceConfig,
+    ) => InstanceConfig | Promise<InstanceConfig>,
   ): Promise<InstanceConfig> {
     const currentConfig = await this.getConfig()
-    const nextConfig = parseInstanceConfig(updater(currentConfig))
+    const nextConfig = parseInstanceConfig(await updater(currentConfig))
 
     await this.writeConfigFile(nextConfig)
 
     return nextConfig
+  }
+
+  async getServerSources(): Promise<ServerSourceConfig[]> {
+    const config = await this.getConfig()
+
+    return this.serverSourcesService.list(config.serverSources)
+  }
+
+  async getEnabledServerSources(): Promise<PublicServerSource[]> {
+    const config = await this.getConfig()
+
+    return this.serverSourcesService.listEnabled(config.serverSources)
+  }
+
+  async createServerSource(input: {
+    name: string
+    path: string
+    enabled?: boolean
+  }): Promise<ServerSourceConfig> {
+    let createdSource: ServerSourceConfig | null = null
+
+    await this.updateConfig(async (config) => {
+      const result = await this.serverSourcesService.create({
+        sources: config.serverSources,
+        input,
+      })
+
+      createdSource = result.source
+
+      return {
+        ...config,
+        serverSources: result.sources,
+      }
+    })
+
+    if (!createdSource) {
+      throw new Error("Server source was not created")
+    }
+
+    return createdSource
+  }
+
+  async updateServerSource(
+    id: string,
+    input: {
+      name?: string
+      path?: string
+      enabled?: boolean
+    },
+  ): Promise<ServerSourceConfig> {
+    let updatedSource: ServerSourceConfig | null = null
+
+    await this.updateConfig(async (config) => {
+      const result = await this.serverSourcesService.update({
+        id,
+        input,
+        sources: config.serverSources,
+      })
+
+      updatedSource = result.source
+
+      return {
+        ...config,
+        serverSources: result.sources,
+      }
+    })
+
+    if (!updatedSource) {
+      throw new Error("Server source was not updated")
+    }
+
+    return updatedSource
+  }
+
+  async deleteServerSource(id: string): Promise<void> {
+    await this.updateConfig((config) => ({
+      ...config,
+      serverSources: this.serverSourcesService.remove(id, config.serverSources),
+    }))
   }
 
   private async ensureInitialized() {
