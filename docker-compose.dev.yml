@@ -57,6 +57,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./apps/api:/usr/src/app
+      - ./config:/var/lib/oboku/config
     command: npm run start:dev
 
 volumes:
