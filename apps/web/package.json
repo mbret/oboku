@@ -19,6 +19,7 @@
     "@prose-reader/enhancer-gestures": "^1.277.0",
     "@prose-reader/enhancer-refit": "^1.277.0",
     "@prose-reader/enhancer-search": "^1.277.0",
+    "@prose-reader/enhancer-audio": "^1.277.0",
     "@prose-reader/react-reader": "^1.277.0",
     "@prose-reader/shared": "^1.277.0",
     "@prose-reader/streamer": "^1.277.0",

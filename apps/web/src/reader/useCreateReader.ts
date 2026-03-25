@@ -10,9 +10,12 @@ import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared
 import { webStreamer } from "./streamer/webStreamer"
 import { from } from "rxjs"
 import { refitEnhancer } from "@prose-reader/enhancer-refit"
+import { audioEnhancer } from "@prose-reader/enhancer-audio"
 
-export const createAppReader = refitEnhancer(
-  galleryEnhancer(gesturesEnhancer(searchEnhancer(createReader))),
+export const createAppReader = audioEnhancer(
+  refitEnhancer(
+    galleryEnhancer(gesturesEnhancer(searchEnhancer(createReader))),
+  ),
 )
 
 export const useCreateReader = ({
