@@ -7,7 +7,7 @@ import {
 import fs from "node:fs"
 import path from "node:path"
 import { randomUUID } from "node:crypto"
-import { type ServerSourceConfig } from "src/config/instance/instance-config.service"
+import { type ServerSourceConfig } from "./instance-config.service"
 
 type CreateServerSourceInput = {
   name: string

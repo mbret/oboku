@@ -2,7 +2,7 @@ import { Inject, Injectable, OnModuleInit } from "@nestjs/common"
 import fs from "node:fs"
 import path from "node:path"
 import Joi from "joi"
-import { AppConfigService } from "../AppConfigService"
+import { AppConfigService } from "src/config/AppConfigService"
 import {
   PublicServerSource,
   ServerSourcesService,

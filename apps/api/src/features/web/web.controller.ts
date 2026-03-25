@@ -1,7 +1,7 @@
 import { Controller, Get } from "@nestjs/common"
 import { AppConfigService } from "../../config/AppConfigService"
 import { Public } from "src/auth/auth.guard"
-import { InstanceConfigService } from "src/config/instance/instance-config.service"
+import { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
 
 @Controller("web")
 export class WebController {

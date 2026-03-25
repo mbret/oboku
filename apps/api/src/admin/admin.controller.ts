@@ -6,13 +6,15 @@ import {
   Param,
   Patch,
   Post,
+  SetMetadata,
   UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
-import { AuthUser, Public, WithAuthUser } from "src/auth/auth.guard"
 import { AuthService } from "src/auth/auth.service"
+import { AdminAuthGuard, AdminPublic } from "./admin.guard"
 import { AppConfigService } from "src/config/AppConfigService"
-import { InstanceConfigService } from "src/config/instance/instance-config.service"
+import { InstanceConfigService } from "./instance-config/instance-config.service"
 import { SecretsService } from "src/config/SecretsService"
 import { CouchMigrationService } from "src/couch/migration.service"
 import { AdminCoversService } from "./admin-covers.service"
@@ -67,6 +69,13 @@ class UpdateServerSourceDto {
   enabled?: boolean
 }
 
+class RefreshDto {
+  @IsString()
+  refresh_token!: string
+}
+
+@SetMetadata("isPublic", true)
+@UseGuards(AdminAuthGuard)
 @Controller("admin")
 export class AdminController {
   constructor(
@@ -79,13 +88,24 @@ export class AdminController {
     private readonly authService: AuthService,
   ) {}
 
-  private ensureAdmin(user: AuthUser) {
-    if (user.role !== "admin") {
-      throw new UnauthorizedException()
-    }
+  private async signAdminTokens() {
+    const privateKey = await this.secretsService.getJwtPrivateKey()
+
+    const [access_token, refresh_token] = await Promise.all([
+      this.jwtService.signAsync(
+        { sub: "admin", role: "admin", type: "access" },
+        { algorithm: "RS256", expiresIn: "15m", privateKey },
+      ),
+      this.jwtService.signAsync(
+        { sub: "admin", type: "refresh" },
+        { algorithm: "RS256", expiresIn: "7d", privateKey },
+      ),
+    ])
+
+    return { access_token, refresh_token }
   }
 
-  @Public()
+  @AdminPublic()
   @Post("signin")
   async signin(@Body() body: { login: string; password: string }) {
     if (
@@ -104,112 +124,87 @@ export class AdminController {
       throw new UnauthorizedException()
     }
 
-    return {
-      access_token: await this.jwtService.signAsync(
-        {
-          sub: "admin",
-          role: "admin",
-        },
-        {
-          algorithm: "RS256",
-          expiresIn: "15m",
-          privateKey: await this.secretsService.getJwtPrivateKey(),
-        },
-      ),
+    return this.signAdminTokens()
+  }
+
+  @AdminPublic()
+  @Post("refresh")
+  async refresh(@Body() body: RefreshDto) {
+    try {
+      const payload = await this.jwtService.verifyAsync(body.refresh_token, {
+        publicKey: await this.secretsService.getJwtPublicKey(),
+        algorithms: ["RS256"],
+      })
+
+      if (payload.type !== "refresh" || payload.sub !== "admin") {
+        throw new UnauthorizedException()
+      }
+    } catch {
+      throw new UnauthorizedException()
     }
+
+    return this.signAdminTokens()
   }
 
   @Post("migrate")
-  async migrate(@WithAuthUser() user: AuthUser) {
-    this.ensureAdmin(user)
-
+  async migrate() {
     await this.couchMigrationService.migrate()
   }
 
   @Post("migrate-webdav-connectors")
-  async migrateWebdavConnectors(@WithAuthUser() user: AuthUser) {
-    this.ensureAdmin(user)
-
+  async migrateWebdavConnectors() {
     return this.couchMigrationService.migrateWebdavConnectorsToConnectors()
   }
 
   @Post("migrate-webdav-resource-ids")
-  async migrateWebdavResourceIds(@WithAuthUser() user: AuthUser) {
-    this.ensureAdmin(user)
-
+  async migrateWebdavResourceIds() {
     return this.couchMigrationService.migrateWebdavResourceIds()
   }
 
   @Get("covers")
-  async getCoversCleanupStats(@WithAuthUser() user: AuthUser) {
-    this.ensureAdmin(user)
-
+  async getCoversCleanupStats() {
     return this.adminCoversService.getCleanupStats()
   }
 
   @Post("covers/delete-all")
-  async deleteAllCovers(@WithAuthUser() user: AuthUser) {
-    this.ensureAdmin(user)
-
+  async deleteAllCovers() {
     return this.adminCoversService.deleteAllCovers()
   }
 
   @Post("signup-links")
-  async generateSignUpLink(
-    @WithAuthUser() user: AuthUser,
-    @Body() body: GenerateSignUpLinkDto,
-  ) {
-    this.ensureAdmin(user)
-
+  async generateSignUpLink(@Body() body: GenerateSignUpLinkDto) {
     return {
       signUpLink: await this.authService.generateSignUpLink(body),
     }
   }
 
   @Get("server-sources")
-  async listServerSources(@WithAuthUser() user: AuthUser) {
-    this.ensureAdmin(user)
-
+  async listServerSources() {
     return this.instanceConfigService.getServerSources()
   }
 
   @Post("server-sources")
-  async createServerSource(
-    @WithAuthUser() user: AuthUser,
-    @Body() body: CreateServerSourceDto,
-  ) {
-    this.ensureAdmin(user)
-
+  async createServerSource(@Body() body: CreateServerSourceDto) {
     return this.instanceConfigService.createServerSource(body)
   }
 
   @Patch("server-sources/:id")
   async updateServerSource(
-    @WithAuthUser() user: AuthUser,
     @Param("id") id: string,
     @Body() body: UpdateServerSourceDto,
   ) {
-    this.ensureAdmin(user)
-
     return this.instanceConfigService.updateServerSource(id, body)
   }
 
   @Delete("server-sources/:id")
-  async deleteServerSource(
-    @WithAuthUser() user: AuthUser,
-    @Param("id") id: string,
-  ) {
-    this.ensureAdmin(user)
-
+  async deleteServerSource(@Param("id") id: string) {
     await this.instanceConfigService.deleteServerSource(id)
 
     return { ok: true }
   }
 
   @Get("session")
-  async getSession(@WithAuthUser() user: AuthUser) {
-    this.ensureAdmin(user)
-
+  async getSession() {
     return {
       ok: true,
     }

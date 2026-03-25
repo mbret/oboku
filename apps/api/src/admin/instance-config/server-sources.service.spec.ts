@@ -4,7 +4,7 @@ import path from "node:path"
 import { ConflictException } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { AppConfigService } from "src/config/AppConfigService"
-import { InstanceConfigService } from "src/config/instance/instance-config.service"
+import { InstanceConfigService } from "./instance-config.service"
 import { EnvironmentVariables } from "src/config/types"
 import { ServerSourcesService } from "./server-sources.service"
 
