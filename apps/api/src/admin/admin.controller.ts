@@ -74,6 +74,12 @@ class RefreshDto {
   refresh_token!: string
 }
 
+/**
+ * Opts out of the global {@link AuthGuard} (user auth) so that admin
+ * routes are not subject to regular user authentication.
+ * {@link AdminAuthGuard} is applied instead to enforce admin-specific
+ * authentication on every route (unless marked {@link AdminPublic}).
+ */
 @SetMetadata("isPublic", true)
 @UseGuards(AdminAuthGuard)
 @Controller("admin")
