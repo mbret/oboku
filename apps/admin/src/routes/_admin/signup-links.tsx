@@ -3,4 +3,5 @@ import { AdminSignUpLinksSection } from "@/features/admin/AdminSignUpLinksSectio
 
 export const Route = createFileRoute("/_admin/signup-links")({
   component: AdminSignUpLinksSection,
+  staticData: { breadcrumb: "Sign up links" },
 })

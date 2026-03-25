@@ -3,11 +3,14 @@ import {
   Link,
   Outlet,
   useLocation,
+  useMatches,
 } from "@tanstack/react-router"
 import { useEffect } from "react"
 import {
+  Anchor,
   AppShell,
   Box,
+  Breadcrumbs,
   Burger,
   Group,
   NavLink,
@@ -53,6 +56,49 @@ const navItems = [
     description: "Database and WebDAV migrations",
   },
 ] as const
+
+function AppBreadcrumbs() {
+  const matches = useMatches()
+
+  const crumbs: { label: string; to: string }[] = []
+
+  for (const match of matches) {
+    if (match.staticData.breadcrumb) {
+      crumbs.push({
+        label: match.staticData.breadcrumb,
+        to: match.pathname,
+      })
+    }
+  }
+
+  const lastMatch = matches[matches.length - 1]
+  if (lastMatch && !lastMatch.staticData.breadcrumb) {
+    const firstParam = Object.values(lastMatch.params)[0]
+    if (firstParam) {
+      crumbs.push({ label: firstParam, to: lastMatch.pathname })
+    }
+  }
+
+  if (crumbs.length === 0) return null
+
+  const items = crumbs.map((crumb, index) => {
+    if (index === crumbs.length - 1) {
+      return (
+        <Text key={crumb.to} size="sm" c="dimmed" truncate maw={200}>
+          {crumb.label}
+        </Text>
+      )
+    }
+
+    return (
+      <Anchor component={Link} to={crumb.to} key={crumb.to} size="sm">
+        {crumb.label}
+      </Anchor>
+    )
+  })
+
+  return <Breadcrumbs mb="xs">{items}</Breadcrumbs>
+}
 
 function AdminLayout() {
   const [opened, { toggle, close }] = useDisclosure(false)
@@ -127,6 +173,7 @@ function AdminLayout() {
 
       <AppShell.Main>
         <Box maw={960}>
+          <AppBreadcrumbs />
           <Outlet />
         </Box>
       </AppShell.Main>

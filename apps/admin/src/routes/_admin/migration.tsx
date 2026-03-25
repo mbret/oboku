@@ -3,4 +3,5 @@ import { AdminMigrationSection } from "@/features/admin/AdminMigrationSection"
 
 export const Route = createFileRoute("/_admin/migration")({
   component: AdminMigrationSection,
+  staticData: { breadcrumb: "Migration" },
 })

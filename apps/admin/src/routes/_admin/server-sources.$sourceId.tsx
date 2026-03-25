@@ -59,12 +59,6 @@ function ServerSourceEditForm({ source }: { source: ServerSource }) {
 
   return (
     <Stack gap="md">
-      <Group>
-        <Button component={Link} to="/server-sources" variant="subtle">
-          ← server sources
-        </Button>
-      </Group>
-
       <Paper withBorder p="md">
         <form
           onSubmit={form.onSubmit(async (values) => {

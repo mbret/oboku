@@ -24,6 +24,9 @@ declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router
   }
+  interface StaticDataRouteOption {
+    breadcrumb?: string
+  }
 }
 
 const queryClient = new QueryClient()
