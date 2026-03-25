@@ -1,13 +1,11 @@
-import { Button, Group, Paper, Text } from "@mantine/core"
+import { Group, Paper, Text } from "@mantine/core"
 import { useMigrate } from "../useMigrate"
 import { useMigrateWebdavConnectors } from "../useMigrateWebdavConnectors"
 import { useMigrateWebdavResourceIds } from "../useMigrateWebdavResourceIds"
+import { ConfirmButton } from "@/components/ConfirmButton"
 
 const DANGEROUS_ACTION_CONFIRMATION_MESSAGE =
   "Don't run this unless you know exactly what you're doing.\n\nThis can permanently damage your database."
-
-const confirmDangerousAction = () =>
-  window.confirm(DANGEROUS_ACTION_CONFIRMATION_MESSAGE)
 
 export const AdminMigrationSection = () => {
   const { mutate: migrate } = useMigrate()
@@ -27,43 +25,28 @@ export const AdminMigrationSection = () => {
   return (
     <>
       <Group gap="sm">
-        <Button
-          onClick={() => {
-            if (!confirmDangerousAction()) {
-              return
-            }
-
-            migrate()
-          }}
+        <ConfirmButton
+          confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
+          onConfirm={() => migrate()}
         >
           migrate db
-        </Button>
-        <Button
-          onClick={() => {
-            if (!confirmDangerousAction()) {
-              return
-            }
-
-            migrateWebdavConnectors()
-          }}
+        </ConfirmButton>
+        <ConfirmButton
           variant="light"
           loading={isWebdavMigrationPending}
+          confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
+          onConfirm={() => migrateWebdavConnectors()}
         >
           migrate webdav → connectors
-        </Button>
-        <Button
-          onClick={() => {
-            if (!confirmDangerousAction()) {
-              return
-            }
-
-            migrateWebdavResourceIds()
-          }}
+        </ConfirmButton>
+        <ConfirmButton
           variant="light"
           loading={isWebdavResourceIdMigrationPending}
+          confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
+          onConfirm={() => migrateWebdavResourceIds()}
         >
           migrate webdav resource ids
-        </Button>
+        </ConfirmButton>
       </Group>
       <Paper withBorder p="md" mt="md">
         <Text size="sm" fw={500} mb="xs">
