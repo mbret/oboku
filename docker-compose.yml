@@ -59,6 +59,8 @@ services:
       APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost}
       JWT_PRIVATE_KEY_FILE: ${JWT_PRIVATE_KEY_FILE:-/secrets/jwt_private_key.pem}
       JWT_PUBLIC_KEY_FILE: ${JWT_PUBLIC_KEY_FILE:-/secrets/jwt_public_key.pem}
+      API_DATA_DIR: ${API_DATA_DIR:-/var/lib/oboku/data}
+      API_CONFIG_DIR: ${API_CONFIG_DIR:-/var/lib/oboku/config}
     volumes:
       - ./secrets:/secrets:ro
       - ./config:${API_CONFIG_DIR:-/var/lib/oboku/config}
