@@ -70,10 +70,8 @@ import { StorageModule } from "./storage/storage.module"
         JWT_PRIVATE_KEY: Joi.string().optional(),
         JWT_PUBLIC_KEY_FILE: Joi.string().optional(),
         JWT_PUBLIC_KEY: Joi.string().optional(),
-        API_DATA_DIR: Joi.string().optional().default("/var/lib/oboku/data"),
-        API_CONFIG_DIR: Joi.string()
-          .optional()
-          .default("/var/lib/oboku/config"),
+        API_DATA_DIR: Joi.string().required(),
+        API_CONFIG_DIR: Joi.string().required(),
         COVERS_STORAGE_STRATEGY: Joi.string()
           .valid("fs", "s3")
           .optional()

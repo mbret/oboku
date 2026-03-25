@@ -61,8 +61,8 @@ services:
       JWT_PUBLIC_KEY_FILE: ${JWT_PUBLIC_KEY_FILE:-/secrets/jwt_public_key.pem}
     volumes:
       - ./secrets:/secrets:ro
-      - ./config:/var/lib/oboku/config
-      - oboku-api-data:/var/lib/oboku/data
+      - ./config:${API_CONFIG_DIR:-/var/lib/oboku/config}
+      - oboku-api-data:${API_DATA_DIR:-/var/lib/oboku/data}
 
 volumes:
   oboku-postgres:
