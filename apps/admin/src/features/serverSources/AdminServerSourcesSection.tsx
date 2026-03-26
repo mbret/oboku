@@ -1,5 +1,4 @@
 import { Button, Code, Group, Paper, Stack, Text } from "@mantine/core"
-import { Link } from "@tanstack/react-router"
 import { useCreateServerSource } from "./useCreateServerSource"
 import { useDeleteServerSource } from "./useDeleteServerSource"
 import { useServerSources } from "./useServerSources"
@@ -9,6 +8,7 @@ import {
   useServerSourceForm,
 } from "./ServerSourceFormFields"
 import { ConfirmButton } from "@/components/ConfirmButton"
+import { ButtonLink } from "@/components/ButtonLink"
 
 export const AdminServerSourcesSection = () => {
   const form = useServerSourceForm()
@@ -120,14 +120,13 @@ export const AdminServerSourcesSection = () => {
                     </Text>
                   </div>
                   <Group gap="xs">
-                    <Button
-                      component={Link}
+                    <ButtonLink
                       to="/server-sources/$sourceId"
                       params={{ sourceId: source.id }}
                       variant="light"
                     >
                       edit
-                    </Button>
+                    </ButtonLink>
                     <ConfirmButton
                       color="red"
                       variant="light"
