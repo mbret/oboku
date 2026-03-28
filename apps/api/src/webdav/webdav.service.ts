@@ -126,7 +126,7 @@ export class WebDavService {
 
     return {
       sourceName,
-      relativePath: "/" + segments.slice(1).join("/"),
+      relativePath: `/${segments.slice(1).join("/")}`,
     }
   }
 

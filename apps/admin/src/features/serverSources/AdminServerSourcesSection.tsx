@@ -6,6 +6,7 @@ import {
   Paper,
   Stack,
   Text,
+  Title,
 } from "@mantine/core"
 import { useCreateServerSource } from "./useCreateServerSource"
 import { useDeleteServerSource } from "./useDeleteServerSource"
@@ -31,11 +32,22 @@ export const AdminServerSourcesSection = () => {
 
   return (
     <Stack gap="md">
+      <div>
+        <Title order={3} mb="xs">
+          Server Sync
+        </Title>
+        <Text size="sm" c="dimmed">
+          Server sync works by exposing a lightweight WebDAV server. This is
+          transparent for the end user and will be available through the "From
+          Server" option when configuring a provider in the client app.
+        </Text>
+      </div>
+
       <Paper withBorder p="md">
         <Stack gap="sm">
           <div>
             <Text size="sm" fw={500} mb="xs">
-              Server Sync
+              General
             </Text>
             <Text size="sm" c="dimmed">
               Enable or disable the WebDAV endpoint that exposes server sources
@@ -44,12 +56,16 @@ export const AdminServerSourcesSection = () => {
           </div>
           <Checkbox
             label="Enable server sync"
+            description="The WebDAV endpoint is publicly accessible with no authentication. Only enable this if your server is on a trusted network."
             checked={serverSync.data?.enabled ?? false}
             disabled={serverSync.isLoading || updateServerSync.isPending}
             onChange={(event) => {
               updateServerSync.mutate({
                 enabled: event.currentTarget.checked,
               })
+            }}
+            styles={{
+              description: { color: "var(--mantine-color-red-text)" },
             }}
           />
           {updateServerSync.error && (

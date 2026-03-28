@@ -12,31 +12,55 @@ const isPersistedConfig = (
   value: unknown,
 ): value is {
   version: number
-  serverSources: Array<{ id: string; path: string }>
+  serverSync: {
+    enabled: boolean
+    sources: Array<{ id: string; name: string; path: string; enabled: boolean }>
+  }
 } => {
   if (typeof value !== "object" || value === null) {
     return false
   }
 
-  if (!("version" in value) || !("serverSources" in value)) {
+  if (!("version" in value) || !("serverSync" in value)) {
     return false
   }
 
+  if (typeof value.version !== "number") {
+    return false
+  }
+
+  const { serverSync } = value as { serverSync: unknown }
+
   if (
-    !Array.isArray(value.serverSources) ||
-    typeof value.version !== "number"
+    typeof serverSync !== "object" ||
+    serverSync === null ||
+    !("sources" in serverSync) ||
+    !("enabled" in serverSync)
   ) {
     return false
   }
 
-  return value.serverSources.every((source) => {
+  const { sources, enabled } = serverSync as {
+    sources: unknown
+    enabled: unknown
+  }
+
+  if (!Array.isArray(sources) || typeof enabled !== "boolean") {
+    return false
+  }
+
+  return sources.every((source) => {
     return (
       typeof source === "object" &&
       source !== null &&
       "id" in source &&
       typeof source.id === "string" &&
+      "name" in source &&
+      typeof source.name === "string" &&
       "path" in source &&
-      typeof source.path === "string"
+      typeof source.path === "string" &&
+      "enabled" in source &&
+      typeof source.enabled === "boolean"
     )
   })
 }
@@ -112,9 +136,9 @@ describe("InstanceConfigService server sources", () => {
     }
 
     expect(persistedConfigRaw.version).toBe(1)
-    expect(persistedConfigRaw.serverSources).toHaveLength(1)
-    expect(persistedConfigRaw.serverSources[0]?.id).toBe(source.id)
-    expect(persistedConfigRaw.serverSources[0]?.path).toBe(sourceDirectory)
+    expect(persistedConfigRaw.serverSync.sources).toHaveLength(1)
+    expect(persistedConfigRaw.serverSync.sources[0]?.id).toBe(source.id)
+    expect(persistedConfigRaw.serverSync.sources[0]?.path).toBe(sourceDirectory)
   })
 
   it("rejects duplicate normalized paths", async () => {

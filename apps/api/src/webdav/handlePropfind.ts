@@ -21,7 +21,7 @@ function toResourceInfo(
   const relative = fsPath.substring(normalizedRoot.length) || "/"
   const normalizedRelative = relative.startsWith("/")
     ? relative
-    : "/" + relative
+    : `/${relative}`
 
   let href = `/webdav/${sourceName}${normalizedRelative}`
 
