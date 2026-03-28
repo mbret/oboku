@@ -27,7 +27,7 @@ const KeyCardPoint = ({
 }) => {
   return (
     <Card sx={{ display: "flex" }} variant="outlined">
-      <CardContent sx={{}}>
+      <CardContent>
         <Typography gutterBottom variant="h5" component="div">
           {title}
         </Typography>
@@ -38,7 +38,7 @@ const KeyCardPoint = ({
       <Image
         style={{ width: "50%", height: "auto" }}
         src={imageSrc}
-        alt="Live from space album cover"
+        alt={`oboku feature: ${title} — ${description}`}
       />
     </Card>
   )

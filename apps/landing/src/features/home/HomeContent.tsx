@@ -132,7 +132,10 @@ export const HomeContent = () => {
             borderRadius: 2,
           }}
         >
-          <HighlightImage alt="Showcase image 1" src={image1} />
+          <HighlightImage
+            alt="oboku library view showing a collection of books on mobile"
+            src={image1}
+          />
         </Paper>
         <Paper
           elevation={4}
@@ -153,7 +156,10 @@ export const HomeContent = () => {
             borderRadius: 2,
           }}
         >
-          <HighlightImage alt="Showcase image 2" src={image2} />
+          <HighlightImage
+            alt="oboku book reader interface on mobile"
+            src={image2}
+          />
         </Paper>
       </Stack>
       <Box mt={[6, 7]} width="100%">
