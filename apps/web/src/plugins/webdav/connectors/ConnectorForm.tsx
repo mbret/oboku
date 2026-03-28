@@ -60,7 +60,6 @@ export const ConnectorForm = memo(
             before proceeding.
           </Alert>
         }
-        urlFieldLabel="URL"
       >
         {children}
       </GenericConnectorForm>

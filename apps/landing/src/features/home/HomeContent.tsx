@@ -68,7 +68,7 @@ export const HomeContent = () => {
           }}
         >
           <Typography
-            variant="body1"
+            variant="subtitle1"
             style={{ fontWeight: "normal", paddingBottom: theme.spacing(1) }}
           >
             {landingSubtitle}
@@ -132,7 +132,10 @@ export const HomeContent = () => {
             borderRadius: 2,
           }}
         >
-          <HighlightImage alt="Showcase image 1" src={image1} />
+          <HighlightImage
+            alt="oboku library view showing a collection of books on mobile"
+            src={image1}
+          />
         </Paper>
         <Paper
           elevation={4}
@@ -153,7 +156,10 @@ export const HomeContent = () => {
             borderRadius: 2,
           }}
         >
-          <HighlightImage alt="Showcase image 2" src={image2} />
+          <HighlightImage
+            alt="oboku book reader interface on mobile"
+            src={image2}
+          />
         </Paper>
       </Stack>
       <Box mt={[6, 7]} width="100%">
@@ -191,8 +197,8 @@ export const HomeContent = () => {
                 Supported formats
               </Typography>
               <Typography color="text.secondary">
-                Read ebook, audiobooks, comics and various type of documents in
-                one place.
+                Read ebooks, audiobooks, comics and various types of documents
+                in one place.
               </Typography>
               <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
                 <Typography variant="body2" color="text.secondary">

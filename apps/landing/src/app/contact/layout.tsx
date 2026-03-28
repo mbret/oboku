@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: `oboku | Contact`,
-  }
+export const metadata: Metadata = {
+  title: "Contact",
+  description:
+    "Get in touch with the oboku team via Discord, Reddit, or report technical issues on GitHub.",
 }
 
 export default function RootLayout({

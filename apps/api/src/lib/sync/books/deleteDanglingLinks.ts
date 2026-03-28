@@ -2,7 +2,7 @@ import { exists } from "src/lib/couch/exists"
 import { logger } from "./logger"
 import { Context } from "../types"
 import { bulkDelete } from "src/lib/couch/bulkDelete"
-import type { LinkCandidate } from "src/lib/plugins/types"
+import type { LinkCandidate } from "src/features/plugins/types"
 
 /**
  * Deletes dangling links for a resource: links that have no book or whose book

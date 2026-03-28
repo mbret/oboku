@@ -17,33 +17,33 @@ describe("WebDAV Plugin", () => {
   describe("generateWebdavResourceId", () => {
     it("should generate resource ID without dummy host", () => {
       const result = generateWebdavResourceId({
-        filename: "document.pdf",
+        filePath: "document.pdf",
       })
       expect(result).toBe("webdav://document.pdf")
     })
 
-    it("should encode special characters in filename", () => {
+    it("should encode special characters in file path", () => {
       const result = generateWebdavResourceId({
-        filename: "my document with spaces.pdf",
+        filePath: "my document with spaces.pdf",
       })
       expect(result).toBe("webdav://my%20document%20with%20spaces.pdf")
     })
 
-    it("should handle filenames with path and special characters", () => {
+    it("should handle file paths with directories and special characters", () => {
       const result = generateWebdavResourceId({
-        filename: "file/with/path:and:colons.pdf",
+        filePath: "file/with/path:and:colons.pdf",
       })
       expect(result).toBe("webdav://file%2Fwith%2Fpath%3Aand%3Acolons.pdf")
     })
   })
 
   describe("explodeWebdavResourceId", () => {
-    it("should extract filename from canonical resource ID format", () => {
+    it("should extract file path from canonical resource ID format", () => {
       const resourceId = "webdav://document.pdf"
 
       const result = explodeWebdavResourceId(resourceId)
       expect(result).toEqual({
-        filename: "document.pdf",
+        filePath: "document.pdf",
       })
     })
 
@@ -55,21 +55,21 @@ describe("WebDAV Plugin", () => {
       )
     })
 
-    it("should decode encoded filenames", () => {
+    it("should decode encoded file paths", () => {
       const resourceId = "webdav://my%20document%20with%20spaces.pdf"
 
       const result = explodeWebdavResourceId(resourceId)
       expect(result).toEqual({
-        filename: "my document with spaces.pdf",
+        filePath: "my document with spaces.pdf",
       })
     })
 
-    it("should handle filenames with path and special characters", () => {
+    it("should handle file paths with directories and special characters", () => {
       const resourceId = "webdav://file%2Fwith%2Fpath%3Aand%3Acolons.pdf"
 
       const result = explodeWebdavResourceId(resourceId)
       expect(result).toEqual({
-        filename: "file/with/path:and:colons.pdf",
+        filePath: "file/with/path:and:colons.pdf",
       })
     })
 
@@ -99,24 +99,24 @@ describe("WebDAV Plugin", () => {
   describe("Integration between generate and explode", () => {
     it("should generate and explode resource IDs correctly", () => {
       const originalData = {
-        filename: "my document with spaces and special chars: like this.pdf",
+        filePath: "my document with spaces and special chars: like this.pdf",
       }
 
       const resourceId = generateWebdavResourceId(originalData)
       const extracted = explodeWebdavResourceId(resourceId)
 
-      expect(extracted.filename).toBe(originalData.filename)
+      expect(extracted.filePath).toBe(originalData.filePath)
     })
 
-    it("should preserve path information inside filename", () => {
+    it("should preserve path information in file path", () => {
       const originalData = {
-        filename: "folder/subfolder/document.pdf",
+        filePath: "folder/subfolder/document.pdf",
       }
 
       const resourceId = generateWebdavResourceId(originalData)
       const extracted = explodeWebdavResourceId(resourceId)
 
-      expect(extracted.filename).toBe(originalData.filename)
+      expect(extracted.filePath).toBe(originalData.filePath)
     })
   })
 })

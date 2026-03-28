@@ -104,7 +104,6 @@ export const DownloadBook = memo(
                   throw new ObokuSharedError(
                     ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND,
                     error,
-                    "user",
                   )
                 }
 

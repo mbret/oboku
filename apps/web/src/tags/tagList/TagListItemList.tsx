@@ -19,10 +19,7 @@ export const TagListItemList = memo(
     const { data: tag } = useTag(id)
 
     return (
-      <ListItemButton
-        onClick={() => tag && onItemClick && onItemClick(tag)}
-        {...rest}
-      >
+      <ListItemButton onClick={() => tag && onItemClick?.(tag)} {...rest}>
         <ListItemIcon>
           <LocalOfferRounded />
         </ListItemIcon>

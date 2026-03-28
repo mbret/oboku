@@ -17,6 +17,7 @@ export interface EnvironmentVariables {
   JWT_PUBLIC_KEY_FILE?: string
   JWT_PUBLIC_KEY?: string
   API_DATA_DIR: string
+  API_CONFIG_DIR: string
   COVERS_BUCKET_NAME?: string
   COVERS_STORAGE_STRATEGY: "s3" | "fs"
   ADMIN_LOGIN?: string

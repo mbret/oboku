@@ -22,10 +22,12 @@ const ConnectorManagementButtons = memo(
     connectorType,
     onNavigate,
     variant = "outlined",
+    showNewButton = true,
   }: {
     connectorType: SettingsConnectorType
     onNavigate?: () => void
     variant?: ButtonProps["variant"]
+    showNewButton?: boolean
   }) => {
     const navigate = useNavigate()
     const { manageRoute, newRoute } = CONNECTOR_DETAILS[connectorType]
@@ -49,9 +51,11 @@ const ConnectorManagementButtons = memo(
         >
           Manage connectors
         </Button>
-        <Button onClick={handleNew} variant={variant}>
-          New connector
-        </Button>
+        {showNewButton && (
+          <Button onClick={handleNew} variant={variant}>
+            New connector
+          </Button>
+        )}
       </Stack>
     )
   },
@@ -64,6 +68,7 @@ export type ConnectorSelectorProps = Omit<
   connectorType: SettingsConnectorType
   connectors?: SettingsConnectorDocType[]
   showManagementButtons?: boolean
+  maxConnectors?: number
   onNavigate?: () => void
   children?: ReactNode
 }
@@ -73,10 +78,10 @@ export const ConnectorSelector = memo(
     connectorType,
     connectors: connectorsProp,
     showManagementButtons = true,
+    maxConnectors,
     onNavigate,
     children,
     ref: refProp,
-    helperText: helperTextProp,
     ...textFieldProps
   }: ConnectorSelectorProps) => {
     const { data: connectorsFromHook = [] } = useConnectors({
@@ -84,8 +89,8 @@ export const ConnectorSelector = memo(
     })
     const connectors = connectorsProp ?? connectorsFromHook
     const { label } = CONNECTOR_DETAILS[connectorType]
-    const resolvedHelperText =
-      helperTextProp ?? `Select the ${label} connector to use for browsing.`
+    const canAddNew =
+      maxConnectors === undefined || connectors.length < maxConnectors
 
     if (connectors.length === 0) {
       return (
@@ -96,6 +101,7 @@ export const ConnectorSelector = memo(
           <ConnectorManagementButtons
             connectorType={connectorType}
             onNavigate={onNavigate}
+            showNewButton={canAddNew}
           />
           {children}
         </>
@@ -108,7 +114,6 @@ export const ConnectorSelector = memo(
           {...textFieldProps}
           fullWidth
           error={textFieldProps.error}
-          helperText={helperTextProp ?? resolvedHelperText}
           inputRef={refProp}
           label={textFieldProps.label ?? "Connector"}
           select
@@ -128,6 +133,7 @@ export const ConnectorSelector = memo(
           <ConnectorManagementButtons
             connectorType={connectorType}
             onNavigate={onNavigate}
+            showNewButton={canAddNew}
           />
         )}
         {children}

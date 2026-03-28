@@ -73,6 +73,10 @@ class Configuration extends BehaviorSubject<{
     )
   }
 
+  get API_WEBDAV_URL() {
+    return `${this.API_URL}/webdav`
+  }
+
   get API_COUCH_URI() {
     return (
       import.meta.env.VITE_COUCH_DB_PUBLIC_URL ??

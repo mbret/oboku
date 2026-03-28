@@ -9,50 +9,212 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/_admin'
+import { Route as AdminIndexRouteImport } from './routes/_admin/index'
+import { Route as AdminSignupLinksRouteImport } from './routes/_admin/signup-links'
+import { Route as AdminServerSyncRouteImport } from './routes/_admin/server-sync'
+import { Route as AdminMigrationRouteImport } from './routes/_admin/migration'
+import { Route as AdminCoversRouteImport } from './routes/_admin/covers'
+import { Route as AdminServerSyncIndexRouteImport } from './routes/_admin/server-sync.index'
+import { Route as AdminServerSyncSourceIdRouteImport } from './routes/_admin/server-sync.$sourceId'
 
-const IndexRoute = IndexRouteImport.update({
+const AdminRoute = AdminRouteImport.update({
+  id: '/_admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSignupLinksRoute = AdminSignupLinksRouteImport.update({
+  id: '/signup-links',
+  path: '/signup-links',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminServerSyncRoute = AdminServerSyncRouteImport.update({
+  id: '/server-sync',
+  path: '/server-sync',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMigrationRoute = AdminMigrationRouteImport.update({
+  id: '/migration',
+  path: '/migration',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCoversRoute = AdminCoversRouteImport.update({
+  id: '/covers',
+  path: '/covers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminServerSyncIndexRoute = AdminServerSyncIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminServerSyncRoute,
+} as any)
+const AdminServerSyncSourceIdRoute = AdminServerSyncSourceIdRouteImport.update({
+  id: '/$sourceId',
+  path: '/$sourceId',
+  getParentRoute: () => AdminServerSyncRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AdminIndexRoute
+  '/covers': typeof AdminCoversRoute
+  '/migration': typeof AdminMigrationRoute
+  '/server-sync': typeof AdminServerSyncRouteWithChildren
+  '/signup-links': typeof AdminSignupLinksRoute
+  '/server-sync/$sourceId': typeof AdminServerSyncSourceIdRoute
+  '/server-sync/': typeof AdminServerSyncIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/covers': typeof AdminCoversRoute
+  '/migration': typeof AdminMigrationRoute
+  '/signup-links': typeof AdminSignupLinksRoute
+  '/': typeof AdminIndexRoute
+  '/server-sync/$sourceId': typeof AdminServerSyncSourceIdRoute
+  '/server-sync': typeof AdminServerSyncIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_admin': typeof AdminRouteWithChildren
+  '/_admin/covers': typeof AdminCoversRoute
+  '/_admin/migration': typeof AdminMigrationRoute
+  '/_admin/server-sync': typeof AdminServerSyncRouteWithChildren
+  '/_admin/signup-links': typeof AdminSignupLinksRoute
+  '/_admin/': typeof AdminIndexRoute
+  '/_admin/server-sync/$sourceId': typeof AdminServerSyncSourceIdRoute
+  '/_admin/server-sync/': typeof AdminServerSyncIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/covers'
+    | '/migration'
+    | '/server-sync'
+    | '/signup-links'
+    | '/server-sync/$sourceId'
+    | '/server-sync/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/covers'
+    | '/migration'
+    | '/signup-links'
+    | '/'
+    | '/server-sync/$sourceId'
+    | '/server-sync'
+  id:
+    | '__root__'
+    | '/_admin'
+    | '/_admin/covers'
+    | '/_admin/migration'
+    | '/_admin/server-sync'
+    | '/_admin/signup-links'
+    | '/_admin/'
+    | '/_admin/server-sync/$sourceId'
+    | '/_admin/server-sync/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_admin': {
+      id: '/_admin'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_admin/': {
+      id: '/_admin/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/signup-links': {
+      id: '/_admin/signup-links'
+      path: '/signup-links'
+      fullPath: '/signup-links'
+      preLoaderRoute: typeof AdminSignupLinksRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/server-sync': {
+      id: '/_admin/server-sync'
+      path: '/server-sync'
+      fullPath: '/server-sync'
+      preLoaderRoute: typeof AdminServerSyncRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/migration': {
+      id: '/_admin/migration'
+      path: '/migration'
+      fullPath: '/migration'
+      preLoaderRoute: typeof AdminMigrationRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/covers': {
+      id: '/_admin/covers'
+      path: '/covers'
+      fullPath: '/covers'
+      preLoaderRoute: typeof AdminCoversRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/server-sync/': {
+      id: '/_admin/server-sync/'
+      path: '/'
+      fullPath: '/server-sync/'
+      preLoaderRoute: typeof AdminServerSyncIndexRouteImport
+      parentRoute: typeof AdminServerSyncRoute
+    }
+    '/_admin/server-sync/$sourceId': {
+      id: '/_admin/server-sync/$sourceId'
+      path: '/$sourceId'
+      fullPath: '/server-sync/$sourceId'
+      preLoaderRoute: typeof AdminServerSyncSourceIdRouteImport
+      parentRoute: typeof AdminServerSyncRoute
     }
   }
 }
 
+interface AdminServerSyncRouteChildren {
+  AdminServerSyncSourceIdRoute: typeof AdminServerSyncSourceIdRoute
+  AdminServerSyncIndexRoute: typeof AdminServerSyncIndexRoute
+}
+
+const AdminServerSyncRouteChildren: AdminServerSyncRouteChildren = {
+  AdminServerSyncSourceIdRoute: AdminServerSyncSourceIdRoute,
+  AdminServerSyncIndexRoute: AdminServerSyncIndexRoute,
+}
+
+const AdminServerSyncRouteWithChildren = AdminServerSyncRoute._addFileChildren(
+  AdminServerSyncRouteChildren,
+)
+
+interface AdminRouteChildren {
+  AdminCoversRoute: typeof AdminCoversRoute
+  AdminMigrationRoute: typeof AdminMigrationRoute
+  AdminServerSyncRoute: typeof AdminServerSyncRouteWithChildren
+  AdminSignupLinksRoute: typeof AdminSignupLinksRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCoversRoute: AdminCoversRoute,
+  AdminMigrationRoute: AdminMigrationRoute,
+  AdminServerSyncRoute: AdminServerSyncRouteWithChildren,
+  AdminSignupLinksRoute: AdminSignupLinksRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

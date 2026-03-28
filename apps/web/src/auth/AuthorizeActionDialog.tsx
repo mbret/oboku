@@ -1,10 +1,12 @@
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControlLabel,
   TextField,
 } from "@mui/material"
 import { useEffect } from "react"
@@ -87,13 +89,12 @@ export function useWithAuthorization() {
 export const AuthorizeActionDialog = () => {
   const { action, onCancel = () => {} } = useSignalValue(actionSignal) ?? {}
   const open = !!action
-  const { control, handleSubmit, setFocus, setError, setValue, reset } =
-    useForm<Inputs>({
-      defaultValues: {
-        password: "",
-        authorizeFor5Min: true, // default so Enter (no button click) triggers "Authorize for 5mn"
-      },
-    })
+  const { control, handleSubmit, setFocus, setError, reset } = useForm<Inputs>({
+    defaultValues: {
+      password: "",
+      authorizeFor5Min: true,
+    },
+  })
   const settings = useSettings()
   const hasNotSetPassword = !settings.data?.masterEncryptionKey
   const { mutate: submitAuthorization, reset: resetSubmitMutation } =
@@ -186,34 +187,32 @@ export const AuthorizeActionDialog = () => {
                 )
               }}
             />
+            <Controller
+              name="authorizeFor5Min"
+              control={control}
+              render={({ field }) => (
+                <FormControlLabel
+                  control={
+                    <Checkbox checked={field.value} onChange={field.onChange} />
+                  }
+                  label={`Remember for ${TEMP_AUTH_DURATION_MINUTES} minutes`}
+                />
+              )}
+            />
           </form>
         )}
       </DialogContent>
       <DialogActions>
         <CancelButton onClick={_onCancel} />
         {!hasNotSetPassword && (
-          <>
-            {/* Primary first in DOM so Enter triggers "Authorize for 5mn"; order for visual placement */}
-            <Button
-              color="primary"
-              variant="contained"
-              type="submit"
-              form={FORM_ID}
-              onClick={() => setValue("authorizeFor5Min", true)}
-              sx={{ order: 2 }}
-            >
-              Authorize for {TEMP_AUTH_DURATION_MINUTES}mn
-            </Button>
-            <Button
-              variant="outlined"
-              type="submit"
-              form={FORM_ID}
-              onClick={() => setValue("authorizeFor5Min", false)}
-              sx={{ order: 1 }}
-            >
-              Authorize once
-            </Button>
-          </>
+          <Button
+            color="primary"
+            variant="contained"
+            type="submit"
+            form={FORM_ID}
+          >
+            Authorize
+          </Button>
         )}
       </DialogActions>
     </Dialog>

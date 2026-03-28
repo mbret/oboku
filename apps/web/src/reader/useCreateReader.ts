@@ -8,11 +8,18 @@ import { readerSignal } from "./states"
 import { localSettingsSignal } from "../settings/useLocalSettings"
 import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
 import { webStreamer } from "./streamer/webStreamer"
-import { from } from "rxjs"
+import { from, of } from "rxjs"
 import { refitEnhancer } from "@prose-reader/enhancer-refit"
+import { audioEnhancer } from "@prose-reader/enhancer-audio"
+import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
+import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 
-export const createAppReader = refitEnhancer(
-  galleryEnhancer(gesturesEnhancer(searchEnhancer(createReader))),
+export const createAppReader = pdfEnhancer(
+  audioEnhancer(
+    refitEnhancer(
+      galleryEnhancer(gesturesEnhancer(searchEnhancer(createReader))),
+    ),
+  ),
 )
 
 export const useCreateReader = ({
@@ -42,6 +49,16 @@ export const useCreateReader = ({
             panNavigation: "swipe",
           }),
         },
+        pdf: {
+          pdfjsViewerInlineCss,
+          getArchiveForItem: (item) => {
+            if (!item.href.endsWith(`pdf`)) {
+              return of(undefined)
+            }
+
+            return webStreamer.accessArchiveWithoutLock(bookId)
+          },
+        },
         ...(isUsingWebStreamer && {
           getResource: (item) => {
             const resourcePath = getResourcePathFromUrl(item.href)
@@ -69,6 +86,8 @@ export const useCreateReader = ({
         reader.destroy()
 
         readerSignal.update(SIGNAL_RESET)
+
+        webStreamer.prune()
       }
     }
   }, [reader])

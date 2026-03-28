@@ -1,5 +1,6 @@
 import type { CollectionMetadata } from "../metadata"
 import type { FileLinkData } from "../plugins/file"
+import type { ServerLinkData } from "../plugins/server"
 import type { SynologyDriveLinkData } from "../plugins/synologyDrive"
 import type { UriLinkData } from "../plugins/uri"
 import type { WebdavLinkData } from "../plugins/webdav"
@@ -12,6 +13,7 @@ export type LinkData =
   | WebdavLinkData
   | FileLinkData
   | SynologyDriveLinkData
+  | ServerLinkData
   | UriLinkData
 
 type CommonBase = CouchDBMeta & RxDbMeta
@@ -26,11 +28,13 @@ export type LinkDataForProvider<T extends DataSourceDocType["type"]> =
     ? WebdavLinkData
     : T extends "synology-drive"
       ? SynologyDriveLinkData
-      : T extends "URI"
-        ? UriLinkData
-        : T extends "file"
-          ? FileLinkData
-          : undefined
+      : T extends "server"
+        ? ServerLinkData
+        : T extends "URI"
+          ? UriLinkData
+          : T extends "file"
+            ? FileLinkData
+            : undefined
 
 /**
  * Link document for a specific provider; `data` is correctly typed as that provider's
@@ -65,6 +69,7 @@ export type LinkDocType =
   | LinkDocTypeForProvider<"DRIVE">
   | LinkDocTypeForProvider<"dropbox">
   | LinkDocTypeForProvider<"URI">
+  | LinkDocTypeForProvider<"server">
 
 /**
  * Minimal link shape passed to plugin getFileMetadata/getFolderMetadata and used when
@@ -141,6 +146,11 @@ export type SynologyDriveDataSourceDocType = Omit<
   data_v2?: SynologyDriveLinkData & { items?: ReadonlyArray<string> }
 }
 
+export type ServerDataSourceDocType = BaseDataSourceDocType & {
+  type: "server"
+  data_v2?: undefined
+}
+
 export type DataSourceDocType =
   | GoogleDriveDataSourceDocType
   | DropboxDataSourceDocType
@@ -148,6 +158,7 @@ export type DataSourceDocType =
   | SynologyDriveDataSourceDocType
   | FileDataSourceDocType
   | URIDataSourceDocType
+  | ServerDataSourceDocType
 
 /** Data source / provider type (e.g. "webdav", "file", "dropbox"). */
 export type DataSourceType = DataSourceDocType["type"]
@@ -237,9 +248,19 @@ export type SynologyDriveConnectorDocType = {
   allowSelfSigned?: boolean
 }
 
+export type ServerConnectorDocType = {
+  id: string
+  type: "server"
+  username: string
+  passwordAsSecretId: string
+  url?: string
+  allowSelfSigned?: boolean
+}
+
 export type SettingsConnectorDocType =
   | WebdavConnectorDocType
   | SynologyDriveConnectorDocType
+  | ServerConnectorDocType
 
 export type SettingsConnectorType = SettingsConnectorDocType["type"]
 

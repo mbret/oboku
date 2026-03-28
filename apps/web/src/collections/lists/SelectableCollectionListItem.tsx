@@ -17,7 +17,7 @@ export const SelectableCollectionListItem: FC<{
       sx={{
         height: `100%`,
       }}
-      onClick={() => data && onItemClick && onItemClick(data?._id)}
+      onClick={() => data && onItemClick?.(data?._id)}
     >
       <ListItemText primary={metadata.displayTitle} />
       <Box mr={1} />

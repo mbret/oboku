@@ -2,6 +2,7 @@ import { z } from "zod"
 
 export const webdavLinkDataSchema = z.object({
   connectorId: z.string().optional(),
+  etag: z.string().optional(),
 })
 
 /**
@@ -40,8 +41,8 @@ export const normalizeWebdavBaseUrl = (baseUrl: string) => {
   return url.toString().replace(/\/+$/, "")
 }
 
-export const generateWebdavResourceId = (data: { filename: string }) => {
-  return `webdav://${encodeURIComponent(data.filename)}`
+export const generateWebdavResourceId = (data: { filePath: string }) => {
+  return `webdav://${encodeURIComponent(data.filePath)}`
 }
 
 export const explodeWebdavResourceId = (resourceId: string) => {
@@ -55,8 +56,8 @@ export const explodeWebdavResourceId = (resourceId: string) => {
     throw new Error(`Invalid resource ID format: ${resourceId}`)
   }
 
-  const encodedFilename = withoutPrefix
-  const filename = decodeURIComponent(encodedFilename)
+  const encodedFilePath = withoutPrefix
+  const filePath = decodeURIComponent(encodedFilePath)
 
-  return { filename }
+  return { filePath }
 }

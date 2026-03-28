@@ -35,6 +35,10 @@ export const usePluginSynchronize = () => {
   const { mutateAsync: synchronizeUri } = pluginsByType.URI.useSynchronize({
     requestPopup: createRequestPopupDialog({ name: "URI" }),
   })
+  const { mutateAsync: synchronizeServer } =
+    pluginsByType.server.useSynchronize({
+      requestPopup: createRequestPopupDialog({ name: "server" }),
+    })
 
   return useCallback(
     async (dataSource: DataSourceDocType): Promise<SynchronizeResult> => {
@@ -51,6 +55,8 @@ export const usePluginSynchronize = () => {
           return synchronizeFile(dataSource)
         case "URI":
           return synchronizeUri(dataSource)
+        case "server":
+          return synchronizeServer(dataSource)
         default:
           return assertNever(dataSource)
       }
@@ -59,6 +65,7 @@ export const usePluginSynchronize = () => {
       synchronizeDrive,
       synchronizeDropbox,
       synchronizeFile,
+      synchronizeServer,
       synchronizeSynologyDrive,
       synchronizeUri,
       synchronizeWebdav,

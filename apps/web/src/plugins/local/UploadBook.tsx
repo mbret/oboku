@@ -18,7 +18,7 @@ import {
 import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
 import { type DragEventHandler, useRef } from "react"
 
-export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
+export const UploadBook: ObokuPlugin<"file">["UploadBookComponent"] & {
   openFrom?: string
 } = ({ onClose, onDragLeave }) => {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
@@ -27,17 +27,19 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] & {
   const dialogRef = useRef<HTMLDivElement>(null)
 
   const handleConfirm = () => {
-    const payloads: UploadBookToAddPayload[] = acceptedFiles.map((file) => ({
-      book: {
-        metadata: [{ type: "link", title: file.name }],
-      },
-      link: {
-        data: { filename: file.name } satisfies FileLinkData,
-        resourceId: "file",
-        type: PLUGIN_FILE_TYPE,
-      },
-      file,
-    }))
+    const payloads: UploadBookToAddPayload<"file">[] = acceptedFiles.map(
+      (file) => ({
+        book: {
+          metadata: [{ type: "link", title: file.name }],
+        },
+        link: {
+          data: { filename: file.name } satisfies FileLinkData,
+          resourceId: "file",
+          type: PLUGIN_FILE_TYPE,
+        },
+        file,
+      }),
+    )
     onClose(payloads)
   }
 

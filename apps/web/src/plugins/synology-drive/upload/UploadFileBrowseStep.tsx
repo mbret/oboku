@@ -25,7 +25,9 @@ export const UploadFileBrowseStep = memo(
   }: {
     authResult: SynologyAuthResult
     onAccountChange: () => void
-    onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload>) => void
+    onClose: (
+      booksToAdd?: ReadonlyArray<UploadBookToAddPayload<"synology-drive">>,
+    ) => void
   }) => {
     const { notifyError } = useNotifications()
     const { session, connectorId } = authResult
@@ -63,7 +65,7 @@ export const UploadFileBrowseStep = memo(
         notifyError(new Error("Synology Drive URL is not available anymore."))
         return
       }
-      const booksToAdd: UploadBookToAddPayload[] = []
+      const booksToAdd: UploadBookToAddPayload<"synology-drive">[] = []
       for (const file of selectedFiles as SynologyTreeNode[]) {
         if (!file.fileId) {
           notifyError(new Error("Missing Synology Drive file id"))

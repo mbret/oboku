@@ -1,2 +1,2 @@
 export const landingSubtitle =
-  "Your books, your cloud. Read and sync your personal library anywhere."
+  "Your personal cloud book reader. Read and sync your personal library anywhere."

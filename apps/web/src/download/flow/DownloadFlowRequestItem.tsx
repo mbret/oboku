@@ -205,7 +205,6 @@ export const DownloadFlowRequestItem = memo(
               throw new ObokuSharedError(
                 ObokuErrorCode.ERROR_NO_LINK,
                 new Error(ERROR_NO_LINK_MESSAGE),
-                "user",
               )
             }
 

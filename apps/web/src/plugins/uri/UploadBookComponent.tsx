@@ -21,7 +21,7 @@ import { string } from "zod"
 
 const bookUrlSchema = string().url()
 
-export const UploadBookComponent: ObokuPlugin["UploadBookComponent"] = ({
+export const UploadBookComponent: ObokuPlugin<"URI">["UploadBookComponent"] = ({
   onClose,
   title,
 }) => {

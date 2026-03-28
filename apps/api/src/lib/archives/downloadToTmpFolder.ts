@@ -7,7 +7,7 @@ import type {
 } from "@oboku/shared"
 import path from "node:path"
 import fs from "node:fs"
-import { pluginFacade } from "src/lib/plugins/facade"
+import { pluginFacade } from "src/features/plugins/facade"
 import { AppConfigService } from "src/config/AppConfigService"
 
 export const downloadToTmpFolder = (

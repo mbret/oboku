@@ -35,8 +35,6 @@ export const SignUpCompleteScreen = () => {
             error={
               new ObokuSharedError(
                 ObokuErrorCode.ERROR_SIGNUP_LINK_MISSING_TOKEN,
-                undefined,
-                "user",
               )
             }
           />

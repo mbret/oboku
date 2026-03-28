@@ -9,12 +9,8 @@ export const ROUTES = {
   STATISTICS: "/profile/statistics",
   PLUGINS: "/plugins",
   PLUGINS_TYPE: "/plugins/:type",
-  PLUGINS_WEBDAV_CONNECTORS_NEW: "/plugins/webdav/connectors/new",
-  PLUGINS_WEBDAV_CONNECTORS_EDIT: "/plugins/webdav/connectors/:id",
-  PLUGINS_SYNOLOGY_DRIVE_CONNECTORS_NEW:
-    "/plugins/synology-drive/connectors/new",
-  PLUGINS_SYNOLOGY_DRIVE_CONNECTORS_EDIT:
-    "/plugins/synology-drive/connectors/:id",
+  PLUGINS_CONNECTORS_NEW: "/plugins/:type/connectors/new",
+  PLUGINS_CONNECTORS_EDIT: "/plugins/:type/connectors/:id",
   SYNC: "/sync",
   SYNC_DATASOURCES: "/sync/datasources",
   SYNC_NEW_DATASOURCES: "/sync/new-datasources/:id",

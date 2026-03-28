@@ -1,9 +1,7 @@
 import { Button, Code, Group, List, Paper, Stack, Text } from "@mantine/core"
 import { useCoverCleanupStats } from "../useCoverCleanupStats"
 import { useDeleteAllCovers } from "../useDeleteAllCovers"
-
-const confirmDeleteAllCovers = () =>
-  window.confirm("Delete all stored covers?\n\nThis cannot be undone.")
+import { ConfirmButton } from "@/components/ConfirmButton"
 
 const formatBytes = (value: number) => {
   if (value < 1024) {
@@ -52,23 +50,18 @@ export const AdminCoversSection = () => {
           >
             refresh
           </Button>
-          <Button
+          <ConfirmButton
             color="red"
             disabled={
               !coverCleanupStats.data?.canDeleteAllCovers ||
               (coverCleanupStats.data?.storedCovers ?? 0) < 1
             }
             loading={isDeleteAllCoversPending}
-            onClick={() => {
-              if (!confirmDeleteAllCovers()) {
-                return
-              }
-
-              deleteAllCovers()
-            }}
+            confirmMessage="Delete all stored covers?\n\nThis cannot be undone."
+            onConfirm={() => deleteAllCovers()}
           >
             delete all covers
-          </Button>
+          </ConfirmButton>
         </Group>
       </Group>
       {coverCleanupStats.isLoading && (
