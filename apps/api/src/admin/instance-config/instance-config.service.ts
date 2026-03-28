@@ -1,6 +1,7 @@
 import { Inject, Injectable, OnModuleInit } from "@nestjs/common"
 import fs from "node:fs"
 import path from "node:path"
+import bcrypt from "bcrypt"
 import Joi from "joi"
 import { AppConfigService } from "src/config/AppConfigService"
 import {
@@ -15,8 +16,14 @@ export type ServerSourceConfig = {
   enabled: boolean
 }
 
+export type WebDavCredentials = {
+  username: string
+  password: string
+}
+
 export type ServerSyncConfig = {
   enabled: boolean
+  credentials: WebDavCredentials | null
   sources: ServerSourceConfig[]
 }
 
@@ -27,7 +34,7 @@ export type InstanceConfig = {
 
 const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
   version: 1,
-  serverSync: { enabled: false, sources: [] },
+  serverSync: { enabled: false, credentials: null, sources: [] },
 }
 
 const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
@@ -37,8 +44,14 @@ const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
   enabled: Joi.boolean().required(),
 })
 
+const webDavCredentialsSchema = Joi.object<WebDavCredentials>({
+  username: Joi.string().trim().min(1).required(),
+  password: Joi.string().min(8).required(),
+})
+
 const serverSyncConfigSchema = Joi.object<ServerSyncConfig>({
   enabled: Joi.boolean().required(),
+  credentials: webDavCredentialsSchema.allow(null).default(null),
   sources: Joi.array().items(serverSourceConfigSchema).required(),
 })
 
@@ -46,6 +59,7 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
   version: Joi.number().valid(1).required(),
   serverSync: serverSyncConfigSchema.default({
     enabled: false,
+    credentials: null,
     sources: [],
   }),
 })
@@ -108,6 +122,27 @@ export class InstanceConfigService implements OnModuleInit {
     const config = await this.getConfig()
 
     return this.serverSourcesService.list(config.serverSync.sources)
+  }
+
+  async getWebDavCredentials(): Promise<WebDavCredentials | null> {
+    const config = await this.getConfig()
+
+    return config.serverSync.credentials
+  }
+
+  async setWebDavCredentials(credentials: WebDavCredentials): Promise<void> {
+    const hashedPassword = await bcrypt.hash(credentials.password, 10)
+
+    await this.updateConfig((config) => ({
+      ...config,
+      serverSync: {
+        ...config.serverSync,
+        credentials: {
+          username: credentials.username,
+          password: hashedPassword,
+        },
+      },
+    }))
   }
 
   async getEnabledServerSources(): Promise<PublicServerSource[]> {

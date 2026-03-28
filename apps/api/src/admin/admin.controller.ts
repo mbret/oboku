@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   SetMetadata,
   UnauthorizedException,
   UseGuards,
@@ -72,6 +73,16 @@ class UpdateServerSourceDto {
 class UpdateServerSyncDto {
   @IsBoolean()
   enabled!: boolean
+}
+
+class SetWebDavCredentialsDto {
+  @IsString()
+  @MinLength(1)
+  username!: string
+
+  @IsString()
+  @MinLength(8)
+  password!: string
 }
 
 class RefreshDto {
@@ -192,8 +203,15 @@ export class AdminController {
   @Get("server-sync")
   async getServerSync() {
     const config = await this.instanceConfigService.getConfig()
+    const { credentials } = config.serverSync
 
-    return { enabled: config.serverSync.enabled }
+    return {
+      enabled: config.serverSync.enabled,
+      credentials: {
+        configured: credentials !== null,
+        username: credentials?.username ?? null,
+      },
+    }
   }
 
   @Patch("server-sync")
@@ -204,6 +222,16 @@ export class AdminController {
     }))
 
     return { enabled: body.enabled }
+  }
+
+  @Put("server-sync/credentials")
+  async setWebDavCredentials(@Body() body: SetWebDavCredentialsDto) {
+    await this.instanceConfigService.setWebDavCredentials({
+      username: body.username,
+      password: body.password,
+    })
+
+    return { configured: true, username: body.username }
   }
 
   @Get("server-sync/sources")

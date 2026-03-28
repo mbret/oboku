@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
 import type { Request, Response } from "express"
 import nodePath from "node:path"
+import { handleAuth } from "./handleAuth"
 import { handlePropfind } from "./handlePropfind"
 import { handleGet } from "./handleGet"
 import { handleOptions } from "./handleOptions"
@@ -9,9 +10,9 @@ import { handleOptions } from "./handleOptions"
 /**
  * Read-only WebDAV endpoint that exposes enabled server sources.
  *
- * This endpoint is intentionally public (no authentication) for now so that
- * any WebDAV client on the local network can discover and download files.
- * Authentication may be added in the future.
+ * Access is gated by HTTP Basic Auth. Credentials are stored in the
+ * instance config file. When no credentials are configured, all requests
+ * are rejected with 401 to prevent unauthenticated access.
  */
 @Injectable()
 export class WebDavService {
@@ -42,6 +43,10 @@ export class WebDavService {
     ) {
       res.status(204).end()
 
+      return
+    }
+
+    if (!(await handleAuth(req, res, this.instanceConfigService))) {
       return
     }
 

@@ -4,14 +4,21 @@ import {
   Code,
   Group,
   Paper,
+  PasswordInput,
   Stack,
   Text,
+  TextInput,
   Title,
 } from "@mantine/core"
+import { useForm } from "@mantine/form"
 import { useCreateServerSource } from "./useCreateServerSource"
 import { useDeleteServerSource } from "./useDeleteServerSource"
 import { useServerSources } from "./useServerSources"
-import { useServerSync, useUpdateServerSync } from "./useServerSync"
+import {
+  useServerSync,
+  useSetWebDavCredentials,
+  useUpdateServerSync,
+} from "./useServerSync"
 import {
   getErrorMessage,
   ServerSourceFormFields,
@@ -22,13 +29,25 @@ import { ButtonLink } from "@/components/ButtonLink"
 
 export const AdminServerSourcesSection = () => {
   const form = useServerSourceForm()
+  const credentialsForm = useForm({
+    mode: "uncontrolled",
+    initialValues: { username: "", password: "" },
+    validate: {
+      username: (value) =>
+        value.trim().length > 0 ? null : "Username is required",
+      password: (value) =>
+        value.length >= 8 ? null : "Password must be at least 8 characters",
+    },
+  })
   const serverSync = useServerSync()
   const updateServerSync = useUpdateServerSync()
+  const setWebDavCredentials = useSetWebDavCredentials()
   const serverSources = useServerSources({ enabled: true })
   const createServerSource = useCreateServerSource()
   const deleteServerSource = useDeleteServerSource()
 
   const mutationError = createServerSource.error ?? deleteServerSource.error
+  const credentialsConfigured = serverSync.data?.credentials.configured ?? false
 
   return (
     <Stack gap="md">
@@ -56,7 +75,7 @@ export const AdminServerSourcesSection = () => {
           </div>
           <Checkbox
             label="Enable server sync"
-            description="The WebDAV endpoint is publicly accessible with no authentication. Only enable this if your server is on a trusted network."
+            description="Access to the WebDAV endpoint is controlled by the credentials configured below. HTTPS is strongly recommended."
             checked={serverSync.data?.enabled ?? false}
             disabled={serverSync.isLoading || updateServerSync.isPending}
             onChange={(event) => {
@@ -64,13 +83,76 @@ export const AdminServerSourcesSection = () => {
                 enabled: event.currentTarget.checked,
               })
             }}
-            styles={{
-              description: { color: "var(--mantine-color-red-text)" },
-            }}
           />
           {updateServerSync.error && (
             <Text size="sm" c="red">
               Error: {updateServerSync.error.message}
+            </Text>
+          )}
+        </Stack>
+      </Paper>
+
+      <Paper withBorder p="md">
+        <Stack gap="sm">
+          <div>
+            <Text size="sm" fw={500} mb="xs">
+              Credentials
+            </Text>
+            <Text size="sm" c="dimmed">
+              Set the username and password that WebDAV clients must provide to
+              access server sources. These credentials are independent from the
+              admin login.
+            </Text>
+          </div>
+
+          {!serverSync.isLoading && !credentialsConfigured && (
+            <Text size="sm" c="red">
+              WebDAV credentials are not configured. All WebDAV requests will be
+              rejected until credentials are set.
+            </Text>
+          )}
+
+          {credentialsConfigured && (
+            <Text size="sm">
+              Current username:{" "}
+              <Code>{serverSync.data?.credentials.username}</Code>
+            </Text>
+          )}
+
+          <form
+            onSubmit={credentialsForm.onSubmit(async (values) => {
+              await setWebDavCredentials.mutateAsync(values)
+
+              credentialsForm.reset()
+            })}
+          >
+            <Stack gap="sm">
+              <TextInput
+                label="Username"
+                placeholder="webdav"
+                key={credentialsForm.key("username")}
+                {...credentialsForm.getInputProps("username")}
+              />
+              <PasswordInput
+                label="Password"
+                description="Minimum 8 characters"
+                placeholder="••••••••"
+                key={credentialsForm.key("password")}
+                {...credentialsForm.getInputProps("password")}
+              />
+              <Group justify="flex-end">
+                <Button type="submit" loading={setWebDavCredentials.isPending}>
+                  {credentialsConfigured
+                    ? "update credentials"
+                    : "save credentials"}
+                </Button>
+              </Group>
+            </Stack>
+          </form>
+
+          {setWebDavCredentials.error && (
+            <Text size="sm" c="red">
+              Error: {getErrorMessage(setWebDavCredentials.error)}
             </Text>
           )}
         </Stack>
