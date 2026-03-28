@@ -13,3 +13,10 @@ export function isUriLinkData(data: unknown): data is UriLinkData {
 export const getUriLinkData = (data: Record<string, unknown>) => {
   return uriLinkDataSchema.parse(data)
 }
+
+export const generateUriResourceId = (data: { url: string }) =>
+  `oboku-link-${data.url}`
+
+export const explodeUriResourceId = (resourceId: string) => ({
+  url: resourceId.replace(`oboku-link-`, ``),
+})

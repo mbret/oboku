@@ -12,9 +12,10 @@ import { find } from "src/lib/couch/dbHelpers"
 import { createThrottler } from "src/lib/utils"
 import { createError, getDataSourceData } from "../helpers"
 
-const extractIdFromResourceId = (resourceId: string) =>
-  resourceId.replace(`dropbox-`, ``)
-const generateResourceId = (id: string) => `dropbox-${id}`
+import {
+  generateDropboxResourceId,
+  explodeDropboxResourceId,
+} from "@oboku/shared"
 
 const DROPBOX_TYPE = "dropbox"
 
@@ -55,7 +56,7 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
     const dbx = new Dropbox({
       accessToken: `${token ?? ""}`,
     })
-    const fileId = extractIdFromResourceId(link.resourceId)
+    const { fileId } = explodeDropboxResourceId(link.resourceId)
 
     const response = await dbx.filesGetMetadata({
       path: `${fileId}`,
@@ -70,7 +71,7 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
     const dbx = new Dropbox({
       accessToken: `${token ?? ""}`,
     })
-    const fileId = extractIdFromResourceId(link.resourceId)
+    const { fileId } = explodeDropboxResourceId(link.resourceId)
 
     const response = await dbx.filesGetMetadata({
       path: `${fileId}`,
@@ -89,7 +90,7 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
     const dbx = new Dropbox({
       accessToken: `${token ?? ""}`,
     })
-    const fileId = extractIdFromResourceId(link.resourceId)
+    const { fileId } = explodeDropboxResourceId(link.resourceId)
 
     const response = await dbx.filesDownload({
       path: `${fileId}`,
@@ -178,9 +179,9 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
             if (item[".tag"] === "file") {
               return {
                 type: "file",
-                resourceId: generateResourceId(
-                  (item as files.FileMetadataReference).id,
-                ),
+                resourceId: generateDropboxResourceId({
+                  fileId: (item as files.FileMetadataReference).id,
+                }),
                 name: item.name,
                 modifiedAt: item.server_modified,
               }
@@ -188,9 +189,9 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
 
             return {
               type: "folder",
-              resourceId: generateResourceId(
-                (item as files.FolderMetadataReference).id,
-              ),
+              resourceId: generateDropboxResourceId({
+                fileId: (item as files.FolderMetadataReference).id,
+              }),
               items: await getContentsFromFolder(
                 (item as files.FolderMetadataReference).id,
               ),

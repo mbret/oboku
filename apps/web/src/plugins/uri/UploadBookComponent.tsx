@@ -14,9 +14,9 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material"
-import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import { TYPE } from "./constants"
 import type { ObokuPlugin } from "../types"
-import { generateResourceId } from "@oboku/shared"
+import { generateUriResourceId } from "@oboku/shared"
 import { string } from "zod"
 
 const bookUrlSchema = string().url()
@@ -42,7 +42,7 @@ export const UploadBookComponent: ObokuPlugin<"URI">["UploadBookComponent"] = ({
         },
         link: {
           data: allowSelfSigned ? { allowSelfSigned: true } : {},
-          resourceId: generateResourceId(UNIQUE_RESOURCE_IDENTIFIER, bookUrl),
+          resourceId: generateUriResourceId({ url: bookUrl }),
           type: TYPE,
         },
       },

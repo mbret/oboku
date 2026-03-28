@@ -12,13 +12,10 @@ import {
   type SafeMangoQuery,
   type SynchronizeAbleDataSource,
   type SynchronizeAbleItem,
-  dataSourceHelpers,
 } from "@oboku/shared"
 import type createNano from "nano"
 import type { IncomingMessage } from "node:http"
 import { SyncReport } from "src/lib/sync/SyncReport"
-
-export { dataSourceHelpers }
 
 /** Re-export from shared so sync item/data source types are single source of truth. */
 export type {

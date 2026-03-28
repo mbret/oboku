@@ -7,9 +7,7 @@ import type { SynchronizeAbleItem } from "src/features/plugins/types"
 import { createThrottler } from "src/lib/utils"
 import { isDefined } from "class-validator"
 
-export const generateResourceId = (driveId: string) => `drive-${driveId}`
-export const extractIdFromResourceId = (resourceId: string) =>
-  resourceId.replace(`drive-`, ``)
+import { generateGoogleDriveResourceId } from "@oboku/shared"
 
 const isFolder = (
   file: NonNullable<drive_v3.Schema$FileList["files"]>[number],
@@ -95,7 +93,7 @@ export const getSynchronizeAbleDataSourceFromItems = async ({
     if (isFolder(file)) {
       return {
         type: "folder",
-        resourceId: generateResourceId(file.id || ""),
+        resourceId: generateGoogleDriveResourceId({ fileId: file.id || "" }),
         items: file.children.map(asSynchronizeAbleItem),
         name: file.name || "",
         modifiedAt: file.modifiedTime || new Date().toISOString(),
@@ -104,7 +102,7 @@ export const getSynchronizeAbleDataSourceFromItems = async ({
 
     return {
       type: "file",
-      resourceId: generateResourceId(file.id || ""),
+      resourceId: generateGoogleDriveResourceId({ fileId: file.id || "" }),
       name: file.name || "",
       modifiedAt: file.modifiedTime || new Date().toISOString(),
     }

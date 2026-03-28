@@ -3,7 +3,7 @@ import type { ObokuPlugin } from "../types"
 import { combineLatest, firstValueFrom, map, switchMap } from "rxjs"
 import { useMutation } from "@tanstack/react-query"
 import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
-import { extractIdFromResourceId } from "./lib/resources"
+import { explodeGoogleDriveResourceId } from "@oboku/shared"
 import { useGoogleScripts } from "./lib/scripts"
 
 export const useRefreshMetadata: ObokuPlugin<"DRIVE">[`useRefreshMetadata`] = ({
@@ -21,7 +21,7 @@ export const useRefreshMetadata: ObokuPlugin<"DRIVE">[`useRefreshMetadata`] = ({
         throw new Error("Link resource id is required")
       }
 
-      const fileId = extractIdFromResourceId(linkResourceId)
+      const { fileId } = explodeGoogleDriveResourceId(linkResourceId)
 
       const token$ = requestToken({
         scope: ["https://www.googleapis.com/auth/drive.file"],

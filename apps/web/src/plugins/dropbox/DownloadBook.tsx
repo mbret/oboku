@@ -16,7 +16,7 @@ import {
 } from "rxjs"
 import type { DownloadBookComponentProps } from "../types"
 import { authUser } from "./lib/auth"
-import { extractIdFromResourceId } from "./helpers"
+import { explodeDropboxResourceId } from "@oboku/shared"
 import { CancelError, LifecycleCancelError } from "../../errors/errors.shared"
 import { useRequestPopupDialog } from "../useRequestPopupDialog"
 import { PLUGIN_NAME } from "./constants"
@@ -56,7 +56,7 @@ export const DownloadBook = memo(
 
             return from(
               dropbox.filesDownload({
-                path: extractIdFromResourceId(link.resourceId),
+                path: explodeDropboxResourceId(link.resourceId).fileId,
               }),
             )
           }),

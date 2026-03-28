@@ -1,12 +1,11 @@
 import { useDrivePicker } from "./lib/useDrivePicker"
-import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { map, switchMap, timer } from "rxjs"
 import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
 import { memo, useEffect } from "react"
 import { SwitchMutationCancelError, useSwitchMutation$ } from "reactjrx"
 import { Logger } from "../../debug/logger.shared"
 import { CancelError } from "../../errors/errors.shared"
-import { generateResourceId } from "@oboku/shared"
+import { generateGoogleDriveResourceId } from "@oboku/shared"
 
 export const UploadBook: ObokuPlugin<"DRIVE">["UploadBookComponent"] = memo(
   ({ onClose, requestPopup }) => {
@@ -29,10 +28,9 @@ export const UploadBook: ObokuPlugin<"DRIVE">["UploadBookComponent"] = memo(
                 },
                 link: {
                   data: null,
-                  resourceId: generateResourceId(
-                    UNIQUE_RESOURCE_IDENTIFIER,
-                    doc.id,
-                  ),
+                  resourceId: generateGoogleDriveResourceId({
+                    fileId: doc.id,
+                  }),
                   type: `DRIVE`,
                 },
               }),

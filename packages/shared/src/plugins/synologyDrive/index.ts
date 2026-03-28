@@ -1,5 +1,4 @@
 export const PLUGIN_SYNOLOGY_DRIVE_TYPE = "synology-drive"
-export const UNIQUE_RESOURCE_IDENTIFIER = PLUGIN_SYNOLOGY_DRIVE_TYPE
 
 export type SynologyDriveLinkData = {
   connectorId?: string

@@ -26,8 +26,8 @@ import { useRequestPopupDialog } from "../useRequestPopupDialog"
 import { useMutation$ } from "reactjrx"
 import { useGoogleScripts } from "./lib/scripts"
 import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
-import { extractIdFromResourceId } from "./lib/resources"
 import { PLUGIN_NAME } from "./lib/constants"
+import { explodeGoogleDriveResourceId } from "@oboku/shared"
 
 export const DownloadBook = memo(
   ({
@@ -45,7 +45,7 @@ export const DownloadBook = memo(
     const getDriveFile = useDriveFilesGet()
     const { mutate: download } = useMutation$({
       mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
-        const fileId = extractIdFromResourceId(link.resourceId)
+        const { fileId } = explodeGoogleDriveResourceId(link.resourceId)
         const abortController = new AbortController()
         let cancelReason: "user" | "lifecycle" | null = null
         const userCancel$: Observable<unknown> = signal.aborted

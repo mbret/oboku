@@ -8,10 +8,7 @@ import type { DataSourcePlugin } from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { getDataSourceData } from "../helpers"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync"
-
-export const generateResourceId = (driveId: string) => `drive-${driveId}`
-export const extractIdFromResourceId = (resourceId: string) =>
-  resourceId.replace(`drive-`, ``)
+import { explodeGoogleDriveResourceId } from "@oboku/shared"
 
 const DRIVE_TYPE = "DRIVE"
 
@@ -57,7 +54,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
     const metadata = (
       await drive.files.get(
         {
-          fileId: extractIdFromResourceId(link.resourceId),
+          fileId: explodeGoogleDriveResourceId(link.resourceId).fileId,
           fields: "size, name, modifiedTime",
         },
         { responseType: "json" },
@@ -79,7 +76,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
     const metadata = (
       await drive.files.get(
         {
-          fileId: extractIdFromResourceId(link.resourceId),
+          fileId: explodeGoogleDriveResourceId(link.resourceId).fileId,
           fields: "size, name, mimeType, modifiedTime",
         },
         { responseType: "json" },
@@ -110,7 +107,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
 
     const response = await drive.files.get(
       {
-        fileId: extractIdFromResourceId(link.resourceId),
+        fileId: explodeGoogleDriveResourceId(link.resourceId).fileId,
         alt: "media",
       },
       { responseType: "stream" },

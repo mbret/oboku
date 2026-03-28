@@ -1,9 +1,11 @@
 import type { UseLinkInfo } from "../types"
-import { extractIdFromResourceId } from "./lib/resources"
+import { explodeGoogleDriveResourceId } from "@oboku/shared"
 
 export const useLinkInfo: UseLinkInfo = ({ resourceId, enabled }) => {
   const id =
-    enabled && resourceId ? extractIdFromResourceId(resourceId) : undefined
+    enabled && resourceId
+      ? explodeGoogleDriveResourceId(resourceId).fileId
+      : undefined
 
   return {
     data: {

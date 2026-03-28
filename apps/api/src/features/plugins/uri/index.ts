@@ -1,17 +1,13 @@
 import type { DataSourcePlugin } from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import axios from "axios"
-import { getUriLinkData } from "@oboku/shared"
+import { getUriLinkData, explodeUriResourceId } from "@oboku/shared"
 import { getHttpsAgent } from "src/lib/http/httpsAgent"
 
-const UNIQUE_RESOURCE_ID = `oboku-link`
 const URI_TYPE = "URI"
 
-const extractIdFromResourceId = (resourceId: string) =>
-  resourceId.replace(`${UNIQUE_RESOURCE_ID}-`, ``)
-
 const extractNameFromUri = (resourceId: string) => {
-  const downloadLink = extractIdFromResourceId(resourceId)
+  const { url: downloadLink } = explodeUriResourceId(resourceId)
   return downloadLink.substring(downloadLink.lastIndexOf("/") + 1) || "unknown"
 }
 
@@ -53,7 +49,7 @@ export const dataSource: DataSourcePlugin<"URI"> = {
     return { name: filename, canDownload: true }
   },
   download: async (link) => {
-    const downloadLink = extractIdFromResourceId(link.resourceId)
+    const { url: downloadLink } = explodeUriResourceId(link.resourceId)
     const { allowSelfSigned } = getUriLinkData(link.data ?? {})
 
     const response = await axios.get(downloadLink, {

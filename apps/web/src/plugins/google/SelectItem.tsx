@@ -1,9 +1,8 @@
-import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { useDrivePicker } from "./lib/useDrivePicker"
 import { catchError, of, tap } from "rxjs"
 import { useEffect } from "react"
 import type { ObokuPlugin } from "../types"
-import { generateResourceId } from "@oboku/shared"
+import { generateGoogleDriveResourceId } from "@oboku/shared"
 
 export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
   onClose,
@@ -32,10 +31,9 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
             })
           } else {
             onClose(undefined, {
-              resourceId: generateResourceId(
-                UNIQUE_RESOURCE_IDENTIFIER,
-                doc.id,
-              ),
+              resourceId: generateGoogleDriveResourceId({
+                fileId: doc.id,
+              }),
             })
           }
         }),
