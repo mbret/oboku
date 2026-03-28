@@ -2,9 +2,9 @@ import type createNano from "nano"
 import { SyncReport } from "./SyncReport"
 import { synchronizeFromDataSource } from "./synchronizeFromDataSource"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
-import { createHelpers } from "../plugins/helpers"
+import { createHelpers } from "src/features/plugins/helpers"
 import { atomicUpdate } from "../couch/dbHelpers"
-import { getPlugin } from "../plugins/plugins"
+import { getPlugin } from "src/features/plugins/plugins"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/config/types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
@@ -15,7 +15,7 @@ import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
 import {
   SynchronizeAbleDataSource,
   SynchronizeAbleItem,
-} from "../plugins/types"
+} from "src/features/plugins/types"
 
 export const sync = async ({
   dataSourceId,

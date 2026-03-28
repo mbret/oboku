@@ -3,7 +3,7 @@ import {
   type CollectionCandidate,
   type DataSourcePlugin,
   type SynchronizeAbleDataSource,
-} from "src/lib/plugins/types"
+} from "src/features/plugins/types"
 import type { BookDocType } from "@oboku/shared"
 import type { Context } from "../types"
 

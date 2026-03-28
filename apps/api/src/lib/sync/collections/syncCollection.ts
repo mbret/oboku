@@ -5,7 +5,7 @@ import { updateCollection } from "./updateCollection"
 import {
   type DataSourcePlugin,
   SynchronizeAbleDataSource,
-} from "src/lib/plugins/types"
+} from "src/features/plugins/types"
 import { Logger } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { CollectionMetadataRefreshEvent, Events } from "src/events"

@@ -24,8 +24,8 @@ import {
 import axios, { AxiosResponse } from "axios"
 import type { Readable } from "node:stream"
 import { text as readText } from "node:stream/consumers"
-import type { SynchronizeAbleItem } from "src/lib/plugins/types"
-import { getHttpsAgent } from "../../http/httpsAgent"
+import type { SynchronizeAbleItem } from "src/features/plugins/types"
+import { getHttpsAgent } from "src/lib/http/httpsAgent"
 
 type SynologyDriveRequestSession = SynologyDriveSession & {
   allowSelfSigned?: boolean

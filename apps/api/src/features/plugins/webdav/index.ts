@@ -4,9 +4,8 @@
 import {
   type DataSourcePlugin,
   type SynchronizeAbleItem,
-} from "src/lib/plugins/types"
+} from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
-import { getConnectorById } from "../../connectors/connectorHelpers"
 import {
   explodeWebdavResourceId,
   generateWebdavResourceId,
@@ -16,7 +15,8 @@ import {
 } from "@oboku/shared"
 import { type createClient } from "webdav"
 import { getDataSourceData } from "../helpers"
-import { getHttpsAgent } from "../../http/httpsAgent"
+import { getHttpsAgent } from "src/lib/http/httpsAgent"
+import { getConnectorById } from "src/lib/connectors/connectorHelpers"
 
 // @important needs "node-domexception" which did not seem to be installed by default
 async function getWebdavModule(): Promise<{

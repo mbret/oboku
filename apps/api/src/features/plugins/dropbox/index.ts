@@ -7,7 +7,7 @@ import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
 import type {
   DataSourcePlugin,
   SynchronizeAbleItem,
-} from "src/lib/plugins/types"
+} from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { createThrottler } from "src/lib/utils"
 import { createError, getDataSourceData } from "../helpers"

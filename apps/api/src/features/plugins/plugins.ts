@@ -6,7 +6,7 @@ import { dataSource as urlDataSource } from "./uri"
 import { dataSource as webdavDataSource } from "./webdav"
 import { plugin as filePlugin } from "./file"
 import { dataSource as serverDataSource } from "./server"
-import type { DataSourcePlugin } from "src/lib/plugins/types"
+import type { DataSourcePlugin } from "./types"
 
 /**
  * Registry keyed by provider type so that getPlugin(type) returns

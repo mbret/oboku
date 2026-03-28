@@ -4,9 +4,9 @@ import {
   PLUGIN_SYNOLOGY_DRIVE_TYPE,
 } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
-import type { DataSourcePlugin } from "src/lib/plugins/types"
+import type { DataSourcePlugin } from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
-import { getConnectorById } from "../../connectors/connectorHelpers"
+import { getConnectorById } from "src/lib/connectors/connectorHelpers"
 import {
   downloadSynologyDriveStream,
   getSynchronizeAbleDataSourceFromItems,

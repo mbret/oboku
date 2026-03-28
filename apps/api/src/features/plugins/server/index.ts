@@ -1,5 +1,5 @@
 import { PLUGIN_SERVER_TYPE } from "@oboku/shared"
-import type { DataSourcePlugin } from "src/lib/plugins/types"
+import type { DataSourcePlugin } from "src/features/plugins/types"
 
 export const dataSource: DataSourcePlugin<"server"> = {
   type: PLUGIN_SERVER_TYPE,

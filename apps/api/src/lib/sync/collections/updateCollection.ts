@@ -3,7 +3,7 @@ import type { Context } from "../types"
 import {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
-} from "src/lib/plugins/types"
+} from "src/features/plugins/types"
 import { Logger } from "@nestjs/common"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]

@@ -3,7 +3,7 @@
  * [{"domain":"global","reason":"authError","message":"Invalid Credentials","locationType":"header","location":"Authorization"}]
  */
 import { type drive_v3 } from "googleapis"
-import type { SynchronizeAbleItem } from "src/lib/plugins/types"
+import type { SynchronizeAbleItem } from "src/features/plugins/types"
 import { createThrottler } from "src/lib/utils"
 import { isDefined } from "class-validator"
 

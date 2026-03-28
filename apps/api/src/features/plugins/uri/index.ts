@@ -1,8 +1,8 @@
-import type { DataSourcePlugin } from "src/lib/plugins/types"
+import type { DataSourcePlugin } from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import axios from "axios"
 import { getUriLinkData } from "@oboku/shared"
-import { getHttpsAgent } from "../../http/httpsAgent"
+import { getHttpsAgent } from "src/lib/http/httpsAgent"
 
 const UNIQUE_RESOURCE_ID = `oboku-link`
 const URI_TYPE = "URI"

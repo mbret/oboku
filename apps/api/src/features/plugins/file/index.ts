@@ -1,4 +1,4 @@
-import type { DataSourcePlugin } from "src/lib/plugins/types"
+import type { DataSourcePlugin } from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { getFileLinkData, PLUGIN_FILE_TYPE } from "@oboku/shared"
 
