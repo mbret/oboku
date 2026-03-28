@@ -13,19 +13,44 @@ import {
   isCollectionOfType,
   WebDAVDataSourceDocType,
 } from "@oboku/shared"
-import { type createClient } from "webdav"
 import { getDataSourceData } from "../helpers"
 import { getHttpsAgent } from "src/lib/http/httpsAgent"
 import { getConnectorById } from "src/lib/connectors/connectorHelpers"
-
-// @important needs "node-domexception" which did not seem to be installed by default
-async function getWebdavModule(): Promise<{
-  createClient: typeof createClient
-}> {
-  return await import("webdav")
-}
+import {
+  getWebdavModule,
+  getFileMetadataFromWebdav,
+  getFolderMetadataFromWebdav,
+  downloadFromWebdav,
+} from "./operations"
 
 const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
+
+async function resolveClientAndPath(params: {
+  link: { data?: { connectorId?: string } | null; resourceId: string }
+  providerCredentials?: { password: string } | null
+  db?: Parameters<typeof getConnectorById>[0]
+}) {
+  const { link, providerCredentials, db } = params
+  const connectorId = link.data?.connectorId
+
+  if (!connectorId || !providerCredentials || !db) {
+    throw new Error("WebDAV credentials (password) and connector are required")
+  }
+
+  const connector = await getConnectorById(db, connectorId, "webdav")
+
+  if (!connector) {
+    throw new Error("WebDAV connector not found")
+  }
+
+  const client = await createWebdavClient({
+    ...connector,
+    password: providerCredentials.password,
+  })
+  const { filePath } = explodeWebdavResourceId(link.resourceId)
+
+  return { client, filePath }
+}
 
 const createWebdavClient = async (connector: {
   allowSelfSigned?: boolean
@@ -134,87 +159,31 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
     }
   },
   getFileMetadata: async ({ link, providerCredentials, db }) => {
-    const connectorId = link.data?.connectorId
-    if (!connectorId || !providerCredentials || !db) {
-      throw new Error(
-        "WebDAV credentials (password) and connector are required",
-      )
-    }
-    const connector = await getConnectorById(db, connectorId, "webdav")
-    if (!connector) {
-      throw new Error("WebDAV connector not found")
-    }
-    const client = await createWebdavClient({
-      ...connector,
-      password: providerCredentials.password,
-    })
-    const { filePath } = explodeWebdavResourceId(link.resourceId)
-
-    const response = await client.stat(filePath, {
-      details: true,
+    const { client, filePath } = await resolveClientAndPath({
+      link,
+      providerCredentials,
+      db,
     })
 
-    if ("data" in response) {
-      return {
-        canDownload: true,
-        contentType: response.data.mime,
-        name: response.data.basename,
-        modifiedAt: response.data.lastmod,
-      }
-    }
-
-    throw new Error("File not found")
+    return getFileMetadataFromWebdav(client, filePath)
   },
   getFolderMetadata: async ({ link, providerCredentials, db }) => {
-    const connectorId = link.data?.connectorId
-    if (!connectorId || !providerCredentials || !db) {
-      throw new Error(
-        "WebDAV credentials (password) and connector are required",
-      )
-    }
-    const connector = await getConnectorById(db, connectorId, "webdav")
-    if (!connector) {
-      throw new Error("WebDAV connector not found")
-    }
-    const client = await createWebdavClient({
-      ...connector,
-      password: providerCredentials.password,
-    })
-    const { filePath } = explodeWebdavResourceId(link.resourceId)
-
-    const response = await client.stat(filePath, {
-      details: true,
+    const { client, filePath } = await resolveClientAndPath({
+      link,
+      providerCredentials,
+      db,
     })
 
-    if ("data" in response) {
-      return {
-        name: response.data.basename,
-        modifiedAt: response.data.lastmod,
-      }
-    }
-
-    throw new Error("Folder not found")
+    return getFolderMetadataFromWebdav(client, filePath)
   },
   download: async (link, providerCredentials, db) => {
-    const connectorId = link.data?.connectorId
-    if (!connectorId || !providerCredentials || !db) {
-      throw new Error(
-        "WebDAV credentials (password) and connector are required",
-      )
-    }
-    const connector = await getConnectorById(db, connectorId, "webdav")
-    if (!connector) {
-      throw new Error("WebDAV connector not found")
-    }
-    const client = await createWebdavClient({
-      ...connector,
-      password: providerCredentials.password,
+    const { client, filePath } = await resolveClientAndPath({
+      link,
+      providerCredentials,
+      db,
     })
-    const { filePath } = explodeWebdavResourceId(link.resourceId)
 
-    return {
-      stream: client.createReadStream(filePath),
-    }
+    return downloadFromWebdav(client, filePath)
   },
   sync: async (options) => {
     const { providerCredentials, dataSourceId, db } = options

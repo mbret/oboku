@@ -6,6 +6,7 @@ import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { DownloadBook } from "./DownloadBook"
 import { InfoScreen } from "./InfoScreen"
 import { UploadBook } from "./UploadBook"
+import { useRefreshMetadata } from "./useRefreshMetadata"
 
 const useSynchronize: ObokuPlugin<"server">["useSynchronize"] = () => {
   return useMutation({
@@ -19,14 +20,6 @@ const useRemoveBook: ObokuPlugin<"server">["useRemoveBook"] = () => {
   return async () => {
     throw new UnsupportedMethodError("Not yet implemented")
   }
-}
-
-const useRefreshMetadata: ObokuPlugin<"server">["useRefreshMetadata"] = () => {
-  return useMutation({
-    mutationFn: async () => {
-      throw new UnsupportedMethodError("Not yet implemented")
-    },
-  })
 }
 
 const useLinkInfo: ObokuPlugin<"server">["useLinkInfo"] = () => ({

@@ -67,13 +67,12 @@ export type DownloadBookComponentProps = {
   signal: AbortSignal
 }
 
-/** Mutation variables for useRefreshMetadata; linkData may be {} when link.data is null. */
 export type UseRefreshMetadataVariables<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = {
   linkId?: string
   linkType: T
-  linkData: LinkDataForProvider<T> | Record<string, never>
+  linkData?: LinkDataForProvider<T> | null
   linkResourceId?: string
 }
 

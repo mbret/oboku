@@ -29,7 +29,7 @@ export const useRefreshCollectionMetadata = () => {
               const pluginData$ = from(
                 getRefreshMetadataPluginData({
                   linkType: collection.linkType ?? "file",
-                  linkData: collection.linkData ?? {},
+                  linkData: collection.linkData,
                   linkResourceId: collection.linkResourceId,
                 }),
               )

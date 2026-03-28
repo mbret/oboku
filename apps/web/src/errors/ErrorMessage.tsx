@@ -46,6 +46,8 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "This magic link is missing a token. Please request a new one."
     case ObokuErrorCode.ERROR_DATASOURCE_DOWNLOAD_DIFFERENT_DEVICE:
       return "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book using a cloud provider."
+    case ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED:
+      return "No connector is configured for this link. Please set one up first."
     default:
       return `Something went wrong. Error code: ${error}`
   }

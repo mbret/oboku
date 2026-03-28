@@ -39,7 +39,7 @@ export const useRefreshBookMetadata = () => {
       const { providerCredentials } = await refreshPluginMetadata({
         linkId: firstLink._id,
         linkType: firstLink.type,
-        linkData: firstLink.data ?? {},
+        linkData: firstLink.data,
         linkResourceId: firstLink.resourceId,
       })
 

@@ -3,10 +3,10 @@ import { useMutation } from "@tanstack/react-query"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { useExtractConnectorData } from "../../connectors/useExtractConnectorData"
 
-export const useRefreshMetadata: ObokuPlugin<"webdav">[`useRefreshMetadata`] =
+export const useRefreshMetadata: ObokuPlugin<"server">["useRefreshMetadata"] =
   () => {
     const { mutateAsync: extractConnectorData } = useExtractConnectorData({
-      type: "webdav",
+      type: "server",
     })
 
     return useMutation({

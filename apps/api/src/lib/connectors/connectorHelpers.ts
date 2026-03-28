@@ -1,6 +1,7 @@
 import type {
   WebdavConnectorDocType,
   SynologyDriveConnectorDocType,
+  ServerConnectorDocType,
   SettingsConnectorDocType,
   SettingsConnectorType,
 } from "@oboku/shared"
@@ -22,6 +23,12 @@ export async function getConnectorById(
   connectorId: string,
   connectorType: "synology-drive",
 ): Promise<SynologyDriveConnectorDocType | null>
+
+export async function getConnectorById(
+  db: createNano.DocumentScope<unknown>,
+  connectorId: string,
+  connectorType: "server",
+): Promise<ServerConnectorDocType | null>
 
 export async function getConnectorById(
   db: createNano.DocumentScope<unknown>,
