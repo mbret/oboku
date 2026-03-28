@@ -5,6 +5,7 @@ import { dataSource as synologyDriveDataSource } from "./synology-drive"
 import { dataSource as urlDataSource } from "./uri"
 import { dataSource as webdavDataSource } from "./webdav"
 import { plugin as filePlugin } from "./file"
+import { dataSource as serverDataSource } from "./server"
 import type { DataSourcePlugin } from "src/lib/plugins/types"
 
 /**
@@ -20,6 +21,7 @@ export const plugins: {
   URI: urlDataSource,
   webdav: webdavDataSource,
   file: filePlugin,
+  server: serverDataSource,
 }
 
 /** Returns the plugin for the given provider; sync return type is typed per provider. */

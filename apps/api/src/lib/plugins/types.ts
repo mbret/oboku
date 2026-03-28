@@ -146,7 +146,7 @@ export type DataSourcePlugin<
     contentType?: string
     bookMetadata?: Partial<Omit<BookMetadata, "type">>
   }>
-  download?: (
+  download: (
     link: LinkDocTypeForProvider<TProvider>,
     providerCredentials: ProviderApiCredentials<TProvider>,
     db?: createNano.DocumentScope<unknown>,
@@ -157,7 +157,7 @@ export type DataSourcePlugin<
   getLinkCandidatesForItem: GetLinkCandidatesForItem<TProvider>
   /** Find all collections that match this item (same resource / link data). Caller picks one or creates. */
   getCollectionCandidatesForItem: GetCollectionCandidatesForItem<TProvider>
-  sync?: (
+  sync: (
     options: SyncContext<TProvider>,
     helper: Helpers,
   ) => Promise<SynchronizeAbleDataSource<TProvider>>

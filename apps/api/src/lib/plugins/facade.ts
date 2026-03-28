@@ -37,16 +37,10 @@ export const pluginFacade = {
     return getRequiredPlugin(params.link.type).getFileMetadata(params)
   },
   download: async <T extends DataSourceType>(params: DownloadParams<T>) => {
-    const result = await getRequiredPlugin(params.link.type).download?.(
+    return getRequiredPlugin(params.link.type).download(
       params.link,
       params.providerCredentials,
       params.db,
     )
-
-    if (!result) {
-      throw new Error("No dataSource found for action")
-    }
-
-    return result
   },
 }

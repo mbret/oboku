@@ -47,4 +47,10 @@ export const plugin: DataSourcePlugin<"file"> = {
       },
     }
   },
+  download: async () => {
+    throw new Error("file plugin does not support download")
+  },
+  sync: async () => {
+    throw new Error("file plugin does not support sync")
+  },
 }
