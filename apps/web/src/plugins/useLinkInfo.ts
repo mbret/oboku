@@ -33,6 +33,10 @@ export const useLinkInfo = (bookId?: string) => {
     enabled: link?.type === "URI",
     resourceId: link?.resourceId,
   })
+  const serverLinkInfo = pluginsByType.server.useLinkInfo({
+    enabled: link?.type === "server",
+    resourceId: link?.resourceId,
+  })
   const linkType = link?.type
   const resourceId = link?.resourceId
 
@@ -49,6 +53,8 @@ export const useLinkInfo = (bookId?: string) => {
       return fileLinkInfo
     case "URI":
       return uriLinkInfo
+    case "server":
+      return serverLinkInfo
     case undefined:
       return { data: { label: resourceId } }
     default:

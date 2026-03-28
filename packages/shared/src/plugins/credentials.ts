@@ -37,6 +37,6 @@ export type ProviderApiCredentials<T extends DataSourceType> =
         ? DriveApiCredentials
         : T extends "dropbox"
           ? DropboxApiCredentials
-          : T extends "file" | "URI"
+          : T extends "file" | "URI" | "server"
             ? NoProviderApiCredentials
             : never

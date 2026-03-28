@@ -43,6 +43,10 @@ export const usePluginRefreshMetadata = () => {
     pluginsByType.URI.useRefreshMetadata({
       requestPopup: createRequestPopupDialog({ name: "URI" }),
     })
+  const { mutateAsync: refreshServerMetadata } =
+    pluginsByType.server.useRefreshMetadata({
+      requestPopup: createRequestPopupDialog({ name: "server" }),
+    })
 
   return useCallback(
     async (
@@ -75,6 +79,10 @@ export const usePluginRefreshMetadata = () => {
           return refreshUriMetadata(
             params as UseRefreshMetadataVariables<"URI">,
           )
+        case "server":
+          return refreshServerMetadata(
+            params as UseRefreshMetadataVariables<"server">,
+          )
         default:
           return assertNever(params.linkType)
       }
@@ -83,6 +91,7 @@ export const usePluginRefreshMetadata = () => {
       refreshDriveMetadata,
       refreshDropboxMetadata,
       refreshFileMetadata,
+      refreshServerMetadata,
       refreshSynologyDriveMetadata,
       refreshUriMetadata,
       refreshWebdavMetadata,

@@ -65,6 +65,7 @@ export type LinkDocType =
   | LinkDocTypeForProvider<"DRIVE">
   | LinkDocTypeForProvider<"dropbox">
   | LinkDocTypeForProvider<"URI">
+  | LinkDocTypeForProvider<"server">
 
 /**
  * Minimal link shape passed to plugin getFileMetadata/getFolderMetadata and used when
@@ -141,6 +142,11 @@ export type SynologyDriveDataSourceDocType = Omit<
   data_v2?: SynologyDriveLinkData & { items?: ReadonlyArray<string> }
 }
 
+export type ServerDataSourceDocType = BaseDataSourceDocType & {
+  type: "server"
+  data_v2?: undefined
+}
+
 export type DataSourceDocType =
   | GoogleDriveDataSourceDocType
   | DropboxDataSourceDocType
@@ -148,6 +154,7 @@ export type DataSourceDocType =
   | SynologyDriveDataSourceDocType
   | FileDataSourceDocType
   | URIDataSourceDocType
+  | ServerDataSourceDocType
 
 /** Data source / provider type (e.g. "webdav", "file", "dropbox"). */
 export type DataSourceType = DataSourceDocType["type"]
