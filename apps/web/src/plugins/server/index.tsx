@@ -4,6 +4,7 @@ import { memo, useEffect } from "react"
 import { UnsupportedMethodError } from "../../errors/errors.shared"
 import type { ObokuPlugin } from "../types"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import { InfoScreen } from "./InfoScreen"
 
 const useSynchronize: ObokuPlugin<"server">["useSynchronize"] = () => {
   return useMutation({
@@ -58,4 +59,5 @@ export const plugin: ObokuPlugin<"server"> = {
   useRemoveBook,
   useSignOut: () => () => {},
   DownloadBookComponent: DownloadBook,
+  InfoScreen: () => <InfoScreen />,
 }

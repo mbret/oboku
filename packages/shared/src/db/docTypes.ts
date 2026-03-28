@@ -244,9 +244,19 @@ export type SynologyDriveConnectorDocType = {
   allowSelfSigned?: boolean
 }
 
+export type ServerConnectorDocType = {
+  id: string
+  type: "server"
+  username: string
+  passwordAsSecretId: string
+  url?: string
+  allowSelfSigned?: boolean
+}
+
 export type SettingsConnectorDocType =
   | WebdavConnectorDocType
   | SynologyDriveConnectorDocType
+  | ServerConnectorDocType
 
 export type SettingsConnectorType = SettingsConnectorDocType["type"]
 

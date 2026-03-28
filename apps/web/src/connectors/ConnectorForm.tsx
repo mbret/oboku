@@ -48,7 +48,8 @@ export type ConnectorFormConfig = {
   connectorId?: string
   onSubmitSuccess: () => void
   children?: ReactNode
-  urlFieldLabel: string
+  /** When false the URL field and "Allow self-signed certificate" checkbox are hidden. Defaults to true. */
+  showUrl?: boolean
   topAlert: ReactNode
   passwordFieldLabel?: string
   /** When provided, TestConnection is rendered; parent provides the async method to test the connection. */
@@ -62,7 +63,7 @@ export const ConnectorForm = memo(
     connectorId,
     onSubmitSuccess,
     children,
-    urlFieldLabel,
+    showUrl = true,
     topAlert,
     passwordFieldLabel = "Password secret",
     testConnection,
@@ -104,10 +105,12 @@ export const ConnectorForm = memo(
     const { mutate: submit } = useMutation$({
       mutationFn: (_formData: FormData) => {
         const payload = {
-          url: data.urlValue,
           username: data.username,
           passwordAsSecretId: data.passwordAsSecretId,
-          allowSelfSigned: data.allowSelfSigned,
+          ...(showUrl && {
+            url: data.urlValue,
+            allowSelfSigned: data.allowSelfSigned,
+          }),
         }
         if (isEditing && connectorId) {
           return from(updateConnector({ id: connectorId, ...payload }))
@@ -132,13 +135,15 @@ export const ConnectorForm = memo(
             mt={2}
             onSubmit={handleSubmit((values) => submit(values))}
           >
-            <ControlledTextField
-              control={control}
-              fullWidth
-              label={urlFieldLabel}
-              name="urlValue"
-              rules={{ required: true, pattern: URL_PATTERN }}
-            />
+            {showUrl && (
+              <ControlledTextField
+                control={control}
+                fullWidth
+                label="URL"
+                name="urlValue"
+                rules={{ required: true, pattern: URL_PATTERN }}
+              />
+            )}
             <ControlledTextField
               control={control}
               fullWidth
@@ -153,28 +158,30 @@ export const ConnectorForm = memo(
               name="passwordAsSecretId"
               rules={{ required: true }}
             />
-            <Controller
-              control={control}
-              name="allowSelfSigned"
-              render={({ field }) => (
-                <Stack gap={0.5}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={!!field.value}
-                        onChange={(_, checked) => field.onChange(checked)}
-                      />
-                    }
-                    label="Allow self-signed certificate"
-                  />
-                  <Typography color="text.secondary" variant="caption">
-                    Used by API sync, metadata, and download requests. Browser
-                    connection tests may still require trusting the certificate
-                    in your browser.
-                  </Typography>
-                </Stack>
-              )}
-            />
+            {showUrl && (
+              <Controller
+                control={control}
+                name="allowSelfSigned"
+                render={({ field }) => (
+                  <Stack gap={0.5}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={!!field.value}
+                          onChange={(_, checked) => field.onChange(checked)}
+                        />
+                      }
+                      label="Allow self-signed certificate"
+                    />
+                    <Typography color="text.secondary" variant="caption">
+                      Used by API sync, metadata, and download requests. Browser
+                      connection tests may still require trusting the
+                      certificate in your browser.
+                    </Typography>
+                  </Stack>
+                )}
+              />
+            )}
             {!!errors.root && <ErrorAlert error={errors.root.message} />}
             {testConnection && (
               <TestConnection
