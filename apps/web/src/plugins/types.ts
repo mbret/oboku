@@ -3,6 +3,7 @@ import type {
   DataSourceDocType,
   LinkDataForProvider,
   LinkDocType,
+  LinkDocTypeForProvider,
   ProviderApiCredentials,
 } from "@oboku/shared"
 import type {
@@ -20,9 +21,8 @@ import type { UseMutationResult } from "@tanstack/react-query"
 import type { Control, UseFormWatch } from "react-hook-form"
 
 /** Link fields that upload payloads can provide (dialog fills book, normalizes data, createdAt, modifiedAt) */
-type PostLink = Pick<LinkDocType, "resourceId" | "type"> & {
-  data?: LinkDocType["data"]
-}
+type PostLink<T extends DataSourceDocType["type"] = DataSourceDocType["type"]> =
+  Pick<LinkDocTypeForProvider<T>, "resourceId" | "type" | "data">
 
 /** Minimal book fields that upload payloads can provide (dialog merges with tags, etc.) */
 type PostBook = {
@@ -30,9 +30,11 @@ type PostBook = {
   title?: string
 }
 
-export type UploadBookToAddPayload = {
+export type UploadBookToAddPayload<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = {
   book: PostBook
-  link: PostLink
+  link: PostLink<T>
   /** When set (e.g. local file upload), dialog will trigger download after add */
   file?: File
 }
@@ -153,7 +155,7 @@ export type ObokuPlugin<
   Icon?: ComponentType<SvgIconProps>
   UploadBookComponent?: FunctionComponent<
     {
-      onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload>) => void
+      onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload<T>>) => void
       requestPopup: () => Promise<boolean>
       TagsSelector: FC<{
         onChange: (tags: string[]) => void

@@ -3,13 +3,13 @@ import { memo, useState } from "react"
 import type { ObokuPlugin } from "../types"
 import {
   ConnectorSelectionStep,
-  type WebdavAuthResult,
+  type ServerAuthResult,
 } from "./upload/ConnectorSelectionStep"
 import { FileBrowseStep } from "./upload/FileBrowseStep"
 
-export const UploadBook: ObokuPlugin<"webdav">["UploadBookComponent"] = memo(
+export const UploadBook: ObokuPlugin<"server">["UploadBookComponent"] = memo(
   ({ onClose, title }) => {
-    const [authResult, setAuthResult] = useState<WebdavAuthResult | undefined>(
+    const [authResult, setAuthResult] = useState<ServerAuthResult | undefined>(
       undefined,
     )
 
@@ -24,7 +24,7 @@ export const UploadBook: ObokuPlugin<"webdav">["UploadBookComponent"] = memo(
           />
         ) : (
           <ConnectorSelectionStep
-            connectorType="webdav"
+            connectorType="server"
             onAuthenticated={setAuthResult}
             onClose={onClose}
           />

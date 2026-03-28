@@ -10,7 +10,7 @@ import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { useDropboxChoose } from "./lib/useDropboxChoose"
 import { useMountOnce } from "../../common/useMountOnce"
 
-export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
+export const UploadBook: ObokuPlugin<"dropbox">["UploadBookComponent"] = memo(
   ({ onClose }) => {
     const { generateResourceId } = useDataSourceHelpers(
       UNIQUE_RESOURCE_IDENTIFIER,
@@ -19,15 +19,18 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
     const { choose } = useDropboxChoose({
       onCancel: () => onClose(),
       onSuccess: (files) => {
-        const payloads: UploadBookToAddPayload[] = files.map((doc) => ({
-          book: {
-            metadata: [{ type: "link", title: doc.name }],
-          },
-          link: {
-            resourceId: generateResourceId(doc.id),
-            type: `dropbox`,
-          },
-        }))
+        const payloads: UploadBookToAddPayload<"dropbox">[] = files.map(
+          (doc) => ({
+            book: {
+              metadata: [{ type: "link", title: doc.name }],
+            },
+            link: {
+              data: null,
+              resourceId: generateResourceId(doc.id),
+              type: `dropbox`,
+            },
+          }),
+        )
         onClose(payloads)
       },
     })

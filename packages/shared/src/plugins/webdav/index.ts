@@ -2,6 +2,7 @@ import { z } from "zod"
 
 export const webdavLinkDataSchema = z.object({
   connectorId: z.string().optional(),
+  etag: z.string().optional(),
 })
 
 /**

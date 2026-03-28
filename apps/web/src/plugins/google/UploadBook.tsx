@@ -8,7 +8,7 @@ import { SwitchMutationCancelError, useSwitchMutation$ } from "reactjrx"
 import { Logger } from "../../debug/logger.shared"
 import { CancelError } from "../../errors/errors.shared"
 
-export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
+export const UploadBook: ObokuPlugin<"DRIVE">["UploadBookComponent"] = memo(
   ({ onClose, requestPopup }) => {
     const { generateResourceId } = useDataSourceHelpers(
       UNIQUE_RESOURCE_IDENTIFIER,
@@ -25,15 +25,18 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
             }
 
             const docs = data?.docs || []
-            const payloads: UploadBookToAddPayload[] = docs.map((doc) => ({
-              book: {
-                metadata: [{ type: "link", title: doc.name }],
-              },
-              link: {
-                resourceId: generateResourceId(doc.id),
-                type: `DRIVE`,
-              },
-            }))
+            const payloads: UploadBookToAddPayload<"DRIVE">[] = docs.map(
+              (doc) => ({
+                book: {
+                  metadata: [{ type: "link", title: doc.name }],
+                },
+                link: {
+                  data: null,
+                  resourceId: generateResourceId(doc.id),
+                  type: `DRIVE`,
+                },
+              }),
+            )
 
             return payloads
           }),

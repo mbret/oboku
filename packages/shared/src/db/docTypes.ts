@@ -1,5 +1,6 @@
 import type { CollectionMetadata } from "../metadata"
 import type { FileLinkData } from "../plugins/file"
+import type { ServerLinkData } from "../plugins/server"
 import type { SynologyDriveLinkData } from "../plugins/synologyDrive"
 import type { UriLinkData } from "../plugins/uri"
 import type { WebdavLinkData } from "../plugins/webdav"
@@ -12,6 +13,7 @@ export type LinkData =
   | WebdavLinkData
   | FileLinkData
   | SynologyDriveLinkData
+  | ServerLinkData
   | UriLinkData
 
 type CommonBase = CouchDBMeta & RxDbMeta
@@ -26,11 +28,13 @@ export type LinkDataForProvider<T extends DataSourceDocType["type"]> =
     ? WebdavLinkData
     : T extends "synology-drive"
       ? SynologyDriveLinkData
-      : T extends "URI"
-        ? UriLinkData
-        : T extends "file"
-          ? FileLinkData
-          : undefined
+      : T extends "server"
+        ? ServerLinkData
+        : T extends "URI"
+          ? UriLinkData
+          : T extends "file"
+            ? FileLinkData
+            : undefined
 
 /**
  * Link document for a specific provider; `data` is correctly typed as that provider's
