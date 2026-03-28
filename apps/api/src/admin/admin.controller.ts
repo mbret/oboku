@@ -12,6 +12,11 @@ import {
   UseGuards,
 } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
+import type {
+  GetServerSyncResponse,
+  SetWebDavCredentialsResponse,
+  UpdateServerSyncResponse,
+} from "@oboku/shared"
 import { AuthService } from "src/auth/auth.service"
 import { AdminAuthGuard, AdminPublic } from "./admin.guard"
 import { AppConfigService } from "src/config/AppConfigService"
@@ -201,7 +206,7 @@ export class AdminController {
   }
 
   @Get("server-sync")
-  async getServerSync() {
+  async getServerSync(): Promise<GetServerSyncResponse> {
     const config = await this.instanceConfigService.getConfig()
     const { credentials } = config.serverSync
 
@@ -215,7 +220,9 @@ export class AdminController {
   }
 
   @Patch("server-sync")
-  async updateServerSync(@Body() body: UpdateServerSyncDto) {
+  async updateServerSync(
+    @Body() body: UpdateServerSyncDto,
+  ): Promise<UpdateServerSyncResponse> {
     await this.instanceConfigService.updateConfig((config) => ({
       ...config,
       serverSync: { ...config.serverSync, enabled: body.enabled },
@@ -225,7 +232,9 @@ export class AdminController {
   }
 
   @Put("server-sync/credentials")
-  async setWebDavCredentials(@Body() body: SetWebDavCredentialsDto) {
+  async setWebDavCredentials(
+    @Body() body: SetWebDavCredentialsDto,
+  ): Promise<SetWebDavCredentialsResponse> {
     await this.instanceConfigService.setWebDavCredentials({
       username: body.username,
       password: body.password,
