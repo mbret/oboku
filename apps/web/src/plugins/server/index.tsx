@@ -1,9 +1,9 @@
 import { DnsRounded } from "@mui/icons-material"
 import { useMutation } from "@tanstack/react-query"
-import { memo, useEffect } from "react"
 import { UnsupportedMethodError } from "../../errors/errors.shared"
 import type { ObokuPlugin } from "../types"
 import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import { DownloadBook } from "./DownloadBook"
 import { InfoScreen } from "./InfoScreen"
 import { UploadBook } from "./UploadBook"
 
@@ -34,16 +34,6 @@ const useLinkInfo: ObokuPlugin<"server">["useLinkInfo"] = () => ({
 })
 
 const useSyncSourceInfo: ObokuPlugin<"server">["useSyncSourceInfo"] = () => ({})
-
-const DownloadBook: ObokuPlugin<"server">["DownloadBookComponent"] = memo(
-  ({ onError }) => {
-    useEffect(() => {
-      onError(new UnsupportedMethodError("Not yet implemented"))
-    }, [onError])
-
-    return null
-  },
-)
 
 export const plugin: ObokuPlugin<"server"> = {
   type: TYPE,

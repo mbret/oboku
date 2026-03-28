@@ -122,7 +122,7 @@ export const FileBrowseStep = memo(
               etag: file.etag,
             },
             resourceId: generateWebdavResourceId({
-              filename: file.id,
+              filePath: file.id,
             }),
             type: TYPE,
           },

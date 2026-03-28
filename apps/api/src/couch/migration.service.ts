@@ -52,11 +52,11 @@ type CollectionDoc = {
  * parsing logic evolves again.
  *
  * Accepted inputs:
- * - `webdav://{encoded filename}` (current canonical format)
- * - `webdav://_:{encoded filename}` (dummy-host legacy format)
- * - `webdav://host:{encoded filename}` (host-based legacy format)
+ * - `webdav://{encoded filePath}` (current canonical format)
+ * - `webdav://_:{encoded filePath}` (dummy-host legacy format)
+ * - `webdav://host:{encoded filePath}` (host-based legacy format)
  */
-const extractFilenameFromWebdavResourceIdForMigration = (
+const extractFilePathFromWebdavResourceIdForMigration = (
   resourceId: string,
 ) => {
   if (!resourceId.startsWith("webdav://")) {
@@ -64,12 +64,12 @@ const extractFilenameFromWebdavResourceIdForMigration = (
   }
 
   const withoutPrefix = resourceId.substring("webdav://".length)
-  const encodedFilename = withoutPrefix.includes(":")
+  const encodedFilePath = withoutPrefix.includes(":")
     ? withoutPrefix.substring(withoutPrefix.lastIndexOf(":") + 1)
     : withoutPrefix
 
   try {
-    return decodeURIComponent(encodedFilename)
+    return decodeURIComponent(encodedFilePath)
   } catch {
     return null
   }
@@ -79,19 +79,19 @@ const extractFilenameFromWebdavResourceIdForMigration = (
  * Snapshot canonical formatter for the WebDAV ids produced by this migration.
  *
  * Target format:
- * - `webdav://{encoded filename}`
+ * - `webdav://{encoded filePath}`
  */
-const generateCanonicalWebdavResourceIdForMigration = (filename: string) =>
-  `webdav://${encodeURIComponent(filename)}`
+const generateCanonicalWebdavResourceIdForMigration = (filePath: string) =>
+  `webdav://${encodeURIComponent(filePath)}`
 
 const toCanonicalWebdavResourceId = (resourceId: string) => {
-  const filename = extractFilenameFromWebdavResourceIdForMigration(resourceId)
+  const filePath = extractFilePathFromWebdavResourceIdForMigration(resourceId)
 
-  if (!filename) {
+  if (!filePath) {
     return null
   }
 
-  return generateCanonicalWebdavResourceIdForMigration(filename)
+  return generateCanonicalWebdavResourceIdForMigration(filePath)
 }
 
 @Injectable()
@@ -251,8 +251,8 @@ export class CouchMigrationService {
      *
      * How each value is transformed:
      * - Parse the existing WebDAV resource id with `explodeWebdavResourceId()`.
-     * - Extract the file/folder path (`filename`).
-     * - Rebuild the value with `generateWebdavResourceId({ filename })`.
+     * - Extract the file/folder path (`filePath`).
+     * - Rebuild the value with `generateWebdavResourceId({ filePath })`.
      * - Save the document back with the canonical id and a fresh `modifiedAt`.
      *
      * Important scope note:

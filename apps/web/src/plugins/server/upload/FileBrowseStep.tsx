@@ -32,7 +32,7 @@ export const FileBrowseStep = memo(
               etag: file.etag,
             },
             resourceId: generateServerResourceId({
-              filename: file.id,
+              filePath: file.id,
             }),
             type: TYPE,
           },

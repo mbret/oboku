@@ -25,8 +25,8 @@ export const getServerLinkData = (data: Record<string, unknown>) => {
   return serverLinkDataSchema.parse(data)
 }
 
-export const generateServerResourceId = (data: { filename: string }) => {
-  return `server://${encodeURIComponent(data.filename)}`
+export const generateServerResourceId = (data: { filePath: string }) => {
+  return `server://${encodeURIComponent(data.filePath)}`
 }
 
 export const explodeServerResourceId = (resourceId: string) => {
@@ -34,11 +34,11 @@ export const explodeServerResourceId = (resourceId: string) => {
     throw new Error(`Invalid resource ID format: ${resourceId}`)
   }
 
-  const filename = decodeURIComponent(resourceId.substring("server://".length))
+  const filePath = decodeURIComponent(resourceId.substring("server://".length))
 
-  if (!filename) {
+  if (!filePath) {
     throw new Error(`Invalid resource ID format: ${resourceId}`)
   }
 
-  return { filename }
+  return { filePath }
 }

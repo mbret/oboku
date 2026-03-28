@@ -148,9 +148,9 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
       ...connector,
       password: providerCredentials.password,
     })
-    const { filename } = explodeWebdavResourceId(link.resourceId)
+    const { filePath } = explodeWebdavResourceId(link.resourceId)
 
-    const response = await client.stat(filename, {
+    const response = await client.stat(filePath, {
       details: true,
     })
 
@@ -180,9 +180,9 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
       ...connector,
       password: providerCredentials.password,
     })
-    const { filename } = explodeWebdavResourceId(link.resourceId)
+    const { filePath } = explodeWebdavResourceId(link.resourceId)
 
-    const response = await client.stat(filename, {
+    const response = await client.stat(filePath, {
       details: true,
     })
 
@@ -210,10 +210,10 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
       ...connector,
       password: providerCredentials.password,
     })
-    const { filename } = explodeWebdavResourceId(link.resourceId)
+    const { filePath } = explodeWebdavResourceId(link.resourceId)
 
     return {
-      stream: client.createReadStream(filename),
+      stream: client.createReadStream(filePath),
     }
   },
   sync: async (options) => {
@@ -268,7 +268,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
                 name: file.basename,
                 linkData: { connectorId },
                 resourceId: generateWebdavResourceId({
-                  filename: file.filename,
+                  filePath: file.filename,
                 }),
               } satisfies SynchronizeAbleItem<"webdav">,
             ]
@@ -288,7 +288,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
               name: file.basename,
               linkData: { connectorId },
               resourceId: generateWebdavResourceId({
-                filename: file.filename,
+                filePath: file.filename,
               }),
               items: childItems,
             } satisfies SynchronizeAbleItem<"webdav">,
