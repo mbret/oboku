@@ -2,7 +2,7 @@ import { DnsRounded } from "@mui/icons-material"
 import { useMutation } from "@tanstack/react-query"
 import { UnsupportedMethodError } from "../../errors/errors.shared"
 import type { ObokuPlugin } from "../types"
-import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import { TYPE } from "./constants"
 import { DownloadBook } from "./DownloadBook"
 import { InfoScreen } from "./InfoScreen"
 import { UploadBook } from "./UploadBook"
@@ -33,7 +33,6 @@ export const plugin: ObokuPlugin<"server"> = {
   name: "Server",
   canRemoveBook: false,
   canSynchronize: false,
-  uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   Icon: DnsRounded,
   description: "Manage contents from your oboku server",
   useLinkInfo,

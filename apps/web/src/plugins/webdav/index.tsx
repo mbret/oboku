@@ -1,6 +1,6 @@
 import type { ObokuPlugin } from "../types"
 import { UnsupportedMethodError } from "../../errors/errors.shared"
-import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import { TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
@@ -30,7 +30,6 @@ const plugin: ObokuPlugin<"webdav"> = {
   name: "WebDAV",
   canRemoveBook: false,
   canSynchronize: true,
-  uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   Icon: WebDAVIcon,
   description: "Manage contents from WebDAV",
   DataSourceForm,

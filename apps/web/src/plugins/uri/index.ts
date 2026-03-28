@@ -1,7 +1,7 @@
 import { HttpRounded } from "@mui/icons-material"
 import { useMutation } from "@tanstack/react-query"
 import { UnsupportedMethodError } from "../../errors/errors.shared"
-import { TYPE, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import { TYPE } from "./constants"
 import type { ObokuPlugin } from "../types"
 import { UploadBookComponent } from "./UploadBookComponent"
 import { DownloadBook } from "./DownloadBook"
@@ -28,7 +28,6 @@ const plugin: ObokuPlugin<"URI"> = {
   name: "uri",
   canRemoveBook: false,
   canSynchronize: false,
-  uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   Icon: HttpRounded,
   UploadBookComponent,
   DownloadBookComponent: DownloadBook,

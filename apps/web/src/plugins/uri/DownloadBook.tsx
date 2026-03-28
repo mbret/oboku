@@ -13,10 +13,8 @@ import {
 } from "rxjs"
 import { useMutation$ } from "reactjrx"
 import { resolveDownloadFileName } from "@oboku/shared"
-import {
-  type DownloadBookComponentProps,
-  extractIdFromResourceId,
-} from "../types"
+import type { DownloadBookComponentProps } from "../types"
+import { extractIdFromResourceId } from "@oboku/shared"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { CancelError, LifecycleCancelError } from "../../errors/errors.shared"
 import { httpClientWeb } from "../../http/httpClient.web"

@@ -4,7 +4,7 @@ import { SvgIcon } from "@mui/material"
 import { UnsupportedMethodError } from "../../errors/errors.shared"
 import { DataSourceForm } from "./DataSourceForm"
 import DropboxIconAsset from "../../assets/dropbox.svg?react"
-import { PLUGIN_NAME, UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import { PLUGIN_NAME } from "./constants"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../types"
@@ -28,7 +28,6 @@ const useRemoveBook: ObokuPlugin<"dropbox">["useRemoveBook"] = () => {
 }
 
 export const plugin: ObokuPlugin<"dropbox"> = {
-  uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   type: `dropbox`,
   name: PLUGIN_NAME,
   canRemoveBook: false,

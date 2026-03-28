@@ -1,5 +1,5 @@
 import type { UseLinkInfo } from "../types"
-import { extractIdFromResourceId } from "../types"
+import { extractIdFromResourceId } from "@oboku/shared"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 
 export const useLinkInfo: UseLinkInfo = ({ resourceId, enabled }) => {

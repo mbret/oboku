@@ -1,8 +1,5 @@
 import { SvgIcon } from "@mui/material"
-import {
-  PLUGIN_SYNOLOGY_DRIVE_TYPE,
-  UNIQUE_RESOURCE_IDENTIFIER,
-} from "@oboku/shared"
+import { PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
 import { UnsupportedMethodError } from "../../errors/errors.shared"
 import type { ObokuPlugin } from "../types"
 import { InfoScreen } from "./InfoScreen"
@@ -29,7 +26,6 @@ const useRemoveBook: ObokuPlugin<"synology-drive">["useRemoveBook"] = () => {
 }
 
 export const plugin: ObokuPlugin<"synology-drive"> = {
-  uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
   name: "Synology Drive",
   canRemoveBook: false,

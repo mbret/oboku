@@ -4,18 +4,14 @@
  */
 import { memo } from "react"
 import { BlockingScreen } from "../../common/BlockingBackdrop"
-import { useDataSourceHelpers } from "../../dataSources/helpers"
 import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
 import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
 import { useDropboxChoose } from "./lib/useDropboxChoose"
 import { useMountOnce } from "../../common/useMountOnce"
+import { generateResourceId } from "@oboku/shared"
 
 export const UploadBook: ObokuPlugin<"dropbox">["UploadBookComponent"] = memo(
   ({ onClose }) => {
-    const { generateResourceId } = useDataSourceHelpers(
-      UNIQUE_RESOURCE_IDENTIFIER,
-    )
-
     const { choose } = useDropboxChoose({
       onCancel: () => onClose(),
       onSuccess: (files) => {
@@ -26,7 +22,10 @@ export const UploadBook: ObokuPlugin<"dropbox">["UploadBookComponent"] = memo(
             },
             link: {
               data: null,
-              resourceId: generateResourceId(doc.id),
+              resourceId: generateResourceId(
+                UNIQUE_RESOURCE_IDENTIFIER,
+                doc.id,
+              ),
               type: `dropbox`,
             },
           }),

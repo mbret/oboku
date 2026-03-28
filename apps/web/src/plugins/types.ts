@@ -141,7 +141,6 @@ export type DataSourceFormData = {
 export type ObokuPlugin<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = {
-  uniqueResourceIdentifier: string
   name: string
   canSynchronize?: boolean
   canRemoveBook: boolean
@@ -193,8 +192,3 @@ export type ObokuPlugin<
   useSyncSourceInfo: UseSyncSourceInfo<T>
   useSignOut: () => () => void
 }
-
-export const extractIdFromResourceId = (
-  uniqueResourceIdentifier: string,
-  resourceId: string,
-) => resourceId.replace(`${uniqueResourceIdentifier}-`, ``)
