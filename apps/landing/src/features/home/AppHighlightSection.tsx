@@ -52,7 +52,7 @@ export const AppHighlightSection = () => {
           Key features
         </Typography>
         <Typography>
-          Non exhaustive list of interesting features you may be interested in.
+          Everything you need to manage and read your personal ebook library.
         </Typography>
         <Box
           mt={4}
@@ -68,7 +68,7 @@ export const AppHighlightSection = () => {
           />
           <KeyCardPoint
             title="Anywhere"
-            description="Oboku is a web app! If you have a browser, you have oboku. We also provide an Android app."
+            description="Oboku is a web app. If you have a browser on any device — phone, tablet, or desktop — you have oboku."
             imageSrc={image2}
           />
           <KeyCardPoint
@@ -83,7 +83,7 @@ export const AppHighlightSection = () => {
           />
           <KeyCardPoint
             title="Sharing is caring"
-            description="Want to share your library ? Simply share your drive and your friends will be able to make their own library as simply as you"
+            description="Want to share your library? Simply share your drive and your friends will be able to build their own library just as easily."
             imageSrc={image8}
           />
           <KeyCardPoint
