@@ -15,14 +15,19 @@ export type ServerSourceConfig = {
   enabled: boolean
 }
 
+export type ServerSyncConfig = {
+  enabled: boolean
+  sources: ServerSourceConfig[]
+}
+
 export type InstanceConfig = {
   version: 1
-  serverSources: ServerSourceConfig[]
+  serverSync: ServerSyncConfig
 }
 
 const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
   version: 1,
-  serverSources: [],
+  serverSync: { enabled: false, sources: [] },
 }
 
 const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
@@ -32,9 +37,17 @@ const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
   enabled: Joi.boolean().required(),
 })
 
+const serverSyncConfigSchema = Joi.object<ServerSyncConfig>({
+  enabled: Joi.boolean().required(),
+  sources: Joi.array().items(serverSourceConfigSchema).required(),
+})
+
 const instanceConfigSchema = Joi.object<InstanceConfig>({
   version: Joi.number().valid(1).required(),
-  serverSources: Joi.array().items(serverSourceConfigSchema).required(),
+  serverSync: serverSyncConfigSchema.default({
+    enabled: false,
+    sources: [],
+  }),
 })
 
 const parseInstanceConfig = (value: unknown): InstanceConfig => {
@@ -85,16 +98,22 @@ export class InstanceConfigService implements OnModuleInit {
     return nextConfig
   }
 
+  async isServerSyncEnabled(): Promise<boolean> {
+    const config = await this.getConfig()
+
+    return config.serverSync.enabled
+  }
+
   async getServerSources(): Promise<ServerSourceConfig[]> {
     const config = await this.getConfig()
 
-    return this.serverSourcesService.list(config.serverSources)
+    return this.serverSourcesService.list(config.serverSync.sources)
   }
 
   async getEnabledServerSources(): Promise<PublicServerSource[]> {
     const config = await this.getConfig()
 
-    return this.serverSourcesService.listEnabled(config.serverSources)
+    return this.serverSourcesService.listEnabled(config.serverSync.sources)
   }
 
   async createServerSource(input: {
@@ -106,7 +125,7 @@ export class InstanceConfigService implements OnModuleInit {
 
     await this.updateConfig(async (config) => {
       const result = await this.serverSourcesService.create({
-        sources: config.serverSources,
+        sources: config.serverSync.sources,
         input,
       })
 
@@ -114,7 +133,7 @@ export class InstanceConfigService implements OnModuleInit {
 
       return {
         ...config,
-        serverSources: result.sources,
+        serverSync: { ...config.serverSync, sources: result.sources },
       }
     })
 
@@ -139,14 +158,14 @@ export class InstanceConfigService implements OnModuleInit {
       const result = await this.serverSourcesService.update({
         id,
         input,
-        sources: config.serverSources,
+        sources: config.serverSync.sources,
       })
 
       updatedSource = result.source
 
       return {
         ...config,
-        serverSources: result.sources,
+        serverSync: { ...config.serverSync, sources: result.sources },
       }
     })
 
@@ -160,7 +179,13 @@ export class InstanceConfigService implements OnModuleInit {
   async deleteServerSource(id: string): Promise<void> {
     await this.updateConfig((config) => ({
       ...config,
-      serverSources: this.serverSourcesService.remove(id, config.serverSources),
+      serverSync: {
+        ...config.serverSync,
+        sources: this.serverSourcesService.remove(
+          id,
+          config.serverSync.sources,
+        ),
+      },
     }))
   }
 

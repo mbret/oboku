@@ -1,7 +1,16 @@
-import { Button, Code, Group, Paper, Stack, Text } from "@mantine/core"
+import {
+  Button,
+  Checkbox,
+  Code,
+  Group,
+  Paper,
+  Stack,
+  Text,
+} from "@mantine/core"
 import { useCreateServerSource } from "./useCreateServerSource"
 import { useDeleteServerSource } from "./useDeleteServerSource"
 import { useServerSources } from "./useServerSources"
+import { useServerSync, useUpdateServerSync } from "./useServerSync"
 import {
   getErrorMessage,
   ServerSourceFormFields,
@@ -12,6 +21,8 @@ import { ButtonLink } from "@/components/ButtonLink"
 
 export const AdminServerSourcesSection = () => {
   const form = useServerSourceForm()
+  const serverSync = useServerSync()
+  const updateServerSync = useUpdateServerSync()
   const serverSources = useServerSources({ enabled: true })
   const createServerSource = useCreateServerSource()
   const deleteServerSource = useDeleteServerSource()
@@ -21,10 +32,39 @@ export const AdminServerSourcesSection = () => {
   return (
     <Stack gap="md">
       <Paper withBorder p="md">
+        <Stack gap="sm">
+          <div>
+            <Text size="sm" fw={500} mb="xs">
+              Server Sync
+            </Text>
+            <Text size="sm" c="dimmed">
+              Enable or disable the WebDAV endpoint that exposes server sources
+              to clients.
+            </Text>
+          </div>
+          <Checkbox
+            label="Enable server sync"
+            checked={serverSync.data?.enabled ?? false}
+            disabled={serverSync.isLoading || updateServerSync.isPending}
+            onChange={(event) => {
+              updateServerSync.mutate({
+                enabled: event.currentTarget.checked,
+              })
+            }}
+          />
+          {updateServerSync.error && (
+            <Text size="sm" c="red">
+              Error: {updateServerSync.error.message}
+            </Text>
+          )}
+        </Stack>
+      </Paper>
+
+      <Paper withBorder p="md">
         <Stack gap="md">
           <div>
             <Text size="sm" fw={500} mb="xs">
-              Server sources
+              Sources
             </Text>
             <Text size="sm" c="dimmed">
               Register server-side folders that can later be exposed to users as
@@ -121,7 +161,7 @@ export const AdminServerSourcesSection = () => {
                   </div>
                   <Group gap="xs">
                     <ButtonLink
-                      to="/server-sources/$sourceId"
+                      to="/server-sync/$sourceId"
                       params={{ sourceId: source.id }}
                       variant="light"
                     >

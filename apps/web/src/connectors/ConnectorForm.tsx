@@ -32,7 +32,7 @@ function getConnectorUrl(
 }
 
 const URL_PATTERN = {
-  value: /^(https?:\/\/)?([\w-]+\.)+[\w-]+(:\d{1,5})?(\/[\w- ./?%&=]*)?$/,
+  value: /^(https?:\/\/)?([\w-]+\.)*[\w-]+(:\d{1,5})?(\/[\w- ./?%&=]*)?$/,
   message: "Invalid URL",
 }
 

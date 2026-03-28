@@ -21,7 +21,7 @@ export const useUpdateServerSource = () => {
       ...input
     }: UpdateServerSourceInput): Promise<ServerSource> => {
       const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/server-sources/${id}`,
+        `${config.apiUrl}/admin/server-sync/sources/${id}`,
         {
           method: "PATCH",
           headers: {

@@ -12,7 +12,7 @@ import {
 } from "@/features/serverSources/ServerSourceFormFields"
 import { ConfirmButton } from "@/components/ConfirmButton"
 
-export const Route = createFileRoute("/_admin/server-sources/$sourceId")({
+export const Route = createFileRoute("/_admin/server-sync/$sourceId")({
   component: ServerSourceDetailPage,
 })
 
@@ -36,8 +36,8 @@ function ServerSourceDetailPage() {
         <Text size="sm" c="red">
           Server source not found.
         </Text>
-        <Button component={Link} to="/server-sources" variant="light">
-          back to server sources
+        <Button component={Link} to="/server-sync" variant="light">
+          back to server sync
         </Button>
       </Stack>
     )
@@ -85,13 +85,13 @@ function ServerSourceEditForm({ source }: { source: ServerSource }) {
                 onConfirm={async () => {
                   await deleteServerSource.mutateAsync({ id: source.id })
 
-                  void navigate({ to: "/server-sources" })
+                  void navigate({ to: "/server-sync" })
                 }}
               >
                 delete source
               </ConfirmButton>
               <Group gap="xs">
-                <Button component={Link} to="/server-sources" variant="light">
+                <Button component={Link} to="/server-sync" variant="light">
                   cancel
                 </Button>
                 <Button type="submit" loading={updateServerSource.isPending}>

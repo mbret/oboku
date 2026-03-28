@@ -45,9 +45,9 @@ const navItems = [
     description: "Storage usage and cleanup",
   },
   {
-    to: "/server-sources",
-    label: "Server sources",
-    description: "Instance-level server folders",
+    to: "/server-sync",
+    label: "Server Sync",
+    description: "Instance-level sync support",
   },
 
   {

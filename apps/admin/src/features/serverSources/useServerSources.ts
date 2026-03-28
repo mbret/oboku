@@ -17,7 +17,7 @@ export const useServerSources = ({ enabled }: { enabled: boolean }) => {
     enabled,
     queryFn: async (): Promise<ServerSource[]> => {
       const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/server-sources`,
+        `${config.apiUrl}/admin/server-sync/sources`,
       )
 
       if (!response.ok) {

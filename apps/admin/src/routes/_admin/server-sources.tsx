@@ -1,6 +1,0 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router"
-
-export const Route = createFileRoute("/_admin/server-sources")({
-  component: () => <Outlet />,
-  staticData: { breadcrumb: "Server sources" },
-})

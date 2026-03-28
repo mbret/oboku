@@ -6,6 +6,7 @@ import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "./config/types"
 import { Logger, ValidationPipe } from "@nestjs/common"
 import path from "node:path"
+import { WebDavService } from "./webdav/webdav.service"
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -19,6 +20,9 @@ async function bootstrap() {
   logger.log(
     `API_CONFIG_DIR: ${path.resolve(configService.getOrThrow("API_CONFIG_DIR"))}`,
   )
+
+  const webDavService = app.get(WebDavService)
+  app.use("/webdav", webDavService.middleware)
 
   app.useGlobalPipes(new ValidationPipe())
   app.enableCors({

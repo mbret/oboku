@@ -25,6 +25,7 @@ import { ScheduleModule } from "@nestjs/schedule"
 import { AdminModule } from "./admin/admin.module"
 import { DataSourceModule } from "./datasource/datasource.module"
 import { StorageModule } from "./storage/storage.module"
+import { WebDavModule } from "./webdav/webdav.module"
 
 @Module({
   imports: [
@@ -38,7 +39,6 @@ import { StorageModule } from "./storage/storage.module"
       autoLoadEntities: true,
       synchronize: true,
     }),
-    // SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       // this is mostly used during dev, for production it will be passed
@@ -99,12 +99,9 @@ import { StorageModule } from "./storage/storage.module"
     CoversModule,
     AdminModule,
     DataSourceModule,
+    WebDavModule,
   ],
   providers: [
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: SentryGlobalFilter,
-    // },
     AppService,
     SyncReportPostgresService,
     CommunicationPostgresService,

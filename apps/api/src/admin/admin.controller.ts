@@ -69,6 +69,11 @@ class UpdateServerSourceDto {
   enabled?: boolean
 }
 
+class UpdateServerSyncDto {
+  @IsBoolean()
+  enabled!: boolean
+}
+
 class RefreshDto {
   @IsString()
   refresh_token!: string
@@ -184,17 +189,34 @@ export class AdminController {
     }
   }
 
-  @Get("server-sources")
+  @Get("server-sync")
+  async getServerSync() {
+    const config = await this.instanceConfigService.getConfig()
+
+    return { enabled: config.serverSync.enabled }
+  }
+
+  @Patch("server-sync")
+  async updateServerSync(@Body() body: UpdateServerSyncDto) {
+    await this.instanceConfigService.updateConfig((config) => ({
+      ...config,
+      serverSync: { ...config.serverSync, enabled: body.enabled },
+    }))
+
+    return { enabled: body.enabled }
+  }
+
+  @Get("server-sync/sources")
   async listServerSources() {
     return this.instanceConfigService.getServerSources()
   }
 
-  @Post("server-sources")
+  @Post("server-sync/sources")
   async createServerSource(@Body() body: CreateServerSourceDto) {
     return this.instanceConfigService.createServerSource(body)
   }
 
-  @Patch("server-sources/:id")
+  @Patch("server-sync/sources/:id")
   async updateServerSource(
     @Param("id") id: string,
     @Body() body: UpdateServerSourceDto,
@@ -202,7 +224,7 @@ export class AdminController {
     return this.instanceConfigService.updateServerSource(id, body)
   }
 
-  @Delete("server-sources/:id")
+  @Delete("server-sync/sources/:id")
   async deleteServerSource(@Param("id") id: string) {
     await this.instanceConfigService.deleteServerSource(id)
 
