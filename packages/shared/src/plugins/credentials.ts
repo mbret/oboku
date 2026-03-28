@@ -1,5 +1,6 @@
 import type { DataSourceType } from "../db/docTypes"
 import type { WebdavApiCredentials } from "./webdav"
+import type { ServerApiCredentials } from "./server"
 import type { DropboxApiCredentials } from "./dropbox"
 import type { SynologyDriveApiCredentials } from "@oboku/synology"
 
@@ -37,6 +38,8 @@ export type ProviderApiCredentials<T extends DataSourceType> =
         ? DriveApiCredentials
         : T extends "dropbox"
           ? DropboxApiCredentials
-          : T extends "file" | "URI" | "server"
-            ? NoProviderApiCredentials
-            : never
+          : T extends "server"
+            ? ServerApiCredentials
+            : T extends "file" | "URI"
+              ? NoProviderApiCredentials
+              : never

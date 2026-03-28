@@ -2,6 +2,14 @@ import { z } from "zod"
 
 export const PLUGIN_SERVER_TYPE = "server"
 
+/**
+ * API credentials for server plugin: only the secret (password). Username
+ * comes from the connector (settings), resolved by the API using link/data connectorId.
+ */
+export type ServerApiCredentials = {
+  password: string
+}
+
 export const serverLinkDataSchema = z.object({
   connectorId: z.string().optional(),
   etag: z.string().optional(),
