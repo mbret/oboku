@@ -1,5 +1,4 @@
 import { Group, Paper, Text } from "@mantine/core"
-import { useMigrate } from "../useMigrate"
 import { useMigrateWebdavConnectors } from "../useMigrateWebdavConnectors"
 import { useMigrateWebdavResourceIds } from "../useMigrateWebdavResourceIds"
 import { useMigrateResourceIdToLinkData } from "../useMigrateResourceIdToLinkData"
@@ -9,7 +8,6 @@ const DANGEROUS_ACTION_CONFIRMATION_MESSAGE =
   "Don't run this unless you know exactly what you're doing.\n\nThis can permanently damage your database."
 
 export const AdminMigrationSection = () => {
-  const { mutate: migrate } = useMigrate()
   const {
     mutate: migrateWebdavConnectors,
     data: webdavMigrationResult,
@@ -32,12 +30,6 @@ export const AdminMigrationSection = () => {
   return (
     <>
       <Group gap="sm">
-        <ConfirmButton
-          confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
-          onConfirm={() => migrate()}
-        >
-          migrate db
-        </ConfirmButton>
         <ConfirmButton
           variant="light"
           loading={isWebdavMigrationPending}
