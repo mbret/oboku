@@ -188,6 +188,11 @@ export class AdminController {
     return this.couchMigrationService.migrateWebdavResourceIds()
   }
 
+  @Post("migrate-resource-id-to-link-data")
+  async migrateResourceIdToLinkData() {
+    return this.couchMigrationService.migrateResourceIdToLinkData()
+  }
+
   @Get("covers")
   async getCoversCleanupStats() {
     return this.adminCoversService.getCleanupStats()

@@ -1,7 +1,4 @@
-import {
-  generateSynologyDriveResourceId,
-  PLUGIN_SYNOLOGY_DRIVE_TYPE,
-} from "@oboku/shared"
+import { PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
 import { memo, useMemo } from "react"
 import { useConnector } from "../../../connectors/useConnector"
 import { useNotifications } from "../../../notifications/useNofitications"
@@ -78,10 +75,8 @@ export const UploadFileBrowseStep = memo(
           link: {
             data: {
               connectorId,
-            },
-            resourceId: generateSynologyDriveResourceId({
               fileId: file.fileId,
-            }),
+            },
             type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
           },
         })

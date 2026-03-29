@@ -37,7 +37,7 @@ export const deleteDanglingLinks = async (
 
   if (toDelete.length) {
     logger.log(
-      `Deleting ${toDelete.length} dangling links for resourceId ${toDelete[0]?.resourceId}`,
+      `Deleting ${toDelete.length} dangling links for type ${toDelete[0]?.type}`,
     )
 
     toDelete.forEach((link) => {

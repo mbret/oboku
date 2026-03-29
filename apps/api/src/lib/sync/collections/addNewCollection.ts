@@ -12,14 +12,12 @@ const logger = new Logger("sync/addNewCollection")
 
 export const addNewCollection = async <T extends DataSourceType>({
   name,
-  linkResourceId,
   linkData,
   linkType,
   ctx,
 }: {
   ctx: Context
   name: string
-  linkResourceId: string
   linkData: LinkDataForProvider<T>
   linkType: T
 }) => {
@@ -43,7 +41,6 @@ export const addNewCollection = async <T extends DataSourceType>({
     CollectionDocType<T>,
     "_id" | "_rev" | "rx_model"
   > = {
-    linkResourceId,
     linkType,
     linkData,
     books: [],

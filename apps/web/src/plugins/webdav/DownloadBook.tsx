@@ -1,8 +1,4 @@
-import {
-  explodeWebdavResourceId,
-  getWebDavLinkData,
-  type SettingsConnectorDocType,
-} from "@oboku/shared"
+import type { SettingsConnectorDocType } from "@oboku/shared"
 import { createClient } from "webdav"
 import { memo, useEffect } from "react"
 import {
@@ -144,10 +140,9 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
 })
 
 export const DownloadBook = memo(function DownloadBook(
-  props: DownloadBookComponentProps,
+  props: DownloadBookComponentProps<"webdav">,
 ) {
-  const { connectorId } = getWebDavLinkData(props.link.data ?? {})
-  const { filePath } = explodeWebdavResourceId(props.link.resourceId)
+  const { connectorId, filePath } = props.link.data
 
   return (
     <WebdavDownloadBook

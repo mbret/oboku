@@ -8,37 +8,36 @@ export const useLinkInfo = (bookId?: string) => {
   const { data: link } = useLink({ id: book?.links[0] })
   const dropboxLinkInfo = pluginsByType.dropbox.useLinkInfo({
     enabled: link?.type === "dropbox",
-    resourceId: link?.resourceId,
+    linkData: link?.data,
   })
 
   const webdavLinkInfo = pluginsByType.webdav.useLinkInfo({
     enabled: link?.type === "webdav",
-    resourceId: link?.resourceId,
+    linkData: link?.data,
   })
 
   const driveLinkInfo = pluginsByType.DRIVE.useLinkInfo({
     enabled: link?.type === "DRIVE",
-    resourceId: link?.resourceId,
+    linkData: link?.data,
   })
 
   const synologyDriveLinkInfo = pluginsByType["synology-drive"].useLinkInfo({
     enabled: link?.type === "synology-drive",
-    resourceId: link?.resourceId,
+    linkData: link?.data,
   })
   const fileLinkInfo = pluginsByType.file.useLinkInfo({
     enabled: link?.type === "file",
-    resourceId: link?.resourceId,
+    linkData: link?.data,
   })
   const uriLinkInfo = pluginsByType.URI.useLinkInfo({
     enabled: link?.type === "URI",
-    resourceId: link?.resourceId,
+    linkData: link?.data,
   })
   const serverLinkInfo = pluginsByType.server.useLinkInfo({
     enabled: link?.type === "server",
-    resourceId: link?.resourceId,
+    linkData: link?.data,
   })
   const linkType = link?.type
-  const resourceId = link?.resourceId
 
   switch (linkType) {
     case "dropbox":
@@ -56,7 +55,7 @@ export const useLinkInfo = (bookId?: string) => {
     case "server":
       return serverLinkInfo
     case undefined:
-      return { data: { label: resourceId } }
+      return { data: { label: undefined } }
     default:
       return assertNever(linkType)
   }

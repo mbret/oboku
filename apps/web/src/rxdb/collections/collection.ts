@@ -1,7 +1,7 @@
 import type { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import type { CollectionDocType } from "@oboku/shared"
-import { generateId } from "./utils"
+import { generateId, migrateResourceIdToData } from "./utils"
 
 // biome-ignore lint/complexity/noBannedTypes: TODO
 type CollectionDocMethods = {}
@@ -30,7 +30,7 @@ export const collectionSchema: RxJsonSchema<
   Omit<CollectionDocType & DeprecatedProps, `_rev` | `rxdbMeta`>
 > = {
   title: "obokucollection",
-  version: 0,
+  version: 1,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -40,7 +40,6 @@ export const collectionSchema: RxJsonSchema<
     name: { type: ["string", "null"] },
     type: { type: ["string", "null"] },
     linkType: { type: "string" },
-    linkResourceId: { type: "string" },
     linkData: { type: "object" },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
@@ -55,7 +54,38 @@ export const collectionSchema: RxJsonSchema<
   },
 }
 
-export const collectionMigrationStrategies = {}
+export function migrateLinkResourceIdToLinkData(
+  linkType: string | undefined,
+  linkResourceId: string | undefined,
+  existingLinkData: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!linkResourceId || !linkType) return existingLinkData
+
+  return migrateResourceIdToData(linkType, linkResourceId, existingLinkData)
+}
+
+export const collectionMigrationStrategies = {
+  1: (oldDoc: Record<string, unknown>) => {
+    const linkType = oldDoc.linkType as string | undefined
+    const linkResourceId = oldDoc.linkResourceId as string | undefined
+    const existingLinkData = oldDoc.linkData as
+      | Record<string, unknown>
+      | undefined
+
+    const newLinkData = migrateLinkResourceIdToLinkData(
+      linkType,
+      linkResourceId,
+      existingLinkData,
+    )
+
+    const { linkResourceId: _, ...rest } = oldDoc
+
+    return {
+      ...rest,
+      ...(newLinkData !== undefined && { linkData: newLinkData }),
+    }
+  },
+}
 
 export const collectionCollectionMethods: CollectionCollectionMethods = {
   post: async function (this: CollectionCollection, json) {

@@ -1,4 +1,4 @@
-import type { CollectionDocType, DataSourceDocType } from "@oboku/shared"
+import type { CollectionDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import type { DeepMutable } from "rxdb/dist/types/types"
 import { Logger } from "../debug/logger.shared"
@@ -11,7 +11,7 @@ export const useFixCollections = () => {
     async (data: [string, { name: string; number: number }][]) => {
       const yes = window.confirm(
         `
-            This action will merge collections that uses the same resourceId.
+            This action will merge collections that use the same resources.
             We will try to use a non destructive merge by keeping defined properties when possible. 
             You may want to re-sync after the operation to restore value with their latest state.
             `.replace(/ {2,}/g, ""),
@@ -21,28 +21,17 @@ export const useFixCollections = () => {
         try {
           await Promise.all(
             data.map(async ([key]) => {
-              const selector = key.includes("\0")
-                ? (() => {
-                    const [
-                      linkType = "",
-                      linkResourceId = "",
-                      connectorId = "",
-                    ] = key.split("\0")
+              const { linkType, linkData } = JSON.parse(key)
 
-                    return {
-                      linkType: linkType as DataSourceDocType["type"],
-                      linkResourceId: linkResourceId || key,
-                      ...(connectorId !== "" && {
-                        "linkData.connectorId": connectorId,
-                      }),
-                    }
-                  })()
-                : { linkResourceId: key ?? `-1` }
-              const docsWithSameResourceId = await database?.obokucollection
+              const selector = {
+                linkType,
+                linkData,
+              }
+              const duplicateDocs = await database?.obokucollection
                 .find({ selector })
                 .exec()
 
-              const collectionsAsJson = docsWithSameResourceId.map(
+              const collectionsAsJson = duplicateDocs.map(
                 (document) =>
                   document.toJSON() as DeepMutable<CollectionDocType>,
               )
@@ -64,14 +53,14 @@ export const useFixCollections = () => {
               const { _id, _rev, ...safeMergedDoc } = mergedDoc
 
               // we update the first entry with the all merged data
-              await docsWithSameResourceId[0]?.incrementalModify((oldData) => ({
+              await duplicateDocs[0]?.incrementalModify((oldData) => ({
                 ...oldData,
                 ...safeMergedDoc,
               }))
 
               // then we remove all the other documents
               await Promise.all(
-                docsWithSameResourceId
+                duplicateDocs
                   .slice(1)
                   .map(async (document) => document.remove()),
               )

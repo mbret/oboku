@@ -1,4 +1,4 @@
-import { explodeServerResourceId, PLUGIN_SERVER_TYPE } from "@oboku/shared"
+import { PLUGIN_SERVER_TYPE } from "@oboku/shared"
 import type {
   DataSourcePlugin,
   PluginMetadataParams,
@@ -40,7 +40,11 @@ async function resolveClientAndPath(
     },
   )
 
-  const { filePath } = explodeServerResourceId(link.resourceId)
+  const filePath = link.data?.filePath
+
+  if (!filePath) {
+    throw new Error("Server link is missing filePath")
+  }
 
   return { client, filePath }
 }

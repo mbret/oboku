@@ -1,8 +1,4 @@
-import {
-  explodeSynologyDriveResourceId,
-  isCollectionOfType,
-  PLUGIN_SYNOLOGY_DRIVE_TYPE,
-} from "@oboku/shared"
+import { isCollectionOfType, PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
 import type { DataSourcePlugin } from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
@@ -31,8 +27,8 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
    *
    * Matching rule:
    * - same provider type
-   * - same resourceId
-   * - same connectorId
+   * - same data.fileId
+   * - same data.connectorId
    *
    * This keeps sync non-destructive. "Same normalized server" is broader than
    * the persisted identity we want to preserve.
@@ -46,8 +42,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
     const links = await find(ctx.db, "link", {
       selector: {
         type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
-        resourceId: item.resourceId,
-        data: { connectorId },
+        data: { connectorId, fileId: item.linkData.fileId },
       },
     })
 
@@ -73,7 +68,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
   },
   /**
    * Same identity rule as getLinkCandidatesForItem: collections are only
-   * considered the same persisted resource when both resourceId and connectorId
+   * considered the same persisted resource when both fileId and connectorId
    * match exactly.
    */
   getCollectionCandidatesForItem: async (item, ctx) => {
@@ -84,8 +79,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
     const collections = await find(ctx.db, "obokucollection", {
       selector: {
         linkType: PLUGIN_SYNOLOGY_DRIVE_TYPE,
-        linkResourceId: item.resourceId,
-        linkData: { connectorId },
+        linkData: { connectorId, fileId: item.linkData.fileId },
       },
     })
     const datasourceData = ctx.dataSource
@@ -129,7 +123,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       },
       providerCredentials,
     })
-    const { fileId } = explodeSynologyDriveResourceId(link.resourceId)
+    const { fileId } = link.data
     const metadata = await getSynologyDriveItemMetadata({
       fileId,
       session,
@@ -164,7 +158,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       },
       providerCredentials,
     })
-    const { fileId } = explodeSynologyDriveResourceId(link.resourceId)
+    const { fileId } = link.data
     const metadata = await getSynologyDriveItemMetadata({
       fileId,
       session,
@@ -194,7 +188,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       },
       providerCredentials,
     })
-    const { fileId } = explodeSynologyDriveResourceId(link.resourceId)
+    const { fileId } = link.data
 
     return downloadSynologyDriveStream({
       fileId,

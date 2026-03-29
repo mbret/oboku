@@ -1,11 +1,7 @@
-import {
-  ObokuErrorCode,
-  ObokuSharedError,
-  type LinkDocType,
-} from "@oboku/shared"
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
+import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { firstValueFrom } from "rxjs"
-import { plugins } from "../../plugins/configure"
+import { pluginsByType } from "../../plugins/configure"
 import type { DownloadBookResult } from "../../plugins/types"
 import { CancelError, ERROR_NO_LINK_MESSAGE } from "../../errors/errors.shared"
 import { latestDatabase$ } from "../../rxdb/RxDbProvider"
@@ -47,10 +43,6 @@ export const DownloadFlowRequestItem = memo(
     const [link, setLink] = useState<DownloadLink | null>(null)
     const [isPreparing, setIsPreparing] = useState(!request.file)
     const { abortController, bookId, file, links, reject, resolve } = request
-    const plugin = useMemo(
-      () => (link ? plugins.find((item) => item.type === link.type) : null),
-      [link],
-    )
     const { notifyError } = useNotifications()
     const isSettledRef = useRef(false)
 
@@ -228,26 +220,50 @@ export const DownloadFlowRequestItem = memo(
       [bookId, file, links, onError, persistDownloadResult, settle],
     )
 
-    useEffect(() => {
-      if (link && !plugin) {
-        onError(new Error(`No plugin found for ${link.type}`))
-      }
-    }, [link, onError, plugin])
-
-    if (file || isPreparing || !link || !plugin) {
+    if (file || isPreparing || !link) {
       return null
     }
 
-    const DownloadBookComponent = plugin.DownloadBookComponent
+    const downloadProps = {
+      onDownloadProgress: setProgress,
+      onError,
+      onResolve,
+      signal: abortController.signal,
+    }
 
-    return (
-      <DownloadBookComponent
-        link={link as LinkDocType}
-        onDownloadProgress={setProgress}
-        onError={onError}
-        onResolve={onResolve}
-        signal={abortController.signal}
-      />
-    )
+    switch (link.type) {
+      case "DRIVE": {
+        const { DownloadBookComponent } = pluginsByType.DRIVE
+        return <DownloadBookComponent {...downloadProps} link={link} />
+      }
+      case "URI": {
+        const { DownloadBookComponent } = pluginsByType.URI
+        return <DownloadBookComponent {...downloadProps} link={link} />
+      }
+      case "dropbox": {
+        const { DownloadBookComponent } = pluginsByType.dropbox
+        return <DownloadBookComponent {...downloadProps} link={link} />
+      }
+      case "file": {
+        const { DownloadBookComponent } = pluginsByType.file
+        return <DownloadBookComponent {...downloadProps} link={link} />
+      }
+      case "server": {
+        const { DownloadBookComponent } = pluginsByType.server
+        return <DownloadBookComponent {...downloadProps} link={link} />
+      }
+      case "synology-drive": {
+        const { DownloadBookComponent } = pluginsByType["synology-drive"]
+        return <DownloadBookComponent {...downloadProps} link={link} />
+      }
+      case "webdav": {
+        const { DownloadBookComponent } = pluginsByType.webdav
+        return <DownloadBookComponent {...downloadProps} link={link} />
+      }
+      default: {
+        const _exhaustive: never = link
+        return _exhaustive
+      }
+    }
   },
 )
