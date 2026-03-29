@@ -4,8 +4,8 @@ import type { ObokuPlugin } from "../types"
 import { ConnectorSelectionStep } from "./upload/ConnectorSelectionStep"
 import { UploadFileBrowseStep } from "./upload/UploadFileBrowseStep"
 
-export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
-  ({ onClose, title }) => {
+export const UploadBook: ObokuPlugin<"synology-drive">["UploadBookComponent"] =
+  memo(({ onClose, title }) => {
     const [authResult, setAuthResult] = useState<
       import("./upload/ConnectorSelectionStep").SynologyAuthResult | undefined
     >(undefined)
@@ -22,12 +22,10 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
         ) : (
           <ConnectorSelectionStep
             connectorType="synology-drive"
-            description="Select a connector, sign in from the browser, then browse your Synology Drive tree directly on your NAS."
             onAuthenticated={setAuthResult}
             onClose={onClose}
           />
         )}
       </Dialog>
     )
-  },
-)
+  })

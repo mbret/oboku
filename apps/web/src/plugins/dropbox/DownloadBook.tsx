@@ -16,7 +16,6 @@ import {
 } from "rxjs"
 import type { DownloadBookComponentProps } from "../types"
 import { authUser } from "./lib/auth"
-import { extractIdFromResourceId } from "./helpers"
 import { CancelError, LifecycleCancelError } from "../../errors/errors.shared"
 import { useRequestPopupDialog } from "../useRequestPopupDialog"
 import { PLUGIN_NAME } from "./constants"
@@ -29,7 +28,12 @@ type ResponseWithFileBlob = DropboxResponse<files.FileMetadata> & {
 }
 
 export const DownloadBook = memo(
-  ({ link, onError, onResolve, signal }: DownloadBookComponentProps) => {
+  ({
+    link,
+    onError,
+    onResolve,
+    signal,
+  }: DownloadBookComponentProps<"dropbox">) => {
     const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
     const { mutate: download } = useMutation$({
       mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
@@ -56,7 +60,7 @@ export const DownloadBook = memo(
 
             return from(
               dropbox.filesDownload({
-                path: extractIdFromResourceId(link.resourceId),
+                path: link.data.fileId,
               }),
             )
           }),

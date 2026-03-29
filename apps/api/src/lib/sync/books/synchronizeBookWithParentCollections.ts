@@ -3,7 +3,7 @@ import {
   type CollectionCandidate,
   type DataSourcePlugin,
   type SynchronizeAbleDataSource,
-} from "src/lib/plugins/types"
+} from "src/features/plugins/types"
 import type { BookDocType } from "@oboku/shared"
 import type { Context } from "../types"
 
@@ -28,10 +28,8 @@ export const synchronizeBookWithParentCollections = async (
     return
   }
 
-  const parentResourceIds = parents.map((parent) => parent.resourceId)
-
   logger.log(
-    `[synchronizeBookWithParentCollections] ${book._id} with ${parentResourceIds.length} parentResourceIds ${parentResourceIds}`,
+    `[synchronizeBookWithParentCollections] ${book._id} with ${parents.length} parents`,
   )
 
   const collectionResults = await Promise.all(

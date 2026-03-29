@@ -28,7 +28,6 @@ const useRemoveBook: ObokuPlugin<"file">["useRemoveBook"] = () => {
 }
 
 export const plugin: ObokuPlugin<"file"> = {
-  uniqueResourceIdentifier: "file",
   type: PLUGIN_FILE_TYPE,
   name: "file",
   canRemoveBook: false,

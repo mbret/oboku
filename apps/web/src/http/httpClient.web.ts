@@ -103,11 +103,7 @@ export class HttpClientWeb extends HttpClient {
         signal?.removeEventListener("abort", handleAbort)
 
         reject(
-          new ObokuSharedError(
-            ObokuErrorCode.ERROR_RESOURCE_NOT_REACHABLE,
-            undefined,
-            "user",
-          ),
+          new ObokuSharedError(ObokuErrorCode.ERROR_RESOURCE_NOT_REACHABLE),
         )
       }
 

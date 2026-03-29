@@ -15,13 +15,14 @@ import type { SettingsConnectorType } from "@oboku/shared"
 
 export type UploadConnectorSelectionStepProps<TAuthResult> = {
   connectorType: SettingsConnectorType
-  description: string
   onAuthenticated: (result: TAuthResult) => void
   onClose: () => void
   /** Returns auth result; called when user clicks Connect/Sign in */
   authenticate: (connectorId: string) => Promise<TAuthResult>
   /** Optional: initial selected connector id (e.g. from session) */
   initialConnectorId?: string
+  /** When set, hides "New connector" button once this many connectors exist. */
+  maxConnectors?: number
 }
 
 const formatError = (error: unknown) =>
@@ -32,11 +33,11 @@ export function UploadConnectorSelectionStep<TAuthResult>(
 ) {
   const {
     connectorType,
-    description,
     onAuthenticated,
     onClose,
     authenticate,
     initialConnectorId,
+    maxConnectors,
   } = props
 
   const { notifyError } = useNotifications()
@@ -65,9 +66,12 @@ export function UploadConnectorSelectionStep<TAuthResult>(
     <>
       <DialogContent>
         <Stack gap={2} py={2}>
-          <Alert severity="info">{description}</Alert>
+          <Alert severity="info">
+            Select a connector, then sign in to browse and add files.
+          </Alert>
           <ConnectorSelector
             connectorType={connectorType}
+            maxConnectors={maxConnectors}
             onNavigate={onClose}
             value={selectedConnectorId}
             onChange={(e) => setSelectedConnectorId(e.target.value)}

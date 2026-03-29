@@ -38,7 +38,6 @@ export const ConnectorForm = memo(
           secret containing the password.
         </Alert>
       }
-      urlFieldLabel="Synology URL"
     >
       {children}
     </GenericConnectorForm>

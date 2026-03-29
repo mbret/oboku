@@ -13,11 +13,7 @@ import {
 } from "rxjs"
 import { useMutation$ } from "reactjrx"
 import { resolveDownloadFileName } from "@oboku/shared"
-import {
-  type DownloadBookComponentProps,
-  extractIdFromResourceId,
-} from "../types"
-import { UNIQUE_RESOURCE_IDENTIFIER } from "./constants"
+import type { DownloadBookComponentProps } from "../types"
 import { CancelError, LifecycleCancelError } from "../../errors/errors.shared"
 import { httpClientWeb } from "../../http/httpClient.web"
 
@@ -28,7 +24,7 @@ export const DownloadBook = memo(
     onError,
     onResolve,
     signal,
-  }: DownloadBookComponentProps) => {
+  }: DownloadBookComponentProps<"URI">) => {
     const { mutate: download } = useMutation$({
       mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
         const abortController = new AbortController()
@@ -51,10 +47,7 @@ export const DownloadBook = memo(
           }),
         )
 
-        const downloadLink = extractIdFromResourceId(
-          UNIQUE_RESOURCE_IDENTIFIER,
-          link.resourceId,
-        )
+        const downloadLink = link.data.url
 
         return from(
           httpClientWeb.download<Blob>({

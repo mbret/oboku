@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export const uriLinkDataSchema = z.object({
+  url: z.string(),
   allowSelfSigned: z.boolean().optional(),
 })
 

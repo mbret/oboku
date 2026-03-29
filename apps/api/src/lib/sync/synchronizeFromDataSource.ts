@@ -1,12 +1,12 @@
 import { directives } from "@oboku/shared"
-import type { createHelpers } from "../plugins/helpers"
+import type { createHelpers } from "src/features/plugins/helpers"
 import { syncCollection } from "./collections/syncCollection"
 import { createOrUpdateBook } from "./books/createOrUpdateBook"
 import type { Context } from "./types"
 import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
-} from "../plugins/types"
+} from "src/features/plugins/types"
 import { createTagFromName } from "../couch/dbHelpers"
 import { Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"

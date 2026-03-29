@@ -7,16 +7,6 @@ export type GoogleDriveDataSourceData = NonNullable<
   GoogleDriveDataSourceDocType["data_v2"]
 >
 
-export const generateResourceId = (
-  uniqueResourceIdentifier: string,
-  resourceId: string,
-) => `${uniqueResourceIdentifier}-${resourceId}`
-
-export const extractIdFromResourceId = (
-  uniqueResourceIdentifier: string,
-  resourceId: string,
-) => resourceId.replace(`${uniqueResourceIdentifier}-`, ``)
-
 export const getDataFromDataSource = <T extends DataSourceDocType["type"]>(
   dataSource: Pick<Extract<DataSourceDocType, { type: T }>, "data_v2">,
 ): Extract<DataSourceDocType, { type: T }>["data_v2"] | undefined => {
@@ -33,14 +23,9 @@ export const getDataFromDataSource = <T extends DataSourceDocType["type"]>(
       return undefined
     }
   } else if (dataSource.data_v2) {
+    // required because TS cannot narrow the union to the exact member from the generic
     return dataSource.data_v2 as any
   } else {
     return undefined
   }
-}
-
-export const dataSourceHelpers = {
-  generateResourceId,
-  extractIdFromResourceId,
-  getDataFromDataSource,
 }

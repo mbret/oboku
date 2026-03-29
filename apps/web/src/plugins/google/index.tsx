@@ -3,7 +3,7 @@
 /// <reference types="@types/google.accounts" />
 /// <reference types="@types/google.picker" />
 import { UnsupportedMethodError } from "../../errors/errors.shared"
-import { PLUGIN_NAME, UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
+import { PLUGIN_NAME } from "./lib/constants"
 import GoogleDriveAsset from "../../assets/google-drive.svg?react"
 import { SvgIcon } from "@mui/material"
 import { UploadBook } from "./UploadBook"
@@ -32,7 +32,6 @@ const useRemoveBook: ObokuPlugin<"DRIVE">["useRemoveBook"] = () => {
 }
 
 export const plugin: ObokuPlugin<"DRIVE"> = {
-  uniqueResourceIdentifier: UNIQUE_RESOURCE_IDENTIFIER,
   type: `DRIVE`,
   name: PLUGIN_NAME,
   canRemoveBook: false,

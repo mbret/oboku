@@ -7,6 +7,7 @@ export const usePluginsSignOut = () => {
   const fileSignOut = pluginsByType.file.useSignOut()
   const synologyDriveSignOut = pluginsByType["synology-drive"].useSignOut()
   const webdavSignOut = pluginsByType.webdav.useSignOut()
+  const serverSignOut = pluginsByType.server.useSignOut()
 
   const signOutByPlugin: {
     [K in keyof typeof pluginsByType]: () => void
@@ -17,6 +18,7 @@ export const usePluginsSignOut = () => {
     file: fileSignOut,
     "synology-drive": synologyDriveSignOut,
     webdav: webdavSignOut,
+    server: serverSignOut,
   }
 
   return () => {

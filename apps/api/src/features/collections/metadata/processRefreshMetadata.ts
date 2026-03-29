@@ -10,7 +10,7 @@ import type nano from "nano"
 import { saveOrUpdateCover } from "./saveOrUpdateCover"
 import { from, lastValueFrom, of, switchMap } from "rxjs"
 import { markCollectionAsFetching } from "./collections"
-import { pluginFacade } from "src/lib/plugins/facade"
+import { pluginFacade } from "src/features/plugins/facade"
 import { Logger } from "@nestjs/common"
 import { computeMetadata } from "src/lib/collections/computeMetadata"
 import { findOne } from "src/lib/couch/findOne"
@@ -39,13 +39,12 @@ export const processRefreshMetadata = async (
         // we always get updated link data
         // we take a chance to update the collection from its resource
         switchMap(() =>
-          collection.linkResourceId && collection.linkType
+          collection.linkData && collection.linkType
             ? from(
                 pluginFacade.getFolderMetadata({
                   link: {
-                    resourceId: collection.linkResourceId,
                     type: collection.linkType,
-                    data: collection.linkData ?? null,
+                    data: collection.linkData,
                   },
                   providerCredentials,
                   db,

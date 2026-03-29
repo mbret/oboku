@@ -7,7 +7,7 @@ import {
 } from "./upload/ConnectorSelectionStep"
 import { FileBrowseStep } from "./upload/FileBrowseStep"
 
-export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
+export const UploadBook: ObokuPlugin<"webdav">["UploadBookComponent"] = memo(
   ({ onClose, title }) => {
     const [authResult, setAuthResult] = useState<WebdavAuthResult | undefined>(
       undefined,
@@ -25,7 +25,6 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
         ) : (
           <ConnectorSelectionStep
             connectorType="webdav"
-            description="Select a connector, sign in from the browser, then browse and add files directly from your WebDAV server."
             onAuthenticated={setAuthResult}
             onClose={onClose}
           />

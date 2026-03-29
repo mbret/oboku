@@ -1,7 +1,7 @@
 import type { LinkDocType } from "@oboku/shared"
 import type { RxCollection, RxDocument, RxJsonSchema } from "rxdb"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
-import { generateId } from "./utils"
+import { generateId, migrateResourceIdToData } from "./utils"
 
 export type LinkCollection = RxCollection<
   LinkDocType,
@@ -23,26 +23,18 @@ type LinkCollectionMethods = {
 const linkSchema: RxJsonSchema<
   Omit<
     LinkDocType & {
-      // Legacy
       dataSourceId?: string
     },
     `_rev` | `rxdbMeta`
   >
 > = {
   title: "link",
-  version: 0,
+  version: 1,
   type: "object",
   primaryKey: `_id`,
   properties: {
     _id: { type: `string`, maxLength: 100 },
-    data: { type: ["object", "null"] },
-    resourceId: { type: "string" },
-    /**
-     * @important This is here for legacy purposes and to no break database.
-     * This is not used anymore and should not be used in the future.
-     * Conceptually, data sources only sync items. They don't own anything. An item
-     * could be synced from various data sources.
-     */
+    data: { type: "object" },
     dataSourceId: { type: "string" },
     type: { type: "string" },
     book: { type: ["string", "null"] },
@@ -51,10 +43,22 @@ const linkSchema: RxJsonSchema<
     modifiedAt: { type: ["string", "null"] },
     ...getReplicationProperties(`link`),
   },
-  required: ["data", "resourceId", "type"],
+  required: ["data", "type"],
 }
 
-const linkSchemaMigrationStrategies = {}
+const linkSchemaMigrationStrategies = {
+  1: (oldDoc: Record<string, unknown>) => {
+    const type = (oldDoc.type ?? "") as string
+    const resourceId = oldDoc.resourceId as string | undefined
+    const existingData = oldDoc.data as Record<string, unknown> | null
+
+    const newData = migrateResourceIdToData(type, resourceId, existingData)
+
+    const { resourceId: _, ...rest } = oldDoc
+
+    return { ...rest, data: newData }
+  },
+}
 
 const linkDocMethods: LinkDocMethods = {}
 

@@ -1,11 +1,9 @@
 import type { Metadata } from "next"
 
-// biome-ignore lint/correctness/noEmptyPattern: TODO
-// biome-ignore lint/complexity/noBannedTypes: TODO
-export async function generateMetadata({}: {}): Promise<Metadata> {
-  return {
-    title: `oboku | Terms and conditions`,
-  }
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "Learn how oboku handles your data, what information is collected, and your privacy rights.",
 }
 
 export default async function RootLayout({

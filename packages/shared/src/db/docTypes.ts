@@ -1,55 +1,56 @@
 import type { CollectionMetadata } from "../metadata"
+import type { DropboxLinkData } from "../plugins/dropbox"
 import type { FileLinkData } from "../plugins/file"
+import type { GoogleDriveLinkData } from "../plugins/google"
+import type { ServerLinkData } from "../plugins/server"
 import type { SynologyDriveLinkData } from "../plugins/synologyDrive"
 import type { UriLinkData } from "../plugins/uri"
 import type { WebdavLinkData } from "../plugins/webdav"
 import type { BookDocType } from "./books"
-/** Union of all plugin-specific link payloads (stored on link.data and sync item.linkData). */
 import type { CouchDBMeta } from "./couchdb"
 import type { RxDbMeta } from "./rxdb"
 
 export type LinkData =
+  | GoogleDriveLinkData
+  | DropboxLinkData
   | WebdavLinkData
   | FileLinkData
   | SynologyDriveLinkData
+  | ServerLinkData
   | UriLinkData
 
 type CommonBase = CouchDBMeta & RxDbMeta
 
 /**
- * Link data shape for a given provider. Same credentials shape used for link.data,
- * collection.linkData, sync items, and when calling plugin getFileMetadata/getFolderMetadata.
- * Providers without link data (e.g. dropbox, DRIVE) get undefined.
+ * Plugin-specific link data shape for a given provider. Contains both identity
+ * fields (e.g. fileId, filePath) and access/metadata fields (e.g. connectorId, etag).
+ * Used for link.data, collection.linkData, sync items, and plugin API calls.
  */
 export type LinkDataForProvider<T extends DataSourceDocType["type"]> =
-  T extends "webdav"
-    ? WebdavLinkData
-    : T extends "synology-drive"
-      ? SynologyDriveLinkData
-      : T extends "URI"
-        ? UriLinkData
-        : T extends "file"
-          ? FileLinkData
-          : undefined
+  T extends "DRIVE"
+    ? GoogleDriveLinkData
+    : T extends "dropbox"
+      ? DropboxLinkData
+      : T extends "webdav"
+        ? WebdavLinkData
+        : T extends "synology-drive"
+          ? SynologyDriveLinkData
+          : T extends "server"
+            ? ServerLinkData
+            : T extends "URI"
+              ? UriLinkData
+              : T extends "file"
+                ? FileLinkData
+                : never
 
 /**
  * Link document for a specific provider; `data` is correctly typed as that provider's
- * link credentials (LinkDataForProvider<T>). Use to type refresh book, refresh collection,
- * and sync flows when the provider is known.
+ * link data (LinkDataForProvider<T>).
  */
 export type LinkDocTypeForProvider<T extends DataSourceDocType["type"]> =
   CommonBase & {
     type: T
-    /**
-     * Identifier of the resource within the plugin (e.g. file path, file id).
-     * Uniqueness for sync, reattach and duplicate detection is (type + resourceId + data).
-     */
-    resourceId: string
-    /**
-     * Provider-specific link credentials (e.g. connectorId for WebDAV/Synology).
-     * Same shape as collection.linkData and sync item linkData; required to connect with provider.
-     */
-    data: LinkDataForProvider<T> | null
+    data: LinkDataForProvider<T>
     book: string | null
     rx_model: "link"
     contentLength?: number | null
@@ -65,6 +66,7 @@ export type LinkDocType =
   | LinkDocTypeForProvider<"DRIVE">
   | LinkDocTypeForProvider<"dropbox">
   | LinkDocTypeForProvider<"URI">
+  | LinkDocTypeForProvider<"server">
 
 /**
  * Minimal link shape passed to plugin getFileMetadata/getFolderMetadata and used when
@@ -73,7 +75,7 @@ export type LinkDocType =
  */
 export type LinkWithCredentials<T extends DataSourceDocType["type"]> = Pick<
   LinkDocTypeForProvider<T>,
-  "type" | "resourceId" | "data"
+  "type" | "data"
 >
 
 export type BaseDataSourceDocType = CommonBase & {
@@ -126,19 +128,24 @@ export type DropboxDataSourceDocType = Omit<
   }
 }
 
-/** WebDAV datasource data: same link credentials (WebdavLinkData) plus optional directory. */
+/** WebDAV datasource config: connector reference plus optional sync directory. */
 export type WebDAVDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
   type: "webdav"
-  data_v2?: WebdavLinkData & { directory?: string }
+  data_v2?: { connectorId?: string; directory?: string }
 }
 
-/** Synology Drive datasource data: same link credentials (SynologyDriveLinkData) plus selected file/folder ids. */
+/** Synology Drive datasource config: connector reference plus selected file/folder ids. */
 export type SynologyDriveDataSourceDocType = Omit<
   BaseDataSourceDocType,
   "data_v2"
 > & {
   type: "synology-drive"
-  data_v2?: SynologyDriveLinkData & { items?: ReadonlyArray<string> }
+  data_v2?: { connectorId?: string; items?: ReadonlyArray<string> }
+}
+
+export type ServerDataSourceDocType = BaseDataSourceDocType & {
+  type: "server"
+  data_v2?: undefined
 }
 
 export type DataSourceDocType =
@@ -148,6 +155,7 @@ export type DataSourceDocType =
   | SynologyDriveDataSourceDocType
   | FileDataSourceDocType
   | URIDataSourceDocType
+  | ServerDataSourceDocType
 
 /** Data source / provider type (e.g. "webdav", "file", "dropbox"). */
 export type DataSourceType = DataSourceDocType["type"]
@@ -201,7 +209,6 @@ export type CollectionDocType<T extends DataSourceType = DataSourceType> =
   CommonBase & {
     books: string[]
     linkType?: T
-    linkResourceId?: string
     linkData?: LinkDataForProvider<T>
     rx_model: "obokucollection"
     modifiedAt: string | null
@@ -237,9 +244,19 @@ export type SynologyDriveConnectorDocType = {
   allowSelfSigned?: boolean
 }
 
+export type ServerConnectorDocType = {
+  id: string
+  type: "server"
+  username: string
+  passwordAsSecretId: string
+  url?: string
+  allowSelfSigned?: boolean
+}
+
 export type SettingsConnectorDocType =
   | WebdavConnectorDocType
   | SynologyDriveConnectorDocType
+  | ServerConnectorDocType
 
 export type SettingsConnectorType = SettingsConnectorDocType["type"]
 

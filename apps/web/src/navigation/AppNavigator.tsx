@@ -40,11 +40,9 @@ import { ROUTES } from "./routes"
 import { SignUpScreen } from "../pages/SignUpScreen"
 import { SecretsScreen } from "../pages/profile/SecretsScreen"
 import { NewDataSourceScreen } from "../pages/sync/NewDataSourceScreen"
-import { AddWebdavConnectorScreen } from "../pages/plugins/webdav/AddWebdavConnectorScreen"
-import { EditWebDavConnectorScreen } from "../pages/plugins/webdav/EditWebdavConnectorScreen"
 import { DataSourceDetailsScreen } from "../pages/sync/DataSourceDetailsScreen"
-import { AddSynologyDriveConnectorScreen } from "../pages/plugins/synology-drive/AddConnectorScreen"
-import { EditSynologyDriveConnectorScreen } from "../pages/plugins/synology-drive/EditConnectorScreen"
+import { AddConnectorScreen } from "../connectors/AddConnectorScreen"
+import { EditConnectorScreen } from "../connectors/EditConnectorScreen"
 import { PluginDownloadFlowHost } from "../download/flow/PluginDownloadFlowHost"
 import { plugins } from "../dataSources"
 import { SignUpCompleteScreen } from "../pages/SignUpCompleteScreen"
@@ -110,20 +108,12 @@ export const AppNavigator = ({
               />
               <Route path="plugins/:type" element={<PluginScreen />} />
               <Route
-                path={ROUTES.PLUGINS_WEBDAV_CONNECTORS_NEW}
-                element={<AddWebdavConnectorScreen />}
+                path={ROUTES.PLUGINS_CONNECTORS_NEW}
+                element={<AddConnectorScreen />}
               />
               <Route
-                path={ROUTES.PLUGINS_WEBDAV_CONNECTORS_EDIT}
-                element={<EditWebDavConnectorScreen />}
-              />
-              <Route
-                path={ROUTES.PLUGINS_SYNOLOGY_DRIVE_CONNECTORS_NEW}
-                element={<AddSynologyDriveConnectorScreen />}
-              />
-              <Route
-                path={ROUTES.PLUGINS_SYNOLOGY_DRIVE_CONNECTORS_EDIT}
-                element={<EditSynologyDriveConnectorScreen />}
+                path={ROUTES.PLUGINS_CONNECTORS_EDIT}
+                element={<EditConnectorScreen />}
               />
               <Route path={`${ROUTES.SECURITY}`} element={<SecurityScreen />} />
               <Route path={`${ROUTES.SECRETS}`} element={<SecretsScreen />} />

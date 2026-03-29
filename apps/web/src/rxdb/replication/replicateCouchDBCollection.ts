@@ -2,6 +2,27 @@ import { replicateCouchDB } from "rxdb/plugins/replication-couchdb"
 import type { RxCollection } from "rxdb"
 import { configuration } from "../../config/configuration"
 import { httpCouchClient } from "../../http/httpClientCouch.web"
+/**
+ * Strips legacy `resourceId` / `linkResourceId` fields from deleted
+ * documents so they don't break the local schema.
+ *
+ * Non-deleted documents are migrated on both the server (admin migration)
+ * and the client (RxDB schema migration strategies). Deleted documents
+ * however are CouchDB tombstones that persist forever and cannot be
+ * updated, so neither migration can clean them up. Since deleted documents
+ * are only pulled to propagate the deletion and their field values are
+ * never used, we just strip the legacy fields to satisfy the schema.
+ *
+ * This modifier can be removed once the stale tombstones have been purged
+ * from CouchDB via the `_purge` endpoint.
+ */
+function stripLegacyResourceIdFromDeletedDoc(docData: Record<string, unknown>) {
+  if (!docData._deleted) return docData
+
+  const { linkResourceId, resourceId, ...rest } = docData
+
+  return rest
+}
 
 export const replicateCouchDBCollection = ({
   dbName,
@@ -103,7 +124,17 @@ export const replicateCouchDBCollection = ({
           }
         }
 
-        return docData
+        if ("rx_model" in docData && docData.rx_model === "obokucollection") {
+          if ("linkData" in docData && typeof docData.linkData === "string") {
+            try {
+              docData.linkData = JSON.parse(docData.linkData)
+            } catch (_error) {
+              docData.linkData = {}
+            }
+          }
+        }
+
+        return stripLegacyResourceIdFromDeletedDoc(docData)
       },
     },
     push: {
@@ -118,7 +149,7 @@ export const replicateCouchDBCollection = ({
        * (optional)
        */
       modifier: (docData) => {
-        return docData
+        return stripLegacyResourceIdFromDeletedDoc(docData)
       },
     },
   })

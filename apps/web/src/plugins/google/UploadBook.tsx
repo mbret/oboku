@@ -1,6 +1,4 @@
 import { useDrivePicker } from "./lib/useDrivePicker"
-import { useDataSourceHelpers } from "../../dataSources/helpers"
-import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { map, switchMap, timer } from "rxjs"
 import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
 import { memo, useEffect } from "react"
@@ -8,11 +6,8 @@ import { SwitchMutationCancelError, useSwitchMutation$ } from "reactjrx"
 import { Logger } from "../../debug/logger.shared"
 import { CancelError } from "../../errors/errors.shared"
 
-export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
+export const UploadBook: ObokuPlugin<"DRIVE">["UploadBookComponent"] = memo(
   ({ onClose, requestPopup }) => {
-    const { generateResourceId } = useDataSourceHelpers(
-      UNIQUE_RESOURCE_IDENTIFIER,
-    )
     const { pick } = useDrivePicker({ requestPopup })
 
     const { mutate } = useSwitchMutation$({
@@ -25,15 +20,17 @@ export const UploadBook: ObokuPlugin["UploadBookComponent"] = memo(
             }
 
             const docs = data?.docs || []
-            const payloads: UploadBookToAddPayload[] = docs.map((doc) => ({
-              book: {
-                metadata: [{ type: "link", title: doc.name }],
-              },
-              link: {
-                resourceId: generateResourceId(doc.id),
-                type: `DRIVE`,
-              },
-            }))
+            const payloads: UploadBookToAddPayload<"DRIVE">[] = docs.map(
+              (doc) => ({
+                book: {
+                  metadata: [{ type: "link", title: doc.name }],
+                },
+                link: {
+                  data: { fileId: doc.id },
+                  type: `DRIVE`,
+                },
+              }),
+            )
 
             return payloads
           }),

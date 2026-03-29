@@ -11,3 +11,7 @@ export type DropboxApiCredentials = {
 export type DropboxDataSourceData = NonNullable<
   DropboxDataSourceDocType["data_v2"]
 >
+
+export type DropboxLinkData = {
+  fileId: string
+}

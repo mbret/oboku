@@ -34,8 +34,6 @@ export const MagicLinkCompleteScreen = () => {
             error={
               new ObokuSharedError(
                 ObokuErrorCode.ERROR_MAGIC_LINK_MISSING_TOKEN,
-                undefined,
-                "user",
               )
             }
           />

@@ -1,5 +1,3 @@
-import { useDataSourceHelpers } from "../../dataSources/helpers"
-import { UNIQUE_RESOURCE_IDENTIFIER } from "./lib/constants"
 import { useDrivePicker } from "./lib/useDrivePicker"
 import { catchError, of, tap } from "rxjs"
 import { useEffect } from "react"
@@ -10,9 +8,6 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
   open,
   requestPopup,
 }) => {
-  const { generateResourceId } = useDataSourceHelpers(
-    UNIQUE_RESOURCE_IDENTIFIER,
-  )
   const { pick } = useDrivePicker({ requestPopup })
 
   useEffect(() => {
@@ -35,7 +30,7 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
             })
           } else {
             onClose(undefined, {
-              resourceId: generateResourceId(doc.id),
+              data: { fileId: doc.id },
             })
           }
         }),
@@ -50,7 +45,7 @@ export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
     return () => {
       stream$.unsubscribe()
     }
-  }, [open, pick, generateResourceId, onClose])
+  }, [open, pick, onClose])
 
   if (!open) return null
 

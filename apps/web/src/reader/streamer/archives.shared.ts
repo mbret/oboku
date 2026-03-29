@@ -43,6 +43,12 @@ export const isRarFile = (
   file.data.name.endsWith(".rar") ||
   file.data.name.endsWith(".cbr")
 
+export const isPdfFile = (
+  file: NonNullable<PromiseReturnType<typeof getBookFile>>,
+) =>
+  file.data.type.startsWith("application/pdf") ||
+  file.data.name.endsWith(".pdf")
+
 export const getArchiveForZipFile = async (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>,
 ): Promise<Archive> => {

@@ -7,6 +7,7 @@ import { theme } from "../theme"
 import AppBar from "../features/home/AppBar"
 import { landingSubtitle } from "../features/home/content"
 import { Footer } from "../features/home/Footer"
+import { links } from "@oboku/shared"
 
 const inter = Inter({ subsets: ["latin"] })
 const roboto = Roboto({
@@ -15,9 +16,46 @@ const roboto = Roboto({
   display: "swap",
 })
 
+const siteTitle = "oboku | Your digital library"
+
 export const metadata: Metadata = {
-  title: "oboku | Your digital library",
+  metadataBase: new URL(links.site),
+  title: {
+    default: siteTitle,
+    template: "%s | oboku",
+  },
   description: landingSubtitle,
+  keywords: [
+    "ebook reader",
+    "digital library",
+    "epub reader",
+    "cbz reader",
+    "self-hosted",
+    "open source",
+    "cloud library",
+    "book reader",
+    "offline reading",
+    "Google Drive books",
+    "Dropbox books",
+    "WebDAV",
+    "Synology",
+  ],
+  openGraph: {
+    title: siteTitle,
+    description: landingSubtitle,
+    url: links.site,
+    siteName: "oboku",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: siteTitle,
+    description: landingSubtitle,
+  },
+  alternates: {
+    canonical: links.site,
+  },
 }
 
 export default function RootLayout({

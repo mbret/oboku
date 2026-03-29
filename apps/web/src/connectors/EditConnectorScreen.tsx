@@ -1,5 +1,5 @@
 import { Button } from "@mui/material"
-import { memo, type ReactNode } from "react"
+import { memo } from "react"
 import { useParams } from "react-router"
 import { useConfirmation } from "../common/useConfirmation"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
@@ -8,59 +8,54 @@ import { useNotifications } from "../notifications/useNofitications"
 import type { SettingsConnectorType } from "@oboku/shared"
 import { CONNECTOR_DETAILS } from "./connectorDetails"
 import { useDeleteConnector } from "./useDeleteConnector"
+import { getConnectorForm } from "./AddConnectorScreen"
 
-export const EditConnectorScreen = memo(
-  ({
-    connectorType,
-    children,
-  }: {
-    connectorType: SettingsConnectorType
-    children: (props: {
-      connectorId: string
-      onSubmitSuccess: () => void
-      deleteButton: ReactNode
-    }) => ReactNode
-  }) => {
-    const { goBack } = useSafeGoBack()
-    const { mutate: deleteConnector } = useDeleteConnector()
-    const { notify } = useNotifications()
-    const confirmation = useConfirmation()
-    const { id = "-1" } = useParams()
-    const { label, manageRoute } = CONNECTOR_DETAILS[connectorType]
+export const EditConnectorScreen = memo(() => {
+  const { type, id = "-1" } = useParams<{
+    type: SettingsConnectorType
+    id: string
+  }>()
+  const { goBack } = useSafeGoBack()
+  const { mutate: deleteConnector } = useDeleteConnector()
+  const { notify } = useNotifications()
+  const confirmation = useConfirmation()
 
-    const deleteButton = (
-      <Button
-        color="error"
-        onClick={() => {
-          const confirm = confirmation()
+  if (!type) return null
 
-          if (confirm) {
-            deleteConnector(
-              { id },
-              {
-                onSuccess: () => {
-                  notify("actionSuccess")
-                  goBack(manageRoute)
-                },
-              },
-            )
-          }
-        }}
-        variant="contained"
+  const details = CONNECTOR_DETAILS[type]
+  const Form = getConnectorForm(type)
+
+  if (!details || !Form) return null
+
+  return (
+    <>
+      <TopBarNavigation title={`${details.label}: Edit connector`} />
+      <Form
+        connectorId={id}
+        onSubmitSuccess={() => goBack(details.manageRoute)}
       >
-        Delete
-      </Button>
-    )
+        <Button
+          color="error"
+          onClick={() => {
+            const confirm = confirmation()
 
-    return (
-      <>
-        <TopBarNavigation title={`${label}: Edit connector`} />
-        {children({
-          connectorId: id,
-          onSubmitSuccess: () => goBack(manageRoute),
-          deleteButton,
-        })}
-      </>
-    )
-  },
-)
+            if (confirm) {
+              deleteConnector(
+                { id },
+                {
+                  onSuccess: () => {
+                    notify("actionSuccess")
+                    goBack(details.manageRoute)
+                  },
+                },
+              )
+            }
+          }}
+          variant="contained"
+        >
+          Delete
+        </Button>
+      </Form>
+    </>
+  )
+})

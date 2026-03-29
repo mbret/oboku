@@ -2,7 +2,7 @@ import { type BookDocType, directives } from "@oboku/shared"
 import {
   type DataSourcePlugin,
   type SynchronizeAbleDataSource,
-} from "src/lib/plugins/types"
+} from "src/features/plugins/types"
 import { updateTagsForBook } from "./updateTagsForBook"
 import { synchronizeBookWithParentCollections } from "./synchronizeBookWithParentCollections"
 import {
@@ -17,7 +17,7 @@ import type { CoversService } from "src/covers/covers.service"
 import { firstValueFrom } from "rxjs"
 import { deleteDanglingLinks } from "./deleteDanglingLinks"
 import { logger } from "./logger"
-import type { LinkCandidate } from "src/lib/plugins/types"
+import type { LinkCandidate } from "src/features/plugins/types"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
@@ -56,7 +56,7 @@ export const createOrUpdateBook = async ({
   try {
     console.log(
       `[sync.books] [createOrUpdateBook] "${item.name}":`,
-      item.resourceId,
+      JSON.stringify(item.linkData),
     )
 
     const parentTagNames = parents.reduce(
@@ -84,7 +84,7 @@ export const createOrUpdateBook = async ({
 
     if (!linkMatchingItem) {
       logger.log(
-        `No link found for ${item.name} with resourceId ${item.resourceId}`,
+        `No link found for ${item.name} with linkData ${JSON.stringify(item.linkData)}`,
       )
     }
 
@@ -92,7 +92,7 @@ export const createOrUpdateBook = async ({
 
     if (linkMatchingItem && !linkMatchingItem.book) {
       logger.log(
-        `Link found for ${item.name} with resourceId ${item.resourceId} but no book attached`,
+        `Link found for ${item.name} with linkData ${JSON.stringify(item.linkData)} but no book attached`,
       )
     }
 
@@ -148,7 +148,7 @@ export const createOrUpdateBook = async ({
 
       if (linkMatchingItem) {
         logger.log(
-          `Update link book reference for ${item.name} with resourceId ${item.resourceId} to a valid book id`,
+          `Update link book reference for ${item.name} to a valid book id`,
         )
 
         await atomicUpdate(ctx.db, "link", linkMatchingItem._id, (old) => ({
@@ -160,9 +160,8 @@ export const createOrUpdateBook = async ({
       } else {
         const newlyCreatedLink = await helpers.create("link", {
           type: dataSourceType,
-          resourceId: item.resourceId,
           book: bookId,
-          data: item.linkData ?? null,
+          data: item.linkData,
           createdAt: new Date().toISOString(),
           modifiedAt: null,
           rxdbMeta: {
@@ -309,7 +308,7 @@ export const createOrUpdateBook = async ({
     console.log(`[createOrUpdateBook]`, `"${item.name}": DONE!`)
   } catch (e) {
     logger.error(
-      `createOrUpdateBook something went wrong for book ${item.name} (${item.resourceId})`,
+      `createOrUpdateBook something went wrong for book ${item.name} (${JSON.stringify(item.linkData)})`,
     )
     logger.error(e)
 

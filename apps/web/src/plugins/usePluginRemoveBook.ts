@@ -26,6 +26,9 @@ export const usePluginRemoveBook = () => {
   const removeBookFromUri = pluginsByType.URI.useRemoveBook({
     requestPopup: createRequestPopupDialog({ name: "URI" }),
   })
+  const removeBookFromServer = pluginsByType.server.useRemoveBook({
+    requestPopup: createRequestPopupDialog({ name: "server" }),
+  })
 
   return useCallback(
     async (bookId: string) => {
@@ -51,6 +54,8 @@ export const usePluginRemoveBook = () => {
           return removeBookFromFile(link)
         case "URI":
           return removeBookFromUri(link)
+        case "server":
+          return removeBookFromServer(link)
       }
     },
     [
@@ -58,6 +63,7 @@ export const usePluginRemoveBook = () => {
       removeBookFromDrive,
       removeBookFromDropbox,
       removeBookFromFile,
+      removeBookFromServer,
       removeBookFromSynologyDrive,
       removeBookFromUri,
       removeBookFromWebdav,

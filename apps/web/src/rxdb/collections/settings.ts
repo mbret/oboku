@@ -6,8 +6,6 @@ import type {
   SettingsConnectorDocType,
   SettingsConnectorType,
   SettingsDocType,
-  SynologyDriveConnectorDocType,
-  WebdavConnectorDocType,
 } from "@oboku/shared"
 
 type SettingsCollectionMethods = {
@@ -59,7 +57,7 @@ export const settingsSchema: RxJsonSchema<
           id: { type: "string" },
           type: {
             type: "string",
-            enum: ["webdav", "synology-drive"],
+            enum: ["webdav", "synology-drive", "server"],
           },
           url: { type: "string" },
           username: { type: "string" },
@@ -147,17 +145,7 @@ export const settingsCollectionMethods: SettingsCollectionMethods = {
           return connector
         }
 
-        if (connector.type === "webdav") {
-          return {
-            ...connector,
-            ...json,
-          } as WebdavConnectorDocType
-        }
-
-        return {
-          ...connector,
-          ...json,
-        } as SynologyDriveConnectorDocType
+        return Object.assign({}, connector, json)
       })
 
       return doc
