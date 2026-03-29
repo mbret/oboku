@@ -117,11 +117,19 @@ function migrateResourceIdToData(
   const base = existingData ?? {}
 
   switch (type) {
-    case "DRIVE":
-      return { ...base, fileId: resourceId.replace("drive-", "") }
+    case "DRIVE": {
+      const fileId = resourceId.startsWith("drive-")
+        ? resourceId.substring("drive-".length)
+        : resourceId
+      return { ...base, fileId }
+    }
 
-    case "dropbox":
-      return { ...base, fileId: resourceId.replace("dropbox-", "") }
+    case "dropbox": {
+      const fileId = resourceId.startsWith("dropbox-")
+        ? resourceId.substring("dropbox-".length)
+        : resourceId
+      return { ...base, fileId }
+    }
 
     case "webdav": {
       const withoutPrefix = resourceId.startsWith("webdav://")
@@ -150,8 +158,12 @@ function migrateResourceIdToData(
       return { ...base, filePath: safeDecodeURIComponent(withoutPrefix) }
     }
 
-    case "URI":
-      return { ...base, url: resourceId.replace("oboku-link-", "") }
+    case "URI": {
+      const url = resourceId.startsWith("oboku-link-")
+        ? resourceId.substring("oboku-link-".length)
+        : resourceId
+      return { ...base, url }
+    }
 
     case "file":
       return null

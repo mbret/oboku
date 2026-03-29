@@ -42,9 +42,15 @@ describe("migrateResourceIdToData", () => {
       })
     })
 
-    it("is a no-op when the prefix is missing", () => {
+    it("leaves the value intact when the prefix is missing", () => {
       expect(migrateResourceIdToData("DRIVE", "abc123", null)).toEqual({
         fileId: "abc123",
+      })
+    })
+
+    it("does not strip a mid-string occurrence of the prefix token", () => {
+      expect(migrateResourceIdToData("DRIVE", "foo-drive-bar", null)).toEqual({
+        fileId: "foo-drive-bar",
       })
     })
 
@@ -62,10 +68,16 @@ describe("migrateResourceIdToData", () => {
       ).toEqual({ fileId: "file42" })
     })
 
-    it("is a no-op when the prefix is missing", () => {
+    it("leaves the value intact when the prefix is missing", () => {
       expect(migrateResourceIdToData("dropbox", "file42", null)).toEqual({
         fileId: "file42",
       })
+    })
+
+    it("does not strip a mid-string occurrence of the prefix token", () => {
+      expect(
+        migrateResourceIdToData("dropbox", "my-dropbox-file", null),
+      ).toEqual({ fileId: "my-dropbox-file" })
     })
   })
 
@@ -206,10 +218,20 @@ describe("migrateResourceIdToData", () => {
       ).toEqual({ url: "https://example.com/book.epub" })
     })
 
-    it("is a no-op when the prefix is missing", () => {
+    it("leaves the value intact when the prefix is missing", () => {
       expect(
         migrateResourceIdToData("URI", "https://example.com/book.epub", null),
       ).toEqual({ url: "https://example.com/book.epub" })
+    })
+
+    it("does not strip a mid-string occurrence of the prefix token", () => {
+      expect(
+        migrateResourceIdToData(
+          "URI",
+          "https://example.com/oboku-link-book.epub",
+          null,
+        ),
+      ).toEqual({ url: "https://example.com/oboku-link-book.epub" })
     })
   })
 
