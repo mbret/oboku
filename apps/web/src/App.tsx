@@ -68,13 +68,13 @@ const App = memo(() => {
             <ManageTagBooksDialog />
             <AuthorizeActionDialog />
             <SetupSecretDialog />
-            <UpdateAvailableDialog serviceWorker={waitingWorker} />
             <BackgroundReplication />
             <BlockingBackdrop />
             <Effects />
           </Box>
         </Fade>
       )}
+      <UpdateAvailableDialog serviceWorker={waitingWorker} />
       <PreloadQueries
         onReady={() => {
           setIsPreloadingQueries(false)
