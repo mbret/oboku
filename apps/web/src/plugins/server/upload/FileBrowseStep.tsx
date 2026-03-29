@@ -1,4 +1,3 @@
-import { generateServerResourceId } from "@oboku/shared"
 import { memo } from "react"
 import type { TreeNode } from "../../../common/FileTreeView"
 import { TYPE } from "../constants"
@@ -29,11 +28,9 @@ export const FileBrowseStep = memo(
           link: {
             data: {
               connectorId,
+              filePath: file.id,
               etag: file.etag,
             },
-            resourceId: generateServerResourceId({
-              filePath: file.id,
-            }),
             type: TYPE,
           },
         }),

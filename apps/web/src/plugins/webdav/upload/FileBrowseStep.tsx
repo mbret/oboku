@@ -1,8 +1,4 @@
-import {
-  generateWebdavResourceId,
-  isFileSupported,
-  ObokuErrorCode,
-} from "@oboku/shared"
+import { isFileSupported, ObokuErrorCode } from "@oboku/shared"
 import type { FileStat, WebDAVClient } from "webdav"
 import { memo, useMemo } from "react"
 import type { TreeNode } from "../../../common/FileTreeView"
@@ -119,11 +115,9 @@ export const FileBrowseStep = memo(
           link: {
             data: {
               connectorId,
+              filePath: file.id,
               etag: file.etag,
             },
-            resourceId: generateWebdavResourceId({
-              filePath: file.id,
-            }),
             type: TYPE,
           },
         }),

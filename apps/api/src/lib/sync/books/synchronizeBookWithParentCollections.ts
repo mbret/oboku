@@ -28,10 +28,8 @@ export const synchronizeBookWithParentCollections = async (
     return
   }
 
-  const parentResourceIds = parents.map((parent) => parent.resourceId)
-
   logger.log(
-    `[synchronizeBookWithParentCollections] ${book._id} with ${parentResourceIds.length} parentResourceIds ${parentResourceIds}`,
+    `[synchronizeBookWithParentCollections] ${book._id} with ${parents.length} parents`,
   )
 
   const collectionResults = await Promise.all(

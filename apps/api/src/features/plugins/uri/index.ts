@@ -1,21 +1,29 @@
 import type { DataSourcePlugin } from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import axios from "axios"
-import { getUriLinkData, explodeUriResourceId } from "@oboku/shared"
 import { getHttpsAgent } from "src/lib/http/httpsAgent"
 
 const URI_TYPE = "URI"
 
-const extractNameFromUri = (resourceId: string) => {
-  const { url: downloadLink } = explodeUriResourceId(resourceId)
-  return downloadLink.substring(downloadLink.lastIndexOf("/") + 1) || "unknown"
+const extractNameFromUrl = (url: string) => {
+  return url.substring(url.lastIndexOf("/") + 1) || "unknown"
+}
+
+function resolveUrl(link: { data: { url: string } }): string {
+  const { url } = link.data
+
+  if (!url) {
+    throw new Error("URI link is missing url")
+  }
+
+  return url
 }
 
 export const dataSource: DataSourcePlugin<"URI"> = {
   type: URI_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => {
     const links = await find(ctx.db, "link", {
-      selector: { type: URI_TYPE, resourceId: item.resourceId },
+      selector: { type: URI_TYPE, data: { url: item.linkData.url } },
     })
     return {
       links: links.map((link) => ({
@@ -28,7 +36,7 @@ export const dataSource: DataSourcePlugin<"URI"> = {
     const collections = await find(ctx.db, "obokucollection", {
       selector: {
         linkType: URI_TYPE,
-        linkResourceId: item.resourceId,
+        linkData: { url: item.linkData.url },
       },
     })
     return {
@@ -39,20 +47,20 @@ export const dataSource: DataSourcePlugin<"URI"> = {
     }
   },
   getFolderMetadata: async ({ link }) => {
-    const filename = extractNameFromUri(link.resourceId)
+    const url = resolveUrl(link)
 
-    return { name: filename }
+    return { name: extractNameFromUrl(url) }
   },
   getFileMetadata: async ({ link }) => {
-    const filename = extractNameFromUri(link.resourceId)
+    const url = resolveUrl(link)
 
-    return { name: filename, canDownload: true }
+    return { name: extractNameFromUrl(url), canDownload: true }
   },
   download: async (link) => {
-    const { url: downloadLink } = explodeUriResourceId(link.resourceId)
-    const { allowSelfSigned } = getUriLinkData(link.data ?? {})
+    const url = resolveUrl(link)
+    const { allowSelfSigned } = link.data
 
-    const response = await axios.get(downloadLink, {
+    const response = await axios.get(url, {
       responseType: "stream",
       httpsAgent: getHttpsAgent(allowSelfSigned),
     })

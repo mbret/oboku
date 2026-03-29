@@ -112,7 +112,7 @@ export type GetCollectionCandidatesForItem<
  * Plugins never see this type; they receive only their provider's types.
  */
 export type PluginFacadeParams = {
-  link: Pick<LinkDocType, "type" | "resourceId" | "data">
+  link: Pick<LinkDocType, "type" | "data">
   providerCredentials?: ProviderApiCredentials<DataSourceType>
   db?: createNano.DocumentScope<unknown>
 }

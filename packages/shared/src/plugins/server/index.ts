@@ -12,6 +12,7 @@ export type ServerApiCredentials = {
 
 export const serverLinkDataSchema = z.object({
   connectorId: z.string().optional(),
+  filePath: z.string(),
   etag: z.string().optional(),
 })
 
@@ -23,22 +24,4 @@ export function isServerLinkData(data: unknown): data is ServerLinkData {
 
 export const getServerLinkData = (data: Record<string, unknown>) => {
   return serverLinkDataSchema.parse(data)
-}
-
-export const generateServerResourceId = (data: { filePath: string }) => {
-  return `server://${encodeURIComponent(data.filePath)}`
-}
-
-export const explodeServerResourceId = (resourceId: string) => {
-  if (!resourceId.startsWith("server://")) {
-    throw new Error(`Invalid resource ID format: ${resourceId}`)
-  }
-
-  const filePath = decodeURIComponent(resourceId.substring("server://".length))
-
-  if (!filePath) {
-    throw new Error(`Invalid resource ID format: ${resourceId}`)
-  }
-
-  return { filePath }
 }

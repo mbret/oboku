@@ -6,7 +6,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material"
-import { groupBy } from "@oboku/shared"
+import { groupBy, type DataSourceType } from "@oboku/shared"
 import { Fragment, memo, useMemo } from "react"
 import { Logger } from "../debug/logger.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
@@ -25,6 +25,16 @@ import { BookDanglingCollections } from "./BookDanglingCollections"
 import { BookDanglingLinks } from "./BookDanglingLinks"
 import { useFixableLinks } from "./useFixableLinks"
 
+const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
+  DRIVE: ["fileId"],
+  dropbox: ["fileId"],
+  webdav: ["connectorId", "filePath"],
+  "synology-drive": ["connectorId", "fileId"],
+  server: ["connectorId", "filePath"],
+  URI: ["url"],
+  file: ["filename"],
+}
+
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
   // const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
@@ -40,11 +50,20 @@ export const ProblemsScreen = memo(() => {
 
   const duplicatedCollections = useMemo(() => {
     const collectionKey = (c: (typeof collections)[0]) => {
-      const linkResourceId = c.linkResourceId ?? ""
-      const linkType = c.linkType ?? ""
-      const connectorId =
-        (c.linkData as { connectorId?: string } | null)?.connectorId ?? ""
-      return `${linkType}\0${linkResourceId}\0${connectorId}`
+      const identityFields = c.linkType
+        ? COLLECTION_IDENTITY_FIELDS[c.linkType]
+        : undefined
+
+      const identityEntries = c.linkData
+        ? Object.entries(c.linkData)
+            .filter(([key]) => !identityFields || identityFields.includes(key))
+            .sort(([a], [b]) => a.localeCompare(b))
+        : []
+
+      return JSON.stringify({
+        linkType: c.linkType,
+        linkData: Object.fromEntries(identityEntries),
+      })
     }
     const collectionsByKey = groupBy(collections, collectionKey)
     const keys = Object.keys(collectionsByKey)
@@ -129,9 +148,9 @@ export const ProblemsScreen = memo(() => {
               <ListItemText
                 primary="Duplicated collections from same resources"
                 secondary={`
-              We found ${duplicatedCollections.length} resourceId that are used by more than one collection. 
+              We found ${duplicatedCollections.length} same resources that are used by more than one collection. 
               This means that some of your collections should probably be merged together since they use the same origin.
-              It is not recommended to keep duplicate resourceId since it could lead to unpredictable sync.
+              It is not recommended to keep duplicates since it could lead to unpredictable sync.
               `}
               />
             </ListItemButton>

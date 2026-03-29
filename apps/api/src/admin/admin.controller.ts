@@ -173,11 +173,6 @@ export class AdminController {
     return this.signAdminTokens()
   }
 
-  @Post("migrate")
-  async migrate() {
-    await this.couchMigrationService.migrate()
-  }
-
   @Post("migrate-webdav-connectors")
   async migrateWebdavConnectors() {
     return this.couchMigrationService.migrateWebdavConnectorsToConnectors()
@@ -186,6 +181,11 @@ export class AdminController {
   @Post("migrate-webdav-resource-ids")
   async migrateWebdavResourceIds() {
     return this.couchMigrationService.migrateWebdavResourceIds()
+  }
+
+  @Post("migrate-resource-id-to-link-data")
+  async migrateResourceIdToLinkData() {
+    return this.couchMigrationService.migrateResourceIdToLinkData()
   }
 
   @Get("covers")

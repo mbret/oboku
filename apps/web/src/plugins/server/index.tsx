@@ -6,6 +6,7 @@ import { TYPE } from "./constants"
 import { DownloadBook } from "./DownloadBook"
 import { InfoScreen } from "./InfoScreen"
 import { UploadBook } from "./UploadBook"
+import { useLinkInfo } from "./useLinkInfo"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 
 const useSynchronize: ObokuPlugin<"server">["useSynchronize"] = () => {
@@ -21,10 +22,6 @@ const useRemoveBook: ObokuPlugin<"server">["useRemoveBook"] = () => {
     throw new UnsupportedMethodError("Not yet implemented")
   }
 }
-
-const useLinkInfo: ObokuPlugin<"server">["useLinkInfo"] = () => ({
-  data: undefined,
-})
 
 const useSyncSourceInfo: ObokuPlugin<"server">["useSyncSourceInfo"] = () => ({})
 

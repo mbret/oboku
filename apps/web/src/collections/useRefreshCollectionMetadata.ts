@@ -30,7 +30,6 @@ export const useRefreshCollectionMetadata = () => {
                 getRefreshMetadataPluginData({
                   linkType: collection.linkType ?? "file",
                   linkData: collection.linkData,
-                  linkResourceId: collection.linkResourceId,
                 }),
               )
 

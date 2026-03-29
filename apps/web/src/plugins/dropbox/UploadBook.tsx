@@ -7,7 +7,6 @@ import { BlockingScreen } from "../../common/BlockingBackdrop"
 import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
 import { useDropboxChoose } from "./lib/useDropboxChoose"
 import { useMountOnce } from "../../common/useMountOnce"
-import { generateDropboxResourceId } from "@oboku/shared"
 
 export const UploadBook: ObokuPlugin<"dropbox">["UploadBookComponent"] = memo(
   ({ onClose }) => {
@@ -20,8 +19,7 @@ export const UploadBook: ObokuPlugin<"dropbox">["UploadBookComponent"] = memo(
               metadata: [{ type: "link", title: doc.name }],
             },
             link: {
-              data: null,
-              resourceId: generateDropboxResourceId({ fileId: doc.id }),
+              data: { fileId: doc.id },
               type: `dropbox`,
             },
           }),

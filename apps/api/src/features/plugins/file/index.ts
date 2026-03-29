@@ -6,7 +6,10 @@ export const plugin: DataSourcePlugin<"file"> = {
   type: PLUGIN_FILE_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => {
     const links = await find(ctx.db, "link", {
-      selector: { type: PLUGIN_FILE_TYPE, resourceId: item.resourceId },
+      selector: {
+        type: PLUGIN_FILE_TYPE,
+        data: { filename: item.linkData.filename },
+      },
     })
     return {
       links: links.map((link) => ({
@@ -19,7 +22,7 @@ export const plugin: DataSourcePlugin<"file"> = {
     const collections = await find(ctx.db, "obokucollection", {
       selector: {
         linkType: PLUGIN_FILE_TYPE,
-        linkResourceId: item.resourceId,
+        linkData: { filename: item.linkData.filename },
       },
     })
     return {

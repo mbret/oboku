@@ -10,7 +10,7 @@ const BASE_DETECTION_REGEX = `\\[oboku\\~[^\\]]*\\]`
  * "foo [oboku~tags~bar,bar2]" -> { tags: ['bar', 'bar2'] }
  */
 export const extractDirectivesFromName = (
-  resourceId: string,
+  name: string,
 ): {
   isNotACollection: boolean
   tags: string[]
@@ -40,7 +40,7 @@ export const extractDirectivesFromName = (
   let googleVolumeId: string | undefined
   let metadataSourceOnly: string | undefined
 
-  const directives = resourceId
+  const directives = name
     .match(/(\[oboku~[^\]]*\])+/gi)
     ?.map((str) => str.replace(/\[oboku~/, "").replace(/\]/, ""))
 

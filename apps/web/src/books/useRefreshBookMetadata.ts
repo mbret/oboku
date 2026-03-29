@@ -40,7 +40,6 @@ export const useRefreshBookMetadata = () => {
         linkId: firstLink._id,
         linkType: firstLink.type,
         linkData: firstLink.data,
-        linkResourceId: firstLink.resourceId,
       })
 
       if (!database) return

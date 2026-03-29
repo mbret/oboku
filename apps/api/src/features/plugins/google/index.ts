@@ -8,7 +8,6 @@ import type { DataSourcePlugin } from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { getDataSourceData } from "../helpers"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync"
-import { explodeGoogleDriveResourceId } from "@oboku/shared"
 
 const DRIVE_TYPE = "DRIVE"
 
@@ -16,7 +15,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
   type: DRIVE_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => {
     const links = await find(ctx.db, "link", {
-      selector: { type: DRIVE_TYPE, resourceId: item.resourceId },
+      selector: { type: DRIVE_TYPE, data: { fileId: item.linkData.fileId } },
     })
     return {
       links: links.map((link) => ({
@@ -33,7 +32,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
     const collections = await find(ctx.db, "obokucollection", {
       selector: {
         linkType: DRIVE_TYPE,
-        linkResourceId: item.resourceId,
+        linkData: { fileId: item.linkData.fileId },
       },
     })
     return {
@@ -54,7 +53,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
     const metadata = (
       await drive.files.get(
         {
-          fileId: explodeGoogleDriveResourceId(link.resourceId).fileId,
+          fileId: link.data.fileId,
           fields: "size, name, modifiedTime",
         },
         { responseType: "json" },
@@ -76,7 +75,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
     const metadata = (
       await drive.files.get(
         {
-          fileId: explodeGoogleDriveResourceId(link.resourceId).fileId,
+          fileId: link.data.fileId,
           fields: "size, name, mimeType, modifiedTime",
         },
         { responseType: "json" },
@@ -95,9 +94,6 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
     }
   },
   download: async (link, providerCredentials) => {
-    if (!link.resourceId) {
-      throw new Error("Invalid google drive file uri")
-    }
     const auth = await authorize({ credentials: providerCredentials })
 
     const drive = google.drive({
@@ -107,7 +103,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
 
     const response = await drive.files.get(
       {
-        fileId: explodeGoogleDriveResourceId(link.resourceId).fileId,
+        fileId: link.data.fileId,
         alt: "media",
       },
       { responseType: "stream" },

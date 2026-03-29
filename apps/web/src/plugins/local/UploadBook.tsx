@@ -34,7 +34,6 @@ export const UploadBook: ObokuPlugin<"file">["UploadBookComponent"] & {
         },
         link: {
           data: { filename: file.name } satisfies FileLinkData,
-          resourceId: "file",
           type: PLUGIN_FILE_TYPE,
         },
         file,

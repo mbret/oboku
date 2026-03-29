@@ -85,7 +85,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
               if (item) {
                 upsertBookLink({
                   bookId,
-                  linkResourceId: item.resourceId,
+                  linkData: item.data,
                   linkType: dataSourcePlugin.type,
                 })
               }
