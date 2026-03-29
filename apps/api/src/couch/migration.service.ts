@@ -396,14 +396,20 @@ export class CouchMigrationService {
     let linksUpdated = 0
     let collectionsUpdated = 0
 
-    for (const { dbName: userDbName } of userDbs) {
+    for (let i = 0; i < userDbs.length; i++) {
+      const userEntry = userDbs[i]
+      if (!userEntry) continue
+      const { dbName: userDbName, email } = userEntry
       const userDbInstance = db.use<LinkDoc | CollectionDoc>(userDbName)
-      let userChanged = false
+      const docsToUpdate: (LinkDoc | CollectionDoc)[] = []
+      let userLinksUpdated = 0
+      let userCollectionsUpdated = 0
 
       const links = await userDbInstance.find({
         selector: {
           rx_model: "link",
           type: "webdav",
+          resourceId: { $exists: true },
         },
         limit: 99999,
       })
@@ -419,19 +425,18 @@ export class CouchMigrationService {
           continue
         }
 
-        await userDbInstance.insert({
+        docsToUpdate.push({
           ...link,
           resourceId: canonicalResourceId,
         })
-
-        userChanged = true
-        linksUpdated += 1
+        userLinksUpdated += 1
       }
 
       const collections = await userDbInstance.find({
         selector: {
           rx_model: "obokucollection",
           linkType: "webdav",
+          linkResourceId: { $exists: true },
         },
         limit: 99999,
       })
@@ -452,19 +457,25 @@ export class CouchMigrationService {
           continue
         }
 
-        await userDbInstance.insert({
+        docsToUpdate.push({
           ...collection,
           linkResourceId: canonicalResourceId,
         })
-
-        userChanged = true
-        collectionsUpdated += 1
+        userCollectionsUpdated += 1
       }
 
-      if (userChanged) {
+      linksUpdated += userLinksUpdated
+      collectionsUpdated += userCollectionsUpdated
+
+      if (docsToUpdate.length > 0) {
+        await userDbInstance.bulk({ docs: docsToUpdate })
         usersMigrated += 1
         logger.log(
-          `${userDbName}: migrated legacy WebDAV resource IDs in links and collections`,
+          `[${i + 1}/${userDbs.length}] ${email}: ${userLinksUpdated} links, ${userCollectionsUpdated} collections`,
+        )
+      } else {
+        logger.log(
+          `[${i + 1}/${userDbs.length}] ${email}: skipped (nothing to migrate)`,
         )
       }
     }
@@ -516,12 +527,17 @@ export class CouchMigrationService {
     let linksUpdated = 0
     let collectionsUpdated = 0
 
-    for (const { dbName: userDbName } of userDbs) {
-      let userChanged = false
+    for (let i = 0; i < userDbs.length; i++) {
+      const userEntry = userDbs[i]
+      if (!userEntry) continue
+      const { dbName: userDbName, email } = userEntry
+      const userDb = db.use<LinkDoc | CollectionDoc>(userDbName)
+      const docsToUpdate: (LinkDoc | CollectionDoc)[] = []
+      let userLinksUpdated = 0
+      let userCollectionsUpdated = 0
 
-      const linkDb = db.use<LinkDoc>(userDbName)
-      const links = await linkDb.find({
-        selector: { rx_model: "link" },
+      const links = await userDb.find({
+        selector: { rx_model: "link", resourceId: { $exists: true } },
         limit: 99999,
       })
 
@@ -540,18 +556,18 @@ export class CouchMigrationService {
 
         const { resourceId: _, ...rest } = link
 
-        await linkDb.insert({
+        docsToUpdate.push({
           ...rest,
           data: newData,
         })
-
-        userChanged = true
-        linksUpdated += 1
+        userLinksUpdated += 1
       }
 
-      const collectionDb = db.use<CollectionDoc>(userDbName)
-      const collections = await collectionDb.find({
-        selector: { rx_model: "obokucollection" },
+      const collections = await userDb.find({
+        selector: {
+          rx_model: "obokucollection",
+          linkResourceId: { $exists: true },
+        },
         limit: 99999,
       })
 
@@ -570,18 +586,26 @@ export class CouchMigrationService {
 
         const { linkResourceId: _, ...rest } = collection
 
-        await collectionDb.insert({
+        docsToUpdate.push({
           ...rest,
           linkData: newLinkData,
         })
-
-        userChanged = true
-        collectionsUpdated += 1
+        userCollectionsUpdated += 1
       }
 
-      if (userChanged) {
+      linksUpdated += userLinksUpdated
+      collectionsUpdated += userCollectionsUpdated
+
+      if (docsToUpdate.length > 0) {
+        await userDb.bulk({ docs: docsToUpdate })
         usersMigrated += 1
-        logger.log(`${userDbName}: migrated resourceId to data fields`)
+        logger.log(
+          `[${i + 1}/${userDbs.length}] ${email}: ${userLinksUpdated} links, ${userCollectionsUpdated} collections`,
+        )
+      } else {
+        logger.log(
+          `[${i + 1}/${userDbs.length}] ${email}: skipped (nothing to migrate)`,
+        )
       }
     }
 
