@@ -547,7 +547,7 @@ export class CouchMigrationService {
         }
 
         const newData = migrateResourceIdToData(
-          link.type ?? "",
+          String(link.type ?? ""),
           link.resourceId,
           normalizeDataField(link.data),
         )
@@ -577,7 +577,7 @@ export class CouchMigrationService {
         }
 
         const newLinkData = migrateResourceIdToData(
-          collection.linkType ?? "",
+          String(collection.linkType ?? ""),
           collection.linkResourceId,
           normalizeDataField(collection.linkData),
         )
