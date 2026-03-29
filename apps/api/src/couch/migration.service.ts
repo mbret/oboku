@@ -30,7 +30,7 @@ type LinkDoc = {
   _rev?: string
   type?: string
   resourceId?: string
-  data?: Record<string, unknown> | null
+  data?: Record<string, unknown> | string | null
   modifiedAt?: string | null
   [key: string]: unknown
 }
@@ -40,7 +40,7 @@ type CollectionDoc = {
   _rev?: string
   linkType?: string
   linkResourceId?: string
-  linkData?: Record<string, unknown> | null
+  linkData?: Record<string, unknown> | string | null
   modifiedAt?: string | null
   [key: string]: unknown
 }
@@ -102,6 +102,36 @@ function safeDecodeURIComponent(value: string): string {
   } catch {
     return value
   }
+}
+
+/**
+ * Older CouchDB installs may store `data` / `linkData` as a JSON-encoded
+ * string rather than an object. This normalises either representation into
+ * a plain object (or null) so the migration can safely spread it.
+ */
+function normalizeDataField(value: unknown): Record<string, unknown> | null {
+  if (value == null) return null
+  if (typeof value === "string") {
+    try {
+      const parsed: unknown = JSON.parse(value)
+      if (
+        typeof parsed === "object" &&
+        parsed !== null &&
+        !Array.isArray(parsed)
+      ) {
+        // Validated as a plain object originating from legacy JSON-string storage
+        return parsed as Record<string, unknown>
+      }
+    } catch {
+      // Malformed JSON – treat as absent
+    }
+    return null
+  }
+  if (typeof value === "object" && !Array.isArray(value)) {
+    // Already an object; safe to treat as record after the runtime checks above
+    return value as Record<string, unknown>
+  }
+  return null
 }
 
 /**
@@ -503,7 +533,7 @@ export class CouchMigrationService {
         const newData = migrateResourceIdToData(
           link.type ?? "",
           link.resourceId,
-          link.data ?? null,
+          normalizeDataField(link.data),
         )
 
         if (!newData) continue
@@ -533,7 +563,7 @@ export class CouchMigrationService {
         const newLinkData = migrateResourceIdToData(
           collection.linkType ?? "",
           collection.linkResourceId,
-          collection.linkData ?? null,
+          normalizeDataField(collection.linkData),
         )
 
         if (!newLinkData) continue

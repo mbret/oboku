@@ -124,6 +124,16 @@ export const replicateCouchDBCollection = ({
           }
         }
 
+        if ("rx_model" in docData && docData.rx_model === "obokucollection") {
+          if ("linkData" in docData && typeof docData.linkData === "string") {
+            try {
+              docData.linkData = JSON.parse(docData.linkData)
+            } catch (_error) {
+              docData.linkData = {}
+            }
+          }
+        }
+
         return stripLegacyResourceIdFromDeletedDoc(docData)
       },
     },
