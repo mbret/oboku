@@ -85,24 +85,6 @@ export const replicateCouchDBCollection = ({
        * (optional)
        */
       modifier: (docData) => {
-        // @todo move somewhere else
-        if ("rx_model" in docData && docData.rx_model === "tag") {
-          // old property not used anymore
-          if ("isHidden" in docData) {
-            delete docData.isHidden
-          }
-        }
-
-        if ("rx_model" in docData && docData.rx_model === "link") {
-          if ("data" in docData && typeof docData.data === "string") {
-            try {
-              docData.data = JSON.parse(docData.data)
-            } catch (_error) {
-              docData.data = {}
-            }
-          }
-        }
-
         return docData
       },
     },
