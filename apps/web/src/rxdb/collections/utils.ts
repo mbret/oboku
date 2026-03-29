@@ -17,7 +17,12 @@ export function migrateResourceIdToData(
   resourceId: string | undefined,
   existingData: Record<string, unknown> | null | undefined,
 ): Record<string, unknown> {
-  const base = existingData ?? {}
+  const base =
+    existingData != null &&
+    typeof existingData === "object" &&
+    !Array.isArray(existingData)
+      ? existingData
+      : {}
 
   if (!resourceId) return base
 

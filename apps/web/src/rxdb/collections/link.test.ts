@@ -20,6 +20,38 @@ describe("migrateResourceIdToData", () => {
     })
   })
 
+  describe("when existingData is a legacy non-object value", () => {
+    it("falls back to empty object when existingData is a string", () => {
+      expect(
+        migrateResourceIdToData(
+          "DRIVE",
+          "drive-abc",
+          // legacy string payload coerced through untyped replication
+          "some-legacy-string" as unknown as Record<string, unknown>,
+        ),
+      ).toEqual({ fileId: "abc" })
+    })
+
+    it("falls back to empty object when existingData is a number", () => {
+      expect(
+        migrateResourceIdToData(
+          "DRIVE",
+          "drive-abc",
+          42 as unknown as Record<string, unknown>,
+        ),
+      ).toEqual({ fileId: "abc" })
+    })
+
+    it("falls back to empty object when existingData is an array", () => {
+      expect(
+        migrateResourceIdToData("DRIVE", "drive-abc", [
+          "a",
+          "b",
+        ] as unknown as Record<string, unknown>),
+      ).toEqual({ fileId: "abc" })
+    })
+  })
+
   describe("unknown type", () => {
     it("returns base unchanged for an unrecognized type", () => {
       expect(

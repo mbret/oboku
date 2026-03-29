@@ -262,7 +262,12 @@ export const DownloadFlowRequestItem = memo(
       }
       default: {
         const _exhaustive: never = link
-        return _exhaustive
+        onError(
+          new Error(
+            `Unsupported link type: ${(_exhaustive as DownloadLink).type}`,
+          ),
+        )
+        return null
       }
     }
   },
