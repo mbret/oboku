@@ -5,7 +5,6 @@ import { memo, useEffect } from "react"
 import { SwitchMutationCancelError, useSwitchMutation$ } from "reactjrx"
 import { Logger } from "../../debug/logger.shared"
 import { CancelError } from "../../errors/errors.shared"
-import { generateGoogleDriveResourceId } from "@oboku/shared"
 
 export const UploadBook: ObokuPlugin<"DRIVE">["UploadBookComponent"] = memo(
   ({ onClose, requestPopup }) => {
@@ -27,10 +26,7 @@ export const UploadBook: ObokuPlugin<"DRIVE">["UploadBookComponent"] = memo(
                   metadata: [{ type: "link", title: doc.name }],
                 },
                 link: {
-                  data: null,
-                  resourceId: generateGoogleDriveResourceId({
-                    fileId: doc.id,
-                  }),
+                  data: { fileId: doc.id },
                   type: `DRIVE`,
                 },
               }),

@@ -57,7 +57,6 @@ export const syncCollection = async ({
     collectionId = await addNewCollection({
       ctx,
       name: item.name,
-      linkResourceId: item.resourceId,
       linkData: item.linkData,
       linkType: ctx.dataSourceType,
     })

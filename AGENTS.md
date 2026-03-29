@@ -41,6 +41,12 @@ When implementing changes in this codebase, prioritize consistency and consolida
 - Keep content strings colocated in the consuming app (e.g. web) so they can be localized and adjusted per product without touching shared code.
 - The shared package may define error codes, types, and structure; the app defines the human-readable messages.
 
+### Package manager
+
+- Use `npm` as the default package manager for this repository.
+- Prefer `npm` commands over `pnpm` or `yarn` unless the user explicitly asks otherwise.
+- When installing dependencies, running scripts, or reproducing CI/local workflows, follow the root `package-lock.json` as the source of truth.
+
 ### Synology API docs
 
 - For Synology integrations, treat the public DSM Login Web API guide and File Station API guide as generic protocol references only.

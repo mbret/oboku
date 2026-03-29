@@ -1,14 +1,12 @@
-import { explodeServerResourceId, getServerLinkData } from "@oboku/shared"
 import { memo } from "react"
 import type { DownloadBookComponentProps } from "../types"
 import { WebdavDownloadBook } from "../webdav/DownloadBook"
 import { configuration } from "../../config/configuration"
 
 export const DownloadBook = memo(function DownloadBook(
-  props: DownloadBookComponentProps,
+  props: DownloadBookComponentProps<"server">,
 ) {
-  const { connectorId } = getServerLinkData(props.link.data ?? {})
-  const { filePath } = explodeServerResourceId(props.link.resourceId)
+  const { connectorId, filePath } = props.link.data
 
   return (
     <WebdavDownloadBook

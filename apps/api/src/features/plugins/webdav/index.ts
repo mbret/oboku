@@ -7,8 +7,6 @@ import {
 } from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import {
-  explodeWebdavResourceId,
-  generateWebdavResourceId,
   isFileSupported,
   isCollectionOfType,
   WebDAVDataSourceDocType,
@@ -26,15 +24,18 @@ import {
 const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
 
 async function resolveClientAndPath(params: {
-  link: { data?: { connectorId?: string } | null; resourceId: string }
+  link: { data: { connectorId?: string; filePath?: string } }
   providerCredentials?: { password: string } | null
   db?: Parameters<typeof getConnectorById>[0]
 }) {
   const { link, providerCredentials, db } = params
-  const connectorId = link.data?.connectorId
+  const connectorId = link.data.connectorId
+  const filePath = link.data.filePath
 
-  if (!connectorId || !providerCredentials || !db) {
-    throw new Error("WebDAV credentials (password) and connector are required")
+  if (!connectorId || !filePath || !providerCredentials || !db) {
+    throw new Error(
+      "WebDAV credentials (password), connector, and filePath are required",
+    )
   }
 
   const connector = await getConnectorById(db, connectorId, "webdav")
@@ -47,7 +48,6 @@ async function resolveClientAndPath(params: {
     ...connector,
     password: providerCredentials.password,
   })
-  const { filePath } = explodeWebdavResourceId(link.resourceId)
 
   return { client, filePath }
 }
@@ -81,8 +81,8 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
    *
    * Matching rule:
    * - same provider type
-   * - same resourceId
-   * - same connectorId
+   * - same data.filePath
+   * - same data.connectorId
    *
    * In other words, "same normalized server" is not enough to treat two links
    * as the same persisted identity. That broader notion may be useful for other
@@ -99,8 +99,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
     const links = await find(ctx.db, "link", {
       selector: {
         type: WEBDAV_TYPE,
-        resourceId: item.resourceId,
-        data: { connectorId },
+        data: { connectorId, filePath: item.linkData.filePath },
       },
     })
     const datasourceData = ctx.dataSource
@@ -125,7 +124,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
   },
   /**
    * Same identity rule as getLinkCandidatesForItem: collections are only
-   * considered the same persisted resource when both resourceId and connectorId
+   * considered the same persisted resource when both filePath and connectorId
    * match exactly.
    */
   getCollectionCandidatesForItem: async (item, ctx) => {
@@ -136,8 +135,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
     const collections = await find(ctx.db, "obokucollection", {
       selector: {
         linkType: WEBDAV_TYPE,
-        linkResourceId: item.resourceId,
-        linkData: { connectorId },
+        linkData: { connectorId, filePath: item.linkData.filePath },
       },
     })
     const datasourceData = ctx.dataSource
@@ -235,10 +233,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
                 type: file.type,
                 modifiedAt: file.lastmod,
                 name: file.basename,
-                linkData: { connectorId },
-                resourceId: generateWebdavResourceId({
-                  filePath: file.filename,
-                }),
+                linkData: { connectorId, filePath: file.filename },
               } satisfies SynchronizeAbleItem<"webdav">,
             ]
           }
@@ -255,10 +250,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
               type: "folder",
               modifiedAt: file.lastmod,
               name: file.basename,
-              linkData: { connectorId },
-              resourceId: generateWebdavResourceId({
-                filePath: file.filename,
-              }),
+              linkData: { connectorId, filePath: file.filename },
               items: childItems,
             } satisfies SynchronizeAbleItem<"webdav">,
           ]

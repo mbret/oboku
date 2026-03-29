@@ -1,4 +1,4 @@
-import { generateSynologyDriveResourceId, isFileSupported } from "@oboku/shared"
+import { isFileSupported } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
 import {
   browseSynologyDriveItems,
@@ -383,12 +383,10 @@ const toSynchronizeAbleItem = async ({
     return {
       linkData: {
         connectorId,
+        fileId,
       },
       modifiedAt,
       name: getSynologyDriveItemName(item),
-      resourceId: generateSynologyDriveResourceId({
-        fileId,
-      }),
       type: "file",
     }
   }
@@ -420,12 +418,10 @@ const toSynchronizeAbleItem = async ({
     items: childItems,
     linkData: {
       connectorId,
+      fileId,
     },
     modifiedAt,
     name: getSynologyDriveItemName(item),
-    resourceId: generateSynologyDriveResourceId({
-      fileId,
-    }),
     type: "folder",
   }
 }

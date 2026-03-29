@@ -2,17 +2,17 @@ import { useMutation$ } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { first, from, of, switchMap } from "rxjs"
 import { Logger } from "../debug/logger.shared"
-import type { DataSourceDocType } from "@oboku/shared"
+import type { DataSourceDocType, LinkData } from "@oboku/shared"
 
 export const useUpsertLink = () => {
   return useMutation$({
     mutationFn: ({
       bookId,
-      resourceId,
+      data,
       type,
     }: {
       bookId: string
-      resourceId: string
+      data: LinkData
       type: DataSourceDocType["type"]
     }) => {
       return latestDatabase$.pipe(
@@ -22,7 +22,7 @@ export const useUpsertLink = () => {
             db.link
               .findOne({
                 selector: {
-                  resourceId,
+                  data,
                   type,
                   book: bookId,
                 },
@@ -38,8 +38,7 @@ export const useUpsertLink = () => {
 
               return from(
                 db.link.safeInsert({
-                  data: type === "URI" ? {} : null,
-                  resourceId,
+                  data,
                   type,
                   book: bookId,
                   createdAt: new Date().toISOString(),

@@ -30,6 +30,7 @@ type LinkDoc = {
   _rev?: string
   type?: string
   resourceId?: string
+  data?: Record<string, unknown> | null
   modifiedAt?: string | null
   [key: string]: unknown
 }
@@ -39,6 +40,7 @@ type CollectionDoc = {
   _rev?: string
   linkType?: string
   linkResourceId?: string
+  linkData?: Record<string, unknown> | null
   modifiedAt?: string | null
   [key: string]: unknown
 }
@@ -92,6 +94,83 @@ const toCanonicalWebdavResourceId = (resourceId: string) => {
   }
 
   return generateCanonicalWebdavResourceIdForMigration(filePath)
+}
+
+function safeDecodeURIComponent(value: string): string {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+/**
+ * Parses a legacy resourceId / linkResourceId string and returns the identity
+ * fields to merge into data / linkData for the given provider type.
+ * Returns null if there is nothing to migrate.
+ */
+function migrateResourceIdToData(
+  type: string,
+  resourceId: string,
+  existingData: Record<string, unknown> | null,
+): Record<string, unknown> | null {
+  const base = existingData ?? {}
+
+  switch (type) {
+    case "DRIVE": {
+      const fileId = resourceId.startsWith("drive-")
+        ? resourceId.substring("drive-".length)
+        : resourceId
+      return { ...base, fileId }
+    }
+
+    case "dropbox": {
+      const fileId = resourceId.startsWith("dropbox-")
+        ? resourceId.substring("dropbox-".length)
+        : resourceId
+      return { ...base, fileId }
+    }
+
+    case "webdav": {
+      const withoutPrefix = resourceId.startsWith("webdav://")
+        ? resourceId.substring("webdav://".length)
+        : resourceId
+      // Strip the host portion from the legacy "webdav://host:encodedPath"
+      // format. Must stay in sync with the client-side migration in
+      // apps/web/src/rxdb/collections/utils.ts.
+      const encodedFilePath = withoutPrefix.includes(":")
+        ? withoutPrefix.substring(withoutPrefix.lastIndexOf(":") + 1)
+        : withoutPrefix
+      return { ...base, filePath: safeDecodeURIComponent(encodedFilePath) }
+    }
+
+    case "synology-drive": {
+      const withoutPrefix = resourceId.startsWith("synology-drive://")
+        ? resourceId.substring("synology-drive://".length)
+        : resourceId
+      return { ...base, fileId: safeDecodeURIComponent(withoutPrefix) }
+    }
+
+    case "server": {
+      const withoutPrefix = resourceId.startsWith("server://")
+        ? resourceId.substring("server://".length)
+        : resourceId
+      return { ...base, filePath: safeDecodeURIComponent(withoutPrefix) }
+    }
+
+    case "URI": {
+      const url = resourceId.startsWith("oboku-link-")
+        ? resourceId.substring("oboku-link-".length)
+        : resourceId
+      return { ...base, url }
+    }
+
+    case "file":
+      return null
+
+    default:
+      return null
+  }
 }
 
 @Injectable()
@@ -253,7 +332,7 @@ export class CouchMigrationService {
      * - Parse the existing WebDAV resource id with `explodeWebdavResourceId()`.
      * - Extract the file/folder path (`filePath`).
      * - Rebuild the value with `generateWebdavResourceId({ filePath })`.
-     * - Save the document back with the canonical id and a fresh `modifiedAt`.
+     * - Save the document back with the canonical id.
      *
      * Important scope note:
      * - This migration only rewrites WebDAV ids.
@@ -312,7 +391,6 @@ export class CouchMigrationService {
 
         await userDbInstance.insert({
           ...link,
-          modifiedAt: new Date().toISOString(),
           resourceId: canonicalResourceId,
         })
 
@@ -347,7 +425,6 @@ export class CouchMigrationService {
         await userDbInstance.insert({
           ...collection,
           linkResourceId: canonicalResourceId,
-          modifiedAt: new Date().toISOString(),
         })
 
         userChanged = true
@@ -369,68 +446,119 @@ export class CouchMigrationService {
     return { usersMigrated, linksUpdated, collectionsUpdated }
   }
 
-  async migrate() {
+  async migrateResourceIdToLinkData(): Promise<{
+    usersMigrated: number
+    linksUpdated: number
+    collectionsUpdated: number
+  }> {
     /**
-     * Legacy migration: normalize `link.data` from serialized JSON strings to objects.
+     * Migration: `resourceId` -> `data` identity fields on links,
+     *            `linkResourceId` -> `linkData` identity fields on collections.
      *
      * Why this exists:
-     * - Some older link documents stored `data` as a JSON string.
-     * - Current code expects `data` to already be a JSON object.
+     * - Previously, each link encoded its provider-specific identity (fileId,
+     *   filePath, url) into a single `resourceId` string using a prefix scheme
+     *   (e.g. "drive-{fileId}", "webdav://{encodedPath}").
+     * - The code now stores identity fields directly in `link.data` (e.g.
+     *   `data.fileId`, `data.filePath`) and queries by those fields.
+     * - Collections had the same pattern with `linkResourceId`.
      *
      * Exactly what this migration rewrites:
-     * - Scans every `link` document in every user database.
-     * - If `link.data` is a string, tries to `JSON.parse()` it.
-     * - Re-saves the document with `data` as an object.
-     *
-     * Parse-failure behavior:
-     * - If parsing fails, the migration does not abort the whole user/database.
-     * - It logs the error and replaces `data` with `{}` for that document so the
-     *   document is still brought into the object-based shape expected by the app.
+     * - For every `link` document: parses `resourceId` per `type`, merges the
+     *   extracted identity field into `data`, removes `resourceId`.
+     * - For every `obokucollection` document: parses `linkResourceId` per
+     *   `linkType`, merges into `linkData`, removes `linkResourceId`.
      *
      * Idempotency:
      * - Safe to run more than once.
-     * - Documents already using object-shaped `data` are ignored.
+     * - Documents without `resourceId` / `linkResourceId` are skipped.
+     * - Documents that already have the identity field in `data` / `linkData`
+     *   are skipped (the extracted value would match what's already there).
      */
     const db = await this.couchService.createAdminNanoInstance()
     const userDbs = await listUserDatabases(db)
 
-    logger.log(`Migrating ${userDbs.length} user databases`)
+    logger.log(
+      `Migrating resourceId to link data for ${userDbs.length} user databases`,
+    )
 
-    let linkChanged = 0
-    const userChanged = new Set<string>()
+    let usersMigrated = 0
+    let linksUpdated = 0
+    let collectionsUpdated = 0
 
     for (const { dbName: userDbName } of userDbs) {
-      const userDbInstance = db.use(userDbName)
+      let userChanged = false
 
-      logger.log(`Migrating ${userDbName} links.data`)
-
-      const result = await userDbInstance.find({
-        selector: {
-          rx_model: "link",
-        },
+      const linkDb = db.use<LinkDoc>(userDbName)
+      const links = await linkDb.find({
+        selector: { rx_model: "link" },
         limit: 99999,
       })
 
-      logger.log(`Found ${result.docs.length} links in ${userDbName}`)
-
-      for (const link of result.docs) {
-        if ("data" in link && typeof link.data === "string") {
-          logger.log(`Migrating ${link._id} to use data JSON format`)
-
-          try {
-            link.data = JSON.parse(link.data)
-          } catch (error) {
-            console.error(error)
-            link.data = {}
-          }
-
-          await userDbInstance.insert(link)
-          linkChanged++
-          userChanged.add(userDbName)
+      for (const link of links.docs) {
+        if (typeof link.resourceId !== "string") {
+          continue
         }
+
+        const newData = migrateResourceIdToData(
+          link.type ?? "",
+          link.resourceId,
+          link.data ?? null,
+        )
+
+        if (!newData) continue
+
+        const { resourceId: _, ...rest } = link
+
+        await linkDb.insert({
+          ...rest,
+          data: newData,
+        })
+
+        userChanged = true
+        linksUpdated += 1
+      }
+
+      const collectionDb = db.use<CollectionDoc>(userDbName)
+      const collections = await collectionDb.find({
+        selector: { rx_model: "obokucollection" },
+        limit: 99999,
+      })
+
+      for (const collection of collections.docs) {
+        if (typeof collection.linkResourceId !== "string") {
+          continue
+        }
+
+        const newLinkData = migrateResourceIdToData(
+          collection.linkType ?? "",
+          collection.linkResourceId,
+          collection.linkData ?? null,
+        )
+
+        if (!newLinkData) continue
+
+        const { linkResourceId: _, ...rest } = collection
+
+        await collectionDb.insert({
+          ...rest,
+          linkData: newLinkData,
+        })
+
+        userChanged = true
+        collectionsUpdated += 1
+      }
+
+      if (userChanged) {
+        usersMigrated += 1
+        logger.log(`${userDbName}: migrated resourceId to data fields`)
       }
     }
 
-    logger.log(`Migrated ${linkChanged} links in ${userChanged.size} users`)
+    logger.log(
+      `Migrated resourceId to link data: ${usersMigrated} users, ${linksUpdated} links, ${collectionsUpdated} collections`,
+    )
+
+    return { usersMigrated, linksUpdated, collectionsUpdated }
   }
 }

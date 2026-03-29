@@ -39,13 +39,12 @@ export const processRefreshMetadata = async (
         // we always get updated link data
         // we take a chance to update the collection from its resource
         switchMap(() =>
-          collection.linkResourceId && collection.linkType
+          collection.linkData && collection.linkType
             ? from(
                 pluginFacade.getFolderMetadata({
                   link: {
-                    resourceId: collection.linkResourceId,
                     type: collection.linkType,
-                    data: collection.linkData ?? null,
+                    data: collection.linkData,
                   },
                   providerCredentials,
                   db,

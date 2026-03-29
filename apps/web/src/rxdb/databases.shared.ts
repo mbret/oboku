@@ -80,7 +80,7 @@ export const createDatabase = (
           storage,
         })
       : storage,
-    multiInstance: false,
+    multiInstance: true,
     cleanupPolicy: {
       /**
        * The minimum time in milliseconds for how long

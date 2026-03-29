@@ -39,13 +39,8 @@ export const ProblemsScreen = memo(() => {
   )
 
   const duplicatedCollections = useMemo(() => {
-    const collectionKey = (c: (typeof collections)[0]) => {
-      const linkResourceId = c.linkResourceId ?? ""
-      const linkType = c.linkType ?? ""
-      const connectorId =
-        (c.linkData as { connectorId?: string } | null)?.connectorId ?? ""
-      return `${linkType}\0${linkResourceId}\0${connectorId}`
-    }
+    const collectionKey = (c: (typeof collections)[0]) =>
+      JSON.stringify({ linkType: c.linkType, linkData: c.linkData })
     const collectionsByKey = groupBy(collections, collectionKey)
     const keys = Object.keys(collectionsByKey)
     const duplicatedCollections = keys
@@ -129,9 +124,9 @@ export const ProblemsScreen = memo(() => {
               <ListItemText
                 primary="Duplicated collections from same resources"
                 secondary={`
-              We found ${duplicatedCollections.length} resourceId that are used by more than one collection. 
+              We found ${duplicatedCollections.length} same resources that are used by more than one collection. 
               This means that some of your collections should probably be merged together since they use the same origin.
-              It is not recommended to keep duplicate resourceId since it could lead to unpredictable sync.
+              It is not recommended to keep duplicates since it could lead to unpredictable sync.
               `}
               />
             </ListItemButton>

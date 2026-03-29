@@ -1,4 +1,3 @@
-import { explodeSynologyDriveResourceId } from "@oboku/shared"
 import { memo, useEffect } from "react"
 import {
   from,
@@ -31,11 +30,10 @@ export const DownloadBook = memo(
     onError,
     onResolve,
     signal,
-  }: DownloadBookComponentProps) => {
+  }: DownloadBookComponentProps<"synology-drive">) => {
     const requestSynologyDriveSession = useRequestSynologyDriveSession()
     const onErrorRef = useLiveRef(onError)
-    const connectorId =
-      link.type === "synology-drive" ? link.data?.connectorId : undefined
+    const connectorId = link.data.connectorId
 
     const { mutate: download } = useMutation$({
       mutationFn: ({
@@ -45,7 +43,7 @@ export const DownloadBook = memo(
         connectorId: string
         onUnmount$: Observable<void>
       }) => {
-        const { fileId } = explodeSynologyDriveResourceId(link.resourceId)
+        const { fileId } = link.data
         const abortController = new AbortController()
         let cancelReason: "user" | "lifecycle" | null = null
         const userCancel$: Observable<unknown> = signal.aborted
