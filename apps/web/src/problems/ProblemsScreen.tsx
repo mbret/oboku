@@ -6,7 +6,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material"
-import { groupBy } from "@oboku/shared"
+import { groupBy, type DataSourceType } from "@oboku/shared"
 import { Fragment, memo, useMemo } from "react"
 import { Logger } from "../debug/logger.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
@@ -25,6 +25,16 @@ import { BookDanglingCollections } from "./BookDanglingCollections"
 import { BookDanglingLinks } from "./BookDanglingLinks"
 import { useFixableLinks } from "./useFixableLinks"
 
+const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
+  DRIVE: ["fileId"],
+  dropbox: ["fileId"],
+  webdav: ["connectorId", "filePath"],
+  "synology-drive": ["connectorId", "fileId"],
+  server: ["connectorId", "filePath"],
+  URI: ["url"],
+  file: ["filename"],
+}
+
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
   // const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
@@ -39,8 +49,22 @@ export const ProblemsScreen = memo(() => {
   )
 
   const duplicatedCollections = useMemo(() => {
-    const collectionKey = (c: (typeof collections)[0]) =>
-      JSON.stringify({ linkType: c.linkType, linkData: c.linkData })
+    const collectionKey = (c: (typeof collections)[0]) => {
+      const identityFields = c.linkType
+        ? COLLECTION_IDENTITY_FIELDS[c.linkType]
+        : undefined
+
+      const identityEntries = c.linkData
+        ? Object.entries(c.linkData)
+            .filter(([key]) => !identityFields || identityFields.includes(key))
+            .sort(([a], [b]) => a.localeCompare(b))
+        : []
+
+      return JSON.stringify({
+        linkType: c.linkType,
+        linkData: Object.fromEntries(identityEntries),
+      })
+    }
     const collectionsByKey = groupBy(collections, collectionKey)
     const keys = Object.keys(collectionsByKey)
     const duplicatedCollections = keys
