@@ -47,7 +47,7 @@ const ConnectorListItem = memo(
   },
 )
 
-export const ConnectorInfoScreen = memo(
+export const ConnectorInfoSection = memo(
   ({
     connectorType,
     maxConnectors,

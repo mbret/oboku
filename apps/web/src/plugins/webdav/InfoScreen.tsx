@@ -1,3 +1,3 @@
-import { ConnectorInfoScreen } from "../../connectors/ConnectorInfoScreen"
+import { ConnectorInfoSection } from "../../connectors/ConnectorInfoSection"
 
-export const InfoScreen = () => <ConnectorInfoScreen connectorType="webdav" />
+export const InfoScreen = () => <ConnectorInfoSection connectorType="webdav" />

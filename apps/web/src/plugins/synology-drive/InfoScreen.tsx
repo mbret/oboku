@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material"
 import { useSignalValue } from "reactjrx"
-import { ConnectorInfoScreen } from "../../connectors/ConnectorInfoScreen"
+import { ConnectorInfoSection } from "../../connectors/ConnectorInfoSection"
 import { useConnector } from "../../connectors/useConnector"
 import {
   SYNOLOGY_DRIVE_SESSION_MAX_AGE_MS,
@@ -84,6 +84,6 @@ export const InfoScreen = () => (
         <CurrentSessionSection />
       </List>
     </Stack>
-    <ConnectorInfoScreen connectorType="synology-drive" />
+    <ConnectorInfoSection connectorType="synology-drive" />
   </Box>
 )
