@@ -81,7 +81,6 @@ export const DataSourceForm = memo(
             <ConnectorSelector
               {...field}
               connectorType="webdav"
-              showManagementButtons={false}
               helperText={
                 fieldState.invalid
                   ? errorToHelperText(fieldState.error)

@@ -45,8 +45,6 @@ export const DataSourceForm = memo(
             <ConnectorSelector
               {...field}
               connectorType="server"
-              maxConnectors={1}
-              showManagementButtons={false}
               helperText={
                 fieldState.invalid
                   ? errorToHelperText(fieldState.error)

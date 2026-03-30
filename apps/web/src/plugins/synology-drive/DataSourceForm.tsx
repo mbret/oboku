@@ -163,7 +163,6 @@ export const DataSourceForm = memo(
         <ConnectorSelector
           {...connectorField}
           connectorType="synology-drive"
-          showManagementButtons={false}
           onChange={(event) => handleConnectorChange(event)}
           helperText={
             connectorFieldState.invalid
