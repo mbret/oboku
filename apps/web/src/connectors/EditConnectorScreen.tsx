@@ -9,6 +9,7 @@ import type { SettingsConnectorType } from "@oboku/shared"
 import { CONNECTOR_DETAILS } from "./connectorDetails"
 import { useDeleteConnector } from "./useDeleteConnector"
 import { getConnectorForm } from "./AddConnectorScreen"
+import { Page } from "../common/Page"
 
 export const EditConnectorScreen = memo(() => {
   const { type, id = "-1" } = useParams<{
@@ -28,7 +29,7 @@ export const EditConnectorScreen = memo(() => {
   if (!details || !Form) return null
 
   return (
-    <>
+    <Page>
       <TopBarNavigation title={`${details.label}: Edit connector`} />
       <Form
         connectorId={id}
@@ -56,6 +57,6 @@ export const EditConnectorScreen = memo(() => {
           Delete
         </Button>
       </Form>
-    </>
+    </Page>
   )
 })
