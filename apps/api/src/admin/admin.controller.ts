@@ -146,10 +146,7 @@ export class AdminController {
     const expectedLogin = this.appConfig.ADMIN_LOGIN
     const expectedPassword = this.appConfig.ADMIN_PASSWORD
 
-    if (
-      (expectedLogin?.length ?? 0) < 1 ||
-      (expectedPassword?.length ?? 0) < 1
-    ) {
+    if (!expectedLogin || !expectedPassword) {
       console.error("Admin credentials not set")
 
       throw new UnauthorizedException()

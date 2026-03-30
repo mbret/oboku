@@ -7,12 +7,13 @@ import {
 } from "@mui/material"
 import type { FC } from "react"
 import { plugins } from "../plugins/configure"
-import { isPluginEnabled } from "../plugins/useIsPluginEnabled"
+import { useGetIsPluginEnabled } from "../plugins/useIsPluginEnabled"
 
 export const DataSourcesAddDrawer: FC<{
   open: boolean
   onClose: (key?: string) => void
 }> = ({ open, onClose }) => {
+  const isPluginEnabled = useGetIsPluginEnabled()
   const dataSourcesPlugins = plugins.filter((plugin) => plugin.canSynchronize)
 
   return (

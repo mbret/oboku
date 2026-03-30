@@ -150,7 +150,6 @@ export type ObokuPlugin<
    */
   type: T
   description?: string
-  sensitive?: boolean
   Icon?: ComponentType<SvgIconProps>
   UploadBookComponent?: FunctionComponent<
     {

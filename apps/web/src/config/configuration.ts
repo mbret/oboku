@@ -1,17 +1,14 @@
 import { BehaviorSubject, filter, first } from "rxjs"
 import { Logger } from "../debug/logger.shared"
 import { httpClientApi } from "../http/httpClientApi.web"
-
-type ServerConfig = {
-  GOOGLE_CLIENT_ID?: string
-  GOOGLE_API_KEY?: string
-  DROPBOX_CLIENT_ID?: string
-}
+import type { GetWebConfigResponse } from "@oboku/shared"
 
 const restoreConfig = () => {
   const config = localStorage.getItem("config")
 
-  return config ? (JSON.parse(config) as ServerConfig) : undefined
+  return config
+    ? (JSON.parse(config) as Partial<GetWebConfigResponse>)
+    : undefined
 }
 
 /**
@@ -20,7 +17,7 @@ const restoreConfig = () => {
  */
 class Configuration extends BehaviorSubject<{
   state: "loading" | "loaded"
-  config: ServerConfig
+  config: Partial<GetWebConfigResponse>
 }> {
   constructor() {
     const restoredConfig = restoreConfig()
@@ -54,9 +51,9 @@ class Configuration extends BehaviorSubject<{
     }
   }
 
-  fetchConfig = async (): Promise<ServerConfig | undefined> => {
+  fetchConfig = async (): Promise<GetWebConfigResponse | undefined> => {
     try {
-      const { data } = await httpClientApi.fetch<ServerConfig>(
+      const { data } = await httpClientApi.fetch<GetWebConfigResponse>(
         `${this.API_URL}/web/config`,
       )
 
@@ -168,6 +165,10 @@ class Configuration extends BehaviorSubject<{
 
   get FEATURE_DROPBOX_ENABLED() {
     return !!this.DROPBOX_CLIENT_ID
+  }
+
+  get FEATURE_SERVER_SYNC_ENABLED() {
+    return !!this.value.config.FEATURE_SERVER_SYNC_ENABLED
   }
 }
 
