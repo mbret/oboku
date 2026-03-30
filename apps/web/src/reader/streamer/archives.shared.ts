@@ -4,23 +4,17 @@ import {
   createArchiveFromLibArchive,
   createArchiveFromText,
 } from "@prose-reader/streamer"
-import { loadAsync } from "jszip"
+import { loadAsync as jszipLoadAsync } from "jszip"
 import { Logger } from "../../debug/logger.shared"
 import type { getBookFile } from "../../download/getBookFile.shared"
 import type { PromiseReturnType } from "../../types"
 import { Archive as LibARchive } from "libarchive.js"
 import { StreamerFileNotSupportedError } from "../../errors/errors.shared"
-
-const jsZipCompatibleMimeTypes = [
-  `application/epub+zip`,
-  `application/x-cbz`,
-  `application/zip`,
-  `application/x-zip-compressed`,
-]
+import { isPotentialZipFile } from "@oboku/shared"
 
 const loadDataWithJsZip = async (data: Blob | File) => {
   try {
-    return await loadAsync(data)
+    return await jszipLoadAsync(data)
   } catch (e) {
     Logger.error(
       "loadDataWithJsZip: An error occurred while loading file with jszip",
@@ -56,9 +50,7 @@ export const getArchiveForZipFile = async (
     const normalizedName = file.data.name.toLowerCase()
 
     if (
-      normalizedName.endsWith(`.epub`) ||
-      normalizedName.endsWith(`.cbz`) ||
-      jsZipCompatibleMimeTypes.includes(file.data.type)
+      isPotentialZipFile({ name: file.data.name, mimeType: file.data.type })
     ) {
       const jszip = await loadDataWithJsZip(file.data)
 

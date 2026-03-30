@@ -6,7 +6,6 @@ import { useSynchronize } from "./useSynchronize"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { InfoScreen } from "./InfoScreen"
 import { useRefreshMetadata } from "./useRefreshMetadata"
-import { DataSourceDetails } from "./DataSourceDetails"
 import { DownloadBook } from "./DownloadBook"
 import { UploadBook } from "./UploadBook"
 import { useLinkInfo } from "./useLinkInfo"
@@ -32,8 +31,17 @@ const plugin: ObokuPlugin<"webdav"> = {
   canSynchronize: true,
   Icon: WebDAVIcon,
   description: "Manage contents from WebDAV",
-  DataSourceForm,
-  DataSourceDetails,
+  DataSourceCreateForm: (props) => (
+    <DataSourceForm {...props} submitLabel="Confirm" />
+  ),
+  // The screen matches plugins by dataSource.type, guaranteeing the correct variant.
+  DataSourceEditForm: ({ dataSource, ...rest }) => (
+    <DataSourceForm
+      {...rest}
+      dataSource={dataSource as never}
+      submitLabel="Save"
+    />
+  ),
   UploadBookComponent: UploadBook,
   useSynchronize,
   useSyncSourceInfo,

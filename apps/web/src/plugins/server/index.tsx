@@ -1,21 +1,15 @@
 import { DnsRounded } from "@mui/icons-material"
-import { useMutation } from "@tanstack/react-query"
 import { UnsupportedMethodError } from "../../errors/errors.shared"
 import type { ObokuPlugin } from "../types"
 import { TYPE } from "./constants"
+import { DataSourceForm } from "./DataSourceForm"
 import { DownloadBook } from "./DownloadBook"
 import { InfoScreen } from "./InfoScreen"
 import { UploadBook } from "./UploadBook"
 import { useLinkInfo } from "./useLinkInfo"
 import { useRefreshMetadata } from "./useRefreshMetadata"
-
-const useSynchronize: ObokuPlugin<"server">["useSynchronize"] = () => {
-  return useMutation({
-    mutationFn: async () => {
-      throw new UnsupportedMethodError("Not yet implemented")
-    },
-  })
-}
+import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useSynchronize } from "./useSynchronize"
 
 const useRemoveBook: ObokuPlugin<"server">["useRemoveBook"] = () => {
   return async () => {
@@ -23,13 +17,11 @@ const useRemoveBook: ObokuPlugin<"server">["useRemoveBook"] = () => {
   }
 }
 
-const useSyncSourceInfo: ObokuPlugin<"server">["useSyncSourceInfo"] = () => ({})
-
 export const plugin: ObokuPlugin<"server"> = {
   type: TYPE,
   name: "Server",
   canRemoveBook: false,
-  canSynchronize: false,
+  canSynchronize: true,
   Icon: DnsRounded,
   description: "Manage contents from your oboku server",
   useLinkInfo,
@@ -40,5 +32,16 @@ export const plugin: ObokuPlugin<"server"> = {
   useSignOut: () => () => {},
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
+  DataSourceCreateForm: (props) => (
+    <DataSourceForm {...props} submitLabel="Confirm" />
+  ),
+  // The screen matches plugins by dataSource.type, guaranteeing the correct variant.
+  DataSourceEditForm: ({ dataSource, ...rest }) => (
+    <DataSourceForm
+      {...rest}
+      dataSource={dataSource as never}
+      submitLabel="Save"
+    />
+  ),
   InfoScreen: () => <InfoScreen />,
 }

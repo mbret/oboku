@@ -1,11 +1,16 @@
-import type { Control } from "react-hook-form"
 import { DataSourceForm } from "./lib/DataSourceForm"
-import type { DataSourceFormData } from "../types"
+import type { DataSourceEditFormProps } from "../types"
 
+// The screen matches plugins by dataSource.type, guaranteeing the correct variant.
 export const DataSourceDetails = ({
-  control,
-}: {
-  control: Control<DataSourceFormData, any, DataSourceFormData>
-}) => {
-  return <DataSourceForm control={control} />
+  dataSource,
+  onSubmit,
+}: DataSourceEditFormProps) => {
+  return (
+    <DataSourceForm
+      dataSource={dataSource as never}
+      onSubmit={onSubmit}
+      submitLabel="Save"
+    />
+  )
 }

@@ -7,7 +7,6 @@ import { UploadBook } from "./UploadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
 import { DataSourceForm } from "./DataSourceForm"
-import { DataSourceDetails } from "./DataSourceDetails"
 import { useSynchronize } from "./useSynchronize"
 import { useLinkInfo } from "./useLinkInfo"
 import iconSynologyDrive from "../../assets/icon_synology_drive_01.png"
@@ -34,8 +33,17 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   InfoScreen,
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
-  DataSourceForm,
-  DataSourceDetails,
+  DataSourceCreateForm: (props) => (
+    <DataSourceForm {...props} submitLabel="Confirm" />
+  ),
+  // The screen matches plugins by dataSource.type, guaranteeing the correct variant.
+  DataSourceEditForm: ({ dataSource, ...rest }) => (
+    <DataSourceForm
+      {...rest}
+      dataSource={dataSource as never}
+      submitLabel="Save"
+    />
+  ),
   useLinkInfo,
   useSyncSourceInfo,
   useRefreshMetadata,

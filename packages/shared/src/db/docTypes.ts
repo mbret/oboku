@@ -1,11 +1,29 @@
 import type { CollectionMetadata } from "../metadata"
-import type { DropboxLinkData } from "../plugins/dropbox"
-import type { FileLinkData } from "../plugins/file"
-import type { GoogleDriveLinkData } from "../plugins/google"
-import type { ServerLinkData } from "../plugins/server"
-import type { SynologyDriveLinkData } from "../plugins/synologyDrive"
-import type { UriLinkData } from "../plugins/uri"
-import type { WebdavLinkData } from "../plugins/webdav"
+import type {
+  DropboxDataSourceDocType,
+  DropboxLinkData,
+} from "../plugins/dropbox"
+import type { FileDataSourceDocType, FileLinkData } from "../plugins/file"
+import type {
+  GoogleDriveDataSourceDocType,
+  GoogleDriveLinkData,
+} from "../plugins/google"
+import type {
+  ServerConnectorDocType,
+  ServerDataSourceDocType,
+  ServerLinkData,
+} from "../plugins/server"
+import type {
+  SynologyDriveConnectorDocType,
+  SynologyDriveDataSourceDocType,
+  SynologyDriveLinkData,
+} from "../plugins/synologyDrive"
+import type { URIDataSourceDocType, UriLinkData } from "../plugins/uri"
+import type {
+  WebDAVDataSourceDocType,
+  WebdavConnectorDocType,
+  WebdavLinkData,
+} from "../plugins/webdav"
 import type { BookDocType } from "./books"
 import type { CouchDBMeta } from "./couchdb"
 import type { RxDbMeta } from "./rxdb"
@@ -97,57 +115,6 @@ export type BaseDataSourceDocType = CommonBase & {
   tags?: string[]
 }
 
-export type FileDataSourceDocType = BaseDataSourceDocType & {
-  type: "file"
-  data_v2?: undefined
-}
-
-export type URIDataSourceDocType = BaseDataSourceDocType & {
-  type: "URI"
-  data_v2?: UriLinkData
-}
-
-export type GoogleDriveDataSourceDocType = Omit<
-  BaseDataSourceDocType,
-  "data_v2"
-> & {
-  type: "DRIVE"
-  data_v2?: {
-    items?: ReadonlyArray<string>
-  }
-}
-
-export type DropboxDataSourceDocType = Omit<
-  BaseDataSourceDocType,
-  "data_v2"
-> & {
-  type: "dropbox"
-  data_v2?: {
-    folderId?: string
-    folderName?: string
-  }
-}
-
-/** WebDAV datasource config: connector reference plus optional sync directory. */
-export type WebDAVDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
-  type: "webdav"
-  data_v2?: { connectorId?: string; directory?: string }
-}
-
-/** Synology Drive datasource config: connector reference plus selected file/folder ids. */
-export type SynologyDriveDataSourceDocType = Omit<
-  BaseDataSourceDocType,
-  "data_v2"
-> & {
-  type: "synology-drive"
-  data_v2?: { connectorId?: string; items?: ReadonlyArray<string> }
-}
-
-export type ServerDataSourceDocType = BaseDataSourceDocType & {
-  type: "server"
-  data_v2?: undefined
-}
-
 export type DataSourceDocType =
   | GoogleDriveDataSourceDocType
   | DropboxDataSourceDocType
@@ -225,33 +192,6 @@ export type CollectionDocType<T extends DataSourceType = DataSourceType> =
     type?: "series" | "shelve"
     metadata?: CollectionMetadata[]
   }
-
-export type WebdavConnectorDocType = {
-  id: string
-  url: string
-  username: string
-  passwordAsSecretId: string
-  allowSelfSigned?: boolean
-  type: "webdav"
-}
-
-export type SynologyDriveConnectorDocType = {
-  id: string
-  type: "synology-drive"
-  url: string
-  username: string
-  passwordAsSecretId: string
-  allowSelfSigned?: boolean
-}
-
-export type ServerConnectorDocType = {
-  id: string
-  type: "server"
-  username: string
-  passwordAsSecretId: string
-  url?: string
-  allowSelfSigned?: boolean
-}
 
 export type SettingsConnectorDocType =
   | WebdavConnectorDocType
