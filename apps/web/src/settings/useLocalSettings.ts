@@ -11,7 +11,6 @@ export const localSettingsDefaultValues = {
   unBlurWhenProtectedVisible: false,
   hideDirectivesFromCollectionName: true,
   showCollectionWithProtectedContent: "unlocked" as const,
-  showSensitiveDataSources: false,
   /**
    * @important
    * As long as a profile is not loaded, the app will default to system mode
@@ -26,7 +25,6 @@ export const localSettingsSignal = signal<{
   unBlurWhenProtectedVisible: boolean
   hideDirectivesFromCollectionName: boolean
   showCollectionWithProtectedContent: "unlocked" | "hasNormalContent"
-  showSensitiveDataSources: boolean
   themeMode?: Mode | "e-ink"
   readerFloatingTime?: "bottom"
   readerFloatingProgress?: "bottom"

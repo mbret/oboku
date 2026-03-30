@@ -13,10 +13,13 @@ import {
 } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import type {
+  GetInstanceSettingsResponse,
   GetServerSyncResponse,
   SetWebDavCredentialsResponse,
+  UpdateInstanceSettingsResponse,
   UpdateServerSyncResponse,
 } from "@oboku/shared"
+import { createHash, timingSafeEqual } from "node:crypto"
 import { AuthService } from "src/auth/auth.service"
 import { AdminAuthGuard, AdminPublic } from "./admin.guard"
 import { AppConfigService } from "src/config/AppConfigService"
@@ -32,6 +35,13 @@ import {
   IsUrl,
   MinLength,
 } from "class-validator"
+
+function timingSafeStringEqual(a: string, b: string): boolean {
+  const hashA = createHash("sha256").update(a).digest()
+  const hashB = createHash("sha256").update(b).digest()
+
+  return timingSafeEqual(hashA, hashB)
+}
 
 class GenerateSignUpLinkDto {
   @IsEmail()
@@ -90,6 +100,20 @@ class SetWebDavCredentialsDto {
   password!: string
 }
 
+class UpdateInstanceSettingsDto {
+  @IsBoolean()
+  @IsOptional()
+  showDisabledPlugins?: boolean
+}
+
+class SigninDto {
+  @IsString()
+  login!: string
+
+  @IsString()
+  password!: string
+}
+
 class RefreshDto {
   @IsString()
   refresh_token!: string
@@ -134,19 +158,19 @@ export class AdminController {
 
   @AdminPublic()
   @Post("signin")
-  async signin(@Body() body: { login: string; password: string }) {
-    if (
-      (this.appConfig.ADMIN_LOGIN?.length ?? 0) < 1 ||
-      (this.appConfig.ADMIN_PASSWORD?.length ?? 0) < 1
-    ) {
+  async signin(@Body() body: SigninDto) {
+    const expectedLogin = this.appConfig.ADMIN_LOGIN
+    const expectedPassword = this.appConfig.ADMIN_PASSWORD
+
+    if (!expectedLogin || !expectedPassword) {
       console.error("Admin credentials not set")
 
       throw new UnauthorizedException()
     }
 
     if (
-      body.login !== this.appConfig.ADMIN_LOGIN ||
-      body.password !== this.appConfig.ADMIN_PASSWORD
+      !timingSafeStringEqual(body.login, expectedLogin) ||
+      !timingSafeStringEqual(body.password, expectedPassword)
     ) {
       throw new UnauthorizedException()
     }
@@ -202,6 +226,31 @@ export class AdminController {
   async generateSignUpLink(@Body() body: GenerateSignUpLinkDto) {
     return {
       signUpLink: await this.authService.generateSignUpLink(body),
+    }
+  }
+
+  @Get("settings")
+  async getSettings(): Promise<GetInstanceSettingsResponse> {
+    const config = await this.instanceConfigService.getConfig()
+
+    return {
+      showDisabledPlugins: config.showDisabledPlugins,
+    }
+  }
+
+  @Patch("settings")
+  async updateSettings(
+    @Body() body: UpdateInstanceSettingsDto,
+  ): Promise<UpdateInstanceSettingsResponse> {
+    const config = await this.instanceConfigService.updateConfig((prev) => ({
+      ...prev,
+      ...(body.showDisabledPlugins !== undefined && {
+        showDisabledPlugins: body.showDisabledPlugins,
+      }),
+    }))
+
+    return {
+      showDisabledPlugins: config.showDisabledPlugins,
     }
   }
 

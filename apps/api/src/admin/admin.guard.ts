@@ -57,7 +57,7 @@ export class AdminAuthGuard implements CanActivate {
         algorithms: ["RS256"],
       })
 
-      if (payload.role !== "admin") {
+      if (payload.role !== "admin" || payload.type !== "access") {
         throw new UnauthorizedException()
       }
 

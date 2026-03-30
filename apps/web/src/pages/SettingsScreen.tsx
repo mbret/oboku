@@ -41,7 +41,6 @@ export const SettingsScreen = memo(() => {
   const [isShowCollectionDrawerOpened, setIsShowCollectionDrawerOpened] =
     useState(false)
   const [isThemeDrawerOpened, setIsThemeDrawerOpened] = useState(false)
-  const sensitiveDataSourcesId = useId()
   const hideDirectivesFromCollectionNameId = useId()
   const unBlurWhenProtectedVisibleId = useId()
 
@@ -72,18 +71,6 @@ export const SettingsScreen = memo(() => {
           <ListSubheader disableSticky>
             Privacy & sensitive content
           </ListSubheader>
-          <ListItemSwitch
-            primary="Show sensitive data sources"
-            secondary="Some data sources deal with sensitive content or website and are hidden by default"
-            onClick={() => {
-              localSettingsSignal.setValue((old) => ({
-                ...old,
-                showSensitiveDataSources: !old.showSensitiveDataSources,
-              }))
-            }}
-            checked={localSettings.showSensitiveDataSources}
-            id={sensitiveDataSourcesId}
-          />
           <ListItemButton
             onClick={() => {
               setIsShowCollectionDrawerOpened(true)
