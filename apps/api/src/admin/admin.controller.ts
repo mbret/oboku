@@ -106,6 +106,14 @@ class UpdateInstanceSettingsDto {
   showDisabledPlugins?: boolean
 }
 
+class SigninDto {
+  @IsString()
+  login!: string
+
+  @IsString()
+  password!: string
+}
+
 class RefreshDto {
   @IsString()
   refresh_token!: string
@@ -150,7 +158,7 @@ export class AdminController {
 
   @AdminPublic()
   @Post("signin")
-  async signin(@Body() body: { login: string; password: string }) {
+  async signin(@Body() body: SigninDto) {
     const expectedLogin = this.appConfig.ADMIN_LOGIN
     const expectedPassword = this.appConfig.ADMIN_PASSWORD
 
