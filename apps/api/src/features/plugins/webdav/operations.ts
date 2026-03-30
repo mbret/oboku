@@ -27,8 +27,6 @@ export async function walkDirectoryContents(
     return []
   }
 
-  console.log("files", files)
-
   return await files.reduce(async (acc: Promise<DirectoryWalkItem[]>, file) => {
     if (file.type === "file") {
       if (
@@ -56,10 +54,6 @@ export async function walkDirectoryContents(
       file.filename,
       connectorId,
     )
-
-    if (childItems.length === 0) {
-      return await acc
-    }
 
     return [
       ...(await acc),

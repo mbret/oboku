@@ -146,7 +146,18 @@ export const dataSource: DataSourcePlugin<"server"> = {
       providerCredentials.password,
     )
 
-    const items = await walkDirectoryContents(client, "/", connectorId)
+    const sourceItems = await walkDirectoryContents(client, "/", connectorId)
+
+    /**
+     * The WebDAV root "/" lists each server source as a top-level folder.
+     * These sources are administrative mount points, not user-organized
+     * folders, so we flatten them out. This way the folders *within*
+     * each source become the first-level items and are treated as
+     * collections by the sync logic.
+     */
+    const items = sourceItems.flatMap((item) =>
+      item.type === "folder" && item.items ? item.items : [item],
+    )
 
     return { items }
   },
