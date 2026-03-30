@@ -17,6 +17,7 @@ import type {
   SetWebDavCredentialsResponse,
   UpdateServerSyncResponse,
 } from "@oboku/shared"
+import { createHash, timingSafeEqual } from "node:crypto"
 import { AuthService } from "src/auth/auth.service"
 import { AdminAuthGuard, AdminPublic } from "./admin.guard"
 import { AppConfigService } from "src/config/AppConfigService"
@@ -32,6 +33,13 @@ import {
   IsUrl,
   MinLength,
 } from "class-validator"
+
+function timingSafeStringEqual(a: string, b: string): boolean {
+  const hashA = createHash("sha256").update(a).digest()
+  const hashB = createHash("sha256").update(b).digest()
+
+  return timingSafeEqual(hashA, hashB)
+}
 
 class GenerateSignUpLinkDto {
   @IsEmail()
@@ -135,9 +143,12 @@ export class AdminController {
   @AdminPublic()
   @Post("signin")
   async signin(@Body() body: { login: string; password: string }) {
+    const expectedLogin = this.appConfig.ADMIN_LOGIN
+    const expectedPassword = this.appConfig.ADMIN_PASSWORD
+
     if (
-      (this.appConfig.ADMIN_LOGIN?.length ?? 0) < 1 ||
-      (this.appConfig.ADMIN_PASSWORD?.length ?? 0) < 1
+      (expectedLogin?.length ?? 0) < 1 ||
+      (expectedPassword?.length ?? 0) < 1
     ) {
       console.error("Admin credentials not set")
 
@@ -145,8 +156,8 @@ export class AdminController {
     }
 
     if (
-      body.login !== this.appConfig.ADMIN_LOGIN ||
-      body.password !== this.appConfig.ADMIN_PASSWORD
+      !timingSafeStringEqual(body.login, expectedLogin) ||
+      !timingSafeStringEqual(body.password, expectedPassword)
     ) {
       throw new UnauthorizedException()
     }
