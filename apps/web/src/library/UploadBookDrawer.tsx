@@ -8,7 +8,10 @@ import {
 } from "@mui/material"
 import { plugins } from "../dataSources"
 import { memo } from "react"
-import { useGetIsPluginEnabled } from "../plugins/useIsPluginEnabled"
+import {
+  useGetIsPluginEnabled,
+  useGetIsPluginVisible,
+} from "../plugins/useIsPluginEnabled"
 
 export const UploadBookDrawer = memo(
   ({
@@ -18,6 +21,7 @@ export const UploadBookDrawer = memo(
     open: boolean
     onClose: (type?: string | undefined) => void
   }) => {
+    const isPluginVisible = useGetIsPluginVisible()
     const isPluginEnabled = useGetIsPluginEnabled()
 
     return (
@@ -25,7 +29,10 @@ export const UploadBookDrawer = memo(
         <div role="presentation">
           <List>
             {plugins
-              .filter((plugin) => !!plugin.UploadBookComponent)
+              .filter(
+                (plugin) =>
+                  !!plugin.UploadBookComponent && isPluginVisible(plugin),
+              )
               .map((dataSource) => (
                 <ListItemButton
                   onClick={() => onClose(dataSource.type)}

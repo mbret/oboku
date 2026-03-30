@@ -7,14 +7,20 @@ import {
 } from "@mui/material"
 import type { FC } from "react"
 import { plugins } from "../plugins/configure"
-import { useGetIsPluginEnabled } from "../plugins/useIsPluginEnabled"
+import {
+  useGetIsPluginEnabled,
+  useGetIsPluginVisible,
+} from "../plugins/useIsPluginEnabled"
 
 export const DataSourcesAddDrawer: FC<{
   open: boolean
   onClose: (key?: string) => void
 }> = ({ open, onClose }) => {
+  const isPluginVisible = useGetIsPluginVisible()
   const isPluginEnabled = useGetIsPluginEnabled()
-  const dataSourcesPlugins = plugins.filter((plugin) => plugin.canSynchronize)
+  const dataSourcesPlugins = plugins.filter(
+    (plugin) => plugin.canSynchronize && isPluginVisible(plugin),
+  )
 
   return (
     <Drawer anchor="bottom" open={open} onClose={() => onClose()}>

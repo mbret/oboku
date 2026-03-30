@@ -14,12 +14,14 @@ export class WebController {
   @Public()
   @Get("config")
   async getConfig(): Promise<GetWebConfigResponse> {
+    const config = await this.instanceConfigService.getConfig()
+
     return {
       GOOGLE_CLIENT_ID: this.appConfigService.GOOGLE_CLIENT_ID,
       GOOGLE_API_KEY: this.appConfigService.GOOGLE_API_KEY,
       DROPBOX_CLIENT_ID: this.appConfigService.DROPBOX_CLIENT_ID,
-      FEATURE_SERVER_SYNC_ENABLED:
-        await this.instanceConfigService.isServerSyncEnabled(),
+      FEATURE_SERVER_SYNC_ENABLED: config.serverSync.enabled,
+      SHOW_DISABLED_PLUGINS: config.showDisabledPlugins,
     }
   }
 

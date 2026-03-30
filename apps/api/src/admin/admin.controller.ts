@@ -13,8 +13,10 @@ import {
 } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import type {
+  GetInstanceSettingsResponse,
   GetServerSyncResponse,
   SetWebDavCredentialsResponse,
+  UpdateInstanceSettingsResponse,
   UpdateServerSyncResponse,
 } from "@oboku/shared"
 import { createHash, timingSafeEqual } from "node:crypto"
@@ -96,6 +98,12 @@ class SetWebDavCredentialsDto {
   @IsString()
   @MinLength(8)
   password!: string
+}
+
+class UpdateInstanceSettingsDto {
+  @IsBoolean()
+  @IsOptional()
+  showDisabledPlugins?: boolean
 }
 
 class RefreshDto {
@@ -210,6 +218,31 @@ export class AdminController {
   async generateSignUpLink(@Body() body: GenerateSignUpLinkDto) {
     return {
       signUpLink: await this.authService.generateSignUpLink(body),
+    }
+  }
+
+  @Get("settings")
+  async getSettings(): Promise<GetInstanceSettingsResponse> {
+    const config = await this.instanceConfigService.getConfig()
+
+    return {
+      showDisabledPlugins: config.showDisabledPlugins,
+    }
+  }
+
+  @Patch("settings")
+  async updateSettings(
+    @Body() body: UpdateInstanceSettingsDto,
+  ): Promise<UpdateInstanceSettingsResponse> {
+    const config = await this.instanceConfigService.updateConfig((prev) => ({
+      ...prev,
+      ...(body.showDisabledPlugins !== undefined && {
+        showDisabledPlugins: body.showDisabledPlugins,
+      }),
+    }))
+
+    return {
+      showDisabledPlugins: config.showDisabledPlugins,
     }
   }
 

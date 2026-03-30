@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { AdminCustomizationSection } from "@/features/admin/AdminCustomizationSection"
 
 export const Route = createFileRoute("/_admin/")({
-  component: () => null,
+  component: AdminHomePage,
 })
+
+function AdminHomePage() {
+  return <AdminCustomizationSection />
+}

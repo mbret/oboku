@@ -30,11 +30,13 @@ export type ServerSyncConfig = {
 export type InstanceConfig = {
   version: 1
   serverSync: ServerSyncConfig
+  showDisabledPlugins: boolean
 }
 
 const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
   version: 1,
   serverSync: { enabled: false, credentials: null, sources: [] },
+  showDisabledPlugins: true,
 }
 
 const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
@@ -62,6 +64,7 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
     credentials: null,
     sources: [],
   }),
+  showDisabledPlugins: Joi.boolean().default(true),
 })
 
 const parseInstanceConfig = (value: unknown): InstanceConfig => {

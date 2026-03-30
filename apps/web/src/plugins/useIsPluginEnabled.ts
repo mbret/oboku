@@ -17,6 +17,13 @@ const isPluginEnabled = (plugin: Plugin) => {
   }
 }
 
+const isPluginVisible = (plugin: Plugin) =>
+  isPluginEnabled(plugin) || configuration.SHOW_DISABLED_PLUGINS
+
+export const useGetIsPluginVisible = () => {
+  return isPluginVisible
+}
+
 export const useGetIsPluginEnabled = () => {
   return isPluginEnabled
 }

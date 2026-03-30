@@ -170,6 +170,10 @@ class Configuration extends BehaviorSubject<{
   get FEATURE_SERVER_SYNC_ENABLED() {
     return !!this.value.config.FEATURE_SERVER_SYNC_ENABLED
   }
+
+  get SHOW_DISABLED_PLUGINS() {
+    return !!this.value.config.SHOW_DISABLED_PLUGINS
+  }
 }
 
 export const configuration = new Configuration()
