@@ -32,16 +32,26 @@ const RAR_MIME_TYPES = [
 
 export const isRarFile = (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>,
-) =>
-  RAR_MIME_TYPES.includes(file.data.type) ||
-  file.data.name.endsWith(".rar") ||
-  file.data.name.endsWith(".cbr")
+) => {
+  const normalizedName = file.data.name.toLowerCase()
+
+  return (
+    RAR_MIME_TYPES.includes(file.data.type) ||
+    normalizedName.endsWith(".rar") ||
+    normalizedName.endsWith(".cbr")
+  )
+}
 
 export const isPdfFile = (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>,
-) =>
-  file.data.type.startsWith("application/pdf") ||
-  file.data.name.endsWith(".pdf")
+) => {
+  const normalizedName = file.data.name.toLowerCase()
+
+  return (
+    file.data.type.startsWith("application/pdf") ||
+    normalizedName.endsWith(".pdf")
+  )
+}
 
 export const getArchiveForZipFile = async (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>,

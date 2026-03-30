@@ -5,12 +5,34 @@ import type {
 } from "src/features/plugins/types"
 import type { WebDAVClient } from "webdav"
 import { getConnectorById } from "src/lib/connectors/connectorHelpers"
+import { getDataSourceData } from "../helpers"
 import {
   getWebdavModule,
   getFileMetadataFromWebdav,
   getFolderMetadataFromWebdav,
   downloadFromWebdav,
+  walkDirectoryContents,
 } from "../webdav/operations"
+import { find } from "src/lib/couch/dbHelpers"
+
+async function createServerWebdavClient(
+  db: Parameters<typeof getConnectorById>[0],
+  connectorId: string,
+  password: string,
+): Promise<WebDAVClient> {
+  const connector = await getConnectorById(db, connectorId, "server")
+
+  if (!connector) {
+    throw new Error("Server connector not found")
+  }
+
+  const webdav = await getWebdavModule()
+
+  return webdav.createClient(`http://localhost:${process.env.PORT}/webdav`, {
+    username: connector.username,
+    password,
+  })
+}
 
 async function resolveClientAndPath(
   params: Pick<
@@ -25,19 +47,10 @@ async function resolveClientAndPath(
     throw new Error("Server credentials (password) and connector are required")
   }
 
-  const connector = await getConnectorById(db, connectorId, "server")
-
-  if (!connector) {
-    throw new Error("Server connector not found")
-  }
-
-  const webdav = await getWebdavModule()
-  const client = webdav.createClient(
-    `http://localhost:${process.env.PORT}/webdav`,
-    {
-      username: connector.username,
-      password: providerCredentials.password,
-    },
+  const client = await createServerWebdavClient(
+    db,
+    connectorId,
+    providerCredentials.password,
   )
 
   const filePath = link.data?.filePath
@@ -51,13 +64,53 @@ async function resolveClientAndPath(
 
 export const dataSource: DataSourcePlugin<"server"> = {
   type: PLUGIN_SERVER_TYPE,
-  getLinkCandidatesForItem: async () => {
-    throw new Error("server plugin: getLinkCandidatesForItem not implemented")
+  getLinkCandidatesForItem: async (item, ctx) => {
+    const { connectorId, filePath } = item.linkData
+
+    if (!connectorId) return { links: [] }
+
+    const datasourceConnectorId =
+      ctx.dataSource.type === "server"
+        ? ctx.dataSource.data_v2?.connectorId
+        : undefined
+
+    const links = await find(ctx.db, "link", {
+      selector: {
+        type: PLUGIN_SERVER_TYPE,
+        data: { connectorId, filePath },
+      },
+    })
+
+    return {
+      links: links.map((link) => ({
+        ...link,
+        isUsingSameProviderCredentials: connectorId === datasourceConnectorId,
+      })),
+    }
   },
-  getCollectionCandidatesForItem: async () => {
-    throw new Error(
-      "server plugin: getCollectionCandidatesForItem not implemented",
-    )
+  getCollectionCandidatesForItem: async (item, ctx) => {
+    const { connectorId, filePath } = item.linkData
+
+    if (!connectorId) return { collections: [] }
+
+    const datasourceConnectorId =
+      ctx.dataSource.type === PLUGIN_SERVER_TYPE
+        ? ctx.dataSource.data_v2?.connectorId
+        : undefined
+
+    const collections = await find(ctx.db, "obokucollection", {
+      selector: {
+        linkType: PLUGIN_SERVER_TYPE,
+        linkData: { connectorId, filePath },
+      },
+    })
+
+    return {
+      collections: collections.map((c) => ({
+        ...c,
+        isUsingSameProviderCredentials: connectorId === datasourceConnectorId,
+      })),
+    }
   },
   getFolderMetadata: async (params) => {
     const { client, filePath } = await resolveClientAndPath(params)
@@ -78,7 +131,23 @@ export const dataSource: DataSourcePlugin<"server"> = {
 
     return downloadFromWebdav(client, filePath)
   },
-  sync: async () => {
-    throw new Error("server plugin: sync not implemented")
+  sync: async (options) => {
+    const { providerCredentials, dataSourceId, db } = options
+    const { connectorId } =
+      (await getDataSourceData<"server">({ db, dataSourceId })) ?? {}
+
+    if (!connectorId || !providerCredentials?.password) {
+      throw new Error("datasource not found or invalid")
+    }
+
+    const client = await createServerWebdavClient(
+      db,
+      connectorId,
+      providerCredentials.password,
+    )
+
+    const items = await walkDirectoryContents(client, "/", connectorId)
+
+    return { items }
   },
 }

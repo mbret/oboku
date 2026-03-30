@@ -20,10 +20,12 @@ export const isPotentialZipFile = ({
   name?: string | null
   mimeType?: string | null
 }) => {
+  const normalizedName = name?.toLowerCase()
+
   return (
-    name?.endsWith(".zip") ||
-    name?.endsWith(".epub") ||
-    name?.endsWith(".cbz") ||
+    normalizedName?.endsWith(".zip") ||
+    normalizedName?.endsWith(".epub") ||
+    normalizedName?.endsWith(".cbz") ||
     mimeType?.startsWith("application/zip") ||
     mimeType?.startsWith("application/x-zip-compressed") ||
     mimeType?.startsWith("application/x-cbz") ||
