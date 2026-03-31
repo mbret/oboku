@@ -10,23 +10,23 @@ import { HomeScreen } from "../pages/HomeScreen"
 import { LoginScreen } from "../pages/LoginScreen"
 import { ReaderScreen } from "../reader/ReaderScreen"
 import { BottomTabBar } from "./BottomTabBar"
+import { DesktopDrawer } from "./DesktopDrawer"
 import { ProfileScreen } from "../pages/profile/ProfileScreen"
 import { ManageStorageScreen } from "../pages/profile/manage-storage/ManageStorageScreen"
 import { LibraryTopTabNavigator } from "../library/LibraryTopTabNavigator"
 import { BookDetailsScreen } from "../books/details/BookDetailsScreen"
 import { CollectionDetailsScreen } from "../pages/collections/CollectionDetailsScreen/CollectionDetailsScreen"
-import { BookActionsDrawer } from "../books/drawer/BookActionsDrawer"
 import { DataSourcesListScreen } from "../pages/sync/DataSourcesListScreen"
 import { SearchScreen } from "../pages/SearchScreen"
 import { AuthCallbackScreen } from "../pages/AuthCallbackScreen"
 import { SettingsScreen } from "../pages/SettingsScreen"
 import { StatisticsScreen } from "../pages/StatisticsScreen"
-import { BackToReadingDialog } from "../reading/BackToReadingDialog"
 import { ProblemsScreen } from "../problems/ProblemsScreen"
 import { LibraryBooksScreen } from "../library/books/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../pages/LibraryCollectionScreen"
 import { LibraryTagsScreen } from "../pages/library/LibraryTagsScreen"
-import { memo, useEffect, useRef } from "react"
+import { memo, useEffect, useRef, type ReactNode } from "react"
+import { useMediaQuery, useTheme } from "@mui/material"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../auth/states.web"
@@ -35,7 +35,6 @@ import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesRepo
 import { SecurityScreen } from "../pages/profile/SecurityScreen"
 import { PluginsScreen } from "../plugins/PluginsScreen"
 import { PluginScreen } from "../plugins/PluginScreen"
-import { CollectionActionsDrawer } from "../collections/CollectionActionsDrawer/CollectionActionsDrawer"
 import { ROUTES } from "./routes"
 import { SignUpScreen } from "../pages/SignUpScreen"
 import { SecretsScreen } from "../pages/profile/SecretsScreen"
@@ -43,59 +42,77 @@ import { NewDataSourceScreen } from "../pages/sync/NewDataSourceScreen"
 import { DataSourceDetailsScreen } from "../pages/sync/DataSourceDetailsScreen"
 import { AddConnectorScreen } from "../connectors/AddConnectorScreen"
 import { EditConnectorScreen } from "../connectors/EditConnectorScreen"
-import { PluginDownloadFlowHost } from "../download/flow/PluginDownloadFlowHost"
 import { plugins } from "../dataSources"
 import { SignUpCompleteScreen } from "../pages/SignUpCompleteScreen"
 import { MagicLinkCompleteScreen } from "../pages/MagicLinkCompleteScreen"
 
-const BottomTabBarRouteWrapper = () => (
-  <BottomTabBar>
+const AppShell = ({ children }: { children: ReactNode }) => {
+  const theme = useTheme()
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"))
+
+  if (isDesktop) {
+    return <DesktopDrawer>{children}</DesktopDrawer>
+  }
+
+  return <>{children}</>
+}
+
+const AppShellRouteWrapper = () => (
+  <AppShell>
     <Outlet />
-  </BottomTabBar>
+  </AppShell>
 )
 
-export const AppNavigator = ({
-  isProfileHydrated,
-}: {
-  isProfileHydrated: boolean
-}) => {
+const MobileTabBar = ({ children }: { children: ReactNode }) => {
+  const theme = useTheme()
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md"))
+
+  if (isDesktop) {
+    return <>{children}</>
+  }
+
+  return <BottomTabBar>{children}</BottomTabBar>
+}
+
+const MobileTabBarRouteWrapper = () => (
+  <MobileTabBar>
+    <Outlet />
+  </MobileTabBar>
+)
+
+export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
   const auth = useSignalValue(authStateSignal)
   const isAuthenticated = !!auth?.accessToken
 
   const content = (
     <>
-      <div
-        style={{
-          flexShrink: 0,
-          height: "100%",
-          flex: 1,
-          flexDirection: "column",
-          display: "flex",
-        }}
-      >
-        <Routes>
-          <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallbackScreen />} />
-          <Route
-            path={ROUTES.LOGIN_MAGIC_LINK}
-            element={<MagicLinkCompleteScreen />}
-          />
-          <Route
-            path={ROUTES.SIGN_UP_COMPLETE}
-            element={<SignUpCompleteScreen />}
-          />
-          {isAuthenticated ? (
-            <>
-              <Route path="/reader/:bookId" element={<ReaderScreen />} />
-              <Route path={`${ROUTES.PROBLEMS}`} element={<ProblemsScreen />} />
+      <Routes>
+        <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallbackScreen />} />
+        <Route
+          path={ROUTES.LOGIN_MAGIC_LINK}
+          element={<MagicLinkCompleteScreen />}
+        />
+        <Route
+          path={ROUTES.SIGN_UP_COMPLETE}
+          element={<SignUpCompleteScreen />}
+        />
+        {isAuthenticated ? (
+          <>
+            <Route path="/reader/:bookId" element={<ReaderScreen />} />
+            <Route path="*" element={<AppShellRouteWrapper />}>
               <Route
-                path={ROUTES.BOOK_DETAILS}
+                path={`${ROUTES.PROBLEMS.slice(1)}`}
+                element={<ProblemsScreen />}
+              />
+              <Route
+                path={ROUTES.BOOK_DETAILS.slice(1)}
                 element={<BookDetailsScreen />}
               />
               <Route
-                path={ROUTES.COLLECTION_DETAILS}
+                path={ROUTES.COLLECTION_DETAILS.slice(1)}
                 element={<CollectionDetailsScreen />}
               />
-              <Route path={ROUTES.SEARCH}>
+              <Route path={ROUTES.SEARCH.slice(1)}>
                 <Route index element={<SearchScreen />} />
                 <Route
                   path=":search/:type"
@@ -103,38 +120,51 @@ export const AppNavigator = ({
                 />
               </Route>
               <Route
-                path={`${ROUTES.PROFILE}/manage-storage`}
+                path="profile/manage-storage"
                 element={<ManageStorageScreen />}
               />
-              <Route path="plugins/:type" element={<PluginScreen />} />
               <Route
-                path={ROUTES.PLUGINS_CONNECTORS_NEW}
-                element={<AddConnectorScreen />}
+                path={ROUTES.SECURITY.slice(1)}
+                element={<SecurityScreen />}
               />
               <Route
-                path={ROUTES.PLUGINS_CONNECTORS_EDIT}
-                element={<EditConnectorScreen />}
+                path={ROUTES.SECRETS.slice(1)}
+                element={<SecretsScreen />}
               />
-              <Route path={`${ROUTES.SECURITY}`} element={<SecurityScreen />} />
-              <Route path={`${ROUTES.SECRETS}`} element={<SecretsScreen />} />
-              <Route path={`${ROUTES.SETTINGS}`} element={<SettingsScreen />} />
               <Route
-                path={`${ROUTES.STATISTICS}`}
+                path={ROUTES.SETTINGS.slice(1)}
+                element={<SettingsScreen />}
+              />
+              <Route
+                path={ROUTES.STATISTICS.slice(1)}
                 element={<StatisticsScreen />}
               />
               <Route
-                path={ROUTES.SYNC_NEW_DATASOURCES}
+                path={ROUTES.PLUGINS_TYPE.slice(1)}
+                element={<PluginScreen />}
+              />
+              <Route
+                path={ROUTES.PLUGINS_CONNECTORS_NEW.slice(1)}
+                element={<AddConnectorScreen />}
+              />
+              <Route
+                path={ROUTES.PLUGINS_CONNECTORS_EDIT.slice(1)}
+                element={<EditConnectorScreen />}
+              />
+              <Route
+                path={ROUTES.SYNC_NEW_DATASOURCES.slice(1)}
                 element={<NewDataSourceScreen />}
               />
               <Route
-                path={ROUTES.DATASOURCE_DETAILS}
+                path={ROUTES.DATASOURCE_DETAILS.slice(1)}
                 element={<DataSourceDetailsScreen />}
               />
-              <Route path="*" element={<BottomTabBarRouteWrapper />}>
+              <Route path="*" element={<MobileTabBarRouteWrapper />}>
                 <Route index element={<HomeScreen />} />
                 <Route path="profile" element={<ProfileScreen />} />
                 <Route path="plugins" element={<PluginsScreen />} />
                 <Route path="library" element={<LibraryTopTabNavigator />}>
+                  <Route index element={<Navigate to="books" replace />} />
                   <Route path="books" element={<LibraryBooksScreen />} />
                   <Route
                     path="collections"
@@ -146,15 +176,16 @@ export const AppNavigator = ({
                 <Route path="sync" element={<DataSourcesTabNavigator />}>
                   <Route
                     index
+                    element={<Navigate to="datasources" replace />}
+                  />
+                  <Route
                     path="datasources"
                     element={<DataSourcesListScreen />}
                   />
                   <Route
-                    index
                     path="reports"
                     element={<DataSourcesReportsScreen />}
                   />
-
                   <Route
                     path="*"
                     element={<Navigate to={ROUTES.SYNC_DATASOURCES} replace />}
@@ -162,23 +193,17 @@ export const AppNavigator = ({
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
-            </>
-          ) : (
-            <>
-              <Route path={ROUTES.LOGIN} element={<LoginScreen />} />
-              <Route path={ROUTES.SIGN_UP} element={<SignUpScreen />} />
-              <Route
-                path="*"
-                element={<Navigate to={ROUTES.LOGIN} replace />}
-              />
-            </>
-          )}
-        </Routes>
-      </div>
-      <BookActionsDrawer />
-      <CollectionActionsDrawer />
-      <PluginDownloadFlowHost />
-      <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
+            </Route>
+          </>
+        ) : (
+          <>
+            <Route path={ROUTES.LOGIN} element={<LoginScreen />} />
+            <Route path={ROUTES.SIGN_UP} element={<SignUpScreen />} />
+            <Route path="*" element={<Navigate to={ROUTES.LOGIN} replace />} />
+          </>
+        )}
+      </Routes>
+      {children}
       <TrackHistoryCanGoBack />
     </>
   )
