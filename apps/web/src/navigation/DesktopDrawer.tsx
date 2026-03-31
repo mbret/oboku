@@ -38,7 +38,7 @@ export const DesktopDrawer = memo(({ children }: { children: ReactNode }) => {
         sx={{
           width: DRAWER_WIDTH,
           flexShrink: 0,
-          [`& .MuiDrawer-paper`]: {
+          "& .MuiDrawer-paper": {
             width: DRAWER_WIDTH,
             minWidth: 0,
             boxSizing: "border-box",
