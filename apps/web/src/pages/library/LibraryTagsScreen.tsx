@@ -1,13 +1,12 @@
 import { useState, type FC, useEffect, useCallback, useMemo } from "react"
 import Dialog from "@mui/material/Dialog"
 import {
+  Box,
   Button,
   DialogActions,
   DialogContent,
   DialogTitle,
   TextField,
-  Toolbar,
-  useTheme,
 } from "@mui/material"
 import { useCreateTag } from "../../tags/helpers"
 import { TagActionsDrawer } from "../../tags/TagActionsDrawer"
@@ -23,37 +22,20 @@ export const LibraryTagsScreen = () => {
     useState<string | undefined>(undefined)
   const { data: tags = [] } = useTagIds()
   const { mutate: addTag } = useCreateTag()
-  const theme = useTheme()
-
-  const addItemButton = useMemo(
-    () => (
-      <Button
-        style={{
-          flex: 1,
-        }}
-        variant="outlined"
-        color="primary"
-        onClick={() => setIsAddTagDialogOpened(true)}
-      >
-        Create a new tag
-      </Button>
-    ),
-    [],
-  )
 
   const listHeader = useMemo(
     () => (
-      <Toolbar
-        style={{
-          paddingLeft: theme.spacing(2),
-          paddingRight: theme.spacing(2),
-          flex: 1,
-        }}
-      >
-        {addItemButton}
-      </Toolbar>
+      <Box p={2} pt={2}>
+        <Button
+          fullWidth
+          variant="outlined"
+          onClick={() => setIsAddTagDialogOpened(true)}
+        >
+          Create a new tag
+        </Button>
+      </Box>
     ),
-    [theme, addItemButton],
+    [],
   )
 
   const listRenderHeader = useCallback(() => listHeader, [listHeader])

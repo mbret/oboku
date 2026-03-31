@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, memo } from "react"
-import { Button, Stack, Toolbar as MuiToolbar } from "@mui/material"
+import { Box, Button, Stack } from "@mui/material"
 import { CollectionList } from "../collections/lists/CollectionList"
 import { useSignalValue } from "reactjrx"
 import { useLibraryShelves } from "../library/shelves/useLibraryShelves"
@@ -18,18 +18,15 @@ export const LibraryCollectionScreen = memo(() => {
 
   const listHeader = useMemo(
     () => (
-      <MuiToolbar>
+      <Box p={2} pt={1}>
         <Button
-          style={{
-            width: "100%",
-          }}
+          fullWidth
           variant="outlined"
-          color="primary"
           onClick={() => setIsAddCollectionDialogOpened(true)}
         >
           Create a new collection
         </Button>
-      </MuiToolbar>
+      </Box>
     ),
     [],
   )
