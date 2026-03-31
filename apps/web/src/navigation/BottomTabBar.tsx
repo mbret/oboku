@@ -5,7 +5,11 @@ import { ROUTES } from "./routes"
 import { navItems } from "./navConstants"
 import { OfflineIcon } from "../common/OfflineIcon"
 
-export const BottomTabBar = memo(({ children }: { children: ReactNode }) => {
+export const BottomTabBar = memo(function BottomTabBar({
+  children,
+}: {
+  children: ReactNode
+}) {
   const location = useLocation()
   const navigate = useNavigate()
 

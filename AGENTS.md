@@ -54,6 +54,11 @@ When implementing changes in this codebase, prioritize consistency and consolida
 - The source of truth for Synology Drive API availability is the target NAS via `SYNO.API.Info`.
 - When typing `SYNO.SynologyDrive.*` responses, prefer shapes validated against live NAS responses over guessed or loosely related public documentation.
 
+### React `memo` components
+
+- Always pass a named function to `memo()` instead of an anonymous arrow function (e.g. `memo(function MyComponent() { ... })` not `memo(() => { ... })`).
+- This ensures memoized components are identifiable in React DevTools and error stack traces without needing a separate `displayName` assignment.
+
 ### Decision rule
 
 - Default choice: the solution that best matches current repository patterns and reduces long-term fragmentation.

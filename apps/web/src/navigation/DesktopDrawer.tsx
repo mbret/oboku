@@ -15,7 +15,11 @@ import { OfflineIcon } from "../common/OfflineIcon"
 
 const DRAWER_WIDTH = 240
 
-export const DesktopDrawer = memo(({ children }: { children: ReactNode }) => {
+export const DesktopDrawer = memo(function DesktopDrawer({
+  children,
+}: {
+  children: ReactNode
+}) {
   const location = useLocation()
   const navigate = useNavigate()
 

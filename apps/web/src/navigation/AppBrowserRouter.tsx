@@ -179,7 +179,6 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                     element={<DataSourcesListScreen />}
                   />
                   <Route
-                    index
                     path="reports"
                     element={<DataSourcesReportsScreen />}
                   />
