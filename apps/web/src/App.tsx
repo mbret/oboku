@@ -66,7 +66,7 @@ const App = memo(() => {
     <DialogProvider>
       {!isHydratingProfile && isAuthHydrated && (
         <Fade in={isAppReady} timeout={500}>
-          <Box height="100%">
+          <Box height="100%" display="flex" flexDirection="column">
             <AppBrowserRouter>
               <AuthenticatedOnly>
                 <UploadBookDialogWithDragOver />
