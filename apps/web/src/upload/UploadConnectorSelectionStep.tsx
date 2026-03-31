@@ -8,6 +8,7 @@ import {
 } from "@mui/material"
 import { useEffect, useState } from "react"
 import { useMutation } from "@tanstack/react-query"
+import { ConnectorManagementButtons } from "../connectors/ConnectorManagementButtons"
 import { ConnectorSelector } from "../connectors/ConnectorSelector"
 import { useConnectors } from "../connectors/useConnectors"
 import { useNotifications } from "../notifications/useNofitications"
@@ -71,10 +72,15 @@ export function UploadConnectorSelectionStep<TAuthResult>(
           </Alert>
           <ConnectorSelector
             connectorType={connectorType}
-            maxConnectors={maxConnectors}
-            onNavigate={onClose}
             value={selectedConnectorId}
             onChange={(e) => setSelectedConnectorId(e.target.value)}
+          />
+          <ConnectorManagementButtons
+            connectorType={connectorType}
+            onNavigate={onClose}
+            showNewButton={
+              maxConnectors === undefined || connectors.length < maxConnectors
+            }
           />
         </Stack>
       </DialogContent>

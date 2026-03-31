@@ -13,6 +13,26 @@ export const READER_ACCEPTED_FILE_TYPES = {
   "application/pdf": [".pdf"],
 }
 
+export const isPotentialZipFile = ({
+  name,
+  mimeType,
+}: {
+  name?: string | null
+  mimeType?: string | null
+}) => {
+  const normalizedName = name?.toLowerCase()
+
+  return (
+    normalizedName?.endsWith(".zip") ||
+    normalizedName?.endsWith(".epub") ||
+    normalizedName?.endsWith(".cbz") ||
+    mimeType?.startsWith("application/zip") ||
+    mimeType?.startsWith("application/x-zip-compressed") ||
+    mimeType?.startsWith("application/x-cbz") ||
+    mimeType?.startsWith("application/epub+zip")
+  )
+}
+
 export const READER_ACCEPTED_MIME_TYPES = Object.keys(
   READER_ACCEPTED_FILE_TYPES,
 )

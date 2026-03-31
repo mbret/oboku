@@ -1,16 +1,8 @@
 /**
  * @see https://github.com/dropbox/dropbox-sdk-js/tree/main/examples/javascript/download
  */
-import {
-  type DataSourcePlugin,
-  type SynchronizeAbleItem,
-} from "src/features/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
-import {
-  isFileSupported,
-  isCollectionOfType,
-  WebDAVDataSourceDocType,
-} from "@oboku/shared"
+import type { DataSourcePlugin } from "src/features/plugins/types"
+import { type WebDAVDataSourceDocType } from "@oboku/shared"
 import { getDataSourceData } from "../helpers"
 import { getHttpsAgent } from "src/lib/http/httpsAgent"
 import { getConnectorById } from "src/lib/connectors/connectorHelpers"
@@ -19,7 +11,9 @@ import {
   getFileMetadataFromWebdav,
   getFolderMetadataFromWebdav,
   downloadFromWebdav,
+  walkDirectoryContents,
 } from "./operations"
+import { find } from "src/lib/couch/dbHelpers"
 
 const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
 
@@ -90,70 +84,51 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
    * non-destructive.
    */
   getLinkCandidatesForItem: async (item, ctx) => {
-    const connectorId = item.linkData.connectorId
+    const { connectorId, filePath } = item.linkData
 
-    if (!connectorId) {
-      return { links: [] }
-    }
+    if (!connectorId) return { links: [] }
+
+    const datasourceConnectorId =
+      ctx.dataSource.type === "webdav"
+        ? ctx.dataSource.data_v2?.connectorId
+        : undefined
 
     const links = await find(ctx.db, "link", {
       selector: {
         type: WEBDAV_TYPE,
-        data: { connectorId, filePath: item.linkData.filePath },
+        data: { connectorId, filePath },
       },
     })
-    const datasourceData = ctx.dataSource
-
-    const datasourceConnectorId =
-      datasourceData.type === "webdav"
-        ? datasourceData.data_v2?.connectorId
-        : null
 
     return {
-      links: links.map((link) => {
-        const linkConnectorId =
-          link.type === "webdav" ? link.data?.connectorId : null
-
-        return {
-          ...link,
-          isUsingSameProviderCredentials:
-            linkConnectorId === datasourceConnectorId,
-        }
-      }),
+      links: links.map((link) => ({
+        ...link,
+        isUsingSameProviderCredentials: connectorId === datasourceConnectorId,
+      })),
     }
   },
-  /**
-   * Same identity rule as getLinkCandidatesForItem: collections are only
-   * considered the same persisted resource when both filePath and connectorId
-   * match exactly.
-   */
   getCollectionCandidatesForItem: async (item, ctx) => {
-    const connectorId = item.linkData.connectorId
-    if (!connectorId) {
-      return { collections: [] }
-    }
+    const { connectorId, filePath } = item.linkData
+
+    if (!connectorId) return { collections: [] }
+
+    const datasourceConnectorId =
+      ctx.dataSource.type === "webdav"
+        ? ctx.dataSource.data_v2?.connectorId
+        : undefined
+
     const collections = await find(ctx.db, "obokucollection", {
       selector: {
         linkType: WEBDAV_TYPE,
-        linkData: { connectorId, filePath: item.linkData.filePath },
+        linkData: { connectorId, filePath },
       },
     })
-    const datasourceData = ctx.dataSource
-    const datasourceConnectorId =
-      datasourceData.type === "webdav"
-        ? datasourceData.data_v2?.connectorId
-        : undefined
+
     return {
-      collections: collections.map((c) => {
-        const collectionConnectorId = isCollectionOfType(c, WEBDAV_TYPE)
-          ? (c.linkData?.connectorId ?? null)
-          : null
-        return {
-          ...c,
-          isUsingSameProviderCredentials:
-            collectionConnectorId === datasourceConnectorId,
-        }
-      }),
+      collections: collections.map((c) => ({
+        ...c,
+        isUsingSameProviderCredentials: connectorId === datasourceConnectorId,
+      })),
     }
   },
   getFileMetadata: async ({ link, providerCredentials, db }) => {
@@ -206,60 +181,11 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
       password: providerCredentials.password,
     })
 
-    const reduceItems = async (
-      directory: string,
-    ): Promise<SynchronizeAbleItem<"webdav">[]> => {
-      const files = await client.getDirectoryContents(directory)
-
-      if (!Array.isArray(files)) {
-        return []
-      }
-
-      return await files.reduce(
-        async (acc: Promise<SynchronizeAbleItem<"webdav">[]>, file) => {
-          if (file.type === "file") {
-            if (
-              !isFileSupported({
-                mimeType: file.mime,
-                name: file.basename,
-              })
-            ) {
-              return await acc
-            }
-
-            return [
-              ...(await acc),
-              {
-                type: file.type,
-                modifiedAt: file.lastmod,
-                name: file.basename,
-                linkData: { connectorId, filePath: file.filename },
-              } satisfies SynchronizeAbleItem<"webdav">,
-            ]
-          }
-
-          const childItems = await reduceItems(file.filename)
-
-          if (childItems.length === 0) {
-            return await acc
-          }
-
-          return [
-            ...(await acc),
-            {
-              type: "folder",
-              modifiedAt: file.lastmod,
-              name: file.basename,
-              linkData: { connectorId, filePath: file.filename },
-              items: childItems,
-            } satisfies SynchronizeAbleItem<"webdav">,
-          ]
-        },
-        Promise.resolve([]),
-      )
-    }
-
-    const items = await reduceItems(rootDirectory)
+    const items = await walkDirectoryContents(
+      client,
+      rootDirectory,
+      connectorId,
+    )
 
     return {
       name: rootDirectory,

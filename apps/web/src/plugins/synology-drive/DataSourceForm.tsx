@@ -6,13 +6,12 @@ import {
   Typography,
 } from "@mui/material"
 import { memo, useCallback, useMemo, useState } from "react"
-import type { Control, UseFormWatch } from "react-hook-form"
-import { useController } from "react-hook-form"
+import { useController, useForm } from "react-hook-form"
 import { LazyTreeView, type TreeNode } from "../../common/FileTreeView"
 import { errorToHelperText } from "../../common/forms/errorToHelperText"
 import { ConnectorSelector } from "../../connectors/ConnectorSelector"
 import { isCancelError } from "../../errors/errors.shared"
-import type { DataSourceFormData } from "../types"
+import type { SynologyDriveDataSourceDocType } from "@oboku/shared"
 import type { SynologyDriveSession } from "./client"
 import { useRequestSynologyDriveSession } from "./auth/auth"
 import {
@@ -23,16 +22,29 @@ import {
   type SynologyTreeNode,
 } from "./browsing/tree"
 import { useSelectionTreeData } from "./browsing/useSelectionTreeData"
+import { DataSourceFormLayout } from "../DataSourceFormLayout"
+import type { DataSourceFormData, DataSourceFormInternalProps } from "../types"
+
+type SynologyDriveFormData = DataSourceFormData<{
+  connectorId: string
+  items: string[]
+}>
 
 export const DataSourceForm = memo(
   ({
-    control,
-    watch,
-  }: {
-    control: Control<DataSourceFormData, unknown, DataSourceFormData>
-    watch: UseFormWatch<DataSourceFormData>
-  }) => {
-    watch("data")
+    dataSource,
+    onSubmit,
+    submitLabel,
+  }: DataSourceFormInternalProps<SynologyDriveDataSourceDocType>) => {
+    const { control, handleSubmit } = useForm<SynologyDriveFormData>({
+      mode: "onChange",
+      defaultValues: {
+        name: dataSource?.name ?? "",
+        tags: [...(dataSource?.tags ?? [])],
+        connectorId: dataSource?.data_v2?.connectorId ?? "",
+        items: [...(dataSource?.data_v2?.items ?? [])],
+      },
+    })
     const requestSynologyDriveSession = useRequestSynologyDriveSession()
     const [session, setSession] = useState<SynologyDriveSession | undefined>(
       undefined,
@@ -48,24 +60,18 @@ export const DataSourceForm = memo(
     const { field: connectorField, fieldState: connectorFieldState } =
       useController({
         control,
-        name: "data.connectorId",
+        name: "connectorId",
         rules: { required: true },
       })
     const { field: itemsField } = useController({
       control,
-      name: "data.items",
+      name: "items",
       rules: { required: false },
     })
 
-    const connectorId =
-      typeof connectorField.value === "string" ? connectorField.value : ""
+    const connectorId = connectorField.value
     const selectedItemIds = useMemo(
-      () =>
-        Array.isArray(itemsField.value)
-          ? itemsField.value.filter(
-              (value): value is string => typeof value === "string",
-            )
-          : [],
+      () => itemsField.value ?? [],
       [itemsField.value],
     )
     const selectedTreeItemIds = useMemo(
@@ -143,11 +149,20 @@ export const DataSourceForm = memo(
     }, [])
 
     return (
-      <Stack gap={2}>
+      <DataSourceFormLayout
+        control={control}
+        onSubmit={handleSubmit((data) =>
+          onSubmit({
+            name: data.name,
+            tags: data.tags,
+            data_v2: { connectorId: data.connectorId, items: data.items },
+          }),
+        )}
+        submitLabel={submitLabel}
+      >
         <ConnectorSelector
           {...connectorField}
           connectorType="synology-drive"
-          showManagementButtons={false}
           onChange={(event) => handleConnectorChange(event)}
           helperText={
             connectorFieldState.invalid
@@ -204,7 +219,7 @@ export const DataSourceForm = memo(
             {errorToHelperText(connectorFieldState.error)}
           </Typography>
         )}
-      </Stack>
+      </DataSourceFormLayout>
     )
   },
 )

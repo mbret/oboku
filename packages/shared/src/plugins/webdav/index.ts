@@ -1,4 +1,20 @@
 import { z } from "zod"
+import type { BaseDataSourceDocType } from "../../db/docTypes"
+
+/** WebDAV datasource config: connector reference plus optional sync directory. */
+export type WebDAVDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
+  type: "webdav"
+  data_v2?: { connectorId?: string; directory?: string }
+}
+
+export type WebdavConnectorDocType = {
+  id: string
+  url: string
+  username: string
+  passwordAsSecretId: string
+  allowSelfSigned?: boolean
+  type: "webdav"
+}
 
 export const webdavLinkDataSchema = z.object({
   connectorId: z.string().optional(),

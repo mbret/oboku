@@ -1,6 +1,21 @@
 import { z } from "zod"
+import type { BaseDataSourceDocType } from "../../db/docTypes"
 
 export const PLUGIN_SERVER_TYPE = "server"
+
+export type ServerDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
+  type: "server"
+  data_v2?: { connectorId?: string }
+}
+
+export type ServerConnectorDocType = {
+  id: string
+  type: "server"
+  username: string
+  passwordAsSecretId: string
+  url?: string
+  allowSelfSigned?: boolean
+}
 
 /**
  * API credentials for server plugin: only the secret (password). Username

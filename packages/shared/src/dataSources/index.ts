@@ -1,7 +1,5 @@
-import type {
-  DataSourceDocType,
-  GoogleDriveDataSourceDocType,
-} from "../db/docTypes"
+import type { DataSourceDocType } from "../db/docTypes"
+import type { GoogleDriveDataSourceDocType } from "../plugins/google"
 
 export type GoogleDriveDataSourceData = NonNullable<
   GoogleDriveDataSourceDocType["data_v2"]
