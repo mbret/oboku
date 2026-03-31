@@ -1,5 +1,5 @@
 import { Controller, Get } from "@nestjs/common"
-import { AppConfigService } from "../../config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService"
 import { Public } from "src/auth/auth.guard"
 import { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
 import type { GetWebConfigResponse } from "@oboku/shared"

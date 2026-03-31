@@ -17,9 +17,8 @@ import type {
   ReactNode,
 } from "react"
 import type { Button, SvgIconProps } from "@mui/material"
-import type { DeepReadonly, DeepReadonlyArray } from "rxdb"
+import type { DeepReadonly } from "rxdb"
 import type { UseMutationResult } from "@tanstack/react-query"
-import type { Control, UseFormWatch } from "react-hook-form"
 
 /** Link fields that upload payloads can provide (dialog fills book, normalizes data, createdAt, modifiedAt) */
 type PostLink<T extends DataSourceDocType["type"] = DataSourceDocType["type"]> =
@@ -133,10 +132,32 @@ export type UseLinkInfo = (data: {
     | undefined
 }
 
-export type DataSourceFormData = {
+export type DataSourceFormData<PluginFields extends Record<string, unknown>> = {
   name: string
-  tags: DeepReadonlyArray<string>
-  data: Record<string, unknown>
+  tags: string[]
+} & PluginFields
+
+export type DataSourceFormInternalProps<
+  T extends DataSourceDocType = DataSourceDocType,
+> = {
+  dataSource?: DeepReadonly<T>
+  onSubmit: (payload: DataSourceSubmitPayload) => void
+  submitLabel: string
+}
+
+export type DataSourceSubmitPayload = {
+  name: string
+  tags: string[]
+  data_v2: Record<string, unknown>
+}
+
+export type DataSourceCreateFormProps = {
+  onSubmit: (payload: DataSourceSubmitPayload) => void
+}
+
+export type DataSourceEditFormProps = {
+  dataSource: DeepReadonly<DataSourceDocType>
+  onSubmit: (payload: DataSourceSubmitPayload) => void
 }
 
 export type ObokuPlugin<
@@ -166,14 +187,8 @@ export type ObokuPlugin<
       title: string
     } & Pick<DOMAttributes<any>, "onDragLeave">
   >
-  DataSourceForm?: FunctionComponent<{
-    control: Control<DataSourceFormData, any, DataSourceFormData>
-    watch: UseFormWatch<DataSourceFormData>
-  }>
-  DataSourceDetails?: FunctionComponent<{
-    control: Control<DataSourceFormData, any, DataSourceFormData>
-    watch: UseFormWatch<DataSourceFormData>
-  }>
+  DataSourceCreateForm?: FunctionComponent<DataSourceCreateFormProps>
+  DataSourceEditForm?: FunctionComponent<DataSourceEditFormProps>
   SelectItemComponent?: FunctionComponent<{
     open: boolean
     requestPopup: () => Promise<boolean>

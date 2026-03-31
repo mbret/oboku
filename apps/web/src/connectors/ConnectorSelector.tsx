@@ -2,64 +2,10 @@ import type {
   SettingsConnectorDocType,
   SettingsConnectorType,
 } from "@oboku/shared"
-import { SettingsRounded } from "@mui/icons-material"
-import {
-  Alert,
-  Button,
-  MenuItem,
-  Stack,
-  TextField,
-  type ButtonProps,
-  type TextFieldProps,
-} from "@mui/material"
-import { memo, type ReactNode } from "react"
-import { useNavigate } from "react-router"
+import { Alert, MenuItem, TextField, type TextFieldProps } from "@mui/material"
+import { memo } from "react"
 import { CONNECTOR_DETAILS } from "./connectorDetails"
 import { useConnectors } from "./useConnectors"
-
-const ConnectorManagementButtons = memo(
-  ({
-    connectorType,
-    onNavigate,
-    variant = "outlined",
-    showNewButton = true,
-  }: {
-    connectorType: SettingsConnectorType
-    onNavigate?: () => void
-    variant?: ButtonProps["variant"]
-    showNewButton?: boolean
-  }) => {
-    const navigate = useNavigate()
-    const { manageRoute, newRoute } = CONNECTOR_DETAILS[connectorType]
-
-    const handleManage = () => {
-      onNavigate?.()
-      navigate(manageRoute)
-    }
-
-    const handleNew = () => {
-      onNavigate?.()
-      navigate(newRoute)
-    }
-
-    return (
-      <Stack direction="row" gap={1}>
-        <Button
-          onClick={handleManage}
-          startIcon={<SettingsRounded />}
-          variant={variant}
-        >
-          Manage connectors
-        </Button>
-        {showNewButton && (
-          <Button onClick={handleNew} variant={variant}>
-            New connector
-          </Button>
-        )}
-      </Stack>
-    )
-  },
-)
 
 export type ConnectorSelectorProps = Omit<
   TextFieldProps,
@@ -67,20 +13,12 @@ export type ConnectorSelectorProps = Omit<
 > & {
   connectorType: SettingsConnectorType
   connectors?: SettingsConnectorDocType[]
-  showManagementButtons?: boolean
-  maxConnectors?: number
-  onNavigate?: () => void
-  children?: ReactNode
 }
 
 export const ConnectorSelector = memo(
   ({
     connectorType,
     connectors: connectorsProp,
-    showManagementButtons = true,
-    maxConnectors,
-    onNavigate,
-    children,
     ref: refProp,
     ...textFieldProps
   }: ConnectorSelectorProps) => {
@@ -89,55 +27,35 @@ export const ConnectorSelector = memo(
     })
     const connectors = connectorsProp ?? connectorsFromHook
     const { label } = CONNECTOR_DETAILS[connectorType]
-    const canAddNew =
-      maxConnectors === undefined || connectors.length < maxConnectors
 
     if (connectors.length === 0) {
       return (
-        <>
-          <Alert severity="warning">
-            No {label} connector is available yet. Create one before continuing.
-          </Alert>
-          <ConnectorManagementButtons
-            connectorType={connectorType}
-            onNavigate={onNavigate}
-            showNewButton={canAddNew}
-          />
-          {children}
-        </>
+        <Alert severity="warning">
+          No {label} connector is available yet. Create one before continuing.
+        </Alert>
       )
     }
 
     return (
-      <Stack gap={2}>
-        <TextField
-          {...textFieldProps}
-          fullWidth
-          error={textFieldProps.error}
-          inputRef={refProp}
-          label={textFieldProps.label ?? "Connector"}
-          select
-          value={
-            typeof textFieldProps.value === "string"
-              ? textFieldProps.value
-              : (textFieldProps.value ?? "")
-          }
-        >
-          {connectors.map((connector) => (
-            <MenuItem key={connector.id} value={connector.id}>
-              {connector.url} ({connector.username})
-            </MenuItem>
-          ))}
-        </TextField>
-        {showManagementButtons && (
-          <ConnectorManagementButtons
-            connectorType={connectorType}
-            onNavigate={onNavigate}
-            showNewButton={canAddNew}
-          />
-        )}
-        {children}
-      </Stack>
+      <TextField
+        {...textFieldProps}
+        fullWidth
+        error={textFieldProps.error}
+        inputRef={refProp}
+        label={textFieldProps.label ?? "Connector"}
+        select
+        value={
+          typeof textFieldProps.value === "string"
+            ? textFieldProps.value
+            : (textFieldProps.value ?? "")
+        }
+      >
+        {connectors.map((connector) => (
+          <MenuItem key={connector.id} value={connector.id}>
+            {connector.url} ({connector.username})
+          </MenuItem>
+        ))}
+      </TextField>
     )
   },
 )

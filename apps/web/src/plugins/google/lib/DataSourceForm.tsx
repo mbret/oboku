@@ -8,9 +8,7 @@ import { PLUGIN_NAME } from "./constants"
 import { useQueries } from "@tanstack/react-query"
 import { useCreateDriveFileQuery } from "../../../google/useDriveFile"
 import { isDriveResponseError } from "../../../google/useDriveFilesGet"
-import { type Control, useController } from "react-hook-form"
-import type { DataSourceFormData } from "../../types"
-import type { GoogleDriveDataSourceDocType } from "@oboku/shared"
+import { useController, useForm } from "react-hook-form"
 import { useRequestFilesAccess } from "./useRequestFilesAccess"
 import { useGoogleScripts } from "./scripts"
 import { isFolder } from "./utils"
@@ -19,22 +17,38 @@ import { useMemo, useState } from "react"
 import { buildTree } from "../../../common/FileTreeView"
 import { useConfirmation } from "../../../common/useConfirmation"
 import { useUnmountSubject } from "../../../common/rxjs/useUnmountSubject"
+import { DataSourceFormLayout } from "../../DataSourceFormLayout"
+import type { GoogleDriveDataSourceDocType } from "@oboku/shared"
+import type {
+  DataSourceFormData,
+  DataSourceFormInternalProps,
+} from "../../types"
+
+type GoogleDriveFormData = DataSourceFormData<{
+  items: string[]
+}>
 
 export const DataSourceForm = ({
-  control,
-}: {
-  control: Control<DataSourceFormData, any, DataSourceFormData>
-}) => {
+  dataSource,
+  onSubmit,
+  submitLabel,
+}: DataSourceFormInternalProps<GoogleDriveDataSourceDocType>) => {
   const { getGoogleScripts } = useGoogleScripts()
+  const { control, handleSubmit } = useForm<GoogleDriveFormData>({
+    mode: "onChange",
+    defaultValues: {
+      name: dataSource?.name ?? "",
+      tags: [...(dataSource?.tags ?? [])],
+      items: [...(dataSource?.data_v2?.items ?? [])],
+    },
+  })
   const {
-    field: { onChange, value },
+    field: { onChange: setItems, value: items },
   } = useController({
     control,
     rules: { required: false },
-    name: "data",
+    name: "items",
   })
-  const { items = [] } =
-    (value as GoogleDriveDataSourceDocType["data_v2"]) ?? {}
   const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
   const confirmation = useConfirmation()
   const requestFilesAccess = useRequestFilesAccess({ requestPopup })
@@ -74,119 +88,116 @@ export const DataSourceForm = ({
   }, [queries])
 
   return (
-    <Stack gap={2} pb={2} overflow="auto">
-      <Stack gap={1}>
-        <Button
-          onClick={() => {
-            pick({ select: "folder", multiSelect: true })
-              .pipe(
-                tap((data) => {
-                  if (data.action === google.picker.Action.PICKED) {
-                    const newData = [
-                      ...items,
-                      ...(data.docs?.map((i) => i.id) ?? []),
-                    ]
-
-                    const newItems = newData.reduce(
-                      function reduceWithoutDuplicates(
-                        acc: typeof newData,
-                        itemId,
-                      ) {
-                        if (acc.find((entry) => entry === itemId)) {
-                          return acc
-                        }
-
-                        return [...acc, itemId]
-                      },
-                      [],
-                    )
-
-                    onChange({
-                      target: {
-                        value: {
-                          items: newItems,
-                        },
-                      },
-                    })
-                  }
-                }),
-                takeUntil(unmountSubject),
-                catchError((error) => {
-                  console.error(error)
-
-                  return of(null)
-                }),
-              )
-              .subscribe()
-          }}
-        >
-          Add folders/files
-        </Button>
-        <Typography variant="caption" align="center">
-          You have {items.length} item(s) registered
-        </Typography>
-        {items.length > 0 && hasMissingPermissions && (
-          <Alert
-            severity="warning"
-            action={
-              <Button
-                size="small"
-                sx={{ alignSelf: "center" }}
-                onClick={() => {
-                  requestFilesAccessMutation()
-                }}
-              >
-                Grant
-              </Button>
-            }
-          >
-            We are missing permissions for some of the files. Please grant
-            access to see the entire tree.
-          </Alert>
-        )}
-      </Stack>
-      <Stack gap={1}>
-        <Stack
-          direction="row"
-          gap={1}
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Typography variant="caption">
-            Item(s) actions: {selectedItems.length}
-          </Typography>
-          <IconButton
-            disabled={selectedItems.length === 0}
+    <DataSourceFormLayout
+      control={control}
+      onSubmit={handleSubmit((data) =>
+        onSubmit({
+          name: data.name,
+          tags: data.tags,
+          data_v2: { items: data.items },
+        }),
+      )}
+      submitLabel={submitLabel}
+    >
+      <Stack gap={2} pb={2} overflow="auto">
+        <Stack gap={1}>
+          <Button
             onClick={() => {
-              const confirmed = confirmation()
+              pick({ select: "folder", multiSelect: true })
+                .pipe(
+                  tap((data) => {
+                    if (data.action === google.picker.Action.PICKED) {
+                      const newData = [
+                        ...items,
+                        ...(data.docs?.map((i) => i.id) ?? []),
+                      ]
 
-              if (!confirmed) {
-                return
-              }
+                      const newItems = newData.reduce(
+                        function reduceWithoutDuplicates(
+                          acc: typeof newData,
+                          itemId,
+                        ) {
+                          if (acc.find((entry) => entry === itemId)) {
+                            return acc
+                          }
 
-              setSelectedItems([])
+                          return [...acc, itemId]
+                        },
+                        [],
+                      )
 
-              onChange({
-                target: {
-                  value: {
-                    items: items.filter(
-                      (item) => !selectedItems.includes(item),
-                    ),
-                  },
-                },
-              })
+                      setItems(newItems)
+                    }
+                  }),
+                  takeUntil(unmountSubject),
+                  catchError((error) => {
+                    console.error(error)
+
+                    return of(null)
+                  }),
+                )
+                .subscribe()
             }}
           >
-            <DeleteRounded />
-          </IconButton>
+            Add folders/files
+          </Button>
+          <Typography variant="caption" align="center">
+            You have {items.length} item(s) registered
+          </Typography>
+          {items.length > 0 && hasMissingPermissions && (
+            <Alert
+              severity="warning"
+              action={
+                <Button
+                  size="small"
+                  sx={{ alignSelf: "center" }}
+                  onClick={() => {
+                    requestFilesAccessMutation()
+                  }}
+                >
+                  Grant
+                </Button>
+              }
+            >
+              We are missing permissions for some of the files. Please grant
+              access to see the entire tree.
+            </Alert>
+          )}
         </Stack>
-        <TreeView
-          items={treeViewItems}
-          selectedItems={selectedItems}
-          checkboxSelection
-          onSelectedItemsChange={(_, items) => setSelectedItems(items)}
-        />
+        <Stack gap={1}>
+          <Stack
+            direction="row"
+            gap={1}
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Typography variant="caption">
+              Item(s) actions: {selectedItems.length}
+            </Typography>
+            <IconButton
+              disabled={selectedItems.length === 0}
+              onClick={() => {
+                const confirmed = confirmation()
+
+                if (!confirmed) {
+                  return
+                }
+
+                setSelectedItems([])
+                setItems(items.filter((item) => !selectedItems.includes(item)))
+              }}
+            >
+              <DeleteRounded />
+            </IconButton>
+          </Stack>
+          <TreeView
+            items={treeViewItems}
+            selectedItems={selectedItems}
+            checkboxSelection
+            onSelectedItemsChange={(_, items) => setSelectedItems(items)}
+          />
+        </Stack>
       </Stack>
-    </Stack>
+    </DataSourceFormLayout>
   )
 }

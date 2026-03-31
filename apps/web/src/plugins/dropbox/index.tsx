@@ -8,7 +8,6 @@ import { PLUGIN_NAME } from "./constants"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../types"
-import { DataSourceDetails } from "./DataSourceDetails"
 import { InfoScreen } from "./InfoScreen"
 import { useSignOut } from "./useSignOut"
 import { DownloadBook } from "./DownloadBook"
@@ -33,8 +32,17 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   canRemoveBook: false,
   Icon: DropboxIcon,
   UploadBookComponent: UploadBook,
-  DataSourceDetails,
-  DataSourceForm,
+  DataSourceCreateForm: (props) => (
+    <DataSourceForm {...props} submitLabel="Confirm" />
+  ),
+  // The screen matches plugins by dataSource.type, guaranteeing the correct variant.
+  DataSourceEditForm: ({ dataSource, ...rest }) => (
+    <DataSourceForm
+      {...rest}
+      dataSource={dataSource as never}
+      submitLabel="Save"
+    />
+  ),
   DownloadBookComponent: DownloadBook,
   useRemoveBook,
   useLinkInfo,

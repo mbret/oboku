@@ -136,6 +136,12 @@ const syncItem = async ({
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
   logger.log(`syncItem ${item.name}: metadata `)
 
+  /**
+   * If a folder:
+   * - does not have parent collection
+   * - or is not forbidden to be from directives
+   * then it is a collection
+   */
   const isCollection =
     isFolder(item) &&
     !hasCollectionAsParent &&
@@ -150,10 +156,6 @@ const syncItem = async ({
     metadataForFolder.tags.map((name) => helpers.getOrCreateTagFromName(name)),
   )
 
-  // Do not register as collection if
-  // - root
-  // - metadata says otherwise
-  // - parent is not already a collection
   if (isFolder(item) && isCollection) {
     await syncCollection({ ctx, item, helpers, eventEmitter })
   }
@@ -173,7 +175,7 @@ const syncItem = async ({
           await syncItem({
             ctx,
             helpers,
-            hasCollectionAsParent: isCollection,
+            hasCollectionAsParent: isCollection || hasCollectionAsParent,
             item: subItem,
             parents: [...parents, item],
             config,

@@ -1,5 +1,5 @@
 import { memo, Suspense, useEffect, useState } from "react"
-import { AppNavigator } from "./navigation/AppNavigator"
+import { AppBrowserRouter } from "./navigation/AppBrowserRouter"
 import { StyledEngineProvider, Fade, Box } from "@mui/material"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
@@ -33,6 +33,12 @@ import { AuthGuard } from "./auth/AuthGuard"
 import { Notifications } from "./notifications/Notifications"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
+import { BackToReadingDialog } from "./reading/BackToReadingDialog"
+import { PluginDownloadFlowHost } from "./download/flow/PluginDownloadFlowHost"
+import { CollectionActionsDrawer } from "./collections/CollectionActionsDrawer/CollectionActionsDrawer"
+import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
+import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
+import { AuthenticatedOnly } from "./auth/AuthenticatedOnly"
 
 // @todo move to sw
 LibArchive.init({
@@ -60,17 +66,24 @@ const App = memo(() => {
     <DialogProvider>
       {!isHydratingProfile && isAuthHydrated && (
         <Fade in={isAppReady} timeout={500}>
-          <Box height="100%">
-            <AuthGuard />
-            <AppNavigator isProfileHydrated={isProfileHydrated} />
-            <ManageBookCollectionsDialog />
-            <ManageBookTagsDialog />
-            <ManageTagBooksDialog />
-            <AuthorizeActionDialog />
-            <SetupSecretDialog />
-            <BackgroundReplication />
-            <BlockingBackdrop />
-            <Effects />
+          <Box height="100%" display="flex" flexDirection="column">
+            <AppBrowserRouter>
+              <AuthenticatedOnly>
+                <UploadBookDialogWithDragOver />
+                <BookActionsDrawer />
+                <CollectionActionsDrawer />
+                <PluginDownloadFlowHost />
+                <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
+                <ManageBookCollectionsDialog />
+                <ManageBookTagsDialog />
+                <ManageTagBooksDialog />
+                <SetupSecretDialog />
+              </AuthenticatedOnly>
+              <AuthorizeActionDialog />
+              <BackgroundReplication />
+              <BlockingBackdrop />
+              <Effects />
+            </AppBrowserRouter>
           </Box>
         </Fade>
       )}
@@ -126,5 +139,5 @@ const Effects = memo(() => {
     loadGsi()
   }, [loadGsi])
 
-  return null
+  return <AuthGuard />
 })
