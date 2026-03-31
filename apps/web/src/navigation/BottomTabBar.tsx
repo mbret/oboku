@@ -1,7 +1,6 @@
 import { type ReactNode, memo } from "react"
 import { BottomNavigationAction, BottomNavigation, Box } from "@mui/material"
-import { useNavigate, useLocation } from "react-router"
-import { ROUTES } from "./routes"
+import { Link, useLocation, matchPath } from "react-router"
 import { navItems } from "./navConstants"
 import { OfflineIcon } from "../common/OfflineIcon"
 
@@ -10,14 +9,11 @@ export const BottomTabBar = memo(function BottomTabBar({
 }: {
   children: ReactNode
 }) {
-  const location = useLocation()
-  const navigate = useNavigate()
+  const { pathname } = useLocation()
 
-  const normalizedPath = location.pathname.startsWith(ROUTES.LIBRARY_ROOT)
-    ? ROUTES.LIBRARY_BOOKS
-    : location.pathname.startsWith(ROUTES.SYNC)
-      ? ROUTES.SYNC
-      : location.pathname
+  const activeRoute = navItems.find(({ matchPattern }) =>
+    matchPath(matchPattern, pathname),
+  )?.route
 
   return (
     <Box
@@ -30,14 +26,15 @@ export const BottomTabBar = memo(function BottomTabBar({
     >
       {children}
       <OfflineIcon />
-      <BottomNavigation
-        value={normalizedPath}
-        onChange={(_event, newValue) => {
-          navigate(newValue)
-        }}
-      >
+      <BottomNavigation value={activeRoute}>
         {navItems.map(({ icon: Icon, route }) => (
-          <BottomNavigationAction key={route} icon={<Icon />} value={route} />
+          <BottomNavigationAction
+            key={route}
+            icon={<Icon />}
+            value={route}
+            component={Link}
+            to={route}
+          />
         ))}
       </BottomNavigation>
     </Box>

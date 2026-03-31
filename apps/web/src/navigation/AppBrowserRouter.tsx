@@ -164,6 +164,7 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 <Route path="profile" element={<ProfileScreen />} />
                 <Route path="plugins" element={<PluginsScreen />} />
                 <Route path="library" element={<LibraryTopTabNavigator />}>
+                  <Route index element={<Navigate to="books" replace />} />
                   <Route path="books" element={<LibraryBooksScreen />} />
                   <Route
                     path="collections"
@@ -175,6 +176,9 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 <Route path="sync" element={<DataSourcesTabNavigator />}>
                   <Route
                     index
+                    element={<Navigate to="datasources" replace />}
+                  />
+                  <Route
                     path="datasources"
                     element={<DataSourcesListScreen />}
                   />

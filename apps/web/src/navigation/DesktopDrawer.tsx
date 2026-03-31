@@ -8,8 +8,7 @@ import {
   ListItemText,
   Toolbar,
 } from "@mui/material"
-import { useNavigate, useLocation } from "react-router"
-import { ROUTES } from "./routes"
+import { Link, useLocation, matchPath } from "react-router"
 import { navItems } from "./navConstants"
 import { OfflineIcon } from "../common/OfflineIcon"
 
@@ -20,14 +19,7 @@ export const DesktopDrawer = memo(function DesktopDrawer({
 }: {
   children: ReactNode
 }) {
-  const location = useLocation()
-  const navigate = useNavigate()
-
-  const normalizedPath = location.pathname.startsWith(ROUTES.LIBRARY_ROOT)
-    ? ROUTES.LIBRARY_BOOKS
-    : location.pathname.startsWith(ROUTES.SYNC)
-      ? ROUTES.SYNC
-      : location.pathname
+  const { pathname } = useLocation()
 
   return (
     <Box display="flex" height="100%" flex={1} overflow="hidden">
@@ -46,11 +38,12 @@ export const DesktopDrawer = memo(function DesktopDrawer({
       >
         <Toolbar />
         <List>
-          {navItems.map(({ icon: Icon, label, route }) => (
+          {navItems.map(({ icon: Icon, label, route, matchPattern }) => (
             <ListItemButton
               key={route}
-              selected={normalizedPath === route}
-              onClick={() => navigate(route)}
+              component={Link}
+              to={route}
+              selected={!!matchPath(matchPattern, pathname)}
             >
               <ListItemIcon>
                 <Icon />
