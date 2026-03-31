@@ -3,19 +3,19 @@ import { useObserve } from "reactjrx"
 import { concatMap, map, merge, of, Subject, timer } from "rxjs"
 import { Alert, Snackbar } from "@mui/material"
 
-export type AppNotification = {
+export type AppToast = {
   title: string
   description: string
   duration?: number
   severity?: "error" | "warning" | "info" | "success"
 }
 
-export const notificationsSubject = new Subject<AppNotification>()
+export const toastsSubject = new Subject<AppToast>()
 
-export const Notifications = memo(() => {
+export const Toasts = memo(() => {
   const { data: notification } = useObserve(
     () =>
-      notificationsSubject.pipe(
+      toastsSubject.pipe(
         concatMap((notification) => {
           const duration = notification.duration ?? 4000
 

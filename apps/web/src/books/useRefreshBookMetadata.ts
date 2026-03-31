@@ -7,14 +7,14 @@ import { Logger } from "../debug/logger.shared"
 import { createDialog } from "../common/dialogs/createDialog"
 import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
 import { CancelError } from "../errors/errors.shared"
-import { useNotifications } from "../notifications/useNofitications"
+import { useToasts } from "../notifications/useToasts"
 
 export const useRefreshBookMetadata = () => {
   const { db: database } = useDatabase()
   const { mutateAsync: incrementalPatchBook } = useIncrementalBookPatch()
   const network = useNetworkState()
   const refreshPluginMetadata = usePluginRefreshMetadata()
-  const { notifyError } = useNotifications()
+  const { notifyError } = useToasts()
 
   return async (bookId: string) => {
     try {
