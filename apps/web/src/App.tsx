@@ -1,6 +1,6 @@
 import { memo, Suspense, useEffect, useState } from "react"
 import { AppBrowserRouter } from "./navigation/AppBrowserRouter"
-import { StyledEngineProvider, Fade } from "@mui/material"
+import { StyledEngineProvider, Fade, Box } from "@mui/material"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
@@ -33,7 +33,6 @@ import { AuthGuard } from "./auth/AuthGuard"
 import { Notifications } from "./notifications/Notifications"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
-import { Root } from "./Root"
 import { BackToReadingDialog } from "./reading/BackToReadingDialog"
 import { PluginDownloadFlowHost } from "./download/flow/PluginDownloadFlowHost"
 import { CollectionActionsDrawer } from "./collections/CollectionActionsDrawer/CollectionActionsDrawer"
@@ -67,7 +66,7 @@ const App = memo(() => {
     <DialogProvider>
       {!isHydratingProfile && isAuthHydrated && (
         <Fade in={isAppReady} timeout={500}>
-          <Root>
+          <Box height="100%">
             <AppBrowserRouter>
               <AuthenticatedOnly>
                 <UploadBookDialogWithDragOver />
@@ -85,7 +84,7 @@ const App = memo(() => {
               <BlockingBackdrop />
               <Effects />
             </AppBrowserRouter>
-          </Root>
+          </Box>
         </Fade>
       )}
       <UpdateAvailableDialog serviceWorker={waitingWorker} />

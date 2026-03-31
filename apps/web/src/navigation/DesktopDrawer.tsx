@@ -30,13 +30,7 @@ export const DesktopDrawer = memo(function DesktopDrawer({
       : location.pathname
 
   return (
-    <Box
-      display="flex"
-      height="100%"
-      flex={1}
-      overflow="hidden"
-      position="relative"
-    >
+    <Box display="flex" height="100%" flex={1} overflow="hidden">
       <Drawer
         variant="permanent"
         sx={{
@@ -66,10 +60,16 @@ export const DesktopDrawer = memo(function DesktopDrawer({
           ))}
         </List>
       </Drawer>
-      <Box flex={1} overflow="hidden" display="flex" flexDirection="column">
+      <Box
+        flex={1}
+        overflow="hidden"
+        display="flex"
+        flexDirection="column"
+        position="relative"
+      >
         {children}
+        <OfflineIcon />
       </Box>
-      <OfflineIcon />
     </Box>
   )
 })
