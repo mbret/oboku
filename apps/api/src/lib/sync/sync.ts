@@ -9,6 +9,7 @@ import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/config/types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "src/events"
+import { NotificationsService } from "src/notifications/notifications.service"
 import { SyncReportPostgresService } from "src/features/postgres/SyncReportPostgresService"
 import { CoversService } from "src/covers/covers.service"
 import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
@@ -25,6 +26,7 @@ export const sync = async ({
   config,
   eventEmitter,
   syncReportPostgresService,
+  notificationService,
   email,
   coversService,
 }: {
@@ -35,6 +37,7 @@ export const sync = async ({
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
   syncReportPostgresService: SyncReportPostgresService
+  notificationService: NotificationsService
   email: string
   coversService: CoversService
 }) => {
@@ -157,5 +160,10 @@ export const sync = async ({
     const syncReportData = syncReport.prepare()
 
     await syncReportPostgresService.save(syncReportData)
+    await notificationService.sendSyncFinishedNotification({
+      userEmail: email,
+      dataSourceId,
+      state: syncReportData.state,
+    })
   }
 }

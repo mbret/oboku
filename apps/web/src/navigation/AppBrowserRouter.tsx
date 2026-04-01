@@ -45,6 +45,7 @@ import { EditConnectorScreen } from "../connectors/EditConnectorScreen"
 import { plugins } from "../dataSources"
 import { SignUpCompleteScreen } from "../pages/SignUpCompleteScreen"
 import { MagicLinkCompleteScreen } from "../pages/MagicLinkCompleteScreen"
+import { NotificationsScreen } from "../notifications/inbox/NotificationsScreen"
 
 const AppShell = ({ children }: { children: ReactNode }) => {
   const theme = useTheme()
@@ -122,6 +123,10 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route
                 path="profile/manage-storage"
                 element={<ManageStorageScreen />}
+              />
+              <Route
+                path={ROUTES.NOTIFICATIONS.slice(1)}
+                element={<NotificationsScreen />}
               />
               <Route
                 path={ROUTES.SECURITY.slice(1)}

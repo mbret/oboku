@@ -5,6 +5,7 @@ import { from, switchMap } from "rxjs"
 import { AppConfigService } from "src/config/AppConfigService"
 import { CouchService } from "src/couch/couch.service"
 import { CoversService } from "src/covers/covers.service"
+import { NotificationsService } from "src/notifications/notifications.service"
 import { SyncReportPostgresService } from "src/features/postgres/SyncReportPostgresService"
 import { sync } from "src/lib/sync/sync"
 
@@ -14,6 +15,7 @@ export class DataSourceService {
     protected appConfig: AppConfigService,
     protected coversService: CoversService,
     protected syncReportPostgresService: SyncReportPostgresService,
+    protected notificationService: NotificationsService,
     protected eventEmitter: EventEmitter2,
     protected couchService: CouchService,
   ) {}
@@ -40,6 +42,7 @@ export class DataSourceService {
             config: this.appConfig.config,
             eventEmitter: this.eventEmitter,
             syncReportPostgresService: this.syncReportPostgresService,
+            notificationService: this.notificationService,
             email,
             coversService: this.coversService,
           }),

@@ -160,7 +160,7 @@ export class AuthService {
     throw new UnauthorizedException()
   }
 
-  async generateTokens({ email }: { email: string }) {
+  async generateTokens({ email, userId }: { email: string; userId: number }) {
     const refreshTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     // const refreshTokenEntity = await this.refreshTokensService.save({
     //   user_email: email,
@@ -169,6 +169,7 @@ export class AuthService {
 
     const accessToken = await this.couchService.generateUserJWT({
       email,
+      userId,
     })
     const refreshToken = await this.generateRefreshToken({
       email,
@@ -183,7 +184,13 @@ export class AuthService {
     }
   }
 
-  private async completeSignInForEmail(email: string) {
+  private async completeSignIn({
+    email,
+    userId,
+  }: {
+    email: string
+    userId: number
+  }) {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
     const couchUser = await getOrCreateUserFromEmail(adminNano, email)
@@ -194,6 +201,7 @@ export class AuthService {
 
     const { accessToken, refreshToken } = await this.generateTokens({
       email: couchUser.email,
+      userId,
     })
 
     const nameHex = Buffer.from(couchUser.name).toString("hex")
@@ -215,7 +223,10 @@ export class AuthService {
         ? await this.signInWithGoogle(params.token)
         : await this.signinWithEmail(params.email, params.password)
 
-    return this.completeSignInForEmail(retrievedUser.email)
+    return this.completeSignIn({
+      email: retrievedUser.email,
+      userId: retrievedUser.id,
+    })
   }
 
   async generateSignUpToken(email: string) {
@@ -452,7 +463,7 @@ export class AuthService {
     user.emailVerified = true
     await this.usersService.saveUser(user)
 
-    return this.completeSignInForEmail(email)
+    return this.completeSignIn({ email, userId: user.id })
   }
 
   async refreshToken(grant_type: "refresh_token", refreshToken: string) {
@@ -467,10 +478,17 @@ export class AuthService {
         },
       )
 
+      const user = await this.usersService.findUserByEmail(sub)
+
+      if (!user) {
+        throw new UnauthorizedException()
+      }
+
       // await this.refreshTokensService.deleteById(id)
 
       return this.generateTokens({
         email: sub,
+        userId: user.id,
       })
     } catch (error) {
       // change to cleanup expired tokens

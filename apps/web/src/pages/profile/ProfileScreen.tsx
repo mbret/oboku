@@ -6,6 +6,7 @@ import {
   LaunchRounded,
   LockOpenRounded,
   LockRounded,
+  NotificationsRounded,
   SecurityRounded,
   SettingsRounded,
   StorageRounded,
@@ -13,6 +14,7 @@ import {
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   Button,
+  Badge,
   Dialog,
   DialogActions,
   Checkbox,
@@ -46,6 +48,7 @@ import { createDialog } from "../../common/dialogs/createDialog"
 import { ROUTES } from "../../navigation/routes"
 import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 import { Page } from "../../common/Page"
+import { useUnreadNotificationsCount } from "../../notifications/inbox/useInboxNotifications"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -57,6 +60,7 @@ export const ProfileScreen = () => {
   const signOut = useSignOut()
   const theme = useTheme()
   const { mutate: removeAllContents } = useRemoveAllContents()
+  const { unreadCount } = useUnreadNotificationsCount()
 
   return (
     <Page bottomGutter={false}>
@@ -95,6 +99,21 @@ export const ProfileScreen = () => {
           />
           {library.isLibraryUnlocked && <LockOpenRounded color="action" />}
           {!library.isLibraryUnlocked && <LockRounded color="action" />}
+        </ListItemButton>
+        <ListItemButton
+          onClick={() => {
+            navigate(ROUTES.NOTIFICATIONS)
+          }}
+        >
+          <ListItemIcon>
+            <Badge badgeContent={unreadCount} color="error">
+              <NotificationsRounded />
+            </Badge>
+          </ListItemIcon>
+          <ListItemText
+            primary="Notifications"
+            secondary={unreadCount > 0 ? `${unreadCount} unread` : "Inbox"}
+          />
         </ListItemButton>
         <ListItemButton
           onClick={() => {

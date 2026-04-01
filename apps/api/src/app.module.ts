@@ -26,6 +26,7 @@ import { AdminModule } from "./admin/admin.module"
 import { DataSourceModule } from "./datasource/datasource.module"
 import { StorageModule } from "./storage/storage.module"
 import { WebDavModule } from "./webdav/webdav.module"
+import { NotificationsModule } from "./notifications/notifications.module"
 
 @Module({
   imports: [
@@ -99,6 +100,7 @@ import { WebDavModule } from "./webdav/webdav.module"
     CoversModule,
     AdminModule,
     DataSourceModule,
+    NotificationsModule,
     WebDavModule,
   ],
   providers: [

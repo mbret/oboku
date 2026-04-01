@@ -1,8 +1,15 @@
 import { type ReactNode, memo } from "react"
-import { BottomNavigationAction, BottomNavigation, Box } from "@mui/material"
+import {
+  Badge,
+  BottomNavigationAction,
+  BottomNavigation,
+  Box,
+} from "@mui/material"
 import { Link, useLocation, matchPath } from "react-router"
 import { navItems } from "./navConstants"
 import { OfflineIcon } from "../common/OfflineIcon"
+import { ROUTES } from "./routes"
+import { useUnreadNotificationsCount } from "../notifications/inbox/useInboxNotifications"
 
 export const BottomTabBar = memo(function BottomTabBar({
   children,
@@ -10,6 +17,7 @@ export const BottomTabBar = memo(function BottomTabBar({
   children: ReactNode
 }) {
   const { pathname } = useLocation()
+  const { unreadCount } = useUnreadNotificationsCount()
 
   const activeRoute = navItems.find(({ matchPattern }) =>
     matchPath(matchPattern, pathname),
@@ -30,7 +38,15 @@ export const BottomTabBar = memo(function BottomTabBar({
         {navItems.map(({ icon: Icon, route }) => (
           <BottomNavigationAction
             key={route}
-            icon={<Icon />}
+            icon={
+              route === ROUTES.PROFILE ? (
+                <Badge badgeContent={unreadCount} color="error">
+                  <Icon />
+                </Badge>
+              ) : (
+                <Icon />
+              )
+            }
             value={route}
             component={Link}
             to={route}
