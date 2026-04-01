@@ -47,8 +47,10 @@ export class NotificationPostgresService {
 
   async getUserNotificationRows({
     userId,
+    limit = 50,
   }: {
     userId: number
+    limit?: number
   }): Promise<UserNotificationRow[]> {
     return this.notificationDeliveryRepository
       .createQueryBuilder("delivery")
@@ -71,6 +73,7 @@ export class NotificationPostgresService {
       .where("delivery.user_id = :userId", { userId })
       .andWhere("delivery.archived_at IS NULL")
       .orderBy("notification.created_at", "DESC")
+      .limit(limit)
       .getRawMany<UserNotificationRow>()
   }
 
