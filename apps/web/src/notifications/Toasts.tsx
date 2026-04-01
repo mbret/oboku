@@ -12,7 +12,7 @@ export type AppToast = {
 
 export const toastsSubject = new Subject<AppToast>()
 
-export const Toasts = memo(() => {
+export const Toasts = memo(function Toasts() {
   const { data: notification } = useObserve(
     () =>
       toastsSubject.pipe(
