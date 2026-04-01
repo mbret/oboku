@@ -32,24 +32,6 @@ export class SyncReportPostgresEntity {
   has_different_provider_credentials!: boolean | null
 }
 
-@Entity({ name: "communication" })
-export class CommunicationPostgresEntity {
-  @PrimaryGeneratedColumn("identity")
-  id!: number
-
-  @Column({
-    type: "timestamp with time zone",
-    default: () => "CURRENT_TIMESTAMP",
-  })
-  created_at!: Date
-
-  @Column({ type: "text", nullable: true })
-  content!: string | null
-
-  @Column({ type: "text", nullable: true })
-  type!: "info" | null
-}
-
 @Entity({ name: "notifications" })
 export class NotificationPostgresEntity {
   @PrimaryGeneratedColumn("identity")

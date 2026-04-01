@@ -14,8 +14,6 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService"
 import { PostgresModule } from "./features/postgres/postgres.module"
 import { AppConfigModule } from "./config/config.module"
-import { CommunicationController } from "./features/communication/communication.controller"
-import { CommunicationPostgresService } from "./features/postgres/CommunicationPostgresService"
 import { WebController } from "./web/web.controller"
 import { UsersModule } from "./users/users.module"
 import { AuthModule } from "./auth/auth.module"
@@ -106,7 +104,6 @@ import { NotificationsModule } from "./notifications/notifications.module"
   providers: [
     AppService,
     SyncReportPostgresService,
-    CommunicationPostgresService,
     CollectionMetadataService,
     InMemoryTaskQueueService,
     BooksMetadataService,
@@ -115,7 +112,6 @@ import { NotificationsModule } from "./notifications/notifications.module"
     AppController,
     BooksController,
     CollectionsController,
-    CommunicationController,
     WebController,
   ],
 })

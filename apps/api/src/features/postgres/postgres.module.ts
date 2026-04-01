@@ -4,14 +4,12 @@ import { NotificationPostgresService } from "./notification-postgres.service"
 import { SyncReportPostgresService } from "./SyncReportPostgresService"
 import { AppConfigService } from "../../config/AppConfigService"
 import {
-  CommunicationPostgresEntity,
   NotificationDeliveryPostgresEntity,
   NotificationPostgresEntity,
   // RefreshTokenPostgresEntity,
   SyncReportPostgresEntity,
   UserPostgresEntity,
 } from "./entities"
-import { CommunicationPostgresService } from "./CommunicationPostgresService"
 import { RefreshTokensService } from "./refreshTokens.service"
 import { UserPostgresService } from "./user-postgres.service"
 import { JwtService } from "@nestjs/jwt"
@@ -20,7 +18,6 @@ import { JwtService } from "@nestjs/jwt"
   imports: [
     TypeOrmModule.forFeature([
       SyncReportPostgresEntity,
-      CommunicationPostgresEntity,
       NotificationPostgresEntity,
       NotificationDeliveryPostgresEntity,
       UserPostgresEntity,
@@ -30,7 +27,6 @@ import { JwtService } from "@nestjs/jwt"
   providers: [
     SyncReportPostgresService,
     AppConfigService,
-    CommunicationPostgresService,
     NotificationPostgresService,
     RefreshTokensService,
     UserPostgresService,
