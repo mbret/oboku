@@ -13,10 +13,11 @@ export class UserPostgresService {
   ) {}
 
   async resolveUserIdByEmail(email: string): Promise<number | null> {
-    const user = await this.userRepository.findOne({
-      where: { email: normalizeEmail(email) },
-      select: ["id"],
-    })
+    const user = await this.userRepository
+      .createQueryBuilder("user")
+      .select("user.id", "id")
+      .where("LOWER(user.email) = :email", { email: normalizeEmail(email) })
+      .getRawOne<{ id: number }>()
 
     return user?.id ?? null
   }

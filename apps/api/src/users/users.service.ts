@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { UserPostgresEntity } from "../features/postgres/entities"
 import { Repository } from "typeorm"
+import { normalizeEmail } from "src/features/postgres/user-postgres.service"
 
 @Injectable()
 export class UsersService {
@@ -11,11 +12,17 @@ export class UsersService {
   ) {}
 
   async findUserByEmail(email: string): Promise<UserPostgresEntity | null> {
-    return this.userRepository.findOne({ where: { email } })
+    return this.userRepository
+      .createQueryBuilder("user")
+      .where("LOWER(user.email) = :email", { email: normalizeEmail(email) })
+      .getOne()
   }
 
   async registerUser(user: Omit<UserPostgresEntity, "id">) {
-    const newUser = this.userRepository.create(user)
+    const newUser = this.userRepository.create({
+      ...user,
+      email: normalizeEmail(user.email),
+    })
 
     await this.userRepository.save(newUser)
 
@@ -23,6 +30,8 @@ export class UsersService {
   }
 
   async saveUser(user: UserPostgresEntity) {
+    user.email = normalizeEmail(user.email)
+
     return this.userRepository.save(user)
   }
 }
