@@ -1,10 +1,11 @@
 import { useQuery$ } from "reactjrx"
+import { RXDB_QUERY_KEY_PREFIX } from "../queries/queryClient"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
 
 export const useSettings = (options: { enabled?: boolean } = {}) => {
   const data = useQuery$({
-    queryKey: ["rxdb", "settings"],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "settings"],
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap((db) =>

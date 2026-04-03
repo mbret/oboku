@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import type { GetUnreadNotificationsCountResponse } from "@oboku/shared"
 import { configuration } from "../../config/configuration"
 import { httpClientApi } from "../../http/httpClientApi.web"
-import { unreadCountQueryKey } from "./keys"
+import { unreadCountQueryKey } from "./queryKeys"
 
 export const useUnreadNotificationsCount = () => {
   const query = useQuery({
@@ -16,9 +16,9 @@ export const useUnreadNotificationsCount = () => {
       return data
     },
     networkMode: "online",
-    staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: 15 * 1000,
+    gcTime: Infinity,
+    refetchInterval: 30 * 1000,
   })
 
   return {

@@ -3,6 +3,7 @@ import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
 import { map, mergeMap, switchMap } from "rxjs"
 import { useQuery$ } from "reactjrx"
+import { RXDB_QUERY_KEY_PREFIX } from "../queries/queryClient"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
 import type { Database } from "../rxdb"
 import type { DeepReadonlyObject, MangoQuery } from "rxdb"
@@ -93,7 +94,7 @@ export const getTagsByIds = async (db: Database) => {
 
 export const useTag = (id?: string) => {
   return useQuery$({
-    queryKey: ["rxdb", "tag", id],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "tag", id],
     enabled: !!id,
     queryFn: () =>
       latestDatabase$.pipe(
@@ -114,7 +115,7 @@ export const useTags = ({
   queryObj?: MangoQuery<TagsDocType> | undefined
 } = {}) =>
   useQuery$({
-    queryKey: ["rxdb", "tags", queryObj],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "tags", queryObj],
     queryFn: () =>
       getLatestDatabase().pipe(
         mergeMap((database) => database.tag.find(queryObj).$),

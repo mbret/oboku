@@ -5,6 +5,7 @@ import { map, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { useQuery$, useSignalValue } from "reactjrx"
+import { RXDB_QUERY_KEY_PREFIX } from "../queries/queryClient"
 import type { BookDocType } from "@oboku/shared"
 import type { DeepReadonlyObject, MangoQuery } from "rxdb"
 import type { DeepReadonlyArray } from "rxdb/dist/types/types"
@@ -36,7 +37,7 @@ export const useBooks = ({
 
   return useQuery$({
     queryKey: [
-      "rxdb",
+      RXDB_QUERY_KEY_PREFIX,
       "get",
       "many",
       "books",
@@ -77,7 +78,7 @@ export const useBook = ({
   "queryKey" | "queryFn"
 >) => {
   return useQuery$({
-    queryKey: [`rxdb/bookJSON`, { id }],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "bookJSON", { id }],
     queryFn:
       id === undefined
         ? skipToken

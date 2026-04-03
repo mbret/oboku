@@ -5,6 +5,7 @@ import {
 } from "@oboku/shared"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useQuery$, useSignalValue } from "reactjrx"
+import { RXDB_QUERY_KEY_PREFIX } from "../queries/queryClient"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { combineLatest, map, switchMap } from "rxjs"
 import type { MangoQuery } from "rxdb"
@@ -45,7 +46,7 @@ export const useCollections = ({
 
   return useQuery$({
     queryKey: [
-      "rxdb",
+      RXDB_QUERY_KEY_PREFIX,
       "get",
       "collections",
       {

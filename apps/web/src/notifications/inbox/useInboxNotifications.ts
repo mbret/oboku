@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import type { GetNotificationsResponse } from "@oboku/shared"
 import { configuration } from "../../config/configuration"
 import { httpClientApi } from "../../http/httpClientApi.web"
-import { inboxNotificationsQueryKey } from "./keys"
+import { inboxNotificationsQueryKey } from "./queryKeys"
 
 export const useInboxNotifications = () => {
   return useQuery({
@@ -15,8 +15,8 @@ export const useInboxNotifications = () => {
       return data
     },
     networkMode: "online",
-    staleTime: 30 * 1000,
-    gcTime: 5 * 60 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: 15 * 1000,
+    gcTime: Infinity,
+    refetchInterval: 30 * 1000,
   })
 }
