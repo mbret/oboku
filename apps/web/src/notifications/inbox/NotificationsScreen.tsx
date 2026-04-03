@@ -1,20 +1,6 @@
 import { memo } from "react"
-import {
-  ArchiveRounded,
-  DoneRounded,
-  LaunchRounded,
-  NotificationsRounded,
-} from "@mui/icons-material"
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material"
-import type { NotificationSeverity, UserNotification } from "@oboku/shared"
+import { Alert, Button, Stack, Typography } from "@mui/material"
+import type { UserNotification } from "@oboku/shared"
 import { useNavigate } from "react-router"
 import { Page } from "../../common/Page"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
@@ -26,25 +12,7 @@ import {
   useMarkNotificationAsSeen,
   useUnreadNotificationsCount,
 } from "./useInboxNotifications"
-
-const severityColorMap: Record<
-  NotificationSeverity,
-  "default" | "success" | "warning" | "error" | "info"
-> = {
-  info: "info",
-  success: "success",
-  warning: "warning",
-  error: "error",
-}
-
-const getNotificationCtaLabel = (notification: UserNotification) => {
-  switch (notification.kind) {
-    case "sync_finished":
-      return "Open reports"
-    case "admin_broadcast":
-      return null
-  }
-}
+import { NotificationCard } from "./NotificationCard"
 
 export const NotificationsScreen = memo(function NotificationsScreen() {
   const navigate = useNavigate()
@@ -103,86 +71,21 @@ export const NotificationsScreen = memo(function NotificationsScreen() {
           )}
 
         {notificationsQuery.data?.map((notification) => (
-          <Paper
-            variant="outlined"
+          <NotificationCard
             key={notification.id}
-            style={{ opacity: notification.seenAt ? 0.6 : 1 }}
-          >
-            <Stack p={2} gap={1.5}>
-              <Stack direction="row" justifyContent="space-between" gap={1}>
-                <Box>
-                  <Stack direction="row" gap={1} alignItems="center" mb={0.5}>
-                    <NotificationsRounded color="action" fontSize="small" />
-                    <Typography fontWeight={600}>
-                      {notification.title}
-                    </Typography>
-                    {!notification.seenAt && (
-                      <Chip
-                        size="small"
-                        label="Unread"
-                        color="primary"
-                        variant="outlined"
-                      />
-                    )}
-                  </Stack>
-                  <Typography variant="caption" color="text.secondary">
-                    {new Date(notification.createdAt).toLocaleString()}
-                  </Typography>
-                </Box>
-                <Chip
-                  size="small"
-                  label={notification.severity}
-                  color={severityColorMap[notification.severity]}
-                  variant="outlined"
-                />
-              </Stack>
-              {notification.body && (
-                <Typography variant="body2" whiteSpace="pre-wrap">
-                  {notification.body}
-                </Typography>
-              )}
-              <Stack direction="row" gap={1} flexWrap="wrap">
-                {!notification.seenAt && (
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<DoneRounded />}
-                    onClick={() => {
-                      markNotificationAsSeen.mutate({ id: notification.id })
-                    }}
-                    disabled={markNotificationAsSeen.isPending}
-                  >
-                    Mark as read
-                  </Button>
-                )}
-                {getNotificationCtaLabel(notification) && (
-                  <Button
-                    size="small"
-                    variant="contained"
-                    startIcon={<LaunchRounded />}
-                    onClick={() => {
-                      void openNotificationCta(notification)
-                    }}
-                    disabled={markNotificationAsSeen.isPending}
-                  >
-                    {getNotificationCtaLabel(notification)}
-                  </Button>
-                )}
-                <Button
-                  size="small"
-                  color="inherit"
-                  variant="text"
-                  startIcon={<ArchiveRounded />}
-                  onClick={() => {
-                    archiveNotification.mutate({ id: notification.id })
-                  }}
-                  disabled={archiveNotification.isPending}
-                >
-                  Archive
-                </Button>
-              </Stack>
-            </Stack>
-          </Paper>
+            notification={notification}
+            onMarkAsSeen={(id) => {
+              markNotificationAsSeen.mutate({ id })
+            }}
+            onOpenCta={(n) => {
+              void openNotificationCta(n)
+            }}
+            onArchive={(id) => {
+              archiveNotification.mutate({ id })
+            }}
+            isMarkingAsSeen={markNotificationAsSeen.isPending}
+            isArchiving={archiveNotification.isPending}
+          />
         ))}
       </Stack>
     </Page>

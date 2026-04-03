@@ -114,6 +114,10 @@ export class NotificationsService {
     }, [])
   }
 
+  async getUnreadCountForUser({ userId }: { userId: number }): Promise<number> {
+    return this.notificationPostgresService.getUnreadCount({ userId })
+  }
+
   async getAdminNotifications(): Promise<GetAdminNotificationsResponse> {
     const rows = await this.notificationPostgresService.getAdminBroadcastRows()
 

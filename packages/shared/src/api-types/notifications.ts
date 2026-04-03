@@ -57,3 +57,7 @@ export type AdminNotificationSummary = {
 export type GetAdminNotificationsResponse = AdminNotificationSummary[]
 
 export type CreateAdminNotificationResponse = AdminNotificationSummary
+
+export type GetUnreadNotificationsCountResponse = {
+  count: number
+}

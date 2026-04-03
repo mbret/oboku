@@ -87,6 +87,17 @@ export class NotificationPostgresService {
       .getRawMany<UserNotificationRow>()
   }
 
+  async getUnreadCount({ userId }: { userId: number }): Promise<number> {
+    const result = await this.notificationDeliveryRepository
+      .createQueryBuilder("delivery")
+      .where("delivery.user_id = :userId", { userId })
+      .andWhere("delivery.archived_at IS NULL")
+      .andWhere("delivery.seen_at IS NULL")
+      .getCount()
+
+    return result
+  }
+
   async markNotificationAsSeen({
     notificationId,
     userId,

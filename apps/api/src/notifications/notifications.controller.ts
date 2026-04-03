@@ -1,5 +1,8 @@
 import { Controller, Get, Param, ParseIntPipe, Post } from "@nestjs/common"
-import type { GetNotificationsResponse } from "@oboku/shared"
+import type {
+  GetNotificationsResponse,
+  GetUnreadNotificationsCountResponse,
+} from "@oboku/shared"
 import { AuthUser, WithAuthUser } from "src/auth/auth.guard"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
 import { NotificationsService } from "./notifications.service"
@@ -16,6 +19,17 @@ export class NotificationsController {
     return this.notificationService.getNotificationsForUser({
       userId: user.userId,
     })
+  }
+
+  @Get("unread-count")
+  async unreadCount(
+    @WithAuthUser() user: AuthUser,
+  ): Promise<GetUnreadNotificationsCountResponse> {
+    const count = await this.notificationService.getUnreadCountForUser({
+      userId: user.userId,
+    })
+
+    return { count }
   }
 
   @Post("seen")

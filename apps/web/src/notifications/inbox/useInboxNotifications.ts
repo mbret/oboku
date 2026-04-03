@@ -1,9 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type { GetNotificationsResponse } from "@oboku/shared"
+import type {
+  GetNotificationsResponse,
+  GetUnreadNotificationsCountResponse,
+} from "@oboku/shared"
 import { configuration } from "../../config/configuration"
 import { httpClientApi } from "../../http/httpClientApi.web"
 
 export const inboxNotificationsQueryKey = ["api", "notifications"] as const
+const unreadCountQueryKey = ["api", "notifications", "unread-count"] as const
 
 export const useInboxNotifications = () => {
   return useQuery({
@@ -22,21 +26,36 @@ export const useInboxNotifications = () => {
   })
 }
 
-/**
- * The count is derived from the same capped response as {@link useInboxNotifications}
- * (server returns at most 50 items). It may under-report once a user exceeds
- * that cap. This is acceptable for now; the API should add pagination to
- * cover the full history.
- */
 export const useUnreadNotificationsCount = () => {
-  const query = useInboxNotifications()
+  const query = useQuery({
+    queryKey: unreadCountQueryKey,
+    queryFn: async (): Promise<GetUnreadNotificationsCountResponse> => {
+      const { data } =
+        await httpClientApi.fetch<GetUnreadNotificationsCountResponse>(
+          `${configuration.API_URL}/notifications/unread-count`,
+        )
+
+      return data
+    },
+    networkMode: "online",
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 60 * 1000,
+  })
 
   return {
     ...query,
-    unreadCount: (query.data ?? []).filter(
-      (notification) => !notification.seenAt,
-    ).length,
+    unreadCount: query.data?.count ?? 0,
   }
+}
+
+const invalidateNotificationQueries = async (
+  queryClient: ReturnType<typeof useQueryClient>,
+) => {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: inboxNotificationsQueryKey }),
+    queryClient.invalidateQueries({ queryKey: unreadCountQueryKey }),
+  ])
 }
 
 export const useMarkNotificationAsSeen = () => {
@@ -51,11 +70,7 @@ export const useMarkNotificationAsSeen = () => {
         },
       )
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: inboxNotificationsQueryKey,
-      })
-    },
+    onSuccess: () => invalidateNotificationQueries(queryClient),
   })
 }
 
@@ -68,11 +83,7 @@ export const useMarkAllNotificationsAsSeen = () => {
         method: "POST",
       })
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: inboxNotificationsQueryKey,
-      })
-    },
+    onSuccess: () => invalidateNotificationQueries(queryClient),
   })
 }
 
@@ -88,10 +99,6 @@ export const useArchiveNotification = () => {
         },
       )
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: inboxNotificationsQueryKey,
-      })
-    },
+    onSuccess: () => invalidateNotificationQueries(queryClient),
   })
 }
