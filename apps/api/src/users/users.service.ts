@@ -68,11 +68,7 @@ export class UsersService {
       )
     }
 
-    try {
-      await deleteCouchUser(adminNano, email)
-    } catch (error) {
-      this.logger.warn(`Failed to delete CouchDB user: ${error}`)
-    }
+    await deleteCouchUser(adminNano, email)
 
     await this.notificationPostgresService.deleteDeliveriesByUserId(userId)
     await this.syncReportPostgresService.deleteByUserName(email)

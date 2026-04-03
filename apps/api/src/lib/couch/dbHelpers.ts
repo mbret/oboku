@@ -32,19 +32,32 @@ export const createUser = async (
   return await obokuDb.insert(newUser, newUser._id)
 }
 
+function isCouchNotFound(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false
+  return Reflect.get(error, "statusCode") === 404
+}
+
 export const deleteCouchUser = async (
   db: createNano.ServerScope,
   email: string,
 ) => {
   const dbName = emailToUserDbName(email)
 
-  await db.db.destroy(dbName)
+  try {
+    await db.db.destroy(dbName)
+  } catch (error) {
+    if (!isCouchNotFound(error)) throw error
+  }
 
   const usersDb = db.use("_users")
   const docId = emailToCouchUserDocId(email)
-  const doc = await usersDb.get(docId)
-
-  await usersDb.destroy(docId, doc._rev)
+  try {
+    const doc = await usersDb.get(docId)
+    await usersDb.destroy(docId, doc._rev)
+  } catch (error) {
+    if (isCouchNotFound(error)) return
+    throw error
+  }
 }
 
 export const getOrCreateUserFromEmail = async (
