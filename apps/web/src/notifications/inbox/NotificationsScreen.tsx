@@ -22,7 +22,7 @@ export const NotificationsScreen = memo(function NotificationsScreen() {
               color="inherit"
               variant="text"
               onClick={() => {
-                markAllNotificationsAsSeen.mutate()
+                markAllNotificationsAsSeen.mutate(undefined)
               }}
               disabled={markAllNotificationsAsSeen.isPending}
             >
