@@ -59,6 +59,12 @@ When implementing changes in this codebase, prioritize consistency and consolida
 - Always pass a named function to `memo()` instead of an anonymous arrow function (e.g. `memo(function MyComponent() { ... })` not `memo(() => { ... })`).
 - This ensures memoized components are identifiable in React DevTools and error stack traces without needing a separate `displayName` assignment.
 
+### React components: do not use `FC`
+
+- Never use `React.FC`, `FC`, or `FunctionComponent` to type components. Treat that pattern as deprecated and do not add it in new code.
+- Prefer explicit props types on the function instead, e.g. `function MyComponent(props: MyProps) { ... }` or `function MyComponent({ a, b }: MyProps) { ... }`, and rely on inferred return types (or annotate the return only when it genuinely helps).
+- Rationale: `FC` is discouraged by current React and TypeScript practice (including implicit `children`, weaker inference, and unnecessary indirection).
+
 ### Decision rule
 
 - Default choice: the solution that best matches current repository patterns and reduces long-term fragmentation.

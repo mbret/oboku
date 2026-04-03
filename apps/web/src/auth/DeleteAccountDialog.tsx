@@ -13,6 +13,7 @@ import { authStateSignal } from "./states.web"
 import { useDeleteAccount } from "./useDeleteAccount"
 import { ReportProblemOutlined } from "@mui/icons-material"
 import { CancelButton } from "../common/forms/CancelButton"
+import { ErrorAlert } from "../errors/ErrorMessage"
 
 const CONFIRMATION_PHRASE = "delete my account"
 
@@ -23,7 +24,7 @@ export const DeleteAccountDialog: FC<{
   const auth = useSignalValue(authStateSignal)
   const email = auth?.email ?? ""
   const [confirmationInput, setConfirmationInput] = useState("")
-  const { mutate, isPending, isError } = useDeleteAccount()
+  const { mutate, isPending, isError, error } = useDeleteAccount()
   const isConfirmed =
     confirmationInput.trim().toLowerCase() === CONFIRMATION_PHRASE
 
@@ -57,7 +58,7 @@ export const DeleteAccountDialog: FC<{
         />
         {isError && (
           <DialogContentText color="error" mt={1}>
-            Something went wrong. Please try again.
+            <ErrorAlert error={error} />
           </DialogContentText>
         )}
       </DialogContent>
