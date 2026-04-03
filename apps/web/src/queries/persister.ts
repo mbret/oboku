@@ -8,7 +8,11 @@ const PERSIST_KEY = "queryClient"
 
 export const persister: Persister = {
   persistClient: async (client: PersistedClient) => {
-    await dexieDb.queryCachePersistence.put({ key: PERSIST_KEY, value: client })
+    // IndexedDB structured clone rejects values like `AbortSignal` that can end
+    // up in dehydrated query state (e.g. fetch meta / in-flight work). JSON
+    // round-trip keeps only serializable plain data for Dexie.
+    const plain: PersistedClient = JSON.parse(JSON.stringify(client))
+    await dexieDb.queryCachePersistence.put({ key: PERSIST_KEY, value: plain })
   },
   restoreClient: async () => {
     const row = await dexieDb.queryCachePersistence.get(PERSIST_KEY)
