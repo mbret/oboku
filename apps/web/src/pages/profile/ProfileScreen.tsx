@@ -261,7 +261,6 @@ export const ProfileScreen = () => {
       />
       <DeleteAccountDialog
         open={isDeleteAccountDialogOpen}
-        email={auth?.email ?? ""}
         onClose={() => setIsDeleteAccountDialogOpen(false)}
       />
     </Page>

@@ -8,15 +8,20 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material"
+import { useSignalValue } from "reactjrx"
+import { authStateSignal } from "./states.web"
 import { useDeleteAccount } from "./useDeleteAccount"
+import { ReportProblemOutlined } from "@mui/icons-material"
+import { CancelButton } from "../common/forms/CancelButton"
 
 const CONFIRMATION_PHRASE = "delete my account"
 
 export const DeleteAccountDialog: FC<{
   open: boolean
-  email: string
   onClose: () => void
-}> = memo(function DeleteAccountDialog({ onClose, open, email }) {
+}> = memo(function DeleteAccountDialog({ onClose, open }) {
+  const auth = useSignalValue(authStateSignal)
+  const email = auth?.email ?? ""
   const [confirmationInput, setConfirmationInput] = useState("")
   const { mutate, isPending, isError } = useDeleteAccount()
   const isConfirmed =
@@ -30,9 +35,12 @@ export const DeleteAccountDialog: FC<{
 
   return (
     <Dialog onClose={onClose} open={open}>
-      <DialogTitle>Delete my account</DialogTitle>
+      <DialogTitle color="error" gap={1} display="flex" alignItems="center">
+        <ReportProblemOutlined color="error" fontSize="large" />
+        Delete my account
+      </DialogTitle>
       <DialogContent>
-        <DialogContentText>
+        <DialogContentText color="error">
           {`This will permanently delete your account (${email}) and all associated data including books, collections, tags, reading progress, and data source configurations. This action cannot be undone.`}
         </DialogContentText>
         <DialogContentText mt={2}>
@@ -54,9 +62,7 @@ export const DeleteAccountDialog: FC<{
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={isPending}>
-          Cancel
-        </Button>
+        <CancelButton onClick={onClose} disabled={isPending} />
         <Button
           onClick={() => mutate()}
           color="error"

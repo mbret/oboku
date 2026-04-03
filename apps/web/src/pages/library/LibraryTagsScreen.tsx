@@ -15,6 +15,7 @@ import { useTagIds } from "../../tags/helpers"
 import { Controller, type SubmitHandler, useForm } from "react-hook-form"
 import { errorToHelperText } from "../../common/forms/errorToHelperText"
 import { authorizeAction } from "../../auth/AuthorizeActionDialog"
+import { CancelButton } from "../../common/forms/CancelButton"
 
 export const LibraryTagsScreen = () => {
   const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
@@ -148,7 +149,7 @@ const AddTagDialog: FC<{
         </form>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onInnerClose}>Cancel</Button>
+        <CancelButton onClick={onInnerClose} />
         <Button type="submit" form={FORM_ID}>
           Add
         </Button>

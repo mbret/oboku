@@ -179,11 +179,6 @@ export type ObokuPlugin<
       TagsSelector: FC<{
         onChange: (tags: string[]) => void
       }>
-      ButtonDialog: FC<
-        Omit<ComponentProps<typeof Button>, `type`> & {
-          type: `confirm` | `cancel`
-        }
-      >
       title: string
     } & Pick<DOMAttributes<any>, "onDragLeave">
   >
