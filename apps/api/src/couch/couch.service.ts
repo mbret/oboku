@@ -26,10 +26,11 @@ export class CouchService {
     })
   }
 
-  async generateUserJWT(payload: { email: string }) {
+  async generateUserJWT(payload: { email: string; userId: number }) {
     return this.generateJWT({
       name: payload.email,
       sub: payload.email,
+      userId: payload.userId,
       "_couchdb.roles": [payload.email],
     })
   }
@@ -70,7 +71,11 @@ export class CouchService {
 
   createNanoInstanceForUser = async ({ email }: { email: string }) => {
     const hexEncodedUserId = Buffer.from(email).toString("hex")
-    const jwt = await this.generateUserJWT({ email })
+    const jwt = await this.generateJWT({
+      name: email,
+      sub: email,
+      "_couchdb.roles": [email],
+    })
 
     const nano = this.createNanoInstance({ jwtToken: jwt })
 

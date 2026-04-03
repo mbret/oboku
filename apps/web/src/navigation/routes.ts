@@ -3,6 +3,7 @@ export const ROUTES = {
   BOOK_DETAILS: "/book/:id",
   COLLECTION_DETAILS: "/collections/:id",
   PROFILE: "/profile",
+  NOTIFICATIONS: "/profile/notifications",
   SECURITY: "/profile/security",
   SECRETS: "/profile/secrets",
   SETTINGS: "/profile/settings",

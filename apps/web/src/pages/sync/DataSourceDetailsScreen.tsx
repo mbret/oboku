@@ -4,7 +4,7 @@ import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { useParams } from "react-router"
 import { plugins } from "../../dataSources"
 import { useDataSource } from "../../dataSources/useDataSource"
-import { useNotifications } from "../../notifications/useNofitications"
+import { useToasts } from "../../notifications/useToasts"
 import { useDataSourceIncrementalModify } from "../../dataSources/useDataSourceIncrementalModify"
 import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 import type { DataSourceSubmitPayload } from "../../plugins/types"
@@ -24,7 +24,7 @@ export const DataSourceDetailsScreen = memo(() => {
   const { mutateAsync: modifyDataSource } = useDataSourceIncrementalModify()
   const label = useDataSourceLabel(dataSource)
   const DetailsComponent = obokuPlugin?.DataSourceEditForm
-  const { notify, notifyError } = useNotifications()
+  const { notify, notifyError } = useToasts()
   const { mutate: syncDataSource } = useSynchronizeDataSource()
   const { mutate: removeDataSource } = useRemoveDataSource()
 

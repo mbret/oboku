@@ -1,4 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm"
+import type {
+  NotificationKind,
+  NotificationSeverity,
+  SyncFinishedNotificationData,
+} from "@oboku/shared"
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm"
 
 @Entity({ name: "sync_reports" })
 export class SyncReportPostgresEntity {
@@ -27,8 +32,8 @@ export class SyncReportPostgresEntity {
   has_different_provider_credentials!: boolean | null
 }
 
-@Entity({ name: "communication" })
-export class CommunicationPostgresEntity {
+@Entity({ name: "notifications" })
+export class NotificationPostgresEntity {
   @PrimaryGeneratedColumn("identity")
   id!: number
 
@@ -38,11 +43,47 @@ export class CommunicationPostgresEntity {
   })
   created_at!: Date
 
-  @Column({ type: "text", nullable: true })
-  content!: string | null
+  @Column({ type: "text" })
+  kind!: NotificationKind
+
+  @Column({ type: "text", default: "info" })
+  severity!: NotificationSeverity
+
+  @Column({ type: "text" })
+  title!: string
 
   @Column({ type: "text", nullable: true })
-  type!: "info" | null
+  body!: string | null
+
+  @Column({ type: "jsonb", nullable: true })
+  data!: SyncFinishedNotificationData | null
+}
+
+@Entity({ name: "notification_deliveries" })
+@Index(["notification_id", "user_id"], { unique: true })
+@Index(["user_id", "archived_at"])
+@Index(["user_id", "seen_at"])
+export class NotificationDeliveryPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "integer" })
+  notification_id!: number
+
+  @Column({ type: "integer" })
+  user_id!: number
+
+  @Column({
+    type: "timestamp with time zone",
+    default: () => "CURRENT_TIMESTAMP",
+  })
+  created_at!: Date
+
+  @Column({ type: "timestamp with time zone", nullable: true })
+  seen_at!: Date | null
+
+  @Column({ type: "timestamp with time zone", nullable: true })
+  archived_at!: Date | null
 }
 
 @Entity({ name: "users" })

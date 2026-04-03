@@ -11,9 +11,10 @@ import { AdminAuthGuard } from "./admin.guard"
 import { AuthModule } from "src/auth/auth.module"
 import { InstanceConfigService } from "./instance-config/instance-config.service"
 import { ServerSourcesService } from "./instance-config/server-sources.service"
+import { NotificationsModule } from "src/notifications/notifications.module"
 
 @Module({
-  imports: [AuthModule, CouchModule, CoversModule],
+  imports: [AuthModule, CouchModule, CoversModule, NotificationsModule],
   providers: [
     AppConfigService,
     JwtService,

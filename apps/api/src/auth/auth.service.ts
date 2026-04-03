@@ -16,6 +16,7 @@ import { JwtService, TokenExpiredError } from "@nestjs/jwt"
 import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
 import { SecretsService } from "src/config/SecretsService"
 import { EmailService } from "../email/EmailService"
+import { normalizeEmail } from "src/features/postgres/user-postgres.service"
 
 type RefreshTokenPayload = {
   sub: string
@@ -102,9 +103,9 @@ export class AuthService {
       throw new BadRequestException({})
     }
 
-    const { email, email_verified } = payload
+    const { email: rawEmail, email_verified } = payload
 
-    if (!email) {
+    if (!rawEmail) {
       throw new BadRequestException({
         errors: [{ code: ObokuErrorCode.ERROR_SIGNIN_NO_EMAIL }],
       })
@@ -115,6 +116,8 @@ export class AuthService {
         errors: [{ code: ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED }],
       })
     }
+
+    const email = normalizeEmail(rawEmail)
 
     // if someone signin with google and is verified, we will always allow retrieving
     // user with the same email
@@ -139,7 +142,8 @@ export class AuthService {
    * - have a locally verified email ownership
    * - validate compare
    */
-  async signinWithEmail(email: string, password: string) {
+  async signinWithEmail(rawEmail: string, password: string) {
+    const email = normalizeEmail(rawEmail)
     const userWithEmail = await this.usersService.findUserByEmail(email)
 
     /**
@@ -160,7 +164,7 @@ export class AuthService {
     throw new UnauthorizedException()
   }
 
-  async generateTokens({ email }: { email: string }) {
+  async generateTokens({ email, userId }: { email: string; userId: number }) {
     const refreshTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     // const refreshTokenEntity = await this.refreshTokensService.save({
     //   user_email: email,
@@ -169,6 +173,7 @@ export class AuthService {
 
     const accessToken = await this.couchService.generateUserJWT({
       email,
+      userId,
     })
     const refreshToken = await this.generateRefreshToken({
       email,
@@ -183,7 +188,13 @@ export class AuthService {
     }
   }
 
-  private async completeSignInForEmail(email: string) {
+  private async completeSignIn({
+    email,
+    userId,
+  }: {
+    email: string
+    userId: number
+  }) {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
     const couchUser = await getOrCreateUserFromEmail(adminNano, email)
@@ -194,6 +205,7 @@ export class AuthService {
 
     const { accessToken, refreshToken } = await this.generateTokens({
       email: couchUser.email,
+      userId,
     })
 
     const nameHex = Buffer.from(couchUser.name).toString("hex")
@@ -215,7 +227,10 @@ export class AuthService {
         ? await this.signInWithGoogle(params.token)
         : await this.signinWithEmail(params.email, params.password)
 
-    return this.completeSignInForEmail(retrievedUser.email)
+    return this.completeSignIn({
+      email: retrievedUser.email,
+      userId: retrievedUser.id,
+    })
   }
 
   async generateSignUpToken(email: string) {
@@ -312,7 +327,9 @@ export class AuthService {
     }
   }
 
-  async requestSignUp({ email }: { email: string }) {
+  async requestSignUp({ email: rawEmail }: { email: string }) {
+    const email = normalizeEmail(rawEmail)
+
     await this.assertCanRequestSignUp(email)
 
     const token = await this.generateSignUpToken(email)
@@ -358,7 +375,8 @@ export class AuthService {
    * - Redeeming this link upgrades the local account exactly once by setting
    *   emailVerified to true, after which normal password sign-in should be used.
    */
-  async requestMagicLink({ email }: { email: string }) {
+  async requestMagicLink({ email: rawEmail }: { email: string }) {
+    const email = normalizeEmail(rawEmail)
     const user = await this.usersService.findUserByEmail(email)
 
     if (typeof user?.password !== "string" || user.emailVerified === true) {
@@ -384,12 +402,14 @@ export class AuthService {
   }
 
   async generateSignUpLink({
-    email,
+    email: rawEmail,
     appPublicUrl,
   }: {
     email: string
     appPublicUrl?: string
   }) {
+    const email = normalizeEmail(rawEmail)
+
     await this.assertCanRequestSignUp(email)
 
     const token = await this.generateSignUpToken(email)
@@ -452,7 +472,7 @@ export class AuthService {
     user.emailVerified = true
     await this.usersService.saveUser(user)
 
-    return this.completeSignInForEmail(email)
+    return this.completeSignIn({ email: user.email, userId: user.id })
   }
 
   async refreshToken(grant_type: "refresh_token", refreshToken: string) {
@@ -467,10 +487,17 @@ export class AuthService {
         },
       )
 
+      const user = await this.usersService.findUserByEmail(sub)
+
+      if (!user) {
+        throw new UnauthorizedException()
+      }
+
       // await this.refreshTokensService.deleteById(id)
 
       return this.generateTokens({
-        email: sub,
+        email: user.email,
+        userId: user.id,
       })
     } catch (error) {
       // change to cleanup expired tokens

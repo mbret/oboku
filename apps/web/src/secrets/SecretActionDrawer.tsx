@@ -14,7 +14,7 @@ import { signal, useLiveRef } from "reactjrx"
 import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
 import { setupSecretDialogSignal } from "./SetupSecretDialog"
 import { useRemoveSecret } from "./useRemoveSecret"
-import { useNotifications } from "../notifications/useNofitications"
+import { useToasts } from "../notifications/useToasts"
 
 type SignalState = {
   openedWith: undefined | string
@@ -58,7 +58,7 @@ export const SecretActionDrawer = memo(
     onClose?: () => void
     masterKey?: string
   }) => {
-    const { notify } = useNotifications()
+    const { notify } = useToasts()
     const { mutate: removeSecret } = useRemoveSecret({
       onSuccess: () => {
         notify("actionSuccess")

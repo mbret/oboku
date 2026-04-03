@@ -11,7 +11,7 @@ import { useMutation } from "@tanstack/react-query"
 import { ConnectorManagementButtons } from "../connectors/ConnectorManagementButtons"
 import { ConnectorSelector } from "../connectors/ConnectorSelector"
 import { useConnectors } from "../connectors/useConnectors"
-import { useNotifications } from "../notifications/useNofitications"
+import { useToasts } from "../notifications/useToasts"
 import type { SettingsConnectorType } from "@oboku/shared"
 
 export type UploadConnectorSelectionStepProps<TAuthResult> = {
@@ -41,7 +41,7 @@ export function UploadConnectorSelectionStep<TAuthResult>(
     maxConnectors,
   } = props
 
-  const { notifyError } = useNotifications()
+  const { notifyError } = useToasts()
   const { data: connectors = [] } = useConnectors({ type: connectorType })
   const [selectedConnectorId, setSelectedConnectorId] = useState<
     string | undefined

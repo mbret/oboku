@@ -12,7 +12,7 @@ import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { ControlledSecretSelect } from "../common/forms/ControlledSecretSelect"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
-import { useNotifications } from "../notifications/useNofitications"
+import { useToasts } from "../notifications/useToasts"
 import type {
   SettingsConnectorDocType,
   SettingsConnectorType,
@@ -94,7 +94,7 @@ export const ConnectorForm = memo(
         allowSelfSigned: connector?.allowSelfSigned ?? false,
       },
     })
-    const { notify } = useNotifications()
+    const { notify } = useToasts()
     const data = watch()
     const { mutateAsync: addConnector } = useAddConnector({
       type: connectorType,

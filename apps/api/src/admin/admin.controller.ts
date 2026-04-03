@@ -28,13 +28,22 @@ import { SecretsService } from "src/config/SecretsService"
 import { CouchMigrationService } from "src/couch/migration.service"
 import { AdminCoversService } from "./admin-covers.service"
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsEmail,
+  IsIn,
   IsOptional,
   IsString,
   IsUrl,
   MinLength,
 } from "class-validator"
+import { NotificationsService } from "src/notifications/notifications.service"
+import type {
+  CreateAdminNotificationRequest,
+  CreateAdminNotificationResponse,
+  GetAdminNotificationsResponse,
+} from "@oboku/shared"
 
 function timingSafeStringEqual(a: string, b: string): boolean {
   const hashA = createHash("sha256").update(a).digest()
@@ -106,6 +115,31 @@ class UpdateInstanceSettingsDto {
   showDisabledPlugins?: boolean
 }
 
+class CreateAdminNotificationDto implements CreateAdminNotificationRequest {
+  @IsString()
+  @MinLength(1)
+  title!: string
+
+  @IsString()
+  @IsOptional()
+  body?: string
+
+  @IsString()
+  @IsIn(["info", "success", "warning", "error"])
+  @IsOptional()
+  severity?: CreateAdminNotificationRequest["severity"]
+
+  @IsString()
+  @IsIn(["all", "emails"])
+  audienceType!: CreateAdminNotificationRequest["audienceType"]
+
+  @IsArray()
+  @ArrayMaxSize(1000)
+  @IsEmail({}, { each: true })
+  @IsOptional()
+  emails?: string[]
+}
+
 class SigninDto {
   @IsString()
   login!: string
@@ -137,6 +171,7 @@ export class AdminController {
     private readonly couchMigrationService: CouchMigrationService,
     private readonly adminCoversService: AdminCoversService,
     private readonly authService: AuthService,
+    private readonly notificationService: NotificationsService,
   ) {}
 
   private async signAdminTokens() {
@@ -227,6 +262,18 @@ export class AdminController {
     return {
       signUpLink: await this.authService.generateSignUpLink(body),
     }
+  }
+
+  @Get("notifications")
+  async getNotifications(): Promise<GetAdminNotificationsResponse> {
+    return this.notificationService.getAdminNotifications()
+  }
+
+  @Post("notifications")
+  async createNotification(
+    @Body() body: CreateAdminNotificationDto,
+  ): Promise<CreateAdminNotificationResponse> {
+    return this.notificationService.sendAdminBroadcast(body)
   }
 
   @Get("settings")

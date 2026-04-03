@@ -1,5 +1,6 @@
 import { type ReactNode, memo } from "react"
 import {
+  Badge,
   Box,
   Drawer,
   List,
@@ -11,6 +12,8 @@ import {
 import { Link, useLocation, matchPath } from "react-router"
 import { navItems } from "./navConstants"
 import { OfflineIcon } from "../common/OfflineIcon"
+import { ROUTES } from "./routes"
+import { useUnreadNotificationsCount } from "../notifications/inbox/useUnreadNotificationsCount"
 
 const DRAWER_WIDTH = 240
 
@@ -20,6 +23,7 @@ export const DesktopDrawer = memo(function DesktopDrawer({
   children: ReactNode
 }) {
   const { pathname } = useLocation()
+  const { unreadCount } = useUnreadNotificationsCount()
 
   return (
     <Box display="flex" height="100%" flex={1} overflow="hidden">
@@ -46,7 +50,13 @@ export const DesktopDrawer = memo(function DesktopDrawer({
               selected={!!matchPath(matchPattern, pathname)}
             >
               <ListItemIcon>
-                <Icon />
+                {route === ROUTES.PROFILE ? (
+                  <Badge badgeContent={unreadCount} color="error">
+                    <Icon />
+                  </Badge>
+                ) : (
+                  <Icon />
+                )}
               </ListItemIcon>
               <ListItemText primary={label} />
             </ListItemButton>

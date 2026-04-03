@@ -6,7 +6,6 @@ import ContinueReadingAsset from "../assets/continue-reading.svg"
 import { useContinueReadingBooks } from "../home/useContinueReadingBooks"
 import { ContinueReadingSection } from "../home/ContinueReadingSection"
 import { RecentlyAddedSection } from "../home/RecentlyAddedSection"
-import { CommunicationPane } from "../communication/CommunicationPane"
 import { ROUTES } from "../navigation/routes"
 import { ContinueCollectionsSection } from "../home/ContinueCollectionsSection"
 
@@ -24,7 +23,6 @@ export const HomeScreen = memo(() => {
         hasLockLibrary
       />
       <Box pb={2}>
-        <CommunicationPane />
         {continueReadingBooks.length === 0 && !isPending && (
           <div
             style={{

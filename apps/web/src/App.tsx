@@ -30,7 +30,7 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { configuration } from "./config/configuration"
 import { useLoadGsi } from "./google/gsi"
 import { AuthGuard } from "./auth/AuthGuard"
-import { Notifications } from "./notifications/Notifications"
+import { Toasts } from "./notifications/Toasts"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
 import { BackToReadingDialog } from "./reading/BackToReadingDialog"
@@ -98,7 +98,7 @@ const App = memo(() => {
           setIsDownloadsHydrated(true)
         }}
       />
-      <Notifications />
+      <Toasts />
       <RxDbProvider />
     </DialogProvider>
   )
