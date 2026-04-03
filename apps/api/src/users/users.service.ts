@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { UserPostgresEntity } from "../features/postgres/entities"
 import { UserPostgresService } from "../features/postgres/user-postgres.service"
-import { CouchService } from "../couch/couch.service"
+import { CouchService, emailToUserDbName } from "../couch/couch.service"
 import { CoversService } from "../covers/covers.service"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
@@ -41,8 +41,7 @@ export class UsersService {
    */
   async deleteAccount({ userId, email }: { userId: number; email: string }) {
     const adminNano = await this.couchService.createAdminNanoInstance()
-    const nameHex = Buffer.from(email).toString("hex")
-    const dbName = `userdb-${nameHex}`
+    const dbName = emailToUserDbName(email)
 
     let coverKeys: string[] = []
 

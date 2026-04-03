@@ -4,6 +4,12 @@ import createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
 import { SecretsService } from "src/config/SecretsService"
 
+export const emailToNameHex = (email: string) =>
+  Buffer.from(email).toString("hex")
+
+export const emailToUserDbName = (email: string) =>
+  `userdb-${emailToNameHex(email)}`
+
 @Injectable()
 export class CouchService {
   constructor(
@@ -70,7 +76,6 @@ export class CouchService {
   }
 
   createNanoInstanceForUser = async ({ email }: { email: string }) => {
-    const hexEncodedUserId = Buffer.from(email).toString("hex")
     const jwt = await this.generateJWT({
       name: email,
       sub: email,
@@ -79,6 +84,6 @@ export class CouchService {
 
     const nano = this.createNanoInstance({ jwtToken: jwt })
 
-    return nano.use(`userdb-${hexEncodedUserId}`)
+    return nano.use(emailToUserDbName(email))
   }
 }

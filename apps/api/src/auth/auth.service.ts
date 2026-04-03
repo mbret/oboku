@@ -9,7 +9,11 @@ import { UsersService } from "../users/users.service"
 import { OAuth2Client } from "google-auth-library"
 import { AppConfigService } from "../config/AppConfigService"
 import { ObokuErrorCode } from "@oboku/shared"
-import { CouchService } from "../couch/couch.service"
+import {
+  CouchService,
+  emailToNameHex,
+  emailToUserDbName,
+} from "../couch/couch.service"
 import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
 import bcrypt from "bcrypt"
 import { JwtService, TokenExpiredError } from "@nestjs/jwt"
@@ -208,13 +212,13 @@ export class AuthService {
       userId,
     })
 
-    const nameHex = Buffer.from(couchUser.name).toString("hex")
+    const nameHex = emailToNameHex(couchUser.name)
 
     return {
       accessToken,
       refreshToken,
       nameHex,
-      dbName: `userdb-${nameHex}`,
+      dbName: emailToUserDbName(couchUser.name),
       email: couchUser.email,
     }
   }
