@@ -45,6 +45,16 @@ export class NotificationPostgresService {
     )
   }
 
+  /**
+   * Returns the most recent notifications for a user, capped at {@link limit}.
+   *
+   * This is an intentional hard cap rather than paginated access. Older
+   * notifications beyond the limit are not reachable from the UI, and the
+   * client-side unread badge is derived from this same slice so it may
+   * under-report once the cap is exceeded.
+   *
+   * @todo Add cursor-based pagination so the full history is accessible.
+   */
   async getUserNotificationRows({
     userId,
     limit = 50,

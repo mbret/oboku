@@ -22,6 +22,12 @@ export const useInboxNotifications = () => {
   })
 }
 
+/**
+ * The count is derived from the same capped response as {@link useInboxNotifications}
+ * (server returns at most 50 items). It may under-report once a user exceeds
+ * that cap. This is acceptable for now; the API should add pagination to
+ * cover the full history.
+ */
 export const useUnreadNotificationsCount = () => {
   const query = useInboxNotifications()
 
