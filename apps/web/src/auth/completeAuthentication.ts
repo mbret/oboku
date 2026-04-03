@@ -27,7 +27,13 @@ export const completeAuthentication = ({
           switchMap(() => {
             queryClient.clear()
 
-            return from(persister.removeClient())
+            const promiseAble = persister.removeClient()
+
+            if (promiseAble && "then" in promiseAble) {
+              return promiseAble
+            }
+
+            return of(null)
           }),
         )
       : of(null)
