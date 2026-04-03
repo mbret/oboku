@@ -1,5 +1,4 @@
-import createNano from "nano"
-import { type MangoResponse } from "nano"
+import createNano, { type MangoResponse, type RequestError } from "nano"
 import {
   type SafeMangoQuery,
   type InsertAbleBookDocType,
@@ -32,9 +31,18 @@ export const createUser = async (
   return await obokuDb.insert(newUser, newUser._id)
 }
 
+/** Nano attaches `statusCode` to `Error` for Couch HTTP failures; `Error` typings omit it. */
+function isCouchRequestError(
+  error: unknown,
+): error is RequestError & { statusCode: number } {
+  if (!(error instanceof Error)) return false
+  if (!("statusCode" in error)) return false
+  const statusCode = (error as Error & { statusCode: unknown }).statusCode
+  return typeof statusCode === "number"
+}
+
 function isCouchNotFound(error: unknown): boolean {
-  if (typeof error !== "object" || error === null) return false
-  return Reflect.get(error, "statusCode") === 404
+  return isCouchRequestError(error) && error.statusCode === 404
 }
 
 export const deleteCouchUser = async (
