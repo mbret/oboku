@@ -21,9 +21,9 @@ export const SyncFinishedNotificationCard = memo(
     const navigate = useNavigate()
     const markAsSeen = useMarkNotificationAsSeen()
 
-    const openReports = async () => {
+    const openReports = () => {
       if (!notification.seenAt) {
-        await markAsSeen.mutateAsync({ id: notification.id })
+        markAsSeen.mutate({ id: notification.id })
       }
 
       navigate(ROUTES.SYNC_REPORTS)
@@ -37,10 +37,7 @@ export const SyncFinishedNotificationCard = memo(
             size="small"
             variant="contained"
             startIcon={<LaunchRounded />}
-            onClick={() => {
-              void openReports()
-            }}
-            disabled={markAsSeen.isPending}
+            onClick={openReports}
           >
             Open reports
           </Button>

@@ -1,23 +1,16 @@
 import { type ReactNode, memo } from "react"
+import { DeleteRounded, DoneRounded } from "@mui/icons-material"
 import {
-  ArchiveRounded,
-  DoneRounded,
-  NotificationsRounded,
-} from "@mui/icons-material"
-import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material"
-import type { NotificationSeverity, UserNotification } from "@oboku/shared"
+  Alert,
+  AlertTitle,
+  Button,
+  IconButton,
+  Stack,
+  Typography,
+} from "@mui/material"
+import type { UserNotification } from "@oboku/shared"
 import { useMarkNotificationAsSeen } from "../useMarkNotificationAsSeen"
 import { useArchiveNotification } from "../useArchiveNotification"
-
-const severityColorMap: Record<
-  NotificationSeverity,
-  "default" | "success" | "warning" | "error" | "info"
-> = {
-  info: "info",
-  success: "success",
-  warning: "warning",
-  error: "error",
-}
 
 export const NotificationCardBase = memo(function NotificationCardBase({
   notification,
@@ -30,70 +23,55 @@ export const NotificationCardBase = memo(function NotificationCardBase({
   const archive = useArchiveNotification()
 
   return (
-    <Paper
-      variant="outlined"
+    <Alert
+      severity={notification.severity}
       style={{ opacity: notification.seenAt ? 0.6 : 1 }}
+      sx={{ "& .MuiAlert-message": { flexGrow: 1 } }}
+      action={
+        <IconButton
+          size="small"
+          color="inherit"
+          aria-label="archive"
+          onClick={() => {
+            archive.mutate({ id: notification.id })
+          }}
+          disabled={archive.isPending}
+        >
+          <DeleteRounded fontSize="small" />
+        </IconButton>
+      }
     >
-      <Stack p={2} gap={1.5}>
-        <Stack direction="row" justifyContent="space-between" gap={1}>
-          <Box>
-            <Stack direction="row" gap={1} alignItems="center" mb={0.5}>
-              <NotificationsRounded color="action" fontSize="small" />
-              <Typography fontWeight={600}>{notification.title}</Typography>
-              {!notification.seenAt && (
-                <Chip
-                  size="small"
-                  label="Unread"
-                  color="primary"
-                  variant="outlined"
-                />
-              )}
-            </Stack>
-            <Typography variant="caption" color="text.secondary">
-              {new Date(notification.createdAt).toLocaleString()}
-            </Typography>
-          </Box>
-          <Chip
-            size="small"
-            label={notification.severity}
-            color={severityColorMap[notification.severity]}
-            variant="outlined"
-          />
-        </Stack>
-        {notification.body && (
-          <Typography variant="body2" whiteSpace="pre-wrap">
-            {notification.body}
-          </Typography>
-        )}
-        <Stack direction="row" gap={1} flexWrap="wrap">
-          {!notification.seenAt && (
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<DoneRounded />}
-              onClick={() => {
-                markAsSeen.mutate({ id: notification.id })
-              }}
-              disabled={markAsSeen.isPending}
-            >
-              Mark as read
-            </Button>
-          )}
-          {cta}
+      <AlertTitle>{notification.title}</AlertTitle>
+      <Stack gap={1} mb={1}>
+        <Typography variant="caption" color="text.secondary">
+          {new Date(notification.createdAt).toLocaleString()}
+        </Typography>
+        {notification.body}
+      </Stack>
+      <Stack
+        direction="row"
+        gap={1}
+        flexWrap="wrap-reverse"
+        justifyContent="space-between"
+        alignItems="center"
+      >
+        {!notification.seenAt ? (
           <Button
             size="small"
-            color="inherit"
             variant="text"
-            startIcon={<ArchiveRounded />}
+            startIcon={<DoneRounded />}
             onClick={() => {
-              archive.mutate({ id: notification.id })
+              markAsSeen.mutate({ id: notification.id })
             }}
-            disabled={archive.isPending}
+            disabled={markAsSeen.isPending}
           >
-            Archive
+            Mark as read
           </Button>
-        </Stack>
+        ) : (
+          <span />
+        )}
+        {cta}
       </Stack>
-    </Paper>
+    </Alert>
   )
 })
