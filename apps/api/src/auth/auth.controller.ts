@@ -86,7 +86,7 @@ export class AuthController {
 
   @Delete("account")
   async deleteAccount(@WithAuthUser() user: AuthUser) {
-    await this.authService.deleteAccount({
+    await this.usersService.deleteAccount({
       userId: user.userId,
       email: user.email,
     })
