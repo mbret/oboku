@@ -49,6 +49,10 @@ export class SyncReportPostgresService {
     })
   }
 
+  async deleteByUserName(userName: string) {
+    await this.repository.delete({ user_name: userName })
+  }
+
   private async cleanupOldReports(
     userName: string,
     maxReportsPerUser: number,

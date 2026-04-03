@@ -104,6 +104,11 @@ class HttpApiClient extends HttpClientWeb {
       },
     )
   }
+
+  deleteAccount = () =>
+    this.fetch(`${configuration.API_URL}/auth/account`, {
+      method: "DELETE",
+    })
 }
 
 export const httpClientApi = new HttpApiClient()

@@ -1,6 +1,7 @@
-import { Body, Controller, Post, Query } from "@nestjs/common"
+import { Body, Controller, Delete, Post, Query } from "@nestjs/common"
 import { AuthService } from "./auth.service"
-import { Public } from "./auth.guard"
+import { UsersService } from "../users/users.service"
+import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
 import { IsEmail, IsNotEmpty, MinLength } from "class-validator"
 
 export class RequestSignUpDto {
@@ -29,7 +30,10 @@ export class CompleteMagicLinkDto {
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService,
+  ) {}
 
   @Public()
   @Post("signin")
@@ -78,5 +82,15 @@ export class AuthController {
     @Query() query: { grant_type: "refresh_token"; refresh_token: string },
   ) {
     return this.authService.refreshToken(query.grant_type, query.refresh_token)
+  }
+
+  @Delete("account")
+  async deleteAccount(@WithAuthUser() user: AuthUser) {
+    await this.authService.deleteAccount({
+      userId: user.userId,
+      email: user.email,
+    })
+
+    return {}
   }
 }
