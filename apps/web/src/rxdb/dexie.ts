@@ -11,8 +11,14 @@ interface Downloads {
   filename: string
 }
 
+interface QueryCachePersistence {
+  key: string
+  value: unknown
+}
+
 export const dexieDb = new Dexie(`oboku-dexie`) as Dexie & {
   downloads: EntityTable<Downloads, "id">
+  queryCachePersistence: EntityTable<QueryCachePersistence, "key">
 }
 
 dexieDb.version(1).stores({
@@ -47,3 +53,8 @@ dexieDb
         delete download.name
       })
   })
+
+dexieDb.version(4).stores({
+  downloads: `++id, data, filename`,
+  queryCachePersistence: `&key`,
+})

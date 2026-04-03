@@ -1,7 +1,10 @@
-import { Injectable } from "@nestjs/common"
+import { ConflictException, Injectable, Logger } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { UserPostgresEntity } from "../features/postgres/entities"
 import { Repository } from "typeorm"
+import { normalizeEmail } from "src/features/postgres/user-postgres.service"
+
+const logger = new Logger("UsersService")
 
 @Injectable()
 export class UsersService {
@@ -11,11 +14,27 @@ export class UsersService {
   ) {}
 
   async findUserByEmail(email: string): Promise<UserPostgresEntity | null> {
-    return this.userRepository.findOne({ where: { email } })
+    const matches = await this.userRepository
+      .createQueryBuilder("user")
+      .where("LOWER(user.email) = :email", { email: normalizeEmail(email) })
+      .getMany()
+
+    if (matches.length > 1) {
+      logger.error(
+        `Ambiguous email lookup: ${matches.length} users share the same normalized email`,
+      )
+
+      throw new ConflictException()
+    }
+
+    return matches[0] ?? null
   }
 
   async registerUser(user: Omit<UserPostgresEntity, "id">) {
-    const newUser = this.userRepository.create(user)
+    const newUser = this.userRepository.create({
+      ...user,
+      email: normalizeEmail(user.email),
+    })
 
     await this.userRepository.save(newUser)
 
@@ -23,6 +42,8 @@ export class UsersService {
   }
 
   async saveUser(user: UserPostgresEntity) {
+    user.email = normalizeEmail(user.email)
+
     return this.userRepository.save(user)
   }
 }

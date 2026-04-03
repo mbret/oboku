@@ -75,6 +75,15 @@ class HttpApiClient extends HttpClientWeb {
       },
     )
 
+  markNotificationAsSeen = ({ id }: { id: number }) =>
+    this.post(`${configuration.API_URL}/notifications/${id}/seen`)
+
+  markAllNotificationsAsSeen = () =>
+    this.post(`${configuration.API_URL}/notifications/seen`)
+
+  archiveNotification = ({ id }: { id: number }) =>
+    this.post(`${configuration.API_URL}/notifications/${id}/archive`)
+
   refreshToken = ({
     refreshToken,
     useInterceptors = true,

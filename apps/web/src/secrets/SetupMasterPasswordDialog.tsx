@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form"
 import { useUpdateMasterKey } from "./useUpdateMasterKey"
 import { ErrorAlert, errorToMessage } from "../errors/ErrorMessage"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
-import { useNotifications } from "../notifications/useNofitications"
+import { useToasts } from "../notifications/useToasts"
 
 const FORM_ID = "SetupContentsPasswordDialogForm"
 
@@ -39,7 +39,7 @@ export const SetupMasterPasswordDialog = memo(
     })
     const hasPassword = !!accountSettings?.masterEncryptionKey
     const { mutate: updatePassword } = useUpdateMasterKey()
-    const { notify } = useNotifications()
+    const { notify } = useToasts()
 
     const onInnerClose = () => {
       onClose()

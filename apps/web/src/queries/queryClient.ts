@@ -3,6 +3,9 @@ import { CancelError } from "../errors/errors.shared"
 import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query"
 import { SwitchMutationCancelError } from "reactjrx"
 
+export const API_QUERY_KEY_PREFIX = "api" as const
+export const RXDB_QUERY_KEY_PREFIX = "rxdb" as const
+
 export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
     onError: (error) => {

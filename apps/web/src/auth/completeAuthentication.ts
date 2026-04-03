@@ -1,7 +1,9 @@
-import { from, of, tap } from "rxjs"
+import { from, of, switchMap, tap } from "rxjs"
 import { authStateSignal } from "./states.web"
 import { setProfile, currentProfileSignal } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
+import { queryClient } from "../queries/queryClient"
+import { persister } from "../queries/persister"
 
 type AuthResponse = {
   dbName: string
@@ -21,7 +23,19 @@ export const completeAuthentication = ({
   const previousAuth = authStateSignal.value
   const waitForDbRecreation$ =
     previousAuth?.email !== auth.email
-      ? from(reCreateDb({ overwrite: true }))
+      ? from(reCreateDb({ overwrite: true })).pipe(
+          switchMap(() => {
+            queryClient.clear()
+
+            const promiseAble = persister.removeClient()
+
+            if (promiseAble && "then" in promiseAble) {
+              return promiseAble
+            }
+
+            return of(null)
+          }),
+        )
       : of(null)
 
   return waitForDbRecreation$.pipe(

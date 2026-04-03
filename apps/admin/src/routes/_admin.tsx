@@ -40,6 +40,11 @@ const navItems = [
     description: "Generate manual sign up links",
   },
   {
+    to: "/notifications",
+    label: "Notifications",
+    description: "Broadcast inbox messages",
+  },
+  {
     to: "/covers",
     label: "Covers",
     description: "Storage usage and cleanup",

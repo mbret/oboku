@@ -3,8 +3,10 @@ import { Injectable } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { from, switchMap } from "rxjs"
 import { AppConfigService } from "src/config/AppConfigService"
+import type { AuthUser } from "src/auth/auth.guard"
 import { CouchService } from "src/couch/couch.service"
 import { CoversService } from "src/covers/covers.service"
+import { NotificationsService } from "src/notifications/notifications.service"
 import { SyncReportPostgresService } from "src/features/postgres/SyncReportPostgresService"
 import { sync } from "src/lib/sync/sync"
 
@@ -14,6 +16,7 @@ export class DataSourceService {
     protected appConfig: AppConfigService,
     protected coversService: CoversService,
     protected syncReportPostgresService: SyncReportPostgresService,
+    protected notificationService: NotificationsService,
     protected eventEmitter: EventEmitter2,
     protected couchService: CouchService,
   ) {}
@@ -21,26 +24,28 @@ export class DataSourceService {
   syncLongProgress = ({
     dataSourceId,
     providerCredentials,
-    email,
+    user,
   }: {
     dataSourceId: string
     providerCredentials: ProviderApiCredentials<DataSourceType>
-    email: string
+    user: AuthUser
   }) => {
-    const db$ = from(this.couchService.createNanoInstanceForUser({ email }))
+    const db$ = from(
+      this.couchService.createNanoInstanceForUser({ email: user.email }),
+    )
 
     return db$.pipe(
       switchMap((db) =>
         from(
           sync({
-            userName: email,
+            user,
             dataSourceId,
             db,
             providerCredentials,
             config: this.appConfig.config,
             eventEmitter: this.eventEmitter,
             syncReportPostgresService: this.syncReportPostgresService,
-            email,
+            notificationService: this.notificationService,
             coversService: this.coversService,
           }),
         ),

@@ -6,6 +6,8 @@ import { setUser } from "@sentry/react"
 import { currentProfileSignal } from "../profile/currentProfile"
 import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
+import { queryClient } from "../queries/queryClient"
+import { persister } from "../queries/persister"
 
 export const useSignOut = () => {
   const signOutPlugins = usePluginsSignOut()
@@ -19,6 +21,9 @@ export const useSignOut = () => {
 
     removeProfile()
     currentProfileSignal.setValue(SIGNAL_RESET)
+
+    queryClient.clear()
+    persister.removeClient()
 
     signOutPlugins()
   }

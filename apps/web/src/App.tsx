@@ -12,7 +12,6 @@ import { ManageBookTagsDialog } from "./books/ManageBookTagsDialog"
 import { ManageTagBooksDialog } from "./tags/ManageTagBooksDialog"
 import { usePersistSignals, QueryClientProvider$, useObserve } from "reactjrx"
 import { signalEntriesToPersist } from "./profile"
-import { queryClient } from "./queries/queryClient"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
@@ -26,11 +25,11 @@ import { Logger } from "./debug/logger.shared"
 import { RestoreDownloadState } from "./download/RestoreDownloadState"
 import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
-import { QueryClientProvider } from "@tanstack/react-query"
+import { PersistQueryProvider } from "./queries/PersistQueryProvider"
 import { configuration } from "./config/configuration"
 import { useLoadGsi } from "./google/gsi"
 import { AuthGuard } from "./auth/AuthGuard"
-import { Notifications } from "./notifications/Notifications"
+import { Toasts } from "./notifications/Toasts"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
 import { BackToReadingDialog } from "./reading/BackToReadingDialog"
@@ -98,7 +97,7 @@ const App = memo(() => {
           setIsDownloadsHydrated(true)
         }}
       />
-      <Notifications />
+      <Toasts />
       <RxDbProvider />
     </DialogProvider>
   )
@@ -117,9 +116,9 @@ export const AppWithConfig = memo(() => {
         <ThemeProvider>
           <QueryClientProvider$>
             <Suspense fallback={<SplashScreen show />}>
-              <QueryClientProvider client={queryClient}>
+              <PersistQueryProvider>
                 {config ? <App /> : null}
-              </QueryClientProvider>
+              </PersistQueryProvider>
             </Suspense>
             {import.meta.env.DEV && <DebugMenu />}
           </QueryClientProvider$>

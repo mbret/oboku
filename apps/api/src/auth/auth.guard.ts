@@ -17,6 +17,7 @@ export const Public = () => SetMetadata(IS_PUBLIC_KEY, true)
 export type TokenPayload = {
   name: string
   sub: string
+  userId: number
   role?: string
   "couchdb.roles": string[]
 }
@@ -61,8 +62,13 @@ export class AuthGuard implements CanActivate {
         algorithms: ["RS256"],
       })
 
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
+      // Tokens issued before the userId migration don't carry this field.
+      // Reject them so the client is forced to re-authenticate.
+      // This guard can be removed once all active sessions have been refreshed.
+      if (typeof payload.userId !== "number") {
+        throw new UnauthorizedException()
+      }
+
       request.user = {
         ...payload,
         email: payload.name,

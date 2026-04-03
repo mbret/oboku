@@ -56,7 +56,11 @@ export const LibraryTopTabNavigator = () => {
         rightComponent={TopBarNavigationRightComponent}
       />
       <Tabs
-        value={location.pathname}
+        value={
+          location.pathname === ROUTES.LIBRARY_ROOT
+            ? ROUTES.LIBRARY_BOOKS
+            : location.pathname
+        }
         indicatorColor="primary"
         onChange={(_e, value) => {
           navigate(value, { replace: true })

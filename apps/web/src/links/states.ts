@@ -1,5 +1,6 @@
 import { plugins } from "../plugins/configure"
 import { useQuery$ } from "reactjrx"
+import { RXDB_QUERY_KEY_PREFIX } from "../queries/queryClient"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
 import type { Database } from "../rxdb"
@@ -7,7 +8,7 @@ import { isRemovableFromDataSource } from "./isRemovableFromDataSource"
 
 export const useLinks = () => {
   return useQuery$({
-    queryKey: ["rxdb", "get", "many", "link/list"],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "get", "many", "link/list"],
     queryFn: () => {
       return latestDatabase$.pipe(
         switchMap((db) => db.collections.link.find({}).$),
@@ -19,7 +20,7 @@ export const useLinks = () => {
 
 export const useLink = ({ id }: { id?: string }) => {
   return useQuery$({
-    queryKey: ["rxdb", "get", "single", "link", id],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "get", "single", "link", id],
     enabled: !!id,
     queryFn: () =>
       latestDatabase$.pipe(
