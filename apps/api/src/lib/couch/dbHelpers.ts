@@ -10,6 +10,7 @@ import {
   type SettingsDocType,
   isShallowEqual,
 } from "@oboku/shared"
+import { emailToCouchUserDocId } from "src/couch/couch.service"
 import { User } from "../couchDbEntities"
 import { waitForRandomTime } from "../utils"
 import { generatePassword } from "../authentication/generatePassword"
@@ -23,7 +24,7 @@ export const createUser = async (
   password: string,
 ) => {
   const obokuDb = db.use("_users")
-  const newUser = new User(`org.couchdb.user:${username}`, username, password)
+  const newUser = new User(emailToCouchUserDocId(username), username, password)
 
   return await obokuDb.insert(newUser, newUser._id)
 }

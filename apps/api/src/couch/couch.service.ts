@@ -10,6 +10,9 @@ export const emailToNameHex = (email: string) =>
 export const emailToUserDbName = (email: string) =>
   `userdb-${emailToNameHex(email)}`
 
+export const emailToCouchUserDocId = (email: string) =>
+  `org.couchdb.user:${email}`
+
 @Injectable()
 export class CouchService {
   constructor(

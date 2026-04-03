@@ -1,7 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { UserPostgresEntity } from "../features/postgres/entities"
 import { UserPostgresService } from "../features/postgres/user-postgres.service"
-import { CouchService, emailToUserDbName } from "../couch/couch.service"
+import {
+  CouchService,
+  emailToCouchUserDocId,
+  emailToUserDbName,
+} from "../couch/couch.service"
+import { find } from "../lib/couch/dbHelpers"
 import { CoversService } from "../covers/covers.service"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
@@ -31,13 +36,12 @@ export class UsersService {
   }
 
   /**
-   * Permanently deletes the user account and all associated data across
-   * PostgreSQL, CouchDB, and cover storage.
+   * Permanently deletes the user account and all associated data.
    *
-   * Token invalidation note: after deletion the Postgres user row no longer
-   * exists, so `refreshToken()` will reject renewal attempts. The CouchDB
-   * database is destroyed, making the access token useless for data access.
-   * The client signs out immediately, clearing locally cached tokens.
+   * Postgres and CouchDB deletions are synchronous so re-registration with
+   * the same email is safe immediately after the response. Only cover image
+   * cleanup runs in the background since it can be slow and doesn't affect
+   * account identity.
    */
   async deleteAccount({ userId, email }: { userId: number; email: string }) {
     const adminNano = await this.couchService.createAdminNanoInstance()
@@ -48,35 +52,19 @@ export class UsersService {
     try {
       const userDb = adminNano.use(dbName)
 
-      const [bookResult, collectionResult] = await Promise.all([
-        userDb.find({
-          selector: { rx_model: "book" },
-          fields: ["_id"],
-          limit: 999999,
-        }),
-        userDb.find({
-          selector: { rx_model: "obokucollection" },
-          fields: ["_id"],
-          limit: 999999,
-        }),
+      const [books, collections] = await Promise.all([
+        find(userDb, "book", { fields: ["_id"], limit: 999999 }),
+        find(userDb, "obokucollection", { fields: ["_id"], limit: 999999 }),
       ])
 
       coverKeys = [
-        ...bookResult.docs.map((d) => `cover-${d._id}`),
-        ...collectionResult.docs.map((d) => `collection-${d._id}`),
+        ...books.map((d) => `cover-${d._id}`),
+        ...collections.map((d) => `collection-${d._id}`),
       ]
     } catch (error) {
       this.logger.warn(
         `Could not read CouchDB data for cover cleanup: ${error}`,
       )
-    }
-
-    if (coverKeys.length > 0) {
-      try {
-        await this.coversService.deleteCovers(coverKeys)
-      } catch (error) {
-        this.logger.warn(`Cover cleanup failed (best-effort): ${error}`)
-      }
     }
 
     try {
@@ -87,7 +75,7 @@ export class UsersService {
 
     try {
       const usersDb = adminNano.use("_users")
-      const couchUserDocId = `org.couchdb.user:${email}`
+      const couchUserDocId = emailToCouchUserDocId(email)
       const couchUserDoc = await usersDb.get(couchUserDocId)
       await usersDb.destroy(couchUserDocId, couchUserDoc._rev)
     } catch (error) {
@@ -97,5 +85,15 @@ export class UsersService {
     await this.notificationPostgresService.deleteDeliveriesByUserId(userId)
     await this.syncReportPostgresService.deleteByUserName(email)
     await this.userPostgresService.deleteById(userId)
+
+    if (coverKeys.length > 0) {
+      this.deleteCoversInBackground(coverKeys)
+    }
+  }
+
+  private deleteCoversInBackground(coverKeys: string[]) {
+    this.coversService.deleteCovers(coverKeys).catch((error) => {
+      this.logger.warn(`Background cover cleanup failed: ${error}`)
+    })
   }
 }
