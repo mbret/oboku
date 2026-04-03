@@ -1,3 +1,4 @@
+import { ConflictException } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 import { getRepositoryToken } from "@nestjs/typeorm"
 import { UserPostgresEntity } from "../features/postgres/entities"
@@ -33,11 +34,11 @@ describe("UsersService", () => {
 
   it("looks up users with a normalized email", async () => {
     const where = jest.fn().mockReturnThis()
-    const getOne = jest.fn().mockResolvedValue(null)
+    const getMany = jest.fn().mockResolvedValue([])
 
     repository.createQueryBuilder.mockReturnValue({
       where,
-      getOne,
+      getMany,
     })
 
     await service.findUserByEmail(" Reader@Example.com ")
@@ -46,7 +47,24 @@ describe("UsersService", () => {
     expect(where).toHaveBeenCalledWith("LOWER(user.email) = :email", {
       email: "reader@example.com",
     })
-    expect(getOne).toHaveBeenCalled()
+    expect(getMany).toHaveBeenCalled()
+  })
+
+  it("rejects ambiguous case-insensitive email matches", async () => {
+    const where = jest.fn().mockReturnThis()
+    const getMany = jest.fn().mockResolvedValue([
+      { id: 1, email: "Reader@example.com" },
+      { id: 2, email: "reader@example.com" },
+    ])
+
+    repository.createQueryBuilder.mockReturnValue({
+      where,
+      getMany,
+    })
+
+    await expect(
+      service.findUserByEmail("reader@example.com"),
+    ).rejects.toBeInstanceOf(ConflictException)
   })
 
   it("normalizes emails before registering users", async () => {
