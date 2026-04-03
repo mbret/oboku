@@ -48,7 +48,7 @@ import { createDialog } from "../../common/dialogs/createDialog"
 import { ROUTES } from "../../navigation/routes"
 import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 import { Page } from "../../common/Page"
-import { useUnreadNotificationsCount } from "../../notifications/inbox/useInboxNotifications"
+import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()

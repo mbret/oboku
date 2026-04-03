@@ -5,13 +5,11 @@ import { useNavigate } from "react-router"
 import { Page } from "../../common/Page"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { ROUTES } from "../../navigation/routes"
-import {
-  useArchiveNotification,
-  useInboxNotifications,
-  useMarkAllNotificationsAsSeen,
-  useMarkNotificationAsSeen,
-  useUnreadNotificationsCount,
-} from "./useInboxNotifications"
+import { useArchiveNotification } from "./useArchiveNotification"
+import { useInboxNotifications } from "./useInboxNotifications"
+import { useMarkAllNotificationsAsSeen } from "./useMarkAllNotificationsAsSeen"
+import { useMarkNotificationAsSeen } from "./useMarkNotificationAsSeen"
+import { useUnreadNotificationsCount } from "./useUnreadNotificationsCount"
 import { NotificationCard } from "./NotificationCard"
 
 export const NotificationsScreen = memo(function NotificationsScreen() {

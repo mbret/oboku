@@ -9,7 +9,7 @@ import { Link, useLocation, matchPath } from "react-router"
 import { navItems } from "./navConstants"
 import { OfflineIcon } from "../common/OfflineIcon"
 import { ROUTES } from "./routes"
-import { useUnreadNotificationsCount } from "../notifications/inbox/useInboxNotifications"
+import { useUnreadNotificationsCount } from "../notifications/inbox/useUnreadNotificationsCount"
 
 export const BottomTabBar = memo(function BottomTabBar({
   children,
