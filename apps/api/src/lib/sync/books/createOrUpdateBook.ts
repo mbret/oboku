@@ -1,4 +1,4 @@
-import { type BookDocType, directives } from "@oboku/shared"
+import { type BookDocType, directives, getBookCoverKey } from "@oboku/shared"
 import {
   type DataSourcePlugin,
   type SynchronizeAbleDataSource,
@@ -235,7 +235,7 @@ export const createOrUpdateBook = async ({
       const metadataAreOlderThanModifiedDate =
         lastMetadataUpdatedAt < new Date(item.modifiedAt || 0)
 
-      const coverObjectKey = `cover-${ctx.userNameHex}-${existingBook._id}`
+      const coverObjectKey = getBookCoverKey(ctx.userNameHex, existingBook._id)
       const coverExists = await firstValueFrom(
         coversService.isCoverExist(coverObjectKey),
       )

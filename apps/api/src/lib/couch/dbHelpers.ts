@@ -10,7 +10,10 @@ import {
   type SettingsDocType,
   isShallowEqual,
 } from "@oboku/shared"
-import { emailToCouchUserDocId } from "src/couch/couch.service"
+import {
+  emailToCouchUserDocId,
+  emailToUserDbName,
+} from "src/couch/couch.service"
 import { User } from "../couchDbEntities"
 import { waitForRandomTime } from "../utils"
 import { generatePassword } from "../authentication/generatePassword"
@@ -27,6 +30,21 @@ export const createUser = async (
   const newUser = new User(emailToCouchUserDocId(username), username, password)
 
   return await obokuDb.insert(newUser, newUser._id)
+}
+
+export const deleteCouchUser = async (
+  db: createNano.ServerScope,
+  email: string,
+) => {
+  const dbName = emailToUserDbName(email)
+
+  await db.db.destroy(dbName)
+
+  const usersDb = db.use("_users")
+  const docId = emailToCouchUserDocId(email)
+  const doc = await usersDb.get(docId)
+
+  await usersDb.destroy(docId, doc._rev)
 }
 
 export const getOrCreateUserFromEmail = async (

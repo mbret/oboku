@@ -3,10 +3,11 @@ import { UserPostgresEntity } from "../features/postgres/entities"
 import { UserPostgresService } from "../features/postgres/user-postgres.service"
 import {
   CouchService,
-  emailToCouchUserDocId,
+  emailToNameHex,
   emailToUserDbName,
 } from "../couch/couch.service"
-import { find } from "../lib/couch/dbHelpers"
+import { deleteCouchUser, find } from "../lib/couch/dbHelpers"
+import { getBookCoverKey, getCollectionCoverKey } from "@oboku/shared"
 import { CoversService } from "../covers/covers.service"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
@@ -45,12 +46,12 @@ export class UsersService {
    */
   async deleteAccount({ userId, email }: { userId: number; email: string }) {
     const adminNano = await this.couchService.createAdminNanoInstance()
-    const dbName = emailToUserDbName(email)
+    const userNameHex = emailToNameHex(email)
 
     let coverKeys: string[] = []
 
     try {
-      const userDb = adminNano.use(dbName)
+      const userDb = adminNano.use(emailToUserDbName(email))
 
       const [books, collections] = await Promise.all([
         find(userDb, "book", { fields: ["_id"], limit: 999999 }),
@@ -58,8 +59,8 @@ export class UsersService {
       ])
 
       coverKeys = [
-        ...books.map((d) => `cover-${d._id}`),
-        ...collections.map((d) => `collection-${d._id}`),
+        ...books.map((d) => getBookCoverKey(userNameHex, d._id)),
+        ...collections.map((d) => getCollectionCoverKey(d._id)),
       ]
     } catch (error) {
       this.logger.warn(
@@ -68,18 +69,9 @@ export class UsersService {
     }
 
     try {
-      await adminNano.db.destroy(dbName)
+      await deleteCouchUser(adminNano, email)
     } catch (error) {
-      this.logger.warn(`Failed to destroy CouchDB database ${dbName}: ${error}`)
-    }
-
-    try {
-      const usersDb = adminNano.use("_users")
-      const couchUserDocId = emailToCouchUserDocId(email)
-      const couchUserDoc = await usersDb.get(couchUserDocId)
-      await usersDb.destroy(couchUserDocId, couchUserDoc._rev)
-    } catch (error) {
-      this.logger.warn(`Failed to delete CouchDB user document: ${error}`)
+      this.logger.warn(`Failed to delete CouchDB user: ${error}`)
     }
 
     await this.notificationPostgresService.deleteDeliveriesByUserId(userId)
