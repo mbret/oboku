@@ -7,6 +7,10 @@ import {
 } from "@mui/icons-material"
 import { Box, Button, Chip, Paper, Stack, Typography } from "@mui/material"
 import type { NotificationSeverity, UserNotification } from "@oboku/shared"
+import { useNavigate } from "react-router"
+import { ROUTES } from "../../navigation/routes"
+import { useMarkNotificationAsSeen } from "./useMarkNotificationAsSeen"
+import { useArchiveNotification } from "./useArchiveNotification"
 
 const severityColorMap: Record<
   NotificationSeverity,
@@ -29,20 +33,28 @@ const getCtaLabel = (notification: UserNotification) => {
 
 export const NotificationCard = memo(function NotificationCard({
   notification,
-  onMarkAsSeen,
-  onOpenCta,
-  onArchive,
-  isMarkingAsSeen,
-  isArchiving,
 }: {
   notification: UserNotification
-  onMarkAsSeen: (id: number) => void
-  onOpenCta: (notification: UserNotification) => void
-  onArchive: (id: number) => void
-  isMarkingAsSeen: boolean
-  isArchiving: boolean
 }) {
+  const navigate = useNavigate()
+  const markAsSeen = useMarkNotificationAsSeen()
+  const archive = useArchiveNotification()
+
   const ctaLabel = getCtaLabel(notification)
+
+  const openCta = async () => {
+    if (!notification.seenAt) {
+      await markAsSeen.mutateAsync({ id: notification.id })
+    }
+
+    switch (notification.kind) {
+      case "sync_finished":
+        navigate(ROUTES.SYNC_REPORTS)
+        return
+      case "admin_broadcast":
+        return
+    }
+  }
 
   return (
     <Paper
@@ -87,9 +99,9 @@ export const NotificationCard = memo(function NotificationCard({
               variant="outlined"
               startIcon={<DoneRounded />}
               onClick={() => {
-                onMarkAsSeen(notification.id)
+                markAsSeen.mutate({ id: notification.id })
               }}
-              disabled={isMarkingAsSeen}
+              disabled={markAsSeen.isPending}
             >
               Mark as read
             </Button>
@@ -100,9 +112,9 @@ export const NotificationCard = memo(function NotificationCard({
               variant="contained"
               startIcon={<LaunchRounded />}
               onClick={() => {
-                onOpenCta(notification)
+                void openCta()
               }}
-              disabled={isMarkingAsSeen}
+              disabled={markAsSeen.isPending}
             >
               {ctaLabel}
             </Button>
@@ -113,9 +125,9 @@ export const NotificationCard = memo(function NotificationCard({
             variant="text"
             startIcon={<ArchiveRounded />}
             onClick={() => {
-              onArchive(notification.id)
+              archive.mutate({ id: notification.id })
             }}
-            disabled={isArchiving}
+            disabled={archive.isPending}
           >
             Archive
           </Button>
