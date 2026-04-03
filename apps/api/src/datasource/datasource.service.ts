@@ -3,6 +3,7 @@ import { Injectable } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { from, switchMap } from "rxjs"
 import { AppConfigService } from "src/config/AppConfigService"
+import type { AuthUser } from "src/auth/auth.guard"
 import { CouchService } from "src/couch/couch.service"
 import { CoversService } from "src/covers/covers.service"
 import { NotificationsService } from "src/notifications/notifications.service"
@@ -23,19 +24,21 @@ export class DataSourceService {
   syncLongProgress = ({
     dataSourceId,
     providerCredentials,
-    email,
+    user,
   }: {
     dataSourceId: string
     providerCredentials: ProviderApiCredentials<DataSourceType>
-    email: string
+    user: AuthUser
   }) => {
-    const db$ = from(this.couchService.createNanoInstanceForUser({ email }))
+    const db$ = from(
+      this.couchService.createNanoInstanceForUser({ email: user.email }),
+    )
 
     return db$.pipe(
       switchMap((db) =>
         from(
           sync({
-            userName: email,
+            user,
             dataSourceId,
             db,
             providerCredentials,
@@ -43,7 +46,6 @@ export class DataSourceService {
             eventEmitter: this.eventEmitter,
             syncReportPostgresService: this.syncReportPostgresService,
             notificationService: this.notificationService,
-            email,
             coversService: this.coversService,
           }),
         ),

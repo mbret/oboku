@@ -186,22 +186,15 @@ export class NotificationsService {
   }
 
   async sendSyncFinishedNotification({
-    userEmail,
+    userId,
     dataSourceId,
     state,
   }: {
-    userEmail: string
+    userId: number
     dataSourceId: string
     state: "success" | "error"
   }) {
     try {
-      const userId =
-        await this.userPostgresService.resolveUserIdByEmail(userEmail)
-
-      if (!userId) {
-        return
-      }
-
       const notification =
         await this.notificationPostgresService.saveNotification({
           kind: "sync_finished",

@@ -57,8 +57,8 @@ export class DataSourcesController implements OnModuleInit {
       () =>
         this.datasourceService.syncLongProgress({
           dataSourceId,
-          providerCredentials: providerCredentials,
-          email: user.email,
+          providerCredentials,
+          user,
         }),
       {
         id: dataSourceId,

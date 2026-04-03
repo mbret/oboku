@@ -13,6 +13,7 @@ import { NotificationsService } from "src/notifications/notifications.service"
 import { SyncReportPostgresService } from "src/features/postgres/SyncReportPostgresService"
 import { CoversService } from "src/covers/covers.service"
 import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
+import type { AuthUser } from "src/auth/auth.guard"
 import {
   SynchronizeAbleDataSource,
   SynchronizeAbleItem,
@@ -20,31 +21,30 @@ import {
 
 export const sync = async ({
   dataSourceId,
-  userName,
+  user,
   providerCredentials,
   db,
   config,
   eventEmitter,
   syncReportPostgresService,
   notificationService,
-  email,
   coversService,
 }: {
   dataSourceId: string
-  userName: string
+  user: AuthUser
   providerCredentials: ProviderApiCredentials<DataSourceType>
   db: createNano.DocumentScope<unknown>
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
   syncReportPostgresService: SyncReportPostgresService
   notificationService: NotificationsService
-  email: string
   coversService: CoversService
 }) => {
-  const syncReport = new SyncReport(dataSourceId, userName)
+  const { email } = user
+  const syncReport = new SyncReport(dataSourceId, email)
 
   console.log(
-    `dataSourceFacade started sync for ${dataSourceId} with user ${userName}`,
+    `dataSourceFacade started sync for ${dataSourceId} with user ${email}`,
   )
 
   const refreshBookMetadata = async ({ bookId }: { bookId: string }) => {
@@ -65,7 +65,7 @@ export const sync = async ({
     )
   }
 
-  const nameHex = Buffer.from(userName).toString("hex")
+  const nameHex = Buffer.from(email).toString("hex")
   const helpers = createHelpers(refreshBookMetadata, db)
 
   try {
@@ -88,7 +88,7 @@ export const sync = async ({
 
     const syncOptions = {
       dataSourceId,
-      userName,
+      userName: email,
       providerCredentials,
       dataSourceType: type,
       dataSource,
@@ -161,7 +161,7 @@ export const sync = async ({
 
     await syncReportPostgresService.save(syncReportData)
     await notificationService.sendSyncFinishedNotification({
-      userEmail: email,
+      userId: user.userId,
       dataSourceId,
       state: syncReportData.state,
     })
