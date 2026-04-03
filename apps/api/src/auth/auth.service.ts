@@ -15,12 +15,16 @@ import {
   emailToUserDbName,
 } from "../couch/couch.service"
 import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
+import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady"
 import bcrypt from "bcrypt"
 import { JwtService, TokenExpiredError } from "@nestjs/jwt"
 import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
 import { SecretsService } from "src/config/SecretsService"
 import { EmailService } from "../email/EmailService"
 import { normalizeEmail } from "src/features/postgres/user-postgres.service"
+
+/** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
+const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
 
 type RefreshTokenPayload = {
   sub: string
@@ -201,10 +205,19 @@ export class AuthService {
   }) {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
-    const couchUser = await getOrCreateUserFromEmail(adminNano, email)
+    const { user: couchUser, created: couchUserCreated } =
+      await getOrCreateUserFromEmail(adminNano, email)
 
     if (!couchUser) {
       throw new Error("Unable to retrieve user")
+    }
+
+    const dbName = emailToUserDbName(couchUser.name)
+
+    if (couchUserCreated) {
+      await waitForUserCouchDatabaseReady(adminNano, dbName, {
+        deadline: Date.now() + COUCH_PERUSER_DB_READY_WAIT_MS,
+      })
     }
 
     const { accessToken, refreshToken } = await this.generateTokens({
@@ -218,7 +231,7 @@ export class AuthService {
       accessToken,
       refreshToken,
       nameHex,
-      dbName: emailToUserDbName(couchUser.name),
+      dbName,
       email: couchUser.email,
     }
   }

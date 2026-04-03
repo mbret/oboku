@@ -24,11 +24,18 @@ export const createUser = async (
   db: createNano.ServerScope,
   username: string,
   password: string,
-) => {
+): Promise<User> => {
   const obokuDb = db.use("_users")
   const newUser = new User(emailToCouchUserDocId(username), username, password)
 
-  return await obokuDb.insert(newUser, newUser._id)
+  const response = await obokuDb.insert(newUser, newUser._id)
+
+  if (!response.ok) {
+    throw new Error("Error when creating user")
+  }
+
+  newUser._rev = response.rev
+  return newUser
 }
 
 /** Nano attaches `statusCode` to `Error` for Couch HTTP failures; `Error` typings omit it. */
@@ -41,7 +48,7 @@ function isCouchRequestError(
   return typeof statusCode === "number"
 }
 
-function isCouchNotFound(error: unknown): boolean {
+export function isCouchNotFound(error: unknown): boolean {
   return isCouchRequestError(error) && error.statusCode === 404
 }
 
@@ -71,7 +78,7 @@ export const deleteCouchUser = async (
 export const getOrCreateUserFromEmail = async (
   db: createNano.ServerScope,
   email: string,
-) => {
+): Promise<{ user: User; created: boolean }> => {
   const usersDb = db.use<User>("_users")
 
   const {
@@ -82,23 +89,12 @@ export const getOrCreateUserFromEmail = async (
     },
   })
 
-  if (user) return user
+  if (user) return { user, created: false }
 
   const generatedPassword = generatePassword()
+  const createdUser = await createUser(db, email, generatedPassword)
 
-  const { ok } = await createUser(db, email, generatedPassword)
-
-  if (!ok) throw new Error("Error when creating user")
-
-  const {
-    docs: [createdUser],
-  } = await usersDb.find({
-    selector: {
-      email,
-    },
-  })
-
-  return createdUser
+  return { user: createdUser, created: true }
 }
 
 export async function atomicUpdate<
