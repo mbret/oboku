@@ -13,7 +13,9 @@ import type {
   SignInWithEmailRequest,
   SignInWithGoogleRequest,
 } from "@oboku/shared"
+import { authStateSignal } from "../auth/states.web"
 import { configuration } from "../config/configuration"
+import { type FetchConfig, HttpClientError } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 import { injectToken } from "./injectToken.web"
 
@@ -122,5 +124,54 @@ class HttpApiClient extends HttpClientWeb {
 
 export const httpClientApi = new HttpApiClient()
 
+export const refreshTokenAndRetry = async (
+  config: FetchConfig,
+  refreshToken: string,
+) => {
+  try {
+    const response = await httpClientApi.refreshToken({
+      refreshToken,
+      useInterceptors: false,
+    })
+
+    authStateSignal.update((state) => {
+      if (!state) return state
+
+      return {
+        ...state,
+        accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+      }
+    })
+  } catch (e) {
+    console.log("Unable to refresh token")
+    console.error(e)
+
+    throw e
+  }
+
+  return httpClientApi.fetch(config.input, config)
+}
+
 // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
 httpClientApi.useRequestInterceptor(injectToken)
+
+// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+httpClientApi.useResponseInterceptor(
+  async (response) => response,
+  async (error: HttpClientError) => {
+    if (error instanceof HttpClientError && error.response?.status === 401) {
+      const refreshToken = authStateSignal.value?.refreshToken
+
+      if (refreshToken) {
+        try {
+          return refreshTokenAndRetry(error.response.config, refreshToken)
+        } catch (_e) {
+          throw error
+        }
+      }
+    }
+
+    throw error
+  },
+)
