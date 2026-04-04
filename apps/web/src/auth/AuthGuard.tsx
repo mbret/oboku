@@ -4,22 +4,7 @@ import { useSignOut } from "./useSignOut"
 import { authStateSignal } from "./states.web"
 import { type FetchConfig, HttpClientError } from "../http/httpClient.shared"
 import { httpCouchClient } from "../http/httpClientCouch.web"
-
-const injectToken = async (config: FetchConfig) => {
-  const authState = authStateSignal.getValue()
-
-  if (authState?.accessToken) {
-    return {
-      ...config,
-      headers: {
-        ...config.headers,
-        Authorization: `Bearer ${authState.accessToken}`,
-      },
-    }
-  }
-
-  return config
-}
+import { useLiveRef } from "reactjrx"
 
 const refreshTokenAndRetry = async (
   config: FetchConfig,
@@ -50,19 +35,11 @@ const refreshTokenAndRetry = async (
   return httpClientApi.fetch(config.input, config)
 }
 
-export const AuthGuard = memo(() => {
+export const AuthGuard = memo(function AuthGuard() {
   const signOut = useSignOut()
-  const signOutEffect = useEffectEvent(signOut)
+  const signOutRef = useLiveRef(signOut)
 
   useEffect(() => {
-    const deregisterTokenInjectorToApi =
-      // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-      httpClientApi.useRequestInterceptor(injectToken)
-
-    const deregisterTokenInjectorToCouch =
-      // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-      httpCouchClient.useRequestInterceptor(injectToken)
-
     // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
     const deregisterAutoSignOut = httpClientApi.useResponseInterceptor(
       async (response) => response,
@@ -80,7 +57,7 @@ export const AuthGuard = memo(() => {
               throw error
             }
           } else {
-            signOut()
+            signOutRef.current()
           }
         }
 
@@ -101,7 +78,7 @@ export const AuthGuard = memo(() => {
               return response
             }
           } else {
-            signOutEffect()
+            signOutRef.current()
           }
         }
 
@@ -110,12 +87,10 @@ export const AuthGuard = memo(() => {
     )
 
     return () => {
-      deregisterTokenInjectorToApi()
       deregisterAutoSignOut()
       deregisterAutoSignOutCouch()
-      deregisterTokenInjectorToCouch()
     }
-  }, [signOut])
+  }, [signOutRef])
 
   return null
 })

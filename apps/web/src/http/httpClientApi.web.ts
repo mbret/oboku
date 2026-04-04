@@ -15,6 +15,7 @@ import type {
 } from "@oboku/shared"
 import { configuration } from "../config/configuration"
 import { HttpClientWeb } from "./httpClient.web"
+import { injectToken } from "./injectToken.web"
 
 class HttpApiClient extends HttpClientWeb {
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>
@@ -120,3 +121,6 @@ class HttpApiClient extends HttpClientWeb {
 }
 
 export const httpClientApi = new HttpApiClient()
+
+// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+httpClientApi.useRequestInterceptor(injectToken)
