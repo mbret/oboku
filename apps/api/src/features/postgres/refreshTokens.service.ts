@@ -5,7 +5,7 @@ import { createHash, randomBytes } from "node:crypto"
 import { IsNull, Repository } from "typeorm"
 import { RefreshTokenPostgresEntity } from "./entities"
 
-const REVOKED_TOKEN_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
+const STALE_SESSION_RETENTION_TWO_YEARS_MS = 2 * 365 * 24 * 60 * 60 * 1000
 
 @Injectable()
 export class RefreshTokensService {
@@ -74,25 +74,25 @@ export class RefreshTokensService {
   }
 
   /**
-   * Cleanup revoked sessions after a short retention window.
+   * Cleanup sessions that have not been used in a very long time.
    *
-   * Active sessions are intentionally kept indefinitely so long-offline users
-   * can still recover their session later.
+   * This keeps the table bounded without evicting active or reasonably dormant
+   * installations, which is important for the offline-first auth model.
    */
-  @Cron("0 */10 * * * *")
-  async handleCron() {
-    const cutoff = new Date(Date.now() - REVOKED_TOKEN_RETENTION_MS)
+  // Every day at 03:00 server time.
+  @Cron("0 0 3 * * *")
+  async deleteStaleSessions() {
+    const cutoff = new Date(Date.now() - STALE_SESSION_RETENTION_TWO_YEARS_MS)
 
     const result = await this.refreshTokenRepository
       .createQueryBuilder()
       .delete()
       .from(RefreshTokenPostgresEntity)
-      .where("revoked_at IS NOT NULL")
-      .andWhere("revoked_at < :cutoff", { cutoff })
+      .where("last_used_at < :cutoff", { cutoff })
       .execute()
 
     if (result.affected) {
-      this.logger.debug(`Deleted ${result.affected} revoked refresh sessions`)
+      this.logger.debug(`Deleted ${result.affected} stale refresh sessions`)
     }
   }
 
