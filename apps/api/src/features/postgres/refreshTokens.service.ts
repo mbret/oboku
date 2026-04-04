@@ -5,7 +5,6 @@ import { createHash, randomBytes } from "node:crypto"
 import { IsNull, Repository } from "typeorm"
 import { RefreshTokenPostgresEntity } from "./entities"
 
-const MAX_ACTIVE_SESSIONS_PER_USER = 20
 const REVOKED_TOKEN_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
 
 @Injectable()
@@ -37,8 +36,6 @@ export class RefreshTokensService {
       }),
       ["user_id", "installation_id"],
     )
-
-    await this.cleanupExtraTokensForUser(userId)
 
     return token
   }
@@ -74,29 +71,6 @@ export class RefreshTokensService {
 
   async deleteByUserId(userId: number) {
     await this.refreshTokenRepository.delete({ user_id: userId })
-  }
-
-  private async cleanupExtraTokensForUser(userId: number) {
-    const sessionsToDelete = await this.refreshTokenRepository.find({
-      select: ["id"],
-      where: {
-        user_id: userId,
-        revoked_at: IsNull(),
-      },
-      order: {
-        last_used_at: "DESC",
-        created_at: "DESC",
-      },
-      skip: MAX_ACTIVE_SESSIONS_PER_USER,
-    })
-
-    if (sessionsToDelete.length === 0) {
-      return
-    }
-
-    await this.refreshTokenRepository.delete(
-      sessionsToDelete.map(({ id }) => id),
-    )
   }
 
   /**
