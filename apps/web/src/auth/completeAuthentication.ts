@@ -21,22 +21,11 @@ export const completeAuthentication = ({
   auth: AuthResponse
 }) => {
   const previousAuth = authStateSignal.value
-  const waitForDbRecreation$ =
-    previousAuth?.email !== auth.email
-      ? from(reCreateDb({ overwrite: true })).pipe(
-          switchMap(() => {
-            queryClient.clear()
+  const switchedAccount = previousAuth?.email !== auth.email
 
-            const promiseAble = persister.removeClient()
-
-            if (promiseAble && "then" in promiseAble) {
-              return promiseAble
-            }
-
-            return of(null)
-          }),
-        )
-      : of(null)
+  const waitForDbRecreation$ = switchedAccount
+    ? from(reCreateDb({ overwrite: true }))
+    : of(null)
 
   return waitForDbRecreation$.pipe(
     tap(() => {
@@ -44,6 +33,22 @@ export const completeAuthentication = ({
       setUser({ email: auth.email, id: auth.nameHex })
       setProfile(auth.nameHex)
       currentProfileSignal.update(auth.nameHex)
+    }),
+    switchMap(() => {
+      if (!switchedAccount) {
+        return of(null)
+      }
+
+      return from(Promise.resolve(persister.removeClient())).pipe(
+        tap(() => {
+          /**
+           * Drop persisted React Query state for the previous account, then reset
+           * the in-memory cache so active queries refetch (see useSignOut).
+           */
+          void queryClient.resetQueries()
+          queryClient.getMutationCache().clear()
+        }),
+      )
     }),
   )
 }

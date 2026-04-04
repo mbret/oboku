@@ -22,8 +22,17 @@ export const useSignOut = () => {
     removeProfile()
     currentProfileSignal.setValue(SIGNAL_RESET)
 
-    queryClient.clear()
-    persister.removeClient()
+    /**
+     * Prefer `resetQueries` over `clear` on sign-out: `clear` removes every
+     * query and cancels in-flight work, but mounted observers may not run a new
+     * fetch right away, which can leave screens stuck until remount.
+     * `resetQueries` resets state and refetches **active** queries (still
+     * skipped when `enabled` is false after auth clears). Mutations are cleared
+     * separately because `resetQueries` only touches the query cache.
+     */
+    void queryClient.resetQueries()
+    queryClient.getMutationCache().clear()
+    void persister.removeClient()
 
     signOutPlugins()
   }

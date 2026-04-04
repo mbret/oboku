@@ -114,14 +114,14 @@ export const AppWithConfig = memo(() => {
     >
       <StyledEngineProvider injectFirst>
         <ThemeProvider>
-          <QueryClientProvider$>
-            <Suspense fallback={<SplashScreen show />}>
-              <PersistQueryProvider>
+          <PersistQueryProvider>
+            <QueryClientProvider$>
+              <Suspense fallback={<SplashScreen show />}>
                 {config ? <App /> : null}
-              </PersistQueryProvider>
-            </Suspense>
-            {import.meta.env.DEV && <DebugMenu />}
-          </QueryClientProvider$>
+              </Suspense>
+              {import.meta.env.DEV && <DebugMenu />}
+            </QueryClientProvider$>
+          </PersistQueryProvider>
         </ThemeProvider>
       </StyledEngineProvider>
       <BlurFilterReference />
