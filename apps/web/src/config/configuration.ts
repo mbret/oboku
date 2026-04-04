@@ -19,6 +19,8 @@ class Configuration extends BehaviorSubject<{
   state: "loading" | "loaded"
   config: Partial<GetWebConfigResponse>
 }> {
+  private hasStartedLoading = false
+
   constructor() {
     const restoredConfig = restoreConfig()
 
@@ -28,8 +30,6 @@ class Configuration extends BehaviorSubject<{
       state: restoredConfig ? "loaded" : "loading",
       config: restoredConfig ?? {},
     })
-
-    this.loadConfig()
   }
 
   loaded$ = this.pipe(
@@ -47,8 +47,17 @@ class Configuration extends BehaviorSubject<{
         state: "loaded",
         config: fetchedConfig,
       })
+
       localStorage.setItem("config", JSON.stringify(fetchedConfig))
     }
+  }
+
+  ensureConfigLoaded = () => {
+    if (this.hasStartedLoading) return
+
+    this.hasStartedLoading = true
+
+    void this.loadConfig()
   }
 
   fetchConfig = async (): Promise<GetWebConfigResponse | undefined> => {
