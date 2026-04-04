@@ -1,5 +1,5 @@
-import type { SignInRequest } from "@oboku/shared"
-import { finalize, from, map, type Observable, of, switchMap } from "rxjs"
+import type { SignInWithGoogleRequest } from "@oboku/shared"
+import { finalize, from, map, switchMap } from "rxjs"
 import { lock, unlock } from "../common/BlockingBackdrop"
 import { useReCreateDb } from "../rxdb"
 import { httpClientApi } from "../http/httpClientApi.web"
@@ -16,20 +16,26 @@ export const useSignIn = () => {
       lock("authentication")
       const installationId = getOrCreateAuthInstallationId()
 
-      const credentials$: Observable<SignInRequest> = data
-        ? of({
-            ...data,
-            installation_id: installationId,
-          })
-        : signInWithGooglePrompt().pipe(
-            map((authResponse) => ({
-              token: authResponse.credential,
+      const signIn$ = data
+        ? from(
+            httpClientApi.signInWithEmail({
+              ...data,
               installation_id: installationId,
-            })),
+            }),
+          )
+        : signInWithGooglePrompt().pipe(
+            map(
+              (authResponse): SignInWithGoogleRequest => ({
+                token: authResponse.credential,
+                installation_id: installationId,
+              }),
+            ),
+            switchMap((credentials) =>
+              from(httpClientApi.signInWithGoogle(credentials)),
+            ),
           )
 
-      return credentials$.pipe(
-        switchMap((credentials) => from(httpClientApi.signIn(credentials))),
+      return signIn$.pipe(
         switchMap(({ data }) =>
           completeAuthentication({
             reCreateDb,

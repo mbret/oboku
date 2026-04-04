@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Post, Query } from "@nestjs/common"
 import { AuthService } from "./auth.service"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
-import { IsEmail, IsNotEmpty, MinLength } from "class-validator"
+import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator"
 import type {
   AuthSessionResponse,
   CompleteMagicLinkRequest,
@@ -14,7 +14,8 @@ import type {
   RequestMagicLinkResponse,
   RequestSignUpRequest,
   RequestSignUpResponse,
-  SignInRequest,
+  SignInWithEmailRequest,
+  SignInWithGoogleRequest,
 } from "@oboku/shared"
 
 export class RequestSignUpDto implements RequestSignUpRequest {
@@ -44,14 +45,47 @@ export class CompleteMagicLinkDto implements CompleteMagicLinkRequest {
   installation_id!: string
 }
 
+export class SignInWithEmailDto implements SignInWithEmailRequest {
+  @IsEmail()
+  email!: string
+
+  @IsString()
+  @IsNotEmpty()
+  password!: string
+
+  @IsString()
+  @IsNotEmpty()
+  installation_id!: string
+}
+
+export class SignInWithGoogleDto implements SignInWithGoogleRequest {
+  @IsString()
+  @IsNotEmpty()
+  token!: string
+
+  @IsString()
+  @IsNotEmpty()
+  installation_id!: string
+}
+
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
-  @Post("signin")
-  async signin(@Body() body: SignInRequest): Promise<AuthSessionResponse> {
-    return this.authService.signIn(body)
+  @Post("signin/email")
+  async signinWithEmail(
+    @Body() body: SignInWithEmailDto,
+  ): Promise<AuthSessionResponse> {
+    return this.authService.signInWithEmail(body)
+  }
+
+  @Public()
+  @Post("signin/google")
+  async signinWithGoogle(
+    @Body() body: SignInWithGoogleDto,
+  ): Promise<AuthSessionResponse> {
+    return this.authService.signInWithGoogle(body)
   }
 
   @Public()

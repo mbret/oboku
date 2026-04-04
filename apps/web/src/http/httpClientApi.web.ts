@@ -10,7 +10,8 @@ import type {
   RequestMagicLinkResponse,
   RequestSignUpRequest,
   RequestSignUpResponse,
-  SignInRequest,
+  SignInWithEmailRequest,
+  SignInWithGoogleRequest,
 } from "@oboku/shared"
 import { configuration } from "../config/configuration"
 import { HttpClientWeb } from "./httpClient.web"
@@ -48,9 +49,17 @@ class HttpApiClient extends HttpClientWeb {
       body: params,
     })
 
-  signIn = (data: SignInRequest) =>
-    this.post<AuthSessionResponse, SignInRequest>(
-      `${configuration.API_URL}/auth/signin`,
+  signInWithEmail = (data: SignInWithEmailRequest) =>
+    this.post<AuthSessionResponse, SignInWithEmailRequest>(
+      `${configuration.API_URL}/auth/signin/email`,
+      {
+        body: data,
+      },
+    )
+
+  signInWithGoogle = (data: SignInWithGoogleRequest) =>
+    this.post<AuthSessionResponse, SignInWithGoogleRequest>(
+      `${configuration.API_URL}/auth/signin/google`,
       {
         body: data,
       },

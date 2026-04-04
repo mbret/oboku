@@ -22,8 +22,6 @@ export type SignInWithGoogleRequest = {
   installation_id: string
 }
 
-export type SignInRequest = SignInWithEmailRequest | SignInWithGoogleRequest
-
 export type RequestSignUpRequest = {
   email: string
 }

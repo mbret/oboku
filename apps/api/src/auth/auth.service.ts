@@ -28,7 +28,8 @@ import type {
   CompleteMagicLinkRequest,
   CompleteSignUpResponse,
   RefreshTokenResponse,
-  SignInRequest,
+  SignInWithEmailRequest,
+  SignInWithGoogleRequest,
 } from "@oboku/shared"
 
 /** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
@@ -80,7 +81,7 @@ export class AuthService {
    * merged user row. Local password access is only upgraded by Oboku's own
    * email verification flow.
    */
-  async signInWithGoogle(token: string) {
+  private async authenticateWithGoogle(token: string) {
     const client = new OAuth2Client()
     const ticket = await client.verifyIdToken({
       idToken: token,
@@ -132,7 +133,7 @@ export class AuthService {
    * - have a locally verified email ownership
    * - validate compare
    */
-  async signinWithEmail(rawEmail: string, password: string) {
+  private async authenticateWithEmail(rawEmail: string, password: string) {
     const email = normalizeEmail(rawEmail)
     const userWithEmail = await this.usersService.findUserByEmail(email)
 
@@ -222,16 +223,30 @@ export class AuthService {
     }
   }
 
-  async signIn(params: SignInRequest): Promise<AuthSessionResponse> {
-    const retrievedUser =
-      "token" in params
-        ? await this.signInWithGoogle(params.token)
-        : await this.signinWithEmail(params.email, params.password)
+  async signInWithEmail({
+    email,
+    password,
+    installation_id,
+  }: SignInWithEmailRequest): Promise<AuthSessionResponse> {
+    const retrievedUser = await this.authenticateWithEmail(email, password)
 
     return this.completeSignIn({
       email: retrievedUser.email,
       userId: retrievedUser.id,
-      installationId: params.installation_id,
+      installationId: installation_id,
+    })
+  }
+
+  async signInWithGoogle({
+    token,
+    installation_id,
+  }: SignInWithGoogleRequest): Promise<AuthSessionResponse> {
+    const retrievedUser = await this.authenticateWithGoogle(token)
+
+    return this.completeSignIn({
+      email: retrievedUser.email,
+      userId: retrievedUser.id,
+      installationId: installation_id,
     })
   }
 
