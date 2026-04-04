@@ -1,6 +1,7 @@
 import {
   type BookDocType,
   type CollectionDocType,
+  getBookCoverKey,
   getCollectionCoverKey,
 } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
@@ -47,7 +48,7 @@ export class CoversCleanupService {
       })
 
       for (const book of books.docs) {
-        keepableCoverKeys.add(`cover-${userDb.userNameHex}-${book._id}`)
+        keepableCoverKeys.add(getBookCoverKey(userDb.userNameHex, book._id))
       }
 
       const collections = await userDbInstance.find({

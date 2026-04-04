@@ -8,7 +8,6 @@ import type {
   ProviderApiCredentials,
 } from "@oboku/shared"
 import type {
-  ComponentProps,
   ComponentType,
   DOMAttributes,
   FC,
@@ -16,7 +15,7 @@ import type {
   ReactElement,
   ReactNode,
 } from "react"
-import type { Button, SvgIconProps } from "@mui/material"
+import type { SvgIconProps } from "@mui/material"
 import type { DeepReadonly } from "rxdb"
 import type { UseMutationResult } from "@tanstack/react-query"
 
@@ -179,11 +178,6 @@ export type ObokuPlugin<
       TagsSelector: FC<{
         onChange: (tags: string[]) => void
       }>
-      ButtonDialog: FC<
-        Omit<ComponentProps<typeof Button>, `type`> & {
-          type: `confirm` | `cancel`
-        }
-      >
       title: string
     } & Pick<DOMAttributes<any>, "onDragLeave">
   >

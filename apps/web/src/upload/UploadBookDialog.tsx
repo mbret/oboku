@@ -8,7 +8,6 @@ import { useAddBook } from "../books/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { TagsSelector } from "../tags/TagsSelector"
-import { ButtonDialog } from "../common/ButtonDialog"
 import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
 import type { ObokuPlugin, UploadBookToAddPayload } from "../plugins/types"
 import { signal } from "reactjrx"
@@ -78,7 +77,6 @@ export const UploadBookDialog = memo(
           <dataSource.UploadBookComponent
             title={`Add a book with plugin ${capitalize(dataSource.name)}`}
             TagsSelector={TagsSelector}
-            ButtonDialog={ButtonDialog}
             onClose={onClose}
             requestPopup={createRequestPopup({ name: dataSource.name })}
             {...rest}

@@ -13,6 +13,7 @@ import { ConnectorSelector } from "../connectors/ConnectorSelector"
 import { useConnectors } from "../connectors/useConnectors"
 import { useToasts } from "../notifications/useToasts"
 import type { SettingsConnectorType } from "@oboku/shared"
+import { CancelButton } from "../common/forms/CancelButton"
 
 export type UploadConnectorSelectionStepProps<TAuthResult> = {
   connectorType: SettingsConnectorType
@@ -85,7 +86,7 @@ export function UploadConnectorSelectionStep<TAuthResult>(
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <CancelButton onClick={onClose} />
         <Button
           disabled={!selectedConnectorId}
           loading={authenticateMutation.isPending}

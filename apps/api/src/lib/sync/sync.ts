@@ -4,6 +4,7 @@ import { synchronizeFromDataSource } from "./synchronizeFromDataSource"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { createHelpers } from "src/features/plugins/helpers"
 import { atomicUpdate } from "../couch/dbHelpers"
+import { emailToNameHex } from "src/couch/couch.service"
 import { getPlugin } from "src/features/plugins/plugins"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/config/types"
@@ -65,7 +66,7 @@ export const sync = async ({
     )
   }
 
-  const nameHex = Buffer.from(email).toString("hex")
+  const nameHex = emailToNameHex(email)
   const helpers = createHelpers(refreshBookMetadata, db)
 
   try {

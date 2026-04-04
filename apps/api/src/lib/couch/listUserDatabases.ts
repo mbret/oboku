@@ -1,4 +1,5 @@
 import type createNano from "nano"
+import { emailToNameHex, emailToUserDbName } from "src/couch/couch.service"
 import { UserCouchEntity } from "src/lib/couchDbEntities"
 
 export const listUserDatabases = async (db: createNano.ServerScope) => {
@@ -8,13 +9,9 @@ export const listUserDatabases = async (db: createNano.ServerScope) => {
     limit: 99999,
   })
 
-  return result.docs.map((user) => {
-    const userNameHex = Buffer.from(user.name).toString("hex")
-
-    return {
-      email: user.name,
-      userNameHex,
-      dbName: `userdb-${userNameHex}`,
-    }
-  })
+  return result.docs.map((user) => ({
+    email: user.name,
+    userNameHex: emailToNameHex(user.name),
+    dbName: emailToUserDbName(user.name),
+  }))
 }

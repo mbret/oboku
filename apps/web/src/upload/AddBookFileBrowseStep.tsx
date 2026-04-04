@@ -13,6 +13,7 @@ import {
   LazyTreeView,
   type TreeNode,
 } from "../common/FileTreeView"
+import { CancelButton } from "../common/forms/CancelButton"
 
 export type AddBookFileBrowseStepProps = {
   /** Initial root-level items (e.g. from first listing). */
@@ -96,7 +97,7 @@ export const AddBookFileBrowseStep = memo(function AddBookFileBrowseStep({
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel}>Cancel</Button>
+        <CancelButton onClick={onCancel} />
         <Button
           onClick={onBack}
           startIcon={<ArrowBackRounded />}

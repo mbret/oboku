@@ -1,18 +1,13 @@
-import {
-  GetObjectCommand,
-  HeadObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3"
 import { Injectable, Logger } from "@nestjs/common"
-import { from, map, of, switchMap, tap } from "rxjs"
+import { from, of, switchMap, tap } from "rxjs"
 import sharp from "sharp"
 import { AppConfigService } from "src/config/AppConfigService"
 import fs from "node:fs"
 import path from "node:path"
+import { CoversFsService } from "./covers-fs.service"
+import { CoversS3Service } from "./covers-s3.service"
 
 const logger = new Logger("CoversService")
-const MANAGED_COVER_PREFIXES = ["cover-", "collection-"] as const
 
 export type StoredCover = {
   key: string
@@ -22,89 +17,26 @@ export type StoredCover = {
 
 @Injectable()
 export class CoversService {
-  private s3Client: S3Client | undefined
+  constructor(
+    public appConfig: AppConfigService,
+    private fsService: CoversFsService,
+    private s3Service: CoversS3Service,
+  ) {}
 
-  constructor(public appConfig: AppConfigService) {
-    const AWS_ACCESS_KEY_ID = this.appConfig.AWS_ACCESS_KEY_ID
-    const AWS_SECRET_ACCESS_KEY = this.appConfig.AWS_SECRET_ACCESS_KEY
-
-    if (this.appConfig.COVERS_STORAGE_STRATEGY === "s3") {
-      this.s3Client = new S3Client({
-        region: `us-east-1`,
-        credentials: {
-          accessKeyId: AWS_ACCESS_KEY_ID ?? "",
-          secretAccessKey: AWS_SECRET_ACCESS_KEY ?? "",
-        },
-      })
-    }
-
-    logger.log(`Creating covers directory: ${this.appConfig.COVERS_DIR}`)
-    fs.mkdirSync(this.appConfig.COVERS_DIR, { recursive: true })
+  private get backend() {
+    return this.appConfig.COVERS_STORAGE_STRATEGY === "s3"
+      ? this.s3Service
+      : this.fsService
   }
 
-  getCoverFromS3 = async (objectKey: string) => {
-    if (!this.s3Client) {
-      throw new Error("No s3 client")
-    }
-
-    try {
-      const response = await this.s3Client.send(
-        new GetObjectCommand({
-          Bucket: this.appConfig.COVERS_BUCKET_NAME ?? "",
-          Key: objectKey,
-          ResponseContentType: "",
-        }),
-      )
-
-      if (!response.Body) {
-        throw new Error("No body")
-      }
-
-      return await response.Body.transformToByteArray()
-    } catch (e) {
-      if (
-        (e as any)?.code === "NoSuchKey" ||
-        (e as any)?.Code === "NoSuchKey"
-      ) {
-        return null
-      }
-
-      throw e
-    }
-  }
-
-  getCoverFromFs = async (objectKey: string) => {
-    try {
-      return await fs.promises.readFile(
-        path.join(this.appConfig.COVERS_DIR, `${objectKey}.webp`),
-      )
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        error.code === "ENOENT"
-      ) {
-        return null
-      }
-
-      throw error
-    }
-  }
-
-  getCoverPlaceholder = async () => {
+  private getCoverPlaceholder() {
     return fs.promises.readFile(
       path.join(this.appConfig.ASSETS_DIR, "cover-placeholder.jpg"),
     )
   }
 
   getCover(id: string) {
-    const cover$ = from(
-      this.appConfig.COVERS_STORAGE_STRATEGY === "s3"
-        ? this.getCoverFromS3(id)
-        : this.getCoverFromFs(id),
-    )
-
-    return cover$.pipe(
+    return from(this.backend.getCover(id)).pipe(
       switchMap((cover) => {
         if (cover) {
           return of(cover)
@@ -112,31 +44,6 @@ export class CoversService {
 
         return from(this.getCoverPlaceholder())
       }),
-    )
-  }
-
-  saveCoverTos3(cover: Uint8Array<ArrayBufferLike>, objectKey: string) {
-    if (!this.s3Client) {
-      throw new Error("No s3 client")
-    }
-
-    return from(
-      this.s3Client.send(
-        new PutObjectCommand({
-          Bucket: this.appConfig.COVERS_BUCKET_NAME ?? "",
-          Body: cover,
-          Key: objectKey,
-        }),
-      ),
-    ).pipe(map(() => undefined))
-  }
-
-  saveCoverToFs(cover: Uint8Array<ArrayBufferLike>, objectKey: string) {
-    return from(
-      fs.promises.writeFile(
-        path.join(this.appConfig.COVERS_DIR, `${objectKey}.webp`),
-        cover,
-      ),
     )
   }
 
@@ -148,13 +55,8 @@ export class CoversService {
     })
 
     return resized$.pipe(
-      switchMap((resized) => {
-        const save$ =
-          this.appConfig.COVERS_STORAGE_STRATEGY === "s3"
-            ? this.saveCoverTos3(resized, objectKey)
-            : this.saveCoverToFs(resized, objectKey)
-
-        return save$.pipe(
+      switchMap((resized) =>
+        from(this.backend.saveCover(resized, objectKey)).pipe(
           tap(() => {
             const coverSize = Buffer.byteLength(resized)
 
@@ -162,131 +64,25 @@ export class CoversService {
               `Saved cover ${objectKey} with a size of ${(coverSize / 1024).toFixed(2)} KB`,
             )
           }),
-        )
-      }),
+        ),
+      ),
     )
-  }
-
-  async isCoverExistS3(objectKey: string) {
-    if (!this.s3Client) {
-      throw new Error("No s3 client")
-    }
-
-    try {
-      await this.s3Client.send(
-        new HeadObjectCommand({
-          Bucket: this.appConfig.COVERS_BUCKET_NAME ?? "",
-          Key: objectKey,
-        }),
-      )
-
-      return true
-    } catch (e) {
-      if ((e as any)?.$metadata?.httpStatusCode === 404) return false
-      if ((e as any).code === "NotFound") return false
-      throw e
-    }
-  }
-
-  async isCoverExistFs(objectKey: string) {
-    return fs.promises
-      .access(path.join(this.appConfig.COVERS_DIR, `${objectKey}.webp`))
-      .then(() => true)
-      .catch(() => false)
   }
 
   isCoverExist(objectKey: string) {
-    return from(
-      this.appConfig.COVERS_STORAGE_STRATEGY === "s3"
-        ? this.isCoverExistS3(objectKey)
-        : this.isCoverExistFs(objectKey),
-    )
-  }
-
-  private isManagedCoverFileName(fileName: string) {
-    return (
-      fileName.endsWith(".webp") &&
-      MANAGED_COVER_PREFIXES.some((prefix) => fileName.startsWith(prefix))
-    )
-  }
-
-  private async listStoredCoversFromFs(): Promise<StoredCover[]> {
-    const entries = await fs.promises.readdir(this.appConfig.COVERS_DIR, {
-      withFileTypes: true,
-    })
-
-    const covers = await Promise.all(
-      entries
-        .filter(
-          (entry) => entry.isFile() && this.isManagedCoverFileName(entry.name),
-        )
-        .map(async (entry) => {
-          const fullPath = path.join(this.appConfig.COVERS_DIR, entry.name)
-          const stats = await fs.promises.stat(fullPath)
-
-          return {
-            key: entry.name.replace(/\.webp$/u, ""),
-            sizeInBytes: stats.size,
-            lastModifiedAt: stats.mtime.toISOString(),
-          }
-        }),
-    )
-
-    return covers
-  }
-
-  async listStoredCovers(): Promise<StoredCover[]> {
-    if (this.appConfig.COVERS_STORAGE_STRATEGY !== "fs") {
-      throw new Error("Listing stored covers is only supported for fs storage")
-    }
-
-    return this.listStoredCoversFromFs()
-  }
-
-  getStorageLocation() {
-    if (this.appConfig.COVERS_STORAGE_STRATEGY === "s3") {
-      return `s3://${this.appConfig.COVERS_BUCKET_NAME ?? ""}`
-    }
-
-    return this.appConfig.COVERS_DIR
-  }
-
-  private async deleteCoversFromFs(keys: string[]) {
-    const deletedKeys: string[] = []
-    const failedKeys: Array<{ key: string; message: string }> = []
-
-    for (const key of keys) {
-      try {
-        await fs.promises.unlink(
-          path.join(this.appConfig.COVERS_DIR, `${key}.webp`),
-        )
-        deletedKeys.push(key)
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          "code" in error &&
-          error.code === "ENOENT"
-        ) {
-          deletedKeys.push(key)
-          continue
-        }
-
-        failedKeys.push({
-          key,
-          message: error instanceof Error ? error.message : "Unknown error",
-        })
-      }
-    }
-
-    return { deletedKeys, failedKeys }
+    return from(this.backend.isCoverExist(objectKey))
   }
 
   async deleteCovers(keys: string[]) {
-    if (this.appConfig.COVERS_STORAGE_STRATEGY !== "fs") {
-      throw new Error("Deleting covers is only supported for fs storage")
-    }
+    return this.backend.deleteCovers(keys)
+  }
 
-    return this.deleteCoversFromFs(keys)
+  async listStoredCovers(): Promise<StoredCover[]> {
+    return this.backend.listStoredCovers()
+  }
+
+  getStorageLocation() {
+    return this.backend.getStorageLocation()
   }
 
   resizeCover(
@@ -311,8 +107,6 @@ export class CoversService {
           })
         : resized.webp()
 
-    const buffer$ = from(converted.toBuffer())
-
-    return buffer$
+    return from(converted.toBuffer())
   }
 }

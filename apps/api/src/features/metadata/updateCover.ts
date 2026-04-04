@@ -1,4 +1,8 @@
-import type { BookDocType, BookMetadata } from "@oboku/shared"
+import {
+  type BookDocType,
+  type BookMetadata,
+  getBookCoverKey,
+} from "@oboku/shared"
 import type { Extractor } from "node-unrar-js"
 import { saveCoverFromRarArchiveToBucket } from "../../lib/books/covers/saveCoverFromRarArchiveToBucket"
 import type { Context } from "./types"
@@ -25,7 +29,7 @@ export const updateCover = async ({
   const currentMetadaForCover = book.metadata?.find(
     (metadata) => metadata.coverLink,
   )
-  const coverObjectKey = `cover-${ctx.userNameHex}-${ctx.book._id}`
+  const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
   const metadataForCover = metadataList.find((metadata) => metadata.coverLink)
 
   if (
@@ -75,7 +79,7 @@ export const updateCover = async ({
     metadataForCover?.type === "googleBookApi" &&
     metadataForCover.coverLink
   ) {
-    const objectKey = `cover-${ctx.userNameHex}-${ctx.book._id}`
+    const objectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
 
     await saveCoverFromExternalLinkToBucket(
       objectKey,
