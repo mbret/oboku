@@ -68,6 +68,16 @@ export class SignInWithGoogleDto implements SignInWithGoogleRequest {
   installation_id!: string
 }
 
+export class RefreshTokenQueryDto {
+  @IsString()
+  @IsNotEmpty()
+  grant_type!: "refresh_token"
+
+  @IsString()
+  @IsNotEmpty()
+  refresh_token!: string
+}
+
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -129,7 +139,7 @@ export class AuthController {
   @Public()
   @Post("token")
   refreshTokens(
-    @Query() query: { grant_type: "refresh_token"; refresh_token: string },
+    @Query() query: RefreshTokenQueryDto,
   ): Promise<RefreshTokenResponse> {
     return this.authService.refreshToken(query.grant_type, query.refresh_token)
   }

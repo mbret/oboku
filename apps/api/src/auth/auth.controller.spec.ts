@@ -3,6 +3,7 @@ import { ValidationPipe } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 import {
   AuthController,
+  RefreshTokenQueryDto,
   SignInWithEmailDto,
   SignInWithGoogleDto,
 } from "./auth.controller"
@@ -151,5 +152,22 @@ describe("AuthController", () => {
     ).rejects.toBeInstanceOf(BadRequestException)
 
     expect(authService.signInWithGoogle).not.toHaveBeenCalled()
+  })
+
+  it("rejects refresh token requests without refresh_token", async () => {
+    await expect(
+      validationPipe.transform(
+        {
+          grant_type: "refresh_token",
+        },
+        {
+          type: "query",
+          metatype: RefreshTokenQueryDto,
+          data: "",
+        },
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException)
+
+    expect(authService.refreshToken).not.toHaveBeenCalled()
   })
 })
