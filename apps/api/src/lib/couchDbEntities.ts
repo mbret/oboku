@@ -33,11 +33,4 @@ export class User implements iUser {
   ) {
     this.name = email
   }
-
-  processAPIResponse(response: nano.DocumentInsertResponse) {
-    if (response.ok === true) {
-      this._id = response.id
-      this._rev = response.rev
-    }
-  }
 }

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
 import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSaveCover"
-import { CouchService } from "src/couch/couch.service"
+import { CouchService, emailToNameHex } from "src/couch/couch.service"
 import { AppConfigService } from "../../config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
 import { ProviderApiCredentials } from "@oboku/shared"
@@ -22,7 +22,7 @@ export class BooksMetadataService {
   ) => {
     const { bookId } = body
 
-    const userNameHex = Buffer.from(userEmail).toString("hex")
+    const userNameHex = emailToNameHex(userEmail)
 
     const db = await this.couchService.createNanoInstanceForUser({
       email: userEmail,

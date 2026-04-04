@@ -10,6 +10,7 @@ import { useEffect, useState, type FC } from "react"
 import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { useCollectionIncrementalModify } from "../useCollectionIncrementalModify"
 import { useCollection } from "../useCollection"
+import { CancelButton } from "../../common/forms/CancelButton"
 
 export const RenameCollectionDialog: FC<{
   openWith: string | undefined
@@ -55,7 +56,7 @@ export const RenameCollectionDialog: FC<{
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onInnerClose}>Cancel</Button>
+        <CancelButton onClick={onInnerClose} />
         <Button
           onClick={() => {
             onInnerClose()

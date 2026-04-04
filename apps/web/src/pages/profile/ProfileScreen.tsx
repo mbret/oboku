@@ -49,10 +49,13 @@ import { ROUTES } from "../../navigation/routes"
 import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
+import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
   const [isDeleteMyDataDialogOpened, setIsDeleteMyDataDialogOpened] =
+    useState(false)
+  const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] =
     useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse({ intervalMs: 5000 })
   const auth = useSignalValue(authStateSignal)
@@ -248,17 +251,17 @@ export const ProfileScreen = () => {
             secondary="Remove all contents from your account"
           />
         </ListItemButton>
-        <ListItemButton
-          onClick={() =>
-            createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })
-          }
-        >
+        <ListItemButton onClick={() => setIsDeleteAccountDialogOpen(true)}>
           <ListItemText primary="Delete my account" />
         </ListItemButton>
       </List>
       <DeleteMyDataDialog
         open={isDeleteMyDataDialogOpened}
         onClose={() => setIsDeleteMyDataDialogOpened(false)}
+      />
+      <DeleteAccountDialog
+        open={isDeleteAccountDialogOpen}
+        onClose={() => setIsDeleteAccountDialogOpen(false)}
       />
     </Page>
   )

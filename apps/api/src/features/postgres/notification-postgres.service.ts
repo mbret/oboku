@@ -149,6 +149,10 @@ export class NotificationPostgresService {
       .execute()
   }
 
+  async deleteDeliveriesByUserId(userId: number) {
+    await this.notificationDeliveryRepository.delete({ user_id: userId })
+  }
+
   async getAdminBroadcastRows(): Promise<AdminNotificationRow[]> {
     return this.notificationRepository
       .createQueryBuilder("notification")

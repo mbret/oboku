@@ -9,14 +9,22 @@ import { UsersService } from "../users/users.service"
 import { OAuth2Client } from "google-auth-library"
 import { AppConfigService } from "../config/AppConfigService"
 import { ObokuErrorCode } from "@oboku/shared"
-import { CouchService } from "../couch/couch.service"
+import {
+  CouchService,
+  emailToNameHex,
+  emailToUserDbName,
+} from "../couch/couch.service"
 import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
+import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady"
 import bcrypt from "bcrypt"
 import { JwtService, TokenExpiredError } from "@nestjs/jwt"
 import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
 import { SecretsService } from "src/config/SecretsService"
 import { EmailService } from "../email/EmailService"
 import { normalizeEmail } from "src/features/postgres/user-postgres.service"
+
+/** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
+const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
 
 type RefreshTokenPayload = {
   sub: string
@@ -197,10 +205,19 @@ export class AuthService {
   }) {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
-    const couchUser = await getOrCreateUserFromEmail(adminNano, email)
+    const { user: couchUser, created: couchUserCreated } =
+      await getOrCreateUserFromEmail(adminNano, email)
 
     if (!couchUser) {
       throw new Error("Unable to retrieve user")
+    }
+
+    const dbName = emailToUserDbName(couchUser.name)
+
+    if (couchUserCreated) {
+      await waitForUserCouchDatabaseReady(adminNano, dbName, {
+        deadline: Date.now() + COUCH_PERUSER_DB_READY_WAIT_MS,
+      })
     }
 
     const { accessToken, refreshToken } = await this.generateTokens({
@@ -208,13 +225,13 @@ export class AuthService {
       userId,
     })
 
-    const nameHex = Buffer.from(couchUser.name).toString("hex")
+    const nameHex = emailToNameHex(couchUser.name)
 
     return {
       accessToken,
       refreshToken,
       nameHex,
-      dbName: `userdb-${nameHex}`,
+      dbName,
       email: couchUser.email,
     }
   }
@@ -509,5 +526,9 @@ export class AuthService {
 
       throw new UnauthorizedException()
     }
+  }
+
+  async deleteAccount({ userId, email }: { userId: number; email: string }) {
+    await this.usersService.deleteAccount({ userId, email })
   }
 }

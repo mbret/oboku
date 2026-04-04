@@ -3,11 +3,19 @@ import { CoversController } from "./covers.controller"
 import { InMemoryTaskQueueService } from "src/features/queue/InMemoryTaskQueueService"
 import { AppConfigModule } from "src/config/config.module"
 import { CoversService } from "./covers.service"
+import { CoversFsService } from "./covers-fs.service"
+import { CoversS3Service } from "./covers-s3.service"
 import { CoversCleanupService } from "./covers-cleanup.service"
 import { CouchModule } from "src/couch/couch.module"
 
 @Module({
-  providers: [InMemoryTaskQueueService, CoversService, CoversCleanupService],
+  providers: [
+    InMemoryTaskQueueService,
+    CoversFsService,
+    CoversS3Service,
+    CoversService,
+    CoversCleanupService,
+  ],
   exports: [CoversService],
   imports: [AppConfigModule, CouchModule],
   controllers: [CoversController],
