@@ -527,4 +527,8 @@ export class AuthService {
       throw new UnauthorizedException()
     }
   }
+
+  async deleteAccount({ userId, email }: { userId: number; email: string }) {
+    await this.usersService.deleteAccount({ userId, email })
+  }
 }

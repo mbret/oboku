@@ -16,6 +16,7 @@ describe("AuthService", () => {
     findUserByEmail: jest.Mock
     registerUser: jest.Mock
     saveUser: jest.Mock
+    deleteAccount: jest.Mock
   }
   let jwtService: {
     signAsync: jest.Mock
@@ -33,6 +34,7 @@ describe("AuthService", () => {
       findUserByEmail: jest.fn(),
       registerUser: jest.fn(),
       saveUser: jest.fn(),
+      deleteAccount: jest.fn().mockResolvedValue(undefined),
     }
     jwtService = {
       signAsync: jest.fn().mockResolvedValue("signup-token"),
@@ -136,6 +138,15 @@ describe("AuthService", () => {
     expect(emailService.getSignUpLink).toHaveBeenCalledWith({
       appPublicUrl: "https://app.example.com",
       token: "signup-token",
+    })
+  })
+
+  it("delegates deleteAccount to UsersService", async () => {
+    await service.deleteAccount({ userId: 1, email: "a@b.c" })
+
+    expect(usersService.deleteAccount).toHaveBeenCalledWith({
+      userId: 1,
+      email: "a@b.c",
     })
   })
 })

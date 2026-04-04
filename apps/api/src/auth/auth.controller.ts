@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Post, Query } from "@nestjs/common"
 import { AuthService } from "./auth.service"
-import { UsersService } from "../users/users.service"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
 import { IsEmail, IsNotEmpty, MinLength } from "class-validator"
 
@@ -30,10 +29,7 @@ export class CompleteMagicLinkDto {
 
 @Controller("auth")
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly usersService: UsersService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Public()
   @Post("signin")
@@ -86,7 +82,7 @@ export class AuthController {
 
   @Delete("account")
   async deleteAccount(@WithAuthUser() user: AuthUser) {
-    await this.usersService.deleteAccount({
+    await this.authService.deleteAccount({
       userId: user.userId,
       email: user.email,
     })
