@@ -1,4 +1,4 @@
-import { from, of, switchMap, tap } from "rxjs"
+import { from, of, tap } from "rxjs"
 import { authStateSignal } from "./states.web"
 import { setProfile, currentProfileSignal } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
@@ -34,21 +34,16 @@ export const completeAuthentication = ({
       setProfile(auth.nameHex)
       currentProfileSignal.update(auth.nameHex)
     }),
-    switchMap(() => {
-      if (!switchedAccount) {
-        return of(null)
-      }
+    tap(() => {
+      if (!switchedAccount) return
 
-      return from(Promise.resolve(persister.removeClient())).pipe(
-        tap(() => {
-          /**
-           * Drop persisted React Query state for the previous account, then reset
-           * the in-memory cache so active queries refetch (see useSignOut).
-           */
-          void queryClient.resetQueries()
-          queryClient.getMutationCache().clear()
-        }),
-      )
+      /**
+       * Reset in-memory cache synchronously so stale cross-account data is
+       * never visible under the new session—even if persister cleanup fails.
+       */
+      void queryClient.resetQueries()
+      queryClient.getMutationCache().clear()
+      void Promise.resolve(persister.removeClient())
     }),
   )
 }
