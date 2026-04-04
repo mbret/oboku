@@ -6,7 +6,7 @@ import { AppConfigService } from "../../config/AppConfigService"
 import {
   NotificationDeliveryPostgresEntity,
   NotificationPostgresEntity,
-  // RefreshTokenPostgresEntity,
+  RefreshTokenPostgresEntity,
   SyncReportPostgresEntity,
   UserPostgresEntity,
 } from "./entities"
@@ -21,7 +21,7 @@ import { JwtService } from "@nestjs/jwt"
       NotificationPostgresEntity,
       NotificationDeliveryPostgresEntity,
       UserPostgresEntity,
-      // RefreshTokenPostgresEntity,
+      RefreshTokenPostgresEntity,
     ]),
   ],
   providers: [

@@ -1,65 +1,132 @@
-import { Injectable } from "@nestjs/common"
-// import { InjectRepository } from "@nestjs/typeorm"
-// import { Repository } from "typeorm"
-// import { RefreshTokenPostgresEntity } from "./entities"
+import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
+import { InjectRepository } from "@nestjs/typeorm"
+import { createHash, randomBytes } from "node:crypto"
+import { IsNull, Repository } from "typeorm"
+import { RefreshTokenPostgresEntity } from "./entities"
+
+const MAX_ACTIVE_SESSIONS_PER_USER = 20
+const REVOKED_TOKEN_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
 
 @Injectable()
 export class RefreshTokensService {
-  // biome-ignore lint/complexity/noUselessConstructor: TODO
+  private readonly logger = new Logger(RefreshTokensService.name)
+
   constructor(
-    // @InjectRepository(RefreshTokenPostgresEntity)
-    // private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
+    @InjectRepository(RefreshTokenPostgresEntity)
+    private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
   ) {}
 
-  async save(
-    // data: Omit<RefreshTokenPostgresEntity, "id" | "revoked" | "created_at">,
-  ) {
-    // Before saving new token, check and cleanup if necessary
-    // const userTokenCount = await this.refreshTokenRepository.count({
-    //   where: { user_email: data.user_email },
-    // })
-    // const MAX_TOKENS_PER_USER_DEVICE = 20
-    // if (userTokenCount >= MAX_TOKENS_PER_USER_DEVICE) {
-    //   // Find and remove the oldest token(s)
-    //   const oldestTokens = await this.refreshTokenRepository.find({
-    //     where: { user_email: data.user_email },
-    //     order: { created_at: "ASC" },
-    //     take: userTokenCount - MAX_TOKENS_PER_USER_DEVICE + 1, // +1 to make room for the new token
-    //   })
-    //   logger.debug(
-    //     `Removing ${userTokenCount - MAX_TOKENS_PER_USER_DEVICE} extra tokens from user ${data.user_email} to make space`,
-    //   )
-    //   await this.refreshTokenRepository.remove(oldestTokens)
-    // }
-    // return this.refreshTokenRepository.save(data)
+  async issueTokenForInstallation({
+    userId,
+    installationId,
+  }: {
+    userId: number
+    installationId: string
+  }) {
+    const token = this.generateToken()
+    const now = new Date()
+
+    await this.refreshTokenRepository.upsert(
+      this.refreshTokenRepository.create({
+        user_id: userId,
+        installation_id: installationId,
+        token_hash: this.hashToken(token),
+        last_used_at: now,
+        revoked_at: null,
+      }),
+      ["user_id", "installation_id"],
+    )
+
+    await this.cleanupExtraTokensForUser(userId)
+
+    return token
   }
 
-  async findById(id: string) {
-    void id
-    // return this.refreshTokenRepository.findOne({ where: { id } })
+  async findActiveByToken(token: string) {
+    const tokenHash = this.hashToken(token)
+
+    const session = await this.refreshTokenRepository.findOne({
+      where: {
+        token_hash: tokenHash,
+        revoked_at: IsNull(),
+      },
+    })
+
+    if (!session) {
+      return null
+    }
+
+    const lastUsedAt = new Date()
+
+    await this.refreshTokenRepository.update(session.id, {
+      last_used_at: lastUsedAt,
+    })
+
+    session.last_used_at = lastUsedAt
+
+    return session
   }
 
-  async deleteById(id: string) {
-    void id
-    // await this.refreshTokenRepository.delete(id)
+  async deleteById(id: number) {
+    await this.refreshTokenRepository.delete(id)
+  }
+
+  async deleteByUserId(userId: number) {
+    await this.refreshTokenRepository.delete({ user_id: userId })
+  }
+
+  private async cleanupExtraTokensForUser(userId: number) {
+    const sessionsToDelete = await this.refreshTokenRepository.find({
+      select: ["id"],
+      where: {
+        user_id: userId,
+        revoked_at: IsNull(),
+      },
+      order: {
+        last_used_at: "DESC",
+        created_at: "DESC",
+      },
+      skip: MAX_ACTIVE_SESSIONS_PER_USER,
+    })
+
+    if (sessionsToDelete.length === 0) {
+      return
+    }
+
+    await this.refreshTokenRepository.delete(
+      sessionsToDelete.map(({ id }) => id),
+    )
   }
 
   /**
-   * Cleanup expired tokens from db every 10 minutes
+   * Cleanup revoked sessions after a short retention window.
+   *
+   * Active sessions are intentionally kept indefinitely so long-offline users
+   * can still recover their session later.
    */
   @Cron("0 */10 * * * *")
   async handleCron() {
-    // const tokens = await this.refreshTokenRepository.find()
-    // console.log(tokens.length)
-    // for (const token of tokens) {
-    //   if (token.expires_at < new Date()) {
-    //     logger.log(
-    //       "[cron]",
-    //       `Cleaning up token expired ${token.id} for ${token.user_email}`,
-    //     )
-    //     await this.refreshTokenRepository.delete(token.id)
-    //   }
-    // }
+    const cutoff = new Date(Date.now() - REVOKED_TOKEN_RETENTION_MS)
+
+    const result = await this.refreshTokenRepository
+      .createQueryBuilder()
+      .delete()
+      .from(RefreshTokenPostgresEntity)
+      .where("revoked_at IS NOT NULL")
+      .andWhere("revoked_at < :cutoff", { cutoff })
+      .execute()
+
+    if (result.affected) {
+      this.logger.debug(`Deleted ${result.affected} revoked refresh sessions`)
+    }
+  }
+
+  private generateToken() {
+    return randomBytes(48).toString("base64url")
+  }
+
+  private hashToken(token: string) {
+    return createHash("sha256").update(token).digest("hex")
   }
 }

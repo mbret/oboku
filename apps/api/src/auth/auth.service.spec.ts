@@ -14,14 +14,23 @@ describe("AuthService", () => {
   let service: AuthService
   let usersService: {
     findUserByEmail: jest.Mock
+    findUserById: jest.Mock
     registerUser: jest.Mock
     saveUser: jest.Mock
     deleteAccount: jest.Mock
+  }
+  let couchService: {
+    generateUserJWT: jest.Mock
   }
   let jwtService: {
     signAsync: jest.Mock
     verifyAsync: jest.Mock
     decode: jest.Mock
+  }
+  let refreshTokensService: {
+    issueTokenForInstallation: jest.Mock
+    findActiveByToken: jest.Mock
+    deleteById: jest.Mock
   }
   let emailService: {
     getSignUpLink: jest.Mock
@@ -32,14 +41,23 @@ describe("AuthService", () => {
   beforeEach(async () => {
     usersService = {
       findUserByEmail: jest.fn(),
+      findUserById: jest.fn(),
       registerUser: jest.fn(),
       saveUser: jest.fn(),
       deleteAccount: jest.fn().mockResolvedValue(undefined),
+    }
+    couchService = {
+      generateUserJWT: jest.fn(),
     }
     jwtService = {
       signAsync: jest.fn().mockResolvedValue("signup-token"),
       verifyAsync: jest.fn(),
       decode: jest.fn(),
+    }
+    refreshTokensService = {
+      issueTokenForInstallation: jest.fn(),
+      findActiveByToken: jest.fn(),
+      deleteById: jest.fn().mockResolvedValue(undefined),
     }
     emailService = {
       getSignUpLink: jest
@@ -64,7 +82,7 @@ describe("AuthService", () => {
         },
         {
           provide: CouchService,
-          useValue: {},
+          useValue: couchService,
         },
         {
           provide: JwtService,
@@ -72,7 +90,7 @@ describe("AuthService", () => {
         },
         {
           provide: RefreshTokensService,
-          useValue: {},
+          useValue: refreshTokensService,
         },
         {
           provide: SecretsService,
@@ -148,5 +166,75 @@ describe("AuthService", () => {
       userId: 1,
       email: "a@b.c",
     })
+  })
+
+  it("issues per-installation refresh sessions when generating tokens", async () => {
+    couchService.generateUserJWT.mockResolvedValue("access-token")
+    refreshTokensService.issueTokenForInstallation.mockResolvedValue(
+      "refresh-token",
+    )
+
+    await expect(
+      service.generateTokens({
+        email: "reader@example.com",
+        userId: 1,
+        installationId: "installation-1",
+      }),
+    ).resolves.toEqual({
+      accessToken: "access-token",
+      refreshToken: "refresh-token",
+    })
+
+    expect(couchService.generateUserJWT).toHaveBeenCalledWith({
+      email: "reader@example.com",
+      userId: 1,
+    })
+    expect(refreshTokensService.issueTokenForInstallation).toHaveBeenCalledWith(
+      {
+        userId: 1,
+        installationId: "installation-1",
+      },
+    )
+  })
+
+  it("refreshes access tokens from an active opaque session", async () => {
+    refreshTokensService.findActiveByToken.mockResolvedValue({
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+    })
+    usersService.findUserById.mockResolvedValue({
+      id: 42,
+      email: "reader@example.com",
+    })
+    couchService.generateUserJWT.mockResolvedValue("fresh-access-token")
+
+    await expect(
+      service.refreshToken("refresh_token", "opaque-refresh-token"),
+    ).resolves.toEqual({
+      accessToken: "fresh-access-token",
+      refreshToken: "opaque-refresh-token",
+    })
+
+    expect(refreshTokensService.findActiveByToken).toHaveBeenCalledWith(
+      "opaque-refresh-token",
+    )
+    expect(usersService.findUserById).toHaveBeenCalledWith(42)
+    expect(refreshTokensService.deleteById).not.toHaveBeenCalled()
+  })
+
+  it("removes dangling refresh sessions when the user no longer exists", async () => {
+    refreshTokensService.findActiveByToken.mockResolvedValue({
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+    })
+    usersService.findUserById.mockResolvedValue(null)
+
+    await expect(
+      service.refreshToken("refresh_token", "opaque-refresh-token"),
+    ).rejects.toThrow()
+
+    expect(refreshTokensService.deleteById).toHaveBeenCalledWith(7)
   })
 })

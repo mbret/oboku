@@ -1,20 +1,28 @@
+import type {
+  AuthSessionResponse,
+  CompleteMagicLinkRequest,
+  CompleteMagicLinkResponse,
+  CompleteSignUpRequest,
+  CompleteSignUpResponse,
+  DeleteAccountResponse,
+  RefreshTokenResponse,
+  RequestMagicLinkRequest,
+  RequestMagicLinkResponse,
+  RequestSignUpRequest,
+  RequestSignUpResponse,
+  SignInRequest,
+} from "@oboku/shared"
 import { configuration } from "../config/configuration"
 import { HttpClientWeb } from "./httpClient.web"
 
 class HttpApiClient extends HttpClientWeb {
-  authWithMagicLink = (data: { token: string }) =>
-    this.post<
+  authWithMagicLink = (data: CompleteMagicLinkRequest) =>
+    this.post<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
+      `${configuration.API_URL}/auth/magic-link/complete`,
       {
-        dbName: string
-        email: string
-        accessToken: string
-        refreshToken: string
-        nameHex: string
+        body: data,
       },
-      typeof data
-    >(`${configuration.API_URL}/auth/magic-link/complete`, {
-      body: data,
-    })
+    )
 
   refreshBookMetadata = (params: {
     bookId: string
@@ -40,35 +48,32 @@ class HttpApiClient extends HttpClientWeb {
       body: params,
     })
 
-  signIn = (data: { email: string; password: string } | { token: string }) =>
-    this.post<
+  signIn = (data: SignInRequest) =>
+    this.post<AuthSessionResponse, SignInRequest>(
+      `${configuration.API_URL}/auth/signin`,
       {
-        dbName: string
-        email: string
-        accessToken: string
-        refreshToken: string
-        nameHex: string
+        body: data,
       },
-      typeof data
-    >(`${configuration.API_URL}/auth/signin`, {
-      body: data,
-    })
+    )
 
-  signUp = (data: { email: string }) =>
-    this.post<unknown, typeof data>(`${configuration.API_URL}/auth/signup`, {
-      body: data,
-    })
+  signUp = (data: RequestSignUpRequest) =>
+    this.post<RequestSignUpResponse, RequestSignUpRequest>(
+      `${configuration.API_URL}/auth/signup`,
+      {
+        body: data,
+      },
+    )
 
-  completeSignUp = (data: { token: string; password: string }) =>
-    this.post<{ email: string }, typeof data>(
+  completeSignUp = (data: CompleteSignUpRequest) =>
+    this.post<CompleteSignUpResponse, CompleteSignUpRequest>(
       `${configuration.API_URL}/auth/signup/complete`,
       {
         body: data,
       },
     )
 
-  requestMagicLink = (data: { email: string }) =>
-    this.post<unknown, typeof data>(
+  requestMagicLink = (data: RequestMagicLinkRequest) =>
+    this.post<RequestMagicLinkResponse, RequestMagicLinkRequest>(
       `${configuration.API_URL}/auth/magic-link`,
       {
         body: data,
@@ -91,13 +96,7 @@ class HttpApiClient extends HttpClientWeb {
     refreshToken: string
     useInterceptors: boolean
   }) => {
-    return this.post<
-      {
-        accessToken: string
-        refreshToken: string
-      },
-      never
-    >(
+    return this.post<RefreshTokenResponse, never>(
       `${configuration.API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`,
       {
         useInterceptors,
@@ -106,7 +105,7 @@ class HttpApiClient extends HttpClientWeb {
   }
 
   deleteAccount = () =>
-    this.fetch(`${configuration.API_URL}/auth/account`, {
+    this.fetch<DeleteAccountResponse>(`${configuration.API_URL}/auth/account`, {
       method: "DELETE",
     })
 }

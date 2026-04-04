@@ -15,7 +15,6 @@ export const useUnreadNotificationsCount = () => {
 
       return data
     },
-    networkMode: "online",
     staleTime: 15 * 1000,
     gcTime: Infinity,
     refetchInterval: 30 * 1000,

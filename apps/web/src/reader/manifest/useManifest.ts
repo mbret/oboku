@@ -16,6 +16,7 @@ export const useManifest = (bookId: string | undefined) => {
 
   return useQuery({
     queryKey: ["reader/streamer/manifest", { bookId }],
+    networkMode: "always",
     queryFn: async () => {
       const { response: swStreamerResponse } =
         serviceWorkerReadySignal.getValue()
