@@ -1,4 +1,4 @@
-import { type FC, memo, useEffect, useState } from "react"
+import { memo, useEffect, useState } from "react"
 import {
   Button,
   Dialog,
@@ -17,10 +17,15 @@ import { ErrorAlert } from "../errors/ErrorMessage"
 
 const CONFIRMATION_PHRASE = "delete my account"
 
-export const DeleteAccountDialog: FC<{
+type DeleteAccountDialogProps = {
   open: boolean
   onClose: () => void
-}> = memo(function DeleteAccountDialog({ onClose, open }) {
+}
+
+export const DeleteAccountDialog = memo(function DeleteAccountDialog({
+  onClose,
+  open,
+}: DeleteAccountDialogProps) {
   const auth = useSignalValue(authStateSignal)
   const email = auth?.email ?? ""
   const [confirmationInput, setConfirmationInput] = useState("")

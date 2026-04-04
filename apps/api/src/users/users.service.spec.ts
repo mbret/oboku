@@ -12,6 +12,7 @@ describe("UsersService", () => {
     findByEmail: jest.Mock
     create: jest.Mock
     save: jest.Mock
+    deleteById: jest.Mock
   }
 
   beforeEach(async () => {
@@ -19,6 +20,7 @@ describe("UsersService", () => {
       findByEmail: jest.fn(),
       create: jest.fn(),
       save: jest.fn(),
+      deleteById: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({

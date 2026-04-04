@@ -39,10 +39,22 @@ export class UsersService {
   /**
    * Permanently deletes the user account and all associated data.
    *
-   * Postgres and CouchDB deletions are synchronous so re-registration with
-   * the same email is safe immediately after the response. Only cover image
-   * cleanup runs in the background since it can be slow and doesn't affect
-   * account identity.
+   * **Order (no cross-store transaction):** read Couch for cover keys (best
+   * effort) → `deleteCouchUser` → Postgres deletes (notifications, sync
+   * reports, user row). Cover object deletion is fire-and-forget afterward.
+   *
+   * **Happy path:** When this method completes without throwing, Couch and
+   * Postgres are both cleared for that account, so re-registration with the
+   * same email is safe immediately. Only cover cleanup runs in the
+   * background (slow, does not affect account identity).
+   *
+   * **Failure after Couch, before Postgres:** If a Postgres step throws after
+   * Couch user/DB removal succeeds, the user row (and related Postgres data)
+   * can remain while Couch is already gone. Recovery is manual and awkward:
+   * e.g. the user might sign in again and auth flows may recreate Couch
+   * while Postgres still reflects an existing account. Mitigations would be
+   * product-specific (e.g. Postgres-first ordering with compensation if
+   * Couch delete fails, or operational repair scripts)—not implemented here.
    */
   async deleteAccount({ userId, email }: { userId: number; email: string }) {
     const adminNano = await this.couchService.createAdminNanoInstance()
