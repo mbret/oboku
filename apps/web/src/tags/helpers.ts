@@ -125,12 +125,15 @@ export const useTags = ({
   })
 
 export const useTagsByIds = () =>
-  useQuery$({ queryFn: tagsByIds$, queryKey: ["tagsById"] })
+  useQuery$({
+    queryFn: tagsByIds$,
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "tagsById"],
+  })
 
 export const useTagIds = () =>
   useQuery$({
     queryFn: () => tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    queryKey: ["tagsIds"],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "tagsIds"],
   })
 
 const blurredTags$ = tags$.pipe(
@@ -140,12 +143,12 @@ const blurredTags$ = tags$.pipe(
 export const useBlurredTagIds = () =>
   useQuery$({
     queryFn: () => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
-    queryKey: ["blurredTagIds"],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "blurredTagIds"],
   })
 
 export const useProtectedTagIds = (options: { enabled?: boolean } = {}) =>
   useQuery$({
-    queryKey: ["protectedTagIds"],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "protectedTagIds"],
     queryFn: () =>
       protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
     ...options,

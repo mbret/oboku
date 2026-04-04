@@ -1,4 +1,4 @@
-import { from, of, switchMap, tap } from "rxjs"
+import { from, of, tap } from "rxjs"
 import { authStateSignal } from "./states.web"
 import { setProfile, currentProfileSignal } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
@@ -21,22 +21,11 @@ export const completeAuthentication = ({
   auth: AuthResponse
 }) => {
   const previousAuth = authStateSignal.value
-  const waitForDbRecreation$ =
-    previousAuth?.email !== auth.email
-      ? from(reCreateDb({ overwrite: true })).pipe(
-          switchMap(() => {
-            queryClient.clear()
+  const switchedAccount = previousAuth?.email !== auth.email
 
-            const promiseAble = persister.removeClient()
-
-            if (promiseAble && "then" in promiseAble) {
-              return promiseAble
-            }
-
-            return of(null)
-          }),
-        )
-      : of(null)
+  const waitForDbRecreation$ = switchedAccount
+    ? from(reCreateDb({ overwrite: true }))
+    : of(null)
 
   return waitForDbRecreation$.pipe(
     tap(() => {
@@ -44,6 +33,17 @@ export const completeAuthentication = ({
       setUser({ email: auth.email, id: auth.nameHex })
       setProfile(auth.nameHex)
       currentProfileSignal.update(auth.nameHex)
+    }),
+    tap(() => {
+      if (!switchedAccount) return
+
+      /**
+       * Reset in-memory cache synchronously so stale cross-account data is
+       * never visible under the new session—even if persister cleanup fails.
+       */
+      void queryClient.resetQueries()
+      queryClient.getMutationCache().clear()
+      void Promise.resolve(persister.removeClient())
     }),
   )
 }
