@@ -4,6 +4,7 @@ import { httpClientApi } from "../http/httpClientApi.web"
 import { useMutation$ } from "reactjrx"
 import { useReCreateDb } from "../rxdb"
 import { completeAuthentication } from "./completeAuthentication"
+import { getOrCreateAuthInstallationId } from "./installationId"
 
 export const useCompleteMagicLink = () => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
@@ -12,7 +13,12 @@ export const useCompleteMagicLink = () => {
     mutationFn: (data: { token: string }) => {
       lock("magic-link-complete")
 
-      return from(httpClientApi.authWithMagicLink(data)).pipe(
+      return from(
+        httpClientApi.authWithMagicLink({
+          ...data,
+          installation_id: getOrCreateAuthInstallationId(),
+        }),
+      ).pipe(
         switchMap(({ data }) =>
           completeAuthentication({
             reCreateDb,

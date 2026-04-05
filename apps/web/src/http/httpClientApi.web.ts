@@ -1,20 +1,32 @@
+import type {
+  AuthSessionResponse,
+  CompleteMagicLinkRequest,
+  CompleteMagicLinkResponse,
+  CompleteSignUpRequest,
+  CompleteSignUpResponse,
+  DeleteAccountResponse,
+  RefreshTokenResponse,
+  RequestMagicLinkRequest,
+  RequestMagicLinkResponse,
+  RequestSignUpRequest,
+  RequestSignUpResponse,
+  SignInWithEmailRequest,
+  SignInWithGoogleRequest,
+} from "@oboku/shared"
+import { authStateSignal } from "../auth/states.web"
 import { configuration } from "../config/configuration"
+import { type FetchConfig, HttpClientError } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
+import { injectToken } from "./injectToken.web"
 
 class HttpApiClient extends HttpClientWeb {
-  authWithMagicLink = (data: { token: string }) =>
-    this.post<
+  authWithMagicLink = (data: CompleteMagicLinkRequest) =>
+    this.post<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
+      `${configuration.API_URL}/auth/magic-link/complete`,
       {
-        dbName: string
-        email: string
-        accessToken: string
-        refreshToken: string
-        nameHex: string
+        body: data,
       },
-      typeof data
-    >(`${configuration.API_URL}/auth/magic-link/complete`, {
-      body: data,
-    })
+    )
 
   refreshBookMetadata = (params: {
     bookId: string
@@ -40,35 +52,40 @@ class HttpApiClient extends HttpClientWeb {
       body: params,
     })
 
-  signIn = (data: { email: string; password: string } | { token: string }) =>
-    this.post<
+  signInWithEmail = (data: SignInWithEmailRequest) =>
+    this.post<AuthSessionResponse, SignInWithEmailRequest>(
+      `${configuration.API_URL}/auth/signin/email`,
       {
-        dbName: string
-        email: string
-        accessToken: string
-        refreshToken: string
-        nameHex: string
+        body: data,
       },
-      typeof data
-    >(`${configuration.API_URL}/auth/signin`, {
-      body: data,
-    })
+    )
 
-  signUp = (data: { email: string }) =>
-    this.post<unknown, typeof data>(`${configuration.API_URL}/auth/signup`, {
-      body: data,
-    })
+  signInWithGoogle = (data: SignInWithGoogleRequest) =>
+    this.post<AuthSessionResponse, SignInWithGoogleRequest>(
+      `${configuration.API_URL}/auth/signin/google`,
+      {
+        body: data,
+      },
+    )
 
-  completeSignUp = (data: { token: string; password: string }) =>
-    this.post<{ email: string }, typeof data>(
+  signUp = (data: RequestSignUpRequest) =>
+    this.post<RequestSignUpResponse, RequestSignUpRequest>(
+      `${configuration.API_URL}/auth/signup`,
+      {
+        body: data,
+      },
+    )
+
+  completeSignUp = (data: CompleteSignUpRequest) =>
+    this.post<CompleteSignUpResponse, CompleteSignUpRequest>(
       `${configuration.API_URL}/auth/signup/complete`,
       {
         body: data,
       },
     )
 
-  requestMagicLink = (data: { email: string }) =>
-    this.post<unknown, typeof data>(
+  requestMagicLink = (data: RequestMagicLinkRequest) =>
+    this.post<RequestMagicLinkResponse, RequestMagicLinkRequest>(
       `${configuration.API_URL}/auth/magic-link`,
       {
         body: data,
@@ -91,13 +108,7 @@ class HttpApiClient extends HttpClientWeb {
     refreshToken: string
     useInterceptors: boolean
   }) => {
-    return this.post<
-      {
-        accessToken: string
-        refreshToken: string
-      },
-      never
-    >(
+    return this.post<RefreshTokenResponse, never>(
       `${configuration.API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`,
       {
         useInterceptors,
@@ -106,9 +117,61 @@ class HttpApiClient extends HttpClientWeb {
   }
 
   deleteAccount = () =>
-    this.fetch(`${configuration.API_URL}/auth/account`, {
+    this.fetch<DeleteAccountResponse>(`${configuration.API_URL}/auth/account`, {
       method: "DELETE",
     })
 }
 
 export const httpClientApi = new HttpApiClient()
+
+export const refreshTokenAndRetry = async (
+  config: FetchConfig,
+  refreshToken: string,
+) => {
+  try {
+    const response = await httpClientApi.refreshToken({
+      refreshToken,
+      useInterceptors: false,
+    })
+
+    authStateSignal.update((state) => {
+      if (!state) return state
+
+      return {
+        ...state,
+        accessToken: response.data.accessToken,
+        refreshToken: response.data.refreshToken,
+      }
+    })
+  } catch (e) {
+    console.log("Unable to refresh token")
+    console.error(e)
+
+    throw e
+  }
+
+  return httpClientApi.fetch(config.input, config)
+}
+
+// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+httpClientApi.useRequestInterceptor(injectToken)
+
+// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+httpClientApi.useResponseInterceptor(
+  async (response) => response,
+  async (error: HttpClientError) => {
+    if (error instanceof HttpClientError && error.response?.status === 401) {
+      const refreshToken = authStateSignal.value?.refreshToken
+
+      if (refreshToken) {
+        try {
+          return refreshTokenAndRetry(error.response.config, refreshToken)
+        } catch (_e) {
+          throw error
+        }
+      }
+    }
+
+    throw error
+  },
+)

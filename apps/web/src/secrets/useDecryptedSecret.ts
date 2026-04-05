@@ -19,6 +19,7 @@ export const useDecryptedSecret = ({
   )
 
   return useQuery({
+    networkMode: "always",
     queryKey: ["secret/decrypted", { id, uuid }],
     enabled: enabled && !!secret && !!masterKey,
     retry: false,

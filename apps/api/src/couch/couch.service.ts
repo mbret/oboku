@@ -3,6 +3,7 @@ import { AppConfigService } from "../config/AppConfigService"
 import createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
 import { SecretsService } from "src/config/SecretsService"
+import type { StringValue } from "ms"
 
 export const emailToNameHex = (email: string) =>
   Buffer.from(email).toString("hex")
@@ -13,6 +14,14 @@ export const emailToUserDbName = (email: string) =>
 export const emailToCouchUserDocId = (email: string) =>
   `org.couchdb.user:${email}`
 
+// End-user Couch access tokens are short-lived so refresh-session revocation
+// takes effect quickly.
+const COUCH_USER_ACCESS_TOKEN_TTL = "5m"
+
+// Internal server-side Couch clients have no refresh path and may be reused by
+// long-running jobs such as migrations and cleanups.
+const COUCH_INTERNAL_SERVER_TOKEN_TTL = "7d"
+
 @Injectable()
 export class CouchService {
   constructor(
@@ -21,31 +30,41 @@ export class CouchService {
     private secretsService: SecretsService,
   ) {}
 
-  async generateJWT(payload: Record<string, unknown>) {
-    // Set expiration to a very distant future date (100 years from now)
-    const farFutureDate =
-      Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365 * 100
-
+  private async generateJWT({
+    payload,
+    expiresIn,
+  }: {
+    payload: Record<string, unknown>
+    expiresIn: StringValue
+  }) {
     return this.jwtService.signAsync(payload, {
       privateKey: await this.secretsService.getJwtPrivateKey(),
       algorithm: "RS256",
-      // @todo
-      expiresIn: farFutureDate,
-      // expiresIn: "10s",
+      expiresIn,
+    })
+  }
+
+  private async generateInternalJWT(payload: Record<string, unknown>) {
+    return this.generateJWT({
+      payload,
+      expiresIn: COUCH_INTERNAL_SERVER_TOKEN_TTL,
     })
   }
 
   async generateUserJWT(payload: { email: string; userId: number }) {
     return this.generateJWT({
-      name: payload.email,
-      sub: payload.email,
-      userId: payload.userId,
-      "_couchdb.roles": [payload.email],
+      payload: {
+        name: payload.email,
+        sub: payload.email,
+        userId: payload.userId,
+        "_couchdb.roles": [payload.email],
+      },
+      expiresIn: COUCH_USER_ACCESS_TOKEN_TTL,
     })
   }
 
   async generateAdminJWT() {
-    return this.generateJWT({
+    return this.generateInternalJWT({
       name: "admin",
       sub: "admin",
       "_couchdb.roles": ["_admin"],
@@ -79,7 +98,7 @@ export class CouchService {
   }
 
   createNanoInstanceForUser = async ({ email }: { email: string }) => {
-    const jwt = await this.generateJWT({
+    const jwt = await this.generateInternalJWT({
       name: email,
       sub: email,
       "_couchdb.roles": [email],

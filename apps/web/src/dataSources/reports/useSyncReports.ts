@@ -86,6 +86,5 @@ export const useSyncReports = () =>
 
       return entries
     },
-    networkMode: "online",
     gcTime: 5 * 60 * 1000,
   })

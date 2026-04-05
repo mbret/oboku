@@ -3,11 +3,12 @@ import {
   createParamDecorator,
   ExecutionContext,
   Injectable,
+  Logger,
   SetMetadata,
   UnauthorizedException,
 } from "@nestjs/common"
 import { Reflector } from "@nestjs/core"
-import { JwtService } from "@nestjs/jwt"
+import { JwtService, TokenExpiredError } from "@nestjs/jwt"
 import { Request } from "express"
 import { SecretsService } from "src/config/SecretsService"
 
@@ -32,6 +33,8 @@ export const WithAuthUser = createParamDecorator((_, req) => {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private readonly logger = new Logger(AuthGuard.name)
+
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
@@ -74,7 +77,11 @@ export class AuthGuard implements CanActivate {
         email: payload.name,
       }
     } catch (error) {
-      console.log("error", error)
+      if (error instanceof TokenExpiredError) {
+        throw new UnauthorizedException()
+      }
+
+      this.logger.error(error)
 
       throw new UnauthorizedException()
     }

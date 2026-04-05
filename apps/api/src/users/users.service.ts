@@ -11,6 +11,7 @@ import { getBookCoverKey, getCollectionCoverKey } from "@oboku/shared"
 import { CoversService } from "../covers/covers.service"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
+import { RefreshTokensService } from "../features/postgres/refreshTokens.service"
 
 @Injectable()
 export class UsersService {
@@ -22,10 +23,15 @@ export class UsersService {
     private coversService: CoversService,
     private notificationPostgresService: NotificationPostgresService,
     private syncReportPostgresService: SyncReportPostgresService,
+    private refreshTokensService: RefreshTokensService,
   ) {}
 
   async findUserByEmail(email: string) {
     return this.userPostgresService.findByEmail(email)
+  }
+
+  async findUserById(userId: number) {
+    return this.userPostgresService.findById(userId)
   }
 
   async registerUser(user: Omit<UserPostgresEntity, "id">) {
@@ -40,8 +46,9 @@ export class UsersService {
    * Permanently deletes the user account and all associated data.
    *
    * **Order (no cross-store transaction):** read Couch for cover keys (best
-   * effort) → `deleteCouchUser` → Postgres deletes (notifications, sync
-   * reports, user row). Cover object deletion is fire-and-forget afterward.
+   * effort) → `deleteCouchUser` → Postgres deletes (refresh sessions,
+   * notifications, sync reports, user row). Cover object deletion is
+   * fire-and-forget afterward.
    *
    * **Happy path:** When this method completes without throwing, Couch and
    * Postgres are both cleared for that account, so re-registration with the
@@ -82,6 +89,7 @@ export class UsersService {
 
     await deleteCouchUser(adminNano, email)
 
+    await this.refreshTokensService.deleteByUserId(userId)
     await this.notificationPostgresService.deleteDeliveriesByUserId(userId)
     await this.syncReportPostgresService.deleteByUserName(email)
     await this.userPostgresService.deleteById(userId)

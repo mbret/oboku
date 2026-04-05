@@ -1,65 +1,106 @@
-import { Injectable } from "@nestjs/common"
-// import { InjectRepository } from "@nestjs/typeorm"
-// import { Repository } from "typeorm"
-// import { RefreshTokenPostgresEntity } from "./entities"
+import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
+import { InjectRepository } from "@nestjs/typeorm"
+import { createHash, randomBytes } from "node:crypto"
+import { IsNull, Repository } from "typeorm"
+import { RefreshTokenPostgresEntity } from "./entities"
+
+const STALE_SESSION_RETENTION_TWO_YEARS_MS = 2 * 365 * 24 * 60 * 60 * 1000
 
 @Injectable()
 export class RefreshTokensService {
-  // biome-ignore lint/complexity/noUselessConstructor: TODO
+  private readonly logger = new Logger(RefreshTokensService.name)
+
   constructor(
-    // @InjectRepository(RefreshTokenPostgresEntity)
-    // private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
+    @InjectRepository(RefreshTokenPostgresEntity)
+    private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
   ) {}
 
-  async save(
-    // data: Omit<RefreshTokenPostgresEntity, "id" | "revoked" | "created_at">,
-  ) {
-    // Before saving new token, check and cleanup if necessary
-    // const userTokenCount = await this.refreshTokenRepository.count({
-    //   where: { user_email: data.user_email },
-    // })
-    // const MAX_TOKENS_PER_USER_DEVICE = 20
-    // if (userTokenCount >= MAX_TOKENS_PER_USER_DEVICE) {
-    //   // Find and remove the oldest token(s)
-    //   const oldestTokens = await this.refreshTokenRepository.find({
-    //     where: { user_email: data.user_email },
-    //     order: { created_at: "ASC" },
-    //     take: userTokenCount - MAX_TOKENS_PER_USER_DEVICE + 1, // +1 to make room for the new token
-    //   })
-    //   logger.debug(
-    //     `Removing ${userTokenCount - MAX_TOKENS_PER_USER_DEVICE} extra tokens from user ${data.user_email} to make space`,
-    //   )
-    //   await this.refreshTokenRepository.remove(oldestTokens)
-    // }
-    // return this.refreshTokenRepository.save(data)
+  async issueTokenForInstallation({
+    userId,
+    installationId,
+  }: {
+    userId: number
+    installationId: string
+  }) {
+    const token = this.generateToken()
+    const now = new Date()
+
+    await this.refreshTokenRepository.upsert(
+      this.refreshTokenRepository.create({
+        user_id: userId,
+        installation_id: installationId,
+        token_hash: this.hashToken(token),
+        last_used_at: now,
+        revoked_at: null,
+      }),
+      ["user_id", "installation_id"],
+    )
+
+    return token
   }
 
-  async findById(id: string) {
-    void id
-    // return this.refreshTokenRepository.findOne({ where: { id } })
+  async findActiveByToken(token: string) {
+    const tokenHash = this.hashToken(token)
+
+    const session = await this.refreshTokenRepository.findOne({
+      where: {
+        token_hash: tokenHash,
+        revoked_at: IsNull(),
+      },
+    })
+
+    if (!session) {
+      return null
+    }
+
+    const lastUsedAt = new Date()
+
+    await this.refreshTokenRepository.update(session.id, {
+      last_used_at: lastUsedAt,
+    })
+
+    session.last_used_at = lastUsedAt
+
+    return session
   }
 
-  async deleteById(id: string) {
-    void id
-    // await this.refreshTokenRepository.delete(id)
+  async deleteById(id: number) {
+    await this.refreshTokenRepository.delete(id)
+  }
+
+  async deleteByUserId(userId: number) {
+    await this.refreshTokenRepository.delete({ user_id: userId })
   }
 
   /**
-   * Cleanup expired tokens from db every 10 minutes
+   * Cleanup sessions that have not been used in a very long time.
+   *
+   * This keeps the table bounded without evicting active or reasonably dormant
+   * installations, which is important for the offline-first auth model.
    */
-  @Cron("0 */10 * * * *")
-  async handleCron() {
-    // const tokens = await this.refreshTokenRepository.find()
-    // console.log(tokens.length)
-    // for (const token of tokens) {
-    //   if (token.expires_at < new Date()) {
-    //     logger.log(
-    //       "[cron]",
-    //       `Cleaning up token expired ${token.id} for ${token.user_email}`,
-    //     )
-    //     await this.refreshTokenRepository.delete(token.id)
-    //   }
-    // }
+  // Every day at 03:00 server time.
+  @Cron("0 0 3 * * *")
+  async deleteStaleSessions() {
+    const cutoff = new Date(Date.now() - STALE_SESSION_RETENTION_TWO_YEARS_MS)
+
+    const result = await this.refreshTokenRepository
+      .createQueryBuilder()
+      .delete()
+      .from(RefreshTokenPostgresEntity)
+      .where("last_used_at < :cutoff", { cutoff })
+      .execute()
+
+    if (result.affected) {
+      this.logger.debug(`Deleted ${result.affected} stale refresh sessions`)
+    }
+  }
+
+  private generateToken() {
+    return randomBytes(48).toString("base64url")
+  }
+
+  private hashToken(token: string) {
+    return createHash("sha256").update(token).digest("hex")
   }
 }

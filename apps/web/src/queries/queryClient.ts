@@ -1,6 +1,11 @@
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { CancelError } from "../errors/errors.shared"
-import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query"
+import {
+  MutationCache,
+  QueryCache,
+  QueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query"
 import { SwitchMutationCancelError } from "reactjrx"
 
 export const API_QUERY_KEY_PREFIX = "api" as const
@@ -48,12 +53,14 @@ export const queryClient = new QueryClient({
        * use cache by default.
        */
       gcTime: 0,
-      /**
-       * @important
-       * offline PWA.
-       * Don't forget to set it back to default when making online queries
-       */
-      networkMode: "always",
     },
   },
+})
+
+export const createRxdbQueryDefaultOptions = (): Pick<
+  UseQueryOptions,
+  "networkMode"
+> => ({
+  // they run on local database, never on network so they have no network constraints.
+  networkMode: "always",
 })

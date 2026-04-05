@@ -1,3 +1,4 @@
+import type { CompleteSignUpRequest } from "@oboku/shared"
 import { finalize, from, switchMap } from "rxjs"
 import { lock, unlock } from "../common/BlockingBackdrop"
 import { httpClientApi } from "../http/httpClientApi.web"
@@ -8,7 +9,7 @@ export const useCompleteSignUp = () => {
   const { mutateAsync: signIn } = useSignIn()
 
   return useMutation$({
-    mutationFn: (data: { token: string; password: string }) => {
+    mutationFn: (data: CompleteSignUpRequest) => {
       lock("signup-complete")
 
       return from(httpClientApi.completeSignUp(data)).pipe(
