@@ -17,7 +17,7 @@ export class HttpClientError extends Error {
   }
 }
 
-type HttpClientResponse<T = unknown> = {
+export type HttpClientResponse<T = unknown> = {
   response: Response
   data: T
   status: number

@@ -15,7 +15,7 @@ import type {
 } from "@oboku/shared"
 import { authStateSignal } from "../auth/states.web"
 import { configuration } from "../config/configuration"
-import type { FetchConfig, HttpClient } from "./httpClient.shared"
+import type { HttpClientResponse } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 import { injectToken } from "./injectToken.web"
 import type { AuthSession } from "../auth/types"
@@ -159,43 +159,31 @@ export const refreshAuthSession = async (refreshToken: string) => {
   return refreshSessionPromise
 }
 
-export const refreshTokenAndRetry = async (
-  client: HttpClient,
-  config: FetchConfig,
-  refreshToken: string,
-) => {
+export const refreshOnUnauthorized = async (response: HttpClientResponse) => {
+  if (response.status !== 401) {
+    return response
+  }
+
+  const refreshToken = authStateSignal.value?.refreshToken
+
+  if (!refreshToken) {
+    return response
+  }
+
   try {
     await refreshAuthSession(refreshToken)
   } catch (e) {
     console.log("Unable to refresh token")
     console.error(e)
 
-    throw e
+    return response
   }
 
-  return client.fetch(config.input, config)
+  return httpClientApi.fetch(response.config.input, response.config)
 }
 
 // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
 httpClientApi.useRequestInterceptor(injectToken)
 
 // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-httpClientApi.useResponseInterceptor(async (response) => {
-  if (response.status === 401) {
-    const refreshToken = authStateSignal.value?.refreshToken
-
-    if (refreshToken) {
-      try {
-        return await refreshTokenAndRetry(
-          httpClientApi,
-          response.config,
-          refreshToken,
-        )
-      } catch (_e) {
-        return response
-      }
-    }
-  }
-
-  return response
-})
+httpClientApi.useResponseInterceptor(refreshOnUnauthorized)
