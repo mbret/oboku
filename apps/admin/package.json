@@ -30,13 +30,13 @@
     "@testing-library/react": "^16.2.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.0.4",
+    "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^27.0.0",
     "postcss": "^8.5.3",
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "^5.9.2",
-    "vite": "^7",
+    "vite": "^8.0.5",
     "vitest": "^4.0.8"
   }
 }

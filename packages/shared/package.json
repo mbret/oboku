@@ -23,11 +23,11 @@
   },
   "dependencies": {
     "@oboku/synology": "0.1.0",
-    "zod": "^4.0.5",
-    "dropbox": "^10.34.0"
+    "dropbox": "^10.34.0",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
-    "vite": "^7",
+    "vite": "^8.0.5",
     "vite-plugin-dts": "^4.0.3"
   }
 }

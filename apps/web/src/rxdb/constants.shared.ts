@@ -1,1 +1,1 @@
-export const RXDB_DATABASE_NAME = "oboku-52"
+export const RXDB_DATABASE_NAME = "oboku-53"
