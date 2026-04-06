@@ -18,6 +18,7 @@ import { configuration } from "../config/configuration"
 import { type FetchConfig, HttpClientError } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 import { injectToken } from "./injectToken.web"
+import type { AuthSession } from "../auth/types"
 
 class HttpApiClient extends HttpClientWeb {
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>
@@ -124,25 +125,43 @@ class HttpApiClient extends HttpClientWeb {
 
 export const httpClientApi = new HttpApiClient()
 
+let refreshSessionPromise: Promise<AuthSession | null> | null = null
+
+const refreshAuthState = async (refreshToken: string) => {
+  const response = await httpClientApi.refreshToken({
+    refreshToken,
+    useInterceptors: false,
+  })
+
+  authStateSignal.update((state) => {
+    if (!state) return state
+
+    return {
+      ...state,
+      accessToken: response.data.accessToken,
+      refreshToken: response.data.refreshToken,
+    }
+  })
+
+  return authStateSignal.value
+}
+
+export const refreshAuthSession = async (refreshToken: string) => {
+  if (!refreshSessionPromise) {
+    refreshSessionPromise = refreshAuthState(refreshToken).finally(() => {
+      refreshSessionPromise = null
+    })
+  }
+
+  return refreshSessionPromise
+}
+
 export const refreshTokenAndRetry = async (
   config: FetchConfig,
   refreshToken: string,
 ) => {
   try {
-    const response = await httpClientApi.refreshToken({
-      refreshToken,
-      useInterceptors: false,
-    })
-
-    authStateSignal.update((state) => {
-      if (!state) return state
-
-      return {
-        ...state,
-        accessToken: response.data.accessToken,
-        refreshToken: response.data.refreshToken,
-      }
-    })
+    await refreshAuthSession(refreshToken)
   } catch (e) {
     console.log("Unable to refresh token")
     console.error(e)

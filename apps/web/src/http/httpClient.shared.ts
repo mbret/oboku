@@ -28,6 +28,7 @@ type HttpClientResponse<T = unknown> = {
 
 export type FetchConfig = RequestInit & {
   input: string | URL | globalThis.Request
+  clientId?: string
   unwrap?: boolean
   validateStatus?: (status: number) => boolean
   useInterceptors?: boolean
@@ -109,6 +110,7 @@ export class HttpClient {
           )
 
     const {
+      clientId: _clientId,
       unwrap = true,
       validateStatus = (status: number) => status < 400,
       ...params
