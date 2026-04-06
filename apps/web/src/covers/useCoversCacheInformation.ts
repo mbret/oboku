@@ -7,6 +7,7 @@ export const USE_COVERS_CACHE_INFORMATION_KEY = ["storage/covers/size"]
 export const useCoversCacheInformation = () =>
   useQuery$({
     queryKey: USE_COVERS_CACHE_INFORMATION_KEY,
+    networkMode: "always",
     gcTime: 5 * 60 * 1000,
     queryFn: () =>
       from(caches.open(serviceWorkerConfiguration.SW_COVERS_CACHE_KEY)).pipe(

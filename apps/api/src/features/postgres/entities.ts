@@ -122,3 +122,36 @@ export class UserPostgresEntity {
   @Column({ type: "boolean", default: false })
   emailVerified?: boolean
 }
+
+@Entity({ name: "refresh_tokens" })
+@Index(["user_id", "installation_id"], { unique: true })
+@Index(["token_hash"], { unique: true })
+@Index(["user_id", "last_used_at"])
+export class RefreshTokenPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "integer" })
+  user_id!: number
+
+  @Column({ type: "text" })
+  installation_id!: string
+
+  @Column({ type: "text" })
+  token_hash!: string
+
+  @Column({
+    type: "timestamp with time zone",
+    default: () => "CURRENT_TIMESTAMP",
+  })
+  created_at!: Date
+
+  @Column({
+    type: "timestamp with time zone",
+    default: () => "CURRENT_TIMESTAMP",
+  })
+  last_used_at!: Date
+
+  @Column({ type: "timestamp with time zone", nullable: true })
+  revoked_at!: Date | null
+}

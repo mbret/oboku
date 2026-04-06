@@ -19,11 +19,9 @@ import { swStreamer } from "./reader/streamer/swStreamer.sw"
 import { serviceWorkerCommunication } from "./workers/communication/communication.sw"
 import {
   ConfigurationChangeMessage,
-  NotifyAuthMessage,
   SkipWaitingMessage,
 } from "./workers/communication/types.shared"
 import { serviceWorkerConfiguration } from "./config/configuration.sw"
-import { authState } from "./auth/states.sw"
 import { cleanupOldRxdbDatabases } from "./rxdb/cleanupOldRxdbDatabases.sw"
 
 declare const self: ServiceWorkerGlobalScope
@@ -98,9 +96,8 @@ serviceWorkerCommunication.watch(SkipWaitingMessage).subscribe(() => {
   console.log("skip waiting")
 
   self.skipWaiting().then(() => {
-    // fetch fresh config as soom as the worker is ready
+    // fetch fresh config as soon as the worker is ready
     serviceWorkerCommunication.askConfig()
-    serviceWorkerCommunication.askAuth()
   })
 })
 
@@ -109,10 +106,6 @@ serviceWorkerCommunication
   .subscribe((message) => {
     serviceWorkerConfiguration.update(message.payload)
   })
-
-serviceWorkerCommunication.watch(NotifyAuthMessage).subscribe((message) => {
-  authState.next(message.payload)
-})
 
 registerCoversCacheCleanup()
 cleanupOldRxdbDatabases()

@@ -17,7 +17,7 @@ export class HttpClientError extends Error {
   }
 }
 
-type HttpClientResponse<T = unknown> = {
+export type HttpClientResponse<T = unknown> = {
   response: Response
   data: T
   status: number
@@ -28,8 +28,8 @@ type HttpClientResponse<T = unknown> = {
 
 export type FetchConfig = RequestInit & {
   input: string | URL | globalThis.Request
+  clientId?: string
   unwrap?: boolean
-  validateStatus?: (status: number) => boolean
   useInterceptors?: boolean
 }
 
@@ -92,10 +92,10 @@ export class HttpClient {
     }
   }
 
-  fetch = async <T>(
+  fetch = async (
     input: string | URL | globalThis.Request,
     config: Omit<FetchConfig, "input"> = {},
-  ): Promise<HttpClientResponse<T>> => {
+  ): Promise<HttpClientResponse<unknown>> => {
     const interceptedConfig =
       config.useInterceptors === false
         ? { ...config, input }
@@ -108,45 +108,64 @@ export class HttpClient {
             Promise.resolve({ ...config, input }),
           )
 
-    const {
-      unwrap = true,
-      validateStatus = (status: number) => status < 400,
-      ...params
-    } = interceptedConfig
+    const { clientId: _clientId, unwrap = true, ...params } = interceptedConfig
 
-    const response = await fetch(input, {
-      ...params,
-    })
+    let response: Response
+
+    try {
+      response = await fetch(input, {
+        ...params,
+      })
+    } catch (error) {
+      const interceptedError =
+        interceptedConfig.useInterceptors === false
+          ? new HttpClientError(undefined, error)
+          : await this.interceptResponse(new HttpClientError(undefined, error))
+
+      if (interceptedError instanceof HttpClientError) {
+        throw interceptedError
+      }
+
+      return interceptedError as HttpClientResponse<unknown>
+    }
 
     const httpResponse = await this.createResponse(response, {
       ...interceptedConfig,
       unwrap,
-      validateStatus,
     })
-
-    const responseOrError = !validateStatus(response.status)
-      ? new HttpClientError(httpResponse, undefined)
-      : httpResponse
 
     const interceptedResponseOrError =
       interceptedConfig.useInterceptors === false
-        ? responseOrError
-        : await this.interceptResponse(responseOrError)
+        ? httpResponse
+        : await this.interceptResponse(httpResponse)
 
     if (interceptedResponseOrError instanceof HttpClientError) {
-      throw responseOrError
+      throw interceptedResponseOrError
     }
 
-    return interceptedResponseOrError as HttpClientResponse<T>
+    return interceptedResponseOrError as HttpClientResponse<unknown>
   }
 
-  post = async <T, Body extends Record<string, unknown>>(
+  fetchOrThrow = async <T>(
+    input: string | URL | globalThis.Request,
+    config: Omit<FetchConfig, "input"> = {},
+  ): Promise<HttpClientResponse<T>> => {
+    const response = await this.fetch(input, config)
+
+    if (response.status >= 400) {
+      throw new HttpClientError(response, undefined)
+    }
+
+    return response as HttpClientResponse<T>
+  }
+
+  postOrThrow = async <T, Body extends Record<string, unknown>>(
     input: string | URL | globalThis.Request,
     options: Omit<FetchConfig, "body" | "method" | "input"> & {
       body?: Body
     } = {},
   ) => {
-    return this.fetch<T>(input, {
+    return this.fetchOrThrow<T>(input, {
       ...options,
       method: "post",
       body: JSON.stringify(options.body),

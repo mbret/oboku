@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing"
 import { CouchService } from "../couch/couch.service"
 import { CoversService } from "../covers/covers.service"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
+import { RefreshTokensService } from "../features/postgres/refreshTokens.service"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
 import { UserPostgresService } from "../features/postgres/user-postgres.service"
 import { UsersService } from "./users.service"
@@ -14,6 +15,9 @@ describe("UsersService", () => {
     save: jest.Mock
     deleteById: jest.Mock
   }
+  let refreshTokensService: {
+    deleteByUserId: jest.Mock
+  }
 
   beforeEach(async () => {
     userPostgresService = {
@@ -21,6 +25,9 @@ describe("UsersService", () => {
       create: jest.fn(),
       save: jest.fn(),
       deleteById: jest.fn(),
+    }
+    refreshTokensService = {
+      deleteByUserId: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -31,6 +38,7 @@ describe("UsersService", () => {
         { provide: CoversService, useValue: {} },
         { provide: NotificationPostgresService, useValue: {} },
         { provide: SyncReportPostgresService, useValue: {} },
+        { provide: RefreshTokensService, useValue: refreshTokensService },
       ],
     }).compile()
 

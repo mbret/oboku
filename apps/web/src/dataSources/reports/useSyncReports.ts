@@ -7,7 +7,7 @@ export const useSyncReports = () =>
     queryKey: ["api/datasourceReport"],
     queryFn: async () => {
       const { data } =
-        await httpClientApi.fetch<SyncReportPostgresEntitiesShared>(
+        await httpClientApi.fetchOrThrow<SyncReportPostgresEntitiesShared>(
           `${configuration.API_URL}/datasources/sync-reports`,
         )
 
@@ -86,6 +86,5 @@ export const useSyncReports = () =>
 
       return entries
     },
-    networkMode: "online",
     gcTime: 5 * 60 * 1000,
   })

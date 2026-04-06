@@ -1,26 +1,38 @@
+import type {
+  AuthSessionResponse,
+  CompleteMagicLinkRequest,
+  CompleteMagicLinkResponse,
+  CompleteSignUpRequest,
+  CompleteSignUpResponse,
+  DeleteAccountResponse,
+  RefreshTokenResponse,
+  RequestMagicLinkRequest,
+  RequestMagicLinkResponse,
+  RequestSignUpRequest,
+  RequestSignUpResponse,
+  SignInWithEmailRequest,
+  SignInWithGoogleRequest,
+} from "@oboku/shared"
+import { authStateSignal } from "../auth/states.web"
 import { configuration } from "../config/configuration"
+import type { HttpClientResponse } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
+import { injectToken } from "./injectToken.web"
 
 class HttpApiClient extends HttpClientWeb {
-  authWithMagicLink = (data: { token: string }) =>
-    this.post<
+  authWithMagicLink = (data: CompleteMagicLinkRequest) =>
+    this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
+      `${configuration.API_URL}/auth/magic-link/complete`,
       {
-        dbName: string
-        email: string
-        accessToken: string
-        refreshToken: string
-        nameHex: string
+        body: data,
       },
-      typeof data
-    >(`${configuration.API_URL}/auth/magic-link/complete`, {
-      body: data,
-    })
+    )
 
   refreshBookMetadata = (params: {
     bookId: string
     providerCredentials?: Record<string, unknown>
   }) =>
-    this.post(`${configuration.API_URL}/books/metadata/refresh`, {
+    this.postOrThrow(`${configuration.API_URL}/books/metadata/refresh`, {
       body: params,
     })
 
@@ -28,7 +40,7 @@ class HttpApiClient extends HttpClientWeb {
     collectionId: string
     providerCredentials?: Record<string, unknown>
   }) =>
-    this.post(`${configuration.API_URL}/collections/metadata/refresh`, {
+    this.postOrThrow(`${configuration.API_URL}/collections/metadata/refresh`, {
       body: { ...params, soft: false },
     })
 
@@ -36,39 +48,44 @@ class HttpApiClient extends HttpClientWeb {
     dataSourceId: string
     providerCredentials?: Record<string, unknown>
   }) =>
-    this.post(`${configuration.API_URL}/datasources/sync`, {
+    this.postOrThrow(`${configuration.API_URL}/datasources/sync`, {
       body: params,
     })
 
-  signIn = (data: { email: string; password: string } | { token: string }) =>
-    this.post<
+  signInWithEmail = (data: SignInWithEmailRequest) =>
+    this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(
+      `${configuration.API_URL}/auth/signin/email`,
       {
-        dbName: string
-        email: string
-        accessToken: string
-        refreshToken: string
-        nameHex: string
+        body: data,
       },
-      typeof data
-    >(`${configuration.API_URL}/auth/signin`, {
-      body: data,
-    })
+    )
 
-  signUp = (data: { email: string }) =>
-    this.post<unknown, typeof data>(`${configuration.API_URL}/auth/signup`, {
-      body: data,
-    })
+  signInWithGoogle = (data: SignInWithGoogleRequest) =>
+    this.postOrThrow<AuthSessionResponse, SignInWithGoogleRequest>(
+      `${configuration.API_URL}/auth/signin/google`,
+      {
+        body: data,
+      },
+    )
 
-  completeSignUp = (data: { token: string; password: string }) =>
-    this.post<{ email: string }, typeof data>(
+  signUp = (data: RequestSignUpRequest) =>
+    this.postOrThrow<RequestSignUpResponse, RequestSignUpRequest>(
+      `${configuration.API_URL}/auth/signup`,
+      {
+        body: data,
+      },
+    )
+
+  completeSignUp = (data: CompleteSignUpRequest) =>
+    this.postOrThrow<CompleteSignUpResponse, CompleteSignUpRequest>(
       `${configuration.API_URL}/auth/signup/complete`,
       {
         body: data,
       },
     )
 
-  requestMagicLink = (data: { email: string }) =>
-    this.post<unknown, typeof data>(
+  requestMagicLink = (data: RequestMagicLinkRequest) =>
+    this.postOrThrow<RequestMagicLinkResponse, RequestMagicLinkRequest>(
       `${configuration.API_URL}/auth/magic-link`,
       {
         body: data,
@@ -76,13 +93,13 @@ class HttpApiClient extends HttpClientWeb {
     )
 
   markNotificationAsSeen = ({ id }: { id: number }) =>
-    this.post(`${configuration.API_URL}/notifications/${id}/seen`)
+    this.postOrThrow(`${configuration.API_URL}/notifications/${id}/seen`)
 
   markAllNotificationsAsSeen = () =>
-    this.post(`${configuration.API_URL}/notifications/seen`)
+    this.postOrThrow(`${configuration.API_URL}/notifications/seen`)
 
   archiveNotification = ({ id }: { id: number }) =>
-    this.post(`${configuration.API_URL}/notifications/${id}/archive`)
+    this.postOrThrow(`${configuration.API_URL}/notifications/${id}/archive`)
 
   refreshToken = ({
     refreshToken,
@@ -91,13 +108,7 @@ class HttpApiClient extends HttpClientWeb {
     refreshToken: string
     useInterceptors: boolean
   }) => {
-    return this.post<
-      {
-        accessToken: string
-        refreshToken: string
-      },
-      never
-    >(
+    return this.postOrThrow<RefreshTokenResponse, never>(
       `${configuration.API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`,
       {
         useInterceptors,
@@ -106,9 +117,98 @@ class HttpApiClient extends HttpClientWeb {
   }
 
   deleteAccount = () =>
-    this.fetch(`${configuration.API_URL}/auth/account`, {
-      method: "DELETE",
-    })
+    this.fetchOrThrow<DeleteAccountResponse>(
+      `${configuration.API_URL}/auth/account`,
+      {
+        method: "DELETE",
+      },
+    )
 }
 
 export const httpClientApi = new HttpApiClient()
+
+type InFlightRefresh = {
+  refreshToken: string
+  promise: Promise<boolean>
+}
+
+let refreshSessionPromise: InFlightRefresh | null = null
+
+const refreshAuthState = async (refreshToken: string) => {
+  const response = await httpClientApi.refreshToken({
+    refreshToken,
+    useInterceptors: false,
+  })
+
+  const authState = authStateSignal.getValue()
+
+  // we are checking if the current auth state is the same as the refresh token
+  // if not, we are not going to refresh the auth state as it's not the same session
+  if (!authState || authState.refreshToken !== refreshToken) {
+    return false
+  }
+
+  const nextAuthState = {
+    ...authState,
+    accessToken: response.data.accessToken,
+    refreshToken: response.data.refreshToken,
+  }
+
+  authStateSignal.update(nextAuthState)
+
+  const didApply = !!nextAuthState
+
+  return didApply
+}
+
+export const refreshAuthSession = (refreshToken: string) => {
+  if (refreshSessionPromise?.refreshToken === refreshToken) {
+    return refreshSessionPromise.promise
+  }
+
+  const promise = refreshAuthState(refreshToken).finally(() => {
+    if (refreshSessionPromise?.promise === promise) {
+      refreshSessionPromise = null
+    }
+  })
+
+  refreshSessionPromise = {
+    refreshToken,
+    promise,
+  }
+
+  return promise
+}
+
+export const refreshOnUnauthorized = async (response: HttpClientResponse) => {
+  if (response.status !== 401) {
+    return response
+  }
+
+  const refreshToken = authStateSignal.value?.refreshToken
+
+  if (!refreshToken) {
+    return response
+  }
+
+  try {
+    const didApply = await refreshAuthSession(refreshToken)
+
+    if (!didApply) {
+      return response
+    }
+  } catch (e) {
+    console.log("Unable to refresh token")
+    console.error(e)
+
+    return response
+  }
+
+  return httpClientApi.fetch(response.config.input, response.config)
+}
+
+// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+httpClientApi.useRequestInterceptor(injectToken)
+
+// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+httpClientApi.useResponseInterceptor(refreshOnUnauthorized)

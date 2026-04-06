@@ -1,16 +1,15 @@
-import { memo, Suspense, useEffect, useState } from "react"
+import { memo, useEffect, useState } from "react"
 import { AppBrowserRouter } from "./navigation/AppBrowserRouter"
 import { StyledEngineProvider, Fade, Box } from "@mui/material"
 import { BlockingBackdrop } from "./common/BlockingBackdrop"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./queries/PreloadQueries"
-import { SplashScreen } from "./common/SplashScreen"
 import { BlurFilterReference } from "./books/BlurFilterReference"
 import { ErrorBoundary } from "@sentry/react"
 import { ManageBookTagsDialog } from "./books/ManageBookTagsDialog"
 import { ManageTagBooksDialog } from "./tags/ManageTagBooksDialog"
-import { usePersistSignals, QueryClientProvider$, useObserve } from "reactjrx"
+import { usePersistSignals, QueryClientProvider$ } from "reactjrx"
 import { signalEntriesToPersist } from "./profile"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
@@ -26,9 +25,9 @@ import { RestoreDownloadState } from "./download/RestoreDownloadState"
 import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
 import { PersistQueryProvider } from "./queries/PersistQueryProvider"
-import { configuration } from "./config/configuration"
+import { LoadConfiguration } from "./config/LoadConfiguration"
 import { useLoadGsi } from "./google/gsi"
-import { AuthGuard } from "./auth/AuthGuard"
+import { AutoSignOutWhenUnauthorized } from "./auth/AutoSignOutWhenUnauthorized"
 import { Toasts } from "./notifications/Toasts"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
@@ -67,6 +66,8 @@ const App = memo(() => {
         <Fade in={isAppReady} timeout={500}>
           <Box height="100%" display="flex" flexDirection="column">
             <AppBrowserRouter>
+              {/* This needs to be high enough to catch at least any early calls to `httpClientApi` */}
+              <AutoSignOutWhenUnauthorized />
               <AuthenticatedOnly>
                 <UploadBookDialogWithDragOver />
                 <BookActionsDrawer />
@@ -81,7 +82,7 @@ const App = memo(() => {
               <AuthorizeActionDialog />
               <BackgroundReplication />
               <BlockingBackdrop />
-              <Effects />
+              <OtherEffects />
             </AppBrowserRouter>
           </Box>
         </Fade>
@@ -104,8 +105,6 @@ const App = memo(() => {
 })
 
 export const AppWithConfig = memo(() => {
-  const { data: config } = useObserve(configuration.loaded$)
-
   return (
     <ErrorBoundary
       onError={(e) => {
@@ -116,9 +115,9 @@ export const AppWithConfig = memo(() => {
         <ThemeProvider>
           <PersistQueryProvider>
             <QueryClientProvider$>
-              <Suspense fallback={<SplashScreen show />}>
-                {config ? <App /> : null}
-              </Suspense>
+              <LoadConfiguration>
+                <App />
+              </LoadConfiguration>
               {import.meta.env.DEV && <DebugMenu />}
             </QueryClientProvider$>
           </PersistQueryProvider>
@@ -129,7 +128,7 @@ export const AppWithConfig = memo(() => {
   )
 })
 
-const Effects = memo(() => {
+const OtherEffects = memo(() => {
   useCleanupDanglingLinks()
   useRemoveDownloadWhenBookIsNotInterested()
   const { mutate: loadGsi } = useLoadGsi()
@@ -138,5 +137,5 @@ const Effects = memo(() => {
     loadGsi()
   }, [loadGsi])
 
-  return <AuthGuard />
+  return null
 })

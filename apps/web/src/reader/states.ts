@@ -24,6 +24,7 @@ export const isMenuShownStateSignal = signal({
 export const usePagination = () =>
   useQuery$({
     queryKey: ["pagination"],
+    networkMode: "always",
     queryFn: () => {
       return readerSignal.pipe(
         filter(isDefined),

@@ -1,5 +1,8 @@
 import { useQuery$, useSignalValue } from "reactjrx"
-import { RXDB_QUERY_KEY_PREFIX } from "../queries/queryClient"
+import {
+  createRxdbQueryDefaultOptions,
+  RXDB_QUERY_KEY_PREFIX,
+} from "../queries/queryClient"
 import { switchMap, map } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { observeEmptyCollection } from "./dbHelpers"
@@ -18,6 +21,7 @@ export const useCollection = ({
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
 
   return useQuery$({
+    ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "collection", id, { isLibraryUnlocked }],
     enabled: !!id && !!enabled,
     queryFn: () => {

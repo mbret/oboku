@@ -17,21 +17,23 @@ import {
 import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
 import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady"
 import bcrypt from "bcrypt"
-import { JwtService, TokenExpiredError } from "@nestjs/jwt"
+import { JwtService } from "@nestjs/jwt"
 import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
 import { SecretsService } from "src/config/SecretsService"
 import { EmailService } from "../email/EmailService"
 import { normalizeEmail } from "src/features/postgres/user-postgres.service"
+import type {
+  AuthSessionResponse,
+  AuthTokensResponse,
+  CompleteMagicLinkRequest,
+  CompleteSignUpResponse,
+  RefreshTokenResponse,
+  SignInWithEmailRequest,
+  SignInWithGoogleRequest,
+} from "@oboku/shared"
 
 /** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
 const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
-
-type RefreshTokenPayload = {
-  sub: string
-  id: string
-  type: "refresh"
-  expires_at: Date
-}
 
 type SignUpTokenPayload = {
   sub: string
@@ -57,25 +59,6 @@ export class AuthService {
     private emailService: EmailService,
   ) {}
 
-  async generateRefreshToken(payload: {
-    email: string
-    id: string
-    expires_at: Date
-  }) {
-    return this.jwtService.signAsync(
-      {
-        sub: payload.email,
-        id: payload.id,
-        type: "refresh",
-      },
-      {
-        algorithm: "RS256",
-        expiresIn: payload.expires_at.getTime() - Date.now(),
-        privateKey: await this.secretService.getJwtPrivateKey(),
-      },
-    )
-  }
-
   async hashPassword(password: string): Promise<string> {
     const saltRounds = 10 // Higher is more secure but slower
     return bcrypt.hash(password, saltRounds)
@@ -98,7 +81,7 @@ export class AuthService {
    * merged user row. Local password access is only upgraded by Oboku's own
    * email verification flow.
    */
-  async signInWithGoogle(token: string) {
+  private async authenticateWithGoogle(token: string) {
     const client = new OAuth2Client()
     const ticket = await client.verifyIdToken({
       idToken: token,
@@ -150,7 +133,7 @@ export class AuthService {
    * - have a locally verified email ownership
    * - validate compare
    */
-  async signinWithEmail(rawEmail: string, password: string) {
+  private async authenticateWithEmail(rawEmail: string, password: string) {
     const email = normalizeEmail(rawEmail)
     const userWithEmail = await this.usersService.findUserByEmail(email)
 
@@ -172,23 +155,24 @@ export class AuthService {
     throw new UnauthorizedException()
   }
 
-  async generateTokens({ email, userId }: { email: string; userId: number }) {
-    const refreshTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    // const refreshTokenEntity = await this.refreshTokensService.save({
-    //   user_email: email,
-    //   expires_at: refreshTokenExpiresAt,
-    // })
-
+  async generateTokens({
+    email,
+    userId,
+    installationId,
+  }: {
+    email: string
+    userId: number
+    installationId: string
+  }): Promise<AuthTokensResponse> {
     const accessToken = await this.couchService.generateUserJWT({
       email,
       userId,
     })
-    const refreshToken = await this.generateRefreshToken({
-      email,
-      // id: refreshTokenEntity.id,
-      id: "123",
-      expires_at: refreshTokenExpiresAt,
-    })
+    const refreshToken =
+      await this.refreshTokensService.issueTokenForInstallation({
+        userId,
+        installationId,
+      })
 
     return {
       accessToken,
@@ -199,10 +183,12 @@ export class AuthService {
   private async completeSignIn({
     email,
     userId,
+    installationId,
   }: {
     email: string
     userId: number
-  }) {
+    installationId: string
+  }): Promise<AuthSessionResponse> {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
     const { user: couchUser, created: couchUserCreated } =
@@ -223,6 +209,7 @@ export class AuthService {
     const { accessToken, refreshToken } = await this.generateTokens({
       email: couchUser.email,
       userId,
+      installationId,
     })
 
     const nameHex = emailToNameHex(couchUser.name)
@@ -236,17 +223,30 @@ export class AuthService {
     }
   }
 
-  async signIn(
-    params: { token: string } | { email: string; password: string },
-  ) {
-    const retrievedUser =
-      "token" in params
-        ? await this.signInWithGoogle(params.token)
-        : await this.signinWithEmail(params.email, params.password)
+  async signInWithEmail({
+    email,
+    password,
+    installation_id,
+  }: SignInWithEmailRequest): Promise<AuthSessionResponse> {
+    const retrievedUser = await this.authenticateWithEmail(email, password)
 
     return this.completeSignIn({
       email: retrievedUser.email,
       userId: retrievedUser.id,
+      installationId: installation_id,
+    })
+  }
+
+  async signInWithGoogle({
+    token,
+    installation_id,
+  }: SignInWithGoogleRequest): Promise<AuthSessionResponse> {
+    const retrievedUser = await this.authenticateWithGoogle(token)
+
+    return this.completeSignIn({
+      email: retrievedUser.email,
+      userId: retrievedUser.id,
+      installationId: installation_id,
     })
   }
 
@@ -443,7 +443,7 @@ export class AuthService {
   }: {
     token: string
     password: string
-  }) {
+  }): Promise<CompleteSignUpResponse> {
     const email = await this.verifySignUpToken(token)
     const user = await this.usersService.findUserByEmail(email)
 
@@ -472,7 +472,10 @@ export class AuthService {
     return { email }
   }
 
-  async completeMagicLink({ token }: { token: string }) {
+  async completeMagicLink({
+    token,
+    installation_id,
+  }: CompleteMagicLinkRequest): Promise<AuthSessionResponse> {
     const email = await this.verifyMagicLinkToken(token)
     const user = await this.usersService.findUserByEmail(email)
 
@@ -489,42 +492,42 @@ export class AuthService {
     user.emailVerified = true
     await this.usersService.saveUser(user)
 
-    return this.completeSignIn({ email: user.email, userId: user.id })
+    return this.completeSignIn({
+      email: user.email,
+      userId: user.id,
+      installationId: installation_id,
+    })
   }
 
-  async refreshToken(grant_type: "refresh_token", refreshToken: string) {
+  async refreshToken(
+    grant_type: "refresh_token",
+    refreshToken: string,
+  ): Promise<RefreshTokenResponse> {
     void grant_type
 
-    try {
-      const { sub } = await this.jwtService.verifyAsync<RefreshTokenPayload>(
-        refreshToken,
-        {
-          secret: await this.secretService.getJwtPrivateKey(),
-          algorithms: ["RS256"],
-        },
-      )
+    const session =
+      await this.refreshTokensService.findActiveByToken(refreshToken)
 
-      const user = await this.usersService.findUserByEmail(sub)
+    if (!session) {
+      throw new UnauthorizedException()
+    }
 
-      if (!user) {
-        throw new UnauthorizedException()
-      }
+    const user = await this.usersService.findUserById(session.user_id)
 
-      // await this.refreshTokensService.deleteById(id)
-
-      return this.generateTokens({
-        email: user.email,
-        userId: user.id,
-      })
-    } catch (error) {
-      // change to cleanup expired tokens
-      if (error instanceof TokenExpiredError) {
-        const { id } = this.jwtService.decode<RefreshTokenPayload>(refreshToken)
-
-        await this.refreshTokensService.deleteById(id)
-      }
+    if (!user) {
+      await this.refreshTokensService.deleteById(session.id)
 
       throw new UnauthorizedException()
+    }
+
+    const accessToken = await this.couchService.generateUserJWT({
+      email: user.email,
+      userId: user.id,
+    })
+
+    return {
+      accessToken,
+      refreshToken,
     }
   }
 

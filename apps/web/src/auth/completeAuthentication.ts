@@ -4,21 +4,14 @@ import { setProfile, currentProfileSignal } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
 import { queryClient } from "../queries/queryClient"
 import { persister } from "../queries/persister"
-
-type AuthResponse = {
-  dbName: string
-  email: string
-  accessToken: string
-  refreshToken: string
-  nameHex: string
-}
+import type { AuthSessionResponse } from "@oboku/shared"
 
 export const completeAuthentication = ({
   reCreateDb,
   auth,
 }: {
   reCreateDb: (params: { overwrite: boolean }) => Promise<unknown>
-  auth: AuthResponse
+  auth: AuthSessionResponse
 }) => {
   const previousAuth = authStateSignal.value
   const switchedAccount = previousAuth?.email !== auth.email
