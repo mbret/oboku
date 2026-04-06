@@ -204,7 +204,14 @@ export const refreshOnUnauthorized = async (response: HttpClientResponse) => {
     return response
   }
 
-  return httpClientApi.fetch(response.config.input, response.config)
+  // Retry once with the refreshed token, but skip interceptors on the retry so
+  // a persistent 401 can fall through to the later sign-out interceptor.
+  const retriedConfig = await injectToken({
+    ...response.config,
+    useInterceptors: false,
+  })
+
+  return httpClientApi.fetch(retriedConfig.input, retriedConfig)
 }
 
 // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook

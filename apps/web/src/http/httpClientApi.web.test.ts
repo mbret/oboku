@@ -228,4 +228,67 @@ describe("httpClientApi web auth refresh", () => {
     await expect(refreshPromise).resolves.toBe(unauthorizedResponse)
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
+
+  it("retries a 401 request only once with the refreshed access token", async () => {
+    let refreshCalls = 0
+
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      const url = String(input)
+
+      if (url.includes("/auth/token?grant_type=refresh_token")) {
+        refreshCalls += 1
+
+        if (refreshCalls > 1) {
+          throw new Error(`Unexpected extra refresh for ${url}`)
+        }
+
+        return Promise.resolve(
+          createRefreshResponse({
+            accessToken: "fresh-access-token",
+            refreshToken: "token-a-2",
+          }),
+        )
+      }
+
+      if (url === "https://api.example.com/protected") {
+        return Promise.resolve(
+          new Response(null, { status: 401, statusText: "Unauthorized" }),
+        )
+      }
+
+      throw new Error(`Unexpected fetch call for ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { authStateSignal } = await import("../auth/states.web")
+    const { refreshOnUnauthorized } = await import("./httpClientApi.web")
+
+    authStateSignal.update(
+      createAuthSession({
+        accessToken: "expired-access-token",
+        refreshToken: "token-a",
+      }),
+    )
+
+    const retriedResponse = await refreshOnUnauthorized({
+      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
+      data: undefined,
+      status: 401,
+      statusText: "Unauthorized",
+      headers: {},
+      config: {
+        input: "https://api.example.com/protected",
+        headers: {
+          Authorization: "Bearer expired-access-token",
+        },
+      },
+    })
+
+    expect(retriedResponse.status).toBe(401)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(
+      new Headers(fetchMock.mock.calls[1]?.[1]?.headers).get("Authorization"),
+    ).toBe("Bearer fresh-access-token")
+  })
 })
