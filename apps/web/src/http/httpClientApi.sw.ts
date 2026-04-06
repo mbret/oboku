@@ -1,8 +1,4 @@
-import {
-  type FetchConfig,
-  HttpClient,
-  HttpClientError,
-} from "./httpClient.shared"
+import { type FetchConfig, HttpClient } from "./httpClient.shared"
 import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
 
 export const httpClientApi = new HttpClient()
@@ -83,29 +79,14 @@ httpClientApi.useRequestInterceptor(async function injectAccessToken(config) {
 })
 
 // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-httpClientApi.useResponseInterceptor(
-  async (response) => {
-    if (response.status === 401) {
-      const retriedResponse = await retryUnauthorized(response.config).catch(
-        () => null,
-      )
+httpClientApi.useResponseInterceptor(async (response) => {
+  if (response.status === 401) {
+    const retriedResponse = await retryUnauthorized(response.config).catch(
+      () => null,
+    )
 
-      return retriedResponse ?? response
-    }
+    return retriedResponse ?? response
+  }
 
-    return response
-  },
-  async (error: HttpClientError) => {
-    if (error instanceof HttpClientError && error.response?.status === 401) {
-      const retriedResponse = await retryUnauthorized(
-        error.response.config,
-      ).catch(() => null)
-
-      if (retriedResponse) {
-        return retriedResponse
-      }
-    }
-
-    throw error
-  },
-)
+  return response
+})

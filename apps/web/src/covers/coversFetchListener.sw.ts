@@ -32,7 +32,6 @@ export const coversFetchListener = (event: FetchEvent) => {
             unwrap: false,
             mode: "cors",
             credentials: "omit",
-            validateStatus: () => true,
           })
 
           if (response.status !== 200) {

@@ -12,12 +12,16 @@ httpCouchClient.useRequestInterceptor(injectToken)
 
 // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
 httpCouchClient.useResponseInterceptor(async (response) => {
-  if (response?.status === 401) {
+  if (response.status === 401) {
     const refreshToken = authStateSignal.value?.refreshToken
 
     if (refreshToken) {
       try {
-        return refreshTokenAndRetry(response.config, refreshToken)
+        return await refreshTokenAndRetry(
+          httpCouchClient,
+          response.config,
+          refreshToken,
+        )
       } catch (_e) {
         return response
       }

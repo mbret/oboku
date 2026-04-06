@@ -54,12 +54,10 @@ export const useRefreshBookMetadata = () => {
       )
         .pipe(
           switchMap(() =>
-            from(
-              httpClientApi.refreshBookMetadata({
-                bookId,
-                providerCredentials: providerCredentials,
-              }),
-            ),
+            httpClientApi.refreshBookMetadata({
+              bookId,
+              providerCredentials: providerCredentials,
+            }),
           ),
           catchError((e) =>
             from(

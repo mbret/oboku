@@ -15,14 +15,14 @@ import type {
 } from "@oboku/shared"
 import { authStateSignal } from "../auth/states.web"
 import { configuration } from "../config/configuration"
-import { type FetchConfig, HttpClientError } from "./httpClient.shared"
+import type { FetchConfig, HttpClient } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 import { injectToken } from "./injectToken.web"
 import type { AuthSession } from "../auth/types"
 
 class HttpApiClient extends HttpClientWeb {
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>
-    this.post<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
+    this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
       `${configuration.API_URL}/auth/magic-link/complete`,
       {
         body: data,
@@ -33,7 +33,7 @@ class HttpApiClient extends HttpClientWeb {
     bookId: string
     providerCredentials?: Record<string, unknown>
   }) =>
-    this.post(`${configuration.API_URL}/books/metadata/refresh`, {
+    this.postOrThrow(`${configuration.API_URL}/books/metadata/refresh`, {
       body: params,
     })
 
@@ -41,7 +41,7 @@ class HttpApiClient extends HttpClientWeb {
     collectionId: string
     providerCredentials?: Record<string, unknown>
   }) =>
-    this.post(`${configuration.API_URL}/collections/metadata/refresh`, {
+    this.postOrThrow(`${configuration.API_URL}/collections/metadata/refresh`, {
       body: { ...params, soft: false },
     })
 
@@ -49,12 +49,12 @@ class HttpApiClient extends HttpClientWeb {
     dataSourceId: string
     providerCredentials?: Record<string, unknown>
   }) =>
-    this.post(`${configuration.API_URL}/datasources/sync`, {
+    this.postOrThrow(`${configuration.API_URL}/datasources/sync`, {
       body: params,
     })
 
   signInWithEmail = (data: SignInWithEmailRequest) =>
-    this.post<AuthSessionResponse, SignInWithEmailRequest>(
+    this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(
       `${configuration.API_URL}/auth/signin/email`,
       {
         body: data,
@@ -62,7 +62,7 @@ class HttpApiClient extends HttpClientWeb {
     )
 
   signInWithGoogle = (data: SignInWithGoogleRequest) =>
-    this.post<AuthSessionResponse, SignInWithGoogleRequest>(
+    this.postOrThrow<AuthSessionResponse, SignInWithGoogleRequest>(
       `${configuration.API_URL}/auth/signin/google`,
       {
         body: data,
@@ -70,7 +70,7 @@ class HttpApiClient extends HttpClientWeb {
     )
 
   signUp = (data: RequestSignUpRequest) =>
-    this.post<RequestSignUpResponse, RequestSignUpRequest>(
+    this.postOrThrow<RequestSignUpResponse, RequestSignUpRequest>(
       `${configuration.API_URL}/auth/signup`,
       {
         body: data,
@@ -78,7 +78,7 @@ class HttpApiClient extends HttpClientWeb {
     )
 
   completeSignUp = (data: CompleteSignUpRequest) =>
-    this.post<CompleteSignUpResponse, CompleteSignUpRequest>(
+    this.postOrThrow<CompleteSignUpResponse, CompleteSignUpRequest>(
       `${configuration.API_URL}/auth/signup/complete`,
       {
         body: data,
@@ -86,7 +86,7 @@ class HttpApiClient extends HttpClientWeb {
     )
 
   requestMagicLink = (data: RequestMagicLinkRequest) =>
-    this.post<RequestMagicLinkResponse, RequestMagicLinkRequest>(
+    this.postOrThrow<RequestMagicLinkResponse, RequestMagicLinkRequest>(
       `${configuration.API_URL}/auth/magic-link`,
       {
         body: data,
@@ -94,13 +94,13 @@ class HttpApiClient extends HttpClientWeb {
     )
 
   markNotificationAsSeen = ({ id }: { id: number }) =>
-    this.post(`${configuration.API_URL}/notifications/${id}/seen`)
+    this.postOrThrow(`${configuration.API_URL}/notifications/${id}/seen`)
 
   markAllNotificationsAsSeen = () =>
-    this.post(`${configuration.API_URL}/notifications/seen`)
+    this.postOrThrow(`${configuration.API_URL}/notifications/seen`)
 
   archiveNotification = ({ id }: { id: number }) =>
-    this.post(`${configuration.API_URL}/notifications/${id}/archive`)
+    this.postOrThrow(`${configuration.API_URL}/notifications/${id}/archive`)
 
   refreshToken = ({
     refreshToken,
@@ -109,7 +109,7 @@ class HttpApiClient extends HttpClientWeb {
     refreshToken: string
     useInterceptors: boolean
   }) => {
-    return this.post<RefreshTokenResponse, never>(
+    return this.postOrThrow<RefreshTokenResponse, never>(
       `${configuration.API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`,
       {
         useInterceptors,
@@ -118,9 +118,12 @@ class HttpApiClient extends HttpClientWeb {
   }
 
   deleteAccount = () =>
-    this.fetch<DeleteAccountResponse>(`${configuration.API_URL}/auth/account`, {
-      method: "DELETE",
-    })
+    this.fetchOrThrow<DeleteAccountResponse>(
+      `${configuration.API_URL}/auth/account`,
+      {
+        method: "DELETE",
+      },
+    )
 }
 
 export const httpClientApi = new HttpApiClient()
@@ -157,6 +160,7 @@ export const refreshAuthSession = async (refreshToken: string) => {
 }
 
 export const refreshTokenAndRetry = async (
+  client: HttpClient,
   config: FetchConfig,
   refreshToken: string,
 ) => {
@@ -169,28 +173,29 @@ export const refreshTokenAndRetry = async (
     throw e
   }
 
-  return httpClientApi.fetch(config.input, config)
+  return client.fetch(config.input, config)
 }
 
 // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
 httpClientApi.useRequestInterceptor(injectToken)
 
 // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-httpClientApi.useResponseInterceptor(
-  async (response) => response,
-  async (error: HttpClientError) => {
-    if (error instanceof HttpClientError && error.response?.status === 401) {
-      const refreshToken = authStateSignal.value?.refreshToken
+httpClientApi.useResponseInterceptor(async (response) => {
+  if (response.status === 401) {
+    const refreshToken = authStateSignal.value?.refreshToken
 
-      if (refreshToken) {
-        try {
-          return refreshTokenAndRetry(error.response.config, refreshToken)
-        } catch (_e) {
-          throw error
-        }
+    if (refreshToken) {
+      try {
+        return await refreshTokenAndRetry(
+          httpClientApi,
+          response.config,
+          refreshToken,
+        )
+      } catch (_e) {
+        return response
       }
     }
+  }
 
-    throw error
-  },
-)
+  return response
+})

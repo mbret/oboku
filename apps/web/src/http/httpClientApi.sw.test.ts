@@ -52,7 +52,6 @@ describe("httpClientApi service worker auth refresh", () => {
       "https://api.example.com/covers/1",
       {
         clientId: "tab-1",
-        validateStatus: () => true,
       },
     )
 

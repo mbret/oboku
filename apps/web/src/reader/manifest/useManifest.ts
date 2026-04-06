@@ -22,9 +22,7 @@ export const useManifest = (bookId: string | undefined) => {
         serviceWorkerReadySignal.getValue()
           ? await httpClient.fetch(
               `${window.location.origin}/streamer/${bookId}/manifest`,
-              {
-                validateStatus: () => true,
-              },
+              {},
             )
           : { response: undefined }
 
