@@ -92,10 +92,10 @@ export class HttpClient {
     }
   }
 
-  fetch = async <T>(
+  fetch = async (
     input: string | URL | globalThis.Request,
     config: Omit<FetchConfig, "input"> = {},
-  ): Promise<HttpClientResponse<T>> => {
+  ): Promise<HttpClientResponse<unknown>> => {
     const interceptedConfig =
       config.useInterceptors === false
         ? { ...config, input }
@@ -126,7 +126,7 @@ export class HttpClient {
         throw interceptedError
       }
 
-      return interceptedError as HttpClientResponse<T>
+      return interceptedError as HttpClientResponse<unknown>
     }
 
     const httpResponse = await this.createResponse(response, {
@@ -143,37 +143,20 @@ export class HttpClient {
       throw interceptedResponseOrError
     }
 
-    return interceptedResponseOrError as HttpClientResponse<T>
+    return interceptedResponseOrError as HttpClientResponse<unknown>
   }
 
   fetchOrThrow = async <T>(
     input: string | URL | globalThis.Request,
     config: Omit<FetchConfig, "input"> = {},
   ): Promise<HttpClientResponse<T>> => {
-    const response = await this.fetch<T>(input, config)
+    const response = await this.fetch(input, config)
 
     if (response.status >= 400) {
       throw new HttpClientError(response, undefined)
     }
 
-    return response
-  }
-
-  post = async <T, Body extends Record<string, unknown>>(
-    input: string | URL | globalThis.Request,
-    options: Omit<FetchConfig, "body" | "method" | "input"> & {
-      body?: Body
-    } = {},
-  ) => {
-    return this.fetch<T>(input, {
-      ...options,
-      method: "post",
-      body: JSON.stringify(options.body),
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    })
+    return response as HttpClientResponse<T>
   }
 
   postOrThrow = async <T, Body extends Record<string, unknown>>(

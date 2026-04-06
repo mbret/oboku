@@ -18,7 +18,6 @@ import { configuration } from "../config/configuration"
 import type { HttpClientResponse } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 import { injectToken } from "./injectToken.web"
-import type { AuthSession } from "../auth/types"
 
 class HttpApiClient extends HttpClientWeb {
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>

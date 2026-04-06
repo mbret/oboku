@@ -18,13 +18,14 @@ export const useManifest = (bookId: string | undefined) => {
     queryKey: ["reader/streamer/manifest", { bookId }],
     networkMode: "always",
     queryFn: async () => {
-      const { response: swStreamerResponse } =
-        serviceWorkerReadySignal.getValue()
-          ? await httpClient.fetch(
-              `${window.location.origin}/streamer/${bookId}/manifest`,
-              {},
-            )
-          : { response: undefined }
+      const isSwStreamerAvailable = serviceWorkerReadySignal.getValue()
+
+      const { response: swStreamerResponse } = isSwStreamerAvailable
+        ? await httpClient.fetch(
+            `${window.location.origin}/streamer/${bookId}/manifest`,
+            {},
+          )
+        : { response: undefined }
 
       const enrichManifest = async (_manifest: Manifest) => {
         const book = await db?.book.findOne(bookId).exec()
