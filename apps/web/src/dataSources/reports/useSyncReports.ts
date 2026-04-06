@@ -7,7 +7,7 @@ export const useSyncReports = () =>
     queryKey: ["api/datasourceReport"],
     queryFn: async () => {
       const { data } =
-        await httpClientApi.fetch<SyncReportPostgresEntitiesShared>(
+        await httpClientApi.fetchOrThrow<SyncReportPostgresEntitiesShared>(
           `${configuration.API_URL}/datasources/sync-reports`,
         )
 

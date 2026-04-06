@@ -62,7 +62,7 @@ class Configuration extends BehaviorSubject<{
 
   fetchConfig = async (): Promise<GetWebConfigResponse | undefined> => {
     try {
-      const { data } = await httpClientApi.fetch<GetWebConfigResponse>(
+      const { data } = await httpClientApi.fetchOrThrow<GetWebConfigResponse>(
         `${this.API_URL}/web/config`,
       )
 
