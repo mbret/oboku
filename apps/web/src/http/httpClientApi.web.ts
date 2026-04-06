@@ -128,7 +128,12 @@ class HttpApiClient extends HttpClientWeb {
 
 export const httpClientApi = new HttpApiClient()
 
-let refreshSessionPromise: Promise<AuthSession | null> | null = null
+type InFlightRefresh = {
+  refreshToken: string
+  promise: Promise<boolean>
+}
+
+let refreshSessionPromise: InFlightRefresh | null = null
 
 const refreshAuthState = async (refreshToken: string) => {
   const response = await httpClientApi.refreshToken({
@@ -136,27 +141,44 @@ const refreshAuthState = async (refreshToken: string) => {
     useInterceptors: false,
   })
 
-  authStateSignal.update((state) => {
-    if (!state) return state
+  const authState = authStateSignal.getValue()
 
-    return {
-      ...state,
-      accessToken: response.data.accessToken,
-      refreshToken: response.data.refreshToken,
+  // we are checking if the current auth state is the same as the refresh token
+  // if not, we are not going to refresh the auth state as it's not the same session
+  if (!authState || authState.refreshToken !== refreshToken) {
+    return false
+  }
+
+  const nextAuthState = {
+    ...authState,
+    accessToken: response.data.accessToken,
+    refreshToken: response.data.refreshToken,
+  }
+
+  authStateSignal.update(nextAuthState)
+
+  const didApply = !!nextAuthState
+
+  return didApply
+}
+
+export const refreshAuthSession = (refreshToken: string) => {
+  if (refreshSessionPromise?.refreshToken === refreshToken) {
+    return refreshSessionPromise.promise
+  }
+
+  const promise = refreshAuthState(refreshToken).finally(() => {
+    if (refreshSessionPromise?.promise === promise) {
+      refreshSessionPromise = null
     }
   })
 
-  return authStateSignal.value
-}
-
-export const refreshAuthSession = async (refreshToken: string) => {
-  if (!refreshSessionPromise) {
-    refreshSessionPromise = refreshAuthState(refreshToken).finally(() => {
-      refreshSessionPromise = null
-    })
+  refreshSessionPromise = {
+    refreshToken,
+    promise,
   }
 
-  return refreshSessionPromise
+  return promise
 }
 
 export const refreshOnUnauthorized = async (response: HttpClientResponse) => {
@@ -171,7 +193,11 @@ export const refreshOnUnauthorized = async (response: HttpClientResponse) => {
   }
 
   try {
-    await refreshAuthSession(refreshToken)
+    const didApply = await refreshAuthSession(refreshToken)
+
+    if (!didApply) {
+      return response
+    }
   } catch (e) {
     console.log("Unable to refresh token")
     console.error(e)
