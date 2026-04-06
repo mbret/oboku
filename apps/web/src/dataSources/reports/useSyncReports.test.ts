@@ -1,5 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+const hasQueryFn = <Result>(
+  value: unknown,
+): value is {
+  queryFn: () => Promise<Result>
+} =>
+  typeof value === "object" &&
+  value !== null &&
+  "queryFn" in value &&
+  typeof value.queryFn === "function"
+
 describe("useSyncReports", () => {
   beforeEach(() => {
     vi.resetModules()
@@ -42,9 +52,19 @@ describe("useSyncReports", () => {
     }))
 
     const { useSyncReports } = await import("./useSyncReports")
+    type SyncReportEntries = NonNullable<
+      ReturnType<typeof useSyncReports>["data"]
+    >
 
-    const query = useSyncReports()
-    const result = await query.queryFn()
+    useSyncReports()
+
+    const options = useQuery.mock.calls[0]?.[0]
+
+    if (!hasQueryFn<SyncReportEntries>(options)) {
+      throw new Error("Expected useQuery to be called with a queryFn")
+    }
+
+    const result = await options.queryFn()
 
     expect(fetchOrThrow).toHaveBeenCalledWith(
       "https://api.example.com/datasources/sync-reports",

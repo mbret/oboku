@@ -85,9 +85,13 @@ export class WebCommunication {
               }
 
               try {
-                const nextAuth = await refreshAuthSession(refreshToken)
+                const didRefresh = await refreshAuthSession(refreshToken)
 
-                reply(new NotifyAuthMessage(nextAuth))
+                reply(
+                  new NotifyAuthMessage(
+                    didRefresh ? authStateSignal.value : null,
+                  ),
+                )
               } catch (error) {
                 console.log("Unable to refresh token")
                 console.error(error)

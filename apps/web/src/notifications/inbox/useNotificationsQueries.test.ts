@@ -1,5 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+const hasQueryFn = <Result>(
+  value: unknown,
+): value is {
+  queryFn: () => Promise<Result>
+} =>
+  typeof value === "object" &&
+  value !== null &&
+  "queryFn" in value &&
+  typeof value.queryFn === "function"
+
 describe("notifications queries", () => {
   beforeEach(() => {
     vi.resetModules()
@@ -34,10 +44,19 @@ describe("notifications queries", () => {
     })
 
     const { useInboxNotifications } = await import("./useInboxNotifications")
+    type InboxNotifications = NonNullable<
+      ReturnType<typeof useInboxNotifications>["data"]
+    >
 
-    const query = useInboxNotifications()
+    useInboxNotifications()
 
-    await expect(query.queryFn()).resolves.toEqual([{ id: 1 }])
+    const options = useQuery.mock.calls[0]?.[0]
+
+    if (!hasQueryFn<InboxNotifications>(options)) {
+      throw new Error("Expected useQuery to be called with a queryFn")
+    }
+
+    await expect(options.queryFn()).resolves.toEqual([{ id: 1 }])
     expect(fetchOrThrow).toHaveBeenCalledWith(
       "https://api.example.com/notifications",
     )
@@ -75,10 +94,19 @@ describe("notifications queries", () => {
     const { useUnreadNotificationsCount } = await import(
       "./useUnreadNotificationsCount"
     )
+    type UnreadNotificationsCount = NonNullable<
+      ReturnType<typeof useUnreadNotificationsCount>["data"]
+    >
 
     const query = useUnreadNotificationsCount()
 
-    await expect(query.queryFn()).resolves.toEqual({ count: 3 })
+    const options = useQuery.mock.calls[0]?.[0]
+
+    if (!hasQueryFn<UnreadNotificationsCount>(options)) {
+      throw new Error("Expected useQuery to be called with a queryFn")
+    }
+
+    await expect(options.queryFn()).resolves.toEqual({ count: 3 })
     expect(fetchOrThrow).toHaveBeenCalledWith(
       "https://api.example.com/notifications/unread-count",
     )
