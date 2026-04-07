@@ -1,19 +1,22 @@
 export class HttpClientError extends Error {
+  response: HttpClientResponse | undefined
+  originalError: unknown | undefined
+
   constructor(
-    public response: HttpClientResponse | undefined,
-    public originalError: unknown | undefined,
+    response: HttpClientResponse | undefined,
+    originalError: unknown | undefined,
   ) {
-    if (response) {
-      super(
-        `Response error with status ${response.status} for ${response.response.url}`,
-      )
-    } else {
-      super(
-        originalError instanceof Error
-          ? originalError.message
-          : "Unknown error",
-      )
-    }
+    const message = response
+      ? `Response error with status ${response.status} for ${response.response.url}`
+      : originalError instanceof Error
+        ? originalError.message
+        : "Unknown error"
+
+    super(message)
+
+    this.name = "HttpClientError"
+    this.response = response
+    this.originalError = originalError
   }
 }
 
