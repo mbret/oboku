@@ -48,20 +48,16 @@ export const AdminMicrosoftSection = () => {
     },
   })
 
-  const savedClientId =
-    instanceSettings.data?.microsoftApplicationClientId ?? null
-  const savedAuthority =
-    instanceSettings.data?.microsoftApplicationAuthority ??
-    DEFAULT_MICROSOFT_APPLICATION_AUTHORITY
+  const savedClientId = instanceSettings.data?.microsoftApplicationClientId
+  const savedAuthority = instanceSettings.data?.microsoftApplicationAuthority
+  const effectiveAuthority =
+    savedAuthority || DEFAULT_MICROSOFT_APPLICATION_AUTHORITY
 
   useEffect(
     function syncFormFromInstanceSettings() {
       form.setValues({
         microsoftApplicationClientId: savedClientId ?? "",
-        microsoftApplicationAuthority:
-          savedAuthority === DEFAULT_MICROSOFT_APPLICATION_AUTHORITY
-            ? ""
-            : savedAuthority,
+        microsoftApplicationAuthority: savedAuthority ?? "",
       })
     },
     [savedAuthority, savedClientId, form.setValues],
@@ -112,7 +108,7 @@ export const AdminMicrosoftSection = () => {
               {savedClientId ? <Code>{savedClientId}</Code> : "Not set"}
             </Text>
             <Text size="sm">
-              Auth authority: <Code>{savedAuthority}</Code>
+              Auth authority: <Code>{effectiveAuthority}</Code>
             </Text>
 
             <form
@@ -123,10 +119,8 @@ export const AdminMicrosoftSection = () => {
                   values.microsoftApplicationAuthority.trim()
 
                 await updateInstanceSettings.mutateAsync({
-                  microsoftApplicationClientId: normalizedClientId || null,
-                  microsoftApplicationAuthority:
-                    normalizedAuthority ||
-                    DEFAULT_MICROSOFT_APPLICATION_AUTHORITY,
+                  microsoftApplicationClientId: normalizedClientId,
+                  microsoftApplicationAuthority: normalizedAuthority,
                 })
               })}
             >
@@ -148,19 +142,15 @@ export const AdminMicrosoftSection = () => {
                   <Button
                     type="button"
                     variant="default"
-                    disabled={
-                      !savedClientId &&
-                      savedAuthority === DEFAULT_MICROSOFT_APPLICATION_AUTHORITY
-                    }
+                    disabled={!savedClientId && !savedAuthority}
                     loading={updateInstanceSettings.isPending}
                     onClick={async () => {
                       form.setFieldValue("microsoftApplicationClientId", "")
                       form.setFieldValue("microsoftApplicationAuthority", "")
 
                       await updateInstanceSettings.mutateAsync({
-                        microsoftApplicationClientId: null,
-                        microsoftApplicationAuthority:
-                          DEFAULT_MICROSOFT_APPLICATION_AUTHORITY,
+                        microsoftApplicationClientId: "",
+                        microsoftApplicationAuthority: "",
                       })
                     }}
                   >

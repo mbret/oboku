@@ -30,6 +30,8 @@ export type ServerSyncConfig = {
 export type InstanceConfig = {
   version: 1
   serverSync: ServerSyncConfig
+  microsoftApplicationClientId?: string
+  microsoftApplicationAuthority?: string
   showDisabledPlugins: boolean
 }
 
@@ -64,6 +66,8 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
     credentials: null,
     sources: [],
   }),
+  microsoftApplicationClientId: Joi.string().trim().min(1).optional(),
+  microsoftApplicationAuthority: Joi.string().trim().uri().allow("").optional(),
   showDisabledPlugins: Joi.boolean().default(true),
 })
 
