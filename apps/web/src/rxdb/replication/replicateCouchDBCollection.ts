@@ -76,7 +76,6 @@ export const replicateCouchDBCollection = ({
             },
             unwrap: false,
             signal: cancelSignal,
-            validateStatus: () => true,
             body: JSON.stringify({ selector: { rx_model: collection.name } }),
           },
         )
@@ -89,7 +88,6 @@ export const replicateCouchDBCollection = ({
         ...optionsWithAuth,
         signal: cancelSignal,
         unwrap: false,
-        validateStatus: () => true,
       })
 
       return response

@@ -5,6 +5,36 @@ import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
 import path from "node:path"
 
+const manualChunkGroups = [
+  ["jszip", ["jszip"]],
+  ["dropbox", ["dropbox"]],
+  ["xmldoc", ["xmldoc"]],
+  ["firebase", ["firebase/app", "firebase/analytics"]],
+  ["prosereader", ["@prose-reader/core"]],
+  ["prosereadershared", ["@prose-reader/shared"]],
+  ["rxjsoperators", ["rxjs/operators"]],
+  ["rxjs", ["rxjs"]],
+  ["datefns", ["date-fns"]],
+  // used by chakra -> ark
+  ["zod", ["zod"]],
+  ["dexie", ["dexie"]],
+  ["tanstack", ["@tanstack/query-core"]],
+] as const
+
+const getManualChunkName = (id: string) => {
+  const normalizedId = id.replaceAll("\\", "/")
+
+  for (const [chunkName, packageNames] of manualChunkGroups) {
+    for (const packageName of packageNames) {
+      if (normalizedId.includes(`/node_modules/${packageName}/`)) {
+        return chunkName
+      }
+    }
+  }
+
+  return undefined
+}
+
 export default defineConfig(({ mode }) => ({
   build: {
     // Keep source maps in production for error logging (stack traces). Excluded from PWA precache via globIgnores.
@@ -17,30 +47,20 @@ export default defineConfig(({ mode }) => ({
         main: "index.html",
       },
       output: {
-        manualChunks: {
-          jszip: ["jszip"],
-          dropbox: ["dropbox"],
-          xmldoc: ["xmldoc"],
-          firebase: ["firebase/app", "firebase/analytics"],
-          prosereader: ["@prose-reader/core"],
-          prosereadershared: ["@prose-reader/shared"],
-          rxjs: ["rxjs"],
-          rxjsoperators: ["rxjs/operators"],
-          datefns: ["date-fns"],
-          // used by chakra -> ark
-          zod: ["zod"],
-          dexie: ["dexie"],
-          tanstack: ["@tanstack/query-core"],
+        manualChunks(id) {
+          return getManualChunkName(id)
         },
       },
     },
   },
   optimizeDeps: {
-    esbuildOptions: {
-      // Node.js global to browser globalThis
-      // fix sax on browser
-      define: {
-        global: "globalThis",
+    rolldownOptions: {
+      transform: {
+        // Node.js global to browser globalThis
+        // fix sax on browser
+        define: {
+          global: "globalThis",
+        },
       },
     },
   },

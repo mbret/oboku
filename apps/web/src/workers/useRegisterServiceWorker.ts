@@ -7,14 +7,12 @@ import {
 } from "./communication/communication.web"
 import {
   ConfigurationChangeMessage,
-  NotifyAuthMessage,
   SkipWaitingMessage,
 } from "./communication/types.shared"
 import { useSubscribe } from "reactjrx"
 import { configuration } from "../config/configuration"
 import { distinctUntilKeyChanged, tap } from "rxjs"
 import { isShallowEqual } from "@oboku/shared"
-import { authStateSignal } from "../auth/states.web"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -92,18 +90,6 @@ export const useRegisterServiceWorker = () => {
     [],
   )
   useSubscribe(sendConfigurationChangeMessage)
-
-  const sendNotifyAuthMessage = useCallback(
-    () =>
-      authStateSignal.pipe(
-        tap((auth) => {
-          webCommunication.sendMessage(new NotifyAuthMessage(auth))
-        }),
-      ),
-    [],
-  )
-
-  useSubscribe(sendNotifyAuthMessage)
 
   return { waitingWorker }
 }

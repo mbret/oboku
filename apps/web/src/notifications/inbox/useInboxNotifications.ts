@@ -8,13 +8,13 @@ export const useInboxNotifications = () => {
   return useQuery({
     queryKey: inboxNotificationsQueryKey,
     queryFn: async (): Promise<GetNotificationsResponse> => {
-      const { data } = await httpClientApi.fetch<GetNotificationsResponse>(
-        `${configuration.API_URL}/notifications`,
-      )
+      const { data } =
+        await httpClientApi.fetchOrThrow<GetNotificationsResponse>(
+          `${configuration.API_URL}/notifications`,
+        )
 
       return data
     },
-    networkMode: "online",
     staleTime: 15 * 1000,
     gcTime: Infinity,
     refetchInterval: 30 * 1000,

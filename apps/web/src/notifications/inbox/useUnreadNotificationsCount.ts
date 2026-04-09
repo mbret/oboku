@@ -9,13 +9,12 @@ export const useUnreadNotificationsCount = () => {
     queryKey: unreadCountQueryKey,
     queryFn: async (): Promise<GetUnreadNotificationsCountResponse> => {
       const { data } =
-        await httpClientApi.fetch<GetUnreadNotificationsCountResponse>(
+        await httpClientApi.fetchOrThrow<GetUnreadNotificationsCountResponse>(
           `${configuration.API_URL}/notifications/unread-count`,
         )
 
       return data
     },
-    networkMode: "online",
     staleTime: 15 * 1000,
     gcTime: Infinity,
     refetchInterval: 30 * 1000,

@@ -3,7 +3,10 @@ import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
 import { map, mergeMap, switchMap } from "rxjs"
 import { useQuery$ } from "reactjrx"
-import { RXDB_QUERY_KEY_PREFIX } from "../queries/queryClient"
+import {
+  createRxdbQueryDefaultOptions,
+  RXDB_QUERY_KEY_PREFIX,
+} from "../queries/queryClient"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
 import type { Database } from "../rxdb"
 import type { DeepReadonlyObject, MangoQuery } from "rxdb"
@@ -50,19 +53,6 @@ const tags$ = latestDatabase$.pipe(
   map((tags) => tags.map((item) => item.toJSON())),
 )
 
-const tagsByIds$ = tags$.pipe(
-  map((tags) =>
-    tags.reduce(
-      (acc, tag) => {
-        acc[tag._id] = tag
-
-        return acc
-      },
-      {} as Record<string, DeepReadonlyObject<TagsDocType>>,
-    ),
-  ),
-)
-
 const protectedTags$ = tags$.pipe(
   map((tag) => tag.filter(({ isProtected }) => isProtected)),
 )
@@ -94,6 +84,7 @@ export const getTagsByIds = async (db: Database) => {
 
 export const useTag = (id?: string) => {
   return useQuery$({
+    ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "tag", id],
     enabled: !!id,
     queryFn: () =>
@@ -115,6 +106,7 @@ export const useTags = ({
   queryObj?: MangoQuery<TagsDocType> | undefined
 } = {}) =>
   useQuery$({
+    ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "tags", queryObj],
     queryFn: () =>
       getLatestDatabase().pipe(
@@ -126,12 +118,26 @@ export const useTags = ({
 
 export const useTagsByIds = () =>
   useQuery$({
-    queryFn: tagsByIds$,
+    ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "tagsById"],
+    queryFn: () =>
+      tags$.pipe(
+        map((tags) =>
+          tags.reduce(
+            (acc, tag) => {
+              acc[tag._id] = tag
+
+              return acc
+            },
+            {} as Record<string, DeepReadonlyObject<TagsDocType>>,
+          ),
+        ),
+      ),
   })
 
 export const useTagIds = () =>
   useQuery$({
+    ...createRxdbQueryDefaultOptions(),
     queryFn: () => tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "tagsIds"],
   })
@@ -142,12 +148,14 @@ const blurredTags$ = tags$.pipe(
 
 export const useBlurredTagIds = () =>
   useQuery$({
+    ...createRxdbQueryDefaultOptions(),
     queryFn: () => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "blurredTagIds"],
   })
 
 export const useProtectedTagIds = (options: { enabled?: boolean } = {}) =>
   useQuery$({
+    ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "protectedTagIds"],
     queryFn: () =>
       protectedTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),

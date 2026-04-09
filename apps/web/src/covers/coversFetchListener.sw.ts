@@ -28,10 +28,10 @@ export const coversFetchListener = (event: FetchEvent) => {
          */
         try {
           const { response } = await httpClientApi.fetch(event.request, {
+            clientId: event.clientId || event.resultingClientId,
             unwrap: false,
             mode: "cors",
             credentials: "omit",
-            validateStatus: () => true,
           })
 
           if (response.status !== 200) {

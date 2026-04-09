@@ -1,21 +1,92 @@
-import { HttpClient } from "./httpClient.shared"
-import { authState } from "../auth/states.sw"
+import { type FetchConfig, HttpClient } from "./httpClient.shared"
+import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
 
 export const httpClientApi = new HttpClient()
 
-// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-httpClientApi.useRequestInterceptor(async (config) => {
-  const auth = authState.value
+const getAuthorizedHeaders = (
+  headers: HeadersInit | undefined,
+  accessToken: string,
+) => {
+  const nextHeaders = new Headers(headers)
 
-  if (auth?.accessToken) {
+  nextHeaders.set("Authorization", `Bearer ${accessToken}`)
+
+  return nextHeaders
+}
+
+const retryUnauthorized = async (config: FetchConfig) => {
+  if (!config.clientId) {
+    return null
+  }
+
+  let authReply: Awaited<
+    ReturnType<typeof serviceWorkerCommunication.refreshClientAuth>
+  >
+
+  try {
+    authReply = await serviceWorkerCommunication.refreshClientAuth(
+      config.clientId,
+    )
+  } catch (error) {
+    console.error(error)
+
+    return null
+  }
+
+  if (!authReply.payload?.accessToken) {
+    return null
+  }
+
+  return httpClientApi.fetch(config.input, {
+    ...config,
+    headers: getAuthorizedHeaders(
+      config.headers,
+      authReply.payload.accessToken,
+    ),
+    useInterceptors: false,
+  })
+}
+
+// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+httpClientApi.useRequestInterceptor(async function injectAccessToken(config) {
+  if (!config.clientId) {
+    return config
+  }
+
+  let authReply: Awaited<
+    ReturnType<typeof serviceWorkerCommunication.askClientAuth>
+  >
+
+  try {
+    authReply = await serviceWorkerCommunication.askClientAuth(config.clientId)
+  } catch (error) {
+    console.error(error)
+
+    return config
+  }
+
+  if (authReply.payload?.accessToken) {
     return {
       ...config,
-      headers: {
-        ...config.headers,
-        Authorization: `Bearer ${auth.accessToken}`,
-      },
+      headers: getAuthorizedHeaders(
+        config.headers,
+        authReply.payload.accessToken,
+      ),
     }
   }
 
   return config
+})
+
+// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+httpClientApi.useResponseInterceptor(async (response) => {
+  if (response.status === 401) {
+    const retriedResponse = await retryUnauthorized(response.config).catch(
+      () => null,
+    )
+
+    return retriedResponse ?? response
+  }
+
+  return response
 })

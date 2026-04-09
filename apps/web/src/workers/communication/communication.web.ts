@@ -5,6 +5,7 @@ import {
   AskConfigurationMessage,
   AskProfileMessage,
   ConfigurationChangeMessage,
+  RefreshAuthMessage,
   ReplyAskProfileMessage,
   NotifyAuthMessage,
   type SkipWaitingMessage,
@@ -12,6 +13,14 @@ import {
 import { authStateSignal } from "../../auth/states.web"
 import { Logger } from "../../debug/logger.shared"
 import { configuration } from "../../config/configuration"
+import { refreshAuthSession } from "../../http/httpClientApi.web"
+
+const isWorkerMessage = (
+  message: unknown,
+): message is {
+  type: string
+  payload?: unknown
+} => typeof message === "object" && message !== null && "type" in message
 
 export class WebCommunication {
   constructor() {
@@ -30,12 +39,11 @@ export class WebCommunication {
 
     return fromEvent(navigator.serviceWorker, "message").pipe(
       tap((event) => {
-        if (
-          "data" in event &&
-          typeof event.data === "object" &&
-          event.data &&
-          "type" in event.data
-        ) {
+        const data = "data" in event ? event.data : undefined
+
+        if (isWorkerMessage(data)) {
+          const replyPort =
+            event instanceof MessageEvent ? event.ports[0] : undefined
           const serviceWorker =
             event instanceof MessageEvent
               ? event.source
@@ -44,37 +52,76 @@ export class WebCommunication {
           Logger.log(
             ["communication:web"],
             "received message from service worker",
-            event.data,
+            data,
           )
 
-          if (event.data.type === AskAuthMessage.type) {
-            const message = new NotifyAuthMessage(authStateSignal.value)
+          const reply = (
+            message:
+              | ConfigurationChangeMessage
+              | NotifyAuthMessage
+              | ReplyAskProfileMessage,
+          ) => {
+            if (replyPort) {
+              replyPort.postMessage(message)
+
+              return
+            }
 
             serviceWorker?.postMessage(message)
           }
 
-          if (event.data.type === AskProfileMessage.type) {
+          if (data.type === AskAuthMessage.type) {
+            reply(new NotifyAuthMessage(authStateSignal.value))
+          }
+
+          if (data.type === RefreshAuthMessage.type) {
+            void (async () => {
+              const refreshToken = authStateSignal.value?.refreshToken
+
+              if (!refreshToken) {
+                reply(new NotifyAuthMessage(null))
+
+                return
+              }
+
+              try {
+                const didRefresh = await refreshAuthSession(refreshToken)
+
+                reply(
+                  new NotifyAuthMessage(
+                    didRefresh ? authStateSignal.value : null,
+                  ),
+                )
+              } catch (error) {
+                console.log("Unable to refresh token")
+                console.error(error)
+                reply(new NotifyAuthMessage(null))
+              }
+            })()
+          }
+
+          if (data.type === AskProfileMessage.type) {
             const message = new ReplyAskProfileMessage({
               profile: getProfile(),
             })
 
-            serviceWorker?.postMessage(message)
+            reply(message)
           }
 
-          if (event.data.type === AskConfigurationMessage.type) {
+          if (data.type === AskConfigurationMessage.type) {
             const message = new ConfigurationChangeMessage({
               API_COUCH_URI: configuration.API_COUCH_URI,
               API_URL: configuration.API_URL,
             })
 
-            serviceWorker?.postMessage(message)
+            reply(message)
           }
         }
       }),
     )
   }
 
-  sendMessage(message: ConfigurationChangeMessage | NotifyAuthMessage) {
+  sendMessage(message: ConfigurationChangeMessage) {
     if (!("serviceWorker" in navigator)) {
       return EMPTY
     }

@@ -31,6 +31,12 @@ export class UserPostgresService {
     return matches[0] ?? null
   }
 
+  async findById(userId: number): Promise<UserPostgresEntity | null> {
+    return this.userRepository.findOne({
+      where: { id: userId },
+    })
+  }
+
   async create(user: Omit<UserPostgresEntity, "id">) {
     const newUser = this.userRepository.create({
       ...user,

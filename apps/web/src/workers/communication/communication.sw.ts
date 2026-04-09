@@ -11,26 +11,68 @@ import {
   AskConfigurationMessage,
   AskProfileMessage,
   ConfigurationChangeMessage,
+  RefreshAuthMessage,
   ReplyAskProfileMessage,
   NotifyAuthMessage,
   SkipWaitingMessage,
 } from "./types.shared"
 import { Logger } from "../../debug/logger.shared"
+import type { AuthSession } from "../../auth/types"
 
 declare const self: ServiceWorkerGlobalScope
 
-class IncomingMessageTimeoutError extends Error {
+export class IncomingMessageTimeoutError extends Error {
   constructor() {
     super("Incoming message timeout")
   }
 }
 
+export class InvalidMessageError extends Error {
+  constructor(messageType: string) {
+    super(`Invalid message for type ${messageType}`)
+  }
+}
+
+export class ClientNotFoundError extends Error {
+  constructor(clientId: string) {
+    super(`Unable to find client ${clientId}`)
+  }
+}
+
+const isMessageData = (
+  value: unknown,
+): value is {
+  type: string
+  payload?: unknown
+} => typeof value === "object" && value !== null && "type" in value
+
+type ClientReplyMessage =
+  | {
+      readonly type: typeof NotifyAuthMessage.type
+      validate(payload: unknown): payload is AuthSession | null
+    }
+  | {
+      readonly type: typeof ReplyAskProfileMessage.type
+      validate(payload: unknown): payload is { profile: string | undefined }
+    }
+  | {
+      readonly type: typeof ConfigurationChangeMessage.type
+      validate(
+        payload: unknown,
+      ): payload is ConfigurationChangeMessage["payload"]
+    }
+
+type ClientReplyData<ReplyType extends ClientReplyMessage["type"], Payload> = {
+  type: ReplyType
+  payload: Payload
+}
+
+const DEFAULT_CLIENT_REPLY_TIMEOUT_MS = 1000
+const REFRESH_AUTH_REPLY_TIMEOUT_MS = 5000
+
 class ServiceWorkerCommunication {
   private incomingMessageSubject = new Subject<
-    | NotifyAuthMessage
-    | ReplyAskProfileMessage
-    | SkipWaitingMessage
-    | ConfigurationChangeMessage
+    ReplyAskProfileMessage | SkipWaitingMessage | ConfigurationChangeMessage
   >()
 
   public incomingMessage$ = this.incomingMessageSubject.asObservable()
@@ -40,12 +82,6 @@ class ServiceWorkerCommunication {
       Logger.log("communication:sw", "received message from client", event.data)
 
       // @todo make it dynamic
-
-      if (event.data.type === NotifyAuthMessage.type) {
-        this.incomingMessageSubject.next(
-          new NotifyAuthMessage(event.data.payload),
-        )
-      }
 
       if (event.data.type === ReplyAskProfileMessage.type) {
         this.incomingMessageSubject.next(
@@ -92,10 +128,66 @@ class ServiceWorkerCommunication {
     )
   }
 
-  public askAuth() {
-    this.sendMessage(new AskAuthMessage())
+  private async requestReplyFromClient<
+    ReplyType extends ClientReplyMessage["type"],
+    Payload,
+  >({
+    clientId,
+    message,
+    ReplyMessage,
+    timeoutMs = DEFAULT_CLIENT_REPLY_TIMEOUT_MS,
+  }: {
+    clientId: string
+    message: unknown
+    ReplyMessage: {
+      readonly type: ReplyType
+      validate(payload: unknown): payload is Payload
+    }
+    timeoutMs?: number
+  }): Promise<ClientReplyData<ReplyType, Payload>> {
+    const client = await self.clients.get(clientId)
 
-    return this.waitFor((message) => message instanceof NotifyAuthMessage)
+    if (!client) {
+      throw new ClientNotFoundError(clientId)
+    }
+
+    return new Promise((resolve, reject) => {
+      const channel = new MessageChannel()
+      const cleanup = () => {
+        clearTimeout(timeoutId)
+        channel.port1.close()
+      }
+      const timeoutId = setTimeout(() => {
+        cleanup()
+        reject(new IncomingMessageTimeoutError())
+      }, timeoutMs)
+
+      channel.port1.onmessage = (event) => {
+        cleanup()
+
+        if (
+          isMessageData(event.data) &&
+          event.data.type === ReplyMessage.type &&
+          ReplyMessage.validate(event.data.payload)
+        ) {
+          resolve({
+            type: ReplyMessage.type,
+            payload: event.data.payload,
+          })
+
+          return
+        }
+
+        reject(new InvalidMessageError(ReplyMessage.type))
+      }
+
+      Logger.log("communication:sw", "sending request to client", {
+        clientId,
+        message,
+      })
+
+      client.postMessage(message, [channel.port2])
+    })
   }
 
   public askConfig() {
@@ -112,11 +204,25 @@ class ServiceWorkerCommunication {
     return this.waitFor((message) => message instanceof ReplyAskProfileMessage)
   }
 
+  public async askClientAuth(clientId: string) {
+    return await this.requestReplyFromClient({
+      clientId,
+      message: new AskAuthMessage(),
+      ReplyMessage: NotifyAuthMessage,
+    })
+  }
+
+  public async refreshClientAuth(clientId: string) {
+    return await this.requestReplyFromClient({
+      clientId,
+      message: new RefreshAuthMessage(),
+      ReplyMessage: NotifyAuthMessage,
+      timeoutMs: REFRESH_AUTH_REPLY_TIMEOUT_MS,
+    })
+  }
+
   public watch<
-    Reply extends
-      | typeof SkipWaitingMessage
-      | typeof ConfigurationChangeMessage
-      | typeof NotifyAuthMessage,
+    Reply extends typeof SkipWaitingMessage | typeof ConfigurationChangeMessage,
   >(Message: Reply) {
     return this.incomingMessage$.pipe(
       filter(
