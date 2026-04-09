@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { notifications } from "@mantine/notifications"
 import { config } from "@/config"
 import { authenticatedFetch } from "./authenticatedFetch"
+import { readResponseErrorMessage } from "./readResponseErrorMessage"
 import { instanceSettingsQueryKey } from "./useInstanceSettings"
 import type {
   UpdateInstanceSettingsRequest,
@@ -25,7 +27,10 @@ export const useUpdateInstanceSettings = () => {
 
       if (!response.ok) {
         throw new Error(
-          response.statusText || "Could not update instance settings",
+          await readResponseErrorMessage(
+            response,
+            "Could not update instance settings",
+          ),
         )
       }
 
@@ -34,6 +39,19 @@ export const useUpdateInstanceSettings = () => {
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: instanceSettingsQueryKey,
+      })
+
+      notifications.show({
+        title: "Settings updated",
+        message: "Instance settings have been saved.",
+        color: "green",
+      })
+    },
+    onError: (error) => {
+      notifications.show({
+        title: "Update failed",
+        message: error.message,
+        color: "red",
       })
     },
   })
