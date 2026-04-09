@@ -84,8 +84,8 @@ export const AdminMicrosoftSection = () => {
           </Text>
           <Text size="sm" c="dimmed">
             This is the public client identifier from your Microsoft Entra app
-            registration. If nothing is saved here, the API still falls back to
-            `MICROSOFT_APPLICATION_CLIENT_ID` when it is configured.
+            registration. This value is stored in instance config and used as
+            the web app's Microsoft client ID.
           </Text>
         </div>
 
