@@ -8,63 +8,6 @@ import { InstanceConfigService } from "./instance-config.service"
 import { EnvironmentVariables } from "src/config/types"
 import { ServerSourcesService } from "./server-sources.service"
 
-const isPersistedConfig = (
-  value: unknown,
-): value is {
-  version: number
-  serverSync: {
-    enabled: boolean
-    sources: Array<{ id: string; name: string; path: string; enabled: boolean }>
-  }
-} => {
-  if (typeof value !== "object" || value === null) {
-    return false
-  }
-
-  if (!("version" in value) || !("serverSync" in value)) {
-    return false
-  }
-
-  if (typeof value.version !== "number") {
-    return false
-  }
-
-  const { serverSync } = value as { serverSync: unknown }
-
-  if (
-    typeof serverSync !== "object" ||
-    serverSync === null ||
-    !("sources" in serverSync) ||
-    !("enabled" in serverSync)
-  ) {
-    return false
-  }
-
-  const { sources, enabled } = serverSync as {
-    sources: unknown
-    enabled: unknown
-  }
-
-  if (!Array.isArray(sources) || typeof enabled !== "boolean") {
-    return false
-  }
-
-  return sources.every((source) => {
-    return (
-      typeof source === "object" &&
-      source !== null &&
-      "id" in source &&
-      typeof source.id === "string" &&
-      "name" in source &&
-      typeof source.name === "string" &&
-      "path" in source &&
-      typeof source.path === "string" &&
-      "enabled" in source &&
-      typeof source.enabled === "boolean"
-    )
-  })
-}
-
 describe("InstanceConfigService server sources", () => {
   const createdDirectories: string[] = []
 
@@ -129,16 +72,31 @@ describe("InstanceConfigService server sources", () => {
 
     const persistedConfigRaw = JSON.parse(
       await fs.promises.readFile(appConfig.CONFIG_FILE, "utf8"),
-    ) as unknown
+    )
 
-    if (!isPersistedConfig(persistedConfigRaw)) {
-      throw new Error("Persisted config has an unexpected shape")
-    }
-
-    expect(persistedConfigRaw.version).toBe(1)
-    expect(persistedConfigRaw.serverSync.sources).toHaveLength(1)
-    expect(persistedConfigRaw.serverSync.sources[0]?.id).toBe(source.id)
-    expect(persistedConfigRaw.serverSync.sources[0]?.path).toBe(sourceDirectory)
+    expect(persistedConfigRaw).toEqual({
+      version: 1,
+      serverSync: {
+        enabled: false,
+        credentials: null,
+        sources: [
+          {
+            id: source.id,
+            name: "Main library",
+            path: sourceDirectory,
+            enabled: true,
+          },
+        ],
+      },
+      showDisabledPlugins: true,
+    })
+    expect(persistedConfigRaw).not.toHaveProperty(
+      "microsoftApplicationClientId",
+    )
+    expect(persistedConfigRaw).not.toHaveProperty("oneDrive")
+    expect(persistedConfigRaw).not.toHaveProperty(
+      "microsoftApplicationAuthority",
+    )
   })
 
   it("rejects duplicate normalized paths", async () => {
@@ -157,5 +115,63 @@ describe("InstanceConfigService server sources", () => {
         enabled: true,
       }),
     ).rejects.toBeInstanceOf(ConflictException)
+  })
+
+  it("rejects unknown nested microsoft config properties", async () => {
+    const { appConfig, instanceConfigService } = await createServices()
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify(
+        {
+          version: 1,
+          serverSync: {
+            enabled: false,
+            credentials: null,
+            sources: [],
+          },
+          oneDrive: {
+            applicationClientId: "legacy-client-id",
+            applicationAuthority:
+              "https://login.microsoftonline.com/legacy-tenant",
+          },
+          showDisabledPlugins: true,
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    )
+
+    await expect(instanceConfigService.getConfig()).rejects.toThrow(
+      "Invalid instance config file",
+    )
+  })
+
+  it("accepts an empty microsoft authority string", async () => {
+    const { appConfig, instanceConfigService } = await createServices()
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify(
+        {
+          version: 1,
+          serverSync: {
+            enabled: false,
+            credentials: null,
+            sources: [],
+          },
+          microsoftApplicationAuthority: "",
+          showDisabledPlugins: true,
+        },
+        null,
+        2,
+      ),
+      "utf8",
+    )
+
+    await expect(instanceConfigService.getConfig()).resolves.toMatchObject({
+      microsoftApplicationAuthority: "",
+    })
   })
 })

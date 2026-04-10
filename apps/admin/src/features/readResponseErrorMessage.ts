@@ -3,10 +3,15 @@ export const readResponseErrorMessage = async (
   fallbackMessage: string,
 ) => {
   const contentType = response.headers.get("content-type") ?? ""
+  const text = await response.text()
+
+  if (!text) {
+    return fallbackMessage
+  }
 
   if (contentType.includes("application/json")) {
     try {
-      const data: unknown = await response.json()
+      const data: unknown = JSON.parse(text)
 
       if (
         typeof data === "object" &&
@@ -16,12 +21,25 @@ export const readResponseErrorMessage = async (
       ) {
         return data.message
       }
+
+      if (
+        typeof data === "object" &&
+        data !== null &&
+        "message" in data &&
+        Array.isArray(data.message)
+      ) {
+        const messages = data.message.filter(
+          (message): message is string => typeof message === "string",
+        )
+
+        if (messages.length > 0) {
+          return messages.join(", ")
+        }
+      }
     } catch {
-      return fallbackMessage
+      return text || fallbackMessage
     }
   }
-
-  const text = await response.text()
 
   return text || fallbackMessage
 }
