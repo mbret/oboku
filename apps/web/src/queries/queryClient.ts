@@ -7,13 +7,14 @@ import {
   type UseQueryOptions,
 } from "@tanstack/react-query"
 import { SwitchMutationCancelError } from "reactjrx"
+import { notifyError } from "../notifications/toasts"
 
 export const API_QUERY_KEY_PREFIX = "api" as const
 export const RXDB_QUERY_KEY_PREFIX = "rxdb" as const
 
 export const queryClient = new QueryClient({
   mutationCache: new MutationCache({
-    onError: (error) => {
+    onError: (error, _variables, _context, mutation) => {
       if (
         error instanceof CancelError ||
         error instanceof SwitchMutationCancelError
@@ -25,6 +26,10 @@ export const queryClient = new QueryClient({
       }
 
       console.error(error)
+
+      if (!mutation.options.meta?.suppressGlobalErrorToast) {
+        notifyError(error)
+      }
     },
   }),
   queryCache: new QueryCache({

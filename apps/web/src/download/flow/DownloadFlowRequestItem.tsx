@@ -11,7 +11,7 @@ import { bytesToMb } from "../../common/utils"
 import { createCbzFromReadableStream } from "../createCbzFromReadableStream"
 import { DownloadState, booksDownloadStateSignal } from "../states"
 import { Logger } from "../../debug/logger.shared"
-import { useToasts } from "../../notifications/useToasts"
+import { notifyError } from "../../notifications/toasts"
 import type { DownloadFlowRequest } from "./types"
 
 type DownloadLink = NonNullable<Awaited<ReturnType<typeof getLinkStateAsync>>>
@@ -43,7 +43,6 @@ export const DownloadFlowRequestItem = memo(
     const [link, setLink] = useState<DownloadLink | null>(null)
     const [isPreparing, setIsPreparing] = useState(!request.file)
     const { abortController, bookId, file, links, reject, resolve } = request
-    const { notifyError } = useToasts()
     const isSettledRef = useRef(false)
 
     const setProgress = useCallback(
@@ -90,7 +89,7 @@ export const DownloadFlowRequestItem = memo(
 
         reject(toError(error, "Download failed"))
       },
-      [bookId, notifyError, onSettled, reject, resolve],
+      [bookId, onSettled, reject, resolve],
     )
 
     const persistDownloadResult = useCallback(

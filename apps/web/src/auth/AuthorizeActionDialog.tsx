@@ -101,6 +101,7 @@ export const AuthorizeActionDialog = () => {
     useMutation$({
       mutationFn: (input: { password: string; authorizeFor5Min: boolean }) =>
         validateMasterKeyFn(input.password),
+      meta: { suppressGlobalErrorToast: true },
       onSuccess: (masterKey, variables) => {
         if (variables.authorizeFor5Min) {
           temporaryMasterKey = {

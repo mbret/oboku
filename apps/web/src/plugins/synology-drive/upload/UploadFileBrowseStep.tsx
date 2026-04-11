@@ -1,7 +1,7 @@
 import { PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
 import { memo, useMemo } from "react"
 import { useConnector } from "../../../connectors/useConnector"
-import { useToasts } from "../../../notifications/useToasts"
+import { notifyError } from "../../../notifications/toasts"
 import { AddBookFileBrowseStep } from "../../../upload/AddBookFileBrowseStep"
 import type { UploadBookToAddPayload } from "../../types"
 import { clearSynologyDriveSession } from "../auth/auth"
@@ -26,7 +26,6 @@ export const UploadFileBrowseStep = memo(
       booksToAdd?: ReadonlyArray<UploadBookToAddPayload<"synology-drive">>,
     ) => void
   }) => {
-    const { notifyError } = useToasts()
     const { session, connectorId } = authResult
     const { data: connector } = useConnector({
       id: connectorId,
