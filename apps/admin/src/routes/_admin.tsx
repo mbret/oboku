@@ -47,7 +47,7 @@ const navItems = [
   {
     to: "/providers",
     label: "Providers",
-    description: "Microsoft and provider settings",
+    description: "Plugins & sync",
   },
   {
     to: "/covers",
