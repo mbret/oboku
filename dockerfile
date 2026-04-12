@@ -50,6 +50,7 @@ WORKDIR /usr/src/app/apps/web
 
 FROM nginx:alpine AS web
 WORKDIR /usr/src/app
+COPY apps/web/nginx.default.conf /etc/nginx/conf.d/default.conf
 COPY --from=web-build /usr/src/app/apps/web/dist /usr/share/nginx/html
 CMD ["nginx", "-g", "daemon off;"]
 
