@@ -11,7 +11,6 @@ import { useMutation } from "@tanstack/react-query"
 import { ConnectorManagementButtons } from "../connectors/ConnectorManagementButtons"
 import { ConnectorSelector } from "../connectors/ConnectorSelector"
 import { useConnectors } from "../connectors/useConnectors"
-import { useToasts } from "../notifications/useToasts"
 import type { SettingsConnectorType } from "@oboku/shared"
 import { CancelButton } from "../common/forms/CancelButton"
 
@@ -27,9 +26,6 @@ export type UploadConnectorSelectionStepProps<TAuthResult> = {
   maxConnectors?: number
 }
 
-const formatError = (error: unknown) =>
-  error instanceof Error ? error : new Error("Unable to connect.")
-
 export function UploadConnectorSelectionStep<TAuthResult>(
   props: UploadConnectorSelectionStepProps<TAuthResult>,
 ) {
@@ -42,7 +38,6 @@ export function UploadConnectorSelectionStep<TAuthResult>(
     maxConnectors,
   } = props
 
-  const { notifyError } = useToasts()
   const { data: connectors = [] } = useConnectors({ type: connectorType })
   const [selectedConnectorId, setSelectedConnectorId] = useState<
     string | undefined
@@ -58,9 +53,6 @@ export function UploadConnectorSelectionStep<TAuthResult>(
     mutationFn: authenticate,
     onSuccess: (result) => {
       onAuthenticated(result)
-    },
-    onError: (error) => {
-      notifyError(formatError(error))
     },
   })
 

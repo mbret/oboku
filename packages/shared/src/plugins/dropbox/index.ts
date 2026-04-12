@@ -1,3 +1,4 @@
+import { z } from "zod"
 import type { BaseDataSourceDocType } from "../../db/docTypes"
 
 export type DropboxDataSourceDocType = Omit<
@@ -11,13 +12,15 @@ export type DropboxDataSourceDocType = Omit<
   }
 }
 
-export type DropboxApiCredentials = {
-  accessToken: string
-  accessTokenExpiresAt: string
-  clientId: string
-  codeVerifier: string
-  refreshToken: string
-}
+export const dropboxApiCredentialsSchema = z.object({
+  accessToken: z.string().min(1),
+  accessTokenExpiresAt: z.string().min(1),
+  clientId: z.string().min(1),
+  codeVerifier: z.string().min(1),
+  refreshToken: z.string().min(1),
+})
+
+export type DropboxApiCredentials = z.infer<typeof dropboxApiCredentialsSchema>
 
 export type DropboxDataSourceData = NonNullable<
   DropboxDataSourceDocType["data_v2"]

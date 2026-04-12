@@ -12,6 +12,5 @@ export const useRemoveCollection = () => {
 
       return document.remove()
     },
-    onError: console.error,
   })
 }

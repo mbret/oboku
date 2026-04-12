@@ -4,6 +4,7 @@ import type {
   LinkWithCredentials,
   ProviderApiCredentials,
 } from "@oboku/shared"
+import { parseProviderApiCredentials } from "@oboku/shared"
 import type createNano from "nano"
 import { getPlugin } from "./plugins"
 
@@ -31,15 +32,36 @@ const getRequiredPlugin = <T extends DataSourceType>(type: T) => {
 
 export const pluginFacade = {
   getFolderMetadata: <T extends DataSourceType>(params: MetadataParams<T>) => {
-    return getRequiredPlugin(params.link.type).getFolderMetadata(params)
+    const providerCredentials = parseProviderApiCredentials(
+      params.link.type,
+      params.providerCredentials,
+    )
+
+    return getRequiredPlugin(params.link.type).getFolderMetadata({
+      ...params,
+      providerCredentials,
+    })
   },
   getFileMetadata: <T extends DataSourceType>(params: MetadataParams<T>) => {
-    return getRequiredPlugin(params.link.type).getFileMetadata(params)
+    const providerCredentials = parseProviderApiCredentials(
+      params.link.type,
+      params.providerCredentials,
+    )
+
+    return getRequiredPlugin(params.link.type).getFileMetadata({
+      ...params,
+      providerCredentials,
+    })
   },
   download: async <T extends DataSourceType>(params: DownloadParams<T>) => {
+    const providerCredentials = parseProviderApiCredentials(
+      params.link.type,
+      params.providerCredentials,
+    )
+
     return getRequiredPlugin(params.link.type).download(
       params.link,
-      params.providerCredentials,
+      providerCredentials,
       params.db,
     )
   },

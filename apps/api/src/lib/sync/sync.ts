@@ -1,7 +1,11 @@
 import type createNano from "nano"
 import { SyncReport } from "./SyncReport"
 import { synchronizeFromDataSource } from "./synchronizeFromDataSource"
-import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
+import {
+  ObokuErrorCode,
+  ObokuSharedError,
+  parseProviderApiCredentials,
+} from "@oboku/shared"
 import { createHelpers } from "src/features/plugins/helpers"
 import { atomicUpdate } from "../couch/dbHelpers"
 import { emailToNameHex } from "src/couch/couch.service"
@@ -43,6 +47,7 @@ export const sync = async ({
 }) => {
   const { email } = user
   const syncReport = new SyncReport(dataSourceId, email)
+  let parsedProviderCredentials = providerCredentials
 
   console.log(
     `dataSourceFacade started sync for ${dataSourceId} with user ${email}`,
@@ -60,7 +65,7 @@ export const sync = async ({
       Events.BOOKS_METADATA_REFRESH,
       new BooksMetadataRefreshEvent({
         bookId,
-        providerCredentials,
+        providerCredentials: parsedProviderCredentials,
         email,
       }),
     )
@@ -77,6 +82,10 @@ export const sync = async ({
     if (!dataSource) throw new Error("Data source not found")
 
     const { type } = dataSource
+    parsedProviderCredentials = parseProviderApiCredentials(
+      type,
+      providerCredentials,
+    )
 
     // we create the date now on purpose so that if something change on the datasource
     // during the process (which can take time), user will not be misled to believe its
@@ -90,7 +99,7 @@ export const sync = async ({
     const syncOptions = {
       dataSourceId,
       userName: email,
-      providerCredentials,
+      providerCredentials: parsedProviderCredentials,
       dataSourceType: type,
       dataSource,
       db,

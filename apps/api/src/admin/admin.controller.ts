@@ -37,6 +37,7 @@ import {
   IsString,
   IsUrl,
   MinLength,
+  ValidateIf,
 } from "class-validator"
 import { NotificationsService } from "src/notifications/notifications.service"
 import type {
@@ -113,6 +114,20 @@ class UpdateInstanceSettingsDto {
   @IsBoolean()
   @IsOptional()
   showDisabledPlugins?: boolean
+
+  @IsOptional()
+  @ValidateIf((_object, value) => value !== "")
+  @IsString()
+  @MinLength(1)
+  microsoftApplicationClientId?: string
+
+  @IsOptional()
+  @ValidateIf((_object, value) => value !== "")
+  @IsUrl({
+    require_tld: false,
+    require_protocol: true,
+  })
+  microsoftApplicationAuthority?: string
 }
 
 class CreateAdminNotificationDto implements CreateAdminNotificationRequest {
@@ -282,6 +297,8 @@ export class AdminController {
 
     return {
       showDisabledPlugins: config.showDisabledPlugins,
+      microsoftApplicationClientId: config.microsoftApplicationClientId,
+      microsoftApplicationAuthority: config.microsoftApplicationAuthority,
     }
   }
 
@@ -289,16 +306,12 @@ export class AdminController {
   async updateSettings(
     @Body() body: UpdateInstanceSettingsDto,
   ): Promise<UpdateInstanceSettingsResponse> {
-    const config = await this.instanceConfigService.updateConfig((prev) => ({
+    await this.instanceConfigService.updateConfig((prev) => ({
       ...prev,
-      ...(body.showDisabledPlugins !== undefined && {
-        showDisabledPlugins: body.showDisabledPlugins,
-      }),
+      ...body,
     }))
 
-    return {
-      showDisabledPlugins: config.showDisabledPlugins,
-    }
+    return {}
   }
 
   @Get("server-sync")

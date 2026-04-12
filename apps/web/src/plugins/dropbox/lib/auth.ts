@@ -1,13 +1,16 @@
 import { DropboxAuth } from "dropbox"
 import { CancelError } from "../../../errors/errors.shared"
-import { ROUTES } from "../../../navigation/routes"
 import { configuration } from "../../../config/configuration"
 import { signal } from "reactjrx"
+import { dropboxAuthCallbackPath } from "../../authCallbackEntrypoints.shared"
+import { hasMinimumValidityLeft } from "../../tokenValidity"
 
 const defaultWindowOptions = {
   toolbar: "no",
   menubar: "no",
 }
+
+const MINIMUM_DROPBOX_TOKEN_VALIDITY_MS = 1000 * 60 * 60
 
 export const dropboxAuthSignal = signal<DropboxAuth | undefined>({})
 
@@ -21,18 +24,11 @@ const isAccessTokenStillSufficient = () => {
   const accessTokenExpiresAt: Date | undefined = dropboxAuthSignal
     .getValue()
     ?.getAccessTokenExpiresAt()
-  const currentTime = Date.now()
-  const hours =
-    Math.abs((accessTokenExpiresAt?.getTime() || 0) - currentTime) / 36e5
 
-  if (
-    accessTokenExpiresAt &&
-    accessTokenExpiresAt.getTime() > currentTime &&
-    hours >= 1
-  )
-    return true
-
-  return false
+  return hasMinimumValidityLeft({
+    expiresAt: accessTokenExpiresAt,
+    minimumValidityMs: MINIMUM_DROPBOX_TOKEN_VALIDITY_MS,
+  })
 }
 
 /**
@@ -62,7 +58,7 @@ export const authUser = ({
       if (isAccessTokenStillSufficient()) return resolve(dropboxAuth)
 
       const redirectUri = new URL(
-        ROUTES.AUTH_CALLBACK,
+        dropboxAuthCallbackPath,
         window.location.origin,
       ).toString()
       const usePKCE = true

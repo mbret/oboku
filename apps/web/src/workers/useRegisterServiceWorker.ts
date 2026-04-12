@@ -89,6 +89,7 @@ export const useRegisterServiceWorker = () => {
       ),
     [],
   )
+
   useSubscribe(sendConfigurationChangeMessage)
 
   return { waitingWorker }

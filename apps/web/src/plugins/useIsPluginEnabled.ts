@@ -1,6 +1,7 @@
 import { configuration } from "../config/configuration"
 import { plugin as googlePlugin } from "./google"
 import { plugin as dropboxPlugin } from "./dropbox"
+import { plugin as oneDrivePlugin } from "./one-drive"
 import { plugin as serverPlugin } from "./server"
 import type { Plugin } from "./configure"
 
@@ -10,6 +11,8 @@ const isPluginEnabled = (plugin: Plugin) => {
       return configuration.FEATURE_GOOGLE_DRIVE_ENABLED
     case dropboxPlugin.type:
       return configuration.FEATURE_DROPBOX_ENABLED
+    case oneDrivePlugin.type:
+      return configuration.FEATURE_ONE_DRIVE_ENABLED
     case serverPlugin.type:
       return configuration.FEATURE_SERVER_SYNC_ENABLED
     default:

@@ -1,19 +1,18 @@
 import type { SignInWithGoogleRequest } from "@oboku/shared"
-import { finalize, from, map, switchMap } from "rxjs"
-import { lock, unlock } from "../common/BlockingBackdrop"
+import { from, map, switchMap } from "rxjs"
 import { useReCreateDb } from "../rxdb"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useMutation$ } from "reactjrx"
 import { signInWithGooglePrompt } from "../google/auth"
 import { completeAuthentication } from "./completeAuthentication"
 import { getOrCreateAuthInstallationId } from "./installationId"
+import { withLock } from "../common/locks/utils"
 
 export const useSignIn = () => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
 
   return useMutation$({
     mutationFn: (data: { email: string; password: string } | undefined) => {
-      lock("authentication")
       const installationId = getOrCreateAuthInstallationId()
 
       const signIn$ = data
@@ -42,9 +41,7 @@ export const useSignIn = () => {
             auth: data,
           }),
         ),
-        finalize(() => {
-          unlock("authentication")
-        }),
+        withLock("authentication"),
       )
     },
   })

@@ -1,19 +1,14 @@
 import type { RequestMagicLinkRequest } from "@oboku/shared"
-import { finalize, from } from "rxjs"
-import { lock, unlock } from "../common/BlockingBackdrop"
+import { from } from "rxjs"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useMutation$ } from "reactjrx"
+import { withLock } from "../common/locks/utils"
 
 export const useRequestMagicLink = () => {
   return useMutation$({
-    mutationFn: (data: RequestMagicLinkRequest) => {
-      lock("magic-link-request")
-
-      return from(httpClientApi.requestMagicLink(data)).pipe(
-        finalize(() => {
-          unlock("magic-link-request")
-        }),
-      )
-    },
+    mutationFn: (data: RequestMagicLinkRequest) =>
+      from(httpClientApi.requestMagicLink(data)).pipe(
+        withLock("magic-link-request"),
+      ),
   })
 }

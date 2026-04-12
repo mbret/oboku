@@ -45,6 +45,11 @@ const navItems = [
     description: "Broadcast inbox messages",
   },
   {
+    to: "/providers",
+    label: "Providers",
+    description: "Plugins & sync",
+  },
+  {
     to: "/covers",
     label: "Covers",
     description: "Storage usage and cleanup",

@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react"
 import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
 import path from "node:path"
+import { getAuthCallbackRollupInput } from "./src/plugins/authCallbackEntrypoints.shared"
 
 const manualChunkGroups = [
   ["jszip", ["jszip"]],
@@ -14,7 +15,6 @@ const manualChunkGroups = [
   ["prosereadershared", ["@prose-reader/shared"]],
   ["rxjsoperators", ["rxjs/operators"]],
   ["rxjs", ["rxjs"]],
-  ["datefns", ["date-fns"]],
   // used by chakra -> ark
   ["zod", ["zod"]],
   ["dexie", ["dexie"]],
@@ -45,6 +45,7 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       input: {
         main: "index.html",
+        ...getAuthCallbackRollupInput(),
       },
       output: {
         manualChunks(id) {

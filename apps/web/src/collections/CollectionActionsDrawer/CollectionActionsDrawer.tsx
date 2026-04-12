@@ -22,7 +22,6 @@ import {
   collectionActionDrawerState,
 } from "./useCollectionActionsDrawer"
 import { RenameCollectionDialog } from "./RenameCollectionDialog"
-import { differenceInMinutes } from "date-fns"
 import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
 import { ManageCollectionBooksDialog } from "../ManageCollectionBooksDialog"
@@ -34,8 +33,9 @@ import { configuration } from "../../config/configuration"
 // import { useRefreshBookMetadata } from "../../books/useRefreshBookMetadata"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
 import { useMarkBookAsFinished } from "../../books/useMarkBookAs"
+import { differenceInMinutes } from "../../common/date/differenceInMinutes"
 
-export const CollectionActionsDrawer = memo(() => {
+export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
   const { openedWith, lastId: collectionId } = useSignalValue(
     collectionActionDrawerState,
   )
@@ -83,7 +83,7 @@ export const CollectionActionsDrawer = memo(() => {
   const isRefreshingMetadata = !!(
     collection?.metadataUpdateStatus === "fetching" &&
     collection.lastMetadataStartedAt &&
-    differenceInMinutes(new Date(), collection.lastMetadataStartedAt) <
+    differenceInMinutes(Date.now(), collection.lastMetadataStartedAt) <
       COLLECTION_METADATA_LOCK_MN
   )
 

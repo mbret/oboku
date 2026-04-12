@@ -20,6 +20,9 @@ export const usePluginRemoveBook = () => {
   const removeBookFromDrive = pluginsByType.DRIVE.useRemoveBook({
     requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
   })
+  const removeBookFromOneDrive = pluginsByType["one-drive"].useRemoveBook({
+    requestPopup: createRequestPopupDialog({ name: "one-drive" }),
+  })
   const removeBookFromFile = pluginsByType.file.useRemoveBook({
     requestPopup: createRequestPopupDialog({ name: "file" }),
   })
@@ -50,6 +53,8 @@ export const usePluginRemoveBook = () => {
           return removeBookFromDropbox(link)
         case "DRIVE":
           return removeBookFromDrive(link)
+        case "one-drive":
+          return removeBookFromOneDrive(link)
         case "file":
           return removeBookFromFile(link)
         case "URI":
@@ -63,6 +68,7 @@ export const usePluginRemoveBook = () => {
       removeBookFromDrive,
       removeBookFromDropbox,
       removeBookFromFile,
+      removeBookFromOneDrive,
       removeBookFromServer,
       removeBookFromSynologyDrive,
       removeBookFromUri,

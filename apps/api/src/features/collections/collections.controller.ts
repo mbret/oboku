@@ -5,19 +5,18 @@ import { CollectionMetadataService } from "./CollectionMetadataService"
 import { IsBoolean, IsString, IsOptional, IsObject } from "class-validator"
 import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
 import { WithAuthUser, AuthUser } from "src/auth/auth.guard"
-import { DataSourceType } from "@oboku/shared"
-import { ProviderApiCredentials } from "@oboku/shared"
+import type { RefreshCollectionMetadataRequest } from "@oboku/shared"
 
 class PostMetadataRefreshDto {
   @IsString()
-  collectionId!: string
+  collectionId!: RefreshCollectionMetadataRequest["collectionId"]
 
   @IsBoolean()
   @IsOptional()
-  soft?: boolean
+  soft?: RefreshCollectionMetadataRequest["soft"]
 
   @IsObject()
-  providerCredentials!: ProviderApiCredentials<DataSourceType>
+  providerCredentials!: RefreshCollectionMetadataRequest["providerCredentials"]
 }
 
 @Controller("collections")

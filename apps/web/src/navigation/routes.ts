@@ -26,7 +26,6 @@ export const ROUTES = {
   LOGIN_MAGIC_LINK: "/login/magic-link",
   SIGN_UP: "/signup",
   SIGN_UP_COMPLETE: "/signup/complete",
-  AUTH_CALLBACK: "/auth_callback",
   READER: "/reader/:id",
   SEARCH: "/search",
   PROBLEMS: "/problems",

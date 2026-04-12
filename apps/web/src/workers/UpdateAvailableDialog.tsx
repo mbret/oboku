@@ -8,7 +8,7 @@ import {
   Link,
 } from "@mui/material"
 import type { FC } from "react"
-import { useLock } from "../common/BlockingBackdrop"
+import { lock } from "../common/locks/utils"
 import { WebCommunication } from "./communication/communication.web"
 import { SkipWaitingMessage } from "./communication/types.shared"
 
@@ -16,7 +16,6 @@ export const UpdateAvailableDialog: FC<{
   serviceWorker?: ServiceWorker
 }> = ({ serviceWorker }) => {
   const hasUpdate = !!serviceWorker
-  const [lock] = useLock()
 
   if (import.meta.env.MODE === "development") return null
 

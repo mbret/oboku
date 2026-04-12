@@ -6,7 +6,7 @@ import { plugins } from "../../dataSources"
 import { ROUTES } from "../../navigation/routes"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
-import { useToasts } from "../../notifications/useToasts"
+import { notify } from "../../notifications/toasts"
 import type { DataSourceSubmitPayload } from "../../plugins/types"
 import { Page } from "../../common/Page"
 
@@ -16,8 +16,6 @@ export const NewDataSourceScreen = memo(() => {
   const plugin = plugins.find((p) => p.type.toLowerCase() === id?.toLowerCase())
   const PluginForm = plugin?.DataSourceCreateForm
   const { mutate: createDataSource } = useCreateDataSource()
-  const { notify, notifyError } = useToasts()
-
   const handleSubmit = (payload: DataSourceSubmitPayload) => {
     if (!plugin?.type) return
 
@@ -33,7 +31,6 @@ export const NewDataSourceScreen = memo(() => {
           notify("actionSuccess")
           goBack(ROUTES.SYNC_DATASOURCES)
         },
-        onError: (error) => notifyError(error),
       },
     )
   }

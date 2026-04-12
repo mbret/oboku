@@ -1,5 +1,5 @@
 import { memo, useEffect } from "react"
-import { BlockingScreen } from "../../common/BlockingBackdrop"
+import { LockScreen } from "../../common/locks/LockScreen"
 import type { ObokuPlugin } from "../types"
 import { useLoadGapi } from "./lib/gapi"
 import { useSignalValue } from "reactjrx"
@@ -18,7 +18,7 @@ export const Provider: ObokuPlugin["Provider"] = memo(({ children }) => {
   return (
     <>
       {children}
-      {!!consentPopupShown && <BlockingScreen />}
+      {!!consentPopupShown && <LockScreen />}
     </>
   )
 })

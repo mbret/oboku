@@ -11,7 +11,7 @@ import { PreventAutocompleteFields } from "../common/forms/PreventAutocompleteFi
 import { useForm } from "react-hook-form"
 import { ErrorAlert, errorToMessage } from "../errors/ErrorMessage"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
-import { useToasts } from "../notifications/useToasts"
+import { notify } from "../notifications/toasts"
 import { signal, SIGNAL_RESET, useMutation$, useSignalValue } from "reactjrx"
 import { useInsertSecret } from "./useInsertSecret"
 import { encryptSecret } from "./secretsUtils"
@@ -73,7 +73,6 @@ export const SetupSecretDialog = memo(() => {
     },
     disabled: !isAddingNewSecret && isPending,
   })
-  const { notify } = useToasts()
   const { mutateAsync: insertSecret } = useInsertSecret()
   const { mutateAsync: updateSecret } = useUpdateSecret()
   const { mutateAsync: submit } = useMutation$({
@@ -115,6 +114,7 @@ export const SetupSecretDialog = memo(() => {
         }),
       )
     },
+    meta: { suppressGlobalErrorToast: true },
     onSuccess: () => {
       onInnerClose()
       notify("actionSuccess")

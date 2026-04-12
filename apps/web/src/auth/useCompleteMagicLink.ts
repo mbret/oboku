@@ -1,18 +1,16 @@
-import { finalize, from, switchMap } from "rxjs"
-import { lock, unlock } from "../common/BlockingBackdrop"
+import { from, switchMap } from "rxjs"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useMutation$ } from "reactjrx"
 import { useReCreateDb } from "../rxdb"
 import { completeAuthentication } from "./completeAuthentication"
 import { getOrCreateAuthInstallationId } from "./installationId"
+import { withLock } from "../common/locks/utils"
 
 export const useCompleteMagicLink = () => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
 
   return useMutation$({
     mutationFn: (data: { token: string }) => {
-      lock("magic-link-complete")
-
       return from(
         httpClientApi.authWithMagicLink({
           ...data,
@@ -25,9 +23,7 @@ export const useCompleteMagicLink = () => {
             auth: data,
           }),
         ),
-        finalize(() => {
-          unlock("magic-link-complete")
-        }),
+        withLock("magic-link-complete"),
       )
     },
   })

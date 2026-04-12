@@ -3,7 +3,7 @@ import type { FileStat, WebDAVClient } from "webdav"
 import { memo, useMemo } from "react"
 import type { TreeNode } from "../../../common/FileTreeView"
 import { useConnector } from "../../../connectors/useConnector"
-import { useToasts } from "../../../notifications/useToasts"
+import { notifyError } from "../../../notifications/toasts"
 import { TYPE } from "../constants"
 import type { WebdavAuthResult } from "./ConnectorSelectionStep"
 import type { UploadBookToAddPayload } from "../../types"
@@ -55,8 +55,6 @@ export const WebdavAddBookFileBrowseStep = memo(
     onCancel: () => void
     onGoBack: () => void
   }) {
-    const { notifyError } = useToasts()
-
     const initialItems = useMemo(
       () => toTreeNodeList(initialFileStats),
       [initialFileStats],
@@ -72,7 +70,7 @@ export const WebdavAddBookFileBrowseStep = memo(
           return []
         }
       }
-    }, [client, notifyError])
+    }, [client])
 
     return (
       <AddBookFileBrowseStep

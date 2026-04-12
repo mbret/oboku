@@ -7,13 +7,11 @@ import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getCollectionById } from "./dbHelpers"
 import { CancelError, OfflineError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
-import { useToasts } from "../notifications/useToasts"
 
 export const useRefreshCollectionMetadata = () => {
   const { mutateAsync: updateCollection } = useCollectionIncrementalModify()
   const getRefreshMetadataPluginData = usePluginRefreshMetadata()
   const withNetwork = useWithNetwork()
-  const { notifyError } = useToasts()
 
   return useMutation$({
     mutationFn: (collectionId: string) =>
@@ -71,8 +69,6 @@ export const useRefreshCollectionMetadata = () => {
         catchError((e) => {
           if (e instanceof CancelError || e instanceof OfflineError)
             return EMPTY
-
-          notifyError(e)
 
           throw e
         }),

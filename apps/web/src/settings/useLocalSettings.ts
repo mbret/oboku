@@ -2,7 +2,10 @@
  * Settings that are only kept for a user session on the device itself.
  */
 import { signal, useSignalValue } from "reactjrx"
-import type { Mode } from "@mui/system/cssVars/useCurrentColorScheme"
+
+import type { ThemeProviderProps } from "@mui/material"
+
+type ThemeMode = ThemeProviderProps["defaultMode"]
 
 export const localSettingsDefaultValues = {
   readingFullScreenSwitchMode: import.meta.env.DEV
@@ -25,7 +28,7 @@ export const localSettingsSignal = signal<{
   unBlurWhenProtectedVisible: boolean
   hideDirectivesFromCollectionName: boolean
   showCollectionWithProtectedContent: "unlocked" | "hasNormalContent"
-  themeMode?: Mode | "e-ink"
+  themeMode?: ThemeMode | "e-ink"
   readerFloatingTime?: "bottom"
   readerFloatingProgress?: "bottom"
 }>({

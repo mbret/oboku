@@ -1,21 +1,17 @@
 import { Stack, Typography } from "@mui/material"
-import { formatDistance } from "date-fns"
 import { memo } from "react"
-import { getRxModelLabelFromValue } from "./helpers"
+import { formatReportDuration, getRxModelLabelFromValue } from "./helpers"
 import type { useSyncReports } from "./useSyncReports"
 
-export const ReportSummary = memo(
-  ({
-    entry,
-  }: {
-    entry: NonNullable<ReturnType<typeof useSyncReports>["data"]>[number]
-  }) => (
+export const ReportSummary = memo(function ReportSummary({
+  entry,
+}: {
+  entry: NonNullable<ReturnType<typeof useSyncReports>["data"]>[number]
+}) {
+  return (
     <Stack gap={1}>
       <Typography variant="body2">
-        <b>Duration:</b>{" "}
-        {formatDistance(entry.createdAt, entry.endedAt, {
-          includeSeconds: true,
-        })}
+        <b>Duration:</b> {formatReportDuration(entry.createdAt, entry.endedAt)}
       </Typography>
 
       <Stack>
@@ -52,5 +48,5 @@ export const ReportSummary = memo(
         )}
       </Stack>
     </Stack>
-  ),
-)
+  )
+})

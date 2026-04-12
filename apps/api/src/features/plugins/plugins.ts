@@ -1,6 +1,7 @@
 import type { DataSourceType } from "@oboku/shared"
 import { dataSource as googleDataSource } from "./google"
 import { dataSource as dropboxDataSource } from "./dropbox"
+import { dataSource as oneDriveDataSource } from "./one-drive"
 import { dataSource as synologyDriveDataSource } from "./synology-drive"
 import { dataSource as urlDataSource } from "./uri"
 import { dataSource as webdavDataSource } from "./webdav"
@@ -17,6 +18,7 @@ export const plugins: {
 } = {
   DRIVE: googleDataSource,
   dropbox: dropboxDataSource,
+  "one-drive": oneDriveDataSource,
   "synology-drive": synologyDriveDataSource,
   URI: urlDataSource,
   webdav: webdavDataSource,
