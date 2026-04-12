@@ -30,7 +30,6 @@
     "@tanstack/react-query-persist-client": "^5.96.2",
     "@tanstack/react-virtual": "^3.8.4",
     "buffer": "^6.0.3",
-    "date-fns": "^4.1.0",
     "dexie": "^4.0.10",
     "dropbox": "^10.34.0",
     "firebase": "^12.5.0",

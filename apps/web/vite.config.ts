@@ -15,7 +15,6 @@ const manualChunkGroups = [
   ["prosereadershared", ["@prose-reader/shared"]],
   ["rxjsoperators", ["rxjs/operators"]],
   ["rxjs", ["rxjs"]],
-  ["datefns", ["date-fns"]],
   // used by chakra -> ark
   ["zod", ["zod"]],
   ["dexie", ["dexie"]],

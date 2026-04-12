@@ -1,7 +1,6 @@
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { combineLatest, first, from, of, switchMap } from "rxjs"
 import { useEffect } from "react"
-import { isBefore, subMonths } from "date-fns"
 import { Logger } from "../debug/logger.shared"
 import { useMutation$ } from "reactjrx"
 import { configuration } from "../config/configuration"
@@ -26,13 +25,14 @@ const useRemoveDanglingLinks = () => {
               })
 
               const today = new Date()
-              const aMonthAgo = subMonths(today, 1)
+              const aMonthAgo = new Date(today)
+              aMonthAgo.setMonth(aMonthAgo.getMonth() - 1)
 
               const danglingLinksOlderThanMonth = danglingLinks.filter(
                 (link) => {
                   const date = new Date(link.createdAt)
 
-                  return isBefore(date, aMonthAgo)
+                  return date < aMonthAgo
                 },
               )
 

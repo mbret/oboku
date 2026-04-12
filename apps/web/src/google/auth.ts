@@ -1,9 +1,9 @@
 import { signal, useSignalValue } from "reactjrx"
-import { addSeconds } from "date-fns"
 import { configuration } from "../config/configuration"
 import { from, switchMap } from "rxjs"
 import { gsiOrThrow$ } from "./gsi"
 import { CancelError } from "../errors/errors.shared"
+import { addSeconds } from "../common/date/addSeconds"
 
 type GoogleAccessToken = google.accounts.oauth2.TokenResponse & {
   created_at: number
@@ -58,9 +58,9 @@ export const hasGrantedPermissions = (
 }
 
 export const getTokenExpirationDate = (accessToken: GoogleAccessToken) => {
-  const createdAtDate = new Date(accessToken.created_at)
+  const expiresInSeconds = Number.parseInt(accessToken.expires_in, 10)
 
-  return addSeconds(createdAtDate, parseInt(accessToken.expires_in, 10))
+  return addSeconds(accessToken.created_at, expiresInSeconds)
 }
 
 export const signInWithGooglePrompt = () =>
