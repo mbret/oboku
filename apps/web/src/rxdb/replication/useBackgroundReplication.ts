@@ -9,7 +9,7 @@ import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
 import { useWatchAndFixConflicts } from "./conflicts/useWatchAndFixConflicts"
 import { configuration } from "../../config/configuration"
-import type { RxCouchDBReplicationState } from "rxdb/dist/types/plugins/replication-couchdb"
+import type { RxCouchDBReplicationState } from "rxdb/plugins/replication-couchdb"
 
 export const useBackgroundReplication = () => {
   const { db: database } = useDatabase()
