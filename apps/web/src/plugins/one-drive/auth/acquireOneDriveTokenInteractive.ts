@@ -1,6 +1,6 @@
 import type { AccountInfo, PublicClientApplication } from "@azure/msal-browser"
 import { CancelError } from "../../../errors/errors.shared"
-import { resolveActiveAccount } from "./auth"
+import { resolveOneDriveAccount } from "./auth"
 import { lock, unlock } from "../../../common/locks/utils"
 
 export async function acquireOneDriveTokenInteractive({
@@ -43,13 +43,11 @@ export async function acquireOneDriveTokenInteractive({
 
     unlock(lockId)
 
-    const nextAccount = loginResult.account ?? resolveActiveAccount(client)
+    const nextAccount = loginResult.account ?? resolveOneDriveAccount(client)
 
     if (!nextAccount) {
       throw new Error("OneDrive did not return an account.")
     }
-
-    client.setActiveAccount(nextAccount)
 
     if (loginResult.accessToken) {
       return loginResult

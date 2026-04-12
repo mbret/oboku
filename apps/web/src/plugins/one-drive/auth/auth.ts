@@ -15,13 +15,28 @@ import { CancelError } from "../../../errors/errors.shared"
 import { acquireOneDriveTokenInteractive } from "./acquireOneDriveTokenInteractive"
 import { Logger } from "../../../debug/logger.shared"
 import { microsoftAuthCallbackPath } from "../../authCallbackEntrypoints.shared"
+import { hasMinimumValidityLeft } from "../../tokenValidity"
 
 export const msalAccountSignal = signal<AccountInfo | undefined>({})
 
 let clientPromise: Promise<PublicClientApplication> | undefined
 
+const MULTIPLE_MICROSOFT_ACCOUNTS_ERROR =
+  "Multiple Microsoft accounts were found. Please clear the OneDrive session from the plugin settings and sign in again."
+
+function hasAmbiguousAccounts(client: PublicClientApplication) {
+  return client.getAllAccounts().length > 1
+}
+
+function assertNoAmbiguousAccounts(client: PublicClientApplication) {
+  if (hasAmbiguousAccounts(client)) {
+    throw new Error(MULTIPLE_MICROSOFT_ACCOUNTS_ERROR)
+  }
+}
+
 function syncAccountFromClient(client: PublicClientApplication) {
-  const account = resolveActiveAccount(client)
+  const account = resolveOneDriveAccount(client)
+
   msalAccountSignal.next(account ?? undefined)
 }
 
@@ -59,7 +74,6 @@ async function initializeOneDriveClient() {
       EventType.LOGIN_SUCCESS,
       EventType.ACQUIRE_TOKEN_SUCCESS,
       EventType.LOGOUT_SUCCESS,
-      EventType.ACTIVE_ACCOUNT_CHANGED,
     ],
   )
 
@@ -82,38 +96,22 @@ async function getOneDriveClient() {
   return clientPromise
 }
 
-export function resolveActiveAccount(client: PublicClientApplication) {
-  const activeAccount = client.getActiveAccount()
-
-  if (activeAccount) {
-    return activeAccount
-  }
-
-  const allAccounts = client.getAllAccounts()
-
-  // Only auto-select when exactly one cached account (unambiguous).
-  // With multiple accounts and no active selection we return null so callers
-  // can surface an explicit error instead of silently binding to an arbitrary
-  // identity.
-  const singleAccount = allAccounts.length === 1 ? allAccounts[0] : undefined
-
-  if (singleAccount) {
-    client.setActiveAccount(singleAccount)
-  }
-
-  return singleAccount ?? null
+export function resolveOneDriveAccount(client: PublicClientApplication) {
+  return client.getAllAccounts()[0] ?? null
 }
 
 async function tryAcquireOneDriveTokenSilently({
   authority,
   client,
+  forceRefresh = false,
   scopes,
 }: {
   authority?: string
   client: PublicClientApplication
+  forceRefresh?: boolean
   scopes: string[]
 }) {
-  const account = resolveActiveAccount(client)
+  const account = resolveOneDriveAccount(client)
 
   if (!account) {
     return undefined
@@ -123,6 +121,7 @@ async function tryAcquireOneDriveTokenSilently({
     return await client.acquireTokenSilent({
       account,
       authority,
+      forceRefresh,
       scopes,
     })
   } catch (error) {
@@ -153,7 +152,7 @@ function resolveAuthorityForAccount(
 ) {
   if (explicitAuthority) return explicitAuthority
 
-  const account = resolveActiveAccount(client)
+  const account = resolveOneDriveAccount(client)
 
   return account && isMicrosoftConsumerAccount(account)
     ? ONE_DRIVE_CONSUMER_AUTHORITY
@@ -162,16 +161,23 @@ function resolveAuthorityForAccount(
 
 export async function requestMicrosoftAccessToken({
   authority,
+  forceRefresh = false,
+  minimumValidityMs = 0,
   requestPopup,
   scopes,
   skipSilent = false,
 }: {
   authority?: string
+  forceRefresh?: boolean
+  minimumValidityMs?: number
   requestPopup: (() => Promise<boolean>) | undefined
   scopes: string[]
   skipSilent?: boolean
 }): Promise<AuthenticationResult> {
   const client = await getOneDriveClient()
+
+  assertNoAmbiguousAccounts(client)
+
   const effectiveAuthority = resolveAuthorityForAccount(client, authority)
 
   try {
@@ -179,31 +185,49 @@ export async function requestMicrosoftAccessToken({
       const silentResult = await tryAcquireOneDriveTokenSilently({
         authority: effectiveAuthority,
         client,
+        forceRefresh,
         scopes,
       })
 
       if (silentResult) {
-        client.setActiveAccount(silentResult.account)
-        return silentResult
-      }
+        if (
+          hasMinimumValidityLeft({
+            expiresAt: silentResult.expiresOn,
+            minimumValidityMs,
+          })
+        ) {
+          return silentResult
+        }
 
-      if (!client.getActiveAccount() && client.getAllAccounts().length > 1) {
-        throw new Error(
-          "Multiple Microsoft accounts were found. Please clear the OneDrive session from the plugin settings and sign in again.",
-        )
+        if (!forceRefresh) {
+          return requestMicrosoftAccessToken({
+            authority,
+            forceRefresh: true,
+            minimumValidityMs,
+            requestPopup,
+            scopes,
+          })
+        }
       }
     }
 
     const result = await acquireOneDriveTokenInteractive({
-      account: skipSilent ? undefined : resolveActiveAccount(client),
+      account: skipSilent ? undefined : resolveOneDriveAccount(client),
       authority: effectiveAuthority,
       client,
       requestPopup,
       scopes,
     })
 
-    if (result.account) {
-      client.setActiveAccount(result.account)
+    if (
+      !hasMinimumValidityLeft({
+        expiresAt: result.expiresOn,
+        minimumValidityMs,
+      })
+    ) {
+      throw new Error(
+        "OneDrive did not return an access token with enough time left.",
+      )
     }
 
     return result
@@ -239,7 +263,6 @@ export async function clearOneDriveSession() {
 
   try {
     const client = await pending
-    client.setActiveAccount(null)
     await client.clearCache()
   } catch (error) {
     Logger.error("Error clearing OneDrive session", error)

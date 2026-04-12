@@ -1,14 +1,25 @@
 import { useMutation } from "@tanstack/react-query"
-import { UnsupportedMethodError } from "../../errors/errors.shared"
 import type { ObokuPlugin } from "../types"
+import { configuration } from "../../config/configuration"
+import { requestMicrosoftAccessToken } from "./auth/auth"
+import { ONE_DRIVE_GRAPH_SCOPES } from "./constants"
 
 export const useRefreshMetadata: ObokuPlugin<"one-drive">["useRefreshMetadata"] =
-  () => {
+  ({ requestPopup }) => {
     return useMutation({
       mutationFn: async () => {
-        throw new UnsupportedMethodError(
-          "OneDrive metadata refresh is not implemented yet",
-        )
+        const authResult = await requestMicrosoftAccessToken({
+          minimumValidityMs: configuration.MINIMUM_TOKEN_VALIDITY_MS,
+          requestPopup,
+          scopes: ONE_DRIVE_GRAPH_SCOPES,
+        })
+
+        return {
+          providerCredentials: {
+            accessToken: authResult.accessToken,
+            expiresAt: authResult.expiresOn?.getTime() ?? null,
+          },
+        }
       },
     })
   }

@@ -31,9 +31,16 @@ export function buildDriveItemUrl(driveId: string, itemId: string) {
   return `${MICROSOFT_GRAPH_BASE_URL}/drives/${encodeURIComponent(driveId)}/items/${encodeURIComponent(itemId)}`
 }
 
+export function getMicrosoftGraphAuthorizationHeaders(accessToken: string) {
+  return {
+    Authorization: `Bearer ${accessToken}`,
+  }
+}
+
 export type GraphDriveItem = {
   name: string
   size?: number
+  lastModifiedDateTime?: string
   file?: { mimeType?: string }
   "@microsoft.graph.downloadUrl"?: string
 }
@@ -60,4 +67,40 @@ export async function parseMicrosoftGraphError(response: Response) {
   }
 
   throw new MicrosoftGraphError(message, response.status)
+}
+
+export async function parseMicrosoftGraphJsonResponse<T>(response: Response) {
+  if (!response.ok) {
+    await parseMicrosoftGraphError(response)
+  }
+
+  const data: T = await response.json()
+
+  return data
+}
+
+export async function fetchMicrosoftGraphJson<T>(
+  accessToken: string,
+  url: string,
+) {
+  const response = await fetch(url, {
+    headers: getMicrosoftGraphAuthorizationHeaders(accessToken),
+  })
+
+  return await parseMicrosoftGraphJsonResponse<T>(response)
+}
+
+export async function getMicrosoftGraphDriveItem({
+  accessToken,
+  driveId,
+  itemId,
+}: {
+  accessToken: string
+  driveId: string
+  itemId: string
+}) {
+  return await fetchMicrosoftGraphJson<GraphDriveItem>(
+    accessToken,
+    buildDriveItemUrl(driveId, itemId),
+  )
 }

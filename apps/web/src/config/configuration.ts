@@ -131,6 +131,10 @@ class Configuration extends BehaviorSubject<{
     return 1000 * 60 * 10 // 10mn
   }
 
+  get MINIMUM_TOKEN_VALIDITY_MS() {
+    return 1000 * 60 * 5 // 5mn
+  }
+
   /**
    * Used for:
    * - signin with google

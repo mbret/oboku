@@ -1,7 +1,9 @@
 import {
   buildDriveItemUrl,
+  fetchMicrosoftGraphJson,
+  getMicrosoftGraphAuthorizationHeaders,
   type GraphDriveItem,
-  parseMicrosoftGraphError,
+  parseMicrosoftGraphJsonResponse,
 } from "@oboku/shared"
 import { map } from "rxjs"
 import { fromFetch } from "rxjs/fetch"
@@ -29,32 +31,15 @@ function buildSharePointPickerBaseUrl(webUrl: string) {
   return url.toString().replace(/\/$/, "")
 }
 
-async function parseOneDriveJsonResponse<T>(response: Response) {
-  if (!response.ok) {
-    await parseMicrosoftGraphError(response)
-  }
-
-  const data: T = await response.json()
-  return data
-}
-
 export function fetchOneDriveJson$<T>(accessToken: string, url: string) {
   return fromFetch(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    selector: (response) => parseOneDriveJsonResponse<T>(response),
+    headers: getMicrosoftGraphAuthorizationHeaders(accessToken),
+    selector: (response) => parseMicrosoftGraphJsonResponse<T>(response),
   })
 }
 
 export async function fetchOneDriveJson<T>(accessToken: string, url: string) {
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
-
-  return await parseOneDriveJsonResponse<T>(response)
+  return await fetchMicrosoftGraphJson<T>(accessToken, url)
 }
 
 export async function getOneDrivePickerBaseUrl(accessToken: string) {

@@ -66,7 +66,7 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
     credentials: null,
     sources: [],
   }),
-  microsoftApplicationClientId: Joi.string().trim().min(1).optional(),
+  microsoftApplicationClientId: Joi.string().trim().empty("").optional(),
   microsoftApplicationAuthority: Joi.string().trim().uri().allow("").optional(),
   showDisabledPlugins: Joi.boolean().default(true),
 })

@@ -168,6 +168,58 @@ describe("OneDrive auth", () => {
     )
   })
 
+  it("forces a silent refresh when the cached token has less than five minutes left", async () => {
+    const { account, client } = createOneDriveAuthTestContext({
+      initialAccount: {
+        homeAccountId: "reader.contoso-tenant-id",
+        name: "Reader",
+        tenantId: "contoso-tenant-id",
+        username: "reader@example.com",
+      },
+    })
+
+    client.acquireTokenSilent
+      .mockResolvedValueOnce({
+        accessToken: "stale-token",
+        account,
+        expiresOn: new Date(Date.now() + 2 * 60 * 1000),
+      })
+      .mockResolvedValueOnce({
+        accessToken: "fresh-token",
+        account,
+        expiresOn: new Date(Date.now() + 10 * 60 * 1000),
+      })
+
+    const { requestMicrosoftAccessToken } = await import("./auth")
+
+    await expect(
+      requestMicrosoftAccessToken({
+        minimumValidityMs: 5 * 60 * 1000,
+        requestPopup: undefined,
+        scopes: ["Files.Read"],
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        accessToken: "fresh-token",
+      }),
+    )
+
+    expect(client.acquireTokenSilent).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        forceRefresh: false,
+        scopes: ["Files.Read"],
+      }),
+    )
+    expect(client.acquireTokenSilent).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        forceRefresh: true,
+        scopes: ["Files.Read"],
+      }),
+    )
+  })
+
   it("keeps popup window failures as real errors", async () => {
     const { client } = createOneDriveAuthTestContext({
       initialAccount: null,

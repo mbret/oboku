@@ -1,5 +1,5 @@
 import { signal, useSignalValue } from "reactjrx"
-import { addMinutes, addSeconds, isBefore } from "date-fns"
+import { addSeconds } from "date-fns"
 import { configuration } from "../config/configuration"
 import { from, switchMap } from "rxjs"
 import { gsiOrThrow$ } from "./gsi"
@@ -61,16 +61,6 @@ export const getTokenExpirationDate = (accessToken: GoogleAccessToken) => {
   const createdAtDate = new Date(accessToken.created_at)
 
   return addSeconds(createdAtDate, parseInt(accessToken.expires_in, 10))
-}
-
-export const hasTokenAccessAtLeast10mnLeft = (
-  accessToken: GoogleAccessToken,
-) => {
-  const tenMinutesFromNow = addMinutes(new Date(), 10)
-  const expirationDate = getTokenExpirationDate(accessToken)
-  const hasAtLeastTenMinutesLeft = isBefore(tenMinutesFromNow, expirationDate)
-
-  return hasAtLeastTenMinutesLeft
 }
 
 export const signInWithGooglePrompt = () =>
