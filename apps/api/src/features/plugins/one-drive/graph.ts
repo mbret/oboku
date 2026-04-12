@@ -60,6 +60,6 @@ export async function downloadOneDriveDriveItem({
     item,
     // Node's Readable.fromWeb expects the `node:stream/web` stream type, while
     // fetch() exposes the DOM ReadableStream type. They are compatible here.
-    stream: Readable.fromWeb(response.body as unknown as NodeReadableStream),
+    stream: Readable.fromWeb(response.body as NodeReadableStream),
   }
 }
