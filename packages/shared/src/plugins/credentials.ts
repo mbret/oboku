@@ -3,6 +3,7 @@ import type { WebdavApiCredentials } from "./webdav"
 import type { ServerApiCredentials } from "./server"
 import type { DropboxApiCredentials } from "./dropbox"
 import type { SynologyDriveApiCredentials } from "@oboku/synology"
+import type { OneDriveApiCredentials } from "./oneDrive"
 
 /**
  * Google OAuth2 credentials shape passed to the API when calling Google Drive.
@@ -36,10 +37,12 @@ export type ProviderApiCredentials<T extends DataSourceType> =
       ? SynologyDriveApiCredentials
       : T extends "DRIVE"
         ? DriveApiCredentials
-        : T extends "dropbox"
-          ? DropboxApiCredentials
-          : T extends "server"
-            ? ServerApiCredentials
-            : T extends "file" | "URI"
-              ? NoProviderApiCredentials
-              : never
+        : T extends "one-drive"
+          ? OneDriveApiCredentials
+          : T extends "dropbox"
+            ? DropboxApiCredentials
+            : T extends "server"
+              ? ServerApiCredentials
+              : T extends "file" | "URI"
+                ? NoProviderApiCredentials
+                : never

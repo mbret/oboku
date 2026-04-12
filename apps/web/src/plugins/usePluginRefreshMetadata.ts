@@ -35,6 +35,11 @@ export const usePluginRefreshMetadata = () => {
     pluginsByType.DRIVE.useRefreshMetadata({
       requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
     })
+  const { mutateAsync: refreshOneDriveMetadata } = pluginsByType[
+    "one-drive"
+  ].useRefreshMetadata({
+    requestPopup: createRequestPopupDialog({ name: "one-drive" }),
+  })
   const { mutateAsync: refreshFileMetadata } =
     pluginsByType.file.useRefreshMetadata({
       requestPopup: createRequestPopupDialog({ name: "file" }),
@@ -71,6 +76,10 @@ export const usePluginRefreshMetadata = () => {
           return refreshDriveMetadata(
             params as UseRefreshMetadataVariables<"DRIVE">,
           )
+        case "one-drive":
+          return refreshOneDriveMetadata(
+            params as UseRefreshMetadataVariables<"one-drive">,
+          )
         case "file":
           return refreshFileMetadata(
             params as UseRefreshMetadataVariables<"file">,
@@ -91,6 +100,7 @@ export const usePluginRefreshMetadata = () => {
       refreshDriveMetadata,
       refreshDropboxMetadata,
       refreshFileMetadata,
+      refreshOneDriveMetadata,
       refreshServerMetadata,
       refreshSynologyDriveMetadata,
       refreshUriMetadata,

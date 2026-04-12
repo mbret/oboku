@@ -235,6 +235,10 @@ export const DownloadFlowRequestItem = memo(
         const { DownloadBookComponent } = pluginsByType.DRIVE
         return <DownloadBookComponent {...downloadProps} link={link} />
       }
+      case "one-drive": {
+        const { DownloadBookComponent } = pluginsByType["one-drive"]
+        return <DownloadBookComponent {...downloadProps} link={link} />
+      }
       case "URI": {
         const { DownloadBookComponent } = pluginsByType.URI
         return <DownloadBookComponent {...downloadProps} link={link} />

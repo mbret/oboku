@@ -1,8 +1,8 @@
 import { DropboxAuth } from "dropbox"
 import { CancelError } from "../../../errors/errors.shared"
-import { ROUTES } from "../../../navigation/routes"
 import { configuration } from "../../../config/configuration"
 import { signal } from "reactjrx"
+import { dropboxAuthCallbackPath } from "../../authCallbackEntrypoints.shared"
 
 const defaultWindowOptions = {
   toolbar: "no",
@@ -62,7 +62,7 @@ export const authUser = ({
       if (isAccessTokenStillSufficient()) return resolve(dropboxAuth)
 
       const redirectUri = new URL(
-        ROUTES.AUTH_CALLBACK,
+        dropboxAuthCallbackPath,
         window.location.origin,
       ).toString()
       const usePKCE = true

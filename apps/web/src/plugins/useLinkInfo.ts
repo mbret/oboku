@@ -20,6 +20,10 @@ export const useLinkInfo = (bookId?: string) => {
     enabled: link?.type === "DRIVE",
     linkData: link?.data,
   })
+  const oneDriveLinkInfo = pluginsByType["one-drive"].useLinkInfo({
+    enabled: link?.type === "one-drive",
+    linkData: link?.data,
+  })
 
   const synologyDriveLinkInfo = pluginsByType["synology-drive"].useLinkInfo({
     enabled: link?.type === "synology-drive",
@@ -46,6 +50,8 @@ export const useLinkInfo = (bookId?: string) => {
       return webdavLinkInfo
     case "DRIVE":
       return driveLinkInfo
+    case "one-drive":
+      return oneDriveLinkInfo
     case "synology-drive":
       return synologyDriveLinkInfo
     case "file":

@@ -9,6 +9,10 @@ import type {
   GoogleDriveLinkData,
 } from "../plugins/google"
 import type {
+  OneDriveDataSourceDocType,
+  OneDriveLinkData,
+} from "../plugins/oneDrive"
+import type {
   ServerConnectorDocType,
   ServerDataSourceDocType,
   ServerLinkData,
@@ -30,6 +34,7 @@ import type { RxDbMeta } from "./rxdb"
 
 export type LinkData =
   | GoogleDriveLinkData
+  | OneDriveLinkData
   | DropboxLinkData
   | WebdavLinkData
   | FileLinkData
@@ -47,19 +52,21 @@ type CommonBase = CouchDBMeta & RxDbMeta
 export type LinkDataForProvider<T extends DataSourceDocType["type"]> =
   T extends "DRIVE"
     ? GoogleDriveLinkData
-    : T extends "dropbox"
-      ? DropboxLinkData
-      : T extends "webdav"
-        ? WebdavLinkData
-        : T extends "synology-drive"
-          ? SynologyDriveLinkData
-          : T extends "server"
-            ? ServerLinkData
-            : T extends "URI"
-              ? UriLinkData
-              : T extends "file"
-                ? FileLinkData
-                : never
+    : T extends "one-drive"
+      ? OneDriveLinkData
+      : T extends "dropbox"
+        ? DropboxLinkData
+        : T extends "webdav"
+          ? WebdavLinkData
+          : T extends "synology-drive"
+            ? SynologyDriveLinkData
+            : T extends "server"
+              ? ServerLinkData
+              : T extends "URI"
+                ? UriLinkData
+                : T extends "file"
+                  ? FileLinkData
+                  : never
 
 /**
  * Link document for a specific provider; `data` is correctly typed as that provider's
@@ -82,6 +89,7 @@ export type LinkDocType =
   | LinkDocTypeForProvider<"synology-drive">
   | LinkDocTypeForProvider<"file">
   | LinkDocTypeForProvider<"DRIVE">
+  | LinkDocTypeForProvider<"one-drive">
   | LinkDocTypeForProvider<"dropbox">
   | LinkDocTypeForProvider<"URI">
   | LinkDocTypeForProvider<"server">
@@ -117,6 +125,7 @@ export type BaseDataSourceDocType = CommonBase & {
 
 export type DataSourceDocType =
   | GoogleDriveDataSourceDocType
+  | OneDriveDataSourceDocType
   | DropboxDataSourceDocType
   | WebDAVDataSourceDocType
   | SynologyDriveDataSourceDocType
@@ -126,6 +135,11 @@ export type DataSourceDocType =
 
 /** Data source / provider type (e.g. "webdav", "file", "dropbox"). */
 export type DataSourceType = DataSourceDocType["type"]
+
+export type DataSourceDocTypeFor<T extends DataSourceType> = Extract<
+  DataSourceDocType,
+  { type: T }
+>
 
 /**
  * Datasource data_v2 shape for a given provider. Same credentials concept as

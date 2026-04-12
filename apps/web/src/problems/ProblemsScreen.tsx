@@ -28,6 +28,7 @@ import { useFixableLinks } from "./useFixableLinks"
 const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
   DRIVE: ["fileId"],
   dropbox: ["fileId"],
+  "one-drive": ["driveId", "fileId"],
   webdav: ["connectorId", "filePath"],
   "synology-drive": ["connectorId", "fileId"],
   server: ["connectorId", "filePath"],

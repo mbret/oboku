@@ -1,58 +1,71 @@
-import { assertNever, type DataSourceDocType } from "@oboku/shared"
+import {
+  assertNever,
+  type DataSourceDocType,
+  type DataSourceDocTypeFor,
+} from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
 import { pluginsByType } from "./configure"
+
+// TypeScript cannot narrow a generic discriminated-union parameter via
+// control flow, so the runtime guard + assertion is the only safe option.
+const syncSourceArgs = <T extends DataSourceDocType["type"]>(
+  dataSource: DeepReadonly<DataSourceDocType> | null | undefined,
+  type: T,
+) => {
+  const narrowed = (dataSource?.type === type ? dataSource : undefined) as
+    | DeepReadonly<DataSourceDocTypeFor<T>>
+    | undefined
+
+  return { enabled: !!narrowed, dataSource: narrowed }
+}
 
 export const usePluginDataSourceLabel = (
   dataSource?: DeepReadonly<DataSourceDocType> | null,
 ) => {
-  const driveSyncSourceInfo = pluginsByType.DRIVE.useSyncSourceInfo({
-    enabled: dataSource?.type === "DRIVE",
-    dataSource: dataSource ?? undefined,
-  })
-  const dropboxSyncSourceInfo = pluginsByType.dropbox.useSyncSourceInfo({
-    enabled: dataSource?.type === "dropbox",
-    dataSource: dataSource ?? undefined,
-  })
-  const fileSyncSourceInfo = pluginsByType.file.useSyncSourceInfo({
-    enabled: dataSource?.type === "file",
-    dataSource: dataSource ?? undefined,
-  })
-  const synologyDriveSyncSourceInfo = pluginsByType[
-    "synology-drive"
-  ].useSyncSourceInfo({
-    enabled: dataSource?.type === "synology-drive",
-    dataSource: dataSource ?? undefined,
-  })
-  const uriSyncSourceInfo = pluginsByType.URI.useSyncSourceInfo({
-    enabled: dataSource?.type === "URI",
-    dataSource: dataSource ?? undefined,
-  })
-  const webdavSyncSourceInfo = pluginsByType.webdav.useSyncSourceInfo({
-    enabled: dataSource?.type === "webdav",
-    dataSource: dataSource ?? undefined,
-  })
-  const serverSyncSourceInfo = pluginsByType.server.useSyncSourceInfo({
-    enabled: dataSource?.type === "server",
-    dataSource: dataSource ?? undefined,
-  })
+  const drive = pluginsByType.DRIVE.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "DRIVE"),
+  )
+  const dropbox = pluginsByType.dropbox.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "dropbox"),
+  )
+  const oneDrive = pluginsByType["one-drive"].useSyncSourceInfo(
+    syncSourceArgs(dataSource, "one-drive"),
+  )
+  const file = pluginsByType.file.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "file"),
+  )
+  const synologyDrive = pluginsByType["synology-drive"].useSyncSourceInfo(
+    syncSourceArgs(dataSource, "synology-drive"),
+  )
+  const uri = pluginsByType.URI.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "URI"),
+  )
+  const webdav = pluginsByType.webdav.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "webdav"),
+  )
+  const server = pluginsByType.server.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "server"),
+  )
 
   const dataSourceType = dataSource?.type
 
   switch (dataSourceType) {
     case "DRIVE":
-      return driveSyncSourceInfo?.name
-    case "webdav":
-      return webdavSyncSourceInfo?.name
+      return drive?.name
     case "dropbox":
-      return dropboxSyncSourceInfo?.name
-    case "synology-drive":
-      return synologyDriveSyncSourceInfo?.name
+      return dropbox?.name
+    case "one-drive":
+      return oneDrive?.name
     case "file":
-      return fileSyncSourceInfo?.name
+      return file?.name
+    case "synology-drive":
+      return synologyDrive?.name
     case "URI":
-      return uriSyncSourceInfo?.name
+      return uri?.name
+    case "webdav":
+      return webdav?.name
     case "server":
-      return serverSyncSourceInfo?.name
+      return server?.name
     case undefined:
       return undefined
     default:

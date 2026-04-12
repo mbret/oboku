@@ -1,6 +1,7 @@
 import type {
   BookMetadata,
   DataSourceDocType,
+  DataSourceDocTypeFor,
   LinkData,
   LinkDataForProvider,
   LinkDocType,
@@ -111,11 +112,10 @@ type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
 >
 
 export type UseSyncSourceInfo<
-  // biome-ignore lint/correctness/noUnusedVariables: Kept for easier maintenance
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = (data: {
   enabled: boolean
-  dataSource?: DeepReadonly<DataSourceDocType> | undefined
+  dataSource?: DeepReadonly<DataSourceDocTypeFor<T>> | undefined
 }) => {
   name?: string
 }

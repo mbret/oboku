@@ -23,6 +23,7 @@ import {
 } from "./workers/communication/types.shared"
 import { serviceWorkerConfiguration } from "./config/configuration.sw"
 import { cleanupOldRxdbDatabases } from "./rxdb/cleanupOldRxdbDatabases.sw"
+import { authCallbackEntrypoints } from "./plugins/authCallbackEntrypoints.shared"
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -36,10 +37,23 @@ if (import.meta.env.PROD) {
   precacheAndRoute(self.__WB_MANIFEST)
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+}
+
 // Set up App Shell-style routing, so that all navigation requests
 // are fulfilled with your index.html shell. Learn more at
 // https://developers.google.com/web/fundamentals/architecture/app-shell
-const fileExtensionRegexp = /\/[^/?]+\.[^/]+$/
+const appShellExcludedPathRegexps = [
+  // Skip framework/internal asset paths such as "/_app" or "/_vercel".
+  /^\/_/,
+  // Skip dedicated OAuth callback pages that live outside the SPA shell.
+  ...authCallbackEntrypoints.map(({ pathname }) => {
+    return new RegExp(`^${escapeRegExp(pathname)}$`)
+  }),
+  // Skip URLs that already point to a concrete file like "/image.png" or "/page.html".
+  /\/[^/?]+\.[^/]+$/,
+]
 
 if (import.meta.env.PROD) {
   registerRoute(
@@ -50,14 +64,11 @@ if (import.meta.env.PROD) {
         return false
       }
 
-      // If this is a URL that starts with /_, skip.
-      if (url.pathname.startsWith("/_")) {
-        return false
-      }
-
-      // If this looks like a URL for a resource, because it contains
-      // a file extension, skip.
-      if (url.pathname.match(fileExtensionRegexp)) {
+      if (
+        appShellExcludedPathRegexps.some((pattern) =>
+          pattern.test(url.pathname),
+        )
+      ) {
         return false
       }
 

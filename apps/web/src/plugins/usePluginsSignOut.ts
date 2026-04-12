@@ -3,6 +3,7 @@ import { pluginsByType } from "./configure"
 export const usePluginsSignOut = () => {
   const dropboxSignOut = pluginsByType.dropbox.useSignOut()
   const driveSignOut = pluginsByType.DRIVE.useSignOut()
+  const oneDriveSignOut = pluginsByType["one-drive"].useSignOut()
   const uriSignOut = pluginsByType.URI.useSignOut()
   const fileSignOut = pluginsByType.file.useSignOut()
   const synologyDriveSignOut = pluginsByType["synology-drive"].useSignOut()
@@ -14,6 +15,7 @@ export const usePluginsSignOut = () => {
   } = {
     dropbox: dropboxSignOut,
     DRIVE: driveSignOut,
+    "one-drive": oneDriveSignOut,
     URI: uriSignOut,
     file: fileSignOut,
     "synology-drive": synologyDriveSignOut,
