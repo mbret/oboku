@@ -36,6 +36,7 @@
     "husky": "^9.1.7",
     "lerna": "^9.0.0",
     "lint-staged": "^16.1.5",
+    "rollup": "^4.60.1",
     "rollup-plugin-analyzer": "^4.0.0",
     "typescript": "^5.9.2",
     "unplugin-dts": "^1.0.0-beta.6",
