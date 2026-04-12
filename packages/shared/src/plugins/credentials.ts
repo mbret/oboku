@@ -1,48 +1,91 @@
 import type { DataSourceType } from "../db/docTypes"
-import type { WebdavApiCredentials } from "./webdav"
-import type { ServerApiCredentials } from "./server"
-import type { DropboxApiCredentials } from "./dropbox"
-import type { SynologyDriveApiCredentials } from "@oboku/synology"
-import type { OneDriveApiCredentials } from "./oneDrive"
-
-/**
- * Google OAuth2 credentials shape passed to the API when calling Google Drive.
- * Compatible with google-auth-library's setCredentials() (no lib dependency here).
- */
-export type DriveApiCredentials = {
-  access_token?: string | null
-  refresh_token?: string | null
-  expiry_date?: number | null
-  token_type?: string | null
-  id_token?: string | null
-  scope?: string
-}
+import { z } from "zod"
+import { dropboxApiCredentialsSchema } from "./dropbox"
+import { driveApiCredentialsSchema } from "./google"
+import { oneDriveApiCredentialsSchema } from "./oneDrive"
+import { serverApiCredentialsSchema } from "./server"
+import { synologyDriveApiCredentialsSchema } from "./synologyDrive"
+import { webdavApiCredentialsSchema } from "./webdav"
 
 /**
  * Providers like local file and URI do not require runtime API credentials.
  * We still model them as an explicit empty object so request payloads can
  * satisfy DTO validation consistently across the stack.
  */
-export type NoProviderApiCredentials = Record<never, never>
+export const noProviderApiCredentialsSchema = z.object({})
+
+export type NoProviderApiCredentials = z.infer<
+  typeof noProviderApiCredentialsSchema
+>
+
+export const providerApiCredentialsSchemas = {
+  webdav: webdavApiCredentialsSchema,
+  "synology-drive": synologyDriveApiCredentialsSchema,
+  DRIVE: driveApiCredentialsSchema,
+  "one-drive": oneDriveApiCredentialsSchema,
+  dropbox: dropboxApiCredentialsSchema,
+  server: serverApiCredentialsSchema,
+  file: noProviderApiCredentialsSchema,
+  URI: noProviderApiCredentialsSchema,
+} satisfies {
+  [K in DataSourceType]: z.ZodTypeAny
+}
+
+type ProviderApiCredentialsSchemaMap = typeof providerApiCredentialsSchemas
 
 /**
  * Dynamic credentials passed when calling a provider's API (sync, getFileMetadata,
  * getFolderMetadata, download). Resolved at runtime (e.g. from secrets, request body).
  * Not stored in RxDB — only link/data_v2 (link credentials) are persisted.
  */
-export type ProviderApiCredentials<T extends DataSourceType> =
-  T extends "webdav"
-    ? WebdavApiCredentials
-    : T extends "synology-drive"
-      ? SynologyDriveApiCredentials
-      : T extends "DRIVE"
-        ? DriveApiCredentials
-        : T extends "one-drive"
-          ? OneDriveApiCredentials
-          : T extends "dropbox"
-            ? DropboxApiCredentials
-            : T extends "server"
-              ? ServerApiCredentials
-              : T extends "file" | "URI"
-                ? NoProviderApiCredentials
-                : never
+export type ProviderApiCredentials<T extends DataSourceType> = z.infer<
+  ProviderApiCredentialsSchemaMap[T]
+>
+
+const formatProviderCredentialsIssue = (issue: z.ZodIssue) => {
+  const path = issue.path.length > 0 ? `${issue.path.join(".")}: ` : ""
+
+  return `${path}${issue.message}`
+}
+
+const providerApiCredentialsParsers: {
+  [K in DataSourceType]: (
+    providerCredentials: unknown,
+  ) => ProviderApiCredentials<K>
+} = {
+  webdav: (providerCredentials) =>
+    webdavApiCredentialsSchema.parse(providerCredentials),
+  "synology-drive": (providerCredentials) =>
+    synologyDriveApiCredentialsSchema.parse(providerCredentials),
+  DRIVE: (providerCredentials) =>
+    driveApiCredentialsSchema.parse(providerCredentials),
+  "one-drive": (providerCredentials) =>
+    oneDriveApiCredentialsSchema.parse(providerCredentials),
+  dropbox: (providerCredentials) =>
+    dropboxApiCredentialsSchema.parse(providerCredentials),
+  server: (providerCredentials) =>
+    serverApiCredentialsSchema.parse(providerCredentials),
+  file: (providerCredentials) =>
+    noProviderApiCredentialsSchema.parse(providerCredentials),
+  URI: (providerCredentials) =>
+    noProviderApiCredentialsSchema.parse(providerCredentials),
+}
+
+export function parseProviderApiCredentials<T extends DataSourceType>(
+  type: T,
+  providerCredentials: unknown,
+): ProviderApiCredentials<T> {
+  const schema = providerApiCredentialsSchemas[type]
+  const normalizedProviderCredentials = providerCredentials ?? {}
+  const result = schema.safeParse(normalizedProviderCredentials)
+
+  if (!result.success) {
+    throw new Error(
+      `Invalid ${type} provider credentials: ${result.error.issues
+        .map(formatProviderCredentialsIssue)
+        .join(", ")}`,
+    )
+  }
+
+  return providerApiCredentialsParsers[type](normalizedProviderCredentials)
+}

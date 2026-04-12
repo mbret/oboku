@@ -7,18 +7,6 @@ const unsupportedSync = () => {
   throw new Error("OneDrive server-side sync is not implemented yet")
 }
 
-function getRequiredAccessToken(
-  providerCredentials?: { accessToken?: string | null } | null,
-) {
-  const accessToken = providerCredentials?.accessToken
-
-  if (!accessToken) {
-    throw new Error("OneDrive access token is required")
-  }
-
-  return accessToken
-}
-
 export const dataSource: DataSourcePlugin<"one-drive"> = {
   type: PLUGIN_ONE_DRIVE_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => {
@@ -58,9 +46,8 @@ export const dataSource: DataSourcePlugin<"one-drive"> = {
     }
   },
   getFolderMetadata: async ({ link, providerCredentials }) => {
-    const accessToken = getRequiredAccessToken(providerCredentials)
     const item = await getOneDriveDriveItem({
-      accessToken,
+      accessToken: providerCredentials.accessToken,
       driveId: link.data.driveId,
       fileId: link.data.fileId,
     })
@@ -71,9 +58,8 @@ export const dataSource: DataSourcePlugin<"one-drive"> = {
     }
   },
   getFileMetadata: async ({ link, providerCredentials }) => {
-    const accessToken = getRequiredAccessToken(providerCredentials)
     const item = await getOneDriveDriveItem({
-      accessToken,
+      accessToken: providerCredentials.accessToken,
       driveId: link.data.driveId,
       fileId: link.data.fileId,
     })
@@ -90,9 +76,8 @@ export const dataSource: DataSourcePlugin<"one-drive"> = {
     }
   },
   download: async (link, providerCredentials) => {
-    const accessToken = getRequiredAccessToken(providerCredentials)
     const { stream } = await downloadOneDriveDriveItem({
-      accessToken,
+      accessToken: providerCredentials.accessToken,
       driveId: link.data.driveId,
       fileId: link.data.fileId,
     })
