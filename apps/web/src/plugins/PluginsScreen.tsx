@@ -12,16 +12,24 @@ import { plugins } from "./configure"
 import { ExtensionRounded } from "@mui/icons-material"
 import { Link } from "react-router"
 import { ROUTES } from "../navigation/routes"
+import {
+  useGetIsPluginEnabled,
+  useGetIsPluginVisible,
+} from "./useIsPluginEnabled"
 
-export const PluginsScreen = memo(() => {
+export const PluginsScreen = memo(function PluginsScreen() {
+  const isPluginVisible = useGetIsPluginVisible()
+  const isPluginEnabled = useGetIsPluginEnabled()
+
   return (
     <Stack flex={1} overflow="auto">
       <TopBarNavigation title={"Plugins"} showBack={false} />
       <List>
-        {plugins.map((plugin) => (
+        {plugins.filter(isPluginVisible).map((plugin) => (
           <ListItemButton
-            key={plugin.name}
+            key={plugin.type}
             component={Link}
+            disabled={!isPluginEnabled(plugin)}
             to={ROUTES.PLUGINS_TYPE.replace(":type", plugin.type)}
           >
             <ListItemIcon>
