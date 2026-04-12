@@ -9,7 +9,7 @@ import {
   of,
   tap,
 } from "rxjs"
-import { useLock } from "../common/BlockingBackdrop"
+import { lock } from "../common/locks/utils"
 import { useWithAuthorization } from "../auth/AuthorizeActionDialog"
 import { Logger } from "../debug/logger.shared"
 import { createDialog } from "../common/dialogs/createDialog"
@@ -17,7 +17,6 @@ import { CancelError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
 
 export const useRemoveAllContents = () => {
-  const [lock] = useLock()
   const withAuthorization = useWithAuthorization()
 
   return useMutation$({
@@ -44,7 +43,7 @@ export const useRemoveAllContents = () => {
           return confirmed$.pipe(
             withAuthorization,
             map(() => lock()),
-            mergeMap((unlock) =>
+            mergeMap((releaseLock) =>
               of(null).pipe(
                 mergeMap(() => {
                   Logger.info("Removing books")
@@ -70,7 +69,7 @@ export const useRemoveAllContents = () => {
                 }),
                 delay(3000), // make sure sync get enough time to finish
                 catchError((e) => {
-                  unlock()
+                  releaseLock()
 
                   throw e
                 }),

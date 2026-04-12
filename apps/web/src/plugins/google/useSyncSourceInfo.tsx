@@ -7,16 +7,13 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"DRIVE"> = ({
   dataSource,
   enabled,
 }) => {
-  const driveDataSource =
-    enabled && dataSource?.type === "DRIVE" ? dataSource : undefined
-
-  if (!driveDataSource) {
+  if (!dataSource || !enabled) {
     return {
       name: undefined,
     }
   }
 
-  const itemsCount = driveDataSource.data_v2?.items?.length ?? 0
+  const itemsCount = dataSource.data_v2?.items?.length ?? 0
 
   return {
     name:

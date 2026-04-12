@@ -4,17 +4,14 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"URI"> = ({
   dataSource,
   enabled,
 }) => {
-  const uriDataSource =
-    enabled && dataSource?.type === "URI" ? dataSource : undefined
-
-  if (!uriDataSource) {
+  if (!dataSource || !enabled) {
     return {
       name: undefined,
     }
   }
 
   return {
-    name: uriDataSource.data_v2?.allowSelfSigned
+    name: dataSource.data_v2?.allowSelfSigned
       ? "URL (self-signed allowed)"
       : "URL",
   }

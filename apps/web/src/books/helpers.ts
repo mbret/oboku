@@ -8,7 +8,7 @@ import { useNetworkState } from "react-use"
 import { usePluginRemoveBook } from "../plugins/usePluginRemoveBook"
 import { getMetadataFromBook } from "./metadata"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
-import { useLock } from "../common/BlockingBackdrop"
+import { lock } from "../common/locks/utils"
 import { OfflineError } from "../errors/errors.shared"
 import { useMutation } from "@tanstack/react-query"
 import { useMutation$ } from "reactjrx"
@@ -21,7 +21,6 @@ export const useRemoveBook = () => {
   const { db } = useDatabase()
   const removeBookFromDataSource = usePluginRemoveBook()
   const network = useNetworkState()
-  const [lock] = useLock()
 
   return useMutation({
     mutationFn: async ({
@@ -39,14 +38,16 @@ export const useRemoveBook = () => {
         await removeBookFromDataSource(id)
       }
 
-      const unlock = lock()
+      const releaseLock = lock()
 
-      await Promise.all([
-        removeDownload({ bookId: id }),
-        db?.book.findOne({ selector: { _id: id } }).remove(),
-      ])
-
-      unlock()
+      try {
+        await Promise.all([
+          removeDownload({ bookId: id }),
+          db?.book.findOne({ selector: { _id: id } }).remove(),
+        ])
+      } finally {
+        releaseLock()
+      }
     },
   })
 }

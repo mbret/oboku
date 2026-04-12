@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react"
 import { AppBrowserRouter } from "./navigation/AppBrowserRouter"
 import { StyledEngineProvider, Fade, Box } from "@mui/material"
-import { BlockingBackdrop } from "./common/BlockingBackdrop"
+import { BlockingBackdrop } from "./common/locks/BlockingBackdrop"
 import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./queries/PreloadQueries"
