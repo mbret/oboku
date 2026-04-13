@@ -127,7 +127,7 @@ describe("OneDrive auth", () => {
     )
   })
 
-  it("supports interactive-only token requests", async () => {
+  it("supports interactive-only token requests without reselecting the account", async () => {
     const { account, client } = createOneDriveAuthTestContext({
       initialAccount: {
         homeAccountId: "reader.contoso-tenant-id",
@@ -137,7 +137,7 @@ describe("OneDrive auth", () => {
       },
     })
 
-    client.loginPopup.mockResolvedValueOnce({
+    client.acquireTokenPopup.mockResolvedValueOnce({
       accessToken: "interactive-token",
       account,
       expiresOn: new Date("2026-04-10T10:15:00.000Z"),
@@ -157,13 +157,14 @@ describe("OneDrive auth", () => {
     )
 
     expect(client.acquireTokenSilent).not.toHaveBeenCalled()
-    expect(client.loginPopup).toHaveBeenCalledWith(
+    expect(client.acquireTokenPopup).toHaveBeenCalledWith(
       expect.objectContaining({
+        account,
         authority: undefined,
-        prompt: "select_account",
         scopes: ["Files.Read"],
       }),
     )
+    expect(client.loginPopup).not.toHaveBeenCalled()
   })
 
   it("forces a silent refresh when the cached token has less than five minutes left", async () => {

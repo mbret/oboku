@@ -219,10 +219,11 @@ export async function requestMicrosoftAccessToken({
     }
 
     const result = await acquireOneDriveTokenInteractive({
-      account:
-        interaction === "interactive-only"
-          ? undefined
-          : resolveOneDriveAccount(client),
+      // "interactive-only" skips the silent branch, but it should still
+      // preserve the current account when one is already cached. Otherwise a
+      // forced account picker can leave MSAL with multiple cached accounts and
+      // make the OneDrive plugin unusable until the session is cleared.
+      account: resolveOneDriveAccount(client),
       authority: effectiveAuthority,
       client,
       requestPopup,
