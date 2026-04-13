@@ -7,10 +7,16 @@ import {
   PublicClientApplication,
   type AuthenticationResult,
 } from "@azure/msal-browser"
-import { isMicrosoftConsumerAccount } from "@oboku/shared"
+import {
+  isMicrosoftConsumerAccount,
+  type OneDriveApiCredentials,
+} from "@oboku/shared"
 import { signal } from "reactjrx"
 import { configuration } from "../../../config/configuration"
-import { ONE_DRIVE_CONSUMER_AUTHORITY } from "../constants"
+import {
+  ONE_DRIVE_CONSUMER_AUTHORITY,
+  ONE_DRIVE_GRAPH_SCOPES,
+} from "../constants"
 import { CancelError } from "../../../errors/errors.shared"
 import { acquireOneDriveTokenInteractive } from "./acquireOneDriveTokenInteractive"
 import { Logger } from "../../../debug/logger.shared"
@@ -248,6 +254,25 @@ export async function requestMicrosoftAccessToken({
     }
 
     throw error
+  }
+}
+
+export async function requestOneDriveProviderCredentials({
+  minimumValidityMs = configuration.MINIMUM_TOKEN_VALIDITY_MS,
+  ...options
+}: Omit<
+  MicrosoftAccessTokenRequest,
+  "authority" | "scopes"
+> = {}): Promise<OneDriveApiCredentials> {
+  const authResult = await requestMicrosoftAccessToken({
+    ...options,
+    minimumValidityMs,
+    scopes: ONE_DRIVE_GRAPH_SCOPES,
+  })
+
+  return {
+    accessToken: authResult.accessToken,
+    expiresAt: authResult.expiresOn?.getTime() ?? null,
   }
 }
 
