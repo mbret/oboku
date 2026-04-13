@@ -10,7 +10,7 @@ import { Logger } from "../../../debug/logger.shared"
 import { useGoogleScripts } from "./scripts"
 import { CancelError } from "../../../errors/errors.shared"
 import { configuration } from "../../../config/configuration"
-import { hasMinimumValidityLeft } from "../../tokenValidity"
+import { hasMinimumValidityLeft } from "../../common/tokenValidity"
 
 const isPopupClosedError = (error: unknown) => {
   return (

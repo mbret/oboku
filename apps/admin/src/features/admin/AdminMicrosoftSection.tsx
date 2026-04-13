@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { DEFAULT_MICROSOFT_APPLICATION_AUTHORITY } from "@oboku/shared"
+import { DEFAULT_MICROSOFT_APPLICATION_AUTHORITY, links } from "@oboku/shared"
 import {
   Button,
   Code,
@@ -76,6 +76,27 @@ export const AdminMicrosoftSection = () => {
             manage the integration from admin instead of relying on API
             environment variables.
           </Text>
+        </div>
+
+        <div>
+          <Text size="sm" fw={500} mb="xs">
+            Documentation
+          </Text>
+          <Text size="sm" c="dimmed">
+            Learn more about setting up Microsoft sign-in and OneDrive sync
+            providers in the documentation site.
+          </Text>
+          <Group mt="sm">
+            <Button
+              component="a"
+              href={links.documentation}
+              rel="noopener noreferrer"
+              target="_blank"
+              variant="light"
+            >
+              open setup guide
+            </Button>
+          </Group>
         </div>
 
         <div>

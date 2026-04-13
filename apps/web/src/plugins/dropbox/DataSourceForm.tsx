@@ -1,7 +1,7 @@
 import { Button, Stack, Typography } from "@mui/material"
 import { useController, useForm } from "react-hook-form"
 import { useDropboxChoose } from "./lib/useDropboxChoose"
-import { DataSourceFormLayout } from "../DataSourceFormLayout"
+import { DataSourceFormLayout } from "../common/DataSourceFormLayout"
 import type { DropboxDataSourceDocType } from "@oboku/shared"
 import type { DataSourceFormData, DataSourceFormInternalProps } from "../types"
 

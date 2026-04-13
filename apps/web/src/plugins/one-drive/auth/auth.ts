@@ -7,15 +7,21 @@ import {
   PublicClientApplication,
   type AuthenticationResult,
 } from "@azure/msal-browser"
-import { isMicrosoftConsumerAccount } from "@oboku/shared"
+import {
+  isMicrosoftConsumerAccount,
+  type OneDriveApiCredentials,
+} from "@oboku/shared"
 import { signal } from "reactjrx"
 import { configuration } from "../../../config/configuration"
-import { ONE_DRIVE_CONSUMER_AUTHORITY } from "../constants"
+import {
+  ONE_DRIVE_CONSUMER_AUTHORITY,
+  ONE_DRIVE_GRAPH_SCOPES,
+} from "../constants"
 import { CancelError } from "../../../errors/errors.shared"
 import { acquireOneDriveTokenInteractive } from "./acquireOneDriveTokenInteractive"
 import { Logger } from "../../../debug/logger.shared"
-import { microsoftAuthCallbackPath } from "../../authCallbackEntrypoints.shared"
-import { hasMinimumValidityLeft } from "../../tokenValidity"
+import { microsoftAuthCallbackPath } from "../../common/authCallbackEntrypoints.shared"
+import { hasMinimumValidityLeft } from "../../common/tokenValidity"
 
 export const msalAccountSignal = signal<AccountInfo | undefined>({})
 
@@ -159,21 +165,23 @@ function resolveAuthorityForAccount(
     : undefined
 }
 
+type MicrosoftAccessTokenRequest = {
+  authority?: string
+  forceRefresh?: boolean
+  interaction?: "allow-interactive" | "interactive-only" | "silent-only"
+  minimumValidityMs?: number
+  requestPopup?: () => Promise<boolean>
+  scopes: string[]
+}
+
 export async function requestMicrosoftAccessToken({
   authority,
   forceRefresh = false,
+  interaction = "allow-interactive",
   minimumValidityMs = 0,
   requestPopup,
   scopes,
-  skipSilent = false,
-}: {
-  authority?: string
-  forceRefresh?: boolean
-  minimumValidityMs?: number
-  requestPopup: (() => Promise<boolean>) | undefined
-  scopes: string[]
-  skipSilent?: boolean
-}): Promise<AuthenticationResult> {
+}: MicrosoftAccessTokenRequest): Promise<AuthenticationResult> {
   const client = await getOneDriveClient()
 
   assertNoAmbiguousAccounts(client)
@@ -181,7 +189,7 @@ export async function requestMicrosoftAccessToken({
   const effectiveAuthority = resolveAuthorityForAccount(client, authority)
 
   try {
-    if (!skipSilent) {
+    if (interaction !== "interactive-only") {
       const silentResult = await tryAcquireOneDriveTokenSilently({
         authority: effectiveAuthority,
         client,
@@ -203,6 +211,7 @@ export async function requestMicrosoftAccessToken({
           return requestMicrosoftAccessToken({
             authority,
             forceRefresh: true,
+            interaction,
             minimumValidityMs,
             requestPopup,
             scopes,
@@ -211,8 +220,16 @@ export async function requestMicrosoftAccessToken({
       }
     }
 
+    if (interaction === "silent-only") {
+      throw new CancelError()
+    }
+
     const result = await acquireOneDriveTokenInteractive({
-      account: skipSilent ? undefined : resolveOneDriveAccount(client),
+      // "interactive-only" skips the silent branch, but it should still
+      // preserve the current account when one is already cached. Otherwise a
+      // forced account picker can leave MSAL with multiple cached accounts and
+      // make the OneDrive plugin unusable until the session is cleared.
+      account: resolveOneDriveAccount(client),
       authority: effectiveAuthority,
       client,
       requestPopup,
@@ -237,6 +254,25 @@ export async function requestMicrosoftAccessToken({
     }
 
     throw error
+  }
+}
+
+export async function requestOneDriveProviderCredentials({
+  minimumValidityMs = configuration.MINIMUM_TOKEN_VALIDITY_MS,
+  ...options
+}: Omit<
+  MicrosoftAccessTokenRequest,
+  "authority" | "scopes"
+> = {}): Promise<OneDriveApiCredentials> {
+  const authResult = await requestMicrosoftAccessToken({
+    ...options,
+    minimumValidityMs,
+    scopes: ONE_DRIVE_GRAPH_SCOPES,
+  })
+
+  return {
+    accessToken: authResult.accessToken,
+    expiresAt: authResult.expiresOn?.getTime() ?? null,
   }
 }
 

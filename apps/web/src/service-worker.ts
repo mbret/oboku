@@ -23,7 +23,7 @@ import {
 } from "./workers/communication/types.shared"
 import { serviceWorkerConfiguration } from "./config/configuration.sw"
 import { cleanupOldRxdbDatabases } from "./rxdb/cleanupOldRxdbDatabases.sw"
-import { authCallbackEntrypoints } from "./plugins/authCallbackEntrypoints.shared"
+import { authCallbackEntrypoints } from "./plugins/common/authCallbackEntrypoints.shared"
 
 declare const self: ServiceWorkerGlobalScope
 

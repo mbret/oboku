@@ -22,7 +22,7 @@ import {
   type SynologyTreeNode,
 } from "./browsing/tree"
 import { useSelectionTreeData } from "./browsing/useSelectionTreeData"
-import { DataSourceFormLayout } from "../DataSourceFormLayout"
+import { DataSourceFormLayout } from "../common/DataSourceFormLayout"
 import type { DataSourceFormData, DataSourceFormInternalProps } from "../types"
 
 type SynologyDriveFormData = DataSourceFormData<{

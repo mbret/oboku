@@ -11,11 +11,24 @@ import { ONE_DRIVE_CONSUMER_PICKER_BASE_URL } from "../constants"
 
 const MICROSOFT_GRAPH_ME_DRIVE_URL =
   "https://graph.microsoft.com/v1.0/me/drive?$select=driveType,webUrl"
+const ONE_DRIVE_ITEM_SUMMARY_FIELDS = [
+  "id",
+  "name",
+  "parentReference",
+  "file",
+  "folder",
+  "package",
+] as const
 
 type CurrentUserDrive = {
   driveType?: string
   webUrl?: string
 }
+
+export type OneDriveDriveItemSummary = Pick<
+  GraphDriveItem,
+  "id" | "name" | "file" | "folder" | "package" | "parentReference"
+>
 
 function buildSharePointPickerBaseUrl(webUrl: string) {
   const url = new URL(webUrl)
@@ -40,6 +53,29 @@ export function fetchOneDriveJson$<T>(accessToken: string, url: string) {
 
 export async function fetchOneDriveJson<T>(accessToken: string, url: string) {
   return await fetchMicrosoftGraphJson<T>(accessToken, url)
+}
+
+function buildOneDriveItemSummaryUrl(driveId: string, fileId: string) {
+  const url = new URL(buildDriveItemUrl(driveId, fileId))
+
+  url.searchParams.set("$select", ONE_DRIVE_ITEM_SUMMARY_FIELDS.join(","))
+
+  return url.toString()
+}
+
+export async function getOneDriveItemSummary({
+  accessToken,
+  driveId,
+  fileId,
+}: {
+  accessToken: string
+  driveId: string
+  fileId: string
+}) {
+  return await fetchOneDriveJson<OneDriveDriveItemSummary>(
+    accessToken,
+    buildOneDriveItemSummaryUrl(driveId, fileId),
+  )
 }
 
 export async function getOneDrivePickerBaseUrl(accessToken: string) {

@@ -2,10 +2,8 @@ import { PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
 import { find } from "src/lib/couch/dbHelpers"
 import type { DataSourcePlugin } from "../types"
 import { downloadOneDriveDriveItem, getOneDriveDriveItem } from "./graph"
-
-const unsupportedSync = () => {
-  throw new Error("OneDrive server-side sync is not implemented yet")
-}
+import { getDataSourceData } from "../helpers"
+import { getSynchronizeAbleDataSourceFromItems } from "./sync"
 
 export const dataSource: DataSourcePlugin<"one-drive"> = {
   type: PLUGIN_ONE_DRIVE_TYPE,
@@ -86,5 +84,16 @@ export const dataSource: DataSourcePlugin<"one-drive"> = {
       stream,
     }
   },
-  sync: async () => unsupportedSync(),
+  sync: async ({ dataSourceId, db, providerCredentials }) => {
+    const { items = [] } =
+      (await getDataSourceData<"one-drive">({
+        db,
+        dataSourceId,
+      })) ?? {}
+
+    return getSynchronizeAbleDataSourceFromItems({
+      accessToken: providerCredentials.accessToken,
+      items,
+    })
+  },
 }

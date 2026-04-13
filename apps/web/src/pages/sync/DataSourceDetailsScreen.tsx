@@ -1,29 +1,42 @@
+import type { DataSourceDocType } from "@oboku/shared"
 import { Alert, Button, Container, Divider, Stack } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { useParams } from "react-router"
-import { plugins } from "../../dataSources"
 import { useDataSource } from "../../dataSources/useDataSource"
 import { notify } from "../../notifications/toasts"
 import { useDataSourceIncrementalModify } from "../../dataSources/useDataSourceIncrementalModify"
 import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
-import type { DataSourceSubmitPayload } from "../../plugins/types"
+import type {
+  DataSourceEditFormProps,
+  DataSourceSubmitPayload,
+} from "../../plugins/types"
 import { useSynchronizeDataSource } from "../../dataSources/useSynchronizeDataSource"
 import { useRemoveDataSource } from "../../dataSources/useRemoveDataSource"
 import { NotFoundPage } from "../../common/NotFoundPage"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { Page } from "../../common/Page"
+import { getPluginByType } from "../../plugins/configure"
 
-export const DataSourceDetailsScreen = memo(() => {
+function renderDataSourceEditForm<T extends DataSourceDocType["type"]>({
+  dataSource,
+  onSubmit,
+}: DataSourceEditFormProps<T>) {
+  const DetailsComponent = getPluginByType<T>(
+    dataSource.type,
+  ).DataSourceEditForm
+
+  return DetailsComponent ? (
+    <DetailsComponent dataSource={dataSource} onSubmit={onSubmit} />
+  ) : null
+}
+
+export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
   const { id } = useParams<{ id: string }>()
   const { data: dataSource } = useDataSource(id)
-  const obokuPlugin = plugins.find(
-    (p) => p.type.toLowerCase() === dataSource?.type.toLowerCase(),
-  )
   const { goBack } = useSafeGoBack()
   const { mutateAsync: modifyDataSource } = useDataSourceIncrementalModify()
   const label = useDataSourceLabel(dataSource)
-  const DetailsComponent = obokuPlugin?.DataSourceEditForm
   const { mutate: syncDataSource } = useSynchronizeDataSource()
   const { mutate: removeDataSource } = useRemoveDataSource()
 
@@ -59,9 +72,11 @@ export const DataSourceDetailsScreen = memo(() => {
                 ? `Last sync did not succeed`
                 : `Last synced on ${new Date(dataSource?.lastSyncedAt ?? 0).toLocaleString()}`}
           </Alert>
-          {DetailsComponent && dataSource && (
-            <DetailsComponent dataSource={dataSource} onSubmit={handleSubmit} />
-          )}
+          {dataSource &&
+            renderDataSourceEditForm({
+              dataSource,
+              onSubmit: handleSubmit,
+            })}
           <Stack gap={1}>
             <Button variant="outlined" onClick={() => id && syncDataSource(id)}>
               Synchronize

@@ -2,6 +2,7 @@
 
 - https://learn.microsoft.com/en-us/onedrive/developer/?view=odsp-graph-online
 - https://github.com/OneDrive/samples/tree/master/samples/file-browsing
+- picker: https://learn.microsoft.com/en-us/onedrive/developer/controls/file-pickers/?view=odsp-graph-online
 
 ## Auth model
 

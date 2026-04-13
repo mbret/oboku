@@ -65,6 +65,7 @@ export const DownloadBook = memo(function DownloadBook({
     mutationFn: ({ cancel$ }: { cancel$: Observable<void> }) => {
       return from(
         requestMicrosoftAccessToken({
+          interaction: "allow-interactive",
           requestPopup,
           scopes: ONE_DRIVE_GRAPH_SCOPES,
         }),

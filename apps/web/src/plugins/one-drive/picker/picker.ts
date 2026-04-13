@@ -1,11 +1,13 @@
-import { isGraphResource } from "@oboku/shared"
+import { isGraphResource, isMicrosoftConsumerAccount } from "@oboku/shared"
 import { CancelError } from "../../../errors/errors.shared"
 import { requestMicrosoftAccessToken } from "../auth/auth"
 import {
+  ONE_DRIVE_CONSUMER_PICKER_BASE_URL,
   ONE_DRIVE_CONSUMER_AUTHORITY,
   PICKER_CONSUMER_SCOPES,
   ONE_DRIVE_GRAPH_SCOPES,
 } from "../constants"
+import { getOneDrivePickerBaseUrl } from "../graph"
 
 type PickerNotificationPayload = {
   notification?: string
@@ -33,6 +35,15 @@ export type OneDrivePickerItem = {
     driveId?: string
   }
   "@sharePoint.endpoint"?: string
+}
+
+const DEFAULT_PICK_LABEL = "Add items"
+
+type OneDrivePickerSelectionMode = "files" | "folders" | "all"
+
+export type OneDrivePickerLaunchData = {
+  initialPickerAccessToken: string
+  pickerBaseUrl: string
 }
 
 type CommandOutcome =
@@ -129,6 +140,7 @@ export async function requestPickerAccessTokenForResource({
   if (isGraphResource(resource)) {
     return (
       await requestMicrosoftAccessToken({
+        interaction: "allow-interactive",
         requestPopup,
         scopes: ONE_DRIVE_GRAPH_SCOPES,
       })
@@ -139,6 +151,7 @@ export async function requestPickerAccessTokenForResource({
     return (
       await requestMicrosoftAccessToken({
         authority: ONE_DRIVE_CONSUMER_AUTHORITY,
+        interaction: "allow-interactive",
         requestPopup,
         scopes: PICKER_CONSUMER_SCOPES,
       })
@@ -147,10 +160,47 @@ export async function requestPickerAccessTokenForResource({
 
   return (
     await requestMicrosoftAccessToken({
+      interaction: "allow-interactive",
       requestPopup,
       scopes: [buildMicrosoftResourceScope(resource)],
     })
   ).accessToken
+}
+
+export async function requestOneDrivePickerLaunchData({
+  requestPopup,
+}: {
+  requestPopup: (() => Promise<boolean>) | undefined
+}): Promise<OneDrivePickerLaunchData> {
+  const graphAuth = await requestMicrosoftAccessToken({
+    interaction: "allow-interactive",
+    requestPopup,
+    scopes: ONE_DRIVE_GRAPH_SCOPES,
+  })
+
+  if (isMicrosoftConsumerAccount(graphAuth.account)) {
+    const { accessToken } = await requestMicrosoftAccessToken({
+      authority: ONE_DRIVE_CONSUMER_AUTHORITY,
+      interaction: "allow-interactive",
+      requestPopup,
+      scopes: PICKER_CONSUMER_SCOPES,
+    })
+
+    return {
+      initialPickerAccessToken: accessToken,
+      pickerBaseUrl: ONE_DRIVE_CONSUMER_PICKER_BASE_URL,
+    }
+  }
+
+  const pickerBaseUrl = await getOneDrivePickerBaseUrl(graphAuth.accessToken)
+
+  return {
+    initialPickerAccessToken: await requestPickerAccessTokenForResource({
+      requestPopup,
+      resource: pickerBaseUrl,
+    }),
+    pickerBaseUrl,
+  }
 }
 
 function buildPickerPageUrl(baseUrl: string) {
@@ -225,34 +275,70 @@ async function handlePickerCommand(
 // Picker URL & form submission
 // ---------------------------------------------------------------------------
 
+export function buildPickerOptions({
+  channelId,
+  fileFilters,
+  origin,
+  pickLabel,
+  selectionMode,
+  selectionPersistence,
+}: {
+  channelId: string
+  fileFilters?: readonly string[]
+  origin: string
+  pickLabel: string
+  selectionMode: OneDrivePickerSelectionMode
+  selectionPersistence: boolean
+}) {
+  return {
+    sdk: "8.0",
+    authentication: {},
+    commands: {
+      close: { label: "Cancel" },
+      pick: { action: "select", label: pickLabel },
+    },
+    entry: { oneDrive: {} },
+    messaging: { channelId, origin },
+    search: { enabled: true },
+    selection: {
+      mode: "multiple" as const,
+      enablePersistence: selectionPersistence,
+    },
+    typesAndSources: {
+      ...(fileFilters && { filters: fileFilters }),
+      mode: selectionMode,
+    },
+  }
+}
+
 function buildPickerUrl({
   baseUrl,
   channelId,
   fileFilters,
   locale,
+  pickLabel,
+  selectionMode,
+  selectionPersistence,
 }: {
   baseUrl: string
   channelId: string
   fileFilters?: readonly string[]
   locale: string
+  pickLabel: string
+  selectionMode: OneDrivePickerSelectionMode
+  selectionPersistence: boolean
 }) {
   const query = new URLSearchParams({
-    filePicker: JSON.stringify({
-      sdk: "8.0",
-      authentication: {},
-      commands: {
-        close: { label: "Cancel" },
-        pick: { action: "select", label: "Add books" },
-      },
-      entry: { oneDrive: {} },
-      messaging: { channelId, origin: window.location.origin },
-      search: { enabled: true },
-      selection: { mode: "multiple" },
-      typesAndSources: {
-        ...(fileFilters && { filters: fileFilters }),
-        mode: "files",
-      },
-    }),
+    filePicker: JSON.stringify(
+      buildPickerOptions({
+        channelId,
+        fileFilters,
+        origin: window.location.origin,
+        pickLabel,
+        selectionMode,
+        selectionPersistence,
+      }),
+    ),
     locale,
   })
 
@@ -299,6 +385,8 @@ export async function pickOneDriveItemsWithPicker({
   iframe,
   initialAccessToken,
   locale,
+  selectionMode = "files",
+  selectionPersistence = false,
   signal,
 }: {
   baseUrl: string
@@ -306,6 +394,8 @@ export async function pickOneDriveItemsWithPicker({
   iframe: HTMLIFrameElement
   initialAccessToken: string
   locale: string
+  selectionMode?: OneDrivePickerSelectionMode
+  selectionPersistence?: boolean
   signal?: AbortSignal
 }) {
   const iframeName = iframe.name
@@ -316,7 +406,15 @@ export async function pickOneDriveItemsWithPicker({
 
   const channelId = crypto.randomUUID()
   const pickerOrigin = new URL(baseUrl).origin
-  const pickerUrl = buildPickerUrl({ baseUrl, channelId, fileFilters, locale })
+  const pickerUrl = buildPickerUrl({
+    baseUrl,
+    channelId,
+    fileFilters,
+    locale,
+    pickLabel: DEFAULT_PICK_LABEL,
+    selectionMode,
+    selectionPersistence,
+  })
 
   return await new Promise<ReadonlyArray<OneDrivePickerItem>>(
     (resolve, reject) => {

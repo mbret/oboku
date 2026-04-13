@@ -36,13 +36,8 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   DataSourceCreateForm: (props) => (
     <DataSourceForm {...props} submitLabel="Confirm" />
   ),
-  // The screen matches plugins by dataSource.type, guaranteeing the correct variant.
   DataSourceEditForm: ({ dataSource, ...rest }) => (
-    <DataSourceForm
-      {...rest}
-      dataSource={dataSource as never}
-      submitLabel="Save"
-    />
+    <DataSourceForm {...rest} dataSource={dataSource} submitLabel="Save" />
   ),
   useLinkInfo,
   useSyncSourceInfo,
