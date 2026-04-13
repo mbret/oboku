@@ -115,6 +115,18 @@ export async function getSynchronizeAbleDataSourceFromItems({
   accessToken: string
   items: readonly OneDriveLinkData[]
 }) {
+  /**
+   * OneDrive sync uses an explicit whitelist, not recursive folder expansion.
+   *
+   * We only fetch metadata for items that were explicitly granted and saved in
+   * the datasource. A selected folder contributes its own node to the tree, but
+   * its descendants only appear when those descendants are also present in
+   * `items`.
+   *
+   * This matches the Google Drive permission model and keeps the cross-plugin
+   * sync contract consistent: the plugin-specific builder shapes the saved
+   * selection into a tree, but it does not discover additional children.
+   */
   const throttle = createThrottler(50)
 
   const getFileMetadata = throttle(async (item: OneDriveLinkData) => {
