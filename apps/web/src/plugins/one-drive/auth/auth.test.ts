@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { ONE_DRIVE_GRAPH_SCOPES } from "../constants"
 
 function createOneDriveAuthTestContext({
   initialClientId = "reader-client-id",
@@ -165,6 +166,38 @@ describe("OneDrive auth", () => {
       }),
     )
     expect(client.loginPopup).not.toHaveBeenCalled()
+  })
+
+  it("maps graph auth into OneDrive provider credentials", async () => {
+    const { account, client } = createOneDriveAuthTestContext({
+      initialAccount: {
+        homeAccountId: "reader.contoso-tenant-id",
+        name: "Reader",
+        tenantId: "contoso-tenant-id",
+        username: "reader@example.com",
+      },
+    })
+
+    const expiresOn = new Date("2026-04-10T10:15:00.000Z")
+
+    client.acquireTokenSilent.mockResolvedValueOnce({
+      accessToken: "graph-token",
+      account,
+      expiresOn,
+    })
+
+    const { requestOneDriveProviderCredentials } = await import("./auth")
+
+    await expect(requestOneDriveProviderCredentials()).resolves.toEqual({
+      accessToken: "graph-token",
+      expiresAt: expiresOn.getTime(),
+    })
+
+    expect(client.acquireTokenSilent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scopes: ONE_DRIVE_GRAPH_SCOPES,
+      }),
+    )
   })
 
   it("forces a silent refresh when the cached token has less than five minutes left", async () => {
