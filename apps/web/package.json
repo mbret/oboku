@@ -3,6 +3,7 @@
   "version": "0.215.0",
   "private": true,
   "dependencies": {
+    "@azure/msal-browser": "^5.6.3",
     "@chakra-ui/react": "^3.16.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.10.6",
@@ -29,7 +30,6 @@
     "@tanstack/react-query-persist-client": "^5.96.2",
     "@tanstack/react-virtual": "^3.8.4",
     "buffer": "^6.0.3",
-    "date-fns": "^4.1.0",
     "dexie": "^4.0.10",
     "dropbox": "^10.34.0",
     "firebase": "^12.5.0",
@@ -47,7 +47,7 @@
     "react-router": "^7.1.3",
     "react-use": "^17.5.1",
     "react-virtuoso": "^4.7.13",
-    "reactjrx": "^1.135.4",
+    "reactjrx": "^1.135.6",
     "rxdb": "^17.1.0",
     "rxjs": "^7.5.7",
     "screenfull": "^6.0.2",
@@ -77,7 +77,6 @@
     "@types/uuid": "^10.0.0",
     "@vitejs/plugin-react": "^6.0.1",
     "vite": "^8.0.5",
-    "vite-plugin-dts": "^4.0.3",
     "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-svgr": "^5.2.0"
   },

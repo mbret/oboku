@@ -10,8 +10,7 @@ import {
   RXDB_QUERY_KEY_PREFIX,
 } from "../queries/queryClient"
 import type { BookDocType } from "@oboku/shared"
-import type { DeepReadonlyObject, MangoQuery } from "rxdb"
-import type { DeepReadonlyArray } from "rxdb/dist/types/types"
+import type { DeepReadonlyArray, DeepReadonlyObject, MangoQuery } from "rxdb"
 import { observeBook, observeBooks } from "./dbHelpers"
 import { libraryStateSignal } from "../library/books/states"
 import { skipToken, type UseQueryOptions } from "@tanstack/react-query"

@@ -19,12 +19,17 @@ export type SetWebDavCredentialsResponse = {
 
 export type GetInstanceSettingsResponse = {
   showDisabledPlugins: boolean
+  microsoftApplicationClientId?: string
+  microsoftApplicationAuthority?: string
 }
 
 export type UpdateInstanceSettingsRequest = Partial<
-  Pick<GetInstanceSettingsResponse, "showDisabledPlugins">
+  Pick<
+    GetInstanceSettingsResponse,
+    | "showDisabledPlugins"
+    | "microsoftApplicationClientId"
+    | "microsoftApplicationAuthority"
+  >
 >
 
-export type UpdateInstanceSettingsResponse = {
-  showDisabledPlugins: boolean
-}
+export type UpdateInstanceSettingsResponse = Record<string, unknown>

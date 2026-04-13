@@ -18,7 +18,6 @@ import { BookDetailsScreen } from "../books/details/BookDetailsScreen"
 import { CollectionDetailsScreen } from "../pages/collections/CollectionDetailsScreen/CollectionDetailsScreen"
 import { DataSourcesListScreen } from "../pages/sync/DataSourcesListScreen"
 import { SearchScreen } from "../pages/SearchScreen"
-import { AuthCallbackScreen } from "../pages/AuthCallbackScreen"
 import { SettingsScreen } from "../pages/SettingsScreen"
 import { StatisticsScreen } from "../pages/StatisticsScreen"
 import { ProblemsScreen } from "../problems/ProblemsScreen"
@@ -88,7 +87,6 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
   const content = (
     <>
       <Routes>
-        <Route path={ROUTES.AUTH_CALLBACK} element={<AuthCallbackScreen />} />
         <Route
           path={ROUTES.LOGIN_MAGIC_LINK}
           element={<MagicLinkCompleteScreen />}

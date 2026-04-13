@@ -28,22 +28,19 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"synology-drive"> = ({
   dataSource,
   enabled,
 }) => {
-  const synologyDriveDataSource =
-    enabled && dataSource?.type === "synology-drive" ? dataSource : undefined
-
   const { data: connector } = useConnector({
-    id: synologyDriveDataSource?.data_v2?.connectorId,
+    id: dataSource?.data_v2?.connectorId,
     type: "synology-drive",
     enabled,
   })
 
-  if (!synologyDriveDataSource) {
+  if (!dataSource) {
     return {
       name: undefined,
     }
   }
 
-  const itemsCount = synologyDriveDataSource.data_v2?.items?.length ?? 0
+  const itemsCount = dataSource.data_v2?.items?.length ?? 0
 
   if (!connector) {
     return {

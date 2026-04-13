@@ -36,8 +36,10 @@
     "husky": "^9.1.7",
     "lerna": "^9.0.0",
     "lint-staged": "^16.1.5",
+    "rollup": "^4.60.1",
     "rollup-plugin-analyzer": "^4.0.0",
     "typescript": "^5.9.2",
+    "unplugin-dts": "^1.0.0-beta.6",
     "vercel": "^50.25.6",
     "vitest": "^4.0.8",
     "webpack-node-externals": "^3.0.0"
@@ -45,7 +47,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.787.0",
     "@aws-sdk/client-ssm": "^3.787.0",
-    "@emotion/cache": "^11.14.0"
+    "@emotion/cache": "^11.14.0",
+    "@microsoft/api-extractor": "^7.58.2"
   },
   "lint-staged": {
     "*": [

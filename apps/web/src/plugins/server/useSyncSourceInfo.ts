@@ -5,16 +5,13 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"server"> = ({
   dataSource,
   enabled,
 }) => {
-  const serverDataSource =
-    enabled && dataSource?.type === "server" ? dataSource : undefined
-
   const { data: connector } = useConnector({
-    id: serverDataSource?.data_v2?.connectorId,
+    id: dataSource?.data_v2?.connectorId,
     enabled,
     type: "server",
   })
 
-  if (!serverDataSource || !connector) {
+  if (!dataSource || !connector) {
     return { name: undefined }
   }
 

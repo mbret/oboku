@@ -5,22 +5,19 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"webdav"> = ({
   dataSource,
   enabled,
 }) => {
-  const webdavDataSource =
-    enabled && dataSource?.type === "webdav" ? dataSource : undefined
-
   const { data: connector } = useConnector({
-    id: webdavDataSource?.data_v2?.connectorId,
+    id: dataSource?.data_v2?.connectorId,
     enabled,
     type: "webdav",
   })
 
-  if (!webdavDataSource) {
+  if (!dataSource) {
     return {
       name: undefined,
     }
   }
 
-  const directory = webdavDataSource.data_v2?.directory ?? "/"
+  const directory = dataSource.data_v2?.directory ?? "/"
 
   if (!connector) {
     return {

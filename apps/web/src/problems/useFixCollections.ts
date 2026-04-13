@@ -1,6 +1,6 @@
 import type { CollectionDocType } from "@oboku/shared"
 import { useCallback } from "react"
-import type { DeepMutable } from "rxdb/dist/types/types"
+import type { DeepMutable } from "rxdb"
 import { Logger } from "../debug/logger.shared"
 import { useDatabase } from "../rxdb"
 

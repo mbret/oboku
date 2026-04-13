@@ -39,6 +39,12 @@ export const isXMLHttpResponseError = (
   return false
 }
 
+export type DownloadParams = {
+  url: string
+  responseType: XMLHttpRequestResponseType
+  onDownloadProgress: (event: ProgressEvent<EventTarget>) => void
+} & Parameters<typeof fetch>[1]
+
 export class HttpClientWeb extends HttpClient {
   download = <T>({
     signal,
@@ -46,11 +52,7 @@ export class HttpClientWeb extends HttpClient {
     responseType,
     onDownloadProgress,
     headers = {},
-  }: {
-    url: string
-    responseType: XMLHttpRequestResponseType
-    onDownloadProgress: (event: ProgressEvent<EventTarget>) => void
-  } & Parameters<typeof fetch>[1]) => {
+  }: DownloadParams) => {
     return new Promise<{
       data: T
       headers: Record<string, string>

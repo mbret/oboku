@@ -29,6 +29,11 @@ export const usePluginSynchronize = () => {
   const { mutateAsync: synchronizeDrive } = pluginsByType.DRIVE.useSynchronize({
     requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
   })
+  const { mutateAsync: synchronizeOneDrive } = pluginsByType[
+    "one-drive"
+  ].useSynchronize({
+    requestPopup: createRequestPopupDialog({ name: "one-drive" }),
+  })
   const { mutateAsync: synchronizeFile } = pluginsByType.file.useSynchronize({
     requestPopup: createRequestPopupDialog({ name: "file" }),
   })
@@ -51,6 +56,8 @@ export const usePluginSynchronize = () => {
           return synchronizeSynologyDrive(dataSource)
         case "DRIVE":
           return synchronizeDrive(dataSource)
+        case "one-drive":
+          return synchronizeOneDrive(dataSource)
         case "file":
           return synchronizeFile(dataSource)
         case "URI":
@@ -65,6 +72,7 @@ export const usePluginSynchronize = () => {
       synchronizeDrive,
       synchronizeDropbox,
       synchronizeFile,
+      synchronizeOneDrive,
       synchronizeServer,
       synchronizeSynologyDrive,
       synchronizeUri,

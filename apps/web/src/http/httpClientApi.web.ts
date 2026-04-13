@@ -5,6 +5,10 @@ import type {
   CompleteSignUpRequest,
   CompleteSignUpResponse,
   DeleteAccountResponse,
+  RefreshBookMetadataRequest,
+  RefreshBookMetadataResponse,
+  RefreshCollectionMetadataRequest,
+  RefreshCollectionMetadataResponse,
   RefreshTokenResponse,
   RequestMagicLinkRequest,
   RequestMagicLinkResponse,
@@ -12,6 +16,8 @@ import type {
   RequestSignUpResponse,
   SignInWithEmailRequest,
   SignInWithGoogleRequest,
+  SyncDataSourceRequest,
+  SyncDataSourceResponse,
 } from "@oboku/shared"
 import { authStateSignal } from "../auth/states.web"
 import { configuration } from "../config/configuration"
@@ -28,29 +34,29 @@ class HttpApiClient extends HttpClientWeb {
       },
     )
 
-  refreshBookMetadata = (params: {
-    bookId: string
-    providerCredentials?: Record<string, unknown>
-  }) =>
-    this.postOrThrow(`${configuration.API_URL}/books/metadata/refresh`, {
-      body: params,
+  refreshBookMetadata = (params: RefreshBookMetadataRequest) =>
+    this.postOrThrow<RefreshBookMetadataResponse, RefreshBookMetadataRequest>(
+      `${configuration.API_URL}/books/metadata/refresh`,
+      {
+        body: params,
+      },
+    )
+
+  refreshCollectionMetadata = (params: RefreshCollectionMetadataRequest) =>
+    this.postOrThrow<
+      RefreshCollectionMetadataResponse,
+      RefreshCollectionMetadataRequest
+    >(`${configuration.API_URL}/collections/metadata/refresh`, {
+      body: { ...params, soft: params.soft ?? false },
     })
 
-  refreshCollectionMetadata = (params: {
-    collectionId: string
-    providerCredentials?: Record<string, unknown>
-  }) =>
-    this.postOrThrow(`${configuration.API_URL}/collections/metadata/refresh`, {
-      body: { ...params, soft: false },
-    })
-
-  syncDataSource = (params: {
-    dataSourceId: string
-    providerCredentials?: Record<string, unknown>
-  }) =>
-    this.postOrThrow(`${configuration.API_URL}/datasources/sync`, {
-      body: params,
-    })
+  syncDataSource = (params: SyncDataSourceRequest) =>
+    this.postOrThrow<SyncDataSourceResponse, SyncDataSourceRequest>(
+      `${configuration.API_URL}/datasources/sync`,
+      {
+        body: params,
+      },
+    )
 
   signInWithEmail = (data: SignInWithEmailRequest) =>
     this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(

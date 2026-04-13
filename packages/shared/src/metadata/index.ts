@@ -8,6 +8,7 @@ export type BookMetadata = {
   pageCount?: number
   contentType?: string
   date?: { year?: number; month?: number; day?: number }
+  /** Stored as a string because some providers already expose byte size as text. */
   size?: string
   languages?: string[]
   subjects?: string[]

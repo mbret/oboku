@@ -26,9 +26,11 @@ export const webdavLinkDataSchema = z.object({
  * API credentials for WebDAV: only the secret (password). URL and username
  * come from the connector (settings), resolved by the API using link/data_v2 connectorId.
  */
-export type WebdavApiCredentials = {
-  password: string
-}
+export const webdavApiCredentialsSchema = z.object({
+  password: z.string().min(1),
+})
+
+export type WebdavApiCredentials = z.infer<typeof webdavApiCredentialsSchema>
 export type WebdavLinkData = z.infer<typeof webdavLinkDataSchema>
 
 export function isWebdavLinkData(data: unknown): data is WebdavLinkData {

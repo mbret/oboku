@@ -3,7 +3,7 @@
  * @see https://www.dropbox.com/lp/developers/reference/oauth-guide
  */
 import { memo } from "react"
-import { BlockingScreen } from "../../common/BlockingBackdrop"
+import { LockScreen } from "../../common/locks/LockScreen"
 import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
 import { useDropboxChoose } from "./lib/useDropboxChoose"
 import { useMountOnce } from "../../common/useMountOnce"
@@ -32,6 +32,6 @@ export const UploadBook: ObokuPlugin<"dropbox">["UploadBookComponent"] = memo(
       choose({ select: "file" })
     })
 
-    return <BlockingScreen />
+    return <LockScreen />
   },
 )

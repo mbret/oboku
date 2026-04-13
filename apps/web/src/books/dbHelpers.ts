@@ -1,9 +1,5 @@
-import type { MangoQuery } from "rxdb"
+import type { DeepReadonlyArray, MangoQuery, MangoQueryNoLimit } from "rxdb"
 import type { BookDocType } from "@oboku/shared"
-import type {
-  DeepReadonlyArray,
-  MangoQueryNoLimit,
-} from "rxdb/dist/types/types"
 import type { Database } from "../rxdb"
 import { combineLatest, map } from "rxjs"
 import { intersection } from "@oboku/shared"

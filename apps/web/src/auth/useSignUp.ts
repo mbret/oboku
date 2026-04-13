@@ -1,19 +1,12 @@
 import type { RequestSignUpRequest } from "@oboku/shared"
-import { finalize, from } from "rxjs"
-import { lock, unlock } from "../common/BlockingBackdrop"
+import { from } from "rxjs"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useMutation$ } from "reactjrx"
+import { withLock } from "../common/locks/utils"
 
 export const useSignUp = () => {
   return useMutation$({
-    mutationFn: (data: RequestSignUpRequest) => {
-      lock("signup")
-
-      return from(httpClientApi.signUp(data)).pipe(
-        finalize(() => {
-          unlock("signup")
-        }),
-      )
-    },
+    mutationFn: (data: RequestSignUpRequest) =>
+      from(httpClientApi.signUp(data)).pipe(withLock("signup")),
   })
 }

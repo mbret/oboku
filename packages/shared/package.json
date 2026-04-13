@@ -2,9 +2,9 @@
   "name": "@oboku/shared",
   "version": "0.8.0",
   "type": "module",
-  "types": "./dist/index.ts",
-  "main": "./dist/index.ts",
-  "module": "./dist/index.ts",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,7 +27,6 @@
     "zod": "^4.0.5"
   },
   "devDependencies": {
-    "vite": "^8.0.5",
-    "vite-plugin-dts": "^4.0.3"
+    "vite": "^8.0.5"
   }
 }

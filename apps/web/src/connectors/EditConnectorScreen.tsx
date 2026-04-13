@@ -4,7 +4,7 @@ import { useParams } from "react-router"
 import { useConfirmation } from "../common/useConfirmation"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
-import { useToasts } from "../notifications/useToasts"
+import { notify } from "../notifications/toasts"
 import type { SettingsConnectorType } from "@oboku/shared"
 import { CONNECTOR_DETAILS } from "./connectorDetails"
 import { useDeleteConnector } from "./useDeleteConnector"
@@ -18,7 +18,6 @@ export const EditConnectorScreen = memo(() => {
   }>()
   const { goBack } = useSafeGoBack()
   const { mutate: deleteConnector } = useDeleteConnector()
-  const { notify } = useToasts()
   const confirmation = useConfirmation()
 
   if (!type) return null

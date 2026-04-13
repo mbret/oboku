@@ -1,5 +1,5 @@
 import { defineConfig } from "vite"
-import dts from "vite-plugin-dts"
+import dts from "unplugin-dts/vite"
 
 export default defineConfig(({ mode }) => ({
   build: {
@@ -12,10 +12,5 @@ export default defineConfig(({ mode }) => ({
     emptyOutDir: mode !== "development",
     sourcemap: true,
   },
-  plugins: [
-    dts({
-      entryRoot: "src",
-      rollupTypes: true,
-    }),
-  ],
+  plugins: [dts({ bundleTypes: true })],
 }))

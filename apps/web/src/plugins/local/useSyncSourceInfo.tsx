@@ -1,10 +1,10 @@
 import type { UseSyncSourceInfo } from "../types"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"file"> = ({
-  dataSource,
   enabled,
+  dataSource,
 }) => {
   return {
-    name: enabled && dataSource?.type === "file" ? "On device" : undefined,
+    name: enabled && !!dataSource ? "On device" : undefined,
   }
 }

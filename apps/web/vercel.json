@@ -1,5 +1,15 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }],
+  "rewrites": [
+    {
+      "source": "/auth-callback-dropbox",
+      "destination": "/auth-callback-dropbox.html"
+    },
+    {
+      "source": "/auth-callback-microsoft",
+      "destination": "/auth-callback-microsoft.html"
+    },
+    { "source": "/(.*)", "destination": "/" }
+  ],
   "git": {
     "deploymentEnabled": {
       "master": false

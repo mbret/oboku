@@ -3,12 +3,14 @@ import {
   googleAccessTokenSignal,
   consentShownSignal,
   hasGrantedPermissions,
-  hasTokenAccessAtLeast10mnLeft,
+  getTokenExpirationDate,
   requestGoogleAccessToken,
 } from "../../../google/auth"
 import { Logger } from "../../../debug/logger.shared"
 import { useGoogleScripts } from "./scripts"
 import { CancelError } from "../../../errors/errors.shared"
+import { configuration } from "../../../config/configuration"
+import { hasMinimumValidityLeft } from "../../tokenValidity"
 
 const isPopupClosedError = (error: unknown) => {
   return (
@@ -33,20 +35,26 @@ export const useRequestToken = ({
         const accessToken = googleAccessTokenSignal.getValue()
 
         /**
-         * We return current token if it has at least 10mn left
-         * and the scope is valid
+         * We return current token if it has enough time left for downstream
+         * requests, based on the shared web configuration threshold, and the
+         * scope is valid.
          */
         if (accessToken) {
           if (
             (!firstScope ||
               (firstScope && hasGrantedPermissions(gsi, accessToken, scope))) &&
-            hasTokenAccessAtLeast10mnLeft(accessToken)
+            hasMinimumValidityLeft({
+              expiresAt: getTokenExpirationDate(accessToken),
+              minimumValidityMs: configuration.MINIMUM_TOKEN_VALIDITY_MS,
+            })
           ) {
             return of(accessToken)
           }
         }
 
-        Logger.info(`google token invalid, requesting new one`)
+        Logger.info(
+          `google token invalid or below ${configuration.MINIMUM_TOKEN_VALIDITY_MS}ms validity, requesting new one`,
+        )
 
         return from(requestPopup()).pipe(
           tap((confirmed) => {

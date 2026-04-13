@@ -131,6 +131,10 @@ class Configuration extends BehaviorSubject<{
     return 1000 * 60 * 10 // 10mn
   }
 
+  get MINIMUM_TOKEN_VALIDITY_MS() {
+    return 1000 * 60 * 5 // 5mn
+  }
+
   /**
    * Used for:
    * - signin with google
@@ -162,6 +166,14 @@ class Configuration extends BehaviorSubject<{
     return this.value.config.DROPBOX_CLIENT_ID
   }
 
+  get MICROSOFT_APPLICATION_CLIENT_ID() {
+    return this.value.config.MICROSOFT_APPLICATION_CLIENT_ID
+  }
+
+  get MICROSOFT_APPLICATION_AUTHORITY() {
+    return this.value.config.MICROSOFT_APPLICATION_AUTHORITY
+  }
+
   get FEATURE_GOOGLE_SIGN_ENABLED() {
     return !!this.GOOGLE_CLIENT_ID
   }
@@ -174,6 +186,10 @@ class Configuration extends BehaviorSubject<{
 
   get FEATURE_DROPBOX_ENABLED() {
     return !!this.DROPBOX_CLIENT_ID
+  }
+
+  get FEATURE_ONE_DRIVE_ENABLED() {
+    return !!this.MICROSOFT_APPLICATION_CLIENT_ID
   }
 
   get FEATURE_SERVER_SYNC_ENABLED() {

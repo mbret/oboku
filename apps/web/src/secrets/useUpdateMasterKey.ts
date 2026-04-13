@@ -8,6 +8,7 @@ import { decryptMasterKey, generateMasterKey } from "./masterKeyUtils"
 
 export const useUpdateMasterKey = () => {
   return useMutation$({
+    meta: { suppressGlobalErrorToast: true },
     mutationFn: ({
       newPassword,
       oldPassword,
