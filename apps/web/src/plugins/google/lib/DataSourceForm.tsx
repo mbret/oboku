@@ -1,4 +1,4 @@
-import { Alert, Button, IconButton, Stack, Typography } from "@mui/material"
+import { Stack } from "@mui/material"
 import { useDrivePicker } from "./useDrivePicker"
 import { catchError, of, switchMap, takeUntil, tap } from "rxjs"
 import { isDefined, useMutation$ } from "reactjrx"
@@ -12,12 +12,12 @@ import { useController, useForm } from "react-hook-form"
 import { useRequestFilesAccess } from "./useRequestFilesAccess"
 import { useGoogleScripts } from "./scripts"
 import { isFolder } from "./utils"
-import { DeleteRounded } from "@mui/icons-material"
 import { useMemo, useState } from "react"
 import { buildTree } from "../../../common/FileTreeView"
-import { useConfirmation } from "../../../common/useConfirmation"
 import { useUnmountSubject } from "../../../common/rxjs/useUnmountSubject"
-import { DataSourceFormLayout } from "../../DataSourceFormLayout"
+import { DataSourceFormLayout } from "../../common/DataSourceFormLayout"
+import { PickItemsSection } from "../../common/PickItemsSection"
+import { TreeActionsSection } from "../../common/TreeActionsSection"
 import type { GoogleDriveDataSourceDocType } from "@oboku/shared"
 import type {
   DataSourceFormData,
@@ -50,7 +50,6 @@ export const DataSourceForm = ({
     name: "items",
   })
   const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
-  const confirmation = useConfirmation()
   const requestFilesAccess = useRequestFilesAccess({ requestPopup })
   const unmountSubject = useUnmountSubject()
   const { mutate: requestFilesAccessMutation } = useMutation$({
@@ -100,103 +99,68 @@ export const DataSourceForm = ({
       submitLabel={submitLabel}
     >
       <Stack gap={2} pb={2} overflow="auto">
-        <Stack gap={1}>
-          <Button
-            onClick={() => {
-              pick({ select: "folder", multiSelect: true })
-                .pipe(
-                  tap((data) => {
-                    if (data.action === google.picker.Action.PICKED) {
-                      const newData = [
-                        ...items,
-                        ...(data.docs?.map((i) => i.id) ?? []),
-                      ]
+        <PickItemsSection
+          itemsCount={items.length}
+          onAction={() => {
+            pick({ select: "folder", multiSelect: true })
+              .pipe(
+                tap((data) => {
+                  if (data.action === google.picker.Action.PICKED) {
+                    const newData = [
+                      ...items,
+                      ...(data.docs?.map((i) => i.id) ?? []),
+                    ]
 
-                      const newItems = newData.reduce(
-                        function reduceWithoutDuplicates(
-                          acc: typeof newData,
-                          itemId,
-                        ) {
-                          if (acc.find((entry) => entry === itemId)) {
-                            return acc
-                          }
+                    const newItems = newData.reduce(
+                      function reduceWithoutDuplicates(
+                        acc: typeof newData,
+                        itemId,
+                      ) {
+                        if (acc.find((entry) => entry === itemId)) {
+                          return acc
+                        }
 
-                          return [...acc, itemId]
-                        },
-                        [],
-                      )
+                        return [...acc, itemId]
+                      },
+                      [],
+                    )
 
-                      setItems(newItems)
-                    }
-                  }),
-                  takeUntil(unmountSubject),
-                  catchError((error) => {
-                    console.error(error)
+                    setItems(newItems)
+                  }
+                }),
+                takeUntil(unmountSubject),
+                catchError((error) => {
+                  console.error(error)
 
-                    return of(null)
-                  }),
-                )
-                .subscribe()
-            }}
-          >
-            Add folders/files
-          </Button>
-          <Typography variant="caption" align="center">
-            You have {items.length} item(s) registered
-          </Typography>
-          {items.length > 0 && hasMissingPermissions && (
-            <Alert
-              severity="warning"
-              action={
-                <Button
-                  size="small"
-                  sx={{ alignSelf: "center" }}
-                  onClick={() => {
+                  return of(null)
+                }),
+              )
+              .subscribe()
+          }}
+          resolveItemsAccess={
+            items.length > 0 && hasMissingPermissions
+              ? {
+                  onAction: () => {
                     requestFilesAccessMutation()
-                  }}
-                >
-                  Grant
-                </Button>
-              }
-            >
-              We are missing permissions for some of the files. Please grant
-              access to see the entire tree.
-            </Alert>
-          )}
-        </Stack>
-        <Stack gap={1}>
-          <Stack
-            direction="row"
-            gap={1}
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography variant="caption">
-              Item(s) actions: {selectedItems.length}
-            </Typography>
-            <IconButton
-              disabled={selectedItems.length === 0}
-              onClick={() => {
-                const confirmed = confirmation()
-
-                if (!confirmed) {
-                  return
+                  },
                 }
-
-                setSelectedItems([])
-                setItems(items.filter((item) => !selectedItems.includes(item)))
-              }}
-            >
-              <DeleteRounded />
-            </IconButton>
-          </Stack>
+              : undefined
+          }
+        />
+        <TreeActionsSection
+          onDeleteSelectedItems={() => {
+            setSelectedItems([])
+            setItems(items.filter((item) => !selectedItems.includes(item)))
+          }}
+          selectedItemsCount={selectedItems.length}
+        >
           <TreeView
             items={treeViewItems}
             selectedItems={selectedItems}
             checkboxSelection
             onSelectedItemsChange={(_, items) => setSelectedItems(items)}
           />
-        </Stack>
+        </TreeActionsSection>
       </Stack>
     </DataSourceFormLayout>
   )

@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { TopBarNavigation } from "../navigation/TopBarNavigation"
+import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   capitalize,
   List,
@@ -8,14 +8,14 @@ import {
   ListItemText,
   Stack,
 } from "@mui/material"
-import { plugins } from "./configure"
+import { plugins } from "../configure"
 import { ExtensionRounded } from "@mui/icons-material"
 import { Link } from "react-router"
-import { ROUTES } from "../navigation/routes"
+import { ROUTES } from "../../navigation/routes"
 import {
   useGetIsPluginEnabled,
   useGetIsPluginVisible,
-} from "./useIsPluginEnabled"
+} from "../useIsPluginEnabled"
 
 export const PluginsScreen = memo(function PluginsScreen() {
   const isPluginVisible = useGetIsPluginVisible()

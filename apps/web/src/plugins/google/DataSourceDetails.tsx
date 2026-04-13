@@ -5,10 +5,10 @@ import type { DataSourceEditFormProps } from "../types"
 export const DataSourceDetails = ({
   dataSource,
   onSubmit,
-}: DataSourceEditFormProps) => {
+}: DataSourceEditFormProps<"DRIVE">) => {
   return (
     <DataSourceForm
-      dataSource={dataSource as never}
+      dataSource={dataSource}
       onSubmit={onSubmit}
       submitLabel="Save"
     />

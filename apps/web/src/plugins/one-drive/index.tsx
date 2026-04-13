@@ -3,6 +3,8 @@ import { UnsupportedMethodError } from "../../errors/errors.shared"
 import OneDriveAsset from "../../assets/Microsoft_OneDrive_Icon_2025_-_present.svg?react"
 import type { ObokuPlugin } from "../types"
 import { clearOneDriveSession } from "./auth/auth"
+import { DataSourceCreateForm } from "./DataSourceCreateForm"
+import { DataSourceEditForm } from "./DataSourceEditForm"
 import { DownloadBook } from "./DownloadBook"
 import { Provider } from "./Provider"
 import { InfoScreen } from "./InfoScreen"
@@ -26,8 +28,11 @@ const useRemoveBook: ObokuPlugin<"one-drive">["useRemoveBook"] = () => {
 }
 
 export const plugin: ObokuPlugin<"one-drive"> = {
+  canSynchronize: true,
   canRemoveBook: false,
   description: "Manage contents from Microsoft OneDrive",
+  DataSourceCreateForm,
+  DataSourceEditForm,
   DownloadBookComponent: DownloadBook,
   Icon: OneDriveIcon,
   name: "OneDrive",

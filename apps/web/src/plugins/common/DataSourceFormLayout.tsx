@@ -1,9 +1,9 @@
 import type { FormEventHandler, ReactNode } from "react"
 import type { Control, FieldPath, FieldValues } from "react-hook-form"
 import { Button, Stack } from "@mui/material"
-import { ControlledTextField } from "../common/forms/ControlledTextField"
-import { ControlledSelect } from "../common/forms/ControlledSelect"
-import { useTags } from "../tags/helpers"
+import { ControlledTextField } from "../../common/forms/ControlledTextField"
+import { ControlledSelect } from "../../common/forms/ControlledSelect"
+import { useTags } from "../../tags/helpers"
 
 type DataSourceFormBase = { name: string; tags: string[] }
 

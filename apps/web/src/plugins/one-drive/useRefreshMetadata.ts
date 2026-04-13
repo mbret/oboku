@@ -9,6 +9,7 @@ export const useRefreshMetadata: ObokuPlugin<"one-drive">["useRefreshMetadata"] 
     return useMutation({
       mutationFn: async () => {
         const authResult = await requestMicrosoftAccessToken({
+          interaction: "allow-interactive",
           minimumValidityMs: configuration.MINIMUM_TOKEN_VALIDITY_MS,
           requestPopup,
           scopes: ONE_DRIVE_GRAPH_SCOPES,

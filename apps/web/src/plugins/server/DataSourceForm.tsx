@@ -2,7 +2,7 @@ import { memo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../../common/forms/errorToHelperText"
 import { ConnectorSelector } from "../../connectors/ConnectorSelector"
-import { DataSourceFormLayout } from "../DataSourceFormLayout"
+import { DataSourceFormLayout } from "../common/DataSourceFormLayout"
 import type { ServerDataSourceDocType } from "@oboku/shared"
 import type { DataSourceFormData, DataSourceFormInternalProps } from "../types"
 

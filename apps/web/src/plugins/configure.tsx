@@ -1,3 +1,5 @@
+import type { DataSourceDocType } from "@oboku/shared"
+import type { ObokuPlugin } from "./types"
 import { plugin as dropbox } from "./dropbox"
 import { plugin as google } from "./google"
 import { plugin as file } from "./local"
@@ -7,7 +9,11 @@ import { plugin as synologyDrive } from "./synology-drive"
 import uri from "./uri"
 import webdav from "./webdav"
 
-export const pluginsByType = {
+type PluginsByType = {
+  [K in DataSourceDocType["type"]]: ObokuPlugin<K>
+}
+
+export const pluginsByType: PluginsByType = {
   DRIVE: google,
   URI: uri,
   dropbox,
@@ -21,3 +27,7 @@ export const pluginsByType = {
 export type Plugin = (typeof pluginsByType)[keyof typeof pluginsByType]
 
 export const plugins = Object.values(pluginsByType)
+
+export function getPluginByType<T extends DataSourceDocType["type"]>(type: T) {
+  return pluginsByType[type]
+}

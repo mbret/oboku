@@ -38,10 +38,17 @@ export function getMicrosoftGraphAuthorizationHeaders(accessToken: string) {
 }
 
 export type GraphDriveItem = {
+  id?: string
   name: string
   size?: number
   lastModifiedDateTime?: string
   file?: { mimeType?: string }
+  folder?: Record<string, unknown>
+  package?: Record<string, unknown>
+  parentReference?: {
+    driveId?: string
+    id?: string
+  }
   "@microsoft.graph.downloadUrl"?: string
 }
 

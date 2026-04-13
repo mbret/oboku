@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react"
 import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
 import path from "node:path"
-import { getAuthCallbackRollupInput } from "./src/plugins/authCallbackEntrypoints.shared"
+import { getAuthCallbackRollupInput } from "./src/plugins/common/authCallbackEntrypoints.shared"
 
 const manualChunkGroups = [
   ["jszip", ["jszip"]],

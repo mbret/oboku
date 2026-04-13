@@ -2,8 +2,8 @@ import { DropboxAuth } from "dropbox"
 import { CancelError } from "../../../errors/errors.shared"
 import { configuration } from "../../../config/configuration"
 import { signal } from "reactjrx"
-import { dropboxAuthCallbackPath } from "../../authCallbackEntrypoints.shared"
-import { hasMinimumValidityLeft } from "../../tokenValidity"
+import { dropboxAuthCallbackPath } from "../../common/authCallbackEntrypoints.shared"
+import { hasMinimumValidityLeft } from "../../common/tokenValidity"
 
 const defaultWindowOptions = {
   toolbar: "no",

@@ -9,7 +9,7 @@ import { ConnectorSelector } from "../../connectors/ConnectorSelector"
 import { TestConnection } from "../../connectors/TestConnection"
 import { useConnector } from "../../connectors/useConnector"
 import { testConnection } from "./connectors/ConnectorForm"
-import { DataSourceFormLayout } from "../DataSourceFormLayout"
+import { DataSourceFormLayout } from "../common/DataSourceFormLayout"
 import type { DataSourceFormData, DataSourceFormInternalProps } from "../types"
 
 type WebDAVFormData = DataSourceFormData<{

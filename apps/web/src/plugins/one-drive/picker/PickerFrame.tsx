@@ -23,16 +23,20 @@ function isOneDrivePickerSelection(
   )
 }
 
-export const Picker = memo(function Picker({
+export const PickerFrame = memo(function PickerFrame({
   fileFilters,
   initialPickerAccessToken,
   onClose,
   pickerBaseUrl,
+  selectionMode,
+  selectionPersistence,
 }: {
   fileFilters?: readonly string[]
   initialPickerAccessToken: string
   onClose: (selections?: ReadonlyArray<OneDrivePickerSelection>) => void
   pickerBaseUrl: string
+  selectionMode?: "files" | "folders" | "all"
+  selectionPersistence?: boolean
 }) {
   const iframeNameRef = useRef(`one-drive-picker-${crypto.randomUUID()}`)
   const [iframe, setIframe] = useState<HTMLIFrameElement | null>(null)
@@ -52,6 +56,8 @@ export const Picker = memo(function Picker({
         iframe: iframeEl,
         initialAccessToken: initialPickerAccessToken,
         locale: navigator.language.toLowerCase(),
+        selectionMode,
+        selectionPersistence,
         signal,
       })
 
@@ -104,7 +110,7 @@ export const Picker = memo(function Picker({
             minHeight: 0,
             width: "100%",
           }}
-          title="OneDrive file picker"
+          title="OneDrive picker"
         />
       </Stack>
     </Dialog>

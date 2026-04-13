@@ -14,8 +14,8 @@ import { ONE_DRIVE_CONSUMER_AUTHORITY } from "../constants"
 import { CancelError } from "../../../errors/errors.shared"
 import { acquireOneDriveTokenInteractive } from "./acquireOneDriveTokenInteractive"
 import { Logger } from "../../../debug/logger.shared"
-import { microsoftAuthCallbackPath } from "../../authCallbackEntrypoints.shared"
-import { hasMinimumValidityLeft } from "../../tokenValidity"
+import { microsoftAuthCallbackPath } from "../../common/authCallbackEntrypoints.shared"
+import { hasMinimumValidityLeft } from "../../common/tokenValidity"
 
 export const msalAccountSignal = signal<AccountInfo | undefined>({})
 
@@ -159,21 +159,23 @@ function resolveAuthorityForAccount(
     : undefined
 }
 
+type MicrosoftAccessTokenRequest = {
+  authority?: string
+  forceRefresh?: boolean
+  interaction?: "allow-interactive" | "interactive-only" | "silent-only"
+  minimumValidityMs?: number
+  requestPopup?: () => Promise<boolean>
+  scopes: string[]
+}
+
 export async function requestMicrosoftAccessToken({
   authority,
   forceRefresh = false,
+  interaction = "allow-interactive",
   minimumValidityMs = 0,
   requestPopup,
   scopes,
-  skipSilent = false,
-}: {
-  authority?: string
-  forceRefresh?: boolean
-  minimumValidityMs?: number
-  requestPopup: (() => Promise<boolean>) | undefined
-  scopes: string[]
-  skipSilent?: boolean
-}): Promise<AuthenticationResult> {
+}: MicrosoftAccessTokenRequest): Promise<AuthenticationResult> {
   const client = await getOneDriveClient()
 
   assertNoAmbiguousAccounts(client)
@@ -181,7 +183,7 @@ export async function requestMicrosoftAccessToken({
   const effectiveAuthority = resolveAuthorityForAccount(client, authority)
 
   try {
-    if (!skipSilent) {
+    if (interaction !== "interactive-only") {
       const silentResult = await tryAcquireOneDriveTokenSilently({
         authority: effectiveAuthority,
         client,
@@ -203,6 +205,7 @@ export async function requestMicrosoftAccessToken({
           return requestMicrosoftAccessToken({
             authority,
             forceRefresh: true,
+            interaction,
             minimumValidityMs,
             requestPopup,
             scopes,
@@ -211,8 +214,15 @@ export async function requestMicrosoftAccessToken({
       }
     }
 
+    if (interaction === "silent-only") {
+      throw new CancelError()
+    }
+
     const result = await acquireOneDriveTokenInteractive({
-      account: skipSilent ? undefined : resolveOneDriveAccount(client),
+      account:
+        interaction === "interactive-only"
+          ? undefined
+          : resolveOneDriveAccount(client),
       authority: effectiveAuthority,
       client,
       requestPopup,

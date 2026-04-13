@@ -154,8 +154,16 @@ export type DataSourceCreateFormProps = {
   onSubmit: (payload: DataSourceSubmitPayload) => void
 }
 
-export type DataSourceEditFormProps = {
-  dataSource: DeepReadonly<DataSourceDocType>
+type ReadonlyDataSourceEditValue<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = DeepReadonly<DataSourceDocTypeFor<T>> & {
+  readonly type: T
+}
+
+export type DataSourceEditFormProps<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = {
+  dataSource: ReadonlyDataSourceEditValue<T>
   onSubmit: (payload: DataSourceSubmitPayload) => void
 }
 
@@ -182,7 +190,7 @@ export type ObokuPlugin<
     } & Pick<DOMAttributes<any>, "onDragLeave">
   >
   DataSourceCreateForm?: FunctionComponent<DataSourceCreateFormProps>
-  DataSourceEditForm?: FunctionComponent<DataSourceEditFormProps>
+  DataSourceEditForm?: ComponentType<DataSourceEditFormProps<T>>
   SelectItemComponent?: FunctionComponent<{
     open: boolean
     requestPopup: () => Promise<boolean>

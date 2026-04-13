@@ -116,7 +116,6 @@ describe("OneDrive auth", () => {
 
     await requestMicrosoftAccessToken({
       authority: "https://login.microsoftonline.com/consumers",
-      requestPopup: undefined,
       scopes: ["OneDrive.ReadOnly"],
     })
 
@@ -128,7 +127,7 @@ describe("OneDrive auth", () => {
     )
   })
 
-  it("skips the silent token path when requested", async () => {
+  it("supports interactive-only token requests", async () => {
     const { account, client } = createOneDriveAuthTestContext({
       initialAccount: {
         homeAccountId: "reader.contoso-tenant-id",
@@ -148,9 +147,8 @@ describe("OneDrive auth", () => {
 
     await expect(
       requestMicrosoftAccessToken({
-        requestPopup: undefined,
+        interaction: "interactive-only",
         scopes: ["Files.Read"],
-        skipSilent: true,
       }),
     ).resolves.toEqual(
       expect.objectContaining({
@@ -195,7 +193,6 @@ describe("OneDrive auth", () => {
     await expect(
       requestMicrosoftAccessToken({
         minimumValidityMs: 5 * 60 * 1000,
-        requestPopup: undefined,
         scopes: ["Files.Read"],
       }),
     ).resolves.toEqual(
@@ -233,9 +230,8 @@ describe("OneDrive auth", () => {
 
     await expect(
       requestMicrosoftAccessToken({
-        requestPopup: undefined,
+        interaction: "interactive-only",
         scopes: ["Files.Read"],
-        skipSilent: true,
       }),
     ).rejects.toEqual(
       expect.objectContaining({
@@ -261,11 +257,38 @@ describe("OneDrive auth", () => {
 
     await expect(
       requestMicrosoftAccessToken({
-        requestPopup: undefined,
+        interaction: "interactive-only",
         scopes: ["Files.Read"],
-        skipSilent: true,
       }),
     ).rejects.toBeInstanceOf(CancelError)
+  })
+
+  it("returns CancelError for silent-only requests when interaction is required", async () => {
+    const { client } = createOneDriveAuthTestContext({
+      initialAccount: null,
+    })
+
+    const { InteractionRequiredAuthError } = await import("@azure/msal-browser")
+
+    client.acquireTokenSilent.mockRejectedValueOnce(
+      new InteractionRequiredAuthError(),
+    )
+
+    const [{ requestMicrosoftAccessToken }, { CancelError }] =
+      await Promise.all([
+        import("./auth"),
+        import("../../../errors/errors.shared"),
+      ])
+
+    await expect(
+      requestMicrosoftAccessToken({
+        interaction: "silent-only",
+        scopes: ["Files.Read"],
+      }),
+    ).rejects.toBeInstanceOf(CancelError)
+
+    expect(client.loginPopup).not.toHaveBeenCalled()
+    expect(client.acquireTokenPopup).not.toHaveBeenCalled()
   })
 
   it("detects Microsoft consumer accounts from tenant metadata", async () => {
@@ -327,7 +350,6 @@ describe("OneDrive auth", () => {
 
     await expect(
       requestMicrosoftAccessToken({
-        requestPopup: undefined,
         scopes: ["Files.Read"],
       }),
     ).rejects.toThrow(
@@ -358,7 +380,6 @@ describe("OneDrive auth", () => {
 
     await expect(
       requestMicrosoftAccessToken({
-        requestPopup: undefined,
         scopes: ["Files.Read"],
       }),
     ).rejects.toThrow(
@@ -375,7 +396,6 @@ describe("OneDrive auth", () => {
 
     await expect(
       requestMicrosoftAccessToken({
-        requestPopup: undefined,
         scopes: ["Files.Read"],
       }),
     ).resolves.toEqual(
