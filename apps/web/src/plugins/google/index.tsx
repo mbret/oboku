@@ -25,7 +25,7 @@ const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-const useRemoveBook: ObokuPlugin<"DRIVE">["useRemoveBook"] = () => {
+const useRemoveResource: ObokuPlugin<"DRIVE">["useRemoveResource"] = () => {
   return async () => {
     throw new UnsupportedMethodError("This data source cannot remove books")
   }
@@ -34,7 +34,7 @@ const useRemoveBook: ObokuPlugin<"DRIVE">["useRemoveBook"] = () => {
 export const plugin: ObokuPlugin<"DRIVE"> = {
   type: `DRIVE`,
   name: PLUGIN_NAME,
-  canRemoveBook: false,
+  canRemoveResource: false,
   Icon: GoogleDriveIcon,
   UploadBookComponent: UploadBook,
   canSynchronize: true,
@@ -46,7 +46,7 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   useLinkInfo,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveBook,
+  useRemoveResource,
   useSignOut: () => () => {},
   Provider,
   InfoScreen,

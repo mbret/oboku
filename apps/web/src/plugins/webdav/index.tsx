@@ -18,7 +18,7 @@ const WebDAVIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-const useRemoveBook: ObokuPlugin<"webdav">["useRemoveBook"] = () => {
+const useRemoveResource: ObokuPlugin<"webdav">["useRemoveResource"] = () => {
   return async () => {
     throw new UnsupportedMethodError("This data source cannot remove books")
   }
@@ -27,7 +27,7 @@ const useRemoveBook: ObokuPlugin<"webdav">["useRemoveBook"] = () => {
 const plugin: ObokuPlugin<"webdav"> = {
   type: TYPE,
   name: "WebDAV",
-  canRemoveBook: false,
+  canRemoveResource: false,
   canSynchronize: true,
   Icon: WebDAVIcon,
   description: "Manage contents from WebDAV",
@@ -42,7 +42,7 @@ const plugin: ObokuPlugin<"webdav"> = {
   useSyncSourceInfo,
   useLinkInfo,
   useRefreshMetadata,
-  useRemoveBook,
+  useRemoveResource,
   useSignOut: () => () => {},
   InfoScreen,
   DownloadBookComponent: DownloadBook,

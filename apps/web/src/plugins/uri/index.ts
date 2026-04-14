@@ -17,7 +17,7 @@ const useSynchronize: ObokuPlugin<"URI">["useSynchronize"] = () => {
   })
 }
 
-const useRemoveBook: ObokuPlugin<"URI">["useRemoveBook"] = () => {
+const useRemoveResource: ObokuPlugin<"URI">["useRemoveResource"] = () => {
   return async () => {
     throw new UnsupportedMethodError("This data source cannot remove books")
   }
@@ -26,7 +26,7 @@ const useRemoveBook: ObokuPlugin<"URI">["useRemoveBook"] = () => {
 const plugin: ObokuPlugin<"URI"> = {
   type: TYPE,
   name: "uri",
-  canRemoveBook: false,
+  canRemoveResource: false,
   canSynchronize: false,
   Icon: HttpRounded,
   UploadBookComponent,
@@ -35,7 +35,7 @@ const plugin: ObokuPlugin<"URI"> = {
   useSyncSourceInfo,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveBook,
+  useRemoveResource,
   useSignOut: () => () => {},
   description: "Manage contents from URI / URL",
 }

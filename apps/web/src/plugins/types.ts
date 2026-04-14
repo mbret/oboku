@@ -4,7 +4,6 @@ import type {
   DataSourceDocTypeFor,
   LinkData,
   LinkDataForProvider,
-  LinkDocType,
   LinkDocTypeForProvider,
   ProviderApiCredentials,
 } from "@oboku/shared"
@@ -98,18 +97,23 @@ export type UseSynchronizeHook<
   Extract<DataSourceDocType, { type: T }>
 >
 
-type UseRemoveBook = (options: { requestPopup: () => Promise<boolean> }) => (
-  link: LinkDocType,
-) => Promise<
+export type RemoveResourceResult<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> =
   | {
-      providerCredentials: ProviderApiCredentials<LinkDocType["type"]>
+      providerCredentials: ProviderApiCredentials<T>
     }
   | {
       isError: true
       error?: Error
       reason: `unknown`
     }
->
+
+type UseRemoveResource<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = () => (
+  links: readonly LinkDocTypeForProvider<T>[],
+) => Promise<RemoveResourceResult<T>>
 
 export type UseSyncSourceInfo<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
@@ -172,7 +176,7 @@ export type ObokuPlugin<
 > = {
   name: string
   canSynchronize?: boolean
-  canRemoveBook: boolean
+  canRemoveResource: boolean
   /**
    * Unique ID for the plugin
    */
@@ -204,7 +208,7 @@ export type ObokuPlugin<
   InfoScreen?: () => ReactElement
   useRefreshMetadata: UseRefreshMetadataHook<T>
   useSynchronize: UseSynchronizeHook<T>
-  useRemoveBook: UseRemoveBook
+  useRemoveResource: UseRemoveResource<T>
   useLinkInfo: UseLinkInfo
   useSyncSourceInfo: UseSyncSourceInfo<T>
   useSignOut: () => () => void

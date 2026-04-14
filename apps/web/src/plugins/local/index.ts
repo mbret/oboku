@@ -21,7 +21,7 @@ const useSynchronize: ObokuPlugin<"file">["useSynchronize"] = () => {
   })
 }
 
-const useRemoveBook: ObokuPlugin<"file">["useRemoveBook"] = () => {
+const useRemoveResource: ObokuPlugin<"file">["useRemoveResource"] = () => {
   return async () => {
     throw new UnsupportedMethodError("This data source cannot remove books")
   }
@@ -30,7 +30,7 @@ const useRemoveBook: ObokuPlugin<"file">["useRemoveBook"] = () => {
 export const plugin: ObokuPlugin<"file"> = {
   type: PLUGIN_FILE_TYPE,
   name: "file",
-  canRemoveBook: false,
+  canRemoveResource: false,
   canSynchronize: false,
   UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
@@ -39,7 +39,7 @@ export const plugin: ObokuPlugin<"file"> = {
   useSyncSourceInfo,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveBook,
+  useRemoveResource,
   useSignOut: () => () => {},
   DownloadBookComponent: memo(({ onError }) => {
     useEffect(() => {

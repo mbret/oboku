@@ -20,7 +20,7 @@ const DropboxIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-const useRemoveBook: ObokuPlugin<"dropbox">["useRemoveBook"] = () => {
+const useRemoveResource: ObokuPlugin<"dropbox">["useRemoveResource"] = () => {
   return async () => {
     throw new UnsupportedMethodError("This data source cannot remove books")
   }
@@ -29,7 +29,7 @@ const useRemoveBook: ObokuPlugin<"dropbox">["useRemoveBook"] = () => {
 export const plugin: ObokuPlugin<"dropbox"> = {
   type: `dropbox`,
   name: PLUGIN_NAME,
-  canRemoveBook: false,
+  canRemoveResource: false,
   Icon: DropboxIcon,
   UploadBookComponent: UploadBook,
   DataSourceCreateForm: (props) => (
@@ -39,7 +39,7 @@ export const plugin: ObokuPlugin<"dropbox"> = {
     <DataSourceForm {...rest} dataSource={dataSource} submitLabel="Save" />
   ),
   DownloadBookComponent: DownloadBook,
-  useRemoveBook,
+  useRemoveResource,
   useLinkInfo,
   useSyncSourceInfo,
   useRefreshMetadata,
