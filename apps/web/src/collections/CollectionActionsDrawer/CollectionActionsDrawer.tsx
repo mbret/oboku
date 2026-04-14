@@ -32,7 +32,7 @@ import { useCollection } from "../useCollection"
 import { configuration } from "../../config/configuration"
 // import { useRefreshBookMetadata } from "../../books/useRefreshBookMetadata"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
-import { useMarkBookAsFinished } from "../../books/useMarkBookAs"
+import { useMarkBooksAsFinished } from "../../books/useMarkBookAs"
 import { differenceInMinutes } from "../../common/date/differenceInMinutes"
 
 export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
@@ -50,7 +50,7 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
   const { mutate: refreshCollectionMetadata } = useRefreshCollectionMetadata()
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
   const { mutate: updateCollectionBooks } = useUpdateCollectionBooks()
-  const markBookAsFinished = useMarkBookAsFinished()
+  const { mutate: markBooksAsFinished } = useMarkBooksAsFinished()
   const { closeModalWithNavigation } = useModalNavigationControl(
     {
       onExit: () => {
@@ -143,8 +143,8 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
             <ListItemButton
               onClick={() => {
                 closeModalWithNavigation()
-                collection?.books.forEach((id) => {
-                  markBookAsFinished(id)
+                markBooksAsFinished({
+                  bookIds: collection?.books ?? [],
                 })
               }}
             >

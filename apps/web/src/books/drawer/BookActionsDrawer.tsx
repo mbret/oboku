@@ -34,7 +34,7 @@ import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 import { useLink } from "../../links/states"
 import { ROUTES } from "../../navigation/routes"
-import { useMarkBookAsFinished, useMarkBookAsUnread } from "../useMarkBookAs"
+import { useMarkBooksAsFinished, useMarkBooksAsUnread } from "../useMarkBookAs"
 import { MarkAsReadIcon, UnreadIcon } from "../../common/icon"
 
 type SignalState = {
@@ -86,8 +86,8 @@ export const BookActionsDrawer = memo(() => {
   const { mutate: removeDownloadFile } = useRemoveDownloadFile()
   const refreshBookMetadata = useRefreshBookMetadata()
   const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
-  const markBookAsUnread = useMarkBookAsUnread()
-  const markBookAsFinished = useMarkBookAsFinished()
+  const { mutate: markBooksAsUnread } = useMarkBooksAsUnread()
+  const { mutate: markBooksAsFinished } = useMarkBooksAsFinished()
   const opened = !!bookId
   const theme = useTheme()
 
@@ -180,7 +180,7 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemButton
                   onClick={() => {
                     handleClose()
-                    markBookAsUnread(book._id)
+                    markBooksAsUnread({ bookIds: [book._id] })
                   }}
                 >
                   <ListItemIcon>
@@ -194,7 +194,7 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemButton
                   onClick={() => {
                     handleClose()
-                    markBookAsFinished(book._id)
+                    markBooksAsFinished({ bookIds: [book._id] })
                   }}
                 >
                   <ListItemIcon>
