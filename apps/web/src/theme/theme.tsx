@@ -154,7 +154,7 @@ export const theme = createTheme({
     // Average ratio (w/h) for books cover. This ratio may be used
     // to help designing fixed height carousel or card. This average takes
     // into account the deviation
-    coverAverageRatio: 9 / 14,
+    coverAverageRatio: 9.1 / 14,
   },
 })
 
