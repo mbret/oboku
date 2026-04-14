@@ -8,7 +8,7 @@ export type DialogType<T = undefined> = {
   id: string
   preset?: Preset
   cancellable?: boolean
-  canEscape?: boolean
+  dismissible?: boolean
   cancelTitle?: string
   confirmTitle?: string
   actions?: { title: string; type: "confirm"; onConfirm: () => T }[]

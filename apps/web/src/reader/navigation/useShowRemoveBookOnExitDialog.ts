@@ -50,7 +50,7 @@ export const useShowRemoveBookOnExitDialog = ({
             cancellable: true,
             confirmTitle: "Remove",
             cancelTitle: "Keep",
-            canEscape: false,
+            dismissible: false,
             onConfirm: () => {
               removeDownloadFile({ bookId: book._id })
             },

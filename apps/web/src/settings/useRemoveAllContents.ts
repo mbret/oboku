@@ -36,7 +36,7 @@ export const useRemoveAllContents = () => {
             title: "Account reset",
             content: `This action will remove all of your content (except data sources). Here is a breakdown of everything that will be removed:\n 
             ${bookCount} books, ${collectionCount} collections, ${tagCount} tags. \n\nThis operation can take a long time and you NEED to be connected to internet`,
-            canEscape: true,
+            dismissible: true,
             cancellable: true,
           }).$
 
