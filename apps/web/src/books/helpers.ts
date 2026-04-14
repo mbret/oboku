@@ -1,56 +1,15 @@
 import { ReadingStateState, sortByTitleComparator } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
-import { useRemoveDownloadFile } from "../download/useRemoveDownloadFile"
 import { Logger } from "../debug/logger.shared"
 import { useMemo } from "react"
 import { type BookQueryResult, useBooks } from "./states"
-import { useNetworkState } from "react-use"
-import { usePluginRemoveBook } from "../plugins/usePluginRemoveBook"
 import { getMetadataFromBook } from "./metadata"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
-import { lock } from "../common/locks/utils"
-import { OfflineError } from "../errors/errors.shared"
 import { useMutation } from "@tanstack/react-query"
 import { useMutation$ } from "reactjrx"
 import { defaultIfEmpty, from, merge } from "rxjs"
 import { useCollectionIncrementalUpdate } from "../collections/useCollectionIncrementalUpdate"
 import { useIncrementalBookUpdate } from "./useIncrementalBookUpdate"
-
-export const useRemoveBook = () => {
-  const { mutateAsync: removeDownload } = useRemoveDownloadFile()
-  const { db } = useDatabase()
-  const removeBookFromDataSource = usePluginRemoveBook()
-  const network = useNetworkState()
-
-  return useMutation({
-    mutationFn: async ({
-      id,
-      deleteFromDataSource,
-    }: {
-      id: string
-      deleteFromDataSource?: boolean
-    }) => {
-      if (deleteFromDataSource) {
-        if (!network.online) {
-          throw new OfflineError()
-        }
-
-        await removeBookFromDataSource(id)
-      }
-
-      const releaseLock = lock()
-
-      try {
-        await Promise.all([
-          removeDownload({ bookId: id }),
-          db?.book.findOne({ selector: { _id: id } }).remove(),
-        ])
-      } finally {
-        releaseLock()
-      }
-    },
-  })
-}
 
 export const useRemoveTagFromBook = () => {
   const { db } = useDatabase()

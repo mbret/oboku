@@ -4,8 +4,6 @@ import ListItemText from "@mui/material/ListItemText"
 import {
   SyncRounded,
   DeleteForeverRounded,
-  RemoveRounded,
-  CheckRounded,
   CollectionsRounded,
   NoSimRounded,
   LocalOfferRounded,
@@ -37,6 +35,7 @@ import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 import { useLink } from "../../links/states"
 import { ROUTES } from "../../navigation/routes"
 import { useMarkBookAsFinished, useMarkBookAsUnread } from "../useMarkBookAs"
+import { MarkAsReadIcon, UnreadIcon } from "../../common/icon"
 
 type SignalState = {
   openedWith: undefined | string
@@ -185,7 +184,7 @@ export const BookActionsDrawer = memo(() => {
                   }}
                 >
                   <ListItemIcon>
-                    <RemoveRounded />
+                    <UnreadIcon />
                   </ListItemIcon>
                   <ListItemText primary="Mark as unread" />
                 </ListItemButton>
@@ -199,7 +198,7 @@ export const BookActionsDrawer = memo(() => {
                   }}
                 >
                   <ListItemIcon>
-                    <CheckRounded />
+                    <MarkAsReadIcon />
                   </ListItemIcon>
                   <ListItemText primary="Mark as finished" />
                 </ListItemButton>

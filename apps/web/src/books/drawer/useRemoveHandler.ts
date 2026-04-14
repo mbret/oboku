@@ -1,4 +1,4 @@
-import { useRemoveBook } from "../helpers"
+import { useRemoveBook } from "../useRemoveBook"
 import { useMutation$ } from "reactjrx"
 import { getLatestDatabase } from "../../rxdb/RxDbProvider"
 import { defaultIfEmpty, first, from, mergeMap, of } from "rxjs"

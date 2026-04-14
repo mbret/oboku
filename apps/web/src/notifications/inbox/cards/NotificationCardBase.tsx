@@ -1,5 +1,5 @@
 import { type ReactNode, memo } from "react"
-import { DeleteRounded, DoneRounded } from "@mui/icons-material"
+import { DeleteRounded } from "@mui/icons-material"
 import {
   Alert,
   AlertTitle,
@@ -9,6 +9,7 @@ import {
   Typography,
 } from "@mui/material"
 import type { UserNotification } from "@oboku/shared"
+import { MarkAsReadIcon } from "../../../common/icon"
 import { useMarkNotificationAsSeen } from "../useMarkNotificationAsSeen"
 import { useArchiveNotification } from "../useArchiveNotification"
 
@@ -59,7 +60,7 @@ export const NotificationCardBase = memo(function NotificationCardBase({
           <Button
             size="small"
             variant="text"
-            startIcon={<DoneRounded />}
+            startIcon={<MarkAsReadIcon />}
             onClick={() => {
               markAsSeen.mutate({ id: notification.id })
             }}
