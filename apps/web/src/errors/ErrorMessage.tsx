@@ -2,6 +2,7 @@ import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import {
   ERROR_LINK_INVALID_MESSAGE,
   ERROR_NO_LINK_MESSAGE,
+  OfflineError,
   isApiError,
 } from "./errors.shared"
 import { HttpClientError } from "../http/httpClient.shared"
@@ -54,6 +55,10 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
 }
 
 export const errorToMessage = (error: unknown) => {
+  if (error instanceof OfflineError) {
+    return "You need to be online to proceed with this action"
+  }
+
   if (error instanceof HttpClientError && error.response?.status === 401) {
     return "Invalid credentials"
   }

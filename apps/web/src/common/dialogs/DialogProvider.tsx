@@ -77,6 +77,7 @@ const InnerDialog = () => {
       type: "confirm",
     },
   ]
+  const content = currentDialog?.content
 
   return (
     <Dialog
@@ -88,9 +89,15 @@ const InnerDialog = () => {
       disableEscapeKeyDown={!isDismissible}
     >
       <DialogTitle>{currentDialog?.title}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>{currentDialog?.content}</DialogContentText>
-      </DialogContent>
+      {content !== undefined && (
+        <DialogContent>
+          {typeof content === "string" ? (
+            <DialogContentText>{content}</DialogContentText>
+          ) : (
+            content
+          )}
+        </DialogContent>
+      )}
       <DialogActions>
         {currentDialog?.cancellable === true && (
           <Button onClick={onCancel} color="primary">

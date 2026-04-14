@@ -28,7 +28,7 @@ import { useModalNavigationControl } from "../../navigation/useModalNavigationCo
 import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
 import { useBookDownloadState } from "../../download/states"
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
-import { useRemoveHandler } from "./useRemoveHandler"
+import { useRemoveHandler } from "../useRemoveHandler"
 import { getMetadataFromBook } from "../metadata"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
@@ -309,7 +309,7 @@ export const BookActionsDrawer = memo(() => {
               <Divider />
               <List>
                 <ListItemButton
-                  onClick={() => bookId && onRemovePress({ bookId })}
+                  onClick={() => bookId && onRemovePress({ bookIds: [bookId] })}
                 >
                   <ListItemIcon>
                     <DeleteForeverRounded />

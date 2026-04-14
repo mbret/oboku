@@ -1,10 +1,11 @@
+import type { ReactNode } from "react"
 import { signal } from "reactjrx"
 
 type Preset = "NOT_IMPLEMENTED" | "OFFLINE" | "CONFIRM" | "UNKNOWN_ERROR"
 
 export type DialogType<T = undefined> = {
   title?: string
-  content?: string
+  content?: ReactNode
   id: string
   preset?: Preset
   cancellable?: boolean
