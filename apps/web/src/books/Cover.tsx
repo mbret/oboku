@@ -36,8 +36,11 @@ const CoverImg = styled(`img`)<{
   fullWidth?: boolean
   rounded?: boolean
 }>(({ theme, withShadow, fullWidth, rounded }) => ({
+  display: "block",
   position: "relative",
   height: "100%",
+  maxHeight: "100%",
+  maxWidth: "100%",
   justifySelf: "flex-end",
   objectFit: "cover",
   ...(withShadow && {
@@ -103,7 +106,7 @@ export const Cover = memo(
     }, [originalSrc])
 
     return (
-      <Box width="100%" height="100%" style={style} sx={sx}>
+      <Box width="100%" height="100%" overflow="hidden" style={style} sx={sx}>
         {isLoading && (
           <CoverImg
             alt="img"
@@ -119,6 +122,8 @@ export const Cover = memo(
         )}
         <picture
           style={{
+            display: "block",
+            height: "100%",
             width: "100%",
             ...(isLoading && {
               display: "none",

@@ -1,5 +1,5 @@
 import { useParams } from "react-router"
-import { BookList } from "../books/bookList/BookList"
+import { BookList } from "../books/lists"
 import { CollectionList } from "../collections/lists/CollectionList"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useCollectionsForSearch } from "./useCollectionsForSearch"

@@ -6,7 +6,7 @@ import { useCallback } from "react"
 import { getBookById } from "../dbHelpers"
 import { ROUTES } from "../../navigation/routes"
 
-export const useDefaultBookCardClickHandler = () => {
+export const useDefaultListItemClickHandler = () => {
   const { mutate: downloadFile } = useDownloadBook()
   const cancelDownload = useCancelBookDownload()
   const navigate = useNavigate()

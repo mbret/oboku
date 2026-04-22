@@ -80,10 +80,12 @@ export const BookCoverCard: FC<
     return (
       <Card
         sx={{
-          aspectRatio: theme.custom.coverAverageRatio,
           position: "relative",
           display: "flex",
+          width: "100%",
+          height: "100%",
           minHeight: 0, // @see https://stackoverflow.com/questions/42130384/why-should-i-specify-height-0-even-if-i-specified-flex-basis-0-in-css3-flexbox
+          overflow: "hidden",
         }}
         style={style}
         className={className}

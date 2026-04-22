@@ -9,6 +9,12 @@ type GoogleAccessToken = google.accounts.oauth2.TokenResponse & {
   created_at: number
 }
 
+const CANCEL_SKIP_REASONS: readonly string[] = [
+  "auto_cancel",
+  "user_cancel",
+  "tap_outside",
+]
+
 export const googleAccessTokenSignal = signal<GoogleAccessToken | undefined>({})
 
 export const consentShownSignal = signal({
@@ -80,10 +86,25 @@ export const signInWithGooglePrompt = () =>
             })
 
             gsi.accounts.id.prompt((notification) => {
-              if (
-                notification.isSkippedMoment() ||
-                notification.isDismissedMoment()
-              ) {
+              if (notification.isSkippedMoment()) {
+                const skippedReason = notification.getSkippedReason()
+
+                if (CANCEL_SKIP_REASONS.includes(skippedReason)) {
+                  return reject(new CancelError())
+                }
+
+                console.warn(
+                  `Google sign in skipped with reason: ${skippedReason}`,
+                )
+
+                return reject(
+                  new Error(
+                    "Google sign in was skipped. If this error persists make sure your browser is not blocking this site's third party sign-in.",
+                  ),
+                )
+              }
+
+              if (notification.isDismissedMoment()) {
                 reject(new CancelError())
               }
             })

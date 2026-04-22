@@ -19,7 +19,7 @@ import {
   StorageRounded,
 } from "@mui/icons-material"
 import { useStorageUse } from "../../../settings/useStorageUse"
-import { BookList } from "../../../books/bookList/BookList"
+import { BookList } from "../../../books/lists"
 import { bookActionDrawerSignal } from "../../../books/drawer/BookActionsDrawer"
 import { useDownloadedFilesInfo } from "../../../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../../../download/useRemoveDownloadFile"
@@ -159,7 +159,7 @@ export const ManageStorageScreen = () => {
         viewMode={"list"}
         data={bookIdsToDisplay}
         density="dense"
-        withBookActions={false}
+        withDrawerActions={false}
         style={{
           height: "100%",
           overflow: "hidden",

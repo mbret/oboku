@@ -1,7 +1,7 @@
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
 import { Stack } from "@mui/material"
 import { useNavigate, useParams } from "react-router"
-import { BookListWithControls } from "../../../books/bookList/BookListWithControls"
+import { BookListWithControls } from "../../../books/lists"
 import { signal, useSignalValue } from "reactjrx"
 import type {
   ListActionSorting,

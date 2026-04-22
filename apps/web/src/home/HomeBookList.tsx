@@ -1,13 +1,12 @@
-import { type ComponentProps, memo, useMemo } from "react"
-import { BookList } from "../books/bookList/BookList"
+import { type ComponentProps, memo } from "react"
+import { BookList } from "../books/lists"
 
-export const HomeBookList = memo((props: ComponentProps<typeof BookList>) => {
-  const listStyle = useMemo(
-    () => ({
-      height: 280,
-    }),
-    [],
-  )
+const listStyle = {
+  height: 280,
+}
 
+export const HomeBookList = memo(function HomeBookList(
+  props: ComponentProps<typeof BookList>,
+) {
   return <BookList style={listStyle} viewMode="horizontal" {...props} />
 })

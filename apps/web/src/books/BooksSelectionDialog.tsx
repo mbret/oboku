@@ -1,7 +1,7 @@
 import { type ComponentProps, memo } from "react"
 import { Dialog, DialogContent } from "@mui/material"
 import { DialogTopBar } from "../navigation/DialogTopBar"
-import { SelectableBookList } from "../books/bookList/SelectableBookList"
+import { SelectableBookList } from "../books/lists"
 import { SelectionDialogBottom } from "../common/SelectionDialogBottom"
 
 export const BooksSelectionDialog = memo(
