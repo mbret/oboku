@@ -22,6 +22,7 @@ export const ROUTES = {
   LIBRARY_COLLECTIONS: "/library/collections",
   LIBRARY_SERIES: "/library/series",
   LIBRARY_TAGS: "/library/tags",
+  TAG_BOOKS: "/library/tags/:id/books",
   LOGIN: "/login",
   LOGIN_MAGIC_LINK: "/login/magic-link",
   SIGN_UP: "/signup",

@@ -15,13 +15,10 @@ import { observeBook, observeBooks } from "./dbHelpers"
 import { libraryStateSignal } from "../library/books/states"
 import { skipToken, type UseQueryOptions } from "@tanstack/react-query"
 
-type UseBooksOptions = UseQueryOptions<
-  DeepReadonlyObject<BookDocType>[],
-  unknown,
-  DeepReadonlyObject<BookDocType>[]
->
+type UseBooksOptions<TData = DeepReadonlyObject<BookDocType>[]> =
+  UseQueryOptions<DeepReadonlyObject<BookDocType>[], unknown, TData>
 
-export const useBooks = ({
+export const useBooks = <TData = DeepReadonlyObject<BookDocType>[]>({
   queryObj = {},
   isNotInterested,
   ids,
@@ -32,12 +29,12 @@ export const useBooks = ({
   isNotInterested?: "none" | "with" | "only"
   ids?: DeepReadonlyArray<string>
   includeProtected?: boolean
-} & Omit<UseBooksOptions, "queryFn" | "queryKey"> = {}) => {
+} & Omit<UseBooksOptions<TData>, "queryFn" | "queryKey"> = {}) => {
   const serializedIds = JSON.stringify(ids)
   const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
   const includeProtected = _includeProtected || isLibraryUnlocked
 
-  return useQuery$({
+  return useQuery$<DeepReadonlyObject<BookDocType>[], unknown, TData>({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [
       RXDB_QUERY_KEY_PREFIX,

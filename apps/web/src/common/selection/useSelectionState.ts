@@ -2,9 +2,20 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 
 type SelectedItemsState = Record<string, true>
 
+function toSelectionState<ItemId extends string>(
+  ids: readonly ItemId[] | undefined,
+): SelectedItemsState {
+  if (!ids || ids.length === 0) return {}
+
+  return ids.reduce<SelectedItemsState>((acc, id) => {
+    acc[id] = true
+    return acc
+  }, {})
+}
+
 function pruneSelectionToVisibleItems(
   current: SelectedItemsState,
-  visibleItemIds: string[],
+  visibleItemIds: readonly string[],
 ) {
   let nextSelectionSize = 0
 
@@ -27,10 +38,20 @@ function pruneSelectionToVisibleItems(
     : nextSelection
 }
 
+export type UseSelectionStateOptions<ItemId extends string> = {
+  /**
+   * acts as the live baseline; change its identity and the diff recomputes against the new baseline
+   */
+  initialSelectedIds?: readonly ItemId[]
+}
+
 export function useSelectionState<ItemId extends string>(
-  visibleItemIds: ItemId[],
+  visibleItemIds: readonly ItemId[],
+  { initialSelectedIds }: UseSelectionStateOptions<ItemId> = {},
 ) {
-  const [selectedItems, setSelectedItems] = useState<SelectedItemsState>({})
+  const [selectedItems, setSelectedItems] = useState<SelectedItemsState>(() =>
+    toSelectionState(initialSelectedIds),
+  )
 
   useEffect(
     function syncSelectionWithVisibleItems() {
@@ -42,6 +63,8 @@ export function useSelectionState<ItemId extends string>(
   )
 
   const selectedIds = useMemo(
+    // Object.keys loses the narrow ItemId type; safe because we only
+    // ever write ItemId-typed keys into `selectedItems`.
     () => Object.keys(selectedItems) as ItemId[],
     [selectedItems],
   )
@@ -52,6 +75,14 @@ export function useSelectionState<ItemId extends string>(
 
   const clearSelection = useCallback(() => {
     setSelectedItems({})
+  }, [])
+
+  const selectAll = useCallback(() => {
+    setSelectedItems(toSelectionState(visibleItemIds))
+  }, [visibleItemIds])
+
+  const setSelection = useCallback((ids: readonly ItemId[]) => {
+    setSelectedItems(toSelectionState(ids))
   }, [])
 
   const startSelection = useCallback((itemId: ItemId) => {
@@ -84,13 +115,46 @@ export function useSelectionState<ItemId extends string>(
     })
   }, [])
 
+  const { toAdd, toRemove, hasChanges } = useMemo(() => {
+    if (!initialSelectedIds) {
+      return {
+        toAdd: [] as ItemId[],
+        toRemove: [] as ItemId[],
+        hasChanges: false,
+      }
+    }
+
+    const baselineSet = new Set(initialSelectedIds)
+    const nextToAdd: ItemId[] = []
+    const nextToRemove: ItemId[] = []
+
+    for (const id of selectedIds) {
+      if (!baselineSet.has(id)) nextToAdd.push(id)
+    }
+
+    for (const id of initialSelectedIds) {
+      if (!selectedItems[id]) nextToRemove.push(id)
+    }
+
+    return {
+      toAdd: nextToAdd,
+      toRemove: nextToRemove,
+      hasChanges: nextToAdd.length > 0 || nextToRemove.length > 0,
+    }
+  }, [initialSelectedIds, selectedIds, selectedItems])
+
   return {
     clearSelection,
+    hasChanges,
     isSelectionMode,
+    selectAll,
     selectedCount,
     selectedIds,
     selectedItems,
+    setSelection,
     startSelection,
+    toAdd,
     toggleSelection,
+    toRemove,
   }
 }

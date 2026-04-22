@@ -8,7 +8,6 @@ import { PreloadQueries } from "./queries/PreloadQueries"
 import { BlurFilterReference } from "./books/BlurFilterReference"
 import { ErrorBoundary } from "@sentry/react"
 import { ManageBookTagsDialog } from "./books/ManageBookTagsDialog"
-import { ManageTagBooksDialog } from "./tags/ManageTagBooksDialog"
 import { usePersistSignals, QueryClientProvider$ } from "reactjrx"
 import { signalEntriesToPersist } from "./profile"
 import { ThemeProvider } from "./theme/ThemeProvider"
@@ -76,7 +75,6 @@ const App = memo(() => {
                 <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
                 <ManageBookCollectionsDialog />
                 <ManageBookTagsDialog />
-                <ManageTagBooksDialog />
                 <SetupSecretDialog />
               </AuthenticatedOnly>
               <AuthorizeActionDialog />

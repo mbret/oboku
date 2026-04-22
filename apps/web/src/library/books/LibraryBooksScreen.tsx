@@ -7,9 +7,10 @@ import {
   type CSSProperties,
 } from "react"
 import { BookList, SortByDialog } from "../../books/lists"
-import { Button, Typography, useTheme, Stack, Box } from "@mui/material"
+import { Button, Stack, Box } from "@mui/material"
 import { LibraryFiltersDrawer } from "../LibraryFiltersDrawer"
 import EmptyLibraryAsset from "../../assets/empty-library.svg"
+import { EmptyList } from "../../common/lists/EmptyList"
 import {
   libraryStateSignal,
   isUploadBookDrawerOpenedStateSignal,
@@ -25,16 +26,17 @@ import {
   useMarkBooksAsUnread,
 } from "../../books/useMarkBookAs"
 import { useRemoveHandler } from "../../books/useRemoveHandler"
-import { useSelectionState } from "../../common/selection"
-import { SelectionToolbar } from "./SelectionToolbar"
+import { SelectionToolbar, useSelectionState } from "../../common/selection"
 import { useLayeredEscape } from "../../common/useLayeredEscape"
+import { DeleteRounded } from "@mui/icons-material"
+import { IconButton } from "@mui/material"
+import { MarkAsReadsIcon, UnreadIcon } from "../../common/icon"
 
 const bookListStyle = {
   height: "100%",
 } satisfies CSSProperties
 
 export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
-  const theme = useTheme()
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const isUploadBookDrawerOpened = useSignalValue(
     isUploadBookDrawerOpenedStateSignal,
@@ -124,19 +126,39 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
     >
       {isSelectionMode ? (
         <SelectionToolbar
-          isSelectionActionPending={isSelectionActionPending}
+          isActionPending={isSelectionActionPending}
           selectionCount={selectedCount}
-          onCancelSelection={clearSelection}
-          onDeleteSelection={() => {
-            removeBooks({
-              bookIds: Array.from(selectedBookIds),
-            })
-          }}
-          onMarkSelectionAsRead={() =>
-            markBooksAsFinished({ bookIds: selectedBookIds })
-          }
-          onMarkSelectionAsUnread={() =>
-            markBooksAsUnread({ bookIds: selectedBookIds })
+          onCancel={clearSelection}
+          actions={
+            <>
+              <IconButton
+                onClick={() => markBooksAsUnread({ bookIds: selectedBookIds })}
+                color="primary"
+                aria-label="Mark selected books as unread"
+              >
+                <UnreadIcon />
+              </IconButton>
+              <IconButton
+                onClick={() =>
+                  markBooksAsFinished({ bookIds: selectedBookIds })
+                }
+                color="primary"
+                disabled={isSelectionActionPending}
+                aria-label="Mark selected books as read"
+              >
+                <MarkAsReadsIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  removeBooks({ bookIds: selectedBookIds })
+                }}
+                color="primary"
+                disabled={isSelectionActionPending}
+                aria-label="Delete selected books"
+              >
+                <DeleteRounded />
+              </IconButton>
+            </>
           }
         />
       ) : (
@@ -151,40 +173,13 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
       )}
       <Stack flex={1}>
         {books.length === 0 && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              flex: 1,
-            }}
-          >
+          <Stack flex={1}>
             {listHeader}
-            <Stack
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                textAlign: "center",
-                alignSelf: "center",
-                width: "80%",
-                maxWidth: theme.custom.maxWidthCenteredContent,
-              }}
-            >
-              <img
-                style={{
-                  width: "100%",
-                }}
-                src={EmptyLibraryAsset}
-                alt="libray"
-              />
-              <Typography
-                style={{ maxWidth: 300, paddingTop: theme.spacing(1) }}
-              >
-                It looks like your library is empty for the moment. Maybe it's
-                time to add a new book
-              </Typography>
-            </Stack>
-          </div>
+            <EmptyList
+              image={{ src: EmptyLibraryAsset, alt: "Empty library" }}
+              description="It looks like your library is empty for the moment. Maybe it's time to add a new book"
+            />
+          </Stack>
         )}
         {books.length > 0 && (
           <BookList
