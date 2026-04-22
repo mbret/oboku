@@ -23,6 +23,7 @@ export const ROUTES = {
   LIBRARY_SERIES: "/library/series",
   LIBRARY_TAGS: "/library/tags",
   TAG_BOOKS: "/library/tags/:id/books",
+  COLLECTION_BOOKS: "/collections/:id/books",
   LOGIN: "/login",
   LOGIN_MAGIC_LINK: "/login/magic-link",
   SIGN_UP: "/signup",
