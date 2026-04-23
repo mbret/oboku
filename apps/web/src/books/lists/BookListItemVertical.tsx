@@ -84,7 +84,16 @@ export const BookListItemVertical = memo(function BookListItemVertical({
         selectionEnabled={selectionEnabled}
         controlProps={controlProps}
         itemLabel="book"
-        sx={{ flex: 1, display: "flex" }}
+        sx={{
+          flex: 1,
+          display: "flex",
+          // Allow this flex child to shrink below its content's intrinsic
+          // height so the fixed bottom bar stays pinned. Without this, the
+          // cover's intrinsic image size can push the item past its
+          // container-query-derived height.
+          minHeight: 0,
+          overflow: "hidden",
+        }}
       >
         <BookCoverCard
           bookId={bookId}
