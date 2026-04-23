@@ -4,8 +4,6 @@ import ListItemText from "@mui/material/ListItemText"
 import {
   SyncRounded,
   DeleteForeverRounded,
-  RemoveRounded,
-  CheckRounded,
   CollectionsRounded,
   NoSimRounded,
   LocalOfferRounded,
@@ -30,13 +28,14 @@ import { useModalNavigationControl } from "../../navigation/useModalNavigationCo
 import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
 import { useBookDownloadState } from "../../download/states"
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
-import { useRemoveHandler } from "./useRemoveHandler"
+import { useRemoveHandler } from "../useRemoveHandler"
 import { getMetadataFromBook } from "../metadata"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 import { useLink } from "../../links/states"
 import { ROUTES } from "../../navigation/routes"
-import { useMarkBookAsFinished, useMarkBookAsUnread } from "../useMarkBookAs"
+import { useMarkBooksAsFinished, useMarkBooksAsUnread } from "../useMarkBookAs"
+import { MarkAsReadIcon, UnreadIcon } from "../../common/icon"
 
 type SignalState = {
   openedWith: undefined | string
@@ -87,8 +86,8 @@ export const BookActionsDrawer = memo(() => {
   const { mutate: removeDownloadFile } = useRemoveDownloadFile()
   const refreshBookMetadata = useRefreshBookMetadata()
   const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
-  const markBookAsUnread = useMarkBookAsUnread()
-  const markBookAsFinished = useMarkBookAsFinished()
+  const { mutate: markBooksAsUnread } = useMarkBooksAsUnread()
+  const { mutate: markBooksAsFinished } = useMarkBooksAsFinished()
   const opened = !!bookId
   const theme = useTheme()
 
@@ -181,11 +180,11 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemButton
                   onClick={() => {
                     handleClose()
-                    markBookAsUnread(book._id)
+                    markBooksAsUnread({ bookIds: [book._id] })
                   }}
                 >
                   <ListItemIcon>
-                    <RemoveRounded />
+                    <UnreadIcon />
                   </ListItemIcon>
                   <ListItemText primary="Mark as unread" />
                 </ListItemButton>
@@ -195,11 +194,11 @@ export const BookActionsDrawer = memo(() => {
                 <ListItemButton
                   onClick={() => {
                     handleClose()
-                    markBookAsFinished(book._id)
+                    markBooksAsFinished({ bookIds: [book._id] })
                   }}
                 >
                   <ListItemIcon>
-                    <CheckRounded />
+                    <MarkAsReadIcon />
                   </ListItemIcon>
                   <ListItemText primary="Mark as finished" />
                 </ListItemButton>
@@ -310,7 +309,7 @@ export const BookActionsDrawer = memo(() => {
               <Divider />
               <List>
                 <ListItemButton
-                  onClick={() => bookId && onRemovePress({ bookId })}
+                  onClick={() => bookId && onRemovePress({ bookIds: [bookId] })}
                 >
                   <ListItemIcon>
                     <DeleteForeverRounded />

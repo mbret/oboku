@@ -10,7 +10,7 @@ import {
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
 import type { Database } from "../rxdb"
 import type { DeepReadonlyObject, MangoQuery } from "rxdb"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, type UseQueryOptions } from "@tanstack/react-query"
 
 export const useCreateTag = () => {
   const { db } = useDatabase()
@@ -82,8 +82,14 @@ export const getTagsByIds = async (db: Database) => {
   )
 }
 
-export const useTag = (id?: string) => {
-  return useQuery$({
+export const useTag = <TData = DeepReadonlyObject<TagsDocType> | null>(
+  id?: string,
+  options: Omit<
+    UseQueryOptions<DeepReadonlyObject<TagsDocType> | null, unknown, TData>,
+    "queryKey" | "queryFn"
+  > = {},
+) => {
+  return useQuery$<DeepReadonlyObject<TagsDocType> | null, unknown, TData>({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "tag", id],
     enabled: !!id,
@@ -95,6 +101,7 @@ export const useTag = (id?: string) => {
             .$.pipe(map((result) => result?.toJSON() ?? null))
         }),
       ),
+    ...options,
   })
 }
 

@@ -14,7 +14,7 @@ import {
   SortRounded,
   TuneRounded,
 } from "@mui/icons-material"
-import { SortByDialog } from "../../books/bookList/SortByDialog"
+import { SortByDialog } from "../../books/lists"
 
 export type ListActionSorting = ComponentProps<typeof SortByDialog>["value"]
 export type ListActionViewMode = "grid" | "list" | "compact" | "horizontal"

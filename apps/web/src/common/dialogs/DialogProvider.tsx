@@ -22,7 +22,7 @@ const enrichDialogWithPreset = (
         ...dialog,
         title: "Not implemented",
         content: "Sorry this feature is not yet implemented",
-        canEscape: true,
+        dismissible: true,
       }
     case "OFFLINE":
       return {
@@ -56,6 +56,7 @@ const InnerDialog = () => {
   const dialogs = useSignalValue(dialogSignal)
 
   const currentDialog = enrichDialogWithPreset(dialogs[0])
+  const isDismissible = currentDialog?.dismissible !== false
 
   const handleClose = useCallback(() => {
     currentDialog?.onClose?.()
@@ -76,21 +77,27 @@ const InnerDialog = () => {
       type: "confirm",
     },
   ]
+  const content = currentDialog?.content
 
   return (
     <Dialog
       open={!!currentDialog}
-      disableEscapeKeyDown={false}
       transitionDuration={0}
-      {...(currentDialog?.canEscape !== false && {
+      {...(isDismissible && {
         onClose: onCancel,
-        disableEscapeKeyDown: true,
       })}
+      disableEscapeKeyDown={!isDismissible}
     >
       <DialogTitle>{currentDialog?.title}</DialogTitle>
-      <DialogContent>
-        <DialogContentText>{currentDialog?.content}</DialogContentText>
-      </DialogContent>
+      {content !== undefined && (
+        <DialogContent>
+          {typeof content === "string" ? (
+            <DialogContentText>{content}</DialogContentText>
+          ) : (
+            content
+          )}
+        </DialogContent>
+      )}
       <DialogActions>
         {currentDialog?.cancellable === true && (
           <Button onClick={onCancel} color="primary">

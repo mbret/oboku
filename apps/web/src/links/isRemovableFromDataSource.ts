@@ -10,5 +10,5 @@ export const isRemovableFromDataSource = ({
 
   const linkPlugin = plugins.find((plugin) => plugin.type === link.type)
 
-  return !!linkPlugin?.canRemoveBook
+  return !!linkPlugin?.canRemoveResource
 }

@@ -18,16 +18,17 @@ const SynologyDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-const useRemoveBook: ObokuPlugin<"synology-drive">["useRemoveBook"] = () => {
-  return async () => {
-    throw new UnsupportedMethodError("This data source cannot remove books")
+const useRemoveResource: ObokuPlugin<"synology-drive">["useRemoveResource"] =
+  () => {
+    return async () => {
+      throw new UnsupportedMethodError("This data source cannot remove books")
+    }
   }
-}
 
 export const plugin: ObokuPlugin<"synology-drive"> = {
   type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
   name: "Synology Drive",
-  canRemoveBook: false,
+  canRemoveResource: false,
   canSynchronize: true,
   Icon: SynologyDriveIcon,
   InfoScreen,
@@ -43,7 +44,7 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   useSyncSourceInfo,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveBook,
+  useRemoveResource,
   useSignOut: () => () => {},
   description:
     "Browse a Synology Drive library and add books by stable file id",

@@ -1,7 +1,7 @@
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
 import { Stack } from "@mui/material"
 import { useNavigate, useParams } from "react-router"
-import { BookListWithControls } from "../../../books/bookList/BookListWithControls"
+import { BookListWithControls } from "../../../books/lists"
 import { signal, useSignalValue } from "reactjrx"
 import type {
   ListActionSorting,
@@ -17,7 +17,8 @@ import { useRafState } from "react-use"
 import { configuration } from "../../../config/configuration"
 import { createPortal } from "react-dom"
 import { Header } from "./Header"
-import { EmptyList } from "./EmptyList"
+import { EmptyList } from "../../../common/lists/EmptyList"
+import EmptyLibraryAsset from "../../../assets/empty-library.svg"
 
 type ScreenParams = {
   id: string
@@ -151,7 +152,12 @@ export const CollectionDetailsScreen = () => {
                 }),
               )
             }}
-            renderEmptyList={<EmptyList />}
+            renderEmptyList={
+              <EmptyList
+                image={{ src: EmptyLibraryAsset, alt: "Empty library" }}
+                description="It looks like your library is empty for the moment. Maybe it's time to add a new book"
+              />
+            }
           />
         </Stack>
       </Stack>

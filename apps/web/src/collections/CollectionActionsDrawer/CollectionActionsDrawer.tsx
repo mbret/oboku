@@ -17,6 +17,7 @@ import {
   CheckRounded,
 } from "@mui/icons-material"
 import { useSignalValue } from "reactjrx"
+import { generatePath, useNavigate } from "react-router"
 import {
   collectionActionDrawerChangesState,
   collectionActionDrawerState,
@@ -24,7 +25,7 @@ import {
 import { RenameCollectionDialog } from "./RenameCollectionDialog"
 import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
-import { ManageCollectionBooksDialog } from "../ManageCollectionBooksDialog"
+import { ROUTES } from "../../navigation/routes"
 import { useRefreshCollectionMetadata } from "../useRefreshCollectionMetadata"
 import { useRemoveCollection } from "../useRemoveCollection"
 import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
@@ -32,7 +33,7 @@ import { useCollection } from "../useCollection"
 import { configuration } from "../../config/configuration"
 // import { useRefreshBookMetadata } from "../../books/useRefreshBookMetadata"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
-import { useMarkBookAsFinished } from "../../books/useMarkBookAs"
+import { useMarkBooksAsFinished } from "../../books/useMarkBookAs"
 import { differenceInMinutes } from "../../common/date/differenceInMinutes"
 
 export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
@@ -44,13 +45,12 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
     setIsEditCollectionDialogOpenedWithId,
   ] = useState<string | undefined>(undefined)
   const { mutate: removeCollection } = useRemoveCollection()
-  const [isManageBookDialogOpened, setIsManageBookDialogOpened] =
-    useState(false)
+  const navigate = useNavigate()
   // const refreshBookMetadata = useRefreshBookMetadata()
   const { mutate: refreshCollectionMetadata } = useRefreshCollectionMetadata()
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
   const { mutate: updateCollectionBooks } = useUpdateCollectionBooks()
-  const markBookAsFinished = useMarkBookAsFinished()
+  const { mutate: markBooksAsFinished } = useMarkBooksAsFinished()
   const { closeModalWithNavigation } = useModalNavigationControl(
     {
       onExit: () => {
@@ -60,7 +60,6 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
         })
 
         setIsEditCollectionDialogOpenedWithId(undefined)
-        setIsManageBookDialogOpened(false)
       },
     },
     openedWith,
@@ -106,16 +105,25 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
             <ListItemText primary="Rename" />
           </ListItemButton>
 
-          <ListItemButton
-            onClick={() => {
-              setIsManageBookDialogOpened(true)
-            }}
-          >
-            <ListItemIcon>
-              <LibraryAddRounded />
-            </ListItemIcon>
-            <ListItemText primary="Manage books" />
-          </ListItemButton>
+          {collection &&
+            collection._id !== configuration.COLLECTION_EMPTY_ID && (
+              <ListItemButton
+                onClick={() => {
+                  closeModalWithNavigation(() => {
+                    navigate(
+                      generatePath(ROUTES.COLLECTION_BOOKS, {
+                        id: collectionId ?? `-1`,
+                      }),
+                    )
+                  })
+                }}
+              >
+                <ListItemIcon>
+                  <LibraryAddRounded />
+                </ListItemIcon>
+                <ListItemText primary="Manage books" />
+              </ListItemButton>
+            )}
           {collection &&
             collection._id !== configuration.COLLECTION_EMPTY_ID && (
               <ListItemButton
@@ -143,8 +151,8 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
             <ListItemButton
               onClick={() => {
                 closeModalWithNavigation()
-                collection?.books.forEach((id) => {
-                  markBookAsFinished(id)
+                markBooksAsFinished({
+                  bookIds: collection?.books ?? [],
                 })
               }}
             >
@@ -216,13 +224,6 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
           </ListItemButton>
         </List>
       </Drawer>
-      <ManageCollectionBooksDialog
-        open={isManageBookDialogOpened}
-        onClose={() => {
-          setIsManageBookDialogOpened(false)
-        }}
-        collectionId={collectionId}
-      />
       <RenameCollectionDialog
         openWith={isEditCollectionDialogOpenedWithId}
         onClose={() => {

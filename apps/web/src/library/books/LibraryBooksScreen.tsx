@@ -1,23 +1,42 @@
-import { useState, useMemo, useEffect, memo } from "react"
-import { BookList } from "../../books/bookList/BookList"
-import { Button, Typography, useTheme, Stack, Box } from "@mui/material"
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react"
+import { BookList, SortByDialog } from "../../books/lists"
+import { Button, Stack, Box } from "@mui/material"
 import { LibraryFiltersDrawer } from "../LibraryFiltersDrawer"
 import EmptyLibraryAsset from "../../assets/empty-library.svg"
+import { EmptyList } from "../../common/lists/EmptyList"
 import {
   libraryStateSignal,
   isUploadBookDrawerOpenedStateSignal,
 } from "./states"
 import { UploadBookDrawer } from "../UploadBookDrawer"
-import { SortByDialog } from "../../books/bookList/SortByDialog"
-import { useCallback } from "react"
 import { useLibraryBooks } from "./useLibraryBooks"
 import { useSignalValue } from "reactjrx"
 import { Toolbar } from "./Toolbar"
 import { useResetFilters } from "./filters/useResetFilters"
 import { uploadBookDialogOpenedSignal } from "../../upload/UploadBookDialog"
+import {
+  useMarkBooksAsFinished,
+  useMarkBooksAsUnread,
+} from "../../books/useMarkBookAs"
+import { useRemoveHandler } from "../../books/useRemoveHandler"
+import { SelectionToolbar, useSelectionState } from "../../common/selection"
+import { useLayeredEscape } from "../../common/useLayeredEscape"
+import { DeleteRounded } from "@mui/icons-material"
+import { IconButton } from "@mui/material"
+import { MarkAsReadsIcon, UnreadIcon } from "../../common/icon"
 
-export const LibraryBooksScreen = memo(() => {
-  const theme = useTheme()
+const bookListStyle = {
+  height: "100%",
+} satisfies CSSProperties
+
+export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
   const [isFiltersDrawerOpened, setIsFiltersDrawerOpened] = useState(false)
   const isUploadBookDrawerOpened = useSignalValue(
     isUploadBookDrawerOpenedStateSignal,
@@ -25,14 +44,37 @@ export const LibraryBooksScreen = memo(() => {
   const [isSortingDialogOpened, setIsSortingDialogOpened] = useState(false)
   const library = useSignalValue(libraryStateSignal)
   const resetFilters = useResetFilters()
+  const books = useLibraryBooks()
+  const {
+    clearSelection,
+    isSelectionMode,
+    selectedCount,
+    selectedIds: selectedBookIds,
+    selectedItems: selectedBooks,
+    startSelection,
+    toggleSelection,
+  } = useSelectionState(books)
+  const {
+    mutate: markBooksAsFinished,
+    isPending: isMarkBooksAsFinishedPending,
+  } = useMarkBooksAsFinished({
+    onSuccess: clearSelection,
+  })
+  const { mutate: markBooksAsUnread, isPending: isMarkBooksAsUnreadPending } =
+    useMarkBooksAsUnread({
+      onSuccess: clearSelection,
+    })
+  const { mutate: removeBooks, isPending: isRemoveBooksPending } =
+    useRemoveHandler({
+      onSuccess: clearSelection,
+    })
+
   let numberOfFiltersApplied = 0
 
   if ((library.tags.length || 0) > 0) numberOfFiltersApplied++
   if ((library.readingStates.length || 0) > 0) numberOfFiltersApplied++
   if (library.downloadState !== undefined) numberOfFiltersApplied++
   if (library.isNotInterested === "only") numberOfFiltersApplied++
-
-  const books = useLibraryBooks()
 
   const addBookButton = useMemo(
     () => (
@@ -62,6 +104,19 @@ export const LibraryBooksScreen = memo(() => {
 
   useEffect(() => () => isUploadBookDrawerOpenedStateSignal.setValue(false), [])
 
+  const isSelectionActionPending =
+    isMarkBooksAsFinishedPending ||
+    isMarkBooksAsUnreadPending ||
+    isRemoveBooksPending
+
+  useLayeredEscape({
+    enabled: isSelectionMode && !isSelectionActionPending,
+    layer: "base",
+    onEscape: () => {
+      clearSelection()
+    },
+  })
+
   return (
     <Stack
       style={{
@@ -69,61 +124,75 @@ export const LibraryBooksScreen = memo(() => {
         overflow: "hidden",
       }}
     >
-      <Toolbar
-        onFilterClick={() => setIsFiltersDrawerOpened(true)}
-        onSortClick={() => setIsSortingDialogOpened(true)}
-        onClearFilterClick={() => {
-          resetFilters()
-        }}
-        numberOfFiltersApplied={numberOfFiltersApplied}
-      />
+      {isSelectionMode ? (
+        <SelectionToolbar
+          isActionPending={isSelectionActionPending}
+          selectionCount={selectedCount}
+          onCancel={clearSelection}
+          actions={
+            <>
+              <IconButton
+                onClick={() => markBooksAsUnread({ bookIds: selectedBookIds })}
+                color="primary"
+                aria-label="Mark selected books as unread"
+              >
+                <UnreadIcon />
+              </IconButton>
+              <IconButton
+                onClick={() =>
+                  markBooksAsFinished({ bookIds: selectedBookIds })
+                }
+                color="primary"
+                disabled={isSelectionActionPending}
+                aria-label="Mark selected books as read"
+              >
+                <MarkAsReadsIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  removeBooks({ bookIds: selectedBookIds })
+                }}
+                color="primary"
+                disabled={isSelectionActionPending}
+                aria-label="Delete selected books"
+              >
+                <DeleteRounded />
+              </IconButton>
+            </>
+          }
+        />
+      ) : (
+        <Toolbar
+          onFilterClick={() => setIsFiltersDrawerOpened(true)}
+          onSortClick={() => setIsSortingDialogOpened(true)}
+          onClearFilterClick={() => {
+            resetFilters()
+          }}
+          numberOfFiltersApplied={numberOfFiltersApplied}
+        />
+      )}
       <Stack flex={1}>
         {books.length === 0 && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              flex: 1,
-            }}
-          >
+          <Stack flex={1}>
             {listHeader}
-            <Stack
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                textAlign: "center",
-                alignSelf: "center",
-                width: "80%",
-                maxWidth: theme.custom.maxWidthCenteredContent,
-              }}
-            >
-              <img
-                style={{
-                  width: "100%",
-                }}
-                src={EmptyLibraryAsset}
-                alt="libray"
-              />
-              <Typography
-                style={{ maxWidth: 300, paddingTop: theme.spacing(1) }}
-              >
-                It looks like your library is empty for the moment. Maybe it's
-                time to add a new book
-              </Typography>
-            </Stack>
-          </div>
+            <EmptyList
+              image={{ src: EmptyLibraryAsset, alt: "Empty library" }}
+              description="It looks like your library is empty for the moment. Maybe it's time to add a new book"
+            />
+          </Stack>
         )}
         {books.length > 0 && (
           <BookList
             viewMode={library.viewMode}
             sorting={library.sorting}
             data={books}
-            style={{
-              height: "100%",
-            }}
+            style={bookListStyle}
             renderHeader={bookListRenderHeader}
             restoreScrollId="libraryBookListRestoreScrollId"
+            selected={selectedBooks}
+            selectionMode={isSelectionMode}
+            onSelectionStart={startSelection}
+            onSelectionToggle={toggleSelection}
           />
         )}
         <SortByDialog

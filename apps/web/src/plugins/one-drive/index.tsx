@@ -21,7 +21,7 @@ const OneDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-const useRemoveBook: ObokuPlugin<"one-drive">["useRemoveBook"] = () => {
+const useRemoveResource: ObokuPlugin<"one-drive">["useRemoveResource"] = () => {
   return async () => {
     throw new UnsupportedMethodError("This data source cannot remove books")
   }
@@ -29,7 +29,7 @@ const useRemoveBook: ObokuPlugin<"one-drive">["useRemoveBook"] = () => {
 
 export const plugin: ObokuPlugin<"one-drive"> = {
   canSynchronize: true,
-  canRemoveBook: false,
+  canRemoveResource: false,
   description: "Manage contents from Microsoft OneDrive",
   DataSourceCreateForm,
   DataSourceEditForm,
@@ -42,7 +42,7 @@ export const plugin: ObokuPlugin<"one-drive"> = {
   InfoScreen,
   useLinkInfo,
   useRefreshMetadata,
-  useRemoveBook,
+  useRemoveResource,
   useSignOut: () => () => {
     void clearOneDriveSession()
   },

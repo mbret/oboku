@@ -13,6 +13,7 @@ import {
 } from "react"
 import { Box, Stack } from "@mui/material"
 import {
+  type Components,
   type ContextProp,
   type GridItemProps,
   type GridListProps,
@@ -25,6 +26,7 @@ import {
 } from "react-virtuoso"
 import { useLiveRef } from "reactjrx"
 import { useRestoreVirtuosoScroll } from "./useRestoreVirtuosoScroll"
+import styles from "./VirtuosoList.module.css"
 
 type Context = { size: number }
 
@@ -41,6 +43,7 @@ export const VirtuosoList = memo(
     renderHeader,
     itemsPerRow = 1,
     style,
+    className,
     listElementStyle,
     data = [],
     rowRenderer,
@@ -52,6 +55,7 @@ export const VirtuosoList = memo(
   }: {
     renderHeader?: () => React.ReactNode | ReactElement
     style?: React.CSSProperties
+    className?: string
     listElementStyle?: React.CSSProperties
     data?: string[]
     itemsPerRow?: number
@@ -157,7 +161,7 @@ export const VirtuosoList = memo(
     )
 
     const listComponents = useMemo(
-      () => ({
+      (): Components<string, Context> => ({
         Header: renderHeader,
         List: ListComponent,
       }),
@@ -205,12 +209,21 @@ export const VirtuosoList = memo(
       [isGrid, resetScrollState],
     )
 
+    // When scrolling horizontally, opt Virtuoso's inner viewport element into
+    // being a size query container so items can resolve `100cqb` against the
+    // usable block size (excluding the scrollbar). See VirtuosoList.module.css.
+    const scrollerClassName =
+      [horizontalDirection ? styles.horizontalCarousel : undefined, className]
+        .filter(Boolean)
+        .join(" ") || undefined
+
     return (
       <>
         {isGrid ? (
           <VirtuosoGrid<string, Context>
             ref={virtuosoGridRef}
             style={gridStyle}
+            className={className}
             totalCount={data.length}
             components={gridComponents}
             data={data}
@@ -224,6 +237,7 @@ export const VirtuosoList = memo(
           <Virtuoso
             ref={virtuosoRef}
             style={style}
+            className={scrollerClassName}
             totalCount={data.length}
             components={listComponents}
             context={context}

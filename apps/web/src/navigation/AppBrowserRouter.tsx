@@ -24,6 +24,8 @@ import { ProblemsScreen } from "../problems/ProblemsScreen"
 import { LibraryBooksScreen } from "../library/books/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../pages/LibraryCollectionScreen"
 import { LibraryTagsScreen } from "../pages/library/LibraryTagsScreen"
+import { TagBooksScreen } from "../pages/library/tags/$id/books/TagBooksScreen"
+import { CollectionBooksScreen } from "../pages/collections/$id/books/CollectionBooksScreen"
 import { memo, useEffect, useRef, type ReactNode } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
@@ -110,6 +112,14 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route
                 path={ROUTES.COLLECTION_DETAILS.slice(1)}
                 element={<CollectionDetailsScreen />}
+              />
+              <Route
+                path={ROUTES.TAG_BOOKS.slice(1)}
+                element={<TagBooksScreen />}
+              />
+              <Route
+                path={ROUTES.COLLECTION_BOOKS.slice(1)}
+                element={<CollectionBooksScreen />}
               />
               <Route path={ROUTES.SEARCH.slice(1)}>
                 <Route index element={<SearchScreen />} />

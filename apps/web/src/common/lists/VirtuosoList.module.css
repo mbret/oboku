@@ -1,0 +1,18 @@
+/*
+ * Horizontal Virtuoso carousels:
+ * Make Virtuoso's internal viewport element a size query container so items
+ * can resolve `100cqb` against the actual usable block size. This node has
+ * explicit width/height 100% and sits inside the scroll area, so its block
+ * size excludes the classic horizontal scrollbar.
+ *
+ * Alternative anchors and why they don't work:
+ * - The scroller (overflow-x: auto) has `cqb` that *includes* the scrollbar
+ *   area, causing items sized from `cqb` to overflow vertically and trigger
+ *   an unwanted vertical scrollbar.
+ * - The `[data-list-component]` node has `display: inline-block` with a
+ *   content-driven auto width; size containment would collapse its width
+ *   to 0 and break horizontal scrolling.
+ */
+.horizontalCarousel > [data-viewport-type="element"] {
+  container-type: size;
+}

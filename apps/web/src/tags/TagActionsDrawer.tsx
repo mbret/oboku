@@ -22,8 +22,9 @@ import {
 } from "@mui/icons-material"
 import { useUpdateTag } from "./helpers"
 import { useTag } from "./helpers"
-import { isManageTagBooksDialogOpenedWithState } from "./ManageTagBooksDialog"
 import { useRemoveTag } from "./useRemoveTag"
+import { useNavigate, generatePath } from "react-router"
+import { ROUTES } from "../navigation/routes"
 
 export const TagActionsDrawer: FC<{
   openWith: string | undefined
@@ -34,6 +35,7 @@ export const TagActionsDrawer: FC<{
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
     useState<string | undefined>(undefined)
   const { mutate: removeTag } = useRemoveTag()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -85,7 +87,9 @@ export const TagActionsDrawer: FC<{
           <ListItemButton
             onClick={() => {
               onClose()
-              isManageTagBooksDialogOpenedWithState.setValue(openWith)
+              if (openWith) {
+                navigate(generatePath(ROUTES.TAG_BOOKS, { id: openWith }))
+              }
             }}
           >
             <ListItemIcon>

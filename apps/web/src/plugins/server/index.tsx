@@ -11,7 +11,7 @@ import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { useSynchronize } from "./useSynchronize"
 
-const useRemoveBook: ObokuPlugin<"server">["useRemoveBook"] = () => {
+const useRemoveResource: ObokuPlugin<"server">["useRemoveResource"] = () => {
   return async () => {
     throw new UnsupportedMethodError("Not yet implemented")
   }
@@ -20,7 +20,7 @@ const useRemoveBook: ObokuPlugin<"server">["useRemoveBook"] = () => {
 export const plugin: ObokuPlugin<"server"> = {
   type: TYPE,
   name: "Server",
-  canRemoveBook: false,
+  canRemoveResource: false,
   canSynchronize: true,
   Icon: DnsRounded,
   description: "Manage contents from your oboku server",
@@ -28,7 +28,7 @@ export const plugin: ObokuPlugin<"server"> = {
   useSyncSourceInfo,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveBook,
+  useRemoveResource,
   useSignOut: () => () => {},
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
