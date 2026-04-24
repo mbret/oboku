@@ -16,9 +16,30 @@ export const MetadataItemList = ({
   onEditClick?: () => void
 } & StackProps) => {
   return (
-    <Stack alignItems="flex-start" gap={0.5} {...rest}>
-      <Stack flexDirection="row" gap={1} alignItems="center">
-        <Typography fontWeight="bold">{label}</Typography>
+    <Stack
+      {...rest}
+      sx={[
+        {
+          alignItems: "flex-start",
+          gap: 0.5,
+        },
+        ...(Array.isArray(rest.sx) ? rest.sx : [rest.sx]),
+      ]}
+    >
+      <Stack
+        sx={{
+          flexDirection: "row",
+          gap: 1,
+          alignItems: "center",
+        }}
+      >
+        <Typography
+          sx={{
+            fontWeight: "bold",
+          }}
+        >
+          {label}
+        </Typography>
         {!!onEditClick && (
           <Button
             size="small"
@@ -30,7 +51,13 @@ export const MetadataItemList = ({
           </Button>
         )}
       </Stack>
-      <Stack flexDirection="row" gap={1} flexWrap="wrap">
+      <Stack
+        sx={{
+          flexDirection: "row",
+          gap: 1,
+          flexWrap: "wrap",
+        }}
+      >
         {!values?.length && (
           <Typography variant="caption">{emptyLabel}</Typography>
         )}

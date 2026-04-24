@@ -8,7 +8,17 @@ export const Page = ({
     bottomGutter?: boolean
   }) => {
   return (
-    <Stack flex={1} overflow={"auto"} pb={bottomGutter ? 4 : 0} {...props}>
+    <Stack
+      {...props}
+      sx={[
+        {
+          flex: 1,
+          overflow: "auto",
+          pb: bottomGutter ? 4 : 0,
+        },
+        ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
+      ]}
+    >
       {children}
     </Stack>
   )

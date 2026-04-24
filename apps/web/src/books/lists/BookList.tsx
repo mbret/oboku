@@ -172,12 +172,19 @@ export const BookList = memo(function BookList({
     return (
       <Box
         style={style}
-        px={viewMode === "horizontal" ? 0 : 1}
-        display="flex"
-        flexDirection="column"
+        sx={{
+          px: viewMode === "horizontal" ? 0 : 1,
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         {data?.map((item, index) => (
-          <Box key={item} height={itemHeight}>
+          <Box
+            key={item}
+            sx={{
+              height: itemHeight,
+            }}
+          >
             {rowRenderer(index, item, { size: data.length })}
           </Box>
         ))}

@@ -84,7 +84,13 @@ export const PickerFrame = memo(function PickerFrame({
   return (
     <Dialog fullScreen onClose={() => onClose()} open>
       {!isPageLoaded && <LockScreen />}
-      <Stack height="100%" minHeight={0} position="relative">
+      <Stack
+        sx={{
+          height: "100%",
+          minHeight: 0,
+          position: "relative",
+        }}
+      >
         <IconButton
           onClick={() => onClose()}
           size="small"

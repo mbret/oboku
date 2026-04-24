@@ -79,11 +79,8 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
             <TreeItemIcon status={status} />
           </TreeItemIconContainer>
           <TreeItemCheckbox
-            {...getCheckboxProps({
-              // MUI sets aria-hidden on the checkbox; if the checkbox input has focus,
-              // the browser blocks it. Blur on focus so focus never stays inside.
-              onFocus: (e) => (e.target as HTMLElement).blur(),
-            })}
+            {...getCheckboxProps()}
+            onFocus={(e: React.FocusEvent<HTMLElement>) => e.target.blur()}
           />
           <TreeItemLabel
             {...labelProps}

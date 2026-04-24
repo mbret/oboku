@@ -3,7 +3,13 @@ import { memo } from "react"
 
 export const SkeletonLoader = memo(() => {
   return (
-    <Stack p={2} gap={2} maxWidth={600}>
+    <Stack
+      sx={{
+        p: 2,
+        gap: 2,
+        maxWidth: 600,
+      }}
+    >
       <Skeleton variant="text" width="60%" />
       <Stack>
         <Skeleton variant="text" width="70%" />

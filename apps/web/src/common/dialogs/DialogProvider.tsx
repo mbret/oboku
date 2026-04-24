@@ -65,10 +65,15 @@ const InnerDialog = () => {
     }
   }, [currentDialog])
 
-  const onCancel = useCallback(() => {
-    currentDialog?.onCancel?.()
-    handleClose()
-  }, [handleClose, currentDialog])
+  const onCancel = useCallback(
+    (_event: unknown, reason?: "backdropClick" | "escapeKeyDown") => {
+      if (!isDismissible && reason === "escapeKeyDown") return
+      if (!isDismissible && reason === "backdropClick") return
+      currentDialog?.onCancel?.()
+      handleClose()
+    },
+    [handleClose, currentDialog, isDismissible],
+  )
 
   const actions = currentDialog?.actions || [
     {
@@ -80,14 +85,7 @@ const InnerDialog = () => {
   const content = currentDialog?.content
 
   return (
-    <Dialog
-      open={!!currentDialog}
-      transitionDuration={0}
-      {...(isDismissible && {
-        onClose: onCancel,
-      })}
-      disableEscapeKeyDown={!isDismissible}
-    >
+    <Dialog open={!!currentDialog} transitionDuration={0} onClose={onCancel}>
       <DialogTitle>{currentDialog?.title}</DialogTitle>
       {content !== undefined && (
         <DialogContent>

@@ -16,20 +16,32 @@ export const SignUpScreen = () => {
   return (
     <AuthPage>
       {status === "success" ? (
-        <Box mb={2}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
           <Alert severity="success">
             Check your inbox for a link to finish creating your account.
           </Alert>
         </Box>
       ) : null}
       {error && !isCancelError(error) ? (
-        <Box mb={2}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
           <ErrorAlert error={error} />
         </Box>
       ) : null}
       <SignUpForm onSubmit={mutate} />
       <OrDivider title="or" />
-      <Stack gap={1}>
+      <Stack
+        sx={{
+          gap: 1,
+        }}
+      >
         <Button
           component={Link}
           to={ROUTES.LOGIN}

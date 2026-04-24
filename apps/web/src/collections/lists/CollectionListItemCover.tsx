@@ -43,31 +43,32 @@ export const CollectionListItemCover = memo(
     return (
       <Stack
         sx={{
+          width: "100%",
+          justifyContent: "center",
           bgcolor: "grey.200",
           flex: 1,
           borderRadius: 2,
           overflow: "hidden",
           position: "relative",
           alignItems: "center",
+
           ...(id === configuration.COLLECTION_EMPTY_ID && {
             opacity: 0.5,
           }),
         }}
-        width="100%"
-        justifyContent="center"
       >
         {bgLoaded && bgLoaded === coverUri ? null : <DefaultBackground />}
         {!!coverUri && (
           <Box
-            position="absolute"
-            left={0}
-            top={0}
             component="img"
             src={coverUri}
             onLoad={() => setBgLoaded(coverUri)}
-            width="100%"
-            height="100%"
             sx={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: "100%",
+              height: "100%",
               opacity: 0.3,
               objectFit: "cover",
               objectPosition: "center center",

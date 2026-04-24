@@ -80,15 +80,29 @@ export const TopBarNavigation: FC<
               <ArrowBackIosRounded />
             </IconButton>
           )}
-          <Box flexGrow={1} overflow="hidden">
+          <Box
+            sx={{
+              flexGrow: 1,
+              overflow: "hidden",
+            }}
+          >
             {!hasSearch && !!title && (
               <Typography
                 variant="h6"
                 style={{ flexGrow: 1 }}
-                whiteSpace="nowrap"
-                textOverflow="ellipsis"
-                overflow="hidden"
                 {...TitleProps}
+                sx={[
+                  {
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                    overflow: "hidden",
+                  },
+                  ...(TitleProps?.sx
+                    ? Array.isArray(TitleProps.sx)
+                      ? TitleProps.sx
+                      : [TitleProps.sx]
+                    : []),
+                ]}
               >
                 {title}
               </Typography>
@@ -134,7 +148,13 @@ export const TopBarNavigation: FC<
             )}
             {middleComponent}
           </Box>
-          <Box display="flex" alignItems="center" ml={2}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              ml: 2,
+            }}
+          >
             {hasLockLibrary && isLibraryUnlocked && (
               <IconButton
                 onClick={() => {

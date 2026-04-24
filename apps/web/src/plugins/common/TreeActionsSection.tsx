@@ -15,12 +15,18 @@ export const TreeActionsSection = memo(function TreeActionsSection({
   const confirmation = useConfirmation()
 
   return (
-    <Stack gap={1}>
+    <Stack
+      sx={{
+        gap: 1,
+      }}
+    >
       <Stack
         direction="row"
-        gap={1}
-        alignItems="center"
-        justifyContent="space-between"
+        sx={{
+          gap: 1,
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
       >
         <Typography variant="caption">
           Item(s) actions: {selectedItemsCount}

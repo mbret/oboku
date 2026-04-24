@@ -79,7 +79,11 @@ export const ListActionsToolbar = memo(
           }}
           {...rest}
         >
-          <Box flexGrow={1}>
+          <Box
+            sx={{
+              flexGrow: 1,
+            }}
+          >
             {!!onFilterClick && (
               <IconButton
                 edge="start"

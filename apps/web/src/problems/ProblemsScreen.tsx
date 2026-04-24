@@ -94,7 +94,12 @@ export const ProblemsScreen = memo(() => {
   return (
     <>
       <TopBarNavigation title={"Problems finder"} showBack={true} />
-      <Box overflow="auto" flex={1}>
+      <Box
+        sx={{
+          overflow: "auto",
+          flex: 1,
+        }}
+      >
         <Alert severity="warning">
           PLEASE READ THIS:
           <p>

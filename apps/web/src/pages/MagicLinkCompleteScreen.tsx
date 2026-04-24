@@ -29,7 +29,11 @@ export const MagicLinkCompleteScreen = () => {
   return (
     <AuthPage>
       {!token ? (
-        <Box mb={2}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
           <ErrorAlert
             error={
               new ObokuSharedError(
@@ -40,12 +44,20 @@ export const MagicLinkCompleteScreen = () => {
         </Box>
       ) : null}
       {error && !isCancelError(error) ? (
-        <Box mb={2}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
           <ErrorAlert error={error} />
         </Box>
       ) : null}
       {token && !error ? (
-        <Box mb={2}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
           <Alert severity="info">
             {isPending
               ? "Verifying your email and signing you in..."
@@ -53,7 +65,12 @@ export const MagicLinkCompleteScreen = () => {
           </Alert>
         </Box>
       ) : null}
-      <Stack gap={1} mt={3}>
+      <Stack
+        sx={{
+          gap: 1,
+          mt: 3,
+        }}
+      >
         {token ? (
           <Button
             variant="contained"

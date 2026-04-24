@@ -63,7 +63,13 @@ const App = memo(() => {
     <DialogProvider>
       {!isHydratingProfile && isAuthHydrated && (
         <Fade in={isAppReady} timeout={500}>
-          <Box height="100%" display="flex" flexDirection="column">
+          <Box
+            sx={{
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <AppBrowserRouter>
               {/* This needs to be high enough to catch at least any early calls to `httpClientApi` */}
               <AutoSignOutWhenUnauthorized />

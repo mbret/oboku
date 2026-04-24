@@ -40,10 +40,6 @@ export const Header = memo(({ id }: { id: string }) => {
 
   return (
     <Stack
-      position="relative"
-      pt={headerPt}
-      minHeight={headerHeight}
-      px={2}
       style={{
         backgroundImage: useOptimizedTheme
           ? undefined
@@ -52,45 +48,59 @@ export const Header = memo(({ id }: { id: string }) => {
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
+      sx={{
+        position: "relative",
+        pt: headerPt,
+        minHeight: headerHeight,
+        px: 2,
+      }}
     >
       {!useOptimizedTheme && (
         <Box
-          position="absolute"
-          left={0}
-          top={0}
-          height="100%"
-          width="100%"
           sx={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            height: "100%",
+            width: "100%",
             background: `linear-gradient(to bottom, color-mix(in srgb, ${theme.palette.background.default} 70%, transparent) 10%, ${theme.palette.background.default} 100%)`,
           }}
         />
       )}
-      <Stack direction="row" gap={2} justifyContent="flex-start">
+      <Stack
+        direction="row"
+        sx={{
+          gap: 2,
+          justifyContent: "flex-start",
+        }}
+      >
         {!!hasCover && (
           <Box
-            position="relative"
             component="img"
             src={coverUri ?? coverPlaceholder}
-            width={coverWidth}
-            height={coverHeight}
-            borderRadius={1}
             sx={{
+              position: "relative",
+              width: coverWidth,
+              height: coverHeight,
+              borderRadius: 1,
               objectFit: "cover",
               objectPosition: "center center",
             }}
           />
         )}
         <Stack
-          pt={hasCover ? 0.5 : 0}
-          position="relative"
-          alignItems="flex-start"
+          sx={{
+            pt: hasCover ? 0.5 : 0,
+            position: "relative",
+            alignItems: "flex-start",
+          }}
         >
           <Typography
             component="h1"
             sx={{
+              fontWeight: "bold",
               typography: ["h6", "h4"],
             }}
-            fontWeight="bold"
           >
             {metadata.displayTitle}
           </Typography>
@@ -103,16 +113,33 @@ export const Header = memo(({ id }: { id: string }) => {
             {`${collection?.books?.length || 0} book(s)`}
           </Typography>
           {collection?.type === "series" && (
-            <Stack direction="row" gap={1} alignItems="center">
+            <Stack
+              direction="row"
+              sx={{
+                gap: 1,
+                alignItems: "center",
+              }}
+            >
               <Typography variant="body2">Publisher:</Typography>
               {metadata.publisherName && (
                 <Chip size="small" label={metadata.publisherName} />
               )}
             </Stack>
           )}
-          <Stack direction="row" gap={1} alignItems="center">
+          <Stack
+            direction="row"
+            sx={{
+              gap: 1,
+              alignItems: "center",
+            }}
+          >
             {!!metadata.startYear && (
-              <Typography variant="caption" fontWeight="bold">
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: "bold",
+                }}
+              >
                 {metadata.startYear}
               </Typography>
             )}

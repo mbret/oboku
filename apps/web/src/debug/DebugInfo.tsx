@@ -17,8 +17,21 @@ export const DebugInfo: FC<
   if (!isDebugEnabled()) return null
 
   return (
-    <Box pt={1} bgcolor={theme.palette.info.light} {...rest}>
-      <Box mx={1}>
+    <Box
+      {...rest}
+      sx={[
+        {
+          pt: 1,
+          bgcolor: theme.palette.info.light,
+        },
+        ...(Array.isArray(rest.sx) ? rest.sx : [rest.sx]),
+      ]}
+    >
+      <Box
+        sx={{
+          mx: 1,
+        }}
+      >
         <Typography>debug:</Typography>
       </Box>
       <TableContainer>

@@ -12,7 +12,11 @@ import Link from "next/link"
 
 export const Footer = () => {
   return (
-    <Box py={[8, 12]}>
+    <Box
+      sx={{
+        py: [8, 12],
+      }}
+    >
       <Container
         maxWidth="sm"
         sx={{
@@ -22,15 +26,30 @@ export const Footer = () => {
         }}
       >
         <Stack
-          display="grid"
-          gap={2}
-          gridTemplateColumns={["1fr", "1fr 1fr 1fr"]}
+          sx={{
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns: ["1fr", "1fr 1fr 1fr"],
+          }}
         >
-          <Stack gap={1}>
-            <Typography variant="body1" fontWeight={500}>
+          <Stack
+            sx={{
+              gap: 1,
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: 500,
+              }}
+            >
               Resources
             </Typography>
-            <Stack gap={0}>
+            <Stack
+              sx={{
+                gap: 0,
+              }}
+            >
               <MuiLink
                 href={links.app}
                 target="_blank"
@@ -60,11 +79,24 @@ export const Footer = () => {
               </MuiLink>
             </Stack>
           </Stack>
-          <Stack gap={1}>
-            <Typography variant="body1" fontWeight={500}>
+          <Stack
+            sx={{
+              gap: 1,
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: 500,
+              }}
+            >
               Socials
             </Typography>
-            <Stack gap={0}>
+            <Stack
+              sx={{
+                gap: 0,
+              }}
+            >
               <MuiLink
                 href={links.discord}
                 target="_blank"
@@ -83,11 +115,24 @@ export const Footer = () => {
               </MuiLink>
             </Stack>
           </Stack>
-          <Stack gap={1}>
-            <Typography variant="body1" fontWeight={500}>
+          <Stack
+            sx={{
+              gap: 1,
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: 500,
+              }}
+            >
               Legal
             </Typography>
-            <Stack gap={0}>
+            <Stack
+              sx={{
+                gap: 0,
+              }}
+            >
               <MuiLink
                 component={Link}
                 href="/privacy-policy"
@@ -99,7 +144,11 @@ export const Footer = () => {
             </Stack>
           </Stack>
         </Stack>
-        <Stack alignItems="center">
+        <Stack
+          sx={{
+            alignItems: "center",
+          }}
+        >
           <Typography>
             © Copyright{" "}
             <MuiLink

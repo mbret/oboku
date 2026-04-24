@@ -83,7 +83,14 @@ export const SecretsScreen = memo(() => {
 
   return (
     <>
-      <Box display="flex" flex={1} overflow="auto" flexDirection="column">
+      <Box
+        sx={{
+          display: "flex",
+          flex: 1,
+          overflow: "auto",
+          flexDirection: "column",
+        }}
+      >
         <TopBarNavigation title={"Secrets"} />
         <Alert severity="info" variant="standard">
           Learn more about secrets{" "}
@@ -95,7 +102,13 @@ export const SecretsScreen = memo(() => {
           </Alert>
         )}
         <Container maxWidth="sm">
-          <Stack gap={1} mb={1} mt={2}>
+          <Stack
+            sx={{
+              gap: 1,
+              mb: 1,
+              mt: 2,
+            }}
+          >
             <Button
               disabled={!hasMasterPassword || !!masterKey}
               onClick={unlockMasterKey}

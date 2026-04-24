@@ -36,12 +36,14 @@ export const HomeContent = () => {
 
   return (
     <Box
-      pt={[12, 16]}
       style={{
         display: "flex",
         flex: 1,
         flexFlow: "column",
         alignItems: "center",
+      }}
+      sx={{
+        pt: [12, 16],
       }}
     >
       <Container
@@ -53,7 +55,12 @@ export const HomeContent = () => {
           alignItems: "center",
         }}
       >
-        <Box component="header" mb={2}>
+        <Box
+          component="header"
+          sx={{
+            mb: 2,
+          }}
+        >
           <Typography variant="h2" component="h1">
             oboku
           </Typography>
@@ -75,14 +82,28 @@ export const HomeContent = () => {
           </Typography>
           <div style={{ paddingBottom: theme.spacing(3) }} />
           <Box
-            width="100%"
-            maxWidth={320}
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
+            sx={{
+              width: "100%",
+              maxWidth: 320,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
           >
-            <Box width="100%" maxWidth={300}>
-              <Box display="flex" gap={2} flexDirection="column" width="100%">
+            <Box
+              sx={{
+                width: "100%",
+                maxWidth: 300,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  flexDirection: "column",
+                  width: "100%",
+                }}
+              >
                 <Button
                   variant="contained"
                   size="large"
@@ -105,13 +126,15 @@ export const HomeContent = () => {
         </div>
       </Container>
       <Stack
-        mt={[4, 6]}
-        gap={2}
-        width="100%"
-        maxWidth={632}
-        px={2}
-        alignItems={["center", "stretch"]}
-        flexDirection={["column", "row"]}
+        sx={{
+          mt: [4, 6],
+          gap: 2,
+          width: "100%",
+          maxWidth: 632,
+          px: 2,
+          alignItems: ["center", "stretch"],
+          flexDirection: ["column", "row"],
+        }}
       >
         <Paper
           elevation={4}
@@ -162,9 +185,18 @@ export const HomeContent = () => {
           />
         </Paper>
       </Stack>
-      <Box mt={[6, 7]} width="100%">
+      <Box
+        sx={{
+          mt: [6, 7],
+          width: "100%",
+        }}
+      >
         <Container>
-          <Stack gap={2}>
+          <Stack
+            sx={{
+              gap: 2,
+            }}
+          >
             <Typography variant="h4" component="h2">
               What is oboku?
             </Typography>
@@ -174,16 +206,36 @@ export const HomeContent = () => {
               solutions is the range of supported contents and the possibility
               to synchronize from external locations.
             </Typography>
-            <Stack gap={1}>
+            <Stack
+              sx={{
+                gap: 1,
+              }}
+            >
               <Typography variant="h5" component="h3">
                 Synchronize from anywhere
               </Typography>
-              <Typography color="text.secondary">
+              <Typography
+                sx={{
+                  color: "text.secondary",
+                }}
+              >
                 Access and synchronize your library from your own server, your
                 device, or external providers.
               </Typography>
-              <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
-                <Typography variant="body2" color="text.secondary">
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "text.secondary",
+                  }}
+                >
                   Examples:
                 </Typography>
                 <Chip label="Google Drive" size="small" variant="outlined" />
@@ -192,16 +244,36 @@ export const HomeContent = () => {
                 <Chip label="WebDAV" size="small" variant="outlined" />
               </Box>
             </Stack>
-            <Stack gap={1}>
+            <Stack
+              sx={{
+                gap: 1,
+              }}
+            >
               <Typography variant="h5" component="h3">
                 Supported formats
               </Typography>
-              <Typography color="text.secondary">
+              <Typography
+                sx={{
+                  color: "text.secondary",
+                }}
+              >
                 Read ebooks, audiobooks, comics and various types of documents
                 in one place.
               </Typography>
-              <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
-                <Typography variant="body2" color="text.secondary">
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: "text.secondary",
+                  }}
+                >
                   Examples:
                 </Typography>
                 <Chip label=".epub" size="small" variant="outlined" />
@@ -209,7 +281,12 @@ export const HomeContent = () => {
                 <Chip label=".cbr" size="small" variant="outlined" />
                 <Chip label=".pdf" size="small" variant="outlined" />
               </Box>
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "text.secondary",
+                }}
+              >
                 Oboku uses{" "}
                 <Link
                   href="https://prose-reader.com/"
@@ -224,7 +301,12 @@ export const HomeContent = () => {
           </Stack>
         </Container>
       </Box>
-      <Box mt={[4, 5]} mb={[8, 8]}>
+      <Box
+        sx={{
+          mt: [4, 5],
+          mb: [8, 8],
+        }}
+      >
         <AppHighlightSection />
       </Box>
       <LastWords />

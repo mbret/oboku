@@ -97,7 +97,7 @@ export const BookSelectionPage = memo(function BookSelectionPage({
   )
 
   return (
-    <Page overflow="hidden" bottomGutter={false}>
+    <Page sx={{ overflow: "hidden" }} bottomGutter={false}>
       <TopBarNavigation title={title} showBack />
       <SelectionToolbar
         variant="dense"
@@ -107,7 +107,12 @@ export const BookSelectionPage = memo(function BookSelectionPage({
         onSelectAll={selectAll}
         onUnselectAll={unselectAll}
       />
-      <Stack flex={1} minHeight={0}>
+      <Stack
+        sx={{
+          flex: 1,
+          minHeight: 0,
+        }}
+      >
         {bookIds.length === 0 ? (
           <EmptyList />
         ) : (
@@ -122,7 +127,14 @@ export const BookSelectionPage = memo(function BookSelectionPage({
           />
         )}
       </Stack>
-      <Box borderTop={1} borderColor="divider" px={2} py={1.5}>
+      <Box
+        sx={{
+          borderTop: 1,
+          borderColor: "divider",
+          px: 2,
+          py: 1.5,
+        }}
+      >
         <Button
           variant="contained"
           color="primary"

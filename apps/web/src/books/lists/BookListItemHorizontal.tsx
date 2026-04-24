@@ -89,14 +89,26 @@ function BookMetadataStatus({
 
   return (
     <Box
-      display="flex"
-      justifyContent="space-between"
-      alignItems="flex-end"
-      width="100%"
-      gap={1}
       {...rest}
+      sx={[
+        {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          width: "100%",
+          gap: 1,
+        },
+        ...(Array.isArray(rest.sx) ? rest.sx : [rest.sx]),
+      ]}
     >
-      <Box display="flex" flexDirection="row" alignItems="center" gap={1}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
         {linkPlugin?.Icon && (
           <linkPlugin.Icon fontSize="small" sx={{ display: "block" }} />
         )}
@@ -114,7 +126,14 @@ function BookMetadataStatus({
           <DoneRounded color="action" />
         )}
         {book?.readingStateCurrentState === ReadingStateState.Reading && (
-          <Box display="flex" flexDirection="row" alignItems="center" gap={0.5}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 0.5,
+            }}
+          >
             <MenuBookRounded color="action" />
             <Typography variant="body2">
               {Math.floor(
@@ -125,7 +144,13 @@ function BookMetadataStatus({
           </Box>
         )}
       </Box>
-      <Box display="flex" flexDirection="row" alignItems="center">
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
         {book?.metadataUpdateStatus === "fetching" && (
           <Chip
             size="small"
@@ -243,24 +268,28 @@ export const BookListItemHorizontal = memo(function BookListItem({
               color="primary"
               disableRipple
               edge="start"
-              inputProps={{
-                "aria-label": selected
-                  ? "Unselect this book"
-                  : "Select this book",
-              }}
               tabIndex={-1}
               {...controlProps}
+              slotProps={{
+                input: {
+                  "aria-label": selected
+                    ? "Unselect this book"
+                    : "Select this book",
+                },
+              }}
             />
           </ListItemIcon>
         )}
         {!isCompact && (
           <Box
-            display="flex"
-            flex="none"
-            alignSelf="stretch"
-            mr={1}
-            overflow="hidden"
-            sx={{ aspectRatio: theme.custom.coverAverageRatio }}
+            sx={{
+              display: "flex",
+              flex: "none",
+              alignSelf: "stretch",
+              mr: 1,
+              overflow: "hidden",
+              aspectRatio: theme.custom.coverAverageRatio,
+            }}
           >
             <BookCoverCard
               bookId={bookId}
@@ -269,11 +298,20 @@ export const BookListItemHorizontal = memo(function BookListItem({
             />
           </Box>
         )}
-        <Stack flex={1} minHeight={0} overflow="hidden" gap={0.5}>
+        <Stack
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            overflow: "hidden",
+            gap: 0.5,
+          }}
+        >
           <Typography
             noWrap
             variant={isCompact ? "body2" : "body1"}
-            display="block"
+            sx={{
+              display: "block",
+            }}
           >
             {metadata?.title || "Unknown"}
           </Typography>
@@ -285,7 +323,7 @@ export const BookListItemHorizontal = memo(function BookListItem({
           <BookMetadataStatus
             bookId={bookId}
             withDownloadIcons={isCompact}
-            mt="auto"
+            sx={{ mt: "auto" }}
           />
         </Stack>
       </StyledListItemButton>

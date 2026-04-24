@@ -49,7 +49,11 @@ export const DataSourceForm = ({
       )}
       submitLabel={submitLabel}
     >
-      <Stack gap={1}>
+      <Stack
+        sx={{
+          gap: 1,
+        }}
+      >
         <Button
           variant="outlined"
           fullWidth

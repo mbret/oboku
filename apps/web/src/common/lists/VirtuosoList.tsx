@@ -95,10 +95,10 @@ export const VirtuosoList = memo(
             return (
               <Stack
                 ref={_ref}
-                flexWrap="wrap"
                 direction="row"
                 style={{ ...style, ...listElementStyle }}
                 {...props}
+                sx={{ flexWrap: "wrap" }}
               >
                 {children}
               </Stack>
@@ -118,13 +118,15 @@ export const VirtuosoList = memo(
           context?: Context
         }) => (
           <Box
-            display="flex"
             component="div"
-            width={`${100 / itemsPerRow}%`}
-            flex="none"
             ref={ref as Ref<HTMLDivElement>}
-            alignContent="stretch"
             {...props}
+            sx={{
+              display: "flex",
+              width: `${100 / itemsPerRow}%`,
+              flex: "none",
+              alignContent: "stretch",
+            }}
           >
             {children}
           </Box>

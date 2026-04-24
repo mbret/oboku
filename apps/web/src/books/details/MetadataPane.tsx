@@ -12,10 +12,20 @@ export const MetadataPane = ({ bookId }: { bookId?: string }) => {
 
   return (
     <Box>
-      <Stack gap={2}>
+      <Stack
+        sx={{
+          gap: 2,
+        }}
+      >
         <TagsRow bookId={book?._id} />
         <DescriptionRow bookId={book?._id} />
-        <Stack flexDirection="row" gap={2} flexWrap="wrap">
+        <Stack
+          sx={{
+            flexDirection: "row",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
           <MetadataItemList
             values={metadata.authors?.map((item) => ({ label: item }))}
             label="Authors"

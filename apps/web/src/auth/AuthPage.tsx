@@ -17,13 +17,18 @@ export const AuthPage = ({
 
   return (
     <Stack
-      flex={1}
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-      gap={3}
-      px={2}
       {...props}
+      sx={[
+        {
+          flex: 1,
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 3,
+          px: 2,
+        },
+        ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
+      ]}
     >
       <Box
         style={{
@@ -35,9 +40,20 @@ export const AuthPage = ({
       >
         <Logo />
       </Box>
-      <Stack maxWidth={400} width="100%" justifyContent="center">
+      <Stack
+        sx={{
+          maxWidth: 400,
+          width: "100%",
+          justifyContent: "center",
+        }}
+      >
         {children}
-        <Typography textAlign="center" mt={10}>
+        <Typography
+          sx={{
+            textAlign: "center",
+            mt: 10,
+          }}
+        >
           <MuiLink href={links.site}>oboku</MuiLink> - Copyright © 2020-
           {new Date().getFullYear()}{" "}
         </Typography>

@@ -82,7 +82,7 @@ export const SetupSecretDialog = memo(() => {
           iv: string
           data: string
         } | null> =
-          data.value !== "" && !!masterKey
+          data.value !== "" && masterKey
             ? from(encryptSecret(data.value, masterKey))
             : of(null)
 
@@ -162,7 +162,9 @@ export const SetupSecretDialog = memo(() => {
           autoComplete="off"
           id={FORM_ID}
           onSubmit={handleSubmit((value) => submit(value))}
-          gap={2}
+          sx={{
+            gap: 2,
+          }}
         >
           <PreventAutocompleteFields />
           <ControlledTextField

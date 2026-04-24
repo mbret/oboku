@@ -3,7 +3,11 @@ import { Chip, Container, Stack, Typography } from "@mui/material"
 export const LastWords = () => {
   return (
     <Container>
-      <Stack gap={2}>
+      <Stack
+        sx={{
+          gap: 2,
+        }}
+      >
         <Chip
           label="One more thing"
           sx={{

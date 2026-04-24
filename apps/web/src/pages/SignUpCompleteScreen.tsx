@@ -30,7 +30,11 @@ export const SignUpCompleteScreen = () => {
   return (
     <AuthPage>
       {!token ? (
-        <Box mb={2}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
           <ErrorAlert
             error={
               new ObokuSharedError(
@@ -41,7 +45,11 @@ export const SignUpCompleteScreen = () => {
         </Box>
       ) : null}
       {error && !isCancelError(error) ? (
-        <Box mb={2}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
           <ErrorAlert error={error} />
         </Box>
       ) : null}
@@ -55,7 +63,12 @@ export const SignUpCompleteScreen = () => {
           }}
         />
       ) : null}
-      <Stack gap={1} mt={3}>
+      <Stack
+        sx={{
+          gap: 1,
+          mt: 3,
+        }}
+      >
         <Button
           component={Link}
           to={ROUTES.LOGIN}

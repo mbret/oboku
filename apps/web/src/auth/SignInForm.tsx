@@ -20,7 +20,14 @@ export const SignInForm = ({
   onSubmit: ReturnType<UseFormHandleSubmit<SignInFormInputs>>
 }) => {
   return (
-    <Stack component="form" noValidate gap={1} onSubmit={onSubmit}>
+    <Stack
+      component="form"
+      noValidate
+      onSubmit={onSubmit}
+      sx={{
+        gap: 1,
+      }}
+    >
       <Controller
         name="email"
         control={control}

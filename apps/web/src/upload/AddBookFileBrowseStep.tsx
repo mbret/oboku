@@ -43,12 +43,21 @@ function DefaultHeader({
   subtitle?: string
 }) {
   return (
-    <Stack gap={0.5}>
+    <Stack
+      sx={{
+        gap: 0.5,
+      }}
+    >
       <Typography variant="subtitle2">
         {selectedCount} file{selectedCount !== 1 ? "s" : ""} selected
       </Typography>
       {subtitle && (
-        <Typography color="text.secondary" variant="body2">
+        <Typography
+          variant="body2"
+          sx={{
+            color: "text.secondary",
+          }}
+        >
           {subtitle}
         </Typography>
       )}
@@ -75,11 +84,18 @@ export const AddBookFileBrowseStep = memo(function AddBookFileBrowseStep({
   return (
     <>
       <DialogContent>
-        <Stack gap={2} py={2}>
+        <Stack
+          sx={{
+            gap: 2,
+            py: 2,
+          }}
+        >
           <Stack
-            alignItems="center"
             direction="row"
-            justifyContent="space-between"
+            sx={{
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
           >
             <DefaultHeader
               selectedCount={selectedFiles.length}

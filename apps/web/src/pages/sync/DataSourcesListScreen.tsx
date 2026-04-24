@@ -122,7 +122,13 @@ export const DataSourcesListScreen = memo(() => {
                     )
                   }
                 />
-                <Stack direction="row" alignItems="center" spacing={1}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{
+                    alignItems: "center",
+                  }}
+                >
                   {syncSource?.isProtected && <LockRounded color="disabled" />}
                   <IconButton
                     edge="end"

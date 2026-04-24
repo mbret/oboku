@@ -7,16 +7,22 @@ export const BookLoading = memo(() => {
 
   return (
     <Stack
-      position="absolute"
-      top={0}
-      left={0}
-      height="100%"
-      width="100%"
-      justifyContent="center"
-      alignItems="center"
-      gap={4}
+      sx={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        height: "100%",
+        width: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: 4,
+      }}
     >
-      <Stack textAlign="center">
+      <Stack
+        sx={{
+          textAlign: "center",
+        }}
+      >
         <Typography gutterBottom>Your book is loading...</Typography>
         <LinearProgress style={{ width: 200 }} />
       </Stack>

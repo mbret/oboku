@@ -66,7 +66,14 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
 
   return (
     <>
-      <Box position="relative" height="100%" width="100%" overflow="hidden">
+      <Box
+        sx={{
+          position: "relative",
+          height: "100%",
+          width: "100%",
+          overflow: "hidden",
+        }}
+      >
         <ReactReader
           onItemClick={onItemClick}
           enableFloatingTime={localSettings.readerFloatingTime === "bottom"}
@@ -80,10 +87,12 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
           }
         >
           <Box
-            position="relative"
-            height="100%"
-            width="100%"
             ref={readerContainerRef}
+            sx={{
+              position: "relative",
+              height: "100%",
+              width: "100%",
+            }}
           />
         </ReactReader>
       </Box>

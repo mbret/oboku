@@ -37,15 +37,20 @@ export function EmptyList({
 
   return (
     <Stack
-      flex={1}
-      alignItems="center"
-      justifyContent="center"
-      alignSelf="center"
-      px={2}
-      textAlign="center"
-      width={image ? "80%" : undefined}
-      maxWidth={image ? theme.custom.maxWidthCenteredContent : undefined}
       {...props}
+      sx={[
+        {
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          alignSelf: "center",
+          px: 2,
+          textAlign: "center",
+          width: image ? "80%" : undefined,
+          maxWidth: image ? theme.custom.maxWidthCenteredContent : undefined,
+        },
+        ...(Array.isArray(props.sx) ? props.sx : [props.sx]),
+      ]}
     >
       {image && (
         <Box
@@ -56,7 +61,13 @@ export function EmptyList({
         />
       )}
       {message !== undefined && message !== null && (
-        <Typography color="text.secondary" maxWidth={300} pt={image ? 1 : 0}>
+        <Typography
+          sx={{
+            color: "text.secondary",
+            maxWidth: 300,
+            pt: image ? 1 : 0,
+          }}
+        >
           {message}
         </Typography>
       )}

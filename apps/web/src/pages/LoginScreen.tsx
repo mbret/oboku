@@ -45,19 +45,31 @@ export const LoginScreen = () => {
   return (
     <AuthPage>
       {displayedError ? (
-        <Box mb={2}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
           <ErrorAlert error={displayedError} />
         </Box>
       ) : null}
       {requestMagicLinkStatus === "success" ? (
-        <Box mb={2}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
           <Alert severity="success">
             Check your inbox for a magic link to verify this account and sign
             in.
           </Alert>
         </Box>
       ) : null}
-      <Stack gap={1}>
+      <Stack
+        sx={{
+          gap: 1,
+        }}
+      >
         <SignInForm
           control={control}
           onSubmit={handleSubmit((data) => {
@@ -83,7 +95,11 @@ export const LoginScreen = () => {
         </Button>
       </Stack>
       <OrDivider title="or" />
-      <Stack gap={1}>
+      <Stack
+        sx={{
+          gap: 1,
+        }}
+      >
         <Button
           onClick={() => mutate(undefined)}
           size="large"
