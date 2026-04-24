@@ -1,7 +1,19 @@
 import { EditOutlined } from "@mui/icons-material"
-import { Button, Chip, Stack, type StackProps, Typography } from "@mui/material"
+import {
+  Button,
+  Chip,
+  Stack,
+  type StackProps,
+  styled,
+  Typography,
+} from "@mui/material"
 import { Link } from "react-router"
 import type { DeepReadonlyArray } from "rxdb"
+
+const StyledRoot = styled(Stack)(({ theme }) => ({
+  alignItems: "flex-start",
+  gap: theme.spacing(0.5),
+}))
 
 export const MetadataItemList = ({
   values,
@@ -16,16 +28,7 @@ export const MetadataItemList = ({
   onEditClick?: () => void
 } & StackProps) => {
   return (
-    <Stack
-      {...rest}
-      sx={[
-        {
-          alignItems: "flex-start",
-          gap: 0.5,
-        },
-        ...(Array.isArray(rest.sx) ? rest.sx : [rest.sx]),
-      ]}
-    >
+    <StyledRoot {...rest}>
       <Stack
         sx={{
           flexDirection: "row",
@@ -77,6 +80,6 @@ export const MetadataItemList = ({
           />
         ))}
       </Stack>
-    </Stack>
+    </StyledRoot>
   )
 }

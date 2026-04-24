@@ -6,6 +6,7 @@ import {
   Card,
   type CardProps,
   Chip,
+  styled,
   Typography,
   useTheme,
 } from "@mui/material"
@@ -25,29 +26,20 @@ import { DownloadState, useBookDownloadState } from "../download/states"
 import { ButtonAsIcon } from "../common/ButtonAsIcon"
 import { pluginsByType } from "../plugins/configure"
 
-export const CoverIconBadge = memo(
-  ({ children, ...rest }: { children: ReactNode } & BoxProps) => {
-    const theme = useTheme()
+const CoverIconBadgeRoot = styled(Box)(({ theme }) => ({
+  display: "flex",
+  padding: theme.spacing(0.3),
+  borderRadius: "50%",
+  backgroundColor: theme.alpha(theme.palette.common.white, 0.7),
+  border: `1px solid ${theme.alpha(theme.palette.primary.main, 0.7)}`,
+}))
 
-    return (
-      <Box
-        {...rest}
-        sx={[
-          {
-            display: "flex",
-            padding: 0.3,
-            borderRadius: "50%",
-            bgcolor: theme.alpha(theme.palette.common.white, 0.7),
-            border: `1px solid ${theme.alpha(theme.palette.primary.main, 0.7)}`,
-          },
-          ...(Array.isArray(rest.sx) ? rest.sx : [rest.sx]),
-        ]}
-      >
-        {children}
-      </Box>
-    )
-  },
-)
+export const CoverIconBadge = memo(function CoverIconBadge({
+  children,
+  ...rest
+}: { children: ReactNode } & BoxProps) {
+  return <CoverIconBadgeRoot {...rest}>{children}</CoverIconBadgeRoot>
+})
 
 export const BookCoverCard: FC<
   {

@@ -71,6 +71,14 @@ const StyledListItemButton = styled(ListItemButton, {
   }),
 }))
 
+const BookMetadataStatusRoot = styled(Box)(({ theme }) => ({
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-end",
+  width: "100%",
+  gap: theme.spacing(1),
+}))
+
 function BookMetadataStatus({
   bookId,
   withDownloadIcons = false,
@@ -88,19 +96,7 @@ function BookMetadataStatus({
   const { data: isBookProtected } = useIsBookProtected(book)
 
   return (
-    <Box
-      {...rest}
-      sx={[
-        {
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          width: "100%",
-          gap: 1,
-        },
-        ...(Array.isArray(rest.sx) ? rest.sx : [rest.sx]),
-      ]}
-    >
+    <BookMetadataStatusRoot {...rest}>
       <Box
         sx={{
           display: "flex",
@@ -168,7 +164,7 @@ function BookMetadataStatus({
             />
           )}
       </Box>
-    </Box>
+    </BookMetadataStatusRoot>
   )
 }
 

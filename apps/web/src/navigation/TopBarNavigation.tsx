@@ -25,6 +25,12 @@ const SearchInput = styled(InputBase)(({ theme }) => ({
   },
 }))
 
+const TitleTypography = styled(Typography)({
+  whiteSpace: "nowrap",
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+})
+
 export const TopBarNavigation: FC<
   {
     title?: string
@@ -87,25 +93,13 @@ export const TopBarNavigation: FC<
             }}
           >
             {!hasSearch && !!title && (
-              <Typography
+              <TitleTypography
                 variant="h6"
                 style={{ flexGrow: 1 }}
                 {...TitleProps}
-                sx={[
-                  {
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
-                    overflow: "hidden",
-                  },
-                  ...(TitleProps?.sx
-                    ? Array.isArray(TitleProps.sx)
-                      ? TitleProps.sx
-                      : [TitleProps.sx]
-                    : []),
-                ]}
               >
                 {title}
-              </Typography>
+              </TitleTypography>
             )}
             {hasSearch && (
               <Box
