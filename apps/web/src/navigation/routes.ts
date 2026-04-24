@@ -1,6 +1,8 @@
 export const ROUTES = {
   HOME: "/",
   BOOK_DETAILS: "/book/:id",
+  BOOK_TAGS: "/book/:id/tags",
+  BOOK_COLLECTIONS: "/book/:id/collections",
   COLLECTION_DETAILS: "/collections/:id",
   PROFILE: "/profile",
   NOTIFICATIONS: "/profile/notifications",

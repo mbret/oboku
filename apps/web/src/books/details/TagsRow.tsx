@@ -1,12 +1,13 @@
 import { Button, Chip, Stack } from "@mui/material"
+import { useNavigate } from "react-router"
 import { useTags } from "../../tags/helpers"
 import { useBook } from "../states"
 import { EditOutlined } from "@mui/icons-material"
-import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
+import { ROUTES } from "../../navigation/routes"
 
 export const TagsRow = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })
-  const { openManageBookTagsDialog } = useManageBookTagsDialog()
+  const navigate = useNavigate()
   const { data: tags } = useTags({
     enabled: !!book?.tags.length,
     queryObj: {
@@ -33,7 +34,9 @@ export const TagsRow = ({ bookId }: { bookId?: string }) => {
         size="small"
         variant="text"
         onClick={() => {
-          book?._id && openManageBookTagsDialog(book?._id)
+          if (book?._id) {
+            navigate(ROUTES.BOOK_TAGS.replace(":id", book._id))
+          }
         }}
         startIcon={<EditOutlined />}
       >

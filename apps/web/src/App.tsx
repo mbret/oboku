@@ -2,12 +2,10 @@ import { memo, useEffect, useState } from "react"
 import { AppBrowserRouter } from "./navigation/AppBrowserRouter"
 import { StyledEngineProvider, Fade, Box } from "@mui/material"
 import { BlockingBackdrop } from "./common/locks/BlockingBackdrop"
-import { ManageBookCollectionsDialog } from "./books/ManageBookCollectionsDialog"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./queries/PreloadQueries"
 import { BlurFilterReference } from "./books/BlurFilterReference"
 import { ErrorBoundary } from "@sentry/react"
-import { ManageBookTagsDialog } from "./books/ManageBookTagsDialog"
 import { usePersistSignals, QueryClientProvider$ } from "reactjrx"
 import { signalEntriesToPersist } from "./profile"
 import { ThemeProvider } from "./theme/ThemeProvider"
@@ -79,8 +77,6 @@ const App = memo(() => {
                 <CollectionActionsDrawer />
                 <PluginDownloadFlowHost />
                 <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
-                <ManageBookCollectionsDialog />
-                <ManageBookTagsDialog />
                 <SetupSecretDialog />
               </AuthenticatedOnly>
               <AuthorizeActionDialog />
