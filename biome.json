@@ -27,7 +27,6 @@
     "indentWidth": 2
   },
   "assist": { "actions": { "source": { "organizeImports": "off" } } },
-  "plugins": ["./.biome/plugins/no-theme-mui-color-helpers.grit"],
   "linter": {
     "enabled": true,
     "rules": {
