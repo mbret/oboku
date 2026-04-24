@@ -127,12 +127,14 @@ export const ConnectorForm = memo(
         {topAlert}
         <Container maxWidth="md">
           <Stack
-            alignSelf="stretch"
             component="form"
-            gap={2}
             id={FORM_ID}
-            mt={2}
             onSubmit={handleSubmit((values) => submit(values))}
+            sx={{
+              alignSelf: "stretch",
+              gap: 2,
+              mt: 2,
+            }}
           >
             {showUrl && (
               <ControlledTextField
@@ -162,7 +164,11 @@ export const ConnectorForm = memo(
                 control={control}
                 name="allowSelfSigned"
                 render={({ field }) => (
-                  <Stack gap={0.5}>
+                  <Stack
+                    sx={{
+                      gap: 0.5,
+                    }}
+                  >
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -172,7 +178,12 @@ export const ConnectorForm = memo(
                       }
                       label="Allow self-signed certificate"
                     />
-                    <Typography color="text.secondary" variant="caption">
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "text.secondary",
+                      }}
+                    >
                       Used by API sync, metadata, and download requests. Browser
                       connection tests may still require trusting the
                       certificate in your browser.
@@ -190,7 +201,12 @@ export const ConnectorForm = memo(
               />
             )}
           </Stack>
-          <Stack gap={1} mt={4}>
+          <Stack
+            sx={{
+              gap: 1,
+              mt: 4,
+            }}
+          >
             {renderExtraActions?.()}
             <Button
               disabled={disabled || !isValid}

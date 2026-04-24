@@ -8,7 +8,14 @@ export const StatisticsScreen = () => {
   const { data: collectionsAsArray = [] } = useCollections()
 
   return (
-    <Box display="flex" flex={1} overflow="scroll" flexDirection="column">
+    <Box
+      sx={{
+        display: "flex",
+        flex: 1,
+        overflow: "scroll",
+        flexDirection: "column",
+      }}
+    >
       <TopBarNavigation title={"Statistics"} />
       <List>
         <ListSubheader disableSticky>Books</ListSubheader>

@@ -60,7 +60,12 @@ export const CollectionList = memo(
       return (
         <List disablePadding>
           {data?.map((item, index) => (
-            <Stack height={itemHeight} key={item}>
+            <Stack
+              key={item}
+              sx={{
+                height: itemHeight,
+              }}
+            >
               {rowRenderer(index, item)}
             </Stack>
           ))}

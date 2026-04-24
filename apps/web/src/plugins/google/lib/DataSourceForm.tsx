@@ -98,7 +98,13 @@ export const DataSourceForm = ({
       )}
       submitLabel={submitLabel}
     >
-      <Stack gap={2} pb={2} overflow="auto">
+      <Stack
+        sx={{
+          gap: 2,
+          pb: 2,
+          overflow: "auto",
+        }}
+      >
         <PickItemsSection
           itemsCount={items.length}
           onAction={() => {

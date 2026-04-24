@@ -43,7 +43,12 @@ export const NewDataSourceScreen = memo(() => {
     <Page>
       <TopBarNavigation title={`New ${plugin.name} data source`} />
       <Container maxWidth="md">
-        <Stack py={2} gap={2}>
+        <Stack
+          sx={{
+            py: 2,
+            gap: 2,
+          }}
+        >
           {PluginForm && <PluginForm onSubmit={handleSubmit} />}
         </Stack>
       </Container>

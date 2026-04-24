@@ -93,7 +93,12 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
 
   const listHeader = useMemo(
     () => (
-      <Box p={2} pt={1}>
+      <Box
+        sx={{
+          p: 2,
+          pt: 1,
+        }}
+      >
         {addBookButton}
       </Box>
     ),
@@ -171,9 +176,17 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
           numberOfFiltersApplied={numberOfFiltersApplied}
         />
       )}
-      <Stack flex={1}>
+      <Stack
+        sx={{
+          flex: 1,
+        }}
+      >
         {books.length === 0 && (
-          <Stack flex={1}>
+          <Stack
+            sx={{
+              flex: 1,
+            }}
+          >
             {listHeader}
             <EmptyList
               image={{ src: EmptyLibraryAsset, alt: "Empty library" }}

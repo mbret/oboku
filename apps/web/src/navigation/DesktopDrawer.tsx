@@ -26,7 +26,14 @@ export const DesktopDrawer = memo(function DesktopDrawer({
   const { unreadCount } = useUnreadNotificationsCount()
 
   return (
-    <Box display="flex" height="100%" flex={1} overflow="hidden">
+    <Box
+      sx={{
+        display: "flex",
+        height: "100%",
+        flex: 1,
+        overflow: "hidden",
+      }}
+    >
       <Drawer
         variant="permanent"
         sx={{
@@ -64,11 +71,13 @@ export const DesktopDrawer = memo(function DesktopDrawer({
         </List>
       </Drawer>
       <Box
-        flex={1}
-        overflow="hidden"
-        display="flex"
-        flexDirection="column"
-        position="relative"
+        sx={{
+          flex: 1,
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
+        }}
       >
         {children}
         <OfflineIcon />

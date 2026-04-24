@@ -43,18 +43,30 @@ export const NotificationCardBase = memo(function NotificationCardBase({
       }
     >
       <AlertTitle>{notification.title}</AlertTitle>
-      <Stack gap={1} mb={1}>
-        <Typography variant="caption" color="text.secondary">
+      <Stack
+        sx={{
+          gap: 1,
+          mb: 1,
+        }}
+      >
+        <Typography
+          variant="caption"
+          sx={{
+            color: "text.secondary",
+          }}
+        >
           {new Date(notification.createdAt).toLocaleString()}
         </Typography>
         {notification.body}
       </Stack>
       <Stack
         direction="row"
-        gap={1}
-        flexWrap="wrap-reverse"
-        justifyContent="space-between"
-        alignItems="center"
+        sx={{
+          gap: 1,
+          flexWrap: "wrap-reverse",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
       >
         {!notification.seenAt ? (
           <Button

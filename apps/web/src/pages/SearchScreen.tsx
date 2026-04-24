@@ -142,7 +142,11 @@ export const SearchScreen = () => {
         }
       />
       <ListActionsToolbar />
-      <Box overflow="auto">
+      <Box
+        sx={{
+          overflow: "auto",
+        }}
+      >
         <Accordion
           disableGutters
           elevation={0}
@@ -162,7 +166,11 @@ export const SearchScreen = () => {
               },
             })}
           >
-            <Box height="auto">
+            <Box
+              sx={{
+                height: "auto",
+              }}
+            >
               {books.length ? (
                 <>
                   <BookList

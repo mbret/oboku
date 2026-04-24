@@ -136,7 +136,13 @@ export const BookListItemVertical = memo(function BookListItemVertical({
           >
             {metadata?.title || "Unknown"}
           </Typography>
-          <Typography variant="caption" noWrap={true} display="block">
+          <Typography
+            variant="caption"
+            noWrap={true}
+            sx={{
+              display: "block",
+            }}
+          >
             {(metadata?.authors ?? [])[0] || "Unknown"}
           </Typography>
         </div>

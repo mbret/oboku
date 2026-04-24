@@ -1,7 +1,19 @@
 import { EditOutlined } from "@mui/icons-material"
-import { Button, Chip, Stack, type StackProps, Typography } from "@mui/material"
+import {
+  Button,
+  Chip,
+  Stack,
+  type StackProps,
+  styled,
+  Typography,
+} from "@mui/material"
 import { Link } from "react-router"
 import type { DeepReadonlyArray } from "rxdb"
+
+const StyledRoot = styled(Stack)(({ theme }) => ({
+  alignItems: "flex-start",
+  gap: theme.spacing(0.5),
+}))
 
 export const MetadataItemList = ({
   values,
@@ -16,9 +28,21 @@ export const MetadataItemList = ({
   onEditClick?: () => void
 } & StackProps) => {
   return (
-    <Stack alignItems="flex-start" gap={0.5} {...rest}>
-      <Stack flexDirection="row" gap={1} alignItems="center">
-        <Typography fontWeight="bold">{label}</Typography>
+    <StyledRoot {...rest}>
+      <Stack
+        sx={{
+          flexDirection: "row",
+          gap: 1,
+          alignItems: "center",
+        }}
+      >
+        <Typography
+          sx={{
+            fontWeight: "bold",
+          }}
+        >
+          {label}
+        </Typography>
         {!!onEditClick && (
           <Button
             size="small"
@@ -30,7 +54,13 @@ export const MetadataItemList = ({
           </Button>
         )}
       </Stack>
-      <Stack flexDirection="row" gap={1} flexWrap="wrap">
+      <Stack
+        sx={{
+          flexDirection: "row",
+          gap: 1,
+          flexWrap: "wrap",
+        }}
+      >
         {!values?.length && (
           <Typography variant="caption">{emptyLabel}</Typography>
         )}
@@ -50,6 +80,6 @@ export const MetadataItemList = ({
           />
         ))}
       </Stack>
-    </Stack>
+    </StyledRoot>
   )
 }

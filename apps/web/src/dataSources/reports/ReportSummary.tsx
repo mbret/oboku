@@ -9,11 +9,14 @@ export const ReportSummary = memo(function ReportSummary({
   entry: NonNullable<ReturnType<typeof useSyncReports>["data"]>[number]
 }) {
   return (
-    <Stack gap={1}>
+    <Stack
+      sx={{
+        gap: 1,
+      }}
+    >
       <Typography variant="body2">
         <b>Duration:</b> {formatReportDuration(entry.createdAt, entry.endedAt)}
       </Typography>
-
       <Stack>
         {(["obokucollection", "book", "tag", "link"] as const).map(
           (rxModel) => (

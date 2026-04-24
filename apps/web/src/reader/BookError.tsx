@@ -32,7 +32,11 @@ export const BookError = ({
           flexDirection: "column",
         }}
       >
-        <Box mb={2}>
+        <Box
+          sx={{
+            mb: 2,
+          }}
+        >
           <Typography>
             Oups! it looks like the book <b>{metadata?.title}</b> is not
             supported yet. If you would like to be able to open it please visit
@@ -68,7 +72,11 @@ export const BookError = ({
         flexDirection: "column",
       }}
     >
-      <Box mb={2}>
+      <Box
+        sx={{
+          mb: 2,
+        }}
+      >
         <Typography variant="h6" align="center">
           Oups!
         </Typography>

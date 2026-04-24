@@ -32,7 +32,12 @@ export const OrDivider: FC<{ title?: string; style?: React.CSSProperties }> = ({
           marginRight: theme.spacing(2),
         }}
       >
-        <Typography textTransform="uppercase" variant="body2">
+        <Typography
+          variant="body2"
+          sx={{
+            textTransform: "uppercase",
+          }}
+        >
           {title}
         </Typography>
       </div>

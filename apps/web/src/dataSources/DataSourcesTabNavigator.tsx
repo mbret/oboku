@@ -20,7 +20,12 @@ export const DataSourcesTabNavigator = () => {
       : routeMatch?.pattern?.path
 
   return (
-    <Stack flex={1} overflow="hidden">
+    <Stack
+      sx={{
+        flex: 1,
+        overflow: "hidden",
+      }}
+    >
       <TopBarNavigation title="Sync" showBack={false} hasSearch={false} />
       <Tabs value={currentTab}>
         <Tab

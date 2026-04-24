@@ -31,9 +31,20 @@ export const NotificationsScreen = memo(function NotificationsScreen() {
           ) : undefined
         }
       />
-      <Stack p={2} gap={2}>
+      <Stack
+        sx={{
+          p: 2,
+          gap: 2,
+        }}
+      >
         {notificationsQuery.isLoading && (
-          <Typography color="text.secondary">Loading notifications…</Typography>
+          <Typography
+            sx={{
+              color: "text.secondary",
+            }}
+          >
+            Loading notifications…
+          </Typography>
         )}
 
         {notificationsQuery.error && (

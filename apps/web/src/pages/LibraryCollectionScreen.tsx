@@ -18,7 +18,12 @@ export const LibraryCollectionScreen = memo(() => {
 
   const listHeader = useMemo(
     () => (
-      <Box p={2} pt={1}>
+      <Box
+        sx={{
+          p: 2,
+          pt: 1,
+        }}
+      >
         <Button
           fullWidth
           variant="outlined"
@@ -34,7 +39,12 @@ export const LibraryCollectionScreen = memo(() => {
   const listRenderHeader = useCallback(() => listHeader, [listHeader])
 
   return (
-    <Stack flex={1} overflow="hidden">
+    <Stack
+      sx={{
+        flex: 1,
+        overflow: "hidden",
+      }}
+    >
       <Toolbar
         viewMode={viewMode}
         onViewModeChange={(viewMode) => {

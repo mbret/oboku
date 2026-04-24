@@ -8,11 +8,11 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.10.6",
     "@fontsource/roboto": "^5.0.14",
-    "@mui/icons-material": "^7.0.1",
-    "@mui/lab": "^7.0.1-beta.18",
-    "@mui/material": "^7.0.1",
-    "@mui/utils": "^7.0.0",
-    "@mui/x-tree-view": "^8.8.0",
+    "@mui/icons-material": "^9.0.0",
+    "@mui/lab": "^9.0.0-beta.2",
+    "@mui/material": "^9.0.0",
+    "@mui/utils": "^9.0.0",
+    "@mui/x-tree-view": "^9.0.2",
     "@oboku/shared": "0.8.0",
     "@oboku/synology": "0.1.0",
     "@prose-reader/core": "^1.274.0",
@@ -64,7 +64,8 @@
     "workbox-routing": "^7.3.0",
     "workbox-strategies": "^7.3.0",
     "workbox-streams": "^7.3.0",
-    "zod": "^4.0.5"
+    "zod": "^4.0.5",
+    "rc-slider": "^11.1.0"
   },
   "devDependencies": {
     "@types/dropbox-chooser": "^1.0.3",
@@ -87,17 +88,5 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   }
 }

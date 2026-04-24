@@ -55,10 +55,12 @@ export const UploadBookComponent: ObokuPlugin<"URI">["UploadBookComponent"] = ({
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <DialogContentText
-          gap={1}
-          display="flex"
-          flexDirection="column"
           component="div"
+          sx={{
+            gap: 1,
+            display: "flex",
+            flexDirection: "column",
+          }}
         >
           <Typography gutterBottom component="p">
             Make sure the resource allow <b>cross origin requests</b> (eg:
@@ -66,7 +68,11 @@ export const UploadBookComponent: ObokuPlugin<"URI">["UploadBookComponent"] = ({
             it. This solution is usually best suited when you have your own NAS
             or server.
           </Typography>
-          <Typography fontWeight="bold">
+          <Typography
+            sx={{
+              fontWeight: "bold",
+            }}
+          >
             We recommend you to add books from datasource or a drive plugin
             (Google Drive, Dropbox, etc)
           </Typography>

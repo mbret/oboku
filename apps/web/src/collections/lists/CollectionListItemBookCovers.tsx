@@ -13,12 +13,12 @@ export const CollectionListItemBookCovers = memo(({ id }: { id: string }) => {
 
   return (
     <Box
-      position="absolute"
-      display="flex"
-      flexDirection="row"
-      width="80%"
-      height="70%"
       sx={{
+        position: "absolute",
+        display: "flex",
+        flexDirection: "row",
+        width: "80%",
+        height: "70%",
         containerType: "size",
       }}
     >

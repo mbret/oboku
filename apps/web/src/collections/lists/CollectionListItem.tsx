@@ -61,23 +61,29 @@ export const CollectionListItem = memo(
         >
           <CollectionListItemCover id={id} showType={showType} />
           <Stack
-            width="100%"
             direction="row"
-            alignItems="center"
             onClick={(e) => {
               if (id !== configuration.COLLECTION_EMPTY_ID) {
                 e.stopPropagation()
                 openActionDrawer()
               }
             }}
+            sx={{
+              width: "100%",
+              alignItems: "center",
+            }}
           >
             <ListItemText
               primary={title ?? `\u00a0`}
               secondary={`${item?.books?.length || 0} book(s)`}
-              primaryTypographyProps={{
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
+              slotProps={{
+                primary: {
+                  sx: {
+                    overflow: "hidden",
+                    whiteSpace: "nowrap",
+                    textOverflow: "ellipsis",
+                  },
+                },
               }}
             />
 

@@ -82,7 +82,12 @@ export const BookDetailsScreen = memo(() => {
             <Typography variant="body1">
               {metadata?.title || "Unknown"}
             </Typography>
-            <Typography variant="body2" fontStyle="italic">
+            <Typography
+              variant="body2"
+              sx={{
+                fontStyle: "italic",
+              }}
+            >
               By {metadata?.authors?.join(", ") || "Unknown"}
             </Typography>
           </Stack>
@@ -152,7 +157,11 @@ export const BookDetailsScreen = memo(() => {
           </IconButton>
         </Stack>
         <Stack>
-          <Stack gap={1}>
+          <Stack
+            sx={{
+              gap: 1,
+            }}
+          >
             {book?.metadataUpdateStatus === "fetching" && (
               <Alert severity="warning">
                 Retrieving metadata information...

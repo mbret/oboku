@@ -66,7 +66,12 @@ export const InfoScreen = () => {
           />
         </ListItem>
       </List>
-      <Stack px={2} alignItems="flex-start">
+      <Stack
+        sx={{
+          px: 2,
+          alignItems: "flex-start",
+        }}
+      >
         <Button onClick={() => mutate()} disabled={!!gapi.gapi}>
           Force reload Google API script
         </Button>

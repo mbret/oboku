@@ -31,10 +31,6 @@ When implementing changes in this codebase, prioritize consistency and consolida
 - Prefer small, incremental refactors that reduce pattern drift without broad unrelated rewrites.
 - Do not introduce new abstractions unless they are reused or clearly expected to be reused.
 
-### Styling (MUI)
-
-- Prefer dedicated MUI props for styling (e.g. `display`, `alignItems`, `padding`, `bgcolor`, `position`) over the `sx` prop whenever the same result can be achieved. Use `sx` only when you need theme functions, selectors, or values that have no dedicated prop.
-
 ### Shared package (@oboku/shared)
 
 - No user-facing content strings (error messages, labels, placeholders, etc.) should live in the shared package.

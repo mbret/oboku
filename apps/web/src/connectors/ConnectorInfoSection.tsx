@@ -62,9 +62,27 @@ export const ConnectorInfoSection = memo(
       maxConnectors === undefined || (connectors?.length ?? 0) < maxConnectors
 
     return (
-      <Box display="flex" flex={1} flexDirection="column" overflow="auto">
-        <Stack px={2} pt={2} gap={1}>
-          <Typography variant="subtitle2" color="text.secondary">
+      <Box
+        sx={{
+          display: "flex",
+          flex: 1,
+          flexDirection: "column",
+          overflow: "auto",
+        }}
+      >
+        <Stack
+          sx={{
+            px: 2,
+            pt: 2,
+            gap: 1,
+          }}
+        >
+          <Typography
+            variant="subtitle2"
+            sx={{
+              color: "text.secondary",
+            }}
+          >
             Connectors
           </Typography>
           <Alert severity="info" variant="standard">
@@ -80,11 +98,13 @@ export const ConnectorInfoSection = memo(
         </Stack>
         {canAdd && (
           <Box
-            display="flex"
-            flexDirection={{ xs: "column", sm: "row" }}
-            justifyContent={{ sm: "flex-start" }}
-            mt={2}
-            px={2}
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: { sm: "flex-start" },
+              mt: 2,
+              px: 2,
+            }}
           >
             <Button
               component={RouterLink}

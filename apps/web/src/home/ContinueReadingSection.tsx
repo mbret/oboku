@@ -10,7 +10,14 @@ export const ContinueReadingSection = memo(() => {
     <>
       {continueReadingBooks.length > 0 && (
         <Box>
-          <Typography variant="h6" component="h1" padding={1} paddingTop={2}>
+          <Typography
+            variant="h6"
+            component="h1"
+            sx={{
+              padding: 1,
+              paddingTop: 2,
+            }}
+          >
             Continue reading
           </Typography>
           <HomeBookList

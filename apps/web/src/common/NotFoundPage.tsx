@@ -23,11 +23,21 @@ export const NotFoundPage = () => {
           flex: 1,
         }}
       >
-        <Typography variant="h3" textAlign="center">
+        <Typography
+          variant="h3"
+          sx={{
+            textAlign: "center",
+          }}
+        >
           Oups!
         </Typography>
         <StyledNotFoundImage src={NotFoundImage} alt="404" />
-        <Typography variant="body1" textAlign="center">
+        <Typography
+          variant="body1"
+          sx={{
+            textAlign: "center",
+          }}
+        >
           It appears what you were looking for is either gone or never existed.
         </Typography>
       </Container>

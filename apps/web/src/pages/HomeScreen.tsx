@@ -15,14 +15,25 @@ export const HomeScreen = memo(() => {
   const { data: continueReadingBooks, isPending } = useContinueReadingBooks()
 
   return (
-    <Box display="flex" flex={1} flexDirection="column" overflow="auto">
+    <Box
+      sx={{
+        display: "flex",
+        flex: 1,
+        flexDirection: "column",
+        overflow: "auto",
+      }}
+    >
       <TopBarNavigation
         title={"Home"}
         showBack={false}
         hasSearch
         hasLockLibrary
       />
-      <Box pb={2}>
+      <Box
+        sx={{
+          pb: 2,
+        }}
+      >
         {continueReadingBooks.length === 0 && !isPending && (
           <div
             style={{

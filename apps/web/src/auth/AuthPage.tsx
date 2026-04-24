@@ -5,9 +5,20 @@ import {
   Typography,
   Stack,
   type StackProps,
+  styled,
 } from "@mui/material"
 import { links } from "@oboku/shared"
 import { Logo } from "../common/Logo"
+
+const StyledRoot = styled(Stack)(({ theme }) => ({
+  flex: 1,
+  flexDirection: "column",
+  justifyContent: "center",
+  alignItems: "center",
+  gap: theme.spacing(3),
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+}))
 
 export const AuthPage = ({
   children,
@@ -16,15 +27,7 @@ export const AuthPage = ({
   const theme = useTheme()
 
   return (
-    <Stack
-      flex={1}
-      flexDirection="column"
-      justifyContent="center"
-      alignItems="center"
-      gap={3}
-      px={2}
-      {...props}
-    >
+    <StyledRoot {...props}>
       <Box
         style={{
           display: "flex",
@@ -35,13 +38,24 @@ export const AuthPage = ({
       >
         <Logo />
       </Box>
-      <Stack maxWidth={400} width="100%" justifyContent="center">
+      <Stack
+        sx={{
+          maxWidth: 400,
+          width: "100%",
+          justifyContent: "center",
+        }}
+      >
         {children}
-        <Typography textAlign="center" mt={10}>
+        <Typography
+          sx={{
+            textAlign: "center",
+            mt: 10,
+          }}
+        >
           <MuiLink href={links.site}>oboku</MuiLink> - Copyright © 2020-
           {new Date().getFullYear()}{" "}
         </Typography>
       </Stack>
-    </Stack>
+    </StyledRoot>
   )
 }

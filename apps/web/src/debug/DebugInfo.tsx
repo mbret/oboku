@@ -1,5 +1,5 @@
-import { Box, Typography, useTheme } from "@mui/material"
-import type { ComponentProps, FC } from "react"
+import { Box, styled, Typography } from "@mui/material"
+import type { ComponentProps } from "react"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
 import TableCell from "@mui/material/TableCell"
@@ -9,16 +9,24 @@ import { isDebugEnabled } from "./isDebugEnabled.shared"
 
 type Info = { [key: string]: string | number }
 
-export const DebugInfo: FC<
-  { info: Info | Info[] } & ComponentProps<typeof Box>
-> = ({ info, ...rest }) => {
-  const theme = useTheme()
+const StyledRoot = styled(Box)(({ theme }) => ({
+  paddingTop: theme.spacing(1),
+  backgroundColor: theme.palette.info.light,
+}))
 
+export function DebugInfo({
+  info,
+  ...rest
+}: { info: Info | Info[] } & ComponentProps<typeof Box>) {
   if (!isDebugEnabled()) return null
 
   return (
-    <Box pt={1} bgcolor={theme.palette.info.light} {...rest}>
-      <Box mx={1}>
+    <StyledRoot {...rest}>
+      <Box
+        sx={{
+          mx: 1,
+        }}
+      >
         <Typography>debug:</Typography>
       </Box>
       <TableContainer>
@@ -43,6 +51,6 @@ export const DebugInfo: FC<
           </TableBody>
         </Table>
       </TableContainer>
-    </Box>
+    </StyledRoot>
   )
 }

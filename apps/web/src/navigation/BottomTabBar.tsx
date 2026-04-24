@@ -25,12 +25,14 @@ export const BottomTabBar = memo(function BottomTabBar({
 
   return (
     <Box
-      display="flex"
-      height="100%"
-      flexDirection="column"
-      flex={1}
-      overflow="hidden"
-      position="relative"
+      sx={{
+        display: "flex",
+        height: "100%",
+        flexDirection: "column",
+        flex: 1,
+        overflow: "hidden",
+        position: "relative",
+      }}
     >
       {children}
       <OfflineIcon />

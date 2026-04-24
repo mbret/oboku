@@ -54,17 +54,25 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
             </ListItemIcon>
             <ListItemText
               primary={`${dataSourcePlugin?.name}`}
-              primaryTypographyProps={{
-                style: {
-                  paddingRight: 10,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+              secondary={linkInfo?.label}
+              slotProps={{
+                primary: {
+                  style: {
+                    paddingRight: 10,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  },
                 },
               }}
-              secondary={linkInfo?.label}
             />
-            <Stack width={50} alignItems="center" flexShrink={0}>
+            <Stack
+              sx={{
+                width: 50,
+                alignItems: "center",
+                flexShrink: 0,
+              }}
+            >
               <MoreVertRounded />
             </Stack>
           </ListItemButton>

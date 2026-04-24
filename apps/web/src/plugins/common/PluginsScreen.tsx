@@ -22,7 +22,12 @@ export const PluginsScreen = memo(function PluginsScreen() {
   const isPluginEnabled = useGetIsPluginEnabled()
 
   return (
-    <Stack flex={1} overflow="auto">
+    <Stack
+      sx={{
+        flex: 1,
+        overflow: "auto",
+      }}
+    >
       <TopBarNavigation title={"Plugins"} showBack={false} />
       <List>
         {plugins.filter(isPluginVisible).map((plugin) => (

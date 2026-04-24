@@ -15,7 +15,11 @@ export const DataSourcesReportsScreen = memo(
     const { data, isLoading } = useSyncReports()
 
     return (
-      <Stack overflow="auto">
+      <Stack
+        sx={{
+          overflow: "auto",
+        }}
+      >
         {isLoading ? (
           <SkeletonLoader />
         ) : !data?.length ? (
@@ -24,12 +28,30 @@ export const DataSourcesReportsScreen = memo(
             sync.
           </Alert>
         ) : (
-          <Stack py={2} px={1} gap={2}>
+          <Stack
+            sx={{
+              py: 2,
+              px: 1,
+              gap: 2,
+            }}
+          >
             {data?.map((entry, index) => (
               <Stack key={index}>
-                <Stack direction="row" gap={1} justifyItems="center">
+                <Stack
+                  direction="row"
+                  sx={{
+                    gap: 1,
+                    justifyItems: "center",
+                  }}
+                >
                   <Chip size="small" label="sync" variant="filled" />
-                  <Typography variant="body1" component="h2" fontWeight="bold">
+                  <Typography
+                    variant="body1"
+                    component="h2"
+                    sx={{
+                      fontWeight: "bold",
+                    }}
+                  >
                     {formatReportDateTime(entry.createdAt)}
                   </Typography>
                   <Box>
@@ -51,7 +73,13 @@ export const DataSourcesReportsScreen = memo(
                     )}
                   </Box>
                 </Stack>
-                <Stack mt={1} gap={1} pl={1}>
+                <Stack
+                  sx={{
+                    mt: 1,
+                    gap: 1,
+                    pl: 1,
+                  }}
+                >
                   {entry.report.has_different_provider_credentials && (
                     <Alert severity="info">
                       Some books or collections were synced but could not have

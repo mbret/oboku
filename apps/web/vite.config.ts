@@ -55,6 +55,14 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
+    /**
+     * Vite 8 / rolldown has CJS interop issues where MUI's nested @mui/system
+     * (.mjs) imports `prop-types` as a default export, but prop-types is CJS
+     * and gets served raw via /@fs/, breaking the default export.
+     *
+     * See: https://github.com/vitejs/vite/issues/21850
+     */
+    include: ["prop-types", "react-is", "hoist-non-react-statics"],
     rolldownOptions: {
       transform: {
         // Node.js global to browser globalThis

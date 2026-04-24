@@ -22,8 +22,10 @@ export const SignUpForm = ({
     <Stack
       component="form"
       noValidate
-      gap={1}
       onSubmit={handleSubmit(onSubmit)}
+      sx={{
+        gap: 1,
+      }}
     >
       <Controller
         name="email"

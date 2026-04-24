@@ -102,7 +102,11 @@ export const ManageStorageScreen = () => {
             disableTypography
             secondary={
               <div>
-                <Box marginY={1}>
+                <Box
+                  sx={{
+                    marginY: 1,
+                  }}
+                >
                   <LinearProgress
                     variant="determinate"
                     value={quotaUsed * 100}
