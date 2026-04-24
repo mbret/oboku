@@ -11,7 +11,7 @@ import {
   useCallback,
   useEffect,
 } from "react"
-import { Box, Stack } from "@mui/material"
+import { Box, Stack, styled } from "@mui/material"
 import {
   type Components,
   type ContextProp,
@@ -29,6 +29,19 @@ import { useRestoreVirtuosoScroll } from "./useRestoreVirtuosoScroll"
 import styles from "./VirtuosoList.module.css"
 
 type Context = { size: number }
+
+const GridStack = styled(Stack)({
+  flexWrap: "wrap",
+})
+
+const GridItemBox = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "itemsPerRow",
+})<{ itemsPerRow: number }>(({ itemsPerRow }) => ({
+  display: "flex",
+  width: `${100 / itemsPerRow}%`,
+  flex: "none",
+  alignContent: "stretch",
+}))
 
 type SharedProps = ComponentProps<typeof Virtuoso> &
   ComponentProps<typeof VirtuosoGrid>
@@ -93,15 +106,14 @@ export const VirtuosoList = memo(
             const _ref = ref
 
             return (
-              <Stack
+              <GridStack
                 ref={_ref}
                 direction="row"
                 style={{ ...style, ...listElementStyle }}
                 {...props}
-                sx={{ flexWrap: "wrap" }}
               >
                 {children}
-              </Stack>
+              </GridStack>
             )
           },
         ),
@@ -117,19 +129,13 @@ export const VirtuosoList = memo(
         }: GridItemProps & {
           context?: Context
         }) => (
-          <Box
-            component="div"
+          <GridItemBox
             ref={ref as Ref<HTMLDivElement>}
             {...props}
-            sx={{
-              display: "flex",
-              width: `${100 / itemsPerRow}%`,
-              flex: "none",
-              alignContent: "stretch",
-            }}
+            itemsPerRow={itemsPerRow}
           >
             {children}
-          </Box>
+          </GridItemBox>
         ),
       [itemsPerRow],
     )

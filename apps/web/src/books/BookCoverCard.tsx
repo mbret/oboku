@@ -10,6 +10,7 @@ import {
   Typography,
   useTheme,
 } from "@mui/material"
+import { alpha } from "@mui/material/styles"
 import {
   CheckOutlined,
   CloudDownloadRounded,
@@ -30,8 +31,8 @@ const CoverIconBadgeRoot = styled(Box)(({ theme }) => ({
   display: "flex",
   padding: theme.spacing(0.3),
   borderRadius: "50%",
-  backgroundColor: theme.alpha(theme.palette.common.white, 0.7),
-  border: `1px solid ${theme.alpha(theme.palette.primary.main, 0.7)}`,
+  backgroundColor: alpha(theme.palette.common.white, 0.7),
+  border: `1px solid ${alpha(theme.palette.primary.main, 0.7)}`,
 }))
 
 export const CoverIconBadge = memo(function CoverIconBadge({
@@ -215,8 +216,8 @@ export const BookCoverCard: FC<
 
               bgcolor:
                 theme.palette.mode === "dark"
-                  ? theme.alpha(theme.palette.common.black, 0.5)
-                  : theme.alpha(theme.palette.common.white, 0.5),
+                  ? alpha(theme.palette.common.black, 0.5)
+                  : alpha(theme.palette.common.white, 0.5),
 
               lineHeight: 0,
               backdropFilter: "blur(8px)",

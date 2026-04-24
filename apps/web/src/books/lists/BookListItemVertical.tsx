@@ -1,6 +1,7 @@
 import { memo, useCallback } from "react"
 import { MoreVert } from "@mui/icons-material"
 import { Box, styled, Typography, type BoxProps } from "@mui/material"
+import { alpha } from "@mui/material/styles"
 import {
   SelectableCardOverlay,
   useSelectableItemInteractions,
@@ -25,7 +26,7 @@ const StyledContainer = styled(Box, {
   WebkitTapHighlightColor: "transparent",
   padding: theme.spacing(BOOK_LIST_ITEM_VERTICAL_PADDING),
   backgroundColor: selected
-    ? theme.alpha(theme.palette.primary.main, 0.12)
+    ? alpha(theme.palette.primary.main, 0.12)
     : "transparent",
   transition: theme.transitions.create("background-color", {
     duration: 150,

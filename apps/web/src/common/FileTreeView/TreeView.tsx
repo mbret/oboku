@@ -78,6 +78,12 @@ const CustomTreeItem = React.forwardRef(function CustomTreeItem(
           <TreeItemIconContainer {...getIconContainerProps()}>
             <TreeItemIcon status={status} />
           </TreeItemIconContainer>
+          {/**
+           * MUI applies aria-hidden to the checkbox wrapper, so the browser
+           * refuses to keep focus here and emits a warning when tabbing in.
+           * Blurring on focus mirrors that behavior and prevents a focus trap
+           * while keeping the checkbox toggleable via click/keyboard on the row.
+           */}
           <TreeItemCheckbox
             {...getCheckboxProps()}
             onFocus={(e: React.FocusEvent<HTMLElement>) => e.target.blur()}

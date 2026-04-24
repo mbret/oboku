@@ -1,0 +1,17 @@
+// Biome GritQL plugin.
+// Flags `theme.alpha(...)`, `theme.lighten(...)`, `theme.darken(...)` usage.
+// MUI 9+ exposes these as methods on the `Theme` interface, so they work inside
+// `sx`/`styled` callbacks where `theme` is in scope. However, if such a
+// callback is ever extracted into a standalone helper (where the `theme`
+// argument no longer flows through), the call breaks. Prefer the standalone
+// helpers `import { alpha, lighten, darken } from "@mui/material/styles"` which
+// work from any context.
+
+`$fn($_args)` where {
+  $fn <: or {
+    `theme.alpha`,
+    `theme.lighten`,
+    `theme.darken`
+  },
+  register_diagnostic(span=$fn, message="Prefer the standalone `alpha`/`lighten`/`darken` from `@mui/material/styles` over the `theme.*` method form. The theme method only works while `theme` is in scope (inside `sx`/`styled` callbacks) and breaks when the callback is extracted into a helper.", severity="warn")
+}
