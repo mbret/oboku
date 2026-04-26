@@ -1,6 +1,8 @@
 import { memo } from "react"
 import { useParams } from "react-router"
 import { useMutation } from "@tanstack/react-query"
+import { AddRounded } from "@mui/icons-material"
+import { IconButton } from "@mui/material"
 import type { TagsDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
@@ -11,6 +13,7 @@ import {
 import { useBook } from "../../../../books/states"
 import { useTags } from "../../../../tags/helpers"
 import { SelectableTagList } from "../../../../tags/tagList/SelectableTagList"
+import { openAddTagDialog } from "../../../../tags/AddTagDialog"
 import { EntitySelectionPage } from "../../../../common/selection"
 import { notify, notifyError } from "../../../../notifications/toasts"
 
@@ -64,6 +67,16 @@ export const BookTagsScreen = memo(function BookTagsScreen() {
       getSearchableText={getTagSearchableText}
       isSaving={isSaving}
       onSave={save}
+      toolbarActions={
+        <IconButton
+          onClick={openAddTagDialog}
+          color="primary"
+          disabled={isSaving}
+          aria-label="Create a new tag"
+        >
+          <AddRounded />
+        </IconButton>
+      }
       renderList={({ filteredIds, selectedItems, toggleSelection }) => (
         <SelectableTagList
           style={listStyle}

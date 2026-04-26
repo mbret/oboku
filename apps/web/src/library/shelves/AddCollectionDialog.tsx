@@ -1,4 +1,4 @@
-import { useState, type FC } from "react"
+import { useState } from "react"
 import Dialog from "@mui/material/Dialog"
 import {
   Button,
@@ -7,18 +7,30 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material"
+import { signal, useSignalValue } from "reactjrx"
 import { useCreateCollection } from "../../collections/useCreateCollection"
 
-export const AddCollectionDialog: FC<{
-  open: boolean
-  onClose: () => void
-}> = ({ onClose, open }) => {
+const addCollectionDialogSignal = signal<{ open: boolean }>({
+  key: "addCollectionDialogState",
+  default: { open: false },
+})
+
+export const openAddCollectionDialog = () => {
+  addCollectionDialogSignal.setValue({ open: true })
+}
+
+const closeAddCollectionDialog = () => {
+  addCollectionDialogSignal.setValue({ open: false })
+}
+
+export function AddCollectionDialog() {
+  const { open } = useSignalValue(addCollectionDialogSignal)
   const [name, setName] = useState("")
   const { mutate: addCollection } = useCreateCollection()
 
   const onInnerClose = () => {
     setName("")
-    onClose()
+    closeAddCollectionDialog()
   }
 
   return (

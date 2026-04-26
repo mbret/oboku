@@ -1,6 +1,8 @@
 import { memo } from "react"
 import { useParams } from "react-router"
 import { useMutation } from "@tanstack/react-query"
+import { AddRounded } from "@mui/icons-material"
+import { IconButton } from "@mui/material"
 import type { CollectionDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
@@ -12,6 +14,7 @@ import { useBook } from "../../../../books/states"
 import { useCollections } from "../../../../collections/useCollections"
 import { SelectableCollectionList } from "../../../../collections/lists/SelectableCollectionList"
 import { getCollectionComputedMetadata } from "../../../../collections/getCollectionComputedMetadata"
+import { openAddCollectionDialog } from "../../../../library/shelves/AddCollectionDialog"
 import { EntitySelectionPage } from "../../../../common/selection"
 import { notify, notifyError } from "../../../../notifications/toasts"
 
@@ -71,6 +74,16 @@ export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
       getSearchableText={getCollectionSearchableText}
       isSaving={isSaving}
       onSave={save}
+      toolbarActions={
+        <IconButton
+          onClick={openAddCollectionDialog}
+          color="primary"
+          disabled={isSaving}
+          aria-label="Create a new collection"
+        >
+          <AddRounded />
+        </IconButton>
+      }
       renderList={({ filteredIds, selectedItems, toggleSelection }) => (
         <SelectableCollectionList
           style={listStyle}

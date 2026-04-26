@@ -49,6 +49,14 @@ export type EntitySelectionPageProps<T extends ListFilterItem> = {
    * concrete `Selectable*List` and wires its idiosyncratic API.
    */
   renderList: (props: EntitySelectionRenderListProps) => ReactNode
+  /**
+   * Optional extra action(s) rendered on the trailing edge of the
+   * selection toolbar (after the built-in select/unselect buttons).
+   * Use to expose page-level actions that fit naturally with the
+   * selection chrome — e.g. a "create new entity" affordance — without
+   * stealing vertical space from the list.
+   */
+  toolbarActions?: ReactNode
   isSaving: boolean
   onSave: (changes: EntitySelectionSaveChanges) => void
 } & UseFilteredSelectionOptions<T>
@@ -75,6 +83,7 @@ export const EntitySelectionPage = memo(function EntitySelectionPage<
   searchPlaceholder,
   searchAriaLabel,
   renderList,
+  toolbarActions,
   isSaving,
   onSave,
   items,
@@ -122,6 +131,7 @@ export const EntitySelectionPage = memo(function EntitySelectionPage<
         isActionPending={isSaving}
         onSelectAll={selectFiltered}
         onUnselectAll={unselectFiltered}
+        actions={toolbarActions}
       />
       <Stack sx={{ flex: 1, minHeight: 0 }}>
         {renderList({ filteredIds, selectedItems, toggleSelection })}

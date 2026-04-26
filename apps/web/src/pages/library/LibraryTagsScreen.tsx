@@ -1,28 +1,15 @@
-import { useState, type FC, useEffect, useCallback, useMemo } from "react"
-import Dialog from "@mui/material/Dialog"
-import {
-  Box,
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-} from "@mui/material"
-import { useCreateTag } from "../../tags/helpers"
+import { useState, useCallback, useMemo } from "react"
+import { Box, Button } from "@mui/material"
 import { TagActionsDrawer } from "../../tags/TagActionsDrawer"
 import { TagList } from "../../tags/tagList/TagList"
 import { useTagIds } from "../../tags/helpers"
-import { Controller, type SubmitHandler, useForm } from "react-hook-form"
-import { errorToHelperText } from "../../common/forms/errorToHelperText"
+import { openAddTagDialog } from "../../tags/AddTagDialog"
 import { authorizeAction } from "../../auth/AuthorizeActionDialog"
-import { CancelButton } from "../../common/forms/CancelButton"
 
 export const LibraryTagsScreen = () => {
-  const [isAddTagDialogOpened, setIsAddTagDialogOpened] = useState(false)
   const [isTagActionsDrawerOpenedWith, setIsTagActionsDrawerOpenedWith] =
     useState<string | undefined>(undefined)
   const { data: tags = [] } = useTagIds()
-  const { mutate: addTag } = useCreateTag()
 
   const listHeader = useMemo(
     () => (
@@ -32,11 +19,7 @@ export const LibraryTagsScreen = () => {
           pt: 2,
         }}
       >
-        <Button
-          fullWidth
-          variant="outlined"
-          onClick={() => setIsAddTagDialogOpened(true)}
-        >
+        <Button fullWidth variant="outlined" onClick={openAddTagDialog}>
           Create a new tag
         </Button>
       </Box>
@@ -70,95 +53,10 @@ export const LibraryTagsScreen = () => {
           }
         }}
       />
-      <AddTagDialog
-        onConfirm={(name) => {
-          if (name) {
-            addTag({ name })
-          }
-        }}
-        onClose={() => setIsAddTagDialogOpened(false)}
-        open={isAddTagDialogOpened}
-      />
       <TagActionsDrawer
         openWith={isTagActionsDrawerOpenedWith}
         onClose={() => setIsTagActionsDrawerOpenedWith(undefined)}
       />
     </div>
-  )
-}
-
-type Inputs = {
-  name: string
-}
-
-const FORM_ID = "new-tag-dialog"
-
-const AddTagDialog: FC<{
-  open: boolean
-  onConfirm: (name: string) => void
-  onClose: () => void
-}> = ({ onClose, onConfirm, open }) => {
-  const { control, handleSubmit, setFocus, reset } = useForm<Inputs>({
-    defaultValues: {
-      name: "",
-    },
-  })
-
-  const onInnerClose = () => {
-    onClose()
-  }
-
-  const onSubmit: SubmitHandler<Inputs> = async (data) => {
-    onInnerClose()
-    onConfirm(data.name)
-  }
-
-  useEffect(() => {
-    void open
-
-    reset()
-  }, [open, reset])
-
-  useEffect(() => {
-    if (open) {
-      setTimeout(() => {
-        setFocus("name")
-      })
-    }
-  }, [setFocus, open])
-
-  return (
-    <Dialog onClose={onInnerClose} open={open}>
-      <DialogTitle>Create a new tag</DialogTitle>
-      <DialogContent>
-        <form id={FORM_ID} onSubmit={handleSubmit(onSubmit)}>
-          <Controller
-            name="name"
-            control={control}
-            rules={{ required: true }}
-            render={({ field: { ref, ...rest }, fieldState }) => {
-              return (
-                <TextField
-                  {...rest}
-                  label="Name"
-                  type="text"
-                  fullWidth
-                  margin="normal"
-                  inputRef={ref}
-                  error={fieldState.invalid}
-                  helperText={errorToHelperText(fieldState.error)}
-                />
-              )
-            }}
-          />
-        </form>
-      </DialogContent>
-      <DialogActions>
-        <CancelButton onClick={onInnerClose} />
-        <Button type="submit" form={FORM_ID}>
-          Add
-        </Button>
-      </DialogActions>
-    </Dialog>
   )
 }
