@@ -1,15 +1,13 @@
-import { useState, useMemo, useCallback, memo } from "react"
+import { useMemo, useCallback, memo } from "react"
 import { Box, Button, Stack } from "@mui/material"
 import { CollectionList } from "../collections/lists/CollectionList"
 import { useSignalValue } from "reactjrx"
 import { useLibraryShelves } from "../library/shelves/useLibraryShelves"
 import { Toolbar } from "../library/shelves/Toolbar"
 import { libraryShelvesFiltersSignal } from "../library/shelves/filters/states"
-import { AddCollectionDialog } from "../library/shelves/AddCollectionDialog"
+import { openAddCollectionDialog } from "../library/shelves/AddCollectionDialog"
 
 export const LibraryCollectionScreen = memo(() => {
-  const [isAddCollectionDialogOpened, setIsAddCollectionDialogOpened] =
-    useState(false)
   const { viewMode } = useSignalValue(
     libraryShelvesFiltersSignal,
     ({ viewMode }) => ({ viewMode }),
@@ -24,11 +22,7 @@ export const LibraryCollectionScreen = memo(() => {
           pt: 1,
         }}
       >
-        <Button
-          fullWidth
-          variant="outlined"
-          onClick={() => setIsAddCollectionDialogOpened(true)}
-        >
+        <Button fullWidth variant="outlined" onClick={openAddCollectionDialog}>
           Create a new collection
         </Button>
       </Box>
@@ -65,10 +59,6 @@ export const LibraryCollectionScreen = memo(() => {
           restoreScrollId="LibraryCollectionScreen"
         />
       )}
-      <AddCollectionDialog
-        onClose={() => setIsAddCollectionDialogOpened(false)}
-        open={isAddCollectionDialogOpened}
-      />
     </Stack>
   )
 })

@@ -34,6 +34,8 @@ import { CollectionActionsDrawer } from "./collections/CollectionActionsDrawer/C
 import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
 import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
 import { AuthenticatedOnly } from "./auth/AuthenticatedOnly"
+import { AddTagDialog } from "./tags/AddTagDialog"
+import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
 
 // @todo move to sw
 LibArchive.init({
@@ -78,6 +80,8 @@ const App = memo(() => {
                 <PluginDownloadFlowHost />
                 <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
                 <SetupSecretDialog />
+                <AddTagDialog />
+                <AddCollectionDialog />
               </AuthenticatedOnly>
               <AuthorizeActionDialog />
               <BackgroundReplication />
