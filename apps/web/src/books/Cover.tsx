@@ -6,10 +6,7 @@ import { Box, type BoxProps, styled } from "@mui/material"
 import { useBook } from "./states"
 import { useBlurredTagIds } from "../tags/helpers"
 import { useLocalSettings } from "../settings/useLocalSettings"
-import { useSignalValue } from "reactjrx"
-import { authStateSignal } from "../auth/states.web"
 import { useBookCover } from "./useBookCover"
-import { configuration } from "../config/configuration"
 
 const useBookCoverState = ({ bookId }: { bookId: string }) => {
   const blurredTags = useBlurredTagIds().data ?? []
@@ -72,38 +69,25 @@ export const Cover = memo(
     rounded?: boolean
     blurIfNeeded?: boolean
   } & Pick<BoxProps, "sx">) => {
-    const auth = useSignalValue(authStateSignal)
     const isMounted = useMountedState()
     const book = useBookCoverState({
       bookId,
     })
     const [hasError, setHasError] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
-    const assetHash = book?.lastMetadataUpdatedAt?.toString()
     const localSettings = useLocalSettings()
     const shouldBlurCover =
       book?.isBlurred &&
       blurIfNeeded &&
       !localSettings.unBlurWhenProtectedVisible
 
-    const urlParams = new URLSearchParams({
-      ...(assetHash && {
-        hash: assetHash,
-      }),
-    })
-
-    const originalSrc = book
-      ? `${configuration.API_URL}/covers/cover-${auth?.nameHex}-${book._id}?${urlParams.toString()}`
-      : undefined
-
-    urlParams.append("format", "image/jpeg")
-
     const { coverSrc, coverSrcJpg } = useBookCover({ bookId })
 
     useEffect(() => {
-      void originalSrc
+      void coverSrc
+
       setHasError(false)
-    }, [originalSrc])
+    }, [coverSrc])
 
     return (
       <Box

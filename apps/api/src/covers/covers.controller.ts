@@ -8,9 +8,12 @@ import {
   Query,
   StreamableFile,
 } from "@nestjs/common"
-import { defer, map, mergeMap } from "rxjs"
+import { defer, map, mergeMap, type Observable } from "rxjs"
 import { InMemoryTaskQueueService } from "src/features/queue/InMemoryTaskQueueService"
 import { CoversService } from "./covers.service"
+import { type AuthUser, WithAuthUser } from "src/auth/auth.guard"
+import { emailToNameHex } from "src/couch/couch.service"
+import { getBookCoverKey, getCollectionCoverKey } from "@oboku/shared"
 
 @Controller("covers")
 export class CoversController implements OnModuleInit {
@@ -29,14 +32,44 @@ export class CoversController implements OnModuleInit {
     })
   }
 
-  @Get(":id")
-  @Header("Cache-Control", "public, max-age=31536000, immutable")
-  findOne(
-    @Param() params: { id: string },
+  /**
+   * The `userNameHex` is intentionally derived from the verified JWT and never
+   * accepted as a URL parameter. This makes the lookup ownership-scoped by
+   * construction: the server can only ever resolve the caller's own covers,
+   * and a request for someone else's `:bookId` simply maps to a non-existent
+   * key in storage. The same applies to collection covers.
+   */
+  @Get("books/:bookId")
+  @Header("Cache-Control", "private, max-age=31536000, immutable")
+  findBookCover(
+    @Param("bookId") bookId: string,
     @Query() query: { format?: string },
+    @WithAuthUser() user: AuthUser,
   ) {
-    const objectKey = params.id ?? ``
-    const format = query?.format || "image/webp"
+    const userNameHex = emailToNameHex(user.email)
+    const objectKey = getBookCoverKey(userNameHex, bookId)
+
+    return this.serveCover(objectKey, query.format)
+  }
+
+  @Get("collections/:collectionId")
+  @Header("Cache-Control", "private, max-age=31536000, immutable")
+  findCollectionCover(
+    @Param("collectionId") collectionId: string,
+    @Query() query: { format?: string },
+    @WithAuthUser() user: AuthUser,
+  ) {
+    const userNameHex = emailToNameHex(user.email)
+    const objectKey = getCollectionCoverKey(userNameHex, collectionId)
+
+    return this.serveCover(objectKey, query.format)
+  }
+
+  private serveCover(
+    objectKey: string,
+    format?: string,
+  ): Observable<StreamableFile> {
+    const resolvedFormat = format || "image/webp"
 
     const response$ = defer(() =>
       this.coversService.getCover(objectKey).pipe(
@@ -48,7 +81,7 @@ export class CoversController implements OnModuleInit {
           const resizedCover$ = this.coversService.resizeCover(cover, {
             width: 600,
             height: 600,
-            format,
+            format: resolvedFormat,
           })
 
           return resizedCover$.pipe(
@@ -65,7 +98,7 @@ export class CoversController implements OnModuleInit {
     )
 
     return this.taskQueueService.enqueue(this.QUEUE_NAME, () => response$, {
-      id: params.id,
+      id: objectKey,
     })
   }
 }

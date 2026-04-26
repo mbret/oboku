@@ -68,7 +68,9 @@ export class CoversCleanupService {
           continue
         }
 
-        keepableCoverKeys.add(getCollectionCoverKey(collection._id))
+        keepableCoverKeys.add(
+          getCollectionCoverKey(userDb.userNameHex, collection._id),
+        )
       }
     }
 

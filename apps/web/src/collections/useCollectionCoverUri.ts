@@ -1,4 +1,4 @@
-import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
+import type { CollectionDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { useBookCover } from "../books/useBookCover"
 import { configuration } from "../config/configuration"
@@ -32,7 +32,7 @@ export const useCollectionCoverUri = (
   }
 
   return {
-    uri: `${configuration.API_URL}/covers/${getCollectionCoverKey(collection?._id)}?${urlParams.toString()}`,
+    uri: `${configuration.API_URL}/covers/collections/${collection._id}?${urlParams.toString()}`,
     hasCover: true,
   }
 }

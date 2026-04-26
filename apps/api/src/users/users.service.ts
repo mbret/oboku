@@ -79,7 +79,7 @@ export class UsersService {
 
       coverKeys = [
         ...books.map((d) => getBookCoverKey(userNameHex, d._id)),
-        ...collections.map((d) => getCollectionCoverKey(d._id)),
+        ...collections.map((d) => getCollectionCoverKey(userNameHex, d._id)),
       ]
     } catch (error) {
       this.logger.warn(

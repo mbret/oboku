@@ -7,6 +7,7 @@ export const saveOrUpdateCover = async (
   prevCollection: Pick<CollectionDocType, "_id" | "metadata">,
   currentCollection: Pick<CollectionDocType, "_id" | "metadata">,
   coversService: CoversService,
+  userNameHex: string,
 ) => {
   const existingCover = prevCollection.metadata?.find(
     (metadata) => metadata.cover,
@@ -17,7 +18,7 @@ export const saveOrUpdateCover = async (
 
   if (!cover) return
 
-  const coverKey = getCollectionCoverKey(currentCollection._id)
+  const coverKey = getCollectionCoverKey(userNameHex, currentCollection._id)
 
   if (
     existingCover &&

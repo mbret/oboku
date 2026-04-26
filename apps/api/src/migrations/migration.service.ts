@@ -1,6 +1,10 @@
+import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
-import { CouchService } from "./couch.service"
+import { CouchService } from "src/couch/couch.service"
 import { listUserDatabases } from "src/lib/couch/listUserDatabases"
+import { CoversService } from "src/covers/covers.service"
+import fs from "node:fs"
+import path from "node:path"
 
 const logger = new Logger("MigrationService")
 
@@ -43,6 +47,14 @@ type CollectionDoc = {
   linkData?: Record<string, unknown> | string | null
   modifiedAt?: string | null
   [key: string]: unknown
+}
+
+type LegacyCollectionCoverMigrationResult = {
+  storageStrategy: "fs" | "s3"
+  ranOnUsers: number
+  renamed: number
+  skippedDestinationExists: number
+  skippedSourceMissing: number
 }
 
 /**
@@ -203,9 +215,19 @@ function migrateResourceIdToData(
   }
 }
 
+/**
+ * Single home for all admin-triggered data and storage migrations.
+ *
+ * Each migration is idempotent and can be re-run safely. Migrations are
+ * exposed via admin endpoints and are intended to be run during deployments
+ * when their corresponding runtime change ships.
+ */
 @Injectable()
-export class CouchMigrationService {
-  constructor(private readonly couchService: CouchService) {}
+export class MigrationService {
+  constructor(
+    private readonly couchService: CouchService,
+    private readonly coversService: CoversService,
+  ) {}
 
   async migrateWebdavConnectorsToConnectors(): Promise<{
     usersMigrated: number
@@ -614,5 +636,138 @@ export class CouchMigrationService {
     )
 
     return { usersMigrated, linksUpdated, collectionsUpdated }
+  }
+
+  async migrateLegacyCollectionCoverKeys(): Promise<LegacyCollectionCoverMigrationResult> {
+    /**
+     * Migration: legacy collection cover keys -> per-user-scoped collection
+     * cover keys.
+     *
+     * Why this exists:
+     * - Older versions stored collection covers under `collection-${id}.webp`
+     *   with no per-user scoping.
+     * - The runtime now constructs `collection-${userNameHex}-${id}.webp` so
+     *   that authorization is enforced by storage layout (only the owning
+     *   user's JWT can ever resolve their collection covers).
+     * - Without this migration, every existing collection cover becomes a
+     *   dangling file and users see placeholders until each collection's
+     *   metadata is refreshed.
+     *
+     * Exactly what this migration rewrites:
+     * - For each user database, lists every `obokucollection` document and,
+     *   for each one, attempts to rename
+     *   `collection-${id}.webp` -> `collection-${userNameHex}-${id}.webp`.
+     *
+     * Idempotency:
+     * - Safe to run more than once. The rename is a no-op when the source
+     *   is missing or the destination already exists.
+     *
+     * Scope:
+     * - FS storage only, mirroring `CoversCleanupService.cleanupDanglingCovers`.
+     *   S3 deployments would need a separate migration (copy + delete) and
+     *   are not handled here.
+     */
+    if (this.coversService.appConfig.COVERS_STORAGE_STRATEGY !== "fs") {
+      logger.log(
+        "Skipping legacy collection cover key migration: storage strategy is not fs",
+      )
+      return {
+        storageStrategy: "s3",
+        ranOnUsers: 0,
+        renamed: 0,
+        skippedDestinationExists: 0,
+        skippedSourceMissing: 0,
+      }
+    }
+
+    logger.log("Starting legacy collection cover key migration")
+
+    const db = await this.couchService.createAdminNanoInstance()
+    const userDbs = await listUserDatabases(db)
+
+    let renamed = 0
+    let skippedDestinationExists = 0
+    let skippedSourceMissing = 0
+
+    for (const userDb of userDbs) {
+      const userDbInstance = db.use<Pick<CollectionDocType, "_id">>(
+        userDb.dbName,
+      )
+
+      const collections = await userDbInstance.find({
+        selector: { rx_model: "obokucollection" },
+        fields: ["_id"],
+        limit: 99999,
+      })
+
+      for (const collection of collections.docs) {
+        const oldKey = `collection-${collection._id}`
+        const newKey = getCollectionCoverKey(userDb.userNameHex, collection._id)
+
+        const result = await this.renameLegacyCoverFile(oldKey, newKey)
+
+        if (result === "renamed") {
+          renamed++
+        } else if (result === "destination-exists") {
+          skippedDestinationExists++
+        } else {
+          skippedSourceMissing++
+        }
+      }
+    }
+
+    logger.log(
+      `Legacy collection cover key migration done: users=${userDbs.length}, renamed=${renamed}, destinationExists=${skippedDestinationExists}, sourceMissing=${skippedSourceMissing}`,
+    )
+
+    return {
+      storageStrategy: "fs",
+      ranOnUsers: userDbs.length,
+      renamed,
+      skippedDestinationExists,
+      skippedSourceMissing,
+    }
+  }
+
+  /**
+   * Idempotent rename of a legacy cover file on disk. Used solely by the
+   * legacy collection-cover-key migration; lives here (rather than on
+   * `CoversFsService` / `CoversService`) because no other code path needs
+   * to rename covers in normal operation.
+   *
+   * Couples to the same on-disk layout assumed by `CoversFsService`: each
+   * cover is stored as `${key}.webp` directly under `getStorageLocation()`.
+   *
+   * Returns:
+   *  - "renamed" when the source existed and was moved to the new key
+   *  - "source-missing" when there is nothing to rename
+   *  - "destination-exists" when the new key is already in place; the source
+   *    is left untouched and will be reaped as a dangling cover by cleanup
+   */
+  private async renameLegacyCoverFile(
+    oldKey: string,
+    newKey: string,
+  ): Promise<"renamed" | "source-missing" | "destination-exists"> {
+    if (oldKey === newKey) return "destination-exists"
+
+    const coversDir = this.coversService.getStorageLocation()
+    const oldPath = path.join(coversDir, `${oldKey}.webp`)
+    const newPath = path.join(coversDir, `${newKey}.webp`)
+
+    try {
+      await fs.promises.access(oldPath)
+    } catch {
+      return "source-missing"
+    }
+
+    try {
+      await fs.promises.access(newPath)
+      return "destination-exists"
+    } catch {
+      // destination doesn't exist, proceed with rename
+    }
+
+    await fs.promises.rename(oldPath, newPath)
+    return "renamed"
   }
 }

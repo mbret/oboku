@@ -1,3 +1,6 @@
-export const getCollectionCoverKey = (collectionId: string) => {
-  return `collection-${collectionId}`
+export const getCollectionCoverKey = (
+  userNameHex: string,
+  collectionId: string,
+) => {
+  return `collection-${userNameHex}-${collectionId}`
 }
