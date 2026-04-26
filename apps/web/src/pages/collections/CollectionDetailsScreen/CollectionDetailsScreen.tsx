@@ -127,8 +127,18 @@ export const CollectionDetailsScreen = () => {
   return (
     <>
       {!!staticContainer && createPortal(staticContent, staticContainer)}
-      <Stack flex={1}>
-        <Stack flex={1} height="100%" overflow="hidden">
+      <Stack
+        sx={{
+          flex: 1,
+        }}
+      >
+        <Stack
+          sx={{
+            flex: 1,
+            height: "100%",
+            overflow: "hidden",
+          }}
+        >
           {visibleBookIds.length === 0 && staticContent}
           <BookListWithControls
             data={visibleBookIds}

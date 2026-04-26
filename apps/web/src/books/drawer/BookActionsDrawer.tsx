@@ -20,12 +20,10 @@ import {
   ListItemButton,
   useTheme,
 } from "@mui/material"
-import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
 import { useBook, useIsBookLocal } from "../states"
 import { Cover } from "../Cover"
 import { ReadingStateState } from "@oboku/shared"
 import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
-import { useManageBookTagsDialog } from "../ManageBookTagsDialog"
 import { useBookDownloadState } from "../../download/states"
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "../useRemoveHandler"
@@ -70,8 +68,6 @@ export const useBookActionDrawer = ({
 }
 
 export const BookActionsDrawer = memo(() => {
-  const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
-  const { openManageBookTagsDialog } = useManageBookTagsDialog()
   const {
     openedWith: bookId,
     actions,
@@ -236,7 +232,9 @@ export const BookActionsDrawer = memo(() => {
               <ListItemButton
                 onClick={() => {
                   handleClose(() => {
-                    bookId && openManageBookCollectionsDialog(bookId)
+                    if (bookId) {
+                      navigate(ROUTES.BOOK_COLLECTIONS.replace(":id", bookId))
+                    }
                   })
                 }}
               >
@@ -250,7 +248,9 @@ export const BookActionsDrawer = memo(() => {
               <ListItemButton
                 onClick={() => {
                   handleClose(() => {
-                    bookId && openManageBookTagsDialog(bookId)
+                    if (bookId) {
+                      navigate(ROUTES.BOOK_TAGS.replace(":id", bookId))
+                    }
                   })
                 }}
               >

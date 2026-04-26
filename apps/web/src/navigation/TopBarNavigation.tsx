@@ -25,6 +25,12 @@ const SearchInput = styled(InputBase)(({ theme }) => ({
   },
 }))
 
+const TitleTypography = styled(Typography)({
+  whiteSpace: "nowrap",
+  textOverflow: "ellipsis",
+  overflow: "hidden",
+})
+
 export const TopBarNavigation: FC<
   {
     title?: string
@@ -80,18 +86,20 @@ export const TopBarNavigation: FC<
               <ArrowBackIosRounded />
             </IconButton>
           )}
-          <Box flexGrow={1} overflow="hidden">
+          <Box
+            sx={{
+              flexGrow: 1,
+              overflow: "hidden",
+            }}
+          >
             {!hasSearch && !!title && (
-              <Typography
+              <TitleTypography
                 variant="h6"
                 style={{ flexGrow: 1 }}
-                whiteSpace="nowrap"
-                textOverflow="ellipsis"
-                overflow="hidden"
                 {...TitleProps}
               >
                 {title}
-              </Typography>
+              </TitleTypography>
             )}
             {hasSearch && (
               <Box
@@ -134,7 +142,13 @@ export const TopBarNavigation: FC<
             )}
             {middleComponent}
           </Box>
-          <Box display="flex" alignItems="center" ml={2}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              ml: 2,
+            }}
+          >
             {hasLockLibrary && isLibraryUnlocked && (
               <IconButton
                 onClick={() => {

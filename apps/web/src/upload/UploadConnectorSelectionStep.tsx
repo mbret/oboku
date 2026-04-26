@@ -59,7 +59,12 @@ export function UploadConnectorSelectionStep<TAuthResult>(
   return (
     <>
       <DialogContent>
-        <Stack gap={2} py={2}>
+        <Stack
+          sx={{
+            gap: 2,
+            py: 2,
+          }}
+        >
           <Alert severity="info">
             Select a connector, then sign in to browse and add files.
           </Alert>

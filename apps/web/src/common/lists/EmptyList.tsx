@@ -1,10 +1,4 @@
-import {
-  Box,
-  Stack,
-  type StackProps,
-  Typography,
-  useTheme,
-} from "@mui/material"
+import { Box, Stack, type StackProps, styled, Typography } from "@mui/material"
 import type { ReactNode } from "react"
 
 type EmptyListProps = StackProps & {
@@ -21,6 +15,22 @@ type EmptyListProps = StackProps & {
   description?: ReactNode
 }
 
+const StyledRoot = styled(Stack, {
+  shouldForwardProp: (prop) => prop !== "hasImage",
+})<{ hasImage: boolean }>(({ theme, hasImage }) => ({
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  alignSelf: "center",
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  textAlign: "center",
+  ...(hasImage && {
+    width: "80%",
+    maxWidth: theme.custom.maxWidthCenteredContent,
+  }),
+}))
+
 /**
  * Centered empty-state placeholder for lists. Fills the available space and
  * optionally shows an illustrative image above a short description.
@@ -31,22 +41,11 @@ export function EmptyList({
   children,
   ...props
 }: EmptyListProps) {
-  const theme = useTheme()
   const hasCustomContent = description !== undefined || children !== undefined
   const message = hasCustomContent ? description : "No items to display"
 
   return (
-    <Stack
-      flex={1}
-      alignItems="center"
-      justifyContent="center"
-      alignSelf="center"
-      px={2}
-      textAlign="center"
-      width={image ? "80%" : undefined}
-      maxWidth={image ? theme.custom.maxWidthCenteredContent : undefined}
-      {...props}
-    >
+    <StyledRoot hasImage={!!image} {...props}>
       {image && (
         <Box
           component="img"
@@ -56,11 +55,17 @@ export function EmptyList({
         />
       )}
       {message !== undefined && message !== null && (
-        <Typography color="text.secondary" maxWidth={300} pt={image ? 1 : 0}>
+        <Typography
+          sx={{
+            color: "text.secondary",
+            maxWidth: 300,
+            pt: image ? 1 : 0,
+          }}
+        >
           {message}
         </Typography>
       )}
       {children}
-    </Stack>
+    </StyledRoot>
   )
 }

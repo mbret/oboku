@@ -31,7 +31,12 @@ const KeyCardPoint = ({
         <Typography gutterBottom variant="h5" component="div">
           {title}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography
+          variant="body2"
+          sx={{
+            color: "text.secondary",
+          }}
+        >
           {description}
         </Typography>
       </CardContent>
@@ -47,7 +52,11 @@ const KeyCardPoint = ({
 export const AppHighlightSection = () => {
   return (
     <Container>
-      <Stack gap={2}>
+      <Stack
+        sx={{
+          gap: 2,
+        }}
+      >
         <Typography variant="h4" component="h2">
           Key features
         </Typography>
@@ -55,10 +64,12 @@ export const AppHighlightSection = () => {
           Everything you need to manage and read your personal ebook library.
         </Typography>
         <Box
-          mt={4}
-          display="grid"
-          gridTemplateColumns={["1fr", "1fr 1fr"]}
-          gap={5}
+          sx={{
+            mt: 4,
+            display: "grid",
+            gridTemplateColumns: ["1fr", "1fr 1fr"],
+            gap: 5,
+          }}
         >
           <KeyCardPoint
             title="Anything"

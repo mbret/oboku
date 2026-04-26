@@ -64,7 +64,12 @@ export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
     <Page>
       <TopBarNavigation title={`${label}`} />
       <Container maxWidth="md">
-        <Stack py={2} gap={2}>
+        <Stack
+          sx={{
+            py: 2,
+            gap: 2,
+          }}
+        >
           <Alert severity={dataSource?.lastSyncErrorCode ? "error" : "info"}>
             {dataSource?.syncStatus === "fetching"
               ? "Synchronizing"
@@ -77,7 +82,11 @@ export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
               dataSource,
               onSubmit: handleSubmit,
             })}
-          <Stack gap={1}>
+          <Stack
+            sx={{
+              gap: 1,
+            }}
+          >
             <Button variant="outlined" onClick={() => id && syncDataSource(id)}>
               Synchronize
             </Button>

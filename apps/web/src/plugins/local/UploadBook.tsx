@@ -49,7 +49,7 @@ export const UploadBook: ObokuPlugin<"file">["UploadBookComponent"] & {
   return (
     <Dialog
       onClose={() => onClose()}
-      componentsProps={{
+      slotProps={{
         root: {
           ref: dialogRef,
           onDragLeave: _onDragLeave,

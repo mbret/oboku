@@ -23,7 +23,14 @@ export const SecurityScreen = memo(() => {
 
   return (
     <>
-      <Box display="flex" flex={1} overflow="auto" flexDirection="column">
+      <Box
+        sx={{
+          display: "flex",
+          flex: 1,
+          overflow: "auto",
+          flexDirection: "column",
+        }}
+      >
         <TopBarNavigation title={"Security"} />
         <List>
           <ListItemButton

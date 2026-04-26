@@ -65,16 +65,24 @@ export function SelectionToolbar({
         </IconButton>
       )}
       <Stack
-        flexGrow={1}
-        flexDirection="row"
-        alignItems="center"
-        overflow="hidden"
+        sx={{
+          flexGrow: 1,
+          flexDirection: "row",
+          alignItems: "center",
+          overflow: "hidden",
+        }}
       >
         <Typography color="primary" noWrap>
           {selectionCount} selected
         </Typography>
       </Stack>
-      <Stack flexDirection="row" alignItems="center" gap={1}>
+      <Stack
+        sx={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
         {onSelectAll && (
           <IconButton
             onClick={onSelectAll}

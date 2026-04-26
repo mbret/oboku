@@ -53,7 +53,15 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
     selectedItems: selectedBooks,
     startSelection,
     toggleSelection,
-  } = useSelectionState(books)
+  } = useSelectionState(books, {
+    /**
+     * Ephemeral selection for the bulk-actions toolbar: when the
+     * user filters or a book leaves the visible list, dropping it
+     * from the selection is the right UX (the action would no
+     * longer apply to it).
+     */
+    pruneInvisibleItems: true,
+  })
   const {
     mutate: markBooksAsFinished,
     isPending: isMarkBooksAsFinishedPending,
@@ -93,7 +101,12 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
 
   const listHeader = useMemo(
     () => (
-      <Box p={2} pt={1}>
+      <Box
+        sx={{
+          p: 2,
+          pt: 1,
+        }}
+      >
         {addBookButton}
       </Box>
     ),
@@ -171,9 +184,17 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
           numberOfFiltersApplied={numberOfFiltersApplied}
         />
       )}
-      <Stack flex={1}>
+      <Stack
+        sx={{
+          flex: 1,
+        }}
+      >
         {books.length === 0 && (
-          <Stack flex={1}>
+          <Stack
+            sx={{
+              flex: 1,
+            }}
+          >
             {listHeader}
             <EmptyList
               image={{ src: EmptyLibraryAsset, alt: "Empty library" }}

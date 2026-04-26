@@ -44,7 +44,7 @@ export const useCreateDriveFileQuery = () => {
       },
       retry: (_, response) => {
         if (
-          !!response &&
+          response &&
           typeof response === "object" &&
           "status" in response &&
           response.status === 404

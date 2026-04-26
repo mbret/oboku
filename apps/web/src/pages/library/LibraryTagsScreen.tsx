@@ -26,7 +26,12 @@ export const LibraryTagsScreen = () => {
 
   const listHeader = useMemo(
     () => (
-      <Box p={2} pt={2}>
+      <Box
+        sx={{
+          p: 2,
+          pt: 2,
+        }}
+      >
         <Button
           fullWidth
           variant="outlined"

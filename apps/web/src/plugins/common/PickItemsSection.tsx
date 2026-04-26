@@ -24,7 +24,11 @@ export const PickItemsSection = memo(function PickItemsSection({
   variant?: "contained" | "outlined" | "text"
 }) {
   return (
-    <Stack gap={1}>
+    <Stack
+      sx={{
+        gap: 1,
+      }}
+    >
       <Button loading={isLoading} onClick={onAction} variant={variant}>
         {actionLabel}
       </Button>

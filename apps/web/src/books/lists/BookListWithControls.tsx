@@ -61,7 +61,11 @@ export const BookListWithControls = memo(function BookListWithControls({
   ])
 
   return (
-    <Stack flex={1}>
+    <Stack
+      sx={{
+        flex: 1,
+      }}
+    >
       {sortedData.length === 0 && !!renderEmptyList && (
         <>
           {_renderHeader()}

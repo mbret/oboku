@@ -31,7 +31,11 @@ function RemoveBooksDialogContent({
   const countLabel = bookCount === 1 ? "this book" : `${bookCount} books`
 
   return (
-    <Stack gap={2}>
+    <Stack
+      sx={{
+        gap: 2,
+      }}
+    >
       <DialogContentText>
         {`You are about to remove ${countLabel} from your library, are you sure ?`}
       </DialogContentText>
@@ -42,15 +46,17 @@ function RemoveBooksDialogContent({
           <MuiCheckbox
             checked={removeFromSource}
             color="error"
-            inputProps={{
-              "aria-label":
-                bookCount === 1
-                  ? "Also delete the original file from its source"
-                  : "Also delete the original files from their sources",
-            }}
             onChange={(_, checked) => {
               setRemoveFromSource(checked)
               onRemoveFromSourceChange(checked)
+            }}
+            slotProps={{
+              input: {
+                "aria-label":
+                  bookCount === 1
+                    ? "Also delete the original file from its source"
+                    : "Also delete the original files from their sources",
+              },
             }}
           />
         }

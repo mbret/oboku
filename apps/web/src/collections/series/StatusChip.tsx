@@ -20,18 +20,37 @@ export const StatusChip = memo(
         variant="filled"
         color="primary"
         label={
-          <Stack direction="row" alignItems="center" gap={1}>
-            <Typography variant="caption" lineHeight="inherit" color="inherit">
+          <Stack
+            direction="row"
+            sx={{
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                lineHeight: "inherit",
+                color: "inherit",
+              }}
+            >
               {capitalize(status ?? "unknown")}
             </Typography>
             {typeof rating === "number" && (
-              <Stack direction="row" alignItems="center">
+              <Stack
+                direction="row"
+                sx={{
+                  alignItems: "center",
+                }}
+              >
                 <StarRounded fontSize="small" color="warning" />
                 <Typography
                   color="warning"
                   variant="caption"
-                  lineHeight="inherit"
-                  fontWeight="bold"
+                  sx={{
+                    lineHeight: "inherit",
+                    fontWeight: "bold",
+                  }}
                 >
                   {rating.toFixed(1)}
                 </Typography>

@@ -106,7 +106,17 @@ export const Cover = memo(
     }, [originalSrc])
 
     return (
-      <Box width="100%" height="100%" overflow="hidden" style={style} sx={sx}>
+      <Box
+        style={style}
+        sx={[
+          {
+            width: "100%",
+            height: "100%",
+            overflow: "hidden",
+          },
+          ...(Array.isArray(sx) ? sx : [sx]),
+        ]}
+      >
         {isLoading && (
           <CoverImg
             alt="img"

@@ -7,7 +7,11 @@ import { Link } from "react-router"
 export const SignOutBeforeContinuePage = () => {
   return (
     <AuthPage>
-      <Stack gap={2}>
+      <Stack
+        sx={{
+          gap: 2,
+        }}
+      >
         <Alert severity="warning">
           You are already signed in. Sign out first if you want to continue.
         </Alert>

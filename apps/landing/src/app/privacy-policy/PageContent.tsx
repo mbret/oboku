@@ -6,7 +6,11 @@ import { Markdown } from "../../features/common/Markdown"
 export function PageContent({ content }: { content: string }) {
   return (
     <Container maxWidth="md">
-      <Stack pt={12}>
+      <Stack
+        sx={{
+          pt: 12,
+        }}
+      >
         <Markdown>{content}</Markdown>
       </Stack>
     </Container>

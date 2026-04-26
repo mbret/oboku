@@ -1,13 +1,13 @@
+import { useNavigate } from "react-router"
 import { getCollectionComputedMetadata } from "../../collections/getCollectionComputedMetadata"
 import { useCollections } from "../../collections/useCollections"
-import { useManageBookCollectionsDialog } from "../ManageBookCollectionsDialog"
 import { useBook } from "../states"
 import { MetadataItemList } from "./MetadataItemList"
 import { ROUTES } from "../../navigation/routes"
 
 export const CollectionsPane = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })
-  const { openManageBookCollectionsDialog } = useManageBookCollectionsDialog()
+  const navigate = useNavigate()
   const { data: collections } = useCollections({
     ids: book?.collections ?? [],
   })
@@ -21,7 +21,9 @@ export const CollectionsPane = ({ bookId }: { bookId?: string }) => {
       }))}
       emptyLabel="None yet"
       onEditClick={() => {
-        book?._id && openManageBookCollectionsDialog(book?._id)
+        if (book?._id) {
+          navigate(ROUTES.BOOK_COLLECTIONS.replace(":id", book._id))
+        }
       }}
     />
   )

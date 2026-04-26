@@ -40,11 +40,13 @@ export const Toolbar = ({
         )}
       </IconButton>
       <Stack
-        flexGrow={1}
-        justifyContent="flex-start"
-        flexDirection="row"
-        display="flex"
-        alignItems="center"
+        sx={{
+          flexGrow: 1,
+          justifyContent: "flex-start",
+          flexDirection: "row",
+          display: "flex",
+          alignItems: "center",
+        }}
       >
         <Button
           variant="text"

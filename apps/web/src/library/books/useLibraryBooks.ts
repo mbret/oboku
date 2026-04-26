@@ -21,14 +21,14 @@ export const useLibraryBooks = () => {
     }
 
     if (
-      !!filteredTags?.length &&
+      filteredTags?.length &&
       !book?.tags?.some((b) => filteredTags.includes(b))
     ) {
       return false
     }
 
     if (
-      !!library.readingStates.length &&
+      library.readingStates.length &&
       !library.readingStates.includes(book.readingStateCurrentState)
     ) {
       return false

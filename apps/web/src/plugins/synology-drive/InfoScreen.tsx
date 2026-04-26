@@ -60,10 +60,22 @@ const CurrentSessionSection = () => {
         primary={primary}
         secondary={
           <Stack component="span" spacing={0.5}>
-            <Typography component="span" variant="body2" display="block">
+            <Typography
+              component="span"
+              variant="body2"
+              sx={{
+                display: "block",
+              }}
+            >
               Created at: {createdAt}
             </Typography>
-            <Typography component="span" variant="body2" display="block">
+            <Typography
+              component="span"
+              variant="body2"
+              sx={{
+                display: "block",
+              }}
+            >
               Expiration: Refreshed after {SESSION_MAX_AGE_MINUTES} minutes or
               sooner if the NAS rejects the session
             </Typography>
@@ -75,9 +87,21 @@ const CurrentSessionSection = () => {
 }
 
 export const InfoScreen = () => (
-  <Box display="flex" flexDirection="column" flex={1}>
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      flex: 1,
+    }}
+  >
     <Stack sx={{ px: 2, pt: 2 }}>
-      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+      <Typography
+        variant="subtitle2"
+        gutterBottom
+        sx={{
+          color: "text.secondary",
+        }}
+      >
         Current session
       </Typography>
       <List disablePadding>

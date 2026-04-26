@@ -65,25 +65,38 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
                         ? "User"
                         : "Link"}
                   {type === "link" && (
-                    <Typography component="span" variant="body2" ml={1}>
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      sx={{
+                        ml: 1,
+                      }}
+                    >
                       ({plugin?.name})
                     </Typography>
                   )}
                 </Typography>
               }
-              secondaryTypographyProps={{
-                component: "div",
-              }}
               secondary={
                 !numberOfProperties ? (
                   <>
                     {type === "user" && (
-                      <Typography variant="body2" color="warning.main">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "warning.main",
+                        }}
+                      >
                         No information entered yet
                       </Typography>
                     )}
                     {type !== "user" && (
-                      <Typography variant="body2" color="warning.main">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "warning.main",
+                        }}
+                      >
                         No data yet
                       </Typography>
                     )}
@@ -103,8 +116,19 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
                   </Stack>
                 )
               }
+              slotProps={{
+                secondary: {
+                  component: "div",
+                },
+              }}
             />
-            <Stack width={50} alignItems="center" flexShrink={0}>
+            <Stack
+              sx={{
+                width: 50,
+                alignItems: "center",
+                flexShrink: 0,
+              }}
+            >
               <MoreVertRounded />
             </Stack>
           </ListItemButton>

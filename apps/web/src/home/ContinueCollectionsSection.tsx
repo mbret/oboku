@@ -14,7 +14,14 @@ export const ContinueCollectionsSection = memo(() => {
 
   return (
     <Box>
-      <Typography variant="h6" component="h1" padding={1} paddingTop={2}>
+      <Typography
+        variant="h6"
+        component="h1"
+        sx={{
+          padding: 1,
+          paddingTop: 2,
+        }}
+      >
         Continue your collections
       </Typography>
       <CollectionList data={collectionIds} />

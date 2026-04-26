@@ -34,7 +34,13 @@ export function DataSourceFormLayout<
   const { data: tags } = useTags()
 
   return (
-    <Stack component="form" onSubmit={onSubmit} gap={2}>
+    <Stack
+      component="form"
+      onSubmit={onSubmit}
+      sx={{
+        gap: 2,
+      }}
+    >
       <ControlledTextField
         name={"name" as FieldPath<T>}
         label="Name"

@@ -25,8 +25,10 @@ export const ListItemSwitch = memo(
             edge="end"
             onChange={onClick}
             checked={checked}
-            inputProps={{
-              "aria-labelledby": id,
+            slotProps={{
+              input: {
+                "aria-labelledby": id,
+              },
             }}
           />
         }

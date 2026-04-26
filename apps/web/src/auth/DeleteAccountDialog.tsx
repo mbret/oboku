@@ -41,15 +41,26 @@ export const DeleteAccountDialog = memo(function DeleteAccountDialog({
 
   return (
     <Dialog onClose={onClose} open={open}>
-      <DialogTitle color="error" gap={1} display="flex" alignItems="center">
+      <DialogTitle
+        sx={{
+          color: "error.main",
+          gap: 1,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <ReportProblemOutlined color="error" fontSize="large" />
         Delete my account
       </DialogTitle>
       <DialogContent>
-        <DialogContentText color="error">
+        <DialogContentText sx={{ color: "error.main" }}>
           {`This will permanently delete your account (${email}) and all associated data including books, collections, tags, reading progress, and data source configurations. This action cannot be undone.`}
         </DialogContentText>
-        <DialogContentText mt={2}>
+        <DialogContentText
+          sx={{
+            mt: 2,
+          }}
+        >
           {`Type "${CONFIRMATION_PHRASE}" to confirm.`}
         </DialogContentText>
         <TextField
@@ -62,7 +73,12 @@ export const DeleteAccountDialog = memo(function DeleteAccountDialog({
           placeholder={CONFIRMATION_PHRASE}
         />
         {isError && (
-          <DialogContentText color="error" mt={1}>
+          <DialogContentText
+            color="error"
+            sx={{
+              mt: 1,
+            }}
+          >
             <ErrorAlert error={error} />
           </DialogContentText>
         )}

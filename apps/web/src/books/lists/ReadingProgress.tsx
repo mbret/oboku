@@ -21,11 +21,13 @@ export const ReadingProgress: FC<{
     <Box
       ref={ref as any}
       className={className}
-      position="relative"
       style={{
         width: "100%",
         textAlign: "center",
         ...style,
+      }}
+      sx={{
+        position: "relative",
       }}
     >
       <MenuBookRounded style={{ opacity: "50%", fontSize: width * 0.4 }} />

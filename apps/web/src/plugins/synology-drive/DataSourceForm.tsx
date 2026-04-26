@@ -182,7 +182,12 @@ export const DataSourceForm = memo(
         >
           {session ? "Reconnect" : "Connect"}
         </Button>
-        <Typography color="text.secondary" variant="body2">
+        <Typography
+          variant="body2"
+          sx={{
+            color: "text.secondary",
+          }}
+        >
           {selectedNodes.length > 0
             ? `${selectedCounts.folders} folders, ${selectedCounts.files} files selected`
             : `${selectedItemIds.length} selected`}
@@ -190,7 +195,13 @@ export const DataSourceForm = memo(
         {browserError ? (
           <Alert severity="error">{String(browserError)}</Alert>
         ) : session && (isTreeLoading || isSelectedItemsPrefetchLoading) ? (
-          <Stack alignItems="center" justifyContent="center" py={6}>
+          <Stack
+            sx={{
+              alignItems: "center",
+              justifyContent: "center",
+              py: 6,
+            }}
+          >
             <CircularProgress />
           </Stack>
         ) : session ? (

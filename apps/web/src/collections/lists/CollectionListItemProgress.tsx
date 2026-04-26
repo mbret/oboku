@@ -12,18 +12,18 @@ export const CollectionListItemProgress = ({
   return (
     <>
       <Box
-        position="absolute"
-        left={0}
-        top={0}
-        height="100%"
-        width={`${progress.toFixed(0)}%`}
-        bgcolor="white"
         sx={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          height: "100%",
+          width: `${progress.toFixed(0)}%`,
+          bgcolor: "white",
           opacity: 0.5,
         }}
       />
       {isFinished && (
-        <CoverIconBadge position="absolute" top={0} right={0} m={1}>
+        <CoverIconBadge sx={{ position: "absolute", top: 0, right: 0, m: 1 }}>
           <CheckOutlined color="primary" />
         </CoverIconBadge>
       )}

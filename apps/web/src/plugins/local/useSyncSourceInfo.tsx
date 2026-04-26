@@ -5,6 +5,6 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"file"> = ({
   dataSource,
 }) => {
   return {
-    name: enabled && !!dataSource ? "On device" : undefined,
+    name: enabled && dataSource ? "On device" : undefined,
   }
 }
