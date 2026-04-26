@@ -33,6 +33,14 @@ export type BookSelectionPageProps = {
    * yet and the add/remove diff stays empty.
    */
   persistedBookIds: readonly string[] | undefined
+  /**
+   * Stable id of the parent entity owning the books (e.g. `tagId`,
+   * `collectionId`). Required so navigating between same-route ids
+   * (`/tag/A/books` → `/tag/B/books`) reseeds from the new entity's
+   * `persistedBookIds` instead of carrying the previous entity's
+   * pending edits over.
+   */
+  entityKey: string
   isSaving: boolean
   onSave: (changes: BookSelectionSaveChanges) => void
 }
@@ -59,6 +67,7 @@ export type BookSelectionPageProps = {
 export const BookSelectionPage = memo(function BookSelectionPage({
   title,
   persistedBookIds,
+  entityKey,
   isSaving,
   onSave,
 }: BookSelectionPageProps) {
@@ -71,6 +80,7 @@ export const BookSelectionPage = memo(function BookSelectionPage({
       searchAriaLabel="Search books"
       items={books}
       persistedIds={persistedBookIds}
+      entityKey={entityKey}
       getSearchableText={getBookSearchableText}
       isSaving={isSaving}
       onSave={onSave}

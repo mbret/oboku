@@ -40,12 +40,13 @@ export const TagBooksScreen = memo(function TagBooksScreen() {
     onError: notifyError,
   })
 
-  if (tag === null) return <NotFoundPage />
+  if (!tagId || tag === null) return <NotFoundPage />
 
   return (
     <BookSelectionPage
       title={`Manage ${tag?.name ?? ""} books`}
       persistedBookIds={tag?.books}
+      entityKey={tagId}
       isSaving={isSaving}
       onSave={save}
     />

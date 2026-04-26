@@ -51,7 +51,7 @@ export const BookTagsScreen = memo(function BookTagsScreen() {
     onError: notifyError,
   })
 
-  if (book === null) return <NotFoundPage />
+  if (!bookId || book === null) return <NotFoundPage />
 
   return (
     <EntitySelectionPage
@@ -60,6 +60,7 @@ export const BookTagsScreen = memo(function BookTagsScreen() {
       searchAriaLabel="Search tags"
       items={tags}
       persistedIds={book?.tags}
+      entityKey={bookId}
       getSearchableText={getTagSearchableText}
       isSaving={isSaving}
       onSave={save}

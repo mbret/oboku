@@ -47,12 +47,13 @@ export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
     onError: notifyError,
   })
 
-  if (collection === null) return <NotFoundPage />
+  if (!collectionId || collection === null) return <NotFoundPage />
 
   return (
     <BookSelectionPage
       title={`Manage ${metadata.title} books`}
       persistedBookIds={collection?.books}
+      entityKey={collectionId}
       isSaving={isSaving}
       onSave={save}
     />

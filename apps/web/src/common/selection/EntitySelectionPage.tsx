@@ -79,6 +79,7 @@ export const EntitySelectionPage = memo(function EntitySelectionPage<
   onSave,
   items,
   persistedIds,
+  entityKey,
   getSearchableText,
   debounceMs,
   fuseOptions,
@@ -99,6 +100,7 @@ export const EntitySelectionPage = memo(function EntitySelectionPage<
   } = useFilteredSelection({
     items,
     persistedIds,
+    entityKey,
     getSearchableText,
     debounceMs,
     fuseOptions,

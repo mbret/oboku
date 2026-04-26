@@ -58,7 +58,7 @@ export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
     onError: notifyError,
   })
 
-  if (book === null) return <NotFoundPage />
+  if (!bookId || book === null) return <NotFoundPage />
 
   return (
     <EntitySelectionPage
@@ -67,6 +67,7 @@ export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
       searchAriaLabel="Search collections"
       items={collections}
       persistedIds={book?.collections}
+      entityKey={bookId}
       getSearchableText={getCollectionSearchableText}
       isSaving={isSaving}
       onSave={save}
