@@ -40,14 +40,35 @@ function pruneSelectionToVisibleItems(
 
 export type UseSelectionStateOptions<ItemId extends string> = {
   /**
-   * acts as the live baseline; change its identity and the diff recomputes against the new baseline
+   * Persisted baseline: change its identity and the `toAdd` /
+   * `toRemove` diff recomputes against the new baseline.
    */
   initialSelectedIds?: readonly ItemId[]
+  /**
+   * When `true`, items that leave `visibleItemIds` are dropped from
+   * the selection. Use this for **ephemeral** selection (e.g. a bulk
+   * actions toolbar over a filterable list, where a book disappearing
+   * from the visible set should also disappear from the selection).
+   *
+   * Set to `false` for **persisted-baseline** Save-button screens
+   * (e.g. `BookSelectionPage`, `BookTagsScreen`,
+   * `BookCollectionsScreen`). In that mode the user's in-progress
+   * selection is the live diff against `initialSelectedIds` and must
+   * survive visible-items churn — e.g. items briefly returning `[]`
+   * from the cache on remount must not wipe a just-seeded selection.
+   * Under React StrictMode this is also the only way to avoid the
+   * mount-effect double-fire wiping a seeded selection (the seed's
+   * once-guard prevents the second iteration from restoring it).
+   *
+   * Required (no default) so every call site picks the right mode
+   * deliberately.
+   */
+  pruneInvisibleItems: boolean
 }
 
 export function useSelectionState<ItemId extends string>(
   visibleItemIds: readonly ItemId[],
-  { initialSelectedIds }: UseSelectionStateOptions<ItemId> = {},
+  { initialSelectedIds, pruneInvisibleItems }: UseSelectionStateOptions<ItemId>,
 ) {
   const [selectedItems, setSelectedItems] = useState<SelectedItemsState>(() =>
     toSelectionState(initialSelectedIds),
@@ -55,11 +76,12 @@ export function useSelectionState<ItemId extends string>(
 
   useEffect(
     function syncSelectionWithVisibleItems() {
+      if (!pruneInvisibleItems) return
       setSelectedItems((current) =>
         pruneSelectionToVisibleItems(current, visibleItemIds),
       )
     },
-    [visibleItemIds],
+    [visibleItemIds, pruneInvisibleItems],
   )
 
   const selectedIds = useMemo(

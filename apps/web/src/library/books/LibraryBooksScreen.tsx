@@ -53,7 +53,15 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
     selectedItems: selectedBooks,
     startSelection,
     toggleSelection,
-  } = useSelectionState(books)
+  } = useSelectionState(books, {
+    /**
+     * Ephemeral selection for the bulk-actions toolbar: when the
+     * user filters or a book leaves the visible list, dropping it
+     * from the selection is the right UX (the action would no
+     * longer apply to it).
+     */
+    pruneInvisibleItems: true,
+  })
   const {
     mutate: markBooksAsFinished,
     isPending: isMarkBooksAsFinishedPending,

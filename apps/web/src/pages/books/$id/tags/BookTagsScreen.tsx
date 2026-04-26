@@ -1,63 +1,78 @@
-import { memo, useCallback } from "react"
+import { memo } from "react"
 import { useParams } from "react-router"
-import { Stack } from "@mui/material"
-import { Page } from "../../../../common/Page"
-import { TopBarNavigation } from "../../../../navigation/TopBarNavigation"
+import { useMutation } from "@tanstack/react-query"
+import type { TagsDocType } from "@oboku/shared"
+import type { DeepReadonlyObject } from "rxdb"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
 import {
   useAddTagToBook,
   useRemoveTagFromBook,
 } from "../../../../books/helpers"
 import { useBook } from "../../../../books/states"
-import { useTagIds } from "../../../../tags/helpers"
+import { useTags } from "../../../../tags/helpers"
 import { SelectableTagList } from "../../../../tags/tagList/SelectableTagList"
+import { EntitySelectionPage } from "../../../../common/selection"
+import { notify, notifyError } from "../../../../notifications/toasts"
+
+const getTagSearchableText = (tag: DeepReadonlyObject<TagsDocType>) =>
+  tag.name ?? ""
+
+const EMPTY_TAGS: DeepReadonlyObject<TagsDocType>[] = []
+const listStyle = { flex: 1 }
 
 type ScreenParams = {
   id: string
 }
 
-const listStyle = { flex: 1 }
-
 export const BookTagsScreen = memo(function BookTagsScreen() {
   const { id: bookId } = useParams<ScreenParams>()
-  const { data: tagIds = [] } = useTagIds()
+  const { data: tags = EMPTY_TAGS } = useTags()
   const { data: book } = useBook({ id: bookId })
-  const { mutate: addTagToBook } = useAddTagToBook()
-  const { mutate: removeTagFromBook } = useRemoveTagFromBook()
+  const { mutateAsync: addTagToBook } = useAddTagToBook()
+  const { mutateAsync: removeTagFromBook } = useRemoveTagFromBook()
 
-  const onItemClick = useCallback(
-    ({ id: tagId, selected }: { id: string; selected: boolean }) => {
+  const { mutate: save, isPending: isSaving } = useMutation({
+    mutationFn: async ({
+      toAdd,
+      toRemove,
+    }: {
+      toAdd: string[]
+      toRemove: string[]
+    }) => {
       if (!bookId) return
-      if (selected) {
-        removeTagFromBook({ _id: bookId, tagId })
-      } else {
-        addTagToBook({ _id: bookId, tagId })
-      }
+      await Promise.all([
+        ...toAdd.map((tagId) => addTagToBook({ _id: bookId, tagId })),
+        ...toRemove.map((tagId) => removeTagFromBook({ _id: bookId, tagId })),
+      ])
     },
-    [addTagToBook, removeTagFromBook, bookId],
-  )
+    onSuccess: () => {
+      notify("actionSuccess")
+    },
+    onError: notifyError,
+  })
 
   if (book === null) return <NotFoundPage />
 
-  const selectedMap = (book?.tags ?? []).reduce<Record<string, boolean>>(
-    (acc, id) => {
-      acc[id] = true
-      return acc
-    },
-    {},
-  )
-
   return (
-    <Page sx={{ overflow: "hidden" }} bottomGutter={false}>
-      <TopBarNavigation title="Manage tags" showBack />
-      <Stack sx={{ flex: 1, minHeight: 0 }}>
+    <EntitySelectionPage
+      title="Manage tags"
+      searchPlaceholder="Search tags…"
+      searchAriaLabel="Search tags"
+      items={tags}
+      persistedIds={book?.tags}
+      getSearchableText={getTagSearchableText}
+      isSaving={isSaving}
+      onSave={save}
+      renderList={({ filteredIds, selectedItems, toggleSelection }) => (
         <SelectableTagList
           style={listStyle}
-          data={tagIds}
-          selected={selectedMap}
-          onItemClick={onItemClick}
+          data={filteredIds}
+          selected={selectedItems}
+          onItemClick={({ id: tagId }: { id: string; selected: boolean }) => {
+            toggleSelection(tagId)
+          }}
         />
-      </Stack>
-    </Page>
+      )}
+    />
   )
 })

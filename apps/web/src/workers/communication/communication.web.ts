@@ -93,7 +93,6 @@ export class WebCommunication {
                   ),
                 )
               } catch (error) {
-                console.log("Unable to refresh token")
                 console.error(error)
                 reply(new NotifyAuthMessage(null))
               }

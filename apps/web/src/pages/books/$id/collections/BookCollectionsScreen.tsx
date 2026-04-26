@@ -1,8 +1,8 @@
-import { memo, useCallback, useMemo } from "react"
+import { memo } from "react"
 import { useParams } from "react-router"
-import { Stack } from "@mui/material"
-import { Page } from "../../../../common/Page"
-import { TopBarNavigation } from "../../../../navigation/TopBarNavigation"
+import { useMutation } from "@tanstack/react-query"
+import type { CollectionDocType } from "@oboku/shared"
+import type { DeepReadonlyObject } from "rxdb"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
 import {
   useAddCollectionToBook,
@@ -11,58 +11,80 @@ import {
 import { useBook } from "../../../../books/states"
 import { useCollections } from "../../../../collections/useCollections"
 import { SelectableCollectionList } from "../../../../collections/lists/SelectableCollectionList"
+import { getCollectionComputedMetadata } from "../../../../collections/getCollectionComputedMetadata"
+import { EntitySelectionPage } from "../../../../common/selection"
+import { notify, notifyError } from "../../../../notifications/toasts"
+
+const getCollectionSearchableText = (
+  collection: DeepReadonlyObject<CollectionDocType>,
+) => getCollectionComputedMetadata(collection).title ?? ""
+
+const EMPTY_COLLECTIONS: DeepReadonlyObject<CollectionDocType>[] = []
+const listStyle = { flex: 1 }
 
 type ScreenParams = {
   id: string
 }
 
-const listStyle = { flex: 1 }
-
 export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
   const { id: bookId } = useParams<ScreenParams>()
-  const { data: collections = [] } = useCollections()
+  const { data: collections = EMPTY_COLLECTIONS } = useCollections()
   const { data: book } = useBook({ id: bookId })
-  const { mutate: addCollectionToBook } = useAddCollectionToBook()
-  const { mutate: removeCollectionFromBook } = useRemoveCollectionFromBook()
+  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook()
+  const { mutateAsync: removeCollectionFromBook } =
+    useRemoveCollectionFromBook()
 
-  const collectionIds = useMemo(
-    () => collections.map(({ _id }) => _id),
-    [collections],
-  )
-
-  const onItemClick = useCallback(
-    ({ id: collectionId, selected }: { id: string; selected: boolean }) => {
+  const { mutate: save, isPending: isSaving } = useMutation({
+    mutationFn: async ({
+      toAdd,
+      toRemove,
+    }: {
+      toAdd: string[]
+      toRemove: string[]
+    }) => {
       if (!bookId) return
-      if (selected) {
-        removeCollectionFromBook({ _id: bookId, collectionId })
-      } else {
-        addCollectionToBook({ _id: bookId, collectionId })
-      }
+      await Promise.all([
+        ...toAdd.map((collectionId) =>
+          addCollectionToBook({ _id: bookId, collectionId }),
+        ),
+        ...toRemove.map((collectionId) =>
+          removeCollectionFromBook({ _id: bookId, collectionId }),
+        ),
+      ])
     },
-    [addCollectionToBook, removeCollectionFromBook, bookId],
-  )
+    onSuccess: () => {
+      notify("actionSuccess")
+    },
+    onError: notifyError,
+  })
 
   if (book === null) return <NotFoundPage />
 
-  const selectedMap = (book?.collections ?? []).reduce<Record<string, boolean>>(
-    (acc, id) => {
-      acc[id] = true
-      return acc
-    },
-    {},
-  )
-
   return (
-    <Page sx={{ overflow: "hidden" }} bottomGutter={false}>
-      <TopBarNavigation title="Manage collections" showBack />
-      <Stack sx={{ flex: 1, minHeight: 0 }}>
+    <EntitySelectionPage
+      title="Manage collections"
+      searchPlaceholder="Search collections…"
+      searchAriaLabel="Search collections"
+      items={collections}
+      persistedIds={book?.collections}
+      getSearchableText={getCollectionSearchableText}
+      isSaving={isSaving}
+      onSave={save}
+      renderList={({ filteredIds, selectedItems, toggleSelection }) => (
         <SelectableCollectionList
           style={listStyle}
-          data={collectionIds}
-          selected={selectedMap}
-          onItemClick={onItemClick}
+          data={filteredIds}
+          selected={selectedItems}
+          onItemClick={({
+            id: collectionId,
+          }: {
+            id: string
+            selected: boolean
+          }) => {
+            toggleSelection(collectionId)
+          }}
         />
-      </Stack>
-    </Page>
+      )}
+    />
   )
 })
