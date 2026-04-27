@@ -18,7 +18,7 @@ export const collectionActionDrawerChangesState = signal<
 })
 
 export const useCollectionActionsDrawer = (
-  id: string,
+  id: string | undefined,
   onChanges?: (change: `delete`) => void,
 ) => {
   const collectionActionDrawerChanges = useSignalValue(
