@@ -112,8 +112,10 @@ export const CollectionDetailsScreen = () => {
       color="transparent"
       elevation={0}
       sx={{
-        bgcolor: `rgba(255, 255, 255, ${Math.min(1, y / 70)})`,
-        borderBottom: `1px solid rgba(0, 0, 0, ${Math.min(1, y / 400)})`,
+        bgcolor: (theme) =>
+          `color-mix(in srgb, ${theme.palette.background.default} ${Math.min(1, y / 70) * 100}%, transparent)`,
+        borderBottom: (theme) =>
+          `1px solid color-mix(in srgb, ${theme.palette.divider} ${Math.min(1, y / 400) * 100}%, transparent)`,
       }}
       TitleProps={{
         sx: {
