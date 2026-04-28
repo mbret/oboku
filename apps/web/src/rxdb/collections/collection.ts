@@ -30,7 +30,7 @@ export const collectionSchema: RxJsonSchema<
   Omit<CollectionDocType & DeprecatedProps, `_rev` | `rxdbMeta`>
 > = {
   title: "obokucollection",
-  version: 1,
+  version: 2,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -50,6 +50,7 @@ export const collectionSchema: RxJsonSchema<
     syncAt: { type: ["string"] },
     dataSourceId: { type: ["string", "null"] },
     metadata: { type: ["array"] },
+    metadataFetchEnabled: { type: ["boolean", "null"] },
     ...getReplicationProperties(`obokucollection`),
   },
 }
@@ -85,6 +86,7 @@ export const collectionMigrationStrategies = {
       ...(newLinkData !== undefined && { linkData: newLinkData }),
     }
   },
+  2: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
 export const collectionCollectionMethods: CollectionCollectionMethods = {

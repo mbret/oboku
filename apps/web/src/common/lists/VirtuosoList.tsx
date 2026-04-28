@@ -80,9 +80,11 @@ export const VirtuosoList = memo(
     ) => React.ReactNode
     horizontalDirection?: boolean
     onScroll?: (event: React.UIEvent<HTMLDivElement, UIEvent>) => void
-    useWindowScroll?: boolean
     ref?: React.RefObject<VirtuosoGridListHandle | null>
-  } & Pick<SharedProps, "scrollerRef">) => {
+  } & Pick<
+    SharedProps,
+    "scrollerRef" | "customScrollParent" | "useWindowScroll"
+  >) => {
     const virtuosoRef = useRef<VirtuosoHandle>(null)
     const virtuosoGridRef = useRef<VirtuosoGridHandle>(null)
     const _ref = useRef<VirtuosoGridListHandle>(null)

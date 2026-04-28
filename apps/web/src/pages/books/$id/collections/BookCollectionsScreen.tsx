@@ -6,6 +6,8 @@ import { IconButton } from "@mui/material"
 import type { CollectionDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
+import { Page } from "../../../../common/Page"
+import { TopBarNavigation } from "../../../../navigation/TopBarNavigation"
 import {
   useAddCollectionToBook,
   useRemoveCollectionFromBook,
@@ -15,7 +17,7 @@ import { useCollections } from "../../../../collections/useCollections"
 import { SelectableCollectionList } from "../../../../collections/lists/SelectableCollectionList"
 import { getCollectionComputedMetadata } from "../../../../collections/getCollectionComputedMetadata"
 import { openAddCollectionDialog } from "../../../../library/shelves/AddCollectionDialog"
-import { EntitySelectionPage } from "../../../../common/selection"
+import { EntitySelectionView } from "../../../../common/selection"
 import { notify, notifyError } from "../../../../notifications/toasts"
 
 const getCollectionSearchableText = (
@@ -64,41 +66,43 @@ export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
   if (!bookId || book === null) return <NotFoundPage />
 
   return (
-    <EntitySelectionPage
-      title="Manage collections"
-      searchPlaceholder="Search collections…"
-      searchAriaLabel="Search collections"
-      items={collections}
-      persistedIds={book?.collections}
-      entityKey={bookId}
-      getSearchableText={getCollectionSearchableText}
-      isSaving={isSaving}
-      onSave={save}
-      toolbarActions={
-        <IconButton
-          onClick={openAddCollectionDialog}
-          color="primary"
-          disabled={isSaving}
-          aria-label="Create a new collection"
-        >
-          <AddRounded />
-        </IconButton>
-      }
-      renderList={({ filteredIds, selectedItems, toggleSelection }) => (
-        <SelectableCollectionList
-          style={listStyle}
-          data={filteredIds}
-          selected={selectedItems}
-          onItemClick={({
-            id: collectionId,
-          }: {
-            id: string
-            selected: boolean
-          }) => {
-            toggleSelection(collectionId)
-          }}
-        />
-      )}
-    />
+    <Page sx={{ overflow: "hidden" }} bottomGutter={false}>
+      <TopBarNavigation title="Manage collections" showBack />
+      <EntitySelectionView
+        searchPlaceholder="Search collections…"
+        searchAriaLabel="Search collections"
+        items={collections}
+        persistedIds={book?.collections}
+        entityKey={bookId}
+        getSearchableText={getCollectionSearchableText}
+        isSaving={isSaving}
+        onSave={save}
+        toolbarActions={
+          <IconButton
+            onClick={openAddCollectionDialog}
+            color="primary"
+            disabled={isSaving}
+            aria-label="Create a new collection"
+          >
+            <AddRounded />
+          </IconButton>
+        }
+        renderList={({ filteredIds, selectedItems, toggleSelection }) => (
+          <SelectableCollectionList
+            style={listStyle}
+            data={filteredIds}
+            selected={selectedItems}
+            onItemClick={({
+              id: collectionId,
+            }: {
+              id: string
+              selected: boolean
+            }) => {
+              toggleSelection(collectionId)
+            }}
+          />
+        )}
+      />
+    </Page>
   )
 })

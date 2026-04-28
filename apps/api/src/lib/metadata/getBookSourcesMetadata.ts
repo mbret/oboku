@@ -24,19 +24,22 @@ const swallowGoogleError = async <T>(promise: Promise<T>) => {
 
 export const getBookSourcesMetadata = async (
   metadata: Metadata,
-  { googleApiKey, withGoogle }: { googleApiKey?: string; withGoogle: boolean },
+  {
+    googleApiKey,
+    withExternalSources,
+  }: { googleApiKey?: string; withExternalSources: boolean },
   config: AppConfigService,
 ): Promise<Metadata[]> => {
-  const list = []
+  const list: Metadata[] = []
 
-  if (withGoogle) {
-    const google = await swallowGoogleError(
-      getGoogleBookMetadata(metadata, googleApiKey ?? "", config),
-    )
+  if (!withExternalSources) return list
 
-    if (google) {
-      list.push(google)
-    }
+  const google = await swallowGoogleError(
+    getGoogleBookMetadata(metadata, googleApiKey ?? "", config),
+  )
+
+  if (google) {
+    list.push(google)
   }
 
   return list

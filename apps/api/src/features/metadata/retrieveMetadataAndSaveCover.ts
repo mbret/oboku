@@ -1,6 +1,10 @@
 import fs from "node:fs"
 import path from "node:path"
-import { type BookMetadata, directives } from "@oboku/shared"
+import {
+  type BookMetadata,
+  directives,
+  resolveMetadataFetchEnabled,
+} from "@oboku/shared"
 import type nano from "nano"
 import type { Extractor } from "node-unrar-js"
 import { Logger } from "@nestjs/common"
@@ -46,6 +50,10 @@ export const retrieveMetadataAndSaveCover = async (
     )
 
     const bookIsProtected = await isBookProtected(ctx.db, ctx.book)
+    const externalFetchEnabled = resolveMetadataFetchEnabled(
+      ctx.book.metadataFetchEnabled,
+      bookIsProtected,
+    )
 
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
@@ -78,20 +86,21 @@ export const retrieveMetadataAndSaveCover = async (
       (contentType &&
         config.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType))
 
-    const sourcesMetadata = ignoreMetadataSources
-      ? []
-      : await getBookSourcesMetadata(
-          {
-            ...linkMetadata,
-            // some plugins returns filename and not title
-            title: path.parse(linkMetadata.title?.toString() ?? "").name,
-          },
-          {
-            googleApiKey: ctx.googleApiKey,
-            withGoogle: !bookIsProtected,
-          },
-          config,
-        )
+    const sourcesMetadata =
+      ignoreMetadataSources || !externalFetchEnabled
+        ? []
+        : await getBookSourcesMetadata(
+            {
+              ...linkMetadata,
+              // some plugins returns filename and not title
+              title: path.parse(linkMetadata.title?.toString() ?? "").name,
+            },
+            {
+              googleApiKey: ctx.googleApiKey,
+              withExternalSources: externalFetchEnabled,
+            },
+            config,
+          )
 
     const metadataList = [linkMetadata, ...sourcesMetadata]
 

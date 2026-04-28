@@ -35,6 +35,7 @@ import { configuration } from "../../config/configuration"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
 import { useMarkBooksAsFinished } from "../../books/useMarkBookAs"
 import { differenceInMinutes } from "../../common/date/differenceInMinutes"
+import { useResolvedMetadataFetchEnabled } from "../../metadata/useResolvedMetadataFetchEnabled"
 
 export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
   const { openedWith, lastId: collectionId } = useSignalValue(
@@ -72,6 +73,11 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
     collectionReadingProgress !== undefined
       ? collectionReadingProgress >= 1
       : undefined
+  const { resolved: metadataFetchResolved } = useResolvedMetadataFetchEnabled({
+    kind: "collection",
+    collection,
+  })
+  const metadataFetchDisabled = metadataFetchResolved === false
 
   const onRemoveCollection = (id: string) => {
     closeModalWithNavigation()
@@ -130,7 +136,7 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
                 onClick={() => {
                   refreshCollectionMetadata(collectionId ?? ``)
                 }}
-                disabled={isRefreshingMetadata}
+                disabled={isRefreshingMetadata || metadataFetchDisabled}
               >
                 <ListItemIcon>
                   <SyncRounded />
@@ -140,6 +146,11 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
                     isRefreshingMetadata
                       ? "Refreshing metadata..."
                       : "Refresh metadata"
+                  }
+                  secondary={
+                    metadataFetchDisabled
+                      ? "Disabled by metadata fetching policy"
+                      : undefined
                   }
                 />
               </ListItemButton>

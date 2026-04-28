@@ -13,12 +13,33 @@ import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/config/types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { CoversService } from "src/covers/covers.service"
+import { CollectionMetadataRefreshEvent, Events } from "src/events"
 
 const logger = new Logger("sync")
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
+
+/**
+ * Tracks collection ids whose metadata refresh should be emitted at the very
+ * end of the sync. Emitting after all books exist (and have their tags
+ * attached) is what allows protection-aware logic in
+ * `processRefreshMetadata` to compute `isCollectionProtected` against the
+ * up-to-date data.
+ */
+export type CollectionRefreshQueue = {
+  add: (collectionId: string) => void
+  flush: () => string[]
+}
+
+const createCollectionRefreshQueue = (): CollectionRefreshQueue => {
+  const ids = new Set<string>()
+  return {
+    add: (id) => ids.add(id),
+    flush: () => Array.from(ids),
+  }
+}
 
 function isFolder(
   item: SynchronizeAbleDataSource | SynchronizeAbleItem,
@@ -54,6 +75,18 @@ export const synchronizeFromDataSource = async (
     })
   }
 
+  /**
+   * Order matters for protection checks: tags → books → collections.
+   * - Tags were created above so they're ready when books reference them.
+   * - syncItem creates/updates collections (no metadata refresh) and books
+   *   (with their tags), so books are tagged before any collection refresh
+   *   reads them.
+   * - Collection metadata refresh events are queued and only emitted once all
+   *   books are persisted with their tags, so `isCollectionProtected` sees the
+   *   true picture.
+   */
+  const collectionRefreshQueue = createCollectionRefreshQueue()
+
   for (const item of synchronizeAble.items) {
     await syncItem({
       ctx,
@@ -64,7 +97,20 @@ export const synchronizeFromDataSource = async (
       config,
       eventEmitter,
       coversService,
+      collectionRefreshQueue,
     })
+  }
+
+  for (const collectionId of collectionRefreshQueue.flush()) {
+    eventEmitter.emit(
+      Events.COLLECTION_METADATA_REFRESH,
+      new CollectionMetadataRefreshEvent({
+        collectionId,
+        providerCredentials: ctx.providerCredentials,
+        soft: true,
+        email: ctx.email,
+      }),
+    )
   }
 }
 
@@ -123,6 +169,7 @@ const syncItem = async ({
   config,
   eventEmitter,
   coversService,
+  collectionRefreshQueue,
 }: {
   ctx: Context
   helpers: Helpers
@@ -132,6 +179,7 @@ const syncItem = async ({
   config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
   coversService: CoversService
+  collectionRefreshQueue: CollectionRefreshQueue
 }) => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
   logger.log(`syncItem ${item.name}: metadata `)
@@ -157,7 +205,7 @@ const syncItem = async ({
   )
 
   if (isFolder(item) && isCollection) {
-    await syncCollection({ ctx, item, helpers, eventEmitter })
+    await syncCollection({ ctx, item, helpers, collectionRefreshQueue })
   }
 
   if (isFolder(item)) {
@@ -181,6 +229,7 @@ const syncItem = async ({
             config,
             eventEmitter,
             coversService,
+            collectionRefreshQueue,
           })
         }
       }),

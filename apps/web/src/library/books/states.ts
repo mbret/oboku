@@ -2,6 +2,7 @@ import type { ReadingStateState } from "@oboku/shared"
 import type { DownloadState } from "../../download/states"
 import { signal } from "reactjrx"
 import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
+import { selectByProperty } from "../../common/state/selectors"
 
 type LibraryDocType = {
   viewMode: ListActionViewMode
@@ -28,6 +29,8 @@ export const libraryStateSignal = signal({
   key: "libraryState",
   default: libraryStateSignalDefaultValue,
 })
+
+export const selectIsLibraryUnlocked = selectByProperty("isLibraryUnlocked")
 
 export const isUploadBookDrawerOpenedStateSignal = signal({
   key: "isUploadBookDrawerOpenedState",

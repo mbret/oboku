@@ -7,8 +7,7 @@ import {
   SynchronizeAbleDataSource,
 } from "src/features/plugins/types"
 import { Logger } from "@nestjs/common"
-import { EventEmitter2 } from "@nestjs/event-emitter"
-import { CollectionMetadataRefreshEvent, Events } from "src/events"
+import type { CollectionRefreshQueue } from "../synchronizeFromDataSource"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
@@ -19,12 +18,12 @@ export const syncCollection = async ({
   item,
   helpers,
   ctx,
-  eventEmitter,
+  collectionRefreshQueue,
 }: {
   ctx: Context
   item: SynchronizeAbleItem
   helpers: Helpers
-  eventEmitter: EventEmitter2
+  collectionRefreshQueue: CollectionRefreshQueue
 }) => {
   /**
    * Try to get existing collection by same resource id and link data.
@@ -68,22 +67,16 @@ export const syncCollection = async ({
   })
 
   /**
-   * Only trigger metadata refresh when the collection uses the same
+   * Only queue a metadata refresh when the collection uses the same
    * connector/credentials as the current datasource; otherwise record it in the
-   * report like we do for books.
+   * report like we do for books. The actual emission happens at the end of the
+   * sync (see `synchronizeFromDataSource`) so that protection-aware logic can
+   * read the up-to-date books and tags.
    */
   const usesSameCredentials =
     !bestCandidate || bestCandidate.isUsingSameProviderCredentials
   if (usesSameCredentials) {
-    eventEmitter.emit(
-      Events.COLLECTION_METADATA_REFRESH,
-      new CollectionMetadataRefreshEvent({
-        collectionId,
-        providerCredentials: ctx.providerCredentials,
-        soft: true,
-        email: ctx.email,
-      }),
-    )
+    collectionRefreshQueue.add(collectionId)
   } else {
     ctx.syncReport.collectionHasDifferentLink(collectionId)
   }

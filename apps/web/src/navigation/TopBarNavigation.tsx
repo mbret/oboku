@@ -13,7 +13,11 @@ import {
 import { alpha, Box, InputBase, styled, useTheme } from "@mui/material"
 import { useSafeGoBack } from "./useSafeGoBack"
 import { useNavigate } from "react-router"
-import { libraryStateSignal } from "../library/books/states"
+import {
+  libraryStateSignal,
+  selectIsLibraryUnlocked,
+} from "../library/books/states"
+import { lockLibrary } from "../library/libraryLock"
 import { useSignalValue } from "reactjrx"
 import { ROUTES } from "./routes"
 
@@ -60,7 +64,7 @@ export const TopBarNavigation: FC<
   }) => {
     const isLibraryUnlocked = useSignalValue(
       libraryStateSignal,
-      ({ isLibraryUnlocked }) => isLibraryUnlocked,
+      selectIsLibraryUnlocked,
     )
     const theme = useTheme()
     const paletteMode = theme.palette.mode
@@ -150,16 +154,7 @@ export const TopBarNavigation: FC<
             }}
           >
             {hasLockLibrary && isLibraryUnlocked && (
-              <IconButton
-                onClick={() => {
-                  libraryStateSignal.setValue((state) => ({
-                    ...state,
-                    isLibraryUnlocked: false,
-                  }))
-                }}
-                size="large"
-                color="inherit"
-              >
+              <IconButton onClick={lockLibrary} size="large" color="inherit">
                 <LockOpenRounded />
               </IconButton>
             )}

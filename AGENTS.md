@@ -55,6 +55,14 @@ When implementing changes in this codebase, prioritize consistency and consolida
 - Always pass a named function to `memo()` instead of an anonymous arrow function (e.g. `memo(function MyComponent() { ... })` not `memo(() => { ... })`).
 - This ensures memoized components are identifiable in React DevTools and error stack traces without needing a separate `displayName` assignment.
 
+### MUI: prefer `styled` over `sx` and keep the underlying component name
+
+- For non-trivial styling, prefer extracting a named `styled(Component)` declaration over inlining `sx={{ ... }}` in JSX. Reserve `sx` for one-off, dynamic, or prop-driven styles where extracting would obscure intent.
+- Always include the underlying component's name as a suffix in the styled component's name so the underlying element is obvious at a glance: e.g. `styled(DialogContent)` → `HeaderDialogContent` (not `HeaderContent`), `styled(Stack)` → `ActionsStack` (not `ActionsRow`), `styled(Typography)` → `WarningTypography`.
+- Place styled declarations near the top of the file (after imports) so they're easy to scan.
+- When `styled(Component)` strips a polymorphic prop (most commonly `Typography`'s `component`), cast the result back to `typeof Component` and add a one-line comment explaining the cast — see the `as` rule above.
+- Rationale: named styled components show up as themselves in React DevTools, eliminate repeated inline blocks, and let readers understand the rendered DOM without crawling through `sx` props.
+
 ### React components: do not use `FC`
 
 - Never use `React.FC`, `FC`, or `FunctionComponent` to type components. Treat that pattern as deprecated and do not add it in new code.

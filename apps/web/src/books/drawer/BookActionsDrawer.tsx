@@ -34,6 +34,7 @@ import { useLink } from "../../links/states"
 import { ROUTES } from "../../navigation/routes"
 import { useMarkBooksAsFinished, useMarkBooksAsUnread } from "../useMarkBookAs"
 import { MarkAsReadIcon, UnreadIcon } from "../../common/icon"
+import { useResolvedMetadataFetchEnabled } from "../../metadata/useResolvedMetadataFetchEnabled"
 
 type SignalState = {
   openedWith: undefined | string
@@ -86,6 +87,11 @@ export const BookActionsDrawer = memo(() => {
   const { mutate: markBooksAsFinished } = useMarkBooksAsFinished()
   const opened = !!bookId
   const theme = useTheme()
+  const { resolved: metadataFetchResolved } = useResolvedMetadataFetchEnabled({
+    kind: "book",
+    book,
+  })
+  const metadataFetchDisabled = metadataFetchResolved === false
 
   const { closeModalWithNavigation: handleClose } = useModalNavigationControl(
     {
@@ -265,12 +271,19 @@ export const BookActionsDrawer = memo(() => {
                 handleClose()
                 refreshBookMetadata(book._id)
               }}
-              disabled={!link}
+              disabled={!link || metadataFetchDisabled}
             >
               <ListItemIcon>
                 <SyncRounded />
               </ListItemIcon>
-              <ListItemText primary="Refresh metadata" />
+              <ListItemText
+                primary="Refresh metadata"
+                secondary={
+                  metadataFetchDisabled
+                    ? "Disabled by metadata fetching policy"
+                    : undefined
+                }
+              />
             </ListItemButton>
             {(actions?.includes("removeDownload") || !actions) &&
               downloadState?.downloadState === "downloaded" &&

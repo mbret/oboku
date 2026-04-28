@@ -1,7 +1,5 @@
 import { memo, type ReactNode } from "react"
-import { Box, Button, Stack } from "@mui/material"
-import { Page } from "../Page"
-import { TopBarNavigation } from "../../navigation/TopBarNavigation"
+import { Button, Stack, styled } from "@mui/material"
 import { SelectionListFilter } from "./SelectionListFilter"
 import { SelectionToolbar } from "./SelectionToolbar"
 import {
@@ -9,6 +7,19 @@ import {
   type UseFilteredSelectionOptions,
 } from "./useFilteredSelection"
 import type { ListFilterItem } from "./useListFilter"
+
+const FillStack = styled(Stack)({
+  flex: 1,
+  minHeight: 0,
+})
+
+const SaveActionStack = styled(Stack)(({ theme }) => ({
+  borderTop: `1px solid ${theme.palette.divider}`,
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  paddingTop: theme.spacing(1.5),
+  paddingBottom: theme.spacing(1.5),
+}))
 
 export type EntitySelectionSaveChanges = {
   toAdd: string[]
@@ -33,9 +44,7 @@ export type EntitySelectionRenderListProps = {
   toggleSelection: (id: string) => void
 }
 
-export type EntitySelectionPageProps<T extends ListFilterItem> = {
-  /** Title shown in the top bar (e.g. "Manage tags"). */
-  title: string
+export type EntitySelectionViewProps<T extends ListFilterItem> = {
   /** Search input placeholder (e.g. "Search tags…"). */
   searchPlaceholder: string
   /**
@@ -62,10 +71,16 @@ export type EntitySelectionPageProps<T extends ListFilterItem> = {
 } & UseFilteredSelectionOptions<T>
 
 /**
- * Shared chrome for "manage X on a book" screens (tags, collections,
- * ...): top bar, fuzzy search field, select/unselect-filtered toolbar,
- * a slot for the entity-specific list, and a Save button that commits
- * the diff against `persistedIds`.
+ * Shared body for "manage X on a book" screens (tags, collections,
+ * ...): fuzzy search field, select/unselect-filtered toolbar, a slot
+ * for the entity-specific list, and a Save button that commits the
+ * diff against `persistedIds`.
+ *
+ * Renders as a flex column intended to fill its parent. Page chrome
+ * (`Page`, `TopBarNavigation`) is the host's responsibility — this
+ * component only owns the selection body. Hosts can therefore swap the
+ * body for an alternative state (e.g. a `ProtectedContentGuard` notice)
+ * without duplicating chrome on each branch.
  *
  * Each call site keeps full ownership of:
  * - the data hook (`useTags`, `useCollections`, ...)
@@ -76,10 +91,9 @@ export type EntitySelectionPageProps<T extends ListFilterItem> = {
  * consistent and tweaks (placeholder copy, toolbar spacing, save button
  * styling) land in one place.
  */
-export const EntitySelectionPage = memo(function EntitySelectionPage<
+export const EntitySelectionView = memo(function EntitySelectionView<
   T extends ListFilterItem,
 >({
-  title,
   searchPlaceholder,
   searchAriaLabel,
   renderList,
@@ -92,7 +106,7 @@ export const EntitySelectionPage = memo(function EntitySelectionPage<
   getSearchableText,
   debounceMs,
   fuseOptions,
-}: EntitySelectionPageProps<T>) {
+}: EntitySelectionViewProps<T>) {
   const {
     query,
     setQuery,
@@ -116,8 +130,7 @@ export const EntitySelectionPage = memo(function EntitySelectionPage<
   })
 
   return (
-    <Page sx={{ overflow: "hidden" }} bottomGutter={false}>
-      <TopBarNavigation title={title} showBack />
+    <FillStack>
       <SelectionListFilter
         value={query}
         onChange={setQuery}
@@ -133,17 +146,10 @@ export const EntitySelectionPage = memo(function EntitySelectionPage<
         onUnselectAll={unselectFiltered}
         actions={toolbarActions}
       />
-      <Stack sx={{ flex: 1, minHeight: 0 }}>
+      <FillStack>
         {renderList({ filteredIds, selectedItems, toggleSelection })}
-      </Stack>
-      <Box
-        sx={{
-          borderTop: 1,
-          borderColor: "divider",
-          px: 2,
-          py: 1.5,
-        }}
-      >
+      </FillStack>
+      <SaveActionStack>
         <Button
           variant="contained"
           color="primary"
@@ -153,13 +159,13 @@ export const EntitySelectionPage = memo(function EntitySelectionPage<
         >
           Save
         </Button>
-      </Box>
-    </Page>
+      </SaveActionStack>
+    </FillStack>
   )
   // `memo` strips the generic parameter from the wrapped component
   // (its public type collapses to a non-generic `MemoExoticComponent`).
   // Re-cast so callers keep inference between `items` and
   // `getSearchableText`. No runtime impact.
 }) as unknown as <T extends ListFilterItem>(
-  props: EntitySelectionPageProps<T>,
+  props: EntitySelectionViewProps<T>,
 ) => ReactNode

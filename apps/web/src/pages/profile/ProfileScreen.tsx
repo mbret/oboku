@@ -34,7 +34,11 @@ import {
 import { useNavigate } from "react-router"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
-import { libraryStateSignal } from "../../library/books/states"
+import {
+  libraryStateSignal,
+  selectIsLibraryUnlocked,
+} from "../../library/books/states"
+import { lockLibrary, unlockLibrary } from "../../library/libraryLock"
 import packageJson from "../../../package.json"
 import { toggleDebug } from "../../debug"
 import { useDatabase } from "../../rxdb"
@@ -46,7 +50,6 @@ import { authStateSignal } from "../../auth/states.web"
 import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { ROUTES } from "../../navigation/routes"
-import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
@@ -59,7 +62,10 @@ export const ProfileScreen = () => {
     useState(false)
   const { quotaUsed, quotaInGb, usedInMb } = useStorageUse({ intervalMs: 5000 })
   const auth = useSignalValue(authStateSignal)
-  const library = useSignalValue(libraryStateSignal)
+  const isLibraryUnlocked = useSignalValue(
+    libraryStateSignal,
+    selectIsLibraryUnlocked,
+  )
   const signOut = useSignOut()
   const theme = useTheme()
   const { mutate: removeAllContents } = useRemoveAllContents()
@@ -75,33 +81,23 @@ export const ProfileScreen = () => {
         </ListItemButton>
         <ListItemButton
           onClick={() => {
-            if (library.isLibraryUnlocked) {
-              libraryStateSignal.update((state) => ({
-                ...state,
-                isLibraryUnlocked: false,
-              }))
+            if (isLibraryUnlocked) {
+              lockLibrary()
             } else {
-              authorizeAction(() => {
-                libraryStateSignal.update((state) => ({
-                  ...state,
-                  isLibraryUnlocked: true,
-                }))
-              })
+              unlockLibrary()
             }
           }}
         >
           <ListItemText
             primary={
-              library.isLibraryUnlocked
+              isLibraryUnlocked
                 ? "Protected contents are visible"
                 : "Protected contents are hidden"
             }
-            secondary={
-              library.isLibraryUnlocked ? "Click to lock" : "Click to unlock"
-            }
+            secondary={isLibraryUnlocked ? "Click to lock" : "Click to unlock"}
           />
-          {library.isLibraryUnlocked && <LockOpenRounded color="action" />}
-          {!library.isLibraryUnlocked && <LockRounded color="action" />}
+          {isLibraryUnlocked && <LockOpenRounded color="action" />}
+          {!isLibraryUnlocked && <LockRounded color="action" />}
         </ListItemButton>
         <ListItemButton
           onClick={() => {
