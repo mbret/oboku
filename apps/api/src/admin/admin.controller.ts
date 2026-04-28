@@ -25,7 +25,7 @@ import { AdminAuthGuard, AdminPublic } from "./admin.guard"
 import { AppConfigService } from "src/config/AppConfigService"
 import { InstanceConfigService } from "./instance-config/instance-config.service"
 import { SecretsService } from "src/config/SecretsService"
-import { CouchMigrationService } from "src/couch/migration.service"
+import { MigrationService } from "src/migrations/migration.service"
 import { AdminCoversService } from "./admin-covers.service"
 import {
   ArrayMaxSize,
@@ -183,7 +183,7 @@ export class AdminController {
     private readonly secretsService: SecretsService,
     private readonly appConfig: AppConfigService,
     private readonly instanceConfigService: InstanceConfigService,
-    private readonly couchMigrationService: CouchMigrationService,
+    private readonly migrationService: MigrationService,
     private readonly adminCoversService: AdminCoversService,
     private readonly authService: AuthService,
     private readonly notificationService: NotificationsService,
@@ -249,17 +249,22 @@ export class AdminController {
 
   @Post("migrate-webdav-connectors")
   async migrateWebdavConnectors() {
-    return this.couchMigrationService.migrateWebdavConnectorsToConnectors()
+    return this.migrationService.migrateWebdavConnectorsToConnectors()
   }
 
   @Post("migrate-webdav-resource-ids")
   async migrateWebdavResourceIds() {
-    return this.couchMigrationService.migrateWebdavResourceIds()
+    return this.migrationService.migrateWebdavResourceIds()
   }
 
   @Post("migrate-resource-id-to-link-data")
   async migrateResourceIdToLinkData() {
-    return this.couchMigrationService.migrateResourceIdToLinkData()
+    return this.migrationService.migrateResourceIdToLinkData()
+  }
+
+  @Post("migrate-collection-cover-keys")
+  async migrateCollectionCoverKeys() {
+    return this.migrationService.migrateLegacyCollectionCoverKeys()
   }
 
   @Get("covers")

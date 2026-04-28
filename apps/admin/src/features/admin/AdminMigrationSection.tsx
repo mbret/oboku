@@ -2,6 +2,7 @@ import { Group, Paper, Text } from "@mantine/core"
 import { useMigrateWebdavConnectors } from "../useMigrateWebdavConnectors"
 import { useMigrateWebdavResourceIds } from "../useMigrateWebdavResourceIds"
 import { useMigrateResourceIdToLinkData } from "../useMigrateResourceIdToLinkData"
+import { useMigrateCollectionCoverKeys } from "../useMigrateCollectionCoverKeys"
 import { ConfirmButton } from "@/components/ConfirmButton"
 
 const DANGEROUS_ACTION_CONFIRMATION_MESSAGE =
@@ -26,6 +27,12 @@ export const AdminMigrationSection = () => {
     isPending: isResourceIdToLinkDataPending,
     error: resourceIdToLinkDataError,
   } = useMigrateResourceIdToLinkData()
+  const {
+    mutate: migrateCollectionCoverKeys,
+    data: collectionCoverKeysResult,
+    isPending: isCollectionCoverKeysPending,
+    error: collectionCoverKeysError,
+  } = useMigrateCollectionCoverKeys()
 
   return (
     <>
@@ -53,6 +60,14 @@ export const AdminMigrationSection = () => {
           onConfirm={() => migrateResourceIdToLinkData()}
         >
           migrate resourceId → link data
+        </ConfirmButton>
+        <ConfirmButton
+          variant="light"
+          loading={isCollectionCoverKeysPending}
+          confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
+          onConfirm={() => migrateCollectionCoverKeys()}
+        >
+          migrate collection cover keys
         </ConfirmButton>
       </Group>
       <Paper withBorder p="md" mt="md">
@@ -139,6 +154,37 @@ export const AdminMigrationSection = () => {
         {!resourceIdToLinkDataResult &&
           !isResourceIdToLinkDataPending &&
           !resourceIdToLinkDataError && (
+            <Text size="sm" c="dimmed">
+              No migration run yet
+            </Text>
+          )}
+      </Paper>
+      <Paper withBorder p="md" mt="md">
+        <Text size="sm" fw={500} mb="xs">
+          Collection cover keys migration
+        </Text>
+        {isCollectionCoverKeysPending && (
+          <Text size="sm" c="dimmed">
+            Running…
+          </Text>
+        )}
+        {collectionCoverKeysError && (
+          <Text size="sm" c="red">
+            Error: {collectionCoverKeysError.message}
+          </Text>
+        )}
+        {collectionCoverKeysResult && !isCollectionCoverKeysPending && (
+          <Text size="sm" c="dimmed">
+            Last run: storage={collectionCoverKeysResult.storageStrategy},{" "}
+            {collectionCoverKeysResult.ranOnUsers} user(s) scanned,{" "}
+            {collectionCoverKeysResult.renamed} renamed,{" "}
+            {collectionCoverKeysResult.skippedDestinationExists} already in
+            place, {collectionCoverKeysResult.skippedSourceMissing} not found
+          </Text>
+        )}
+        {!collectionCoverKeysResult &&
+          !isCollectionCoverKeysPending &&
+          !collectionCoverKeysError && (
             <Text size="sm" c="dimmed">
               No migration run yet
             </Text>

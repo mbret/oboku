@@ -1,5 +1,5 @@
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
-import { Stack } from "@mui/material"
+import { Stack, styled } from "@mui/material"
 import { useNavigate, useParams } from "react-router"
 import { BookListWithControls } from "../../../books/lists"
 import { signal, useSignalValue } from "reactjrx"
@@ -11,11 +11,11 @@ import { useCollectionActionsDrawer } from "../../../collections/CollectionActio
 import { useCollection } from "../../../collections/useCollection"
 import { useEffect, useMemo, useState } from "react"
 import { useBooks } from "../../../books/states"
+import { selectIds } from "../../../queries/selectors"
 import { Logger } from "../../../debug/logger.shared"
 import { useCollectionComputedMetadata } from "../../../collections/useCollectionComputedMetadata"
-import { useRafState } from "react-use"
+import { useScroll } from "../../../common/useScroll"
 import { configuration } from "../../../config/configuration"
-import { createPortal } from "react-dom"
 import { Header } from "./Header"
 import { EmptyList } from "../../../common/lists/EmptyList"
 import EmptyLibraryAsset from "../../../assets/empty-library.svg"
@@ -23,6 +23,24 @@ import EmptyLibraryAsset from "../../../assets/empty-library.svg"
 type ScreenParams = {
   id: string
 }
+
+/**
+ * The scroll position is exposed as a single `--y` custom property on the bar.
+ * All progress ratios are then derived in CSS via `clamp(...)`, so emotion's
+ * generated class never changes while the user scrolls.
+ */
+const ScrollAwareTopBar = styled(TopBarNavigation)(({ theme }) => ({
+  backgroundColor: `color-mix(in srgb, ${theme.palette.background.default} calc(clamp(0, var(--y, 0) / 70, 1) * 100%), transparent)`,
+  borderBottom: `1px solid color-mix(in srgb, ${theme.palette.divider} calc(clamp(0, var(--y, 0) / 400, 1) * 100%), transparent)`,
+}))
+
+const ListContainer = styled(Stack)({
+  flex: 1,
+  minHeight: 0,
+  overflow: "hidden",
+})
+
+const EMPTY_BOOK_IDS: string[] = []
 
 export const collectionDetailsScreenListControlsStateSignal = signal<{
   viewMode?: ListActionViewMode
@@ -37,22 +55,19 @@ export const collectionDetailsScreenListControlsStateSignal = signal<{
 
 export const CollectionDetailsScreen = () => {
   const navigate = useNavigate()
-  const { id = `-1` } = useParams<ScreenParams>()
+  const { id } = useParams<ScreenParams>()
   const { viewMode, sorting } = useSignalValue(
     collectionDetailsScreenListControlsStateSignal,
   )
   const { data: collection } = useCollection({
     id,
   })
-  const { data: visibleBooks } = useBooks({
+  const { data: visibleBookIds = EMPTY_BOOK_IDS } = useBooks({
     ids: collection?.books ?? [],
+    select: selectIds,
   })
 
   const metadata = useCollectionComputedMetadata(collection)
-  const visibleBookIds = useMemo(
-    () => visibleBooks?.map((item) => item._id) ?? [],
-    [visibleBooks],
-  )
   const { open: openActionDrawer } = useCollectionActionsDrawer(
     id,
     (changes) => {
@@ -61,37 +76,8 @@ export const CollectionDetailsScreen = () => {
       }
     },
   )
-  const [scrollerRef, setScrollerRef] = useState<HTMLElement | Window | null>(
-    null,
-  )
-  const [staticContainer, setStaticContainer] = useState<HTMLElement | null>(
-    null,
-  )
-  const [y, setY] = useRafState(0)
-
-  useEffect(() => {
-    if (!scrollerRef || !(scrollerRef instanceof HTMLElement)) return
-
-    const handler = () => {
-      setY(scrollerRef.scrollTop)
-    }
-
-    scrollerRef.addEventListener("scroll", handler)
-
-    return () => {
-      scrollerRef.removeEventListener("scroll", handler)
-    }
-  }, [scrollerRef, setY])
-
-  useEffect(() => {
-    if (!scrollerRef || !(scrollerRef instanceof HTMLElement)) return
-
-    const container = scrollerRef.ownerDocument.createElement("div")
-    container.style.display = "contents"
-    scrollerRef.prepend(container)
-
-    setStaticContainer(container)
-  }, [scrollerRef])
+  const [scrollerEl, setScrollerEl] = useState<HTMLElement | null>(null)
+  const { y } = useScroll(scrollerEl)
 
   useEffect(() => {
     Logger.log({
@@ -102,75 +88,58 @@ export const CollectionDetailsScreen = () => {
 
   const renderHeader = useMemo(() => () => <Header id={id} />, [id])
 
-  const staticContent = (
-    <TopBarNavigation
-      title={metadata.title}
-      showBack={true}
-      {...(id !== configuration.COLLECTION_EMPTY_ID && {
-        onMoreClick: openActionDrawer,
-      })}
-      color="transparent"
-      elevation={0}
-      sx={{
-        bgcolor: `rgba(255, 255, 255, ${Math.min(1, y / 70)})`,
-        borderBottom: `1px solid rgba(0, 0, 0, ${Math.min(1, y / 400)})`,
-      }}
-      TitleProps={{
-        sx: {
-          opacity: Math.min(1, y / 100),
-        },
-      }}
-      position={visibleBookIds.length === 0 ? "fixed" : "sticky"}
-    />
-  )
-
   return (
     <>
-      {!!staticContainer && createPortal(staticContent, staticContainer)}
-      <Stack
-        sx={{
-          flex: 1,
+      <ScrollAwareTopBar
+        title={metadata.title}
+        showBack={true}
+        {...(id !== configuration.COLLECTION_EMPTY_ID && {
+          onMoreClick: openActionDrawer,
+        })}
+        color="transparent"
+        elevation={0}
+        style={{ "--y": y } as React.CSSProperties}
+        TitleProps={{
+          style: {
+            flexGrow: 1,
+            opacity: "clamp(0, calc(var(--y, 0) / 100), 1)",
+          },
         }}
-      >
-        <Stack
-          sx={{
-            flex: 1,
-            height: "100%",
-            overflow: "hidden",
+        position="absolute"
+      />
+      <ListContainer>
+        <BookListWithControls
+          data={visibleBookIds}
+          sorting={sorting}
+          viewMode={viewMode}
+          renderHeader={renderHeader}
+          scrollerRef={(el) =>
+            setScrollerEl(el instanceof HTMLElement ? el : null)
+          }
+          onViewModeChange={(value) => {
+            collectionDetailsScreenListControlsStateSignal.setValue(
+              (state) => ({
+                ...state,
+                viewMode: value,
+              }),
+            )
           }}
-        >
-          {visibleBookIds.length === 0 && staticContent}
-          <BookListWithControls
-            data={visibleBookIds}
-            sorting={sorting}
-            viewMode={viewMode}
-            renderHeader={renderHeader}
-            scrollerRef={setScrollerRef}
-            onViewModeChange={(value) => {
-              collectionDetailsScreenListControlsStateSignal.setValue(
-                (state) => ({
-                  ...state,
-                  viewMode: value,
-                }),
-              )
-            }}
-            onSortingChange={(value) => {
-              collectionDetailsScreenListControlsStateSignal.setValue(
-                (state) => ({
-                  ...state,
-                  sorting: value,
-                }),
-              )
-            }}
-            renderEmptyList={
-              <EmptyList
-                image={{ src: EmptyLibraryAsset, alt: "Empty library" }}
-                description="It looks like your library is empty for the moment. Maybe it's time to add a new book"
-              />
-            }
-          />
-        </Stack>
-      </Stack>
+          onSortingChange={(value) => {
+            collectionDetailsScreenListControlsStateSignal.setValue(
+              (state) => ({
+                ...state,
+                sorting: value,
+              }),
+            )
+          }}
+          renderEmptyList={
+            <EmptyList
+              image={{ src: EmptyLibraryAsset, alt: "Empty library" }}
+              description="It looks like your library is empty for the moment. Maybe it's time to add a new book"
+            />
+          }
+        />
+      </ListContainer>
     </>
   )
 }

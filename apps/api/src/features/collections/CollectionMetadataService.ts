@@ -8,7 +8,7 @@ import {
 } from "./metadata/collections"
 import { onBeforeError, switchMapCombineOuter } from "src/lib/utils"
 import { processRefreshMetadata } from "./metadata/processRefreshMetadata"
-import { CouchService } from "src/couch/couch.service"
+import { CouchService, emailToNameHex } from "src/couch/couch.service"
 import { AppConfigService } from "../../config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
 import { ProviderApiCredentials } from "@oboku/shared"
@@ -67,6 +67,7 @@ export class CollectionMetadataService {
                   db,
                   ...params,
                   comicVineApiKey: this.appConfigService.COMICVINE_API_KEY,
+                  userNameHex: emailToNameHex(email),
                 },
                 this.coversService,
               ),

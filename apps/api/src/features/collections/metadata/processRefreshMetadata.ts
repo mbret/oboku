@@ -24,12 +24,14 @@ export const processRefreshMetadata = async (
     providerCredentials,
     soft,
     comicVineApiKey,
+    userNameHex,
   }: {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
     providerCredentials: ProviderApiCredentials<DataSourceType>
     soft?: boolean
     comicVineApiKey?: string
+    userNameHex: string
   },
   coversService: CoversService,
 ) => {
@@ -160,6 +162,7 @@ export const processRefreshMetadata = async (
       metadata,
     },
     coversService,
+    userNameHex,
   )
 
   await atomicUpdate(

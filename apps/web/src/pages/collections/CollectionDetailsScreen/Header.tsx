@@ -8,7 +8,7 @@ import CollectionBgSvg from "../../../assets/series-bg.svg"
 import { StatusChip } from "../../../collections/series/StatusChip"
 import { useCollectionComputedMetadata } from "../../../collections/useCollectionComputedMetadata"
 
-export const Header = memo(({ id }: { id: string }) => {
+export const Header = memo(({ id }: { id: string | undefined }) => {
   const theme = useTheme()
   const { themeMode } = useLocalSettings()
   const useOptimizedTheme = themeMode === "e-ink"
