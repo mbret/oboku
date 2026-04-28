@@ -5,6 +5,7 @@ import {
   ListItemText,
   ListSubheader,
   Stack,
+  styled,
 } from "@mui/material"
 import { MoreVertRounded } from "@mui/icons-material"
 import { memo, useState } from "react"
@@ -17,6 +18,12 @@ import { useUpsertBookLink } from "../useUpdateBookLink"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useLink } from "../../links/states"
 import { useLinkInfo } from "../../plugins/useLinkInfo"
+
+const TrailingIconStack = styled(Stack)({
+  width: 50,
+  alignItems: "center",
+  flexShrink: 0,
+})
 
 export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
   const { data: book } = useBook({ id: bookId })
@@ -35,12 +42,11 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
       <List
         disablePadding
         dense
-        subheader={<ListSubheader disableGutters>Source</ListSubheader>}
+        subheader={<ListSubheader>Source</ListSubheader>}
       >
         {!!link && !!dataSourcePlugin && (
           <ListItemButton
             key={link?._id}
-            disableGutters
             onClick={() => {
               if (!dataSourcePlugin?.SelectItemComponent) {
                 createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })
@@ -66,15 +72,9 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
                 },
               }}
             />
-            <Stack
-              sx={{
-                width: 50,
-                alignItems: "center",
-                flexShrink: 0,
-              }}
-            >
+            <TrailingIconStack>
               <MoreVertRounded />
-            </Stack>
+            </TrailingIconStack>
           </ListItemButton>
         )}
       </List>

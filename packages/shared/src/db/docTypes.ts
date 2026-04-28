@@ -205,6 +205,17 @@ export type CollectionDocType<T extends DataSourceType = DataSourceType> =
     lastMetadataUpdateError?: null | string
     type?: "series" | "shelve"
     metadata?: CollectionMetadata[]
+    /**
+     * Tri-state user override for external metadata fetching on this collection:
+     * - `undefined` / `null`: follow protection (skip when any contained book is
+     *   protected, fetch otherwise)
+     * - `true`: always fetch external metadata, even if protected
+     * - `false`: never fetch external metadata
+     *
+     * Use {@link resolveMetadataFetchEnabled} to collapse this to a boolean.
+     * Only gates calls to third-party providers; user data sources keep syncing.
+     */
+    metadataFetchEnabled?: boolean | null
   }
 
 export type SettingsConnectorDocType =

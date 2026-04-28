@@ -4,6 +4,7 @@ import {
   DataSourceType,
   directives,
   ProviderApiCredentials,
+  resolveMetadataFetchEnabled,
 } from "@oboku/shared"
 import { fetchMetadata } from "./fetchMetadata"
 import type nano from "nano"
@@ -15,6 +16,7 @@ import { Logger } from "@nestjs/common"
 import { computeMetadata } from "src/lib/collections/computeMetadata"
 import { findOne } from "src/lib/couch/findOne"
 import { atomicUpdate } from "src/lib/couch/dbHelpers"
+import { isCollectionProtected } from "src/lib/couch/isCollectionProtected"
 import { CoversService } from "src/covers/covers.service"
 
 export const processRefreshMetadata = async (
@@ -122,8 +124,20 @@ export const processRefreshMetadata = async (
     ? [metadataSourceOnly]
     : ["googleBookApi", "biblioreads", "comicvine", "mangaupdates", "mangadex"]
 
+  /**
+   * Privacy gate: skip third-party metadata providers when the collection holds
+   * protected books (unless the user explicitly opted in via
+   * `metadataFetchEnabled`). The user's data source (link metadata above) is
+   * still checked as it is their own data.
+   */
+  const collectionIsProtected = await isCollectionProtected(db, collection)
+  const externalFetchEnabled = resolveMetadataFetchEnabled(
+    collection.metadataFetchEnabled,
+    collectionIsProtected,
+  )
+
   const externalMetadata =
-    collectionType === "series"
+    collectionType === "series" && externalFetchEnabled
       ? await fetchMetadata(
           { title, year: year ? String(year) : undefined },
           {
@@ -132,6 +146,12 @@ export const processRefreshMetadata = async (
           },
         )
       : []
+
+  if (collectionType === "series" && !externalFetchEnabled) {
+    Logger.log(
+      `${collection._id} skipping external metadata fetch (protected=${collectionIsProtected}, override=${collection.metadataFetchEnabled ?? "undefined"})`,
+    )
+  }
 
   const linkMetadata: CollectionMetadata = {
     type: "link",

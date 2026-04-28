@@ -37,13 +37,15 @@ export const bookCollectionMethods: BookCollectionMethods = {
   },
 }
 
-export const bookSchemaMigrationStrategies: MigrationStrategies = {}
+export const bookSchemaMigrationStrategies: MigrationStrategies = {
+  1: (oldDoc: Record<string, unknown>) => oldDoc,
+}
 
 export const bookSchema: RxJsonSchema<
   Omit<BookDocType & DeprecatedBookDocType, `_rev` | `rxdbMeta`>
 > = {
   title: "books",
-  version: 0,
+  version: 1,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -76,6 +78,7 @@ export const bookSchema: RxJsonSchema<
     isAttachedToDataSource: { type: ["boolean"] },
     isNotInterested: { type: ["boolean"] },
     metadata: { type: ["array"] },
+    metadataFetchEnabled: { type: ["boolean", "null"] },
     ...getReplicationProperties(`book`),
   },
   required: [],

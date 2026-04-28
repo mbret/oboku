@@ -12,7 +12,10 @@ import {
 import type { BookDocType } from "@oboku/shared"
 import type { DeepReadonlyArray, DeepReadonlyObject, MangoQuery } from "rxdb"
 import { observeBook, observeBooks } from "./dbHelpers"
-import { libraryStateSignal } from "../library/books/states"
+import {
+  libraryStateSignal,
+  selectIsLibraryUnlocked,
+} from "../library/books/states"
 import { skipToken, type UseQueryOptions } from "@tanstack/react-query"
 
 type UseBooksOptions<TData = DeepReadonlyObject<BookDocType>[]> =
@@ -31,7 +34,10 @@ export const useBooks = <TData = DeepReadonlyObject<BookDocType>[]>({
   includeProtected?: boolean
 } & Omit<UseBooksOptions<TData>, "queryFn" | "queryKey"> = {}) => {
   const serializedIds = JSON.stringify(ids)
-  const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
+  const isLibraryUnlocked = useSignalValue(
+    libraryStateSignal,
+    selectIsLibraryUnlocked,
+  )
   const includeProtected = _includeProtected || isLibraryUnlocked
 
   return useQuery$<DeepReadonlyObject<BookDocType>[], unknown, TData>({
@@ -102,7 +108,7 @@ export const useBook = ({
 
 export type BookQueryResult = NonNullable<ReturnType<typeof useBook>["data"]>
 
-const isBookProtected = (
+export const isBookProtected = (
   protectedTags: string[],
   book: Pick<DeepReadonlyObject<BookDocType>, "tags">,
 ) => intersection(protectedTags, book?.tags || []).length > 0

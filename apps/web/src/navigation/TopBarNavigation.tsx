@@ -13,7 +13,10 @@ import {
 import { alpha, Box, InputBase, styled, useTheme } from "@mui/material"
 import { useSafeGoBack } from "./useSafeGoBack"
 import { useNavigate } from "react-router"
-import { libraryStateSignal } from "../library/books/states"
+import {
+  libraryStateSignal,
+  selectIsLibraryUnlocked,
+} from "../library/books/states"
 import { useSignalValue } from "reactjrx"
 import { ROUTES } from "./routes"
 
@@ -60,7 +63,7 @@ export const TopBarNavigation: FC<
   }) => {
     const isLibraryUnlocked = useSignalValue(
       libraryStateSignal,
-      ({ isLibraryUnlocked }) => isLibraryUnlocked,
+      selectIsLibraryUnlocked,
     )
     const theme = useTheme()
     const paletteMode = theme.palette.mode

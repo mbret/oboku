@@ -1,5 +1,5 @@
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
-import { Stack, styled } from "@mui/material"
+import { Box, Stack, Tab, Tabs, styled } from "@mui/material"
 import { useNavigate, useParams } from "react-router"
 import { BookListWithControls } from "../../../books/lists"
 import { signal, useSignalValue } from "reactjrx"
@@ -9,36 +9,56 @@ import type {
 } from "../../../common/lists/ListActionsToolbar"
 import { useCollectionActionsDrawer } from "../../../collections/CollectionActionsDrawer/useCollectionActionsDrawer"
 import { useCollection } from "../../../collections/useCollection"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useBooks } from "../../../books/states"
 import { selectIds } from "../../../queries/selectors"
 import { Logger } from "../../../debug/logger.shared"
 import { useCollectionComputedMetadata } from "../../../collections/useCollectionComputedMetadata"
-import { useScroll } from "../../../common/useScroll"
 import { configuration } from "../../../config/configuration"
 import { Header } from "./Header"
 import { EmptyList } from "../../../common/lists/EmptyList"
 import EmptyLibraryAsset from "../../../assets/empty-library.svg"
+import { MetadataFetchPolicyPane } from "../../../metadata/MetadataFetchPolicyPane"
+import { useResolvedMetadataFetchEnabled } from "../../../metadata/useResolvedMetadataFetchEnabled"
+import { useCollectionIncrementalModify } from "../../../collections/useCollectionIncrementalModify"
 
 type ScreenParams = {
   id: string
 }
 
-/**
- * The scroll position is exposed as a single `--y` custom property on the bar.
- * All progress ratios are then derived in CSS via `clamp(...)`, so emotion's
- * generated class never changes while the user scrolls.
- */
-const ScrollAwareTopBar = styled(TopBarNavigation)(({ theme }) => ({
-  backgroundColor: `color-mix(in srgb, ${theme.palette.background.default} calc(clamp(0, var(--y, 0) / 70, 1) * 100%), transparent)`,
-  borderBottom: `1px solid color-mix(in srgb, ${theme.palette.divider} calc(clamp(0, var(--y, 0) / 400, 1) * 100%), transparent)`,
-}))
+type CollectionDetailsTab = "books" | "details"
 
-const ListContainer = styled(Stack)({
+/**
+ * The whole screen is a single scroller. Top bar + Header + Tabs + tab
+ * content all share this scroll context; the books list virtualizes against
+ * it via `customScrollParent`.
+ */
+const ScrollContainer = styled(Stack)({
   flex: 1,
   minHeight: 0,
-  overflow: "hidden",
+  overflowY: "auto",
+  overflowX: "hidden",
 })
+
+/**
+ * Local positioning frame for the absolute top bar. Sits inside the
+ * scroller so the bar is part of the scroll content (scrolls with the page)
+ * while still overlaying the cover hero. `Header`'s built-in `headerPt`
+ * already reserves room below the bar — no extra offset needed.
+ */
+const ScrollFrameBox = styled(Box)({
+  position: "relative",
+})
+
+const AbsoluteTopBarNavigation = styled(TopBarNavigation)({
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  zIndex: 1,
+})
+
+const bookListStyle = { width: "100%" }
 
 const EMPTY_BOOK_IDS: string[] = []
 
@@ -76,8 +96,16 @@ export const CollectionDetailsScreen = () => {
       }
     },
   )
-  const [scrollerEl, setScrollerEl] = useState<HTMLElement | null>(null)
-  const { y } = useScroll(scrollerEl)
+  const [tab, setTab] = useState<CollectionDetailsTab>("books")
+  const [scrollerEl, setScrollerEl] = useState<HTMLDivElement | null>(null)
+  const isEmptyCollection = id === configuration.COLLECTION_EMPTY_ID
+
+  const {
+    override: metadataFetchOverride,
+    isProtected: metadataFetchIsProtected,
+    resolved: metadataFetchResolved,
+  } = useResolvedMetadataFetchEnabled({ kind: "collection", collection })
+  const { mutate: updateCollection } = useCollectionIncrementalModify()
 
   useEffect(() => {
     Logger.log({
@@ -86,60 +114,74 @@ export const CollectionDetailsScreen = () => {
     })
   }, [collection, metadata])
 
-  const renderHeader = useMemo(() => () => <Header id={id} />, [id])
-
   return (
-    <>
-      <ScrollAwareTopBar
-        title={metadata.title}
-        showBack={true}
-        {...(id !== configuration.COLLECTION_EMPTY_ID && {
-          onMoreClick: openActionDrawer,
-        })}
-        color="transparent"
-        elevation={0}
-        style={{ "--y": y } as React.CSSProperties}
-        TitleProps={{
-          style: {
-            flexGrow: 1,
-            opacity: "clamp(0, calc(var(--y, 0) / 100), 1)",
-          },
-        }}
-        position="absolute"
-      />
-      <ListContainer>
-        <BookListWithControls
-          data={visibleBookIds}
-          sorting={sorting}
-          viewMode={viewMode}
-          renderHeader={renderHeader}
-          scrollerRef={(el) =>
-            setScrollerEl(el instanceof HTMLElement ? el : null)
-          }
-          onViewModeChange={(value) => {
-            collectionDetailsScreenListControlsStateSignal.setValue(
-              (state) => ({
-                ...state,
-                viewMode: value,
-              }),
-            )
-          }}
-          onSortingChange={(value) => {
-            collectionDetailsScreenListControlsStateSignal.setValue(
-              (state) => ({
-                ...state,
-                sorting: value,
-              }),
-            )
-          }}
-          renderEmptyList={
-            <EmptyList
-              image={{ src: EmptyLibraryAsset, alt: "Empty library" }}
-              description="It looks like your library is empty for the moment. Maybe it's time to add a new book"
-            />
-          }
+    <ScrollContainer ref={setScrollerEl}>
+      <ScrollFrameBox>
+        <AbsoluteTopBarNavigation
+          showBack
+          color="transparent"
+          elevation={0}
+          {...(!isEmptyCollection && {
+            onMoreClick: openActionDrawer,
+          })}
         />
-      </ListContainer>
-    </>
+        <Header id={id} />
+        {!isEmptyCollection && (
+          <Tabs
+            value={tab}
+            onChange={(_e, value: CollectionDetailsTab) => setTab(value)}
+            indicatorColor="primary"
+          >
+            <Tab label="Books" value="books" />
+            <Tab label="Details" value="details" />
+          </Tabs>
+        )}
+        {tab === "books" && (
+          <BookListWithControls
+            data={visibleBookIds}
+            sorting={sorting}
+            viewMode={viewMode}
+            customScrollParent={scrollerEl ?? undefined}
+            style={bookListStyle}
+            onViewModeChange={(value) => {
+              collectionDetailsScreenListControlsStateSignal.setValue(
+                (state) => ({
+                  ...state,
+                  viewMode: value,
+                }),
+              )
+            }}
+            onSortingChange={(value) => {
+              collectionDetailsScreenListControlsStateSignal.setValue(
+                (state) => ({
+                  ...state,
+                  sorting: value,
+                }),
+              )
+            }}
+            renderEmptyList={
+              <EmptyList
+                image={{ src: EmptyLibraryAsset, alt: "Empty library" }}
+                description="It looks like your library is empty for the moment. Maybe it's time to add a new book"
+              />
+            }
+          />
+        )}
+        {tab === "details" && !isEmptyCollection && (
+          <MetadataFetchPolicyPane
+            override={metadataFetchOverride}
+            isProtected={metadataFetchIsProtected}
+            resolved={metadataFetchResolved}
+            onChange={(next) => {
+              if (!collection) return
+              updateCollection({
+                _id: collection._id,
+                metadataFetchEnabled: next,
+              })
+            }}
+          />
+        )}
+      </ScrollFrameBox>
+    </ScrollContainer>
   )
 }

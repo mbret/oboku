@@ -62,6 +62,7 @@ export * from "./sorting"
 export { ObokuErrorCode, ObokuSharedError } from "./errors"
 
 export * from "./metadata"
+export * from "./metadata/policy"
 export * from "./sync/reports"
 export * from "./sync/types"
 export * from "./utils/objects"

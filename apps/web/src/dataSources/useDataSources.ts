@@ -5,10 +5,16 @@ import {
   RXDB_QUERY_KEY_PREFIX,
 } from "../queries/queryClient"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { libraryStateSignal } from "../library/books/states"
+import {
+  libraryStateSignal,
+  selectIsLibraryUnlocked,
+} from "../library/books/states"
 
 export const useDataSources = () => {
-  const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
+  const isLibraryUnlocked = useSignalValue(
+    libraryStateSignal,
+    selectIsLibraryUnlocked,
+  )
 
   return useQuery$({
     ...createRxdbQueryDefaultOptions(),

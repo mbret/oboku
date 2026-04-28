@@ -6,7 +6,10 @@ import {
 import { switchMap, map } from "rxjs"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { observeEmptyCollection } from "./dbHelpers"
-import { libraryStateSignal } from "../library/books/states"
+import {
+  libraryStateSignal,
+  selectIsLibraryUnlocked,
+} from "../library/books/states"
 import { configuration } from "../config/configuration"
 
 export const useCollection = ({
@@ -18,7 +21,10 @@ export const useCollection = ({
   isNotInterested?: "with" | "none" | "only" | undefined
   enabled?: boolean
 }) => {
-  const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
+  const isLibraryUnlocked = useSignalValue(
+    libraryStateSignal,
+    selectIsLibraryUnlocked,
+  )
 
   return useQuery$({
     ...createRxdbQueryDefaultOptions(),

@@ -12,7 +12,10 @@ import {
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { combineLatest, map, switchMap } from "rxjs"
 import type { DeepReadonlyArray, MangoQuery } from "rxdb"
-import { libraryStateSignal } from "../library/books/states"
+import {
+  libraryStateSignal,
+  selectIsLibraryUnlocked,
+} from "../library/books/states"
 import { intersection } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
 
@@ -42,7 +45,10 @@ export const useCollections = ({
 } = {}) => {
   const serializedBookIds = JSON.stringify(bookIds)
   const serializedIds = JSON.stringify(ids)
-  const { isLibraryUnlocked } = useSignalValue(libraryStateSignal)
+  const isLibraryUnlocked = useSignalValue(
+    libraryStateSignal,
+    selectIsLibraryUnlocked,
+  )
   const { showCollectionWithProtectedContent } = useLocalSettings()
   const includeProtected = _includeProtected || isLibraryUnlocked
 

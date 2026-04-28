@@ -16,7 +16,10 @@ import {
 } from "@mui/icons-material"
 import { useDataSource } from "./useDataSource"
 import { useSignalValue } from "reactjrx"
-import { libraryStateSignal } from "../library/books/states"
+import {
+  libraryStateSignal,
+  selectIsLibraryUnlocked,
+} from "../library/books/states"
 import { useRemoveDataSource } from "./useRemoveDataSource"
 import { useDataSourceIncrementalModify } from "./useDataSourceIncrementalModify"
 import { useSynchronizeDataSource } from "./useSynchronizeDataSource"
@@ -28,7 +31,10 @@ export const DataSourceActionsDrawer = memo(
     const { mutate: syncDataSource } = useSynchronizeDataSource()
     const { mutate: removeDataSource } = useRemoveDataSource()
     const { data: dataSource } = useDataSource(openWith)
-    const library = useSignalValue(libraryStateSignal)
+    const isLibraryUnlocked = useSignalValue(
+      libraryStateSignal,
+      selectIsLibraryUnlocked,
+    )
     const { mutate: modifyDataSource } = useDataSourceIncrementalModify()
 
     return (
@@ -61,7 +67,7 @@ export const DataSourceActionsDrawer = memo(
             <ListItemButton
               onClick={() => {
                 const datasourceWillBeHidden =
-                  !dataSource?.isProtected && !library.isLibraryUnlocked
+                  !dataSource?.isProtected && !isLibraryUnlocked
 
                 if (datasourceWillBeHidden) {
                   onClose()

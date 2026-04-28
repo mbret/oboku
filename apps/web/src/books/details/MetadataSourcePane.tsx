@@ -6,6 +6,7 @@ import {
   ListSubheader,
   Stack,
   Typography,
+  styled,
 } from "@mui/material"
 import {
   Google,
@@ -19,6 +20,22 @@ import { useBook } from "../states"
 import type { BookMetadata } from "@oboku/shared"
 import { useLink } from "../../links/states"
 import { pluginsByType } from "../../plugins/configure"
+
+// Cast preserves Typography's polymorphic `component` prop, which MUI's
+// `styled` otherwise erases.
+const PluginNameTypography = styled(Typography)(({ theme }) => ({
+  marginLeft: theme.spacing(1),
+})) as typeof Typography
+
+const WarningTypography = styled(Typography)(({ theme }) => ({
+  color: theme.palette.warning.main,
+})) as typeof Typography
+
+const TrailingIconStack = styled(Stack)({
+  width: 50,
+  alignItems: "center",
+  flexShrink: 0,
+})
 
 export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
   const { data: book } = useBook({ id: bookId })
@@ -34,7 +51,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
   return (
     <List
       dense
-      subheader={<ListSubheader disableGutters>Metadata Sources</ListSubheader>}
+      subheader={<ListSubheader>Metadata Sources</ListSubheader>}
       disablePadding
     >
       {types.map((type) => {
@@ -47,7 +64,7 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
           : 0
 
         return (
-          <ListItemButton key={type} disableGutters>
+          <ListItemButton key={type}>
             <ListItemIcon>
               {type === "file" && <PlagiarismOutlined />}
               {type === "link" && <InsertLinkOutlined />}
@@ -65,15 +82,9 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
                         ? "User"
                         : "Link"}
                   {type === "link" && (
-                    <Typography
-                      component="span"
-                      variant="body2"
-                      sx={{
-                        ml: 1,
-                      }}
-                    >
+                    <PluginNameTypography component="span" variant="body2">
                       ({plugin?.name})
-                    </Typography>
+                    </PluginNameTypography>
                   )}
                 </Typography>
               }
@@ -81,24 +92,14 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
                 !numberOfProperties ? (
                   <>
                     {type === "user" && (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: "warning.main",
-                        }}
-                      >
+                      <WarningTypography variant="body2">
                         No information entered yet
-                      </Typography>
+                      </WarningTypography>
                     )}
                     {type !== "user" && (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: "warning.main",
-                        }}
-                      >
+                      <WarningTypography variant="body2">
                         No data yet
-                      </Typography>
+                      </WarningTypography>
                     )}
                   </>
                 ) : (
@@ -122,15 +123,9 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
                 },
               }}
             />
-            <Stack
-              sx={{
-                width: 50,
-                alignItems: "center",
-                flexShrink: 0,
-              }}
-            >
+            <TrailingIconStack>
               <MoreVertRounded />
-            </Stack>
+            </TrailingIconStack>
           </ListItemButton>
         )
       })}

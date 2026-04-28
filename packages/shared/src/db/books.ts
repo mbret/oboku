@@ -42,4 +42,14 @@ export type BookDocType = CouchDBMeta &
     isAttachedToDataSource: boolean
     isNotInterested?: boolean
     metadata?: BookMetadata[]
+    /**
+     * Tri-state user override for external metadata fetching:
+     * - `undefined` / `null`: follow protection (skip when protected, fetch otherwise)
+     * - `true`: always fetch external metadata, even if protected
+     * - `false`: never fetch external metadata
+     *
+     * Use {@link resolveMetadataFetchEnabled} to collapse this to a boolean.
+     * Only gates calls to third-party providers; does not affect local extraction.
+     */
+    metadataFetchEnabled?: boolean | null
   }

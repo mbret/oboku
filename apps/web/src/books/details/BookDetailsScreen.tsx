@@ -6,7 +6,7 @@ import {
   MoreVertOutlined,
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import { Typography, Container, Stack, IconButton } from "@mui/material"
+import { Typography, Container, Stack, IconButton, styled } from "@mui/material"
 import { useNavigate, useParams } from "react-router"
 import { Alert } from "@mui/material"
 import { useCancelBookDownload, useDownloadBook } from "../../download"
@@ -16,6 +16,9 @@ import { DataSourceSection } from "./DataSourceSection"
 import { useBookDownloadState } from "../../download/states"
 import { useMetadataFromBook } from "../metadata"
 import { MetadataSourcePane } from "./MetadataSourcePane"
+import { MetadataFetchPolicyPane } from "../../metadata/MetadataFetchPolicyPane"
+import { useResolvedMetadataFetchEnabled } from "../../metadata/useResolvedMetadataFetchEnabled"
+import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 import { CoverPane } from "./CoverPane"
 import { MetadataPane } from "./MetadataPane"
 import { DebugInfo } from "../../debug/DebugInfo"
@@ -32,6 +35,66 @@ type ScreenParams = {
   id: string
 }
 
+const PageContainer = styled(Container)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  gap: theme.spacing(2),
+}))
+
+const HeaderStack = styled(Stack)(({ theme }) => ({
+  flexDirection: "column",
+  gap: theme.spacing(1),
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+  [theme.breakpoints.up("sm")]: {
+    flexDirection: "row",
+    gap: theme.spacing(3),
+  },
+}))
+
+const HeaderTextStack = styled(Stack)(({ theme }) => ({
+  alignItems: "center",
+  flexFlow: "column",
+  justifyContent: "center",
+  paddingTop: 0,
+  [theme.breakpoints.up("sm")]: {
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    paddingTop: theme.spacing(5),
+  },
+}))
+
+const ItalicTypography = styled(Typography)({
+  fontStyle: "italic",
+})
+
+const ActionsStack = styled(Stack)(({ theme }) => ({
+  flexDirection: "row",
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+  display: "flex",
+  width: "100%",
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+}))
+
+const ActionButton = styled(Button)(({ theme }) => ({
+  flex: 1,
+  minWidth: 260,
+  [theme.breakpoints.up("sm")]: {
+    flex: "none",
+  },
+}))
+
+const SectionStack = styled(Stack)(({ theme }) => ({
+  paddingLeft: theme.spacing(2),
+  paddingRight: theme.spacing(2),
+}))
+
+const SectionInnerStack = styled(Stack)(({ theme }) => ({
+  gap: theme.spacing(1),
+}))
+
 export const BookDetailsScreen = memo(() => {
   const navigate = useNavigate()
   const { mutate: downloadFile } = useDownloadBook()
@@ -47,6 +110,12 @@ export const BookDetailsScreen = memo(() => {
       goBack()
     },
   })
+  const {
+    override: metadataFetchOverride,
+    isProtected: metadataFetchIsProtected,
+    resolved: metadataFetchResolved,
+  } = useResolvedMetadataFetchEnabled({ kind: "book", book })
+  const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
 
   if (isDebugEnabled()) {
     Logger.info(`BookDetailsScreen`, { book, link })
@@ -57,93 +126,56 @@ export const BookDetailsScreen = memo(() => {
   return (
     <Page>
       <TopBarNavigation color="transparent" showBack={true} />
-      <Container sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <PageContainer disableGutters>
         <DebugInfo
           info={{
             id: book?._id || ``,
             linkId: book?.links[0] ?? "",
           }}
         />
-        <Stack
-          sx={{
-            flexDirection: ["column", "row"],
-            gap: [1, 3],
-          }}
-        >
+        <HeaderStack>
           <CoverPane bookId={book?._id} />
-          <Stack
-            sx={{
-              alignItems: ["center", "flex-start"],
-              flexFlow: "column",
-              justifyContent: ["center", "flex-start"],
-              pt: [0, 5],
-            }}
-          >
+          <HeaderTextStack>
             <Typography variant="body1">
               {metadata?.title || "Unknown"}
             </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                fontStyle: "italic",
-              }}
-            >
+            <ItalicTypography variant="body2">
               By {metadata?.authors?.join(", ") || "Unknown"}
-            </Typography>
-          </Stack>
-        </Stack>
-        <Stack
-          sx={{
-            flexDirection: ["row", "row"],
-            gap: 1,
-            mb: 1,
-            display: "flex",
-            width: "100%",
-          }}
-        >
+            </ItalicTypography>
+          </HeaderTextStack>
+        </HeaderStack>
+        <ActionsStack>
           {downloadState?.downloadState === "none" && (
-            <Button
+            <ActionButton
               variant="outlined"
               color="primary"
-              sx={{
-                flex: [1, "none"],
-                minWidth: 260,
-              }}
               startIcon={<CloudDownloadRounded />}
               onClick={() => book && downloadFile(book)}
               disabled={!link}
             >
               Download
-            </Button>
+            </ActionButton>
           )}
           {downloadState?.downloadState === "downloading" && (
-            <Button
-              sx={{
-                flex: [1, "none"],
-                minWidth: 260,
-              }}
+            <ActionButton
               variant="outlined"
               color="primary"
               onClick={() => book?._id && cancelDownload(book._id)}
             >
               Downloading...
-            </Button>
+            </ActionButton>
           )}
           {downloadState?.downloadState === "downloaded" && (
-            <Button
+            <ActionButton
               variant="contained"
               color="primary"
-              sx={{
-                flex: [1, "none"],
-                minWidth: 260,
-              }}
               startIcon={<MenuBookOutlined />}
               onClick={() =>
                 book?._id && navigate(ROUTES.READER.replace(":id", book._id))
               }
             >
               Read
-            </Button>
+            </ActionButton>
           )}
           <IconButton
             onClick={() => {
@@ -155,13 +187,9 @@ export const BookDetailsScreen = memo(() => {
           >
             <MoreVertOutlined />
           </IconButton>
-        </Stack>
-        <Stack>
-          <Stack
-            sx={{
-              gap: 1,
-            }}
-          >
+        </ActionsStack>
+        <SectionStack>
+          <SectionInnerStack>
             {book?.metadataUpdateStatus === "fetching" && (
               <Alert severity="warning">
                 Retrieving metadata information...
@@ -169,11 +197,23 @@ export const BookDetailsScreen = memo(() => {
             )}
             <MetadataPane bookId={book?._id} />
             <CollectionsPane bookId={book?._id} />
-          </Stack>
-        </Stack>
+          </SectionInnerStack>
+        </SectionStack>
         <MetadataSourcePane bookId={id} />
+        <MetadataFetchPolicyPane
+          override={metadataFetchOverride}
+          isProtected={metadataFetchIsProtected}
+          resolved={metadataFetchResolved}
+          onChange={(next) => {
+            if (!book) return
+            incrementalBookPatch({
+              doc: book._id,
+              patch: { metadataFetchEnabled: next },
+            })
+          }}
+        />
         <DataSourceSection bookId={id} />
-      </Container>
+      </PageContainer>
     </Page>
   )
 })
